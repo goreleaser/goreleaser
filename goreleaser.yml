@@ -1,0 +1,4 @@
+repo: goreleaser/releaser
+binary_name: release
+brew:
+  repo: goreleaser/homebrew
