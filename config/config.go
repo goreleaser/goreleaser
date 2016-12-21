@@ -16,6 +16,11 @@ type HomebrewDeploy struct {
 	Token string
 }
 
+type BuildConfig struct {
+	Oses   []string
+	Arches []string
+}
+
 type ProjectConfig struct {
 	Repo       string
 	Main       string
@@ -23,6 +28,7 @@ type ProjectConfig struct {
 	FileList   []string
 	Brew       HomebrewDeploy
 	Token      string
+	Build      BuildConfig
 }
 
 func Load(file string) (config ProjectConfig, err error) {
@@ -59,6 +65,12 @@ func fix(config ProjectConfig) ProjectConfig {
 	}
 	if config.Brew != emptyBrew && config.Brew.Token == "" {
 		config.Brew.Token = config.Token
+	}
+	if len(config.Build.Oses) == 0 {
+		config.Build.Oses = []string{"linux", "darwin"}
+	}
+	if len(config.Build.Arches) == 0 {
+		config.Build.Arches = []string{"amd64", "386"}
 	}
 	return config
 }
