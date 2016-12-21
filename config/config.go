@@ -2,7 +2,6 @@ package config
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -32,7 +31,6 @@ type ProjectConfig struct {
 }
 
 func Load(file string) (config ProjectConfig, err error) {
-	log.Println("Loading", file)
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		return config, err
@@ -75,12 +73,11 @@ func fix(config ProjectConfig) ProjectConfig {
 	return config
 }
 
-func contains(s string, ss []string) (ok bool) {
+func contains(s string, ss []string) bool {
 	for _, sx := range ss {
 		if sx == s {
-			ok = true
-			break
+			return true
 		}
 	}
-	return ok
+	return false
 }
