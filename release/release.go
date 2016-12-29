@@ -24,7 +24,6 @@ func Release(version, diff string, config config.ProjectConfig) error {
 	repo := strings.Split(config.Repo, "/")[1]
 
 	r, _, err := client.Repositories.CreateRelease(owner, repo, &github.RepositoryRelease{
-		TargetCommitish: github.String(version),
 		Draft:           github.Bool(true),
 		Name:            github.String(version),
 		TagName:         github.String(version),

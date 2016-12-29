@@ -13,7 +13,7 @@ import (
 func Build(version string, config config.ProjectConfig) error {
 	for _, bos := range config.Build.Oses {
 		for _, arch := range config.Build.Arches {
-			fmt.Println("Building", bos+"/"+arch+"...")
+			fmt.Println("Building", bos+"/"+arch, "...")
 			cmd := exec.Command(
 				"go",
 				"build",
