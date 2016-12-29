@@ -48,11 +48,6 @@ func fix(config ProjectConfig) ProjectConfig {
 		config.FileList = []string{
 			"README.md",
 			"LICENSE.md",
-			config.BinaryName,
-		}
-	} else {
-		if !contains(config.BinaryName, config.FileList) {
-			config.FileList = append(config.FileList, config.BinaryName)
 		}
 	}
 	if config.Main == "" {

@@ -7,6 +7,7 @@ import (
 	"os/exec"
 
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/uname"
 )
 
 func Build(version string, config config.ProjectConfig) error {
@@ -31,8 +32,8 @@ func Build(version string, config config.ProjectConfig) error {
 			cmd.Stdout = &stdout
 			cmd.Stderr = &stdout
 			err := cmd.Run()
-			fmt.Println(stdout.String())
 			if err != nil {
+				fmt.Println(stdout.String())
 				return err
 			}
 		}
@@ -41,5 +42,5 @@ func Build(version string, config config.ProjectConfig) error {
 }
 
 func target(os, arch, binary string) string {
-	return "dist/" + binary + "_" + os + "_" + arch + "/" + binary
+	return "dist/" + binary + "_" + uname.FromGo(os) + "_" + uname.FromGo(arch) + "/" + binary
 }
