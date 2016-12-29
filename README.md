@@ -1,7 +1,9 @@
-# Releaser
+# GoReleaser
 
-Builds go binaries for several platforms, creates a github release and then
-push it to a custom homebrew repository
+Deliver Go binaries as fast and easy as possible.
+
+GoReleaser builds Go binaries for several platforms, creates a github release and then
+push a homebrew formulae to a repository. All that wrapped in your favorite CI.
 
 ## How it works?
 
