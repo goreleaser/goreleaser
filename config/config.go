@@ -1,10 +1,10 @@
 package config
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 
-	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v1"
 )
 
