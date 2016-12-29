@@ -6,6 +6,7 @@ import (
 	"os"
 
 	yaml "gopkg.in/yaml.v1"
+	"fmt"
 )
 
 var emptyBrew = HomebrewDeploy{}
@@ -36,12 +37,14 @@ func Load(file string) (config ProjectConfig, err error) {
 		return config, err
 	}
 	err = yaml.Unmarshal(data, &config)
+	fmt.Println("a",config.BinaryName)
 	config = fix(config)
+	fmt.Println("b",config.BinaryName)
 	if config.BinaryName == "" {
-		return config, errors.New("Missing binary_name")
+		return config, errors.New("missing binary_name")
 	}
 	if config.Repo == "" {
-		return config, errors.New("Missing repo")
+		return config, errors.New("missing repo")
 	}
 	return config, err
 }

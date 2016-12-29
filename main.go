@@ -16,7 +16,7 @@ var version = "none"
 func main() {
 	config, err := config.Load("goreleaser.yml")
 	if err != nil {
-		log.Fatalln("Failed to load goreleaser.yml", err.Error())
+		log.Fatalln("Failed to load goreleaser.yml:", err.Error())
 	}
 	tag, err := git.CurrentTag()
 	if err != nil {
