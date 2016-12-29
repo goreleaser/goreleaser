@@ -31,7 +31,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("Failed to create archives", err.Error())
 	}
-	previousTag, err := git.PreviousTag()
+	previousTag, err := git.PreviousTag(tag)
 	if err != nil {
 		log.Fatalln("Failed to get previous tag name", err.Error())
 	}

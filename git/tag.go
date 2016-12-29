@@ -3,18 +3,15 @@ package git
 import (
 	"os/exec"
 	"strings"
+	"errors"
 )
 
 func CurrentTag() (tag string, err error) {
 	return getTag("master")
 }
 
-func PreviousTag() (tag string, err error) {
-	current, err := CurrentTag()
-	if err != nil {
-		return tag, err
-	}
-	return getTag(current + "^")
+func PreviousTag(base string) (tag string, err error) {
+	return getTag(base + "^")
 }
 
 func getTag(ref string) (tag string, err error) {
@@ -28,7 +25,7 @@ func getTag(ref string) (tag string, err error) {
 	)
 	bts, err := cmd.CombinedOutput()
 	if err != nil {
-		return tag, err
+		return tag, errors.New(err.Error() + ": " + string(bts))
 	}
 	return strings.Split(string(bts), "\n")[0], err
 }
