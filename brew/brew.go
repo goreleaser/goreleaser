@@ -96,13 +96,18 @@ func dataFor(version string, config config.ProjectConfig, client *github.Client)
 	} else {
 		description = *rep.Description
 	}
-	// TODO deal with `-`, `_` and other stuff on binary name
 	return templateData{
-		Name:       strings.Title(config.BinaryName),
+		Name:       formulaNameFor(config.BinaryName),
 		Desc:       description,
 		Homepage:   homepage,
 		Repo:       config.Repo,
 		Tag:        version,
 		BinaryName: config.BinaryName,
 	}, err
+}
+
+func formulaNameFor(name string) string {
+	name = strings.Replace(name, "-", " ", -1)
+	name = strings.Replace(name, "_", " ", -1)
+	return strings.Replace(strings.Title(name), " ", "", -1)
 }
