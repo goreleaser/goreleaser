@@ -39,7 +39,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("Failed to diff current and previous tags", err.Error())
 	}
-	err = release.Release(version, diff, config)
+	err = release.Release(tag, diff, config)
 	if err != nil {
 		log.Fatalln("Failed to create the GitHub release", err.Error())
 	}
