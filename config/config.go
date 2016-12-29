@@ -54,14 +54,14 @@ func fix(config ProjectConfig) ProjectConfig {
 			"LICENSE.md",
 		}
 	}
-	if config.Build.Main == "" {
-		config.Build.Main = "main.go"
-	}
 	if config.Token == "" {
 		config.Token = os.Getenv("GITHUB_TOKEN")
 	}
 	if config.Brew != emptyBrew && config.Brew.Token == "" {
 		config.Brew.Token = config.Token
+	}
+	if config.Build.Main == "" {
+		config.Build.Main = "main.go"
 	}
 	if len(config.Build.Oses) == 0 {
 		config.Build.Oses = []string{"linux", "darwin"}
