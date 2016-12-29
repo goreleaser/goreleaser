@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/uname"
 	"golang.org/x/oauth2"
+	"os/exec"
 )
 
 func Release(version, diff string, config config.ProjectConfig) error {
@@ -22,14 +23,12 @@ func Release(version, diff string, config config.ProjectConfig) error {
 
 	owner := strings.Split(config.Repo, "/")[0]
 	repo := strings.Split(config.Repo, "/")[1]
-
-	// TODO update release if it already exists
-	// TODO add `go version` to the description
-	r, _, err := client.Repositories.CreateRelease(owner, repo, &github.RepositoryRelease{
+	releaseData := &github.RepositoryRelease{
 		Name:            github.String(version),
 		TagName:         github.String(version),
-		Body:            github.String(diff + "\n\nAutomated with @goreleaser"),
-	})
+		Body:            github.String(description(diff)),
+	}
+	r, _, err := client.Repositories.CreateRelease(owner, repo, releaseData)
 	if err != nil {
 		return err
 	}
@@ -41,6 +40,16 @@ func Release(version, diff string, config config.ProjectConfig) error {
 		}
 	}
 	return nil
+}
+
+func description(diff string) string {
+	result := diff + "\n\nAutomated with @goreleaser"
+	cmd := exec.Command("go", "version")
+	bts, err := cmd.CombinedOutput()
+	if err != nil {
+		return result
+	}
+	return result + "\nBuilt with " + string(bts)
 }
 
 func upload(client *github.Client, releaseID int, owner, repo, system, arch, binaryName string) error {
