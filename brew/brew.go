@@ -96,6 +96,7 @@ func dataFor(version string, config config.ProjectConfig, client *github.Client)
 	} else {
 		description = *rep.Description
 	}
+	// TODO deal with `-`, `_` and other stuff on binary name
 	return templateData{
 		Name:       strings.Title(config.BinaryName),
 		Desc:       description,

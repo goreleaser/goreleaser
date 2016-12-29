@@ -24,6 +24,7 @@ func Release(version, diff string, config config.ProjectConfig) error {
 	repo := strings.Split(config.Repo, "/")[1]
 
 	// TODO update release if it already exists
+	// TODO add `go version` to the description
 	r, _, err := client.Repositories.CreateRelease(owner, repo, &github.RepositoryRelease{
 		Name:            github.String(version),
 		TagName:         github.String(version),
