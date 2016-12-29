@@ -5,7 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
-	"html/template"
+	"text/template"
 	"strings"
 
 	"github.com/google/go-github/github"
@@ -51,6 +51,16 @@ func Brew(version string, config config.ProjectConfig) error {
 	var out bytes.Buffer
 	tmpl.Execute(&out, data)
 
+	var sha *string
+	file, _, _, err := client.Repositories.GetContents(
+		parts[0], parts[1], config.BinaryName+".rb", &github.RepositoryContentGetOptions{},
+	)
+	if err == nil {
+		sha = file.SHA
+	} else {
+		sha = github.String(fmt.Sprintf("%s", sha256.Sum256(out.Bytes())))
+	}
+
 	_, _, err = client.Repositories.UpdateFile(
 		parts[0],
 		parts[1],
@@ -62,7 +72,7 @@ func Brew(version string, config config.ProjectConfig) error {
 			},
 			Content: out.Bytes(),
 			Message: github.String(config.BinaryName + " version " + version),
-			SHA:     github.String(fmt.Sprintf("%s", sha256.Sum256(out.Bytes()))),
+			SHA:     sha,
 		},
 	)
 	return err

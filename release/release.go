@@ -23,6 +23,7 @@ func Release(version, diff string, config config.ProjectConfig) error {
 	owner := strings.Split(config.Repo, "/")[0]
 	repo := strings.Split(config.Repo, "/")[1]
 
+	// TODO update release if it already exists
 	r, _, err := client.Repositories.CreateRelease(owner, repo, &github.RepositoryRelease{
 		Name:            github.String(version),
 		TagName:         github.String(version),

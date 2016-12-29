@@ -1,7 +1,7 @@
 repo: goreleaser/releaser
 binary_name: release
 brew:
-  repo: goreleaser/brew
+  repo: goreleaser/homebrew-formulae
 build:
     arches:
         - amd64
