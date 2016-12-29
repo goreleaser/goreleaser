@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/goreleaser/releaser/brew"
 	"github.com/goreleaser/releaser/build"
+	"github.com/goreleaser/releaser/compress"
 	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/git"
-	"github.com/goreleaser/releaser/compress"
 	"github.com/goreleaser/releaser/release"
 )
 
@@ -41,9 +42,11 @@ func main() {
 	}
 	err = release.Release(tag, diff, config)
 	if err != nil {
-		log.Fatalln("Failed to create the GitHub release", err.Error())
+		log.Fatalln("Failed to create GitHub release", err.Error())
 	}
 	if config.Brew.Repo != "" {
-		// release to brew
+		if err := brew.Brew(tag, config); err != nil {
+			log.Fatalln("Failed to create homebrew formula", err.Error())
+		}
 	}
 }
