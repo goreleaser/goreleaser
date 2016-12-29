@@ -7,7 +7,7 @@ import (
 )
 
 func CurrentTag() (tag string, err error) {
-	return getTag("master")
+	return getTag("")
 }
 
 func PreviousTag(base string) (tag string, err error) {
