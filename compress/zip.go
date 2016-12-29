@@ -1,13 +1,14 @@
 package compress
 
 import (
-	"github.com/goreleaser/releaser/config"
-	"os"
-	"github.com/goreleaser/releaser/uname"
-	"compress/gzip"
 	"archive/tar"
-	"io"
+	"compress/gzip"
 	"fmt"
+	"io"
+	"os"
+
+	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/uname"
 )
 
 func ArchiveAll(version string, config config.ProjectConfig) error {

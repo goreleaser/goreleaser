@@ -12,7 +12,7 @@ import (
 	"github.com/goreleaser/releaser/release"
 )
 
-var version = "none"
+var version = "master"
 
 func main() {
 	config, err := config.Load("goreleaser.yml")

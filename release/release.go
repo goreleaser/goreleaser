@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/uname"
 	"golang.org/x/oauth2"
-	"os/exec"
 	"golang.org/x/sync/errgroup"
 )
 
