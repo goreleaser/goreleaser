@@ -1,5 +1,5 @@
 hash: 99aa967804549d50c1b897c28c555c0bb10a3045f68b3024f926758be9d0a5f8
-updated: 2016-12-29T14:09:53.896252195-02:00
+updated: 2016-12-29T18:01:00.535565441-02:00
 imports:
 - name: github.com/golang/protobuf
   version: df1d3ca07d2d07bba352d5b73c4313b4e2a6203e
@@ -13,8 +13,6 @@ imports:
   version: 9235644dd9e52eeae6fa48efd539fdc351a0af53
   subpackages:
   - query
-- name: github.com/pkg/errors
-  version: 248dadf4e9068a0b3e79f02ed0a610d935de5302
 - name: golang.org/x/net
   version: 6d3beaea10370160dea67f5c9327ed791afd5389
   subpackages:
