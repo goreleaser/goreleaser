@@ -6,7 +6,6 @@ import (
 	"os"
 
 	yaml "gopkg.in/yaml.v1"
-	"fmt"
 )
 
 var emptyBrew = HomebrewDeploy{}
@@ -24,8 +23,8 @@ type BuildConfig struct {
 type ProjectConfig struct {
 	Repo       string
 	Main       string
-	BinaryName string
-	FileList   []string
+	BinaryName string `yaml:"binary_name"`
+	Files      []string
 	Brew       HomebrewDeploy
 	Token      string
 	Build      BuildConfig
@@ -37,9 +36,7 @@ func Load(file string) (config ProjectConfig, err error) {
 		return config, err
 	}
 	err = yaml.Unmarshal(data, &config)
-	fmt.Println("a",config.BinaryName)
 	config = fix(config)
-	fmt.Println("b",config.BinaryName)
 	if config.BinaryName == "" {
 		return config, errors.New("missing binary_name")
 	}
@@ -50,8 +47,8 @@ func Load(file string) (config ProjectConfig, err error) {
 }
 
 func fix(config ProjectConfig) ProjectConfig {
-	if len(config.FileList) == 0 {
-		config.FileList = []string{
+	if len(config.Files) == 0 {
+		config.Files = []string{
 			"README.md",
 			"LICENSE.md",
 		}

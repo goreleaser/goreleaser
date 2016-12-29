@@ -32,7 +32,7 @@ func create(system, arch string, config config.ProjectConfig) error {
 	defer gw.Close()
 	tw := tar.NewWriter(gw)
 	defer tw.Close()
-	for _, f := range config.FileList {
+	for _, f := range config.Files {
 		if err := addFile(tw, f, f); err != nil {
 			return err
 		}
