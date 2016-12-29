@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"os"
-	"io/ioutil"
 )
 
 func TestNameWithDash(t *testing.T) {
@@ -20,6 +18,22 @@ func TestSimpleName(t *testing.T) {
 	assert.Equal(t, formulaNameFor("binary"), "Binary")
 }
 
+var testFormulaeExpected = `class Test < Formula
+  desc "Some desc"
+  homepage "https://google.com"
+  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}.tar.gz"
+  head "https://github.com/caarlos0/test.git"
+  version "v0.1.3"
+
+  def install
+    bin.install "test"
+  end
+
+  def caveats
+    "Here are some caveats"
+  end
+end
+`
 
 func TestFormulae(t *testing.T) {
 	assert := assert.New(t)
@@ -33,8 +47,6 @@ func TestFormulae(t *testing.T) {
 		Caveats:    "Here are some caveats",
 	})
 	assert.NoError(err)
-	f, err := os.Open("./brew/test_files/test.txt")
-	bts, _ := ioutil.ReadAll(f)
 	assert.NoError(err)
-	assert.Equal(string(bts), out.String())
+	assert.Equal(testFormulaeExpected, out.String())
 }
