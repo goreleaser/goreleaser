@@ -18,3 +18,10 @@ func TestPreviousTag(t *testing.T) {
 	assert.NoError(err)
 	assert.NotEmpty(tag)
 }
+
+func TestInvalidRef(t *testing.T) {
+	assert := assert.New(t)
+	tag, err := PreviousTag("this-should-not-exist")
+	assert.Error(err)
+	assert.Empty(tag)
+}

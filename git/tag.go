@@ -21,8 +21,10 @@ func getTag(ref string) (tag string, err error) {
 		"--tags",
 		"--abbrev=0",
 		"--always",
-		ref,
 	)
+	if ref != "" {
+		cmd.Args = append(cmd.Args, ref)
+	}
 	bts, err := cmd.CombinedOutput()
 	if err != nil {
 		return tag, errors.New(err.Error() + ": " + string(bts))
