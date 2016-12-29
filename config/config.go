@@ -11,8 +11,9 @@ import (
 var emptyBrew = HomebrewDeploy{}
 
 type HomebrewDeploy struct {
-	Repo  string
-	Token string
+	Repo    string
+	Token   string
+	Caveats string
 }
 
 type BuildConfig struct {

@@ -5,8 +5,8 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
-	"text/template"
 	"strings"
+	"text/template"
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
@@ -23,11 +23,17 @@ const formulae = `class {{ .Name }} < Formula
   def install
     bin.install "{{ .BinaryName }}"
   end
+
+  {{ if .Caveats }}
+  def caveats
+    "{{ .Caveats }}"
+  end
+  {{ end }}
 end
 `
 
 type templateData struct {
-	Name, Desc, Homepage, Repo, Tag, BinaryName string
+	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats string
 }
 
 func Brew(version string, config config.ProjectConfig) error {
@@ -39,19 +45,15 @@ func Brew(version string, config config.ProjectConfig) error {
 	client := github.NewClient(tc)
 	parts := strings.Split(config.Brew.Repo, "/")
 
-	tmpl, err := template.New(config.BinaryName).Parse(formulae)
-	if err != nil {
-		return err
-	}
-
 	data, err := dataFor(version, config, client)
 	if err != nil {
 		return err
 	}
 
-	var out bytes.Buffer
-	tmpl.Execute(&out, data)
-
+	out, err := buildFormulae(data)
+	if err != nil {
+		return err
+	}
 	var sha *string
 	file, _, _, err := client.Repositories.GetContents(
 		parts[0], parts[1], config.BinaryName+".rb", &github.RepositoryContentGetOptions{},
@@ -79,6 +81,16 @@ func Brew(version string, config config.ProjectConfig) error {
 	return err
 }
 
+func buildFormulae(data templateData) (bytes.Buffer, error) {
+	var out bytes.Buffer
+	tmpl, err := template.New(data.BinaryName).Parse(formulae)
+	if err != nil {
+		return out, err
+	}
+	err = tmpl.Execute(&out, data)
+	return out, err
+}
+
 func dataFor(version string, config config.ProjectConfig, client *github.Client) (result templateData, err error) {
 	var homepage string
 	var description string
@@ -104,6 +116,7 @@ func dataFor(version string, config config.ProjectConfig, client *github.Client)
 		Repo:       config.Repo,
 		Tag:        version,
 		BinaryName: config.BinaryName,
+		Caveats:    config.Brew.Caveats,
 	}, err
 }
 
