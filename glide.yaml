@@ -5,6 +5,9 @@ import:
   - github
 - package: golang.org/x/oauth2
 - package: gopkg.in/yaml.v1
+- package: golang.org/x/sync
+  subpackages:
+  - errgroup
 testImport:
 - package: github.com/stretchr/testify
   version: ~1.1.4

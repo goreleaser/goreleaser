@@ -1,5 +1,5 @@
-hash: d994e2b869e9f8e43e94f45a805e7443c459a8357f4d0935c4c96171bb54265f
-updated: 2016-12-28T23:26:07.891361125-02:00
+hash: 99aa967804549d50c1b897c28c555c0bb10a3045f68b3024f926758be9d0a5f8
+updated: 2016-12-29T14:09:53.896252195-02:00
 imports:
 - name: github.com/golang/protobuf
   version: df1d3ca07d2d07bba352d5b73c4313b4e2a6203e
@@ -13,6 +13,8 @@ imports:
   version: 9235644dd9e52eeae6fa48efd539fdc351a0af53
   subpackages:
   - query
+- name: github.com/pkg/errors
+  version: 248dadf4e9068a0b3e79f02ed0a610d935de5302
 - name: golang.org/x/net
   version: 6d3beaea10370160dea67f5c9327ed791afd5389
   subpackages:
@@ -21,6 +23,10 @@ imports:
   version: 1e695b1c8febf17aad3bfa7bf0a819ef94b98ad5
   subpackages:
   - internal
+- name: golang.org/x/sync
+  version: 316e794f7b5e3df4e95175a45a5fb8b12f85cb4f
+  subpackages:
+  - errgroup
 - name: google.golang.org/appengine
   version: 3f4dbbc0ec153a39878fd524ece9f39732bd4998
   subpackages:
