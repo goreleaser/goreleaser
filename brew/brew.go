@@ -5,9 +5,9 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"html/template"
 	"strings"
 
-	"github.com/alecthomas/template"
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
 	"golang.org/x/oauth2"
