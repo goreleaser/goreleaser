@@ -18,11 +18,11 @@ type HomebrewDeploy struct {
 type BuildConfig struct {
 	Oses   []string
 	Arches []string
+	Main   string
 }
 
 type ProjectConfig struct {
 	Repo       string
-	Main       string
 	BinaryName string `yaml:"binary_name"`
 	Files      []string
 	Brew       HomebrewDeploy
@@ -53,8 +53,8 @@ func fix(config ProjectConfig) ProjectConfig {
 			"LICENSE.md",
 		}
 	}
-	if config.Main == "" {
-		config.Main = "main.go"
+	if config.Build.Main == "" {
+		config.Build.Main = "main.go"
 	}
 	if config.Token == "" {
 		config.Token = os.Getenv("GITHUB_TOKEN")

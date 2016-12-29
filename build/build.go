@@ -19,7 +19,7 @@ func Build(version string, config config.ProjectConfig) error {
 				"build",
 				"-ldflags=-s -w -X main.version="+version,
 				"-o", target(bos, arch, config.BinaryName),
-				config.Main,
+				config.Build.Main,
 			)
 			cmd.Env = append(
 				cmd.Env,
