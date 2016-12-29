@@ -8,7 +8,7 @@ import (
 func TestFixConfig(t *testing.T) {
 	assert := assert.New(t)
 	config := fix(ProjectConfig{})
-	assert.Equal("main.go", config.Main)
+	assert.Equal("main.go", config.Build.Main)
 	assert.Contains(config.Files, "README.md")
 	assert.Contains(config.Files, "LICENSE.md")
 	assert.Contains(config.Build.Oses, "darwin")
