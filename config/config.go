@@ -3,8 +3,8 @@ package config
 import (
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v1"
 )
 
@@ -36,14 +36,17 @@ func Load(file string) (config ProjectConfig, err error) {
 		return config, err
 	}
 	err = yaml.Unmarshal(data, &config)
-	return fix(config), err
+	config = fix(config)
+	if config.BinaryName == "" {
+		return config, errors.New("Missing binary_name")
+	}
+	if config.Repo == "" {
+		return config, errors.New("Missing repo")
+	}
+	return config, err
 }
 
 func fix(config ProjectConfig) ProjectConfig {
-	if config.BinaryName == "" {
-		dir, _ := os.Getwd()
-		config.BinaryName = filepath.Base(dir)
-	}
 	if len(config.FileList) == 0 {
 		config.FileList = []string{
 			"README.md",
