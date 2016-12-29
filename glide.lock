@@ -1,0 +1,48 @@
+hash: d994e2b869e9f8e43e94f45a805e7443c459a8357f4d0935c4c96171bb54265f
+updated: 2016-12-28T23:26:07.891361125-02:00
+imports:
+- name: github.com/golang/protobuf
+  version: df1d3ca07d2d07bba352d5b73c4313b4e2a6203e
+  subpackages:
+  - proto
+- name: github.com/google/go-github
+  version: 939928b912496ed4fbeb6e4beb2467b4fa540af7
+  subpackages:
+  - github
+- name: github.com/google/go-querystring
+  version: 9235644dd9e52eeae6fa48efd539fdc351a0af53
+  subpackages:
+  - query
+- name: golang.org/x/net
+  version: 6d3beaea10370160dea67f5c9327ed791afd5389
+  subpackages:
+  - context
+- name: golang.org/x/oauth2
+  version: 1e695b1c8febf17aad3bfa7bf0a819ef94b98ad5
+  subpackages:
+  - internal
+- name: google.golang.org/appengine
+  version: 3f4dbbc0ec153a39878fd524ece9f39732bd4998
+  subpackages:
+  - internal
+  - internal/base
+  - internal/datastore
+  - internal/log
+  - internal/remote_api
+  - internal/urlfetch
+  - urlfetch
+- name: gopkg.in/yaml.v1
+  version: 9f9df34309c04878acc86042b16630b0f696e1de
+testImports:
+- name: github.com/davecgh/go-spew
+  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  subpackages:
+  - spew
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  subpackages:
+  - assert
