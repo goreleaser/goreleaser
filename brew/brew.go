@@ -18,6 +18,7 @@ const formulae = `class {{ .Name }} < Formula
   homepage "{{ .Homepage }}"
   url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .BinaryName }}_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}.tar.gz"
   head "https://github.com/{{ .Repo }}.git"
+  version "{{ .Tag }}"
 
   def install
     bin.install "{{ .BinaryName }}"
