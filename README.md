@@ -1,4 +1,4 @@
-# GoReleaser
+# GoReleaser [![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square)](https://github.com/goreleaser)
 
 Deliver Go binaries as fast and easy as possible.
 
@@ -105,4 +105,12 @@ class Antibody < Formula
     "To start using antibody, you need to add `source <(antibody init)` to your `~/.zshrc`."
   end
 end
+```
+
+## Badges
+
+Feel free to use it in your own projects:
+
+```md
+[![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square)](https://github.com/goreleaser)
 ```
