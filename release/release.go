@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/releaser/uname"
 	"golang.org/x/oauth2"
 	"os/exec"
+	"golang.org/x/sync/errgroup"
 )
 
 func Release(version, diff string, config config.ProjectConfig) error {
@@ -32,14 +33,17 @@ func Release(version, diff string, config config.ProjectConfig) error {
 	if err != nil {
 		return err
 	}
+	var g errgroup.Group
 	for _, system := range config.Build.Oses {
 		for _, arch := range config.Build.Arches {
-			if err := upload(client, *r.ID, owner, repo, system, arch, config.BinaryName); err != nil {
-				return err
-			}
+			system := system
+			arch := arch
+			g.Go(func() error {
+				return upload(client, *r.ID, owner, repo, system, arch, config.BinaryName)
+			})
 		}
 	}
-	return nil
+	return g.Wait()
 }
 
 func description(diff string) string {
