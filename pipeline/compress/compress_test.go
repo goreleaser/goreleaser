@@ -2,7 +2,7 @@ package compress
 
 import (
 	"testing"
-	"github.com/docker/docker/pkg/testutil/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestExtWindows(t *testing.T) {
@@ -10,5 +10,5 @@ func TestExtWindows(t *testing.T) {
 }
 
 func TestExtOthers(t *testing.T) {
-	assert.Equal(t, ext("linux"), "")
+	assert.Empty(t, ext("linux"))
 }
