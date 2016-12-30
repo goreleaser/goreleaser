@@ -21,7 +21,7 @@ func (Pipe) Name() string {
 }
 
 func (Pipe) Work(config config.ProjectConfig) error {
-	log.Println("Creating release", config.Git.CurrentTag, "on repo", config.Repo, "...")
+	log.Println("Creating release", config.Git.CurrentTag, "on", config.Repo, "...")
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: config.Token},
 	)
