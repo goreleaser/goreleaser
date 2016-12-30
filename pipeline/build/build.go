@@ -20,30 +20,30 @@ func (Pipe) Name() string {
 
 func (Pipe) Work(config config.ProjectConfig) error {
 	var g errgroup.Group
-	for _, bos := range config.Build.Oses {
+	for _, system := range config.Build.Oses {
 		for _, arch := range config.Build.Arches {
-			bos := bos
+			system := system
 			arch := arch
 			g.Go(func() error {
-				return build(bos, arch, config)
+				return build(system, arch, config)
 			})
 		}
 	}
 	return g.Wait()
 }
 
-func build(bos, arch string, config config.ProjectConfig) error {
-	log.Println("Building", bos+"/"+arch, "...")
+func build(system, arch string, config config.ProjectConfig) error {
+	log.Println("Building", system+"/"+arch, "...")
 	cmd := exec.Command(
 		"go",
 		"build",
 		"-ldflags=-s -w -X main.version="+config.Git.CurrentTag,
-		"-o", target(bos, arch, config.BinaryName),
+		"-o", target(system, arch, config.BinaryName),
 		config.Build.Main,
 	)
 	cmd.Env = append(
 		cmd.Env,
-		"GOOS="+bos,
+		"GOOS="+system,
 		"GOARCH="+arch,
 		"GOROOT="+os.Getenv("GOROOT"),
 		"GOPATH="+os.Getenv("GOPATH"),
@@ -58,6 +58,6 @@ func build(bos, arch string, config config.ProjectConfig) error {
 	return nil
 }
 
-func target(os, arch, binary string) string {
-	return "dist/" + binary + "_" + uname.FromGo(os) + "_" + uname.FromGo(arch) + "/" + binary
+func target(system, arch, binary string) string {
+	return "dist/" + binary + "_" + uname.FromGo(system) + "_" + uname.FromGo(arch) + "/" + binary
 }
