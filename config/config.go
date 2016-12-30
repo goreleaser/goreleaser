@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/goreleaser/releaser/config/git"
 	yaml "gopkg.in/yaml.v1"
 )
 
@@ -22,6 +23,12 @@ type BuildConfig struct {
 	Main   string
 }
 
+type GitInfo struct {
+	CurrentTag  string
+	PreviousTag string
+	Diff        string
+}
+
 type ProjectConfig struct {
 	Repo       string
 	BinaryName string `yaml:"binary_name"`
@@ -29,6 +36,7 @@ type ProjectConfig struct {
 	Brew       HomebrewDeploy
 	Token      string
 	Build      BuildConfig
+	Git        GitInfo `yaml:"_"`
 }
 
 func Load(file string) (config ProjectConfig, err error) {
@@ -38,6 +46,10 @@ func Load(file string) (config ProjectConfig, err error) {
 	}
 	err = yaml.Unmarshal(data, &config)
 	config = fix(config)
+	config, err = fillGitData(config)
+	if err != nil {
+		return config, err
+	}
 	if config.BinaryName == "" {
 		return config, errors.New("missing binary_name")
 	}
@@ -70,6 +82,26 @@ func fix(config ProjectConfig) ProjectConfig {
 		config.Build.Arches = []string{"amd64", "386"}
 	}
 	return config
+}
+
+func fillGitData(config ProjectConfig) (ProjectConfig, error) {
+	tag, err := git.CurrentTag()
+	if err != nil {
+		return config, err
+	}
+	previous, err := git.PreviousTag(tag)
+	if err != nil {
+		return config, err
+	}
+	log, err := git.Log(previous, tag)
+	if err != nil {
+		return config, err
+	}
+
+	config.Git.CurrentTag = tag
+	config.Git.PreviousTag = previous
+	config.Git.Diff = log
+	return config, nil
 }
 
 func contains(s string, ss []string) bool {

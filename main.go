@@ -1,15 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
-	"github.com/goreleaser/releaser/brew"
-	"github.com/goreleaser/releaser/build"
-	"github.com/goreleaser/releaser/compress"
 	"github.com/goreleaser/releaser/config"
-	"github.com/goreleaser/releaser/git"
-	"github.com/goreleaser/releaser/release"
+	"github.com/goreleaser/releaser/pipeline"
+	"github.com/goreleaser/releaser/pipeline/brew"
+	"github.com/goreleaser/releaser/pipeline/build"
+	"github.com/goreleaser/releaser/pipeline/compress"
+	"github.com/goreleaser/releaser/pipeline/release"
 )
 
 var version = "master"
@@ -19,34 +18,15 @@ func main() {
 	if err != nil {
 		log.Fatalln("Failed to load goreleaser.yml:", err.Error())
 	}
-	tag, err := git.CurrentTag()
-	if err != nil {
-		log.Fatalln("Failed to get current tag name", err.Error())
+	var pipeline = []pipeline.Pipe{
+		build.Pipe{},
+		compress.Pipe{},
+		release.Pipe{},
+		brew.Pipe{},
 	}
-	fmt.Println("Building", tag, "...")
-	err = build.Build(tag, config)
-	if err != nil {
-		log.Fatalln("Failed to diff current and previous tags", err.Error())
-	}
-	err = compress.ArchiveAll(version, config)
-	if err != nil {
-		log.Fatalln("Failed to create archives", err.Error())
-	}
-	previousTag, err := git.PreviousTag(tag)
-	if err != nil {
-		log.Fatalln("Failed to get previous tag name", err.Error())
-	}
-	diff, err := git.Log(previousTag, tag)
-	if err != nil {
-		log.Fatalln("Failed to diff current and previous tags", err.Error())
-	}
-	err = release.Release(tag, diff, config)
-	if err != nil {
-		log.Fatalln("Failed to create GitHub release", err.Error())
-	}
-	if config.Brew.Repo != "" {
-		if err := brew.Brew(tag, config); err != nil {
-			log.Fatalln("Failed to create homebrew formula", err.Error())
+	for _, pipe := range pipeline {
+		if err := pipe.Work(config); err != nil {
+			log.Fatalln(pipe.Name(), "failed:", err.Error())
 		}
 	}
 }

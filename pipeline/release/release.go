@@ -2,7 +2,7 @@ package release
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -14,8 +14,14 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func Release(version, diff string, config config.ProjectConfig) error {
-	fmt.Println("Creating release", version, "on repo", config.Repo, "...")
+type Pipe struct{}
+
+func (Pipe) Name() string {
+	return "GithubRelease"
+}
+
+func (Pipe) Work(config config.ProjectConfig) error {
+	log.Println("Creating release", config.Git.CurrentTag, "on repo", config.Repo, "...")
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: config.Token},
 	)
@@ -24,12 +30,11 @@ func Release(version, diff string, config config.ProjectConfig) error {
 
 	owner := strings.Split(config.Repo, "/")[0]
 	repo := strings.Split(config.Repo, "/")[1]
-	releaseData := &github.RepositoryRelease{
-		Name:            github.String(version),
-		TagName:         github.String(version),
-		Body:            github.String(description(diff)),
-	}
-	r, _, err := client.Repositories.CreateRelease(owner, repo, releaseData)
+	r, _, err := client.Repositories.CreateRelease(owner, repo, &github.RepositoryRelease{
+		Name:            github.String(config.Git.CurrentTag),
+		TagName:         github.String(config.Git.CurrentTag),
+		Body:            github.String(description(config.Git.Diff)),
+	})
 	if err != nil {
 		return err
 	}
@@ -63,7 +68,7 @@ func upload(client *github.Client, releaseID int, owner, repo, system, arch, bin
 		return err
 	}
 	defer file.Close()
-	fmt.Println("Uploading", file.Name(), "...")
+	log.Println("Uploading", file.Name(), "...")
 	_, _, err = client.Repositories.UploadReleaseAsset(owner, repo, releaseID, &github.UploadOptions{
 		Name: name,
 	}, file)

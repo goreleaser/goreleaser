@@ -3,7 +3,7 @@ package build
 import (
 	"bytes"
 	"errors"
-	"fmt"
+	"log"
 	"os"
 	"os/exec"
 
@@ -12,26 +12,32 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func Build(version string, config config.ProjectConfig) error {
+type Pipe struct{}
+
+func (Pipe) Name() string {
+	return "Build"
+}
+
+func (Pipe) Work(config config.ProjectConfig) error {
 	var g errgroup.Group
 	for _, bos := range config.Build.Oses {
 		for _, arch := range config.Build.Arches {
 			bos := bos
 			arch := arch
 			g.Go(func() error {
-				return build(bos, arch, version, config)
+				return build(bos, arch, config)
 			})
 		}
 	}
 	return g.Wait()
 }
 
-func build(bos, arch, version string, config config.ProjectConfig) error {
-	fmt.Println("Building", bos+"/"+arch, "...")
+func build(bos, arch string, config config.ProjectConfig) error {
+	log.Println("Building", bos+"/"+arch, "...")
 	cmd := exec.Command(
 		"go",
 		"build",
-		"-ldflags=-s -w -X main.version="+version,
+		"-ldflags=-s -w -X main.version="+config.Git.CurrentTag,
 		"-o", target(bos, arch, config.BinaryName),
 		config.Build.Main,
 	)
