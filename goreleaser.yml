@@ -3,10 +3,10 @@ binary_name: release
 brew:
   repo: goreleaser/homebrew-formulae
 build:
-    arches:
-        - amd64
-        - 386
-    oses:
-      - windows
-      - darwin
-      - linux
+  arches:
+    - amd64
+    - 386
+  oses:
+    - windows
+    - darwin
+    - linux
