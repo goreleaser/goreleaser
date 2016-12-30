@@ -9,36 +9,41 @@ import (
 	yaml "gopkg.in/yaml.v1"
 )
 
-var emptyBrew = HomebrewDeploy{}
+var emptyBrew = Homebrew{}
 
-type HomebrewDeploy struct {
+// Homebrew contains the brew section
+type Homebrew struct {
 	Repo    string
 	Token   string
 	Caveats string
 }
 
+// BuildConfig contains the build configuration section
 type BuildConfig struct {
 	Oses   []string
 	Arches []string
 	Main   string
 }
 
+// GitInfo includes tags and diffs used in some point
 type GitInfo struct {
 	CurrentTag  string
 	PreviousTag string
 	Diff        string
 }
 
+// ProjectConfig includes all project configuration
 type ProjectConfig struct {
 	Repo       string
 	BinaryName string `yaml:"binary_name"`
 	Files      []string
-	Brew       HomebrewDeploy
+	Brew       Homebrew
 	Token      string
 	Build      BuildConfig
 	Git        GitInfo `yaml:"_"`
 }
 
+// Load config file
 func Load(file string) (config ProjectConfig, err error) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {

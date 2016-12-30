@@ -2,7 +2,11 @@ package pipeline
 
 import "github.com/goreleaser/releaser/config"
 
+// Pipe interface
 type Pipe interface {
+	// Name of the pipe
 	Name() string
-	Work(config config.ProjectConfig) error
+
+	// Run the pipe
+	Run(config config.ProjectConfig) error
 }

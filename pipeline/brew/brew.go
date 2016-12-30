@@ -36,13 +36,16 @@ type templateData struct {
 	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats string
 }
 
+// Pipe for brew deployment
 type Pipe struct{}
 
+// Name of the pipe
 func (Pipe) Name() string {
 	return "Homebrew"
 }
 
-func (Pipe) Work(config config.ProjectConfig) error {
+// Run the pipe
+func (Pipe) Run(config config.ProjectConfig) error {
 	if config.Brew.Repo == "" {
 		return nil
 	}

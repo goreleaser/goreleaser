@@ -14,13 +14,16 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// Pipe for github release
 type Pipe struct{}
 
+// Name of the pipe
 func (Pipe) Name() string {
 	return "GithubRelease"
 }
 
-func (Pipe) Work(config config.ProjectConfig) error {
+// Run the pipe
+func (Pipe) Run(config config.ProjectConfig) error {
 	log.Println("Creating release", config.Git.CurrentTag, "on", config.Repo, "...")
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: config.Token},

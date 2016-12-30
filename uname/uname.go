@@ -10,6 +10,7 @@ var mapping = map[string]string{
 	"amd64":   "x86_64",
 }
 
+// FromGo translates GOOS and GOARCH to uname compatibles
 func FromGo(s string) string {
 	result := mapping[s]
 	if result == "" {

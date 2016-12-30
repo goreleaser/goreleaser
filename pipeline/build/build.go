@@ -12,13 +12,16 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// Pipe for build
 type Pipe struct{}
 
+// Name of the pipe
 func (Pipe) Name() string {
 	return "Build"
 }
 
-func (Pipe) Work(config config.ProjectConfig) error {
+// Run the pipe
+func (Pipe) Run(config config.ProjectConfig) error {
 	var g errgroup.Group
 	for _, system := range config.Build.Oses {
 		for _, arch := range config.Build.Arches {

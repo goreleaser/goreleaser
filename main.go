@@ -25,7 +25,7 @@ func main() {
 		brew.Pipe{},
 	}
 	for _, pipe := range pipeline {
-		if err := pipe.Work(config); err != nil {
+		if err := pipe.Run(config); err != nil {
 			log.Fatalln(pipe.Name(), "failed:", err.Error())
 		}
 	}
