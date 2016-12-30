@@ -6,6 +6,7 @@ var mapping = map[string]string{
 	"freebsd": "FreeBSD",
 	"openbsd": "OpenBSD",
 	"netbsd":  "NetBSD",
+	"windows": "Windows",
 	"386":     "i386",
 	"amd64":   "x86_64",
 }
