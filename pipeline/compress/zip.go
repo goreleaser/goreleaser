@@ -9,6 +9,7 @@ import (
 
 	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/uname"
+	"golang.org/x/sync/errgroup"
 )
 
 type Pipe struct{}
@@ -18,15 +19,15 @@ func (Pipe) Name() string {
 }
 
 func (Pipe) Work(config config.ProjectConfig) error {
-	// TODO use a errgroup here?
+	var g errgroup.Group
 	for _, system := range config.Build.Oses {
 		for _, arch := range config.Build.Arches {
-			if err := create(system, arch, config); err != nil {
-				return err
-			}
+			g.Go(func() error {
+				return create(system, arch, config)
+			})
 		}
 	}
-	return nil
+	return g.Wait()
 }
 
 func create(system, arch string, config config.ProjectConfig) error {
