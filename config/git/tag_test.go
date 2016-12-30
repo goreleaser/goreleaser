@@ -1,8 +1,8 @@
 package git
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestCurrentTag(t *testing.T) {

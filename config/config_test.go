@@ -1,8 +1,8 @@
 package config
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestFixConfig(t *testing.T) {

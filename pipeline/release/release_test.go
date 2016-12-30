@@ -1,9 +1,9 @@
 package release
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"fmt"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestDescription(t *testing.T) {

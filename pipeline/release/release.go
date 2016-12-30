@@ -30,9 +30,9 @@ func (Pipe) Work(config config.ProjectConfig) error {
 
 	owner, repo := split.OnSlash(config.Repo)
 	r, _, err := client.Repositories.CreateRelease(owner, repo, &github.RepositoryRelease{
-		Name:            github.String(config.Git.CurrentTag),
-		TagName:         github.String(config.Git.CurrentTag),
-		Body:            github.String(description(config.Git.Diff)),
+		Name:    github.String(config.Git.CurrentTag),
+		TagName: github.String(config.Git.CurrentTag),
+		Body:    github.String(description(config.Git.Diff)),
 	})
 	if err != nil {
 		return err
