@@ -55,7 +55,7 @@ func (Pipe) Work(config config.ProjectConfig) error {
 	owner, repo := split.OnSlash(config.Brew.Repo)
 	name := config.BinaryName + ".rb"
 
-	log.Println("Updating", name, "on", config.Repo, "...")
+	log.Println("Updating", name, "on", config.Brew.Repo, "...")
 	out, err := buildFormulae(config, client)
 	if err != nil {
 		return err
