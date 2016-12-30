@@ -5,13 +5,22 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/uname"
 )
 
-func ArchiveAll(version string, config config.ProjectConfig) error {
+type Pipe struct{}
+
+func (Pipe) Name() string {
+	return "Compress"
+}
+
+func (Pipe) Work(config config.ProjectConfig) error {
+	log.Println("Creating archives...")
+	// TODO use a errgroup here?
 	for _, system := range config.Build.Oses {
 		for _, arch := range config.Build.Arches {
 			if err := create(system, arch, config); err != nil {

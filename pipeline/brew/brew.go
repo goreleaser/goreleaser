@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
 	"golang.org/x/oauth2"
+	"log"
 )
 
 const formulae = `class {{ .Name }} < Formula
@@ -34,8 +35,17 @@ type templateData struct {
 	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats string
 }
 
-func Brew(version string, config config.ProjectConfig) error {
-	fmt.Println("Updating brew formulae...")
+type Pipe struct{}
+
+func (Pipe) Name() string {
+	return "Homebrew"
+}
+
+func (Pipe) Work(config config.ProjectConfig) error {
+	if config.Brew.Repo == "" {
+		return nil
+	}
+	log.Println("Updating brew formulae...")
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: config.Token},
 	)
@@ -43,7 +53,7 @@ func Brew(version string, config config.ProjectConfig) error {
 	client := github.NewClient(tc)
 	parts := strings.Split(config.Brew.Repo, "/")
 
-	data, err := dataFor(version, config, client)
+	data, err := dataFor(config, client)
 	if err != nil {
 		return err
 	}
@@ -72,7 +82,7 @@ func Brew(version string, config config.ProjectConfig) error {
 				Email: github.String("bot@goreleaser"),
 			},
 			Content: out.Bytes(),
-			Message: github.String(config.BinaryName + " version " + version),
+			Message: github.String(config.BinaryName + " version " + config.Git.CurrentTag),
 			SHA:     sha,
 		},
 	)
@@ -89,7 +99,7 @@ func buildFormulae(data templateData) (bytes.Buffer, error) {
 	return out, err
 }
 
-func dataFor(version string, config config.ProjectConfig, client *github.Client) (result templateData, err error) {
+func dataFor(config config.ProjectConfig, client *github.Client) (result templateData, err error) {
 	var homepage string
 	var description string
 	parts := strings.Split(config.Repo, "/")
@@ -112,7 +122,7 @@ func dataFor(version string, config config.ProjectConfig, client *github.Client)
 		Desc:       description,
 		Homepage:   homepage,
 		Repo:       config.Repo,
-		Tag:        version,
+		Tag:        config.Git.CurrentTag,
 		BinaryName: config.BinaryName,
 		Caveats:    config.Brew.Caveats,
 	}, err
