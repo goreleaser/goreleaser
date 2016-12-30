@@ -37,7 +37,7 @@ end
 
 func TestFormulae(t *testing.T) {
 	assert := assert.New(t)
-	out, err := buildFormulae(templateData{
+	out, err := doBuildFormulae(templateData{
 		BinaryName: "test",
 		Desc:       "Some desc",
 		Homepage:   "https://google.com",

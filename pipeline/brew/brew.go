@@ -91,11 +91,15 @@ func sha(client *github.Client, owner, repo, name string, out bytes.Buffer) (*st
 }
 
 func buildFormulae(config config.ProjectConfig, client *github.Client) (bytes.Buffer, error) {
-	var out bytes.Buffer
 	data, err := dataFor(config, client)
 	if err != nil {
-		return out, err
+		return bytes.Buffer{}, err
 	}
+	return doBuildFormulae(data)
+}
+
+func doBuildFormulae(data templateData) (bytes.Buffer, error) {
+	var out bytes.Buffer
 	tmpl, err := template.New(data.BinaryName).Parse(formulae)
 	if err != nil {
 		return out, err
