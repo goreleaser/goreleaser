@@ -51,7 +51,7 @@ func (Pipe) Work(config config.ProjectConfig) error {
 }
 
 func description(diff string) string {
-	result := "## Changelog:\n" + diff + "\n\n--\nAutomated with @goreleaser"
+	result := "## Changelog\n" + diff + "\n\n--\nAutomated with @goreleaser"
 	cmd := exec.Command("go", "version")
 	bts, err := cmd.CombinedOutput()
 	if err != nil {
