@@ -3,7 +3,6 @@ package compress
 import (
 	"archive/tar"
 	"compress/gzip"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -19,7 +18,6 @@ func (Pipe) Name() string {
 }
 
 func (Pipe) Work(config config.ProjectConfig) error {
-	log.Println("Creating archives...")
 	// TODO use a errgroup here?
 	for _, system := range config.Build.Oses {
 		for _, arch := range config.Build.Arches {
@@ -33,7 +31,7 @@ func (Pipe) Work(config config.ProjectConfig) error {
 
 func create(system, arch string, config config.ProjectConfig) error {
 	file, err := os.Create("dist/" + nameFor(system, arch, config.BinaryName) + ".tar.gz")
-	fmt.Println("Creating", file.Name(), "...")
+	log.Println("Creating", file.Name(), "...")
 	if err != nil {
 		return err
 	}
