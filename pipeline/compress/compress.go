@@ -51,7 +51,7 @@ func create(system, arch string, config config.ProjectConfig) error {
 			return err
 		}
 	}
-	if err := addFile(tw, config.BinaryName, binaryName(system, arch, config.BinaryName)); err != nil {
+	if err := addFile(tw, config.BinaryName+ext(system), binaryPath(system, arch, config.BinaryName)); err != nil {
 		return err
 	}
 	return nil
@@ -85,6 +85,13 @@ func nameFor(system, arch, binary string) string {
 	return binary + "_" + uname.FromGo(system) + "_" + uname.FromGo(arch)
 }
 
-func binaryName(system, arch, binary string) string {
+func binaryPath(system, arch, binary string) string {
 	return "dist/" + nameFor(system, arch, binary) + "/" + binary
+}
+
+func ext(system string) string {
+	if system == "windows" {
+		return ".exe"
+	}
+	return ""
 }
