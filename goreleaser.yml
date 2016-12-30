@@ -5,3 +5,8 @@ brew:
 build:
     arches:
         - amd64
+        - 386
+    oses:
+      - windows
+      - darwin
+      - linux
