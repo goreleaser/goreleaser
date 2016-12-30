@@ -22,6 +22,8 @@ func (Pipe) Work(config config.ProjectConfig) error {
 	var g errgroup.Group
 	for _, system := range config.Build.Oses {
 		for _, arch := range config.Build.Arches {
+			system := system
+			arch := arch
 			g.Go(func() error {
 				return create(system, arch, config)
 			})
