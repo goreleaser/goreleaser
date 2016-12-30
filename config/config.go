@@ -66,9 +66,12 @@ func Load(file string) (config ProjectConfig, err error) {
 
 func fix(config ProjectConfig) ProjectConfig {
 	if len(config.Files) == 0 {
-		config.Files = []string{
-			"README.md",
-			"LICENSE.md",
+		config.Files = []string{}
+
+		for _, f := range []string{"README.md", "LICENCE.md", "LICENSE.md"} {
+			if _, err := os.Stat(f); err == nil {
+				config.Files = append(config.Files, f)
+			}
 		}
 	}
 	if config.Token == "" {
@@ -86,6 +89,7 @@ func fix(config ProjectConfig) ProjectConfig {
 	if len(config.Build.Arches) == 0 {
 		config.Build.Arches = []string{"amd64", "386"}
 	}
+
 	return config
 }
 
