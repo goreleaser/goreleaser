@@ -5,13 +5,14 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"log"
 	"strings"
 	"text/template"
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/split"
 	"golang.org/x/oauth2"
-	"log"
 )
 
 const formulae = `class {{ .Name }} < Formula
@@ -45,38 +46,26 @@ func (Pipe) Work(config config.ProjectConfig) error {
 	if config.Brew.Repo == "" {
 		return nil
 	}
-	log.Println("Updating brew formulae...")
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: config.Token},
 	)
 	tc := oauth2.NewClient(context.Background(), ts)
 	client := github.NewClient(tc)
-	parts := strings.Split(config.Brew.Repo, "/")
 
-	data, err := dataFor(config, client)
+	owner, repo := split.OnSlash(config.Brew.Repo)
+	name := config.BinaryName + ".rb"
+
+	log.Println("Updating", name, "on", config.Repo, "...")
+	out, err := buildFormulae(config, client)
 	if err != nil {
 		return err
 	}
-
-	out, err := buildFormulae(data)
+	sha, err := sha(client, owner, repo, name, out)
 	if err != nil {
 		return err
 	}
-	var sha *string
-	file, _, _, err := client.Repositories.GetContents(
-		parts[0], parts[1], config.BinaryName+".rb", &github.RepositoryContentGetOptions{},
-	)
-	if err == nil {
-		sha = file.SHA
-	} else {
-		sha = github.String(fmt.Sprintf("%s", sha256.Sum256(out.Bytes())))
-	}
-
 	_, _, err = client.Repositories.UpdateFile(
-		parts[0],
-		parts[1],
-		config.BinaryName+".rb",
-		&github.RepositoryContentFileOptions{
+		owner, repo, name, &github.RepositoryContentFileOptions{
 			Committer: &github.CommitAuthor{
 				Name:  github.String("goreleaserbot"),
 				Email: github.String("bot@goreleaser"),
@@ -88,9 +77,25 @@ func (Pipe) Work(config config.ProjectConfig) error {
 	)
 	return err
 }
+func sha(client *github.Client, owner, repo, name string, out bytes.Buffer) (*string, error) {
+	var sha *string
+	file, _, _, err := client.Repositories.GetContents(
+		owner, repo, name, &github.RepositoryContentGetOptions{},
+	)
+	if err == nil {
+		sha = file.SHA
+	} else {
+		sha = github.String(fmt.Sprintf("%s", sha256.Sum256(out.Bytes())))
+	}
+	return sha, err
+}
 
-func buildFormulae(data templateData) (bytes.Buffer, error) {
+func buildFormulae(config config.ProjectConfig, client *github.Client) (bytes.Buffer, error) {
 	var out bytes.Buffer
+	data, err := dataFor(config, client)
+	if err != nil {
+		return out, err
+	}
 	tmpl, err := template.New(data.BinaryName).Parse(formulae)
 	if err != nil {
 		return out, err
@@ -102,8 +107,8 @@ func buildFormulae(data templateData) (bytes.Buffer, error) {
 func dataFor(config config.ProjectConfig, client *github.Client) (result templateData, err error) {
 	var homepage string
 	var description string
-	parts := strings.Split(config.Repo, "/")
-	rep, _, err := client.Repositories.Get(parts[0], parts[1])
+	owner, repo := split.OnSlash(config.Repo)
+	rep, _, err := client.Repositories.Get(owner, repo)
 	if err != nil {
 		return result, err
 	}

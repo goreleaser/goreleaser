@@ -5,10 +5,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/split"
 	"github.com/goreleaser/releaser/uname"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
@@ -28,8 +28,7 @@ func (Pipe) Work(config config.ProjectConfig) error {
 	tc := oauth2.NewClient(context.Background(), ts)
 	client := github.NewClient(tc)
 
-	owner := strings.Split(config.Repo, "/")[0]
-	repo := strings.Split(config.Repo, "/")[1]
+	owner, repo := split.OnSlash(config.Repo)
 	r, _, err := client.Repositories.CreateRelease(owner, repo, &github.RepositoryRelease{
 		Name:            github.String(config.Git.CurrentTag),
 		TagName:         github.String(config.Git.CurrentTag),
