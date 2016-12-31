@@ -2,6 +2,7 @@ package compress
 
 import (
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 

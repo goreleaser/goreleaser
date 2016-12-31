@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/pipeline"
@@ -10,7 +11,6 @@ import (
 	"github.com/goreleaser/releaser/pipeline/compress"
 	"github.com/goreleaser/releaser/pipeline/release"
 	"github.com/urfave/cli"
-	"os"
 )
 
 var version = "master"
@@ -32,7 +32,6 @@ func main() {
 			Name:  "config, c",
 			Usage: "Load configuration from `FILE`",
 			Value: "goreleaser.yml",
-
 		},
 	}
 	app.Action = func(c *cli.Context) (err error) {
