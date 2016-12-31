@@ -62,10 +62,10 @@ func Load(file string) (config ProjectConfig, err error) {
 	if err := config.fillGitData(); err != nil {
 		return config, err
 	}
-	return config, config.validade()
+	return config, config.validate()
 }
 
-func (config *ProjectConfig) validade() (err error) {
+func (config *ProjectConfig) validate() (err error) {
 	if config.BinaryName == "" {
 		return errors.New("missing binary_name")
 	}
