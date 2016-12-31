@@ -47,7 +47,6 @@ func TestFullFormulae(t *testing.T) {
 	assertDefaultTemplateData(t, formulae)
 	assert.Contains(formulae, "def caveats")
 	assert.Contains(formulae, "Here are some caveats")
-
 }
 
 func TestFormulaeNoCaveats(t *testing.T) {
