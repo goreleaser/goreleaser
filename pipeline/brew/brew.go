@@ -25,12 +25,12 @@ const formulae = `class {{ .Name }} < Formula
   def install
     bin.install "{{ .BinaryName }}"
   end
+  {{- if .Caveats }}
 
-  {{ if .Caveats }}
   def caveats
     "{{ .Caveats }}"
   end
-  {{ end }}
+  {{- end }}
 end
 `
 
