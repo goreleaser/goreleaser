@@ -1,32 +1,34 @@
-hash: 99aa967804549d50c1b897c28c555c0bb10a3045f68b3024f926758be9d0a5f8
-updated: 2016-12-29T18:01:00.535565441-02:00
+hash: 93b83079095ba0cb4b5244840032b91adc415e658a36e8ed709743a53cd9197f
+updated: 2016-12-31T13:46:04.437121081-02:00
 imports:
 - name: github.com/golang/protobuf
-  version: df1d3ca07d2d07bba352d5b73c4313b4e2a6203e
+  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
   subpackages:
   - proto
 - name: github.com/google/go-github
-  version: 939928b912496ed4fbeb6e4beb2467b4fa540af7
+  version: 90861904aa86352a956f91ba0664df93a3547584
   subpackages:
   - github
 - name: github.com/google/go-querystring
   version: 9235644dd9e52eeae6fa48efd539fdc351a0af53
   subpackages:
   - query
+- name: github.com/urfave/cli
+  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 - name: golang.org/x/net
-  version: 6d3beaea10370160dea67f5c9327ed791afd5389
+  version: 8fd7f25955530b92e73e9e1932a41b522b22ccd9
   subpackages:
   - context
 - name: golang.org/x/oauth2
-  version: 1e695b1c8febf17aad3bfa7bf0a819ef94b98ad5
+  version: 314dd2c0bf3ebd592ec0d20847d27e79d0dbe8dd
   subpackages:
   - internal
 - name: golang.org/x/sync
-  version: 316e794f7b5e3df4e95175a45a5fb8b12f85cb4f
+  version: 450f422ab23cf9881c94e2db30cac0eb1b7cf80c
   subpackages:
   - errgroup
 - name: google.golang.org/appengine
-  version: 3f4dbbc0ec153a39878fd524ece9f39732bd4998
+  version: 08a149cfaee099e6ce4be01c0113a78c85ee1dee
   subpackages:
   - internal
   - internal/base

@@ -8,6 +8,8 @@ import:
 - package: golang.org/x/sync
   subpackages:
   - errgroup
+- package: github.com/urfave/cli
+  version: ~1.19.1
 testImport:
 - package: github.com/stretchr/testify
   version: ~1.1.4
