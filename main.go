@@ -18,6 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("Failed to load goreleaser.yml:", err.Error())
 	}
+	log.Println("Building", config.Git.CurrentTag, "...")
 	var pipeline = []pipeline.Pipe{
 		build.Pipe{},
 		compress.Pipe{},
