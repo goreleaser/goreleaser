@@ -85,24 +85,21 @@ after_success:
 
 The release on github looks pretty much like this:
 
-[![image](https://cloud.githubusercontent.com/assets/245435/21547473/6a486bc2-cdcd-11e6-8d40-7a5ff9442ace.png)](https://github.com/getantibody/antibody/releases/tag/v2.2.2)
+[![image](https://cloud.githubusercontent.com/assets/245435/21578845/09404c8a-cf78-11e6-92d7-165ddc03ca6c.png)
+](https://github.com/goreleaser/releaser/releases)
 
-And the homebrew formulae would look like:
+And the [homebrew formulae](https://github.com/goreleaser/homebrew-formulae/blob/master/release.rb) would look like:
 
 ```rb
-class Antibody < Formula
-  desc "A faster and simpler antigen written in Golang."
-  homepage "http://getantibody.github.io"
-  url "https://github.com/getantibody/antibody/releases/download/v2.2.2/antibody_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}.tar.gz"
-  head "https://github.com/getantibody/antibody.git"
-  version "v2.2.2"
+class Release < Formula
+  desc "Deliver Go binaries as fast and easily as possible."
+  homepage ""
+  url "https://github.com/goreleaser/releaser/releases/download/v0.2.0/release_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}.tar.gz"
+  head "https://github.com/goreleaser/releaser.git"
+  version "v0.2.0"
 
   def install
-    bin.install "antibody"
-  end
-
-  def caveats
-    "To start using antibody, you need to add `source <(antibody init)` to your `~/.zshrc`."
+    bin.install "release"
   end
 end
 ```
