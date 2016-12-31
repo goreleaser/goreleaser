@@ -119,10 +119,10 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 	if err != nil {
 		return result, err
 	}
-	if rep.Homepage == nil {
-		homepage = *rep.HTMLURL
-	} else {
+	if rep.Homepage != nil && *rep.Homepage != "" {
 		homepage = *rep.Homepage
+	} else {
+		homepage = *rep.HTMLURL
 	}
 	if rep.Description == nil {
 		description = "TODO"
