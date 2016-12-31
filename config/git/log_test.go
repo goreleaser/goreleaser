@@ -8,7 +8,7 @@ import (
 
 func TestLog(t *testing.T) {
 	assert := assert.New(t)
-	log, err := Log("v0.0.1", "v0.1.0")
+	log, err := Log("v0.1.9", "v0.2.0")
 	assert.NoError(err)
 	assert.NotEmpty(log)
 }

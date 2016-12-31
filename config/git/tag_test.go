@@ -14,7 +14,7 @@ func TestCurrentTag(t *testing.T) {
 
 func TestPreviousTag(t *testing.T) {
 	assert := assert.New(t)
-	tag, err := PreviousTag("v0.0.1")
+	tag, err := PreviousTag("v0.2.0")
 	assert.NoError(err)
 	assert.NotEmpty(tag)
 }
