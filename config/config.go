@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -11,7 +12,10 @@ import (
 	yaml "gopkg.in/yaml.v1"
 )
 
-var emptyBrew = Homebrew{}
+var (
+	emptyBrew    = Homebrew{}
+	filePatterns = []string{"LICENCE.*", "LICENSE.*", "README.*"}
+)
 
 // Homebrew contains the brew section
 type Homebrew struct {
@@ -70,10 +74,13 @@ func fix(config ProjectConfig) ProjectConfig {
 	if len(config.Files) == 0 {
 		config.Files = []string{}
 
-		for _, f := range []string{"README.md", "LICENCE.md", "LICENSE.md"} {
-			if _, err := os.Stat(f); err == nil {
-				config.Files = append(config.Files, f)
+		for _, pattern := range filePatterns {
+			matches, err := globPath(pattern)
+			if err != nil {
+				log.Fatalf("Error searching for %q: %v", pattern, err)
 			}
+
+			config.Files = append(config.Files, matches...)
 		}
 	}
 	if config.Token == "" {

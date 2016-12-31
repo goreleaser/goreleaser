@@ -22,18 +22,41 @@ func TestFixConfigMissingFiles(t *testing.T) {
 	assert := assert.New(t)
 	config := fix(ProjectConfig{})
 
-	assert.NotContains(config.Files, "README.md")
-	assert.NotContains(config.Files, "LICENSE.md")
-	assert.NotContains(config.Files, "LICENCE.md")
+	assert.Equal([]string{}, config.Files)
 }
 
-func TestFixConfigNoMissingFiles(t *testing.T) {
+func TestFixConfigUSENMarkdown(t *testing.T) {
 	assert := assert.New(t)
 
-	os.Chdir("./.test")
-	config := fix(ProjectConfig{})
+	cwd, _ := os.Getwd()
+	os.Chdir("./.test/1")
 
-	assert.Contains(config.Files, "README.md")
-	assert.Contains(config.Files, "LICENSE.md")
-	assert.Contains(config.Files, "LICENCE.md")
+	config := fix(ProjectConfig{})
+	assert.Equal([]string{"LICENSE.md", "README.md"}, config.Files)
+
+	os.Chdir(cwd)
+}
+
+func TestFixConfigRealENMarkdown(t *testing.T) {
+	assert := assert.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir("./.test/2")
+
+	config := fix(ProjectConfig{})
+	assert.Equal([]string{"LICENCE.md", "README.md"}, config.Files)
+
+	os.Chdir(cwd)
+}
+
+func TestFixConfigArbitratryENTXT(t *testing.T) {
+	assert := assert.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir("./.test/3")
+
+	config := fix(ProjectConfig{})
+	assert.Equal([]string{"LICENCE.txt", "README.txt"}, config.Files)
+
+	os.Chdir(cwd)
 }
