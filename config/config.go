@@ -3,13 +3,19 @@ package config
 import (
 	"errors"
 	"io/ioutil"
+	"log"
 	"os"
+	"path"
+	"path/filepath"
 
 	"github.com/goreleaser/releaser/config/git"
 	yaml "gopkg.in/yaml.v1"
 )
 
-var emptyBrew = Homebrew{}
+var (
+	emptyBrew    = Homebrew{}
+	filePatterns = []string{"LICENCE*", "LICENSE*", "README*"}
+)
 
 // Homebrew contains the brew section
 type Homebrew struct {
@@ -66,9 +72,15 @@ func Load(file string) (config ProjectConfig, err error) {
 
 func fix(config ProjectConfig) ProjectConfig {
 	if len(config.Files) == 0 {
-		config.Files = []string{
-			"README.md",
-			"LICENSE.md",
+		config.Files = []string{}
+
+		for _, pattern := range filePatterns {
+			matches, err := globPath(pattern)
+			if err != nil {
+				log.Fatalf("Error searching for %q: %v", pattern, err)
+			}
+
+			config.Files = append(config.Files, matches...)
 		}
 	}
 	if config.Token == "" {
@@ -86,6 +98,7 @@ func fix(config ProjectConfig) ProjectConfig {
 	if len(config.Build.Arches) == 0 {
 		config.Build.Arches = []string{"amd64", "386"}
 	}
+
 	return config
 }
 
@@ -116,4 +129,27 @@ func contains(s string, ss []string) bool {
 		}
 	}
 	return false
+}
+
+func globPath(p string) (m []string, err error) {
+	var cwd string
+	var dirs []string
+
+	if cwd, err = os.Getwd(); err != nil {
+		return
+	}
+
+	fp := path.Join(cwd, p)
+
+	if dirs, err = filepath.Glob(fp); err != nil {
+		return
+	}
+
+	// Normalise to avoid nested dirs in tarball
+	for _, dir := range dirs {
+		_, f := filepath.Split(dir)
+		m = append(m, f)
+	}
+
+	return
 }
