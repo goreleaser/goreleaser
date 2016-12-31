@@ -84,6 +84,20 @@ func TestFillFilesArbitratryENNoSuffix(t *testing.T) {
 	assert.Equal([]string{"LICENCE"}, config.Files)
 }
 
+func TestFillFilesChangelog(t *testing.T) {
+	assert := assert.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir("./.test/5")
+	defer os.Chdir(cwd)
+
+	config := ProjectConfig{}
+	err := config.fillFiles()
+
+	assert.NoError(err)
+	assert.Equal([]string{"CHANGELOG", "CHANGELOG.md"}, config.Files)
+}
+
 func TestValidadeMissingBinaryName(t *testing.T) {
 	assert := assert.New(t)
 
