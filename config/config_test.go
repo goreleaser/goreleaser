@@ -7,9 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFixConfig(t *testing.T) {
+func TestFillBasicData(t *testing.T) {
 	assert := assert.New(t)
-	config := fix(ProjectConfig{})
+	config := ProjectConfig{}
+	config.fillBasicData()
 
 	assert.Equal("main.go", config.Build.Main)
 	assert.Contains(config.Build.Oses, "darwin")
@@ -18,57 +19,88 @@ func TestFixConfig(t *testing.T) {
 	assert.Contains(config.Build.Arches, "amd64")
 }
 
-func TestFixConfigMissingFiles(t *testing.T) {
+func TestFillFilesMissingFiles(t *testing.T) {
 	assert := assert.New(t)
-	config := fix(ProjectConfig{})
+	config := ProjectConfig{}
+	err := config.fillFiles()
 
+	assert.NoError(err)
 	assert.Equal([]string{}, config.Files)
 }
 
-func TestFixConfigUSENMarkdown(t *testing.T) {
+func TestFillFilesUSENMarkdown(t *testing.T) {
 	assert := assert.New(t)
 
 	cwd, _ := os.Getwd()
 	os.Chdir("./.test/1")
+	defer os.Chdir(cwd)
 
-	config := fix(ProjectConfig{})
+	config := ProjectConfig{}
+	err := config.fillFiles()
+
+	assert.NoError(err)
 	assert.Equal([]string{"LICENSE.md", "README.md"}, config.Files)
-
-	os.Chdir(cwd)
 }
 
-func TestFixConfigRealENMarkdown(t *testing.T) {
+func TestFillFilesRealENMarkdown(t *testing.T) {
 	assert := assert.New(t)
 
 	cwd, _ := os.Getwd()
 	os.Chdir("./.test/2")
+	defer os.Chdir(cwd)
 
-	config := fix(ProjectConfig{})
+	config := ProjectConfig{}
+	err := config.fillFiles()
+
+	assert.NoError(err)
 	assert.Equal([]string{"LICENCE.md", "README.md"}, config.Files)
-
-	os.Chdir(cwd)
 }
 
-func TestFixConfigArbitratryENTXT(t *testing.T) {
+func TestFillFilesArbitratryENTXT(t *testing.T) {
 	assert := assert.New(t)
 
 	cwd, _ := os.Getwd()
 	os.Chdir("./.test/3")
+	defer os.Chdir(cwd)
 
-	config := fix(ProjectConfig{})
+	config := ProjectConfig{}
+	err := config.fillFiles()
+
+	assert.NoError(err)
 	assert.Equal([]string{"LICENCE.txt", "README.txt"}, config.Files)
-
-	os.Chdir(cwd)
 }
 
-func TestFixConfigArbitratryENNoSuffix(t *testing.T) {
+func TestFillFilesArbitratryENNoSuffix(t *testing.T) {
 	assert := assert.New(t)
 
 	cwd, _ := os.Getwd()
 	os.Chdir("./.test/4")
+	defer os.Chdir(cwd)
 
-	config := fix(ProjectConfig{})
+	config := ProjectConfig{}
+	err := config.fillFiles()
+
+	assert.NoError(err)
 	assert.Equal([]string{"LICENCE"}, config.Files)
+}
 
-	os.Chdir(cwd)
+func TestValidadeMissingBinaryName(t *testing.T) {
+	assert := assert.New(t)
+
+	config := ProjectConfig{Repo: "asd/asd"}
+	assert.Error(config.validate())
+}
+
+func TestValidadeMissingRepo(t *testing.T) {
+	assert := assert.New(t)
+
+	config := ProjectConfig{BinaryName: "asd"}
+	assert.Error(config.validate())
+}
+
+func TestValidadeMinimalConfig(t *testing.T) {
+	assert := assert.New(t)
+
+	config := ProjectConfig{BinaryName: "asd", Repo: "asd/asd"}
+	assert.NoError(config.validate())
 }

@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -56,33 +55,43 @@ func Load(file string) (config ProjectConfig, err error) {
 		return config, err
 	}
 	err = yaml.Unmarshal(data, &config)
-	config = fix(config)
-	config, err = fillGitData(config)
-	if err != nil {
+	config.fillBasicData()
+	if err := config.fillFiles(); err != nil {
 		return config, err
 	}
-	if config.BinaryName == "" {
-		return config, errors.New("missing binary_name")
+	if err := config.fillGitData(); err != nil {
+		return config, err
 	}
-	if config.Repo == "" {
-		return config, errors.New("missing repo")
-	}
-	return config, err
+	return config, config.validate()
 }
 
-func fix(config ProjectConfig) ProjectConfig {
-	if len(config.Files) == 0 {
-		config.Files = []string{}
-
-		for _, pattern := range filePatterns {
-			matches, err := globPath(pattern)
-			if err != nil {
-				log.Fatalf("Error searching for %q: %v", pattern, err)
-			}
-
-			config.Files = append(config.Files, matches...)
-		}
+func (config *ProjectConfig) validate() (err error) {
+	if config.BinaryName == "" {
+		return errors.New("missing binary_name")
 	}
+	if config.Repo == "" {
+		return errors.New("missing repo")
+	}
+	return
+}
+
+func (config *ProjectConfig) fillFiles() (err error) {
+	if len(config.Files) != 0 {
+		return
+	}
+	config.Files = []string{}
+	for _, pattern := range filePatterns {
+		matches, err := globPath(pattern)
+		if err != nil {
+			return err
+		}
+
+		config.Files = append(config.Files, matches...)
+	}
+	return
+}
+
+func (config *ProjectConfig) fillBasicData() {
 	if config.Token == "" {
 		config.Token = os.Getenv("GITHUB_TOKEN")
 	}
@@ -98,37 +107,26 @@ func fix(config ProjectConfig) ProjectConfig {
 	if len(config.Build.Arches) == 0 {
 		config.Build.Arches = []string{"amd64", "386"}
 	}
-
-	return config
 }
 
-func fillGitData(config ProjectConfig) (ProjectConfig, error) {
+func (config *ProjectConfig) fillGitData() (err error) {
 	tag, err := git.CurrentTag()
 	if err != nil {
-		return config, err
+		return
 	}
 	previous, err := git.PreviousTag(tag)
 	if err != nil {
-		return config, err
+		return
 	}
 	log, err := git.Log(previous, tag)
 	if err != nil {
-		return config, err
+		return
 	}
 
 	config.Git.CurrentTag = tag
 	config.Git.PreviousTag = previous
 	config.Git.Diff = log
-	return config, nil
-}
-
-func contains(s string, ss []string) bool {
-	for _, sx := range ss {
-		if sx == s {
-			return true
-		}
-	}
-	return false
+	return
 }
 
 func globPath(p string) (m []string, err error) {
