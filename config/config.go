@@ -14,7 +14,7 @@ import (
 
 var (
 	emptyBrew    = Homebrew{}
-	filePatterns = []string{"LICENCE.*", "LICENSE.*", "README.*"}
+	filePatterns = []string{"LICENCE*", "LICENSE*", "README*"}
 )
 
 // Homebrew contains the brew section

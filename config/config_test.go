@@ -60,3 +60,15 @@ func TestFixConfigArbitratryENTXT(t *testing.T) {
 
 	os.Chdir(cwd)
 }
+
+func TestFixConfigArbitratryENNoSuffix(t *testing.T) {
+	assert := assert.New(t)
+
+	cwd, _ := os.Getwd()
+	os.Chdir("./.test/4")
+
+	config := fix(ProjectConfig{})
+	assert.Equal([]string{"LICENCE"}, config.Files)
+
+	os.Chdir(cwd)
+}
