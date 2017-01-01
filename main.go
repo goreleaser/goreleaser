@@ -8,10 +8,10 @@ import (
 	"github.com/goreleaser/releaser/pipeline"
 	"github.com/goreleaser/releaser/pipeline/brew"
 	"github.com/goreleaser/releaser/pipeline/build"
+	"github.com/goreleaser/releaser/pipeline/cleanup"
 	"github.com/goreleaser/releaser/pipeline/compress"
 	"github.com/goreleaser/releaser/pipeline/release"
 	"github.com/urfave/cli"
-	"github.com/goreleaser/releaser/pipeline/cleanup"
 )
 
 var version = "master"
