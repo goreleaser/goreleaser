@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/releaser/pipeline/compress"
 	"github.com/goreleaser/releaser/pipeline/release"
 	"github.com/urfave/cli"
+	"github.com/goreleaser/releaser/pipeline/cleanup"
 )
 
 var version = "master"
@@ -20,6 +21,7 @@ var pipes = []pipeline.Pipe{
 	compress.Pipe{},
 	release.Pipe{},
 	brew.Pipe{},
+	cleanup.Pipe{},
 }
 
 func main() {
