@@ -18,35 +18,42 @@ func TestSimpleName(t *testing.T) {
 	assert.Equal(t, formulaNameFor("binary"), "Binary")
 }
 
-var testFormulaeExpected = `class Test < Formula
-  desc "Some desc"
-  homepage "https://google.com"
-  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}.tar.gz"
-  head "https://github.com/caarlos0/test.git"
-  version "v0.1.3"
+var defaultTemplateData = templateData{
+	BinaryName: "test",
+	Desc:       "Some desc",
+	Homepage:   "https://google.com",
+	Name:       "Test",
+	Repo:       "caarlos0/test",
+	Tag:        "v0.1.3",
+}
 
-  def install
-    bin.install "test"
-  end
-
-  def caveats
-    "Here are some caveats"
-  end
-end
-`
-
-func TestFormulae(t *testing.T) {
+func assertDefaultTemplateData(t *testing.T, formulae string) {
 	assert := assert.New(t)
-	out, err := doBuildFormulae(templateData{
-		BinaryName: "test",
-		Desc:       "Some desc",
-		Homepage:   "https://google.com",
-		Name:       "Test",
-		Repo:       "caarlos0/test",
-		Tag:        "v0.1.3",
-		Caveats:    "Here are some caveats",
-	})
+	assert.Contains(formulae, "class Test < Formula")
+	assert.Contains(formulae, "homepage \"https://google.com\"")
+	assert.Contains(formulae, "url \"https://github.com/caarlos0/test/releases/download/v0.1.3/test_#{%x(uname -s).gsub(/\\n/, '')}_#{%x(uname -m).gsub(/\\n/, '')}.tar.gz\"")
+	assert.Contains(formulae, "head \"https://github.com/caarlos0/test.git\"")
+	assert.Contains(formulae, "version \"v0.1.3\"")
+	assert.Contains(formulae, "bin.install \"test\"")
+}
+
+func TestFullFormulae(t *testing.T) {
+	assert := assert.New(t)
+	data := defaultTemplateData
+	data.Caveats = "Here are some caveats"
+	out, err := doBuildFormulae(data)
 	assert.NoError(err)
+	formulae := out.String()
+	assertDefaultTemplateData(t, formulae)
+	assert.Contains(formulae, "def caveats")
+	assert.Contains(formulae, "Here are some caveats")
+}
+
+func TestFormulaeNoCaveats(t *testing.T) {
+	assert := assert.New(t)
+	out, err := doBuildFormulae(defaultTemplateData)
 	assert.NoError(err)
-	assert.Equal(testFormulaeExpected, out.String())
+	formulae := out.String()
+	assertDefaultTemplateData(t, formulae)
+	assert.NotContains(formulae, "def caveats")
 }
