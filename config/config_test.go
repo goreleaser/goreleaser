@@ -74,11 +74,11 @@ func assertFiles(t *testing.T, dir string, files []string) {
 
 	cwd, _ := os.Getwd()
 	if err := os.Chdir(dir); err != nil {
-		t.Error(err)
+		panic(err)
 	}
 	defer func() {
 		if err := os.Chdir(cwd); err != nil {
-			t.Error(err)
+			panic(err)
 		}
 	}()
 
