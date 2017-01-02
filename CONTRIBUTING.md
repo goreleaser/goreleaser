@@ -11,7 +11,7 @@ Prerequisites are:
 
 * Build:
   * `make`
-  * [Go 1.6+](http://golang.org/doc/install)
+  * [Go 1.7+](http://golang.org/doc/install)
 
 Clone `releaser` from source:
 
