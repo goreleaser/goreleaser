@@ -82,7 +82,7 @@ You may want to wire this to auto-deploy your new tags on travis, for example:
 
 ```yaml
 after_success:
-  test ! -z "$TRAVIS_TAG" && curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
+  test -n "$TRAVIS_TAG" && curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
 ```
 
 ## How the end result looks like
