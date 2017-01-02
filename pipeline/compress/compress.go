@@ -51,10 +51,7 @@ func create(system, arch string, config config.ProjectConfig) error {
 			return err
 		}
 	}
-	if err := addFile(tw, config.BinaryName+ext(system), binaryPath(system, arch, config.BinaryName)); err != nil {
-		return err
-	}
-	return nil
+	return addFile(tw, config.BinaryName+ext(system), binaryPath(system, arch, config.BinaryName))
 }
 
 func addFile(tw *tar.Writer, name, path string) error {
