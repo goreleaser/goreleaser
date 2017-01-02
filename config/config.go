@@ -54,7 +54,9 @@ func Load(file string) (config ProjectConfig, err error) {
 	if err != nil {
 		return config, err
 	}
-	err = yaml.Unmarshal(data, &config)
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return config, err
+	}
 	config.fillBasicData()
 	if err := config.fillFiles(); err != nil {
 		return config, err

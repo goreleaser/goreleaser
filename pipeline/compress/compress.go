@@ -41,31 +41,32 @@ func create(system, arch string, config config.ProjectConfig) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 	gw := gzip.NewWriter(file)
-	defer gw.Close()
 	tw := tar.NewWriter(gw)
-	defer tw.Close()
+	defer func() {
+		_ = file.Close()
+		_ = gw.Close()
+		_ = tw.Close()
+	}()
 	for _, f := range config.Files {
 		if err := addFile(tw, f, f); err != nil {
 			return err
 		}
 	}
-	if err := addFile(tw, config.BinaryName+ext(system), binaryPath(system, arch, config.BinaryName)); err != nil {
-		return err
-	}
-	return nil
+	return addFile(tw, config.BinaryName+ext(system), binaryPath(system, arch, config.BinaryName))
 }
 
-func addFile(tw *tar.Writer, name, path string) error {
+func addFile(tw *tar.Writer, name, path string) (err error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return err
+		return
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 	stat, err := file.Stat()
 	if err != nil {
-		return err
+		return
 	}
 	header := new(tar.Header)
 	header.Name = name
@@ -78,7 +79,7 @@ func addFile(tw *tar.Writer, name, path string) error {
 	if _, err := io.Copy(tw, file); err != nil {
 		return err
 	}
-	return nil
+	return
 }
 
 func nameFor(system, arch, binary string) string {

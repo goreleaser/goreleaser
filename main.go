@@ -49,5 +49,7 @@ func main() {
 		log.Println("Done!")
 		return
 	}
-	app.Run(os.Args)
+	if err := app.Run(os.Args); err != nil {
+		log.Fatalln(err)
+	}
 }
