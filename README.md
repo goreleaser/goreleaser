@@ -74,7 +74,7 @@ files:
 
 ## Wire it with travis-ci
 
-You may want to wire this to auto-deploy your new tags on travis, for examepl:
+You may want to wire this to auto-deploy your new tags on travis, for example:
 
 ```yaml
 after_success:
