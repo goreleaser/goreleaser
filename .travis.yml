@@ -1,10 +1,17 @@
 language: go
 go: 1.7.4
 install:
+  - go get github.com/alecthomas/gometalinter
   - go get github.com/Masterminds/glide
   - glide install
 script:
   - go test -cover `glide nv`
+  - gometalinter --vendor --disable-all \
+    --enable=deadcode \
+    --enable=ineffassign \
+    --enable=gosimple \
+    --enable=staticcheck \
+    ./...
 after_success:
   test ! -z "$TRAVIS_TAG" && go run main.go
 notifications:
