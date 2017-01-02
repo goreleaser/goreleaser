@@ -69,10 +69,16 @@ func upload(client *github.Client, releaseID int, owner, repo, system, arch, bin
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 	log.Println("Uploading", file.Name(), "...")
-	_, _, err = client.Repositories.UploadReleaseAsset(owner, repo, releaseID, &github.UploadOptions{
-		Name: name,
-	}, file)
+	_, _, err = client.Repositories.UploadReleaseAsset(
+		owner,
+		repo,
+		releaseID,
+		&github.UploadOptions{Name: name},
+		file,
+	)
 	return err
 }
