@@ -2,7 +2,6 @@ language: go
 go: 1.7.4
 install: make setup
 script:
-  - ls $GOPATH/bin
   - make ci
 after_success: test -n "$TRAVIS_TAG" && go run main.go
 notifications:
