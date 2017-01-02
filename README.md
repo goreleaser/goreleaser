@@ -5,6 +5,10 @@ Deliver Go binaries as fast and easily as possible.
 GoReleaser builds Go binaries for several platforms, creates a github release and then
 push a homebrew formulae to a repository. All that wrapped in your favorite CI.
 
+
+This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md).
+By participating, you are expected to uphold this code. Please report unacceptable behavior to root@carlosbecker.com.
+
 ## How it works?
 
 The idea started with a [simple shell script](https://github.com/goreleaser/old-go-releaser),
