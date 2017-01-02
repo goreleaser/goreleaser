@@ -14,6 +14,7 @@ script:
     --enable=gofmt \
     --enable=goimports \
     --enable=dupl \
+    --enable=misspell \
     ./...
 after_success:
   test ! -z "$TRAVIS_TAG" && go run main.go
