@@ -13,6 +13,7 @@ script:
     --enable=staticcheck \
     --enable=gofmt \
     --enable=goimports \
+    --enable=dupl \
     ./...
 after_success:
   test ! -z "$TRAVIS_TAG" && go run main.go
