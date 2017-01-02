@@ -11,15 +11,12 @@ import (
 	yaml "gopkg.in/yaml.v1"
 )
 
-var (
-	emptyBrew    = Homebrew{}
-	filePatterns = []string{"LICENCE*", "LICENSE*", "README*", "CHANGELOG*"}
-)
+var filePatterns = []string{"LICENCE*", "LICENSE*", "README*", "CHANGELOG*"}
 
 // Homebrew contains the brew section
 type Homebrew struct {
 	Repo    string
-	Token   string
+	Token   string `yaml:"_"`
 	Caveats string
 }
 
@@ -43,7 +40,7 @@ type ProjectConfig struct {
 	BinaryName string `yaml:"binary_name"`
 	Files      []string
 	Brew       Homebrew
-	Token      string
+	Token      string `yaml:"_"`
 	Build      BuildConfig
 	Git        GitInfo `yaml:"_"`
 }
@@ -97,7 +94,7 @@ func (config *ProjectConfig) fillBasicData() {
 	if config.Token == "" {
 		config.Token = os.Getenv("GITHUB_TOKEN")
 	}
-	if config.Brew != emptyBrew && config.Brew.Token == "" {
+	if config.Brew.Repo != "" {
 		config.Brew.Token = config.Token
 	}
 	if config.Build.Main == "" {
