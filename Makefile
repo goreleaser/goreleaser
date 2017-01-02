@@ -3,7 +3,7 @@ TEST_PATTERN?=.
 TEST_OPTIONS?=
 
 setup: ## Install all the build and lint dependencies
-	curl https://glide.sh/get | sh
+	go get -u github.com/Masterminds/glide
 	go get -u github.com/kisielk/errcheck
 	go get -u github.com/golang/lint/golint
 	glide install
