@@ -11,6 +11,8 @@ script:
     --enable=ineffassign \
     --enable=gosimple \
     --enable=staticcheck \
+    --enable=gofmt \
+    --enable=goimports \
     ./...
 after_success:
   test ! -z "$TRAVIS_TAG" && go run main.go
