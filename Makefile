@@ -6,7 +6,7 @@ setup: ## Install all the build and lint dependencies
 	@go get -u github.com/alecthomas/gometalinter
 	@go get -u github.com/Masterminds/glide
 	@glide install
-  @gometalinter --install
+	@gometalinter --install
 
 test: ## Run all the tests
 	@go test $(TEST_OPTIONS) -cover $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=30s
