@@ -108,6 +108,10 @@ class Release < Formula
 end
 ```
 
+## How to contribute
+
+Please refer to our [contributing guidelines](/CONTRIBUTING.md).
+
 ## Badges
 
 Feel free to use it in your own projects:
