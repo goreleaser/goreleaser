@@ -44,9 +44,9 @@ func create(system, arch string, config config.ProjectConfig) error {
 	gw := gzip.NewWriter(file)
 	tw := tar.NewWriter(gw)
 	defer func() {
-		_ = file.Close()
-		_ = gw.Close()
 		_ = tw.Close()
+		_ = gw.Close()
+		_ = file.Close()
 	}()
 	for _, f := range config.Files {
 		if err := addFile(tw, f, f); err != nil {
