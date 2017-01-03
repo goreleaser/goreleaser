@@ -16,7 +16,7 @@ var filePatterns = []string{"LICENCE*", "LICENSE*", "README*", "CHANGELOG*"}
 // Homebrew contains the brew section
 type Homebrew struct {
 	Repo    string
-	Token   string `yaml:"_"`
+	Token   string `yaml:"-"`
 	Caveats string
 }
 
@@ -40,9 +40,9 @@ type ProjectConfig struct {
 	BinaryName string `yaml:"binary_name"`
 	Files      []string
 	Brew       Homebrew
-	Token      string `yaml:"_"`
+	Token      string `yaml:"-"`
 	Build      BuildConfig
-	Git        GitInfo `yaml:"_"`
+	Git        GitInfo `yaml:"-"`
 }
 
 // Load config file
