@@ -19,12 +19,22 @@ So, the all-new goreleaser was born.
 
 ## Usage
 
-Basically, you need to create a `goreleaser.yml` file in the root of your
+```
+go get github.com/goreleaser/releaser
+```
+
+Once installed, you need to create a `goreleaser.yml` file in the root of your
 repository. A minimal config would look like this:
 
 ```yaml
 repo: user/repo
 binary_name: my-binary
+```
+
+You may then run the command at the root of your repository:
+
+```sh
+releaser
 ```
 
 This will build `main.go` file as `my-binary`, for _Darwin_ and _Linux_,
