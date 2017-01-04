@@ -9,7 +9,6 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/split"
-	"github.com/goreleaser/releaser/uname"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
 )

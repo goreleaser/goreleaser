@@ -8,7 +8,6 @@ import (
 	"os/exec"
 
 	"github.com/goreleaser/releaser/config"
-	"github.com/goreleaser/releaser/uname"
 	"golang.org/x/sync/errgroup"
 )
 
