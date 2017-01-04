@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/uname"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/appengine/file"
 )
 
 // Pipe for compress
@@ -36,7 +37,11 @@ func (Pipe) Run(config config.ProjectConfig) error {
 }
 
 func create(system, arch string, config config.ProjectConfig) error {
-	file, err := os.Create("dist/" + nameFor(system, arch, config.BinaryName) + ".tar.gz")
+	name, err := config.NameFor(system, arch, config.Git.CurrentTag)
+	if err != nil {
+		return err
+	}
+	file, err := os.Create("dist/" + name + ".tar.gz")
 	log.Println("Creating", file.Name(), "...")
 	if err != nil {
 		return err
@@ -53,7 +58,7 @@ func create(system, arch string, config config.ProjectConfig) error {
 			return err
 		}
 	}
-	return addFile(tw, config.BinaryName+ext(system), binaryPath(system, arch, config.BinaryName))
+	return addFile(tw, config.BinaryName+extFor(system), "dist/"+name+"/"+config.BinaryName)
 }
 
 func addFile(tw *tar.Writer, name, path string) (err error) {
@@ -82,15 +87,7 @@ func addFile(tw *tar.Writer, name, path string) (err error) {
 	return
 }
 
-func nameFor(system, arch, binary string) string {
-	return binary + "_" + uname.FromGo(system) + "_" + uname.FromGo(arch)
-}
-
-func binaryPath(system, arch, binary string) string {
-	return "dist/" + nameFor(system, arch, binary) + "/" + binary
-}
-
-func ext(system string) string {
+func extFor(system string) string {
 	if system == "windows" {
 		return ".exe"
 	}

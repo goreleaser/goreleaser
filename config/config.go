@@ -9,6 +9,9 @@ import (
 
 	"github.com/goreleaser/releaser/config/git"
 	yaml "gopkg.in/yaml.v1"
+	"bytes"
+	"text/template"
+	"github.com/goreleaser/releaser/uname"
 )
 
 var filePatterns = []string{"LICENCE*", "LICENSE*", "README*", "CHANGELOG*"}
@@ -36,13 +39,14 @@ type GitInfo struct {
 
 // ProjectConfig includes all project configuration
 type ProjectConfig struct {
-	Repo       string
-	BinaryName string `yaml:"binary_name"`
-	Files      []string
-	Brew       Homebrew
-	Token      string `yaml:"-"`
-	Build      BuildConfig
-	Git        GitInfo `yaml:"-"`
+	Repo         string
+	BinaryName   string `yaml:"binary_name"`
+	Files        []string
+	Brew         Homebrew
+	Token        string `yaml:"-"`
+	Build        BuildConfig
+	Git          GitInfo `yaml:"-"`
+	NameTemplate string
 }
 
 // Load config file
@@ -62,6 +66,33 @@ func Load(file string) (config ProjectConfig, err error) {
 		return config, err
 	}
 	return config, config.validate()
+}
+
+type NameData struct {
+	Goos       string
+	Goarch     string
+	Os         string
+	Arch       string
+	Version    string
+	BinaryName string
+}
+
+func (config *ProjectConfig) NameFor(goos, goarch, version string) (string, error) {
+	var data = NameData{
+		Goos:       goos,
+		Goarch:     goarch,
+		Os:         uname.FromGo(goos),
+		Arch:       uname.FromGo(goarch),
+		Version:    version,
+		BinaryName: config.BinaryName,
+	}
+	var out bytes.Buffer
+	template, err := template.New(data.BinaryName).Parse(config.NameTemplate)
+	if err != nil {
+
+	}
+	err = template.Execute(&out, data)
+	return out.String(), err
 }
 
 func (config *ProjectConfig) validate() (err error) {
@@ -105,6 +136,9 @@ func (config *ProjectConfig) fillBasicData() {
 	}
 	if len(config.Build.Arches) == 0 {
 		config.Build.Arches = []string{"amd64", "386"}
+	}
+	if config.NameTemplate == "" {
+		config.NameTemplate = "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
 	}
 }
 
