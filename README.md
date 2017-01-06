@@ -62,8 +62,9 @@ build:
 
 > `oses` and `arches` should be in `GOOS`/`GOARCH`-compatible format.
 
-### Custom final file name
+### Custom archive file name
 
+You can customize the name of the archive using the name_template config:
 
 ```yaml
 repo: user/repo
