@@ -69,17 +69,6 @@ func TestValidadeMinimalConfig(t *testing.T) {
 	assert.NoError(config.validate())
 }
 
-func TestNameTemplate(t *testing.T) {
-	assert := assert.New(t)
-	var config = ProjectConfig{
-		BinaryName: "test",
-		NameTemplate : "{{.BinaryName}}_{{.Os}}_{{.Goos}}_{{.Arch}}_{{.Goarch}}_{{.Version}}",
-	}
-	name, err := config.NameFor("darwin", "amd64", "v1.2.3")
-	assert.NoError(err)
-	assert.Equal("test_Darwin_darwin_x86_64_amd64_v1.2.3", name)
-}
-
 func assertFiles(t *testing.T, dir string, files []string) {
 	assert := assert.New(t)
 

@@ -8,6 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/name"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -36,7 +37,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 
 func build(system, arch string, config config.ProjectConfig) error {
 	log.Println("Building", system+"/"+arch, "...")
-	name, err := config.NameFor(system, arch, config.Git.CurrentTag)
+	name, err := name.For(config, system, arch)
 	if err != nil {
 		return err
 	}

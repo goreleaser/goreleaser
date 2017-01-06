@@ -9,9 +9,6 @@ import (
 
 	"github.com/goreleaser/releaser/config/git"
 	yaml "gopkg.in/yaml.v1"
-	"bytes"
-	"text/template"
-	"github.com/goreleaser/releaser/uname"
 )
 
 var filePatterns = []string{"LICENCE*", "LICENSE*", "README*", "CHANGELOG*"}
@@ -66,33 +63,6 @@ func Load(file string) (config ProjectConfig, err error) {
 		return config, err
 	}
 	return config, config.validate()
-}
-
-type NameData struct {
-	Goos       string
-	Goarch     string
-	Os         string
-	Arch       string
-	Version    string
-	BinaryName string
-}
-
-func (config *ProjectConfig) NameFor(goos, goarch, version string) (string, error) {
-	var data = NameData{
-		Goos:       goos,
-		Goarch:     goarch,
-		Os:         uname.FromGo(goos),
-		Arch:       uname.FromGo(goarch),
-		Version:    version,
-		BinaryName: config.BinaryName,
-	}
-	var out bytes.Buffer
-	template, err := template.New(data.BinaryName).Parse(config.NameTemplate)
-	if err != nil {
-
-	}
-	err = template.Execute(&out, data)
-	return out.String(), err
 }
 
 func (config *ProjectConfig) validate() (err error) {

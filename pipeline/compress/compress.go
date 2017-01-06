@@ -8,9 +8,8 @@ import (
 	"os"
 
 	"github.com/goreleaser/releaser/config"
-	"github.com/goreleaser/releaser/uname"
+	"github.com/goreleaser/releaser/name"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/appengine/file"
 )
 
 // Pipe for compress
@@ -37,7 +36,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 }
 
 func create(system, arch string, config config.ProjectConfig) error {
-	name, err := config.NameFor(system, arch, config.Git.CurrentTag)
+	name, err := name.For(config, system, arch)
 	if err != nil {
 		return err
 	}

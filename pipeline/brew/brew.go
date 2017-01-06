@@ -13,12 +13,13 @@ import (
 	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/split"
 	"golang.org/x/oauth2"
+	"github.com/goreleaser/releaser/name"
 )
 
 const formulae = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .BinaryName }}_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}.tar.gz"
+  url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .File }}.tar.gz"
   head "https://github.com/{{ .Repo }}.git"
   version "{{ .Tag }}"
 
@@ -36,7 +37,7 @@ end
 `
 
 type templateData struct {
-	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats string
+	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, File string
 }
 
 // Pipe for brew deployment
@@ -83,6 +84,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 	)
 	return err
 }
+
 func sha(client *github.Client, owner, repo, name string, out bytes.Buffer) (*string, error) {
 	file, _, _, err := client.Repositories.GetContents(
 		owner, repo, name, &github.RepositoryContentGetOptions{},
@@ -129,6 +131,10 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 	} else {
 		description = *rep.Description
 	}
+	file, err := fileName(config)
+	if err != nil {
+		return result, err
+	}
 	return templateData{
 		Name:       formulaNameFor(config.BinaryName),
 		Desc:       description,
@@ -137,7 +143,16 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 		Tag:        config.Git.CurrentTag,
 		BinaryName: config.BinaryName,
 		Caveats:    config.Brew.Caveats,
+		File:       file,
 	}, err
+}
+
+func fileName(config config.ProjectConfig) (string, error) {
+	return name.For(
+		config,
+		"#{%x(uname -s).gsub(/\n/, '')}",
+		"#{%x(uname -m).gsub(/\n/, '')}",
+	)
 }
 
 func formulaNameFor(name string) string {

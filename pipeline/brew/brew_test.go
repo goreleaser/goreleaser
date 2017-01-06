@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/goreleaser/releaser/config"
 )
 
 func TestNameWithDash(t *testing.T) {
@@ -25,6 +26,7 @@ var defaultTemplateData = templateData{
 	Name:       "Test",
 	Repo:       "caarlos0/test",
 	Tag:        "v0.1.3",
+	File:       "test_#{%x(uname -s).gsub(/\\n/, '')}_#{%x(uname -m).gsub(/\\n/, '')}",
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
@@ -56,4 +58,17 @@ func TestFormulaeNoCaveats(t *testing.T) {
 	formulae := out.String()
 	assertDefaultTemplateData(t, formulae)
 	assert.NotContains(formulae, "def caveats")
+}
+
+func TestFilename(t *testing.T) {
+	assert := assert.New(t)
+	name, err := fileName(config.ProjectConfig{
+		BinaryName:   "test",
+		NameTemplate: "{{.BinaryName}}_{{.Os}}_{{.Arch}}",
+		Git: config.GitInfo{
+			CurrentTag:"v1.2.3",
+		},
+	})
+	assert.NoError(err)
+	assert.Equal("test_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}", name)
 }

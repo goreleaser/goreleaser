@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/name"
 	"github.com/goreleaser/releaser/split"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
@@ -45,7 +46,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 			system := system
 			arch := arch
 			g.Go(func() error {
-				name, err := config.NameFor(system, arch, config.Git.CurrentTag)
+				name, err := name.For(config, system, arch)
 				if err != nil {
 					return err
 				}
