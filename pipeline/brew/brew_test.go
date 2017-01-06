@@ -3,8 +3,8 @@ package brew
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/goreleaser/releaser/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNameWithDash(t *testing.T) {
@@ -66,7 +66,7 @@ func TestFilename(t *testing.T) {
 		BinaryName:   "test",
 		NameTemplate: "{{.BinaryName}}_{{.Os}}_{{.Arch}}",
 		Git: config.GitInfo{
-			CurrentTag:"v1.2.3",
+			CurrentTag: "v1.2.3",
 		},
 	})
 	assert.NoError(err)

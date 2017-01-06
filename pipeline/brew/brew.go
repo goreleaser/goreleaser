@@ -11,9 +11,9 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/name"
 	"github.com/goreleaser/releaser/split"
 	"golang.org/x/oauth2"
-	"github.com/goreleaser/releaser/name"
 )
 
 const formulae = `class {{ .Name }} < Formula
