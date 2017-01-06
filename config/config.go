@@ -34,11 +34,6 @@ type GitInfo struct {
 	Diff        string
 }
 
-// ArchiveConfig
-type ArchiveConfig struct {
-	Format string
-}
-
 // ProjectConfig includes all project configuration
 type ProjectConfig struct {
 	Repo       string
@@ -48,27 +43,10 @@ type ProjectConfig struct {
 	Token      string `yaml:"-"`
 	Build      BuildConfig
 	Git        GitInfo `yaml:"-"`
-	Archive    ArchiveConfig
-}
-
-var defaults = ProjectConfig{
-	Token: os.Getenv("GITHUB_TOKEN"),
-	Build: BuildConfig{
-		Main:   "main.go",
-		Oses:   []string{"linux", "darwin"},
-		Arches: []string{"amd64", "386"},
-	},
-	Brew: Homebrew{
-		Token: os.Getenv("GITHUB_TOKEN"),
-	},
-	Archive: ArchiveConfig{
-		Format: "tar.gz",
-	},
 }
 
 // Load config file
-func Load(file string) (ProjectConfig, error) {
-	var config = defaults
+func Load(file string) (config ProjectConfig, err error) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		return config, err
@@ -76,6 +54,7 @@ func Load(file string) (ProjectConfig, error) {
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		return config, err
 	}
+	config.fillBasicData()
 	if err := config.fillFiles(); err != nil {
 		return config, err
 	}
@@ -109,6 +88,24 @@ func (config *ProjectConfig) fillFiles() (err error) {
 		config.Files = append(config.Files, matches...)
 	}
 	return
+}
+
+func (config *ProjectConfig) fillBasicData() {
+	if config.Token == "" {
+		config.Token = os.Getenv("GITHUB_TOKEN")
+	}
+	if config.Brew.Repo != "" {
+		config.Brew.Token = config.Token
+	}
+	if config.Build.Main == "" {
+		config.Build.Main = "main.go"
+	}
+	if len(config.Build.Oses) == 0 {
+		config.Build.Oses = []string{"linux", "darwin"}
+	}
+	if len(config.Build.Arches) == 0 {
+		config.Build.Arches = []string{"amd64", "386"}
+	}
 }
 
 func (config *ProjectConfig) fillGitData() (err error) {

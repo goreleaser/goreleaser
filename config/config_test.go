@@ -5,16 +5,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/yaml.v1"
 )
 
 func TestFillBasicData(t *testing.T) {
 	assert := assert.New(t)
-	config := defaults
+	config := ProjectConfig{}
+	config.fillBasicData()
 
-	assert.NoError(yaml.Unmarshal([]byte{}, &config))
 	assert.Equal("main.go", config.Build.Main)
-	assert.Equal("tar.gz", config.Archive.Format)
 	assert.Contains(config.Build.Oses, "darwin")
 	assert.Contains(config.Build.Oses, "linux")
 	assert.Contains(config.Build.Arches, "386")
