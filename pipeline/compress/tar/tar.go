@@ -13,10 +13,10 @@ type Archive struct {
 }
 
 func (a Archive) Close() error {
-	if err := a.gw.Close(); err != nil {
+	if err := a.tw.Close(); err != nil {
 		return err
 	}
-	if err := a.tw.Close(); err != nil {
+	if err := a.gw.Close(); err != nil {
 		return err
 	}
 	return nil
