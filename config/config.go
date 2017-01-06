@@ -22,8 +22,8 @@ type Homebrew struct {
 
 // BuildConfig contains the build configuration section
 type BuildConfig struct {
-	Oses   []string
-	Arches []string
+	GoOS   []string `yaml:"oses"`
+	GoArch []string `yaml:"arches"`
 	Main   string
 }
 
@@ -100,11 +100,11 @@ func (config *ProjectConfig) fillBasicData() {
 	if config.Build.Main == "" {
 		config.Build.Main = "main.go"
 	}
-	if len(config.Build.Oses) == 0 {
-		config.Build.Oses = []string{"linux", "darwin"}
+	if len(config.Build.GoOS) == 0 {
+		config.Build.GoOS = []string{"linux", "darwin"}
 	}
-	if len(config.Build.Arches) == 0 {
-		config.Build.Arches = []string{"amd64", "386"}
+	if len(config.Build.GoArch) == 0 {
+		config.Build.GoArch = []string{"amd64", "386"}
 	}
 }
 

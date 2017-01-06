@@ -41,8 +41,8 @@ func (Pipe) Run(config config.ProjectConfig) error {
 		return err
 	}
 	var g errgroup.Group
-	for _, system := range config.Build.Oses {
-		for _, arch := range config.Build.Arches {
+	for _, system := range config.Build.GoOS {
+		for _, arch := range config.Build.GoArch {
 			system := system
 			arch := arch
 			g.Go(func() error {
