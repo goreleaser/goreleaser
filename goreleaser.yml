@@ -10,4 +10,3 @@ build:
     - windows
     - darwin
     - linux
-NameTemplate: {{.BinaryName}}_{{.Version}}_{{.Os}}_{{.Arch}}

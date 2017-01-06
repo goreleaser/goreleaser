@@ -62,6 +62,17 @@ build:
 
 > `oses` and `arches` should be in `GOOS`/`GOARCH`-compatible format.
 
+### Custom final file name
+
+
+```yaml
+repo: user/repo
+binary_name: my-binary
+name_template: "{{.BinaryName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+```
+
+> Default is "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
+
 ### Add more files
 
 You might also want to change the files that are packaged by adding a `files`

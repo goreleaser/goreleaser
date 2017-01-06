@@ -43,7 +43,7 @@ type ProjectConfig struct {
 	Token        string `yaml:"-"`
 	Build        BuildConfig
 	Git          GitInfo `yaml:"-"`
-	NameTemplate string
+	NameTemplate string `yaml:"name_template"`
 }
 
 // Load config file
