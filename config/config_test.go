@@ -13,10 +13,10 @@ func TestFillBasicData(t *testing.T) {
 	config.fillBasicData()
 
 	assert.Equal("main.go", config.Build.Main)
-	assert.Contains(config.Build.Oses, "darwin")
-	assert.Contains(config.Build.Oses, "linux")
-	assert.Contains(config.Build.Arches, "386")
-	assert.Contains(config.Build.Arches, "amd64")
+	assert.Contains(config.Build.GoOS, "darwin")
+	assert.Contains(config.Build.GoOS, "linux")
+	assert.Contains(config.Build.GoArch, "386")
+	assert.Contains(config.Build.GoArch, "amd64")
 }
 
 func TestFillFilesMissingFiles(t *testing.T) {
