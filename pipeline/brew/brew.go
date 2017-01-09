@@ -83,6 +83,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 	)
 	return err
 }
+
 func sha(client *github.Client, owner, repo, name string, out bytes.Buffer) (*string, error) {
 	file, _, _, err := client.Repositories.GetContents(
 		owner, repo, name, &github.RepositoryContentGetOptions{},
@@ -90,7 +91,7 @@ func sha(client *github.Client, owner, repo, name string, out bytes.Buffer) (*st
 	if err == nil {
 		return file.SHA, err
 	}
-	return github.String(fmt.Sprintf("%s", sha256.Sum256(out.Bytes()))), err
+	return github.String(fmt.Sprintf("%s", sha256.Sum256(out.Bytes()))), nil
 }
 
 func buildFormulae(config config.ProjectConfig, client *github.Client) (bytes.Buffer, error) {
