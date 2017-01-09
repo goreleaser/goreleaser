@@ -18,7 +18,7 @@ import (
 const formulae = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .BinaryName }}_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}.tar.gz"
+  url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .BinaryName }}_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}.{{ .Format }}"
   head "https://github.com/{{ .Repo }}.git"
   version "{{ .Tag }}"
 
@@ -36,7 +36,7 @@ end
 `
 
 type templateData struct {
-	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats string
+	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, Format string
 }
 
 // Pipe for brew deployment
@@ -138,6 +138,7 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 		Tag:        config.Git.CurrentTag,
 		BinaryName: config.BinaryName,
 		Caveats:    config.Brew.Caveats,
+		Format:     config.Archive.Format,
 	}, err
 }
 
