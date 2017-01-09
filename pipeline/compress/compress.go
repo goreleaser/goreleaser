@@ -46,12 +46,7 @@ func create(system, arch string, config config.ProjectConfig) error {
 		return err
 	}
 	defer func() { _ = file.Close() }()
-	var archive Archive
-	if config.Archive.Format == "zip" {
-		archive = zip.New(file)
-	} else {
-		archive = tar.New(file)
-	}
+	var archive = archiveFor(file, config.Archive.Format)
 	defer func() { _ = archive.Close() }()
 	for _, f := range config.Files {
 		if err := archive.Add(f, f); err != nil {
@@ -59,6 +54,13 @@ func create(system, arch string, config config.ProjectConfig) error {
 		}
 	}
 	return archive.Add(config.BinaryName+ext(system), binaryPath(system, arch, config.BinaryName))
+}
+
+func archiveFor(file *os.File, format string) Archive {
+	if format == "zip" {
+		return zip.New(file)
+	}
+	return tar.New(file)
 }
 
 func nameFor(system, arch, binary string) string {
