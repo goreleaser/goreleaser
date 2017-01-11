@@ -67,7 +67,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 	if err != nil {
 		return err
 	}
-	sha, err := sha(client, owner, repo, name, out)
+	sha, err := formulaeSHA(client, owner, repo, name, out)
 	if err != nil {
 		return err
 	}
@@ -79,13 +79,13 @@ func (Pipe) Run(config config.ProjectConfig) error {
 			},
 			Content: out.Bytes(),
 			Message: github.String(config.BinaryName + " version " + config.Git.CurrentTag),
-			SHA256:  sha,
+			SHA:     sha,
 		},
 	)
 	return err
 }
 
-func sha(client *github.Client, owner, repo, name string, out bytes.Buffer) (*string, error) {
+func formulaeSHA(client *github.Client, owner, repo, name string, out bytes.Buffer) (*string, error) {
 	file, _, _, err := client.Repositories.GetContents(
 		owner, repo, name, &github.RepositoryContentGetOptions{},
 	)
@@ -144,6 +144,7 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 		BinaryName: config.BinaryName,
 		Caveats:    config.Brew.Caveats,
 		Format:     config.Archive.Format,
+		SHA256:     sum,
 	}, err
 }
 
