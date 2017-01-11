@@ -57,6 +57,7 @@ repo: user/repo
 binary_name: my-binary
 build:
   main: ./cmd/main.go
+  ldflags: -s -w
   oses:
     - darwin
     - freebsd
@@ -64,7 +65,8 @@ build:
     - amd64
 ```
 
-> `oses` and `arches` should be in `GOOS`/`GOARCH`-compatible format.
+> - `oses` and `arches` should be in `GOOS`/`GOARCH`-compatible format.
+> - `-s -w` is the default value for `ldflags`.
 
 ### Archive customization
 
@@ -107,7 +109,7 @@ files:
 > By default GoReleaser adds the binary itself, `LICENCE*`, `LICENSE*`,
 `README*` and `CHANGELOG*`.
 
-### ldflags
+### ldflags (main.version)
 
 GoReleaser already sets a `main.version` ldflag, so, in you `main.go` program,
 you can:

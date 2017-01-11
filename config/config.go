@@ -22,9 +22,10 @@ type Homebrew struct {
 
 // BuildConfig contains the build configuration section
 type BuildConfig struct {
-	Oses   []string
-	Arches []string
-	Main   string
+	Oses    []string
+	Arches  []string
+	Main    string
+	Ldflags string
 }
 
 // GitInfo includes tags and diffs used in some point
@@ -106,6 +107,9 @@ func (config *ProjectConfig) fillBasicData() {
 	}
 	if len(config.Build.Arches) == 0 {
 		config.Build.Arches = []string{"amd64", "386"}
+	}
+	if config.Build.Ldflags == "" {
+		config.Build.Ldflags = "-s -w"
 	}
 	if config.Archive.NameTemplate == "" {
 		config.Archive.NameTemplate = "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
