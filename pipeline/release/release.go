@@ -9,7 +9,6 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/split"
-	"github.com/goreleaser/releaser/uname"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
 )
@@ -65,7 +64,11 @@ func description(diff string) string {
 
 func upload(client *github.Client, releaseID int, system, arch string, config config.ProjectConfig) error {
 	owner, repo := split.OnSlash(config.Repo)
-	name := config.BinaryName + "_" + uname.FromGo(system) + "_" + uname.FromGo(arch) + "." + config.Archive.Format
+	name, err := config.ArchiveName(system, arch)
+	if err != nil {
+		return err
+	}
+	name = name + "." + config.Archive.Format
 	file, err := os.Open("dist/" + name)
 	if err != nil {
 		return err

@@ -19,7 +19,7 @@ import (
 const formulae = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .BinaryName }}_Darwin_x86_64.{{ .Format }}"
+  url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .File }}.{{ .Format }}"
   version "{{ .Tag }}"
   sha256 "{{ .SHA256 }}"
 
@@ -37,7 +37,7 @@ end
 `
 
 type templateData struct {
-	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, Format, SHA256 string
+	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, File, Format, SHA256 string
 }
 
 // Pipe for brew deployment
@@ -121,7 +121,11 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 	if err != nil {
 		return
 	}
-	sum, err := sha256sum.For("dist/" + config.BinaryName + "_Darwin_x86_64." + config.Archive.Format)
+	file, err := config.ArchiveName("darwin", "amd64")
+	if err != nil {
+		return
+	}
+	sum, err := sha256sum.For("dist/" + file + config.Archive.Format)
 	if err != nil {
 		return
 	}
@@ -143,6 +147,7 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 		Tag:        config.Git.CurrentTag,
 		BinaryName: config.BinaryName,
 		Caveats:    config.Brew.Caveats,
+		File:       file,
 		Format:     config.Archive.Format,
 		SHA256:     sum,
 	}, err

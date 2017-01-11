@@ -8,7 +8,6 @@ import (
 	"os/exec"
 
 	"github.com/goreleaser/releaser/config"
-	"github.com/goreleaser/releaser/uname"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -37,11 +36,15 @@ func (Pipe) Run(config config.ProjectConfig) error {
 
 func build(system, arch string, config config.ProjectConfig) error {
 	log.Println("Building", system+"/"+arch, "...")
+	name, err := config.ArchiveName(system, arch)
+	if err != nil {
+		return err
+	}
 	cmd := exec.Command(
 		"go",
 		"build",
 		"-ldflags=-s -w -X main.version="+config.Git.CurrentTag,
-		"-o", target(system, arch, config.BinaryName),
+		"-o", "dist/"+name+"/"+config.BinaryName,
 		config.Build.Main,
 	)
 	cmd.Env = append(
@@ -54,13 +57,8 @@ func build(system, arch string, config config.ProjectConfig) error {
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stdout
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return errors.New(stdout.String())
 	}
 	return nil
-}
-
-func target(system, arch, binary string) string {
-	return "dist/" + binary + "_" + uname.FromGo(system) + "_" + uname.FromGo(arch) + "/" + binary
 }

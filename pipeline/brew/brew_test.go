@@ -25,6 +25,7 @@ var defaultTemplateData = templateData{
 	Name:       "Test",
 	Repo:       "caarlos0/test",
 	Tag:        "v0.1.3",
+	File:       "test_Darwin_x86_64",
 	SHA256:     "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
 	Format:     "tar.gz",
 }

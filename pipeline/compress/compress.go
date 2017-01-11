@@ -7,7 +7,6 @@ import (
 	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/pipeline/compress/tar"
 	"github.com/goreleaser/releaser/pipeline/compress/zip"
-	"github.com/goreleaser/releaser/uname"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -40,7 +39,11 @@ type Archive interface {
 }
 
 func create(system, arch string, config config.ProjectConfig) error {
-	file, err := os.Create("dist/" + nameFor(system, arch, config.BinaryName) + "." + config.Archive.Format)
+	name, err := config.ArchiveName(system, arch)
+	if err != nil {
+		return err
+	}
+	file, err := os.Create("dist/" + name + "." + config.Archive.Format)
 	log.Println("Creating", file.Name(), "...")
 	if err != nil {
 		return err
@@ -53,7 +56,7 @@ func create(system, arch string, config config.ProjectConfig) error {
 			return err
 		}
 	}
-	return archive.Add(config.BinaryName+ext(system), binaryPath(system, arch, config.BinaryName))
+	return archive.Add(config.BinaryName+extFor(system), "dist/"+name+"/"+config.BinaryName)
 }
 
 func archiveFor(file *os.File, format string) Archive {
@@ -63,15 +66,7 @@ func archiveFor(file *os.File, format string) Archive {
 	return tar.New(file)
 }
 
-func nameFor(system, arch, binary string) string {
-	return binary + "_" + uname.FromGo(system) + "_" + uname.FromGo(arch)
-}
-
-func binaryPath(system, arch, binary string) string {
-	return "dist/" + nameFor(system, arch, binary) + "/" + binary
-}
-
-func ext(system string) string {
+func extFor(system string) string {
 	if system == "windows" {
 		return ".exe"
 	}

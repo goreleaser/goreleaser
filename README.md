@@ -31,14 +31,14 @@ You may then run releaser at the root of your repository:
 curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
 ```
 
-This will build `main.go` file as `my-binary`, for _Darwin_ and _Linux_,
-_x86_64_ and _i386_, packaging the binary, `LICENSE.md` and `README.md`
-and publish a new github release in the `user/repo` repository with
-the `.tar.gz` files there.
+This will build `main.go` as `my-binary`, for `Darwin` and `Linux`
+(`amd64` and `i386`), archive the binary and common files as `.tar.gz`,
+and finally, publish a new github release in the `user/repo` repository with
+archives uploaded.
 
 ### Homebrew
 
-To push it to a homebrew repo, just add a `brew` section:
+To push a basic formulae a homebrew tap repo, just add a `brew` section:
 
 ```yaml
 repo: user/repo
@@ -66,6 +66,22 @@ build:
 
 > `oses` and `arches` should be in `GOOS`/`GOARCH`-compatible format.
 
+### Archive customization
+
+You can customize the name and format of the archive adding an `archive`
+section:
+
+```yaml
+repo: user/repo
+binary_name: my-binary
+archive:
+  name_template: "{{.BinaryName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+  format: tar.gz
+```
+
+> Default `name_template` is "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
+> Valid formats are `tar.gz` and `zip`, default is `tar.gz`
+
 ### Add more files
 
 You might also want to change the files that are packaged by adding a `files`
@@ -79,6 +95,9 @@ files:
   - README.md
   - CHANGELOG.md
 ```
+
+> By default GoReleaser adds the binary itself, `LICENCE*`, `LICENSE*`,
+`README*` and `CHANGELOG*`.
 
 ## Wire it with travis-ci
 
@@ -100,11 +119,11 @@ And the [homebrew formulae](https://github.com/goreleaser/homebrew-formulae/blob
 
 ```rb
 class Release < Formula
-  desc "Deliver Go binaries as fast and easily as possible."
+  desc "Deliver Go binaries as fast and easily as possible"
   homepage "https://github.com/goreleaser/releaser"
-  url "https://github.com/goreleaser/releaser/releases/download/v0.2.0/release_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}.tar.gz"
-  head "https://github.com/goreleaser/releaser.git"
-  version "v0.2.0"
+  url "https://github.com/goreleaser/releaser/releases/download/v0.2.8/release_Darwin_x86_64.tar.gz"
+  version "v0.2.8"
+  sha256 "9ee30fc358fae8d248a2d7538957089885da321dca3f09e3296fe2058e7fff74"
 
   def install
     bin.install "release"
