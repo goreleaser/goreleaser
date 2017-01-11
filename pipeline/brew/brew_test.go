@@ -25,6 +25,7 @@ var defaultTemplateData = templateData{
 	Name:       "Test",
 	Repo:       "caarlos0/test",
 	Tag:        "v0.1.3",
+	SHA256:     "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
 	Format:     "tar.gz",
 }
 
@@ -32,10 +33,11 @@ func assertDefaultTemplateData(t *testing.T, formulae string) {
 	assert := assert.New(t)
 	assert.Contains(formulae, "class Test < Formula")
 	assert.Contains(formulae, "homepage \"https://google.com\"")
-	assert.Contains(formulae, "url \"https://github.com/caarlos0/test/releases/download/v0.1.3/test_#{%x(uname -s).gsub(/\\n/, '')}_#{%x(uname -m).gsub(/\\n/, '')}.tar.gz\"")
-	assert.Contains(formulae, "head \"https://github.com/caarlos0/test.git\"")
+	assert.Contains(formulae, "url \"https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz\"")
+	assert.Contains(formulae, "sha256 \"1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68\"")
 	assert.Contains(formulae, "version \"v0.1.3\"")
 	assert.Contains(formulae, "bin.install \"test\"")
+
 }
 
 func TestFullFormulae(t *testing.T) {

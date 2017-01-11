@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/sha256sum"
 	"github.com/goreleaser/releaser/split"
 	"golang.org/x/oauth2"
 )
@@ -18,9 +19,9 @@ import (
 const formulae = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .BinaryName }}_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}.{{ .Format }}"
-  head "https://github.com/{{ .Repo }}.git"
+  url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .BinaryName }}_Darwin_x86_64.{{ .Format }}"
   version "{{ .Tag }}"
+  sha256 "{{ .SHA256 }}"
 
   def install
     bin.install "{{ .BinaryName }}"
@@ -36,7 +37,7 @@ end
 `
 
 type templateData struct {
-	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, Format string
+	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, Format, SHA256 string
 }
 
 // Pipe for brew deployment
@@ -66,7 +67,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 	if err != nil {
 		return err
 	}
-	sha, err := sha(client, owner, repo, name, out)
+	sha, err := formulaeSHA(client, owner, repo, name, out)
 	if err != nil {
 		return err
 	}
@@ -84,7 +85,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 	return err
 }
 
-func sha(client *github.Client, owner, repo, name string, out bytes.Buffer) (*string, error) {
+func formulaeSHA(client *github.Client, owner, repo, name string, out bytes.Buffer) (*string, error) {
 	file, _, _, err := client.Repositories.GetContents(
 		owner, repo, name, &github.RepositoryContentGetOptions{},
 	)
@@ -118,7 +119,11 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 	owner, repo := split.OnSlash(config.Repo)
 	rep, _, err := client.Repositories.Get(owner, repo)
 	if err != nil {
-		return result, err
+		return
+	}
+	sum, err := sha256sum.For("dist/" + config.BinaryName + "_Darwin_x86_64." + config.Archive.Format)
+	if err != nil {
+		return
 	}
 	if rep.Homepage != nil && *rep.Homepage != "" {
 		homepage = *rep.Homepage
@@ -139,6 +144,7 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 		BinaryName: config.BinaryName,
 		Caveats:    config.Brew.Caveats,
 		Format:     config.Archive.Format,
+		SHA256:     sum,
 	}, err
 }
 
