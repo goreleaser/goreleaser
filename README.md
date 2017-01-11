@@ -31,14 +31,14 @@ You may then run releaser at the root of your repository:
 curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
 ```
 
-This will build `main.go` file as `my-binary`, for _Darwin_ and _Linux_,
-_x86_64_ and _i386_, packaging the binary, `LICENSE.*`, `CHANGELOG.*` and
-`README.*` and publish a new github release in the `user/repo` repository with
-the `.tar.gz` files there.
+This will build `main.go` as `my-binary`, for `Darwin` and `Linux`
+(`amd64` and `i386`), archive the binary and common files as `.tar.gz`,
+and finally, publish a new github release in the `user/repo` repository with
+archives uploaded.
 
 ### Homebrew
 
-To push it to a homebrew repo, just add a `brew` section:
+To push a basic formulae a homebrew tap repo, just add a `brew` section:
 
 ```yaml
 repo: user/repo
