@@ -5,7 +5,6 @@ Deliver Go binaries as fast and easily as possible.
 GoReleaser builds Go binaries for several platforms, creates a github release and then
 push a homebrew formulae to a repository. All that wrapped in your favorite CI.
 
-
 This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code. Please report unacceptable behavior to root@carlosbecker.com.
 
@@ -19,12 +18,17 @@ So, the all-new goreleaser was born.
 
 ## Usage
 
-Basically, you need to create a `goreleaser.yml` file in the root of your
-repository. A minimal config would look like this:
+Create a `goreleaser.yml` file in the root of your repository. A minimal config would look like this:
 
 ```yaml
 repo: user/repo
 binary_name: my-binary
+```
+
+You may then run releaser at the root of your repository:
+
+```sh
+curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
 ```
 
 This will build `main.go` file as `my-binary`, for _Darwin_ and _Linux_,
@@ -97,7 +101,7 @@ after_success:
   test -n "$TRAVIS_TAG" && curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
 ```
 
-## How the end result looks like
+## What the end result looks like
 
 The release on github looks pretty much like this:
 

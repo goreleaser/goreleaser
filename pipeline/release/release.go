@@ -46,11 +46,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 			system := system
 			arch := arch
 			g.Go(func() error {
-				name, err := name.For(config, system, arch)
-				if err != nil {
-					return err
-				}
-				return upload(client, *r.ID, owner, repo, name+".tar.gz")
+				return upload(client, *r.ID, system, arch, config)
 			})
 		}
 	}
@@ -67,7 +63,13 @@ func description(diff string) string {
 	return result + "\nBuilt with " + string(bts)
 }
 
-func upload(client *github.Client, releaseID int, owner, repo, name string) error {
+func upload(client *github.Client, releaseID int, system, arch string, config config.ProjectConfig) error {
+	owner, repo := split.OnSlash(config.Repo)
+  name, err := name.For(config, system, arch)
+  if err != nil {
+    return err
+  }
+	name = name + "." + config.Archive.Format
 	file, err := os.Open("dist/" + name)
 	if err != nil {
 		return err

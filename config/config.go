@@ -34,6 +34,11 @@ type GitInfo struct {
 	Diff        string
 }
 
+// ArchiveConfig
+type ArchiveConfig struct {
+	Format string
+}
+
 // ProjectConfig includes all project configuration
 type ProjectConfig struct {
 	Repo         string
@@ -44,6 +49,7 @@ type ProjectConfig struct {
 	Build        BuildConfig
 	Git          GitInfo `yaml:"-"`
 	NameTemplate string  `yaml:"name_template"`
+	Archive      ArchiveConfig
 }
 
 // Load config file
@@ -109,6 +115,9 @@ func (config *ProjectConfig) fillBasicData() {
 	}
 	if config.NameTemplate == "" {
 		config.NameTemplate = "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
+  }
+	if config.Archive.Format == "" {
+		config.Archive.Format = "tar.gz"
 	}
 }
 
