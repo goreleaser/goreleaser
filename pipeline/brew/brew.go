@@ -125,7 +125,7 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 	if err != nil {
 		return
 	}
-	sum, err := sha256sum.For("dist/" + file + config.Archive.Format)
+	sum, err := sha256sum.For("dist/" + file + "." + config.Archive.Format)
 	if err != nil {
 		return
 	}
