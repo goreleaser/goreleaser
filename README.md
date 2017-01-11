@@ -107,6 +107,23 @@ files:
 > By default GoReleaser adds the binary itself, `LICENCE*`, `LICENSE*`,
 `README*` and `CHANGELOG*`.
 
+### ldflags
+
+GoReleaser already sets a `main.version` ldflag, so, in you `main.go` program,
+you can:
+
+```go
+package main
+
+var version = "master"
+
+func main() {
+  println(version)
+}
+```
+
+And this version will always be the tag name.
+
 ## Wire it with travis-ci
 
 You may want to wire this to auto-deploy your new tags on travis, for example:
