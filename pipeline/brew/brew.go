@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/name"
+	"github.com/goreleaser/releaser/sha256sum"
 	"github.com/goreleaser/releaser/split"
 	"golang.org/x/oauth2"
 )
@@ -22,6 +23,7 @@ const formulae = `class {{ .Name }} < Formula
   url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .File }}.{{ .Format }}"
   head "https://github.com/{{ .Repo }}.git"
   version "{{ .Tag }}"
+  sha256 "{{ .SHA256 }}"
 
   def install
     bin.install "{{ .BinaryName }}"
@@ -37,7 +39,7 @@ end
 `
 
 type templateData struct {
-	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, File, Format string
+	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, File, Format, SHA256 string
 }
 
 // Pipe for brew deployment
@@ -67,7 +69,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 	if err != nil {
 		return err
 	}
-	sha, err := sha(client, owner, repo, name, out)
+	sha, err := formulaeSHA(client, owner, repo, name, out)
 	if err != nil {
 		return err
 	}
@@ -85,7 +87,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 	return err
 }
 
-func sha(client *github.Client, owner, repo, name string, out bytes.Buffer) (*string, error) {
+func formulaeSHA(client *github.Client, owner, repo, name string, out bytes.Buffer) (*string, error) {
 	file, _, _, err := client.Repositories.GetContents(
 		owner, repo, name, &github.RepositoryContentGetOptions{},
 	)
@@ -119,7 +121,11 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 	owner, repo := split.OnSlash(config.Repo)
 	rep, _, err := client.Repositories.Get(owner, repo)
 	if err != nil {
-		return result, err
+		return
+	}
+	sum, err := sha256sum.For("dist/" + config.BinaryName + "_Darwin_x86_64." + config.Archive.Format)
+	if err != nil {
+		return
 	}
 	if rep.Homepage != nil && *rep.Homepage != "" {
 		homepage = *rep.Homepage
@@ -145,6 +151,7 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 		Caveats:    config.Brew.Caveats,
 		File:       file,
 		Format:     config.Archive.Format,
+		SHA256:     sum,
 	}, err
 }
 
