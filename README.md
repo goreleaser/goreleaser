@@ -76,11 +76,19 @@ repo: user/repo
 binary_name: my-binary
 archive:
   name_template: "{{.BinaryName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
-  format: tar.gz
+  format: zip
+  replacements:
+    amd64: 64-bit
+    386: 32-bit
+    darwin: macOS
+    linux: Tux
 ```
 
 > - Default `name_template` is `{{.BinaryName}}_{{.Os}}_{{.Arch}}`
 > - Valid formats are `tar.gz` and `zip`, default is `tar.gz`
+> - By default, `replacements` replace `GOOS` with `uname -s` values and
+> `GOARCH` with `uname -m` values. They keys should always be in the `GOOS` and
+> `GOARCH` form.
 
 ### Add more files
 

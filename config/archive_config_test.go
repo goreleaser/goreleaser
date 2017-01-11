@@ -15,6 +15,10 @@ func TestNameTemplate(t *testing.T) {
 		},
 		Archive: ArchiveConfig{
 			NameTemplate: "{{.BinaryName}}_{{.Os}}_{{.Arch}}_{{.Version}}",
+			Replacements: map[string]string{
+				"darwin": "Darwin",
+				"amd64":  "x86_64",
+			},
 		},
 	}
 	name, err := config.ArchiveName("darwin", "amd64")

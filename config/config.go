@@ -113,6 +113,18 @@ func (config *ProjectConfig) fillBasicData() {
 	if config.Archive.Format == "" {
 		config.Archive.Format = "tar.gz"
 	}
+	if len(config.Archive.Replacements) == 0 {
+		config.Archive.Replacements = map[string]string{
+			"darwin":  "Darwin",
+			"linux":   "Linux",
+			"freebsd": "FreeBSD",
+			"openbsd": "OpenBSD",
+			"netbsd":  "NetBSD",
+			"windows": "Windows",
+			"386":     "i386",
+			"amd64":   "x86_64",
+		}
+	}
 }
 
 func (config *ProjectConfig) fillGitData() (err error) {
