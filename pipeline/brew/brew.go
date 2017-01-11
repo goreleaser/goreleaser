@@ -18,7 +18,7 @@ import (
 const formulae = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .BinaryName }}_Darwin_x86_64.tar.gz"
+  url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .BinaryName }}_Darwin_x86_64.{{ .Format }}"
   head "https://github.com/{{ .Repo }}.git"
   version "{{ .Tag }}"
 
@@ -36,7 +36,7 @@ end
 `
 
 type templateData struct {
-	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats string
+	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, Format string
 }
 
 // Pipe for brew deployment
@@ -83,6 +83,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 	)
 	return err
 }
+
 func sha(client *github.Client, owner, repo, name string, out bytes.Buffer) (*string, error) {
 	file, _, _, err := client.Repositories.GetContents(
 		owner, repo, name, &github.RepositoryContentGetOptions{},
@@ -90,7 +91,7 @@ func sha(client *github.Client, owner, repo, name string, out bytes.Buffer) (*st
 	if err == nil {
 		return file.SHA, err
 	}
-	return github.String(fmt.Sprintf("%s", sha256.Sum256(out.Bytes()))), err
+	return github.String(fmt.Sprintf("%s", sha256.Sum256(out.Bytes()))), nil
 }
 
 func buildFormulae(config config.ProjectConfig, client *github.Client) (bytes.Buffer, error) {
@@ -137,6 +138,7 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 		Tag:        config.Git.CurrentTag,
 		BinaryName: config.BinaryName,
 		Caveats:    config.Brew.Caveats,
+		Format:     config.Archive.Format,
 	}, err
 }
 

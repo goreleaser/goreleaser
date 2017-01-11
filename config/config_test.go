@@ -13,6 +13,7 @@ func TestFillBasicData(t *testing.T) {
 	config.fillBasicData()
 
 	assert.Equal("main.go", config.Build.Main)
+	assert.Equal("tar.gz", config.Archive.Format)
 	assert.Contains(config.Build.Oses, "darwin")
 	assert.Contains(config.Build.Oses, "linux")
 	assert.Contains(config.Build.Arches, "386")

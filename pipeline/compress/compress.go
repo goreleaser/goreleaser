@@ -1,13 +1,12 @@
 package compress
 
 import (
-	"archive/tar"
-	"compress/gzip"
-	"io"
 	"log"
 	"os"
 
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/pipeline/compress/tar"
+	"github.com/goreleaser/releaser/pipeline/compress/zip"
 	"github.com/goreleaser/releaser/uname"
 	"golang.org/x/sync/errgroup"
 )
@@ -35,51 +34,33 @@ func (Pipe) Run(config config.ProjectConfig) error {
 	return g.Wait()
 }
 
+type Archive interface {
+	Close() error
+	Add(name, path string) error
+}
+
 func create(system, arch string, config config.ProjectConfig) error {
-	file, err := os.Create("dist/" + nameFor(system, arch, config.BinaryName) + ".tar.gz")
+	file, err := os.Create("dist/" + nameFor(system, arch, config.BinaryName) + "." + config.Archive.Format)
 	log.Println("Creating", file.Name(), "...")
 	if err != nil {
 		return err
 	}
-	gw := gzip.NewWriter(file)
-	tw := tar.NewWriter(gw)
-	defer func() {
-		_ = tw.Close()
-		_ = gw.Close()
-		_ = file.Close()
-	}()
+	defer func() { _ = file.Close() }()
+	var archive = archiveFor(file, config.Archive.Format)
+	defer func() { _ = archive.Close() }()
 	for _, f := range config.Files {
-		if err := addFile(tw, f, f); err != nil {
+		if err := archive.Add(f, f); err != nil {
 			return err
 		}
 	}
-	return addFile(tw, config.BinaryName+ext(system), binaryPath(system, arch, config.BinaryName))
+	return archive.Add(config.BinaryName+ext(system), binaryPath(system, arch, config.BinaryName))
 }
 
-func addFile(tw *tar.Writer, name, path string) (err error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return
+func archiveFor(file *os.File, format string) Archive {
+	if format == "zip" {
+		return zip.New(file)
 	}
-	defer func() {
-		_ = file.Close()
-	}()
-	stat, err := file.Stat()
-	if err != nil {
-		return
-	}
-	header := new(tar.Header)
-	header.Name = name
-	header.Size = stat.Size()
-	header.Mode = int64(stat.Mode())
-	header.ModTime = stat.ModTime()
-	if err := tw.WriteHeader(header); err != nil {
-		return err
-	}
-	if _, err := io.Copy(tw, file); err != nil {
-		return err
-	}
-	return
+	return tar.New(file)
 }
 
 func nameFor(system, arch, binary string) string {

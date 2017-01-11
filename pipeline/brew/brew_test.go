@@ -25,6 +25,7 @@ var defaultTemplateData = templateData{
 	Name:       "Test",
 	Repo:       "caarlos0/test",
 	Tag:        "v0.1.3",
+	Format:     "tar.gz",
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
