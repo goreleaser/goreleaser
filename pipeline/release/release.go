@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
-	"github.com/goreleaser/releaser/name"
 	"github.com/goreleaser/releaser/split"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
@@ -65,7 +64,7 @@ func description(diff string) string {
 
 func upload(client *github.Client, releaseID int, system, arch string, config config.ProjectConfig) error {
 	owner, repo := split.OnSlash(config.Repo)
-	name, err := name.For(config, system, arch)
+	name, err := config.ArchiveName(system, arch)
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/goreleaser/releaser/config"
-	"github.com/goreleaser/releaser/name"
 	"github.com/goreleaser/releaser/pipeline/compress/tar"
 	"github.com/goreleaser/releaser/pipeline/compress/zip"
 	"golang.org/x/sync/errgroup"
@@ -40,7 +39,7 @@ type Archive interface {
 }
 
 func create(system, arch string, config config.ProjectConfig) error {
-	name, err := name.For(config, system, arch)
+	name, err := config.ArchiveName(system, arch)
 	if err != nil {
 		return err
 	}

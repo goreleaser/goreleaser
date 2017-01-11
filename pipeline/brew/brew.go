@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
-	"github.com/goreleaser/releaser/name"
 	"github.com/goreleaser/releaser/sha256sum"
 	"github.com/goreleaser/releaser/split"
 	"golang.org/x/oauth2"
@@ -122,7 +121,7 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 	if err != nil {
 		return
 	}
-	file, err := name.For(config, "darwin", "amd64")
+	file, err := config.ArchiveName("darwin", "amd64")
 	if err != nil {
 		return
 	}
