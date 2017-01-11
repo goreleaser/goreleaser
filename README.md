@@ -79,8 +79,8 @@ archive:
   format: tar.gz
 ```
 
-> Default `name_template` is `{{.BinaryName}}_{{.Os}}_{{.Arch}}`
-> Valid formats are `tar.gz` and `zip`, default is `tar.gz`
+> - Default `name_template` is `{{.BinaryName}}_{{.Os}}_{{.Arch}}`
+> - Valid formats are `tar.gz` and `zip`, default is `tar.gz`
 
 ### Add more files
 
