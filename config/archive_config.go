@@ -3,14 +3,13 @@ package config
 import (
 	"bytes"
 	"html/template"
-
-	"github.com/goreleaser/releaser/uname"
 )
 
 // ArchiveConfig config used for the archive
 type ArchiveConfig struct {
 	Format       string
 	NameTemplate string `yaml:"name_template"`
+	Replacements map[string]string
 }
 
 type archiveNameData struct {
@@ -23,8 +22,8 @@ type archiveNameData struct {
 // ArchiveName following the given template
 func (config ProjectConfig) ArchiveName(goos, goarch string) (string, error) {
 	var data = archiveNameData{
-		Os:         uname.FromGo(goos),
-		Arch:       uname.FromGo(goarch),
+		Os:         replace(config.Archive.Replacements, goos),
+		Arch:       replace(config.Archive.Replacements, goarch),
 		Version:    config.Git.CurrentTag,
 		BinaryName: config.BinaryName,
 	}
@@ -35,4 +34,12 @@ func (config ProjectConfig) ArchiveName(goos, goarch string) (string, error) {
 	}
 	err = t.Execute(&out, data)
 	return out.String(), err
+}
+
+func replace(replacements map[string]string, original string) string {
+	result := replacements[original]
+	if result == "" {
+		return original
+	}
+	return result
 }
