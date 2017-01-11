@@ -32,8 +32,8 @@ curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
 ```
 
 This will build `main.go` file as `my-binary`, for _Darwin_ and _Linux_,
-_x86_64_ and _i386_, packaging the binary, `LICENSE.md` and `README.md`
-and publish a new github release in the `user/repo` repository with
+_x86_64_ and _i386_, packaging the binary, `LICENSE.*`, `CHANGELOG.*` and
+`README.*` and publish a new github release in the `user/repo` repository with
 the `.tar.gz` files there.
 
 ### Homebrew
@@ -66,17 +66,21 @@ build:
 
 > `oses` and `arches` should be in `GOOS`/`GOARCH`-compatible format.
 
-### Custom archive file name
+### Archive customization
 
-You can customize the name of the archive using the name_template config:
+You can customize the name and format of the archive adding an `archive`
+section:
 
 ```yaml
 repo: user/repo
 binary_name: my-binary
-name_template: "{{.BinaryName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+archive:
+	name_template: "{{.BinaryName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+	format: tar.gz
 ```
 
 > Default is "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
+> Valid formats are `tar.gz` and `zip`
 
 ### Add more files
 
@@ -91,6 +95,9 @@ files:
   - README.md
   - CHANGELOG.md
 ```
+
+> By default GoReleaser adds the binary itself, `LICENCE*`, `LICENSE*`,
+`README*` and `CHANGELOG*`.
 
 ## Wire it with travis-ci
 
@@ -112,11 +119,11 @@ And the [homebrew formulae](https://github.com/goreleaser/homebrew-formulae/blob
 
 ```rb
 class Release < Formula
-  desc "Deliver Go binaries as fast and easily as possible."
+  desc "Deliver Go binaries as fast and easily as possible"
   homepage "https://github.com/goreleaser/releaser"
-  url "https://github.com/goreleaser/releaser/releases/download/v0.2.0/release_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}.tar.gz"
-  head "https://github.com/goreleaser/releaser.git"
-  version "v0.2.0"
+  url "https://github.com/goreleaser/releaser/releases/download/v0.2.8/release_Darwin_x86_64.tar.gz"
+  version "v0.2.8"
+  sha256 "9ee30fc358fae8d248a2d7538957089885da321dca3f09e3296fe2058e7fff74"
 
   def install
     bin.install "release"
