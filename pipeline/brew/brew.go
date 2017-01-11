@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/sha256sum"
 	"github.com/goreleaser/releaser/split"
 	"golang.org/x/oauth2"
 )
@@ -19,8 +20,8 @@ const formulae = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
   url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .BinaryName }}_Darwin_x86_64.{{ .Format }}"
-  head "https://github.com/{{ .Repo }}.git"
   version "{{ .Tag }}"
+  sha256 "{{ .SHA256 }}"
 
   def install
     bin.install "{{ .BinaryName }}"
@@ -36,7 +37,7 @@ end
 `
 
 type templateData struct {
-	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, Format string
+	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, Format, SHA256 string
 }
 
 // Pipe for brew deployment
@@ -78,7 +79,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 			},
 			Content: out.Bytes(),
 			Message: github.String(config.BinaryName + " version " + config.Git.CurrentTag),
-			SHA:     sha,
+			SHA256:  sha,
 		},
 	)
 	return err
@@ -118,7 +119,11 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 	owner, repo := split.OnSlash(config.Repo)
 	rep, _, err := client.Repositories.Get(owner, repo)
 	if err != nil {
-		return result, err
+		return
+	}
+	sum, err := sha256sum.For("dist/" + config.BinaryName + "_Darwin_x86_64." + config.Archive.Format)
+	if err != nil {
+		return
 	}
 	if rep.Homepage != nil && *rep.Homepage != "" {
 		homepage = *rep.Homepage
