@@ -21,7 +21,6 @@ const formulae = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
   url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .File }}.{{ .Format }}"
-  head "https://github.com/{{ .Repo }}.git"
   version "{{ .Tag }}"
   sha256 "{{ .SHA256 }}"
 
@@ -123,7 +122,11 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 	if err != nil {
 		return
 	}
-	sum, err := sha256sum.For("dist/" + config.BinaryName + "_Darwin_x86_64." + config.Archive.Format)
+	file, err := name.For(config, "darwin", "amd64")
+	if err != nil {
+		return
+	}
+	sum, err := sha256sum.For("dist/" + file + config.Archive.Format)
 	if err != nil {
 		return
 	}
@@ -137,10 +140,6 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 	} else {
 		description = *rep.Description
 	}
-	file, err := fileName(config)
-	if err != nil {
-		return result, err
-	}
 	return templateData{
 		Name:       formulaNameFor(config.BinaryName),
 		Desc:       description,
@@ -153,14 +152,6 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 		Format:     config.Archive.Format,
 		SHA256:     sum,
 	}, err
-}
-
-func fileName(config config.ProjectConfig) (string, error) {
-	return name.For(
-		config,
-		"#{%x(uname -s).gsub(/\n/, '')}",
-		"#{%x(uname -m).gsub(/\n/, '')}",
-	)
 }
 
 func formulaNameFor(name string) string {

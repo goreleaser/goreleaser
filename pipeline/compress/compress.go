@@ -8,7 +8,6 @@ import (
 	"github.com/goreleaser/releaser/name"
 	"github.com/goreleaser/releaser/pipeline/compress/tar"
 	"github.com/goreleaser/releaser/pipeline/compress/zip"
-	"github.com/goreleaser/releaser/uname"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -58,7 +57,7 @@ func create(system, arch string, config config.ProjectConfig) error {
 			return err
 		}
 	}
-	return addFile(tw, config.BinaryName+extFor(system), "dist/"+name+"/"+config.BinaryName)
+	return archive.Add(config.BinaryName+extFor(system), "dist/"+name+"/"+config.BinaryName)
 }
 
 func archiveFor(file *os.File, format string) Archive {

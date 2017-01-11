@@ -3,7 +3,6 @@ package brew
 import (
 	"testing"
 
-	"github.com/goreleaser/releaser/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,7 +25,7 @@ var defaultTemplateData = templateData{
 	Name:       "Test",
 	Repo:       "caarlos0/test",
 	Tag:        "v0.1.3",
-	File:       "test_#{%x(uname -s).gsub(/\\n/, '')}_#{%x(uname -m).gsub(/\\n/, '')}",
+	File:       "test_Darwin_x86_64",
 	SHA256:     "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
 	Format:     "tar.gz",
 }
@@ -61,17 +60,4 @@ func TestFormulaeNoCaveats(t *testing.T) {
 	formulae := out.String()
 	assertDefaultTemplateData(t, formulae)
 	assert.NotContains(formulae, "def caveats")
-}
-
-func TestFilename(t *testing.T) {
-	assert := assert.New(t)
-	name, err := fileName(config.ProjectConfig{
-		BinaryName:   "test",
-		NameTemplate: "{{.BinaryName}}_{{.Os}}_{{.Arch}}",
-		Git: config.GitInfo{
-			CurrentTag: "v1.2.3",
-		},
-	})
-	assert.NoError(err)
-	assert.Equal("test_#{%x(uname -s).gsub(/\n/, '')}_#{%x(uname -m).gsub(/\n/, '')}", name)
 }

@@ -115,7 +115,7 @@ func (config *ProjectConfig) fillBasicData() {
 	}
 	if config.NameTemplate == "" {
 		config.NameTemplate = "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
-  }
+	}
 	if config.Archive.Format == "" {
 		config.Archive.Format = "tar.gz"
 	}
