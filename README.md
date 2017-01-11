@@ -75,8 +75,8 @@ section:
 repo: user/repo
 binary_name: my-binary
 archive:
-	name_template: "{{.BinaryName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
-	format: tar.gz
+  name_template: "{{.BinaryName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+  format: tar.gz
 ```
 
 > Default is "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
