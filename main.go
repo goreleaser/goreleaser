@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/initialize"
 	"github.com/goreleaser/releaser/pipeline"
 	"github.com/goreleaser/releaser/pipeline/brew"
 	"github.com/goreleaser/releaser/pipeline/build"
@@ -34,6 +35,20 @@ func main() {
 			Value: "goreleaser.yml",
 		},
 	}
+	app.Commands = []cli.Command{
+		{
+			Name:  "init",
+			Usage: "Generate a skeleton releaser.yml file based on the origin remote of the repo",
+			Action: func(c *cli.Context) error {
+				if err := initialize.Init(); err != nil {
+					return cli.NewExitError(err.Error(), 1)
+				}
+				log.Println("gorelaser.yml created!")
+				return nil
+			},
+		},
+	}
+
 	app.Action = func(c *cli.Context) (err error) {
 		var file = c.String("config")
 		config, err := config.Load(file)
