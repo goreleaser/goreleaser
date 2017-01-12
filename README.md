@@ -44,7 +44,7 @@ To push a basic formulae a homebrew tap repo, just add a `brew` section:
 repo: user/repo
 binary_name: my-binary
 brew:
-  repo: user/homebrew-formulae
+  repo: user/homebrew-tap
   caveats: "Optional caveats to add to the formulae"
 ```
 
@@ -142,7 +142,7 @@ The release on github looks pretty much like this:
 [![image](https://cloud.githubusercontent.com/assets/245435/21578845/09404c8a-cf78-11e6-92d7-165ddc03ca6c.png)
 ](https://github.com/goreleaser/releaser/releases)
 
-And the [homebrew formulae](https://github.com/goreleaser/homebrew-formulae/blob/master/release.rb) would look like:
+And the [homebrew formulae](https://github.com/goreleaser/homebrew-tap/blob/master/release.rb) would look like:
 
 ```rb
 class Release < Formula
