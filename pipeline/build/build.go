@@ -35,16 +35,18 @@ func (Pipe) Run(config config.ProjectConfig) error {
 }
 
 func build(system, arch string, config config.ProjectConfig) error {
-	log.Println("Building", system+"/"+arch, "...")
 	name, err := config.ArchiveName(system, arch)
 	if err != nil {
 		return err
 	}
+	ldflags := config.Build.Ldflags + " -X main.version=" + config.Git.CurrentTag
+	output := "dist/" + name + "/" + config.BinaryName
+	log.Println("Building", output, "...")
 	cmd := exec.Command(
 		"go",
 		"build",
-		"-ldflags=-s -w -X main.version="+config.Git.CurrentTag,
-		"-o", "dist/"+name+"/"+config.BinaryName,
+		"-ldflags="+ldflags,
+		"-o", output,
 		config.Build.Main,
 	)
 	cmd.Env = append(
