@@ -18,7 +18,8 @@ So, the all-new goreleaser was born.
 
 ## Usage
 
-Create a `goreleaser.yml` file in the root of your repository. A minimal config would look like this:
+Create a `goreleaser.yml` file in the root of your repository. A minimal config
+would look like this:
 
 ```yaml
 repo: user/repo
@@ -30,6 +31,10 @@ You may then run releaser at the root of your repository:
 ```sh
 curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
 ```
+
+For that to work, you need to export a `GITHUB_TOKEN` environment variable with
+the `repo` scope selected. You can create one
+[here](https://github.com/settings/tokens/new).
 
 This will build `main.go` as `my-binary`, for `Darwin` and `Linux`
 (`amd64` and `i386`), archive the binary and common files as `.tar.gz`,
