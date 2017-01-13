@@ -54,9 +54,9 @@ func getOrCreateRelease(client *github.Client, config config.ProjectConfig) (*gi
 		Body:    github.String(description(config.Git.Diff)),
 	}
 	r, res, err := client.Repositories.GetReleaseByTag(owner, repo, config.Git.CurrentTag)
-	if res.StatusCode == 404 {
+	if err != nil && res.StatusCode == 404 {
 		log.Println("Creating release", config.Git.CurrentTag, "on", config.Repo, "...")
-		r, _, err := client.Repositories.CreateRelease(owner, repo, data)
+		r, _, err = client.Repositories.CreateRelease(owner, repo, data)
 		return r, err
 	}
 	log.Println("Updating existing release", config.Git.CurrentTag, "on", config.Repo, "...")
