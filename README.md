@@ -20,7 +20,8 @@ So, the all-new goreleaser was born.
 
 ## Usage
 
-Create a `goreleaser.yml` file in the root of your repository. A minimal config would look like this:
+Create a `goreleaser.yml` file in the root of your repository. A minimal config
+would look like this:
 
 ```yaml
 repo: user/repo
@@ -32,6 +33,10 @@ You may then run releaser at the root of your repository:
 ```sh
 curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
 ```
+
+For that to work, you need to export a `GITHUB_TOKEN` environment variable with
+the `repo` scope selected. You can create one
+[here](https://github.com/settings/tokens/new).
 
 This will build `main.go` as `my-binary`, for `Darwin` and `Linux`
 (`amd64` and `i386`), archive the binary and common files as `.tar.gz`,
@@ -59,6 +64,7 @@ repo: user/repo
 binary_name: my-binary
 build:
   main: ./cmd/main.go
+  ldflags: -s -w
   oses:
     - darwin
     - freebsd
@@ -66,7 +72,8 @@ build:
     - amd64
 ```
 
-> `oses` and `arches` should be in `GOOS`/`GOARCH`-compatible format.
+> - `oses` and `arches` should be in `GOOS`/`GOARCH`-compatible format.
+> - `-s -w` is the default value for `ldflags`.
 
 ### Archive customization
 
@@ -109,7 +116,7 @@ files:
 > By default GoReleaser adds the binary itself, `LICENCE*`, `LICENSE*`,
 `README*` and `CHANGELOG*`.
 
-### ldflags
+### ldflags (main.version)
 
 GoReleaser already sets a `main.version` ldflag, so, in you `main.go` program,
 you can:
