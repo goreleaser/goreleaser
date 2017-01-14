@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"log"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -58,8 +59,7 @@ func (Pipe) Run(config config.ProjectConfig) error {
 	client := github.NewClient(tc)
 
 	owner, repo := split.OnSlash(config.Brew.Repo)
-	path := config.BinaryName + ".rb"
-
+	path := filepath.Join(config.Brew.Folder, config.BinaryName+".rb")
 	log.Println("Updating", path, "on", config.Brew.Repo, "...")
 	out, err := buildFormulae(config, client)
 	if err != nil {
