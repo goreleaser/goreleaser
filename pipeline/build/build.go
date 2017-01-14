@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/context"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -20,34 +20,35 @@ func (Pipe) Name() string {
 }
 
 // Run the pipe
-func (Pipe) Run(config config.ProjectConfig) error {
+func (Pipe) Run(context *context.Context) error {
 	var g errgroup.Group
-	for _, system := range config.Build.Oses {
-		for _, arch := range config.Build.Arches {
+	for _, system := range context.Config.Build.Oses {
+		for _, arch := range context.Config.Build.Arches {
 			system := system
 			arch := arch
+			name, err := context.Config.ArchiveName(system, arch)
+			if err != nil {
+				return err
+			}
+			context.Archives = append(context.Archives, name)
 			g.Go(func() error {
-				return build(system, arch, config)
+				return build(name, system, arch, context)
 			})
 		}
 	}
 	return g.Wait()
 }
 
-func build(system, arch string, config config.ProjectConfig) error {
-	name, err := config.ArchiveName(system, arch)
-	if err != nil {
-		return err
-	}
-	ldflags := config.Build.Ldflags + " -X main.version=" + config.Git.CurrentTag
-	output := "dist/" + name + "/" + config.BinaryName
+func build(name, system, arch string, context *context.Context) error {
+	ldflags := context.Config.Build.Ldflags + " -X main.version=" + context.Git.CurrentTag
+	output := "dist/" + name + "/" + context.Config.BinaryName
 	log.Println("Building", output, "...")
 	cmd := exec.Command(
 		"go",
 		"build",
 		"-ldflags="+ldflags,
 		"-o", output,
-		config.Build.Main,
+		context.Config.Build.Main,
 	)
 	cmd.Env = append(
 		cmd.Env,

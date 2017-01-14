@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/context"
 	"github.com/goreleaser/releaser/pipeline/compress/tar"
 	"github.com/goreleaser/releaser/pipeline/compress/zip"
 	"golang.org/x/sync/errgroup"
@@ -19,16 +20,13 @@ func (Pipe) Name() string {
 }
 
 // Run the pipe
-func (Pipe) Run(config config.ProjectConfig) error {
+func (Pipe) Run(context *context.Context) error {
 	var g errgroup.Group
-	for _, system := range config.Build.Oses {
-		for _, arch := range config.Build.Arches {
-			system := system
-			arch := arch
-			g.Go(func() error {
-				return create(system, arch, config)
-			})
-		}
+	for _, archive := range context.Archives {
+		archive := archive
+		g.Go(func() error {
+			return create(archive, context)
+		})
 	}
 	return g.Wait()
 }
@@ -38,18 +36,14 @@ type Archive interface {
 	Add(name, path string) error
 }
 
-func create(system, arch string, config config.ProjectConfig) error {
-	name, err := config.ArchiveName(system, arch)
-	if err != nil {
-		return err
-	}
-	file, err := os.Create("dist/" + name + "." + config.Archive.Format)
+func create(archive string, context *context.Context) error {
+	file, err := os.Create("dist/" + archive + "." + context.Config.Archive.Format)
 	log.Println("Creating", file.Name(), "...")
 	if err != nil {
 		return err
 	}
 	defer func() { _ = file.Close() }()
-	var archive = archiveFor(file, config.Archive.Format)
+	var archive = archiveFor(file, context.Config.Archive.Format)
 	defer func() { _ = archive.Close() }()
 	for _, f := range config.Files {
 		if err := archive.Add(f, f); err != nil {

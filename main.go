@@ -5,19 +5,28 @@ import (
 	"os"
 
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/context"
 	"github.com/goreleaser/releaser/pipeline"
 	"github.com/goreleaser/releaser/pipeline/brew"
 	"github.com/goreleaser/releaser/pipeline/build"
 	"github.com/goreleaser/releaser/pipeline/compress"
+	"github.com/goreleaser/releaser/pipeline/defaults"
+	"github.com/goreleaser/releaser/pipeline/git"
 	"github.com/goreleaser/releaser/pipeline/release"
+	"github.com/goreleaser/releaser/pipeline/repos"
+	"github.com/goreleaser/releaser/pipeline/valid"
 	"github.com/urfave/cli"
 )
 
 var version = "master"
 
 var pipes = []pipeline.Pipe{
+	defaults.Pipe{},
+	valid.Pipe{},
+	git.Pipe{},
 	build.Pipe{},
 	compress.Pipe{},
+	repos.Pipe{},
 	release.Pipe{},
 	brew.Pipe{},
 }
@@ -40,9 +49,9 @@ func main() {
 		if err != nil {
 			return cli.NewExitError(err.Error(), 1)
 		}
-		log.Println("Releasing", config.Git.CurrentTag, "...")
+		context := context.New(config)
 		for _, pipe := range pipes {
-			if err := pipe.Run(config); err != nil {
+			if err := pipe.Run(context); err != nil {
 				return cli.NewExitError(pipe.Name()+" failed: "+err.Error(), 1)
 			}
 		}

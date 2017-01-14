@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/context"
 	"github.com/goreleaser/releaser/sha256sum"
 	"github.com/goreleaser/releaser/split"
 	"golang.org/x/oauth2"
@@ -48,8 +49,8 @@ func (Pipe) Name() string {
 }
 
 // Run the pipe
-func (Pipe) Run(config config.ProjectConfig) error {
-	if config.Brew.Repo == "" {
+func (Pipe) Run(context context.Context) error {
+	if context.Config.Brew.Repo == "" {
 		return nil
 	}
 	ts := oauth2.StaticTokenSource(

@@ -2,8 +2,7 @@ package git
 
 import "os/exec"
 
-// Log between two tags
-func Log(previous, current string) (str string, err error) {
+func log(previous, current string) (str string, err error) {
 	cmd := exec.Command(
 		"git",
 		"log",

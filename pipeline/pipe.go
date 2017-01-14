@@ -1,6 +1,6 @@
 package pipeline
 
-import "github.com/goreleaser/releaser/config"
+"github.com/goreleaser/releaser/config"
 
 // Pipe interface
 type Pipe interface {
@@ -8,5 +8,5 @@ type Pipe interface {
 	Name() string
 
 	// Run the pipe
-	Run(config config.ProjectConfig) error
+	Run(config context.Context) error
 }

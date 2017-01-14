@@ -8,21 +8,21 @@ import (
 
 func TestCurrentTag(t *testing.T) {
 	assert := assert.New(t)
-	tag, err := CurrentTag()
+	tag, err := currentTag()
 	assert.NoError(err)
 	assert.NotEmpty(tag)
 }
 
 func TestPreviousTag(t *testing.T) {
 	assert := assert.New(t)
-	tag, err := PreviousTag("v0.2.0")
+	tag, err := previousTag("v0.2.0")
 	assert.NoError(err)
 	assert.NotEmpty(tag)
 }
 
 func TestInvalidRef(t *testing.T) {
 	assert := assert.New(t)
-	tag, err := PreviousTag("this-should-not-exist")
+	tag, err := previousTag("this-should-not-exist")
 	assert.Error(err)
 	assert.Empty(tag)
 }
