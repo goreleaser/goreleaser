@@ -1,14 +1,12 @@
 package release
 
 import (
-	"context"
 	"log"
 	"os"
 	"os/exec"
 
 	"github.com/google/go-github/github"
-	"github.com/goreleaser/releaser/config"
-	"github.com/goreleaser/releaser/split"
+	"github.com/goreleaser/releaser/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
 )
@@ -22,44 +20,43 @@ func (Pipe) Name() string {
 }
 
 // Run the pipe
-func (Pipe) Run(config config.ProjectConfig) error {
+func (Pipe) Run(context *context.Context) error {
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: config.Token},
+		&oauth2.Token{AccessToken: context.Token},
 	)
 	tc := oauth2.NewClient(context.Background(), ts)
 	client := github.NewClient(tc)
 
-	r, err := getOrCreateRelease(client, config)
+	r, err := getOrCreateRelease(client, context)
 	if err != nil {
 		return err
 	}
 	var g errgroup.Group
-	for _, system := range config.Build.Oses {
-		for _, arch := range config.Build.Arches {
-			system := system
-			arch := arch
-			g.Go(func() error {
-				return upload(client, *r.ID, system, arch, config)
-			})
-		}
+	for _, archive := range context.Archives {
+		archive := archive
+		g.Go(func() error {
+			return upload(client, *r.ID, archive, context)
+		})
+
 	}
 	return g.Wait()
 }
 
-func getOrCreateRelease(client *github.Client, config config.ProjectConfig) (*github.RepositoryRelease, error) {
-	owner, repo := split.OnSlash(config.Repo)
+func getOrCreateRelease(client *github.Client, context *context.Context) (*github.RepositoryRelease, error) {
+	owner := context.Repo.Owner
+	repo := context.Repo.Name
 	data := &github.RepositoryRelease{
-		Name:    github.String(config.Git.CurrentTag),
-		TagName: github.String(config.Git.CurrentTag),
-		Body:    github.String(description(config.Git.Diff)),
+		Name:    github.String(context.Git.CurrentTag),
+		TagName: github.String(context.Git.CurrentTag),
+		Body:    github.String(description(context.Git.Diff)),
 	}
-	r, res, err := client.Repositories.GetReleaseByTag(owner, repo, config.Git.CurrentTag)
+	r, res, err := client.Repositories.GetReleaseByTag(owner, repo, context.Git.CurrentTag)
 	if err != nil && res.StatusCode == 404 {
-		log.Println("Creating release", config.Git.CurrentTag, "on", config.Repo, "...")
+		log.Println("Creating release", config.Git.CurrentTag, "on", context.Config.Repo, "...")
 		r, _, err = client.Repositories.CreateRelease(owner, repo, data)
 		return r, err
 	}
-	log.Println("Updating existing release", config.Git.CurrentTag, "on", config.Repo, "...")
+	log.Println("Updating existing release", config.Git.CurrentTag, "on", context.Config.Repo, "...")
 	r, _, err = client.Repositories.EditRelease(owner, repo, *r.ID, data)
 	return r, err
 }
@@ -74,26 +71,19 @@ func description(diff string) string {
 	return result + "\nBuilt with " + string(bts)
 }
 
-func upload(client *github.Client, releaseID int, system, arch string, config config.ProjectConfig) error {
-	owner, repo := split.OnSlash(config.Repo)
-	name, err := config.ArchiveName(system, arch)
+func upload(client *github.Client, releaseID int, archive string, context *context.Context) error {
+	archive = archive + "." + context.Config.Archive.Format
+	file, err := os.Open("dist/" + archive)
 	if err != nil {
 		return err
 	}
-	name = name + "." + config.Archive.Format
-	file, err := os.Open("dist/" + name)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		_ = file.Close()
-	}()
+	defer func() { _ = file.Close() }()
 	log.Println("Uploading", file.Name(), "...")
 	_, _, err = client.Repositories.UploadReleaseAsset(
-		owner,
-		repo,
+		context.Repo.Owner,
+		context.Repo.Name,
 		releaseID,
-		&github.UploadOptions{Name: name},
+		&github.UploadOptions{Name: archive},
 		file,
 	)
 	return err
