@@ -2,7 +2,7 @@ brew:
   repo: goreleaser/homebrew-tap
   folder: Formula
 build:
-  oses:
+  goos:
     - windows
     - darwin
     - linux
