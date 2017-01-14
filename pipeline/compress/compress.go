@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/goreleaser/releaser/context"
-	"github.com/goreleaser/releaser/pipeline/compress/tar"
-	"github.com/goreleaser/releaser/pipeline/compress/zip"
+	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/pipeline/compress/tar"
+	"github.com/goreleaser/goreleaser/pipeline/compress/zip"
 	"golang.org/x/sync/errgroup"
 )
 

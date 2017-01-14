@@ -3,7 +3,7 @@ package repos
 import (
 	"strings"
 
-	"github.com/goreleaser/releaser/context"
+	"github.com/goreleaser/goreleaser/context"
 )
 
 // Pipe for brew deployment
