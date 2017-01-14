@@ -38,7 +38,8 @@ type Archive interface {
 }
 
 func create(name string, ctx *context.Context) error {
-	file, err := os.Create("dist/" + name + "." + ctx.Config.Archive.Format)
+	folder := filepath.Join("dist", name)
+	file, err := os.Create(folder + "." + ctx.Config.Archive.Format)
 	log.Println("Creating", file.Name(), "...")
 	if err != nil {
 		return err
@@ -51,13 +52,12 @@ func create(name string, ctx *context.Context) error {
 			return err
 		}
 	}
-	folder := filepath.Join("dist", name)
 	files, err := ioutil.ReadDir(folder)
 	if err != nil {
 		return err
 	}
 	for _, f := range files {
-		if err := archive.Add(file.Name(), filepath.Join(folder, f.Name())); err != nil {
+		if err := archive.Add(f.Name(), filepath.Join(folder, f.Name())); err != nil {
 			return err
 		}
 	}
