@@ -8,7 +8,7 @@ pushes a Homebrew formulae to a repository. All that wrapped in your favorite CI
 This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code. Please report unacceptable behavior to root@carlosbecker.com.
 
-[![Build Status](https://travis-ci.org/goreleaser/releaser.svg?branch=master)](https://travis-ci.org/goreleaser/releaser) [![Go Report Card](https://goreportcard.com/badge/github.com/goreleaser/releaser)](https://goreportcard.com/report/github.com/goreleaser/releaser) [![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square)](https://github.com/goreleaser)
+[![Build Status](https://travis-ci.org/goreleaser/goreleaser.svg?branch=master)](https://travis-ci.org/goreleaser/goreleaser) [![Go Report Card](https://goreportcard.com/badge/github.com/goreleaser/goreleaser)](https://goreportcard.com/report/github.com/goreleaser/goreleaser) [![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square)](https://github.com/goreleaser)
 
 ## How it works?
 
@@ -156,15 +156,15 @@ after_success:
 The release on Github looks pretty much like this:
 
 [![image](https://cloud.githubusercontent.com/assets/245435/21578845/09404c8a-cf78-11e6-92d7-165ddc03ca6c.png)
-](https://github.com/goreleaser/releaser/releases)
+](https://github.com/goreleaser/goreleaser/releases)
 
 And the [Homebrew formulae](https://github.com/goreleaser/homebrew-tap/blob/master/release.rb) would look like:
 
 ```rb
 class Release < Formula
   desc "Deliver Go binaries as fast and easily as possible"
-  homepage "https://github.com/goreleaser/releaser"
-  url "https://github.com/goreleaser/releaser/releases/download/v0.2.8/release_Darwin_x86_64.tar.gz"
+  homepage "https://github.com/goreleaser/goreleaser"
+  url "https://github.com/goreleaser/goreleaser/releases/download/v0.2.8/release_Darwin_x86_64.tar.gz"
   version "v0.2.8"
   sha256 "9ee30fc358fae8d248a2d7538957089885da321dca3f09e3296fe2058e7fff74"
 

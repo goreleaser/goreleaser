@@ -1,5 +1,3 @@
-repo: goreleaser/releaser
-binary_name: goreleaser
 brew:
   repo: goreleaser/homebrew-tap
   folder: Formula
