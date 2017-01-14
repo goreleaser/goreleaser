@@ -16,6 +16,7 @@ var filePatterns = []string{"LICENCE*", "LICENSE*", "README*", "CHANGELOG*"}
 // Homebrew contains the brew section
 type Homebrew struct {
 	Repo    string
+	Folder  string
 	Token   string `yaml:"-"`
 	Caveats string
 }

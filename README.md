@@ -55,6 +55,7 @@ repo: user/repo
 binary_name: my-binary
 brew:
   repo: user/homebrew-tap
+  folder: optional/subfolder/inside/the/repo
   caveats: "Optional caveats to add to the formulae"
 ```
 
