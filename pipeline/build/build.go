@@ -22,26 +22,26 @@ func (Pipe) Name() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	for _, system := range ctx.Config.Build.Oses {
-		for _, arch := range ctx.Config.Build.Arches {
-			system := system
-			arch := arch
-			name, err := ctx.ArchiveName(system, arch)
+	for _, goos := range ctx.Config.Build.Oses {
+		for _, goarch := range ctx.Config.Build.Arches {
+			goos := goos
+			goarch := goarch
+			name, err := nameFor(ctx, goos, goarch)
 			if err != nil {
 				return err
 			}
-			ctx.Archives = append(ctx.Archives, name)
+			ctx.Archives[goos+goarch] = name
 			g.Go(func() error {
-				return build(name, system, arch, ctx)
+				return build(name, goos, goarch, ctx)
 			})
 		}
 	}
 	return g.Wait()
 }
 
-func build(name, system, arch string, ctx *context.Context) error {
+func build(name, goos, goarch string, ctx *context.Context) error {
 	ldflags := ctx.Config.Build.Ldflags + " -X main.version=" + ctx.Git.CurrentTag
-	output := "dist/" + name + "/" + ctx.Config.BinaryName + extFor(system)
+	output := "dist/" + name + "/" + ctx.Config.BinaryName + extFor(goos)
 	log.Println("Building", output, "...")
 	cmd := exec.Command(
 		"go",
@@ -52,8 +52,8 @@ func build(name, system, arch string, ctx *context.Context) error {
 	)
 	cmd.Env = append(
 		cmd.Env,
-		"GOOS="+system,
-		"GOARCH="+arch,
+		"GOOS="+goos,
+		"GOARCH="+goarch,
 		"GOROOT="+os.Getenv("GOROOT"),
 		"GOPATH="+os.Getenv("GOPATH"),
 	)
@@ -64,11 +64,4 @@ func build(name, system, arch string, ctx *context.Context) error {
 		return errors.New(stdout.String())
 	}
 	return nil
-}
-
-func extFor(system string) string {
-	if system == "windows" {
-		return ".exe"
-	}
-	return ""
 }

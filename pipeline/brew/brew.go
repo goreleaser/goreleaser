@@ -109,10 +109,7 @@ func dataFor(ctx *context.Context, client *github.Client) (result templateData, 
 	if err != nil {
 		return
 	}
-	file, err := ctx.ArchiveName("darwin", "amd64")
-	if err != nil {
-		return
-	}
+	file := ctx.Archives["darwinamd64"]
 	sum, err := sha256sum.For("dist/" + file + "." + ctx.Config.Archive.Format)
 	if err != nil {
 		return
