@@ -27,6 +27,9 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 			return errors.New("failed reading repo from Git: " + err.Error())
 		}
 	}
+	if ctx.Config.BinaryName == "" {
+		ctx.Config.BinaryName = strings.Split(ctx.Config.Repo, "/")[1]
+	}
 	if ctx.Config.Build.Main == "" {
 		ctx.Config.Build.Main = "main.go"
 	}
