@@ -50,7 +50,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Brew.Repo == "" {
 		return nil
 	}
-	client := clients.Github(*ctx.Token)
+	client := clients.GitHub(*ctx.Token)
 	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.BinaryName+".rb")
 
 	log.Println("Updating", path, "on", ctx.Config.Brew.Repo, "...")

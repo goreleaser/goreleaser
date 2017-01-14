@@ -21,7 +21,7 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	client := clients.Github(*ctx.Token)
+	client := clients.GitHub(*ctx.Token)
 
 	r, err := getOrCreateRelease(client, ctx)
 	if err != nil {
