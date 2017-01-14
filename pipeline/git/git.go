@@ -11,7 +11,7 @@ func (Pipe) Name() string {
 }
 
 // Run the pipe
-func (Pipe) Run(context *context.Context) (err error) {
+func (Pipe) Run(ctx *context.Context) (err error) {
 	tag, err := currentTag()
 	if err != nil {
 		return
@@ -25,8 +25,10 @@ func (Pipe) Run(context *context.Context) (err error) {
 		return
 	}
 
-	context.Git.CurrentTag = tag
-	context.Git.PreviousTag = previous
-	context.Git.Diff = log
+	ctx.Git = &context.GitInfo{
+		CurrentTag:  tag,
+		PreviousTag: previous,
+		Diff:        log,
+	}
 	return
 }

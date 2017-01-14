@@ -1,26 +1,28 @@
-package valid
+package env
 
 import (
 	"errors"
+	"os"
 
 	"github.com/goreleaser/releaser/context"
 )
 
-// Pipe for brew deployment
+var ErrMissingToken = errors.New("Missing GITHUB_TOKEN")
+
+// Pipe for env
 type Pipe struct{}
 
 // Name of the pipe
 func (Pipe) Name() string {
-	return "Valid"
+	return "Env"
 }
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
-	if ctx.Config.BinaryName == "" {
-		return errors.New("missing binary_name")
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		return ErrMissingToken
 	}
-	if ctx.Config.Repo == "" {
-		return errors.New("missing repo")
-	}
+	ctx.Token = &token
 	return
 }

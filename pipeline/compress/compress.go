@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/goreleaser/releaser/context"
 	"github.com/goreleaser/releaser/pipeline/compress/tar"
@@ -20,12 +21,12 @@ func (Pipe) Name() string {
 }
 
 // Run the pipe
-func (Pipe) Run(context *context.Context) error {
+func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	for _, archive := range context.Archives {
+	for _, archive := range ctx.Archives {
 		archive := archive
 		g.Go(func() error {
-			return create(archive, context)
+			return create(archive, ctx)
 		})
 	}
 	return g.Wait()
@@ -36,26 +37,27 @@ type Archive interface {
 	Add(name, path string) error
 }
 
-func create(archive string, context *context.Context) error {
-	file, err := os.Create("dist/" + archive + "." + context.Config.Archive.Format)
+func create(name string, ctx *context.Context) error {
+	file, err := os.Create("dist/" + name + "." + ctx.Config.Archive.Format)
 	log.Println("Creating", file.Name(), "...")
 	if err != nil {
 		return err
 	}
 	defer func() { _ = file.Close() }()
-	var archive = archiveFor(file, context.Config.Archive.Format)
+	var archive = archiveFor(file, ctx.Config.Archive.Format)
 	defer func() { _ = archive.Close() }()
-	for _, f := range context.Config.Files {
+	for _, f := range ctx.Config.Files {
 		if err := archive.Add(f, f); err != nil {
 			return err
 		}
 	}
-	files, err := ioutil.ReadDir("dist/" + name)
+	folder := filepath.Join("dist", name)
+	files, err := ioutil.ReadDir(folder)
 	if err != nil {
 		return err
 	}
 	for _, f := range files {
-		if err := archive.Add(file.Name(), f); err != nil {
+		if err := archive.Add(file.Name(), filepath.Join(folder, f.Name())); err != nil {
 			return err
 		}
 	}

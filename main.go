@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/releaser/pipeline/build"
 	"github.com/goreleaser/releaser/pipeline/compress"
 	"github.com/goreleaser/releaser/pipeline/defaults"
+	"github.com/goreleaser/releaser/pipeline/env"
 	"github.com/goreleaser/releaser/pipeline/git"
 	"github.com/goreleaser/releaser/pipeline/release"
 	"github.com/goreleaser/releaser/pipeline/repos"
@@ -21,12 +22,18 @@ import (
 var version = "master"
 
 var pipes = []pipeline.Pipe{
+	// load data, set defaults, etc...
 	defaults.Pipe{},
-	valid.Pipe{},
+	env.Pipe{},
 	git.Pipe{},
+	repos.Pipe{},
+
+	// validate
+	valid.Pipe{},
+
+	// real work
 	build.Pipe{},
 	compress.Pipe{},
-	repos.Pipe{},
 	release.Pipe{},
 	brew.Pipe{},
 }
@@ -50,10 +57,14 @@ func main() {
 			return cli.NewExitError(err.Error(), 1)
 		}
 		context := context.New(config)
+		log.SetFlags(0)
 		for _, pipe := range pipes {
+			log.Println("Executing pipe", pipe.Name(), "...")
+			log.SetPrefix(" -> ")
 			if err := pipe.Run(context); err != nil {
 				return cli.NewExitError(pipe.Name()+" failed: "+err.Error(), 1)
 			}
+			log.SetPrefix("")
 		}
 		log.Println("Done!")
 		return

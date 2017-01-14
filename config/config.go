@@ -21,6 +21,13 @@ type BuildConfig struct {
 	Ldflags string
 }
 
+// ArchiveConfig config used for the archive
+type ArchiveConfig struct {
+	Format       string
+	NameTemplate string `yaml:"name_template"`
+	Replacements map[string]string
+}
+
 // ProjectConfig includes all project configuration
 type ProjectConfig struct {
 	Repo       string

@@ -1,7 +1,6 @@
 package repos
 
 import (
-	"context"
 	"strings"
 
 	"github.com/goreleaser/releaser/context"
@@ -16,13 +15,17 @@ func (Pipe) Name() string {
 }
 
 // Run the pipe
-func (Pipe) Run(context *context.Context) (err error) {
-	owner, name := split(context.Config.Repo)
-	context.Repo.Owner = owner
-	context.Repo.Name = name
-	owner, name = split(context.Config.Brew.Repo)
-	context.BrewRepo.Owner = owner
-	context.BrewRepo.Name = name
+func (Pipe) Run(ctx *context.Context) (err error) {
+	owner, name := split(ctx.Config.Repo)
+	ctx.Repo = &context.Repo{
+		Owner: owner,
+		Name:  name,
+	}
+	owner, name = split(ctx.Config.Brew.Repo)
+	ctx.BrewRepo = &context.Repo{
+		Owner: owner,
+		Name:  name,
+	}
 	return
 }
 

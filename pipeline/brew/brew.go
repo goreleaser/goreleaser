@@ -2,17 +2,15 @@ package brew
 
 import (
 	"bytes"
-	"context"
+	goctx "context"
 	"log"
 	"path/filepath"
 	"strings"
 	"text/template"
 
 	"github.com/google/go-github/github"
-	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/context"
 	"github.com/goreleaser/releaser/sha256sum"
-	"github.com/goreleaser/releaser/split"
 	"golang.org/x/oauth2"
 )
 
@@ -49,20 +47,24 @@ func (Pipe) Name() string {
 }
 
 // Run the pipe
-func (Pipe) Run(context context.Context) error {
-	if context.Config.Brew.Repo == "" {
+func (Pipe) Run(ctx *context.Context) error {
+	if ctx.Config.Brew.Repo == "" {
 		return nil
 	}
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: config.Token},
+		&oauth2.Token{AccessToken: *ctx.Token},
 	)
-	tc := oauth2.NewClient(context.Background(), ts)
+	tc := oauth2.NewClient(goctx.Background(), ts)
 	client := github.NewClient(tc)
 
-	owner, repo := split.OnSlash(config.Brew.Repo)
-	path := filepath.Join(config.Brew.Folder, config.BinaryName+".rb")
-	log.Println("Updating", path, "on", config.Brew.Repo, "...")
-	out, err := buildFormulae(config, client)
+	owner := ctx.BrewRepo.Owner
+	repo := ctx.BrewRepo.Name
+	path := filepath.Join(
+		ctx.Config.Brew.Folder,
+		ctx.Config.BinaryName+".rb",
+	)
+	log.Println("Updating", path, "on", ctx.Config.Brew.Repo, "...")
+	out, err := buildFormulae(ctx, client)
 	if err != nil {
 		return err
 	}
@@ -73,7 +75,9 @@ func (Pipe) Run(context context.Context) error {
 			Email: github.String("bot@goreleaser"),
 		},
 		Content: out.Bytes(),
-		Message: github.String(config.BinaryName + " version " + config.Git.CurrentTag),
+		Message: github.String(
+			ctx.Config.BinaryName + " version " + ctx.Git.CurrentTag,
+		),
 	}
 
 	file, _, res, err := client.Repositories.GetContents(
@@ -88,8 +92,8 @@ func (Pipe) Run(context context.Context) error {
 	return err
 }
 
-func buildFormulae(config config.ProjectConfig, client *github.Client) (bytes.Buffer, error) {
-	data, err := dataFor(config, client)
+func buildFormulae(ctx *context.Context, client *github.Client) (bytes.Buffer, error) {
+	data, err := dataFor(ctx, client)
 	if err != nil {
 		return bytes.Buffer{}, err
 	}
@@ -106,19 +110,18 @@ func doBuildFormulae(data templateData) (bytes.Buffer, error) {
 	return out, err
 }
 
-func dataFor(config config.ProjectConfig, client *github.Client) (result templateData, err error) {
+func dataFor(ctx *context.Context, client *github.Client) (result templateData, err error) {
 	var homepage string
 	var description string
-	owner, repo := split.OnSlash(config.Repo)
-	rep, _, err := client.Repositories.Get(owner, repo)
+	rep, _, err := client.Repositories.Get(ctx.Repo.Owner, ctx.Repo.Name)
 	if err != nil {
 		return
 	}
-	file, err := config.ArchiveName("darwin", "amd64")
+	file, err := ctx.ArchiveName("darwin", "amd64")
 	if err != nil {
 		return
 	}
-	sum, err := sha256sum.For("dist/" + file + "." + config.Archive.Format)
+	sum, err := sha256sum.For("dist/" + file + "." + ctx.Config.Archive.Format)
 	if err != nil {
 		return
 	}
@@ -133,15 +136,15 @@ func dataFor(config config.ProjectConfig, client *github.Client) (result templat
 		description = *rep.Description
 	}
 	return templateData{
-		Name:       formulaNameFor(config.BinaryName),
+		Name:       formulaNameFor(ctx.Config.BinaryName),
 		Desc:       description,
 		Homepage:   homepage,
-		Repo:       config.Repo,
-		Tag:        config.Git.CurrentTag,
-		BinaryName: config.BinaryName,
-		Caveats:    config.Brew.Caveats,
+		Repo:       ctx.Config.Repo,
+		Tag:        ctx.Git.CurrentTag,
+		BinaryName: ctx.Config.BinaryName,
+		Caveats:    ctx.Config.Brew.Caveats,
 		File:       file,
-		Format:     config.Archive.Format,
+		Format:     ctx.Config.Archive.Format,
 		SHA256:     sum,
 	}, err
 }

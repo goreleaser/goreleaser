@@ -19,27 +19,27 @@ func (Pipe) Name() string {
 }
 
 // Run the pipe
-func (Pipe) Run(context *context.Context) (err error) {
-	if context.Config.Build.Main == "" {
-		context.Config.Build.Main = "main.go"
+func (Pipe) Run(ctx *context.Context) (err error) {
+	if ctx.Config.Build.Main == "" {
+		ctx.Config.Build.Main = "main.go"
 	}
-	if len(context.Config.Build.Oses) == 0 {
-		context.Config.Build.Oses = []string{"linux", "darwin"}
+	if len(ctx.Config.Build.Oses) == 0 {
+		ctx.Config.Build.Oses = []string{"linux", "darwin"}
 	}
-	if len(context.Config.Build.Arches) == 0 {
-		context.Config.Build.Arches = []string{"amd64", "386"}
+	if len(ctx.Config.Build.Arches) == 0 {
+		ctx.Config.Build.Arches = []string{"amd64", "386"}
 	}
-	if context.Config.Build.Ldflags == "" {
-		context.Config.Build.Ldflags = "-s -w"
+	if ctx.Config.Build.Ldflags == "" {
+		ctx.Config.Build.Ldflags = "-s -w"
 	}
-	if context.Config.Archive.NameTemplate == "" {
-		context.Config.Archive.NameTemplate = "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
+	if ctx.Config.Archive.NameTemplate == "" {
+		ctx.Config.Archive.NameTemplate = "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
 	}
-	if context.Config.Archive.Format == "" {
-		context.Config.Archive.Format = "tar.gz"
+	if ctx.Config.Archive.Format == "" {
+		ctx.Config.Archive.Format = "tar.gz"
 	}
-	if len(context.Config.Archive.Replacements) == 0 {
-		context.Config.Archive.Replacements = map[string]string{
+	if len(ctx.Config.Archive.Replacements) == 0 {
+		ctx.Config.Archive.Replacements = map[string]string{
 			"darwin":  "Darwin",
 			"linux":   "Linux",
 			"freebsd": "FreeBSD",
@@ -50,17 +50,17 @@ func (Pipe) Run(context *context.Context) (err error) {
 			"amd64":   "x86_64",
 		}
 	}
-	if len(context.Config.Files) != 0 {
+	if len(ctx.Config.Files) != 0 {
 		return
 	}
-	context.Config.Files = []string{}
+	ctx.Config.Files = []string{}
 	for _, pattern := range filePatterns {
 		matches, err := globPath(pattern)
 		if err != nil {
 			return err
 		}
 
-		context.Config.Files = append(context.Config.Files, matches...)
+		ctx.Config.Files = append(ctx.Config.Files, matches...)
 	}
 	return
 }
