@@ -6,8 +6,8 @@ import "github.com/goreleaser/releaser/context"
 type Pipe struct{}
 
 // Name of the pipe
-func (Pipe) Name() string {
-	return "Git"
+func (Pipe) Description() string {
+	return "Gathering Git data..."
 }
 
 // Run the pipe

@@ -10,8 +10,8 @@ import (
 type Pipe struct{}
 
 // Name of the pipe
-func (Pipe) Name() string {
-	return "Repos"
+func (Pipe) Description() string {
+	return "Filling repositories data..."
 }
 
 // Run the pipe

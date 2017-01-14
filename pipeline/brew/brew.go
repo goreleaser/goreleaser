@@ -41,8 +41,8 @@ type templateData struct {
 type Pipe struct{}
 
 // Name of the pipe
-func (Pipe) Name() string {
-	return "Homebrew"
+func (Pipe) Description() string {
+	return "Creating homebrew formulae..."
 }
 
 // Run the pipe

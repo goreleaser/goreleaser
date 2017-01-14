@@ -10,8 +10,8 @@ import (
 type Pipe struct{}
 
 // Name of the pipe
-func (Pipe) Name() string {
-	return "Valid"
+func (Pipe) Description() string {
+	return "Validating configuration..."
 }
 
 // Run the pipe

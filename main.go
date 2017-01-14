@@ -59,10 +59,10 @@ func main() {
 		context := context.New(config)
 		log.SetFlags(0)
 		for _, pipe := range pipes {
-			log.Println("Executing pipe", pipe.Name(), "...")
+			log.Println(pipe.Description())
 			log.SetPrefix(" -> ")
 			if err := pipe.Run(context); err != nil {
-				return cli.NewExitError(pipe.Name()+" failed: "+err.Error(), 1)
+				return cli.NewExitError(err.Error(), 1)
 			}
 			log.SetPrefix("")
 		}

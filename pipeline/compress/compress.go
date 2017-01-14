@@ -16,8 +16,8 @@ import (
 type Pipe struct{}
 
 // Name of the pipe
-func (Pipe) Name() string {
-	return "Compress"
+func (Pipe) Description() string {
+	return "Creating archives..."
 }
 
 // Run the pipe

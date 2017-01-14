@@ -13,8 +13,8 @@ var defaultFiles = []string{"LICENCE", "LICENSE", "README", "CHANGELOG"}
 type Pipe struct{}
 
 // Name of the pipe
-func (Pipe) Name() string {
-	return "Defaults"
+func (Pipe) Description() string {
+	return "Setting defaults..."
 }
 
 // Run the pipe

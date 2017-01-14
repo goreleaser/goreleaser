@@ -15,8 +15,8 @@ import (
 type Pipe struct{}
 
 // Name of the pipe
-func (Pipe) Name() string {
-	return "Build"
+func (Pipe) Description() string {
+	return "Building..."
 }
 
 // Run the pipe

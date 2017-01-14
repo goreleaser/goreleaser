@@ -15,8 +15,8 @@ import (
 type Pipe struct{}
 
 // Name of the pipe
-func (Pipe) Name() string {
-	return "GithubRelease"
+func (Pipe) Description() string {
+	return "Releasing to GitHub..."
 }
 
 // Run the pipe
