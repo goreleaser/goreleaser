@@ -3,26 +3,30 @@ package valid
 import (
 	"testing"
 
+	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/context"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidadeMissingBinaryName(t *testing.T) {
-	assert := assert.New(t)
+func runPipe(repo, bin string) error {
+	var config = &config.ProjectConfig{
+		Repo:       repo,
+		BinaryName: bin,
+	}
+	var ctx = &context.Context{
+		Config: config,
+	}
+	return Pipe{}.Run(ctx)
+}
 
-	config := ProjectConfig{Repo: "asd/asd"}
-	assert.Error(config.validate())
+func TestValidadeMissingBinaryName(t *testing.T) {
+	assert.Error(t, runPipe("a/b", ""))
 }
 
 func TestValidadeMissingRepo(t *testing.T) {
-	assert := assert.New(t)
-
-	config := ProjectConfig{BinaryName: "asd"}
-	assert.Error(config.validate())
+	assert.Error(t, runPipe("", "a"))
 }
 
 func TestValidadeMinimalConfig(t *testing.T) {
-	assert := assert.New(t)
-
-	config := ProjectConfig{BinaryName: "asd", Repo: "asd/asd"}
-	assert.NoError(config.validate())
+	assert.NoError(t, runPipe("a/b", "a"))
 }
