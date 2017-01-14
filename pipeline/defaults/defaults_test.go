@@ -18,7 +18,7 @@ func TestFillBasicData(t *testing.T) {
 
 	assert.NoError(Pipe{}.Run(ctx))
 
-	assert.Equal("goreleaser/gogoreleaser", config.Repo)
+	assert.Equal("goreleaser/goreleaser", config.Repo)
 	assert.Equal("goreleaser", config.BinaryName)
 	assert.Equal("main.go", config.Build.Main)
 	assert.Equal("tar.gz", config.Archive.Format)
