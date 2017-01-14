@@ -3,7 +3,7 @@
 <img src="https://avatars2.githubusercontent.com/u/24697112?v=3&s=200" alt="goreleaser" align="right" />
 
 GoReleaser builds Go binaries for several platforms, creates a Github release and then
-push a Homebrew formulae to a repository. All that wrapped in your favorite CI.
+pushes a Homebrew formulae to a repository. All that wrapped in your favorite CI.
 
 This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code. Please report unacceptable behavior to root@carlosbecker.com.
@@ -20,16 +20,13 @@ So, the all-new goreleaser was born.
 
 ## Usage
 
-You may then run releaser at the root of your repository:
+- You need to export a `GITHUB_TOKEN` environment variable with
+the `repo` scope selected. You can create one [here](https://github.com/settings/tokens/new).
 
-You need to export a `GITHUB_TOKEN` environment variable with
-the `repo` scope selected. You can create one
-[here](https://github.com/settings/tokens/new).
-
-GoReleaser uses the latest [Git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of your repository,
+- GoReleaser uses the latest [Git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of your repository,
 so you need to [create a tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging#Annotated-Tags) first.
 
-Now you can run `releaser` at the root of your repository:
+- Now you can run `releaser` at the root of your repository:
 
 ```sh
 curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
@@ -113,8 +110,7 @@ files:
 
 ### ldflags (main.version)
 
-GoReleaser already sets a `main.version` ldflag, so, in you `main.go` program,
-you can:
+GoReleaser always sets a `main.version` ldflag. You can use it in your `main.go` file:
 
 ```go
 package main
@@ -126,7 +122,7 @@ func main() {
 }
 ```
 
-And this version will always be the tag name.
+And this version will always be the name of the current tag.
 
 
 ### Other customizations
@@ -146,9 +142,9 @@ binary_name: my-binary
 ```
 
 
-## Wire it with travis-ci
+## Wire it with Travis CI
 
-You may want to wire this to auto-deploy your new tags on travis, for example:
+You may want to wire this to auto-deploy your new tags on Travis, for example:
 
 ```yaml
 after_success:
