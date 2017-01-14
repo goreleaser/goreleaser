@@ -41,7 +41,7 @@ func (Pipe) Run(context *context.Context) error {
 
 func build(name, system, arch string, context *context.Context) error {
 	ldflags := context.Config.Build.Ldflags + " -X main.version=" + context.Git.CurrentTag
-	output := "dist/" + name + "/" + context.Config.BinaryName
+	output := "dist/" + name + "/" + context.Config.BinaryName + extFor(system)
 	log.Println("Building", output, "...")
 	cmd := exec.Command(
 		"go",
@@ -64,4 +64,11 @@ func build(name, system, arch string, context *context.Context) error {
 		return errors.New(stdout.String())
 	}
 	return nil
+}
+
+func extFor(system string) string {
+	if system == "windows" {
+		return ".exe"
+	}
+	return ""
 }

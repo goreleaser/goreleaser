@@ -1,10 +1,10 @@
 package compress
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 
-	"github.com/goreleaser/releaser/config"
 	"github.com/goreleaser/releaser/context"
 	"github.com/goreleaser/releaser/pipeline/compress/tar"
 	"github.com/goreleaser/releaser/pipeline/compress/zip"
@@ -45,12 +45,21 @@ func create(archive string, context *context.Context) error {
 	defer func() { _ = file.Close() }()
 	var archive = archiveFor(file, context.Config.Archive.Format)
 	defer func() { _ = archive.Close() }()
-	for _, f := range config.Files {
+	for _, f := range context.Config.Files {
 		if err := archive.Add(f, f); err != nil {
 			return err
 		}
 	}
-	return archive.Add(config.BinaryName+extFor(system), "dist/"+name+"/"+config.BinaryName)
+	files, err := ioutil.ReadDir("dist/" + name)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		if err := archive.Add(file.Name(), f); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func archiveFor(file *os.File, format string) Archive {
@@ -58,11 +67,4 @@ func archiveFor(file *os.File, format string) Archive {
 		return zip.New(file)
 	}
 	return tar.New(file)
-}
-
-func extFor(system string) string {
-	if system == "windows" {
-		return ".exe"
-	}
-	return ""
 }
