@@ -1,6 +1,6 @@
 package git
 
-import "github.com/goreleaser/releaser/context"
+import "github.com/goreleaser/goreleaser/context"
 
 // Pipe for brew deployment
 type Pipe struct{}

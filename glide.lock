@@ -1,5 +1,5 @@
-hash: 93b83079095ba0cb4b5244840032b91adc415e658a36e8ed709743a53cd9197f
-updated: 2016-12-31T13:46:04.437121081-02:00
+hash: 4ae97a8ee2374ccb3e4730069be4fe7cd9f222861add5633ebf82cbbee99025e
+updated: 2017-01-14T20:01:15.582114617-02:00
 imports:
 - name: github.com/golang/protobuf
   version: 8ee79997227bf9b34611aee7946ae64735e6fd93
@@ -16,7 +16,7 @@ imports:
 - name: github.com/urfave/cli
   version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 - name: golang.org/x/net
-  version: 8fd7f25955530b92e73e9e1932a41b522b22ccd9
+  version: 6d3beaea10370160dea67f5c9327ed791afd5389
   subpackages:
   - context
 - name: golang.org/x/oauth2
@@ -24,7 +24,7 @@ imports:
   subpackages:
   - internal
 - name: golang.org/x/sync
-  version: 450f422ab23cf9881c94e2db30cac0eb1b7cf80c
+  version: 316e794f7b5e3df4e95175a45a5fb8b12f85cb4f
   subpackages:
   - errgroup
 - name: google.golang.org/appengine

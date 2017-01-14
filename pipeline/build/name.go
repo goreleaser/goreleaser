@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"text/template"
 
-	"github.com/goreleaser/releaser/context"
+	"github.com/goreleaser/goreleaser/context"
 )
 
 type nameData struct {

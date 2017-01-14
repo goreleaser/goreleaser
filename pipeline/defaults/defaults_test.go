@@ -3,8 +3,8 @@ package defaults
 import (
 	"testing"
 
-	"github.com/goreleaser/releaser/config"
-	"github.com/goreleaser/releaser/context"
+	"github.com/goreleaser/goreleaser/config"
+	"github.com/goreleaser/goreleaser/context"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,8 +18,8 @@ func TestFillBasicData(t *testing.T) {
 
 	assert.NoError(Pipe{}.Run(ctx))
 
-	assert.Equal("goreleaser/releaser", config.Release.Repo)
-	assert.Equal("releaser", config.Build.BinaryName)
+	assert.Equal("goreleaser/releaser", config.Repo)
+	assert.Equal("releaser", config.BinaryName)
 	assert.Equal("main.go", config.Build.Main)
 	assert.Equal("tar.gz", config.Archive.Format)
 	assert.Contains(config.Build.Goos, "darwin")

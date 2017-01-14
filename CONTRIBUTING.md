@@ -16,7 +16,7 @@ Prerequisites are:
 Clone `releaser` from source:
 
 ```sh
-$ git clone https://github.com/goreleaser/releaser.git
+$ git clone https://github.com/goreleaser/goreleaser.git
 $ cd releaser
 ```
 
