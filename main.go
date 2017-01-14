@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/releaser/pipeline"
 	"github.com/goreleaser/releaser/pipeline/brew"
 	"github.com/goreleaser/releaser/pipeline/build"
+	"github.com/goreleaser/releaser/pipeline/cleanup"
 	"github.com/goreleaser/releaser/pipeline/compress"
 	"github.com/goreleaser/releaser/pipeline/defaults"
 	"github.com/goreleaser/releaser/pipeline/env"
@@ -36,6 +37,7 @@ var pipes = []pipeline.Pipe{
 	compress.Pipe{},
 	release.Pipe{},
 	brew.Pipe{},
+	cleanup.Pipe{},
 }
 
 func main() {
