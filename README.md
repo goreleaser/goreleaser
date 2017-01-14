@@ -1,4 +1,4 @@
-# GoReleaser 
+# GoReleaser
 
 <img src="https://avatars2.githubusercontent.com/u/24697112?v=3&s=200" alt="goreleaser" align="right" />
 
@@ -37,6 +37,9 @@ curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
 For that to work, you need to export a `GITHUB_TOKEN` environment variable with
 the `repo` scope selected. You can create one
 [here](https://github.com/settings/tokens/new).
+
+GoReleaser uses the latest [Git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of your repository,
+so you need to [create a tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging#Annotated-Tags) first.
 
 This will build `main.go` as `my-binary`, for `Darwin` and `Linux`
 (`amd64` and `i386`), archive the binary and common files as `.tar.gz`,
