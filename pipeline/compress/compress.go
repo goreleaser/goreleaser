@@ -47,7 +47,7 @@ func create(name string, ctx *context.Context) error {
 	var archive = archiveFor(file, ctx.Config.Archive.Format)
 	defer func() { _ = archive.Close() }()
 	for _, f := range ctx.Config.Files {
-		if err := archive.Add(f, f); err != nil {
+		if err = archive.Add(f, f); err != nil {
 			return err
 		}
 	}

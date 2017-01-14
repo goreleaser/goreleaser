@@ -1,14 +1,13 @@
 package defaults
 
 import (
-	"os"
-	"path"
-	"path/filepath"
+	"io/ioutil"
+	"strings"
 
 	"github.com/goreleaser/releaser/context"
 )
 
-var filePatterns = []string{"LICENCE*", "LICENSE*", "README*", "CHANGELOG*"}
+var defaultFiles = []string{"LICENCE", "LICENSE", "README", "CHANGELOG"}
 
 // Pipe for brew deployment
 type Pipe struct{}
@@ -53,37 +52,25 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if len(ctx.Config.Files) != 0 {
 		return
 	}
-	ctx.Config.Files = []string{}
-	for _, pattern := range filePatterns {
-		matches, err := globPath(pattern)
-		if err != nil {
-			return err
-		}
-
-		ctx.Config.Files = append(ctx.Config.Files, matches...)
+	files, err := findFiles(".")
+	if err != nil {
+		return
 	}
+	ctx.Config.Files = files
 	return
 }
 
-func globPath(p string) (m []string, err error) {
-	var cwd string
-	var dirs []string
-
-	if cwd, err = os.Getwd(); err != nil {
+func findFiles(path string) (files []string, err error) {
+	all, err := ioutil.ReadDir(path)
+	if err != nil {
 		return
 	}
-
-	fp := path.Join(cwd, p)
-
-	if dirs, err = filepath.Glob(fp); err != nil {
-		return
+	for _, file := range all {
+		for _, accepted := range defaultFiles {
+			if strings.Contains(file.Name(), accepted) {
+				files = append(files, file.Name())
+			}
+		}
 	}
-
-	// Normalise to avoid nested dirs in tarball
-	for _, dir := range dirs {
-		_, f := filepath.Split(dir)
-		m = append(m, f)
-	}
-
 	return
 }
