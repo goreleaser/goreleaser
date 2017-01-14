@@ -14,7 +14,7 @@ import (
 // Pipe for build
 type Pipe struct{}
 
-// Name of the pipe
+// Description of the pipe
 func (Pipe) Description() string {
 	return "Building..."
 }

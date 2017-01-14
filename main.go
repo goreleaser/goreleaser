@@ -15,7 +15,6 @@ import (
 	"github.com/goreleaser/releaser/pipeline/git"
 	"github.com/goreleaser/releaser/pipeline/release"
 	"github.com/goreleaser/releaser/pipeline/repos"
-	"github.com/goreleaser/releaser/pipeline/valid"
 	"github.com/urfave/cli"
 )
 
@@ -27,9 +26,6 @@ var pipes = []pipeline.Pipe{
 	env.Pipe{},
 	git.Pipe{},
 	repos.Pipe{},
-
-	// validate
-	valid.Pipe{},
 
 	// real work
 	build.Pipe{},
@@ -52,11 +48,12 @@ func main() {
 	}
 	app.Action = func(c *cli.Context) (err error) {
 		var file = c.String("config")
-		config, err := config.Load(file)
-		if err != nil {
+		cfg, err := config.Load(file)
+		// Allow failing to load the config file if file is not explicitly specified
+		if err != nil && c.IsSet("config") {
 			return cli.NewExitError(err.Error(), 1)
 		}
-		context := context.New(config)
+		context := context.New(cfg)
 		log.SetFlags(0)
 		for _, pipe := range pipes {
 			log.Println(pipe.Description())

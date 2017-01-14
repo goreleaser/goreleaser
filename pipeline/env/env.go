@@ -7,12 +7,13 @@ import (
 	"github.com/goreleaser/releaser/context"
 )
 
+// ErrMissingToken indicates an error when GITHUB_TOKEN is missing in the environment
 var ErrMissingToken = errors.New("Missing GITHUB_TOKEN")
 
 // Pipe for env
 type Pipe struct{}
 
-// Name of the pipe
+// Description of the pipe
 func (Pipe) Description() string {
 	return "Loading data from environment variables..."
 }

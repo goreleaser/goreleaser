@@ -5,7 +5,7 @@ import "github.com/goreleaser/releaser/context"
 // Pipe for brew deployment
 type Pipe struct{}
 
-// Name of the pipe
+// Description of the pipe
 func (Pipe) Description() string {
 	return "Gathering Git data..."
 }

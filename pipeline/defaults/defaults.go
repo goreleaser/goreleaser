@@ -1,6 +1,7 @@
 package defaults
 
 import (
+	"errors"
 	"io/ioutil"
 	"strings"
 
@@ -12,13 +13,23 @@ var defaultFiles = []string{"licence", "license", "readme", "changelog"}
 // Pipe for brew deployment
 type Pipe struct{}
 
-// Name of the pipe
+// Description of the pipe
 func (Pipe) Description() string {
 	return "Setting defaults..."
 }
 
 // Run the pipe
-func (Pipe) Run(ctx *context.Context) (err error) {
+func (Pipe) Run(ctx *context.Context) error {
+	if ctx.Config.Repo == "" {
+		repo, err := remoteRepo()
+		ctx.Config.Repo = repo
+		if err != nil {
+			return errors.New("failed reading repo from Git: " + err.Error())
+		}
+	}
+	if ctx.Config.BinaryName == "" {
+		ctx.Config.BinaryName = strings.Split(ctx.Config.Repo, "/")[1]
+	}
 	if ctx.Config.Build.Main == "" {
 		ctx.Config.Build.Main = "main.go"
 	}
@@ -50,14 +61,14 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		}
 	}
 	if len(ctx.Config.Files) != 0 {
-		return
+		return nil
 	}
 	files, err := findFiles()
 	if err != nil {
-		return
+		return err
 	}
 	ctx.Config.Files = files
-	return
+	return nil
 }
 
 func findFiles() (files []string, err error) {
