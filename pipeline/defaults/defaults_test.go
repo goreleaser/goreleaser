@@ -18,19 +18,19 @@ func TestFillBasicData(t *testing.T) {
 
 	assert.NoError(Pipe{}.Run(ctx))
 
-	assert.Equal("goreleaser/releaser", config.Repo)
-	assert.Equal("releaser", config.BinaryName)
+	assert.Equal("goreleaser/releaser", config.Release.Repo)
+	assert.Equal("releaser", config.Build.BinaryName)
 	assert.Equal("main.go", config.Build.Main)
 	assert.Equal("tar.gz", config.Archive.Format)
-	assert.Contains(config.Build.Oses, "darwin")
-	assert.Contains(config.Build.Oses, "linux")
-	assert.Contains(config.Build.Arches, "386")
-	assert.Contains(config.Build.Arches, "amd64")
+	assert.Contains(config.Build.Goos, "darwin")
+	assert.Contains(config.Build.Goos, "linux")
+	assert.Contains(config.Build.Goarch, "386")
+	assert.Contains(config.Build.Goarch, "amd64")
 	assert.NotEmpty(
 		config.Archive.Replacements,
 		config.Archive.NameTemplate,
 		config.Build.Ldflags,
-		config.Files,
+		config.Archive.Files,
 	)
 }
 
@@ -38,8 +38,10 @@ func TestFilesFilled(t *testing.T) {
 	assert := assert.New(t)
 
 	var config = &config.ProjectConfig{
-		Files: []string{
-			"README.md",
+		Archive: config.ArchiveConfig{
+			Files: []string{
+				"README.md",
+			},
 		},
 	}
 	var ctx = &context.Context{
@@ -47,7 +49,7 @@ func TestFilesFilled(t *testing.T) {
 	}
 
 	assert.NoError(Pipe{}.Run(ctx))
-	assert.Len(config.Files, 1)
+	assert.Len(config.Archive.Files, 1)
 }
 
 func TestAcceptFiles(t *testing.T) {

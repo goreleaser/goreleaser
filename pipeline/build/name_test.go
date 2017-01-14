@@ -20,13 +20,15 @@ func TestNameFor(t *testing.T) {
 	assert := assert.New(t)
 
 	var config = &config.ProjectConfig{
-		BinaryName: "test",
 		Archive: config.ArchiveConfig{
 			NameTemplate: "{{.BinaryName}}_{{.Os}}_{{.Arch}}_{{.Version}}",
 			Replacements: map[string]string{
 				"darwin": "Darwin",
 				"amd64":  "x86_64",
 			},
+		},
+		Build: config.BuildConfig{
+			BinaryName: "test",
 		},
 	}
 	var ctx = &context.Context{
