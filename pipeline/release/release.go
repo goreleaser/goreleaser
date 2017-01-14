@@ -23,19 +23,13 @@ func (Pipe) Name() string {
 
 // Run the pipe
 func (Pipe) Run(config config.ProjectConfig) error {
-	log.Println("Creating release", config.Git.CurrentTag, "on", config.Repo, "...")
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: config.Token},
 	)
 	tc := oauth2.NewClient(context.Background(), ts)
 	client := github.NewClient(tc)
 
-	owner, repo := split.OnSlash(config.Repo)
-	r, _, err := client.Repositories.CreateRelease(owner, repo, &github.RepositoryRelease{
-		Name:    github.String(config.Git.CurrentTag),
-		TagName: github.String(config.Git.CurrentTag),
-		Body:    github.String(description(config.Git.Diff)),
-	})
+	r, err := getOrCreateRelease(client, config)
 	if err != nil {
 		return err
 	}
@@ -50,6 +44,24 @@ func (Pipe) Run(config config.ProjectConfig) error {
 		}
 	}
 	return g.Wait()
+}
+
+func getOrCreateRelease(client *github.Client, config config.ProjectConfig) (*github.RepositoryRelease, error) {
+	owner, repo := split.OnSlash(config.Repo)
+	data := &github.RepositoryRelease{
+		Name:    github.String(config.Git.CurrentTag),
+		TagName: github.String(config.Git.CurrentTag),
+		Body:    github.String(description(config.Git.Diff)),
+	}
+	r, res, err := client.Repositories.GetReleaseByTag(owner, repo, config.Git.CurrentTag)
+	if err != nil && res.StatusCode == 404 {
+		log.Println("Creating release", config.Git.CurrentTag, "on", config.Repo, "...")
+		r, _, err = client.Repositories.CreateRelease(owner, repo, data)
+		return r, err
+	}
+	log.Println("Updating existing release", config.Git.CurrentTag, "on", config.Repo, "...")
+	r, _, err = client.Repositories.EditRelease(owner, repo, *r.ID, data)
+	return r, err
 }
 
 func description(diff string) string {
