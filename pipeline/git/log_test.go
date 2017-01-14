@@ -8,14 +8,14 @@ import (
 
 func TestLog(t *testing.T) {
 	assert := assert.New(t)
-	log, err := Log("v0.1.9", "v0.2.0")
+	log, err := log("v0.1.9", "v0.2.0")
 	assert.NoError(err)
 	assert.NotEmpty(log)
 }
 
 func TestLogInvalidRef(t *testing.T) {
 	assert := assert.New(t)
-	log, err := Log("wtfff", "nope")
+	log, err := log("wtfff", "nope")
 	assert.Error(err)
 	assert.Empty(log)
 }

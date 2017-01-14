@@ -1,12 +1,12 @@
 package pipeline
 
-import "github.com/goreleaser/releaser/config"
+import "github.com/goreleaser/releaser/context"
 
 // Pipe interface
 type Pipe interface {
 	// Name of the pipe
-	Name() string
+	Description() string
 
 	// Run the pipe
-	Run(config config.ProjectConfig) error
+	Run(ctx *context.Context) error
 }

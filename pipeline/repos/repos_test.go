@@ -1,4 +1,4 @@
-package split
+package repos
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 
 func TestSplit(t *testing.T) {
 	assert := assert.New(t)
-	a, b := OnSlash("a/b")
+	a, b := split("a/b")
 	assert.Equal("a", a)
 	assert.Equal("b", b)
 }

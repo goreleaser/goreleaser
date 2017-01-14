@@ -1,10 +1,12 @@
 package compress
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 
-	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/context"
 	"github.com/goreleaser/releaser/pipeline/compress/tar"
 	"github.com/goreleaser/releaser/pipeline/compress/zip"
 	"golang.org/x/sync/errgroup"
@@ -14,21 +16,18 @@ import (
 type Pipe struct{}
 
 // Name of the pipe
-func (Pipe) Name() string {
-	return "Compress"
+func (Pipe) Description() string {
+	return "Creating archives..."
 }
 
 // Run the pipe
-func (Pipe) Run(config config.ProjectConfig) error {
+func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	for _, system := range config.Build.Oses {
-		for _, arch := range config.Build.Arches {
-			system := system
-			arch := arch
-			g.Go(func() error {
-				return create(system, arch, config)
-			})
-		}
+	for _, archive := range ctx.Archives {
+		archive := archive
+		g.Go(func() error {
+			return create(archive, ctx)
+		})
 	}
 	return g.Wait()
 }
@@ -38,25 +37,31 @@ type Archive interface {
 	Add(name, path string) error
 }
 
-func create(system, arch string, config config.ProjectConfig) error {
-	name, err := config.ArchiveName(system, arch)
-	if err != nil {
-		return err
-	}
-	file, err := os.Create("dist/" + name + "." + config.Archive.Format)
+func create(name string, ctx *context.Context) error {
+	folder := filepath.Join("dist", name)
+	file, err := os.Create(folder + "." + ctx.Config.Archive.Format)
 	log.Println("Creating", file.Name(), "...")
 	if err != nil {
 		return err
 	}
 	defer func() { _ = file.Close() }()
-	var archive = archiveFor(file, config.Archive.Format)
+	var archive = archiveFor(file, ctx.Config.Archive.Format)
 	defer func() { _ = archive.Close() }()
-	for _, f := range config.Files {
-		if err := archive.Add(f, f); err != nil {
+	for _, f := range ctx.Config.Files {
+		if err = archive.Add(f, f); err != nil {
 			return err
 		}
 	}
-	return archive.Add(config.BinaryName+extFor(system), "dist/"+name+"/"+config.BinaryName)
+	files, err := ioutil.ReadDir(folder)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		if err := archive.Add(f.Name(), filepath.Join(folder, f.Name())); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func archiveFor(file *os.File, format string) Archive {
@@ -64,11 +69,4 @@ func archiveFor(file *os.File, format string) Archive {
 		return zip.New(file)
 	}
 	return tar.New(file)
-}
-
-func extFor(system string) string {
-	if system == "windows" {
-		return ".exe"
-	}
-	return ""
 }

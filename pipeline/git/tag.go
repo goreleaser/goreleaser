@@ -6,13 +6,11 @@ import (
 	"strings"
 )
 
-// CurrentTag tag being built
-func CurrentTag() (tag string, err error) {
+func currentTag() (tag string, err error) {
 	return getTag("")
 }
 
-// PreviousTag previous tag of the base tag
-func PreviousTag(base string) (tag string, err error) {
+func previousTag(base string) (tag string, err error) {
 	return getTag(base + "^")
 }
 

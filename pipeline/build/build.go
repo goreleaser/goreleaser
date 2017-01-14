@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/goreleaser/releaser/config"
+	"github.com/goreleaser/releaser/context"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -15,44 +15,45 @@ import (
 type Pipe struct{}
 
 // Name of the pipe
-func (Pipe) Name() string {
-	return "Build"
+func (Pipe) Description() string {
+	return "Building..."
 }
 
 // Run the pipe
-func (Pipe) Run(config config.ProjectConfig) error {
+func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	for _, system := range config.Build.Oses {
-		for _, arch := range config.Build.Arches {
-			system := system
-			arch := arch
+	for _, goos := range ctx.Config.Build.Oses {
+		for _, goarch := range ctx.Config.Build.Arches {
+			goos := goos
+			goarch := goarch
+			name, err := nameFor(ctx, goos, goarch)
+			if err != nil {
+				return err
+			}
+			ctx.Archives[goos+goarch] = name
 			g.Go(func() error {
-				return build(system, arch, config)
+				return build(name, goos, goarch, ctx)
 			})
 		}
 	}
 	return g.Wait()
 }
 
-func build(system, arch string, config config.ProjectConfig) error {
-	name, err := config.ArchiveName(system, arch)
-	if err != nil {
-		return err
-	}
-	ldflags := config.Build.Ldflags + " -X main.version=" + config.Git.CurrentTag
-	output := "dist/" + name + "/" + config.BinaryName
+func build(name, goos, goarch string, ctx *context.Context) error {
+	ldflags := ctx.Config.Build.Ldflags + " -X main.version=" + ctx.Git.CurrentTag
+	output := "dist/" + name + "/" + ctx.Config.BinaryName + extFor(goos)
 	log.Println("Building", output, "...")
 	cmd := exec.Command(
 		"go",
 		"build",
 		"-ldflags="+ldflags,
 		"-o", output,
-		config.Build.Main,
+		ctx.Config.Build.Main,
 	)
 	cmd.Env = append(
 		cmd.Env,
-		"GOOS="+system,
-		"GOARCH="+arch,
+		"GOOS="+goos,
+		"GOARCH="+goarch,
 		"GOROOT="+os.Getenv("GOROOT"),
 		"GOPATH="+os.Getenv("GOPATH"),
 	)
