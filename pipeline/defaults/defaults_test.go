@@ -24,4 +24,46 @@ func TestFillBasicData(t *testing.T) {
 	assert.Contains(config.Build.Oses, "linux")
 	assert.Contains(config.Build.Arches, "386")
 	assert.Contains(config.Build.Arches, "amd64")
+	assert.NotEmpty(
+		config.Archive.Replacements,
+		config.Archive.NameTemplate,
+		config.Build.Ldflags,
+		config.Files,
+	)
+}
+
+func TestFilesFilled(t *testing.T) {
+	assert := assert.New(t)
+
+	var config = &config.ProjectConfig{
+		Files: []string{
+			"README.md",
+		},
+	}
+	var ctx = &context.Context{
+		Config: config,
+	}
+
+	assert.NoError(Pipe{}.Run(ctx))
+	assert.Len(config.Files, 1)
+}
+
+func TestAcceptFiles(t *testing.T) {
+	assert := assert.New(t)
+
+	var files = []string{
+		"LICENSE.md",
+		"LICENSE.txt",
+		"LICENSE",
+		"LICENCE.txt",
+		"LICENCE",
+		"README",
+		"README.md",
+		"CHANGELOG.txt",
+		"CHANGELOG.md",
+	}
+
+	for _, file := range files {
+		assert.True(accept(file))
+	}
 }

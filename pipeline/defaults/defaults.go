@@ -52,7 +52,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if len(ctx.Config.Files) != 0 {
 		return
 	}
-	files, err := findFiles(".")
+	files, err := findFiles()
 	if err != nil {
 		return
 	}
@@ -60,17 +60,24 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	return
 }
 
-func findFiles(path string) (files []string, err error) {
-	all, err := ioutil.ReadDir(path)
+func findFiles() (files []string, err error) {
+	all, err := ioutil.ReadDir(".")
 	if err != nil {
 		return
 	}
 	for _, file := range all {
-		for _, accepted := range defaultFiles {
-			if strings.Contains(file.Name(), accepted) {
-				files = append(files, file.Name())
-			}
+		if accept(file.Name()) {
+			files = append(files, file.Name())
 		}
 	}
 	return
+}
+
+func accept(file string) bool {
+	for _, accepted := range defaultFiles {
+		if strings.HasPrefix(file, accepted) {
+			return true
+		}
+	}
+	return false
 }
