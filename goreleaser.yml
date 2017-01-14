@@ -2,7 +2,7 @@ repo: goreleaser/releaser
 binary_name: goreleaser
 brew:
   repo: goreleaser/homebrew-tap
-  folder: Formulae
+  folder: Formula
 build:
   oses:
     - windows
