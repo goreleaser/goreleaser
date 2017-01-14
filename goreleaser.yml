@@ -4,9 +4,6 @@ brew:
   repo: goreleaser/homebrew-tap
   folder: Formulae
 build:
-  arches:
-    - amd64
-    - 386
   oses:
     - windows
     - darwin
