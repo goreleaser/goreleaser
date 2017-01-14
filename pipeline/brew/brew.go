@@ -3,9 +3,8 @@ package brew
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
-	"fmt"
 	"log"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -60,39 +59,32 @@ func (Pipe) Run(config config.ProjectConfig) error {
 	client := github.NewClient(tc)
 
 	owner, repo := split.OnSlash(config.Brew.Repo)
-	name := config.BinaryName + ".rb"
-
-	log.Println("Updating", name, "on", config.Brew.Repo, "...")
+	path := filepath.Join(config.Brew.Folder, config.BinaryName+".rb")
+	log.Println("Updating", path, "on", config.Brew.Repo, "...")
 	out, err := buildFormulae(config, client)
 	if err != nil {
 		return err
 	}
-	sha, err := formulaeSHA(client, owner, repo, name, out)
-	if err != nil {
+
+	options := &github.RepositoryContentFileOptions{
+		Committer: &github.CommitAuthor{
+			Name:  github.String("goreleaserbot"),
+			Email: github.String("bot@goreleaser"),
+		},
+		Content: out.Bytes(),
+		Message: github.String(config.BinaryName + " version " + config.Git.CurrentTag),
+	}
+
+	file, _, res, err := client.Repositories.GetContents(
+		owner, repo, path, &github.RepositoryContentGetOptions{},
+	)
+	if err != nil && res.StatusCode == 404 {
+		_, _, err = client.Repositories.CreateFile(owner, repo, path, options)
 		return err
 	}
-	_, _, err = client.Repositories.UpdateFile(
-		owner, repo, name, &github.RepositoryContentFileOptions{
-			Committer: &github.CommitAuthor{
-				Name:  github.String("goreleaserbot"),
-				Email: github.String("bot@goreleaser"),
-			},
-			Content: out.Bytes(),
-			Message: github.String(config.BinaryName + " version " + config.Git.CurrentTag),
-			SHA:     sha,
-		},
-	)
+	options.SHA = file.SHA
+	_, _, err = client.Repositories.UpdateFile(owner, repo, path, options)
 	return err
-}
-
-func formulaeSHA(client *github.Client, owner, repo, name string, out bytes.Buffer) (*string, error) {
-	file, _, _, err := client.Repositories.GetContents(
-		owner, repo, name, &github.RepositoryContentGetOptions{},
-	)
-	if err == nil {
-		return file.SHA, err
-	}
-	return github.String(fmt.Sprintf("%s", sha256.Sum256(out.Bytes()))), nil
 }
 
 func buildFormulae(config config.ProjectConfig, client *github.Client) (bytes.Buffer, error) {
