@@ -2,6 +2,7 @@ repo: goreleaser/releaser
 binary_name: goreleaser
 brew:
   repo: goreleaser/homebrew-tap
+  folder: Formulae
 build:
   arches:
     - amd64
