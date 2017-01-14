@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/goreleaser/releaser/context"
+	"github.com/goreleaser/goreleaser/context"
 )
 
 var defaultFiles = []string{"licence", "license", "readme", "changelog"}

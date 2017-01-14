@@ -1,4 +1,4 @@
-package: github.com/goreleaser/releaser
+package: github.com/goreleaser/goreleaser
 import:
 - package: github.com/google/go-github
   subpackages:

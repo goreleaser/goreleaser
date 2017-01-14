@@ -8,9 +8,9 @@ import (
 	"text/template"
 
 	"github.com/google/go-github/github"
-	"github.com/goreleaser/releaser/clients"
-	"github.com/goreleaser/releaser/context"
-	"github.com/goreleaser/releaser/sha256sum"
+	"github.com/goreleaser/goreleaser/clients"
+	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/sha256sum"
 )
 
 const formulae = `class {{ .Name }} < Formula

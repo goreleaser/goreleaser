@@ -6,8 +6,8 @@ import (
 	"os/exec"
 
 	"github.com/google/go-github/github"
-	"github.com/goreleaser/releaser/clients"
-	"github.com/goreleaser/releaser/context"
+	"github.com/goreleaser/goreleaser/clients"
+	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/sync/errgroup"
 )
 

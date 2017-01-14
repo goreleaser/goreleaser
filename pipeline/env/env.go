@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	"github.com/goreleaser/releaser/context"
+	"github.com/goreleaser/goreleaser/context"
 )
 
 // ErrMissingToken indicates an error when GITHUB_TOKEN is missing in the environment

@@ -3,8 +3,8 @@ package defaults
 import (
 	"testing"
 
-	"github.com/goreleaser/releaser/config"
-	"github.com/goreleaser/releaser/context"
+	"github.com/goreleaser/goreleaser/config"
+	"github.com/goreleaser/goreleaser/context"
 	"github.com/stretchr/testify/assert"
 )
 

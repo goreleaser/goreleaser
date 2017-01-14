@@ -21,6 +21,6 @@ func TestExtractReporFromGitURL(t *testing.T) {
 
 func TestExtractReporFromHttpsURL(t *testing.T) {
 	assert := assert.New(t)
-	url := extractRepoFromURL("https://github.com/goreleaser/releaser.git")
+	url := extractRepoFromURL("https://github.com/goreleaser/goreleaser.git")
 	assert.Equal("goreleaser/releaser", url)
 }

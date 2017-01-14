@@ -1,6 +1,6 @@
 package context
 
-import "github.com/goreleaser/releaser/config"
+import "github.com/goreleaser/goreleaser/config"
 
 // GitInfo includes tags and diffs used in some point
 type GitInfo struct {

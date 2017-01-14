@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/goreleaser/releaser/context"
+	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/sync/errgroup"
 )
 
