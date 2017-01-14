@@ -13,13 +13,13 @@ var defaultFiles = []string{"licence", "license", "readme", "changelog"}
 // Pipe for brew deployment
 type Pipe struct{}
 
-// Name of the pipe
+// Description of the pipe
 func (Pipe) Description() string {
 	return "Setting defaults..."
 }
 
 // Run the pipe
-func (Pipe) Run(ctx *context.Context) (err error) {
+func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Repo == "" {
 		repo, err := remoteRepo()
 		ctx.Config.Repo = repo
@@ -61,14 +61,14 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		}
 	}
 	if len(ctx.Config.Files) != 0 {
-		return
+		return nil
 	}
 	files, err := findFiles()
 	if err != nil {
-		return
+		return err
 	}
 	ctx.Config.Files = files
-	return
+	return nil
 }
 
 func findFiles() (files []string, err error) {

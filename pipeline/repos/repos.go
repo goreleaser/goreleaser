@@ -9,7 +9,7 @@ import (
 // Pipe for brew deployment
 type Pipe struct{}
 
-// Name of the pipe
+// Description of the pipe
 func (Pipe) Description() string {
 	return "Filling repositories data..."
 }

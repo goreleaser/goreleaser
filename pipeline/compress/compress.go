@@ -15,7 +15,7 @@ import (
 // Pipe for compress
 type Pipe struct{}
 
-// Name of the pipe
+// Description of the pipe
 func (Pipe) Description() string {
 	return "Creating archives..."
 }
@@ -32,6 +32,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	return g.Wait()
 }
 
+// Archive represents a compression archive files from disk can be written to.
 type Archive interface {
 	Close() error
 	Add(name, path string) error
