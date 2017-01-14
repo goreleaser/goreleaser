@@ -48,7 +48,7 @@ archives uploaded.
 
 ### Homebrew
 
-To push a basic formulae a homebrew tap repo, just add a `brew` section:
+Add a `brew` section to push a formulae to a Homebrew tab repository:
 
 ```yaml
 repo: user/repo
@@ -58,6 +58,8 @@ brew:
   folder: optional/subfolder/inside/the/repo
   caveats: "Optional caveats to add to the formulae"
 ```
+
+See the [Homebrew docs](https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap.md) for creating your own tap.
 
 ### Build customization
 
