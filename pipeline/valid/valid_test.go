@@ -23,10 +23,6 @@ func TestValidadeMissingBinaryName(t *testing.T) {
 	assert.Error(t, runPipe("a/b", ""))
 }
 
-func TestValidadeMissingRepo(t *testing.T) {
-	assert.Error(t, runPipe("", "a"))
-}
-
 func TestValidadeMinimalConfig(t *testing.T) {
-	assert.NoError(t, runPipe("a/b", "a"))
+	assert.NoError(t, runPipe("", "a"))
 }

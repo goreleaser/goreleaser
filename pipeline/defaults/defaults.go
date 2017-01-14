@@ -1,6 +1,7 @@
 package defaults
 
 import (
+	"errors"
 	"io/ioutil"
 	"strings"
 
@@ -19,6 +20,13 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
+	if ctx.Config.Repo == "" {
+		repo, err := remoteRepo()
+		ctx.Config.Repo = repo
+		if err != nil {
+			return errors.New("failed reading repo from Git: " + err.Error())
+		}
+	}
 	if ctx.Config.Build.Main == "" {
 		ctx.Config.Build.Main = "main.go"
 	}

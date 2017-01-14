@@ -19,8 +19,5 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if ctx.Config.BinaryName == "" {
 		return errors.New("missing binary_name")
 	}
-	if ctx.Config.Repo == "" {
-		return errors.New("missing repo")
-	}
 	return
 }
