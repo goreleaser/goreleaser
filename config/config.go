@@ -6,8 +6,8 @@ import (
 	yaml "gopkg.in/yaml.v1"
 )
 
-// Homebrew contains the brew section
-type Homebrew struct {
+// HomebrewConfig contains the brew section
+type HomebrewConfig struct {
 	Repo    string
 	Folder  string
 	Caveats string
@@ -15,10 +15,11 @@ type Homebrew struct {
 
 // BuildConfig contains the build configuration section
 type BuildConfig struct {
-	Oses    []string
-	Arches  []string
-	Main    string
-	Ldflags string
+	Goos       []string
+	Goarch     []string
+	Main       string
+	Ldflags    string
+	BinaryName string `yaml:"binary_name"`
 }
 
 // ArchiveConfig config used for the archive
@@ -26,16 +27,20 @@ type ArchiveConfig struct {
 	Format       string
 	NameTemplate string `yaml:"name_template"`
 	Replacements map[string]string
+	Files        []string
+}
+
+// ReleaseConfig config used for the GitHub release
+type ReleaseConfig struct {
+	Repo string
 }
 
 // ProjectConfig includes all project configuration
 type ProjectConfig struct {
-	Repo       string
-	BinaryName string `yaml:"binary_name"`
-	Files      []string
-	Brew       Homebrew
-	Build      BuildConfig
-	Archive    ArchiveConfig
+	Release ReleaseConfig
+	Brew    HomebrewConfig
+	Build   BuildConfig
+	Archive ArchiveConfig
 }
 
 // Load config file

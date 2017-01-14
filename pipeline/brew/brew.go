@@ -51,7 +51,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		return nil
 	}
 	client := clients.GitHub(*ctx.Token)
-	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.BinaryName+".rb")
+	path := filepath.Join(
+		ctx.Config.Brew.Folder, ctx.Config.Build.BinaryName+".rb",
+	)
 
 	log.Println("Updating", path, "on", ctx.Config.Brew.Repo, "...")
 	out, err := buildFormulae(ctx, client)
@@ -66,7 +68,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		},
 		Content: out.Bytes(),
 		Message: github.String(
-			ctx.Config.BinaryName + " version " + ctx.Git.CurrentTag,
+			ctx.Config.Build.BinaryName + " version " + ctx.Git.CurrentTag,
 		),
 	}
 
@@ -105,7 +107,7 @@ func doBuildFormulae(data templateData) (bytes.Buffer, error) {
 func dataFor(ctx *context.Context, client *github.Client) (result templateData, err error) {
 	var homepage string
 	var description string
-	rep, _, err := client.Repositories.Get(ctx.Repo.Owner, ctx.Repo.Name)
+	rep, _, err := client.Repositories.Get(ctx.ReleaseRepo.Owner, ctx.ReleaseRepo.Name)
 	if err != nil {
 		return
 	}
@@ -125,12 +127,12 @@ func dataFor(ctx *context.Context, client *github.Client) (result templateData, 
 		description = *rep.Description
 	}
 	return templateData{
-		Name:       formulaNameFor(ctx.Config.BinaryName),
+		Name:       formulaNameFor(ctx.Config.Build.BinaryName),
 		Desc:       description,
 		Homepage:   homepage,
-		Repo:       ctx.Config.Repo,
+		Repo:       ctx.Config.Release.Repo,
 		Tag:        ctx.Git.CurrentTag,
-		BinaryName: ctx.Config.BinaryName,
+		BinaryName: ctx.Config.Build.BinaryName,
 		Caveats:    ctx.Config.Brew.Caveats,
 		File:       file,
 		Format:     ctx.Config.Archive.Format,

@@ -14,12 +14,12 @@ type Repo struct {
 }
 
 type Context struct {
-	Config   *config.ProjectConfig
-	Token    *string
-	Git      *GitInfo
-	Repo     *Repo
-	BrewRepo *Repo
-	Archives map[string]string
+	Config      *config.ProjectConfig
+	Token       *string
+	Git         *GitInfo
+	ReleaseRepo *Repo
+	BrewRepo    *Repo
+	Archives    map[string]string
 }
 
 func New(config config.ProjectConfig) *Context {

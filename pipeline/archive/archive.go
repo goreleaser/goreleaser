@@ -1,4 +1,4 @@
-package compress
+package archive
 
 import (
 	"io/ioutil"
@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 
 	"github.com/goreleaser/releaser/context"
-	"github.com/goreleaser/releaser/pipeline/compress/tar"
-	"github.com/goreleaser/releaser/pipeline/compress/zip"
+	"github.com/goreleaser/releaser/pipeline/archive/tar"
+	"github.com/goreleaser/releaser/pipeline/archive/zip"
 	"golang.org/x/sync/errgroup"
 )
 
-// Pipe for compress
+// Pipe for archive
 type Pipe struct{}
 
 // Description of the pipe
@@ -48,7 +48,7 @@ func create(name string, ctx *context.Context) error {
 	defer func() { _ = file.Close() }()
 	var archive = archiveFor(file, ctx.Config.Archive.Format)
 	defer func() { _ = archive.Close() }()
-	for _, f := range ctx.Config.Files {
+	for _, f := range ctx.Config.Archive.Files {
 		if err = archive.Add(f, f); err != nil {
 			return err
 		}
