@@ -2,16 +2,15 @@ package brew
 
 import (
 	"bytes"
-	goctx "context"
 	"log"
 	"path/filepath"
 	"strings"
 	"text/template"
 
 	"github.com/google/go-github/github"
+	"github.com/goreleaser/releaser/clients"
 	"github.com/goreleaser/releaser/context"
 	"github.com/goreleaser/releaser/sha256sum"
-	"golang.org/x/oauth2"
 )
 
 const formulae = `class {{ .Name }} < Formula
@@ -51,18 +50,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Brew.Repo == "" {
 		return nil
 	}
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: *ctx.Token},
-	)
-	tc := oauth2.NewClient(goctx.Background(), ts)
-	client := github.NewClient(tc)
+	client := clients.Github(*ctx.Token)
+	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.BinaryName+".rb")
 
-	owner := ctx.BrewRepo.Owner
-	repo := ctx.BrewRepo.Name
-	path := filepath.Join(
-		ctx.Config.Brew.Folder,
-		ctx.Config.BinaryName+".rb",
-	)
 	log.Println("Updating", path, "on", ctx.Config.Brew.Repo, "...")
 	out, err := buildFormulae(ctx, client)
 	if err != nil {
@@ -80,6 +70,8 @@ func (Pipe) Run(ctx *context.Context) error {
 		),
 	}
 
+	owner := ctx.BrewRepo.Owner
+	repo := ctx.BrewRepo.Name
 	file, _, res, err := client.Repositories.GetContents(
 		owner, repo, path, &github.RepositoryContentGetOptions{},
 	)

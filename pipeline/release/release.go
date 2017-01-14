@@ -1,14 +1,13 @@
 package release
 
 import (
-	goctx "context"
 	"log"
 	"os"
 	"os/exec"
 
 	"github.com/google/go-github/github"
+	"github.com/goreleaser/releaser/clients"
 	"github.com/goreleaser/releaser/context"
-	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -22,11 +21,7 @@ func (Pipe) Name() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: *ctx.Token},
-	)
-	tc := oauth2.NewClient(goctx.Background(), ts)
-	client := github.NewClient(tc)
+	client := clients.Github(*ctx.Token)
 
 	r, err := getOrCreateRelease(client, ctx)
 	if err != nil {
