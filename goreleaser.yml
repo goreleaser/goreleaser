@@ -1,5 +1,5 @@
 repo: goreleaser/releaser
-binary_name: release
+binary_name: goreleaser
 brew:
   repo: goreleaser/homebrew-tap
 build:
