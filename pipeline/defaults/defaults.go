@@ -7,7 +7,7 @@ import (
 	"github.com/goreleaser/releaser/context"
 )
 
-var defaultFiles = []string{"LICENCE", "LICENSE", "README", "CHANGELOG"}
+var defaultFiles = []string{"licence", "license", "readme", "changelog"}
 
 // Pipe for brew deployment
 type Pipe struct{}
@@ -75,7 +75,7 @@ func findFiles() (files []string, err error) {
 
 func accept(file string) bool {
 	for _, accepted := range defaultFiles {
-		if strings.HasPrefix(file, accepted) {
+		if strings.HasPrefix(strings.ToLower(file), accepted) {
 			return true
 		}
 	}
