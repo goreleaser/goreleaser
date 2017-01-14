@@ -16,7 +16,7 @@ The idea started with a [simple shell script](https://github.com/goreleaser/old-
 but it quickly became more complex and I also wanted to publish binaries via
 Homebrew.
 
-So, the all-new goreleaser was born.
+So, the all-new GoReleaser was born.
 
 ## Usage
 
@@ -26,7 +26,7 @@ the `repo` scope selected. You can create one [here](https://github.com/settings
 - GoReleaser uses the latest [Git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of your repository,
 so you need to [create a tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging#Annotated-Tags) first.
 
-- Now you can run `releaser` at the root of your repository:
+- Now you can run `goreleaser` at the root of your repository:
 
 ```sh
 curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
