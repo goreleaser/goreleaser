@@ -53,14 +53,14 @@ func TestAcceptFiles(t *testing.T) {
 
 	var files = []string{
 		"LICENSE.md",
-		"LICENSE.txt",
+		"LIceNSE.txt",
 		"LICENSE",
 		"LICENCE.txt",
-		"LICENCE",
+		"LICEncE",
 		"README",
-		"README.md",
+		"READme.md",
 		"CHANGELOG.txt",
-		"CHANGELOG.md",
+		"ChanGELOG.md",
 	}
 
 	for _, file := range files {
