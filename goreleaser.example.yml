@@ -1,13 +1,13 @@
 # Build customization
 build:
-  # main.go path.
+  # Path to main.go file.
   # Default is `main.go`
   main: ./cmd/main.go
 
-  # name of the binary. Default is the name of the project directory.
+  # Name of the binary. Default is the name of the project directory.
   binary_name: program
 
-  # custom ldflags.
+  # Custom ldflags.
   # Default is `-s -w`
   ldflags: -s -w
 
@@ -26,7 +26,7 @@ build:
 # Archive customization
 archive:
   # You can change the name of the archive.
-  # This is parsed with golang template engine and the following variables
+  # This is parsed with Golang template engine and the following variables
   # are available:
   # - BinaryName
   # - Version
@@ -40,10 +40,10 @@ archive:
   format: zip
 
   # Replacements for GOOS and GOARCH on the archive name.
-  # The left values should be a valid GOOS or GOARCH name, and the right
-  # the name you want instead.
-  # By default, replacements replace GOOS and GOARCH values with valid outputs
-  # of uname -s and uname -m respectively.
+  # The keys should be valid GOOS or GOARCH values followed by your custom
+  # replacements.
+  # By default, `replacements` replace GOOS and GOARCH values with valid outputs
+  # of `uname -s` and `uname -m` respectively.
   replacements:
     amd64: 64-bit
     386: 32-bit
@@ -69,11 +69,11 @@ release:
 # The brew section specifies how the formula should be created
 # Check this link for details: https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap.md
 brew:
-  # Reporitory to push the tap
+  # Reporitory to push the tap to.
   repo: user/homebrew-tap
 
   # Folder inside the repository to put the formula.
-  # Default is the root folder
+  # Default is the root folder.
   folder: Formula
 
   # Caveats for the user of your binary.
