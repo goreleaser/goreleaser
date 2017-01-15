@@ -12,12 +12,14 @@ build:
   ldflags: -s -w
 
   # GOOS list to build in.
+  # For more info refer to https://golang.org/doc/install/source#environment
   # Defaults are darwin and linux
   goos:
     - freebsd
     - windows
 
   # GOARCH to build in.
+  # For more info refer to https://golang.org/doc/install/source#environment
   # Defaults are 386 and amd64
   goarch:
     - amd64
