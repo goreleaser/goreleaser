@@ -7,9 +7,9 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
+	"github.com/goreleaser/goreleaser/pipeline/archive"
 	"github.com/goreleaser/goreleaser/pipeline/brew"
 	"github.com/goreleaser/goreleaser/pipeline/build"
-	"github.com/goreleaser/goreleaser/pipeline/compress"
 	"github.com/goreleaser/goreleaser/pipeline/defaults"
 	"github.com/goreleaser/goreleaser/pipeline/env"
 	"github.com/goreleaser/goreleaser/pipeline/git"
@@ -29,7 +29,7 @@ var pipes = []pipeline.Pipe{
 
 	// real work
 	build.Pipe{},
-	compress.Pipe{},
+	archive.Pipe{},
 	release.Pipe{},
 	brew.Pipe{},
 }

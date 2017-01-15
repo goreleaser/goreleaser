@@ -19,14 +19,16 @@ func TestExtOthers(t *testing.T) {
 func TestNameFor(t *testing.T) {
 	assert := assert.New(t)
 
-	var config = &config.ProjectConfig{
-		BinaryName: "test",
-		Archive: config.ArchiveConfig{
+	var config = &config.Project{
+		Archive: config.Archive{
 			NameTemplate: "{{.BinaryName}}_{{.Os}}_{{.Arch}}_{{.Version}}",
 			Replacements: map[string]string{
 				"darwin": "Darwin",
 				"amd64":  "x86_64",
 			},
+		},
+		Build: config.Build{
+			BinaryName: "test",
 		},
 	}
 	var ctx = &context.Context{

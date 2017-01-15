@@ -16,8 +16,8 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
-	owner, name := split(ctx.Config.Repo)
-	ctx.Repo = &context.Repo{
+	owner, name := split(ctx.Config.Release.Repo)
+	ctx.ReleaseRepo = &context.Repo{
 		Owner: owner,
 		Name:  name,
 	}

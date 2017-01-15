@@ -7,8 +7,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// Github client for the given token
-func Github(token string) *github.Client {
+// GitHub client for the given token
+func GitHub(token string) *github.Client {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)

@@ -22,8 +22,8 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	for _, goos := range ctx.Config.Build.Oses {
-		for _, goarch := range ctx.Config.Build.Arches {
+	for _, goos := range ctx.Config.Build.Goos {
+		for _, goarch := range ctx.Config.Build.Goarch {
 			goos := goos
 			goarch := goarch
 			name, err := nameFor(ctx, goos, goarch)
@@ -41,7 +41,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func build(name, goos, goarch string, ctx *context.Context) error {
 	ldflags := ctx.Config.Build.Ldflags + " -X main.version=" + ctx.Git.CurrentTag
-	output := "dist/" + name + "/" + ctx.Config.BinaryName + extFor(goos)
+	output := "dist/" + name + "/" + ctx.Config.Build.BinaryName + extFor(goos)
 	log.Println("Building", output, "...")
 	cmd := exec.Command(
 		"go",

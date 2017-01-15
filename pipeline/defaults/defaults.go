@@ -20,28 +20,30 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.Repo == "" {
+	if ctx.Config.Release.Repo == "" {
 		repo, err := remoteRepo()
-		ctx.Config.Repo = repo
+		ctx.Config.Release.Repo = repo
 		if err != nil {
-			return errors.New("failed reading repo from Git: " + err.Error())
+			return errors.New("failed reading repo from git: " + err.Error())
 		}
 	}
-	if ctx.Config.BinaryName == "" {
-		ctx.Config.BinaryName = strings.Split(ctx.Config.Repo, "/")[1]
+
+	if ctx.Config.Build.BinaryName == "" {
+		ctx.Config.Build.BinaryName = strings.Split(ctx.Config.Release.Repo, "/")[1]
 	}
 	if ctx.Config.Build.Main == "" {
 		ctx.Config.Build.Main = "main.go"
 	}
-	if len(ctx.Config.Build.Oses) == 0 {
-		ctx.Config.Build.Oses = []string{"linux", "darwin"}
+	if len(ctx.Config.Build.Goos) == 0 {
+		ctx.Config.Build.Goos = []string{"linux", "darwin"}
 	}
-	if len(ctx.Config.Build.Arches) == 0 {
-		ctx.Config.Build.Arches = []string{"amd64", "386"}
+	if len(ctx.Config.Build.Goarch) == 0 {
+		ctx.Config.Build.Goarch = []string{"amd64", "386"}
 	}
 	if ctx.Config.Build.Ldflags == "" {
 		ctx.Config.Build.Ldflags = "-s -w"
 	}
+
 	if ctx.Config.Archive.NameTemplate == "" {
 		ctx.Config.Archive.NameTemplate = "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
 	}
@@ -60,14 +62,13 @@ func (Pipe) Run(ctx *context.Context) error {
 			"amd64":   "x86_64",
 		}
 	}
-	if len(ctx.Config.Files) != 0 {
-		return nil
+	if len(ctx.Config.Archive.Files) == 0 {
+		files, err := findFiles()
+		if err != nil {
+			return err
+		}
+		ctx.Config.Archive.Files = files
 	}
-	files, err := findFiles()
-	if err != nil {
-		return err
-	}
-	ctx.Config.Files = files
 	return nil
 }
 

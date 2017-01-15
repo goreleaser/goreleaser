@@ -19,7 +19,7 @@ func nameFor(ctx *context.Context, goos, goarch string) (string, error) {
 		Os:         replace(ctx.Config.Archive.Replacements, goos),
 		Arch:       replace(ctx.Config.Archive.Replacements, goarch),
 		Version:    ctx.Git.CurrentTag,
-		BinaryName: ctx.Config.BinaryName,
+		BinaryName: ctx.Config.Build.BinaryName,
 	}
 	var out bytes.Buffer
 	t, err := template.New(data.BinaryName).Parse(ctx.Config.Archive.NameTemplate)
