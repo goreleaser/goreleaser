@@ -7,6 +7,7 @@ import (
 	"os"
 )
 
+// For calculates the SHA256 sum for the given file
 func For(path string) (result string, err error) {
 	file, err := os.Open(path)
 	if err != nil {
