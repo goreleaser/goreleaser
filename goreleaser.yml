@@ -6,3 +6,8 @@ build:
     - windows
     - darwin
     - linux
+archive:
+  files:
+    - README.md
+    - LICENSE.md
+    - goreleaser.example.yml
