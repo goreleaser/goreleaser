@@ -8,7 +8,11 @@ import (
 
 func TestLog(t *testing.T) {
 	assert := assert.New(t)
-	log, err := log("v0.1.9", "v0.2.0")
+	tag, err := currentTag()
+	assert.NoError(err)
+	tagb, err := previousTag(tag)
+	assert.NoError(err)
+	log, err := log(tagb, tag)
 	assert.NoError(err)
 	assert.NotEmpty(log)
 }
