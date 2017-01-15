@@ -3,16 +3,20 @@ TEST_PATTERN?=.
 TEST_OPTIONS?=
 
 setup: ## Install all the build and lint dependencies
-	@go get -u github.com/alecthomas/gometalinter
-	@go get -u github.com/Masterminds/glide
-	@glide install
-	@gometalinter --install
+	go get -u github.com/alecthomas/gometalinter
+	go get -u github.com/Masterminds/glide
+	glide install
+	gometalinter --install
 
 test: ## Run all the tests
-	@go test $(TEST_OPTIONS) -cover $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=30s
+	go test $(TEST_OPTIONS) -cover $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=30s
+
+fmt: ## gofmt and goimports all go files
+	find . -name '*.go' | xargs gofmt -w -s
+	find . -name '*.go' | xargs goimports -w
 
 lint: ## Run all the linters
-	@gometalinter --vendor --disable-all \
+	gometalinter --vendor --disable-all \
 		--enable=deadcode \
 		--enable=ineffassign \
 		--enable=gosimple \
@@ -30,7 +34,7 @@ lint: ## Run all the linters
 ci: lint test ## Run all the tests and code checks
 
 build: ## Build a beta version of releaser
-	@go build
+	go build
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
