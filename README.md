@@ -14,7 +14,7 @@ By participating, you are expected to uphold this code. Please report unacceptab
 [![Go Report Card](https://goreportcard.com/badge/github.com/goreleaser/goreleaser?style=flat-square)](https://goreportcard.com/report/github.com/goreleaser/goreleaser) 
 [![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square)](https://github.com/goreleaser)
 
-## How it works?
+## Why?
 
 The idea started with a [simple shell script](https://github.com/goreleaser/old-go-releaser),
 but it quickly became more complex and I also wanted to publish binaries via
@@ -40,6 +40,8 @@ This will build `main.go` as binary, for `Darwin` and `Linux`
 (`amd64` and `i386`), archive the binary and common files as `.tar.gz`,
 and finally, publish a new GitHub release in the repository with
 archives uploaded.
+
+Of course, all this can be customized!
 
 ## Customization
 
