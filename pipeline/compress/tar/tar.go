@@ -7,11 +7,13 @@ import (
 	"os"
 )
 
+// Archive as tar.gz
 type Archive struct {
 	gw *gzip.Writer
 	tw *tar.Writer
 }
 
+// Close all closeables
 func (a Archive) Close() error {
 	if err := a.tw.Close(); err != nil {
 		return err
@@ -22,6 +24,7 @@ func (a Archive) Close() error {
 	return nil
 }
 
+// New tar.gz archive
 func New(target *os.File) Archive {
 	gw := gzip.NewWriter(target)
 	tw := tar.NewWriter(gw)
@@ -31,6 +34,7 @@ func New(target *os.File) Archive {
 	}
 }
 
+// Add file to the archive
 func (a Archive) Add(name, path string) (err error) {
 	file, err := os.Open(path)
 	if err != nil {
