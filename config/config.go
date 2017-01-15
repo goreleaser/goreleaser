@@ -6,15 +6,15 @@ import (
 	yaml "gopkg.in/yaml.v1"
 )
 
-// HomebrewConfig contains the brew section
-type HomebrewConfig struct {
+// Homebrew contains the brew section
+type Homebrew struct {
 	Repo    string
 	Folder  string
 	Caveats string
 }
 
-// BuildConfig contains the build configuration section
-type BuildConfig struct {
+// Build contains the build configuration section
+type Build struct {
 	Goos       []string
 	Goarch     []string
 	Main       string
@@ -22,29 +22,29 @@ type BuildConfig struct {
 	BinaryName string `yaml:"binary_name"`
 }
 
-// ArchiveConfig config used for the archive
-type ArchiveConfig struct {
+// Archive config used for the archive
+type Archive struct {
 	Format       string
 	NameTemplate string `yaml:"name_template"`
 	Replacements map[string]string
 	Files        []string
 }
 
-// ReleaseConfig config used for the GitHub release
-type ReleaseConfig struct {
+// Release config used for the GitHub release
+type Release struct {
 	Repo string
 }
 
-// ProjectConfig includes all project configuration
-type ProjectConfig struct {
-	Release ReleaseConfig
-	Brew    HomebrewConfig
-	Build   BuildConfig
-	Archive ArchiveConfig
+// Project includes all project configuration
+type Project struct {
+	Release Release
+	Brew    Homebrew
+	Build   Build
+	Archive Archive
 }
 
 // Load config file
-func Load(file string) (config ProjectConfig, err error) {
+func Load(file string) (config Project, err error) {
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		return config, err
