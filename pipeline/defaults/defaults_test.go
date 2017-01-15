@@ -11,7 +11,7 @@ import (
 func TestFillBasicData(t *testing.T) {
 	assert := assert.New(t)
 
-	var config = &config.ProjectConfig{}
+	var config = &config.Project{}
 	var ctx = &context.Context{
 		Config: config,
 	}
@@ -37,8 +37,8 @@ func TestFillBasicData(t *testing.T) {
 func TestFilesFilled(t *testing.T) {
 	assert := assert.New(t)
 
-	var config = &config.ProjectConfig{
-		Archive: config.ArchiveConfig{
+	var config = &config.Project{
+		Archive: config.Archive{
 			Files: []string{
 				"README.md",
 			},
