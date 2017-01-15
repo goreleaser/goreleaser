@@ -8,7 +8,11 @@ pushes a Homebrew formulae to a repository. All that wrapped in your favorite CI
 This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code. Please report unacceptable behavior to root@carlosbecker.com.
 
-[![Build Status](https://travis-ci.org/goreleaser/goreleaser.svg?branch=master)](https://travis-ci.org/goreleaser/goreleaser) [![Go Report Card](https://goreportcard.com/badge/github.com/goreleaser/goreleaser)](https://goreportcard.com/report/github.com/goreleaser/goreleaser) [![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square)](https://github.com/goreleaser)
+[![Release](https://img.shields.io/github/release/goreleaser/goreleaser.svg?style=flat-square)](https://github.com/goreleaser/goreleaser/releases/latest)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
+[![Travis](https://img.shields.io/travis/goreleaser/goreleaser.svg?style=flat-square)](https://travis-ci.org/goreleaser/goreleaser)
+[![Go Report Card](https://goreportcard.com/badge/github.com/goreleaser/goreleaser?style=flat-square)](https://goreportcard.com/report/github.com/goreleaser/goreleaser) 
+[![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square)](https://github.com/goreleaser)
 
 ## How it works?
 
