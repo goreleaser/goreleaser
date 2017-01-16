@@ -2,6 +2,7 @@ package brew
 
 import (
 	"bytes"
+	"errors"
 	"log"
 	"path/filepath"
 	"strings"
@@ -12,6 +13,10 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/sha256sum"
 )
+
+// ErrNoDarwin64Build when there is no build for darwin_amd64 (goos doesn't
+// contain darwin and/or goarch doesn't contain amd64)
+var ErrNoDarwin64Build = errors.New("brew tap requires a darwin amd64 build")
 
 const formulae = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
@@ -112,6 +117,9 @@ func dataFor(ctx *context.Context, client *github.Client) (result templateData, 
 		return
 	}
 	file := ctx.Archives["darwinamd64"]
+	if file == "" {
+		return result, ErrNoDarwin64Build
+	}
 	sum, err := sha256sum.For("dist/" + file + "." + ctx.Config.Archive.Format)
 	if err != nil {
 		return
