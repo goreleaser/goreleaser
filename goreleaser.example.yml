@@ -81,3 +81,14 @@ brew:
   # Caveats for the user of your binary.
   # Default is empty.
   caveats: "How to use this binary"
+
+  # Dependencies of your formula.
+  # For more info, check https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md
+  dependencies:
+    - pkg-config
+    - jpeg
+    - boost
+    - readline
+    - gtk+
+    - x11
+

@@ -8,9 +8,10 @@ import (
 
 // Homebrew contains the brew section
 type Homebrew struct {
-	Repo    string
-	Folder  string
-	Caveats string
+	Repo         string
+	Folder       string
+	Caveats      string
+	Dependencies []string
 }
 
 // Build contains the build configuration section

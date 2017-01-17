@@ -25,6 +25,12 @@ const formulae = `class {{ .Name }} < Formula
   version "{{ .Tag }}"
   sha256 "{{ .SHA256 }}"
 
+  {{- if .Dependencies }}
+  {{ range $index, $element := .Dependencies }}
+  depends_on: {{ . }}
+  {{- end }}
+  {{- end }}
+
   def install
     bin.install "{{ .BinaryName }}"
   end
@@ -39,7 +45,17 @@ end
 `
 
 type templateData struct {
-	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, File, Format, SHA256 string
+	Name         string
+	Desc         string
+	Homepage     string
+	Repo         string
+	Tag          string
+	BinaryName   string
+	Caveats      string
+	File         string
+	Format       string
+	SHA256       string
+	Dependencies []string
 }
 
 // Pipe for brew deployment
@@ -135,16 +151,17 @@ func dataFor(ctx *context.Context, client *github.Client) (result templateData, 
 		description = *rep.Description
 	}
 	return templateData{
-		Name:       formulaNameFor(ctx.Config.Build.BinaryName),
-		Desc:       description,
-		Homepage:   homepage,
-		Repo:       ctx.Config.Release.Repo,
-		Tag:        ctx.Git.CurrentTag,
-		BinaryName: ctx.Config.Build.BinaryName,
-		Caveats:    ctx.Config.Brew.Caveats,
-		File:       file,
-		Format:     ctx.Config.Archive.Format,
-		SHA256:     sum,
+		Name:         formulaNameFor(ctx.Config.Build.BinaryName),
+		Desc:         description,
+		Homepage:     homepage,
+		Repo:         ctx.Config.Release.Repo,
+		Tag:          ctx.Git.CurrentTag,
+		BinaryName:   ctx.Config.Build.BinaryName,
+		Caveats:      ctx.Config.Brew.Caveats,
+		File:         file,
+		Format:       ctx.Config.Archive.Format,
+		SHA256:       sum,
+		Dependencies: ctx.Config.Brew.Dependencies,
 	}, err
 }
 
