@@ -5,7 +5,7 @@ conduct](/CODE_OF_CONDUCT.md).
 
 ## Setup your machine
 
-`releaser` is written in [Go](https://golang.org/).
+`goreleaser` is written in [Go](https://golang.org/).
 
 Prerequisites are:
 
@@ -13,7 +13,7 @@ Prerequisites are:
   * `make`
   * [Go 1.7+](http://golang.org/doc/install)
 
-Clone `releaser` from source:
+Clone `goreleaser` from source into `$GOPATH`:
 
 ```sh
 $ go get github.com/goreleaser/goreleaser
@@ -50,5 +50,5 @@ Which runs all the linters and tests.
 
 ## Submit a pull request
 
-Push your branch to your `releaser` fork and open a pull request against the
+Push your branch to your `goreleaser` fork and open a pull request against the
 master branch.
