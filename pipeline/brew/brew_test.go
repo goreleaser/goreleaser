@@ -51,8 +51,8 @@ func TestFullFormulae(t *testing.T) {
 	assertDefaultTemplateData(t, formulae)
 	assert.Contains(formulae, "def caveats")
 	assert.Contains(formulae, "Here are some caveats")
-	assert.Contains(formulae, "depends_on: gtk")
-	assert.Contains(formulae, "depends_on: git")
+	assert.Contains(formulae, "depends_on: \"gtk\"")
+	assert.Contains(formulae, "depends_on: \"git\"")
 }
 
 func TestFormulaeNoCaveats(t *testing.T) {
