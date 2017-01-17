@@ -27,7 +27,7 @@ const formulae = `class {{ .Name }} < Formula
 
   {{- if .Dependencies }}
   {{ range $index, $element := .Dependencies }}
-  depends_on: "{{ . }}"
+  depends_on "{{ . }}"
   {{- end }}
   {{- end }}
 
