@@ -25,7 +25,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return
 	}
 
-	ctx.Git = &context.GitInfo{
+	ctx.Git = context.GitInfo{
 		CurrentTag:  tag,
 		PreviousTag: previous,
 		Diff:        log,

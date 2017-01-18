@@ -20,10 +20,9 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
+	ctx.Token = os.Getenv("GITHUB_TOKEN")
+	if ctx.Token == "" {
 		return ErrMissingToken
 	}
-	ctx.Token = &token
 	return
 }
