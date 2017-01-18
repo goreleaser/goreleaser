@@ -71,7 +71,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Brew.Repo == "" {
 		return nil
 	}
-	client := clients.GitHub(*ctx.Token)
+	client := clients.GitHub(ctx.Token)
 	path := filepath.Join(
 		ctx.Config.Brew.Folder, ctx.Config.Build.BinaryName+".rb",
 	)
