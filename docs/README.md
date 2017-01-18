@@ -1,5 +1,5 @@
 GoReleaser builds Go binaries for several platforms, creates a GitHub release and then
-pushes a Homebrew formulae to a repository. All that wrapped in your favorite CI.
+pushes a Homebrew formula to a repository. All that wrapped in your favorite CI.
 
 [![Release](https://img.shields.io/github/release/goreleaser/goreleaser.svg?style=flat-square)](https://github.com/goreleaser/goreleaser/releases/latest)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
@@ -42,9 +42,7 @@ func main() {
   println("Ba dum, tss!")
 }
 ```
-By default, GoReleaser will build the main.go file located in your current directory, but you can change the build package path in a GoReleaser configuration file.
-
-Speaking of GoReleaser configuration, let's create _goreleaser.yml_ file:
+By default, GoReleaser will build the *main.go* file located in your current directory, but you can change the build package path in the GoReleaser configuration file.
 
 ```yml
 # goreleaser.yml
@@ -61,8 +59,8 @@ build:
 
 This configuration specifies the build operating systems to Windows, Linux and MacOS using 64bit architecture, the name of the binaries is "drum-roll".  
 
-GoReleaser will then archive the result binaries of each Os/Arch into a separate file. The default syntax is `{{.BinaryName}}_{{.Os}}_{{.Arch}}`.  
-You can change the archives name, and format, you can also replace the OS and the Architecture names with your own.  
+GoReleaser will then archive the result binaries of each Os/Arch into a separate file. The default format is `{{.BinaryName}}_{{.Os}}_{{.Arch}}`.  
+You can change the archives name and format. You can also replace the OS and the Architecture with your own.  
 Another useful feature is to add files to archives, this is very useful for integrating assets like resource files.
 
 ```yml
@@ -98,8 +96,8 @@ Next, you need to export a `GITHUB_TOKEN` environment variable with the `repo` s
 export GITHUB_TOKEN=`YOUR_TOKEN`
 ```
 
-GoReleaser uses the latest [Git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of your repository,
-create a tag:  
+GoReleaser uses the latest [Git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of your repository.
+Create a tag:  
 ```sh
 git tag -a v0.1 -m "First release"
 ```
@@ -118,13 +116,8 @@ The release on GitHub looks pretty much like this:
 ## Environment setup
 
 ### GitHub Token
-GoReleaser, requires GitHub api token with the `repo` scope checked. This will help release the artifacts to GitHub. You can create one [here](https://github.com/settings/tokens/new).  
+GoReleaser requires a GitHub API token with the `repo` scope checked to deploy the artefacts to GitHub. You can create one [here](https://github.com/settings/tokens/new).  
 This token should be added to the environment variables as `GITHUB_TOKEN`. Here is how to do it with Travis-ci: [Defining Variables in Repository Settings](https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-Repository-Settings).  
-You can manually export this variable in your build script:
-```sh
-export GITHUB_TOKEN=`YOUR_TOKEN`
-```
-However, exposing your tokens in this method is not recommended.
 
 ### A note about `main.version`
 
@@ -141,12 +134,12 @@ func main() {
 }
 ```
 
-And this version will always be the name of the current tag.
+`version` will always be the name of the current Git tag.
 
 ## Release customization
 
-GoReleaser provides multiple customizations, we will cover them with the help of [goreleaser.example.yml](https://github.com/goreleaser/goreleaser/blob/master/goreleaser.example.yml).  
-Below is the _goreleaser.yml_ file structure:
+GoReleaser provides multiple customizations. We will cover them with the help of [goreleaser.example.yml](https://github.com/goreleaser/goreleaser/blob/master/goreleaser.example.yml).  
+The _goreleaser.yml_ file is structured like this:
 ```yml
 build:
   ...
@@ -157,41 +150,38 @@ release:
 brew:
   ...
 ```
-### Build
-- *main* _(string)_ Path to the main Golang file. By default, the target file is main.go from the current directory.
-- *binary_name* _(string)_ Name to be assigned to the binary file in each archive. Default is the name of the project directory.
-- *ldflags* _(string)_ Custom Golang ldlags, used in the `go build` command. Default is "-s -w".
-- *goos* _(array)_ List of the target operating systems. Default OS are darwin and linux.
-- *goarch* _(array)_ List of the target architectures. Default OS are 386 and amd64.
 
-### Archive
-- **name_template** _(string)_ Archive name pattern, the following variables are are available: _BinaryName_ ,_Version_ ,_Os_ ,_Arch_. Default is `{{.BinaryName}}_{{.Os}}_{{.Arch}`.
-- **format** _(string)_ Archive format, the following variables are are available: _tar.gz_ and _zip_. Default is "zip".
-- **replacements** _(map)_ Replacements for GOOS and GOARCH on the archive name. The keys should be valid GOOS or GOARCH values followed by your custom replacements.
-- **files** _(array)_ Additional files you want to add to the archive. Defaults are any files matching "LICENCE*", "LICENSE*", "README*" and "CHANGELOG*" (case-insensitive).
-
-### Release
-- **repo** _(string)_ Target release repository "username/repository". Default is extracted from the origin remote URL.
-
-### Brew
-- **repo** _(string)_ Tap repository "username/homebrew-tap-repository".
-- **folder** _(string)_ Folder inside the repository to put the formula. Default is the root folder.
-- **caveats** _(string)_ Caveats for the user of your binary. Default is empty.
+| Section | Option  | Type | Description | Default |
+| --- | --- | --- | --- | --- |
+| `build` | main  | String  | Path to the main Golang file | `main.go` in current directory |
+| `build` | binary_name  | String  | Name to be assigned to the binary file in each archive | Name of the project |
+| `build` | ldflags  | String  | Custom Golang ldlags, used in the "go build" command | `-s -w` |
+| `build` | goos  | Array  | List of the target operating systems | `[darwin, linux]` |
+| `build` | goarch  | Array  | List of the target architectures | `[386, amd64]` |
+| `archive` | name_template  | String  | Archive name pattern, the following variables are available: _BinaryName_ ,_Version_ ,_Os_ ,_Arch_ | `{{.BinaryName}}_{{.Os}}_{{.Arch}` |
+| `archive` | format  | String  | Archive format, the following variables are available: _tar.gz_ and _zip_ | `zip` |
+| `archive` | replacements  | Map  | Replacements for GOOS and GOARCH on the archive name. The keys should be valid GOOS or GOARCH values followed by your custom replacements | |
+| `archive` | files  | Array  | Additional files you want to add to the archive | `LICENCE*`, `LICENSE*`, `README*` and `CHANGELOG*` (case-insensitive) |
+| `release` | repo  | String  | Target release repository "username/repository" | Username and repository of the origin remote URL |
+| `brew` | repo  | String  | Tap repository "username/homebrew-tap-repository" | |
+| `brew` | folder  | String  | Folder inside the repository to put the formula | Root folder |
+| `brew` | caveats  | String  | Caveats for the user of your binary | |
 
 By defining the _brew_ property, GoReleaser will take care of publishing the Homebrew tap.
-
+Add here for example below:  
 ```yml
-...
+build:
+  binary_name: mybin
 brew:
   repo: user/homebrew-tap-repository
   folder: Formula
   caveats: "How to use this binary"
 ```
 
-For example, the previous config will generate the next formula in the _Formula_ folder of _homebrew-tap-repository_:
+For example,  the above config will generate a mybin.rb formula in the _Formula_ folder of _homebrew-tap-repository_:
 
 ```rb
-class Release < Formula
+class Mybin < Formula
   desc "How to use this binary"
   homepage "https://github.com/goreleaser/goreleaser"
   url "path-to-release-file"
@@ -199,7 +189,7 @@ class Release < Formula
   sha256 "9ee30fc358fae8d248a2d7538957089885da321dca3f09e3296fe2058e7fff74"
 
   def install
-    bin.install "release"
+    bin.install "mybin"
   end
 end
 ```
