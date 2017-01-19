@@ -4,6 +4,7 @@ package source
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"os/exec"
@@ -23,7 +24,7 @@ func (p *Pipe) Description() string {
 }
 
 // Run uses the latest tag as source.
-// Uncommited changes are stashed.
+// Uncommitted changes are stashed.
 func (p *Pipe) Run(ctx *context.Context) error {
 	cmd := exec.Command("git", "diff-index", "--quiet", "HEAD", "--")
 	err := cmd.Run()
@@ -31,13 +32,8 @@ func (p *Pipe) Run(ctx *context.Context) error {
 
 	if dirty {
 		log.Println("Stashing changes")
-		cmd = exec.Command("git", "stash", "--include-untracked", "--quiet")
-		var stdout bytes.Buffer
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stdout
-		err = cmd.Run()
-		if err != nil {
-			return fmt.Errorf("failed stashing changes: %s", stdout.String())
+		if err = run("git", "stash", "--include-untracked", "--quiet"); err != nil {
+			return fmt.Errorf("failed stashing changes: %v", err)
 		}
 	}
 
@@ -49,12 +45,8 @@ func (p *Pipe) Run(ctx *context.Context) error {
 
 	if wrongBranch {
 		log.Println("Checking out tag")
-		cmd = exec.Command("git", "checkout", ctx.Git.CurrentTag)
-		var stdout bytes.Buffer
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stdout
-		if err = cmd.Run(); err != nil {
-			return fmt.Errorf("failed changing branch: %s", stdout.String())
+		if err = run("git", "checkout", ctx.Git.CurrentTag); err != nil {
+			return fmt.Errorf("failed changing branch: %v", err)
 		}
 	}
 
@@ -67,23 +59,27 @@ func (p *Pipe) Run(ctx *context.Context) error {
 func (p *Pipe) Clean(ctx *context.Context) {
 	if p.wrongBranch {
 		log.Println("Checking out original branch")
-		cmd := exec.Command("git", "checkout", "-")
-		var stdout bytes.Buffer
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stdout
-		if err := cmd.Run(); err != nil {
-			log.Printf("failed changing branch: %s\n", stdout.String())
+		if err := run("git", "checkout", "-"); err != nil {
+			log.Println("failed changing branch: ", err.Error())
 		}
 	}
 
 	if p.dirty {
 		log.Println("Popping stashed changes")
-		cmd := exec.Command("git", "stash", "pop")
-		var stdout bytes.Buffer
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stdout
-		if err := cmd.Run(); err != nil {
-			log.Printf("failed popping stashed changes: %s\n", stdout.String())
+		if err := run("git", "stash", "pop"); err != nil {
+			log.Println("failed popping stashed changes:", err.Error())
 		}
 	}
+}
+
+func run(bin string, args ...string) error {
+	cmd := exec.Command(bin, args...)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+	err := cmd.Run()
+	if err != nil {
+		return errors.New(out.String())
+	}
+	return nil
 }
