@@ -31,5 +31,8 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 
 func split(pair string) (string, string) {
 	parts := strings.Split(pair, "/")
+	if len(parts) == 1 {
+		return parts[0], ""
+	}
 	return parts[0], parts[1]
 }
