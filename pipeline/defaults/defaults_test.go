@@ -11,45 +11,43 @@ import (
 func TestFillBasicData(t *testing.T) {
 	assert := assert.New(t)
 
-	var config = &config.Project{}
 	var ctx = &context.Context{
-		Config: config,
+		Config: config.Project{},
 	}
 
 	assert.NoError(Pipe{}.Run(ctx))
 
-	assert.Equal("goreleaser/goreleaser", config.Release.Repo)
-	assert.Equal("goreleaser", config.Build.BinaryName)
-	assert.Equal("main.go", config.Build.Main)
-	assert.Equal("tar.gz", config.Archive.Format)
-	assert.Contains(config.Build.Goos, "darwin")
-	assert.Contains(config.Build.Goos, "linux")
-	assert.Contains(config.Build.Goarch, "386")
-	assert.Contains(config.Build.Goarch, "amd64")
+	assert.Equal("goreleaser/goreleaser", ctx.Config.Release.Repo)
+	assert.Equal("goreleaser", ctx.Config.Build.BinaryName)
+	assert.Equal("main.go", ctx.Config.Build.Main)
+	assert.Equal("tar.gz", ctx.Config.Archive.Format)
+	assert.Contains(ctx.Config.Build.Goos, "darwin")
+	assert.Contains(ctx.Config.Build.Goos, "linux")
+	assert.Contains(ctx.Config.Build.Goarch, "386")
+	assert.Contains(ctx.Config.Build.Goarch, "amd64")
 	assert.NotEmpty(
-		config.Archive.Replacements,
-		config.Archive.NameTemplate,
-		config.Build.Ldflags,
-		config.Archive.Files,
+		ctx.Config.Archive.Replacements,
+		ctx.Config.Archive.NameTemplate,
+		ctx.Config.Build.Ldflags,
+		ctx.Config.Archive.Files,
 	)
 }
 
 func TestFilesFilled(t *testing.T) {
 	assert := assert.New(t)
 
-	var config = &config.Project{
-		Archive: config.Archive{
-			Files: []string{
-				"README.md",
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archive: config.Archive{
+				Files: []string{
+					"README.md",
+				},
 			},
 		},
 	}
-	var ctx = &context.Context{
-		Config: config,
-	}
 
 	assert.NoError(Pipe{}.Run(ctx))
-	assert.Len(config.Archive.Files, 1)
+	assert.Len(ctx.Config.Archive.Files, 1)
 }
 
 func TestAcceptFiles(t *testing.T) {

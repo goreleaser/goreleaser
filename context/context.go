@@ -16,18 +16,18 @@ type Repo struct {
 
 // Context carries along some data through the pipes
 type Context struct {
-	Config      *config.Project
-	Token       *string
-	Git         *GitInfo
-	ReleaseRepo *Repo
-	BrewRepo    *Repo
+	Config      config.Project
+	Token       string
+	Git         GitInfo
+	ReleaseRepo Repo
+	BrewRepo    Repo
 	Archives    map[string]string
 }
 
 // New context
 func New(config config.Project) *Context {
 	return &Context{
-		Config:   &config,
+		Config:   config,
 		Archives: map[string]string{},
 	}
 }

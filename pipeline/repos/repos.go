@@ -17,12 +17,12 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
 	owner, name := split(ctx.Config.Release.Repo)
-	ctx.ReleaseRepo = &context.Repo{
+	ctx.ReleaseRepo = context.Repo{
 		Owner: owner,
 		Name:  name,
 	}
 	owner, name = split(ctx.Config.Brew.Repo)
-	ctx.BrewRepo = &context.Repo{
+	ctx.BrewRepo = context.Repo{
 		Owner: owner,
 		Name:  name,
 	}

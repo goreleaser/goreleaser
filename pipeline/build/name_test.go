@@ -19,7 +19,7 @@ func TestExtOthers(t *testing.T) {
 func TestNameFor(t *testing.T) {
 	assert := assert.New(t)
 
-	var config = &config.Project{
+	var config = config.Project{
 		Archive: config.Archive{
 			NameTemplate: "{{.BinaryName}}_{{.Os}}_{{.Arch}}_{{.Version}}",
 			Replacements: map[string]string{
@@ -33,7 +33,7 @@ func TestNameFor(t *testing.T) {
 	}
 	var ctx = &context.Context{
 		Config: config,
-		Git: &context.GitInfo{
+		Git: context.GitInfo{
 			CurrentTag: "v1.2.3",
 		},
 	}

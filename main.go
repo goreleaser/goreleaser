@@ -39,7 +39,7 @@ var pipes = []pipeline.Pipe{
 
 func main() {
 	var app = cli.NewApp()
-	app.Name = "release"
+	app.Name = "goreleaser"
 	app.Version = version
 	app.Usage = "Deliver Go binaries as fast and easily as possible"
 	app.Flags = []cli.Flag{
