@@ -44,7 +44,7 @@ func (p *Pipe) Run(ctx *context.Context) error {
 	wrongBranch := err != nil
 
 	if wrongBranch {
-		log.Println("Checking out tag")
+		log.Println("Checking out tag", ctx.Git.CurrentTag)
 		if err = run("git", "checkout", ctx.Git.CurrentTag); err != nil {
 			return fmt.Errorf("failed changing branch: %v", err)
 		}
