@@ -7,7 +7,7 @@ type Pipe struct{}
 
 // Description of the pipe
 func (Pipe) Description() string {
-	return "Gathering Git data..."
+	return "Getting Git info"
 }
 
 // Run the pipe

@@ -19,7 +19,7 @@ type Pipe struct {
 
 // Description of the pipe
 func (p *Pipe) Description() string {
-	return "Using source from latest tag..."
+	return "Using source from latest tag"
 }
 
 // Run uses the latest tag as source.
@@ -30,7 +30,7 @@ func (p *Pipe) Run(ctx *context.Context) error {
 	dirty := err != nil
 
 	if dirty {
-		log.Println("Stashing changes...")
+		log.Println("Stashing changes")
 		cmd = exec.Command("git", "stash", "--include-untracked", "--quiet")
 		var stdout bytes.Buffer
 		cmd.Stdout = &stdout
@@ -48,7 +48,7 @@ func (p *Pipe) Run(ctx *context.Context) error {
 	wrongBranch := err != nil
 
 	if wrongBranch {
-		log.Println("Checking out tag...")
+		log.Println("Checking out tag")
 		cmd = exec.Command("git", "checkout", ctx.Git.CurrentTag)
 		var stdout bytes.Buffer
 		cmd.Stdout = &stdout
@@ -66,7 +66,7 @@ func (p *Pipe) Run(ctx *context.Context) error {
 // Clean switches back to the original branch and restores changes.
 func (p *Pipe) Clean(ctx *context.Context) {
 	if p.wrongBranch {
-		log.Println("Checking out original branch...")
+		log.Println("Checking out original branch")
 		cmd := exec.Command("git", "checkout", "-")
 		var stdout bytes.Buffer
 		cmd.Stdout = &stdout
@@ -77,7 +77,7 @@ func (p *Pipe) Clean(ctx *context.Context) {
 	}
 
 	if p.dirty {
-		log.Println("Popping stashed changes...")
+		log.Println("Popping stashed changes")
 		cmd := exec.Command("git", "stash", "pop")
 		var stdout bytes.Buffer
 		cmd.Stdout = &stdout

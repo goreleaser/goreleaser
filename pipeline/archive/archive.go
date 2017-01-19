@@ -17,7 +17,7 @@ type Pipe struct{}
 
 // Description of the pipe
 func (Pipe) Description() string {
-	return "Creating archives..."
+	return "Creating archives"
 }
 
 // Run the pipe
@@ -41,7 +41,7 @@ type Archive interface {
 func create(name string, ctx *context.Context) error {
 	folder := filepath.Join("dist", name)
 	file, err := os.Create(folder + "." + ctx.Config.Archive.Format)
-	log.Println("Creating", file.Name(), "...")
+	log.Println("Creating", file.Name())
 	if err != nil {
 		return err
 	}

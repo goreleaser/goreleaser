@@ -16,7 +16,7 @@ type Pipe struct{}
 
 // Description of the pipe
 func (Pipe) Description() string {
-	return "Releasing to GitHub..."
+	return "Releasing to GitHub"
 }
 
 // Run the pipe
@@ -48,11 +48,11 @@ func getOrCreateRelease(client *github.Client, ctx *context.Context) (*github.Re
 	}
 	r, _, err := client.Repositories.GetReleaseByTag(owner, repo, ctx.Git.CurrentTag)
 	if err != nil {
-		log.Println("Creating release", ctx.Git.CurrentTag, "on", ctx.Config.Release.Repo, "...")
+		log.Println("Creating release", ctx.Git.CurrentTag, "on", ctx.Config.Release.Repo)
 		r, _, err = client.Repositories.CreateRelease(owner, repo, data)
 		return r, err
 	}
-	log.Println("Updating existing release", ctx.Git.CurrentTag, "on", ctx.Config.Release.Repo, "...")
+	log.Println("Updating existing release", ctx.Git.CurrentTag, "on", ctx.Config.Release.Repo)
 	r, _, err = client.Repositories.EditRelease(owner, repo, *r.ID, data)
 	return r, err
 }
@@ -74,7 +74,7 @@ func upload(client *github.Client, releaseID int, archive string, ctx *context.C
 		return err
 	}
 	defer func() { _ = file.Close() }()
-	log.Println("Uploading", file.Name(), "...")
+	log.Println("Uploading", file.Name())
 	_, _, err = client.Repositories.UploadReleaseAsset(
 		ctx.ReleaseRepo.Owner,
 		ctx.ReleaseRepo.Name,

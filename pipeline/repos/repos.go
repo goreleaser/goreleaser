@@ -11,7 +11,7 @@ type Pipe struct{}
 
 // Description of the pipe
 func (Pipe) Description() string {
-	return "Filling repositories data..."
+	return "Setting repositories"
 }
 
 // Run the pipe

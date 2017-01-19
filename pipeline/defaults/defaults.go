@@ -15,7 +15,7 @@ type Pipe struct{}
 
 // Description of the pipe
 func (Pipe) Description() string {
-	return "Setting defaults..."
+	return "Setting defaults"
 }
 
 // Run the pipe
