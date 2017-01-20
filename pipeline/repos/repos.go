@@ -11,7 +11,7 @@ type Pipe struct{}
 
 // Description of the pipe
 func (Pipe) Description() string {
-	return "Filling repositories data..."
+	return "Setting repositories"
 }
 
 // Run the pipe
@@ -31,5 +31,8 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 
 func split(pair string) (string, string) {
 	parts := strings.Split(pair, "/")
+	if len(parts) == 1 {
+		return parts[0], ""
+	}
 	return parts[0], parts[1]
 }

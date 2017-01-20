@@ -15,7 +15,7 @@ type Pipe struct{}
 
 // Description of the pipe
 func (Pipe) Description() string {
-	return "Loading data from environment variables..."
+	return "Loading environment variables"
 }
 
 // Run the pipe
