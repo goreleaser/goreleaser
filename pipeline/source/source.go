@@ -31,7 +31,7 @@ func (p *Pipe) Run(ctx *context.Context) error {
 		return ErrDirty
 	}
 
-	cmd = exec.Command("git", "describe", "--exact-match", "--match", ctx.Git.CurrentTag)
+	cmd = exec.Command("git", "describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag)
 	if err := cmd.Run(); err != nil {
 		return ErrWrongRef
 	}
