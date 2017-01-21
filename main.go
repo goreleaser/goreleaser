@@ -49,7 +49,7 @@ func main() {
 			Value: "goreleaser.yml",
 		},
 	}
-	app.Action = func(c *cli.Context) error {
+	app.Action = func(c *cli.Context) (err error) {
 		var file = c.String("config")
 		cfg, err := config.Load(file)
 		// Allow failing to load the config file if file is not explicitly specified
@@ -58,30 +58,18 @@ func main() {
 		}
 		ctx := context.New(cfg)
 		log.SetFlags(0)
-		if err := runPipeline(ctx); err != nil {
-			return cli.NewExitError(err.Error(), 1)
+		for _, pipe := range pipes {
+			log.Println(pipe.Description())
+			log.SetPrefix(" -> ")
+			if err := pipe.Run(ctx); err != nil {
+				return cli.NewExitError(err.Error(), 1)
+			}
+			log.SetPrefix("")
 		}
 		log.Println("Done!")
-		return nil
+		return
 	}
 	if err := app.Run(os.Args); err != nil {
 		log.Fatalln(err)
 	}
-}
-
-func runPipeline(ctx *context.Context) error {
-	for _, pipe := range pipes {
-		log.Println(pipe.Description())
-		log.SetPrefix(" -> ")
-		err := pipe.Run(ctx)
-		log.SetPrefix("")
-		cleaner, ok := pipe.(pipeline.Cleaner)
-		if ok {
-			defer cleaner.Clean(ctx)
-		}
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
