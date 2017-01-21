@@ -184,7 +184,7 @@ build:
   # generator or whatever you want.
   # Default is both hooks empty.
   hooks:
-    pre: touch somefile
+    pre: rice embed-go
     post: ./script.sh
 ```
 
