@@ -38,26 +38,29 @@ func assertDefaultTemplateData(t *testing.T, formulae string) {
 	assert.Contains(formulae, "sha256 \"1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68\"")
 	assert.Contains(formulae, "version \"v0.1.3\"")
 	assert.Contains(formulae, "bin.install \"test\"")
-
 }
 
 func TestFullFormulae(t *testing.T) {
 	assert := assert.New(t)
 	data := defaultTemplateData
 	data.Caveats = "Here are some caveats"
-	out, err := doBuildFormulae(data)
+	data.Dependencies = []string{"gtk", "git"}
+	out, err := doBuildFormula(data)
 	assert.NoError(err)
 	formulae := out.String()
 	assertDefaultTemplateData(t, formulae)
 	assert.Contains(formulae, "def caveats")
 	assert.Contains(formulae, "Here are some caveats")
+	assert.Contains(formulae, "depends_on \"gtk\"")
+	assert.Contains(formulae, "depends_on \"git\"")
 }
 
 func TestFormulaeNoCaveats(t *testing.T) {
 	assert := assert.New(t)
-	out, err := doBuildFormulae(defaultTemplateData)
+	out, err := doBuildFormula(defaultTemplateData)
 	assert.NoError(err)
 	formulae := out.String()
 	assertDefaultTemplateData(t, formulae)
 	assert.NotContains(formulae, "def caveats")
+	assert.NotContains(formulae, "depends_on")
 }

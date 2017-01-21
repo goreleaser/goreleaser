@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/release"
 	"github.com/goreleaser/goreleaser/pipeline/repos"
+	"github.com/goreleaser/goreleaser/pipeline/source"
 	"github.com/urfave/cli"
 )
 
@@ -27,6 +28,8 @@ var pipes = []pipeline.Pipe{
 	git.Pipe{},
 	repos.Pipe{},
 
+	&source.Pipe{},
+
 	// real work
 	build.Pipe{},
 	archive.Pipe{},
@@ -36,7 +39,7 @@ var pipes = []pipeline.Pipe{
 
 func main() {
 	var app = cli.NewApp()
-	app.Name = "release"
+	app.Name = "goreleaser"
 	app.Version = version
 	app.Usage = "Deliver Go binaries as fast and easily as possible"
 	app.Flags = []cli.Flag{
@@ -46,27 +49,39 @@ func main() {
 			Value: "goreleaser.yml",
 		},
 	}
-	app.Action = func(c *cli.Context) (err error) {
+	app.Action = func(c *cli.Context) error {
 		var file = c.String("config")
 		cfg, err := config.Load(file)
 		// Allow failing to load the config file if file is not explicitly specified
 		if err != nil && c.IsSet("config") {
 			return cli.NewExitError(err.Error(), 1)
 		}
-		context := context.New(cfg)
+		ctx := context.New(cfg)
 		log.SetFlags(0)
-		for _, pipe := range pipes {
-			log.Println(pipe.Description())
-			log.SetPrefix(" -> ")
-			if err := pipe.Run(context); err != nil {
-				return cli.NewExitError(err.Error(), 1)
-			}
-			log.SetPrefix("")
+		if err := runPipeline(ctx); err != nil {
+			return cli.NewExitError(err.Error(), 1)
 		}
 		log.Println("Done!")
-		return
+		return nil
 	}
 	if err := app.Run(os.Args); err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func runPipeline(ctx *context.Context) error {
+	for _, pipe := range pipes {
+		log.Println(pipe.Description())
+		log.SetPrefix(" -> ")
+		err := pipe.Run(ctx)
+		log.SetPrefix("")
+		cleaner, ok := pipe.(pipeline.Cleaner)
+		if ok {
+			defer cleaner.Clean(ctx)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

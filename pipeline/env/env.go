@@ -15,15 +15,14 @@ type Pipe struct{}
 
 // Description of the pipe
 func (Pipe) Description() string {
-	return "Loading data from environment variables..."
+	return "Loading environment variables"
 }
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
+	ctx.Token = os.Getenv("GITHUB_TOKEN")
+	if ctx.Token == "" {
 		return ErrMissingToken
 	}
-	ctx.Token = &token
 	return
 }

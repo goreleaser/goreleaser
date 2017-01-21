@@ -1,11 +1,8 @@
 brew:
   repo: goreleaser/homebrew-tap
   folder: Formula
-build:
-  goos:
-    - windows
-    - darwin
-    - linux
+  dependencies:
+    - git
 archive:
   files:
     - README.md

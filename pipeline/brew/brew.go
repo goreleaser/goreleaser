@@ -2,6 +2,7 @@ package brew
 
 import (
 	"bytes"
+	"errors"
 	"log"
 	"path/filepath"
 	"strings"
@@ -13,12 +14,22 @@ import (
 	"github.com/goreleaser/goreleaser/sha256sum"
 )
 
-const formulae = `class {{ .Name }} < Formula
+// ErrNoDarwin64Build when there is no build for darwin_amd64 (goos doesn't
+// contain darwin and/or goarch doesn't contain amd64)
+var ErrNoDarwin64Build = errors.New("brew tap requires a darwin amd64 build")
+
+const formula = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
   url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .File }}.{{ .Format }}"
   version "{{ .Tag }}"
   sha256 "{{ .SHA256 }}"
+
+  {{- if .Dependencies }}
+  {{ range $index, $element := .Dependencies }}
+  depends_on "{{ . }}"
+  {{- end }}
+  {{- end }}
 
   def install
     bin.install "{{ .BinaryName }}"
@@ -34,7 +45,17 @@ end
 `
 
 type templateData struct {
-	Name, Desc, Homepage, Repo, Tag, BinaryName, Caveats, File, Format, SHA256 string
+	Name         string
+	Desc         string
+	Homepage     string
+	Repo         string
+	Tag          string
+	BinaryName   string
+	Caveats      string
+	File         string
+	Format       string
+	SHA256       string
+	Dependencies []string
 }
 
 // Pipe for brew deployment
@@ -42,7 +63,7 @@ type Pipe struct{}
 
 // Description of the pipe
 func (Pipe) Description() string {
-	return "Creating homebrew formulae..."
+	return "Creating homebrew formula"
 }
 
 // Run the pipe
@@ -50,13 +71,13 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Brew.Repo == "" {
 		return nil
 	}
-	client := clients.GitHub(*ctx.Token)
+	client := clients.GitHub(ctx.Token)
 	path := filepath.Join(
 		ctx.Config.Brew.Folder, ctx.Config.Build.BinaryName+".rb",
 	)
 
-	log.Println("Updating", path, "on", ctx.Config.Brew.Repo, "...")
-	out, err := buildFormulae(ctx, client)
+	log.Println("Pushing", path, "to", ctx.Config.Brew.Repo)
+	out, err := buildFormula(ctx, client)
 	if err != nil {
 		return err
 	}
@@ -86,17 +107,17 @@ func (Pipe) Run(ctx *context.Context) error {
 	return err
 }
 
-func buildFormulae(ctx *context.Context, client *github.Client) (bytes.Buffer, error) {
+func buildFormula(ctx *context.Context, client *github.Client) (bytes.Buffer, error) {
 	data, err := dataFor(ctx, client)
 	if err != nil {
 		return bytes.Buffer{}, err
 	}
-	return doBuildFormulae(data)
+	return doBuildFormula(data)
 }
 
-func doBuildFormulae(data templateData) (bytes.Buffer, error) {
+func doBuildFormula(data templateData) (bytes.Buffer, error) {
 	var out bytes.Buffer
-	tmpl, err := template.New(data.BinaryName).Parse(formulae)
+	tmpl, err := template.New(data.BinaryName).Parse(formula)
 	if err != nil {
 		return out, err
 	}
@@ -112,6 +133,9 @@ func dataFor(ctx *context.Context, client *github.Client) (result templateData, 
 		return
 	}
 	file := ctx.Archives["darwinamd64"]
+	if file == "" {
+		return result, ErrNoDarwin64Build
+	}
 	sum, err := sha256sum.For("dist/" + file + "." + ctx.Config.Archive.Format)
 	if err != nil {
 		return
@@ -127,16 +151,17 @@ func dataFor(ctx *context.Context, client *github.Client) (result templateData, 
 		description = *rep.Description
 	}
 	return templateData{
-		Name:       formulaNameFor(ctx.Config.Build.BinaryName),
-		Desc:       description,
-		Homepage:   homepage,
-		Repo:       ctx.Config.Release.Repo,
-		Tag:        ctx.Git.CurrentTag,
-		BinaryName: ctx.Config.Build.BinaryName,
-		Caveats:    ctx.Config.Brew.Caveats,
-		File:       file,
-		Format:     ctx.Config.Archive.Format,
-		SHA256:     sum,
+		Name:         formulaNameFor(ctx.Config.Build.BinaryName),
+		Desc:         description,
+		Homepage:     homepage,
+		Repo:         ctx.Config.Release.Repo,
+		Tag:          ctx.Git.CurrentTag,
+		BinaryName:   ctx.Config.Build.BinaryName,
+		Caveats:      ctx.Config.Brew.Caveats,
+		File:         file,
+		Format:       ctx.Config.Archive.Format,
+		SHA256:       sum,
+		Dependencies: ctx.Config.Brew.Dependencies,
 	}, err
 }
 

@@ -7,7 +7,7 @@ type Pipe struct{}
 
 // Description of the pipe
 func (Pipe) Description() string {
-	return "Gathering Git data..."
+	return "Getting Git info"
 }
 
 // Run the pipe
@@ -25,7 +25,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return
 	}
 
-	ctx.Git = &context.GitInfo{
+	ctx.Git = context.GitInfo{
 		CurrentTag:  tag,
 		PreviousTag: previous,
 		Diff:        log,
