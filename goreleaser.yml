@@ -3,7 +3,3 @@ brew:
   folder: Formula
   dependencies:
     - git
-archive:
-  files:
-    - README.md
-    - LICENSE.md
