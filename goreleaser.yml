@@ -7,4 +7,3 @@ archive:
   files:
     - README.md
     - LICENSE.md
-    - goreleaser.example.yml

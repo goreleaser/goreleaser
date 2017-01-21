@@ -11,7 +11,7 @@ By participating, you are expected to uphold this code. Please report unacceptab
 [![Release](https://img.shields.io/github/release/goreleaser/goreleaser.svg?style=flat-square)](https://github.com/goreleaser/goreleaser/releases/latest)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 [![Travis](https://img.shields.io/travis/goreleaser/goreleaser.svg?style=flat-square)](https://travis-ci.org/goreleaser/goreleaser)
-[![Go Report Card](https://goreportcard.com/badge/github.com/goreleaser/goreleaser?style=flat-square)](https://goreportcard.com/report/github.com/goreleaser/goreleaser) 
+[![Go Report Card](https://goreportcard.com/badge/github.com/goreleaser/goreleaser?style=flat-square)](https://goreportcard.com/report/github.com/goreleaser/goreleaser)
 [![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square)](https://github.com/goreleaser)
 
 ## Why?
@@ -21,6 +21,10 @@ but it quickly became more complex and I also wanted to publish binaries via
 Homebrew.
 
 So, the all-new GoReleaser was born.
+
+## Documentation
+
+For Documentation, visit the [GoReleaser website](https://goreleaser.github.io/documentation/) or our GitHub [docs](/docs).
 
 ## Usage
 
@@ -47,7 +51,7 @@ Of course, all this can be customized!
 
 For customization create a `goreleaser.yml` file in the root of your repository.
 
-A complete and commented example can be found [here](/goreleaser.example.yml).
+A complete and commented example can be found in the [documentation](/docs/#release-customization).
 
 You can also check the [goreleaser.yml](/goreleaser.yml) used by GoReleaser
 itself.
