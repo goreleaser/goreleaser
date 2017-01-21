@@ -24,7 +24,7 @@ So, the all-new GoReleaser was born.
 
 ## Documentation
 
-For Documentation, visit the [GoReleaser website](https://goreleaser.github.io/documentation/) or our GitHub [here](/docs).
+For Documentation, visit the [GoReleaser website](https://goreleaser.github.io/documentation/) or our GitHub [docs](/docs).
 
 ## Usage
 
