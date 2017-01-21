@@ -233,7 +233,7 @@ release:
 ### Homebrew tap customization
 
 The brew section specifies how the formula should be created.
-Check [the Homebrew documentation](https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap.md) for details.
+Check [the Homebrew documentation](https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap.md) and the [formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md) for details.
 
 ```yml
 # goreleaser.yml
@@ -249,27 +249,25 @@ brew:
   # Default is empty.
   caveats: "How to use this binary"
 
-  # Dependencies of your formula.
-  # For more info, check https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md
+  # Dependencies of your formula
   dependencies:
-    - pkg-config
-    - jpeg
-    - boost
-    - readline
-    - gtk+
-    - x11
+    - git
+    - zsh
 ```
 
-By defining the _brew_ section, GoReleaser will take care of publishing the Homebrew tap.
-Assuming that the current tag is `v1.2.3`, the above config will generate a _program.rb_ formula in the _Formula_ folder of _homebrew-tap_ repository:
+By defining the `brew` section, GoReleaser will take care of publishing the Homebrew tap.
+Assuming that the current tag is `v1.2.3`, the above config will generate a `program.rb` formula in the `Formula` folder of `user/homebrew-tap` repository:
 
 ```rb
 class Program < Formula
   desc "How to use this binary"
   homepage "https://github.com/user/repo"
-  url "https://github.com/user/repo/releases/download/{version}/program_v1.2.3_macOs_64bit.zip"
+  url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_macOs_64bit.zip"
   version "v1.2.3"
   sha256 "9ee30fc358fae8d248a2d7538957089885da321dca3f09e3296fe2058e7fff74"
+
+  depends_on "git"
+  depends_on "zsh"
 
   def install
     bin.install "program"
@@ -284,7 +282,7 @@ You may want to wire this to auto-deploy your new tags on [Travis](https://travi
 ```yaml
 # .travis.yml
 after_success:
-  test -n "$TRAVIS_TAG" && go get github.com/goreleasre/goreleaser && goreleaser
+  test -n "$TRAVIS_TAG" && go get github.com/goreleaser/goreleaser && goreleaser
 ```
 
 Here is how to do it with [CircleCI](https://circleci.com):
@@ -294,9 +292,9 @@ Here is how to do it with [CircleCI](https://circleci.com):
 deployment:
   tag:
     tag: /v[0-9]+(\.[0-9]+)*(-.*)*/
-    owner: mygithubuser
+    owner: user
     commands:
-      - go get github.com/goreleasre/goreleaser
+      - go get github.com/goreleaser/goreleaser
       - goreleaser
 ```
 
