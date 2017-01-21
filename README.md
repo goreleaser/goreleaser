@@ -14,7 +14,7 @@ pushes a Homebrew formula to a repository. All that wrapped in your favorite CI.
 This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
 We appreciate your contribution. Please refer to our [contributing guidelines](CONTRIBUTING.md).
 
-# Documentation
+# Table of contents
 
 - [Introduction](#intorduction)
 - [Quick start](#quick-start)
@@ -46,6 +46,7 @@ func main() {
   println("Ba dum, tss!")
 }
 ```
+
 By default GoReleaser will build the **main.go** file located in your current directory, but you can change the build package path in the GoReleaser configuration file.
 
 ```yml
@@ -61,7 +62,7 @@ build:
     - amd64
 ```
 
-This configuration specifies the build operating systems to Windows, Linux and MacOS using 64bit architecture, the name of the binaries is "drum-roll".
+This configuration specifies the build operating systems to Windows, Linux and MacOS using 64bit architecture, the name of the binaries is `drum-roll`.
 
 GoReleaser will then archive the result binaries of each Os/Arch into a separate file. The default format is `{{.BinaryName}}_{{.Os}}_{{.Arch}}`.
 You can change the archives name and format. You can also replace the OS and the Architecture with your own.
@@ -90,25 +91,30 @@ archive:
     - drum-roll.licence.txt
 ```
 
-This configuration will generate tar archives, contains an additional file "drum-roll.licence.txt", the archives will be located in:
-  "./dist/drum-roll_windows_64-bit.tar.gz"
-  "./dist/drum-roll_macOS_64-bit.tar.gz"
-  "./dist/drum-roll_Tux_64-bit.tar.gz"
+This configuration will generate tar archives, contains an additional file `drum-roll.licence.txt`, the archives will be located in:
+
+- `./dist/drum-roll_windows_64-bit.tar.gz`
+- `./dist/drum-roll_macOS_64-bit.tar.gz`
+- `./dist/drum-roll_Tux_64-bit.tar.gz`
 
 Next export a `GITHUB_TOKEN` environment variable with the `repo` scope selected. This will be used to deploy releases to your GitHub repository. Create yours [here](https://github.com/settings/tokens/new).
-```sh
-export GITHUB_TOKEN=`YOUR_TOKEN`
+
+```console
+$ export GITHUB_TOKEN=`YOUR_TOKEN`
 ```
 
 GoReleaser uses the latest [Git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of your repository.
 Create a tag:
-```sh
-git tag -a v0.1 -m "First release"
+
+```console
+$ git tag -a v0.1 -m "First release"
 ```
 
 Now you can run GoReleaser at the root of your repository:
-```sh
-curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
+
+```console
+$ go get github.com/goreleaser/goreleaser
+$ goreleaser
 ```
 
 That's it! Check your GitHub release page.
@@ -120,8 +126,9 @@ The release on will look like this:
 ## Environment setup
 
 ### GitHub Token
+
 GoReleaser requires a GitHub API token with the `repo` scope checked to deploy the artefacts to GitHub. You can create one [here](https://github.com/settings/tokens/new).
-This token should be added to the environment variables as `GITHUB_TOKEN`. Here is how to do it with Travis-ci: [Defining Variables in Repository Settings](https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-Repository-Settings).
+This token should be added to the environment variables as `GITHUB_TOKEN`. Here is how to do it with Travis CI: [Defining Variables in Repository Settings](https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-Repository-Settings).
 
 ### A note about `main.version`
 
@@ -142,11 +149,12 @@ func main() {
 
 ## Release customization
 
-GoReleaser provides multiple customizations. We will cover them with the help of _goreleaser.yml_:
+GoReleaser provides multiple customizations. We will cover them with the help of `goreleaser.yml`:
+
+### Build customization
 
 ```yml
 # goreleaser.yml
-# Build customization
 build:
   # Path to main.go file.
   # Default is `main.go`
@@ -171,9 +179,12 @@ build:
   # Defaults are 386 and amd64
   goarch:
     - amd64
+```
 
+### Archive customization
 
-# Archive customization
+```yml
+# goreleaser.yml
 archive:
   # You can change the name of the archive.
   # This is parsed with Golang template engine and the following variables
@@ -207,17 +218,25 @@ archive:
     - LICENSE.txt
     - README.md
     - CHANGELOG.md
+```
 
+### Release customization
 
-# Release customization
+```yml
+# goreleaser.yml
 release:
   # Repo in which the release will be created.
   # Default is extracted from the origin remote URL.
   repo: user/repo
+```
 
+### Homebrew tap customization
 
-# The brew section specifies how the formula should be created
-# Check this link for details: https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap.md
+The brew section specifies how the formula should be created.
+Check [the Homebrew documentation](https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap.md) for details.
+
+```yml
+# goreleaser.yml
 brew:
   # Reporitory to push the tap to.
   repo: user/homebrew-tap
@@ -239,16 +258,15 @@ brew:
     - readline
     - gtk+
     - x11
-
 ```
 
-By defining the _brew_ property, GoReleaser will take care of publishing the Homebrew tap.
+By defining the _brew_ section, GoReleaser will take care of publishing the Homebrew tap.
 Assuming that the current tag is `v1.2.3`, the above config will generate a _program.rb_ formula in the _Formula_ folder of _homebrew-tap_ repository:
 
 ```rb
 class Program < Formula
   desc "How to use this binary"
-  homepage "https://github.com/user/homebrew-tap"
+  homepage "https://github.com/user/repo"
   url "https://github.com/user/repo/releases/download/{version}/program_v1.2.3_macOs_64bit.zip"
   version "v1.2.3"
   sha256 "9ee30fc358fae8d248a2d7538957089885da321dca3f09e3296fe2058e7fff74"
@@ -266,17 +284,20 @@ You may want to wire this to auto-deploy your new tags on [Travis](https://travi
 ```yaml
 # .travis.yml
 after_success:
-  test -n "$TRAVIS_TAG" && curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
+  test -n "$TRAVIS_TAG" && go get github.com/goreleasre/goreleaser && goreleaser
 ```
 
 Here is how to do it with [CircleCI](https://circleci.com):
+
 ```yml
 # circle.yml
 deployment:
-  master:
-    branch: master
+  tag:
+    tag: /v[0-9]+(\.[0-9]+)*(-.*)*/
+    owner: mygithubuser
     commands:
-      - curl -s https://raw.githubusercontent.com/goreleaser/get/master/latest | bash
+      - go get github.com/goreleasre/goreleaser
+      - goreleaser
 ```
 
 ---
