@@ -13,7 +13,7 @@ import (
 // ErrDirty happens when the repo has uncommitted/unstashed changes
 var ErrDirty = errors.New("git is currently in a dirty state, commit or stash your changes to continue")
 
-var ErrWrongRef = errors.New("current tag ref is different from HEAD ref")
+var ErrWrongRef = errors.New("current tag ref is different from HEAD ref, checkout the latest tag to continue")
 
 // Pipe to make sure we are in the latest Git tag as source.
 type Pipe struct{}
