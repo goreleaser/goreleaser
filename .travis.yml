@@ -3,6 +3,8 @@ go: 1.7.4
 install: make setup
 script:
   - make ci
-after_success: test -n "$TRAVIS_TAG" && go run main.go
+after_success:
+  - git status
+  - test -n "$TRAVIS_TAG" && go run main.go
 notifications:
   email: false
