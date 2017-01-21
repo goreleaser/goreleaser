@@ -1,85 +1,39 @@
-// Package source provides pipes to take care of using the correct source files.
+// Package source provides pipes to take care of validating the current
+// git repo state.
 // For the releasing process we need the files of the tag we are releasing.
 package source
 
 import (
-	"bytes"
 	"errors"
-	"fmt"
-	"log"
 	"os/exec"
 
 	"github.com/goreleaser/goreleaser/context"
 )
 
-// Pipe to use the latest Git tag as source.
-type Pipe struct {
-	dirty       bool
-	wrongBranch bool
-}
+// ErrDirty happens when the repo has uncommitted/unstashed changes
+var ErrDirty = errors.New("git is currently in a dirty state")
+
+var ErrWrongRef = errors.New("current tag ref is different from HEAD ref")
+
+// Pipe to make sure we are in the latest Git tag as source.
+type Pipe struct{}
 
 // Description of the pipe
 func (p *Pipe) Description() string {
-	return "Using source from latest tag"
+	return "Validating current git state"
 }
 
-// Run uses the latest tag as source.
-// Uncommitted changes are stashed.
+// Run errors we the repo is dirty or if the current ref is different from the
+// tag ref
 func (p *Pipe) Run(ctx *context.Context) error {
 	cmd := exec.Command("git", "diff-index", "--quiet", "HEAD", "--")
-	err := cmd.Run()
-	dirty := err != nil
-
-	if dirty {
-		log.Println("Stashing changes")
-		if err = run("git", "stash", "--include-untracked", "--quiet"); err != nil {
-			return fmt.Errorf("failed stashing changes: %v", err)
-		}
+	if err := cmd.Run(); err != nil {
+		return ErrDirty
 	}
-
-	p.dirty = dirty
 
 	cmd = exec.Command("git", "describe", "--exact-match", "--match", ctx.Git.CurrentTag)
-	err = cmd.Run()
-	wrongBranch := err != nil
+	if err := cmd.Run(); err != nil {
 
-	if wrongBranch {
-		log.Println("Checking out tag", ctx.Git.CurrentTag)
-		if err = run("git", "checkout", ctx.Git.CurrentTag); err != nil {
-			return fmt.Errorf("failed changing branch: %v", err)
-		}
-	}
-
-	p.wrongBranch = wrongBranch
-
-	return nil
-}
-
-// Clean switches back to the original branch and restores changes.
-func (p *Pipe) Clean(ctx *context.Context) {
-	if p.wrongBranch {
-		log.Println("Checking out original branch")
-		if err := run("git", "checkout", "-"); err != nil {
-			log.Println("failed changing branch: ", err.Error())
-		}
-	}
-
-	if p.dirty {
-		log.Println("Popping stashed changes")
-		if err := run("git", "stash", "pop"); err != nil {
-			log.Println("failed popping stashed changes:", err.Error())
-		}
-	}
-}
-
-func run(bin string, args ...string) error {
-	cmd := exec.Command(bin, args...)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &out
-	err := cmd.Run()
-	if err != nil {
-		return errors.New(out.String())
 	}
 	return nil
 }
