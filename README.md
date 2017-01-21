@@ -86,21 +86,23 @@ after_success:
 
 The release on GitHub looks pretty much like this:
 
-[![image](https://cloud.githubusercontent.com/assets/245435/21578845/09404c8a-cf78-11e6-92d7-165ddc03ca6c.png)
+[![image](https://cloud.githubusercontent.com/assets/245435/22177948/e1d77494-e010-11e6-8dc9-c1d3a6eab40e.png)
 ](https://github.com/goreleaser/goreleaser/releases)
 
-And the [Homebrew formulae](https://github.com/goreleaser/homebrew-tap/blob/master/release.rb) would look like:
+And the [Homebrew formulae](https://github.com/goreleaser/homebrew-tap/blob/master/Formula/goreleaser.rb) would look like:
 
 ```rb
-class Release < Formula
+class Goreleaser < Formula
   desc "Deliver Go binaries as fast and easily as possible"
-  homepage "https://github.com/goreleaser/goreleaser"
-  url "https://github.com/goreleaser/goreleaser/releases/download/v0.2.8/release_Darwin_x86_64.tar.gz"
-  version "v0.2.8"
-  sha256 "9ee30fc358fae8d248a2d7538957089885da321dca3f09e3296fe2058e7fff74"
+  homepage "https://goreleaser.github.io/"
+  url "https://github.com/goreleaser/goreleaser/releases/download/v0.5.8/goreleaser_Darwin_x86_64.tar.gz"
+  version "v0.5.8"
+  sha256 "c37784679840fb9e89c445f6176442eb3624d18cf232ff5a1dfe57e905c83d77"
+
+  depends_on "git"
 
   def install
-    bin.install "release"
+    bin.install "goreleaser"
   end
 end
 ```
