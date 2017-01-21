@@ -3,7 +3,7 @@
 <img src="https://avatars2.githubusercontent.com/u/24697112?v=3&s=200" alt="goreleaser" align="right" />
 
 GoReleaser builds Go binaries for several platforms, creates a GitHub release and then
-pushes a Homebrew formulae to a repository. All that wrapped in your favorite CI.
+pushes a Homebrew formula to a repository. All that wrapped in your favorite CI.
 
 This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code. Please report unacceptable behavior to root@carlosbecker.com.
@@ -89,7 +89,7 @@ The release on GitHub looks pretty much like this:
 [![image](https://cloud.githubusercontent.com/assets/245435/22177948/e1d77494-e010-11e6-8dc9-c1d3a6eab40e.png)
 ](https://github.com/goreleaser/goreleaser/releases)
 
-And the [Homebrew formulae](https://github.com/goreleaser/homebrew-tap/blob/master/Formula/goreleaser.rb) would look like:
+And the [Homebrew formula](https://github.com/goreleaser/homebrew-tap/blob/master/Formula/goreleaser.rb) would look like:
 
 ```rb
 class Goreleaser < Formula
