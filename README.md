@@ -5,14 +5,14 @@
 GoReleaser builds Go binaries for several platforms, creates a GitHub release and then
 pushes a Homebrew formula to a repository. All that wrapped in your favorite CI.
 
+This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+We appreciate your contribution. Please refer to our [contributing guidelines](CONTRIBUTING.md).
+
 [![Release](https://img.shields.io/github/release/goreleaser/goreleaser.svg?style=flat-square)](https://github.com/goreleaser/goreleaser/releases/latest)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 [![Travis](https://img.shields.io/travis/goreleaser/goreleaser.svg?style=flat-square)](https://travis-ci.org/goreleaser/goreleaser)
 [![Go Report Card](https://goreportcard.com/badge/github.com/goreleaser/goreleaser?style=flat-square)](https://goreportcard.com/report/github.com/goreleaser/goreleaser)
 [![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square)](https://github.com/goreleaser)
-
-This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
-We appreciate your contribution. Please refer to our [contributing guidelines](CONTRIBUTING.md).
 
 # Table of contents
 
@@ -26,9 +26,9 @@ We appreciate your contribution. Please refer to our [contributing guidelines](C
 
 GoReleaser is a release automation tool for Golang projects, the goal is to simplify the build, release and publish steps while providing variant customization options for all steps.
 
-GoReleaser is built for CI tools; you only need a [single command line](#integration-with-ci) in your build script. Therefore, no package is required.
-You can define your [customization](#release-customization) in a `goreleaser.yml` file.
-We are also working on integrating package managers, we currently support Homebrew.
+GoReleaser is built for CI tools; you only need to [`go get` and execute it](#integration-with-ci) in your build script.
+You can [customize](#release-customization) your release process by createing a `goreleaser.yml` file.
+We are also working on integrating with package managers, we currently support Homebrew.
 
 The idea started with a [simple shell script](https://github.com/goreleaser/old-go-releaser), but it quickly became more complex and I also wanted to publish binaries via Homebrew.
 
