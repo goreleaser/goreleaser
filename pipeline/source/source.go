@@ -20,13 +20,13 @@ var ErrWrongRef = errors.New("current tag ref is different from HEAD ref, checko
 type Pipe struct{}
 
 // Description of the pipe
-func (p *Pipe) Description() string {
+func (p Pipe) Description() string {
 	return "Validating current git state"
 }
 
 // Run errors we the repo is dirty or if the current ref is different from the
 // tag ref
-func (p *Pipe) Run(ctx *context.Context) error {
+func (p Pipe) Run(ctx *context.Context) error {
 	cmd := exec.Command("git", "diff-index", "--quiet", "HEAD", "--")
 	if err := cmd.Run(); err != nil {
 		return ErrDirty
