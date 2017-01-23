@@ -65,8 +65,8 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 
 func run(goos, goarch string, command []string) error {
 	cmd := exec.Command(command[0], command[1:]...)
-	cmd.Env = append(cmd.Env, "GOOS="+goos, "GOARCH="+goarch)
 	cmd.Env = append(cmd.Env, os.Environ()...)
+	cmd.Env = append(cmd.Env, "GOOS="+goos, "GOARCH="+goarch)
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stdout
