@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/sync/errgroup"
@@ -50,13 +51,16 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 		"-o", output,
 		ctx.Config.Build.Main,
 	)
-	cmd.Env = append(
-		cmd.Env,
-		"GOOS="+goos,
-		"GOARCH="+goarch,
-		"GOROOT="+os.Getenv("GOROOT"),
-		"GOPATH="+os.Getenv("GOPATH"),
-	)
+	env := getEnvironment()
+	env["GOOS"] = goos
+	env["GOARCH"] = goarch
+	for key, val := range env {
+		cmd.Env = append(
+			cmd.Env,
+			key+"="+val,
+		)
+	}
+
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stdout
@@ -64,4 +68,17 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 		return errors.New(stdout.String())
 	}
 	return nil
+}
+
+func getEnvironment() map[string]string {
+	env := make(map[string]string)
+	for _, e := range os.Environ() {
+		pair := strings.Split(e, "=")
+		key := pair[0]
+		if key != "" {
+			env[key] = pair[1]
+		}
+	}
+
+	return env
 }
