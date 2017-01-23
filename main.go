@@ -28,7 +28,7 @@ var pipes = []pipeline.Pipe{
 	git.Pipe{},
 	repos.Pipe{},
 
-	&source.Pipe{},
+	source.Pipe{},
 
 	// real work
 	build.Pipe{},
