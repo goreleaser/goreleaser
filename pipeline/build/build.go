@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/sync/errgroup"
@@ -43,13 +44,27 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 	ldflags := ctx.Config.Build.Ldflags + " -X main.version=" + ctx.Git.CurrentTag
 	output := "dist/" + name + "/" + ctx.Config.Build.BinaryName + extFor(goos)
 	log.Println("Building", output)
-	cmd := exec.Command(
-		"go",
-		"build",
-		"-ldflags="+ldflags,
-		"-o", output,
-		ctx.Config.Build.Main,
-	)
+	if ctx.Config.Build.Hooks.Pre != "" {
+		cmd := strings.Split(ctx.Config.Build.Hooks.Pre, " ")
+		if err := run(goos, goarch, cmd); err != nil {
+			return err
+		}
+	}
+	cmd := []string{"go", "build", "-ldflags=" + ldflags, "-o", output, ctx.Config.Build.Main}
+	if err := run(goos, goarch, cmd); err != nil {
+		return err
+	}
+	if ctx.Config.Build.Hooks.Post != "" {
+		cmd := strings.Split(ctx.Config.Build.Hooks.Post, " ")
+		if err := run(goos, goarch, cmd); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func run(goos, goarch string, command []string) error {
+	cmd := exec.Command(command[0], command[1:]...)
 	cmd.Env = append(cmd.Env, "GOOS="+goos, "GOARCH="+goarch)
 	cmd.Env = append(cmd.Env, os.Environ()...)
 	var stdout bytes.Buffer

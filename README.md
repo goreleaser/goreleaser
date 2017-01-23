@@ -179,6 +179,13 @@ build:
   # Defaults are 386 and amd64
   goarch:
     - amd64
+
+  # Hooks can be used to customize the final binary, for example, to run
+  # generator or whatever you want.
+  # Default is both hooks empty.
+  hooks:
+    pre: rice embed-go
+    post: ./script.sh
 ```
 
 ### Archive customization

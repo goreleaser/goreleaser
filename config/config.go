@@ -14,6 +14,12 @@ type Homebrew struct {
 	Dependencies []string
 }
 
+// Hooks define actions to run before and/or after something
+type Hooks struct {
+	Pre  string
+	Post string
+}
+
 // Build contains the build configuration section
 type Build struct {
 	Goos       []string
@@ -21,6 +27,7 @@ type Build struct {
 	Main       string
 	Ldflags    string
 	BinaryName string `yaml:"binary_name"`
+	Hooks      Hooks
 }
 
 // Archive config used for the archive
