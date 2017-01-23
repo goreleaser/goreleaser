@@ -50,13 +50,8 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 		"-o", output,
 		ctx.Config.Build.Main,
 	)
-	cmd.Env = append(
-		cmd.Env,
-		"GOOS="+goos,
-		"GOARCH="+goarch,
-		"GOROOT="+os.Getenv("GOROOT"),
-		"GOPATH="+os.Getenv("GOPATH"),
-	)
+	cmd.Env = append(cmd.Env, "GOOS="+goos, "GOARCH="+goarch)
+	cmd.Env = append(cmd.Env, os.Environ()...)
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stdout
