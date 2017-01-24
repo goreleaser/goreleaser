@@ -307,7 +307,7 @@ deployment:
       - goreleaser
 ```
 
-(Note that if you test multiple versions or multiple OSes you probably want to make sure GoReleaser is just run once)
+*Note that if you test multiple versions or multiple OSes you probably want to make sure GoReleaser is just run once*
 
 ---
 
