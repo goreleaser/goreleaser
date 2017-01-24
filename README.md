@@ -307,6 +307,8 @@ deployment:
       - goreleaser
 ```
 
+(Note that if you test multiple versions or multiple OSes you probably want to make sure GoReleaser is just run once)
+
 ---
 
 Would you like to fix something in the documentation? Feel free to open an [issue](https://github.com/goreleaser/goreleaser/issues).
