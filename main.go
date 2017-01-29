@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/build"
 	"github.com/goreleaser/goreleaser/pipeline/defaults"
 	"github.com/goreleaser/goreleaser/pipeline/env"
+	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/release"
 	"github.com/goreleaser/goreleaser/pipeline/repos"
@@ -33,6 +34,7 @@ var pipes = []pipeline.Pipe{
 	// real work
 	build.Pipe{},
 	archive.Pipe{},
+	fpm.Pipe{},
 	release.Pipe{},
 	brew.Pipe{},
 }

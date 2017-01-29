@@ -3,3 +3,13 @@ brew:
   folder: Formula
   dependencies:
     - git
+fpm:
+  formats:
+    -
+      name: deb
+      dependencies:
+        - git
+    -
+      name: rpm
+      dependencies:
+        - git

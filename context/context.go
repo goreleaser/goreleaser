@@ -22,6 +22,7 @@ type Context struct {
 	ReleaseRepo Repo
 	BrewRepo    Repo
 	Archives    map[string]string
+	Version     string
 }
 
 // New context

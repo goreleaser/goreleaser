@@ -22,7 +22,7 @@ const formula = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
   url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .File }}.{{ .Format }}"
-  version "{{ .Tag }}"
+  version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
 
   {{- if .Dependencies }}
@@ -50,6 +50,7 @@ type templateData struct {
 	Homepage     string
 	Repo         string
 	Tag          string
+	Version      string
 	BinaryName   string
 	Caveats      string
 	File         string
@@ -156,6 +157,7 @@ func dataFor(ctx *context.Context, client *github.Client) (result templateData, 
 		Homepage:     homepage,
 		Repo:         ctx.Config.Release.Repo,
 		Tag:          ctx.Git.CurrentTag,
+		Version:      ctx.Version,
 		BinaryName:   ctx.Config.Build.BinaryName,
 		Caveats:      ctx.Config.Brew.Caveats,
 		File:         file,

@@ -31,9 +31,13 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, archive := range ctx.Archives {
 		archive := archive
 		g.Go(func() error {
-			return upload(client, *r.ID, archive, ctx)
+			return upload(ctx, client, *r.ID, archive, ctx.Config.Archive.Format)
 		})
-
+		for _, fpm := range ctx.Config.FPM.Formats {
+			g.Go(func() error {
+				return upload(ctx, client, *r.ID, archive, fpm.Name)
+			})
+		}
 	}
 	return g.Wait()
 }
@@ -67,8 +71,8 @@ func description(diff string) string {
 	return result + "\nBuilt with " + string(bts)
 }
 
-func upload(client *github.Client, releaseID int, archive string, ctx *context.Context) error {
-	archive = archive + "." + ctx.Config.Archive.Format
+func upload(ctx *context.Context, client *github.Client, releaseID int, archive, format string) error {
+	archive = archive + "." + format
 	file, err := os.Open("dist/" + archive)
 	if err != nil {
 		return err

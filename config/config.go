@@ -43,12 +43,24 @@ type Release struct {
 	Repo string
 }
 
+// FPMFormat defines a FPM format and how it should be built
+type FPMFormat struct {
+	Name         string
+	Dependencies []string
+}
+
+// FPM config
+type FPM struct {
+	Formats []FPMFormat
+}
+
 // Project includes all project configuration
 type Project struct {
 	Release Release
 	Brew    Homebrew
 	Build   Build
 	Archive Archive
+	FPM     FPM `yaml:"fpm"`
 }
 
 // Load config file

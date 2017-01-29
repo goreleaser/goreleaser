@@ -1,6 +1,10 @@
 package git
 
-import "github.com/goreleaser/goreleaser/context"
+import (
+	"strings"
+
+	"github.com/goreleaser/goreleaser/context"
+)
 
 // Pipe for brew deployment
 type Pipe struct{}
@@ -30,5 +34,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		PreviousTag: previous,
 		Diff:        log,
 	}
+	// removes usual `v` prefix
+	ctx.Version = strings.TrimPrefix(tag, "v")
 	return
 }
