@@ -5,11 +5,6 @@ brew:
     - git
 fpm:
   formats:
-    -
-      name: deb
-      dependencies:
-        - git
-    -
-      name: rpm
-      dependencies:
-        - git
+    - deb
+  dependencies:
+    - git

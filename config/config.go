@@ -43,15 +43,10 @@ type Release struct {
 	Repo string
 }
 
-// FPMFormat defines a FPM format and how it should be built
-type FPMFormat struct {
-	Name         string
-	Dependencies []string
-}
-
 // FPM config
 type FPM struct {
-	Formats []FPMFormat
+	Formats      []string
+	Dependencies []string
 }
 
 // Project includes all project configuration

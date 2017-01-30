@@ -11,18 +11,9 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var linuxArchives = []struct {
-	Key  string
-	Arch string
-}{
-	{
-		Key:  "linuxamd64",
-		Arch: "x86_64",
-	},
-	{
-		Key:  "linux386",
-		Arch: "i386",
-	},
+var goarchToUnix = map[string]string{
+	"386":   "i386",
+	"amd64": "x86_64",
 }
 
 // ErrNoFPM is shown when fpm cannot be found in $PATH
@@ -46,20 +37,20 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err := cmd.Run(); err != nil {
 		return ErrNoFPM
 	}
+
 	var g errgroup.Group
 	for _, format := range ctx.Config.FPM.Formats {
-		for _, archive := range linuxArchives {
-			if ctx.Archives[archive.Key] == "" {
+		for _, goarch := range ctx.Config.Build.Goarch {
+			if ctx.Archives["linux"+goarch] == "" {
 				continue
 			}
-			archive := archive
+			archive := ctx.Archives["linux"+goarch]
 			g.Go(func() error {
 				return create(
 					ctx,
-					format.Name,
-					ctx.Archives[archive.Key],
-					archive.Arch,
-					format.Dependencies,
+					format,
+					archive,
+					goarchToUnix[goarch],
 				)
 			})
 		}
@@ -67,7 +58,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func create(ctx *context.Context, format, archive, arch string, deps []string) error {
+func create(ctx *context.Context, format, archive, arch string) error {
 	var path = filepath.Join("dist", archive)
 	var file = path + ".deb"
 	var name = ctx.Config.Build.BinaryName
@@ -83,12 +74,12 @@ func create(ctx *context.Context, format, archive, arch string, deps []string) e
 		"-p", file,
 		"--force",
 	}
-	for _, dep := range deps {
+	for _, dep := range ctx.Config.FPM.Dependencies {
 		options = append(options, "-d", dep)
 	}
 	options = append(options, name+"="+filepath.Join("/usr/local/bin", name))
 	cmd := exec.Command("fpm", options...)
-	log.Println(cmd)
+
 	var stdout bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stdout

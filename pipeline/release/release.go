@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/goreleaser/clients"
@@ -33,9 +34,10 @@ func (Pipe) Run(ctx *context.Context) error {
 		g.Go(func() error {
 			return upload(ctx, client, *r.ID, archive, ctx.Config.Archive.Format)
 		})
-		for _, fpm := range ctx.Config.FPM.Formats {
+		for _, format := range ctx.Config.FPM.Formats {
+			format := format
 			g.Go(func() error {
-				return upload(ctx, client, *r.ID, archive, fpm.Name)
+				return upload(ctx, client, *r.ID, archive, format)
 			})
 		}
 	}
@@ -73,7 +75,11 @@ func description(diff string) string {
 
 func upload(ctx *context.Context, client *github.Client, releaseID int, archive, format string) error {
 	archive = archive + "." + format
-	file, err := os.Open("dist/" + archive)
+	var path = filepath.Join("dist", archive)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil
+	}
+	file, err := os.Open(path)
 	if err != nil {
 		return err
 	}
