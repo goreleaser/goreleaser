@@ -77,6 +77,8 @@ func create(ctx *context.Context, format, archive, arch string) error {
 	for _, dep := range ctx.Config.FPM.Dependencies {
 		options = append(options, "-d", dep)
 	}
+	// This basically tells fpm to put the binary in the /usr/local/bin
+	// binary=/usr/local/bin/binary
 	options = append(options, name+"="+filepath.Join("/usr/local/bin", name))
 	cmd := exec.Command("fpm", options...)
 
