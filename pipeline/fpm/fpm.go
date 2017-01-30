@@ -44,13 +44,9 @@ func (Pipe) Run(ctx *context.Context) error {
 				continue
 			}
 			archive := ctx.Archives["linux"+goarch]
+			arch := goarchToUnix[goarch]
 			g.Go(func() error {
-				return create(
-					ctx,
-					format,
-					archive,
-					goarchToUnix[goarch],
-				)
+				return create(ctx, format, archive, arch)
 			})
 		}
 	}
