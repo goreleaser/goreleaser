@@ -1,7 +1,6 @@
 package build
 
 import (
-	"bytes"
 	"errors"
 	"log"
 	"os"
@@ -41,7 +40,7 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func build(name, goos, goarch string, ctx *context.Context) error {
-	ldflags := ctx.Config.Build.Ldflags + " -X main.version=" + ctx.Git.CurrentTag
+	ldflags := ctx.Config.Build.Ldflags + " -X main.version=" + ctx.Version
 	output := "dist/" + name + "/" + ctx.Config.Build.BinaryName + extFor(goos)
 	log.Println("Building", output)
 	if ctx.Config.Build.Hooks.Pre != "" {
@@ -67,11 +66,8 @@ func run(goos, goarch string, command []string) error {
 	cmd := exec.Command(command[0], command[1:]...)
 	cmd.Env = append(cmd.Env, os.Environ()...)
 	cmd.Env = append(cmd.Env, "GOOS="+goos, "GOARCH="+goarch)
-	var stdout bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stdout
-	if err := cmd.Run(); err != nil {
-		return errors.New(stdout.String())
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return errors.New(string(out))
 	}
 	return nil
 }
