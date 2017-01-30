@@ -7,9 +7,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/goreleaser/goreleaser/context"
+	"golang.org/x/sync/errgroup"
 )
 
 var linuxArchives = []struct {
@@ -39,13 +38,13 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	if len(ctx.Config.FPM.Formats) == 0 {
+		log.Println("No output formats configured, skipping")
+		return nil
+	}
 	cmd := exec.Command("which", "fpm")
 	if err := cmd.Run(); err != nil {
 		return ErrNoFPM
-	}
-	if len(ctx.Config.FPM.Formats) == 0 {
-		log.Println("No output formats configured")
-		return nil
 	}
 	var g errgroup.Group
 	for _, format := range ctx.Config.FPM.Formats {
