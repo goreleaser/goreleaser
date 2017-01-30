@@ -4,6 +4,9 @@ install: make setup
 script:
   - make ci
 after_success:
-  - test -n "$TRAVIS_TAG" && gem install fpm && go run main.go
+  - test -n "$TRAVIS_TAG" && gem install fpm
+  - git status -sb
+  - test -n "$TRAVIS_TAG" && go run main.go
+  - git status -sb
 notifications:
   email: false
