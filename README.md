@@ -285,6 +285,28 @@ class Program < Formula
 end
 ```
 
+### FPM build customization
+
+GoReleaser can be wired to [fpm]() to generate `.deb`, `.rpm` and other archives. Check it's
+[wiki](https://github.com/jordansissel/fpm/wiki) for more info.
+
+[fpm]: https://github.com/jordansissel/fpm
+
+```yml
+# goreleaser.yml
+fpm:
+  # Formats to generate as output
+  formats:
+    - deb
+    - rpm
+
+  # Dependencies of your package
+  dependencies:
+    - git
+```
+
+Note that GoReleaser will not install `fpm` nor any of it's dependencies for you.
+
 ## Integration with CI
 
 You may want to wire this to auto-deploy your new tags on [Travis](https://travis-ci.org), for example:
