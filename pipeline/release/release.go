@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/goreleaser/clients"
@@ -31,9 +32,14 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, archive := range ctx.Archives {
 		archive := archive
 		g.Go(func() error {
-			return upload(client, *r.ID, archive, ctx)
+			return upload(ctx, client, *r.ID, archive, ctx.Config.Archive.Format)
 		})
-
+		for _, format := range ctx.Config.FPM.Formats {
+			format := format
+			g.Go(func() error {
+				return upload(ctx, client, *r.ID, archive, format)
+			})
+		}
 	}
 	return g.Wait()
 }
@@ -67,9 +73,20 @@ func description(diff string) string {
 	return result + "\nBuilt with " + string(bts)
 }
 
-func upload(client *github.Client, releaseID int, archive string, ctx *context.Context) error {
-	archive = archive + "." + ctx.Config.Archive.Format
-	file, err := os.Open("dist/" + archive)
+func upload(ctx *context.Context, client *github.Client, releaseID int, archive, format string) error {
+	archive = archive + "." + format
+	var path = filepath.Join("dist", archive)
+	// In case the file doesn't exist, we just ignore it.
+	// We do this because we can get invalid combinations of archive+format here,
+	// like darwinamd64 + deb or something like that.
+	// It's assumed that the archive pipe would fail the entire thing in case it fails to
+	// generate some archive, as well fpm pipe is expected to fail if something wrong happens.
+	// So, here, we just assume IsNotExist as an expected error.
+	// TODO: maybe add a list of files to upload in the context so we don't have to do this.
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil
+	}
+	file, err := os.Open(path)
 	if err != nil {
 		return err
 	}

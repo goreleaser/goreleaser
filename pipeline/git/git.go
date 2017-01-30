@@ -1,6 +1,20 @@
 package git
 
-import "github.com/goreleaser/goreleaser/context"
+import (
+	"regexp"
+	"strings"
+
+	"github.com/goreleaser/goreleaser/context"
+)
+
+// ErrInvalidVersionFormat is return when the version isnt in a valid format
+type ErrInvalidVersionFormat struct {
+	version string
+}
+
+func (e ErrInvalidVersionFormat) Error() string {
+	return e.version + " is not in a valid version format"
+}
 
 // Pipe for brew deployment
 type Pipe struct{}
@@ -29,6 +43,11 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		CurrentTag:  tag,
 		PreviousTag: previous,
 		Diff:        log,
+	}
+	// removes usual `v` prefix
+	ctx.Version = strings.TrimPrefix(tag, "v")
+	if matches, err := regexp.MatchString("^[0-9.]+", ctx.Version); !matches || err != nil {
+		return ErrInvalidVersionFormat{ctx.Version}
 	}
 	return
 }

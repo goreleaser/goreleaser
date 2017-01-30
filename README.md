@@ -110,8 +110,13 @@ GoReleaser uses the latest [Git tag](https://git-scm.com/book/en/v2/Git-Basics-T
 Create a tag:
 
 ```console
-$ git tag -a v0.1 -m "First release"
+$ git tag -a v0.1.0 -m "First release"
 ```
+
+**Note**: we recommend the use of [semantic versioning](http://semver.org/). We
+are not enforcing it though. We do remove the `v` prefix and then enforce
+that the next character is a number. So, `v0.1.0` and `0.1.0` are virtually the
+same and are both accepted, while `version0.1.0` is not.
 
 Now you can run GoReleaser at the root of your repository:
 
@@ -284,6 +289,28 @@ class Program < Formula
   end
 end
 ```
+
+### FPM build customization
+
+GoReleaser can be wired to [fpm]() to generate `.deb`, `.rpm` and other archives. Check it's
+[wiki](https://github.com/jordansissel/fpm/wiki) for more info.
+
+[fpm]: https://github.com/jordansissel/fpm
+
+```yml
+# goreleaser.yml
+fpm:
+  # Formats to generate as output
+  formats:
+    - deb
+    - rpm
+
+  # Dependencies of your package
+  dependencies:
+    - git
+```
+
+Note that GoReleaser will not install `fpm` nor any of it's dependencies for you.
 
 ## Integration with CI
 
