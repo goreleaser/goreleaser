@@ -33,8 +33,8 @@ func (Pipe) Run(ctx *context.Context) error {
 		log.Println("No output formats configured, skipping")
 		return nil
 	}
-	cmd := exec.Command("which", "fpm")
-	if err := cmd.Run(); err != nil {
+	_, err := exec.LookPath("fpm")
+	if err != nil {
 		return ErrNoFPM
 	}
 
