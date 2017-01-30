@@ -76,6 +76,13 @@ func description(diff string) string {
 func upload(ctx *context.Context, client *github.Client, releaseID int, archive, format string) error {
 	archive = archive + "." + format
 	var path = filepath.Join("dist", archive)
+	// In case the file doesn't exist, we just ignore it.
+	// We do this because we can get invalid combinations of archive+format here,
+	// like darwinamd64 + deb or something like that.
+	// It's assumed that the archive pipe would fail the entire thing in case it fails to
+	// generate some archive, as well fpm pipe is expected to fail if something wrong happens.
+	// So, here, we just assume IsNotExist as an expected error.
+	// TODO: maybe add a list of files to upload in the context so we don't have to do this.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil
 	}
