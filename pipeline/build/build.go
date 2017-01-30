@@ -1,7 +1,6 @@
 package build
 
 import (
-	"bytes"
 	"errors"
 	"log"
 	"os"
@@ -67,11 +66,8 @@ func run(goos, goarch string, command []string) error {
 	cmd := exec.Command(command[0], command[1:]...)
 	cmd.Env = append(cmd.Env, os.Environ()...)
 	cmd.Env = append(cmd.Env, "GOOS="+goos, "GOARCH="+goarch)
-	var stdout bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stdout
-	if err := cmd.Run(); err != nil {
-		return errors.New(stdout.String())
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return errors.New(string(out))
 	}
 	return nil
 }

@@ -1,7 +1,6 @@
 package fpm
 
 import (
-	"bytes"
 	"errors"
 	"log"
 	"os/exec"
@@ -82,11 +81,8 @@ func create(ctx *context.Context, format, archive, arch string) error {
 	options = append(options, name+"="+filepath.Join("/usr/local/bin", name))
 	cmd := exec.Command("fpm", options...)
 
-	var stdout bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stdout
-	if err := cmd.Run(); err != nil {
-		return errors.New(stdout.String())
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return errors.New(string(out))
 	}
 	return nil
 }
