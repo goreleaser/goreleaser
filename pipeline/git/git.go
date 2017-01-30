@@ -46,7 +46,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	}
 	// removes usual `v` prefix
 	ctx.Version = strings.TrimPrefix(tag, "v")
-	if matches, err := regexp.MatchString("[0-9.]+", ctx.Version); !matches || err != nil {
+	if matches, err := regexp.MatchString("^[0-9.]+", ctx.Version); !matches || err != nil {
 		return ErrInvalidVersionFormat{ctx.Version}
 	}
 	return
