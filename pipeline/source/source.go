@@ -15,7 +15,7 @@ type ErrDirty struct {
 }
 
 func (e ErrDirty) Error() string {
-	return "git is currently in a dirty state: " + e.status
+	return "git is currently in a dirty state:\n" + e.status
 }
 
 // ErrWrongRef happens when the HEAD reference is different from the tag being built
@@ -24,7 +24,7 @@ type ErrWrongRef struct {
 }
 
 func (e ErrWrongRef) Error() string {
-	return "current tag ref is different from HEAD ref: " + e.status
+	return "current tag ref is different from HEAD ref:\n" + e.status
 }
 
 // Pipe to make sure we are in the latest Git tag as source.
@@ -40,28 +40,13 @@ func (p Pipe) Description() string {
 func (p Pipe) Run(ctx *context.Context) error {
 	cmd := exec.Command("git", "diff-index", "--quiet", "HEAD", "--")
 	if err := cmd.Run(); err != nil {
-		status, err := status()
-		if err != nil {
-			return err
-		}
-		return ErrDirty{status}
+		bts, _ := exec.Command("git", "diff-index", "HEAD", "--").CombinedOutput()
+		return ErrDirty{string(bts)}
 	}
 
 	cmd = exec.Command("git", "describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag)
-	if err := cmd.Run(); err != nil {
-		status, err := status()
-		if err != nil {
-			return err
-		}
-		return ErrWrongRef{status}
+	if bts, err := cmd.CombinedOutput(); err != nil {
+		return ErrWrongRef{string(bts)}
 	}
 	return nil
-}
-
-func status() (string, error) {
-	bts, err := exec.Command("git", "status", "-sb").CombinedOutput()
-	if err != nil {
-		return "", err
-	}
-	return "\n\n" + string(bts), nil
 }
