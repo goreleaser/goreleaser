@@ -12,8 +12,7 @@ test: ## Run all the tests
 	go test $(TEST_OPTIONS) -cover $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=30s
 
 fmt: ## gofmt and goimports all go files
-	find . -name '*.go' | xargs gofmt -w -s
-	find . -name '*.go' | xargs goimports -w
+	find . -name '*.go' -not -wholename './vendor/*' | while read -r file; do gofmt -w -s "$$file"; goimports -w "$$file"; done
 
 lint: ## Run all the linters
 	gometalinter --vendor --disable-all \
