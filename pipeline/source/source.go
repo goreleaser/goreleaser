@@ -40,7 +40,7 @@ func (p Pipe) Description() string {
 func (p Pipe) Run(ctx *context.Context) error {
 	cmd := exec.Command("git", "diff-index", "--quiet", "HEAD", "--")
 	if err := cmd.Run(); err != nil {
-		bts, _ := exec.Command("git", "diff-index", "HEAD", "--").CombinedOutput()
+		bts, _ := exec.Command("git", "diff").CombinedOutput()
 		return ErrDirty{string(bts)}
 	}
 
