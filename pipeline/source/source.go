@@ -4,17 +4,28 @@
 package source
 
 import (
-	"errors"
 	"os/exec"
 
 	"github.com/goreleaser/goreleaser/context"
 )
 
 // ErrDirty happens when the repo has uncommitted/unstashed changes
-var ErrDirty = errors.New("git is currently in a dirty state, commit or stash your changes to continue")
+type ErrDirty struct {
+	status string
+}
+
+func (e ErrDirty) Error() string {
+	return "git is currently in a dirty state: " + e.status
+}
 
 // ErrWrongRef happens when the HEAD reference is different from the tag being built
-var ErrWrongRef = errors.New("current tag ref is different from HEAD ref, checkout the latest tag to continue")
+type ErrWrongRef struct {
+	status string
+}
+
+func (e ErrWrongRef) Error() string {
+	return "current tag ref is different from HEAD ref: " + e.status
+}
 
 // Pipe to make sure we are in the latest Git tag as source.
 type Pipe struct{}
@@ -29,12 +40,28 @@ func (p Pipe) Description() string {
 func (p Pipe) Run(ctx *context.Context) error {
 	cmd := exec.Command("git", "diff-index", "--quiet", "HEAD", "--")
 	if err := cmd.Run(); err != nil {
-		return ErrDirty
+		status, err := status()
+		if err != nil {
+			return err
+		}
+		return ErrDirty{status}
 	}
 
 	cmd = exec.Command("git", "describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag)
 	if err := cmd.Run(); err != nil {
-		return ErrWrongRef
+		status, err := status()
+		if err != nil {
+			return err
+		}
+		return ErrWrongRef{status}
 	}
 	return nil
+}
+
+func status() (string, error) {
+	bts, err := exec.Command("git", "status", "-sb").CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return "\n\n" + string(bts), nil
 }
