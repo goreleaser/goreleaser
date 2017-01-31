@@ -5,6 +5,7 @@ package source
 
 import (
 	"os/exec"
+	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
 )
@@ -24,7 +25,7 @@ type ErrWrongRef struct {
 }
 
 func (e ErrWrongRef) Error() string {
-	return "current tag ref is different from HEAD ref:\n" + e.status
+	return e.status
 }
 
 // Pipe to make sure we are in the latest Git tag as source.
@@ -38,13 +39,12 @@ func (p Pipe) Description() string {
 // Run errors we the repo is dirty or if the current ref is different from the
 // tag ref
 func (p Pipe) Run(ctx *context.Context) error {
-	cmd := exec.Command("git", "diff-index", "--quiet", "HEAD", "--")
-	if err := cmd.Run(); err != nil {
-		bts, _ := exec.Command("git", "diff").CombinedOutput()
+	bts, err := exec.Command("git", "diff").CombinedOutput()
+	if err != nil || strings.TrimSpace(string(bts)) != "" {
 		return ErrDirty{string(bts)}
 	}
 
-	cmd = exec.Command("git", "describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag)
+	cmd := exec.Command("git", "describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag)
 	if bts, err := cmd.CombinedOutput(); err != nil {
 		return ErrWrongRef{string(bts)}
 	}
