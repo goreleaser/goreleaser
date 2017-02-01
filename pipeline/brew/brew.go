@@ -31,6 +31,12 @@ const formula = `class {{ .Name }} < Formula
   {{- end }}
   {{- end }}
 
+  {{- if .Conflicts }}
+  {{ range $index, $element := .Conflicts }}
+  conflicts_with "{{ . }}"
+  {{- end }}
+  {{- end }}
+
   def install
     bin.install "{{ .BinaryName }}"
   end
@@ -57,6 +63,7 @@ type templateData struct {
 	Format       string
 	SHA256       string
 	Dependencies []string
+	Conflicts    []string
 }
 
 // Pipe for brew deployment
@@ -164,6 +171,7 @@ func dataFor(ctx *context.Context, client *github.Client) (result templateData, 
 		Format:       ctx.Config.Archive.Format,
 		SHA256:       sum,
 		Dependencies: ctx.Config.Brew.Dependencies,
+		Conflicts:    ctx.Config.Brew.Conflicts,
 	}, err
 }
 

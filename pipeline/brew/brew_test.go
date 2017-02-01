@@ -46,6 +46,7 @@ func TestFullFormulae(t *testing.T) {
 	data := defaultTemplateData
 	data.Caveats = "Here are some caveats"
 	data.Dependencies = []string{"gtk", "git"}
+	data.Conflicts = []string{"conflicting_dep"}
 	out, err := doBuildFormula(data)
 	assert.NoError(err)
 	formulae := out.String()
@@ -54,9 +55,10 @@ func TestFullFormulae(t *testing.T) {
 	assert.Contains(formulae, "Here are some caveats")
 	assert.Contains(formulae, "depends_on \"gtk\"")
 	assert.Contains(formulae, "depends_on \"git\"")
+	assert.Contains(formulae, "conflicts_with \"conflicting_dep\"")
 }
 
-func TestFormulaeNoCaveats(t *testing.T) {
+func TestFormulaeSimple(t *testing.T) {
 	assert := assert.New(t)
 	out, err := doBuildFormula(defaultTemplateData)
 	assert.NoError(err)
