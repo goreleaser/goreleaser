@@ -12,6 +12,7 @@ type Homebrew struct {
 	Folder       string
 	Caveats      string
 	Dependencies []string
+	Conflicts    []string
 }
 
 // Hooks define actions to run before and/or after something
@@ -47,6 +48,7 @@ type Release struct {
 type FPM struct {
 	Formats      []string
 	Dependencies []string
+	Conflicts    []string
 }
 
 // Project includes all project configuration

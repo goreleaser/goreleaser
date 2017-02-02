@@ -60,24 +60,27 @@ func create(ctx *context.Context, format, archive, arch string) error {
 	log.Println("Creating", file)
 
 	var options = []string{
-		"-s", "dir",
-		"-t", format,
-		"-n", name,
-		"-v", ctx.Version,
-		"-a", arch,
-		"-C", path,
-		"-p", file,
+		"--input-type", "dir",
+		"--output-type", format,
+		"--name", name,
+		"--version", ctx.Version,
+		"--architecture", arch,
+		"--chdir", path,
+		"--package", file,
 		"--force",
 	}
 	for _, dep := range ctx.Config.FPM.Dependencies {
-		options = append(options, "-d", dep)
+		options = append(options, "--depends", dep)
 	}
+	for _, conflict := range ctx.Config.FPM.Conflicts {
+		options = append(options, "--conflicts", conflict)
+	}
+
 	// This basically tells fpm to put the binary in the /usr/local/bin
 	// binary=/usr/local/bin/binary
 	options = append(options, name+"="+filepath.Join("/usr/local/bin", name))
-	cmd := exec.Command("fpm", options...)
 
-	if out, err := cmd.CombinedOutput(); err != nil {
+	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
 		return errors.New(string(out))
 	}
 	return nil

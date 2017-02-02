@@ -264,10 +264,15 @@ brew:
   # Default is empty.
   caveats: "How to use this binary"
 
-  # Dependencies of your formula
+  # Dependencies of your package
   dependencies:
     - git
     - zsh
+
+  # Packages that conflict with your package
+  conflicts:
+    - svn
+    - bash
 ```
 
 By defining the `brew` section, GoReleaser will take care of publishing the Homebrew tap.
@@ -308,6 +313,12 @@ fpm:
   # Dependencies of your package
   dependencies:
     - git
+    - zsh
+
+  # Packages that conflict with your package
+  conflicts:
+    - svn
+    - bash
 ```
 
 Note that GoReleaser will not install `fpm` nor any of it's dependencies for you.

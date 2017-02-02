@@ -3,6 +3,9 @@ brew:
   folder: Formula
   dependencies:
     - git
+  conflicts:
+    # previous name of goreleaser...
+    - releaser
 fpm:
   formats:
     - deb
