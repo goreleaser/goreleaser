@@ -2,3 +2,4 @@ dist/
 vendor
 goreleaser
 .glide/
+coverage.out

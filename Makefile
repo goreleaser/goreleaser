@@ -5,11 +5,13 @@ TEST_OPTIONS?=
 setup: ## Install all the build and lint dependencies
 	go get -u github.com/alecthomas/gometalinter
 	go get -u github.com/Masterminds/glide
+	go get -u github.com/pierrre/gotestcover
+	go get -u golang.org/x/tools/cmd/cover
 	glide install
 	gometalinter --install
 
 test: ## Run all the tests
-	go test $(TEST_OPTIONS) -cover $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=30s
+	gotestcover $(TEST_OPTIONS) -coverprofile=coverage.out $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=30s
 
 fmt: ## gofmt and goimports all go files
 	find . -name '*.go' -not -wholename './vendor/*' | while read -r file; do gofmt -w -s "$$file"; goimports -w "$$file"; done
