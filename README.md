@@ -243,7 +243,9 @@ archive:
 release:
   # Repo in which the release will be created.
   # Default is extracted from the origin remote URL.
-  repo: user/repo
+  repo:
+    owner: user
+    name: my-repo
 ```
 
 ### Homebrew tap customization
@@ -255,7 +257,9 @@ Check [the Homebrew documentation](https://github.com/Homebrew/brew/blob/master/
 # goreleaser.yml
 brew:
   # Reporitory to push the tap to.
-  repo: user/homebrew-tap
+  repo:
+    owner: user
+    name: homebrew-tap
 
   # Folder inside the repository to put the formula.
   # Default is the root folder.

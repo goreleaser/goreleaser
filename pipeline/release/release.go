@@ -45,8 +45,8 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func getOrCreateRelease(client *github.Client, ctx *context.Context) (*github.RepositoryRelease, error) {
-	owner := ctx.ReleaseRepo.Owner
-	repo := ctx.ReleaseRepo.Name
+	owner := ctx.Config.Release.Repo.Owner
+	repo := ctx.Config.Release.Repo.Name
 	data := &github.RepositoryRelease{
 		Name:    github.String(ctx.Git.CurrentTag),
 		TagName: github.String(ctx.Git.CurrentTag),
@@ -93,8 +93,8 @@ func upload(ctx *context.Context, client *github.Client, releaseID int, archive,
 	defer func() { _ = file.Close() }()
 	log.Println("Uploading", file.Name())
 	_, _, err = client.Repositories.UploadReleaseAsset(
-		ctx.ReleaseRepo.Owner,
-		ctx.ReleaseRepo.Name,
+		ctx.Config.Release.Repo.Owner,
+		ctx.Config.Release.Repo.Name,
 		releaseID,
 		&github.UploadOptions{Name: archive},
 		file,

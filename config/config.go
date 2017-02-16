@@ -6,9 +6,17 @@ import (
 	yaml "gopkg.in/yaml.v1"
 )
 
+// Repo can be a github, gitlab or others repository
+type Repo struct {
+	Provider string
+	Owner    string
+	Name     string
+	Host     string
+}
+
 // Homebrew contains the brew section
 type Homebrew struct {
-	Repo         string
+	Repo         Repo
 	Folder       string
 	Caveats      string
 	Dependencies []string
@@ -41,7 +49,7 @@ type Archive struct {
 
 // Release config used for the GitHub release
 type Release struct {
-	Repo string
+	Repo Repo
 }
 
 // FPM config
