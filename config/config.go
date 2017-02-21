@@ -11,6 +11,7 @@ type Homebrew struct {
 	Repo         string
 	Folder       string
 	Caveats      string
+	Plist        string
 	Dependencies []string
 	Conflicts    []string
 }

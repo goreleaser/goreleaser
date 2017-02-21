@@ -47,6 +47,14 @@ const formula = `class {{ .Name }} < Formula
     "{{ .Caveats }}"
   end
   {{- end }}
+
+  {{- if .Plist }}
+
+  def plist; <<-EOS.undent
+    {{ .Plist }}
+	EOS
+  end
+  {{- end }}
 end
 `
 
@@ -62,6 +70,7 @@ type templateData struct {
 	File         string
 	Format       string
 	SHA256       string
+	Plist        string
 	Dependencies []string
 	Conflicts    []string
 }
@@ -172,6 +181,7 @@ func dataFor(ctx *context.Context, client *github.Client) (result templateData, 
 		SHA256:       sum,
 		Dependencies: ctx.Config.Brew.Dependencies,
 		Conflicts:    ctx.Config.Brew.Conflicts,
+		Plist:        ctx.Config.Brew.Plist,
 	}, err
 }
 
