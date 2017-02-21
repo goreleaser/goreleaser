@@ -274,6 +274,11 @@ brew:
   conflicts:
     - svn
     - bash
+
+  # Packages that run as a service
+  plist:
+    <?xml version="1.0" encoding="UTF-8"?>
+    ...
 ```
 
 By defining the `brew` section, GoReleaser will take care of publishing the Homebrew tap.

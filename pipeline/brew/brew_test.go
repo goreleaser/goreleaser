@@ -29,6 +29,7 @@ var defaultTemplateData = templateData{
 	File:       "test_Darwin_x86_64",
 	SHA256:     "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
 	Format:     "tar.gz",
+	Plist:      "it works",
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
@@ -56,6 +57,7 @@ func TestFullFormulae(t *testing.T) {
 	assert.Contains(formulae, "depends_on \"gtk\"")
 	assert.Contains(formulae, "depends_on \"git\"")
 	assert.Contains(formulae, "conflicts_with \"conflicting_dep\"")
+	assert.Contains(formulae, "def plist;")
 }
 
 func TestFormulaeSimple(t *testing.T) {
