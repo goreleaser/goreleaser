@@ -88,7 +88,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Brew.Repo == "" {
 		return nil
 	}
-	client := clients.GitHub(ctx.Token)
+	client := clients.GitHub(ctx)
 	path := filepath.Join(
 		ctx.Config.Brew.Folder, ctx.Config.Build.BinaryName+".rb",
 	)
@@ -113,14 +113,16 @@ func (Pipe) Run(ctx *context.Context) error {
 	owner := ctx.BrewRepo.Owner
 	repo := ctx.BrewRepo.Name
 	file, _, res, err := client.Repositories.GetContents(
-		owner, repo, path, &github.RepositoryContentGetOptions{},
+		ctx, owner, repo, path, &github.RepositoryContentGetOptions{},
 	)
 	if err != nil && res.StatusCode == 404 {
-		_, _, err = client.Repositories.CreateFile(owner, repo, path, options)
+		_, _, err = client.Repositories.CreateFile(
+			ctx, owner, repo, path, options,
+		)
 		return err
 	}
 	options.SHA = file.SHA
-	_, _, err = client.Repositories.UpdateFile(owner, repo, path, options)
+	_, _, err = client.Repositories.UpdateFile(ctx, owner, repo, path, options)
 	return err
 }
 
@@ -142,10 +144,14 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 	return out, err
 }
 
-func dataFor(ctx *context.Context, client *github.Client) (result templateData, err error) {
+func dataFor(
+	ctx *context.Context, client *github.Client,
+) (result templateData, err error) {
 	var homepage string
 	var description string
-	rep, _, err := client.Repositories.Get(ctx.ReleaseRepo.Owner, ctx.ReleaseRepo.Name)
+	rep, _, err := client.Repositories.Get(
+		ctx, ctx.ReleaseRepo.Owner, ctx.ReleaseRepo.Name,
+	)
 	if err != nil {
 		return
 	}
