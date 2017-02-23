@@ -169,8 +169,13 @@ build:
   # Default is `main.go`
   main: ./cmd/main.go
 
-  # Name of the binary. Default is the name of the project directory.
+  # Name of the binary.
+  # Default is the name of the project directory.
   binary_name: program
+
+  # Custom build tags.
+  # Default is empty
+  flags: -tags dev
 
   # Custom ldflags.
   # Default is `-s -w`

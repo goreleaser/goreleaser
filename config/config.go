@@ -28,6 +28,7 @@ type Build struct {
 	Goarch     []string
 	Main       string
 	Ldflags    string
+	Flags      string
 	BinaryName string `yaml:"binary_name"`
 	Hooks      Hooks
 }
