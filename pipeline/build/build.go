@@ -51,7 +51,7 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 	}
 	cmd := []string{"go", "build"}
 	if ctx.Config.Build.Flags != "" {
-		cmd = append(cmd, strings.Split(ctx.Config.Build.Flags, " ")...)
+		cmd = append(cmd, strings.Fields(ctx.Config.Build.Flags)...)
 	}
 	cmd = append(cmd, "-ldflags="+ldflags, "-o", output, ctx.Config.Build.Main)
 	if err := run(goos, goarch, cmd); err != nil {
