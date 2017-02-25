@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/goreleaser/clients"
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/sha256sum"
 )
@@ -21,7 +22,7 @@ var ErrNoDarwin64Build = errors.New("brew tap requires a darwin amd64 build")
 const formula = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .File }}.{{ .Format }}"
+  url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}.{{ .Format }}"
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
 
@@ -62,7 +63,7 @@ type templateData struct {
 	Name         string
 	Desc         string
 	Homepage     string
-	Repo         string
+	Repo         config.Repo
 	Tag          string
 	Version      string
 	BinaryName   string
@@ -85,7 +86,7 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.Brew.Repo == "" {
+	if ctx.Config.Brew.Repo.Provider == "" {
 		return nil
 	}
 	client := clients.GitHub(ctx.Token)
@@ -110,8 +111,8 @@ func (Pipe) Run(ctx *context.Context) error {
 		),
 	}
 
-	owner := ctx.BrewRepo.Owner
-	repo := ctx.BrewRepo.Name
+	owner := ctx.Config.Brew.Repo.Owner
+	repo := ctx.Config.Brew.Repo.Name
 	file, _, res, err := client.Repositories.GetContents(
 		owner, repo, path, &github.RepositoryContentGetOptions{},
 	)
@@ -145,7 +146,10 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 func dataFor(ctx *context.Context, client *github.Client) (result templateData, err error) {
 	var homepage string
 	var description string
-	rep, _, err := client.Repositories.Get(ctx.ReleaseRepo.Owner, ctx.ReleaseRepo.Name)
+	rep, _, err := client.Repositories.Get(
+		ctx.Config.Release.Repo.Owner,
+		ctx.Config.Release.Repo.Name,
+	)
 	if err != nil {
 		return
 	}

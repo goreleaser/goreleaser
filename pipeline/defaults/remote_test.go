@@ -8,19 +8,23 @@ import (
 
 func TestRepoName(t *testing.T) {
 	assert := assert.New(t)
-	name, err := remoteRepo()
+	repo, err := remoteRepo()
 	assert.NoError(err)
-	assert.Equal("goreleaser/goreleaser", name)
+	assert.Equal("goreleaser", repo.Owner)
+	assert.Equal("goreleaser", repo.Name)
+	assert.Equal("github", repo.Provider)
 }
 
 func TestExtractReporFromGitURL(t *testing.T) {
 	assert := assert.New(t)
-	url := extractRepoFromURL("git@github.com:goreleaser/goreleaser.git")
-	assert.Equal("goreleaser/goreleaser", url)
+	repo := extractRepoFromURL("git@github.com:owner/repo.git")
+	assert.Equal("owner", repo.Owner)
+	assert.Equal("repo", repo.Name)
 }
 
 func TestExtractReporFromHttpsURL(t *testing.T) {
 	assert := assert.New(t)
-	url := extractRepoFromURL("https://github.com/goreleaser/goreleaser.git")
-	assert.Equal("goreleaser/goreleaser", url)
+	repo := extractRepoFromURL("https://github.com/owner/repo.git")
+	assert.Equal("owner", repo.Owner)
+	assert.Equal("repo", repo.Name)
 }

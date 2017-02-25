@@ -20,7 +20,7 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.Release.Repo == "" {
+	if ctx.Config.Release.Repo.Name == "" {
 		repo, err := remoteRepo()
 		ctx.Config.Release.Repo = repo
 		if err != nil {
@@ -29,7 +29,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	if ctx.Config.Build.BinaryName == "" {
-		ctx.Config.Build.BinaryName = strings.Split(ctx.Config.Release.Repo, "/")[1]
+		ctx.Config.Build.BinaryName = ctx.Config.Release.Repo.Name
 	}
 	if ctx.Config.Build.Main == "" {
 		ctx.Config.Build.Main = "main.go"
