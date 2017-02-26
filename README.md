@@ -30,7 +30,7 @@ For questions join the [#goreleaser](https://gophers.slack.com/messages/goreleas
 
 GoReleaser is a release automation tool for Golang projects, the goal is to simplify the build, release and publish steps while providing variant customization options for all steps.
 
-GoReleaser is built for CI tools; you only need to [`go get` and execute it](#integration-with-ci) in your build script.
+GoReleaser is built for CI tools; you only need to [download and execute it](#integration-with-ci) in your build script.
 You can [customize](#release-customization) your release process by createing a `goreleaser.yml` file.
 We are also working on integrating with package managers, we currently support Homebrew.
 
@@ -341,7 +341,7 @@ You may want to wire this to auto-deploy your new tags on [Travis](https://travi
 ```yaml
 # .travis.yml
 after_success:
-  test -n "$TRAVIS_TAG" && go get github.com/goreleaser/goreleaser && goreleaser
+  test -n "$TRAVIS_TAG" && curl -s https://git.io/goreleaser | bash
 ```
 
 Here is how to do it with [CircleCI](https://circleci.com):
@@ -353,8 +353,7 @@ deployment:
     tag: /v[0-9]+(\.[0-9]+)*(-.*)*/
     owner: user
     commands:
-      - go get github.com/goreleaser/goreleaser
-      - goreleaser
+      - curl -s https://git.io/goreleaser | bash
 ```
 
 *Note that if you test multiple versions or multiple OSes you probably want to make sure GoReleaser is just run once*
