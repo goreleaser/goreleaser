@@ -1,6 +1,10 @@
 package context
 
-import "github.com/goreleaser/goreleaser/config"
+import (
+	ctx "context"
+
+	"github.com/goreleaser/goreleaser/config"
+)
 
 // GitInfo includes tags and diffs used in some point
 type GitInfo struct {
@@ -16,6 +20,7 @@ type Repo struct {
 
 // Context carries along some data through the pipes
 type Context struct {
+	ctx.Context
 	Config      config.Project
 	Token       string
 	Git         GitInfo
@@ -28,6 +33,7 @@ type Context struct {
 // New context
 func New(config config.Project) *Context {
 	return &Context{
+		Context:  ctx.Background(),
 		Config:   config,
 		Archives: map[string]string{},
 	}
