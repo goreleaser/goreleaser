@@ -165,8 +165,8 @@ GoReleaser provides multiple customizations. We will cover them with the help of
 ```yml
 # goreleaser.yml
 build:
-  # Path to main.go file.
-  # Default is `main.go`
+  # Path to main.go file or main package.
+  # Default is `.`
   main: ./cmd/main.go
 
   # Name of the binary.
