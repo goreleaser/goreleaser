@@ -341,7 +341,7 @@ You may want to wire this to auto-deploy your new tags on [Travis](https://travi
 ```yaml
 # .travis.yml
 after_success:
-  test -n "$TRAVIS_TAG" && curl -s https://git.io/goreleaser | bash
+  test -n "$TRAVIS_TAG" && curl -sL https://git.io/goreleaser | bash
 ```
 
 Here is how to do it with [CircleCI](https://circleci.com):
@@ -353,7 +353,7 @@ deployment:
     tag: /v[0-9]+(\.[0-9]+)*(-.*)*/
     owner: user
     commands:
-      - curl -s https://git.io/goreleaser | bash
+      - curl -sL https://git.io/goreleaser | bash
 ```
 
 *Note that if you test multiple versions or multiple OSes you probably want to make sure GoReleaser is just run once*
