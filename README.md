@@ -122,14 +122,13 @@ same and are both accepted, while `version0.1.0` is not.
 Now you can run GoReleaser at the root of your repository:
 
 ```console
-$ go get github.com/goreleaser/goreleaser
 $ goreleaser
 ```
 
-That's it! Check your GitHub release page.
-The release on will look like this:
+That's it! Check your GitHub project's release page.
+The release should look like this:
 
-[![image](https://cloud.githubusercontent.com/assets/245435/21578845/09404c8a-cf78-11e6-92d7-165ddc03ca6c.png)
+[![image](https://cloud.githubusercontent.com/assets/245435/23342061/fbcbd506-fc31-11e6-9d2b-4c1b776dee9c.png)
 ](https://github.com/goreleaser/goreleaser/releases)
 
 ## Environment setup
