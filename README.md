@@ -30,7 +30,7 @@ For questions join the [#goreleaser](https://gophers.slack.com/messages/goreleas
 
 GoReleaser is a release automation tool for Golang projects, the goal is to simplify the build, release and publish steps while providing variant customization options for all steps.
 
-GoReleaser is built for CI tools; you only need to [`go get` and execute it](#integration-with-ci) in your build script.
+GoReleaser is built for CI tools; you only need to [download and execute it](#integration-with-ci) in your build script.
 You can [customize](#release-customization) your release process by createing a `goreleaser.yml` file.
 We are also working on integrating with package managers, we currently support Homebrew.
 
@@ -122,14 +122,13 @@ same and are both accepted, while `version0.1.0` is not.
 Now you can run GoReleaser at the root of your repository:
 
 ```console
-$ go get github.com/goreleaser/goreleaser
 $ goreleaser
 ```
 
-That's it! Check your GitHub release page.
-The release on will look like this:
+That's it! Check your GitHub project's release page.
+The release should look like this:
 
-[![image](https://cloud.githubusercontent.com/assets/245435/21578845/09404c8a-cf78-11e6-92d7-165ddc03ca6c.png)
+[![image](https://cloud.githubusercontent.com/assets/245435/23342061/fbcbd506-fc31-11e6-9d2b-4c1b776dee9c.png)
 ](https://github.com/goreleaser/goreleaser/releases)
 
 ## Environment setup
@@ -341,7 +340,7 @@ You may want to wire this to auto-deploy your new tags on [Travis](https://travi
 ```yaml
 # .travis.yml
 after_success:
-  test -n "$TRAVIS_TAG" && go get github.com/goreleaser/goreleaser && goreleaser
+  test -n "$TRAVIS_TAG" && curl -sL https://git.io/goreleaser | bash
 ```
 
 Here is how to do it with [CircleCI](https://circleci.com):
@@ -353,8 +352,7 @@ deployment:
     tag: /v[0-9]+(\.[0-9]+)*(-.*)*/
     owner: user
     commands:
-      - go get github.com/goreleaser/goreleaser
-      - goreleaser
+      - curl -sL https://git.io/goreleaser | bash
 ```
 
 *Note that if you test multiple versions or multiple OSes you probably want to make sure GoReleaser is just run once*
