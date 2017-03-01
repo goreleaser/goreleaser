@@ -85,7 +85,7 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.Brew.Repo == "" {
+	if ctx.Config.Brew.Repo == "" || ctx.Config.Brew.Repo == "none" {
 		return nil
 	}
 	client := clients.GitHub(ctx)
