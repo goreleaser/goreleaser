@@ -1,7 +1,6 @@
 package env
 
 import (
-	"errors"
 	"os"
 
 	"github.com/goreleaser/goreleaser/context"

@@ -1,6 +1,8 @@
 package clients
 
 import (
+	"errors"
+
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/oauth2"
@@ -10,7 +12,7 @@ import (
 var ErrMissingToken = errors.New("Missing GITHUB_TOKEN")
 
 // GitHub client for the given token
-func GitHub(ctx *context.Context) *github.Client, error {
+func GitHub(ctx *context.Context) (*github.Client, error) {
 	if ctx.Token == "" {
 		return nil, ErrMissingToken
 	}
