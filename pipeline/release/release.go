@@ -22,7 +22,7 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.Brew.Repo == "" || ctx.Config.Brew.Repo == "none" {
+	if ctx.Config.Release.Repo == "" || ctx.Config.Release.Repo == "none" {
 		return nil
 	}
 	client, err := clients.GitHub(ctx)
