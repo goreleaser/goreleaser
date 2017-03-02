@@ -32,7 +32,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Config.Build.BinaryName = strings.Split(ctx.Config.Release.Repo, "/")[1]
 	}
 	if ctx.Config.Build.Main == "" {
-		ctx.Config.Build.Main = "main.go"
+		ctx.Config.Build.Main = "."
 	}
 	if len(ctx.Config.Build.Goos) == 0 {
 		ctx.Config.Build.Goos = []string{"linux", "darwin"}

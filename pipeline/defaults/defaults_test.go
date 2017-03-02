@@ -19,7 +19,7 @@ func TestFillBasicData(t *testing.T) {
 
 	assert.Equal("goreleaser/goreleaser", ctx.Config.Release.Repo)
 	assert.Equal("goreleaser", ctx.Config.Build.BinaryName)
-	assert.Equal("main.go", ctx.Config.Build.Main)
+	assert.Equal(".", ctx.Config.Build.Main)
 	assert.Equal("tar.gz", ctx.Config.Archive.Format)
 	assert.Contains(ctx.Config.Build.Goos, "darwin")
 	assert.Contains(ctx.Config.Build.Goos, "linux")
@@ -51,8 +51,6 @@ func TestFilesFilled(t *testing.T) {
 }
 
 func TestAcceptFiles(t *testing.T) {
-	assert := assert.New(t)
-
 	var files = []string{
 		"LICENSE.md",
 		"LIceNSE.txt",
@@ -66,6 +64,8 @@ func TestAcceptFiles(t *testing.T) {
 	}
 
 	for _, file := range files {
-		assert.True(accept(file))
+		t.Run(file, func(t *testing.T) {
+			assert.True(t, accept(file))
+		})
 	}
 }
