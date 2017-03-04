@@ -22,23 +22,6 @@ import (
 
 var version = "master"
 
-var pipes = []pipeline.Pipe{
-	// load data, set defaults, etc...
-	defaults.Pipe{},
-	env.Pipe{},
-	git.Pipe{},
-	repos.Pipe{},
-
-	source.Pipe{},
-
-	// real work
-	build.Pipe{},
-	archive.Pipe{},
-	fpm.Pipe{},
-	release.Pipe{},
-	brew.Pipe{},
-}
-
 func main() {
 	var app = cli.NewApp()
 	app.Name = "goreleaser"
@@ -50,6 +33,10 @@ func main() {
 			Usage: "Load configuration from `FILE`",
 			Value: "goreleaser.yml",
 		},
+		cli.BoolFlag{
+			Name:  "build-only, skip-release, no-release, nr",
+			Usage: "Skip all the release processes and run only the build and packaging steps",
+		},
 	}
 	app.Action = func(c *cli.Context) (err error) {
 		var file = c.String("config")
@@ -60,7 +47,7 @@ func main() {
 		}
 		ctx := context.New(cfg)
 		log.SetFlags(0)
-		for _, pipe := range pipes {
+		for _, pipe := range pipes(c.Bool("build-only")) {
 			log.Println(pipe.Description())
 			log.SetPrefix(" -> ")
 			if err := pipe.Run(ctx); err != nil {
@@ -74,4 +61,33 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func pipes(buildOnly bool) []pipeline.Pipe {
+	var pipes = []pipeline.Pipe{
+		defaults.Pipe{}, // load default configs
+		git.Pipe{},      // get current tag info
+		repos.Pipe{},    // split repos into owner/name pairs
+	}
+	if !buildOnly {
+		pipes = append(
+			pipes,
+			env.Pipe{},    // load and validate environment variables
+			source.Pipe{}, // validate current git state
+		)
+	}
+	pipes = append(
+		pipes,
+		build.Pipe{},   // build
+		archive.Pipe{}, // archive (tar.gz, zip, etc)
+		fpm.Pipe{},     // archive via fpm (deb, rpm, etc)
+	)
+	if !buildOnly {
+		pipes = append(
+			pipes,
+			release.Pipe{}, // release to github
+			brew.Pipe{},    // push to brew tap
+		)
+	}
+	return pipes
 }
