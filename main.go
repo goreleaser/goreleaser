@@ -66,12 +66,12 @@ func main() {
 func pipes(buildOnly bool) []pipeline.Pipe {
 	var pipes = []pipeline.Pipe{
 		defaults.Pipe{}, // load default configs
-		git.Pipe{},      // get current tag info
 		repos.Pipe{},    // split repos into owner/name pairs
 	}
 	if !buildOnly {
 		pipes = append(
 			pipes,
+			git.Pipe{},    // get current tag info
 			env.Pipe{},    // load and validate environment variables
 			source.Pipe{}, // validate current git state
 		)
