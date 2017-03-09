@@ -88,10 +88,13 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.Brew.Repo == "" {
+	if ctx.Config.Brew.Repo == "" || ctx.Config.Brew.Repo == "none" {
 		return nil
 	}
-	client := clients.GitHub(ctx)
+	client, err := clients.GitHub(ctx)
+	if err != nil {
+		return err
+	}
 	path := filepath.Join(
 		ctx.Config.Brew.Folder, ctx.Config.Build.BinaryName+".rb",
 	)
