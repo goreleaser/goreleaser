@@ -69,6 +69,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 		ctx.Config.Archive.Files = files
 	}
+	if ctx.Config.Brew.Install == "" {
+		ctx.Config.Brew.Install = "bin.install \"" + ctx.Config.Build.BinaryName + "\""
+	}
 	return nil
 }
 

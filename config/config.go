@@ -12,6 +12,7 @@ type Homebrew struct {
 	Folder       string
 	Caveats      string
 	Plist        string
+	Install      string
 	Dependencies []string
 	Conflicts    []string
 }
