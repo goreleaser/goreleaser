@@ -152,7 +152,6 @@ func dataFor(
 ) (result templateData, err error) {
 	var homepage string
 	var description string
-	var installCmds string
 	rep, _, err := client.Repositories.Get(
 		ctx, ctx.ReleaseRepo.Owner, ctx.ReleaseRepo.Name,
 	)
@@ -177,12 +176,6 @@ func dataFor(
 	} else {
 		description = *rep.Description
 	}
-	if ctx.Config.Brew.Install != "" {
-		installCmds = ctx.Config.Brew.Install
-	} else {
-		installCmds = "bin.install \"" + ctx.Config.Build.BinaryName + "\""
-	}
-
 	return templateData{
 		Name:         formulaNameFor(ctx.Config.Build.BinaryName),
 		Desc:         description,
@@ -198,7 +191,7 @@ func dataFor(
 		Dependencies: ctx.Config.Brew.Dependencies,
 		Conflicts:    ctx.Config.Brew.Conflicts,
 		Plist:        ctx.Config.Brew.Plist,
-		Install:      strings.Split(installCmds, "\n"),
+		Install:      strings.Split(ctx.Config.Brew.Install, "\n"),
 	}, err
 }
 
