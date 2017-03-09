@@ -37,9 +37,21 @@ const formula = `class {{ .Name }} < Formula
   {{- end }}
   {{- end }}
 
+  {{- if .Install }}
+
+  def install
+    {{- range $index, $element := .Install }}
+    {{ . -}}
+		{{- end }}
+  end
+
+	{{- else }}
+
   def install
     bin.install "{{ .BinaryName }}"
   end
+
+	{{- end }}
 
   {{- if .Caveats }}
 
@@ -71,6 +83,7 @@ type templateData struct {
 	Format       string
 	SHA256       string
 	Plist        string
+	Install      []string
 	Dependencies []string
 	Conflicts    []string
 }
@@ -188,6 +201,7 @@ func dataFor(
 		Dependencies: ctx.Config.Brew.Dependencies,
 		Conflicts:    ctx.Config.Brew.Conflicts,
 		Plist:        ctx.Config.Brew.Plist,
+		Install:      strings.Split(ctx.Config.Brew.Install, "\n"),
 	}, err
 }
 
