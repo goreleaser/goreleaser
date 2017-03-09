@@ -68,7 +68,6 @@ func TestFormulaeSimple(t *testing.T) {
 	assert.NoError(err)
 	formulae := out.String()
 	assertDefaultTemplateData(t, formulae)
-	assert.Contains(formulae, "bin.install \"test\"")
 	assert.NotContains(formulae, "def caveats")
 	assert.NotContains(formulae, "depends_on")
 	assert.NotContains(formulae, "def plist;")
