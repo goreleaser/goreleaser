@@ -29,7 +29,7 @@ lint: ## Run all the linters
 		--enable=errcheck \
 		--enable=vet \
 		--enable=vetshadow \
-		--deadline=1m \
+		--deadline=5m \
 		./...
 
 ci: lint test ## Run all the tests and code checks
