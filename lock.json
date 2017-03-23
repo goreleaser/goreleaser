@@ -1,5 +1,5 @@
 {
-    "memo": "71eb406bc76ac8012b7930667c630d2a35388459e8aad82bc4bc719c617c7438",
+    "memo": "4a9f04efa74d2fb39f61aa1820bd1132a74f6360bf03562f1787a6bf4fad7b83",
     "projects": [
         {
             "name": "github.com/davecgh/go-spew",
@@ -43,8 +43,8 @@
         },
         {
             "name": "github.com/stretchr/testify",
-            "version": "v1.1.4",
-            "revision": "69483b4bd14f5845b5a1e55bca19e954e827f1d0",
+            "branch": "master",
+            "revision": "4d4bfba8f1d1027c4fdbe371823030df51419987",
             "packages": [
                 "assert"
             ]
@@ -60,7 +60,7 @@
         {
             "name": "golang.org/x/net",
             "branch": "master",
-            "revision": "6b27048ae5e6ad1ef927e72e437531493de612fe",
+            "revision": "a6577fac2d73be281a500b310739095313165611",
             "packages": [
                 "context"
             ]

@@ -3,6 +3,9 @@
         "github.com/google/go-github": {
             "branch": "master"
         },
+        "github.com/stretchr/testify": {
+            "branch": "master"
+        },
         "github.com/urfave/cli": {
             "branch": "master"
         },
