@@ -57,7 +57,7 @@ By default GoReleaser will build the **main.go** file located in your current di
 # goreleaser.yml
 # Build customization
 build:
-  binary_name: drum-roll
+  binary: drum-roll
   goos:
     - windows
     - darwin
@@ -68,7 +68,7 @@ build:
 
 This configuration specifies the build operating systems to Windows, Linux and MacOS using 64bit architecture, the name of the binaries is `drum-roll`.
 
-GoReleaser will then archive the result binaries of each Os/Arch into a separate file. The default format is `{{.BinaryName}}_{{.Os}}_{{.Arch}}`.
+GoReleaser will then archive the result binaries of each Os/Arch into a separate file. The default format is `{{.Binary}}_{{.Os}}_{{.Arch}}`.
 You can change the archives name and format. You can also replace the OS and the Architecture with your own.
 Another useful feature is to add files to archives, this is very useful for integrating assets like resource files.
 
@@ -77,7 +77,7 @@ Another useful feature is to add files to archives, this is very useful for inte
 # Build customization
 build:
   main: main.go
-  binary_name: drum-roll
+  binary: drum-roll
   goos:
     - windows
     - darwin
@@ -170,7 +170,7 @@ build:
 
   # Name of the binary.
   # Default is the name of the project directory.
-  binary_name: program
+  binary: program
 
   # Custom build tags.
   # Default is empty
@@ -209,12 +209,12 @@ archive:
   # You can change the name of the archive.
   # This is parsed with Golang template engine and the following variables
   # are available:
-  # - BinaryName
+  # - Binary
   # - Version
   # - Os
   # - Arch
-  # The default is `{{.BinaryName}}_{{.Os}}_{{.Arch}}`
-  name_template: "{{.BinaryName}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+  # The default is `{{.Binary}}_{{.Os}}_{{.Arch}}`
+  name_template: "{{.Binary}}_{{.Version}}_{{.Os}}_{{.Arch}}"
 
   # Archive format. Valid options are `tar.gz` and `zip`.
   # Default is `tar.gz`
@@ -247,7 +247,9 @@ archive:
 release:
   # Repo in which the release will be created.
   # Default is extracted from the origin remote URL.
-  repo: user/repo
+  github:
+    owner: user
+    name: repo
 ```
 
 ### Homebrew tap customization
@@ -259,7 +261,9 @@ Check [the Homebrew documentation](https://github.com/Homebrew/brew/blob/master/
 # goreleaser.yml
 brew:
   # Reporitory to push the tap to.
-  repo: user/homebrew-tap
+  github:
+    owner: user
+    name: homebrew-tap
 
   # Folder inside the repository to put the formula.
   # Default is the root folder.

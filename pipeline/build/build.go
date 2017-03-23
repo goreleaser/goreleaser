@@ -44,7 +44,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func build(name, goos, goarch string, ctx *context.Context) error {
 	ldflags := ctx.Config.Build.Ldflags + " -X main.version=" + ctx.Version
-	output := "dist/" + name + "/" + ctx.Config.Build.BinaryName + extFor(goos)
+	output := "dist/" + name + "/" + ctx.Config.Build.Binary + extFor(goos)
 	log.Println("Building", output)
 	if ctx.Config.Build.Hooks.Pre != "" {
 		cmd := strings.Fields(ctx.Config.Build.Hooks.Pre)

@@ -1,5 +1,7 @@
 brew:
-  repo: goreleaser/homebrew-tap
+  github:
+    owner: goreleaser
+    name: homebrew-tap
   folder: Formula
   dependencies:
     - git

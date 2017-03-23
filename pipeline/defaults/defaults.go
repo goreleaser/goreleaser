@@ -3,6 +3,7 @@ package defaults
 import (
 	"errors"
 	"io/ioutil"
+	"log"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
@@ -20,16 +21,25 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.Release.Repo == "" {
+	// TODO: remove this block in next release cycle
+	if ctx.Config.Release.Repo != "" {
+		log.Println("The `release.repo` syntax is deprecated and will soon be removed. Please check the README for more info.")
+		ctx.Config.Release.GitHub = toRepo(ctx.Config.Release.Repo)
+	}
+	if ctx.Config.Release.GitHub.Name == "" {
 		repo, err := remoteRepo()
-		ctx.Config.Release.Repo = repo
+		ctx.Config.Release.GitHub = repo
 		if err != nil {
 			return errors.New("failed reading repo from git: " + err.Error())
 		}
 	}
-
-	if ctx.Config.Build.BinaryName == "" {
-		ctx.Config.Build.BinaryName = strings.Split(ctx.Config.Release.Repo, "/")[1]
+	// TODO: remove this block in next release cycle
+	if ctx.Config.Build.BinaryName != "" {
+		log.Println("The `build.binary_name` syntax is deprecated and will soon be removed. Please check the README for more info.")
+		ctx.Config.Build.Binary = ctx.Config.Build.BinaryName
+	}
+	if ctx.Config.Build.Binary == "" {
+		ctx.Config.Build.Binary = ctx.Config.Release.GitHub.Name
 	}
 	if ctx.Config.Build.Main == "" {
 		ctx.Config.Build.Main = "."
@@ -45,7 +55,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	if ctx.Config.Archive.NameTemplate == "" {
-		ctx.Config.Archive.NameTemplate = "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
+		ctx.Config.Archive.NameTemplate = "{{.Binary}}_{{.Os}}_{{.Arch}}"
 	}
 	if ctx.Config.Archive.Format == "" {
 		ctx.Config.Archive.Format = "tar.gz"
@@ -70,7 +80,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Config.Archive.Files = files
 	}
 	if ctx.Config.Brew.Install == "" {
-		ctx.Config.Brew.Install = "bin.install \"" + ctx.Config.Build.BinaryName + "\""
+		ctx.Config.Brew.Install = "bin.install \"" + ctx.Config.Build.Binary + "\""
 	}
 	return nil
 }

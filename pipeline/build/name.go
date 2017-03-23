@@ -2,27 +2,41 @@ package build
 
 import (
 	"bytes"
+	"log"
+	"strings"
 	"text/template"
 
 	"github.com/goreleaser/goreleaser/context"
 )
 
 type nameData struct {
-	Os         string
-	Arch       string
-	Version    string
-	BinaryName string
+	Os      string
+	Arch    string
+	Version string
+	Binary  string
 }
 
 func nameFor(ctx *context.Context, goos, goarch string) (string, error) {
 	var data = nameData{
-		Os:         replace(ctx.Config.Archive.Replacements, goos),
-		Arch:       replace(ctx.Config.Archive.Replacements, goarch),
-		Version:    ctx.Git.CurrentTag,
-		BinaryName: ctx.Config.Build.BinaryName,
+		Os:      replace(ctx.Config.Archive.Replacements, goos),
+		Arch:    replace(ctx.Config.Archive.Replacements, goarch),
+		Version: ctx.Git.CurrentTag,
+		Binary:  ctx.Config.Build.Binary,
 	}
+
+	// TODO: remove this block in next release cycle
+	if strings.Contains(ctx.Config.Archive.NameTemplate, ".BinaryName") {
+		log.Println("The `.BinaryName` in `archive.name_template` is deprecated and will soon be removed. Please check the README for more info.")
+		ctx.Config.Archive.NameTemplate = strings.Replace(
+			ctx.Config.Archive.NameTemplate,
+			".BinaryName",
+			".Binary",
+			-1,
+		)
+	}
+
 	var out bytes.Buffer
-	t, err := template.New(data.BinaryName).Parse(ctx.Config.Archive.NameTemplate)
+	t, err := template.New(data.Binary).Parse(ctx.Config.Archive.NameTemplate)
 	if err != nil {
 		return "", err
 	}

@@ -45,21 +45,35 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func getOrCreateRelease(client *github.Client, ctx *context.Context) (*github.RepositoryRelease, error) {
-	owner := ctx.ReleaseRepo.Owner
-	repo := ctx.ReleaseRepo.Name
 	data := &github.RepositoryRelease{
 		Name:    github.String(ctx.Git.CurrentTag),
 		TagName: github.String(ctx.Git.CurrentTag),
 		Body:    github.String(description(ctx.Git.Diff)),
 	}
-	r, _, err := client.Repositories.GetReleaseByTag(ctx, owner, repo, ctx.Git.CurrentTag)
+	r, _, err := client.Repositories.GetReleaseByTag(
+		ctx,
+		ctx.Config.Release.GitHub.Owner,
+		ctx.Config.Release.GitHub.Name,
+		ctx.Git.CurrentTag,
+	)
 	if err != nil {
-		log.Println("Creating release", ctx.Git.CurrentTag, "on", ctx.Config.Release.Repo)
-		r, _, err = client.Repositories.CreateRelease(ctx, owner, repo, data)
+		log.Println("Creating release", ctx.Git.CurrentTag, "on", ctx.Config.Release.GitHub.String())
+		r, _, err = client.Repositories.CreateRelease(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			data,
+		)
 		return r, err
 	}
-	log.Println("Updating existing release", ctx.Git.CurrentTag, "on", ctx.Config.Release.Repo)
-	r, _, err = client.Repositories.EditRelease(ctx, owner, repo, *r.ID, data)
+	log.Println("Updating existing release", ctx.Git.CurrentTag, "on", ctx.Config.Release.GitHub.String())
+	r, _, err = client.Repositories.EditRelease(
+		ctx,
+		ctx.Config.Release.GitHub.Owner,
+		ctx.Config.Release.GitHub.Name,
+		*r.ID,
+		data,
+	)
 	return r, err
 }
 
@@ -94,8 +108,8 @@ func upload(ctx *context.Context, client *github.Client, releaseID int, archive,
 	log.Println("Uploading", file.Name())
 	_, _, err = client.Repositories.UploadReleaseAsset(
 		ctx,
-		ctx.ReleaseRepo.Owner,
-		ctx.ReleaseRepo.Name,
+		ctx.Config.Release.GitHub.Owner,
+		ctx.Config.Release.GitHub.Name,
 		releaseID,
 		&github.UploadOptions{Name: archive},
 		file,
