@@ -47,6 +47,7 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 	output := "dist/" + name + "/" + ctx.Config.Build.Binary + extFor(goos)
 	log.Println("Building", output)
 	if ctx.Config.Build.Hooks.Pre != "" {
+		log.Println("Running pre-build hook", ctx.Config.Build.Hooks.Pre)
 		cmd := strings.Fields(ctx.Config.Build.Hooks.Pre)
 		if err := run(goos, goarch, cmd); err != nil {
 			return err
@@ -61,6 +62,7 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 		return err
 	}
 	if ctx.Config.Build.Hooks.Post != "" {
+		log.Println("Running post-build hook", ctx.Config.Build.Hooks.Post)
 		cmd := strings.Fields(ctx.Config.Build.Hooks.Post)
 		if err := run(goos, goarch, cmd); err != nil {
 			return err
