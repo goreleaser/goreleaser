@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/goreleaser/clients"
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/sha256sum"
 )
@@ -21,7 +22,7 @@ var ErrNoDarwin64Build = errors.New("brew tap requires a darwin amd64 build")
 const formula = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  url "https://github.com/{{ .Repo }}/releases/download/{{ .Tag }}/{{ .File }}.{{ .Format }}"
+  url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}.{{ .Format }}"
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
 
@@ -64,7 +65,7 @@ type templateData struct {
 	Name         string
 	Desc         string
 	Homepage     string
-	Repo         string
+	Repo         config.Repo // FIXME: will not work for anything but github right now.
 	Tag          string
 	Version      string
 	BinaryName   string
@@ -88,7 +89,16 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.Brew.Repo == "" {
+	// TODO: remove this block in next release cycle
+	if ctx.Config.Brew.Repo != "" {
+		log.Println("The `brew.repo` syntax is deprecated and will soon be removed. Please check the README for more info.")
+		var ss = strings.Split(ctx.Config.Brew.Repo, "/")
+		ctx.Config.Brew.GitHub = config.Repo{
+			Owner: ss[0],
+			Name:  ss[1],
+		}
+	}
+	if ctx.Config.Brew.GitHub.Name == "" {
 		return nil
 	}
 	client := clients.GitHub(ctx)
@@ -96,7 +106,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Config.Brew.Folder, ctx.Config.Build.BinaryName+".rb",
 	)
 
-	log.Println("Pushing", path, "to", ctx.Config.Brew.Repo)
+	log.Println("Pushing", path, "to", ctx.Config.Brew.GitHub.String())
 	out, err := buildFormula(ctx, client)
 	if err != nil {
 		return err
@@ -113,19 +123,31 @@ func (Pipe) Run(ctx *context.Context) error {
 		),
 	}
 
-	owner := ctx.BrewRepo.Owner
-	repo := ctx.BrewRepo.Name
 	file, _, res, err := client.Repositories.GetContents(
-		ctx, owner, repo, path, &github.RepositoryContentGetOptions{},
+		ctx,
+		ctx.Config.Brew.GitHub.Owner,
+		ctx.Config.Brew.GitHub.Name,
+		path,
+		&github.RepositoryContentGetOptions{},
 	)
 	if err != nil && res.StatusCode == 404 {
 		_, _, err = client.Repositories.CreateFile(
-			ctx, owner, repo, path, options,
+			ctx,
+			ctx.Config.Brew.GitHub.Owner,
+			ctx.Config.Brew.GitHub.Name,
+			path,
+			options,
 		)
 		return err
 	}
 	options.SHA = file.SHA
-	_, _, err = client.Repositories.UpdateFile(ctx, owner, repo, path, options)
+	_, _, err = client.Repositories.UpdateFile(
+		ctx,
+		ctx.Config.Brew.GitHub.Owner,
+		ctx.Config.Brew.GitHub.Name,
+		path,
+		options,
+	)
 	return err
 }
 
@@ -153,7 +175,9 @@ func dataFor(
 	var homepage string
 	var description string
 	rep, _, err := client.Repositories.Get(
-		ctx, ctx.ReleaseRepo.Owner, ctx.ReleaseRepo.Name,
+		ctx,
+		ctx.Config.Release.GitHub.Owner,
+		ctx.Config.Release.GitHub.Name,
 	)
 	if err != nil {
 		return
@@ -180,7 +204,7 @@ func dataFor(
 		Name:         formulaNameFor(ctx.Config.Build.BinaryName),
 		Desc:         description,
 		Homepage:     homepage,
-		Repo:         ctx.Config.Release.Repo,
+		Repo:         ctx.Config.Release.GitHub,
 		Tag:          ctx.Git.CurrentTag,
 		Version:      ctx.Version,
 		BinaryName:   ctx.Config.Build.BinaryName,

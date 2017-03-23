@@ -3,6 +3,7 @@ package brew
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,7 +24,7 @@ var defaultTemplateData = templateData{
 	Desc:       "Some desc",
 	Homepage:   "https://google.com",
 	Name:       "Test",
-	Repo:       "caarlos0/test",
+	Repo:       config.Repo{"caarlos0", "test"},
 	Tag:        "v0.1.3",
 	Version:    "0.1.3",
 	File:       "test_Darwin_x86_64",

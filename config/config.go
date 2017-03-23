@@ -6,9 +6,21 @@ import (
 	yaml "gopkg.in/yaml.v1"
 )
 
+// Repo represents any kind of repo (github, gitlab, etc)
+type Repo struct {
+	Owner string
+	Name  string
+}
+
+// String of ther repo, e.g. owner/name
+func (r Repo) String() string {
+	return r.Owner + "/" + r.Name
+}
+
 // Homebrew contains the brew section
 type Homebrew struct {
-	Repo         string
+	Repo         string // deprecated!
+	GitHub       Repo
 	Folder       string
 	Caveats      string
 	Plist        string
@@ -44,7 +56,8 @@ type Archive struct {
 
 // Release config used for the GitHub release
 type Release struct {
-	Repo string
+	Repo   string // deprecated!
+	GitHub Repo
 }
 
 // FPM config

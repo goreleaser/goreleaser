@@ -13,21 +13,14 @@ type GitInfo struct {
 	Diff        string
 }
 
-// Repo owner/name pair
-type Repo struct {
-	Owner, Name string
-}
-
 // Context carries along some data through the pipes
 type Context struct {
 	ctx.Context
-	Config      config.Project
-	Token       string
-	Git         GitInfo
-	ReleaseRepo Repo
-	BrewRepo    Repo
-	Archives    map[string]string
-	Version     string
+	Config   config.Project
+	Token    string
+	Git      GitInfo
+	Archives map[string]string
+	Version  string
 }
 
 // New context
