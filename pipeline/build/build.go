@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
@@ -21,6 +22,13 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	if ctx.Config.Build.Hooks.Pre != "" {
+		log.Println("Running pre-build hook", ctx.Config.Build.Hooks.Pre)
+		cmd := strings.Fields(ctx.Config.Build.Hooks.Pre)
+		if err := run(runtime.GOOS, runtime.GOARCH, cmd); err != nil {
+			return err
+		}
+	}
 	var g errgroup.Group
 	for _, goos := range ctx.Config.Build.Goos {
 		for _, goarch := range ctx.Config.Build.Goarch {
@@ -39,20 +47,21 @@ func (Pipe) Run(ctx *context.Context) error {
 			})
 		}
 	}
-	return g.Wait()
+	err := g.Wait()
+	if ctx.Config.Build.Hooks.Post != "" {
+		log.Println("Running post-build hook", ctx.Config.Build.Hooks.Post)
+		cmd := strings.Fields(ctx.Config.Build.Hooks.Post)
+		if err := run(runtime.GOOS, runtime.GOARCH, cmd); err != nil {
+			return err
+		}
+	}
+	return err
 }
 
 func build(name, goos, goarch string, ctx *context.Context) error {
 	ldflags := ctx.Config.Build.Ldflags + " -X main.version=" + ctx.Version
 	output := "dist/" + name + "/" + ctx.Config.Build.Binary + extFor(goos)
 	log.Println("Building", output)
-	if ctx.Config.Build.Hooks.Pre != "" {
-		log.Println("Running pre-build hook", ctx.Config.Build.Hooks.Pre)
-		cmd := strings.Fields(ctx.Config.Build.Hooks.Pre)
-		if err := run(goos, goarch, cmd); err != nil {
-			return err
-		}
-	}
 	cmd := []string{"go", "build"}
 	if ctx.Config.Build.Flags != "" {
 		cmd = append(cmd, strings.Fields(ctx.Config.Build.Flags)...)
@@ -60,13 +69,6 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 	cmd = append(cmd, "-ldflags="+ldflags, "-o", output, ctx.Config.Build.Main)
 	if err := run(goos, goarch, cmd); err != nil {
 		return err
-	}
-	if ctx.Config.Build.Hooks.Post != "" {
-		log.Println("Running post-build hook", ctx.Config.Build.Hooks.Post)
-		cmd := strings.Fields(ctx.Config.Build.Hooks.Post)
-		if err := run(goos, goarch, cmd); err != nil {
-			return err
-		}
 	}
 	return nil
 }
