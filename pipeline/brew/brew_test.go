@@ -24,12 +24,15 @@ var defaultTemplateData = templateData{
 	Desc:     "Some desc",
 	Homepage: "https://google.com",
 	Name:     "Test",
-	Repo:     config.Repo{"caarlos0", "test"},
-	Tag:      "v0.1.3",
-	Version:  "0.1.3",
-	File:     "test_Darwin_x86_64",
-	SHA256:   "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
-	Format:   "tar.gz",
+	Repo: config.Repo{
+		Owner: "caarlos0",
+		Name:  "test",
+	},
+	Tag:     "v0.1.3",
+	Version: "0.1.3",
+	File:    "test_Darwin_x86_64",
+	SHA256:  "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
+	Format:  "tar.gz",
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
