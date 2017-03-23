@@ -33,9 +33,13 @@ func (Pipe) Run(ctx *context.Context) error {
 			return errors.New("failed reading repo from git: " + err.Error())
 		}
 	}
-
-	if ctx.Config.Build.BinaryName == "" {
-		ctx.Config.Build.BinaryName = ctx.Config.Release.GitHub.Name
+	// TODO: remove this block in next release cycle
+	if ctx.Config.Build.BinaryName != "" {
+		log.Println("The `build.binary_name` syntax is deprecated and will soon be removed. Please check the README for more info.")
+		ctx.Config.Build.Binary = ctx.Config.Build.BinaryName
+	}
+	if ctx.Config.Build.Binary == "" {
+		ctx.Config.Build.Binary = ctx.Config.Release.GitHub.Name
 	}
 	if ctx.Config.Build.Main == "" {
 		ctx.Config.Build.Main = "."

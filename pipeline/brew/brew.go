@@ -68,7 +68,7 @@ type templateData struct {
 	Repo         config.Repo // FIXME: will not work for anything but github right now.
 	Tag          string
 	Version      string
-	BinaryName   string
+	Binary       string
 	Caveats      string
 	File         string
 	Format       string
@@ -103,7 +103,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	client := clients.GitHub(ctx)
 	path := filepath.Join(
-		ctx.Config.Brew.Folder, ctx.Config.Build.BinaryName+".rb",
+		ctx.Config.Brew.Folder, ctx.Config.Build.Binary+".rb",
 	)
 
 	log.Println("Pushing", path, "to", ctx.Config.Brew.GitHub.String())
@@ -119,7 +119,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		},
 		Content: out.Bytes(),
 		Message: github.String(
-			ctx.Config.Build.BinaryName + " version " + ctx.Git.CurrentTag,
+			ctx.Config.Build.Binary + " version " + ctx.Git.CurrentTag,
 		),
 	}
 
@@ -161,7 +161,7 @@ func buildFormula(ctx *context.Context, client *github.Client) (bytes.Buffer, er
 
 func doBuildFormula(data templateData) (bytes.Buffer, error) {
 	var out bytes.Buffer
-	tmpl, err := template.New(data.BinaryName).Parse(formula)
+	tmpl, err := template.New(data.Binary).Parse(formula)
 	if err != nil {
 		return out, err
 	}
@@ -201,13 +201,13 @@ func dataFor(
 		description = *rep.Description
 	}
 	return templateData{
-		Name:         formulaNameFor(ctx.Config.Build.BinaryName),
+		Name:         formulaNameFor(ctx.Config.Build.Binary),
 		Desc:         description,
 		Homepage:     homepage,
 		Repo:         ctx.Config.Release.GitHub,
 		Tag:          ctx.Git.CurrentTag,
 		Version:      ctx.Version,
-		BinaryName:   ctx.Config.Build.BinaryName,
+		Binary:       ctx.Config.Build.Binary,
 		Caveats:      ctx.Config.Brew.Caveats,
 		File:         file,
 		Format:       ctx.Config.Archive.Format,

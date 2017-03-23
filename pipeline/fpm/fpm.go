@@ -56,7 +56,7 @@ func (Pipe) Run(ctx *context.Context) error {
 func create(ctx *context.Context, format, archive, arch string) error {
 	var path = filepath.Join("dist", archive)
 	var file = path + ".deb"
-	var name = ctx.Config.Build.BinaryName
+	var name = ctx.Config.Build.Binary
 	log.Println("Creating", file)
 
 	var options = []string{

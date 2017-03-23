@@ -19,7 +19,7 @@ func TestFillBasicData(t *testing.T) {
 
 	assert.Equal("goreleaser", ctx.Config.Release.GitHub.Owner)
 	assert.Equal("goreleaser", ctx.Config.Release.GitHub.Name)
-	assert.Equal("goreleaser", ctx.Config.Build.BinaryName)
+	assert.Equal("goreleaser", ctx.Config.Build.Binary)
 	assert.Equal(".", ctx.Config.Build.Main)
 	assert.Equal("tar.gz", ctx.Config.Archive.Format)
 	assert.Contains(ctx.Config.Build.Goos, "darwin")

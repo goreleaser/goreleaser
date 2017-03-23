@@ -21,14 +21,14 @@ func TestNameFor(t *testing.T) {
 
 	var config = config.Project{
 		Archive: config.Archive{
-			NameTemplate: "{{.BinaryName}}_{{.Os}}_{{.Arch}}_{{.Version}}",
+			NameTemplate: "{{.Binary}}_{{.Os}}_{{.Arch}}_{{.Version}}",
 			Replacements: map[string]string{
 				"darwin": "Darwin",
 				"amd64":  "x86_64",
 			},
 		},
 		Build: config.Build{
-			BinaryName: "test",
+			Binary: "test",
 		},
 	}
 	var ctx = &context.Context{

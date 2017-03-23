@@ -42,7 +42,8 @@ type Build struct {
 	Main       string
 	Ldflags    string
 	Flags      string
-	BinaryName string `yaml:"binary_name"`
+	BinaryName string `yaml:"binary_name"` // deprecated
+	Binary     string
 	Hooks      Hooks
 }
 
