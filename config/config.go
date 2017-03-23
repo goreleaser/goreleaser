@@ -12,7 +12,7 @@ type Repo struct {
 	Name  string
 }
 
-// String of ther repo, e.g. owner/name
+// String of the repo, e.g. owner/name
 func (r Repo) String() string {
 	return r.Owner + "/" + r.Name
 }
