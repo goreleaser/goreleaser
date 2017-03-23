@@ -273,6 +273,10 @@ brew:
   # Default is empty.
   caveats: "How to use this binary"
 
+  # Choose which versions brew should be build. Eg: for stable releases only without -rc suffix
+  # Default to any version
+  version_match: '^[0-9\.]+$'
+
   # Dependencies of your package
   dependencies:
     - git

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -100,6 +101,14 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	if ctx.Config.Brew.GitHub.Name == "" {
 		return nil
+	}
+	version := ctx.Version
+	if ctx.Config.Brew.VersionMatch != "" {
+		matched, _ := regexp.MatchString(ctx.Config.Brew.VersionMatch, version)
+		if !matched {
+			log.Println("No version match for brew, skipping")
+			return nil
+		}
 	}
 	client := clients.GitHub(ctx)
 	path := filepath.Join(

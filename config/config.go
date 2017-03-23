@@ -25,6 +25,7 @@ type Homebrew struct {
 	Caveats      string
 	Plist        string
 	Install      string
+	VersionMatch string `yaml:"version_match"`
 	Dependencies []string
 	Conflicts    []string
 }
