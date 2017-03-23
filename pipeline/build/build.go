@@ -47,7 +47,9 @@ func (Pipe) Run(ctx *context.Context) error {
 			})
 		}
 	}
-	err := g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
 	if ctx.Config.Build.Hooks.Post != "" {
 		log.Println("Running post-build hook", ctx.Config.Build.Hooks.Post)
 		cmd := strings.Fields(ctx.Config.Build.Hooks.Post)
@@ -55,7 +57,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			return err
 		}
 	}
-	return err
+	return nil
 }
 
 func build(name, goos, goarch string, ctx *context.Context) error {
