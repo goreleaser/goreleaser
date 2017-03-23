@@ -55,7 +55,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	if ctx.Config.Archive.NameTemplate == "" {
-		ctx.Config.Archive.NameTemplate = "{{.BinaryName}}_{{.Os}}_{{.Arch}}"
+		ctx.Config.Archive.NameTemplate = "{{.Binary}}_{{.Os}}_{{.Arch}}"
 	}
 	if ctx.Config.Archive.Format == "" {
 		ctx.Config.Archive.Format = "tar.gz"
@@ -80,7 +80,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Config.Archive.Files = files
 	}
 	if ctx.Config.Brew.Install == "" {
-		ctx.Config.Brew.Install = "bin.install \"" + ctx.Config.Build.BinaryName + "\""
+		ctx.Config.Brew.Install = "bin.install \"" + ctx.Config.Build.Binary + "\""
 	}
 	return nil
 }
