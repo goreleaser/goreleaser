@@ -29,7 +29,6 @@ var defaultTemplateData = templateData{
 	File:       "test_Darwin_x86_64",
 	SHA256:     "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
 	Format:     "tar.gz",
-	Plist:      "it works",
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
@@ -39,7 +38,6 @@ func assertDefaultTemplateData(t *testing.T, formulae string) {
 	assert.Contains(formulae, "url \"https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz\"")
 	assert.Contains(formulae, "sha256 \"1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68\"")
 	assert.Contains(formulae, "version \"0.1.3\"")
-	assert.Contains(formulae, "bin.install \"test\"")
 }
 
 func TestFullFormulae(t *testing.T) {
@@ -48,6 +46,8 @@ func TestFullFormulae(t *testing.T) {
 	data.Caveats = "Here are some caveats"
 	data.Dependencies = []string{"gtk", "git"}
 	data.Conflicts = []string{"conflicting_dep"}
+	data.Plist = "it works"
+	data.Install = []string{"custom install script", "another install script"}
 	out, err := doBuildFormula(data)
 	assert.NoError(err)
 	formulae := out.String()
@@ -57,6 +57,8 @@ func TestFullFormulae(t *testing.T) {
 	assert.Contains(formulae, "depends_on \"gtk\"")
 	assert.Contains(formulae, "depends_on \"git\"")
 	assert.Contains(formulae, "conflicts_with \"conflicting_dep\"")
+	assert.Contains(formulae, "custom install script")
+	assert.Contains(formulae, "another install script")
 	assert.Contains(formulae, "def plist;")
 }
 
@@ -68,4 +70,5 @@ func TestFormulaeSimple(t *testing.T) {
 	assertDefaultTemplateData(t, formulae)
 	assert.NotContains(formulae, "def caveats")
 	assert.NotContains(formulae, "depends_on")
+	assert.NotContains(formulae, "def plist;")
 }

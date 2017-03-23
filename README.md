@@ -280,8 +280,13 @@ brew:
     - bash
 
   # Packages that run as a service
-  plist:
+  plist:|
     <?xml version="1.0" encoding="UTF-8"?>
+    ...
+
+  # Custom install script for brew. Default: "bin.install "program"
+  install:|
+    bin.install "program"
     ...
 ```
 

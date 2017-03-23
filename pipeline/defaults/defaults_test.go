@@ -25,6 +25,7 @@ func TestFillBasicData(t *testing.T) {
 	assert.Contains(ctx.Config.Build.Goos, "linux")
 	assert.Contains(ctx.Config.Build.Goarch, "386")
 	assert.Contains(ctx.Config.Build.Goarch, "amd64")
+	assert.Contains(ctx.Config.Brew.Install, "bin.install \"goreleaser\"")
 	assert.NotEmpty(
 		ctx.Config.Archive.Replacements,
 		ctx.Config.Archive.NameTemplate,
