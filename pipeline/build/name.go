@@ -2,6 +2,8 @@ package build
 
 import (
 	"bytes"
+	"log"
+	"strings"
 	"text/template"
 
 	"github.com/goreleaser/goreleaser/context"
@@ -21,6 +23,18 @@ func nameFor(ctx *context.Context, goos, goarch string) (string, error) {
 		Version: ctx.Git.CurrentTag,
 		Binary:  ctx.Config.Build.Binary,
 	}
+
+	// TODO: remove this block in next release cycle
+	if strings.Contains(ctx.Config.Archive.NameTemplate, ".BinaryName") {
+		log.Println("The `.BinaryName` in `archive.name_template` is deprecated and will soon be removed. Please check the README for more info.")
+		ctx.Config.Archive.NameTemplate = strings.Replace(
+			ctx.Config.Archive.NameTemplate,
+			".BinaryName",
+			".Binary",
+			-1,
+		)
+	}
+
 	var out bytes.Buffer
 	t, err := template.New(data.Binary).Parse(ctx.Config.Archive.NameTemplate)
 	if err != nil {
