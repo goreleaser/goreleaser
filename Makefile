@@ -1,4 +1,4 @@
-SOURCE_FILES?=$$(glide novendor)
+SOURCE_FILES?=$$(go list ./... | grep -v /vendor/)
 TEST_PATTERN?=.
 TEST_OPTIONS?=
 
