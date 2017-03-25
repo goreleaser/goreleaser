@@ -9,6 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestPipeDescription(t *testing.T) {
+	assert.NotEmpty(t, Pipe{}.Description())
+}
+
 func TestRun(t *testing.T) {
 	assert.NoError(t, run(runtime.GOOS, runtime.GOARCH, []string{"go", "list", "./..."}))
 }
