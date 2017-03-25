@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -21,9 +20,9 @@ import (
 )
 
 var (
-	version = "master"
-	commit  = "master"
-	date    = time.Now().Format("2006-01-02_15:04:05")
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
 )
 
 func main() {
