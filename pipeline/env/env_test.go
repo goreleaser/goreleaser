@@ -1,6 +1,7 @@
-package git
+package env
 
 import (
+	"os"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -12,14 +13,20 @@ func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.Description())
 }
 
-func TestValidVersion(t *testing.T) {
+func TestValidEnv(t *testing.T) {
 	assert := assert.New(t)
 
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
-	assert.NotEmpty(ctx.Git.CurrentTag)
-	assert.NotEmpty(ctx.Git.PreviousTag)
-	assert.NotEmpty(ctx.Git.Diff)
+}
+
+func TestInvalidEnv(t *testing.T) {
+	assert := assert.New(t)
+	os.Unsetenv("GITHUB_TOKEN")
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.Error(Pipe{}.Run(ctx))
 }
