@@ -49,5 +49,10 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if matches, err := regexp.MatchString("^[0-9.]+", ctx.Version); !matches || err != nil {
 		return ErrInvalidVersionFormat{ctx.Version}
 	}
+	commit, err := commitHash()
+	if err != nil {
+		return
+	}
+	ctx.Git.Commit = commit
 	return
 }

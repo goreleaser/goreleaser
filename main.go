@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -19,12 +20,16 @@ import (
 	"github.com/urfave/cli"
 )
 
-var version = "master"
+var (
+	version = "master"
+	commit  = "master"
+	date    = time.Now().Format("2006-01-02_15:04:05")
+)
 
 func main() {
 	var app = cli.NewApp()
 	app.Name = "goreleaser"
-	app.Version = version
+	app.Version = version + ", commit: " + commit + ", built at " + date
 	app.Usage = "Deliver Go binaries as fast and easily as possible"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
