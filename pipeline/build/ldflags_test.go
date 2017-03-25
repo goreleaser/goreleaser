@@ -27,7 +27,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	assert.Contains(flags, "-s -w")
 	assert.Contains(flags, "-X main.version=v1.2.3")
 	assert.Contains(flags, "-X main.commit=123")
-	// TODO assert main.date
+	assert.Contains(flags, "-X main.date=")
 }
 
 func TestInvalidTemplate(t *testing.T) {
