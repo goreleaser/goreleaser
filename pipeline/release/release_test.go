@@ -7,6 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestPipeDescription(t *testing.T) {
+	assert.NotEmpty(t, Pipe{}.Description())
+}
+
 func TestDescription(t *testing.T) {
 	assert := assert.New(t)
 	desc := description("0abf342 some message")
