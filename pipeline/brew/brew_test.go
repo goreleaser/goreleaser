@@ -7,6 +7,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestDescription(t *testing.T) {
+	assert.NotEmpty(t, Pipe{}.Description())
+}
+
 func TestNameWithDash(t *testing.T) {
 	assert.Equal(t, formulaNameFor("some-binary"), "SomeBinary")
 }
