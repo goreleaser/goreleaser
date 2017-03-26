@@ -21,6 +21,10 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	client := clients.NewGitHubClient(ctx)
+	return doRun(ctx, client)
+}
+
+func doRun(ctx *context.Context, client clients.Client) error {
 	log.Println("Creating or updating release", ctx.Git.CurrentTag, "on", ctx.Config.Release.GitHub.String())
 	releaseID, err := client.CreateRelease(ctx)
 	if err != nil {
