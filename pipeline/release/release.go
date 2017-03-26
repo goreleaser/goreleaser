@@ -3,10 +3,8 @@ package release
 import (
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 
-	"github.com/google/go-github/github"
 	"github.com/goreleaser/goreleaser/clients"
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/sync/errgroup"
@@ -22,9 +20,9 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	client := clients.GitHub(ctx)
-
-	r, err := getOrCreateRelease(client, ctx)
+	client := clients.NewGitHubClient(ctx)
+	log.Println("Creating or updating release", ctx.Git.CurrentTag, "on", ctx.Config.Release.GitHub.String())
+	releaseID, err := client.CreateRelease(ctx)
 	if err != nil {
 		return err
 	}
@@ -32,62 +30,19 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, archive := range ctx.Archives {
 		archive := archive
 		g.Go(func() error {
-			return upload(ctx, client, *r.ID, archive, ctx.Config.Archive.Format)
+			return upload(ctx, client, releaseID, archive, ctx.Config.Archive.Format)
 		})
 		for _, format := range ctx.Config.FPM.Formats {
 			format := format
 			g.Go(func() error {
-				return upload(ctx, client, *r.ID, archive, format)
+				return upload(ctx, client, releaseID, archive, format)
 			})
 		}
 	}
 	return g.Wait()
 }
 
-func getOrCreateRelease(client *github.Client, ctx *context.Context) (*github.RepositoryRelease, error) {
-	data := &github.RepositoryRelease{
-		Name:    github.String(ctx.Git.CurrentTag),
-		TagName: github.String(ctx.Git.CurrentTag),
-		Body:    github.String(description(ctx.Git.Diff)),
-	}
-	r, _, err := client.Repositories.GetReleaseByTag(
-		ctx,
-		ctx.Config.Release.GitHub.Owner,
-		ctx.Config.Release.GitHub.Name,
-		ctx.Git.CurrentTag,
-	)
-	if err != nil {
-		log.Println("Creating release", ctx.Git.CurrentTag, "on", ctx.Config.Release.GitHub.String())
-		r, _, err = client.Repositories.CreateRelease(
-			ctx,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
-			data,
-		)
-		return r, err
-	}
-	log.Println("Updating existing release", ctx.Git.CurrentTag, "on", ctx.Config.Release.GitHub.String())
-	r, _, err = client.Repositories.EditRelease(
-		ctx,
-		ctx.Config.Release.GitHub.Owner,
-		ctx.Config.Release.GitHub.Name,
-		*r.ID,
-		data,
-	)
-	return r, err
-}
-
-func description(diff string) string {
-	result := "## Changelog\n" + diff + "\n\n--\nAutomated with @goreleaser"
-	cmd := exec.Command("go", "version")
-	bts, err := cmd.CombinedOutput()
-	if err != nil {
-		return result
-	}
-	return result + "\nBuilt with " + string(bts)
-}
-
-func upload(ctx *context.Context, client *github.Client, releaseID int, archive, format string) error {
+func upload(ctx *context.Context, client clients.Client, releaseID int, archive, format string) error {
 	archive = archive + "." + format
 	var path = filepath.Join(ctx.Config.Dist, archive)
 	// In case the file doesn't exist, we just ignore it.
@@ -106,13 +61,5 @@ func upload(ctx *context.Context, client *github.Client, releaseID int, archive,
 	}
 	defer func() { _ = file.Close() }()
 	log.Println("Uploading", file.Name())
-	_, _, err = client.Repositories.UploadReleaseAsset(
-		ctx,
-		ctx.Config.Release.GitHub.Owner,
-		ctx.Config.Release.GitHub.Name,
-		releaseID,
-		&github.UploadOptions{Name: archive},
-		file,
-	)
-	return err
+	return client.Upload(ctx, releaseID, archive, file)
 }
