@@ -188,7 +188,7 @@ func dataFor(
 	}
 	sum, err := sha256sum.For(
 		filepath.Join(
-			ctx.Config.TargetFolder,
+			ctx.Config.Dist,
 			file+"."+ctx.Config.Archive.Format,
 		),
 	)

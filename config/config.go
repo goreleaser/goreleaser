@@ -77,7 +77,7 @@ type Project struct {
 	FPM     FPM `yaml:"fpm"`
 
 	// test only property:
-	TargetFolder string `yaml:"-"`
+	Dist string `yaml:"-"`
 }
 
 // Load config file

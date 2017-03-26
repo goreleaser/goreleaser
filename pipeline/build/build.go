@@ -64,7 +64,7 @@ func (Pipe) Run(ctx *context.Context) error {
 func build(name, goos, goarch string, ctx *context.Context) error {
 	ldflags := ctx.Config.Build.Ldflags + " -X main.version=" + ctx.Version
 	output := filepath.Join(
-		ctx.Config.TargetFolder,
+		ctx.Config.Dist,
 		name,
 		ctx.Config.Build.Binary+extFor(goos),
 	)

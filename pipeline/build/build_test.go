@@ -46,7 +46,7 @@ func TestRunFullPipe(t *testing.T) {
 	var pre = filepath.Join(folder, "pre")
 	var post = filepath.Join(folder, "post")
 	var config = config.Project{
-		TargetFolder: folder,
+		Dist: folder,
 		Build: config.Build{
 			Binary:  "testing",
 			Flags:   "-v",
