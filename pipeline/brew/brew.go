@@ -88,6 +88,11 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	client := clients.NewGitHubClient(ctx)
+	return doRun(ctx, client)
+}
+
+func doRun(ctx *context.Context, client clients.Client) error {
 	// TODO: remove this block in next release cycle
 	if ctx.Config.Brew.Repo != "" {
 		log.Println("The `brew.repo` syntax is deprecated and will soon be removed. Please check the README for more info.")
@@ -100,15 +105,12 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Brew.GitHub.Name == "" {
 		return nil
 	}
-	client := clients.NewGitHubClient(ctx)
 	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.Build.Binary+".rb")
-
 	log.Println("Pushing", path, "to", ctx.Config.Brew.GitHub.String())
 	content, err := buildFormula(ctx, client)
 	if err != nil {
 		return err
 	}
-
 	return client.CreateFile(ctx, content, path)
 }
 
@@ -175,10 +177,10 @@ func getInfo(
 	if err != nil {
 		return
 	}
-	if info.Homepage != "" {
-		homepage = info.Homepage
-	} else {
+	if info.Homepage == "" {
 		homepage = info.URL
+	} else {
+		homepage = info.Homepage
 	}
 	if info.Description == "" {
 		description = "TODO"
