@@ -186,7 +186,12 @@ func dataFor(
 	if file == "" {
 		return result, ErrNoDarwin64Build
 	}
-	sum, err := sha256sum.For("dist/" + file + "." + ctx.Config.Archive.Format)
+	sum, err := sha256sum.For(
+		filepath.Join(
+			ctx.Config.Dist,
+			file+"."+ctx.Config.Archive.Format,
+		),
+	)
 	if err != nil {
 		return
 	}
