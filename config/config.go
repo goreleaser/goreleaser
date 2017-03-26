@@ -76,7 +76,7 @@ type Project struct {
 	Archive Archive
 	FPM     FPM `yaml:"fpm"`
 
-	// test only property:
+	// test only property indicating the path to the dist folder
 	Dist string `yaml:"-"`
 }
 
