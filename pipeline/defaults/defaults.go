@@ -82,6 +82,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Brew.Install == "" {
 		ctx.Config.Brew.Install = "bin.install \"" + ctx.Config.Build.Binary + "\""
 	}
+	ctx.Config.Dist = "dist"
 	return nil
 }
 
