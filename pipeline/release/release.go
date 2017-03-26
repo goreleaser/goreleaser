@@ -89,7 +89,7 @@ func description(diff string) string {
 
 func upload(ctx *context.Context, client *github.Client, releaseID int, archive, format string) error {
 	archive = archive + "." + format
-	var path = filepath.Join("dist", archive)
+	var path = filepath.Join(ctx.Config.TargetFolder, archive)
 	// In case the file doesn't exist, we just ignore it.
 	// We do this because we can get invalid combinations of archive+format here,
 	// like darwinamd64 + deb or something like that.

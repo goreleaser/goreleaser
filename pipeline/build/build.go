@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -62,7 +63,11 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func build(name, goos, goarch string, ctx *context.Context) error {
 	ldflags := ctx.Config.Build.Ldflags + " -X main.version=" + ctx.Version
-	output := "dist/" + name + "/" + ctx.Config.Build.Binary + extFor(goos)
+	output := filepath.Join(
+		ctx.Config.TargetFolder,
+		name,
+		ctx.Config.Build.Binary+extFor(goos),
+	)
 	log.Println("Building", output)
 	cmd := []string{"go", "build"}
 	if ctx.Config.Build.Flags != "" {

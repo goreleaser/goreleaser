@@ -1,6 +1,9 @@
 package build
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"runtime"
 	"testing"
 
@@ -33,4 +36,44 @@ func TestBuild(t *testing.T) {
 		Config: config,
 	}
 	assert.NoError(build("build_test", runtime.GOOS, runtime.GOARCH, ctx))
+}
+
+func TestRunFullPipe(t *testing.T) {
+	assert := assert.New(t)
+	folder, err := ioutil.TempDir("", "gorelasertest")
+	assert.NoError(err)
+	var binary = filepath.Join(folder, "testing")
+	var pre = filepath.Join(folder, "pre")
+	var post = filepath.Join(folder, "post")
+	var config = config.Project{
+		TargetFolder: folder,
+		Build: config.Build{
+			Binary:  "testing",
+			Flags:   "-v",
+			Ldflags: "-X main.test=testing",
+			Hooks: config.Hooks{
+				Pre:  "touch " + pre,
+				Post: "touch " + post,
+			},
+			Goos: []string{
+				runtime.GOOS,
+			},
+			Goarch: []string{
+				runtime.GOARCH,
+			},
+		},
+	}
+	var ctx = &context.Context{
+		Config:   config,
+		Archives: map[string]string{},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	assert.True(exists(binary), binary)
+	assert.True(exists(pre), pre)
+	assert.True(exists(post), post)
+}
+
+func exists(file string) bool {
+	_, err := os.Stat(file)
+	return !os.IsNotExist(err)
 }

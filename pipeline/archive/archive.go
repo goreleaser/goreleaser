@@ -39,7 +39,7 @@ type Archive interface {
 }
 
 func create(name string, ctx *context.Context) error {
-	folder := filepath.Join("dist", name)
+	folder := filepath.Join(ctx.Config.TargetFolder, name)
 	file, err := os.Create(folder + "." + ctx.Config.Archive.Format)
 	log.Println("Creating", file.Name())
 	if err != nil {
