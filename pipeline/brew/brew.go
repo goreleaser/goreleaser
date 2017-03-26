@@ -8,7 +8,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/google/go-github/github"
 	"github.com/goreleaser/goreleaser/clients"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -89,6 +88,11 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	client := clients.NewGitHubClient(ctx)
+	return doRun(ctx, client)
+}
+
+func doRun(ctx *context.Context, client clients.Client) error {
 	// TODO: remove this block in next release cycle
 	if ctx.Config.Brew.Repo != "" {
 		log.Println("The `brew.repo` syntax is deprecated and will soon be removed. Please check the README for more info.")
@@ -101,57 +105,16 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Brew.GitHub.Name == "" {
 		return nil
 	}
-	client := clients.GitHub(ctx)
-	path := filepath.Join(
-		ctx.Config.Brew.Folder, ctx.Config.Build.Binary+".rb",
-	)
-
+	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.Build.Binary+".rb")
 	log.Println("Pushing", path, "to", ctx.Config.Brew.GitHub.String())
-	out, err := buildFormula(ctx, client)
+	content, err := buildFormula(ctx, client)
 	if err != nil {
 		return err
 	}
-
-	options := &github.RepositoryContentFileOptions{
-		Committer: &github.CommitAuthor{
-			Name:  github.String("goreleaserbot"),
-			Email: github.String("bot@goreleaser"),
-		},
-		Content: out.Bytes(),
-		Message: github.String(
-			ctx.Config.Build.Binary + " version " + ctx.Git.CurrentTag,
-		),
-	}
-
-	file, _, res, err := client.Repositories.GetContents(
-		ctx,
-		ctx.Config.Brew.GitHub.Owner,
-		ctx.Config.Brew.GitHub.Name,
-		path,
-		&github.RepositoryContentGetOptions{},
-	)
-	if err != nil && res.StatusCode == 404 {
-		_, _, err = client.Repositories.CreateFile(
-			ctx,
-			ctx.Config.Brew.GitHub.Owner,
-			ctx.Config.Brew.GitHub.Name,
-			path,
-			options,
-		)
-		return err
-	}
-	options.SHA = file.SHA
-	_, _, err = client.Repositories.UpdateFile(
-		ctx,
-		ctx.Config.Brew.GitHub.Owner,
-		ctx.Config.Brew.GitHub.Name,
-		path,
-		options,
-	)
-	return err
+	return client.CreateFile(ctx, content, path)
 }
 
-func buildFormula(ctx *context.Context, client *github.Client) (bytes.Buffer, error) {
+func buildFormula(ctx *context.Context, client clients.Client) (bytes.Buffer, error) {
 	data, err := dataFor(ctx, client)
 	if err != nil {
 		return bytes.Buffer{}, err
@@ -169,19 +132,7 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 	return out, err
 }
 
-func dataFor(
-	ctx *context.Context, client *github.Client,
-) (result templateData, err error) {
-	var homepage string
-	var description string
-	rep, _, err := client.Repositories.Get(
-		ctx,
-		ctx.Config.Release.GitHub.Owner,
-		ctx.Config.Release.GitHub.Name,
-	)
-	if err != nil {
-		return
-	}
+func dataFor(ctx *context.Context, client clients.Client) (result templateData, err error) {
 	file := ctx.Archives["darwinamd64"]
 	if file == "" {
 		return result, ErrNoDarwin64Build
@@ -195,15 +146,9 @@ func dataFor(
 	if err != nil {
 		return
 	}
-	if rep.Homepage != nil && *rep.Homepage != "" {
-		homepage = *rep.Homepage
-	} else {
-		homepage = *rep.HTMLURL
-	}
-	if rep.Description == nil {
-		description = "TODO"
-	} else {
-		description = *rep.Description
+	homepage, description, err := getInfo(ctx, client)
+	if err != nil {
+		return
 	}
 	return templateData{
 		Name:         formulaNameFor(ctx.Config.Build.Binary),
@@ -222,6 +167,27 @@ func dataFor(
 		Plist:        ctx.Config.Brew.Plist,
 		Install:      strings.Split(ctx.Config.Brew.Install, "\n"),
 	}, err
+}
+
+func getInfo(
+	ctx *context.Context,
+	client clients.Client,
+) (homepage string, description string, err error) {
+	info, err := client.GetInfo(ctx)
+	if err != nil {
+		return
+	}
+	if info.Homepage == "" {
+		homepage = info.URL
+	} else {
+		homepage = info.Homepage
+	}
+	if info.Description == "" {
+		description = "TODO"
+	} else {
+		description = info.Description
+	}
+	return
 }
 
 func formulaNameFor(name string) string {
