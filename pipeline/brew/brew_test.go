@@ -1,9 +1,15 @@
 package brew
 
 import (
+	"bytes"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/clients"
 	"github.com/goreleaser/goreleaser/config"
+	"github.com/goreleaser/goreleaser/context"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -79,4 +85,53 @@ func TestFormulaeSimple(t *testing.T) {
 	assert.NotContains(formulae, "def caveats")
 	assert.NotContains(formulae, "depends_on")
 	assert.NotContains(formulae, "def plist;")
+}
+
+func TestRunPipe(t *testing.T) {
+	assert := assert.New(t)
+	folder, err := ioutil.TempDir("", "gorelasertest")
+	assert.NoError(err)
+	_, err = os.Create(filepath.Join(folder, "bin.tar.gz"))
+	assert.NoError(err)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dist: folder,
+			Archive: config.Archive{
+				Format: "tar.gz",
+			},
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+		Archives: map[string]string{
+			"darwinamd64": "bin",
+		},
+	}
+	client := &DummyClient{}
+	assert.NoError(doRun(ctx, client))
+	assert.True(client.CreatedFile)
+}
+
+type DummyClient struct {
+	CreatedFile bool
+}
+
+func (client *DummyClient) GetInfo(ctx *context.Context) (info clients.Info, err error) {
+	return
+}
+
+func (client *DummyClient) CreateRelease(ctx *context.Context) (releaseID int, err error) {
+	return
+}
+
+func (client *DummyClient) CreateFile(ctx *context.Context, content bytes.Buffer, path string) (err error) {
+	client.CreatedFile = true
+	return
+}
+
+func (client *DummyClient) Upload(ctx *context.Context, releaseID int, name string, file *os.File) (err error) {
+	return
 }
