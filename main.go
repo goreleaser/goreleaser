@@ -28,7 +28,7 @@ func main() {
 	app.Usage = "Deliver Go binaries as fast and easily as possible"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "config, c",
+			Name:  "config, file, c, f",
 			Usage: "Load configuration from `FILE`",
 			Value: "goreleaser.yml",
 		},
