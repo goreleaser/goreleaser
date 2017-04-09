@@ -19,12 +19,16 @@ import (
 	"github.com/urfave/cli"
 )
 
-var version = "master"
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
 
 func main() {
 	var app = cli.NewApp()
 	app.Name = "goreleaser"
-	app.Version = version
+	app.Version = version + ", commit " + commit + ", built at " + date
 	app.Usage = "Deliver Go binaries as fast and easily as possible"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{

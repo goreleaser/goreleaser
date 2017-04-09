@@ -62,7 +62,6 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func build(name, goos, goarch string, ctx *context.Context) error {
-	ldflags := ctx.Config.Build.Ldflags + " -X main.version=" + ctx.Version
 	output := filepath.Join(
 		ctx.Config.Dist,
 		name,
@@ -73,7 +72,11 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 	if ctx.Config.Build.Flags != "" {
 		cmd = append(cmd, strings.Fields(ctx.Config.Build.Flags)...)
 	}
-	cmd = append(cmd, "-ldflags="+ldflags, "-o", output, ctx.Config.Build.Main)
+	flags, err := ldflags(ctx)
+	if err != nil {
+		return err
+	}
+	cmd = append(cmd, "-ldflags="+flags, "-o", output, ctx.Config.Build.Main)
 	if err := run(goos, goarch, cmd); err != nil {
 		return err
 	}

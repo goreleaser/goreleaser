@@ -51,7 +51,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Config.Build.Goarch = []string{"amd64", "386"}
 	}
 	if ctx.Config.Build.Ldflags == "" {
-		ctx.Config.Build.Ldflags = "-s -w"
+		ctx.Config.Build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
 	}
 
 	if ctx.Config.Archive.NameTemplate == "" {
