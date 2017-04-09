@@ -23,12 +23,8 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.Build.Hooks.Pre != "" {
-		log.Println("Running pre-build hook", ctx.Config.Build.Hooks.Pre)
-		cmd := strings.Fields(ctx.Config.Build.Hooks.Pre)
-		if err := run(runtime.GOOS, runtime.GOARCH, cmd); err != nil {
-			return err
-		}
+	if err := runHook(ctx.Config.Build.Hooks.Pre); err != nil {
+		return err
 	}
 	var g errgroup.Group
 	for _, goos := range ctx.Config.Build.Goos {
@@ -51,14 +47,16 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err := g.Wait(); err != nil {
 		return err
 	}
-	if ctx.Config.Build.Hooks.Post != "" {
-		log.Println("Running post-build hook", ctx.Config.Build.Hooks.Post)
-		cmd := strings.Fields(ctx.Config.Build.Hooks.Post)
-		if err := run(runtime.GOOS, runtime.GOARCH, cmd); err != nil {
-			return err
-		}
+	return runHook(ctx.Config.Build.Hooks.Post)
+}
+
+func runHook(hook string) error {
+	if hook == "" {
+		return nil
 	}
-	return nil
+	log.Println("Running hook", hook)
+	cmd := strings.Fields(hook)
+	return run(runtime.GOOS, runtime.GOARCH, cmd)
 }
 
 func build(name, goos, goarch string, ctx *context.Context) error {
@@ -77,10 +75,7 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 		return err
 	}
 	cmd = append(cmd, "-ldflags="+flags, "-o", output, ctx.Config.Build.Main)
-	if err := run(goos, goarch, cmd); err != nil {
-		return err
-	}
-	return nil
+	return run(goos, goarch, cmd)
 }
 
 func run(goos, goarch string, command []string) error {
