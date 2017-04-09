@@ -54,7 +54,7 @@ func runHook(hook string) error {
 	if hook == "" {
 		return nil
 	}
-	log.Println("Running build hook", hook)
+	log.Println("Running hook", hook)
 	cmd := strings.Fields(hook)
 	return run(runtime.GOOS, runtime.GOARCH, cmd)
 }
