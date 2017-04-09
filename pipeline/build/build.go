@@ -76,7 +76,6 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Println(flags)
 	cmd = append(cmd, "-ldflags="+flags, "-o", output, ctx.Config.Build.Main)
 	if err := run(goos, goarch, cmd); err != nil {
 		return err

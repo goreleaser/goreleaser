@@ -2,7 +2,6 @@ package build
 
 import (
 	"bytes"
-	"log"
 	"text/template"
 	"time"
 
@@ -21,7 +20,6 @@ func ldflags(ctx *context.Context) (string, error) {
 		Version: ctx.Git.CurrentTag,
 		Date:    time.Now().Format("2006-01-02_15:04:05"),
 	}
-	log.Println(ctx.Git)
 	var out bytes.Buffer
 	t, err := template.New("ldflags").Parse(ctx.Config.Build.Ldflags)
 	if err != nil {
