@@ -2,7 +2,7 @@ language: go
 go: 1.8
 install: make setup
 script:
-  - make test
+  - make ci
 after_success:
   - go get github.com/mattn/goveralls
   - goveralls -coverprofile=coverage.out -service=travis-ci -repotoken="$COVERALLS_TOKEN"
