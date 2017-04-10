@@ -176,9 +176,15 @@ build:
   # Default is empty
   flags: -tags dev
 
-  # Custom ldflags.
-  # Default is `-s -w`
-  ldflags: -s -w
+  # Custom ldflags template.
+  # This is parsed with Golang template engine and the following variables
+  # are available:
+  # - Version
+  # - Date
+  # - Commit
+  # The default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`
+  # Date format is `2006-01-02_15:04:05`
+  ldflags_template: -s -w -X main.build={{.Version}}
 
   # GOOS list to build in.
   # For more info refer to https://golang.org/doc/install/source#environment

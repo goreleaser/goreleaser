@@ -24,7 +24,7 @@ func TestValidEnv(t *testing.T) {
 
 func TestInvalidEnv(t *testing.T) {
 	assert := assert.New(t)
-	os.Unsetenv("GITHUB_TOKEN")
+	assert.NoError(os.Unsetenv("GITHUB_TOKEN"))
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}

@@ -11,6 +11,7 @@ type GitInfo struct {
 	CurrentTag  string
 	PreviousTag string
 	Diff        string
+	Commit      string
 }
 
 // Context carries along some data through the pipes
