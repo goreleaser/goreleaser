@@ -18,7 +18,7 @@ func ldflags(ctx *context.Context) (string, error) {
 	var data = ldflagsData{
 		Commit:  ctx.Git.Commit,
 		Version: ctx.Git.CurrentTag,
-		Date:    time.Now().Format("2006-01-02_15:04:05"),
+		Date:    time.Now().UTC().Format(time.RFC3339),
 	}
 	var out bytes.Buffer
 	t, err := template.New("ldflags").Parse(ctx.Config.Build.Ldflags)
