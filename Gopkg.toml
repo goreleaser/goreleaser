@@ -1,0 +1,16 @@
+
+[[dependencies]]
+  name = "github.com/stretchr/testify"
+  version = "^1.1.4"
+
+[[dependencies]]
+  name = "github.com/urfave/cli"
+  version = "^1.19.1"
+
+[[dependencies]]
+  branch = "master"
+  name = "golang.org/x/sync"
+
+[[dependencies]]
+  branch = "v1"
+  name = "gopkg.in/yaml.v1"
