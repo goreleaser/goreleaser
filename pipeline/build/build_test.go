@@ -73,6 +73,26 @@ func TestRunFullPipe(t *testing.T) {
 	assert.True(exists(post), post)
 }
 
+func TestRunPipeWithInvalidOS(t *testing.T) {
+	assert := assert.New(t)
+	var config = config.Project{
+		Build: config.Build{
+			Flags: "-v",
+			Goos: []string{
+				"windows",
+			},
+			Goarch: []string{
+				"arm",
+			},
+		},
+	}
+	var ctx = &context.Context{
+		Config:   config,
+		Archives: map[string]string{},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+}
+
 func exists(file string) bool {
 	_, err := os.Stat(file)
 	return !os.IsNotExist(err)
