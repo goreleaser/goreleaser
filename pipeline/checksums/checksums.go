@@ -6,10 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/context"
+	"golang.org/x/sync/errgroup"
 )
 
 // Pipe for checksums
