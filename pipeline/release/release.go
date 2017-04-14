@@ -42,15 +42,6 @@ func doRun(ctx *context.Context, client clients.Client) error {
 
 func upload(ctx *context.Context, client clients.Client, releaseID int, artifact string) error {
 	var path = filepath.Join(ctx.Config.Dist, artifact)
-	// In case the file doesn't exist, we just ignore it.
-	// We do this because we can get invalid combinations of archive+format here,
-	// like darwinamd64 + deb or something like that.
-	// It's assumed that the archive pipe would fail the entire thing in case it fails to
-	// generate some archive, as well fpm pipe is expected to fail if something wrong happens.
-	// So, here, we just assume IsNotExist as an expected error.
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return nil
-	}
 	file, err := os.Open(path)
 	if err != nil {
 		return err
