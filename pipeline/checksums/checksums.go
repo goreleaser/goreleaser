@@ -4,8 +4,8 @@ package checksums
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 
 	"github.com/goreleaser/goreleaser/checksum"
@@ -36,23 +36,18 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 func checksums(ctx *context.Context, name string) error {
 	log.Println("Checksumming", name)
 	var artifact = filepath.Join(ctx.Config.Dist, name)
-	var checksums = fmt.Sprintf("%v.%v", name, "checksums")
 	sha, err := checksum.SHA256(artifact)
 	if err != nil {
 		return err
 	}
-	file, err := os.OpenFile(
-		filepath.Join(ctx.Config.Dist, checksums),
-		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
-		0600,
+	var file = filepath.Join(
+		ctx.Config.Dist,
+		fmt.Sprintf("%v.%v", name, "checksums"),
 	)
-	if err != nil {
+	var content = fmt.Sprintf("%v\t%v\n", sha, name)
+	if err := ioutil.WriteFile(file, []byte(content), 0644); err != nil {
 		return err
 	}
-	defer func() { _ = file.Close() }()
-	if _, err = file.WriteString(fmt.Sprintf("%v\t%v\n", sha, name)); err != nil {
-		return err
-	}
-	ctx.AddArtifact(file.Name())
+	ctx.AddArtifact(file)
 	return nil
 }
