@@ -15,7 +15,7 @@ func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.Description())
 }
 
-func TestBlah(t *testing.T) {
+func TestPipe(t *testing.T) {
 	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "gorelasertest")
 	assert.NoError(err)
