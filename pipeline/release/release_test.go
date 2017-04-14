@@ -47,6 +47,28 @@ func TestRunPipe(t *testing.T) {
 	assert.True(client.UploadedFile)
 }
 
+func TestRunPipeWithFileThatDontExist(t *testing.T) {
+	assert := assert.New(t)
+	var ctx = &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.0.0",
+		},
+		Config: config.Project{
+			Release: config.Release{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+	}
+	ctx.AddArtifact("this-file-wont-exist-hopefuly")
+	client := &DummyClient{}
+	assert.Error(doRun(ctx, client))
+	assert.True(client.CreatedRelease)
+	assert.False(client.UploadedFile)
+}
+
 type DummyClient struct {
 	CreatedRelease bool
 	UploadedFile   bool
