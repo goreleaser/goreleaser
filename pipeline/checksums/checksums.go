@@ -48,6 +48,9 @@ func checksums(ctx *context.Context, name string) error {
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_EXCL,
 		0600,
 	)
+	if err != nil {
+		return err
+	}
 	defer func() { _ = file.Close() }()
 	var template = "%v %v\n"
 	if _, err = file.WriteString(fmt.Sprintf(template, "md5sum", md5)); err != nil {
