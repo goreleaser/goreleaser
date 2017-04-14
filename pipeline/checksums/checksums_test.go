@@ -1,6 +1,9 @@
 package checksums
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -14,8 +17,27 @@ func TestDescription(t *testing.T) {
 
 func TestBlah(t *testing.T) {
 	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "gorelasertest")
+	assert.NoError(err)
+	file, err := os.OpenFile(
+		filepath.Join(folder, "binary"),
+		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_EXCL,
+		0600,
+	)
+	assert.NoError(err)
+	_, err = file.WriteString("some string")
+	assert.NoError(err)
+	assert.NoError(file.Close())
 	var ctx = &context.Context{
-		Config: config.Project{},
+		Config: config.Project{
+			Dist: folder,
+		},
 	}
+	ctx.AddArtifact(file.Name())
 	assert.NoError(Pipe{}.Run(ctx))
+	assert.Len(ctx.Artifacts, 2)
+	bts, err := ioutil.ReadFile(filepath.Join(folder, "binary.checksums"))
+	assert.NoError(err)
+	assert.Contains(string(bts), "md5sum 5ac749fbeec93607fc28d666be85e73a")
+	assert.Contains(string(bts), "sha256sum 61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc")
 }
