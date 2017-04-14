@@ -135,5 +135,5 @@ func (c *githubClient) Upload(
 		},
 		file,
 	)
-	return err
+	return
 }
