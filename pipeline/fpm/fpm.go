@@ -83,5 +83,6 @@ func create(ctx *context.Context, format, archive, arch string) error {
 	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
 		return errors.New(string(out))
 	}
+	ctx.AddArtifact(file)
 	return nil
 }
