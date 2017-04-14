@@ -8,10 +8,10 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/clients"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/sha256sum"
 )
 
 // ErrNoDarwin64Build when there is no build for darwin_amd64 (goos doesn't
@@ -137,7 +137,7 @@ func dataFor(ctx *context.Context, client clients.Client) (result templateData, 
 	if file == "" {
 		return result, ErrNoDarwin64Build
 	}
-	sum, err := sha256sum.For(
+	sum, err := checksum.SHA256(
 		filepath.Join(
 			ctx.Config.Dist,
 			file+"."+ctx.Config.Archive.Format,

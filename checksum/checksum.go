@@ -1,21 +1,25 @@
-package sha256sum
+package checksum
 
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"hash"
 	"io"
 	"os"
 )
 
-// For calculates the SHA256 sum for the given file
-func For(path string) (result string, err error) {
+// SHA256 sum of the given file
+func SHA256(path string) (result string, err error) {
+	return calculate(sha256.New(), path)
+}
+
+func calculate(hash hash.Hash, path string) (result string, err error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return
 	}
 	defer func() { _ = file.Close() }()
 
-	hash := sha256.New()
 	_, err = io.Copy(hash, file)
 	if err != nil {
 		return
