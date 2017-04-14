@@ -73,6 +73,26 @@ func TestRunFullPipe(t *testing.T) {
 	assert.True(exists(post), post)
 }
 
+func TestBuildFailed(t *testing.T) {
+	assert := assert.New(t)
+	var config = config.Project{
+		Build: config.Build{
+			Flags: "-flag-that-dont-exists-to-force-failure",
+			Goos: []string{
+				runtime.GOOS,
+			},
+			Goarch: []string{
+				runtime.GOARCH,
+			},
+		},
+	}
+	var ctx = &context.Context{
+		Config:   config,
+		Archives: map[string]string{},
+	}
+	assert.Error(Pipe{}.Run(ctx))
+}
+
 func TestRunPipeWithInvalidOS(t *testing.T) {
 	assert := assert.New(t)
 	var config = config.Project{
