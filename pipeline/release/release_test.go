@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/clients"
+	"github.com/goreleaser/goreleaser/client"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/stretchr/testify/assert"
@@ -74,7 +74,7 @@ type DummyClient struct {
 	UploadedFile   bool
 }
 
-func (client *DummyClient) GetInfo(ctx *context.Context) (info clients.Info, err error) {
+func (client *DummyClient) GetInfo(ctx *context.Context) (info client.Info, err error) {
 	return
 }
 

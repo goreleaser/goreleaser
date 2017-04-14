@@ -1,4 +1,4 @@
-package clients
+package client
 
 import (
 	"bytes"
@@ -13,8 +13,8 @@ type githubClient struct {
 	client *github.Client
 }
 
-// NewGitHubClient impl
-func NewGitHubClient(ctx *context.Context) Client {
+// NewGitHub returns a github client implementation
+func NewGitHub(ctx *context.Context) Client {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: ctx.Token},
 	)
