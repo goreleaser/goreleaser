@@ -21,9 +21,9 @@ func TestRunPipe(t *testing.T) {
 	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "gorelasertest")
 	assert.NoError(err)
-	_, err = os.Create(filepath.Join(folder, "bin.tar.gz"))
+	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	assert.NoError(err)
-	_, err = os.Create(filepath.Join(folder, "bin.deb"))
+	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
 	assert.NoError(err)
 	var ctx = &context.Context{
 		Git: context.GitInfo{
@@ -31,25 +31,16 @@ func TestRunPipe(t *testing.T) {
 		},
 		Config: config.Project{
 			Dist: folder,
-			Archive: config.Archive{
-				Format: "tar.gz",
-			},
 			Release: config.Release{
 				GitHub: config.Repo{
 					Owner: "test",
 					Name:  "test",
 				},
 			},
-			FPM: config.FPM{
-				Formats: []string{
-					"deb",
-				},
-			},
-		},
-		Archives: map[string]string{
-			"darwinamd64": "bin",
 		},
 	}
+	ctx.AddArtifact(tarfile.Name())
+	ctx.AddArtifact(debfile.Name())
 	client := &DummyClient{}
 	assert.NoError(doRun(ctx, client))
 	assert.True(client.CreatedRelease)

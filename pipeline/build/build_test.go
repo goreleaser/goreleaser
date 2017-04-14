@@ -73,6 +73,73 @@ func TestRunFullPipe(t *testing.T) {
 	assert.True(exists(post), post)
 }
 
+func TestBuildFailed(t *testing.T) {
+	assert := assert.New(t)
+	var config = config.Project{
+		Build: config.Build{
+			Flags: "-flag-that-dont-exists-to-force-failure",
+			Goos: []string{
+				runtime.GOOS,
+			},
+			Goarch: []string{
+				runtime.GOARCH,
+			},
+		},
+	}
+	var ctx = &context.Context{
+		Config:   config,
+		Archives: map[string]string{},
+	}
+	assert.Error(Pipe{}.Run(ctx))
+}
+
+func TestRunPipeWithInvalidOS(t *testing.T) {
+	assert := assert.New(t)
+	var config = config.Project{
+		Build: config.Build{
+			Flags: "-v",
+			Goos: []string{
+				"windows",
+			},
+			Goarch: []string{
+				"arm",
+			},
+		},
+	}
+	var ctx = &context.Context{
+		Config:   config,
+		Archives: map[string]string{},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+}
+
+func TestRunPipeFailingHooks(t *testing.T) {
+	assert := assert.New(t)
+	var config = config.Project{
+		Build: config.Build{
+			Hooks: config.Hooks{},
+			Goos: []string{
+				runtime.GOOS,
+			},
+			Goarch: []string{
+				runtime.GOARCH,
+			},
+		},
+	}
+	var ctx = &context.Context{
+		Config:   config,
+		Archives: map[string]string{},
+	}
+	t.Run("pre-hook", func(t *testing.T) {
+		ctx.Config.Build.Hooks.Pre = "exit 1"
+		assert.Error(Pipe{}.Run(ctx))
+	})
+	t.Run("post-hook", func(t *testing.T) {
+		ctx.Config.Build.Hooks.Post = "exit 1"
+		assert.Error(Pipe{}.Run(ctx))
+	})
+}
+
 func exists(file string) bool {
 	_, err := os.Stat(file)
 	return !os.IsNotExist(err)
