@@ -93,6 +93,33 @@ func TestRunPipeWithInvalidOS(t *testing.T) {
 	assert.NoError(Pipe{}.Run(ctx))
 }
 
+func TestRunPipeFailingHooks(t *testing.T) {
+	assert := assert.New(t)
+	var config = config.Project{
+		Build: config.Build{
+			Hooks: config.Hooks{},
+			Goos: []string{
+				runtime.GOOS,
+			},
+			Goarch: []string{
+				runtime.GOARCH,
+			},
+		},
+	}
+	var ctx = &context.Context{
+		Config:   config,
+		Archives: map[string]string{},
+	}
+	t.Run("pre-hook", func(t *testing.T) {
+		ctx.Config.Build.Hooks.Pre = "exit 1"
+		assert.Error(Pipe{}.Run(ctx))
+	})
+	t.Run("post-hook", func(t *testing.T) {
+		ctx.Config.Build.Hooks.Post = "exit 1"
+		assert.Error(Pipe{}.Run(ctx))
+	})
+}
+
 func exists(file string) bool {
 	_, err := os.Stat(file)
 	return !os.IsNotExist(err)
