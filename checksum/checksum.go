@@ -1,3 +1,4 @@
+// Package checksum contain algorithms to checksum files
 package checksum
 
 import (

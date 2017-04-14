@@ -1,3 +1,5 @@
+// Package config contains the model and loader of the goreleaser configuration
+// file.
 package config
 
 import (

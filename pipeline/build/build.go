@@ -1,3 +1,5 @@
+// Package build implements Pipe and can build Go projects for
+// several platforms, with pre and post hook support.
 package build
 
 import (
