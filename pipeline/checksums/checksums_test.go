@@ -2,7 +2,6 @@ package checksums
 
 import (
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -19,21 +18,14 @@ func TestPipe(t *testing.T) {
 	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "gorelasertest")
 	assert.NoError(err)
-	file, err := os.OpenFile(
-		filepath.Join(folder, "binary"),
-		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_EXCL,
-		0600,
-	)
-	assert.NoError(err)
-	_, err = file.WriteString("some string")
-	assert.NoError(err)
-	assert.NoError(file.Close())
+	var file = filepath.Join(folder, "binary")
+	assert.NoError(ioutil.WriteFile(file, []byte("some string"), 0644))
 	var ctx = &context.Context{
 		Config: config.Project{
 			Dist: folder,
 		},
 	}
-	ctx.AddArtifact(file.Name())
+	ctx.AddArtifact(file)
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.Contains(ctx.Artifacts, "binary.checksums", "binary")
 	bts, err := ioutil.ReadFile(filepath.Join(folder, "binary.checksums"))
