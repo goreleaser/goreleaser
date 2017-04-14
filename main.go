@@ -80,9 +80,10 @@ func pipes(buildOnly bool) []pipeline.Pipe {
 	}
 	pipes = append(
 		pipes,
-		build.Pipe{},   // build
-		archive.Pipe{}, // archive (tar.gz, zip, etc)
-		fpm.Pipe{},     // archive via fpm (deb, rpm, etc)
+		build.Pipe{},               // build
+		archive.Pipe{},             // archive (tar.gz, zip, etc)
+		archive.ArchiveChecksums{}, // creates checksums for archives
+		fpm.Pipe{},                 // archive via fpm (deb, rpm, etc)
 	)
 	if !buildOnly {
 		pipes = append(
