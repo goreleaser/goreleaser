@@ -26,7 +26,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, archive := range ctx.Archives {
 		archive := archive
 		g.Go(func() error {
-			return create(archive, ctx)
+			return create(ctx, archive)
 		})
 	}
 	return g.Wait()
@@ -38,7 +38,7 @@ type Archive interface {
 	Add(name, path string) error
 }
 
-func create(name string, ctx *context.Context) error {
+func create(ctx *context.Context, name string) error {
 	folder := filepath.Join(ctx.Config.Dist, name)
 	file, err := os.Create(folder + "." + ctx.Config.Archive.Format)
 	log.Println("Creating", file.Name())
@@ -62,6 +62,7 @@ func create(name string, ctx *context.Context) error {
 			return err
 		}
 	}
+	ctx.AddArtifact(file.Name())
 	return nil
 }
 
