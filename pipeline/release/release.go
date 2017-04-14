@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/goreleaser/goreleaser/clients"
+	"github.com/goreleaser/goreleaser/client"
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/sync/errgroup"
 )
@@ -22,11 +22,10 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	client := clients.NewGitHubClient(ctx)
-	return doRun(ctx, client)
+	return doRun(ctx, client.NewGitHub(ctx))
 }
 
-func doRun(ctx *context.Context, client clients.Client) error {
+func doRun(ctx *context.Context, client client.Client) error {
 	log.Println("Creating or updating release", ctx.Git.CurrentTag, "on", ctx.Config.Release.GitHub.String())
 	releaseID, err := client.CreateRelease(ctx)
 	if err != nil {
@@ -42,7 +41,7 @@ func doRun(ctx *context.Context, client clients.Client) error {
 	return g.Wait()
 }
 
-func upload(ctx *context.Context, client clients.Client, releaseID int, artifact string) error {
+func upload(ctx *context.Context, client client.Client, releaseID int, artifact string) error {
 	var path = filepath.Join(ctx.Config.Dist, artifact)
 	file, err := os.Open(path)
 	if err != nil {
