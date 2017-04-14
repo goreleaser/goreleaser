@@ -40,3 +40,16 @@ func TestPipe(t *testing.T) {
 	assert.NoError(err)
 	assert.Contains(string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc	binary")
 }
+
+func TestPipeFileNotExist(t *testing.T) {
+	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "gorelasertest")
+	assert.NoError(err)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dist: folder,
+		},
+	}
+	ctx.AddArtifact("nope")
+	assert.Error(Pipe{}.Run(ctx))
+}

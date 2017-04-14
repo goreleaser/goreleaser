@@ -1,3 +1,6 @@
+// Package archive implements the pipe interface with the intent of
+// archiving and compressing the binaries, readme, and other artifacts. It
+// also provides an Archive interface which represents an archiving format.
 package archive
 
 import (

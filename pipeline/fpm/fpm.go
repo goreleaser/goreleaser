@@ -1,3 +1,4 @@
+// Package fpm implements the Pipe interface providing FPM bindings.
 package fpm
 
 import (

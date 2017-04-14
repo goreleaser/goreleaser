@@ -1,3 +1,4 @@
+// Package pipeline provides a generic pipe interface.
 package pipeline
 
 import "github.com/goreleaser/goreleaser/context"

@@ -115,6 +115,34 @@ func TestRunPipe(t *testing.T) {
 	assert.True(client.CreatedFile)
 }
 
+func TestRunPipeBrewNotSetup(t *testing.T) {
+	assert := assert.New(t)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archive: config.Archive{
+				Format: "tar.gz",
+			},
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+	}
+	client := &DummyClient{}
+	assert.Equal(ErrNoDarwin64Build, doRun(ctx, client))
+	assert.False(client.CreatedFile)
+}
+
+func TestRunPipeNoDarwinBuild(t *testing.T) {
+	assert := assert.New(t)
+	var ctx = &context.Context{}
+	client := &DummyClient{}
+	assert.NoError(doRun(ctx, client))
+	assert.False(client.CreatedFile)
+}
+
 type DummyClient struct {
 	CreatedFile bool
 }

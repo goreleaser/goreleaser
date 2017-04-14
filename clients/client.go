@@ -1,3 +1,4 @@
+// Package clients contains the client implementations for several providers.
 package clients
 
 import (

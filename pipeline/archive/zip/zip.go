@@ -1,3 +1,5 @@
+// Package zip implements the Archive interface providing zip archiving
+// and compression.
 package zip
 
 import (

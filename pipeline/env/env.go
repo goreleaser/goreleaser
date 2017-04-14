@@ -1,3 +1,5 @@
+// Package env implements the Pipe interface providing validation of
+// missing environment variables needed by the release process.
 package env
 
 import (
