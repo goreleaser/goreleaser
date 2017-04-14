@@ -22,11 +22,6 @@ func TestChecksums(t *testing.T) {
 	_, err = file.WriteString("lorem ipsum")
 	assert.NoError(err)
 	assert.NoError(file.Close())
-	t.Run("md5", func(t *testing.T) {
-		sum, err := MD5(file.Name())
-		assert.NoError(err)
-		assert.Equal("80a751fde577028640c419000e33eba6", sum)
-	})
 	t.Run("sha256", func(t *testing.T) {
 		sum, err := SHA256(file.Name())
 		assert.NoError(err)
@@ -36,7 +31,7 @@ func TestChecksums(t *testing.T) {
 
 func TestOpenFailure(t *testing.T) {
 	var assert = assert.New(t)
-	sum, err := MD5("/tmp/this-file-wont-exist-I-hope")
+	sum, err := SHA256("/tmp/this-file-wont-exist-I-hope")
 	assert.Empty(sum)
 	assert.Error(err)
 }

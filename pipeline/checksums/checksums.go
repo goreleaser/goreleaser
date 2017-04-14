@@ -39,10 +39,6 @@ func checksums(ctx *context.Context, name string) error {
 	if err != nil {
 		return err
 	}
-	md5, err := checksum.MD5(artifact)
-	if err != nil {
-		return err
-	}
 	file, err := os.OpenFile(
 		filepath.Join(ctx.Config.Dist, checksums),
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
@@ -52,11 +48,7 @@ func checksums(ctx *context.Context, name string) error {
 		return err
 	}
 	defer func() { _ = file.Close() }()
-	var template = "%v %v\n"
-	if _, err = file.WriteString(fmt.Sprintf(template, "md5sum", md5)); err != nil {
-		return err
-	}
-	if _, err = file.WriteString(fmt.Sprintf(template, "sha256sum", sha)); err != nil {
+	if _, err = file.WriteString(fmt.Sprintf("%v\t%v\n", sha, name)); err != nil {
 		return err
 	}
 	ctx.AddArtifact(file.Name())

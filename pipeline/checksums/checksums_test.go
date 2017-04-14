@@ -38,6 +38,5 @@ func TestPipe(t *testing.T) {
 	assert.Contains(ctx.Artifacts, "binary.checksums", "binary")
 	bts, err := ioutil.ReadFile(filepath.Join(folder, "binary.checksums"))
 	assert.NoError(err)
-	assert.Contains(string(bts), "md5sum 5ac749fbeec93607fc28d666be85e73a")
-	assert.Contains(string(bts), "sha256sum 61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc")
+	assert.Contains(string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc	binary")
 }
