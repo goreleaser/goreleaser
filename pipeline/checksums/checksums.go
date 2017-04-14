@@ -1,11 +1,15 @@
 package checksums
 
 import (
+	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
+	"golang.org/x/sync/errgroup"
+
+	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/sha256sum"
 )
 
 // Pipe for checksums
@@ -18,24 +22,41 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
+	var g errgroup.Group
+	for _, artifact := range ctx.Artifacts {
+		artifact := artifact
+		g.Go(func() error {
+			return checksums(ctx, artifact)
+		})
+	}
+	return g.Wait()
+}
+
+func checksums(ctx *context.Context, name string) error {
+	log.Println("Checksumming", name)
+	var artifact = filepath.Join(ctx.Config.Dist, name)
+	var checksums = fmt.Sprintf("%v.%v", name, "checksums")
+	sha, err := checksum.SHA256(artifact)
+	if err != nil {
+		return err
+	}
+	md5, err := checksum.MD5(artifact)
+	if err != nil {
+		return err
+	}
 	file, err := os.OpenFile(
-		filepath.Join(ctx.Config.Dist, "CHECKSUMS.txt"),
-		os.O_APPEND|os.O_WRONLY|os.O_CREATE,
+		filepath.Join(ctx.Config.Dist, checksums),
+		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_EXCL,
 		0600,
 	)
-	if err != nil {
-		return
-	}
 	defer func() { _ = file.Close() }()
-	for _, artifact := range ctx.Artifacts {
-		sha, err := sha256sum.For(filepath.Join(ctx.Config.Dist, artifact))
-		if err != nil {
-			return err
-		}
-		if _, err = file.WriteString(artifact + " sha256sum: " + sha + "\n"); err != nil {
-			return err
-		}
+	var template = "%v %v\n"
+	if _, err = file.WriteString(fmt.Sprintf(template, "md5sum", md5)); err != nil {
+		return err
+	}
+	if _, err = file.WriteString(fmt.Sprintf(template, "sha256sum", sha)); err != nil {
+		return err
 	}
 	ctx.AddArtifact(file.Name())
-	return
+	return nil
 }
