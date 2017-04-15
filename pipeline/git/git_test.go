@@ -1,6 +1,7 @@
 package git
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -42,8 +43,11 @@ func TestSingleCommit(t *testing.T) {
 	_, back := createAndChdir(t)
 	defer back()
 	assert.NoError(exec.Command("git", "init").Run())
-	assert.NoError(exec.Command("git", "commit", "--allow-empty", "-m", "asd").Run())
+	assert.NoError(exec.Command("git", "commit", "--allow-empty", "-m", "commit1").Run())
 	assert.NoError(exec.Command("git", "tag", "v0.0.1").Run())
+	out, err := git("log")
+	assert.NoError(err)
+	fmt.Print("git log:\n", out)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
@@ -67,8 +71,11 @@ func TestInvalidTagFormat(t *testing.T) {
 	_, back := createAndChdir(t)
 	defer back()
 	assert.NoError(exec.Command("git", "init").Run())
-	assert.NoError(exec.Command("git", "commit", "--allow-empty", "-m", "asd").Run())
+	assert.NoError(exec.Command("git", "commit", "--allow-empty", "-m", "commit2").Run())
 	assert.NoError(exec.Command("git", "tag", "sadasd").Run())
+	out, err := git("log")
+	assert.NoError(err)
+	fmt.Print("git log:\n", out)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
@@ -78,7 +85,7 @@ func TestInvalidTagFormat(t *testing.T) {
 
 func createAndChdir(t *testing.T) (current string, back func()) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "gorelasertest")
+	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
 	previous, err := os.Getwd()
 	assert.NoError(err)

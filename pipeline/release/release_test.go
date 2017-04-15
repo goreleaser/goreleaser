@@ -20,7 +20,7 @@ func TestPipeDescription(t *testing.T) {
 
 func TestRunPipe(t *testing.T) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "gorelasertest")
+	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	assert.NoError(err)
@@ -95,7 +95,7 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 
 func TestRunPipeUploadFailure(t *testing.T) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "gorelasertest")
+	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	assert.NoError(err)

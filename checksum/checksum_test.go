@@ -10,7 +10,7 @@ import (
 
 func TestChecksums(t *testing.T) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "gorelasertest")
+	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
 	var file = filepath.Join(folder, "subject")
 	assert.NoError(ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
