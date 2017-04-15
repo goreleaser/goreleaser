@@ -16,7 +16,6 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/release"
-	"github.com/goreleaser/goreleaser/pipeline/source"
 	"github.com/urfave/cli"
 )
 
@@ -74,9 +73,8 @@ func pipes(buildOnly bool) []pipeline.Pipe {
 	if !buildOnly {
 		pipes = append(
 			pipes,
-			git.Pipe{},    // get current tag info
-			env.Pipe{},    // load and validate environment variables
-			source.Pipe{}, // validate current git state
+			git.Pipe{}, // get and validate git repo state
+			env.Pipe{}, // load and validate environment variables
 		)
 	}
 	pipes = append(

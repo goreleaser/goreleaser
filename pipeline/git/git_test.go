@@ -1,9 +1,9 @@
 package git
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -13,18 +13,6 @@ import (
 
 func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.Description())
-}
-
-func TestValidVersion(t *testing.T) {
-	var assert = assert.New(t)
-
-	var ctx = &context.Context{
-		Config: config.Project{},
-	}
-	assert.NoError(Pipe{}.Run(ctx))
-	assert.NotEmpty(ctx.Git.CurrentTag)
-	assert.NotEmpty(ctx.Git.PreviousTag)
-	assert.NotEmpty(ctx.Git.Diff)
 }
 
 func TestNotAGitFolder(t *testing.T) {
@@ -44,7 +32,6 @@ func TestSingleCommit(t *testing.T) {
 	gitInit(t)
 	gitCommit(t, "commit1")
 	gitTag(t, "v0.0.1")
-	gitLog(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
@@ -70,12 +57,46 @@ func TestInvalidTagFormat(t *testing.T) {
 	gitInit(t)
 	gitCommit(t, "commit2")
 	gitTag(t, "sadasd")
-	gitLog(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 	assert.EqualError(Pipe{}.Run(ctx), "sadasd is not in a valid version format")
 	assert.Equal("sadasd", ctx.Git.CurrentTag)
+}
+
+func TestDirty(t *testing.T) {
+	var assert = assert.New(t)
+	folder, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	dummy, err := os.Create(filepath.Join(folder, "dummy"))
+	assert.NoError(err)
+	gitAdd(t)
+	gitCommit(t, "commit2")
+	gitTag(t, "v0.0.1")
+	assert.NoError(ioutil.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0644))
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	err = Pipe{}.Run(ctx)
+	assert.Error(err)
+	assert.Contains(err.Error(), "git is currently in a dirty state:")
+}
+
+func TestTagIsNotLastCommit(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	gitCommit(t, "commit3")
+	gitTag(t, "v0.0.1")
+	gitCommit(t, "commit4")
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	err := Pipe{}.Run(ctx)
+	assert.Error(err)
+	assert.Contains(err.Error(), "fatal: no tag exactly matches")
 }
 
 //
@@ -115,12 +136,11 @@ func gitTag(t *testing.T, tag string) {
 	assert.Empty(out)
 }
 
-func gitLog(t *testing.T) {
+func gitAdd(t *testing.T) {
 	var assert = assert.New(t)
-	out, err := git("log")
+	out, err := git("add", "-A")
 	assert.NoError(err)
-	assert.NotEmpty(out)
-	fmt.Print("\n\ngit log output:\n", out)
+	assert.Empty(out)
 }
 
 func fakeGit(args ...string) (string, error) {

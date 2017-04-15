@@ -18,12 +18,30 @@ func (e ErrInvalidVersionFormat) Error() string {
 	return e.version + " is not in a valid version format"
 }
 
+// ErrDirty happens when the repo has uncommitted/unstashed changes
+type ErrDirty struct {
+	status string
+}
+
+func (e ErrDirty) Error() string {
+	return "git is currently in a dirty state:\n" + e.status
+}
+
+// ErrWrongRef happens when the HEAD reference is different from the tag being built
+type ErrWrongRef struct {
+	status string
+}
+
+func (e ErrWrongRef) Error() string {
+	return e.status
+}
+
 // Pipe for brew deployment
 type Pipe struct{}
 
 // Description of the pipe
 func (Pipe) Description() string {
-	return "Getting Git info"
+	return "Getting and validating git state"
 }
 
 // Run the pipe
@@ -57,7 +75,15 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return
 	}
 	ctx.Git.Commit = commit
-	return
+	out, err := git("diff")
+	if strings.TrimSpace(out) != "" || err != nil {
+		return ErrDirty{out}
+	}
+	_, err = cleanGit("describe", "--exact-match", "--tags", "--match", tag)
+	if err != nil {
+		return ErrWrongRef{err.Error()}
+	}
+	return nil
 }
 
 func previous(tag string) (previous string, err error) {
