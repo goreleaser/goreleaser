@@ -103,14 +103,14 @@ func gitInit(t *testing.T) {
 
 func gitCommit(t *testing.T, msg string) {
 	var assert = assert.New(t)
-	out, err := git("commit", "--allow-empty", "-m", msg)
+	out, err := fakeGit("commit", "--allow-empty", "-m", msg)
 	assert.NoError(err)
 	assert.Contains(out, "master", msg)
 }
 
 func gitTag(t *testing.T, tag string) {
 	var assert = assert.New(t)
-	out, err := git("tag", tag)
+	out, err := fakeGit("tag", tag)
 	assert.NoError(err)
 	assert.Empty(out)
 }
@@ -121,4 +121,15 @@ func gitLog(t *testing.T) {
 	assert.NoError(err)
 	assert.NotEmpty(out)
 	fmt.Print("\n\ngit log output:\n", out)
+}
+
+func fakeGit(args ...string) (string, error) {
+	var allArgs = []string{
+		"-c",
+		"user.name='GoReleaser'",
+		"-c",
+		"user.email='test@goreleaser.github.com'",
+	}
+	allArgs = append(allArgs, args...)
+	return git(allArgs...)
 }
