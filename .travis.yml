@@ -1,11 +1,13 @@
 language: go
 go: 1.8
-install: make setup
+install:
+  - make setup
+  - gem install fpm
 script:
   - make test
 after_success:
   - go get github.com/mattn/goveralls
   - goveralls -coverprofile=coverage.out -service=travis-ci -repotoken="$COVERALLS_TOKEN"
-  - test -n "$TRAVIS_TAG" && gem install fpm && go run main.go
+  - test -n "$TRAVIS_TAG" && go run main.go
 notifications:
   email: false
