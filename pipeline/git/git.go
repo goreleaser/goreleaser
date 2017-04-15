@@ -3,7 +3,6 @@
 package git
 
 import (
-	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -38,7 +37,6 @@ func (p Pipe) Run(ctx *context.Context) (err error) {
 }
 
 func (Pipe) doRun(ctx *context.Context, pwd string) (err error) {
-	log.Println("git:", pwd)
 	tag, err := cleanGit(pwd, "describe", "--tags", "--abbrev=0", "--always")
 	if err != nil {
 		return
@@ -58,16 +56,16 @@ func (Pipe) doRun(ctx *context.Context, pwd string) (err error) {
 		PreviousTag: prev,
 		Diff:        log,
 	}
-	commit, err := cleanGit(pwd, "show", "--format='%H'", "HEAD")
-	if err != nil {
-		return
-	}
-	ctx.Git.Commit = commit
 	// removes usual `v` prefix
 	ctx.Version = strings.TrimPrefix(tag, "v")
 	if versionErr := isVersionValid(ctx.Version); versionErr != nil {
 		return versionErr
 	}
+	commit, err := cleanGit(pwd, "show", "--format='%H'", "HEAD")
+	if err != nil {
+		return
+	}
+	ctx.Git.Commit = commit
 	return
 }
 
