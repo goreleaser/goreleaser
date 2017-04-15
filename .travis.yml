@@ -1,5 +1,6 @@
 language: go
 go: 1.8
+sudo: true
 install: make setup
 script:
   - make test
