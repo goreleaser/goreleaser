@@ -48,6 +48,7 @@ func TestSingleCommit(t *testing.T) {
 		Config: config.Project{},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
+	assert.Equal("v0.0.1", ctx.Git.CurrentTag)
 }
 
 func TestNewRepository(t *testing.T) {
@@ -72,6 +73,7 @@ func TestInvalidTagFormat(t *testing.T) {
 		Config: config.Project{},
 	}
 	assert.EqualError(Pipe{}.Run(ctx), "sadasd is not in a valid version format")
+	assert.Equal("sadasd", ctx.Git.CurrentTag)
 }
 
 func createAndChdir(t *testing.T) (current string, back func()) {
