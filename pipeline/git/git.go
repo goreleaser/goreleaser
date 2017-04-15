@@ -3,6 +3,7 @@
 package git
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -15,7 +16,7 @@ type ErrInvalidVersionFormat struct {
 }
 
 func (e ErrInvalidVersionFormat) Error() string {
-	return e.version + " is not in a valid version format"
+	return fmt.Sprintf("%v is not in a valid version format", e.version)
 }
 
 // ErrDirty happens when the repo has uncommitted/unstashed changes
@@ -24,16 +25,16 @@ type ErrDirty struct {
 }
 
 func (e ErrDirty) Error() string {
-	return "git is currently in a dirty state:\n" + e.status
+	return fmt.Sprintf("git is currently in a dirty state:\n%v", e.status)
 }
 
 // ErrWrongRef happens when the HEAD reference is different from the tag being built
 type ErrWrongRef struct {
-	status string
+	commit, tag string
 }
 
 func (e ErrWrongRef) Error() string {
-	return e.status
+	return fmt.Sprintf("git tag %v was not made against commit %v", e.tag, e.commit)
 }
 
 // Pipe for brew deployment
@@ -46,44 +47,52 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
-	tag, err := cleanGit("describe", "--tags", "--abbrev=0", "--always")
+	tag, prev, commit, log, err := getInfo()
 	if err != nil {
 		return
 	}
-	prev, err := previous(tag)
-	if err != nil {
-		return
-	}
-
-	log, err := git("log", "--pretty=oneline", "--abbrev-commit", prev+".."+tag)
-	if err != nil {
-		return
-	}
-
 	ctx.Git = context.GitInfo{
 		CurrentTag:  tag,
 		PreviousTag: prev,
 		Diff:        log,
+		Commit:      commit,
 	}
 	// removes usual `v` prefix
 	ctx.Version = strings.TrimPrefix(tag, "v")
-	if versionErr := isVersionValid(ctx.Version); versionErr != nil {
-		return versionErr
+	return validate(commit, tag, ctx.Version)
+}
+
+func validate(commit, tag, version string) error {
+	matches, err := regexp.MatchString("^[0-9.]+", version)
+	if err != nil || !matches {
+		return ErrInvalidVersionFormat{version}
 	}
-	commit, err := cleanGit("show", "--format='%H'", "HEAD")
-	if err != nil {
-		return
-	}
-	ctx.Git.Commit = commit
-	out, err := git("diff")
+	out, err := git("status", "-s")
 	if strings.TrimSpace(out) != "" || err != nil {
 		return ErrDirty{out}
 	}
 	_, err = cleanGit("describe", "--exact-match", "--tags", "--match", tag)
 	if err != nil {
-		return ErrWrongRef{err.Error()}
+		return ErrWrongRef{commit, tag}
 	}
 	return nil
+}
+
+func getInfo() (tag, prev, commit, log string, err error) {
+	tag, err = cleanGit("describe", "--tags", "--abbrev=0", "--always")
+	if err != nil {
+		return
+	}
+	prev, err = previous(tag)
+	if err != nil {
+		return
+	}
+	log, err = git("log", "--pretty=oneline", "--abbrev-commit", prev+".."+tag)
+	if err != nil {
+		return
+	}
+	commit, err = cleanGit("show", "--format='%H'", "HEAD")
+	return
 }
 
 func previous(tag string) (previous string, err error) {
@@ -92,12 +101,4 @@ func previous(tag string) (previous string, err error) {
 		previous, err = cleanGit("rev-list", "--max-parents=0", "HEAD")
 	}
 	return
-}
-
-func isVersionValid(version string) error {
-	matches, err := regexp.MatchString("^[0-9.]+", version)
-	if err != nil || !matches {
-		return ErrInvalidVersionFormat{version}
-	}
-	return nil
 }

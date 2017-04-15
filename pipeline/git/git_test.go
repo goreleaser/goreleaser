@@ -96,7 +96,7 @@ func TestTagIsNotLastCommit(t *testing.T) {
 	}
 	err := Pipe{}.Run(ctx)
 	assert.Error(err)
-	assert.Contains(err.Error(), "fatal: no tag exactly matches")
+	assert.Contains(err.Error(), "git tag v0.0.1 was not made against commit")
 }
 
 //
