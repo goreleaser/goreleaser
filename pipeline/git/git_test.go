@@ -1,6 +1,7 @@
 package git
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -81,7 +82,9 @@ func createAndChdir(t *testing.T) (current string, back func()) {
 	previous, err := os.Getwd()
 	assert.NoError(err)
 	assert.NoError(os.Chdir(folder))
+	fmt.Println("Changed dir to", folder)
 	return folder, func() {
 		assert.NoError(os.Chdir(previous))
+		fmt.Println("Changed dir to", previous)
 	}
 }
