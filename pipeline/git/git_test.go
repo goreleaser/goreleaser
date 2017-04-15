@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -42,12 +41,10 @@ func TestSingleCommit(t *testing.T) {
 	var assert = assert.New(t)
 	_, back := createAndChdir(t)
 	defer back()
-	assert.NoError(exec.Command("git", "init").Run())
-	assert.NoError(exec.Command("git", "commit", "--allow-empty", "-m", "commit1").Run())
-	assert.NoError(exec.Command("git", "tag", "v0.0.1").Run())
-	out, err := git("log")
-	assert.NoError(err)
-	fmt.Print("git log:\n", out)
+	gitInit(t)
+	gitCommit(t, "commit1")
+	gitTag(t, "v0.0.1")
+	gitLog(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
@@ -59,7 +56,7 @@ func TestNewRepository(t *testing.T) {
 	var assert = assert.New(t)
 	_, back := createAndChdir(t)
 	defer back()
-	assert.NoError(exec.Command("git", "init").Run())
+	gitInit(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
@@ -70,18 +67,20 @@ func TestInvalidTagFormat(t *testing.T) {
 	var assert = assert.New(t)
 	_, back := createAndChdir(t)
 	defer back()
-	assert.NoError(exec.Command("git", "init").Run())
-	assert.NoError(exec.Command("git", "commit", "--allow-empty", "-m", "commit2").Run())
-	assert.NoError(exec.Command("git", "tag", "sadasd").Run())
-	out, err := git("log")
-	assert.NoError(err)
-	fmt.Print("git log:\n", out)
+	gitInit(t)
+	gitCommit(t, "commit2")
+	gitTag(t, "sadasd")
+	gitLog(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 	assert.EqualError(Pipe{}.Run(ctx), "sadasd is not in a valid version format")
 	assert.Equal("sadasd", ctx.Git.CurrentTag)
 }
+
+//
+// helper functions
+//
 
 func createAndChdir(t *testing.T) (current string, back func()) {
 	var assert = assert.New(t)
@@ -93,4 +92,33 @@ func createAndChdir(t *testing.T) (current string, back func()) {
 	return folder, func() {
 		assert.NoError(os.Chdir(previous))
 	}
+}
+
+func gitInit(t *testing.T) {
+	var assert = assert.New(t)
+	out, err := git("init")
+	assert.NoError(err)
+	assert.Contains(out, "Initialized empty Git repository")
+}
+
+func gitCommit(t *testing.T, msg string) {
+	var assert = assert.New(t)
+	out, err := git("commit", "--allow-empty", "-m", msg)
+	assert.NoError(err)
+	assert.Contains(out, "master", msg)
+}
+
+func gitTag(t *testing.T, tag string) {
+	var assert = assert.New(t)
+	out, err := git("tag", tag)
+	assert.NoError(err)
+	assert.Empty(out)
+}
+
+func gitLog(t *testing.T) {
+	var assert = assert.New(t)
+	out, err := git("log")
+	assert.NoError(err)
+	assert.NotEmpty(out)
+	fmt.Print("\n\ngit log output:\n", out)
 }
