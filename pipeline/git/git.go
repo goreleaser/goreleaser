@@ -3,7 +3,6 @@
 package git
 
 import (
-	"os"
 	"regexp"
 	"strings"
 
@@ -28,25 +27,17 @@ func (Pipe) Description() string {
 }
 
 // Run the pipe
-func (p Pipe) Run(ctx *context.Context) (err error) {
-	folder, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	return p.doRun(ctx, folder)
-}
-
-func (Pipe) doRun(ctx *context.Context, pwd string) (err error) {
-	tag, err := cleanGit(pwd, "describe", "--tags", "--abbrev=0", "--always")
+func (Pipe) Run(ctx *context.Context) (err error) {
+	tag, err := cleanGit("describe", "--tags", "--abbrev=0", "--always")
 	if err != nil {
 		return
 	}
-	prev, err := previous(pwd, tag)
+	prev, err := previous(tag)
 	if err != nil {
 		return
 	}
 
-	log, err := git(pwd, "log", "--pretty=oneline", "--abbrev-commit", prev+".."+tag)
+	log, err := git("log", "--pretty=oneline", "--abbrev-commit", prev+".."+tag)
 	if err != nil {
 		return
 	}
@@ -61,7 +52,7 @@ func (Pipe) doRun(ctx *context.Context, pwd string) (err error) {
 	if versionErr := isVersionValid(ctx.Version); versionErr != nil {
 		return versionErr
 	}
-	commit, err := cleanGit(pwd, "show", "--format='%H'", "HEAD")
+	commit, err := cleanGit("show", "--format='%H'", "HEAD")
 	if err != nil {
 		return
 	}
@@ -69,10 +60,10 @@ func (Pipe) doRun(ctx *context.Context, pwd string) (err error) {
 	return
 }
 
-func previous(pwd, tag string) (previous string, err error) {
-	previous, err = cleanGit(pwd, "describe", "--tags", "--abbrev=0", "--always", tag+"^")
+func previous(tag string) (previous string, err error) {
+	previous, err = cleanGit("describe", "--tags", "--abbrev=0", "--always", tag+"^")
 	if err != nil {
-		previous, err = cleanGit(pwd, "rev-list", "--max-parents=0", "HEAD")
+		previous, err = cleanGit("rev-list", "--max-parents=0", "HEAD")
 	}
 	return
 }

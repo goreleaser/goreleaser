@@ -6,10 +6,8 @@ import (
 	"strings"
 )
 
-func git(pwd string, args ...string) (output string, err error) {
-	var allArgs = []string{"-C", pwd}
-	allArgs = append(allArgs, args...)
-	var cmd = exec.Command("git", allArgs...)
+func git(args ...string) (output string, err error) {
+	var cmd = exec.Command("git", args...)
 	bts, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", errors.New(string(bts))
@@ -17,7 +15,7 @@ func git(pwd string, args ...string) (output string, err error) {
 	return string(bts), err
 }
 
-func cleanGit(pwd string, args ...string) (output string, err error) {
-	output, err = git(pwd, args...)
+func cleanGit(args ...string) (output string, err error) {
+	output, err = git(args...)
 	return strings.Replace(strings.Split(output, "\n")[0], "'", "", -1), err
 }

@@ -1,7 +1,9 @@
 package git
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"testing"
 
@@ -28,47 +30,61 @@ func TestValidVersion(t *testing.T) {
 
 func TestNotAGitFolder(t *testing.T) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "gorelasertest")
-	assert.NoError(err)
+	_, back := createAndChdir(t)
+	defer back()
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.Error(Pipe{}.doRun(ctx, folder))
+	assert.Error(Pipe{}.Run(ctx))
 }
 
 func TestSingleCommit(t *testing.T) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "gorelasertest")
-	assert.NoError(err)
-	assert.NoError(exec.Command("git", "-C", folder, "init").Run())
-	assert.NoError(exec.Command("git", "-C", folder, "commit", "--allow-empty", "-m", "asd").Run())
-	assert.NoError(exec.Command("git", "-C", folder, "tag", "v0.0.1").Run())
+	_, back := createAndChdir(t)
+	defer back()
+	assert.NoError(exec.Command("git", "init").Run())
+	assert.NoError(exec.Command("git", "commit", "--allow-empty", "-m", "asd").Run())
+	assert.NoError(exec.Command("git", "tag", "v0.0.1").Run())
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.NoError(Pipe{}.doRun(ctx, folder))
+	assert.NoError(Pipe{}.Run(ctx))
 }
 
 func TestNewRepository(t *testing.T) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "gorelasertest")
-	assert.NoError(err)
-	assert.NoError(exec.Command("git", "-C", folder, "init").Run())
+	_, back := createAndChdir(t)
+	defer back()
+	assert.NoError(exec.Command("git", "init").Run())
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.Error(Pipe{}.doRun(ctx, folder))
+	assert.Error(Pipe{}.Run(ctx))
 }
 
 func TestInvalidTagFormat(t *testing.T) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "gorelasertest")
-	assert.NoError(err)
-	assert.NoError(exec.Command("git", "-C", folder, "init").Run())
-	assert.NoError(exec.Command("git", "-C", folder, "commit", "--allow-empty", "-m", "asd").Run())
-	assert.NoError(exec.Command("git", "-C", folder, "tag", "sadasd").Run())
+	_, back := createAndChdir(t)
+	defer back()
+	assert.NoError(exec.Command("git", "init").Run())
+	assert.NoError(exec.Command("git", "commit", "--allow-empty", "-m", "asd").Run())
+	assert.NoError(exec.Command("git", "tag", "sadasd").Run())
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.EqualError(Pipe{}.doRun(ctx, folder), "sadasd is not in a valid version format")
+	assert.EqualError(Pipe{}.Run(ctx), "sadasd is not in a valid version format")
+}
+
+func createAndChdir(t *testing.T) (current string, back func()) {
+	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "gorelasertest")
+	assert.NoError(err)
+	previous, err := os.Getwd()
+	assert.NoError(err)
+	assert.NoError(os.Chdir(folder))
+	fmt.Println("Changed dir to", folder)
+	return folder, func() {
+		assert.NoError(os.Chdir(previous))
+		fmt.Println("Changed dir to", previous)
+	}
 }
