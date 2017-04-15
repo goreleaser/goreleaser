@@ -1,3 +1,5 @@
+// Package tar implements the Archive interface providing tar.gz archiving
+// and compression.
 package tar
 
 import (

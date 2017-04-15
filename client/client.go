@@ -1,4 +1,5 @@
-package clients
+// Package client contains the client implementations for several providers.
+package client
 
 import (
 	"bytes"

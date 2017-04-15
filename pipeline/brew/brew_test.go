@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/clients"
+	"github.com/goreleaser/goreleaser/client"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/stretchr/testify/assert"
@@ -115,11 +115,39 @@ func TestRunPipe(t *testing.T) {
 	assert.True(client.CreatedFile)
 }
 
+func TestRunPipeBrewNotSetup(t *testing.T) {
+	assert := assert.New(t)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archive: config.Archive{
+				Format: "tar.gz",
+			},
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+	}
+	client := &DummyClient{}
+	assert.Equal(ErrNoDarwin64Build, doRun(ctx, client))
+	assert.False(client.CreatedFile)
+}
+
+func TestRunPipeNoDarwinBuild(t *testing.T) {
+	assert := assert.New(t)
+	var ctx = &context.Context{}
+	client := &DummyClient{}
+	assert.NoError(doRun(ctx, client))
+	assert.False(client.CreatedFile)
+}
+
 type DummyClient struct {
 	CreatedFile bool
 }
 
-func (client *DummyClient) GetInfo(ctx *context.Context) (info clients.Info, err error) {
+func (client *DummyClient) GetInfo(ctx *context.Context) (info client.Info, err error) {
 	return
 }
 

@@ -1,3 +1,5 @@
+// Package brew implements the Pipe, providing formula generation and
+// uploading it to a configured repo.
 package brew
 
 import (
@@ -8,10 +10,10 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/goreleaser/goreleaser/clients"
+	"github.com/goreleaser/goreleaser/checksum"
+	"github.com/goreleaser/goreleaser/client"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/sha256sum"
 )
 
 // ErrNoDarwin64Build when there is no build for darwin_amd64 (goos doesn't
@@ -88,11 +90,10 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	client := clients.NewGitHubClient(ctx)
-	return doRun(ctx, client)
+	return doRun(ctx, client.NewGitHub(ctx))
 }
 
-func doRun(ctx *context.Context, client clients.Client) error {
+func doRun(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Brew.GitHub.Name == "" {
 		return nil
 	}
@@ -105,7 +106,7 @@ func doRun(ctx *context.Context, client clients.Client) error {
 	return client.CreateFile(ctx, content, path)
 }
 
-func buildFormula(ctx *context.Context, client clients.Client) (bytes.Buffer, error) {
+func buildFormula(ctx *context.Context, client client.Client) (bytes.Buffer, error) {
 	data, err := dataFor(ctx, client)
 	if err != nil {
 		return bytes.Buffer{}, err
@@ -123,12 +124,12 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 	return out, err
 }
 
-func dataFor(ctx *context.Context, client clients.Client) (result templateData, err error) {
+func dataFor(ctx *context.Context, client client.Client) (result templateData, err error) {
 	file := ctx.Archives["darwinamd64"]
 	if file == "" {
 		return result, ErrNoDarwin64Build
 	}
-	sum, err := sha256sum.For(
+	sum, err := checksum.SHA256(
 		filepath.Join(
 			ctx.Config.Dist,
 			file+"."+ctx.Config.Archive.Format,
@@ -162,7 +163,7 @@ func dataFor(ctx *context.Context, client clients.Client) (result templateData, 
 
 func getInfo(
 	ctx *context.Context,
-	client clients.Client,
+	client client.Client,
 ) (homepage string, description string, err error) {
 	info, err := client.GetInfo(ctx)
 	if err != nil {

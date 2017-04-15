@@ -1,3 +1,5 @@
+// Package defaults implements the Pipe interface providing default values
+// for missing configuration.
 package defaults
 
 import (

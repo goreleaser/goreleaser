@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/archive"
 	"github.com/goreleaser/goreleaser/pipeline/brew"
 	"github.com/goreleaser/goreleaser/pipeline/build"
+	"github.com/goreleaser/goreleaser/pipeline/checksums"
 	"github.com/goreleaser/goreleaser/pipeline/defaults"
 	"github.com/goreleaser/goreleaser/pipeline/env"
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
@@ -87,8 +88,9 @@ func pipes(buildOnly bool) []pipeline.Pipe {
 	if !buildOnly {
 		pipes = append(
 			pipes,
-			release.Pipe{}, // release to github
-			brew.Pipe{},    // push to brew tap
+			checksums.Pipe{}, // checksums of the files
+			release.Pipe{},   // release to github
+			brew.Pipe{},      // push to brew tap
 		)
 	}
 	return pipes

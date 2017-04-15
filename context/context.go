@@ -1,3 +1,9 @@
+// Package context provides gorelease context which is passed through the
+// pipeline.
+//
+// The context extends the standard library context and add a few more
+// fields and other things, so pipes can gather data provided by previous
+// pipes without really knowing each other.
 package context
 
 import (
