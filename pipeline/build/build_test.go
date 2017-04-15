@@ -40,7 +40,7 @@ func TestBuild(t *testing.T) {
 
 func TestRunFullPipe(t *testing.T) {
 	assert := assert.New(t)
-	folder, err := ioutil.TempDir("", "gorelasertest")
+	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
 	var binary = filepath.Join(folder, "testing")
 	var pre = filepath.Join(folder, "pre")

@@ -16,7 +16,7 @@ func TestDescription(t *testing.T) {
 
 func TestPipe(t *testing.T) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "gorelasertest")
+	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
 	var file = filepath.Join(folder, "binary")
 	assert.NoError(ioutil.WriteFile(file, []byte("some string"), 0644))
@@ -35,7 +35,20 @@ func TestPipe(t *testing.T) {
 
 func TestPipeFileNotExist(t *testing.T) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "gorelasertest")
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(err)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dist: folder,
+		},
+	}
+	ctx.AddArtifact("nope")
+	assert.Error(Pipe{}.Run(ctx))
+}
+
+func TestPipeFileCantBeWritten(t *testing.T) {
+	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
 	var ctx = &context.Context{
 		Config: config.Project{
