@@ -28,34 +28,50 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
-	tag, err := currentTag()
+	tag, err := cleanGit("describe", "--tags", "--abbrev=0", "--always")
 	if err != nil {
 		return
 	}
-	previous, err := previousTag(tag)
+	prev, err := previous(tag)
 	if err != nil {
 		return
 	}
-	log, err := log(previous, tag)
+
+	log, err := git("log", "--pretty=oneline", "--abbrev-commit", prev+".."+tag)
 	if err != nil {
 		return
 	}
 
 	ctx.Git = context.GitInfo{
 		CurrentTag:  tag,
-		PreviousTag: previous,
+		PreviousTag: prev,
 		Diff:        log,
 	}
 	// removes usual `v` prefix
 	ctx.Version = strings.TrimPrefix(tag, "v")
-	matches, err := regexp.MatchString("^[0-9.]+", ctx.Version)
-	if err != nil || !matches {
-		return ErrInvalidVersionFormat{ctx.Version}
+	if versionErr := isVersionValid(ctx.Version); versionErr != nil {
+		return versionErr
 	}
-	commit, err := commitHash()
+	commit, err := cleanGit("show", "--format='%H'", "HEAD")
 	if err != nil {
 		return
 	}
 	ctx.Git.Commit = commit
 	return
+}
+
+func previous(tag string) (previous string, err error) {
+	previous, err = cleanGit("describe", "--tags", "--abbrev=0", "--always", tag+"^")
+	if err != nil {
+		previous, err = cleanGit("rev-list", "--max-parents=0", "HEAD")
+	}
+	return
+}
+
+func isVersionValid(version string) error {
+	matches, err := regexp.MatchString("^[0-9.]+", version)
+	if err != nil || !matches {
+		return ErrInvalidVersionFormat{version}
+	}
+	return nil
 }
