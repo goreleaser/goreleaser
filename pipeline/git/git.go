@@ -1,5 +1,5 @@
-// Package git implements the Pipe interface extracting usefull data from
-// git and putting it in the context.
+// Package git implements the Pipe interface getting and validating the
+// current git repository state
 package git
 
 import (
