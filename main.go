@@ -79,16 +79,16 @@ func pipes(buildOnly bool) []pipeline.Pipe {
 	}
 	pipes = append(
 		pipes,
-		build.Pipe{},   // build
-		archive.Pipe{}, // archive (tar.gz, zip, etc)
-		fpm.Pipe{},     // archive via fpm (deb, rpm, etc)
+		build.Pipe{},     // build
+		archive.Pipe{},   // archive (tar.gz, zip, etc)
+		fpm.Pipe{},       // archive via fpm (deb, rpm, etc)
+		checksums.Pipe{}, // checksums of the files
 	)
 	if !buildOnly {
 		pipes = append(
 			pipes,
-			checksums.Pipe{}, // checksums of the files
-			release.Pipe{},   // release to github
-			brew.Pipe{},      // push to brew tap
+			release.Pipe{}, // release to github
+			brew.Pipe{},    // push to brew tap
 		)
 	}
 	return pipes
