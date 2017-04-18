@@ -44,11 +44,15 @@ func main() {
 	app.Action = func(c *cli.Context) (err error) {
 		var file = c.String("config")
 		cfg, err := config.Load(file)
-		// Allow failing to load the config file if file is not explicitly specified
-		if err != nil && c.IsSet("config") {
-			return cli.NewExitError(err.Error(), 1)
+		if err != nil {
+			// Allow file not found errors if config file was not
+			// explicitly specified
+			_, statErr := os.Stat(file)
+			if !os.IsNotExist(statErr) || c.IsSet("config") {
+				return cli.NewExitError(err.Error(), 1)
+			}
 		}
-		ctx := context.New(cfg)
+		var ctx = context.New(cfg)
 		log.SetFlags(0)
 		for _, pipe := range pipes(c.Bool("build-only")) {
 			log.Println(pipe.Description())
@@ -79,16 +83,16 @@ func pipes(buildOnly bool) []pipeline.Pipe {
 	}
 	pipes = append(
 		pipes,
-		build.Pipe{},   // build
-		archive.Pipe{}, // archive (tar.gz, zip, etc)
-		fpm.Pipe{},     // archive via fpm (deb, rpm, etc)
+		build.Pipe{},     // build
+		archive.Pipe{},   // archive (tar.gz, zip, etc)
+		fpm.Pipe{},       // archive via fpm (deb, rpm, etc)
+		checksums.Pipe{}, // checksums of the files
 	)
 	if !buildOnly {
 		pipes = append(
 			pipes,
-			checksums.Pipe{}, // checksums of the files
-			release.Pipe{},   // release to github
-			brew.Pipe{},      // push to brew tap
+			release.Pipe{}, // release to github
+			brew.Pipe{},    // push to brew tap
 		)
 	}
 	return pipes

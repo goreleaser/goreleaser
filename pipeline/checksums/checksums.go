@@ -4,8 +4,8 @@ package checksums
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/goreleaser/goreleaser/checksum"
@@ -23,31 +23,38 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
+	file, err := os.OpenFile(
+		filepath.Join(
+			ctx.Config.Dist,
+			fmt.Sprintf("%v_checksums.txt", ctx.Config.Build.Binary),
+		),
+		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+		0644,
+	)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = file.Close()
+		ctx.AddArtifact(file.Name())
+	}()
 	var g errgroup.Group
 	for _, artifact := range ctx.Artifacts {
 		artifact := artifact
 		g.Go(func() error {
-			return checksums(ctx, artifact)
+			return checksums(ctx, file, artifact)
 		})
 	}
 	return g.Wait()
 }
 
-func checksums(ctx *context.Context, name string) error {
+func checksums(ctx *context.Context, file *os.File, name string) error {
 	log.Println("Checksumming", name)
 	var artifact = filepath.Join(ctx.Config.Dist, name)
 	sha, err := checksum.SHA256(artifact)
 	if err != nil {
 		return err
 	}
-	var file = filepath.Join(
-		ctx.Config.Dist,
-		fmt.Sprintf("%v.%v", name, "checksums"),
-	)
-	var content = fmt.Sprintf("%v\t%v\n", sha, name)
-	if err := ioutil.WriteFile(file, []byte(content), 0644); err != nil {
-		return err
-	}
-	ctx.AddArtifact(file)
-	return nil
+	_, err = file.WriteString(fmt.Sprintf("%v\t%v\n", sha, name))
+	return err
 }
