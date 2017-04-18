@@ -44,11 +44,15 @@ func main() {
 	app.Action = func(c *cli.Context) (err error) {
 		var file = c.String("config")
 		cfg, err := config.Load(file)
-		// Allow failing to load the config file if file is not explicitly specified
-		if err != nil && c.IsSet("config") {
-			return cli.NewExitError(err.Error(), 1)
+		if err != nil {
+			// Allow file not found errors if config file was not
+			// explicitly specified
+			_, statErr := os.Stat(file)
+			if !os.IsNotExist(statErr) || c.IsSet("config") {
+				return cli.NewExitError(err.Error(), 1)
+			}
 		}
-		ctx := context.New(cfg)
+		var ctx = context.New(cfg)
 		log.SetFlags(0)
 		for _, pipe := range pipes(c.Bool("build-only")) {
 			log.Println(pipe.Description())
