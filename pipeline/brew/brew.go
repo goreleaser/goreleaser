@@ -103,7 +103,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 			Name:  ss[1],
 		}
 	}
-	if ctx.Config.Brew.GitHub.Name == "" {
+	if ctx.Config.Brew.GitHub.Name == "" || !ctx.Publish {
 		return nil
 	}
 	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.Build.Binary+".rb")

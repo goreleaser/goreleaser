@@ -17,7 +17,8 @@ func TestValidEnv(t *testing.T) {
 	assert := assert.New(t)
 
 	var ctx = &context.Context{
-		Config: config.Project{},
+		Config:   config.Project{},
+		Validate: true,
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 }
@@ -26,7 +27,17 @@ func TestInvalidEnv(t *testing.T) {
 	assert := assert.New(t)
 	assert.NoError(os.Unsetenv("GITHUB_TOKEN"))
 	var ctx = &context.Context{
-		Config: config.Project{},
+		Config:   config.Project{},
+		Validate: true,
 	}
 	assert.Error(Pipe{}.Run(ctx))
+}
+
+func TestSkipValidate(t *testing.T) {
+	assert := assert.New(t)
+	var ctx = &context.Context{
+		Config:   config.Project{},
+		Validate: false,
+	}
+	assert.NoError(Pipe{}.Run(ctx))
 }

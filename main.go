@@ -25,6 +25,22 @@ var (
 	date    = "unknown"
 )
 
+var pipes = []pipeline.Pipe{
+	defaults.Pipe{},  // load default configs
+	git.Pipe{},       // get and validate git repo state
+	env.Pipe{},       // load and validate environment variables
+	build.Pipe{},     // build
+	archive.Pipe{},   // archive (tar.gz, zip, etc)
+	fpm.Pipe{},       // archive via fpm (deb, rpm, etc)
+	checksums.Pipe{}, // checksums of the files
+	release.Pipe{},   // release to github
+	brew.Pipe{},      // push to brew tap
+}
+
+func init() {
+	log.SetFlags(0)
+}
+
 func main() {
 	var app = cli.NewApp()
 	app.Name = "goreleaser"
@@ -37,8 +53,12 @@ func main() {
 			Value: "goreleaser.yml",
 		},
 		cli.BoolFlag{
-			Name:  "build-only, skip-release, no-release, nr",
-			Usage: "Skip all the release processes and run only the build and packaging steps",
+			Name:  "skip-validate",
+			Usage: "Skip all the validations against the release",
+		},
+		cli.BoolFlag{
+			Name:  "skip-publish",
+			Usage: "Skip all publishing pipes of the release",
 		},
 	}
 	app.Action = func(c *cli.Context) (err error) {
@@ -53,8 +73,9 @@ func main() {
 			}
 		}
 		var ctx = context.New(cfg)
-		log.SetFlags(0)
-		for _, pipe := range pipes(c.Bool("build-only")) {
+		ctx.Validate = !c.Bool("skip-validate")
+		ctx.Publish = !c.Bool("skip-publish")
+		for _, pipe := range pipes {
 			log.Println(pipe.Description())
 			log.SetPrefix(" -> ")
 			if err := pipe.Run(ctx); err != nil {
@@ -68,32 +89,4 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatalln(err)
 	}
-}
-
-func pipes(buildOnly bool) []pipeline.Pipe {
-	var pipes = []pipeline.Pipe{
-		defaults.Pipe{}, // load default configs
-	}
-	if !buildOnly {
-		pipes = append(
-			pipes,
-			git.Pipe{}, // get and validate git repo state
-			env.Pipe{}, // load and validate environment variables
-		)
-	}
-	pipes = append(
-		pipes,
-		build.Pipe{},     // build
-		archive.Pipe{},   // archive (tar.gz, zip, etc)
-		fpm.Pipe{},       // archive via fpm (deb, rpm, etc)
-		checksums.Pipe{}, // checksums of the files
-	)
-	if !buildOnly {
-		pipes = append(
-			pipes,
-			release.Pipe{}, // release to github
-			brew.Pipe{},    // push to brew tap
-		)
-	}
-	return pipes
 }

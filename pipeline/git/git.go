@@ -59,6 +59,9 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	}
 	// removes usual `v` prefix
 	ctx.Version = strings.TrimPrefix(tag, "v")
+	if !ctx.Validate {
+		return nil
+	}
 	return validate(commit, tag, ctx.Version)
 }
 

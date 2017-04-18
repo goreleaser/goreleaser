@@ -32,6 +32,8 @@ type Context struct {
 	Archives  map[string]string
 	Artifacts []string
 	Version   string
+	Validate  bool
+	Publish   bool
 }
 
 var lock sync.Mutex

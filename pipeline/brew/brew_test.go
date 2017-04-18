@@ -109,6 +109,7 @@ func TestRunPipe(t *testing.T) {
 		Archives: map[string]string{
 			"darwinamd64": "bin",
 		},
+		Publish: true,
 	}
 	client := &DummyClient{}
 	assert.NoError(doRun(ctx, client))
@@ -129,6 +130,7 @@ func TestRunPipeBrewNotSetup(t *testing.T) {
 				},
 			},
 		},
+		Publish: true,
 	}
 	client := &DummyClient{}
 	assert.Equal(ErrNoDarwin64Build, doRun(ctx, client))
@@ -138,6 +140,16 @@ func TestRunPipeBrewNotSetup(t *testing.T) {
 func TestRunPipeNoDarwinBuild(t *testing.T) {
 	assert := assert.New(t)
 	var ctx = &context.Context{}
+	client := &DummyClient{}
+	assert.NoError(doRun(ctx, client))
+	assert.False(client.CreatedFile)
+}
+
+func TestRunPipeNoPublish(t *testing.T) {
+	assert := assert.New(t)
+	var ctx = &context.Context{
+		Publish: false,
+	}
 	client := &DummyClient{}
 	assert.NoError(doRun(ctx, client))
 	assert.False(client.CreatedFile)
