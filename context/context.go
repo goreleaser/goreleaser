@@ -19,7 +19,6 @@ import (
 type GitInfo struct {
 	CurrentTag  string
 	PreviousTag string
-	Diff        string
 	Commit      string
 }
 
@@ -31,6 +30,7 @@ type Context struct {
 	Git       GitInfo
 	Archives  map[string]string
 	Artifacts []string
+	Changelog string
 	Version   string
 	Validate  bool
 	Publish   bool

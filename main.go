@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -52,6 +53,10 @@ func main() {
 			Usage: "Load configuration from `FILE`",
 			Value: "goreleaser.yml",
 		},
+		cli.StringFlag{
+			Name:  "release-notes",
+			Usage: "Define a file with custom release notes to be used instead of the git log between tags",
+		},
 		cli.BoolFlag{
 			Name:  "skip-validate",
 			Usage: "Skip all the validations against the release",
@@ -63,6 +68,7 @@ func main() {
 	}
 	app.Action = func(c *cli.Context) (err error) {
 		var file = c.String("config")
+		var notes = c.String("release-notes")
 		cfg, err := config.Load(file)
 		if err != nil {
 			// Allow file not found errors if config file was not
@@ -75,6 +81,13 @@ func main() {
 		var ctx = context.New(cfg)
 		ctx.Validate = !c.Bool("skip-validate")
 		ctx.Publish = !c.Bool("skip-publish")
+		if notes != "" {
+			bts, err := ioutil.ReadFile(notes)
+			if err != nil {
+				return cli.NewExitError(err.Error(), 1)
+			}
+			ctx.Changelog = string(bts)
+		}
 		for _, pipe := range pipes {
 			log.Println(pipe.Description())
 			log.SetPrefix(" -> ")
