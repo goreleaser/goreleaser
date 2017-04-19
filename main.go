@@ -55,7 +55,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "release-notes",
-			Usage: "Define a file with custom release notes to be used instead of the git log between tags",
+			Usage: "Path to a markdown file with custom release notes",
 		},
 		cli.BoolFlag{
 			Name:  "skip-validate",

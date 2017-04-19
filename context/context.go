@@ -17,23 +17,22 @@ import (
 
 // GitInfo includes tags and diffs used in some point
 type GitInfo struct {
-	CurrentTag  string
-	PreviousTag string
-	Commit      string
+	CurrentTag string
+	Commit     string
 }
 
 // Context carries along some data through the pipes
 type Context struct {
 	ctx.Context
-	Config    config.Project
-	Token     string
-	Git       GitInfo
-	Archives  map[string]string
-	Artifacts []string
-	Changelog string
-	Version   string
-	Validate  bool
-	Publish   bool
+	Config       config.Project
+	Token        string
+	Git          GitInfo
+	Archives     map[string]string
+	Artifacts    []string
+	ReleaseNotes string
+	Version      string
+	Validate     bool
+	Publish      bool
 }
 
 var lock sync.Mutex

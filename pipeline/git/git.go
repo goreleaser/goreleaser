@@ -47,21 +47,20 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
-	tag, prev, commit, err := getInfo()
+	tag, commit, err := getInfo()
 	if err != nil {
 		return
 	}
 	ctx.Git = context.GitInfo{
-		CurrentTag:  tag,
-		PreviousTag: prev,
-		Commit:      commit,
+		CurrentTag: tag,
+		Commit:     commit,
 	}
-	if ctx.Changelog == "" {
-		log, err := git("log", "--pretty=oneline", "--abbrev-commit", prev+".."+tag)
+	if ctx.ReleaseNotes == "" {
+		log, err := getChangelog(tag)
 		if err != nil {
 			return err
 		}
-		ctx.Changelog = log
+		ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", log)
 	}
 	// removes usual `v` prefix
 	ctx.Version = strings.TrimPrefix(tag, "v")
@@ -87,12 +86,16 @@ func validate(commit, tag, version string) error {
 	return nil
 }
 
-func getInfo() (tag, prev, commit string, err error) {
-	tag, err = cleanGit("describe", "--tags", "--abbrev=0", "--always")
+func getChangelog(tag string) (string, error) {
+	prev, err := previous(tag)
 	if err != nil {
-		return
+		return "", err
 	}
-	prev, err = previous(tag)
+	return git("log", "--pretty=oneline", "--abbrev-commit", prev+".."+tag)
+}
+
+func getInfo() (tag, commit string, err error) {
+	tag, err = cleanGit("describe", "--tags", "--abbrev=0", "--always")
 	if err != nil {
 		return
 	}

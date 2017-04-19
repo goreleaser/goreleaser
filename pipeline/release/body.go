@@ -8,9 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 )
 
-const bodyTemplate = `## Changelog
-
-{{ .Changelog }}
+const bodyTemplate = `{{ .ReleaseNotes }}
 
 ---
 Automated with @goreleaser
@@ -25,10 +23,10 @@ func buildBody(ctx *context.Context) (bytes.Buffer, error) {
 	}
 	var template = template.Must(template.New("release").Parse(bodyTemplate))
 	err = template.Execute(&out, struct {
-		Changelog, GoVersion string
+		ReleaseNotes, GoVersion string
 	}{
-		Changelog: ctx.Changelog,
-		GoVersion: string(bts),
+		ReleaseNotes: ctx.ReleaseNotes,
+		GoVersion:    string(bts),
 	})
 	return out, err
 }
