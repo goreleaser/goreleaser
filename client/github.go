@@ -88,11 +88,11 @@ func (c *githubClient) GetInfo(ctx *context.Context) (info Info, err error) {
 	return
 }
 
-func (c *githubClient) CreateRelease(ctx *context.Context) (releaseID int, err error) {
+func (c *githubClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
 	data := &github.RepositoryRelease{
 		Name:    github.String(ctx.Git.CurrentTag),
 		TagName: github.String(ctx.Git.CurrentTag),
-		Body:    github.String(describeRelease(ctx.Git.Diff)),
+		Body:    github.String(body),
 	}
 	r, _, err := c.client.Repositories.GetReleaseByTag(
 		ctx,

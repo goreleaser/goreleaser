@@ -163,7 +163,7 @@ func (client *DummyClient) GetInfo(ctx *context.Context) (info client.Info, err 
 	return
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context) (releaseID int, err error) {
+func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
 	return
 }
 
