@@ -31,6 +31,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Release.GitHub.Name == "" {
 		repo, err := remoteRepo()
 		ctx.Config.Release.GitHub = repo
+		// TODO add a test to cover this
 		if err != nil {
 			return errors.New("failed reading repo from git: " + err.Error())
 		}

@@ -86,7 +86,7 @@ func main() {
 			if err != nil {
 				return cli.NewExitError(err.Error(), 1)
 			}
-			ctx.Changelog = string(bts)
+			ctx.ReleaseNotes = string(bts)
 		}
 		for _, pipe := range pipes {
 			log.Println(pipe.Description())

@@ -12,6 +12,7 @@ import (
 func remoteRepo() (result config.Repo, err error) {
 	cmd := exec.Command("git", "config", "--get", "remote.origin.url")
 	bts, err := cmd.CombinedOutput()
+	// TODO: cover this with tests
 	if err != nil {
 		return result, errors.New(err.Error() + ": " + string(bts))
 	}
