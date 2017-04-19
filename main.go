@@ -67,6 +67,7 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) (err error) {
+		// TODO: cover this with tests
 		var file = c.String("config")
 		var notes = c.String("release-notes")
 		cfg, err := config.Load(file)
@@ -86,6 +87,7 @@ func main() {
 			if err != nil {
 				return cli.NewExitError(err.Error(), 1)
 			}
+			log.Println("Loaded custom release notes from", notes)
 			ctx.ReleaseNotes = string(bts)
 		}
 		for _, pipe := range pipes {
