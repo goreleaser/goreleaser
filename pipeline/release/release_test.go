@@ -33,9 +33,11 @@ func TestRunPipe(t *testing.T) {
 		Config: config.Project{
 			Dist: folder,
 			Release: config.Release{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
+				GitHub: config.GitHubReleaseRepo{
+					Repo: config.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
 				},
 			},
 		},
@@ -57,9 +59,11 @@ func TestRunPipeReleaseCreationFailed(t *testing.T) {
 		},
 		Config: config.Project{
 			Release: config.Release{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
+				GitHub: config.GitHubReleaseRepo{
+					Repo: config.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
 				},
 			},
 		},
@@ -81,9 +85,11 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 		},
 		Config: config.Project{
 			Release: config.Release{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
+				GitHub: config.GitHubReleaseRepo{
+					Repo: config.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
 				},
 			},
 		},
@@ -109,9 +115,11 @@ func TestRunPipeUploadFailure(t *testing.T) {
 		Config: config.Project{
 			Dist: folder,
 			Release: config.Release{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
+				GitHub: config.GitHubReleaseRepo{
+					Repo: config.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
 				},
 			},
 		},
