@@ -22,6 +22,9 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
+	if !ctx.Validate {
+		return nil
+	}
 	ctx.Token = os.Getenv("GITHUB_TOKEN")
 	if ctx.Token == "" {
 		return ErrMissingToken

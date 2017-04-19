@@ -26,6 +26,9 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context, client client.Client) error {
+	if !ctx.Publish {
+		return nil
+	}
 	log.Println("Creating or updating release", ctx.Git.CurrentTag, "on", ctx.Config.Release.GitHub.String())
 	releaseID, err := client.CreateRelease(ctx)
 	if err != nil {

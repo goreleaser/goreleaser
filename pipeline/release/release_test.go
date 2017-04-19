@@ -39,6 +39,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 		},
+		Publish: true,
 	}
 	ctx.AddArtifact(tarfile.Name())
 	ctx.AddArtifact(debfile.Name())
@@ -62,6 +63,7 @@ func TestRunPipeReleaseCreationFailed(t *testing.T) {
 				},
 			},
 		},
+		Publish: true,
 	}
 	client := &DummyClient{
 		FailToCreateRelease: true,
@@ -85,6 +87,7 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 				},
 			},
 		},
+		Publish: true,
 	}
 	ctx.AddArtifact("this-file-wont-exist-hopefuly")
 	client := &DummyClient{}
@@ -112,6 +115,7 @@ func TestRunPipeUploadFailure(t *testing.T) {
 				},
 			},
 		},
+		Publish: true,
 	}
 	ctx.AddArtifact(tarfile.Name())
 	client := &DummyClient{
@@ -119,6 +123,17 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	}
 	assert.Error(doRun(ctx, client))
 	assert.True(client.CreatedRelease)
+	assert.False(client.UploadedFile)
+}
+
+func TestSkipPublish(t *testing.T) {
+	var assert = assert.New(t)
+	var ctx = &context.Context{
+		Publish: false,
+	}
+	client := &DummyClient{}
+	assert.NoError(doRun(ctx, client))
+	assert.False(client.CreatedRelease)
 	assert.False(client.UploadedFile)
 }
 

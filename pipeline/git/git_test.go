@@ -58,7 +58,8 @@ func TestInvalidTagFormat(t *testing.T) {
 	gitCommit(t, "commit2")
 	gitTag(t, "sadasd")
 	var ctx = &context.Context{
-		Config: config.Project{},
+		Config:   config.Project{},
+		Validate: true,
 	}
 	assert.EqualError(Pipe{}.Run(ctx), "sadasd is not in a valid version format")
 	assert.Equal("sadasd", ctx.Git.CurrentTag)
@@ -76,7 +77,8 @@ func TestDirty(t *testing.T) {
 	gitTag(t, "v0.0.1")
 	assert.NoError(ioutil.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0644))
 	var ctx = &context.Context{
-		Config: config.Project{},
+		Config:   config.Project{},
+		Validate: true,
 	}
 	err = Pipe{}.Run(ctx)
 	assert.Error(err)
@@ -92,11 +94,28 @@ func TestTagIsNotLastCommit(t *testing.T) {
 	gitTag(t, "v0.0.1")
 	gitCommit(t, "commit4")
 	var ctx = &context.Context{
-		Config: config.Project{},
+		Config:   config.Project{},
+		Validate: true,
 	}
 	err := Pipe{}.Run(ctx)
 	assert.Error(err)
 	assert.Contains(err.Error(), "git tag v0.0.1 was not made against commit")
+}
+
+func TestNoValidate(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	gitAdd(t)
+	gitCommit(t, "commit5")
+	gitTag(t, "v0.0.1")
+	gitCommit(t, "commit6")
+	var ctx = &context.Context{
+		Config:   config.Project{},
+		Validate: false,
+	}
+	assert.NoError(Pipe{}.Run(ctx))
 }
 
 //
