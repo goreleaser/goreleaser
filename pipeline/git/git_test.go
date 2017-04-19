@@ -118,6 +118,42 @@ func TestNoValidate(t *testing.T) {
 	assert.NoError(Pipe{}.Run(ctx))
 }
 
+func TestChangelog(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	gitCommit(t, "first")
+	gitTag(t, "v0.0.1")
+	gitCommit(t, "added feature 1")
+	gitCommit(t, "fixed bug 2")
+	gitTag(t, "v0.0.2")
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	assert.Equal("v0.0.2", ctx.Git.CurrentTag)
+	assert.Contains(ctx.ReleaseNotes, "## Changelog")
+	assert.Contains(ctx.ReleaseNotes, "added feature 1")
+	assert.Contains(ctx.ReleaseNotes, "fixed bug 2")
+}
+
+func TestCustomReleaseNotes(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	gitCommit(t, "first")
+	gitTag(t, "v0.0.1")
+	var ctx = &context.Context{
+		Config:       config.Project{},
+		ReleaseNotes: "custom",
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	assert.Equal("v0.0.1", ctx.Git.CurrentTag)
+	assert.Equal(ctx.ReleaseNotes, "custom")
+}
+
 //
 // helper functions
 //
