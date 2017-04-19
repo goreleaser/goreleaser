@@ -9,7 +9,7 @@ import (
 )
 
 // remoteRepo gets the repo name from the Git config.
-func remoteRepo() (result config.Repo, err error) {
+func remoteRepo() (result config.GitHubReleaseRepo, err error) {
 	cmd := exec.Command("git", "config", "--get", "remote.origin.url")
 	bts, err := cmd.CombinedOutput()
 	// TODO: cover this with tests
@@ -19,7 +19,7 @@ func remoteRepo() (result config.Repo, err error) {
 	return extractRepoFromURL(string(bts)), nil
 }
 
-func extractRepoFromURL(s string) config.Repo {
+func extractRepoFromURL(s string) config.GitHubReleaseRepo {
 	for _, r := range []string{
 		"git@github.com:",
 		".git",
@@ -31,10 +31,12 @@ func extractRepoFromURL(s string) config.Repo {
 	return toRepo(s)
 }
 
-func toRepo(s string) config.Repo {
+func toRepo(s string) config.GitHubReleaseRepo {
 	var ss = strings.Split(s, "/")
-	return config.Repo{
-		Owner: ss[0],
-		Name:  ss[1],
+	return config.GitHubReleaseRepo{
+		Repo: config.Repo{
+			Owner: ss[0],
+			Name:  ss[1],
+		},
 	}
 }

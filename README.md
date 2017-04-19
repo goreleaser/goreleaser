@@ -257,6 +257,7 @@ release:
   github:
     owner: user
     name: repo
+    draft: true
 ```
 
 ### Homebrew tap customization
