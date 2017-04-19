@@ -29,12 +29,12 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Config.Release.GitHub = toRepo(ctx.Config.Release.Repo)
 	}
 	if ctx.Config.Release.GitHub.Name == "" {
+		// TODO add a test to cover this
 		repo, err := remoteRepo()
 		if err != nil {
 			return errors.New("failed reading repo from git: " + err.Error())
 		}
 		ctx.Config.Release.GitHub = repo
-		// TODO add a test to cover this
 	}
 	// TODO: remove this block in next release cycle
 	if ctx.Config.Build.BinaryName != "" {
