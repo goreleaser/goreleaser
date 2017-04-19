@@ -15,7 +15,7 @@ Automated with @goreleaser
 Built with {{ .GoVersion }}
 `
 
-func buildBody(ctx *context.Context) (bytes.Buffer, error) {
+func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 	var out bytes.Buffer
 	bts, err := exec.Command("go", "version").CombinedOutput()
 	if err != nil {

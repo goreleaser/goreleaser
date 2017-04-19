@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBody(t *testing.T) {
+func TestDescribeBody(t *testing.T) {
 	var assert = assert.New(t)
 	var changelog = "\nfeature1: description\nfeature2: other description"
 	var ctx = &context.Context{
 		ReleaseNotes: changelog,
 	}
-	out, err := buildBody(ctx)
+	out, err := describeBody(ctx)
 	assert.NoError(err)
 	assert.Contains(out.String(), changelog)
 	assert.Contains(out.String(), "Automated with @goreleaser")
@@ -31,6 +31,6 @@ func TestGoVersionFails(t *testing.T) {
 	var ctx = &context.Context{
 		ReleaseNotes: "changelog",
 	}
-	_, err := buildBody(ctx)
+	_, err := describeBody(ctx)
 	assert.Error(err)
 }
