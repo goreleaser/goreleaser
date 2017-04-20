@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"os"
 
@@ -29,17 +30,76 @@ func (c *githubClient) CreateFile(
 	content bytes.Buffer,
 	path string,
 ) (err error) {
-	options := &github.RepositoryContentFileOptions{
-		Committer: &github.CommitAuthor{
-			Name:  github.String("goreleaserbot"),
-			Email: github.String("bot@goreleaser"),
-		},
-		Content: content.Bytes(),
-		Message: github.String(
-			ctx.Config.Build.Binary + " version " + ctx.Git.CurrentTag,
-		),
+	var title = fmt.Sprintf(
+		"Releasing %v version %v",
+		ctx.Config.Build.Binary,
+		ctx.Git.CurrentTag,
+	)
+	master, branch, err := c.setupBranches(ctx)
+	if err != nil {
+		return err
 	}
+	if err = c.uploadFile(ctx, content, path, branch, title); err != nil {
+		return err
+	}
+	pull, _, err := c.client.PullRequests.Create(
+		ctx,
+		ctx.Config.Brew.GitHub.Owner,
+		ctx.Config.Brew.GitHub.Name,
+		&github.NewPullRequest{
+			Base:  master.Ref,
+			Head:  branch.Ref,
+			Title: github.String(title),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	log.Printf("Created pull request %v", pull.GetHTMLURL())
+	if ctx.Config.Release.Draft {
+		log.Println("Draft release, pull request will not be merged.")
+		return nil
+	}
+	return c.mergeAndDeleteBranch(ctx, pull, branch)
+}
 
+func (c *githubClient) setupBranches(
+	ctx *context.Context,
+) (master, branch *github.Reference, err error) {
+	master, _, err = c.client.Git.GetRef(
+		ctx,
+		ctx.Config.Brew.GitHub.Owner,
+		ctx.Config.Brew.GitHub.Name,
+		"refs/heads/master",
+	)
+	if err != nil {
+		return
+	}
+	branch, _, err = c.client.Git.CreateRef(
+		ctx,
+		ctx.Config.Brew.GitHub.Owner,
+		ctx.Config.Brew.GitHub.Name,
+		&github.Reference{
+			Ref: github.String(fmt.Sprintf(
+				"refs/heads/%v-%v",
+				ctx.Config.Build.Binary,
+				ctx.Git.CurrentTag,
+			)),
+			Object: &github.GitObject{
+				SHA: github.String(master.Object.GetSHA()),
+			},
+		},
+	)
+	return
+}
+
+func (c *githubClient) uploadFile(
+	ctx *context.Context,
+	content bytes.Buffer,
+	path string,
+	branch *github.Reference,
+	msg string,
+) error {
 	file, _, res, err := c.client.Repositories.GetContents(
 		ctx,
 		ctx.Config.Brew.GitHub.Owner,
@@ -47,15 +107,26 @@ func (c *githubClient) CreateFile(
 		path,
 		&github.RepositoryContentGetOptions{},
 	)
+	var options = &github.RepositoryContentFileOptions{
+		Committer: &github.CommitAuthor{
+			Name:  github.String("goreleaser"),
+			Login: github.String("goreleaser"),
+			Email: github.String("goreleaser@goreleaser"),
+		},
+		Content: content.Bytes(),
+		Message: github.String(msg),
+		Branch:  branch.Ref,
+	}
 	if err != nil && res.StatusCode == 404 {
-		_, _, err = c.client.Repositories.CreateFile(
+		if _, _, err = c.client.Repositories.CreateFile(
 			ctx,
 			ctx.Config.Brew.GitHub.Owner,
 			ctx.Config.Brew.GitHub.Name,
 			path,
 			options,
-		)
-		return
+		); err != nil {
+			return err
+		}
 	}
 	options.SHA = file.SHA
 	_, _, err = c.client.Repositories.UpdateFile(
@@ -65,7 +136,31 @@ func (c *githubClient) CreateFile(
 		path,
 		options,
 	)
-	return
+	return err
+}
+
+func (c *githubClient) mergeAndDeleteBranch(
+	ctx *context.Context,
+	pull *github.PullRequest,
+	branch *github.Reference,
+) error {
+	if _, _, err := c.client.PullRequests.Merge(
+		ctx,
+		ctx.Config.Brew.GitHub.Owner,
+		ctx.Config.Brew.GitHub.Name,
+		pull.GetNumber(),
+		pull.GetTitle(),
+		&github.PullRequestOptions{},
+	); err != nil {
+		return err
+	}
+	_, err := c.client.Git.DeleteRef(
+		ctx,
+		ctx.Config.Brew.GitHub.Owner,
+		ctx.Config.Brew.GitHub.Name,
+		branch.GetRef(),
+	)
+	return err
 }
 
 func (c *githubClient) GetInfo(ctx *context.Context) (info Info, err error) {
@@ -77,30 +172,18 @@ func (c *githubClient) GetInfo(ctx *context.Context) (info Info, err error) {
 	if err != nil {
 		return
 	}
-	if rep.Homepage != nil {
-		info.Homepage = *rep.Homepage
-	}
-	if rep.HTMLURL != nil {
-		info.URL = *rep.HTMLURL
-	}
-	if rep.Description != nil {
-		info.Description = *rep.Description
-	}
+	info.Homepage = rep.GetHomepage()
+	info.URL = rep.GetHTMLURL()
+	info.Description = rep.GetDescription()
 	return
 }
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
-	log.Printf(
-		"Release URL: https://github.com/%v/%v/releases/tag/%v\n",
-		ctx.Config.Release.GitHub.Owner,
-		ctx.Config.Release.GitHub.Name,
-		ctx.Git.CurrentTag,
-	)
 	var data = &github.RepositoryRelease{
 		Name:    github.String(ctx.Git.CurrentTag),
 		TagName: github.String(ctx.Git.CurrentTag),
 		Body:    github.String(body),
-		Draft:   github.Bool(ctx.Config.Release.GitHub.Draft),
+		Draft:   github.Bool(ctx.Config.Release.Draft),
 	}
 	r, _, err := c.client.Repositories.GetReleaseByTag(
 		ctx,
@@ -115,16 +198,18 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (release
 			ctx.Config.Release.GitHub.Name,
 			data,
 		)
-		return *r.ID, err
+		log.Printf("URL: %v\n", r.GetHTMLURL())
+		return r.GetID(), err
 	}
 	r, _, err = c.client.Repositories.EditRelease(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
-		*r.ID,
+		r.GetID(),
 		data,
 	)
-	return *r.ID, err
+	log.Printf("URL: %v\n", r.GetHTMLURL())
+	return r.GetID(), err
 }
 
 func (c *githubClient) Upload(

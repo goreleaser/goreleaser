@@ -14,12 +14,6 @@ type Repo struct {
 	Name  string
 }
 
-// GitHubReleaseRepo represents a github repo to relase to, as well its configs
-type GitHubReleaseRepo struct {
-	Repo
-	Draft bool
-}
-
 // String of the repo, e.g. owner/name
 func (r Repo) String() string {
 	return r.Owner + "/" + r.Name
@@ -66,7 +60,8 @@ type Archive struct {
 // Release config used for the GitHub release
 type Release struct {
 	Repo   string // deprecated!
-	GitHub GitHubReleaseRepo
+	GitHub Repo
+	Draft  bool
 }
 
 // FPM config

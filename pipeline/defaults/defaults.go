@@ -28,6 +28,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		log.Println("The `release.repo` syntax is deprecated and will soon be removed. Please check the README for more info.")
 		ctx.Config.Release.GitHub = toRepo(ctx.Config.Release.Repo)
 	}
+	log.Println(ctx.Config.Release)
 	if ctx.Config.Release.GitHub.Name == "" {
 		// TODO add a test to cover this
 		repo, err := remoteRepo()

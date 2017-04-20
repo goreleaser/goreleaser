@@ -30,10 +30,13 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return nil
 	}
 	log.Printf(
-		"Creating or updating release %v on %v",
+		"Creating or updating release %v on %v\n",
 		ctx.Git.CurrentTag,
 		ctx.Config.Release.GitHub.String(),
 	)
+	if ctx.Config.Release.Draft {
+		log.Println("Release will be created as a draft.")
+	}
 	body, err := describeBody(ctx)
 	if err != nil {
 		return err

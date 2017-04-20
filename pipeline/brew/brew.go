@@ -155,7 +155,7 @@ func dataFor(ctx *context.Context, client client.Client) (result templateData, e
 		Name:         formulaNameFor(ctx.Config.Build.Binary),
 		Desc:         description,
 		Homepage:     homepage,
-		Repo:         ctx.Config.Release.GitHub.Repo,
+		Repo:         ctx.Config.Release.GitHub,
 		Tag:          ctx.Git.CurrentTag,
 		Version:      ctx.Version,
 		Binary:       ctx.Config.Build.Binary,
