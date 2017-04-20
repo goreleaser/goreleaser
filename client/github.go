@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"log"
 	"os"
 
 	"github.com/google/go-github/github"
@@ -89,7 +90,13 @@ func (c *githubClient) GetInfo(ctx *context.Context) (info Info, err error) {
 }
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
-	data := &github.RepositoryRelease{
+	log.Printf(
+		"Release URL: https://github.com/%v/%v/releases/tag/%v\n",
+		ctx.Config.Release.GitHub.Owner,
+		ctx.Config.Release.GitHub.Name,
+		ctx.Git.CurrentTag,
+	)
+	var data = &github.RepositoryRelease{
 		Name:    github.String(ctx.Git.CurrentTag),
 		TagName: github.String(ctx.Git.CurrentTag),
 		Body:    github.String(body),

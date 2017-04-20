@@ -29,7 +29,11 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if !ctx.Publish {
 		return nil
 	}
-	log.Println("Creating or updating release", ctx.Git.CurrentTag, "on", ctx.Config.Release.GitHub.String())
+	log.Printf(
+		"Creating or updating release %v on %v",
+		ctx.Git.CurrentTag,
+		ctx.Config.Release.GitHub.String(),
+	)
 	body, err := describeBody(ctx)
 	if err != nil {
 		return err
