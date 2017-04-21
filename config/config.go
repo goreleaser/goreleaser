@@ -67,6 +67,7 @@ type Archive struct {
 // Release config used for the GitHub release
 type Release struct {
 	GitHub Repo
+	Draft  bool
 }
 
 // FPM config
