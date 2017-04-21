@@ -115,7 +115,14 @@ func setup(t *testing.T) (current string, back func()) {
 	createGoreleaserYaml(t)
 	createMainGo(t)
 	for _, cmd := range gitCmds {
-		assert.NoError(exec.Command("git", cmd...).Run())
+		var args = []string{
+			"-c",
+			"user.name='GoReleaser'",
+			"-c",
+			"user.email='test@goreleaser.github.com'",
+		}
+		args = append(args, cmd...)
+		assert.NoError(exec.Command("git", args...).Run())
 	}
 	return folder, func() {
 		assert.NoError(os.Chdir(previous))
