@@ -47,12 +47,19 @@ type Build struct {
 	Hooks   Hooks
 }
 
+// FormatOverride is used to specify a custom format for a specific GOOS.
+type FormatOverride struct {
+	Goos   string
+	Format string
+}
+
 // Archive config used for the archive
 type Archive struct {
-	Format       string
-	NameTemplate string `yaml:"name_template"`
-	Replacements map[string]string
-	Files        []string
+	Format          string
+	FormatOverrides []FormatOverride `yaml:"format_overrides"`
+	NameTemplate    string           `yaml:"name_template"`
+	Replacements    map[string]string
+	Files           []string
 }
 
 // Release config used for the GitHub release

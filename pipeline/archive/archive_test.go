@@ -34,13 +34,20 @@ func TestRunPipe(t *testing.T) {
 	assert.NoError(err)
 	var ctx = &context.Context{
 		Archives: map[string]string{
-			"darwinamd64": "mybin",
+			"darwinamd64":  "mybin",
+			"windowsamd64": "mybin",
 		},
 		Config: config.Project{
 			Dist: dist,
 			Archive: config.Archive{
 				Files: []string{
 					"README.md",
+				},
+				FormatOverrides: []config.FormatOverride{
+					{
+						Goos:   "windows",
+						Format: "zip",
+					},
 				},
 			},
 		},
