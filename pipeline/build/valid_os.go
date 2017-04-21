@@ -5,8 +5,8 @@ var valids = []string{
 	"androidarm",
 	"darwin386",
 	"darwinamd64",
-	"darwinarm",
-	"darwinarm64",
+	// "darwinarm", - requires admin rights and other ios stuff
+	// "darwinarm64", - requires admin rights and other ios stuff
 	"dragonflyamd64",
 	"freebsd386",
 	"freebsdamd64",
