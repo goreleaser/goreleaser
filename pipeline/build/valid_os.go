@@ -15,8 +15,8 @@ var valids = []string{
 	"linuxamd64",
 	"linuxarm",
 	"linuxarm64",
-	"linuxppc64",
-	"linuxppc64le",
+	// "linuxppc64", - https://github.com/golang/go/issues/10087
+	// "linuxppc64le", - https://github.com/golang/go/issues/10087
 	"linuxmips",
 	"linuxmipsle",
 	"linuxmips64",
@@ -26,7 +26,7 @@ var valids = []string{
 	"netbsdarm",
 	"openbsd386",
 	"openbsdamd64",
-	"openbsdarm",
+	// "openbsdarm", - https://github.com/golang/go/issues/10087
 	"plan9386",
 	"plan9amd64",
 	"solarisamd64",
