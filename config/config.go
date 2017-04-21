@@ -68,6 +68,16 @@ type FPM struct {
 	Formats      []string
 	Dependencies []string
 	Conflicts    []string
+	Options      FPMOptions
+}
+
+// FPM config options
+type FPMOptions struct {
+	Vendor      string
+	URL         string
+	Maintainer  string
+	Description string
+	License     string
 }
 
 // Project includes all project configuration
