@@ -9,7 +9,7 @@ import (
 
 func TestValid(t *testing.T) {
 	var platforms = []struct {
-		goos, goarch string
+		os, arch string
 	}{
 		{"android", "arm"},
 		{"darwin", "386"},
@@ -41,15 +41,15 @@ func TestValid(t *testing.T) {
 		{"windows", "amd64"},
 	}
 	for _, p := range platforms {
-		t.Run(fmt.Sprintf("%v %v is valid", p.goos, p.goarch), func(t *testing.T) {
-			assert.True(t, valid(p.goos, p.goarch))
+		t.Run(fmt.Sprintf("%v %v is valid", p.os, p.arch), func(t *testing.T) {
+			assert.True(t, valid(p.os, p.arch))
 		})
 	}
 }
 
 func TestInvalid(t *testing.T) {
 	var platforms = []struct {
-		goos, goarch string
+		os, arch string
 	}{
 		{"darwin", "arm"},
 		{"darwin", "arm64"},
@@ -57,8 +57,8 @@ func TestInvalid(t *testing.T) {
 		{"windows", "arm64"},
 	}
 	for _, p := range platforms {
-		t.Run(fmt.Sprintf("%v %v is invalid", p.goos, p.goarch), func(t *testing.T) {
-			assert.False(t, valid(p.goos, p.goarch))
+		t.Run(fmt.Sprintf("%v %v is invalid", p.os, p.arch), func(t *testing.T) {
+			assert.False(t, valid(p.os, p.arch))
 		})
 	}
 }
