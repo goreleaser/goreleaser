@@ -168,9 +168,16 @@ func TestRunPipeNoPublish(t *testing.T) {
 func TestRunPipeDraftRelease(t *testing.T) {
 	assert := assert.New(t)
 	var ctx = &context.Context{
+		Publish: true,
 		Config: config.Project{
 			Release: config.Release{
 				Draft: true,
+			},
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
 			},
 		},
 	}
