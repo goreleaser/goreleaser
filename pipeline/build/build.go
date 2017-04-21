@@ -28,9 +28,11 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err := runHook(ctx.Config.Build.Hooks.Pre); err != nil {
 		return err
 	}
+	sem := make(chan bool, 4)
 	var g errgroup.Group
 	for _, goos := range ctx.Config.Build.Goos {
 		for _, goarch := range ctx.Config.Build.Goarch {
+			sem <- true
 			goos := goos
 			goarch := goarch
 			if !valid(goos, goarch) {
@@ -42,6 +44,9 @@ func (Pipe) Run(ctx *context.Context) error {
 			}
 			ctx.Archives[goos+goarch] = name
 			g.Go(func() error {
+				defer func() {
+					<-sem
+				}()
 				return build(name, goos, goarch, ctx)
 			})
 		}
