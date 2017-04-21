@@ -1,3 +1,5 @@
+build:
+  main: ./cmd/goreleaser/main.go
 brew:
   github:
     owner: goreleaser
