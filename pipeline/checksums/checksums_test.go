@@ -50,16 +50,3 @@ func TestPipeFileNotExist(t *testing.T) {
 	ctx.AddArtifact("nope")
 	assert.Error(Pipe{}.Run(ctx))
 }
-
-func TestPipeFileCantBeWritten(t *testing.T) {
-	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(err)
-	var ctx = &context.Context{
-		Config: config.Project{
-			Dist: folder,
-		},
-	}
-	ctx.AddArtifact("nope")
-	assert.Error(Pipe{}.Run(ctx))
-}
