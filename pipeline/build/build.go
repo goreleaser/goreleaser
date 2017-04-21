@@ -36,6 +36,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			goos := goos
 			goarch := goarch
 			if !valid(goos, goarch) {
+				<-sem
 				continue
 			}
 			name, err := nameFor(ctx, goos, goarch)
