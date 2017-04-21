@@ -21,7 +21,6 @@ func (r Repo) String() string {
 
 // Homebrew contains the brew section
 type Homebrew struct {
-	Repo         string // deprecated!
 	GitHub       Repo
 	Folder       string
 	Caveats      string
@@ -39,14 +38,13 @@ type Hooks struct {
 
 // Build contains the build configuration section
 type Build struct {
-	Goos       []string
-	Goarch     []string
-	Main       string
-	Ldflags    string
-	Flags      string
-	BinaryName string `yaml:"binary_name"` // deprecated
-	Binary     string
-	Hooks      Hooks
+	Goos    []string
+	Goarch  []string
+	Main    string
+	Ldflags string
+	Flags   string
+	Binary  string
+	Hooks   Hooks
 }
 
 // Archive config used for the archive
@@ -59,7 +57,6 @@ type Archive struct {
 
 // Release config used for the GitHub release
 type Release struct {
-	Repo   string // deprecated!
 	GitHub Repo
 }
 
@@ -71,7 +68,7 @@ type FPM struct {
 	Options      FPMOptions
 }
 
-// FPM config options
+// FPMOptions config options
 type FPMOptions struct {
 	Vendor      string
 	URL         string

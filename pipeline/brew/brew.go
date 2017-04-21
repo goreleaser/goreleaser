@@ -94,15 +94,6 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context, client client.Client) error {
-	// TODO: remove this block in next release cycle
-	if ctx.Config.Brew.Repo != "" {
-		log.Println("The `brew.repo` syntax is deprecated and will soon be removed. Please check the README for more info.")
-		var ss = strings.Split(ctx.Config.Brew.Repo, "/")
-		ctx.Config.Brew.GitHub = config.Repo{
-			Owner: ss[0],
-			Name:  ss[1],
-		}
-	}
 	if !ctx.Publish {
 		log.Println("Skipped because --skip-publish is set")
 		return nil
