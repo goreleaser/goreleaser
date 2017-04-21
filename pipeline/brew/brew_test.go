@@ -116,7 +116,7 @@ func TestRunPipe(t *testing.T) {
 	assert.True(client.CreatedFile)
 }
 
-func TestRunPipeBrewNotSetup(t *testing.T) {
+func TestRunPipeNoDarwin64Build(t *testing.T) {
 	assert := assert.New(t)
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -134,6 +134,17 @@ func TestRunPipeBrewNotSetup(t *testing.T) {
 	}
 	client := &DummyClient{}
 	assert.Equal(ErrNoDarwin64Build, doRun(ctx, client))
+	assert.False(client.CreatedFile)
+}
+
+func TestRunPipeBrewNotSetup(t *testing.T) {
+	assert := assert.New(t)
+	var ctx = &context.Context{
+		Config:  config.Project{},
+		Publish: true,
+	}
+	client := &DummyClient{}
+	assert.NoError(doRun(ctx, client))
 	assert.False(client.CreatedFile)
 }
 
