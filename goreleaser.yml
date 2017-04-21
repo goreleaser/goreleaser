@@ -5,12 +5,12 @@ build:
   goos:
     - linux
     - darwin
-    # - windows
+    - windows
   goarch:
-    # - 386
+    - 386
     - amd64
-    # - arm
-    # - arm64
+    - arm
+    - arm64
 archive:
   format_overrides:
     - goos: windows
@@ -25,9 +25,9 @@ brew:
   dependencies:
     - git
 fpm:
-  url: *homepage
+  homepage: *homepage
   description: *description
-  maintainer: <root@carlosbecker.com>
+  maintainer: Carlos Alexandro Becker <root@carlosbecker.com>
   license: MIT
   vendor: GoReleaser
   formats:
