@@ -28,6 +28,8 @@ type Homebrew struct {
 	Install      string
 	Dependencies []string
 	Conflicts    []string
+	Description  string
+	URL          string
 }
 
 // Hooks define actions to run before and/or after something
@@ -72,16 +74,11 @@ type FPM struct {
 	Formats      []string
 	Dependencies []string
 	Conflicts    []string
-	Options      FPMOptions
-}
-
-// FPMOptions config options
-type FPMOptions struct {
-	Vendor      string
-	URL         string
-	Maintainer  string
-	Description string
-	License     string
+	Vendor       string
+	Homepage     string
+	Maintainer   string
+	Description  string
+	License      string
 }
 
 // Project includes all project configuration

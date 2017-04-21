@@ -1,3 +1,5 @@
+homepage: &homepage http://goreleaser.github.io
+description: &description Deliver Go binaries as fast and easily as possible
 build:
   main: ./cmd/goreleaser/main.go
   goos:
@@ -18,9 +20,16 @@ brew:
     owner: goreleaser
     name: homebrew-tap
   folder: Formula
+  homepage: *homepage
+  description: *description
   dependencies:
     - git
 fpm:
+  homepage: *homepage
+  description: *description
+  maintainer: Carlos Alexandro Becker <root@carlosbecker.com>
+  license: MIT
+  vendor: GoReleaser
   formats:
     - deb
   dependencies:

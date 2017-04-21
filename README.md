@@ -288,6 +288,14 @@ brew:
   # Default is empty.
   caveats: "How to use this binary"
 
+  # Your app's homepage
+  # Default is empty
+  homepage: "https://example.com/"
+
+  # Your app's description
+  # Default is empty
+  description: "Software to create fast and easy drum rolls."
+
   # Dependencies of your package
   dependencies:
     - git
@@ -339,13 +347,25 @@ GoReleaser can be wired to [fpm]() to generate `.deb`, `.rpm` and other archives
 ```yml
 # goreleaser.yml
 fpm:
-  # Options used in deb control file etc.
-  options:
-    vendor: "Drum Roll Inc."
-    url: "https://example.com/"
-    maintainer: "<Drummer drum-roll@example.com>"
-    description: "Software to create fast and easy drum rolls."
-    license: "Apache 2.0"
+  # Your app's vendor
+  # Default is empty
+  vendor: Drum Roll Inc.
+  # Your app's homepage
+  # Default is empty
+  homepage: https://example.com/
+
+  # Your app's maintainer (probably you)
+  # Default is empty
+  maintainer: <Drummer drum-roll@example.com>
+
+  # Your app's description
+  # Default is empty
+  description: Software to create fast and easy drum rolls.
+
+  # Your app's license
+  # Default is empty
+  license: Apache 2.0
+
   # Formats to generate as output
   formats:
     - deb
