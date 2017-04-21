@@ -36,6 +36,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			goos := goos
 			goarch := goarch
 			if !valid(goos, goarch) {
+				log.Printf("Skipped build for %v/%v\n", goos, goarch)
 				<-sem
 				continue
 			}
