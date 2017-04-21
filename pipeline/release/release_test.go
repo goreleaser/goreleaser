@@ -89,7 +89,7 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 		},
 		Publish: true,
 	}
-	ctx.AddArtifact("this-file-wont-exist-hopefuly")
+	ctx.AddArtifact("this-file-wont-exist-hopefully")
 	client := &DummyClient{}
 	assert.Error(doRun(ctx, client))
 	assert.True(client.CreatedRelease)
