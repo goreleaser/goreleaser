@@ -261,6 +261,9 @@ release:
     name: repo
 ```
 
+You can also specify a release notes file in markdown format using the
+`--release-notes` flag.
+
 ### Homebrew tap customization
 
 The brew section specifies how the formula should be created.
