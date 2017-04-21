@@ -23,12 +23,12 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Release.GitHub.Name == "" {
-		repo, err := remoteRepo()
-		ctx.Config.Release.GitHub = repo
 		// TODO add a test to cover this
+		repo, err := remoteRepo()
 		if err != nil {
 			return errors.New("failed reading repo from git: " + err.Error())
 		}
+		ctx.Config.Release.GitHub = repo
 	}
 	if ctx.Config.Build.Binary == "" {
 		ctx.Config.Build.Binary = ctx.Config.Release.GitHub.Name

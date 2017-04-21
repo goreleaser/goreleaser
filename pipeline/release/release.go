@@ -30,7 +30,14 @@ func doRun(ctx *context.Context, client client.Client) error {
 		log.Println("Skipped because --skip-publish is set")
 		return nil
 	}
-	log.Println("Creating or updating release", ctx.Git.CurrentTag, "on", ctx.Config.Release.GitHub.String())
+	log.Printf(
+		"Creating or updating release %v on %v\n",
+		ctx.Git.CurrentTag,
+		ctx.Config.Release.GitHub.String(),
+	)
+	if ctx.Config.Release.Draft {
+		log.Println("Release will be created as a draft.")
+	}
 	body, err := describeBody(ctx)
 	if err != nil {
 		return err
