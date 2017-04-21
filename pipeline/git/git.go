@@ -66,7 +66,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	// removes usual `v` prefix
 	ctx.Version = strings.TrimPrefix(tag, "v")
 	if !ctx.Validate {
-		log.Println("Skipped validation because --skip-validate is set")
+		log.Println("Skipped validations because --skip-validate is set")
 		return nil
 	}
 	return validate(commit, tag, ctx.Version)
