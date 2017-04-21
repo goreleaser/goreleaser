@@ -37,7 +37,7 @@ $ make test
 You can create a branch for your changes and try to build from the source as you go:
 
 ``` sh
-$ go build
+$ make build
 ```
 
 When you are satisfied with the changes, we suggest you run:
