@@ -32,14 +32,13 @@ func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
 	for _, goos := range ctx.Config.Build.Goos {
 		for _, goarch := range ctx.Config.Build.Goarch {
-			sem <- true
 			goos := goos
 			goarch := goarch
 			if !valid(goos, goarch) {
 				log.Printf("Skipped build for %v/%v\n", goos, goarch)
-				<-sem
 				continue
 			}
+			sem <- true
 			name, err := nameFor(ctx, goos, goarch)
 			if err != nil {
 				return err
