@@ -13,7 +13,7 @@ setup: ## Install all the build and lint dependencies
 test: ## Run all the tests
 	gotestcover $(TEST_OPTIONS) -covermode=count -coverprofile=coverage.out $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=30s
 
-cover: test ## RUn all the tests and opens the coverage report
+cover: test ## Run all the tests and opens the coverage report
 	go tool cover -html=coverage.out
 
 fmt: ## gofmt and goimports all go files
