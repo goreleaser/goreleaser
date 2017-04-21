@@ -76,15 +76,9 @@ func (c *githubClient) GetInfo(ctx *context.Context) (info Info, err error) {
 	if err != nil {
 		return
 	}
-	if rep.Homepage != nil {
-		info.Homepage = *rep.Homepage
-	}
-	if rep.HTMLURL != nil {
-		info.URL = *rep.HTMLURL
-	}
-	if rep.Description != nil {
-		info.Description = *rep.Description
-	}
+	info.Homepage = rep.GetHomepage()
+	info.URL = rep.GetHTMLURL()
+	info.Description = rep.GetDescription()
 	return
 }
 
@@ -107,16 +101,16 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (release
 			ctx.Config.Release.GitHub.Name,
 			data,
 		)
-		return *r.ID, err
+		return r.GetID(), err
 	}
 	r, _, err = c.client.Repositories.EditRelease(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
-		*r.ID,
+		r.GetID(),
 		data,
 	)
-	return *r.ID, err
+	return r.GetID(), err
 }
 
 func (c *githubClient) Upload(

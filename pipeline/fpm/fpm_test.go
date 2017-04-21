@@ -49,6 +49,13 @@ func TestRunPipe(t *testing.T) {
 				Formats:      []string{"deb"},
 				Dependencies: []string{"make"},
 				Conflicts:    []string{"git"},
+				Options: config.FPMOptions{
+					Description: "Some description",
+					License:     "MIT",
+					Maintainer:  "me@me",
+					Vendor:      "asdf",
+					URL:         "https://goreleaser.github.io",
+				},
 			},
 		},
 	}
