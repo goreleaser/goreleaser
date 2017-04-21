@@ -38,7 +38,8 @@ lint: ## Run all the linters
 ci: lint test ## Run all the tests and code checks
 
 build: ## Build a beta version of releaser
-	go build
+	go build -o goreleaser ./cmd/goreleaser/main.go
+
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
