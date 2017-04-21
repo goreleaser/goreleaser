@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"log"
 	"os"
 
 	"github.com/google/go-github/github"
@@ -68,34 +69,37 @@ func (c *githubClient) CreateFile(
 }
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
-	data := &github.RepositoryRelease{
+	var release *github.RepositoryRelease
+	var data = &github.RepositoryRelease{
 		Name:    github.String(ctx.Git.CurrentTag),
 		TagName: github.String(ctx.Git.CurrentTag),
 		Body:    github.String(body),
+		Draft:   github.Bool(ctx.Config.Release.Draft),
 	}
-	r, _, err := c.client.Repositories.GetReleaseByTag(
+	release, _, err = c.client.Repositories.GetReleaseByTag(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
 		ctx.Git.CurrentTag,
 	)
 	if err != nil {
-		r, _, err = c.client.Repositories.CreateRelease(
+		release, _, err = c.client.Repositories.CreateRelease(
 			ctx,
 			ctx.Config.Release.GitHub.Owner,
 			ctx.Config.Release.GitHub.Name,
 			data,
 		)
-		return r.GetID(), err
+	} else {
+		release, _, err = c.client.Repositories.EditRelease(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			release.GetID(),
+			data,
+		)
 	}
-	r, _, err = c.client.Repositories.EditRelease(
-		ctx,
-		ctx.Config.Release.GitHub.Owner,
-		ctx.Config.Release.GitHub.Name,
-		r.GetID(),
-		data,
-	)
-	return r.GetID(), err
+	log.Printf("Release updated: %v\n", release.GetHTMLURL())
+	return release.GetID(), err
 }
 
 func (c *githubClient) Upload(

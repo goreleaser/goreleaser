@@ -262,6 +262,10 @@ release:
   github:
     owner: user
     name: repo
+
+  # If set to true, will not auto-publish the release.
+  # Default is false
+  draft: true
 ```
 
 You can also specify a release notes file in markdown format using the

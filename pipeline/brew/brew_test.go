@@ -165,6 +165,27 @@ func TestRunPipeNoPublish(t *testing.T) {
 	assert.False(client.CreatedFile)
 }
 
+func TestRunPipeDraftRelease(t *testing.T) {
+	assert := assert.New(t)
+	var ctx = &context.Context{
+		Publish: true,
+		Config: config.Project{
+			Release: config.Release{
+				Draft: true,
+			},
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+	}
+	client := &DummyClient{}
+	assert.NoError(doRun(ctx, client))
+	assert.False(client.CreatedFile)
+}
+
 type DummyClient struct {
 	CreatedFile bool
 }

@@ -102,6 +102,10 @@ func doRun(ctx *context.Context, client client.Client) error {
 		log.Println("Skipped because brew section is not configured")
 		return nil
 	}
+	if ctx.Config.Release.Draft {
+		log.Println("Skipped because release is marked as draft")
+		return nil
+	}
 	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.Build.Binary+".rb")
 	log.Println("Pushing", path, "to", ctx.Config.Brew.GitHub.String())
 	content, err := buildFormula(ctx, client)
