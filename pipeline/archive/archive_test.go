@@ -34,13 +34,20 @@ func TestRunPipe(t *testing.T) {
 	assert.NoError(err)
 	var ctx = &context.Context{
 		Archives: map[string]string{
-			"darwinamd64": "mybin",
+			"darwinamd64":  "mybin",
+			"windowsamd64": "mybin",
 		},
 		Config: config.Project{
 			Dist: dist,
 			Archive: config.Archive{
 				Files: []string{
 					"README.md",
+				},
+				FormatOverrides: []config.FormatOverride{
+					{
+						Goos:   "windows",
+						Format: "zip",
+					},
 				},
 			},
 		},
@@ -55,4 +62,23 @@ func TestRunPipe(t *testing.T) {
 		assert.NoError(os.Remove(readme.Name()))
 		assert.Error(Pipe{}.Run(ctx))
 	})
+}
+
+func TestFormatFor(t *testing.T) {
+	var assert = assert.New(t)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archive: config.Archive{
+				Format: "tar.gz",
+				FormatOverrides: []config.FormatOverride{
+					{
+						Goos:   "windows",
+						Format: "zip",
+					},
+				},
+			},
+		},
+	}
+	assert.Equal("zip", formatFor(ctx, "windowsamd64"))
+	assert.Equal("tar.gz", formatFor(ctx, "linux386"))
 }

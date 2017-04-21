@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline/archive/tar"
@@ -26,10 +27,11 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	for _, archive := range ctx.Archives {
+	for platform, archive := range ctx.Archives {
 		archive := archive
+		platform := platform
 		g.Go(func() error {
-			return create(ctx, archive)
+			return create(ctx, platform, archive)
 		})
 	}
 	return g.Wait()
@@ -41,15 +43,16 @@ type Archive interface {
 	Add(name, path string) error
 }
 
-func create(ctx *context.Context, name string) error {
-	folder := filepath.Join(ctx.Config.Dist, name)
-	file, err := os.Create(folder + "." + ctx.Config.Archive.Format)
+func create(ctx *context.Context, platform, name string) error {
+	var folder = filepath.Join(ctx.Config.Dist, name)
+	var format = formatFor(ctx, platform)
+	file, err := os.Create(folder + "." + format)
 	log.Println("Creating", file.Name())
 	if err != nil {
 		return err
 	}
 	defer func() { _ = file.Close() }()
-	var archive = archiveFor(file, ctx.Config.Archive.Format)
+	var archive = archiveFor(file, format)
 	defer func() { _ = archive.Close() }()
 	for _, f := range ctx.Config.Archive.Files {
 		if err = archive.Add(f, f); err != nil {
@@ -74,4 +77,13 @@ func archiveFor(file *os.File, format string) Archive {
 		return zip.New(file)
 	}
 	return tar.New(file)
+}
+
+func formatFor(ctx *context.Context, platform string) string {
+	for _, override := range ctx.Config.Archive.FormatOverrides {
+		if strings.HasPrefix(platform, override.Goos) {
+			return override.Format
+		}
+	}
+	return ctx.Config.Archive.Format
 }

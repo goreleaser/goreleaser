@@ -90,6 +90,9 @@ build:
 # Archive customization
 archive:
   format: tar.gz
+  format_overrides:
+    - goos: windows
+      format: zip
   replacements:
     amd64: 64-bit
     darwin: macOS
