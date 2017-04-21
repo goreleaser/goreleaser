@@ -5,7 +5,7 @@ install:
   - gem install fpm
 script:
   - make test
-  - test -z "$TRAVIS_TAG" && go run ./cmd/goreleaser/main.go --skip-validate --skip-publish
+  - test -n "$TRAVIS_TAG" || go run ./cmd/goreleaser/main.go --skip-validate --skip-publish
 after_success:
   - go get github.com/mattn/goveralls
   - goveralls -coverprofile=coverage.out -service=travis-ci -repotoken="$COVERALLS_TOKEN"
