@@ -1,5 +1,18 @@
 build:
   main: ./cmd/goreleaser/main.go
+  goos:
+    - linux
+    - darwin
+    - windows
+  goarch:
+    - 386
+    - amd64
+    - arm
+    - arm64
+archive:
+  format_overrides:
+    - goos: windows
+      format: zip
 brew:
   github:
     owner: goreleaser
