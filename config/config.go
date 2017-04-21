@@ -29,7 +29,7 @@ type Homebrew struct {
 	Dependencies []string
 	Conflicts    []string
 	Description  string
-	URL          string
+	Homepage     string
 }
 
 // Hooks define actions to run before and/or after something

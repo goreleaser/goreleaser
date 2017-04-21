@@ -146,7 +146,7 @@ func dataFor(ctx *context.Context, client client.Client) (result templateData, e
 	return templateData{
 		Name:         formulaNameFor(ctx.Config.Build.Binary),
 		Desc:         ctx.Config.Brew.Description,
-		Homepage:     ctx.Config.Brew.URL,
+		Homepage:     ctx.Config.Brew.Homepage,
 		Repo:         ctx.Config.Release.GitHub,
 		Tag:          ctx.Git.CurrentTag,
 		Version:      ctx.Version,
