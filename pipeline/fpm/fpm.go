@@ -70,6 +70,22 @@ func create(ctx *context.Context, format, archive, arch string) error {
 		"--package", file,
 		"--force",
 	}
+
+	if ctx.Config.FPM.Options.Vendor != "" {
+		options = append(options, "--vendor", ctx.Config.FPM.Options.Vendor)
+	}
+	if ctx.Config.FPM.Options.URL != "" {
+		options = append(options, "--url", ctx.Config.FPM.Options.URL)
+	}
+	if ctx.Config.FPM.Options.Maintainer != "" {
+		options = append(options, "--maintainer", ctx.Config.FPM.Options.Maintainer)
+	}
+	if ctx.Config.FPM.Options.Description != "" {
+		options = append(options, "--description", ctx.Config.FPM.Options.Description)
+	}
+	if ctx.Config.FPM.Options.License != "" {
+		options = append(options, "--license", ctx.Config.FPM.Options.License)
+	}
 	for _, dep := range ctx.Config.FPM.Dependencies {
 		options = append(options, "--depends", dep)
 	}
