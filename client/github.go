@@ -67,21 +67,6 @@ func (c *githubClient) CreateFile(
 	return
 }
 
-func (c *githubClient) GetInfo(ctx *context.Context) (info Info, err error) {
-	rep, _, err := c.client.Repositories.Get(
-		ctx,
-		ctx.Config.Release.GitHub.Owner,
-		ctx.Config.Release.GitHub.Name,
-	)
-	if err != nil {
-		return
-	}
-	info.Homepage = rep.GetHomepage()
-	info.URL = rep.GetHTMLURL()
-	info.Description = rep.GetDescription()
-	return
-}
-
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
 	data := &github.RepositoryRelease{
 		Name:    github.String(ctx.Git.CurrentTag),

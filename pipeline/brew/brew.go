@@ -143,48 +143,23 @@ func dataFor(ctx *context.Context, client client.Client) (result templateData, e
 	if err != nil {
 		return
 	}
-	homepage, description, err := getInfo(ctx, client)
-	if err != nil {
-		return
-	}
 	return templateData{
 		Name:         formulaNameFor(ctx.Config.Build.Binary),
-		Desc:         description,
-		Homepage:     homepage,
+		Desc:         ctx.Config.Brew.Description,
+		Homepage:     ctx.Config.Brew.URL,
 		Repo:         ctx.Config.Release.GitHub,
 		Tag:          ctx.Git.CurrentTag,
 		Version:      ctx.Version,
 		Binary:       ctx.Config.Build.Binary,
 		Caveats:      ctx.Config.Brew.Caveats,
 		File:         file,
-		Format:       ctx.Config.Archive.Format,
+		Format:       ctx.Config.Archive.Format, // TODO this can be broken by format_overrides
 		SHA256:       sum,
 		Dependencies: ctx.Config.Brew.Dependencies,
 		Conflicts:    ctx.Config.Brew.Conflicts,
 		Plist:        ctx.Config.Brew.Plist,
 		Install:      strings.Split(ctx.Config.Brew.Install, "\n"),
 	}, err
-}
-
-func getInfo(
-	ctx *context.Context,
-	client client.Client,
-) (homepage string, description string, err error) {
-	info, err := client.GetInfo(ctx)
-	if err != nil {
-		return
-	}
-	if info.Homepage == "" {
-		homepage = info.URL
-	} else {
-		homepage = info.Homepage
-	}
-	if info.Description == "" {
-		description = "TODO"
-	} else {
-		description = info.Description
-	}
-	return
 }
 
 func formulaNameFor(name string) string {

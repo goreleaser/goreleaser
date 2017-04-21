@@ -1,14 +1,16 @@
+homepage: &homepage http://goreleaser.github.io
+description: &description Deliver Go binaries as fast and easily as possible
 build:
   main: ./cmd/goreleaser/main.go
   goos:
     - linux
     - darwin
-    - windows
+    # - windows
   goarch:
-    - 386
+    # - 386
     - amd64
-    - arm
-    - arm64
+    # - arm
+    # - arm64
 archive:
   format_overrides:
     - goos: windows
@@ -18,9 +20,16 @@ brew:
     owner: goreleaser
     name: homebrew-tap
   folder: Formula
+  homepage: *homepage
+  description: *description
   dependencies:
     - git
 fpm:
+  url: *homepage
+  description: *description
+  maintainer: <root@carlosbecker.com>
+  license: MIT
+  vendor: GoReleaser
   formats:
     - deb
   dependencies:
