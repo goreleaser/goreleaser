@@ -17,7 +17,6 @@ type Info struct {
 
 // Client interface
 type Client interface {
-	GetInfo(ctx *context.Context) (info Info, err error)
 	CreateRelease(ctx *context.Context, body string) (releaseID int, err error)
 	CreateFile(ctx *context.Context, content bytes.Buffer, path string) (err error)
 	Upload(ctx *context.Context, releaseID int, name string, file *os.File) (err error)

@@ -27,7 +27,7 @@ func TestGoVersionFails(t *testing.T) {
 	defer func() {
 		assert.NoError(os.Setenv("PATH", path))
 	}()
-	os.Setenv("PATH", "")
+	assert.NoError(os.Setenv("PATH", ""))
 	var ctx = &context.Context{
 		ReleaseNotes: "changelog",
 	}

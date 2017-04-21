@@ -5,7 +5,6 @@ package defaults
 import (
 	"errors"
 	"io/ioutil"
-	"log"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
@@ -23,12 +22,6 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	// TODO: remove this block in next release cycle
-	if ctx.Config.Release.Repo != "" {
-		log.Println("The `release.repo` syntax is deprecated and will soon be removed. Please check the README for more info.")
-		ctx.Config.Release.GitHub = toRepo(ctx.Config.Release.Repo)
-	}
-	log.Println(ctx.Config.Release)
 	if ctx.Config.Release.GitHub.Name == "" {
 		// TODO add a test to cover this
 		repo, err := remoteRepo()
@@ -36,11 +29,6 @@ func (Pipe) Run(ctx *context.Context) error {
 			return errors.New("failed reading repo from git: " + err.Error())
 		}
 		ctx.Config.Release.GitHub = repo
-	}
-	// TODO: remove this block in next release cycle
-	if ctx.Config.Build.BinaryName != "" {
-		log.Println("The `build.binary_name` syntax is deprecated and will soon be removed. Please check the README for more info.")
-		ctx.Config.Build.Binary = ctx.Config.Build.BinaryName
 	}
 	if ctx.Config.Build.Binary == "" {
 		ctx.Config.Build.Binary = ctx.Config.Release.GitHub.Name

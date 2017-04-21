@@ -21,7 +21,6 @@ func (r Repo) String() string {
 
 // Homebrew contains the brew section
 type Homebrew struct {
-	Repo         string // deprecated!
 	GitHub       Repo
 	Folder       string
 	Caveats      string
@@ -29,6 +28,8 @@ type Homebrew struct {
 	Install      string
 	Dependencies []string
 	Conflicts    []string
+	Description  string
+	URL          string
 }
 
 // Hooks define actions to run before and/or after something
@@ -39,27 +40,32 @@ type Hooks struct {
 
 // Build contains the build configuration section
 type Build struct {
-	Goos       []string
-	Goarch     []string
-	Main       string
-	Ldflags    string
-	Flags      string
-	BinaryName string `yaml:"binary_name"` // deprecated
-	Binary     string
-	Hooks      Hooks
+	Goos    []string
+	Goarch  []string
+	Main    string
+	Ldflags string
+	Flags   string
+	Binary  string
+	Hooks   Hooks
+}
+
+// FormatOverride is used to specify a custom format for a specific GOOS.
+type FormatOverride struct {
+	Goos   string
+	Format string
 }
 
 // Archive config used for the archive
 type Archive struct {
-	Format       string
-	NameTemplate string `yaml:"name_template"`
-	Replacements map[string]string
-	Files        []string
+	Format          string
+	FormatOverrides []FormatOverride `yaml:"format_overrides"`
+	NameTemplate    string           `yaml:"name_template"`
+	Replacements    map[string]string
+	Files           []string
 }
 
 // Release config used for the GitHub release
 type Release struct {
-	Repo   string // deprecated!
 	GitHub Repo
 	Draft  bool
 }
@@ -69,6 +75,11 @@ type FPM struct {
 	Formats      []string
 	Dependencies []string
 	Conflicts    []string
+	Vendor       string
+	Homepage     string
+	Maintainer   string
+	Description  string
+	License      string
 }
 
 // Project includes all project configuration

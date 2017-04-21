@@ -13,7 +13,7 @@ setup: ## Install all the build and lint dependencies
 test: ## Run all the tests
 	gotestcover $(TEST_OPTIONS) -covermode=count -coverprofile=coverage.out $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=30s
 
-cover: test ## RUn all the tests and opens the coverage report
+cover: test ## Run all the tests and opens the coverage report
 	go tool cover -html=coverage.out
 
 fmt: ## gofmt and goimports all go files
@@ -38,7 +38,8 @@ lint: ## Run all the linters
 ci: lint test ## Run all the tests and code checks
 
 build: ## Build a beta version of releaser
-	go build
+	go build -o goreleaser ./cmd/goreleaser/main.go
+
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:

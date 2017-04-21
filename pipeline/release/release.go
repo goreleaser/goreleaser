@@ -27,6 +27,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, client client.Client) error {
 	if !ctx.Publish {
+		log.Println("Skipped because --skip-publish is set")
 		return nil
 	}
 	log.Printf(

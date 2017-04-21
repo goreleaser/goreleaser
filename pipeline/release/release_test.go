@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/client"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/stretchr/testify/assert"
@@ -89,7 +88,7 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 		},
 		Publish: true,
 	}
-	ctx.AddArtifact("this-file-wont-exist-hopefuly")
+	ctx.AddArtifact("this-file-wont-exist-hopefully")
 	client := &DummyClient{}
 	assert.Error(doRun(ctx, client))
 	assert.True(client.CreatedRelease)
@@ -142,10 +141,6 @@ type DummyClient struct {
 	FailToUpload        bool
 	CreatedRelease      bool
 	UploadedFile        bool
-}
-
-func (client *DummyClient) GetInfo(ctx *context.Context) (info client.Info, err error) {
-	return
 }
 
 func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {

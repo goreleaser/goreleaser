@@ -49,6 +49,11 @@ func TestRunPipe(t *testing.T) {
 				Formats:      []string{"deb"},
 				Dependencies: []string{"make"},
 				Conflicts:    []string{"git"},
+				Description:  "Some description",
+				License:      "MIT",
+				Maintainer:   "me@me",
+				Vendor:       "asdf",
+				Homepage:     "https://goreleaser.github.io",
 			},
 		},
 	}
@@ -61,7 +66,7 @@ func TestNoFPMInPath(t *testing.T) {
 	defer func() {
 		assert.NoError(os.Setenv("PATH", path))
 	}()
-	os.Setenv("PATH", "")
+	assert.NoError(os.Setenv("PATH", ""))
 	var ctx = &context.Context{
 		Config: config.Project{
 			FPM: config.FPM{

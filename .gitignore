@@ -1,5 +1,6 @@
 dist/
 vendor
 goreleaser
+!cmd/goreleaser
 .glide/
 coverage.out

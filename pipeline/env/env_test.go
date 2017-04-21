@@ -15,7 +15,7 @@ func TestDescription(t *testing.T) {
 
 func TestValidEnv(t *testing.T) {
 	assert := assert.New(t)
-
+	assert.NoError(os.Setenv("GITHUB_TOKEN", "asdf"))
 	var ctx = &context.Context{
 		Config:   config.Project{},
 		Validate: true,

@@ -6,7 +6,7 @@ GoReleaser builds Go binaries for several platforms, creates a GitHub release an
 pushes a Homebrew formula to a repository. All that wrapped in your favorite CI.
 
 This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
-We appreciate your contribution. Please refer to our [contributing guidelines](CONTRIBUTING.md).
+We appreciate your contribution. Please refer to our [contributing guidelines](CONTRIBUTING.md) for further information.
 
 [![Release](https://img.shields.io/github/release/goreleaser/goreleaser.svg?style=flat-square)](https://github.com/goreleaser/goreleaser/releases/latest)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
@@ -67,6 +67,8 @@ build:
     - amd64
 ```
 
+PS: Invalid GOOS/GOARCH combinations will automatically be skipped.
+
 This configuration specifies the build operating systems to Windows, Linux and MacOS using 64bit architecture, the name of the binaries is `drum-roll`.
 
 GoReleaser will then archive the result binaries of each Os/Arch into a separate file. The default format is `{{.Binary}}_{{.Os}}_{{.Arch}}`.
@@ -88,6 +90,9 @@ build:
 # Archive customization
 archive:
   format: tar.gz
+  format_overrides:
+    - goos: windows
+      format: zip
   replacements:
     amd64: 64-bit
     darwin: macOS
@@ -260,6 +265,9 @@ release:
     draft: true
 ```
 
+You can also specify a release notes file in markdown format using the
+`--release-notes` flag.
+
 ### Homebrew tap customization
 
 The brew section specifies how the formula should be created.
@@ -280,6 +288,14 @@ brew:
   # Caveats for the user of your binary.
   # Default is empty.
   caveats: "How to use this binary"
+
+  # Your app's homepage
+  # Default is empty
+  homepage: "https://example.com/"
+
+  # Your app's description
+  # Default is empty
+  description: "Software to create fast and easy drum rolls."
 
   # Dependencies of your package
   dependencies:
@@ -332,6 +348,25 @@ GoReleaser can be wired to [fpm]() to generate `.deb`, `.rpm` and other archives
 ```yml
 # goreleaser.yml
 fpm:
+  # Your app's vendor
+  # Default is empty
+  vendor: Drum Roll Inc.
+  # Your app's homepage
+  # Default is empty
+  homepage: https://example.com/
+
+  # Your app's maintainer (probably you)
+  # Default is empty
+  maintainer: <Drummer drum-roll@example.com>
+
+  # Your app's description
+  # Default is empty
+  description: Software to create fast and easy drum rolls.
+
+  # Your app's license
+  # Default is empty
+  license: Apache 2.0
+
   # Formats to generate as output
   formats:
     - deb
