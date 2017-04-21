@@ -67,6 +67,8 @@ build:
     - amd64
 ```
 
+PS: Invalid GOOS/GOARCH combinations will automatically be skipped.
+
 This configuration specifies the build operating systems to Windows, Linux and MacOS using 64bit architecture, the name of the binaries is `drum-roll`.
 
 GoReleaser will then archive the result binaries of each Os/Arch into a separate file. The default format is `{{.Binary}}_{{.Os}}_{{.Arch}}`.
