@@ -7,8 +7,7 @@ script:
   - make test
   - test -n "$TRAVIS_TAG" || go run ./cmd/goreleaser/main.go --skip-validate --skip-publish
 after_success:
-  - go get github.com/mattn/goveralls
-  - goveralls -coverprofile=coverage.out -service=travis-ci -repotoken="$COVERALLS_TOKEN"
+  - bash <(curl -s https://codecov.io/bash)
   - test -n "$TRAVIS_TAG" && go run ./cmd/goreleaser/main.go
 notifications:
   email: false
