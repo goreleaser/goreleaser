@@ -102,6 +102,22 @@ func TestTagIsNotLastCommit(t *testing.T) {
 	assert.Contains(err.Error(), "git tag v0.0.1 was not made against commit")
 }
 
+func TestValidState(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	gitCommit(t, "commit3")
+	gitTag(t, "v0.0.1")
+	gitCommit(t, "commit4")
+	gitTag(t, "v0.0.2")
+	var ctx = &context.Context{
+		Config:   config.Project{},
+		Validate: true,
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+}
+
 func TestNoValidate(t *testing.T) {
 	var assert = assert.New(t)
 	_, back := createAndChdir(t)
