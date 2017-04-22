@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -17,7 +18,7 @@ var (
 func main() {
 	var app = cli.NewApp()
 	app.Name = "goreleaser"
-	app.Version = version + ", commit " + commit + ", built at " + date
+	app.Version = fmt.Sprintf("%v, commit %v, built at %v", version, commit, date)
 	app.Usage = "Deliver Go binaries as fast and easily as possible"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
