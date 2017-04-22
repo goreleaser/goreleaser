@@ -1,7 +1,9 @@
 package checksum
 
 import (
+	"crypto/sha256"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -23,5 +25,17 @@ func TestOpenFailure(t *testing.T) {
 	var assert = assert.New(t)
 	sum, err := SHA256("/tmp/this-file-wont-exist-I-hope")
 	assert.Empty(sum)
+	assert.Error(err)
+}
+
+func TestFileDoesntExist(t *testing.T) {
+	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(err)
+	var path = filepath.Join(folder, "subject")
+	file, err := os.Create(path)
+	assert.NoError(err)
+	assert.NoError(file.Close())
+	_, err = doCalculate(sha256.New(), file)
 	assert.Error(err)
 }
