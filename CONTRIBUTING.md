@@ -16,7 +16,7 @@ Prerequisites are:
 Clone `goreleaser` from source into `$GOPATH`:
 
 ```sh
-$ go get github.com/goreleaser/goreleaser
+$ go get -d github.com/goreleaser/goreleaser
 $ cd $GOPATH/src/github.com/goreleaser/goreleaser
 ```
 
