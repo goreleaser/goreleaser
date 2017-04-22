@@ -9,11 +9,11 @@ import (
 )
 
 func TestExtWindows(t *testing.T) {
-	assert.Equal(t, extFor("windows"), ".exe")
+	assert.Equal(t, ".exe", extFor("windows"))
 }
 
 func TestExtOthers(t *testing.T) {
-	assert.Empty(t, extFor("linux"))
+	assert.Empty(t, "", extFor("linux"))
 }
 
 func TestNameFor(t *testing.T) {
@@ -41,4 +41,26 @@ func TestNameFor(t *testing.T) {
 	name, err := nameFor(ctx, "darwin", "amd64")
 	assert.NoError(err)
 	assert.Equal("test_Darwin_x86_64_v1.2.3", name)
+}
+
+func TestInvalidNameTemplate(t *testing.T) {
+	assert := assert.New(t)
+
+	var config = config.Project{
+		Archive: config.Archive{
+			NameTemplate: "{{.Binaryyy}}_{{.Os}}_{{.Arch}}_{{.Version}}",
+		},
+		Build: config.Build{
+			Binary: "test",
+		},
+	}
+	var ctx = &context.Context{
+		Config: config,
+		Git: context.GitInfo{
+			CurrentTag: "v1.2.3",
+		},
+	}
+
+	_, err := nameFor(ctx, "darwin", "amd64")
+	assert.Error(err)
 }
