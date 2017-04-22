@@ -1,6 +1,8 @@
 package defaults
 
 import (
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -74,4 +76,20 @@ func TestAcceptFiles(t *testing.T) {
 			assert.True(t, accept(file))
 		})
 	}
+}
+
+func TestNotAGitRepo(t *testing.T) {
+	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(err)
+	previous, err := os.Getwd()
+	assert.NoError(err)
+	assert.NoError(os.Chdir(folder))
+	defer func() {
+		assert.NoError(os.Chdir(previous))
+	}()
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.Error(Pipe{}.Run(ctx))
 }
