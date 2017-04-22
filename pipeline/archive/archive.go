@@ -47,10 +47,10 @@ func create(ctx *context.Context, platform, name string) error {
 	var folder = filepath.Join(ctx.Config.Dist, name)
 	var format = formatFor(ctx, platform)
 	file, err := os.Create(folder + "." + format)
-	log.Println("Creating", file.Name())
 	if err != nil {
 		return err
 	}
+	log.Println("Creating", file.Name())
 	defer func() { _ = file.Close() }()
 	var archive = archiveFor(file, format)
 	defer func() { _ = archive.Close() }()

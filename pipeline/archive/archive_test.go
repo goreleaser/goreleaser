@@ -64,6 +64,23 @@ func TestRunPipe(t *testing.T) {
 	})
 }
 
+func TestRunPipeDistRemoved(t *testing.T) {
+	var assert = assert.New(t)
+	var ctx = &context.Context{
+		Archives: map[string]string{
+			"darwinamd64":  "mybin",
+			"windowsamd64": "mybin",
+		},
+		Config: config.Project{
+			Dist: "/path/nope",
+			Archive: config.Archive{
+				Format: "zip",
+			},
+		},
+	}
+	assert.Error(Pipe{}.Run(ctx))
+}
+
 func TestFormatFor(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
