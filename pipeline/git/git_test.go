@@ -2,6 +2,7 @@ package git
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -144,14 +145,43 @@ func TestChangelog(t *testing.T) {
 	gitCommit(t, "added feature 1")
 	gitCommit(t, "fixed bug 2")
 	gitTag(t, "v0.0.2")
+	s, _ := git("log", "--oneline")
+	log.Println("\n" + s)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.Equal("v0.0.2", ctx.Git.CurrentTag)
 	assert.Contains(ctx.ReleaseNotes, "## Changelog")
+	assert.NotContains(ctx.ReleaseNotes, "first")
 	assert.Contains(ctx.ReleaseNotes, "added feature 1")
 	assert.Contains(ctx.ReleaseNotes, "fixed bug 2")
+}
+
+func TestChangelogOfFirstRelease(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	var msgs = []string{
+		"initial commit",
+		"another one",
+		"one more",
+		"and finally this one",
+	}
+	for _, msg := range msgs {
+		gitCommit(t, msg)
+	}
+	gitTag(t, "v0.0.1")
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	assert.Equal("v0.0.1", ctx.Git.CurrentTag)
+	assert.Contains(ctx.ReleaseNotes, "## Changelog")
+	for _, msg := range msgs {
+		assert.Contains(ctx.ReleaseNotes, msg)
+	}
 }
 
 func TestCustomReleaseNotes(t *testing.T) {
