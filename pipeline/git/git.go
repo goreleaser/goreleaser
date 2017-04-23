@@ -114,18 +114,14 @@ func getInfo() (tag, commit string, err error) {
 	return
 }
 
-func previous(tag string) (r ref, err error) {
-	var previous string
-	var istag = true
-	previous, err = cleanGit("describe", "--tags", "--abbrev=0", tag+"^")
+func previous(tag string) (result ref, err error) {
+	result.Tag = true
+	result.SHA, err = cleanGit("describe", "--tags", "--abbrev=0", tag+"^")
 	if err != nil {
-		istag = false
-		previous, err = cleanGit("rev-list", "--max-parents=0", "HEAD")
+		result.Tag = false
+		result.SHA, err = cleanGit("rev-list", "--max-parents=0", "HEAD")
 	}
-	return ref{
-		Tag: istag,
-		SHA: previous,
-	}, err
+	return
 }
 
 type ref struct {
