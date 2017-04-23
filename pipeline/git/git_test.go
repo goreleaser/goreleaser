@@ -2,7 +2,6 @@ package git
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -145,8 +144,6 @@ func TestChangelog(t *testing.T) {
 	gitCommit(t, "added feature 1")
 	gitCommit(t, "fixed bug 2")
 	gitTag(t, "v0.0.2")
-	s, _ := git("log", "--oneline")
-	log.Println("\n" + s)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
