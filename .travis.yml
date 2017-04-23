@@ -5,9 +5,9 @@ install:
   - gem install fpm
 script:
   - make test
-  - test -n "$TRAVIS_TAG" || go run ./cmd/goreleaser/main.go --skip-validate --skip-publish
+  - test -n "$TRAVIS_TAG" || go run main.go --skip-validate --skip-publish
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - test -n "$TRAVIS_TAG" && go run ./cmd/goreleaser/main.go
+  - test -n "$TRAVIS_TAG" && go run main.go
 notifications:
   email: false

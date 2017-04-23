@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/goreleaser/goreleaser"
+	"github.com/goreleaser/goreleaser/goreleaserlib"
 	"github.com/urfave/cli"
 )
 
@@ -41,7 +41,7 @@ func main() {
 	}
 	app.Action = func(c *cli.Context) error {
 		log.Printf("Running goreleaser %v\n", version)
-		if err := goreleaser.Release(c); err != nil {
+		if err := goreleaserlib.Release(c); err != nil {
 			return cli.NewExitError(err.Error(), 1)
 		}
 		return nil
