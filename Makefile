@@ -37,11 +37,8 @@ lint: ## Run all the linters
 
 ci: lint test ## Run all the tests and code checks
 
-build: ## Build a beta version of releaser
-	go build -o goreleaser ./cmd/goreleaser/main.go
-
-install: ## Install the binary into $GOPATH/bin
-	go install ./cmd/...
+build: ## Build a beta version of goreleaser
+	go build
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
