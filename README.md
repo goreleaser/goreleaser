@@ -1,6 +1,6 @@
 <p align="center">
   <img alt="GoReleaser Logo" src="https://avatars2.githubusercontent.com/u/24697112?v=3&s=200" height="140" />
-  <h1 align="center">GoReleaser</h1>
+  <h3 align="center">GoReleaser</h3>
   <p align="center">Deliver Go binaries as fast and easily as possible.</p>
   <p align="center">
     <a href="https://github.com/goreleaser/goreleaser/releases/latest">
