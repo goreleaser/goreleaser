@@ -93,11 +93,20 @@ func getChangelog(tag string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return git("log", "--pretty=oneline", "--abbrev-commit", prev+".."+tag)
+	if !prev.Tag {
+		return gitLog(prev.SHA, tag)
+	}
+	return gitLog(fmt.Sprintf("%v..%v", prev.SHA, tag))
+}
+
+func gitLog(refs ...string) (string, error) {
+	var args = []string{"log", "--pretty=oneline", "--abbrev-commit"}
+	args = append(args, refs...)
+	return git(args...)
 }
 
 func getInfo() (tag, commit string, err error) {
-	tag, err = cleanGit("describe", "--tags", "--abbrev=0", "--always")
+	tag, err = cleanGit("describe", "--tags", "--abbrev=0")
 	if err != nil {
 		return
 	}
@@ -105,10 +114,17 @@ func getInfo() (tag, commit string, err error) {
 	return
 }
 
-func previous(tag string) (previous string, err error) {
-	previous, err = cleanGit("describe", "--tags", "--abbrev=0", "--always", tag+"^")
+func previous(tag string) (result ref, err error) {
+	result.Tag = true
+	result.SHA, err = cleanGit("describe", "--tags", "--abbrev=0", tag+"^")
 	if err != nil {
-		previous, err = cleanGit("rev-list", "--max-parents=0", "HEAD")
+		result.Tag = false
+		result.SHA, err = cleanGit("rev-list", "--max-parents=0", "HEAD")
 	}
 	return
+}
+
+type ref struct {
+	Tag bool
+	SHA string
 }
