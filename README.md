@@ -222,7 +222,8 @@ archive:
   # This is parsed with Golang template engine and the following variables
   # are available:
   # - Binary
-  # - Version
+  # - Tag
+  # - Version (Tag with the `v` prefix stripped)
   # - Os
   # - Arch
   # The default is `{{.Binary}}_{{.Os}}_{{.Arch}}`
