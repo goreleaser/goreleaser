@@ -21,7 +21,7 @@ func TestNameFor(t *testing.T) {
 
 	var config = config.Project{
 		Archive: config.Archive{
-			NameTemplate: "{{.Binary}}_{{.Os}}_{{.Arch}}_{{.Version}}",
+			NameTemplate: "{{.Binary}}_{{.Os}}_{{.Arch}}_{{.Tag}}_{{.Version}}",
 			Replacements: map[string]string{
 				"darwin": "Darwin",
 				"amd64":  "x86_64",
@@ -32,7 +32,8 @@ func TestNameFor(t *testing.T) {
 		},
 	}
 	var ctx = &context.Context{
-		Config: config,
+		Config:  config,
+		Version: "1.2.3",
 		Git: context.GitInfo{
 			CurrentTag: "v1.2.3",
 		},
@@ -40,7 +41,7 @@ func TestNameFor(t *testing.T) {
 
 	name, err := nameFor(ctx, "darwin", "amd64")
 	assert.NoError(err)
-	assert.Equal("test_Darwin_x86_64_v1.2.3", name)
+	assert.Equal("test_Darwin_x86_64_v1.2.3_1.2.3", name)
 }
 
 func TestInvalidNameTemplate(t *testing.T) {

@@ -11,6 +11,7 @@ type nameData struct {
 	Os      string
 	Arch    string
 	Version string
+	Tag     string
 	Binary  string
 }
 
@@ -18,7 +19,8 @@ func nameFor(ctx *context.Context, goos, goarch string) (string, error) {
 	var data = nameData{
 		Os:      replace(ctx.Config.Archive.Replacements, goos),
 		Arch:    replace(ctx.Config.Archive.Replacements, goarch),
-		Version: ctx.Git.CurrentTag,
+		Version: ctx.Version,
+		Tag:     ctx.Git.CurrentTag,
 		Binary:  ctx.Config.Build.Binary,
 	}
 
