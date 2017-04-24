@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
@@ -30,27 +29,21 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	sem := make(chan bool, 4)
 	var g errgroup.Group
-	for _, goos := range ctx.Config.Build.Goos {
-		for _, goarch := range ctx.Config.Build.Goarch {
-			goos := goos
-			goarch := goarch
-			if !valid(goos, goarch) {
-				log.Printf("Skipped build for %v/%v\n", goos, goarch)
-				continue
-			}
-			sem <- true
-			name, err := nameFor(ctx, goos, goarch)
-			if err != nil {
-				return err
-			}
-			ctx.Archives[goos+goarch] = name
-			g.Go(func() error {
-				defer func() {
-					<-sem
-				}()
-				return build(name, goos, goarch, ctx)
-			})
+	for _, target := range allBuildTargets(ctx) {
+		name, err := nameFor(ctx, target)
+		if err != nil {
+			return err
 		}
+		ctx.Archives[target.String()] = name
+
+		sem <- true
+		target := target
+		g.Go(func() error {
+			defer func() {
+				<-sem
+			}()
+			return build(ctx, name, target)
+		})
 	}
 	if err := g.Wait(); err != nil {
 		return err
@@ -64,14 +57,14 @@ func runHook(hook string) error {
 	}
 	log.Println("Running hook", hook)
 	cmd := strings.Fields(hook)
-	return run(runtime.GOOS, runtime.GOARCH, cmd)
+	return run(runtimeTarget, cmd)
 }
 
-func build(name, goos, goarch string, ctx *context.Context) error {
+func build(ctx *context.Context, name string, target buildTarget) error {
 	output := filepath.Join(
 		ctx.Config.Dist,
 		name,
-		ctx.Config.Build.Binary+extFor(goos),
+		ctx.Config.Build.Binary+extFor(target.goos),
 	)
 	log.Println("Building", output)
 	cmd := []string{"go", "build"}
@@ -83,13 +76,18 @@ func build(name, goos, goarch string, ctx *context.Context) error {
 		return err
 	}
 	cmd = append(cmd, "-ldflags="+flags, "-o", output, ctx.Config.Build.Main)
-	return run(goos, goarch, cmd)
+	return run(target, cmd)
 }
 
-func run(goos, goarch string, command []string) error {
+func run(target buildTarget, command []string) error {
 	cmd := exec.Command(command[0], command[1:]...)
 	cmd.Env = append(cmd.Env, os.Environ()...)
-	cmd.Env = append(cmd.Env, "GOOS="+goos, "GOARCH="+goarch)
+	cmd.Env = append(
+		cmd.Env,
+		"GOOS="+target.goos,
+		"GOARCH="+target.goarch,
+		"GOARM="+target.goarm,
+	)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return errors.New(string(out))
 	}
