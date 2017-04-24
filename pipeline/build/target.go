@@ -19,7 +19,7 @@ func (t buildTarget) String() string {
 	return fmt.Sprintf("%v%v%v", t.goos, t.goarch, t.goarm)
 }
 
-func allBuildTargets(ctx *context.Context) (t []buildTarget) {
+func allBuildTargets(ctx *context.Context) (targets []buildTarget) {
 	for _, goos := range ctx.Config.Build.Goos {
 		for _, goarch := range ctx.Config.Build.Goarch {
 			if !valid(goos, goarch) {
@@ -28,11 +28,11 @@ func allBuildTargets(ctx *context.Context) (t []buildTarget) {
 			}
 			if goarch == "arm" {
 				for _, goarm := range ctx.Config.Build.Goarm {
-					t = append(t, buildTarget{goos, goarch, goarm})
+					targets = append(targets, buildTarget{goos, goarch, goarm})
 				}
 				continue
 			}
-			t = append(t, buildTarget{goos, goarch, ""})
+			targets = append(targets, buildTarget{goos, goarch, ""})
 		}
 	}
 	return

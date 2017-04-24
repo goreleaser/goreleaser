@@ -73,7 +73,7 @@ func TestRunFullPipe(t *testing.T) {
 	assert.True(exists(post), post)
 }
 
-func TestRunArmFullPipe(t *testing.T) {
+func TestRunPipeArmBuilds(t *testing.T) {
 	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
