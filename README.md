@@ -210,7 +210,7 @@ build:
   # - Commit
   # The default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`
   # Date format is `2006-01-02_15:04:05`
-  ldflags_template: -s -w -X main.build={{.Version}}
+  ldflags: -s -w -X main.build={{.Version}}
 
   # GOOS list to build in.
   # For more info refer to https://golang.org/doc/install/source#environment
