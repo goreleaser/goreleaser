@@ -107,6 +107,9 @@ build:
     - linux
   goarch:
     - amd64
+  goarm:
+    - 6
+    - 7
 # Archive customization
 archive:
   format: tar.gz
@@ -246,7 +249,8 @@ archive:
   # - Version (Tag with the `v` prefix stripped)
   # - Os
   # - Arch
-  # The default is `{{.Binary}}_{{.Os}}_{{.Arch}}`
+  # - Arm (ARM version)
+  # The default is `{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
   name_template: "{{.Binary}}_{{.Version}}_{{.Os}}_{{.Arch}}"
 
   # Archive format. Valid options are `tar.gz` and `zip`.

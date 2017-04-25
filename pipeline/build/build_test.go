@@ -17,11 +17,11 @@ func TestPipeDescription(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	assert.NoError(t, run(runtime.GOOS, runtime.GOARCH, []string{"go", "list", "./..."}))
+	assert.NoError(t, run(runtimeTarget, []string{"go", "list", "./..."}))
 }
 
 func TestRunInvalidCommand(t *testing.T) {
-	assert.Error(t, run(runtime.GOOS, runtime.GOARCH, []string{"gggggo", "nope"}))
+	assert.Error(t, run(runtimeTarget, []string{"gggggo", "nope"}))
 }
 
 func TestBuild(t *testing.T) {
@@ -35,7 +35,7 @@ func TestBuild(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config,
 	}
-	assert.NoError(build("build_test", runtime.GOOS, runtime.GOARCH, ctx))
+	assert.NoError(build(ctx, "build_test", runtimeTarget))
 }
 
 func TestRunFullPipe(t *testing.T) {
@@ -71,6 +71,37 @@ func TestRunFullPipe(t *testing.T) {
 	assert.True(exists(binary), binary)
 	assert.True(exists(pre), pre)
 	assert.True(exists(post), post)
+}
+
+func TestRunPipeArmBuilds(t *testing.T) {
+	assert := assert.New(t)
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(err)
+	var binary = filepath.Join(folder, "armtesting")
+	var config = config.Project{
+		Dist: folder,
+		Build: config.Build{
+			Binary:  "armtesting",
+			Flags:   "-v",
+			Ldflags: "-X main.test=armtesting",
+			Goos: []string{
+				"linux",
+			},
+			Goarch: []string{
+				"arm",
+				"arm64",
+			},
+			Goarm: []string{
+				"6",
+			},
+		},
+	}
+	var ctx = &context.Context{
+		Config:   config,
+		Archives: map[string]string{},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	assert.True(exists(binary), binary)
 }
 
 func TestBuildFailed(t *testing.T) {

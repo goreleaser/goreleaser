@@ -10,15 +10,17 @@ import (
 type nameData struct {
 	Os      string
 	Arch    string
+	Arm     string
 	Version string
 	Tag     string
 	Binary  string
 }
 
-func nameFor(ctx *context.Context, goos, goarch string) (string, error) {
+func nameFor(ctx *context.Context, target buildTarget) (string, error) {
 	var data = nameData{
-		Os:      replace(ctx.Config.Archive.Replacements, goos),
-		Arch:    replace(ctx.Config.Archive.Replacements, goarch),
+		Os:      replace(ctx.Config.Archive.Replacements, target.goos),
+		Arch:    replace(ctx.Config.Archive.Replacements, target.goarch),
+		Arm:     replace(ctx.Config.Archive.Replacements, target.goarm),
 		Version: ctx.Version,
 		Tag:     ctx.Git.CurrentTag,
 		Binary:  ctx.Config.Build.Binary,

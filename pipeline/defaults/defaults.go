@@ -12,6 +12,9 @@ import (
 
 var defaultFiles = []string{"licence", "license", "readme", "changelog"}
 
+// NameTemplate default name_template for the archive.
+const NameTemplate = "{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+
 // Pipe for brew deployment
 type Pipe struct{}
 
@@ -41,12 +44,15 @@ func (Pipe) Run(ctx *context.Context) error {
 	if len(ctx.Config.Build.Goarch) == 0 {
 		ctx.Config.Build.Goarch = []string{"amd64", "386"}
 	}
+	if len(ctx.Config.Build.Goarm) == 0 {
+		ctx.Config.Build.Goarm = []string{"6"}
+	}
 	if ctx.Config.Build.Ldflags == "" {
 		ctx.Config.Build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
 	}
 
 	if ctx.Config.Archive.NameTemplate == "" {
-		ctx.Config.Archive.NameTemplate = "{{.Binary}}_{{.Os}}_{{.Arch}}"
+		ctx.Config.Archive.NameTemplate = NameTemplate
 	}
 	if ctx.Config.Archive.Format == "" {
 		ctx.Config.Archive.Format = "tar.gz"

@@ -42,6 +42,7 @@ type Hooks struct {
 type Build struct {
 	Goos    []string
 	Goarch  []string
+	Goarm   []string
 	Main    string
 	Ldflags string
 	Flags   string
