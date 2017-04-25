@@ -28,9 +28,15 @@ func TestAllBuildTargets(t *testing.T) {
 					"6",
 					"7",
 				},
-				Ignore: []string{
-					"darwin386",
-					"linuxarm7",
+				Ignore: []config.IgnoredBuild{
+					{
+						Goos:   "darwin",
+						Goarch: "386",
+					}, {
+						Goos:   "linux",
+						Goarch: "arm",
+						Goarm:  "7",
+					},
 				},
 			},
 		},

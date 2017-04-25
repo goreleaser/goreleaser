@@ -53,7 +53,12 @@ func shouldBuild(ctx *context.Context, target buildTarget) bool {
 
 func isIgnored(ctx *context.Context, target buildTarget) bool {
 	for _, ignore := range ctx.Config.Build.Ignore {
-		if ignore == target.String() {
+		var ignoredTarget = buildTarget{
+			goos:   ignore.Goos,
+			goarch: ignore.Goarch,
+			goarm:  ignore.Goarm,
+		}
+		if ignoredTarget == target {
 			log.Printf(
 				"Skipped ignored build: %v %v %v\n",
 				target.goos,
