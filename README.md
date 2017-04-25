@@ -374,7 +374,7 @@ end
 
 ### FPM build customization
 
-GoReleaser can be wired to [fpm]() to generate `.deb`, `.rpm` and other archives. Check it's
+GoReleaser can be wired to [fpm]() to generate `.deb`, `.rpm` and other archives. Check its
 [wiki](https://github.com/jordansissel/fpm/wiki) for more info.
 
 [fpm]: https://github.com/jordansissel/fpm
@@ -391,7 +391,7 @@ fpm:
 
   # Your app's maintainer (probably you)
   # Default is empty
-  maintainer: <Drummer drum-roll@example.com>
+  maintainer: Drummer <drum-roll@example.com>
 
   # Your app's description
   # Default is empty
@@ -417,7 +417,7 @@ fpm:
     - bash
 ```
 
-Note that GoReleaser will not install `fpm` nor any of it's dependencies for you.
+Note that GoReleaser will not install `fpm` nor any of its dependencies for you.
 
 ## Integration with CI
 
