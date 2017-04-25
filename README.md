@@ -107,9 +107,6 @@ build:
     - linux
   goarch:
     - amd64
-  goarm:
-    - 6
-    - 7
 # Archive customization
 archive:
   format: tar.gz
@@ -227,6 +224,15 @@ build:
   # Defaults are 386 and amd64
   goarch:
     - amd64
+    - arm
+    - arm64
+
+  # GOARM to build in when GOARCH is arm.
+  # For more info refer to https://golang.org/doc/install/source#environment
+  # Defaults are 6
+  goarm:
+    - 6
+    - 7
 
   # Hooks can be used to customize the final binary, for example, to run
   # generator or whatever you want.
