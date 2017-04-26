@@ -144,6 +144,49 @@ func TestRunPipeWithInvalidOS(t *testing.T) {
 	assert.NoError(Pipe{}.Run(ctx))
 }
 
+func TestRunInvalidNametemplate(t *testing.T) {
+	var assert = assert.New(t)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Build: config.Build{
+				Binary: "nametest",
+				Flags:  "-v",
+				Goos: []string{
+					runtime.GOOS,
+				},
+				Goarch: []string{
+					runtime.GOARCH,
+				},
+			},
+			Archive: config.Archive{
+				NameTemplate: "{{.Binary}_{{.Os}}_{{.Arch}}_{{.Version}}",
+			},
+		},
+	}
+	assert.Error(Pipe{}.Run(ctx))
+}
+
+func TestRunInvalidLdflags(t *testing.T) {
+	var assert = assert.New(t)
+	var ctx = &context.Context{
+		Archives: map[string]string{},
+		Config: config.Project{
+			Build: config.Build{
+				Binary:  "nametest",
+				Flags:   "-v",
+				Ldflags: "-s -w -X main.version={{.Version}",
+				Goos: []string{
+					runtime.GOOS,
+				},
+				Goarch: []string{
+					runtime.GOARCH,
+				},
+			},
+		},
+	}
+	assert.Error(Pipe{}.Run(ctx))
+}
+
 func TestRunPipeFailingHooks(t *testing.T) {
 	assert := assert.New(t)
 	var config = config.Project{
