@@ -3,30 +3,14 @@
   <h3 align="center">GoReleaser</h3>
   <p align="center">Deliver Go binaries as fast and easily as possible.</p>
   <p align="center">
-    <a href="https://github.com/goreleaser/goreleaser/releases/latest">
-      <img alt="Release" src="https://img.shields.io/github/release/goreleaser/goreleaser.svg?style=flat-square">
-    </a>
-    <a href="/goreleaser/goreleaser/blob/master/LICENSE.md">
-      <img alt="Software License" src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square">
-    </a>
-    <a href="https://travis-ci.org/goreleaser/goreleaser">
-      <img alt="Travis" src="https://img.shields.io/travis/goreleaser/goreleaser.svg?style=flat-square">
-    </a>
-    <a href="https://codecov.io/gh/goreleaser/goreleaser">
-      <img alt="Codecov branch" src="https://img.shields.io/codecov/c/github/goreleaser/goreleaser/master.svg?style=flat-square">
-    </a>
-    <a href="https://goreportcard.com/report/github.com/goreleaser/goreleaser">
-      <img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/goreleaser/goreleaser?style=flat-square">
-    </a>
-    <a href="http://godoc.org/github.com/goreleaser/goreleaser">
-      <img alt="Go Doc" src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square">
-    </a>
-    <a href="https://saythanks.io/to/caarlos0">
-      <img alt="SayThanks.io" src="https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg?style=flat-square">
-    </a>
-    <a href="https://github.com/goreleaser">
-      <img alt="Powered By: GoReleaser" src="https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square">
-    </a>
+    <a href="/releases/latest"><img alt="Release" src="https://img.shields.io/github/release/goreleaser/goreleaser.svg?style=flat-square"></a>
+    <a href="/LICENSE.md"><img alt="Software License" src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square"></a>
+    <a href="https://travis-ci.org/goreleaser/goreleaser"><img alt="Travis" src="https://img.shields.io/travis/goreleaser/goreleaser.svg?style=flat-square"></a>
+    <a href="https://codecov.io/gh/goreleaser/goreleaser"><img alt="Codecov branch" src="https://img.shields.io/codecov/c/github/goreleaser/goreleaser/master.svg?style=flat-square"></a>
+    <a href="https://goreportcard.com/report/github.com/goreleaser/goreleaser"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/goreleaser/goreleaser?style=flat-square"></a>
+    <a href="http://godoc.org/github.com/goreleaser/goreleaser"><img alt="Go Doc" src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square"></a>
+    <a href="https://saythanks.io/to/caarlos0"><img alt="SayThanks.io" src="https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg?style=flat-square"></a>
+    <a href="https://github.com/goreleaser"><img alt="Powered By: GoReleaser" src="https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square"></a>
   </p>
 </p>
 
@@ -210,7 +194,7 @@ build:
   # - Commit
   # The default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`
   # Date format is `2006-01-02_15:04:05`
-  ldflags_template: -s -w -X main.build={{.Version}}
+  ldflags: -s -w -X main.build={{.Version}}
 
   # GOOS list to build in.
   # For more info refer to https://golang.org/doc/install/source#environment
@@ -383,7 +367,7 @@ end
 
 ### FPM build customization
 
-GoReleaser can be wired to [fpm]() to generate `.deb`, `.rpm` and other archives. Check it's
+GoReleaser can be wired to [fpm]() to generate `.deb`, `.rpm` and other archives. Check its
 [wiki](https://github.com/jordansissel/fpm/wiki) for more info.
 
 [fpm]: https://github.com/jordansissel/fpm
@@ -400,7 +384,7 @@ fpm:
 
   # Your app's maintainer (probably you)
   # Default is empty
-  maintainer: <Drummer drum-roll@example.com>
+  maintainer: Drummer <drum-roll@example.com>
 
   # Your app's description
   # Default is empty
@@ -426,7 +410,7 @@ fpm:
     - bash
 ```
 
-Note that GoReleaser will not install `fpm` nor any of it's dependencies for you.
+Note that GoReleaser will not install `fpm` nor any of its dependencies for you.
 
 ## Integration with CI
 
