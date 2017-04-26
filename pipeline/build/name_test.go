@@ -1,6 +1,7 @@
 package build
 
 import (
+	"log"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -50,7 +51,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 
 	var config = config.Project{
 		Archive: config.Archive{
-			NameTemplate: "{{.Binaryyy}}_{{.Os}}_{{.Arch}}_{{.Version}}",
+			NameTemplate: "{{.Binary}_{{.Os}}_{{.Arch}}_{{.Version}}",
 		},
 		Build: config.Build{
 			Binary: "test",
@@ -64,6 +65,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 	}
 
 	_, err := nameFor(ctx, buildTarget{"darwin", "amd64", ""})
+	log.Println(err.Error())
 	assert.Error(err)
 }
 

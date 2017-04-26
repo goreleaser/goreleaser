@@ -38,11 +38,17 @@ type Hooks struct {
 	Post string
 }
 
+// IgnoredBuild represents a build ignored by the user
+type IgnoredBuild struct {
+	Goos, Goarch, Goarm string
+}
+
 // Build contains the build configuration section
 type Build struct {
 	Goos    []string
 	Goarch  []string
 	Goarm   []string
+	Ignore  []IgnoredBuild
 	Main    string
 	Ldflags string
 	Flags   string

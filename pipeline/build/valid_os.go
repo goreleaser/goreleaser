@@ -33,13 +33,3 @@ var valids = []string{
 	"windows386",
 	"windowsamd64",
 }
-
-func valid(goos, goarch string) bool {
-	var s = goos + goarch
-	for _, a := range valids {
-		if a == s {
-			return true
-		}
-	}
-	return false
-}
