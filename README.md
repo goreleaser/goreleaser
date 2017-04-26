@@ -6,7 +6,7 @@
     <a href="https://github.com/goreleaser/goreleaser/releases/latest">
       <img alt="Release" src="https://img.shields.io/github/release/goreleaser/goreleaser.svg?style=flat-square">
     </a>
-    <a href="/goreleaser/goreleaser/blob/master/LICENSE.md">
+    <a href="/LICENSE.md">
       <img alt="Software License" src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square">
     </a>
     <a href="https://travis-ci.org/goreleaser/goreleaser">
