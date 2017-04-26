@@ -50,7 +50,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 
 	var config = config.Project{
 		Archive: config.Archive{
-			NameTemplate: "{{.Binaryyy}}_{{.Os}}_{{.Arch}}_{{.Version}}",
+			NameTemplate: "{{.Binary}_{{.Os}}_{{.Arch}}_{{.Version}}",
 		},
 		Build: config.Build{
 			Binary: "test",
