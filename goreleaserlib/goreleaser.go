@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"fmt"
+
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
@@ -76,4 +78,18 @@ func Release(flags Flags) error {
 	}
 	log.Println("Done!")
 	return nil
+}
+
+// InitProject creates an example goreleaser.yml in the current directory
+func InitProject() error {
+	filename := "goreleaser.yml"
+	if _, err := os.Stat(filename); !os.IsNotExist(err) {
+		if err != nil {
+			return err
+		}
+
+		return fmt.Errorf("%s already exists", filename)
+	}
+
+	return ioutil.WriteFile(filename, []byte(config.DefaultConfig()), 0644)
 }

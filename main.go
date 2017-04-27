@@ -46,6 +46,22 @@ func main() {
 		}
 		return nil
 	}
+	app.Commands = []cli.Command{
+		{
+			Name:    "init",
+			Aliases: []string{"i"},
+			Usage:   "generate goreleaser.yml",
+			Action: func(c *cli.Context) error {
+				err := goreleaserlib.InitProject()
+				if err != nil {
+					return err
+				}
+
+				log.Printf("goreleaser.yml created. Please edit accordingly to your needs.")
+				return nil
+			},
+		},
+	}
 	if err := app.Run(os.Args); err != nil {
 		log.Fatalln(err)
 	}

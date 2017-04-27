@@ -104,3 +104,16 @@ func Load(file string) (config Project, err error) {
 	err = yaml.Unmarshal(data, &config)
 	return
 }
+
+// DefaultConfig returns a default configuration for the init command
+func DefaultConfig() string {
+	return `
+build:
+  binary: drum-roll
+  goos:
+    - windows
+    - darwin
+    - linux
+  goarch:
+    - amd64`
+}
