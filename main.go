@@ -52,12 +52,13 @@ func main() {
 			Aliases: []string{"i"},
 			Usage:   "generate goreleaser.yml",
 			Action: func(c *cli.Context) error {
-				err := goreleaserlib.InitProject()
+				var filename = "goreleaser.yml"
+				err := goreleaserlib.InitProject(filename)
 				if err != nil {
 					return err
 				}
 
-				log.Printf("goreleaser.yml created. Please edit accordingly to your needs.")
+				log.Printf("%s created. Please edit accordingly to your needs.", filename)
 				return nil
 			},
 		},

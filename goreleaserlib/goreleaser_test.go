@@ -8,6 +8,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	yaml "gopkg.in/yaml.v1"
+
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -151,4 +154,39 @@ release:
     name: fake
 `
 	createFile(t, "goreleaser.yml", yaml)
+}
+
+func TestInitProject(t *testing.T) {
+	var filename = "test_goreleaser.yml"
+
+	defer func() {
+		if _, err := os.Stat(filename); !os.IsNotExist(err) {
+			if err != nil {
+				t.Fatal(err.Error())
+			}
+
+			if err := os.Remove(filename); err != nil {
+				t.Fatal(err.Error())
+			}
+		}
+	}()
+
+	if err := InitProject(filename); err != nil {
+		t.Errorf("exepcted InitProject() to run, but got %v", err.Error())
+	}
+
+	file, err := os.Open(filename)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	out, err := ioutil.ReadAll(file)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	config := config.Project{}
+	if err := yaml.Unmarshal(out, &config); err != nil {
+		t.Errorf("Not a valid config. %s", err.Error())
+	}
 }
