@@ -82,56 +82,28 @@ func TestBrokenPipe(t *testing.T) {
 }
 
 func TestInitProject(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := setup(t)
+	defer back()
 	var filename = "test_goreleaser.yml"
-
-	defer func() {
-		if _, err := os.Stat(filename); !os.IsNotExist(err) {
-			if err != nil {
-				t.Fatal(err.Error())
-			}
-
-			if err := os.Remove(filename); err != nil {
-				t.Fatal(err.Error())
-			}
-		}
-	}()
-
-	if err := InitProject(filename); err != nil {
-		t.Fatalf("exepcted InitProject() to run, but got %v", err.Error())
-	}
+	assert.NoError(InitProject(filename))
 
 	file, err := os.Open(filename)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
-
+	assert.NoError(err)
 	out, err := ioutil.ReadAll(file)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
+	assert.NoError(err)
 
-	config := config.Project{}
-	assert.NoError(t, yaml.Unmarshal(out, &config))
+	var config = config.Project{}
+	assert.NoError(yaml.Unmarshal(out, &config))
 }
 
 func TestInitProjectFileExist(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := setup(t)
+	defer back()
 	var filename = "test_goreleaser.yml"
-
 	createFile(t, filename, "")
-
-	defer func() {
-		if _, err := os.Stat(filename); !os.IsNotExist(err) {
-			if err != nil {
-				t.Fatal(err.Error())
-			}
-
-			if err := os.Remove(filename); err != nil {
-				t.Fatal(err.Error())
-			}
-		}
-	}()
-
-	assert.Error(t, InitProject(filename))
+	assert.Error(InitProject(filename))
 }
 
 // fakeFlags is a mock of the cli flags
