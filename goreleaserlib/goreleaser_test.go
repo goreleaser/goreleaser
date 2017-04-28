@@ -106,6 +106,15 @@ func TestInitProjectFileExist(t *testing.T) {
 	assert.Error(InitProject(filename))
 }
 
+func TestInitProjectDefaultPipeFails(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := setup(t)
+	defer back()
+	var filename = "test_goreleaser.yml"
+	assert.NoError(os.RemoveAll(".git"))
+	assert.Error(InitProject(filename))
+}
+
 // fakeFlags is a mock of the cli flags
 type fakeFlags struct {
 	flags map[string]string
