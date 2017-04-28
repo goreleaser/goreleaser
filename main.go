@@ -53,9 +53,8 @@ func main() {
 			Usage:   "generate goreleaser.yml",
 			Action: func(c *cli.Context) error {
 				var filename = "goreleaser.yml"
-				err := goreleaserlib.InitProject(filename)
-				if err != nil {
-					return err
+				if err := goreleaserlib.InitProject(filename); err != nil {
+					return cli.NewExitError(err.Error(), 1)
 				}
 
 				log.Printf("%s created. Please edit accordingly to your needs.", filename)

@@ -172,7 +172,7 @@ func TestInitProject(t *testing.T) {
 	}()
 
 	if err := InitProject(filename); err != nil {
-		t.Errorf("exepcted InitProject() to run, but got %v", err.Error())
+		t.Fatalf("exepcted InitProject() to run, but got %v", err.Error())
 	}
 
 	file, err := os.Open(filename)
@@ -186,7 +186,25 @@ func TestInitProject(t *testing.T) {
 	}
 
 	config := config.Project{}
-	if err := yaml.Unmarshal(out, &config); err != nil {
-		t.Errorf("Not a valid config. %s", err.Error())
-	}
+	assert.NoError(t, yaml.Unmarshal(out, &config))
+}
+
+func TestInitProjectFileExist(t *testing.T) {
+	var filename = "test_goreleaser.yml"
+
+	createFile(t, filename, "")
+
+	defer func() {
+		if _, err := os.Stat(filename); !os.IsNotExist(err) {
+			if err != nil {
+				t.Fatal(err.Error())
+			}
+
+			if err := os.Remove(filename); err != nil {
+				t.Fatal(err.Error())
+			}
+		}
+	}()
+
+	assert.Error(t, InitProject(filename))
 }
