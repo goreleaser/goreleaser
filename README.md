@@ -431,8 +431,3 @@ deployment:
 ---
 
 Would you like to fix something in the documentation? Feel free to open an [issue](https://github.com/goreleaser/goreleaser/issues).
-
-## Support on Beerpay
-Hey dude! Help me out for a couple of :beers:!
-
-[![Beerpay](https://beerpay.io/goreleaser/goreleaser/badge.svg?style=beer-square)](https://beerpay.io/goreleaser/goreleaser)  [![Beerpay](https://beerpay.io/goreleaser/goreleaser/make-wish.svg?style=flat-square)](https://beerpay.io/goreleaser/goreleaser?focus=wish)
