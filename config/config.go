@@ -10,8 +10,8 @@ import (
 
 // Repo represents any kind of repo (github, gitlab, etc)
 type Repo struct {
-	Owner string
-	Name  string
+	Owner string `yaml:"owner,omitempty"`
+	Name  string `yaml:"name,omitempty"`
 }
 
 // String of the repo, e.g. owner/name
@@ -21,48 +21,48 @@ func (r Repo) String() string {
 
 // Homebrew contains the brew section
 type Homebrew struct {
-	GitHub       Repo
-	Folder       string
-	Caveats      string
-	Plist        string
-	Install      string
-	Dependencies []string
-	Conflicts    []string
-	Description  string
-	Homepage     string
+	GitHub       Repo     `yaml:"github,omitempty"`
+	Folder       string   `yaml:"folder,omitempty"`
+	Caveats      string   `yaml:"caveats,omitempty"`
+	Plist        string   `yaml:"plist,omitempty"`
+	Install      string   `yaml:"install,omitempty"`
+	Dependencies []string `yaml:"dependencies,omitempty"`
+	Conflicts    []string `yaml:"conflicts,omitempty"`
+	Description  string   `yaml:"description,omitempty"`
+	Homepage     string   `yaml:"homepage,omitempty"`
 }
 
 // Hooks define actions to run before and/or after something
 type Hooks struct {
-	Pre  string
-	Post string
+	Pre  string `yaml:"pre,omitempty"`
+	Post string `yaml:"post,omitempty"`
 }
 
 // Build contains the build configuration section
 type Build struct {
-	Goos    []string
-	Goarch  []string
-	Goarm   []string
-	Main    string
-	Ldflags string
-	Flags   string
-	Binary  string
-	Hooks   Hooks
+	Goos    []string `yaml:"goos,omitempty"`
+	Goarch  []string `yaml:"goarch,omitempty"`
+	Goarm   []string `yaml:"goarm,omitempty"`
+	Main    string   `yaml:"main,omitempty"`
+	Ldflags string   `yaml:"ldflags,omitempty"`
+	Flags   string   `yaml:"flags,omitempty"`
+	Binary  string   `yaml:"binary,omitempty"`
+	Hooks   Hooks    `yaml:"hooks,omitempty"`
 }
 
 // FormatOverride is used to specify a custom format for a specific GOOS.
 type FormatOverride struct {
-	Goos   string
-	Format string
+	Goos   string `yaml:"goos,omitempty"`
+	Format string `yaml:"format,omitempty"`
 }
 
 // Archive config used for the archive
 type Archive struct {
-	Format          string
-	FormatOverrides []FormatOverride `yaml:"format_overrides"`
-	NameTemplate    string           `yaml:"name_template"`
-	Replacements    map[string]string
-	Files           []string
+	Format          string            `yaml:"format,omitempty"`
+	FormatOverrides []FormatOverride  `yaml:"format_overrides,omitempty"`
+	NameTemplate    string            `yaml:"name_template,omitempty"`
+	Replacements    map[string]string `yaml:"replacemnts,omitempty"`
+	Files           []string          `yaml:"files,omitempty"`
 }
 
 // Release config used for the GitHub release
@@ -73,14 +73,14 @@ type Release struct {
 
 // FPM config
 type FPM struct {
-	Formats      []string
-	Dependencies []string
-	Conflicts    []string
-	Vendor       string
-	Homepage     string
-	Maintainer   string
-	Description  string
-	License      string
+	Formats      []string `yaml:"formats,omitempty"`
+	Dependencies []string `yaml:"dependencies,omitempty"`
+	Conflicts    []string `yaml:"conflicts,omitempty"`
+	Vendor       string   `yaml:"vendor,omitempty"`
+	Homepage     string   `yaml:"homepage,omitempty"`
+	Maintainer   string   `yaml:"maintainer,omitempty"`
+	Description  string   `yaml:"description,omitempty"`
+	License      string   `yaml:"license,omitempty"`
 }
 
 // Project includes all project configuration
