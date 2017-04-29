@@ -70,6 +70,11 @@ func Release(flags Flags) error {
 		log.Println("Loaded custom release notes from", notes)
 		ctx.ReleaseNotes = string(bts)
 	}
+	ctx.Snapshot = flags.Bool("snapshot")
+	if ctx.Snapshot {
+		log.Println("Publishing disabled in snapshot mode")
+		ctx.Publish = false
+	}
 	for _, pipe := range pipes {
 		log.Println(pipe.Description())
 		log.SetPrefix(" -> ")

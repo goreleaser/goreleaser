@@ -130,6 +130,8 @@ are not enforcing it though. We do remove the `v` prefix and then enforce
 that the next character is a number. So, `v0.1.0` and `0.1.0` are virtually the
 same and are both accepted, while `version0.1.0` is not.
 
+If you don't want to create a tag yet but instead simply create a package based on the latest commit, then you can also use the `--snapshot` flag.
+
 Now you can run GoReleaser at the root of your repository:
 
 ```console
@@ -164,7 +166,7 @@ func main() {
 }
 ```
 
-`version` will always be the name of the current Git tag.
+`version` will be the current Git tag or the name of the snapshot if you're using the `--snapshot` flag.
 
 ## Release customization
 
@@ -286,6 +288,20 @@ release:
 
 You can also specify a release notes file in markdown format using the
 `--release-notes` flag.
+
+### Snapshot customization
+
+```yml
+# goreleaser.yml
+snapshot:
+  # Allows you to change the name of the generated snapshot
+  # releases. The following variables are available:
+  # - Commit
+  # - Tag
+  # - Timestamp
+  # Default: SNAPSHOT-{{.Commit}}
+  name_template: SNAPSHOT-{{.Commit}}
+```
 
 ### Homebrew tap customization
 

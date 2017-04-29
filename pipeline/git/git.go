@@ -3,10 +3,14 @@
 package git
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"regexp"
 	"strings"
+	"time"
+
+	"text/template"
 
 	"github.com/goreleaser/goreleaser/context"
 )
@@ -38,6 +42,10 @@ func (e ErrWrongRef) Error() string {
 	return fmt.Sprintf("git tag %v was not made against commit %v", e.tag, e.commit)
 }
 
+// ErrNoTag happens if the underlying git repository doesn't contain any tags
+// but no snapshot-release was requested.
+var ErrNoTag = fmt.Errorf("git doesn't contain any tags. Either add a tag or use --snapshot")
+
 // Pipe for brew deployment
 type Pipe struct{}
 
@@ -52,38 +60,77 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if err != nil {
 		return
 	}
+	if tag == "" && !ctx.Snapshot {
+		return ErrNoTag
+	}
 	ctx.Git = context.GitInfo{
 		CurrentTag: tag,
 		Commit:     commit,
 	}
 	if ctx.ReleaseNotes == "" {
-		log, err := getChangelog(tag)
+		var log string
+		if tag != "" {
+			log, err = getChangelog(tag)
+		} else {
+			log, err = getChangelog(commit)
+		}
 		if err != nil {
 			return err
 		}
 		ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", log)
 	}
-	// removes usual `v` prefix
-	ctx.Version = strings.TrimPrefix(tag, "v")
+	if tag == "" || ctx.Snapshot {
+		snapshotName, err := getSnapshotName(ctx, tag, commit)
+		if err != nil {
+			log.Printf("Failed to generate snapshot name: %s", err.Error())
+			return err
+		}
+		ctx.Version = snapshotName
+	} else {
+		// removes usual `v` prefix
+		ctx.Version = strings.TrimPrefix(tag, "v")
+	}
 	if !ctx.Validate {
 		log.Println("Skipped validations because --skip-validate is set")
 		return nil
 	}
-	return validate(commit, tag, ctx.Version)
+	return validate(commit, tag, ctx.Version, ctx.Snapshot)
 }
 
-func validate(commit, tag, version string) error {
-	matches, err := regexp.MatchString("^[0-9.]+", version)
-	if err != nil || !matches {
-		return ErrInvalidVersionFormat{version}
+type snapshotNameData struct {
+	Commit    string
+	Tag       string
+	Timestamp int64
+}
+
+func getSnapshotName(ctx *context.Context, tag, commit string) (string, error) {
+	tmpl, err := template.New("snapshot").Parse(ctx.Config.Snapshot.NameTemplate)
+	var out bytes.Buffer
+	if err != nil {
+		return "", err
+	}
+	if err := tmpl.Execute(&out, snapshotNameData{Commit: commit, Tag: tag, Timestamp: time.Now().Unix()}); err != nil {
+		return "", err
+	}
+	return out.String(), nil
+}
+
+func validate(commit, tag, version string, isSnapshot bool) error {
+	if !isSnapshot {
+		matches, err := regexp.MatchString("^[0-9.]+", version)
+		if err != nil || !matches {
+			return ErrInvalidVersionFormat{version}
+		}
 	}
 	out, err := git("status", "-s")
 	if strings.TrimSpace(out) != "" || err != nil {
 		return ErrDirty{out}
 	}
-	_, err = cleanGit("describe", "--exact-match", "--tags", "--match", tag)
-	if err != nil {
-		return ErrWrongRef{commit, tag}
+	if !isSnapshot {
+		_, err = cleanGit("describe", "--exact-match", "--tags", "--match", tag)
+		if err != nil {
+			return ErrWrongRef{commit, tag}
+		}
 	}
 	return nil
 }
@@ -108,7 +155,7 @@ func gitLog(refs ...string) (string, error) {
 func getInfo() (tag, commit string, err error) {
 	tag, err = cleanGit("describe", "--tags", "--abbrev=0")
 	if err != nil {
-		return
+		log.Printf("Failed to retrieve current tag: %s", err.Error())
 	}
 	commit, err = cleanGit("show", "--format='%H'", "HEAD")
 	return

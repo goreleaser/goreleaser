@@ -38,6 +38,10 @@ func main() {
 			Name:  "skip-publish",
 			Usage: "Skip all publishing pipes of the release",
 		},
+		cli.BoolFlag{
+			Name:  "snapshot",
+			Usage: "Generate an unversioned snapshot release",
+		},
 	}
 	app.Action = func(c *cli.Context) error {
 		log.Printf("Running goreleaser %v\n", version)

@@ -33,6 +33,7 @@ type Context struct {
 	Version      string
 	Validate     bool
 	Publish      bool
+	Snapshot     bool
 }
 
 var lock sync.Mutex
