@@ -83,13 +83,19 @@ type FPM struct {
 	License      string   `yaml:",omitempty"`
 }
 
+// Snapshot config
+type Snapshot struct {
+	NameTemplate string `yaml:"name_template,omitempty"`
+}
+
 // Project includes all project configuration
 type Project struct {
-	Release Release  `yaml:",omitempty"`
-	Brew    Homebrew `yaml:",omitempty"`
-	Build   Build    `yaml:",omitempty"`
-	Archive Archive  `yaml:",omitempty"`
-	FPM     FPM      `yaml:",omitempty"`
+	Release  Release  `yaml:",omitempty"`
+	Brew     Homebrew `yaml:",omitempty"`
+	Build    Build    `yaml:",omitempty"`
+	Archive  Archive  `yaml:",omitempty"`
+	FPM      FPM      `yaml:",omitempty"`
+	Snapshot Snapshot `yaml:",omitempty"`
 
 	// test only property indicating the path to the dist folder
 	Dist string `yaml:"-"`

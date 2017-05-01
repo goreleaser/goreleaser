@@ -15,6 +15,9 @@ var defaultFiles = []string{"licence", "license", "readme", "changelog"}
 // NameTemplate default name_template for the archive.
 const NameTemplate = "{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
+// SnapshotNameTemplate represents the default format for snapshot release names.
+const SnapshotNameTemplate = "SNAPSHOT-{{.Commit}}"
+
 // Pipe for brew deployment
 type Pipe struct{}
 
@@ -25,6 +28,9 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	if ctx.Config.Snapshot.NameTemplate == "" {
+		ctx.Config.Snapshot.NameTemplate = SnapshotNameTemplate
+	}
 	if ctx.Config.Release.GitHub.Name == "" {
 		repo, err := remoteRepo()
 		ctx.Config.Release.GitHub = repo

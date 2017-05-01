@@ -50,6 +50,58 @@ func TestNewRepository(t *testing.T) {
 	assert.Error(Pipe{}.Run(ctx))
 }
 
+func TestNoTagsSnapshot(t *testing.T) {
+	assert := assert.New(t)
+	_, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	gitCommit(t, "first")
+	var ctx = &context.Context{
+		Config: config.Project{
+			Snapshot: config.Snapshot{NameTemplate: "SNAPSHOT-{{.Commit}}"},
+		},
+		Snapshot: true,
+		Publish:  false,
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	assert.Contains(ctx.Version, "SNAPSHOT-")
+}
+
+func TestNoTagsSnapshotInvalidTemplate(t *testing.T) {
+	assert := assert.New(t)
+	_, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	gitCommit(t, "first")
+	var ctx = &context.Context{
+		Config: config.Project{
+			Snapshot: config.Snapshot{NameTemplate: "{{"},
+		},
+		Snapshot: true,
+		Publish:  false,
+	}
+	assert.Error(Pipe{}.Run(ctx))
+}
+
+// TestNoTagsNoSnapshot covers the situation where a repository
+// only contains simple commits and no tags. In this case you have
+// to set the --snapshot flag otherwise an error is returned.
+func TestNoTagsNoSnapshot(t *testing.T) {
+	assert := assert.New(t)
+	_, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	gitCommit(t, "first")
+	var ctx = &context.Context{
+		Config: config.Project{
+			Snapshot: config.Snapshot{NameTemplate: "SNAPSHOT-{{.Commit}}"},
+		},
+		Snapshot: false,
+		Publish:  false,
+	}
+	assert.Error(Pipe{}.Run(ctx))
+}
+
 func TestInvalidTagFormat(t *testing.T) {
 	var assert = assert.New(t)
 	_, back := createAndChdir(t)

@@ -24,6 +24,10 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
 	ctx.Token = os.Getenv("GITHUB_TOKEN")
+	if !ctx.Publish {
+		log.Println("GITHUB_TOKEN not validated because publishing has been disabled")
+		return nil
+	}
 	if !ctx.Validate {
 		log.Println("Skipped validations because --skip-validate is set")
 		return nil
