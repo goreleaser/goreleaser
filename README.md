@@ -95,9 +95,6 @@ build:
 # Archive customization
 archive:
   format: tar.gz
-  format_overrides:
-    - goos: windows
-      format: zip
   replacements:
     amd64: 64-bit
     darwin: macOS
@@ -108,7 +105,7 @@ archive:
 
 This configuration will generate tar archives, contains an additional file `drum-roll.licence.txt`, the archives will be located in:
 
-- `./dist/drum-roll_windows_64-bit.zip`
+- `./dist/drum-roll_windows_64-bit.tar.gz`
 - `./dist/drum-roll_macOS_64-bit.tar.gz`
 - `./dist/drum-roll_Tux_64-bit.tar.gz`
 
