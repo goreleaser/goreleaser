@@ -59,9 +59,6 @@ func main() {
 
 By default GoReleaser will build the your current directory, but you can change the build package path in the GoReleaser configuration file.
 
-To generate a `goreleaser.yml` file with the defaults, you can run `goreleaser init`.
-You can then custumize the sections as you wish.
-
 ```yml
 # goreleaser.yml
 # Build customization
@@ -169,11 +166,15 @@ func main() {
 }
 ```
 
-`version` will be the current Git tag or the name of the snapshot if you're using the `--snapshot` flag.
+`version` will be the current Git tag (with `v` prefix stripped) or the name of the snapshot if you're using the `--snapshot` flag.
 
-## Release customization
+## GoReleaser customization
 
-GoReleaser provides multiple customizations. We will cover them with the help of `goreleaser.yml`:
+GoReleaser provides multiple customizations via the `goreleaser.yml` file.
+You can generate it by running `goreleaser init` or start from scratch. The
+defaults are sensible and fit for most projects.
+
+We'll cover all customizations available bellow:
 
 ### Build customization
 
@@ -430,6 +431,11 @@ fpm:
 ```
 
 Note that GoReleaser will not install `fpm` nor any of its dependencies for you.
+
+### Custom release notes
+
+You can have a markdown file previously created with the release notes, and
+pass it down to goreleaser with the `--release-notes=FILE` flag.
 
 ## Integration with CI
 
