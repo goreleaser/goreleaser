@@ -43,15 +43,15 @@ func TestAllBuildTargets(t *testing.T) {
 		},
 	}
 	assert.Equal([]buildTarget{
-		buildTarget{"linux", "386", ""},
-		buildTarget{"linux", "amd64", ""},
-		buildTarget{"linux", "arm", "6"},
-		buildTarget{"linux", "arm64", ""},
-		buildTarget{"darwin", "amd64", ""},
-		buildTarget{"freebsd", "386", ""},
-		buildTarget{"freebsd", "amd64", ""},
-		buildTarget{"freebsd", "arm", "6"},
-		buildTarget{"freebsd", "arm", "7"},
+		{"linux", "386", ""},
+		{"linux", "amd64", ""},
+		{"linux", "arm", "6"},
+		{"linux", "arm64", ""},
+		{"darwin", "amd64", ""},
+		{"freebsd", "386", ""},
+		{"freebsd", "amd64", ""},
+		{"freebsd", "arm", "6"},
+		{"freebsd", "arm", "7"},
 	}, buildTargets(ctx))
 }
 
