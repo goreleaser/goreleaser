@@ -31,6 +31,18 @@ func TestRelease(t *testing.T) {
 	assert.NoError(Release(flags))
 }
 
+func TestSnapshotRelease(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := setup(t)
+	defer back()
+	var flags = fakeFlags{
+		flags: map[string]string{
+			"snapshot": "true",
+		},
+	}
+	assert.NoError(Release(flags))
+}
+
 func TestConfigFileIsSetAndDontExist(t *testing.T) {
 	var assert = assert.New(t)
 	var flags = fakeFlags{

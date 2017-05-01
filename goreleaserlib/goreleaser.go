@@ -93,7 +93,6 @@ func InitProject(filename string) error {
 		if err != nil {
 			return err
 		}
-
 		return fmt.Errorf("%s already exists", filename)
 	}
 
