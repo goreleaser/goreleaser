@@ -67,34 +67,48 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		CurrentTag: tag,
 		Commit:     commit,
 	}
-	if ctx.ReleaseNotes == "" {
-		var log string
-		if tag != "" {
-			log, err = getChangelog(tag)
-		} else {
-			log, err = getChangelog(commit)
-		}
-		if err != nil {
-			return err
-		}
-		ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", log)
+	if err = setLog(ctx, tag, commit); err != nil {
+		return
 	}
-	if tag == "" || ctx.Snapshot {
-		snapshotName, err := getSnapshotName(ctx, tag, commit)
-		if err != nil {
-			log.Printf("Failed to generate snapshot name: %s", err.Error())
-			return err
-		}
-		ctx.Version = snapshotName
-	} else {
-		// removes usual `v` prefix
-		ctx.Version = strings.TrimPrefix(tag, "v")
+	if err = setVersion(ctx, tag, commit); err != nil {
+		return
 	}
 	if !ctx.Validate {
 		log.Println("Skipped validations because --skip-validate is set")
 		return nil
 	}
 	return validate(commit, tag, ctx.Version, ctx.Snapshot)
+}
+
+func setVersion(ctx *context.Context, tag, commit string) (err error) {
+	if ctx.Snapshot {
+		snapshotName, err := getSnapshotName(ctx, tag, commit)
+		if err != nil {
+			return fmt.Errorf("failed to generate snapshot name: %s", err.Error())
+		}
+		ctx.Version = snapshotName
+		return nil
+	}
+	// removes usual `v` prefix
+	ctx.Version = strings.TrimPrefix(tag, "v")
+	return
+}
+
+func setLog(ctx *context.Context, tag, commit string) (err error) {
+	if ctx.ReleaseNotes != "" {
+		return
+	}
+	var log string
+	if tag == "" {
+		log, err = getChangelog(commit)
+	} else {
+		log, err = getChangelog(tag)
+	}
+	if err != nil {
+		return err
+	}
+	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", log)
+	return nil
 }
 
 type snapshotNameData struct {
@@ -109,10 +123,13 @@ func getSnapshotName(ctx *context.Context, tag, commit string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if err := tmpl.Execute(&out, snapshotNameData{Commit: commit, Tag: tag, Timestamp: time.Now().Unix()}); err != nil {
-		return "", err
+	var data = snapshotNameData{
+		Commit:    commit,
+		Tag:       tag,
+		Timestamp: time.Now().Unix(),
 	}
-	return out.String(), nil
+	err = tmpl.Execute(&out, data)
+	return out.String(), err
 }
 
 func validate(commit, tag, version string, isSnapshot bool) error {

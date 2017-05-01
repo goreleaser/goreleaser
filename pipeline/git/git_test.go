@@ -8,6 +8,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/pipeline/defaults"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -58,7 +59,9 @@ func TestNoTagsSnapshot(t *testing.T) {
 	gitCommit(t, "first")
 	var ctx = &context.Context{
 		Config: config.Project{
-			Snapshot: config.Snapshot{NameTemplate: "SNAPSHOT-{{.Commit}}"},
+			Snapshot: config.Snapshot{
+				NameTemplate: defaults.SnapshotNameTemplate,
+			},
 		},
 		Snapshot: true,
 		Publish:  false,
@@ -75,7 +78,9 @@ func TestNoTagsSnapshotInvalidTemplate(t *testing.T) {
 	gitCommit(t, "first")
 	var ctx = &context.Context{
 		Config: config.Project{
-			Snapshot: config.Snapshot{NameTemplate: "{{"},
+			Snapshot: config.Snapshot{
+				NameTemplate: "{{",
+			},
 		},
 		Snapshot: true,
 		Publish:  false,
@@ -94,7 +99,9 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 	gitCommit(t, "first")
 	var ctx = &context.Context{
 		Config: config.Project{
-			Snapshot: config.Snapshot{NameTemplate: "SNAPSHOT-{{.Commit}}"},
+			Snapshot: config.Snapshot{
+				NameTemplate: defaults.SnapshotNameTemplate,
+			},
 		},
 		Snapshot: false,
 		Publish:  false,
