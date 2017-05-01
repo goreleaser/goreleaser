@@ -81,9 +81,9 @@ func TestNameDefaltTemplate(t *testing.T) {
 		Version: "1.2.3",
 	}
 	for key, target := range map[string]buildTarget{
-		"test_darwin_amd64": buildTarget{"darwin", "amd64", ""},
-		"test_linux_arm64":  buildTarget{"linux", "arm64", ""},
-		"test_linux_armv7":  buildTarget{"linux", "arm", "7"},
+		"test_darwin_amd64": {"darwin", "amd64", ""},
+		"test_linux_arm64":  {"linux", "arm64", ""},
+		"test_linux_armv7":  {"linux", "arm", "7"},
 	} {
 		t.Run(key, func(t *testing.T) {
 			name, err := nameFor(ctx, target)
