@@ -192,9 +192,10 @@ build:
   # Custom ldflags template.
   # This is parsed with Golang template engine and the following variables
   # are available:
-  # - Version
   # - Date
   # - Commit
+  # - Tag
+  # - Version (Tag with the `v` prefix stripped)
   # The default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`
   # Date format is `2006-01-02_15:04:05`
   ldflags: -s -w -X main.build={{.Version}}

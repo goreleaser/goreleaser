@@ -12,7 +12,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	assert := assert.New(t)
 	var config = config.Project{
 		Build: config.Build{
-			Ldflags: "-s -w -X main.version={{.Version}} -X main.date={{.Date}} -X main.commit={{.Commit}}",
+			Ldflags: "-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}}",
 		},
 	}
 	var ctx = &context.Context{
@@ -20,12 +20,14 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 			CurrentTag: "v1.2.3",
 			Commit:     "123",
 		},
-		Config: config,
+		Version: "1.2.3",
+		Config:  config,
 	}
 	flags, err := ldflags(ctx)
 	assert.NoError(err)
 	assert.Contains(flags, "-s -w")
-	assert.Contains(flags, "-X main.version=v1.2.3")
+	assert.Contains(flags, "-X main.version=1.2.3")
+	assert.Contains(flags, "-X main.tag=v1.2.3")
 	assert.Contains(flags, "-X main.commit=123")
 	assert.Contains(flags, "-X main.date=")
 }
