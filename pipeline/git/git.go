@@ -77,7 +77,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		log.Println("Skipped validations because --skip-validate is set")
 		return nil
 	}
-	return validate(commit, tag, ctx.Version, ctx.Snapshot)
+	return validate(ctx, commit, tag)
 }
 
 func setVersion(ctx *context.Context, tag, commit string) (err error) {
@@ -132,22 +132,20 @@ func getSnapshotName(ctx *context.Context, tag, commit string) (string, error) {
 	return out.String(), err
 }
 
-func validate(commit, tag, version string, isSnapshot bool) error {
-	if !isSnapshot {
-		matches, err := regexp.MatchString("^[0-9.]+", version)
-		if err != nil || !matches {
-			return ErrInvalidVersionFormat{version}
-		}
-	}
+func validate(ctx *context.Context, commit, tag string) error {
 	out, err := git("status", "-s")
 	if strings.TrimSpace(out) != "" || err != nil {
 		return ErrDirty{out}
 	}
-	if !isSnapshot {
-		_, err = cleanGit("describe", "--exact-match", "--tags", "--match", tag)
-		if err != nil {
-			return ErrWrongRef{commit, tag}
-		}
+	if ctx.Snapshot {
+		return nil
+	}
+	if !regexp.MustCompile("^[0-9.]+").MatchString(ctx.Version) {
+		return ErrInvalidVersionFormat{ctx.Version}
+	}
+	_, err = cleanGit("describe", "--exact-match", "--tags", "--match", tag)
+	if err != nil {
+		return ErrWrongRef{commit, tag}
 	}
 	return nil
 }
