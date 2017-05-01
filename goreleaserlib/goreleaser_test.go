@@ -8,6 +8,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	yaml "gopkg.in/yaml.v1"
+
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,6 +26,18 @@ func TestRelease(t *testing.T) {
 		flags: map[string]string{
 			"skip-publish":  "true",
 			"skip-validate": "true",
+		},
+	}
+	assert.NoError(Release(flags))
+}
+
+func TestSnapshotRelease(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := setup(t)
+	defer back()
+	var flags = fakeFlags{
+		flags: map[string]string{
+			"snapshot": "true",
 		},
 	}
 	assert.NoError(Release(flags))
@@ -76,6 +91,40 @@ func TestBrokenPipe(t *testing.T) {
 		},
 	}
 	assert.Error(Release(flags))
+}
+
+func TestInitProject(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := setup(t)
+	defer back()
+	var filename = "test_goreleaser.yml"
+	assert.NoError(InitProject(filename))
+
+	file, err := os.Open(filename)
+	assert.NoError(err)
+	out, err := ioutil.ReadAll(file)
+	assert.NoError(err)
+
+	var config = config.Project{}
+	assert.NoError(yaml.Unmarshal(out, &config))
+}
+
+func TestInitProjectFileExist(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := setup(t)
+	defer back()
+	var filename = "test_goreleaser.yml"
+	createFile(t, filename, "")
+	assert.Error(InitProject(filename))
+}
+
+func TestInitProjectDefaultPipeFails(t *testing.T) {
+	var assert = assert.New(t)
+	_, back := setup(t)
+	defer back()
+	var filename = "test_goreleaser.yml"
+	assert.NoError(os.RemoveAll(".git"))
+	assert.Error(InitProject(filename))
 }
 
 // fakeFlags is a mock of the cli flags

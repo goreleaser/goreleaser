@@ -9,6 +9,7 @@
     <a href="https://codecov.io/gh/goreleaser/goreleaser"><img alt="Codecov branch" src="https://img.shields.io/codecov/c/github/goreleaser/goreleaser/master.svg?style=flat-square"></a>
     <a href="https://goreportcard.com/report/github.com/goreleaser/goreleaser"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/goreleaser/goreleaser?style=flat-square"></a>
     <a href="http://godoc.org/github.com/goreleaser/goreleaser"><img alt="Go Doc" src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square"></a>
+    <a href="https://beerpay.io/goreleaser/goreleaser"><img src="https://beerpay.io/goreleaser/goreleaser/badge.svg?style=flat-square" /></a>
     <a href="https://saythanks.io/to/caarlos0"><img alt="SayThanks.io" src="https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg?style=flat-square"></a>
     <a href="https://github.com/goreleaser"><img alt="Powered By: GoReleaser" src="https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square"></a>
   </p>
@@ -56,7 +57,7 @@ func main() {
 }
 ```
 
-By default GoReleaser will build the **main.go** file located in your current directory, but you can change the build package path in the GoReleaser configuration file.
+By default GoReleaser will build the your current directory, but you can change the build package path in the GoReleaser configuration file.
 
 ```yml
 # goreleaser.yml
@@ -94,9 +95,6 @@ build:
 # Archive customization
 archive:
   format: tar.gz
-  format_overrides:
-    - goos: windows
-      format: zip
   replacements:
     amd64: 64-bit
     darwin: macOS
@@ -128,6 +126,8 @@ $ git tag -a v0.1.0 -m "First release"
 are not enforcing it though. We do remove the `v` prefix and then enforce
 that the next character is a number. So, `v0.1.0` and `0.1.0` are virtually the
 same and are both accepted, while `version0.1.0` is not.
+
+If you don't want to create a tag yet but instead simply create a package based on the latest commit, then you can also use the `--snapshot` flag.
 
 Now you can run GoReleaser at the root of your repository:
 
@@ -163,11 +163,15 @@ func main() {
 }
 ```
 
-`version` will always be the name of the current Git tag.
+`version` will be the current Git tag (with `v` prefix stripped) or the name of the snapshot if you're using the `--snapshot` flag.
 
-## Release customization
+## GoReleaser customization
 
-GoReleaser provides multiple customizations. We will cover them with the help of `goreleaser.yml`:
+GoReleaser provides multiple customizations via the `goreleaser.yml` file.
+You can generate it by running `goreleaser init` or start from scratch. The
+defaults are sensible and fit for most projects.
+
+We'll cover all customizations available bellow:
 
 ### Build customization
 
@@ -189,9 +193,10 @@ build:
   # Custom ldflags template.
   # This is parsed with Golang template engine and the following variables
   # are available:
-  # - Version
   # - Date
   # - Commit
+  # - Tag
+  # - Version (Tag with the `v` prefix stripped)
   # The default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`
   # Date format is `2006-01-02_15:04:05`
   ldflags: -s -w -X main.build={{.Version}}
@@ -256,6 +261,13 @@ archive:
   # Default is `tar.gz`
   format: zip
 
+  # Can be used to archive on different formats for specific GOOSs.
+  # Most common use case is to archive as zip on Windows.
+  # Default is empty
+  format_overrides:
+    - goos: windows
+      format: zip
+
   # Replacements for GOOS and GOARCH on the archive name.
   # The keys should be valid GOOS or GOARCH values followed by your custom
   # replacements.
@@ -294,6 +306,20 @@ release:
 
 You can also specify a release notes file in markdown format using the
 `--release-notes` flag.
+
+### Snapshot customization
+
+```yml
+# goreleaser.yml
+snapshot:
+  # Allows you to change the name of the generated snapshot
+  # releases. The following variables are available:
+  # - Commit
+  # - Tag
+  # - Timestamp
+  # Default: SNAPSHOT-{{.Commit}}
+  name_template: SNAPSHOT-{{.Commit}}
+```
 
 ### Homebrew tap customization
 
@@ -411,6 +437,11 @@ fpm:
 ```
 
 Note that GoReleaser will not install `fpm` nor any of its dependencies for you.
+
+### Custom release notes
+
+You can have a markdown file previously created with the release notes, and
+pass it down to goreleaser with the `--release-notes=FILE` flag.
 
 ## Integration with CI
 

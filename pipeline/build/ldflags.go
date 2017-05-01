@@ -10,6 +10,7 @@ import (
 
 type ldflagsData struct {
 	Date    string
+	Tag     string
 	Commit  string
 	Version string
 }
@@ -17,7 +18,8 @@ type ldflagsData struct {
 func ldflags(ctx *context.Context) (string, error) {
 	var data = ldflagsData{
 		Commit:  ctx.Git.Commit,
-		Version: ctx.Git.CurrentTag,
+		Tag:     ctx.Git.CurrentTag,
+		Version: ctx.Version,
 		Date:    time.Now().UTC().Format(time.RFC3339),
 	}
 	var out bytes.Buffer

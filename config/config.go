@@ -10,8 +10,8 @@ import (
 
 // Repo represents any kind of repo (github, gitlab, etc)
 type Repo struct {
-	Owner string
-	Name  string
+	Owner string `yaml:",omitempty"`
+	Name  string `yaml:",omitempty"`
 }
 
 // String of the repo, e.g. owner/name
@@ -21,21 +21,21 @@ func (r Repo) String() string {
 
 // Homebrew contains the brew section
 type Homebrew struct {
-	GitHub       Repo
-	Folder       string
-	Caveats      string
-	Plist        string
-	Install      string
-	Dependencies []string
-	Conflicts    []string
-	Description  string
-	Homepage     string
+	GitHub       Repo     `yaml:",omitempty"`
+	Folder       string   `yaml:",omitempty"`
+	Caveats      string   `yaml:",omitempty"`
+	Plist        string   `yaml:",omitempty"`
+	Install      string   `yaml:",omitempty"`
+	Dependencies []string `yaml:",omitempty"`
+	Conflicts    []string `yaml:",omitempty"`
+	Description  string   `yaml:",omitempty"`
+	Homepage     string   `yaml:",omitempty"`
 }
 
 // Hooks define actions to run before and/or after something
 type Hooks struct {
-	Pre  string
-	Post string
+	Pre  string `yaml:",omitempty"`
+	Post string `yaml:",omitempty"`
 }
 
 // IgnoredBuild represents a build ignored by the user
@@ -45,57 +45,63 @@ type IgnoredBuild struct {
 
 // Build contains the build configuration section
 type Build struct {
-	Goos    []string
-	Goarch  []string
-	Goarm   []string
-	Ignore  []IgnoredBuild
-	Main    string
-	Ldflags string
-	Flags   string
-	Binary  string
-	Hooks   Hooks
+	Goos    []string        `yaml:",omitempty"`
+	Goarch  []string        `yaml:",omitempty"`
+	Goarm   []string        `yaml:",omitempty"`
+  Ignore  []IgnoredBuild  `yaml:",omitempty"`
+	Main    string          `yaml:",omitempty"`
+	Ldflags string          `yaml:",omitempty"`
+	Flags   string          `yaml:",omitempty"`
+	Binary  string          `yaml:",omitempty"`
+	Hooks   Hooks           `yaml:",omitempty"`
 }
 
 // FormatOverride is used to specify a custom format for a specific GOOS.
 type FormatOverride struct {
-	Goos   string
-	Format string
+	Goos   string `yaml:",omitempty"`
+	Format string `yaml:",omitempty"`
 }
 
 // Archive config used for the archive
 type Archive struct {
-	Format          string
-	FormatOverrides []FormatOverride `yaml:"format_overrides"`
-	NameTemplate    string           `yaml:"name_template"`
-	Replacements    map[string]string
-	Files           []string
+	Format          string            `yaml:",omitempty"`
+	FormatOverrides []FormatOverride  `yaml:"format_overrides,omitempty"`
+	NameTemplate    string            `yaml:"name_template,omitempty"`
+	Replacements    map[string]string `yaml:",omitempty"`
+	Files           []string          `yaml:",omitempty"`
 }
 
 // Release config used for the GitHub release
 type Release struct {
-	GitHub Repo
-	Draft  bool
+	GitHub Repo `yaml:",omitempty"`
+	Draft  bool `yaml:",omitempty"`
 }
 
 // FPM config
 type FPM struct {
-	Formats      []string
-	Dependencies []string
-	Conflicts    []string
-	Vendor       string
-	Homepage     string
-	Maintainer   string
-	Description  string
-	License      string
+	Formats      []string `yaml:",omitempty"`
+	Dependencies []string `yaml:",omitempty"`
+	Conflicts    []string `yaml:",omitempty"`
+	Vendor       string   `yaml:",omitempty"`
+	Homepage     string   `yaml:",omitempty"`
+	Maintainer   string   `yaml:",omitempty"`
+	Description  string   `yaml:",omitempty"`
+	License      string   `yaml:",omitempty"`
+}
+
+// Snapshot config
+type Snapshot struct {
+	NameTemplate string `yaml:"name_template,omitempty"`
 }
 
 // Project includes all project configuration
 type Project struct {
-	Release Release
-	Brew    Homebrew
-	Build   Build
-	Archive Archive
-	FPM     FPM `yaml:"fpm"`
+	Release  Release  `yaml:",omitempty"`
+	Brew     Homebrew `yaml:",omitempty"`
+	Build    Build    `yaml:",omitempty"`
+	Archive  Archive  `yaml:",omitempty"`
+	FPM      FPM      `yaml:",omitempty"`
+	Snapshot Snapshot `yaml:",omitempty"`
 
 	// test only property indicating the path to the dist folder
 	Dist string `yaml:"-"`

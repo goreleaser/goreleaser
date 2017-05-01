@@ -8,6 +8,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/pipeline/defaults"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,6 +47,64 @@ func TestNewRepository(t *testing.T) {
 	gitInit(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
+	}
+	assert.Error(Pipe{}.Run(ctx))
+}
+
+func TestNoTagsSnapshot(t *testing.T) {
+	assert := assert.New(t)
+	_, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	gitCommit(t, "first")
+	var ctx = &context.Context{
+		Config: config.Project{
+			Snapshot: config.Snapshot{
+				NameTemplate: defaults.SnapshotNameTemplate,
+			},
+		},
+		Snapshot: true,
+		Publish:  false,
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	assert.Contains(ctx.Version, "SNAPSHOT-")
+}
+
+func TestNoTagsSnapshotInvalidTemplate(t *testing.T) {
+	assert := assert.New(t)
+	_, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	gitCommit(t, "first")
+	var ctx = &context.Context{
+		Config: config.Project{
+			Snapshot: config.Snapshot{
+				NameTemplate: "{{",
+			},
+		},
+		Snapshot: true,
+		Publish:  false,
+	}
+	assert.Error(Pipe{}.Run(ctx))
+}
+
+// TestNoTagsNoSnapshot covers the situation where a repository
+// only contains simple commits and no tags. In this case you have
+// to set the --snapshot flag otherwise an error is returned.
+func TestNoTagsNoSnapshot(t *testing.T) {
+	assert := assert.New(t)
+	_, back := createAndChdir(t)
+	defer back()
+	gitInit(t)
+	gitCommit(t, "first")
+	var ctx = &context.Context{
+		Config: config.Project{
+			Snapshot: config.Snapshot{
+				NameTemplate: defaults.SnapshotNameTemplate,
+			},
+		},
+		Snapshot: false,
+		Publish:  false,
 	}
 	assert.Error(Pipe{}.Run(ctx))
 }
