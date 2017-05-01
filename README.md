@@ -57,7 +57,10 @@ func main() {
 }
 ```
 
-By default GoReleaser will build the **main.go** file located in your current directory, but you can change the build package path in the GoReleaser configuration file.
+By default GoReleaser will build the your current directory, but you can change the build package path in the GoReleaser configuration file.
+
+To generate a `goreleaser.yml` file with the defaults, you can run `goreleaser init`.
+You can then custumize the sections as you wish.
 
 ```yml
 # goreleaser.yml
@@ -108,7 +111,7 @@ archive:
 
 This configuration will generate tar archives, contains an additional file `drum-roll.licence.txt`, the archives will be located in:
 
-- `./dist/drum-roll_windows_64-bit.tar.gz`
+- `./dist/drum-roll_windows_64-bit.zip`
 - `./dist/drum-roll_macOS_64-bit.tar.gz`
 - `./dist/drum-roll_Tux_64-bit.tar.gz`
 
@@ -250,6 +253,13 @@ archive:
   # Archive format. Valid options are `tar.gz` and `zip`.
   # Default is `tar.gz`
   format: zip
+
+  # Can be used to archive on different formats for specific GOOSs.
+  # Most common use case is to archive as zip on Windows.
+  # Default is empty
+  format_overrides:
+    - goos: windows
+      format: zip
 
   # Replacements for GOOS and GOARCH on the archive name.
   # The keys should be valid GOOS or GOARCH values followed by your custom
