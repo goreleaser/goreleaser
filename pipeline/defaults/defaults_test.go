@@ -41,6 +41,22 @@ func TestFillBasicData(t *testing.T) {
 	)
 }
 
+func TestFillPartial(t *testing.T) {
+	assert := assert.New(t)
+
+	var ctx = &context.Context{
+		Config: config.Project{
+			Release: config.Release{
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "test",
+				},
+			},
+		},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+}
+
 func TestFilesFilled(t *testing.T) {
 	assert := assert.New(t)
 

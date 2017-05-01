@@ -3,7 +3,7 @@
 package defaults
 
 import (
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"strings"
 
@@ -16,7 +16,7 @@ var defaultFiles = []string{"licence", "license", "readme", "changelog"}
 const NameTemplate = "{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
 // SnapshotNameTemplate represents the default format for snapshot release names.
-const SnapshotNameTemplate = "SNAPSHOT-{{.Commit}}"
+const SnapshotNameTemplate = "SNAPSHOT-{{ .Commit }}"
 
 // Pipe for brew deployment
 type Pipe struct{}
@@ -28,16 +28,36 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	ctx.Config.Dist = "dist"
 	if ctx.Config.Snapshot.NameTemplate == "" {
 		ctx.Config.Snapshot.NameTemplate = SnapshotNameTemplate
 	}
-	if ctx.Config.Release.GitHub.Name == "" {
-		repo, err := remoteRepo()
-		ctx.Config.Release.GitHub = repo
-		if err != nil {
-			return errors.New("failed reading repo from git: " + err.Error())
-		}
+	if err := setReleaseDefaults(ctx); err != nil {
+		return err
 	}
+	setBuildDefaults(ctx)
+	if ctx.Config.Brew.Install == "" {
+		ctx.Config.Brew.Install = fmt.Sprintf(
+			`bin.install "%s"`,
+			ctx.Config.Build.Binary,
+		)
+	}
+	return setArchiveDefaults(ctx)
+}
+
+func setReleaseDefaults(ctx *context.Context) error {
+	if ctx.Config.Release.GitHub.Name != "" {
+		return nil
+	}
+	repo, err := remoteRepo()
+	if err != nil {
+		return fmt.Errorf("failed reading repo from git: %v", err.Error())
+	}
+	ctx.Config.Release.GitHub = repo
+	return nil
+}
+
+func setBuildDefaults(ctx *context.Context) {
 	if ctx.Config.Build.Binary == "" {
 		ctx.Config.Build.Binary = ctx.Config.Release.GitHub.Name
 	}
@@ -56,7 +76,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Build.Ldflags == "" {
 		ctx.Config.Build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
 	}
+}
 
+func setArchiveDefaults(ctx *context.Context) error {
 	if ctx.Config.Archive.NameTemplate == "" {
 		ctx.Config.Archive.NameTemplate = NameTemplate
 	}
@@ -82,10 +104,6 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 		ctx.Config.Archive.Files = files
 	}
-	if ctx.Config.Brew.Install == "" {
-		ctx.Config.Brew.Install = "bin.install \"" + ctx.Config.Build.Binary + "\""
-	}
-	ctx.Config.Dist = "dist"
 	return nil
 }
 
