@@ -10,6 +10,14 @@ build:
     - amd64
     - arm
     - arm64
+  goarm:
+    - 6
+    - 7
+  ignore:
+    - goos: darwin
+      goarch: 386
+    - goos: windows
+      goarch: 386
 archive:
   format_overrides:
     - goos: windows

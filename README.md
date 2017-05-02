@@ -223,6 +223,15 @@ build:
     - 6
     - 7
 
+  # List of combinations of GOOS + GOARCH + GOARM to ignore.
+  # Default is empty.
+  ignore:
+    - goos: darwin
+      goarch: 386
+    - goos: linux
+      goarch: arm
+      goarm: 7
+
   # Hooks can be used to customize the final binary, for example, to run
   # generator or whatever you want.
   # Default is both hooks empty.

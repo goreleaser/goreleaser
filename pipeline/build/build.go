@@ -29,7 +29,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	sem := make(chan bool, 4)
 	var g errgroup.Group
-	for _, target := range allBuildTargets(ctx) {
+	for _, target := range buildTargets(ctx) {
 		name, err := nameFor(ctx, target)
 		if err != nil {
 			return err
