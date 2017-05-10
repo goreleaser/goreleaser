@@ -1,7 +1,7 @@
 homepage: &homepage http://goreleaser.github.io
 description: &description Deliver Go binaries as fast and easily as possible
-ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -linkmode external -extldflags "-static"
 build:
+  ldflags: -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -linkmode external -extldflags "-static"
   goos:
     - linux
     - darwin
