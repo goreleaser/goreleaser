@@ -1,6 +1,9 @@
 homepage: &homepage http://goreleaser.github.io
 description: &description Deliver Go binaries as fast and easily as possible
 build:
+  main: main.go
+  ldflags: -s -w -linkmode external -extldflags "-static"
+  flags: --tags netgo
   goos:
     - linux
     - darwin
