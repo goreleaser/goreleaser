@@ -3,7 +3,7 @@
 package build
 
 import (
-	"errors"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -89,7 +89,7 @@ func run(target buildTarget, command []string) error {
 		"GOARM="+target.goarm,
 	)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		return errors.New(string(out))
+		return fmt.Errorf("build failed: %v\n%v", target, string(out))
 	}
 	return nil
 }
