@@ -20,8 +20,11 @@ func TestZipFile(t *testing.T) {
 	empty, err := os.Create(folder + "/empty.txt")
 	assert.NoError(err)
 
+	assert.NoError(os.Mkdir(folder+"/folder-inside", 0755))
+
 	archive := New(file)
 	assert.NoError(archive.Add("empty.txt", empty.Name()))
+	assert.NoError(archive.Add("empty.txt", folder+"/folder-inside"))
 	assert.Error(archive.Add("dont.txt", empty.Name()+"_nope"))
 	assert.NoError(archive.Close())
 }

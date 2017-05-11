@@ -46,7 +46,7 @@ func (a Archive) Add(name, path string) (err error) {
 		_ = file.Close()
 	}()
 	stat, err := file.Stat()
-	if err != nil {
+	if err != nil || stat.IsDir() {
 		return
 	}
 	header := new(tar.Header)
