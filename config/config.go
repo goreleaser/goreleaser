@@ -3,6 +3,7 @@
 package config
 
 import (
+	"io"
 	"io/ioutil"
 
 	yaml "gopkg.in/yaml.v1"
@@ -110,6 +111,16 @@ type Project struct {
 // Load config file
 func Load(file string) (config Project, err error) {
 	data, err := ioutil.ReadFile(file)
+	if err != nil {
+		return config, err
+	}
+	err = yaml.Unmarshal(data, &config)
+	return
+}
+
+// Load config via io.Reader
+func LoadReader(fd io.Reader) (config Project, err error) {
+	data, err := ioutil.ReadAll(fd)
 	if err != nil {
 		return config, err
 	}
