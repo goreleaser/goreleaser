@@ -2,15 +2,19 @@ homepage: &homepage http://goreleaser.github.io
 description: &description Deliver Go binaries as fast and easily as possible
 build:
   goos:
-    - linux
+    # - linux
     - darwin
     - windows
   goarch:
-    - 386
+    # - 386
     - amd64
-    - arm
-    - arm64
+    # - arm
+    # - arm64
 archive:
+  files:
+    - README.*
+    - internal/**/*.go
+    - config/*
   format_overrides:
     - goos: windows
       format: zip

@@ -4,13 +4,13 @@
 package archive
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/goreleaser/goreleaser/pipeline/archive/tar"
 	"github.com/goreleaser/goreleaser/pipeline/archive/zip"
 	"golang.org/x/sync/errgroup"
@@ -54,22 +54,33 @@ func create(ctx *context.Context, platform, name string) error {
 	defer func() { _ = file.Close() }()
 	var archive = archiveFor(file, format)
 	defer func() { _ = archive.Close() }()
-	for _, f := range ctx.Config.Archive.Files {
-		if err = archive.Add(f, f); err != nil {
-			return err
-		}
-	}
-	files, err := ioutil.ReadDir(folder)
+
+	files, err := findFiles(ctx)
 	if err != nil {
 		return err
 	}
 	for _, f := range files {
-		if err := archive.Add(f.Name(), filepath.Join(folder, f.Name())); err != nil {
+		if err = archive.Add(f, f); err != nil {
 			return err
 		}
 	}
+	var binary = ctx.Config.Build.Binary + ext.For(platform)
+	if err := archive.Add(binary, filepath.Join(folder, binary)); err != nil {
+		return err
+	}
 	ctx.AddArtifact(file.Name())
 	return nil
+}
+
+func findFiles(ctx *context.Context) (result []string, err error) {
+	for _, glob := range ctx.Config.Archive.Files {
+		files, err := filepath.Glob(glob)
+		if err != nil {
+			return result, err
+		}
+		result = append(result, files...)
+	}
+	return
 }
 
 func archiveFor(file *os.File, format string) Archive {

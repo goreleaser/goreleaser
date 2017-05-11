@@ -42,10 +42,3 @@ func replace(replacements map[string]string, original string) string {
 	}
 	return result
 }
-
-func extFor(goos string) string {
-	if goos == "windows" {
-		return ".exe"
-	}
-	return ""
-}

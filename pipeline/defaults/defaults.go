@@ -4,13 +4,9 @@ package defaults
 
 import (
 	"fmt"
-	"io/ioutil"
-	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
 )
-
-var defaultFiles = []string{"licence", "license", "readme", "changelog"}
 
 // NameTemplate default name_template for the archive.
 const NameTemplate = "{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
@@ -98,33 +94,16 @@ func setArchiveDefaults(ctx *context.Context) error {
 		}
 	}
 	if len(ctx.Config.Archive.Files) == 0 {
-		files, err := findFiles()
-		if err != nil {
-			return err
+		ctx.Config.Archive.Files = []string{
+			"licence*",
+			"LICENCE*",
+			"license*",
+			"LICENSE*",
+			"readme*",
+			"README*",
+			"changelog*",
+			"CHANGELOG*",
 		}
-		ctx.Config.Archive.Files = files
 	}
 	return nil
-}
-
-func findFiles() (files []string, err error) {
-	all, err := ioutil.ReadDir(".")
-	if err != nil {
-		return
-	}
-	for _, file := range all {
-		if accept(file.Name()) {
-			files = append(files, file.Name())
-		}
-	}
-	return
-}
-
-func accept(file string) bool {
-	for _, accepted := range defaultFiles {
-		if strings.HasPrefix(strings.ToLower(file), accepted) {
-			return true
-		}
-	}
-	return false
 }

@@ -9,14 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestExtWindows(t *testing.T) {
-	assert.Equal(t, ".exe", extFor("windows"))
-}
-
-func TestExtOthers(t *testing.T) {
-	assert.Empty(t, "", extFor("linux"))
-}
-
 func TestNameFor(t *testing.T) {
 	assert := assert.New(t)
 
