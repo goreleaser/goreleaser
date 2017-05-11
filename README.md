@@ -201,6 +201,11 @@ build:
   # Date format is `2006-01-02_15:04:05`
   ldflags: -s -w -X main.build={{.Version}}
 
+  # Custom environment variables to be set durign the builds.
+  # Default is empty
+  env:
+   - CGO_ENABLED=0
+
   # GOOS list to build in.
   # For more info refer to https://golang.org/doc/install/source#environment
   # Defaults are darwin and linux

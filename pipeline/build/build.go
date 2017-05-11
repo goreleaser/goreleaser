@@ -24,7 +24,7 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if err := runHook(ctx.Config.Build.Hooks.Pre); err != nil {
+	if err := runHook(ctx.Config.Build.Env, ctx.Config.Build.Hooks.Pre); err != nil {
 		return err
 	}
 	sem := make(chan bool, 4)
@@ -48,16 +48,16 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err := g.Wait(); err != nil {
 		return err
 	}
-	return runHook(ctx.Config.Build.Hooks.Post)
+	return runHook(ctx.Config.Build.Env, ctx.Config.Build.Hooks.Post)
 }
 
-func runHook(hook string) error {
+func runHook(env []string, hook string) error {
 	if hook == "" {
 		return nil
 	}
 	log.Println("Running hook", hook)
 	cmd := strings.Fields(hook)
-	return run(runtimeTarget, cmd)
+	return run(env, runtimeTarget, cmd)
 }
 
 func build(ctx *context.Context, name string, target buildTarget) error {
@@ -76,12 +76,13 @@ func build(ctx *context.Context, name string, target buildTarget) error {
 		return err
 	}
 	cmd = append(cmd, "-ldflags="+flags, "-o", output, ctx.Config.Build.Main)
-	return run(target, cmd)
+	return run(ctx.Config.Build.Env, target, cmd)
 }
 
-func run(target buildTarget, command []string) error {
+func run(env []string, target buildTarget, command []string) error {
 	cmd := exec.Command(command[0], command[1:]...)
 	cmd.Env = append(cmd.Env, os.Environ()...)
+	cmd.Env = append(cmd.Env, env...)
 	cmd.Env = append(
 		cmd.Env,
 		"GOOS="+target.goos,
