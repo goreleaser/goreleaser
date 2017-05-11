@@ -55,6 +55,6 @@ func checksums(ctx *context.Context, file *os.File, name string) error {
 	if err != nil {
 		return err
 	}
-	_, err = file.WriteString(fmt.Sprintf("%v\t%v\n", sha, name))
+	_, err = file.WriteString(fmt.Sprintf("%v  %v\n", sha, name))
 	return err
 }

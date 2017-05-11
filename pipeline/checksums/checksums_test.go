@@ -35,7 +35,7 @@ func TestPipe(t *testing.T) {
 	assert.Contains(ctx.Artifacts, checksums, binary)
 	bts, err := ioutil.ReadFile(filepath.Join(folder, checksums))
 	assert.NoError(err)
-	assert.Equal(string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc	binary\n")
+	assert.Equal(string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary\n")
 }
 
 func TestPipeFileNotExist(t *testing.T) {
