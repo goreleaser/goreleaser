@@ -1,10 +1,10 @@
 package config
 
 import (
-        "testing"
 	"strings"
+	"testing"
 
-        "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRepo(t *testing.T) {
@@ -14,12 +14,12 @@ func TestRepo(t *testing.T) {
 }
 
 func TestLoadReader(t *testing.T) {
-	var conf =`
+	var conf = `
 homepage: &homepage http://goreleaser.github.io
 fpm:
   homepage: *homepage
 `
-        var assert = assert.New(t)
+	var assert = assert.New(t)
 	buf := strings.NewReader(conf)
 	prop, err := LoadReader(buf)
 

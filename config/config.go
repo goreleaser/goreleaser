@@ -122,8 +122,8 @@ func Load(file string) (config Project, err error) {
 func LoadReader(fd io.Reader) (config Project, err error) {
 	data, err := ioutil.ReadAll(fd)
 	if err != nil {
-                return config, err
-        }
-        err = yaml.Unmarshal(data, &config)
-        return
+		return config, err
+	}
+	err = yaml.Unmarshal(data, &config)
+	return
 }
