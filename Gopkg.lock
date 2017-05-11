@@ -1,4 +1,4 @@
-memo = "85c15b94eaf073e2c6e87a85ac2088f1d61889c8ddcc8542c09145f0f816c6af"
+memo = "3cbc12d80513bcbb0ac166d404600ffbc63b1c301b5c6d3722dad30db6f6a549"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -23,6 +23,12 @@ memo = "85c15b94eaf073e2c6e87a85ac2088f1d61889c8ddcc8542c09145f0f816c6af"
   name = "github.com/google/go-querystring"
   packages = ["query"]
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mattn/go-zglob"
+  packages = [".","fastwalk"]
+  revision = "95345c4e1c0ebc9d16a3284177f09360f4d20fab"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"

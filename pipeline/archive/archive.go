@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/goreleaser/goreleaser/pipeline/archive/tar"
 	"github.com/goreleaser/goreleaser/pipeline/archive/zip"
+	"github.com/mattn/go-zglob"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -74,7 +75,7 @@ func create(ctx *context.Context, platform, name string) error {
 
 func findFiles(ctx *context.Context) (result []string, err error) {
 	for _, glob := range ctx.Config.Archive.Files {
-		files, err := filepath.Glob(glob)
+		files, err := zglob.Glob(glob)
 		if err != nil {
 			return result, err
 		}
