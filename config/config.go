@@ -55,6 +55,7 @@ type Build struct {
 	Flags   string         `yaml:",omitempty"`
 	Binary  string         `yaml:",omitempty"`
 	Hooks   Hooks          `yaml:",omitempty"`
+	Env     []string       `yaml:",omitempty"`
 }
 
 // FormatOverride is used to specify a custom format for a specific GOOS.
