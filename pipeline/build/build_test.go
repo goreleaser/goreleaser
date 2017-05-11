@@ -12,16 +12,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var emptyEnv []string
+
 func TestPipeDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.Description())
 }
 
 func TestRun(t *testing.T) {
-	assert.NoError(t, run(runtimeTarget, []string{"go", "list", "./..."}))
+	assert.NoError(t, run(emptyEnv, runtimeTarget, []string{"go", "list", "./..."}))
 }
 
 func TestRunInvalidCommand(t *testing.T) {
-	assert.Error(t, run(runtimeTarget, []string{"gggggo", "nope"}))
+	assert.Error(t, run(emptyEnv, runtimeTarget, []string{"gggggo", "nope"}))
 }
 
 func TestBuild(t *testing.T) {
@@ -30,6 +32,7 @@ func TestBuild(t *testing.T) {
 		Build: config.Build{
 			Binary: "testing",
 			Flags:  "-n",
+			Env:    []string{"BLAH=1"},
 		},
 	}
 	var ctx = &context.Context{
