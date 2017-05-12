@@ -16,8 +16,10 @@ Prerequisites are:
 Clone `goreleaser` from source into `$GOPATH`:
 
 ```sh
-$ go get -d github.com/goreleaser/goreleaser
-$ cd $GOPATH/src/github.com/goreleaser/goreleaser
+$ pkdir -p $GOPATH/src/github.com/github.com/goreleaser
+$ cd $_
+$ git clone git@github.com:goreleaser/goreleaser.git
+$ cd goreleaser
 ```
 
 Install the build and lint dependencies:
