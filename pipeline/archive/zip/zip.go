@@ -31,6 +31,10 @@ func (a Archive) Add(name, path string) (err error) {
 	if err != nil {
 		return
 	}
+	stat, err := file.Stat()
+	if err != nil || stat.IsDir() {
+		return
+	}
 	defer func() { _ = file.Close() }()
 	f, err := a.z.Create(name)
 	if err != nil {

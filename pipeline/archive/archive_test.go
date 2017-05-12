@@ -30,7 +30,9 @@ func TestRunPipe(t *testing.T) {
 	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	_, err = os.Create(filepath.Join(dist, "mybin", "mybin"))
 	assert.NoError(err)
-	readme, err := os.Create(filepath.Join(folder, "README.md"))
+	_, err = os.Create(filepath.Join(dist, "mybin", "mybin.exe"))
+	assert.NoError(err)
+	_, err = os.Create(filepath.Join(folder, "README.md"))
 	assert.NoError(err)
 	var ctx = &context.Context{
 		Archives: map[string]string{
@@ -39,9 +41,12 @@ func TestRunPipe(t *testing.T) {
 		},
 		Config: config.Project{
 			Dist: dist,
+			Build: config.Build{
+				Binary: "mybin",
+			},
 			Archive: config.Archive{
 				Files: []string{
-					"README.md",
+					"README.*",
 				},
 				FormatOverrides: []config.FormatOverride{
 					{
@@ -58,10 +63,6 @@ func TestRunPipe(t *testing.T) {
 			assert.NoError(Pipe{}.Run(ctx))
 		})
 	}
-	t.Run("Removed README", func(t *testing.T) {
-		assert.NoError(os.Remove(readme.Name()))
-		assert.Error(Pipe{}.Run(ctx))
-	})
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {
@@ -98,4 +99,65 @@ func TestFormatFor(t *testing.T) {
 	}
 	assert.Equal("zip", formatFor(ctx, "windowsamd64"))
 	assert.Equal("tar.gz", formatFor(ctx, "linux386"))
+}
+
+func TestRunPipeInvalidGlob(t *testing.T) {
+	var assert = assert.New(t)
+	var ctx = &context.Context{
+		Archives: map[string]string{
+			"windowsamd64": "mybin",
+		},
+		Config: config.Project{
+			Dist: "/tmp",
+			Archive: config.Archive{
+				Files: []string{
+					"[x-]",
+				},
+			},
+		},
+	}
+	assert.Error(Pipe{}.Run(ctx))
+}
+
+func TestRunPipeGlobFailsToAdd(t *testing.T) {
+	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(err)
+	current, err := os.Getwd()
+	assert.NoError(err)
+	assert.NoError(os.Chdir(folder))
+	defer func() {
+		assert.NoError(os.Chdir(current))
+	}()
+	assert.NoError(os.MkdirAll(filepath.Join(folder, "folder", "another"), 0755))
+
+	var ctx = &context.Context{
+		Archives: map[string]string{
+			"windows386": "mybin",
+		},
+		Config: config.Project{
+			Dist: folder,
+			Archive: config.Archive{
+				Files: []string{
+					"folder",
+				},
+			},
+		},
+	}
+	assert.Error(Pipe{}.Run(ctx))
+}
+
+func TestRunPipeBinaryDontExist(t *testing.T) {
+	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(err)
+	var ctx = &context.Context{
+		Archives: map[string]string{
+			"windows386": "mybin",
+		},
+		Config: config.Project{
+			Dist: folder,
+		},
+	}
+	assert.Error(Pipe{}.Run(ctx))
 }

@@ -52,46 +52,15 @@ func TestFillPartial(t *testing.T) {
 					Name:  "test",
 				},
 			},
-		},
-	}
-	assert.NoError(Pipe{}.Run(ctx))
-}
-
-func TestFilesFilled(t *testing.T) {
-	assert := assert.New(t)
-
-	var ctx = &context.Context{
-		Config: config.Project{
 			Archive: config.Archive{
 				Files: []string{
-					"README.md",
+					"glob/*",
 				},
 			},
 		},
 	}
-
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.Len(ctx.Config.Archive.Files, 1)
-}
-
-func TestAcceptFiles(t *testing.T) {
-	var files = []string{
-		"LICENSE.md",
-		"LIceNSE.txt",
-		"LICENSE",
-		"LICENCE.txt",
-		"LICEncE",
-		"README",
-		"READme.md",
-		"CHANGELOG.txt",
-		"ChanGELOG.md",
-	}
-
-	for _, file := range files {
-		t.Run(file, func(t *testing.T) {
-			assert.True(t, accept(file))
-		})
-	}
 }
 
 func TestNotAGitRepo(t *testing.T) {

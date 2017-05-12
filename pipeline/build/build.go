@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/ext"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -64,7 +65,7 @@ func build(ctx *context.Context, name string, target buildTarget) error {
 	output := filepath.Join(
 		ctx.Config.Dist,
 		name,
-		ctx.Config.Build.Binary+extFor(target.goos),
+		ctx.Config.Build.Binary+ext.For(target.goos),
 	)
 	log.Println("Building", output)
 	cmd := []string{"go", "build"}
