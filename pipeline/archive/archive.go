@@ -11,9 +11,8 @@ import (
 
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/ext"
-	"github.com/goreleaser/goreleaser/pipeline/archive/tar"
-	"github.com/goreleaser/goreleaser/pipeline/archive/zip"
-	"github.com/mattn/go-zglob"
+	"github.com/goreleaser/goreleaser/internal/tar"
+	"github.com/goreleaser/goreleaser/internal/zip"
 	"golang.org/x/sync/errgroup"
 )
 
