@@ -11,9 +11,9 @@ import (
 	"text/template"
 
 	"github.com/goreleaser/goreleaser/checksum"
-	"github.com/goreleaser/goreleaser/client"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/client"
 )
 
 // ErrNoDarwin64Build when there is no build for darwin_amd64 (goos doesn't
