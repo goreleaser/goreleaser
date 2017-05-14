@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/goreleaser/goreleaser/internal/tar"
 	"github.com/goreleaser/goreleaser/internal/zip"
+	"github.com/mattn/go-zglob"
 	"golang.org/x/sync/errgroup"
 )
 
