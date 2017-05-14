@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/goreleaser/goreleaser/client"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/client"
 	"golang.org/x/sync/errgroup"
 )
 
