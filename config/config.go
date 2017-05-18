@@ -5,7 +5,6 @@ package config
 import (
 	"io"
 	"io/ioutil"
-
 	"os"
 
 	yaml "gopkg.in/yaml.v1"
