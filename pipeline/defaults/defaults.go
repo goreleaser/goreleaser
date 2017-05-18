@@ -81,18 +81,6 @@ func setArchiveDefaults(ctx *context.Context) error {
 	if ctx.Config.Archive.Format == "" {
 		ctx.Config.Archive.Format = "tar.gz"
 	}
-	if len(ctx.Config.Archive.Replacements) == 0 {
-		ctx.Config.Archive.Replacements = map[string]string{
-			"darwin":  "Darwin",
-			"linux":   "Linux",
-			"freebsd": "FreeBSD",
-			"openbsd": "OpenBSD",
-			"netbsd":  "NetBSD",
-			"windows": "Windows",
-			"386":     "i386",
-			"amd64":   "x86_64",
-		}
-	}
 	if len(ctx.Config.Archive.Files) == 0 {
 		ctx.Config.Archive.Files = []string{
 			"licence*",
