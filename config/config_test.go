@@ -1,13 +1,12 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"fmt"
 
 	"github.com/stretchr/testify/assert"
 )
