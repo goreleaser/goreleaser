@@ -276,8 +276,6 @@ archive:
   # Replacements for GOOS and GOARCH on the archive name.
   # The keys should be valid GOOS or GOARCH values followed by your custom
   # replacements.
-  # By default, `replacements` replace GOOS and GOARCH values with valid outputs
-  # of `uname -s` and `uname -m` respectively.
   replacements:
     amd64: 64-bit
     386: 32-bit
