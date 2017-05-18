@@ -58,6 +58,7 @@ func Release(flags Flags) error {
 		if !os.IsNotExist(statErr) || flags.IsSet("config") {
 			return err
 		}
+		log.Printf("WARNING: Could not load %v\n", file)
 	}
 	var ctx = context.New(cfg)
 	ctx.Validate = !flags.Bool("skip-validate")
