@@ -259,7 +259,7 @@ archive:
   # - Os
   # - Arch
   # - Arm (ARM version)
-  # The default is `{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
+  # The default is `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
   name_template: "{{.Binary}}_{{.Version}}_{{.Os}}_{{.Arch}}"
 
   # Archive format. Valid options are `tar.gz` and `zip`.
