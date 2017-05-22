@@ -116,10 +116,10 @@ $ export GITHUB_TOKEN=`YOUR_TOKEN`
 ```
 
 GoReleaser uses the latest [Git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of your repository.
-Create a tag:
+Create a tag and push it to GitHub:
 
 ```console
-$ git tag -a v0.1.0 -m "First release"
+$ git tag -a v0.1.0 -m "First release" && git push origin v0.1.0
 ```
 
 **Note**: we recommend the use of [semantic versioning](http://semver.org/). We
