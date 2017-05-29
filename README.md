@@ -28,7 +28,7 @@ For questions join the [#goreleaser](https://gophers.slack.com/messages/goreleas
 
 # Table of contents
 
-- [Introduction](#intorduction)
+- [Introduction](#introduction)
 - [Quick start](#quick-start)
 - [Environment setup](#environment-setup)
 - [Release customization](#release-customization)
@@ -455,7 +455,7 @@ You may want to wire this to auto-deploy your new tags on [Travis](https://travi
 ```yaml
 # .travis.yml
 after_success:
-  test -n "$TRAVIS_TAG" && curl -sL https://git.io/goreleaser | bash
+  - test -n "$TRAVIS_TAG" && curl -sL https://git.io/goreleaser | bash
 ```
 
 Here is how to do it with [CircleCI](https://circleci.com):
