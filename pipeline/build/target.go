@@ -19,14 +19,18 @@ func (t buildTarget) String() string {
 	return fmt.Sprintf("%v%v%v", t.goos, t.goarch, t.goarm)
 }
 
+func (t buildTarget) PrettyString() string {
+	return fmt.Sprintf("%v/%v%v", t.goos, t.goarch, t.goarm)
+}
+
 func buildTargets(ctx *context.Context) (targets []buildTarget) {
 	for _, target := range allBuildTargets(ctx) {
 		if !valid(target) {
-			log.Println("Skipped invalid build target:", target)
+			log.Println("Skipped invalid build target:", target.PrettyString())
 			continue
 		}
 		if ignored(ctx, target) {
-			log.Println("Skipped ignored build target:", target)
+			log.Println("Skipped ignored build target:", target.PrettyString())
 			continue
 		}
 		targets = append(targets, target)
