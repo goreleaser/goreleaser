@@ -91,7 +91,7 @@ func run(target buildTarget, command, env []string) error {
 		"GOARM="+target.goarm,
 	)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("build failed: %s/%s %s\n%v", target.goos, target.goarch, target.goarm, string(out))
+		return fmt.Errorf("build failed: %s\n%v", target.PrettyString(), string(out))
 	}
 	return nil
 }
