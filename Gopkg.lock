@@ -11,13 +11,13 @@
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "2bba0603135d7d7f5cb73b2125beeda19c09f4ef"
+  revision = "5a0f697c9ed9d68fef0116532c6e05cfeae00e55"
 
 [[projects]]
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "de33c46a823d3f723514fc5333b75ef2e937b7df"
+  revision = "ebfec748347a9af6793c723f8859afcd906860fb"
 
 [[projects]]
   branch = "master"
@@ -34,7 +34,7 @@
 [[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
-  revision = "c0b812dadcf4498dede02bb7f0c5c478be997e34"
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
 
 [[projects]]
@@ -53,19 +53,19 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context"]
-  revision = "ffcf1bedda3b04ebb15a168a59800a73d6dc0f4d"
+  revision = "3da985ce5951d99de868be4385f21ea6c2b22f24"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","internal"]
-  revision = "a6bd8cefa1811bd24b86f8902872e4e8225f74c4"
+  revision = "f047394b6d14284165300fd82dad67edb3a4d7f6"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sync"
   packages = ["errgroup"]
-  revision = "5a06fca2c336a4b2b2fcb45702e8c47621b2aa2c"
+  revision = "57af736625aaa69dfa099432bb67e0808eef3bcc"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -82,6 +82,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1af1153c76a6d4ed58aa403235aebae50190a1b0495157072e6ba1daac077052"
+  inputs-digest = "612a8c73aafb0d235fb9758a889e7a2fee0e0155d4c70cec64d544b62f329cdd"
   solver-name = "gps-cdcl"
   solver-version = 1
