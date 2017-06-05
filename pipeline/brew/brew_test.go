@@ -186,6 +186,20 @@ func TestRunPipeDraftRelease(t *testing.T) {
 	assert.False(client.CreatedFile)
 }
 
+func TestRunPipeSkipArchive(t *testing.T) {
+	assert := assert.New(t)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archive: config.Archive{
+				Skip: true,
+			},
+		},
+	}
+	client := &DummyClient{}
+	assert.NoError(doRun(ctx, client))
+	assert.False(client.CreatedFile)
+}
+
 type DummyClient struct {
 	CreatedFile bool
 }

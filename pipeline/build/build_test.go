@@ -76,6 +76,35 @@ func TestRunFullPipe(t *testing.T) {
 	assert.True(exists(post), post)
 }
 
+func TestRunPipeSkipArchive(t *testing.T) {
+	assert := assert.New(t)
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(err)
+	var binary = filepath.Join(folder, "binary-testing")
+	var config = config.Project{
+		Dist: folder,
+		Build: config.Build{
+			Binary: "testing",
+			Goos: []string{
+				runtime.GOOS,
+			},
+			Goarch: []string{
+				runtime.GOARCH,
+			},
+		},
+		Archive: config.Archive{
+			Skip:         true,
+			NameTemplate: "binary-{{.Binary}}",
+		},
+	}
+	var ctx = &context.Context{
+		Config:   config,
+		Archives: map[string]string{},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	assert.True(exists(binary))
+}
+
 func TestRunPipeArmBuilds(t *testing.T) {
 	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
