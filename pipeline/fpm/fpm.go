@@ -33,6 +33,10 @@ func (Pipe) Run(ctx *context.Context) error {
 		log.Println("No output formats configured, skipping")
 		return nil
 	}
+	if ctx.Config.Archive.Skip {
+		log.Println("Skipped because archiving is skipped")
+		return nil
+	}
 	_, err := exec.LookPath("fpm")
 	if err != nil {
 		return ErrNoFPM

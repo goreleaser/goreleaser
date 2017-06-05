@@ -32,6 +32,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		archive := archive
 		platform := platform
 		g.Go(func() error {
+			if ctx.Config.Archive.Skip {
+				return skip(ctx, platform, archive)
+			}
 			return create(ctx, platform, archive)
 		})
 	}
@@ -70,6 +73,13 @@ func create(ctx *context.Context, platform, name string) error {
 		return err
 	}
 	ctx.AddArtifact(file.Name())
+	return nil
+}
+
+func skip(ctx *context.Context, platform, name string) error {
+	log.Println("Skip archiving")
+	var binary = filepath.Join(ctx.Config.Dist, name+ext.For(platform))
+	ctx.AddArtifact(binary)
 	return nil
 }
 

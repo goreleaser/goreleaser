@@ -67,6 +67,9 @@ func build(ctx *context.Context, name string, target buildTarget) error {
 		name,
 		ctx.Config.Build.Binary+ext.For(target.goos),
 	)
+	if ctx.Config.Archive.Skip {
+		output = filepath.Join(ctx.Config.Dist, name+ext.For(target.goos))
+	}
 	log.Println("Building", output)
 	cmd := []string{"go", "build"}
 	if ctx.Config.Build.Flags != "" {

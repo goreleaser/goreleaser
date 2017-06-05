@@ -67,6 +67,7 @@ type FormatOverride struct {
 
 // Archive config used for the archive
 type Archive struct {
+	Skip            bool              `yaml:",omitempty"`
 	Format          string            `yaml:",omitempty"`
 	FormatOverrides []FormatOverride  `yaml:"format_overrides,omitempty"`
 	NameTemplate    string            `yaml:"name_template,omitempty"`

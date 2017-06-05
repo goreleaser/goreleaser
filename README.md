@@ -250,6 +250,12 @@ build:
 ```yml
 # goreleaser.yml
 archive:
+  # If set, no archives are created and the binaries are instead uploaded directly.
+  # In that case name_template is used to name the binary
+  # and the below specified files are ignored.
+  # Default is false
+  skip: true
+
   # You can change the name of the archive.
   # This is parsed with Golang template engine and the following variables
   # are available:
