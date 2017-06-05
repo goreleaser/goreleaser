@@ -77,8 +77,9 @@ func create(ctx *context.Context, platform, name string) error {
 }
 
 func skip(ctx *context.Context, platform, name string) error {
-	log.Println("Skip archiving")
-	var binary = filepath.Join(ctx.Config.Dist, name+ext.For(platform))
+	b := name + ext.For(platform)
+	log.Printf("Skip archiving for binary %s", b)
+	var binary = filepath.Join(ctx.Config.Dist, b)
 	ctx.AddArtifact(binary)
 	return nil
 }

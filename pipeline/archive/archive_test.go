@@ -100,7 +100,9 @@ func TestRunPipeSkip(t *testing.T) {
 		},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
-	assert.Equal([]string{"mybin.exe", "mybin"}, ctx.Artifacts)
+	assert.Contains(ctx.Artifacts, "mybin")
+	assert.Contains(ctx.Artifacts, "mybin.exe")
+	assert.Len(ctx.Artifacts, 2)
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {
