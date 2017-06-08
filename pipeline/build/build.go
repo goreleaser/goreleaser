@@ -67,7 +67,7 @@ func build(ctx *context.Context, name string, target buildTarget) error {
 		name,
 		ctx.Config.Build.Binary+ext.For(target.goos),
 	)
-	if ctx.Config.Archive.Skip {
+	if ctx.Config.Archive.Format == "binary" {
 		output = filepath.Join(ctx.Config.Dist, name+ext.For(target.goos))
 	}
 	log.Println("Building", output)

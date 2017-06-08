@@ -106,8 +106,8 @@ func doRun(ctx *context.Context, client client.Client) error {
 		log.Println("Skipped because release is marked as draft")
 		return nil
 	}
-	if ctx.Config.Archive.Skip {
-		log.Println("Skipped because archiving is skipped")
+	if ctx.Config.Archive.Format == "binary" {
+		log.Println("Skipped because archive format is binary")
 		return nil
 	}
 	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.Build.Binary+".rb")

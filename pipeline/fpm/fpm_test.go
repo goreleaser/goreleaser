@@ -23,12 +23,12 @@ func TestRunPipeNoFormats(t *testing.T) {
 	assert.NoError(Pipe{}.Run(ctx))
 }
 
-func TestRunPipeSkipArchive(t *testing.T) {
+func TestRunPipeFormatBinary(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
 		Config: config.Project{
 			Archive: config.Archive{
-				Skip: true,
+				Format: "binary",
 			},
 		},
 	}

@@ -65,7 +65,7 @@ func TestRunPipe(t *testing.T) {
 	}
 }
 
-func TestRunPipeSkip(t *testing.T) {
+func TestRunPipeBinary(t *testing.T) {
 	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(err)
@@ -95,7 +95,7 @@ func TestRunPipeSkip(t *testing.T) {
 				Binary: "mybin",
 			},
 			Archive: config.Archive{
-				Skip: true,
+				Format: "binary",
 			},
 		},
 	}

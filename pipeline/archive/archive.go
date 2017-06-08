@@ -32,7 +32,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		archive := archive
 		platform := platform
 		g.Go(func() error {
-			if ctx.Config.Archive.Skip {
+			if ctx.Config.Archive.Format == "binary" {
 				return skip(ctx, platform, archive)
 			}
 			return create(ctx, platform, archive)

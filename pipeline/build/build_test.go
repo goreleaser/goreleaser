@@ -76,7 +76,7 @@ func TestRunFullPipe(t *testing.T) {
 	assert.True(exists(post), post)
 }
 
-func TestRunPipeSkipArchive(t *testing.T) {
+func TestRunPipeFormatBinary(t *testing.T) {
 	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
@@ -93,7 +93,7 @@ func TestRunPipeSkipArchive(t *testing.T) {
 			},
 		},
 		Archive: config.Archive{
-			Skip:         true,
+			Format:       "binary",
 			NameTemplate: "binary-{{.Binary}}",
 		},
 	}
