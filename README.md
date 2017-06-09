@@ -57,7 +57,7 @@ func main() {
 }
 ```
 
-By default GoReleaser will build the your current directory, but you can change the build package path in the GoReleaser configuration file.
+By default GoReleaser will build the current directory, but you can change the build package path in the GoReleaser configuration file.
 
 ```yml
 # goreleaser.yml
