@@ -26,6 +26,12 @@
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 
 [[projects]]
+  name = "github.com/goreleaser/archive"
+  packages = [".","tar","zip"]
+  revision = "caa5f3f5742eb0535631e94fa5e171c74c0144b7"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/mattn/go-zglob"
   packages = [".","fastwalk"]
@@ -82,6 +88,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "612a8c73aafb0d235fb9758a889e7a2fee0e0155d4c70cec64d544b62f329cdd"
+  inputs-digest = "c020d9bb377ff4b15fd8b7b2787c7c77fb854b64cb2da5ca12ff5a2311afa5f7"
   solver-name = "gps-cdcl"
   solver-version = 1

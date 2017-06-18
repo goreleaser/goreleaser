@@ -46,7 +46,7 @@ func create(ctx *context.Context, platform, name string) error {
 	}
 	log.Println("Creating", file.Name())
 	defer func() { _ = file.Close() }()
-	var archive = archiveFor(file, format)
+	var archive = archive.New(file)
 	defer func() { _ = archive.Close() }()
 
 	files, err := findFiles(ctx)
@@ -75,13 +75,6 @@ func findFiles(ctx *context.Context) (result []string, err error) {
 		result = append(result, files...)
 	}
 	return
-}
-
-func archiveFor(file *os.File, format string) archive.Archive {
-	if format == "zip" {
-		return archive.NewZip(file)
-	}
-	return archive.NewTargz(file)
 }
 
 func formatFor(ctx *context.Context, platform string) string {
