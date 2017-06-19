@@ -40,6 +40,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	var g errgroup.Group
 	for _, format := range ctx.Config.FPM.Formats {
+		format := format
 		for _, goarch := range ctx.Config.Build.Goarch {
 			if ctx.Archives["linux"+goarch] == "" {
 				continue
