@@ -2,16 +2,14 @@ package goreleaserlib
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
 
-	yaml "gopkg.in/yaml.v1"
-
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/stretchr/testify/assert"
+	yaml "gopkg.in/yaml.v1"
 )
 
 func init() {
@@ -26,6 +24,7 @@ func TestRelease(t *testing.T) {
 		flags: map[string]string{
 			"skip-publish":  "true",
 			"skip-validate": "true",
+			"debug":         "true",
 		},
 	}
 	assert.NoError(Release(flags))
@@ -146,7 +145,6 @@ func setup(t *testing.T) (current string, back func()) {
 	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleaser")
 	assert.NoError(err)
-	log.Println("Folder:", folder)
 	previous, err := os.Getwd()
 	assert.NoError(err)
 	assert.NoError(os.Chdir(folder))

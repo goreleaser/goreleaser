@@ -2,9 +2,9 @@ package client
 
 import (
 	"bytes"
-	"log"
 	"os"
 
+	"github.com/apex/log"
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/oauth2"
@@ -98,7 +98,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (release
 			data,
 		)
 	}
-	log.Printf("Release updated: %v\n", release.GetHTMLURL())
+	log.Infof("Release updated: %v\n", release.GetHTMLURL())
 	return release.GetID(), err
 }
 
