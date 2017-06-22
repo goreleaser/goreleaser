@@ -24,6 +24,7 @@ func TestRelease(t *testing.T) {
 		flags: map[string]string{
 			"skip-publish":  "true",
 			"skip-validate": "true",
+			"debug":         "true",
 		},
 	}
 	assert.NoError(Release(flags))
