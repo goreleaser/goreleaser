@@ -56,7 +56,7 @@ func runHook(env []string, hook string) error {
 	if hook == "" {
 		return nil
 	}
-	log.WithField("hook", hook).Info("Running hook")
+	log.WithField("hook", hook).Info("running hook")
 	cmd := strings.Fields(hook)
 	return run(runtimeTarget, cmd, env)
 }
@@ -67,7 +67,7 @@ func build(ctx *context.Context, name string, target buildTarget) error {
 		name,
 		ctx.Config.Build.Binary+ext.For(target.goos),
 	)
-	log.WithField("binary", output).Info("Building")
+	log.WithField("binary", output).Info("building")
 	cmd := []string{"go", "build"}
 	if ctx.Config.Build.Flags != "" {
 		cmd = append(cmd, strings.Fields(ctx.Config.Build.Flags)...)
@@ -88,7 +88,7 @@ func run(target buildTarget, command, env []string) error {
 	log.WithField("target", target.PrettyString()).
 		WithField("env", env).
 		WithField("args", cmd.Args).
-		Debug("Running")
+		Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("build failed: %s\n%v", target.PrettyString(), string(out))
 	}
