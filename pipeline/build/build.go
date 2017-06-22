@@ -4,12 +4,12 @@ package build
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/ext"
 	"golang.org/x/sync/errgroup"
@@ -56,7 +56,7 @@ func runHook(env []string, hook string) error {
 	if hook == "" {
 		return nil
 	}
-	log.Println("Running hook", hook)
+	log.WithField("hook", hook).Info("Running hook")
 	cmd := strings.Fields(hook)
 	return run(runtimeTarget, cmd, env)
 }
@@ -67,7 +67,7 @@ func build(ctx *context.Context, name string, target buildTarget) error {
 		name,
 		ctx.Config.Build.Binary+ext.For(target.goos),
 	)
-	log.Println("Building", output)
+	log.WithField("binary", output).Info("Building")
 	cmd := []string{"go", "build"}
 	if ctx.Config.Build.Flags != "" {
 		cmd = append(cmd, strings.Fields(ctx.Config.Build.Flags)...)
