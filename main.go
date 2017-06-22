@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/apex/log"
-	lcli "github.com/apex/log/handlers/text"
+	lcli "github.com/apex/log/handlers/cli"
 	"github.com/goreleaser/goreleaser/goreleaserlib"
 	"github.com/urfave/cli"
 )
