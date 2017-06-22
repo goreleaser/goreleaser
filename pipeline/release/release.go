@@ -27,7 +27,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, client client.Client) error {
 	if !ctx.Publish {
-		log.Info("Skipped because --skip-publish is set")
+		log.Warn("Skipped because --skip-publish is set")
 		return nil
 	}
 	log.WithField("tag", ctx.Git.CurrentTag).

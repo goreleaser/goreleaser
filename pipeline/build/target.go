@@ -26,11 +26,11 @@ func (t buildTarget) PrettyString() string {
 func buildTargets(ctx *context.Context) (targets []buildTarget) {
 	for _, target := range allBuildTargets(ctx) {
 		if !valid(target) {
-			log.WithField("target", target.PrettyString()).Info("Skipped invalid build")
+			log.WithField("target", target.PrettyString()).Warn("Skipped invalid build")
 			continue
 		}
 		if ignored(ctx, target) {
-			log.WithField("target", target.PrettyString()).Info("Skipped ignored build")
+			log.WithField("target", target.PrettyString()).Warn("Skipped ignored build")
 			continue
 		}
 		targets = append(targets, target)

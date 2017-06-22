@@ -44,6 +44,9 @@ type Flags interface {
 func Release(flags Flags) error {
 	var file = flags.String("config")
 	var notes = flags.String("release-notes")
+	if flags.Bool("debug") {
+		log.SetLevel(log.DebugLevel)
+	}
 	cfg, err := config.Load(file)
 	if err != nil {
 		// Allow file not found errors if config file was not
