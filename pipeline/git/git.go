@@ -73,7 +73,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return
 	}
 	if !ctx.Validate {
-		log.Warn("Skipped validations because --skip-validate is set")
+		log.Warn("skipped validations because --skip-validate is set")
 		return nil
 	}
 	return validate(ctx, commit, tag)
@@ -169,7 +169,7 @@ func gitLog(refs ...string) (string, error) {
 func getInfo() (tag, commit string, err error) {
 	tag, err = cleanGit("describe", "--tags", "--abbrev=0")
 	if err != nil {
-		log.WithError(err).Info("Failed to retrieve current tag")
+		log.WithError(err).Info("failed to retrieve current tag")
 	}
 	commit, err = cleanGit("show", "--format='%H'", "HEAD")
 	return

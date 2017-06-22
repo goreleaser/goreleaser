@@ -44,7 +44,7 @@ func create(ctx *context.Context, platform, name string) error {
 	if err != nil {
 		return err
 	}
-	log.WithField("archive", file.Name()).Info("Creating")
+	log.WithField("archive", file.Name()).Info("creating")
 	defer func() { _ = file.Close() }()
 	var archive = archive.New(file)
 	defer func() { _ = archive.Close() }()

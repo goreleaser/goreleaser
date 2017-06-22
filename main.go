@@ -53,7 +53,7 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) error {
-		log.Infof("Running goreleaser %v", version)
+		log.Infof("running goreleaser %v", version)
 		if err := goreleaserlib.Release(c); err != nil {
 			return cli.NewExitError(err.Error(), 1)
 		}
@@ -70,12 +70,13 @@ func main() {
 					return cli.NewExitError(err.Error(), 1)
 				}
 
-				log.Infof("%s created. Please edit accordingly to your needs.", filename)
+				log.WithField("file", filename).
+					Info("config create, please edit accordingly to your needs")
 				return nil
 			},
 		},
 	}
 	if err := app.Run(os.Args); err != nil {
-		log.WithError(err).Fatal("Failed")
+		log.WithError(err).Fatal("failed")
 	}
 }

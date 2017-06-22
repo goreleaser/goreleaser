@@ -45,7 +45,7 @@ func (ctx *Context) AddArtifact(file string) {
 	file = strings.TrimPrefix(file, ctx.Config.Dist)
 	file = strings.Replace(file, "/", "", -1)
 	ctx.Artifacts = append(ctx.Artifacts, file)
-	log.WithField("artifact", file).Info("Registered")
+	log.WithField("artifact", file).Info("registered")
 }
 
 // New context

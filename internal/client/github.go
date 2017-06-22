@@ -98,7 +98,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (release
 			data,
 		)
 	}
-	log.Infof("Release updated: %v\n", release.GetHTMLURL())
+	log.WithField("url", release.GetHTMLURL()).Info("release updated")
 	return release.GetID(), err
 }
 
