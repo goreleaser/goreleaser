@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
@@ -74,12 +75,12 @@ func Release(flags Flags) error {
 		ctx.Publish = false
 	}
 	for _, pipe := range pipes {
-		log.Infof(pipe.Description())
+		log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.Description()))
 		if err := pipe.Run(ctx); err != nil {
 			return err
 		}
 	}
-	log.Info("Done!")
+	log.Infof("\033[1mSUCCESS!\033[0m")
 	return nil
 }
 
