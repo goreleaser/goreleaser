@@ -49,7 +49,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 }
 
 func checksums(ctx *context.Context, file *os.File, name string) error {
-	log.WithField("file", name).Info("Checksumming")
+	log.WithField("file", name).Info("checksumming")
 	var artifact = filepath.Join(ctx.Config.Dist, name)
 	sha, err := checksum.SHA256(artifact)
 	if err != nil {

@@ -27,12 +27,12 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, client client.Client) error {
 	if !ctx.Publish {
-		log.Warn("Skipped because --skip-publish is set")
+		log.Warn("skipped because --skip-publish is set")
 		return nil
 	}
 	log.WithField("tag", ctx.Git.CurrentTag).
 		WithField("repo", ctx.Config.Release.GitHub.String()).
-		Info("Creating or updating release")
+		Info("creating or updating release")
 	body, err := describeBody(ctx)
 	if err != nil {
 		return err
@@ -58,6 +58,6 @@ func upload(ctx *context.Context, client client.Client, releaseID int, artifact 
 		return err
 	}
 	defer func() { _ = file.Close() }()
-	log.WithField("file", file).Info("Uploading")
+	log.WithField("file", file.Name()).Info("uploading")
 	return client.Upload(ctx, releaseID, artifact, file)
 }

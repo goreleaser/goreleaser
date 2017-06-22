@@ -56,7 +56,7 @@ func Release(flags Flags) error {
 		if !os.IsNotExist(statErr) || flags.IsSet("config") {
 			return err
 		}
-		log.WithField("file", file).Warn("Could not load")
+		log.WithField("file", file).Warn("could not load config")
 	}
 	var ctx = context.New(cfg)
 	ctx.Validate = !flags.Bool("skip-validate")
@@ -66,12 +66,12 @@ func Release(flags Flags) error {
 		if err != nil {
 			return err
 		}
-		log.WithField("notes", notes).Info("Loaded custom release notes")
+		log.WithField("notes", notes).Info("loaded custom release notes")
 		ctx.ReleaseNotes = string(bts)
 	}
 	ctx.Snapshot = flags.Bool("snapshot")
 	if ctx.Snapshot {
-		log.Info("Publishing disabled in snapshot mode")
+		log.Info("publishing disabled in snapshot mode")
 		ctx.Publish = false
 	}
 	for _, pipe := range pipes {

@@ -30,7 +30,7 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	if len(ctx.Config.FPM.Formats) == 0 {
-		log.Info("No output formats configured, skipping")
+		log.Info("no output formats configured, skipping")
 		return nil
 	}
 	_, err := exec.LookPath("fpm")
