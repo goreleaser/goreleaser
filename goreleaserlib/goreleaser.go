@@ -1,14 +1,11 @@
 package goreleaserlib
 
 import (
+	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
-	yaml "gopkg.in/yaml.v1"
-
-	"fmt"
-
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
@@ -21,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/release"
+	yaml "gopkg.in/yaml.v1"
 )
 
 var pipes = []pipeline.Pipe{
@@ -33,10 +31,6 @@ var pipes = []pipeline.Pipe{
 	checksums.Pipe{}, // checksums of the files
 	release.Pipe{},   // release to github
 	brew.Pipe{},      // push to brew tap
-}
-
-func init() {
-	log.SetFlags(0)
 }
 
 // Flags interface represents an extractor of cli flags
@@ -58,7 +52,7 @@ func Release(flags Flags) error {
 		if !os.IsNotExist(statErr) || flags.IsSet("config") {
 			return err
 		}
-		log.Printf("WARNING: Could not load %v\n", file)
+		log.WithField("file", file).Warn("Could not load")
 	}
 	var ctx = context.New(cfg)
 	ctx.Validate = !flags.Bool("skip-validate")
@@ -68,23 +62,21 @@ func Release(flags Flags) error {
 		if err != nil {
 			return err
 		}
-		log.Println("Loaded custom release notes from", notes)
+		log.WithField("notes", notes).Info("Loaded custom release notes")
 		ctx.ReleaseNotes = string(bts)
 	}
 	ctx.Snapshot = flags.Bool("snapshot")
 	if ctx.Snapshot {
-		log.Println("Publishing disabled in snapshot mode")
+		log.Info("Publishing disabled in snapshot mode")
 		ctx.Publish = false
 	}
 	for _, pipe := range pipes {
-		log.Println(pipe.Description())
-		log.SetPrefix(" -> ")
+		log.Infof(pipe.Description())
 		if err := pipe.Run(ctx); err != nil {
 			return err
 		}
-		log.SetPrefix("")
 	}
-	log.Println("Done!")
+	log.Info("Done!")
 	return nil
 }
 

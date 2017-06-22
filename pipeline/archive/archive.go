@@ -4,11 +4,11 @@
 package archive
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/ext"
@@ -44,7 +44,7 @@ func create(ctx *context.Context, platform, name string) error {
 	if err != nil {
 		return err
 	}
-	log.Println("Creating", file.Name())
+	log.WithField("archive", file.Name()).Info("Creating")
 	defer func() { _ = file.Close() }()
 	var archive = archive.New(file)
 	defer func() { _ = archive.Close() }()

@@ -4,9 +4,9 @@ package env
 
 import (
 	"errors"
-	"log"
 	"os"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 )
 
@@ -25,11 +25,11 @@ func (Pipe) Description() string {
 func (Pipe) Run(ctx *context.Context) (err error) {
 	ctx.Token = os.Getenv("GITHUB_TOKEN")
 	if !ctx.Publish {
-		log.Println("GITHUB_TOKEN not validated because publishing has been disabled")
+		log.Warn("GITHUB_TOKEN not validated because publishing has been disabled")
 		return nil
 	}
 	if !ctx.Validate {
-		log.Println("Skipped validations because --skip-validate is set")
+		log.Warn("Skipped validations because --skip-validate is set")
 		return nil
 	}
 	if ctx.Token == "" {
