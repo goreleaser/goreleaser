@@ -95,15 +95,15 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, client client.Client) error {
 	if !ctx.Publish {
-		log.Info("Skipped because --skip-publish is set")
+		log.Warn("Skipped because --skip-publish is set")
 		return nil
 	}
 	if ctx.Config.Brew.GitHub.Name == "" {
-		log.Info("Skipped because brew section is not configured")
+		log.Warn("Skipped because brew section is not configured")
 		return nil
 	}
 	if ctx.Config.Release.Draft {
-		log.Info("Skipped because release is marked as draft")
+		log.Warn("Skipped because release is marked as draft")
 		return nil
 	}
 	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.Build.Binary+".rb")

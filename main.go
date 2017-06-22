@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/apex/log"
-	lcli "github.com/apex/log/handlers/cli"
+	lcli "github.com/apex/log/handlers/text"
 	"github.com/goreleaser/goreleaser/goreleaserlib"
 	"github.com/urfave/cli"
 )
@@ -46,6 +46,10 @@ func main() {
 		cli.BoolFlag{
 			Name:  "snapshot",
 			Usage: "Generate an unversioned snapshot release",
+		},
+		cli.BoolFlag{
+			Name:  "debug",
+			Usage: "Enable debug mode",
 		},
 	}
 	app.Action = func(c *cli.Context) error {
