@@ -107,7 +107,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return nil
 	}
 	if ctx.Config.Archive.Format == "binary" {
-		log.Println("Skipped because archive format is binary")
+		log.Info("skipped because archive format is binary")
 		return nil
 	}
 	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.Build.Binary+".rb")

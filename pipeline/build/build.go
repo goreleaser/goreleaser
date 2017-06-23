@@ -70,7 +70,7 @@ func build(ctx *context.Context, name string, target buildTarget) error {
 	if ctx.Config.Archive.Format == "binary" {
 		output = filepath.Join(ctx.Config.Dist, name+ext.For(target.goos))
 	}
-	log.Println("Building", output)
+	log.WithField("output", output).Info("building")
 	cmd := []string{"go", "build"}
 	if ctx.Config.Build.Flags != "" {
 		cmd = append(cmd, strings.Fields(ctx.Config.Build.Flags)...)
