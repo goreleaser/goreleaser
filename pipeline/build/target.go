@@ -2,9 +2,9 @@ package build
 
 import (
 	"fmt"
-	"log"
 	"runtime"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 )
 
@@ -26,11 +26,13 @@ func (t buildTarget) PrettyString() string {
 func buildTargets(ctx *context.Context) (targets []buildTarget) {
 	for _, target := range allBuildTargets(ctx) {
 		if !valid(target) {
-			log.Println("Skipped invalid build target:", target.PrettyString())
+			log.WithField("target", target.PrettyString()).
+				Warn("skipped invalid build")
 			continue
 		}
 		if ignored(ctx, target) {
-			log.Println("Skipped ignored build target:", target.PrettyString())
+			log.WithField("target", target.PrettyString()).
+				Warn("skipped ignored build")
 			continue
 		}
 		targets = append(targets, target)

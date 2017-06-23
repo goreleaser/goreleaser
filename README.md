@@ -9,7 +9,6 @@
     <a href="https://codecov.io/gh/goreleaser/goreleaser"><img alt="Codecov branch" src="https://img.shields.io/codecov/c/github/goreleaser/goreleaser/master.svg?style=flat-square"></a>
     <a href="https://goreportcard.com/report/github.com/goreleaser/goreleaser"><img alt="Go Report Card" src="https://goreportcard.com/badge/github.com/goreleaser/goreleaser?style=flat-square"></a>
     <a href="http://godoc.org/github.com/goreleaser/goreleaser"><img alt="Go Doc" src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square"></a>
-    <a href="https://beerpay.io/goreleaser/goreleaser"><img src="https://beerpay.io/goreleaser/goreleaser/badge.svg?style=flat-square" /></a>
     <a href="https://saythanks.io/to/caarlos0"><img alt="SayThanks.io" src="https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg?style=flat-square"></a>
     <a href="https://github.com/goreleaser"><img alt="Powered By: GoReleaser" src="https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square"></a>
   </p>
@@ -57,7 +56,7 @@ func main() {
 }
 ```
 
-By default GoReleaser will build the your current directory, but you can change the build package path in the GoReleaser configuration file.
+By default GoReleaser will build the current directory, but you can change the build package path in the GoReleaser configuration file.
 
 ```yml
 # goreleaser.yml

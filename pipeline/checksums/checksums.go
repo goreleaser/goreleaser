@@ -4,10 +4,10 @@ package checksums
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/sync/errgroup"
@@ -49,7 +49,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 }
 
 func checksums(ctx *context.Context, file *os.File, name string) error {
-	log.Println("Checksumming", name)
+	log.WithField("file", name).Info("checksumming")
 	var artifact = filepath.Join(ctx.Config.Dist, name)
 	sha, err := checksum.SHA256(artifact)
 	if err != nil {

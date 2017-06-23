@@ -8,10 +8,10 @@ package context
 
 import (
 	ctx "context"
-	"log"
 	"strings"
 	"sync"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 )
 
@@ -45,7 +45,7 @@ func (ctx *Context) AddArtifact(file string) {
 	file = strings.TrimPrefix(file, ctx.Config.Dist)
 	file = strings.Replace(file, "/", "", -1)
 	ctx.Artifacts = append(ctx.Artifacts, file)
-	log.Println("Registered artifact", file)
+	log.WithField("artifact", file).Info("registered")
 }
 
 // New context

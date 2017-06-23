@@ -4,12 +4,12 @@ package build
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/ext"
 	"golang.org/x/sync/errgroup"
@@ -56,7 +56,7 @@ func runHook(env []string, hook string) error {
 	if hook == "" {
 		return nil
 	}
-	log.Println("Running hook", hook)
+	log.WithField("hook", hook).Info("running hook")
 	cmd := strings.Fields(hook)
 	return run(runtimeTarget, cmd, env)
 }
@@ -84,15 +84,14 @@ func build(ctx *context.Context, name string, target buildTarget) error {
 }
 
 func run(target buildTarget, command, env []string) error {
-	cmd := exec.Command(command[0], command[1:]...)
+	var cmd = exec.Command(command[0], command[1:]...)
+	env = append(env, "GOOS="+target.goos, "GOARCH="+target.goarch, "GOARM="+target.goarm)
 	cmd.Env = append(cmd.Env, os.Environ()...)
 	cmd.Env = append(cmd.Env, env...)
-	cmd.Env = append(
-		cmd.Env,
-		"GOOS="+target.goos,
-		"GOARCH="+target.goarch,
-		"GOARM="+target.goarm,
-	)
+	log.WithField("target", target.PrettyString()).
+		WithField("env", env).
+		WithField("args", cmd.Args).
+		Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("build failed: %s\n%v", target.PrettyString(), string(out))
 	}

@@ -64,7 +64,9 @@
 ## what source location any dependent projects specify.
 # source = "https://github.com/myfork/package.git"
 
-
+[[constraint]]
+  name = "github.com/goreleaser/archive"
+  version = "1.0.0"
 
 [[constraint]]
   branch = "master"

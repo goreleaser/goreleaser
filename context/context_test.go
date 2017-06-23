@@ -3,10 +3,9 @@ package context
 import (
 	"testing"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/sync/errgroup"
 )
 
 func TestMultipleArtifactAdds(t *testing.T) {

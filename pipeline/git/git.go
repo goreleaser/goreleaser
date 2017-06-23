@@ -5,13 +5,12 @@ package git
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
+	"text/template"
 	"time"
 
-	"text/template"
-
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 )
 
@@ -74,7 +73,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return
 	}
 	if !ctx.Validate {
-		log.Println("Skipped validations because --skip-validate is set")
+		log.Warn("skipped validations because --skip-validate is set")
 		return nil
 	}
 	return validate(ctx, commit, tag)
@@ -170,7 +169,7 @@ func gitLog(refs ...string) (string, error) {
 func getInfo() (tag, commit string, err error) {
 	tag, err = cleanGit("describe", "--tags", "--abbrev=0")
 	if err != nil {
-		log.Printf("Failed to retrieve current tag: %s", err.Error())
+		log.WithError(err).Info("failed to retrieve current tag")
 	}
 	commit, err = cleanGit("show", "--format='%H'", "HEAD")
 	return

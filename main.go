@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
+	"github.com/apex/log"
+	lcli "github.com/apex/log/handlers/cli"
 	"github.com/goreleaser/goreleaser/goreleaserlib"
 	"github.com/urfave/cli"
 )
@@ -14,6 +15,10 @@ var (
 	commit  = "none"
 	date    = "unknown"
 )
+
+func init() {
+	log.SetHandler(lcli.New(os.Stdout))
+}
 
 func main() {
 	var app = cli.NewApp()
@@ -42,9 +47,13 @@ func main() {
 			Name:  "snapshot",
 			Usage: "Generate an unversioned snapshot release",
 		},
+		cli.BoolFlag{
+			Name:  "debug",
+			Usage: "Enable debug mode",
+		},
 	}
 	app.Action = func(c *cli.Context) error {
-		log.Printf("Running goreleaser %v\n", version)
+		log.Infof("running goreleaser %v", version)
 		if err := goreleaserlib.Release(c); err != nil {
 			return cli.NewExitError(err.Error(), 1)
 		}
@@ -61,12 +70,13 @@ func main() {
 					return cli.NewExitError(err.Error(), 1)
 				}
 
-				log.Printf("%s created. Please edit accordingly to your needs.", filename)
+				log.WithField("file", filename).
+					Info("config create, please edit accordingly to your needs")
 				return nil
 			},
 		},
 	}
 	if err := app.Run(os.Args); err != nil {
-		log.Fatalln(err)
+		log.WithError(err).Fatal("failed")
 	}
 }

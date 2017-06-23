@@ -3,10 +3,10 @@ package fpm
 
 import (
 	"errors"
-	"log"
 	"os/exec"
 	"path/filepath"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/sync/errgroup"
 )
@@ -30,7 +30,7 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	if len(ctx.Config.FPM.Formats) == 0 {
-		log.Println("No output formats configured, skipping")
+		log.Info("no output formats configured, skipping")
 		return nil
 	}
 	if ctx.Config.Archive.Format == "binary" {
@@ -44,6 +44,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	var g errgroup.Group
 	for _, format := range ctx.Config.FPM.Formats {
+		format := format
 		for _, goarch := range ctx.Config.Build.Goarch {
 			if ctx.Archives["linux"+goarch] == "" {
 				continue
@@ -62,7 +63,7 @@ func create(ctx *context.Context, format, archive, arch string) error {
 	var path = filepath.Join(ctx.Config.Dist, archive)
 	var file = path + "." + format
 	var name = ctx.Config.Build.Binary
-	log.Println("Creating", file)
+	log.WithField("file", file).Info("Creating")
 
 	var options = []string{
 		"--input-type", "dir",

@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/apex/log"
+  packages = [".","handlers/cli"]
+  revision = "8f3a15d95392c8fc202d1e1059f46df21dff2992"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -26,10 +32,22 @@
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 
 [[projects]]
+  name = "github.com/goreleaser/archive"
+  packages = [".","tar","zip"]
+  revision = "caa5f3f5742eb0535631e94fa5e171c74c0144b7"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/mattn/go-zglob"
   packages = [".","fastwalk"]
   revision = "95345c4e1c0ebc9d16a3284177f09360f4d20fab"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"
@@ -82,6 +100,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "612a8c73aafb0d235fb9758a889e7a2fee0e0155d4c70cec64d544b62f329cdd"
+  inputs-digest = "15a60b1efa147cc2507589fd45e4b767e118c6853c6ae2e2728a6ba01b818fe4"
   solver-name = "gps-cdcl"
   solver-version = 1
