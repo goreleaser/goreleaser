@@ -9,10 +9,9 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/ext"
-	"github.com/goreleaser/goreleaser/internal/tar"
-	"github.com/goreleaser/goreleaser/internal/zip"
 	"github.com/mattn/go-zglob"
 	"golang.org/x/sync/errgroup"
 )
@@ -38,12 +37,6 @@ func (Pipe) Run(ctx *context.Context) error {
 	return g.Wait()
 }
 
-// Archive represents a compression archive files from disk can be written to.
-type Archive interface {
-	Close() error
-	Add(name, path string) error
-}
-
 func create(ctx *context.Context, platform, name string) error {
 	var folder = filepath.Join(ctx.Config.Dist, name)
 	var format = formatFor(ctx, platform)
@@ -53,7 +46,7 @@ func create(ctx *context.Context, platform, name string) error {
 	}
 	log.WithField("archive", file.Name()).Info("creating")
 	defer func() { _ = file.Close() }()
-	var archive = archiveFor(file, format)
+	var archive = archive.New(file)
 	defer func() { _ = archive.Close() }()
 
 	files, err := findFiles(ctx)
@@ -82,13 +75,6 @@ func findFiles(ctx *context.Context) (result []string, err error) {
 		result = append(result, files...)
 	}
 	return
-}
-
-func archiveFor(file *os.File, format string) Archive {
-	if format == "zip" {
-		return zip.New(file)
-	}
-	return tar.New(file)
 }
 
 func formatFor(ctx *context.Context, platform string) string {
