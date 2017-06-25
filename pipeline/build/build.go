@@ -83,14 +83,15 @@ func build(ctx *context.Context, name string, target buildTarget) error {
 func run(target buildTarget, command, env []string) error {
 	var cmd = exec.Command(command[0], command[1:]...)
 	env = append(env, "GOOS="+target.goos, "GOARCH="+target.goarch, "GOARM="+target.goarm)
+	var log = log.WithField("target", target.PrettyString()).
+		WithField("env", env).
+		WithField("cmd", command)
 	cmd.Env = append(cmd.Env, os.Environ()...)
 	cmd.Env = append(cmd.Env, env...)
-	log.WithField("target", target.PrettyString()).
-		WithField("env", env).
-		WithField("args", cmd.Args).
-		Debug("running")
+	log.Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("build failed: %s\n%v", target.PrettyString(), string(out))
+		log.WithError(err).Debug("failed")
+		return fmt.Errorf("build failed for %s:\n%v", target.PrettyString(), string(out))
 	}
 	return nil
 }
