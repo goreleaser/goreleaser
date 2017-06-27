@@ -38,7 +38,7 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func create(ctx *context.Context, platform, name string) error {
-	var folder = filepath.Join(ctx.Config.Dist, name)
+	var folder = filepath.Join(ctx.Config.Dist, ctx.Config.Name)
 	var format = formatFor(ctx, platform)
 	file, err := os.Create(folder + "." + format)
 	if err != nil {
@@ -60,7 +60,8 @@ func create(ctx *context.Context, platform, name string) error {
 	}
 	for _, build := range ctx.Config.Builds {
 		var binary = build.Binary + ext.For(platform)
-		if err := archive.Add(binary, filepath.Join(folder, binary)); err != nil {
+		var bin = filepath.Join(ctx.Config.Dist, name)
+		if err := archive.Add(binary, filepath.Join(bin, binary)); err != nil {
 			return err
 		}
 	}

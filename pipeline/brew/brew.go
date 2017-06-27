@@ -134,17 +134,21 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 	return out, err
 }
 
+func hasDarwinBuilds(ctx *context.Context) bool {
+	for key := range ctx.Archives {
+		if strings.HasSuffix(key, "darwinamd64") {
+			return true
+		}
+	}
+	return false
+}
+
 func dataFor(ctx *context.Context, client client.Client) (result templateData, err error) {
-	file := ctx.Archives["darwinamd64"]
-	if file == "" {
+	if !hasDarwinBuilds(ctx) {
 		return result, ErrNoDarwin64Build
 	}
-	sum, err := checksum.SHA256(
-		filepath.Join(
-			ctx.Config.Dist,
-			file+"."+ctx.Config.Archive.Format,
-		),
-	)
+	var file = ctx.Config.Name + "." + ctx.Config.Archive.Format
+	sum, err := checksum.SHA256(filepath.Join(ctx.Config.Dist, file))
 	if err != nil {
 		return
 	}

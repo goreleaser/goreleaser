@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/apex/log"
 	yaml "gopkg.in/yaml.v1"
 )
 
@@ -128,5 +129,6 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 		return config, err
 	}
 	err = yaml.Unmarshal(data, &config)
+	log.WithField("config", config).Debug("loaded")
 	return
 }
