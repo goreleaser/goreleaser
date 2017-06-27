@@ -1,17 +1,18 @@
 homepage: &homepage http://goreleaser.github.io
 description: &description Deliver Go binaries as fast and easily as possible
-build:
-  env:
-   - CGO_ENABLED=0
-  goos:
-    - linux
-    - darwin
-    - windows
-  goarch:
-    - 386
-    - amd64
-    - arm
-    - arm64
+builds:
+  -
+    env:
+    - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
 archive:
   name_template: '{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
   replacements:

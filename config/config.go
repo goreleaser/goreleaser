@@ -99,13 +99,15 @@ type Snapshot struct {
 
 // Project includes all project configuration
 type Project struct {
+	Name     string   `yaml:",omitempty"`
 	Release  Release  `yaml:",omitempty"`
 	Brew     Homebrew `yaml:",omitempty"`
-	Build    Build    `yaml:",omitempty"`
+	Builds   []Build  `yaml:",omitempty"`
 	Archive  Archive  `yaml:",omitempty"`
 	FPM      FPM      `yaml:",omitempty"`
 	Snapshot Snapshot `yaml:",omitempty"`
 
+	// Build    Build    `yaml:",omitempty"` // deprecated, remove
 	// test only property indicating the path to the dist folder
 	Dist string `yaml:"-"`
 }

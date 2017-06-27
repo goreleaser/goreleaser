@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/ext"
 	"golang.org/x/sync/errgroup"
@@ -25,12 +26,21 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if err := runHook(ctx.Config.Build.Env, ctx.Config.Build.Hooks.Pre); err != nil {
+	for _, build := range ctx.Config.Builds {
+		if err := runPipeOnBuild(ctx, build); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func runPipeOnBuild(ctx *context.Context, build config.Build) error {
+	if err := runHook(build.Env, build.Hooks.Pre); err != nil {
 		return err
 	}
 	sem := make(chan bool, 4)
 	var g errgroup.Group
-	for _, target := range buildTargets(ctx) {
+	for _, target := range buildTargets(build) {
 		name, err := nameFor(ctx, target)
 		if err != nil {
 			return err
@@ -43,13 +53,13 @@ func (Pipe) Run(ctx *context.Context) error {
 			defer func() {
 				<-sem
 			}()
-			return build(ctx, name, target)
+			return doBuild(ctx, build, name, target)
 		})
 	}
 	if err := g.Wait(); err != nil {
 		return err
 	}
-	return runHook(ctx.Config.Build.Env, ctx.Config.Build.Hooks.Post)
+	return runHook(build.Env, build.Hooks.Post)
 }
 
 func runHook(env []string, hook string) error {
@@ -61,23 +71,19 @@ func runHook(env []string, hook string) error {
 	return run(runtimeTarget, cmd, env)
 }
 
-func build(ctx *context.Context, name string, target buildTarget) error {
-	output := filepath.Join(
-		ctx.Config.Dist,
-		name,
-		ctx.Config.Build.Binary+ext.For(target.goos),
-	)
+func doBuild(ctx *context.Context, build config.Build, name string, target buildTarget) error {
+	output := filepath.Join(ctx.Config.Dist, name, build.Binary+ext.For(target.goos))
 	log.WithField("binary", output).Info("building")
 	cmd := []string{"go", "build"}
-	if ctx.Config.Build.Flags != "" {
-		cmd = append(cmd, strings.Fields(ctx.Config.Build.Flags)...)
+	if build.Flags != "" {
+		cmd = append(cmd, strings.Fields(build.Flags)...)
 	}
 	flags, err := ldflags(ctx)
 	if err != nil {
 		return err
 	}
-	cmd = append(cmd, "-ldflags="+flags, "-o", output, ctx.Config.Build.Main)
-	return run(target, cmd, ctx.Config.Build.Env)
+	cmd = append(cmd, "-ldflags="+flags, "-o", output, build.Main)
+	return run(target, cmd, build.Env)
 }
 
 func run(target buildTarget, command, env []string) error {

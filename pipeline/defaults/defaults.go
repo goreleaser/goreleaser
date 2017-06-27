@@ -4,7 +4,10 @@ package defaults
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 )
 
@@ -31,14 +34,23 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err := setReleaseDefaults(ctx); err != nil {
 		return err
 	}
+	if ctx.Config.Name == "" {
+		ctx.Config.Name = ctx.Config.Release.GitHub.Name
+	}
 	setBuildDefaults(ctx)
 	if ctx.Config.Brew.Install == "" {
-		ctx.Config.Brew.Install = fmt.Sprintf(
-			`bin.install "%s"`,
-			ctx.Config.Build.Binary,
-		)
+		var installs []string
+		for _, build := range ctx.Config.Builds {
+			installs = append(
+				installs,
+				fmt.Sprintf(`bin.install "%s"`, build.Binary),
+			)
+		}
+		ctx.Config.Brew.Install = strings.Join(installs, "\n")
 	}
-	return setArchiveDefaults(ctx)
+	err := setArchiveDefaults(ctx)
+	log.WithField("config", ctx.Config).Debug("defaults set")
+	return err
 }
 
 func setReleaseDefaults(ctx *context.Context) error {
@@ -54,24 +66,35 @@ func setReleaseDefaults(ctx *context.Context) error {
 }
 
 func setBuildDefaults(ctx *context.Context) {
-	if ctx.Config.Build.Binary == "" {
-		ctx.Config.Build.Binary = ctx.Config.Release.GitHub.Name
+	if len(ctx.Config.Builds) == 0 {
+		ctx.Config.Builds = append(ctx.Config.Builds, ctx.Config.Build)
 	}
-	if ctx.Config.Build.Main == "" {
-		ctx.Config.Build.Main = "."
+	ctx.Config.Build = config.Build{}
+	for i, build := range ctx.Config.Builds {
+		ctx.Config.Builds[i] = buildWithDefaults(ctx, build)
 	}
-	if len(ctx.Config.Build.Goos) == 0 {
-		ctx.Config.Build.Goos = []string{"linux", "darwin"}
+}
+
+func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
+	if build.Binary == "" {
+		build.Binary = ctx.Config.Release.GitHub.Name
 	}
-	if len(ctx.Config.Build.Goarch) == 0 {
-		ctx.Config.Build.Goarch = []string{"amd64", "386"}
+	if build.Main == "" {
+		build.Main = "."
 	}
-	if len(ctx.Config.Build.Goarm) == 0 {
-		ctx.Config.Build.Goarm = []string{"6"}
+	if len(build.Goos) == 0 {
+		build.Goos = []string{"linux", "darwin"}
 	}
-	if ctx.Config.Build.Ldflags == "" {
-		ctx.Config.Build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
+	if len(build.Goarch) == 0 {
+		build.Goarch = []string{"amd64", "386"}
 	}
+	if len(build.Goarm) == 0 {
+		build.Goarm = []string{"6"}
+	}
+	if build.Ldflags == "" {
+		build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
+	}
+	return build
 }
 
 func setArchiveDefaults(ctx *context.Context) error {
