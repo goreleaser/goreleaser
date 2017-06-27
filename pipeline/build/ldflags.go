@@ -5,6 +5,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 )
 
@@ -15,7 +16,7 @@ type ldflagsData struct {
 	Version string
 }
 
-func ldflags(ctx *context.Context) (string, error) {
+func ldflags(ctx *context.Context, build config.Build) (string, error) {
 	var data = ldflagsData{
 		Commit:  ctx.Git.Commit,
 		Tag:     ctx.Git.CurrentTag,
@@ -23,7 +24,7 @@ func ldflags(ctx *context.Context) (string, error) {
 		Date:    time.Now().UTC().Format(time.RFC3339),
 	}
 	var out bytes.Buffer
-	t, err := template.New("ldflags").Parse(ctx.Config.Build.Ldflags)
+	t, err := template.New("ldflags").Parse(build.Ldflags)
 	if err != nil {
 		return "", err
 	}

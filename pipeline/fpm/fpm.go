@@ -3,6 +3,7 @@ package fpm
 
 import (
 	"errors"
+	"fmt"
 	"os/exec"
 	"path/filepath"
 
@@ -40,16 +41,19 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	var g errgroup.Group
 	for _, format := range ctx.Config.FPM.Formats {
-		format := format
-		for _, goarch := range ctx.Config.Build.Goarch {
-			if ctx.Archives["linux"+goarch] == "" {
-				continue
+		for _, build := range ctx.Config.Builds {
+			for _, goarch := range build.Goarch {
+				var key = build.Binary + "linux" + goarch
+				if ctx.Archives[key] == "" {
+					continue
+				}
+				format := format
+				archive := ctx.Archives[key]
+				arch := goarchToUnix[goarch]
+				g.Go(func() error {
+					return create(ctx, format, archive, arch)
+				})
 			}
-			archive := ctx.Archives["linux"+goarch]
-			arch := goarchToUnix[goarch]
-			g.Go(func() error {
-				return create(ctx, format, archive, arch)
-			})
 		}
 	}
 	return g.Wait()
@@ -58,13 +62,12 @@ func (Pipe) Run(ctx *context.Context) error {
 func create(ctx *context.Context, format, archive, arch string) error {
 	var path = filepath.Join(ctx.Config.Dist, archive)
 	var file = path + "." + format
-	var name = ctx.Config.Build.Binary
 	log.WithField("file", file).Info("Creating")
 
 	var options = []string{
 		"--input-type", "dir",
 		"--output-type", format,
-		"--name", name,
+		"--name", ctx.Config.Name,
 		"--version", ctx.Version,
 		"--architecture", arch,
 		"--chdir", path,
@@ -94,9 +97,15 @@ func create(ctx *context.Context, format, archive, arch string) error {
 		options = append(options, "--conflicts", conflict)
 	}
 
-	// This basically tells fpm to put the binary in the /usr/local/bin
-	// binary=/usr/local/bin/binary
-	options = append(options, name+"="+filepath.Join("/usr/local/bin", name))
+	for _, build := range ctx.Config.Builds {
+		// This basically tells fpm to put the binary in the /usr/local/bin
+		// binary=/usr/local/bin/binary
+		options = append(options, fmt.Sprintf(
+			"%s=%s",
+			build.Binary,
+			filepath.Join("/usr/local/bin", build.Binary),
+		))
+	}
 
 	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
 		return errors.New(string(out))

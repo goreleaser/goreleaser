@@ -69,7 +69,6 @@ type templateData struct {
 	Repo         config.Repo // FIXME: will not work for anything but github right now.
 	Tag          string
 	Version      string
-	Binary       string
 	Caveats      string
 	File         string
 	Format       string
@@ -127,7 +126,7 @@ func buildFormula(ctx *context.Context, client client.Client) (bytes.Buffer, err
 
 func doBuildFormula(data templateData) (bytes.Buffer, error) {
 	var out bytes.Buffer
-	tmpl, err := template.New(data.Binary).Parse(formula)
+	tmpl, err := template.New(data.Name).Parse(formula)
 	if err != nil {
 		return out, err
 	}
@@ -150,13 +149,12 @@ func dataFor(ctx *context.Context, client client.Client) (result templateData, e
 		return
 	}
 	return templateData{
-		Name:         formulaNameFor(ctx.Config.Build.Binary),
+		Name:         formulaNameFor(ctx.Config.Name),
 		Desc:         ctx.Config.Brew.Description,
 		Homepage:     ctx.Config.Brew.Homepage,
 		Repo:         ctx.Config.Release.GitHub,
 		Tag:          ctx.Git.CurrentTag,
 		Version:      ctx.Version,
-		Binary:       ctx.Config.Build.Binary,
 		Caveats:      ctx.Config.Brew.Caveats,
 		File:         file,
 		Format:       ctx.Config.Archive.Format, // TODO this can be broken by format_overrides

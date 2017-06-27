@@ -27,6 +27,7 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	for _, build := range ctx.Config.Builds {
+		log.WithField("build", build).Debug("building")
 		if err := runPipeOnBuild(ctx, build); err != nil {
 			return err
 		}
@@ -41,11 +42,11 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	sem := make(chan bool, 4)
 	var g errgroup.Group
 	for _, target := range buildTargets(build) {
-		name, err := nameFor(ctx, target)
+		name, err := nameFor(ctx, build, target)
 		if err != nil {
 			return err
 		}
-		ctx.Archives[target.String()] = name
+		ctx.Archives[build.Binary+target.String()] = name
 
 		sem <- true
 		target := target
@@ -78,7 +79,7 @@ func doBuild(ctx *context.Context, build config.Build, name string, target build
 	if build.Flags != "" {
 		cmd = append(cmd, strings.Fields(build.Flags)...)
 	}
-	flags, err := ldflags(ctx)
+	flags, err := ldflags(ctx, build)
 	if err != nil {
 		return err
 	}

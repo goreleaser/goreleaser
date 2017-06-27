@@ -66,10 +66,6 @@ func setReleaseDefaults(ctx *context.Context) error {
 }
 
 func setBuildDefaults(ctx *context.Context) {
-	if len(ctx.Config.Builds) == 0 {
-		ctx.Config.Builds = append(ctx.Config.Builds, ctx.Config.Build)
-	}
-	ctx.Config.Build = config.Build{}
 	for i, build := range ctx.Config.Builds {
 		ctx.Config.Builds[i] = buildWithDefaults(ctx, build)
 	}
