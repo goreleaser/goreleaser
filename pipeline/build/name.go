@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"text/template"
 
-	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 )
 
@@ -17,14 +16,14 @@ type nameData struct {
 	Binary  string
 }
 
-func nameFor(ctx *context.Context, build config.Build, target buildTarget) (string, error) {
+func nameFor(ctx *context.Context, target buildTarget) (string, error) {
 	var data = nameData{
 		Os:      replace(ctx.Config.Archive.Replacements, target.goos),
 		Arch:    replace(ctx.Config.Archive.Replacements, target.goarch),
 		Arm:     replace(ctx.Config.Archive.Replacements, target.goarm),
 		Version: ctx.Version,
 		Tag:     ctx.Git.CurrentTag,
-		Binary:  build.Binary,
+		Binary:  ctx.Config.Name,
 	}
 
 	var out bytes.Buffer

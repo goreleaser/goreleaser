@@ -3,7 +3,7 @@ description: &description Deliver Go binaries as fast and easily as possible
 builds:
   -
     env:
-    - CGO_ENABLED=0
+      - CGO_ENABLED=0
     goos:
       - linux
       - darwin
