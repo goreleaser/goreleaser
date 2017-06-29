@@ -132,7 +132,7 @@ func getSnapshotName(ctx *context.Context, tag, commit string) (string, error) {
 }
 
 func validate(ctx *context.Context, commit, tag string) error {
-	out, err := git("status", "-s")
+	out, err := git("status", "--porcelain")
 	if strings.TrimSpace(out) != "" || err != nil {
 		return ErrDirty{out}
 	}
