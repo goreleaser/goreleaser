@@ -39,6 +39,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
 	for _, format := range ctx.Config.FPM.Formats {
 		for key, folder := range ctx.Folders {
+			if !strings.Contains(key, "linux") {
+				log.WithField("key", key).Debug("skipped non-linux builds for fpm")
+				continue
+			}
 			folder := folder
 			format := format
 			arch := archFor(key)
