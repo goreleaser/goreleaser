@@ -4,6 +4,7 @@
 package archive
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/mattn/go-zglob"
 	"golang.org/x/sync/errgroup"
 )
@@ -58,10 +58,13 @@ func create(ctx *context.Context, platform, name string) error {
 			return err
 		}
 	}
-	for _, build := range ctx.Config.Builds {
-		var binary = build.Binary + ext.For(platform)
-		var bin = filepath.Join(ctx.Config.Dist, name)
-		if err := archive.Add(binary, filepath.Join(bin, binary)); err != nil {
+	var path = filepath.Join(ctx.Config.Dist, name)
+	binaries, err := ioutil.ReadDir(path)
+	if err != nil {
+		return err
+	}
+	for _, binary := range binaries {
+		if err := archive.Add(binary.Name(), filepath.Join(path, binary.Name())); err != nil {
 			return err
 		}
 	}
