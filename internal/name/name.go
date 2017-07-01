@@ -1,4 +1,4 @@
-package build
+package name
 
 import (
 	"bytes"
@@ -16,11 +16,11 @@ type nameData struct {
 	Binary  string
 }
 
-func nameFor(ctx *context.Context, target buildTarget) (string, error) {
+func For(ctx *context.Context, goos, goarch, goarm string) (string, error) {
 	var data = nameData{
-		Os:      replace(ctx.Config.Archive.Replacements, target.goos),
-		Arch:    replace(ctx.Config.Archive.Replacements, target.goarch),
-		Arm:     replace(ctx.Config.Archive.Replacements, target.goarm),
+		Os:      replace(ctx.Config.Archive.Replacements, goos),
+		Arch:    replace(ctx.Config.Archive.Replacements, goarch),
+		Arm:     replace(ctx.Config.Archive.Replacements, goarm),
 		Version: ctx.Version,
 		Tag:     ctx.Git.CurrentTag,
 		Binary:  ctx.Config.Name,
