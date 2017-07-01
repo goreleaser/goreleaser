@@ -23,7 +23,7 @@ var ErrNoDarwin64Build = errors.New("brew tap requires a darwin amd64 build")
 const formula = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}.{{ .Format }}"
+  url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
 
@@ -71,7 +71,6 @@ type templateData struct {
 	Version      string
 	Caveats      string
 	File         string
-	Format       string
 	SHA256       string
 	Plist        string
 	Install      []string
@@ -105,7 +104,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		log.Warn("skipped because release is marked as draft")
 		return nil
 	}
-	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.Name+".rb")
+	var path = filepath.Join(ctx.Config.Brew.Folder, ctx.Config.Name+".rb")
 	log.WithField("formula", path).
 		WithField("repo", ctx.Config.Brew.GitHub.String()).
 		Info("pushing")
@@ -134,21 +133,13 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 	return out, err
 }
 
-func hasDarwinBuilds(ctx *context.Context) bool {
-	// TODO: fix here
-	for key := range ctx.Binaries {
-		if strings.HasSuffix(key, "darwinamd64") {
-			return true
-		}
-	}
-	return false
-}
-
 func dataFor(ctx *context.Context, client client.Client) (result templateData, err error) {
-	if !hasDarwinBuilds(ctx) {
+	var folder = ctx.Folders["darwinamd64"]
+	if folder == "" {
 		return result, ErrNoDarwin64Build
 	}
-	var file = ctx.Config.Name + "." + ctx.Config.Archive.Format
+	// TODO this can be broken by format_overrides
+	var file = folder + "." + ctx.Config.Archive.Format
 	sum, err := checksum.SHA256(filepath.Join(ctx.Config.Dist, file))
 	if err != nil {
 		return
@@ -162,7 +153,6 @@ func dataFor(ctx *context.Context, client client.Client) (result templateData, e
 		Version:      ctx.Version,
 		Caveats:      ctx.Config.Brew.Caveats,
 		File:         file,
-		Format:       ctx.Config.Archive.Format, // TODO this can be broken by format_overrides
 		SHA256:       sum,
 		Dependencies: ctx.Config.Brew.Dependencies,
 		Conflicts:    ctx.Config.Brew.Conflicts,
