@@ -36,13 +36,13 @@ type Context struct {
 	Snapshot     bool
 }
 
-var artifactLock sync.Mutex
-var archiveLock sync.Mutex
+var artifactsLock sync.Mutex
+var binariesLock sync.Mutex
 
 // AddArtifact adds a file to upload list
 func (ctx *Context) AddArtifact(file string) {
-	artifactLock.Lock()
-	defer artifactLock.Unlock()
+	artifactsLock.Lock()
+	defer artifactsLock.Unlock()
 	file = strings.TrimPrefix(file, ctx.Config.Dist)
 	file = strings.Replace(file, "/", "", -1)
 	ctx.Artifacts = append(ctx.Artifacts, file)
@@ -51,8 +51,8 @@ func (ctx *Context) AddArtifact(file string) {
 
 // AddBinary adds a built binary to the current context
 func (ctx *Context) AddBinary(key, file string) {
-	archiveLock.Lock()
-	defer archiveLock.Unlock()
+	binariesLock.Lock()
+	defer binariesLock.Unlock()
 	ctx.Binaries[key] = file
 	log.WithField("key", key).WithField("binary", file).Info("added")
 }
