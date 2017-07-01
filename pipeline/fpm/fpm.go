@@ -44,11 +44,13 @@ func (Pipe) Run(ctx *context.Context) error {
 		for _, build := range ctx.Config.Builds {
 			for _, goarch := range build.Goarch {
 				var key = build.Binary + "linux" + goarch
-				if ctx.Archives[key] == "" {
+				// TODO: fix here
+				if ctx.Binaries[key] == "" {
 					continue
 				}
 				format := format
-				archive := ctx.Archives[key]
+				// TODO: fix here
+				archive := ctx.Binaries[key]
 				arch := goarchToUnix[goarch]
 				g.Go(func() error {
 					return create(ctx, format, archive, arch)

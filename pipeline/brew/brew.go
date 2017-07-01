@@ -135,7 +135,8 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 }
 
 func hasDarwinBuilds(ctx *context.Context) bool {
-	for key := range ctx.Archives {
+	// TODO: fix here
+	for key := range ctx.Binaries {
 		if strings.HasSuffix(key, "darwinamd64") {
 			return true
 		}

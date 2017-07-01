@@ -27,7 +27,7 @@ type Context struct {
 	Config       config.Project
 	Token        string
 	Git          GitInfo
-	Archives     map[string]string
+	Binaries     map[string]string
 	Artifacts    []string
 	ReleaseNotes string
 	Version      string
@@ -49,11 +49,12 @@ func (ctx *Context) AddArtifact(file string) {
 	log.WithField("artifact", file).Info("registered")
 }
 
-func (ctx *Context) AddArchive(key, file string) {
+// AddBinary adds a built binary to the current context
+func (ctx *Context) AddBinary(key, file string) {
 	archiveLock.Lock()
 	defer archiveLock.Unlock()
-	ctx.Archives[key] = file
-	log.WithField("key", key).WithField("archive", file).Info("added")
+	ctx.Binaries[key] = file
+	log.WithField("key", key).WithField("binary", file).Info("added")
 }
 
 // New context

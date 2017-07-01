@@ -27,7 +27,8 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	for platform, archive := range ctx.Archives {
+	// TODO: fix here
+	for platform, archive := range ctx.Binaries {
 		archive := archive
 		platform := platform
 		g.Go(func() error {
