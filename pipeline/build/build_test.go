@@ -29,16 +29,20 @@ func TestRunInvalidCommand(t *testing.T) {
 func TestBuild(t *testing.T) {
 	assert := assert.New(t)
 	var config = config.Project{
-		Build: config.Build{
-			Binary: "testing",
-			Flags:  "-n",
-			Env:    []string{"BLAH=1"},
+		Builds: []config.Build{
+			{
+				Binary: "testing",
+				Flags:  "-n",
+				Env:    []string{"BLAH=1"},
+			},
 		},
 	}
 	var ctx = &context.Context{
-		Config: config,
+		Config:   config,
+		Folders:  map[string]string{},
+		Binaries: map[string]string{},
 	}
-	assert.NoError(build(ctx, "build_test", runtimeTarget))
+	assert.NoError(doBuild(ctx, ctx.Config.Builds[0], runtimeTarget))
 }
 
 func TestRunFullPipe(t *testing.T) {
@@ -50,25 +54,28 @@ func TestRunFullPipe(t *testing.T) {
 	var post = filepath.Join(folder, "post")
 	var config = config.Project{
 		Dist: folder,
-		Build: config.Build{
-			Binary:  "testing",
-			Flags:   "-v",
-			Ldflags: "-X main.test=testing",
-			Hooks: config.Hooks{
-				Pre:  "touch " + pre,
-				Post: "touch " + post,
-			},
-			Goos: []string{
-				runtime.GOOS,
-			},
-			Goarch: []string{
-				runtime.GOARCH,
+		Builds: []config.Build{
+			{
+				Binary:  "testing",
+				Flags:   "-v",
+				Ldflags: "-X main.test=testing",
+				Hooks: config.Hooks{
+					Pre:  "touch " + pre,
+					Post: "touch " + post,
+				},
+				Goos: []string{
+					runtime.GOOS,
+				},
+				Goarch: []string{
+					runtime.GOARCH,
+				},
 			},
 		},
 	}
 	var ctx = &context.Context{
 		Config:   config,
-		Archives: map[string]string{},
+		Folders:  map[string]string{},
+		Binaries: map[string]string{},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.True(exists(binary), binary)
@@ -83,25 +90,28 @@ func TestRunPipeArmBuilds(t *testing.T) {
 	var binary = filepath.Join(folder, "armtesting")
 	var config = config.Project{
 		Dist: folder,
-		Build: config.Build{
-			Binary:  "armtesting",
-			Flags:   "-v",
-			Ldflags: "-X main.test=armtesting",
-			Goos: []string{
-				"linux",
-			},
-			Goarch: []string{
-				"arm",
-				"arm64",
-			},
-			Goarm: []string{
-				"6",
+		Builds: []config.Build{
+			{
+				Binary:  "armtesting",
+				Flags:   "-v",
+				Ldflags: "-X main.test=armtesting",
+				Goos: []string{
+					"linux",
+				},
+				Goarch: []string{
+					"arm",
+					"arm64",
+				},
+				Goarm: []string{
+					"6",
+				},
 			},
 		},
 	}
 	var ctx = &context.Context{
 		Config:   config,
-		Archives: map[string]string{},
+		Folders:  map[string]string{},
+		Binaries: map[string]string{},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.True(exists(binary), binary)
@@ -110,19 +120,22 @@ func TestRunPipeArmBuilds(t *testing.T) {
 func TestBuildFailed(t *testing.T) {
 	assert := assert.New(t)
 	var config = config.Project{
-		Build: config.Build{
-			Flags: "-flag-that-dont-exists-to-force-failure",
-			Goos: []string{
-				runtime.GOOS,
-			},
-			Goarch: []string{
-				runtime.GOARCH,
+		Builds: []config.Build{
+			{
+				Flags: "-flag-that-dont-exists-to-force-failure",
+				Goos: []string{
+					runtime.GOOS,
+				},
+				Goarch: []string{
+					runtime.GOARCH,
+				},
 			},
 		},
 	}
 	var ctx = &context.Context{
 		Config:   config,
-		Archives: map[string]string{},
+		Folders:  map[string]string{},
+		Binaries: map[string]string{},
 	}
 	assert.Error(Pipe{}.Run(ctx))
 }
@@ -130,19 +143,22 @@ func TestBuildFailed(t *testing.T) {
 func TestRunPipeWithInvalidOS(t *testing.T) {
 	assert := assert.New(t)
 	var config = config.Project{
-		Build: config.Build{
-			Flags: "-v",
-			Goos: []string{
-				"windows",
-			},
-			Goarch: []string{
-				"arm",
+		Builds: []config.Build{
+			{
+				Flags: "-v",
+				Goos: []string{
+					"windows",
+				},
+				Goarch: []string{
+					"arm",
+				},
 			},
 		},
 	}
 	var ctx = &context.Context{
 		Config:   config,
-		Archives: map[string]string{},
+		Folders:  map[string]string{},
+		Binaries: map[string]string{},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 }
@@ -151,14 +167,16 @@ func TestRunInvalidNametemplate(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
 		Config: config.Project{
-			Build: config.Build{
-				Binary: "nametest",
-				Flags:  "-v",
-				Goos: []string{
-					runtime.GOOS,
-				},
-				Goarch: []string{
-					runtime.GOARCH,
+			Builds: []config.Build{
+				{
+					Binary: "nametest",
+					Flags:  "-v",
+					Goos: []string{
+						runtime.GOOS,
+					},
+					Goarch: []string{
+						runtime.GOARCH,
+					},
 				},
 			},
 			Archive: config.Archive{
@@ -172,17 +190,20 @@ func TestRunInvalidNametemplate(t *testing.T) {
 func TestRunInvalidLdflags(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
-		Archives: map[string]string{},
+		Folders:  map[string]string{},
+		Binaries: map[string]string{},
 		Config: config.Project{
-			Build: config.Build{
-				Binary:  "nametest",
-				Flags:   "-v",
-				Ldflags: "-s -w -X main.version={{.Version}",
-				Goos: []string{
-					runtime.GOOS,
-				},
-				Goarch: []string{
-					runtime.GOARCH,
+			Builds: []config.Build{
+				{
+					Binary:  "nametest",
+					Flags:   "-v",
+					Ldflags: "-s -w -X main.version={{.Version}",
+					Goos: []string{
+						runtime.GOOS,
+					},
+					Goarch: []string{
+						runtime.GOARCH,
+					},
 				},
 			},
 		},
@@ -193,26 +214,29 @@ func TestRunInvalidLdflags(t *testing.T) {
 func TestRunPipeFailingHooks(t *testing.T) {
 	assert := assert.New(t)
 	var config = config.Project{
-		Build: config.Build{
-			Hooks: config.Hooks{},
-			Goos: []string{
-				runtime.GOOS,
-			},
-			Goarch: []string{
-				runtime.GOARCH,
+		Builds: []config.Build{
+			{
+				Hooks: config.Hooks{},
+				Goos: []string{
+					runtime.GOOS,
+				},
+				Goarch: []string{
+					runtime.GOARCH,
+				},
 			},
 		},
 	}
 	var ctx = &context.Context{
 		Config:   config,
-		Archives: map[string]string{},
+		Folders:  map[string]string{},
+		Binaries: map[string]string{},
 	}
 	t.Run("pre-hook", func(t *testing.T) {
-		ctx.Config.Build.Hooks.Pre = "exit 1"
+		ctx.Config.Builds[0].Hooks.Pre = "exit 1"
 		assert.Error(Pipe{}.Run(ctx))
 	})
 	t.Run("post-hook", func(t *testing.T) {
-		ctx.Config.Build.Hooks.Post = "exit 1"
+		ctx.Config.Builds[0].Hooks.Post = "exit 1"
 		assert.Error(Pipe{}.Run(ctx))
 	})
 }
