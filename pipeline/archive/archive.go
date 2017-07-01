@@ -27,19 +27,18 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	// TODO: fix here
-	for platform, archive := range ctx.Binaries {
-		archive := archive
+	for platform, folder := range ctx.Folders {
+		folder := folder
 		platform := platform
 		g.Go(func() error {
-			return create(ctx, platform, archive)
+			return create(ctx, platform, folder)
 		})
 	}
 	return g.Wait()
 }
 
 func create(ctx *context.Context, platform, name string) error {
-	var folder = filepath.Join(ctx.Config.Dist, ctx.Config.Name)
+	var folder = filepath.Join(ctx.Config.Dist, name)
 	var format = formatFor(ctx, platform)
 	file, err := os.Create(folder + "." + format)
 	if err != nil {

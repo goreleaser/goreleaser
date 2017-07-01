@@ -73,12 +73,13 @@ func doBuild(ctx *context.Context, build config.Build, target buildTarget) error
 	if err != nil {
 		return err
 	}
+	ctx.AddFolder(target.String(), folder)
 	var binary = filepath.Join(
 		ctx.Config.Dist,
 		folder,
 		build.Binary+ext.For(target.goos),
 	)
-	ctx.AddArchive(build.Binary+target.String(), binary)
+	ctx.AddBinary(build.Binary+target.String(), binary)
 	log.WithField("binary", binary).Info("building")
 	cmd := []string{"go", "build"}
 	if build.Flags != "" {
