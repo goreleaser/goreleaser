@@ -1,3 +1,5 @@
+// Package name provides name template logic for the final archive, formulae,
+// etc.
 package name
 
 import (
@@ -16,6 +18,7 @@ type nameData struct {
 	Binary  string
 }
 
+// For returns the name for the given context, goos, goarch and goarm.
 func For(ctx *context.Context, goos, goarch, goarm string) (string, error) {
 	var data = nameData{
 		Os:      replace(ctx.Config.Archive.Replacements, goos),
