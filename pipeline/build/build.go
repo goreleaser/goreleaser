@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/ext"
+	"github.com/goreleaser/goreleaser/internal/name"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -42,19 +43,14 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	sem := make(chan bool, 4)
 	var g errgroup.Group
 	for _, target := range buildTargets(build) {
-		name, err := nameFor(ctx, target)
-		if err != nil {
-			return err
-		}
-		ctx.Archives[build.Binary+target.String()] = name
-
 		sem <- true
 		target := target
+		build := build
 		g.Go(func() error {
 			defer func() {
 				<-sem
 			}()
-			return doBuild(ctx, build, name, target)
+			return doBuild(ctx, build, target)
 		})
 	}
 	if err := g.Wait(); err != nil {
@@ -72,9 +68,18 @@ func runHook(env []string, hook string) error {
 	return run(runtimeTarget, cmd, env)
 }
 
-func doBuild(ctx *context.Context, build config.Build, name string, target buildTarget) error {
-	output := filepath.Join(ctx.Config.Dist, name, build.Binary+ext.For(target.goos))
-	log.WithField("binary", output).Info("building")
+func doBuild(ctx *context.Context, build config.Build, target buildTarget) error {
+	folder, err := name.For(ctx, target.goos, target.goarch, target.goarm)
+	if err != nil {
+		return err
+	}
+	var binary = filepath.Join(
+		ctx.Config.Dist,
+		folder,
+		build.Binary+ext.For(target.goos),
+	)
+	ctx.AddArchive(build.Binary+target.String(), binary)
+	log.WithField("binary", binary).Info("building")
 	cmd := []string{"go", "build"}
 	if build.Flags != "" {
 		cmd = append(cmd, strings.Fields(build.Flags)...)
@@ -83,7 +88,7 @@ func doBuild(ctx *context.Context, build config.Build, name string, target build
 	if err != nil {
 		return err
 	}
-	cmd = append(cmd, "-ldflags="+flags, "-o", output, build.Main)
+	cmd = append(cmd, "-ldflags="+flags, "-o", binary, build.Main)
 	return run(target, cmd, build.Env)
 }
 

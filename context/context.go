@@ -36,16 +36,24 @@ type Context struct {
 	Snapshot     bool
 }
 
-var lock sync.Mutex
+var artifactLock sync.Mutex
+var archiveLock sync.Mutex
 
 // AddArtifact adds a file to upload list
 func (ctx *Context) AddArtifact(file string) {
-	lock.Lock()
-	defer lock.Unlock()
+	artifactLock.Lock()
+	defer artifactLock.Unlock()
 	file = strings.TrimPrefix(file, ctx.Config.Dist)
 	file = strings.Replace(file, "/", "", -1)
 	ctx.Artifacts = append(ctx.Artifacts, file)
 	log.WithField("artifact", file).Info("registered")
+}
+
+func (ctx *Context) AddArchive(key, file string) {
+	archiveLock.Lock()
+	defer archiveLock.Unlock()
+	ctx.Archives[key] = file
+	log.WithField("key", key).WithField("archive", file).Info("added")
 }
 
 // New context
