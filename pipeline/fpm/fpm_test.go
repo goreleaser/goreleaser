@@ -33,18 +33,14 @@ func TestRunPipe(t *testing.T) {
 	_, err = os.Create(filepath.Join(dist, "mybin", "mybin"))
 	assert.NoError(err)
 	var ctx = &context.Context{
-		Archives: map[string]string{
-			"linuxamd64": "mybin",
+		Folders: map[string]string{
+			"linuxamd64":  "mybin",
+			"linux386":    "mybin",
+			"darwinamd64": "anotherbin",
 		},
 		Config: config.Project{
+			Name: "mybin",
 			Dist: dist,
-			Build: config.Build{
-				Goarch: []string{
-					"amd64",
-					"i386",
-				},
-				Binary: "mybin",
-			},
 			FPM: config.FPM{
 				Formats:      []string{"deb"},
 				Dependencies: []string{"make"},
@@ -85,18 +81,11 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	assert.NoError(os.Mkdir(dist, 0755))
 	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var ctx = &context.Context{
-		Archives: map[string]string{
+		Folders: map[string]string{
 			"linuxamd64": "mybin",
 		},
 		Config: config.Project{
 			Dist: dist,
-			Build: config.Build{
-				Goarch: []string{
-					"amd64",
-					"i386",
-				},
-				Binary: "mybin",
-			},
 			FPM: config.FPM{
 				Formats: []string{"deb"},
 			},
