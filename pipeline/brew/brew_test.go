@@ -138,7 +138,7 @@ func TestRunPipeFormatOverride(t *testing.T) {
 				},
 			},
 		},
-		Archives: map[string]string{
+		Folders: map[string]string{
 			"darwinamd64": "bin",
 		},
 		Publish: true,
@@ -166,7 +166,7 @@ func TestRunPipeArchiveDoesntExist(t *testing.T) {
 				},
 			},
 		},
-		Archives: map[string]string{
+		Folders: map[string]string{
 			"darwinamd64": "bin",
 		},
 		Publish: true,
