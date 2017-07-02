@@ -75,7 +75,6 @@ func setBuildDefaults(ctx *context.Context) {
 			buildWithDefaults(ctx, ctx.Config.SingleBuild),
 		}
 	}
-	log.WithField("builds", ctx.Config.Builds).Info("set")
 }
 
 func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
