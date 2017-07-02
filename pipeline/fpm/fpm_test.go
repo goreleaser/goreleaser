@@ -93,3 +93,12 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	}
 	assert.Error(Pipe{}.Run(ctx))
 }
+
+func TestCreatePathDoesntExist(t *testing.T) {
+	var assert = assert.New(t)
+	var ctx = &context.Context{}
+	assert.Contains(
+		create(ctx, "tar.gz", "/nope/noooo", "windowsarm64").Error(),
+		"no such file",
+	)
+}
