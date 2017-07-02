@@ -17,7 +17,7 @@ func TestDescribeBody(t *testing.T) {
 	out, err := describeBody(ctx)
 	assert.NoError(err)
 	assert.Contains(out.String(), changelog)
-	assert.Contains(out.String(), "Automated with @goreleaser")
+	assert.Contains(out.String(), "Automated with [GoReleaser]")
 	assert.Contains(out.String(), "Built with go version go1.8")
 }
 
