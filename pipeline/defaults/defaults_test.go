@@ -57,11 +57,19 @@ func TestFillPartial(t *testing.T) {
 			},
 			Builds: []config.Build{
 				{Binary: "testreleaser"},
+				{Goos: []string{"linux"}},
+				{
+					Binary: "another",
+					Ignore: []config.IgnoredBuild{
+						{Goos: "darwin", Goarch: "amd64"},
+					},
+				},
 			},
 		},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.Len(ctx.Config.Archive.Files, 1)
+	assert.Equal(`bin.install "testreleaser"`, ctx.Config.Brew.Install)
 }
 
 func TestFillSingleBuild(t *testing.T) {

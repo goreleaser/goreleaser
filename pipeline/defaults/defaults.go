@@ -41,7 +41,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Brew.Install == "" {
 		var installs []string
 		for _, build := range ctx.Config.Builds {
-			// TODO: check for OSX builds only
+			if !isBrewBuild(build) {
+				continue
+			}
 			installs = append(
 				installs,
 				fmt.Sprintf(`bin.install "%s"`, build.Binary),
@@ -52,6 +54,24 @@ func (Pipe) Run(ctx *context.Context) error {
 	err := setArchiveDefaults(ctx)
 	log.WithField("config", ctx.Config).Debug("defaults set")
 	return err
+}
+
+func isBrewBuild(build config.Build) bool {
+	for _, ignore := range build.Ignore {
+		if ignore.Goos == "darwin" && ignore.Goarch == "amd64" {
+			return false
+		}
+	}
+	return contains(build.Goos, "darwin") && contains(build.Goarch, "amd64")
+}
+
+func contains(ss []string, s string) bool {
+	for _, zs := range ss {
+		if zs == s {
+			return true
+		}
+	}
+	return false
 }
 
 func setReleaseDefaults(ctx *context.Context) error {
