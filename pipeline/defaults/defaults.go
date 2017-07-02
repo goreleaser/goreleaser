@@ -41,6 +41,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Brew.Install == "" {
 		var installs []string
 		for _, build := range ctx.Config.Builds {
+			// TODO: check for OSX builds only
 			installs = append(
 				installs,
 				fmt.Sprintf(`bin.install "%s"`, build.Binary),
@@ -66,31 +67,37 @@ func setReleaseDefaults(ctx *context.Context) error {
 }
 
 func setBuildDefaults(ctx *context.Context) {
-	var builds []config.Build
-	log.WithField("builds", ctx.Config.Builds).Debug("builds cleaned")
-	for _, build := range ctx.Config.Builds {
-		if build.Binary == "" {
-			build.Binary = ctx.Config.Release.GitHub.Name
-		}
-		if build.Main == "" {
-			build.Main = "."
-		}
-		if len(build.Goos) == 0 {
-			build.Goos = []string{"linux", "darwin"}
-		}
-		if len(build.Goarch) == 0 {
-			build.Goarch = []string{"amd64", "386"}
-		}
-		if len(build.Goarm) == 0 {
-			build.Goarm = []string{"6"}
-		}
-		if build.Ldflags == "" {
-			build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
-		}
-		builds = append(builds, build)
+	for i, build := range ctx.Config.Builds {
+		ctx.Config.Builds[i] = buildWithDefaults(ctx, build)
 	}
-	ctx.Config.Builds = builds
-	log.WithField("builds", ctx.Config.Builds).Debug("set")
+	if len(ctx.Config.Builds) == 0 {
+		ctx.Config.Builds = []config.Build{
+			buildWithDefaults(ctx, config.Build{}),
+		}
+	}
+	log.WithField("builds", ctx.Config.Builds).Info("set")
+}
+
+func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
+	if build.Binary == "" {
+		build.Binary = ctx.Config.Release.GitHub.Name
+	}
+	if build.Main == "" {
+		build.Main = "."
+	}
+	if len(build.Goos) == 0 {
+		build.Goos = []string{"linux", "darwin"}
+	}
+	if len(build.Goarch) == 0 {
+		build.Goarch = []string{"amd64", "386"}
+	}
+	if len(build.Goarm) == 0 {
+		build.Goarm = []string{"6"}
+	}
+	if build.Ldflags == "" {
+		build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
+	}
+	return build
 }
 
 func setArchiveDefaults(ctx *context.Context) error {
