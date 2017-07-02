@@ -113,6 +113,69 @@ func TestRunPipe(t *testing.T) {
 	assert.True(client.CreatedFile)
 }
 
+func TestRunPipeFormatOverride(t *testing.T) {
+	assert := assert.New(t)
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(err)
+	_, err = os.Create(filepath.Join(folder, "bin.zip"))
+	assert.NoError(err)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dist: folder,
+			Archive: config.Archive{
+				Format: "tar.gz",
+				FormatOverrides: []config.FormatOverride{
+					{
+						Format: "zip",
+						Goos:   "darwin",
+					},
+				},
+			},
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+		Archives: map[string]string{
+			"darwinamd64": "bin",
+		},
+		Publish: true,
+	}
+	client := &DummyClient{}
+	assert.NoError(doRun(ctx, client))
+	assert.True(client.CreatedFile)
+	assert.Contains(client.Content, "bin.zip")
+}
+
+func TestRunPipeArchiveDoesntExist(t *testing.T) {
+	assert := assert.New(t)
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(err)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dist: folder,
+			Archive: config.Archive{
+				Format: "tar.gz",
+			},
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+		Archives: map[string]string{
+			"darwinamd64": "bin",
+		},
+		Publish: true,
+	}
+	client := &DummyClient{}
+	assert.Error(doRun(ctx, client))
+	assert.False(client.CreatedFile)
+}
+
 func TestRunPipeNoDarwin64Build(t *testing.T) {
 	assert := assert.New(t)
 	var ctx = &context.Context{
@@ -186,6 +249,7 @@ func TestRunPipeDraftRelease(t *testing.T) {
 
 type DummyClient struct {
 	CreatedFile bool
+	Content     string
 }
 
 func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
@@ -194,6 +258,8 @@ func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (rel
 
 func (client *DummyClient) CreateFile(ctx *context.Context, content bytes.Buffer, path string) (err error) {
 	client.CreatedFile = true
+	bts, _ := ioutil.ReadAll(&content)
+	client.Content = string(bts)
 	return
 }
 
