@@ -72,7 +72,7 @@ func setBuildDefaults(ctx *context.Context) {
 	}
 	if len(ctx.Config.Builds) == 0 {
 		ctx.Config.Builds = []config.Build{
-			buildWithDefaults(ctx, config.Build{}),
+			buildWithDefaults(ctx, ctx.Config.SingleBuild),
 		}
 	}
 	log.WithField("builds", ctx.Config.Builds).Info("set")

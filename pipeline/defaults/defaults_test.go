@@ -64,6 +64,21 @@ func TestFillPartial(t *testing.T) {
 	assert.Len(ctx.Config.Archive.Files, 1)
 }
 
+func TestFillSingleBuild(t *testing.T) {
+	var assert = assert.New(t)
+
+	var ctx = &context.Context{
+		Config: config.Project{
+			SingleBuild: config.Build{
+				Main: "testreleaser",
+			},
+		},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	assert.Len(ctx.Config.Builds, 1)
+	assert.Equal(ctx.Config.Builds[0].Binary, "goreleaser")
+}
+
 func TestNotAGitRepo(t *testing.T) {
 	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
