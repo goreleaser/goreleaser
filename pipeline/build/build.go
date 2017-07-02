@@ -79,7 +79,6 @@ func doBuild(ctx *context.Context, build config.Build, target buildTarget) error
 		folder,
 		build.Binary+ext.For(target.goos),
 	)
-	ctx.AddBinary(build.Binary+target.String(), binary)
 	log.WithField("binary", binary).Info("building")
 	cmd := []string{"go", "build"}
 	if build.Flags != "" {
