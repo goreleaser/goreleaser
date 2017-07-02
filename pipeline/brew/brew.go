@@ -13,12 +13,15 @@ import (
 	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/client"
 )
 
 // ErrNoDarwin64Build when there is no build for darwin_amd64 (goos doesn't
 // contain darwin and/or goarch doesn't contain amd64)
 var ErrNoDarwin64Build = errors.New("brew tap requires a darwin amd64 build")
+
+const platform = "darwinamd64"
 
 const formula = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
@@ -134,12 +137,11 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 }
 
 func dataFor(ctx *context.Context, client client.Client) (result templateData, err error) {
-	var folder = ctx.Folders["darwinamd64"]
+	var folder = ctx.Folders[platform]
 	if folder == "" {
 		return result, ErrNoDarwin64Build
 	}
-	// TODO this can be broken by format_overrides
-	var file = folder + "." + ctx.Config.Archive.Format
+	var file = folder + "." + archiveformat.For(ctx, platform)
 	sum, err := checksum.SHA256(filepath.Join(ctx.Config.Dist, file))
 	if err != nil {
 		return
