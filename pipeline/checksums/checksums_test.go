@@ -25,9 +25,7 @@ func TestPipe(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
 			Dist: folder,
-			Build: config.Build{
-				Binary: binary,
-			},
+			Name: binary,
 		},
 	}
 	ctx.AddArtifact(file)
