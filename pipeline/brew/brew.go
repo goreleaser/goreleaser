@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/client"
 )
 
@@ -23,7 +24,7 @@ var ErrNoDarwin64Build = errors.New("brew tap requires a darwin amd64 build")
 const formula = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}.{{ .Format }}"
+  url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
 
@@ -72,7 +73,6 @@ type templateData struct {
 	Binary       string
 	Caveats      string
 	File         string
-	Format       string
 	SHA256       string
 	Plist        string
 	Install      []string
@@ -136,16 +136,12 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 }
 
 func dataFor(ctx *context.Context, client client.Client) (result templateData, err error) {
-	file := ctx.Archives["darwinamd64"]
-	if file == "" {
+	var folder = ctx.Archives["darwinamd64"]
+	if folder == "" {
 		return result, ErrNoDarwin64Build
 	}
-	sum, err := checksum.SHA256(
-		filepath.Join(
-			ctx.Config.Dist,
-			file+"."+ctx.Config.Archive.Format,
-		),
-	)
+	var file = folder + "." + archiveformat.For(ctx, "darwinamd64")
+	sum, err := checksum.SHA256(filepath.Join(ctx.Config.Dist, file))
 	if err != nil {
 		return
 	}
@@ -159,7 +155,6 @@ func dataFor(ctx *context.Context, client client.Client) (result templateData, e
 		Binary:       ctx.Config.Build.Binary,
 		Caveats:      ctx.Config.Brew.Caveats,
 		File:         file,
-		Format:       ctx.Config.Archive.Format, // TODO this can be broken by format_overrides
 		SHA256:       sum,
 		Dependencies: ctx.Config.Brew.Dependencies,
 		Conflicts:    ctx.Config.Brew.Conflicts,

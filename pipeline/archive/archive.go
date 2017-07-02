@@ -6,11 +6,11 @@ package archive
 import (
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/mattn/go-zglob"
 	"golang.org/x/sync/errgroup"
@@ -39,7 +39,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func create(ctx *context.Context, platform, name string) error {
 	var folder = filepath.Join(ctx.Config.Dist, name)
-	var format = formatFor(ctx, platform)
+	var format = archiveformat.For(ctx, platform)
 	file, err := os.Create(folder + "." + format)
 	if err != nil {
 		return err
@@ -75,13 +75,4 @@ func findFiles(ctx *context.Context) (result []string, err error) {
 		result = append(result, files...)
 	}
 	return
-}
-
-func formatFor(ctx *context.Context, platform string) string {
-	for _, override := range ctx.Config.Archive.FormatOverrides {
-		if strings.HasPrefix(platform, override.Goos) {
-			return override.Format
-		}
-	}
-	return ctx.Config.Archive.Format
 }

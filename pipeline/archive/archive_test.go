@@ -82,25 +82,6 @@ func TestRunPipeDistRemoved(t *testing.T) {
 	assert.Error(Pipe{}.Run(ctx))
 }
 
-func TestFormatFor(t *testing.T) {
-	var assert = assert.New(t)
-	var ctx = &context.Context{
-		Config: config.Project{
-			Archive: config.Archive{
-				Format: "tar.gz",
-				FormatOverrides: []config.FormatOverride{
-					{
-						Goos:   "windows",
-						Format: "zip",
-					},
-				},
-			},
-		},
-	}
-	assert.Equal("zip", formatFor(ctx, "windowsamd64"))
-	assert.Equal("tar.gz", formatFor(ctx, "linux386"))
-}
-
 func TestRunPipeInvalidGlob(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
