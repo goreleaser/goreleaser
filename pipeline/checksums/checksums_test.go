@@ -24,8 +24,8 @@ func TestPipe(t *testing.T) {
 	assert.NoError(ioutil.WriteFile(file, []byte("some string"), 0644))
 	var ctx = &context.Context{
 		Config: config.Project{
-			Dist: folder,
-			Name: binary,
+			Dist:        folder,
+			ProjectName: binary,
 		},
 	}
 	ctx.AddArtifact(file)

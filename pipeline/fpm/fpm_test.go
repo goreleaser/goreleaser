@@ -39,8 +39,8 @@ func TestRunPipe(t *testing.T) {
 			"darwinamd64": "anotherbin",
 		},
 		Config: config.Project{
-			Name: "mybin",
-			Dist: dist,
+			ProjectName: "mybin",
+			Dist:        dist,
 			FPM: config.FPM{
 				Formats:      []string{"deb"},
 				Dependencies: []string{"make"},

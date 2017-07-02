@@ -34,8 +34,8 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err := setReleaseDefaults(ctx); err != nil {
 		return err
 	}
-	if ctx.Config.Name == "" {
-		ctx.Config.Name = ctx.Config.Release.GitHub.Name
+	if ctx.Config.ProjectName == "" {
+		ctx.Config.ProjectName = ctx.Config.Release.GitHub.Name
 	}
 	setBuildDefaults(ctx)
 	if ctx.Config.Brew.Install == "" {

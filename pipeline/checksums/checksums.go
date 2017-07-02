@@ -26,7 +26,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	file, err := os.OpenFile(
 		filepath.Join(
 			ctx.Config.Dist,
-			fmt.Sprintf("%v_checksums.txt", ctx.Config.Name),
+			fmt.Sprintf("%v_checksums.txt", ctx.Config.ProjectName),
 		),
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 		0644,

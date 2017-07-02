@@ -69,7 +69,7 @@ func create(ctx *context.Context, format, folder, arch string) error {
 	var options = []string{
 		"--input-type", "dir",
 		"--output-type", format,
-		"--name", ctx.Config.Name,
+		"--name", ctx.Config.ProjectName,
 		"--version", ctx.Version,
 		"--architecture", arch,
 		"--chdir", path,

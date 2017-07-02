@@ -36,7 +36,7 @@ func (c *githubClient) CreateFile(
 		},
 		Content: content.Bytes(),
 		Message: github.String(
-			ctx.Config.Name + " version " + ctx.Git.CurrentTag,
+			ctx.Config.ProjectName + " version " + ctx.Git.CurrentTag,
 		),
 	}
 

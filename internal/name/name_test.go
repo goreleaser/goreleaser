@@ -20,7 +20,7 @@ func TestNameFor(t *testing.T) {
 				"amd64":  "x86_64",
 			},
 		},
-		Name: "test",
+		ProjectName: "test",
 	}
 	var ctx = &context.Context{
 		Config:  config,
@@ -42,7 +42,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 			Archive: config.Archive{
 				NameTemplate: "{{.Binary}_{{.Os}}_{{.Arch}}_{{.Version}}",
 			},
-			Name: "test",
+			ProjectName: "test",
 		},
 		Git: context.GitInfo{
 			CurrentTag: "v1.2.3",
@@ -60,7 +60,7 @@ func TestNameDefaltTemplate(t *testing.T) {
 			Archive: config.Archive{
 				NameTemplate: defaults.NameTemplate,
 			},
-			Name: "test",
+			ProjectName: "test",
 		},
 		Version: "1.2.3",
 	}

@@ -100,13 +100,13 @@ type Snapshot struct {
 
 // Project includes all project configuration
 type Project struct {
-	Name     string   `yaml:",omitempty"`
-	Release  Release  `yaml:",omitempty"`
-	Brew     Homebrew `yaml:",omitempty"`
-	Builds   []Build  `yaml:",omitempty"`
-	Archive  Archive  `yaml:",omitempty"`
-	FPM      FPM      `yaml:",omitempty"`
-	Snapshot Snapshot `yaml:",omitempty"`
+	ProjectName string   `yaml:"project_name,omitempty"`
+	Release     Release  `yaml:",omitempty"`
+	Brew        Homebrew `yaml:",omitempty"`
+	Builds      []Build  `yaml:",omitempty"`
+	Archive     Archive  `yaml:",omitempty"`
+	FPM         FPM      `yaml:",omitempty"`
+	Snapshot    Snapshot `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

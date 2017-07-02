@@ -75,7 +75,7 @@ PS: Invalid GOOS/GOARCH combinations will automatically be skipped.
 
 This configuration specifies the build operating systems to Windows, Linux and MacOS using 64bit architecture, the name of the binaries is `drum-roll`.
 
-GoReleaser will then archive the result binaries of each Os/Arch into a separate file. The default format is `{{.Binary}}_{{.Os}}_{{.Arch}}`.
+GoReleaser will then archive the result binaries of each Os/Arch into a separate file. The default format is `{{.ProjectName}}_{{.Os}}_{{.Arch}}`.
 You can change the archives name and format. You can also replace the OS and the Architecture with your own.
 Another useful feature is to add files to archives, this is very useful for integrating assets like resource files.
 
@@ -172,6 +172,15 @@ defaults are sensible and fit for most projects.
 
 We'll cover all customizations available bellow:
 
+### Project name
+
+```yml
+# goreleaser.yml
+# The name of the project. It is used in the name of the brew formula, archives,
+# etc. Defaults to the name of the git project.
+project_name: myproject
+```
+
 ### Build customization
 
 ```yml
@@ -254,14 +263,14 @@ archive:
   # You can change the name of the archive.
   # This is parsed with Golang template engine and the following variables
   # are available:
-  # - Binary
+  # - ProjectName
   # - Tag
   # - Version (Tag with the `v` prefix stripped)
   # - Os
   # - Arch
   # - Arm (ARM version)
-  # The default is `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
-  name_template: "{{.Binary}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+  # The default is `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
+  name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
   # Archive format. Valid options are `tar.gz` and `zip`.
   # Default is `tar.gz`

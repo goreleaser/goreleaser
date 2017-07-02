@@ -10,23 +10,25 @@ import (
 )
 
 type nameData struct {
-	Os      string
-	Arch    string
-	Arm     string
-	Version string
-	Tag     string
-	Binary  string
+	Os          string
+	Arch        string
+	Arm         string
+	Version     string
+	Tag         string
+	Binary      string // deprecated
+	ProjectName string
 }
 
 // For returns the name for the given context, goos, goarch and goarm.
 func For(ctx *context.Context, goos, goarch, goarm string) (string, error) {
 	var data = nameData{
-		Os:      replace(ctx.Config.Archive.Replacements, goos),
-		Arch:    replace(ctx.Config.Archive.Replacements, goarch),
-		Arm:     replace(ctx.Config.Archive.Replacements, goarm),
-		Version: ctx.Version,
-		Tag:     ctx.Git.CurrentTag,
-		Binary:  ctx.Config.Name,
+		Os:          replace(ctx.Config.Archive.Replacements, goos),
+		Arch:        replace(ctx.Config.Archive.Replacements, goarch),
+		Arm:         replace(ctx.Config.Archive.Replacements, goarm),
+		Version:     ctx.Version,
+		Tag:         ctx.Git.CurrentTag,
+		Binary:      ctx.Config.ProjectName,
+		ProjectName: ctx.Config.ProjectName,
 	}
 
 	var out bytes.Buffer
