@@ -27,6 +27,9 @@ func TestRunPipeFormatBinary(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
 		Config: config.Project{
+			FPM: config.FPM{
+				Formats: []string{"deb"},
+			},
 			Archive: config.Archive{
 				Format: "binary",
 			},
