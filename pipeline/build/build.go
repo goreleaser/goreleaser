@@ -80,7 +80,15 @@ func doBuild(ctx *context.Context, build config.Build, target buildTarget) error
 		build.Binary+ext.For(target.goos),
 	)
 	if ctx.Config.Archive.Format == "binary" {
-		binary = filepath.Join(ctx.Config.Dist, build.Binary+ext.For(target.goos))
+		bin, err := name.ForBuild(ctx, build, target.goos, target.goarch, target.goarm)
+		if err != nil {
+			return err
+		}
+		binary = filepath.Join(
+			ctx.Config.Dist,
+			folder,
+			bin+ext.For(target.goos),
+		)
 	}
 	log.WithField("binary", binary).Info("building")
 	cmd := []string{"go", "build"}

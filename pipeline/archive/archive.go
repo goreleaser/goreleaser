@@ -12,7 +12,6 @@ import (
 	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/archiveformat"
-	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/mattn/go-zglob"
 	"golang.org/x/sync/errgroup"
 )
@@ -33,9 +32,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		platform := platform
 		g.Go(func() error {
 			if ctx.Config.Archive.Format == "binary" {
-				return skip(ctx, platform, archive)
+				return skip(ctx, platform, folder)
 			}
-			return create(ctx, platform, archive)
+			return create(ctx, platform, folder)
 		})
 	}
 	return g.Wait()
@@ -77,10 +76,16 @@ func create(ctx *context.Context, platform, name string) error {
 }
 
 func skip(ctx *context.Context, platform, name string) error {
-	b := name + ext.For(platform)
-	log.WithField("binary", b).Info("skip archiving")
-	var binary = filepath.Join(ctx.Config.Dist, b)
-	ctx.AddArtifact(binary)
+	var path = filepath.Join(ctx.Config.Dist, name)
+	binaries, err := ioutil.ReadDir(path)
+	if err != nil {
+		return err
+	}
+	for _, binary := range binaries {
+		log.WithField("binary", binary.Name()).Info("skip archiving")
+		log.Infof("path: %v %v", path, binary.Name())
+		ctx.AddArtifact(filepath.Join(path+"/", binary.Name()))
+	}
 	return nil
 }
 
