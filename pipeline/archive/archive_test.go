@@ -75,22 +75,23 @@ func TestRunPipeBinary(t *testing.T) {
 	}()
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(os.Mkdir(dist, 0755))
-	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	_, err = os.Create(filepath.Join(dist, "mybin", "mybin"))
+	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin_darwin"), 0755))
+	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin_win"), 0755))
+	_, err = os.Create(filepath.Join(dist, "mybin_darwin", "mybin"))
 	assert.NoError(err)
-	_, err = os.Create(filepath.Join(dist, "mybin", "mybin.exe"))
+	_, err = os.Create(filepath.Join(dist, "mybin_win", "mybin.exe"))
 	assert.NoError(err)
 	_, err = os.Create(filepath.Join(folder, "README.md"))
 	assert.NoError(err)
 	var ctx = &context.Context{
-		Archives: map[string]string{
-			"darwinamd64":  "mybin",
-			"windowsamd64": "mybin",
+		Folders: map[string]string{
+			"darwinamd64":  "mybin_darwin",
+			"windowsamd64": "mybin_win",
 		},
 		Config: config.Project{
 			Dist: dist,
-			Build: config.Build{
-				Binary: "mybin",
+			Builds: []config.Build{
+				{Binary: "mybin"},
 			},
 			Archive: config.Archive{
 				Format: "binary",
@@ -98,8 +99,8 @@ func TestRunPipeBinary(t *testing.T) {
 		},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
-	assert.Contains(ctx.Artifacts, "mybin")
-	assert.Contains(ctx.Artifacts, "mybin.exe")
+	assert.Contains(ctx.Artifacts, "mybin_darwin/mybin")
+	assert.Contains(ctx.Artifacts, "mybin_win/mybin.exe")
 	assert.Len(ctx.Artifacts, 2)
 }
 

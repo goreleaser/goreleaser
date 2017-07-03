@@ -81,9 +81,9 @@ func skip(ctx *context.Context, platform, name string) error {
 	if err != nil {
 		return err
 	}
+	log.WithField("platform", platform).Debugf("found %v binaries", len(binaries))
 	for _, binary := range binaries {
 		log.WithField("binary", binary.Name()).Info("skip archiving")
-		log.Infof("path: %v %v", path, binary.Name())
 		ctx.AddArtifact(filepath.Join(path+"/", binary.Name()))
 	}
 	return nil
