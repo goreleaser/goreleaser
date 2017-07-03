@@ -20,6 +20,8 @@ type nameData struct {
 	ProjectName string
 }
 
+// ForBuild return the name for the given context, goos, goarch, goarm and
+// build, using the build.Binary property instead of project_name.
 func ForBuild(ctx *context.Context, build config.Build, goos, goarch, goarm string) (string, error) {
 	return apply(
 		nameData{
