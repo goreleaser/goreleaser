@@ -35,6 +35,31 @@ func TestNameFor(t *testing.T) {
 	assert.Equal("test_Darwin_x86_64_v1.2.3_1.2.3", name)
 }
 
+func TestNameForBuild(t *testing.T) {
+	assert := assert.New(t)
+
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archive: config.Archive{
+				NameTemplate: "{{.Binary}}_{{.Os}}_{{.Arch}}_{{.Tag}}_{{.Version}}",
+				Replacements: map[string]string{
+					"darwin": "Darwin",
+					"amd64":  "x86_64",
+				},
+			},
+			ProjectName: "test",
+		},
+		Version: "1.2.3",
+		Git: context.GitInfo{
+			CurrentTag: "v1.2.3",
+		},
+	}
+
+	name, err := ForBuild(ctx, config.Build{Binary: "foo"}, "darwin", "amd64", "")
+	assert.NoError(err)
+	assert.Equal("foo_Darwin_x86_64_v1.2.3_1.2.3", name)
+}
+
 func TestInvalidNameTemplate(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
