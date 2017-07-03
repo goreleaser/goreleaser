@@ -29,7 +29,6 @@ func TestSimpleName(t *testing.T) {
 }
 
 var defaultTemplateData = templateData{
-	Binary:   "test",
 	Desc:     "Some desc",
 	Homepage: "https://google.com",
 	Name:     "Test",
@@ -39,9 +38,8 @@ var defaultTemplateData = templateData{
 	},
 	Tag:     "v0.1.3",
 	Version: "0.1.3",
-	File:    "test_Darwin_x86_64",
+	File:    "test_Darwin_x86_64.tar.gz",
 	SHA256:  "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
-	Format:  "tar.gz",
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
@@ -105,7 +103,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 		},
-		Archives: map[string]string{
+		Folders: map[string]string{
 			"darwinamd64": "bin",
 		},
 		Publish: true,
@@ -113,6 +111,69 @@ func TestRunPipe(t *testing.T) {
 	client := &DummyClient{}
 	assert.NoError(doRun(ctx, client))
 	assert.True(client.CreatedFile)
+}
+
+func TestRunPipeFormatOverride(t *testing.T) {
+	assert := assert.New(t)
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(err)
+	_, err = os.Create(filepath.Join(folder, "bin.zip"))
+	assert.NoError(err)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dist: folder,
+			Archive: config.Archive{
+				Format: "tar.gz",
+				FormatOverrides: []config.FormatOverride{
+					{
+						Format: "zip",
+						Goos:   "darwin",
+					},
+				},
+			},
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+		Folders: map[string]string{
+			"darwinamd64": "bin",
+		},
+		Publish: true,
+	}
+	client := &DummyClient{}
+	assert.NoError(doRun(ctx, client))
+	assert.True(client.CreatedFile)
+	assert.Contains(client.Content, "bin.zip")
+}
+
+func TestRunPipeArchiveDoesntExist(t *testing.T) {
+	assert := assert.New(t)
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(err)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dist: folder,
+			Archive: config.Archive{
+				Format: "tar.gz",
+			},
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+		Folders: map[string]string{
+			"darwinamd64": "bin",
+		},
+		Publish: true,
+	}
+	client := &DummyClient{}
+	assert.Error(doRun(ctx, client))
+	assert.False(client.CreatedFile)
 }
 
 func TestRunPipeNoDarwin64Build(t *testing.T) {
@@ -202,6 +263,7 @@ func TestRunPipeFormatBinary(t *testing.T) {
 
 type DummyClient struct {
 	CreatedFile bool
+	Content     string
 }
 
 func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
@@ -210,6 +272,8 @@ func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (rel
 
 func (client *DummyClient) CreateFile(ctx *context.Context, content bytes.Buffer, path string) (err error) {
 	client.CreatedFile = true
+	bts, _ := ioutil.ReadAll(&content)
+	client.Content = string(bts)
 	return
 }
 

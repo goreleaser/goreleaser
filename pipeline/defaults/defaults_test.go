@@ -15,33 +15,32 @@ func TestDescription(t *testing.T) {
 }
 
 func TestFillBasicData(t *testing.T) {
-	assert := assert.New(t)
-
+	var assert = assert.New(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 
 	assert.NoError(Pipe{}.Run(ctx))
-
 	assert.Equal("goreleaser", ctx.Config.Release.GitHub.Owner)
 	assert.Equal("goreleaser", ctx.Config.Release.GitHub.Name)
-	assert.Equal("goreleaser", ctx.Config.Build.Binary)
-	assert.Equal(".", ctx.Config.Build.Main)
+	assert.NotEmpty(ctx.Config.Builds)
+	assert.Equal("goreleaser", ctx.Config.Builds[0].Binary)
+	assert.Equal(".", ctx.Config.Builds[0].Main)
+	assert.Contains(ctx.Config.Builds[0].Goos, "darwin")
+	assert.Contains(ctx.Config.Builds[0].Goos, "linux")
+	assert.Contains(ctx.Config.Builds[0].Goarch, "386")
+	assert.Contains(ctx.Config.Builds[0].Goarch, "amd64")
 	assert.Equal("tar.gz", ctx.Config.Archive.Format)
-	assert.Contains(ctx.Config.Build.Goos, "darwin")
-	assert.Contains(ctx.Config.Build.Goos, "linux")
-	assert.Contains(ctx.Config.Build.Goarch, "386")
-	assert.Contains(ctx.Config.Build.Goarch, "amd64")
 	assert.Contains(ctx.Config.Brew.Install, "bin.install \"goreleaser\"")
 	assert.NotEmpty(
 		ctx.Config.Archive.NameTemplate,
-		ctx.Config.Build.Ldflags,
+		ctx.Config.Builds[0].Ldflags,
 		ctx.Config.Archive.Files,
 	)
 }
 
 func TestFillPartial(t *testing.T) {
-	assert := assert.New(t)
+	var assert = assert.New(t)
 
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -56,10 +55,36 @@ func TestFillPartial(t *testing.T) {
 					"glob/*",
 				},
 			},
+			Builds: []config.Build{
+				{Binary: "testreleaser"},
+				{Goos: []string{"linux"}},
+				{
+					Binary: "another",
+					Ignore: []config.IgnoredBuild{
+						{Goos: "darwin", Goarch: "amd64"},
+					},
+				},
+			},
 		},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.Len(ctx.Config.Archive.Files, 1)
+	assert.Equal(`bin.install "testreleaser"`, ctx.Config.Brew.Install)
+}
+
+func TestFillSingleBuild(t *testing.T) {
+	var assert = assert.New(t)
+
+	var ctx = &context.Context{
+		Config: config.Project{
+			SingleBuild: config.Build{
+				Main: "testreleaser",
+			},
+		},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	assert.Len(ctx.Config.Builds, 1)
+	assert.Equal(ctx.Config.Builds[0].Binary, "goreleaser")
 }
 
 func TestNotAGitRepo(t *testing.T) {

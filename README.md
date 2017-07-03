@@ -61,36 +61,36 @@ By default GoReleaser will build the current directory, but you can change the b
 ```yml
 # goreleaser.yml
 # Build customization
-build:
-  binary: drum-roll
-  goos:
-    - windows
-    - darwin
-    - linux
-  goarch:
-    - amd64
+builds:
+  - binary: drum-roll
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
 ```
 
 PS: Invalid GOOS/GOARCH combinations will automatically be skipped.
 
 This configuration specifies the build operating systems to Windows, Linux and MacOS using 64bit architecture, the name of the binaries is `drum-roll`.
 
-GoReleaser will then archive the result binaries of each Os/Arch into a separate file. The default format is `{{.Binary}}_{{.Os}}_{{.Arch}}`.
+GoReleaser will then archive the result binaries of each Os/Arch into a separate file. The default format is `{{.ProjectName}}_{{.Os}}_{{.Arch}}`.
 You can change the archives name and format. You can also replace the OS and the Architecture with your own.
 Another useful feature is to add files to archives, this is very useful for integrating assets like resource files.
 
 ```yml
 # goreleaser.yml
 # Build customization
-build:
-  main: main.go
-  binary: drum-roll
-  goos:
-    - windows
-    - darwin
-    - linux
-  goarch:
-    - amd64
+builds:
+  - main: main.go
+    binary: drum-roll
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
 # Archive customization
 archive:
   format: tar.gz
@@ -172,76 +172,87 @@ defaults are sensible and fit for most projects.
 
 We'll cover all customizations available bellow:
 
+### Project name
+
+```yml
+# goreleaser.yml
+# The name of the project. It is used in the name of the brew formula, archives,
+# etc. Defaults to the name of the git project.
+project_name: myproject
+```
+
 ### Build customization
 
 ```yml
 # goreleaser.yml
-build:
-  # Path to main.go file or main package.
-  # Default is `.`
-  main: ./cmd/main.go
+builds:
+  # You can have multiple builds, its a common yaml list
+  -
+    # Path to main.go file or main package.
+    # Default is `.`
+    main: ./cmd/main.go
 
-  # Name of the binary.
-  # Default is the name of the project directory.
-  binary: program
+    # Name of the binary.
+    # Default is the name of the project directory.
+    binary: program
 
-  # Custom build tags.
-  # Default is empty
-  flags: -tags dev
+    # Custom build tags.
+    # Default is empty
+    flags: -tags dev
 
-  # Custom ldflags template.
-  # This is parsed with Golang template engine and the following variables
-  # are available:
-  # - Date
-  # - Commit
-  # - Tag
-  # - Version (Tag with the `v` prefix stripped)
-  # The default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`
-  # Date format is `2006-01-02_15:04:05`
-  ldflags: -s -w -X main.build={{.Version}}
+    # Custom ldflags template.
+    # This is parsed with Golang template engine and the following variables
+    # are available:
+    # - Date
+    # - Commit
+    # - Tag
+    # - Version (Tag with the `v` prefix stripped)
+    # The default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`
+    # Date format is `2006-01-02_15:04:05`
+    ldflags: -s -w -X main.build={{.Version}}
 
-  # Custom environment variables to be set durign the builds.
-  # Default is empty
-  env:
-   - CGO_ENABLED=0
+    # Custom environment variables to be set durign the builds.
+    # Default is empty
+    env:
+    - CGO_ENABLED=0
 
-  # GOOS list to build in.
-  # For more info refer to https://golang.org/doc/install/source#environment
-  # Defaults are darwin and linux
-  goos:
-    - freebsd
-    - windows
+    # GOOS list to build in.
+    # For more info refer to https://golang.org/doc/install/source#environment
+    # Defaults are darwin and linux
+    goos:
+      - freebsd
+      - windows
 
-  # GOARCH to build in.
-  # For more info refer to https://golang.org/doc/install/source#environment
-  # Defaults are 386 and amd64
-  goarch:
-    - amd64
-    - arm
-    - arm64
+    # GOARCH to build in.
+    # For more info refer to https://golang.org/doc/install/source#environment
+    # Defaults are 386 and amd64
+    goarch:
+      - amd64
+      - arm
+      - arm64
 
-  # GOARM to build in when GOARCH is arm.
-  # For more info refer to https://golang.org/doc/install/source#environment
-  # Defaults are 6
-  goarm:
-    - 6
-    - 7
+    # GOARM to build in when GOARCH is arm.
+    # For more info refer to https://golang.org/doc/install/source#environment
+    # Defaults are 6
+    goarm:
+      - 6
+      - 7
 
-  # List of combinations of GOOS + GOARCH + GOARM to ignore.
-  # Default is empty.
-  ignore:
-    - goos: darwin
-      goarch: 386
-    - goos: linux
-      goarch: arm
-      goarm: 7
+    # List of combinations of GOOS + GOARCH + GOARM to ignore.
+    # Default is empty.
+    ignore:
+      - goos: darwin
+        goarch: 386
+      - goos: linux
+        goarch: arm
+        goarm: 7
 
-  # Hooks can be used to customize the final binary, for example, to run
-  # generator or whatever you want.
-  # Default is both hooks empty.
-  hooks:
-    pre: rice embed-go
-    post: ./script.sh
+    # Hooks can be used to customize the final binary, for example, to run
+    # generator or whatever you want.
+    # Default is both hooks empty.
+    hooks:
+      pre: rice embed-go
+      post: ./script.sh
 ```
 
 ### Archive customization
@@ -252,14 +263,14 @@ archive:
   # You can change the name of the archive.
   # This is parsed with Golang template engine and the following variables
   # are available:
-  # - Binary
+  # - ProjectName
   # - Tag
   # - Version (Tag with the `v` prefix stripped)
   # - Os
   # - Arch
   # - Arm (ARM version)
-  # The default is `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
-  name_template: "{{.Binary}}_{{.Version}}_{{.Os}}_{{.Arch}}"
+  # The default is `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
+  name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
   # Archive format. Valid options are `tar.gz`, `zip` and `binary`.
   # If format is `binary` no archives are created and the binaries are instead uploaded directly.

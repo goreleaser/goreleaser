@@ -4,13 +4,14 @@
 package archive
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/mattn/go-zglob"
 	"golang.org/x/sync/errgroup"
@@ -27,8 +28,8 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	for platform, archive := range ctx.Archives {
-		archive := archive
+	for platform, folder := range ctx.Folders {
+		folder := folder
 		platform := platform
 		g.Go(func() error {
 			if ctx.Config.Archive.Format == "binary" {
@@ -42,7 +43,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func create(ctx *context.Context, platform, name string) error {
 	var folder = filepath.Join(ctx.Config.Dist, name)
-	var format = formatFor(ctx, platform)
+	var format = archiveformat.For(ctx, platform)
 	file, err := os.Create(folder + "." + format)
 	if err != nil {
 		return err
@@ -61,9 +62,15 @@ func create(ctx *context.Context, platform, name string) error {
 			return err
 		}
 	}
-	var binary = ctx.Config.Build.Binary + ext.For(platform)
-	if err := archive.Add(binary, filepath.Join(folder, binary)); err != nil {
+	var path = filepath.Join(ctx.Config.Dist, name)
+	binaries, err := ioutil.ReadDir(path)
+	if err != nil {
 		return err
+	}
+	for _, binary := range binaries {
+		if err := archive.Add(binary.Name(), filepath.Join(path, binary.Name())); err != nil {
+			return err
+		}
 	}
 	ctx.AddArtifact(file.Name())
 	return nil
@@ -86,13 +93,4 @@ func findFiles(ctx *context.Context) (result []string, err error) {
 		result = append(result, files...)
 	}
 	return
-}
-
-func formatFor(ctx *context.Context, platform string) string {
-	for _, override := range ctx.Config.Archive.FormatOverrides {
-		if strings.HasPrefix(platform, override.Goos) {
-			return override.Format
-		}
-	}
-	return ctx.Config.Archive.Format
 }

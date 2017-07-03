@@ -27,7 +27,7 @@ type Context struct {
 	Config       config.Project
 	Token        string
 	Git          GitInfo
-	Archives     map[string]string
+	Folders      map[string]string
 	Artifacts    []string
 	ReleaseNotes string
 	Version      string
@@ -36,23 +36,32 @@ type Context struct {
 	Snapshot     bool
 }
 
-var lock sync.Mutex
+var artifactsLock sync.Mutex
+var foldersLock sync.Mutex
 
 // AddArtifact adds a file to upload list
 func (ctx *Context) AddArtifact(file string) {
-	lock.Lock()
-	defer lock.Unlock()
+	artifactsLock.Lock()
+	defer artifactsLock.Unlock()
 	file = strings.TrimPrefix(file, ctx.Config.Dist)
 	file = strings.Replace(file, "/", "", -1)
 	ctx.Artifacts = append(ctx.Artifacts, file)
-	log.WithField("artifact", file).Info("registered")
+	log.WithField("artifact", file).Info("new artifact")
+}
+
+// AddFolder adds a built binary to the current context
+func (ctx *Context) AddFolder(key, folder string) {
+	foldersLock.Lock()
+	defer foldersLock.Unlock()
+	ctx.Folders[key] = folder
+	log.WithField("key", key).WithField("folder", folder).Info("new folder")
 }
 
 // New context
 func New(config config.Project) *Context {
 	return &Context{
-		Context:  ctx.Background(),
-		Config:   config,
-		Archives: map[string]string{},
+		Context: ctx.Background(),
+		Config:  config,
+		Folders: map[string]string{},
 	}
 }

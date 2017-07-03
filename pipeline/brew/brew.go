@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/client"
 )
 
@@ -20,10 +21,12 @@ import (
 // contain darwin and/or goarch doesn't contain amd64)
 var ErrNoDarwin64Build = errors.New("brew tap requires a darwin amd64 build")
 
+const platform = "darwinamd64"
+
 const formula = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}.{{ .Format }}"
+  url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
 
@@ -69,10 +72,8 @@ type templateData struct {
 	Repo         config.Repo // FIXME: will not work for anything but github right now.
 	Tag          string
 	Version      string
-	Binary       string
 	Caveats      string
 	File         string
-	Format       string
 	SHA256       string
 	Plist        string
 	Install      []string
@@ -110,7 +111,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		log.Info("skipped because archive format is binary")
 		return nil
 	}
-	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.Build.Binary+".rb")
+	var path = filepath.Join(ctx.Config.Brew.Folder, ctx.Config.ProjectName+".rb")
 	log.WithField("formula", path).
 		WithField("repo", ctx.Config.Brew.GitHub.String()).
 		Info("pushing")
@@ -131,7 +132,7 @@ func buildFormula(ctx *context.Context, client client.Client) (bytes.Buffer, err
 
 func doBuildFormula(data templateData) (bytes.Buffer, error) {
 	var out bytes.Buffer
-	tmpl, err := template.New(data.Binary).Parse(formula)
+	tmpl, err := template.New(data.Name).Parse(formula)
 	if err != nil {
 		return out, err
 	}
@@ -140,30 +141,24 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 }
 
 func dataFor(ctx *context.Context, client client.Client) (result templateData, err error) {
-	file := ctx.Archives["darwinamd64"]
-	if file == "" {
+	var folder = ctx.Folders[platform]
+	if folder == "" {
 		return result, ErrNoDarwin64Build
 	}
-	sum, err := checksum.SHA256(
-		filepath.Join(
-			ctx.Config.Dist,
-			file+"."+ctx.Config.Archive.Format,
-		),
-	)
+	var file = folder + "." + archiveformat.For(ctx, platform)
+	sum, err := checksum.SHA256(filepath.Join(ctx.Config.Dist, file))
 	if err != nil {
 		return
 	}
 	return templateData{
-		Name:         formulaNameFor(ctx.Config.Build.Binary),
+		Name:         formulaNameFor(ctx.Config.ProjectName),
 		Desc:         ctx.Config.Brew.Description,
 		Homepage:     ctx.Config.Brew.Homepage,
 		Repo:         ctx.Config.Release.GitHub,
 		Tag:          ctx.Git.CurrentTag,
 		Version:      ctx.Version,
-		Binary:       ctx.Config.Build.Binary,
 		Caveats:      ctx.Config.Brew.Caveats,
 		File:         file,
-		Format:       ctx.Config.Archive.Format, // TODO this can be broken by format_overrides
 		SHA256:       sum,
 		Dependencies: ctx.Config.Brew.Dependencies,
 		Conflicts:    ctx.Config.Brew.Conflicts,
