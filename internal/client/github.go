@@ -32,7 +32,7 @@ func (c *githubClient) CreateFile(
 	options := &github.RepositoryContentFileOptions{
 		Committer: &github.CommitAuthor{
 			Name:  github.String("goreleaserbot"),
-			Email: github.String("bot@goreleaser"),
+			Email: github.String("goreleaser@carlosbecker.com"),
 		},
 		Content: content.Bytes(),
 		Message: github.String(
