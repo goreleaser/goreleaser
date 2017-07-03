@@ -87,14 +87,17 @@ func TestRunPipeFormatBinary(t *testing.T) {
 	assert.NoError(err)
 	var binary = filepath.Join(folder, "binary-testing")
 	var config = config.Project{
-		Dist: folder,
-		Build: config.Build{
-			Binary: "testing",
-			Goos: []string{
-				runtime.GOOS,
-			},
-			Goarch: []string{
-				runtime.GOARCH,
+		ProjectName: "testing",
+		Dist:        folder,
+		Builds: []config.Build{
+			{
+				Binary: "testing",
+				Goos: []string{
+					runtime.GOOS,
+				},
+				Goarch: []string{
+					runtime.GOARCH,
+				},
 			},
 		},
 		Archive: config.Archive{
@@ -103,8 +106,8 @@ func TestRunPipeFormatBinary(t *testing.T) {
 		},
 	}
 	var ctx = &context.Context{
-		Config:   config,
-		Archives: map[string]string{},
+		Config:  config,
+		Folders: map[string]string{},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.True(exists(binary))
