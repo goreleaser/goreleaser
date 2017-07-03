@@ -5,7 +5,7 @@ import (
 	"runtime"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/config"
 )
 
 var runtimeTarget = buildTarget{runtime.GOOS, runtime.GOARCH, ""}
@@ -23,14 +23,14 @@ func (t buildTarget) PrettyString() string {
 	return fmt.Sprintf("%v/%v%v", t.goos, t.goarch, t.goarm)
 }
 
-func buildTargets(ctx *context.Context) (targets []buildTarget) {
-	for _, target := range allBuildTargets(ctx) {
+func buildTargets(build config.Build) (targets []buildTarget) {
+	for _, target := range allBuildTargets(build) {
 		if !valid(target) {
 			log.WithField("target", target.PrettyString()).
 				Warn("skipped invalid build")
 			continue
 		}
-		if ignored(ctx, target) {
+		if ignored(build, target) {
 			log.WithField("target", target.PrettyString()).
 				Warn("skipped ignored build")
 			continue
@@ -40,11 +40,11 @@ func buildTargets(ctx *context.Context) (targets []buildTarget) {
 	return
 }
 
-func allBuildTargets(ctx *context.Context) (targets []buildTarget) {
-	for _, goos := range ctx.Config.Build.Goos {
-		for _, goarch := range ctx.Config.Build.Goarch {
+func allBuildTargets(build config.Build) (targets []buildTarget) {
+	for _, goos := range build.Goos {
+		for _, goarch := range build.Goarch {
 			if goarch == "arm" {
-				for _, goarm := range ctx.Config.Build.Goarm {
+				for _, goarm := range build.Goarm {
 					targets = append(targets, buildTarget{goos, goarch, goarm})
 				}
 				continue
@@ -55,8 +55,8 @@ func allBuildTargets(ctx *context.Context) (targets []buildTarget) {
 	return
 }
 
-func ignored(ctx *context.Context, target buildTarget) bool {
-	for _, ig := range ctx.Config.Build.Ignore {
+func ignored(build config.Build, target buildTarget) bool {
+	for _, ig := range build.Ignore {
 		var ignored = buildTarget{ig.Goos, ig.Goarch, ig.Goarm}
 		if ignored == target {
 			return true

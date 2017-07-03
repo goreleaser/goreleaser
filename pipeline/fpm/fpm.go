@@ -3,18 +3,16 @@ package fpm
 
 import (
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/sync/errgroup"
 )
-
-var goarchToUnix = map[string]string{
-	"386":   "i386",
-	"amd64": "x86_64",
-}
 
 // ErrNoFPM is shown when fpm cannot be found in $PATH
 var ErrNoFPM = errors.New("fpm not present in $PATH")
@@ -40,31 +38,38 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	var g errgroup.Group
 	for _, format := range ctx.Config.FPM.Formats {
-		format := format
-		for _, goarch := range ctx.Config.Build.Goarch {
-			if ctx.Archives["linux"+goarch] == "" {
+		for key, folder := range ctx.Folders {
+			if !strings.Contains(key, "linux") {
+				log.WithField("key", key).Debug("skipped non-linux builds for fpm")
 				continue
 			}
-			archive := ctx.Archives["linux"+goarch]
-			arch := goarchToUnix[goarch]
+			folder := folder
+			format := format
+			arch := archFor(key)
 			g.Go(func() error {
-				return create(ctx, format, archive, arch)
+				return create(ctx, format, folder, arch)
 			})
 		}
 	}
 	return g.Wait()
 }
 
-func create(ctx *context.Context, format, archive, arch string) error {
-	var path = filepath.Join(ctx.Config.Dist, archive)
+func archFor(key string) string {
+	if strings.Contains(key, "386") {
+		return "i386"
+	}
+	return "x86_64"
+}
+
+func create(ctx *context.Context, format, folder, arch string) error {
+	var path = filepath.Join(ctx.Config.Dist, folder)
 	var file = path + "." + format
-	var name = ctx.Config.Build.Binary
-	log.WithField("file", file).Info("Creating")
+	log.WithField("file", file).Info("creating fpm archive")
 
 	var options = []string{
 		"--input-type", "dir",
 		"--output-type", format,
-		"--name", name,
+		"--name", ctx.Config.ProjectName,
 		"--version", ctx.Version,
 		"--architecture", arch,
 		"--chdir", path,
@@ -94,9 +99,21 @@ func create(ctx *context.Context, format, archive, arch string) error {
 		options = append(options, "--conflicts", conflict)
 	}
 
-	// This basically tells fpm to put the binary in the /usr/local/bin
-	// binary=/usr/local/bin/binary
-	options = append(options, name+"="+filepath.Join("/usr/local/bin", name))
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		// XXX: skip non executable files here?
+		// This basically tells fpm to put the binary in the /usr/local/bin
+		// binary=/usr/local/bin/binary
+		log.WithField("file", file.Name()).Debug("passed binary to fpm")
+		options = append(options, fmt.Sprintf(
+			"%s=%s",
+			file.Name(),
+			filepath.Join("/usr/local/bin", file.Name()),
+		))
+	}
 
 	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
 		return errors.New(string(out))

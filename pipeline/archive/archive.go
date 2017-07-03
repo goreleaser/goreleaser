@@ -4,6 +4,7 @@
 package archive
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -11,7 +12,6 @@ import (
 	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/archiveformat"
-	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/mattn/go-zglob"
 	"golang.org/x/sync/errgroup"
 )
@@ -27,11 +27,11 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	for platform, archive := range ctx.Archives {
-		archive := archive
+	for platform, folder := range ctx.Folders {
+		folder := folder
 		platform := platform
 		g.Go(func() error {
-			return create(ctx, platform, archive)
+			return create(ctx, platform, folder)
 		})
 	}
 	return g.Wait()
@@ -58,9 +58,15 @@ func create(ctx *context.Context, platform, name string) error {
 			return err
 		}
 	}
-	var binary = ctx.Config.Build.Binary + ext.For(platform)
-	if err := archive.Add(binary, filepath.Join(folder, binary)); err != nil {
+	var path = filepath.Join(ctx.Config.Dist, name)
+	binaries, err := ioutil.ReadDir(path)
+	if err != nil {
 		return err
+	}
+	for _, binary := range binaries {
+		if err := archive.Add(binary.Name(), filepath.Join(path, binary.Name())); err != nil {
+			return err
+		}
 	}
 	ctx.AddArtifact(file.Name())
 	return nil

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/apex/log"
 	yaml "gopkg.in/yaml.v1"
 )
 
@@ -99,12 +100,16 @@ type Snapshot struct {
 
 // Project includes all project configuration
 type Project struct {
-	Release  Release  `yaml:",omitempty"`
-	Brew     Homebrew `yaml:",omitempty"`
-	Build    Build    `yaml:",omitempty"`
-	Archive  Archive  `yaml:",omitempty"`
-	FPM      FPM      `yaml:",omitempty"`
-	Snapshot Snapshot `yaml:",omitempty"`
+	ProjectName string   `yaml:"project_name,omitempty"`
+	Release     Release  `yaml:",omitempty"`
+	Brew        Homebrew `yaml:",omitempty"`
+	Builds      []Build  `yaml:",omitempty"`
+	Archive     Archive  `yaml:",omitempty"`
+	FPM         FPM      `yaml:",omitempty"`
+	Snapshot    Snapshot `yaml:",omitempty"`
+
+	// this is a hack ¯\_(ツ)_/¯
+	SingleBuild Build `yaml:"build,omitempty"`
 
 	// test only property indicating the path to the dist folder
 	Dist string `yaml:"-"`
@@ -126,5 +131,6 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 		return config, err
 	}
 	err = yaml.Unmarshal(data, &config)
+	log.WithField("config", config).Debug("loaded config file")
 	return
 }

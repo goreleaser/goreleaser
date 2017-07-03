@@ -31,3 +31,27 @@ func TestMultipleArtifactAdds(t *testing.T) {
 	assert.Len(ctx.Artifacts, len(list))
 	assert.Contains(ctx.Artifacts, "a", "b", "c", "d")
 }
+
+func TestMultipleFolderAdds(t *testing.T) {
+	var assert = assert.New(t)
+	var list = map[string]string{
+		"key-a": "folder/a",
+		"key-b": "folder/b",
+		"key-c": "folder/c",
+		"key-d": "folder/d",
+	}
+	var ctx = New(config.Project{
+		Dist: "dist",
+	})
+	var g errgroup.Group
+	for k, f := range list {
+		f := f
+		k := k
+		g.Go(func() error {
+			ctx.AddFolder(k, f)
+			return nil
+		})
+	}
+	assert.NoError(g.Wait())
+	assert.Len(ctx.Folders, len(list))
+}

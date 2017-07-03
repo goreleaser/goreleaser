@@ -29,7 +29,6 @@ func TestSimpleName(t *testing.T) {
 }
 
 var defaultTemplateData = templateData{
-	Binary:   "test",
 	Desc:     "Some desc",
 	Homepage: "https://google.com",
 	Name:     "Test",
@@ -104,7 +103,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 		},
-		Archives: map[string]string{
+		Folders: map[string]string{
 			"darwinamd64": "bin",
 		},
 		Publish: true,
@@ -139,7 +138,7 @@ func TestRunPipeFormatOverride(t *testing.T) {
 				},
 			},
 		},
-		Archives: map[string]string{
+		Folders: map[string]string{
 			"darwinamd64": "bin",
 		},
 		Publish: true,
@@ -167,7 +166,7 @@ func TestRunPipeArchiveDoesntExist(t *testing.T) {
 				},
 			},
 		},
-		Archives: map[string]string{
+		Folders: map[string]string{
 			"darwinamd64": "bin",
 		},
 		Publish: true,

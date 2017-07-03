@@ -1,4 +1,4 @@
-package build
+package name
 
 import (
 	"testing"
@@ -20,9 +20,7 @@ func TestNameFor(t *testing.T) {
 				"amd64":  "x86_64",
 			},
 		},
-		Build: config.Build{
-			Binary: "test",
-		},
+		ProjectName: "test",
 	}
 	var ctx = &context.Context{
 		Config:  config,
@@ -32,30 +30,26 @@ func TestNameFor(t *testing.T) {
 		},
 	}
 
-	name, err := nameFor(ctx, buildTarget{"darwin", "amd64", ""})
+	name, err := For(ctx, "darwin", "amd64", "")
 	assert.NoError(err)
 	assert.Equal("test_Darwin_x86_64_v1.2.3_1.2.3", name)
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
-	assert := assert.New(t)
-
-	var config = config.Project{
-		Archive: config.Archive{
-			NameTemplate: "{{.Binary}_{{.Os}}_{{.Arch}}_{{.Version}}",
-		},
-		Build: config.Build{
-			Binary: "test",
-		},
-	}
+	var assert = assert.New(t)
 	var ctx = &context.Context{
-		Config: config,
+		Config: config.Project{
+			Archive: config.Archive{
+				NameTemplate: "{{.Binary}_{{.Os}}_{{.Arch}}_{{.Version}}",
+			},
+			ProjectName: "test",
+		},
 		Git: context.GitInfo{
 			CurrentTag: "v1.2.3",
 		},
 	}
 
-	_, err := nameFor(ctx, buildTarget{"darwin", "amd64", ""})
+	_, err := For(ctx, "darwin", "amd64", "")
 	assert.Error(err)
 }
 
@@ -66,11 +60,12 @@ func TestNameDefaltTemplate(t *testing.T) {
 			Archive: config.Archive{
 				NameTemplate: defaults.NameTemplate,
 			},
-			Build: config.Build{
-				Binary: "test",
-			},
+			ProjectName: "test",
 		},
 		Version: "1.2.3",
+	}
+	type buildTarget struct {
+		goos, goarch, goarm string
 	}
 	for key, target := range map[string]buildTarget{
 		"test_1.2.3_darwin_amd64": {"darwin", "amd64", ""},
@@ -78,7 +73,7 @@ func TestNameDefaltTemplate(t *testing.T) {
 		"test_1.2.3_linux_armv7":  {"linux", "arm", "7"},
 	} {
 		t.Run(key, func(t *testing.T) {
-			name, err := nameFor(ctx, target)
+			name, err := For(ctx, target.goos, target.goarch, target.goarm)
 			assert.NoError(err)
 			assert.Equal(key, name)
 		})

@@ -21,6 +21,8 @@ import (
 // contain darwin and/or goarch doesn't contain amd64)
 var ErrNoDarwin64Build = errors.New("brew tap requires a darwin amd64 build")
 
+const platform = "darwinamd64"
+
 const formula = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
@@ -70,7 +72,6 @@ type templateData struct {
 	Repo         config.Repo // FIXME: will not work for anything but github right now.
 	Tag          string
 	Version      string
-	Binary       string
 	Caveats      string
 	File         string
 	SHA256       string
@@ -106,7 +107,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		log.Warn("skipped because release is marked as draft")
 		return nil
 	}
-	path := filepath.Join(ctx.Config.Brew.Folder, ctx.Config.Build.Binary+".rb")
+	var path = filepath.Join(ctx.Config.Brew.Folder, ctx.Config.ProjectName+".rb")
 	log.WithField("formula", path).
 		WithField("repo", ctx.Config.Brew.GitHub.String()).
 		Info("pushing")
@@ -127,7 +128,7 @@ func buildFormula(ctx *context.Context, client client.Client) (bytes.Buffer, err
 
 func doBuildFormula(data templateData) (bytes.Buffer, error) {
 	var out bytes.Buffer
-	tmpl, err := template.New(data.Binary).Parse(formula)
+	tmpl, err := template.New(data.Name).Parse(formula)
 	if err != nil {
 		return out, err
 	}
@@ -136,23 +137,22 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 }
 
 func dataFor(ctx *context.Context, client client.Client) (result templateData, err error) {
-	var folder = ctx.Archives["darwinamd64"]
+	var folder = ctx.Folders[platform]
 	if folder == "" {
 		return result, ErrNoDarwin64Build
 	}
-	var file = folder + "." + archiveformat.For(ctx, "darwinamd64")
+	var file = folder + "." + archiveformat.For(ctx, platform)
 	sum, err := checksum.SHA256(filepath.Join(ctx.Config.Dist, file))
 	if err != nil {
 		return
 	}
 	return templateData{
-		Name:         formulaNameFor(ctx.Config.Build.Binary),
+		Name:         formulaNameFor(ctx.Config.ProjectName),
 		Desc:         ctx.Config.Brew.Description,
 		Homepage:     ctx.Config.Brew.Homepage,
 		Repo:         ctx.Config.Release.GitHub,
 		Tag:          ctx.Git.CurrentTag,
 		Version:      ctx.Version,
-		Binary:       ctx.Config.Build.Binary,
 		Caveats:      ctx.Config.Brew.Caveats,
 		File:         file,
 		SHA256:       sum,
