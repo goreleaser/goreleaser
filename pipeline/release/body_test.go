@@ -21,6 +21,17 @@ func TestDescribeBody(t *testing.T) {
 	assert.Contains(out.String(), "Built with go version go1.8")
 }
 
+func TestDontEscapeHTML(t *testing.T) {
+	var assert = assert.New(t)
+	var changelog = "<h1>test</h1>"
+	var ctx = &context.Context{
+		ReleaseNotes: changelog,
+	}
+	out, err := describeBody(ctx)
+	assert.NoError(err)
+	assert.Contains(changelog, out.String())
+}
+
 func TestGoVersionFails(t *testing.T) {
 	var assert = assert.New(t)
 	var path = os.Getenv("PATH")
