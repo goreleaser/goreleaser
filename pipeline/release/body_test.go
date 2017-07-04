@@ -18,7 +18,7 @@ func TestDescribeBody(t *testing.T) {
 	assert.NoError(err)
 	assert.Contains(out.String(), changelog)
 	assert.Contains(out.String(), "Automated with [GoReleaser]")
-	assert.Contains(out.String(), "Built with go version go1.8")
+	assert.Contains(out.String(), "Built with go version go1.")
 }
 
 func TestDontEscapeHTML(t *testing.T) {
@@ -29,7 +29,7 @@ func TestDontEscapeHTML(t *testing.T) {
 	}
 	out, err := describeBody(ctx)
 	assert.NoError(err)
-	assert.Contains(changelog, out.String())
+	assert.Contains(out.String(), changelog)
 }
 
 func TestGoVersionFails(t *testing.T) {
