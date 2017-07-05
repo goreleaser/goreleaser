@@ -34,6 +34,7 @@ type Context struct {
 	Validate     bool
 	Publish      bool
 	Snapshot     bool
+	RmDist       bool
 }
 
 var artifactsLock sync.Mutex

@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/brew"
 	"github.com/goreleaser/goreleaser/pipeline/build"
 	"github.com/goreleaser/goreleaser/pipeline/checksums"
+	"github.com/goreleaser/goreleaser/pipeline/cleandist"
 	"github.com/goreleaser/goreleaser/pipeline/defaults"
 	"github.com/goreleaser/goreleaser/pipeline/env"
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
@@ -26,6 +27,7 @@ var pipes = []pipeline.Pipe{
 	defaults.Pipe{},  // load default configs
 	git.Pipe{},       // get and validate git repo state
 	env.Pipe{},       // load and validate environment variables
+	cleandist.Pipe{}, // ensure ./dist is clean
 	build.Pipe{},     // build
 	archive.Pipe{},   // archive (tar.gz, zip, etc)
 	fpm.Pipe{},       // archive via fpm (deb, rpm, etc)
@@ -74,6 +76,7 @@ func Release(flags Flags) error {
 		log.Info("publishing disabled in snapshot mode")
 		ctx.Publish = false
 	}
+	ctx.RmDist = flags.Bool("rm-dist")
 	for _, pipe := range pipes {
 		log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.Description()))
 		if err := pipe.Run(ctx); err != nil {
