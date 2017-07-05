@@ -45,7 +45,7 @@ type Flags interface {
 
 // Release runs the release process with the given flags
 func Release(flags Flags) error {
-	var file = flags.String("config")
+	var file = getConfigFile(flags)
 	var notes = flags.String("release-notes")
 	if flags.Bool("debug") {
 		log.SetLevel(log.DebugLevel)
@@ -58,7 +58,7 @@ func Release(flags Flags) error {
 		if !os.IsNotExist(statErr) || flags.IsSet("config") {
 			return err
 		}
-		log.WithField("file", file).Warn("could not load config")
+		log.WithField("file", file).Warn("could not load config, using defaults")
 	}
 	var ctx = context.New(cfg)
 	ctx.Validate = !flags.Bool("skip-validate")
@@ -107,4 +107,18 @@ func InitProject(filename string) error {
 	}
 
 	return ioutil.WriteFile(filename, out, 0644)
+}
+
+func getConfigFile(flags Flags) string {
+	var config = flags.String("config")
+	if flags.IsSet("config") {
+		return config
+	}
+	for _, f := range []string{".goreleaser.yml", "goreleaser.yml"} {
+		_, ferr := os.Stat(f)
+		if ferr == nil || os.IsExist(ferr) {
+			return f
+		}
+	}
+	return config
 }

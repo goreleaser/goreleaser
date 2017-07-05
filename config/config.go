@@ -121,6 +121,7 @@ func Load(file string) (config Project, err error) {
 	if err != nil {
 		return
 	}
+	log.WithField("file", file).Info("loading config file")
 	return LoadReader(f)
 }
 
