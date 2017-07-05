@@ -46,8 +46,8 @@ func TestRunPipe(t *testing.T) {
 	assert.NoError(doRun(ctx, client))
 	assert.True(client.CreatedRelease)
 	assert.True(client.UploadedFile)
-	assert.Contains("bin.deb", client.UploadedFileNames)
-	assert.Contains("bin.tar.gz", client.UploadedFileNames)
+	assert.Contains(client.UploadedFileNames, "bin.deb")
+	assert.Contains(client.UploadedFileNames, "bin.tar.gz")
 }
 
 func TestRunPipeReleaseCreationFailed(t *testing.T) {
