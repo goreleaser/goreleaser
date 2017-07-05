@@ -42,9 +42,14 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return err
 	}
 	var g errgroup.Group
+	sem := make(chan bool, 4)
 	for _, artifact := range ctx.Artifacts {
+		sem <- true
 		artifact := artifact
 		g.Go(func() error {
+			defer func() {
+				<-sem
+			}()
 			return upload(ctx, client, releaseID, artifact)
 		})
 	}
