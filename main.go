@@ -29,7 +29,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "config, file, c, f",
 			Usage: "Load configuration from `FILE`",
-			Value: "goreleaser.yml",
+			Value: ".goreleaser.yml",
 		},
 		cli.StringFlag{
 			Name:  "release-notes",
@@ -59,7 +59,7 @@ func main() {
 	app.Action = func(c *cli.Context) error {
 		log.Infof("running goreleaser %v", version)
 		if err := goreleaserlib.Release(c); err != nil {
-			log.WithError(err).Error("pipe failed")
+			log.WithError(err).Error("release failed")
 			return cli.NewExitError("\n", 1)
 		}
 		return nil
@@ -68,9 +68,9 @@ func main() {
 		{
 			Name:    "init",
 			Aliases: []string{"i"},
-			Usage:   "generate goreleaser.yml",
+			Usage:   "generate .goreleaser.yml",
 			Action: func(c *cli.Context) error {
-				var filename = "goreleaser.yml"
+				var filename = ".goreleaser.yml"
 				if err := goreleaserlib.InitProject(filename); err != nil {
 					log.WithError(err).Error("failed to init project")
 					return cli.NewExitError("\n", 1)

@@ -52,6 +52,20 @@ func TestConfigFileIsSetAndDontExist(t *testing.T) {
 	assert.Error(Release(flags))
 }
 
+func TestConfigFlagNotSetButExists(t *testing.T) {
+	var assert = assert.New(t)
+	folder, back := setup(t)
+	defer back()
+	os.Rename(
+		filepath.Join(folder, "goreleaser.yml"),
+		filepath.Join(folder, ".goreleaser.yml"),
+	)
+	var flags = fakeFlags{
+		flags: map[string]string{},
+	}
+	assert.Equal(".goreleaser.yml", getConfigFile(flags))
+}
+
 func TestReleaseNotesFileDontExist(t *testing.T) {
 	var assert = assert.New(t)
 	var flags = fakeFlags{
