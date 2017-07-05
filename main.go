@@ -48,6 +48,10 @@ func main() {
 			Usage: "Generate an unversioned snapshot release",
 		},
 		cli.BoolFlag{
+			Name:  "rm-dist",
+			Usage: "Remove ./dist before building",
+		},
+		cli.BoolFlag{
 			Name:  "debug",
 			Usage: "Enable debug mode",
 		},
@@ -55,7 +59,8 @@ func main() {
 	app.Action = func(c *cli.Context) error {
 		log.Infof("running goreleaser %v", version)
 		if err := goreleaserlib.Release(c); err != nil {
-			return cli.NewExitError(err.Error(), 1)
+			log.WithError(err).Error("pipe failed")
+			return cli.NewExitError("\n", 1)
 		}
 		return nil
 	}
@@ -67,7 +72,8 @@ func main() {
 			Action: func(c *cli.Context) error {
 				var filename = "goreleaser.yml"
 				if err := goreleaserlib.InitProject(filename); err != nil {
-					return cli.NewExitError(err.Error(), 1)
+					log.WithError(err).Error(err.Error())
+					return cli.NewExitError("aborted", 1)
 				}
 
 				log.WithField("file", filename).
