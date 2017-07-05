@@ -38,7 +38,7 @@ For questions join the [#goreleaser](https://gophers.slack.com/messages/goreleas
 GoReleaser is a release automation tool for Golang projects, the goal is to simplify the build, release and publish steps while providing variant customization options for all steps.
 
 GoReleaser is built for CI tools; you only need to [download and execute it](#integration-with-ci) in your build script.
-You can [customize](#release-customization) your release process by createing a `goreleaser.yml` file.
+You can [customize](#release-customization) your release process by createing a `.goreleaser.yml` file.
 We are also working on integrating with package managers, we currently support Homebrew.
 
 The idea started with a [simple shell script](https://github.com/goreleaser/old-go-releaser), but it quickly became more complex and I also wanted to publish binaries via Homebrew.
@@ -59,7 +59,7 @@ func main() {
 By default GoReleaser will build the current directory, but you can change the build package path in the GoReleaser configuration file.
 
 ```yml
-# goreleaser.yml
+# .goreleaser.yml
 # Build customization
 builds:
   - binary: drum-roll
@@ -80,7 +80,7 @@ You can change the archives name and format. You can also replace the OS and the
 Another useful feature is to add files to archives, this is very useful for integrating assets like resource files.
 
 ```yml
-# goreleaser.yml
+# .goreleaser.yml
 # Build customization
 builds:
   - main: main.go
@@ -166,7 +166,7 @@ func main() {
 
 ## GoReleaser customization
 
-GoReleaser provides multiple customizations via the `goreleaser.yml` file.
+GoReleaser provides multiple customizations via the `.goreleaser.yml` file.
 You can generate it by running `goreleaser init` or start from scratch. The
 defaults are sensible and fit for most projects.
 
@@ -175,7 +175,7 @@ We'll cover all customizations available bellow:
 ### Project name
 
 ```yml
-# goreleaser.yml
+# .goreleaser.yml
 # The name of the project. It is used in the name of the brew formula, archives,
 # etc. Defaults to the name of the git project.
 project_name: myproject
@@ -184,7 +184,7 @@ project_name: myproject
 ### Build customization
 
 ```yml
-# goreleaser.yml
+# .goreleaser.yml
 builds:
   # You can have multiple builds, its a common yaml list
   -
@@ -258,7 +258,7 @@ builds:
 ### Archive customization
 
 ```yml
-# goreleaser.yml
+# .goreleaser.yml
 archive:
   # You can change the name of the archive.
   # This is parsed with Golang template engine and the following variables
@@ -308,7 +308,7 @@ archive:
 ### Release customization
 
 ```yml
-# goreleaser.yml
+# .goreleaser.yml
 release:
   # Repo in which the release will be created.
   # Default is extracted from the origin remote URL.
@@ -327,7 +327,7 @@ You can also specify a release notes file in markdown format using the
 ### Snapshot customization
 
 ```yml
-# goreleaser.yml
+# .goreleaser.yml
 snapshot:
   # Allows you to change the name of the generated snapshot
   # releases. The following variables are available:
@@ -344,7 +344,7 @@ The brew section specifies how the formula should be created.
 Check [the Homebrew documentation](https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap.md) and the [formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md) for details.
 
 ```yml
-# goreleaser.yml
+# .goreleaser.yml
 brew:
   # Reporitory to push the tap to.
   github:
@@ -416,7 +416,7 @@ GoReleaser can be wired to [fpm]() to generate `.deb`, `.rpm` and other archives
 [fpm]: https://github.com/jordansissel/fpm
 
 ```yml
-# goreleaser.yml
+# .goreleaser.yml
 fpm:
   # Your app's vendor
   # Default is empty
