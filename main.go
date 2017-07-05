@@ -72,8 +72,8 @@ func main() {
 			Action: func(c *cli.Context) error {
 				var filename = "goreleaser.yml"
 				if err := goreleaserlib.InitProject(filename); err != nil {
-					log.WithError(err).Error(err.Error())
-					return cli.NewExitError("aborted", 1)
+					log.WithError(err).Error("failed to init project")
+					return cli.NewExitError("\n", 1)
 				}
 
 				log.WithField("file", filename).
