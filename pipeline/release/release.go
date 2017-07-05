@@ -58,6 +58,7 @@ func upload(ctx *context.Context, client client.Client, releaseID int, artifact 
 		return err
 	}
 	defer func() { _ = file.Close() }()
-	log.WithField("file", file.Name()).Info("uploading")
-	return client.Upload(ctx, releaseID, artifact, file)
+	_, name := filepath.Split(path)
+	log.WithField("file", file.Name()).WithField("name", name).Info("uploading to release")
+	return client.Upload(ctx, releaseID, name, file)
 }
