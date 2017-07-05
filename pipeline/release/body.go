@@ -2,8 +2,8 @@ package release
 
 import (
 	"bytes"
-	"html/template"
 	"os/exec"
+	"text/template"
 
 	"github.com/goreleaser/goreleaser/context"
 )
