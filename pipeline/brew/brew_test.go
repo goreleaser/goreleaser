@@ -208,9 +208,25 @@ func TestRunPipeBrewNotSetup(t *testing.T) {
 	assert.False(client.CreatedFile)
 }
 
-func TestRunPipeNoDarwinBuild(t *testing.T) {
+func TestRunPipeBinaryRelease(t *testing.T) {
 	assert := assert.New(t)
-	var ctx = &context.Context{}
+	var ctx = &context.Context{
+		Publish: true,
+		Config: config.Project{
+			Archive: config.Archive{
+				Format: "binary",
+			},
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+		Folders: map[string]string{
+			"darwinamd64": "bin",
+		},
+	}
 	client := &DummyClient{}
 	assert.NoError(doRun(ctx, client))
 	assert.False(client.CreatedFile)
@@ -239,6 +255,20 @@ func TestRunPipeDraftRelease(t *testing.T) {
 					Owner: "test",
 					Name:  "test",
 				},
+			},
+		},
+	}
+	client := &DummyClient{}
+	assert.NoError(doRun(ctx, client))
+	assert.False(client.CreatedFile)
+}
+
+func TestRunPipeFormatBinary(t *testing.T) {
+	assert := assert.New(t)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archive: config.Archive{
+				Format: "binary",
 			},
 		},
 	}

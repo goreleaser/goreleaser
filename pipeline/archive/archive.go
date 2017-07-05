@@ -31,6 +31,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		folder := folder
 		platform := platform
 		g.Go(func() error {
+			if ctx.Config.Archive.Format == "binary" {
+				return skip(ctx, platform, folder)
+			}
 			return create(ctx, platform, folder)
 		})
 	}
@@ -69,6 +72,20 @@ func create(ctx *context.Context, platform, name string) error {
 		}
 	}
 	ctx.AddArtifact(file.Name())
+	return nil
+}
+
+func skip(ctx *context.Context, platform, name string) error {
+	var path = filepath.Join(ctx.Config.Dist, name)
+	binaries, err := ioutil.ReadDir(path)
+	if err != nil {
+		return err
+	}
+	log.WithField("platform", platform).Debugf("found %v binaries", len(binaries))
+	for _, binary := range binaries {
+		log.WithField("binary", binary.Name()).Info("skip archiving")
+		ctx.AddArtifact(filepath.Join(path+"/", binary.Name()))
+	}
 	return nil
 }
 

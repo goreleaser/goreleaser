@@ -63,6 +63,47 @@ func TestRunPipe(t *testing.T) {
 	}
 }
 
+func TestRunPipeBinary(t *testing.T) {
+	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(err)
+	current, err := os.Getwd()
+	assert.NoError(err)
+	assert.NoError(os.Chdir(folder))
+	defer func() {
+		assert.NoError(os.Chdir(current))
+	}()
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(os.Mkdir(dist, 0755))
+	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin_darwin"), 0755))
+	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin_win"), 0755))
+	_, err = os.Create(filepath.Join(dist, "mybin_darwin", "mybin"))
+	assert.NoError(err)
+	_, err = os.Create(filepath.Join(dist, "mybin_win", "mybin.exe"))
+	assert.NoError(err)
+	_, err = os.Create(filepath.Join(folder, "README.md"))
+	assert.NoError(err)
+	var ctx = &context.Context{
+		Folders: map[string]string{
+			"darwinamd64":  "mybin_darwin",
+			"windowsamd64": "mybin_win",
+		},
+		Config: config.Project{
+			Dist: dist,
+			Builds: []config.Build{
+				{Binary: "mybin"},
+			},
+			Archive: config.Archive{
+				Format: "binary",
+			},
+		},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	assert.Contains(ctx.Artifacts, "mybin_darwin/mybin")
+	assert.Contains(ctx.Artifacts, "mybin_win/mybin.exe")
+	assert.Len(ctx.Artifacts, 2)
+}
+
 func TestRunPipeDistRemoved(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{

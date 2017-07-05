@@ -107,6 +107,10 @@ func doRun(ctx *context.Context, client client.Client) error {
 		log.Warn("skipped because release is marked as draft")
 		return nil
 	}
+	if ctx.Config.Archive.Format == "binary" {
+		log.Info("skipped because archive format is binary")
+		return nil
+	}
 	var path = filepath.Join(ctx.Config.Brew.Folder, ctx.Config.ProjectName+".rb")
 	log.WithField("formula", path).
 		WithField("repo", ctx.Config.Brew.GitHub.String()).

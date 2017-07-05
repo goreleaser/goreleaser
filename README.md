@@ -272,7 +272,9 @@ archive:
   # The default is `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
   name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
-  # Archive format. Valid options are `tar.gz` and `zip`.
+  # Archive format. Valid options are `tar.gz`, `zip` and `binary`.
+  # If format is `binary` no archives are created and the binaries are instead uploaded directly.
+  # In that case name_template the below specified files are ignored.
   # Default is `tar.gz`
   format: zip
 

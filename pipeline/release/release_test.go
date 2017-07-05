@@ -46,6 +46,8 @@ func TestRunPipe(t *testing.T) {
 	assert.NoError(doRun(ctx, client))
 	assert.True(client.CreatedRelease)
 	assert.True(client.UploadedFile)
+	assert.Contains("bin.deb", client.UploadedFileNames)
+	assert.Contains("bin.tar.gz", client.UploadedFileNames)
 }
 
 func TestRunPipeReleaseCreationFailed(t *testing.T) {
@@ -141,6 +143,7 @@ type DummyClient struct {
 	FailToUpload        bool
 	CreatedRelease      bool
 	UploadedFile        bool
+	UploadedFileNames   []string
 }
 
 func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
@@ -160,5 +163,6 @@ func (client *DummyClient) Upload(ctx *context.Context, releaseID int, name stri
 		return errors.New("upload failed")
 	}
 	client.UploadedFile = true
+	client.UploadedFileNames = append(client.UploadedFileNames, name)
 	return
 }

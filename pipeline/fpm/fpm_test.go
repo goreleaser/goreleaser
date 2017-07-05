@@ -23,6 +23,21 @@ func TestRunPipeNoFormats(t *testing.T) {
 	assert.NoError(Pipe{}.Run(ctx))
 }
 
+func TestRunPipeFormatBinary(t *testing.T) {
+	var assert = assert.New(t)
+	var ctx = &context.Context{
+		Config: config.Project{
+			FPM: config.FPM{
+				Formats: []string{"deb"},
+			},
+			Archive: config.Archive{
+				Format: "binary",
+			},
+		},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+}
+
 func TestRunPipe(t *testing.T) {
 	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "archivetest")

@@ -43,8 +43,7 @@ var foldersLock sync.Mutex
 func (ctx *Context) AddArtifact(file string) {
 	artifactsLock.Lock()
 	defer artifactsLock.Unlock()
-	file = strings.TrimPrefix(file, ctx.Config.Dist)
-	file = strings.Replace(file, "/", "", -1)
+	file = strings.TrimPrefix(file, ctx.Config.Dist+"/")
 	ctx.Artifacts = append(ctx.Artifacts, file)
 	log.WithField("artifact", file).Info("new artifact")
 }
