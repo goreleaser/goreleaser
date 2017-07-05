@@ -3,10 +3,8 @@
 package cleandist
 
 import (
-	"io/ioutil"
-
 	"fmt"
-
+	"io/ioutil"
 	"os"
 
 	"github.com/apex/log"
