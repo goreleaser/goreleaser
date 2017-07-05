@@ -63,7 +63,7 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 	var flags = fakeFlags{
 		flags: map[string]string{},
 	}
-	assert.Equal(".goreleaser.yml", getConfig(flags))
+	assert.Equal(".goreleaser.yml", getConfigFile(flags))
 }
 
 func TestReleaseNotesFileDontExist(t *testing.T) {
