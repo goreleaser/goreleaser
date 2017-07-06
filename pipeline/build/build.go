@@ -98,6 +98,7 @@ func binaryName(
 	target buildtarget.Target,
 	folder string,
 ) (binary string, err error) {
+	binary = build.Binary + ext.For(target)
 	if ctx.Config.Archive.Format == "binary" {
 		binary, err = name.ForBuild(ctx, build, target)
 		if err != nil {
@@ -105,7 +106,6 @@ func binaryName(
 		}
 		binary = binary + ext.For(target)
 	}
-	binary = build.Binary + ext.For(target)
 	return filepath.Join(ctx.Config.Dist, folder, binary), nil
 }
 

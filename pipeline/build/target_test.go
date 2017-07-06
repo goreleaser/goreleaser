@@ -51,58 +51,50 @@ func TestAllBuildTargets(t *testing.T) {
 	}, buildTargets(build))
 }
 
-func TestValidGoosGoarchCombos(t *testing.T) {
+func TestGoosGoarchCombos(t *testing.T) {
 	var platforms = []struct {
-		os, arch string
+		os    string
+		arch  string
+		valid bool
 	}{
-		{"android", "arm"},
-		{"darwin", "386"},
-		{"darwin", "amd64"},
-		{"dragonfly", "amd64"},
-		{"freebsd", "386"},
-		{"freebsd", "amd64"},
-		{"freebsd", "arm"},
-		{"linux", "386"},
-		{"linux", "amd64"},
-		{"linux", "arm"},
-		{"linux", "arm64"},
-		{"linux", "mips"},
-		{"linux", "mipsle"},
-		{"linux", "mips64"},
-		{"linux", "mips64le"},
-		{"linux", "ppc64"},
-		{"linux", "ppc64le"},
-		{"netbsd", "386"},
-		{"netbsd", "amd64"},
-		{"netbsd", "arm"},
-		{"openbsd", "386"},
-		{"openbsd", "amd64"},
-		{"openbsd", "arm"},
-		{"plan9", "386"},
-		{"plan9", "amd64"},
-		{"solaris", "amd64"},
-		{"windows", "386"},
-		{"windows", "amd64"},
+		// valid targets:
+		{"android", "arm", true},
+		{"darwin", "386", true},
+		{"darwin", "amd64", true},
+		{"dragonfly", "amd64", true},
+		{"freebsd", "386", true},
+		{"freebsd", "amd64", true},
+		{"freebsd", "arm", true},
+		{"linux", "386", true},
+		{"linux", "amd64", true},
+		{"linux", "arm", true},
+		{"linux", "arm64", true},
+		{"linux", "mips", true},
+		{"linux", "mipsle", true},
+		{"linux", "mips64", true},
+		{"linux", "mips64le", true},
+		{"linux", "ppc64", true},
+		{"linux", "ppc64le", true},
+		{"netbsd", "386", true},
+		{"netbsd", "amd64", true},
+		{"netbsd", "arm", true},
+		{"openbsd", "386", true},
+		{"openbsd", "amd64", true},
+		{"openbsd", "arm", true},
+		{"plan9", "386", true},
+		{"plan9", "amd64", true},
+		{"solaris", "amd64", true},
+		{"windows", "386", true},
+		{"windows", "amd64", true},
+		// invalid targets
+		{"darwin", "arm", false},
+		{"darwin", "arm64", false},
+		{"windows", "arm", false},
+		{"windows", "arm64", false},
 	}
 	for _, p := range platforms {
-		t.Run(fmt.Sprintf("%v %v is valid", p.os, p.arch), func(t *testing.T) {
-			assert.True(t, valid(buildtarget.New(p.os, p.arch, "")))
-		})
-	}
-}
-
-func TestInvalidGoosGoarchCombos(t *testing.T) {
-	var platforms = []struct {
-		os, arch string
-	}{
-		{"darwin", "arm"},
-		{"darwin", "arm64"},
-		{"windows", "arm"},
-		{"windows", "arm64"},
-	}
-	for _, p := range platforms {
-		t.Run(fmt.Sprintf("%v %v is invalid", p.os, p.arch), func(t *testing.T) {
-			assert.False(t, valid(buildtarget.New(p.os, p.arch, "")))
+		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {
+			assert.Equal(t, p.valid, valid(buildtarget.New(p.os, p.arch, "")))
 		})
 	}
 }

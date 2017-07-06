@@ -88,8 +88,6 @@ func TestRunPipe(t *testing.T) {
 	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
-	_, err = os.Create(filepath.Join(folder, "bin.tar.gz"))
-	assert.NoError(err)
 	var ctx = &context.Context{
 		Config: config.Project{
 			Dist: folder,
@@ -109,6 +107,11 @@ func TestRunPipe(t *testing.T) {
 		Publish: true,
 	}
 	client := &DummyClient{}
+	assert.Error(doRun(ctx, client))
+	assert.False(client.CreatedFile)
+
+	_, err = os.Create(filepath.Join(folder, "bin.tar.gz"))
+	assert.NoError(err)
 	assert.NoError(doRun(ctx, client))
 	assert.True(client.CreatedFile)
 }
@@ -147,33 +150,6 @@ func TestRunPipeFormatOverride(t *testing.T) {
 	assert.NoError(doRun(ctx, client))
 	assert.True(client.CreatedFile)
 	assert.Contains(client.Content, "bin.zip")
-}
-
-func TestRunPipeArchiveDoesntExist(t *testing.T) {
-	assert := assert.New(t)
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(err)
-	var ctx = &context.Context{
-		Config: config.Project{
-			Dist: folder,
-			Archive: config.Archive{
-				Format: "tar.gz",
-			},
-			Brew: config.Homebrew{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
-				},
-			},
-		},
-		Folders: map[string]string{
-			"darwinamd64": "bin",
-		},
-		Publish: true,
-	}
-	client := &DummyClient{}
-	assert.Error(doRun(ctx, client))
-	assert.False(client.CreatedFile)
 }
 
 func TestRunPipeNoDarwin64Build(t *testing.T) {
