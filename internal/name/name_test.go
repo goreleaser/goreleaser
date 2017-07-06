@@ -5,6 +5,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/goreleaser/goreleaser/pipeline/defaults"
 	"github.com/stretchr/testify/assert"
 )
@@ -30,7 +31,7 @@ func TestNameFor(t *testing.T) {
 		},
 	}
 
-	name, err := For(ctx, "darwin", "amd64", "")
+	name, err := For(ctx, buildtarget.New("darwin", "amd64", ""))
 	assert.NoError(err)
 	assert.Equal("test_Darwin_x86_64_v1.2.3_1.2.3", name)
 }
@@ -55,7 +56,11 @@ func TestNameForBuild(t *testing.T) {
 		},
 	}
 
-	name, err := ForBuild(ctx, config.Build{Binary: "foo"}, "darwin", "amd64", "")
+	name, err := ForBuild(
+		ctx,
+		config.Build{Binary: "foo"},
+		buildtarget.New("darwin", "amd64", ""),
+	)
 	assert.NoError(err)
 	assert.Equal("foo_Darwin_x86_64_v1.2.3_1.2.3", name)
 }
@@ -74,7 +79,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 		},
 	}
 
-	_, err := For(ctx, "darwin", "amd64", "")
+	_, err := For(ctx, buildtarget.New("darwin", "amd64", ""))
 	assert.Error(err)
 }
 
@@ -92,13 +97,13 @@ func TestNameDefaltTemplate(t *testing.T) {
 	type buildTarget struct {
 		goos, goarch, goarm string
 	}
-	for key, target := range map[string]buildTarget{
-		"test_1.2.3_darwin_amd64": {"darwin", "amd64", ""},
-		"test_1.2.3_linux_arm64":  {"linux", "arm64", ""},
-		"test_1.2.3_linux_armv7":  {"linux", "arm", "7"},
+	for key, target := range map[string]buildtarget.Target{
+		"test_1.2.3_darwin_amd64": buildtarget.New("darwin", "amd64", ""),
+		"test_1.2.3_linux_arm64":  buildtarget.New("linux", "arm64", ""),
+		"test_1.2.3_linux_armv7":  buildtarget.New("linux", "arm", "7"),
 	} {
 		t.Run(key, func(t *testing.T) {
-			name, err := For(ctx, target.goos, target.goarch, target.goarm)
+			name, err := For(ctx, target)
 			assert.NoError(err)
 			assert.Equal(key, name)
 		})

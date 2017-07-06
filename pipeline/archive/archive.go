@@ -61,13 +61,14 @@ func create(ctx *context.Context, platform, name string) error {
 			return err
 		}
 	}
-	var path = filepath.Join(ctx.Config.Dist, name)
-	binaries, err := ioutil.ReadDir(path)
+	var basepath = filepath.Join(ctx.Config.Dist, name)
+	binaries, err := ioutil.ReadDir(basepath)
 	if err != nil {
 		return err
 	}
 	for _, binary := range binaries {
-		if err := archive.Add(binary.Name(), filepath.Join(path, binary.Name())); err != nil {
+		var path = filepath.Join(basepath, binary.Name())
+		if err := archive.Add(binary.Name(), path); err != nil {
 			return err
 		}
 	}

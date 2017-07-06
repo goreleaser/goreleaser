@@ -8,6 +8,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/buildtarget"
 )
 
 type nameData struct {
@@ -22,12 +23,12 @@ type nameData struct {
 
 // ForBuild return the name for the given context, goos, goarch, goarm and
 // build, using the build.Binary property instead of project_name.
-func ForBuild(ctx *context.Context, build config.Build, goos, goarch, goarm string) (string, error) {
+func ForBuild(ctx *context.Context, build config.Build, target buildtarget.Target) (string, error) {
 	return apply(
 		nameData{
-			Os:          replace(ctx.Config.Archive.Replacements, goos),
-			Arch:        replace(ctx.Config.Archive.Replacements, goarch),
-			Arm:         replace(ctx.Config.Archive.Replacements, goarm),
+			Os:          replace(ctx.Config.Archive.Replacements, target.OS),
+			Arch:        replace(ctx.Config.Archive.Replacements, target.Arch),
+			Arm:         replace(ctx.Config.Archive.Replacements, target.Arm),
 			Version:     ctx.Version,
 			Tag:         ctx.Git.CurrentTag,
 			Binary:      build.Binary,
@@ -38,12 +39,12 @@ func ForBuild(ctx *context.Context, build config.Build, goos, goarch, goarm stri
 }
 
 // For returns the name for the given context, goos, goarch and goarm.
-func For(ctx *context.Context, goos, goarch, goarm string) (string, error) {
+func For(ctx *context.Context, target buildtarget.Target) (string, error) {
 	return apply(
 		nameData{
-			Os:          replace(ctx.Config.Archive.Replacements, goos),
-			Arch:        replace(ctx.Config.Archive.Replacements, goarch),
-			Arm:         replace(ctx.Config.Archive.Replacements, goarm),
+			Os:          replace(ctx.Config.Archive.Replacements, target.OS),
+			Arch:        replace(ctx.Config.Archive.Replacements, target.Arch),
+			Arm:         replace(ctx.Config.Archive.Replacements, target.Arm),
 			Version:     ctx.Version,
 			Tag:         ctx.Git.CurrentTag,
 			Binary:      ctx.Config.ProjectName,

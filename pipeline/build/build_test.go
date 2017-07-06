@@ -9,6 +9,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,11 +20,11 @@ func TestPipeDescription(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	assert.NoError(t, run(runtimeTarget, []string{"go", "list", "./..."}, emptyEnv))
+	assert.NoError(t, run(buildtarget.Runtime, []string{"go", "list", "./..."}, emptyEnv))
 }
 
 func TestRunInvalidCommand(t *testing.T) {
-	assert.Error(t, run(runtimeTarget, []string{"gggggo", "nope"}, emptyEnv))
+	assert.Error(t, run(buildtarget.Runtime, []string{"gggggo", "nope"}, emptyEnv))
 }
 
 func TestBuild(t *testing.T) {
@@ -41,7 +42,7 @@ func TestBuild(t *testing.T) {
 		Config:  config,
 		Folders: map[string]string{},
 	}
-	assert.NoError(doBuild(ctx, ctx.Config.Builds[0], runtimeTarget))
+	assert.NoError(doBuild(ctx, ctx.Config.Builds[0], buildtarget.Runtime))
 }
 
 func TestRunFullPipe(t *testing.T) {

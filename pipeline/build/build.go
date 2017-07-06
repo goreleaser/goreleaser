@@ -12,6 +12,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/goreleaser/goreleaser/internal/name"
 	"golang.org/x/sync/errgroup"
@@ -65,30 +66,18 @@ func runHook(env []string, hook string) error {
 	}
 	log.WithField("hook", hook).Info("running hook")
 	cmd := strings.Fields(hook)
-	return run(runtimeTarget, cmd, env)
+	return run(buildtarget.Runtime, cmd, env)
 }
 
-func doBuild(ctx *context.Context, build config.Build, target buildTarget) error {
-	folder, err := name.For(ctx, target.goos, target.goarch, target.goarm)
+func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
+	folder, err := name.For(ctx, target)
 	if err != nil {
 		return err
 	}
 	ctx.AddFolder(target.String(), folder)
-	var binary = filepath.Join(
-		ctx.Config.Dist,
-		folder,
-		build.Binary+ext.For(target.goos),
-	)
-	if ctx.Config.Archive.Format == "binary" {
-		bin, err := name.ForBuild(ctx, build, target.goos, target.goarch, target.goarm)
-		if err != nil {
-			return err
-		}
-		binary = filepath.Join(
-			ctx.Config.Dist,
-			folder,
-			bin+ext.For(target.goos),
-		)
+	binary, err := binaryName(ctx, build, target, folder)
+	if err != nil {
+		return err
 	}
 	log.WithField("binary", binary).Info("building")
 	cmd := []string{"go", "build"}
@@ -103,10 +92,27 @@ func doBuild(ctx *context.Context, build config.Build, target buildTarget) error
 	return run(target, cmd, build.Env)
 }
 
-func run(target buildTarget, command, env []string) error {
+func binaryName(
+	ctx *context.Context,
+	build config.Build,
+	target buildtarget.Target,
+	folder string,
+) (binary string, err error) {
+	if ctx.Config.Archive.Format == "binary" {
+		binary, err = name.ForBuild(ctx, build, target)
+		if err != nil {
+			return
+		}
+		binary = binary + ext.For(target)
+	}
+	binary = build.Binary + ext.For(target)
+	return filepath.Join(ctx.Config.Dist, folder, binary), nil
+}
+
+func run(target buildtarget.Target, command, env []string) error {
 	var cmd = exec.Command(command[0], command[1:]...)
-	env = append(env, "GOOS="+target.goos, "GOARCH="+target.goarch, "GOARM="+target.goarm)
-	var log = log.WithField("target", target.PrettyString()).
+	env = append(env, target.Env()...)
+	var log = log.WithField("target", target.String()).
 		WithField("env", env).
 		WithField("cmd", command)
 	cmd.Env = append(cmd.Env, os.Environ()...)
@@ -114,7 +120,7 @@ func run(target buildTarget, command, env []string) error {
 	log.Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
-		return fmt.Errorf("build failed for %s:\n%v", target.PrettyString(), string(out))
+		return fmt.Errorf("build failed for %s:\n%v", target.String(), string(out))
 	}
 	return nil
 }
