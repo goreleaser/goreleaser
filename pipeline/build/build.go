@@ -75,10 +75,15 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 		return err
 	}
 	ctx.AddFolder(target.String(), folder)
-	binary, err := binaryName(ctx, build, target, folder)
-	if err != nil {
-		return err
+	var binaryName = build.Binary + ext.For(target)
+	if ctx.Config.Archive.Format == "binary" {
+		binaryName, err = name.ForBuild(ctx, build, target)
+		if err != nil {
+			return err
+		}
+		binaryName = binaryName + ext.For(target)
 	}
+	var binary = filepath.Join(ctx.Config.Dist, folder, binaryName)
 	log.WithField("binary", binary).Info("building")
 	cmd := []string{"go", "build"}
 	if build.Flags != "" {
@@ -92,27 +97,10 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 	return run(target, cmd, build.Env)
 }
 
-func binaryName(
-	ctx *context.Context,
-	build config.Build,
-	target buildtarget.Target,
-	folder string,
-) (binary string, err error) {
-	binary = build.Binary + ext.For(target)
-	if ctx.Config.Archive.Format == "binary" {
-		binary, err = name.ForBuild(ctx, build, target)
-		if err != nil {
-			return
-		}
-		binary = binary + ext.For(target)
-	}
-	return filepath.Join(ctx.Config.Dist, folder, binary), nil
-}
-
 func run(target buildtarget.Target, command, env []string) error {
 	var cmd = exec.Command(command[0], command[1:]...)
 	env = append(env, target.Env()...)
-	var log = log.WithField("target", target.String()).
+	var log = log.WithField("target", target.PrettyString()).
 		WithField("env", env).
 		WithField("cmd", command)
 	cmd.Env = append(cmd.Env, os.Environ()...)
@@ -120,7 +108,7 @@ func run(target buildtarget.Target, command, env []string) error {
 	log.Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
-		return fmt.Errorf("build failed for %s:\n%v", target.String(), string(out))
+		return fmt.Errorf("build failed for %s:\n%v", target.PrettyString(), string(out))
 	}
 	return nil
 }
