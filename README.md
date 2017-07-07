@@ -484,12 +484,10 @@ deployment:
 
 *Note that if you test multiple versions or multiple OSes you probably want to make sure GoReleaser is just run once*
 
----
-
-Would you like to fix something in the documentation? Feel free to open an [issue](https://github.com/goreleaser/goreleaser/issues).
-
----
-
 ### Star history over time
 
 [![goreleaser stars](https://starcharts.herokuapp.com/goreleaser/goreleaser)](https://starcharts.herokuapp.com/goreleaser/goreleaser)
+
+---
+
+Would you like to fix something in the documentation? Feel free to open an [issue](https://github.com/goreleaser/goreleaser/issues).
