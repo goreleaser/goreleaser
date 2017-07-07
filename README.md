@@ -492,4 +492,4 @@ Would you like to fix something in the documentation? Feel free to open an [issu
 
 ### Star history over time
 
-![goreleaser stars](https://caarlos0-st.herokuapp.com/goreleaser/goreleaser)
+[![goreleaser stars](https://caarlos0-st.herokuapp.com/goreleaser/goreleaser)](https://caarlos0-st.herokuapp.com/goreleaser/goreleaser)
