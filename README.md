@@ -487,3 +487,9 @@ deployment:
 ---
 
 Would you like to fix something in the documentation? Feel free to open an [issue](https://github.com/goreleaser/goreleaser/issues).
+
+---
+
+### Star history over time
+
+![goreleaser stars](https://caarlos0-st.herokuapp.com/goreleaser/goreleaser)
