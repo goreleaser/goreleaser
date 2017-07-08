@@ -17,13 +17,13 @@
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "5a0f697c9ed9d68fef0116532c6e05cfeae00e55"
+  revision = "6a1fa9404c0aebf36c879bc50152edcc953910d2"
 
 [[projects]]
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "ebfec748347a9af6793c723f8859afcd906860fb"
+  revision = "fe7d11f8add400587b6718d9f39a62e42cb04c28"
 
 [[projects]]
   branch = "master"
@@ -70,20 +70,20 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context"]
-  revision = "3da985ce5951d99de868be4385f21ea6c2b22f24"
+  packages = ["context","context/ctxhttp"]
+  revision = "054b33e6527139ad5b1ec2f6232c3b175bd9a30c"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","internal"]
-  revision = "f047394b6d14284165300fd82dad67edb3a4d7f6"
+  revision = "cce311a261e6fcf29de72ca96827bdb0b7d9c9e6"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sync"
   packages = ["errgroup"]
-  revision = "57af736625aaa69dfa099432bb67e0808eef3bcc"
+  revision = "f52d1811a62927559de87708c8913c1650ce4f26"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -92,14 +92,14 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "v1"
-  name = "gopkg.in/yaml.v1"
+  branch = "v2"
+  name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "9f9df34309c04878acc86042b16630b0f696e1de"
+  revision = "cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "15a60b1efa147cc2507589fd45e4b767e118c6853c6ae2e2728a6ba01b818fe4"
+  inputs-digest = "d3f68b6665e34ba913718b1ea7bbe0dbb185290b5209146133ca8d70615c09ac"
   solver-name = "gps-cdcl"
   solver-version = 1

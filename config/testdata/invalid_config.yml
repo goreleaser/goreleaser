@@ -1,0 +1,30 @@
+invalid_root: 1
+build:
+  invalid_build: 1
+  hooks:
+    invalid_build_hook: 1
+  ignore:
+  - invalid_build_ignore: 1
+builds:
+- invalid_builds: 1
+  hooks:
+    invalid_builds_hooks: 1
+  ignore:
+  - invalid_builds_ignore: 1
+archive:
+  invalid_archive: 1
+  format_overrides:
+  - invalid_archive_fmtoverrides: 1
+release:
+  invalid_release: 1
+  github:
+    invalid_release_github: 1
+brew:
+  invalid_brew: 1
+  github:
+    invalid_brew_github: 1
+fpm:
+  invalid_fpm: 1
+snapshot:
+  invalid_snapshot: 1
+

@@ -9,7 +9,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/stretchr/testify/assert"
-	yaml "gopkg.in/yaml.v1"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func init() {

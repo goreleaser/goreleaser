@@ -20,7 +20,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/release"
-	yaml "gopkg.in/yaml.v1"
+	yaml "gopkg.in/yaml.v2"
 )
 
 var pipes = []pipeline.Pipe{
