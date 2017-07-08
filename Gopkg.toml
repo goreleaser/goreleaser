@@ -97,5 +97,5 @@
   name = "golang.org/x/sync"
 
 [[constraint]]
-  branch = "v1"
-  name = "gopkg.in/yaml.v1"
+  branch = "v2"
+  name = "gopkg.in/yaml.v2"

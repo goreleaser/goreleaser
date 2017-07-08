@@ -1,7 +1,6 @@
-homepage: &homepage http://goreleaser.github.io
-description: &description Deliver Go binaries as fast and easily as possible
+nnnnnnnn: a
 builds:
-  -
+  - y: 1
     env:
       - CGO_ENABLED=0
     goos:
@@ -14,6 +13,7 @@ builds:
       - arm
       - arm64
 archive:
+  s: 1
   name_template: '{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
   replacements:
     darwin: Darwin
@@ -24,18 +24,22 @@ archive:
   format_overrides:
     - goos: windows
       format: zip
+    - asd: as
 brew:
+  a: 1
   github:
+    bb: a
     owner: goreleaser
     name: homebrew-tap
   folder: Formula
-  homepage: *homepage
-  description: *description
+  homepage:  http://goreleaser.github.io
+  description: Deliver Go binaries as fast and easily as possible
   dependencies:
     - git
 fpm:
-  homepage: *homepage
-  description: *description
+  fff: 444
+  homepage:  http://goreleaser.github.io
+  description: Deliver Go binaries as fast and easily as possible
   maintainer: Carlos Alexandro Becker <root@carlosbecker.com>
   license: MIT
   vendor: GoReleaser
