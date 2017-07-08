@@ -484,9 +484,7 @@ deployment:
 
 *Note that if you test multiple versions or multiple OSes you probably want to make sure GoReleaser is just run once*
 
-### Star history over time
-
-## stargazers over time
+### Stargazers over time
 
 [![goreleaser/goreleaser stargazers over time](https://starcharts.herokuapp.com/goreleaser/goreleaser.svg)](https://starcharts.herokuapp.com/goreleaser/goreleaser)
 
