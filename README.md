@@ -486,7 +486,10 @@ deployment:
 
 ### Star history over time
 
-[![goreleaser stars](https://starcharts.herokuapp.com/goreleaser/goreleaser)](https://starcharts.herokuapp.com/goreleaser/goreleaser)
+## stargazers over time
+
+[![goreleaser/goreleaser stargazers over time](https://starcharts.herokuapp.com/goreleaser/goreleaser.svg)](https://starcharts.herokuapp.com/goreleaser/goreleaser)
+
 
 ---
 
