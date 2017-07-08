@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-
 	"strings"
 
 	"github.com/apex/log"
