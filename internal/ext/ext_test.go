@@ -3,16 +3,17 @@ package ext
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestExtWindows(t *testing.T) {
-	assert.Equal(t, ".exe", For("windows"))
-	assert.Equal(t, ".exe", For("windowsamd64"))
+	assert.Equal(t, ".exe", For(buildtarget.New("windows", "", "")))
+	assert.Equal(t, ".exe", For(buildtarget.New("windows", "adm64", "")))
 }
 
 func TestExtOthers(t *testing.T) {
-	assert.Empty(t, "", For("linux"))
-	assert.Empty(t, "", For("linuxwin"))
-	assert.Empty(t, "", For("winasdasd"))
+	assert.Empty(t, "", For(buildtarget.New("linux", "", "")))
+	assert.Empty(t, "", For(buildtarget.New("linuxwin", "", "")))
+	assert.Empty(t, "", For(buildtarget.New("winasdasd", "sad", "6")))
 }

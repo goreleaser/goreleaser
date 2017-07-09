@@ -12,6 +12,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/goreleaser/goreleaser/internal/name"
 	"golang.org/x/sync/errgroup"
@@ -42,7 +43,7 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	}
 	sem := make(chan bool, 4)
 	var g errgroup.Group
-	for _, target := range buildTargets(build) {
+	for _, target := range buildtarget.All(build) {
 		sem <- true
 		target := target
 		build := build
@@ -65,31 +66,24 @@ func runHook(env []string, hook string) error {
 	}
 	log.WithField("hook", hook).Info("running hook")
 	cmd := strings.Fields(hook)
-	return run(runtimeTarget, cmd, env)
+	return run(buildtarget.Runtime, cmd, env)
 }
 
-func doBuild(ctx *context.Context, build config.Build, target buildTarget) error {
-	folder, err := name.For(ctx, target.goos, target.goarch, target.goarm)
+func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
+	folder, err := name.For(ctx, target)
 	if err != nil {
 		return err
 	}
 	ctx.AddFolder(target.String(), folder)
-	var binary = filepath.Join(
-		ctx.Config.Dist,
-		folder,
-		build.Binary+ext.For(target.goos),
-	)
+	var binaryName = build.Binary + ext.For(target)
 	if ctx.Config.Archive.Format == "binary" {
-		bin, err := name.ForBuild(ctx, build, target.goos, target.goarch, target.goarm)
+		binaryName, err = name.ForBuild(ctx, build, target)
 		if err != nil {
 			return err
 		}
-		binary = filepath.Join(
-			ctx.Config.Dist,
-			folder,
-			bin+ext.For(target.goos),
-		)
+		binaryName = binaryName + ext.For(target)
 	}
+	var binary = filepath.Join(ctx.Config.Dist, folder, binaryName)
 	log.WithField("binary", binary).Info("building")
 	cmd := []string{"go", "build"}
 	if build.Flags != "" {
@@ -103,9 +97,9 @@ func doBuild(ctx *context.Context, build config.Build, target buildTarget) error
 	return run(target, cmd, build.Env)
 }
 
-func run(target buildTarget, command, env []string) error {
+func run(target buildtarget.Target, command, env []string) error {
 	var cmd = exec.Command(command[0], command[1:]...)
-	env = append(env, "GOOS="+target.goos, "GOARCH="+target.goarch, "GOARM="+target.goarm)
+	env = append(env, target.Env()...)
 	var log = log.WithField("target", target.PrettyString()).
 		WithField("env", env).
 		WithField("cmd", command)

@@ -35,7 +35,7 @@ lint: ## Run all the linters
 		--deadline=10m \
 		./...
 
-ci: lint test ## Run all the tests and code checks
+ci: test lint  ## Run all the tests and code checks
 
 build: ## Build a beta version of goreleaser
 	go build

@@ -56,9 +56,11 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 	var assert = assert.New(t)
 	folder, back := setup(t)
 	defer back()
-	os.Rename(
-		filepath.Join(folder, "goreleaser.yml"),
-		filepath.Join(folder, ".goreleaser.yml"),
+	assert.NoError(
+		os.Rename(
+			filepath.Join(folder, "goreleaser.yml"),
+			filepath.Join(folder, ".goreleaser.yml"),
+		),
 	)
 	var flags = fakeFlags{
 		flags: map[string]string{},

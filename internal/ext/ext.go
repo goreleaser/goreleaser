@@ -1,10 +1,10 @@
 package ext
 
-import "strings"
+import "github.com/goreleaser/goreleaser/internal/buildtarget"
 
 // For returns the binary extension for the given platform
-func For(platform string) (ext string) {
-	if strings.HasPrefix(platform, "windows") {
+func For(target buildtarget.Target) (ext string) {
+	if target.OS == "windows" {
 		ext = ".exe"
 	}
 	return
