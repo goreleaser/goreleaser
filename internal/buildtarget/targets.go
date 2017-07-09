@@ -9,12 +9,12 @@ import (
 func All(build config.Build) (targets []Target) {
 	for _, target := range allBuildTargets(build) {
 		if !valid(target) {
-			log.WithField("target", target.String()).
+			log.WithField("target", target.PrettyString()).
 				Warn("skipped invalid build")
 			continue
 		}
 		if ignored(build, target) {
-			log.WithField("target", target.String()).
+			log.WithField("target", target.PrettyString()).
 				Warn("skipped ignored build")
 			continue
 		}
