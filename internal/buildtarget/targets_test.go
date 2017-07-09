@@ -1,11 +1,10 @@
-package build
+package buildtarget
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
-	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,17 +37,17 @@ func TestAllBuildTargets(t *testing.T) {
 			},
 		},
 	}
-	assert.Equal([]buildtarget.Target{
-		buildtarget.New("linux", "386", ""),
-		buildtarget.New("linux", "amd64", ""),
-		buildtarget.New("linux", "arm", "6"),
-		buildtarget.New("linux", "arm64", ""),
-		buildtarget.New("darwin", "amd64", ""),
-		buildtarget.New("freebsd", "386", ""),
-		buildtarget.New("freebsd", "amd64", ""),
-		buildtarget.New("freebsd", "arm", "6"),
-		buildtarget.New("freebsd", "arm", "7"),
-	}, buildTargets(build))
+	assert.Equal([]Target{
+		New("linux", "386", ""),
+		New("linux", "amd64", ""),
+		New("linux", "arm", "6"),
+		New("linux", "arm64", ""),
+		New("darwin", "amd64", ""),
+		New("freebsd", "386", ""),
+		New("freebsd", "amd64", ""),
+		New("freebsd", "arm", "6"),
+		New("freebsd", "arm", "7"),
+	}, All(build))
 }
 
 func TestGoosGoarchCombos(t *testing.T) {
@@ -94,7 +93,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 	}
 	for _, p := range platforms {
 		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {
-			assert.Equal(t, p.valid, valid(buildtarget.New(p.os, p.arch, "")))
+			assert.Equal(t, p.valid, valid(New(p.os, p.arch, "")))
 		})
 	}
 }

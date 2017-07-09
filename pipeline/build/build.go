@@ -43,7 +43,7 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	}
 	sem := make(chan bool, 4)
 	var g errgroup.Group
-	for _, target := range buildTargets(build) {
+	for _, target := range buildtarget.All(build) {
 		sem <- true
 		target := target
 		build := build
