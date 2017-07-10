@@ -166,6 +166,7 @@ func setup(t *testing.T) (current string, back func()) {
 	assert.NoError(os.Chdir(folder))
 	var gitCmds = [][]string{
 		{"init"},
+		{"config", "commit.gpgSign", "false"},
 		{"add", "-A"},
 		{"commit", "--allow-empty", "-m", "asdf"},
 		{"tag", "v0.0.1"},
