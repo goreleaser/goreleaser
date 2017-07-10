@@ -15,6 +15,7 @@ func TestAllBuildTargets(t *testing.T) {
 			"linux",
 			"darwin",
 			"freebsd",
+			"openbsd",
 		},
 		Goarch: []string{
 			"386",
@@ -34,6 +35,9 @@ func TestAllBuildTargets(t *testing.T) {
 				Goos:   "linux",
 				Goarch: "arm",
 				Goarm:  "7",
+			}, {
+				Goos:   "openbsd",
+				Goarch: "arm",
 			},
 		},
 	}
@@ -47,6 +51,8 @@ func TestAllBuildTargets(t *testing.T) {
 		New("freebsd", "amd64", ""),
 		New("freebsd", "arm", "6"),
 		New("freebsd", "arm", "7"),
+		New("openbsd", "386", ""),
+		New("openbsd", "amd64", ""),
 	}, All(build))
 }
 

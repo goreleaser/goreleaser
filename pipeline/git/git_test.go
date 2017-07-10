@@ -277,6 +277,8 @@ func gitInit(t *testing.T) {
 	out, err := git("init")
 	assert.NoError(err)
 	assert.Contains(out, "Initialized empty Git repository")
+	_, err = git("config", "commit.gpgSign", "false")
+	assert.NoError(err)
 }
 
 func gitCommit(t *testing.T, msg string) {
