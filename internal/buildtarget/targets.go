@@ -40,10 +40,16 @@ func allBuildTargets(build config.Build) (targets []Target) {
 
 func ignored(build config.Build, target Target) bool {
 	for _, ig := range build.Ignore {
-		var ignored = New(ig.Goos, ig.Goarch, ig.Goarm)
-		if ignored == target {
-			return true
+		if ig.Goos != "" && ig.Goos != target.OS {
+			continue
 		}
+		if ig.Goarch != "" && ig.Goarch != target.Arch {
+			continue
+		}
+		if ig.Goarm != "" && ig.Goarm != target.Arm {
+			continue
+		}
+		return true
 	}
 	return false
 }
