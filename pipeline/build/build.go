@@ -74,8 +74,8 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 	if err != nil {
 		return err
 	}
-	ctx.AddFolder(target.String(), folder)
 	var binaryName = build.Binary + ext.For(target)
+	var prettyName = binaryName
 	if ctx.Config.Archive.Format == "binary" {
 		binaryName, err = name.ForBuild(ctx, build, target)
 		if err != nil {
@@ -84,6 +84,7 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 		binaryName = binaryName + ext.For(target)
 	}
 	var binary = filepath.Join(ctx.Config.Dist, folder, binaryName)
+	ctx.AddBinary(target.String(), folder, prettyName, binary)
 	log.WithField("binary", binary).Info("building")
 	cmd := []string{"go", "build"}
 	if build.Flags != "" {

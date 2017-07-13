@@ -4,9 +4,7 @@
 package archive
 
 import (
-	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/archive"
@@ -27,65 +25,56 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	for platform, folder := range ctx.Folders {
-		folder := folder
+	for platform, binaries := range ctx.Binaries {
 		platform := platform
+		binaries := binaries
 		g.Go(func() error {
 			if ctx.Config.Archive.Format == "binary" {
-				return skip(ctx, platform, folder)
+				return skip(ctx, platform, binaries)
 			}
-			return create(ctx, platform, folder)
+			return create(ctx, platform, binaries)
 		})
 	}
 	return g.Wait()
 }
 
-func create(ctx *context.Context, platform, name string) error {
-	var folder = filepath.Join(ctx.Config.Dist, name)
-	var format = archiveformat.For(ctx, platform)
-	file, err := os.Create(folder + "." + format)
-	if err != nil {
-		return err
-	}
-	log.WithField("archive", file.Name()).Info("creating")
-	defer func() { _ = file.Close() }()
-	var archive = archive.New(file)
-	defer func() { _ = archive.Close() }()
+func create(ctx *context.Context, platform string, groups map[string][]context.Binary) error {
+	for folder, binaries := range groups {
+		var format = archiveformat.For(ctx, platform)
+		file, err := os.Create(folder + "." + format)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = file.Close() }()
+		log.WithField("archive", file.Name()).Info("creating")
+		var archive = archive.New(file)
+		defer func() { _ = archive.Close() }()
 
-	files, err := findFiles(ctx)
-	if err != nil {
-		return err
-	}
-	for _, f := range files {
-		if err = archive.Add(f, f); err != nil {
+		files, err := findFiles(ctx)
+		if err != nil {
 			return err
 		}
-	}
-	var basepath = filepath.Join(ctx.Config.Dist, name)
-	binaries, err := ioutil.ReadDir(basepath)
-	if err != nil {
-		return err
-	}
-	for _, binary := range binaries {
-		var path = filepath.Join(basepath, binary.Name())
-		if err := archive.Add(binary.Name(), path); err != nil {
-			return err
+		for _, f := range files {
+			if err = archive.Add(f, f); err != nil {
+				return err
+			}
 		}
+		for _, binary := range binaries {
+			if err := archive.Add(binary.Name, binary.Path); err != nil {
+				return err
+			}
+		}
+		ctx.AddArtifact(file.Name())
 	}
-	ctx.AddArtifact(file.Name())
 	return nil
 }
 
-func skip(ctx *context.Context, platform, name string) error {
-	var path = filepath.Join(ctx.Config.Dist, name)
-	binaries, err := ioutil.ReadDir(path)
-	if err != nil {
-		return err
-	}
-	log.WithField("platform", platform).Debugf("found %v binaries", len(binaries))
-	for _, binary := range binaries {
-		log.WithField("binary", binary.Name()).Info("skip archiving")
-		ctx.AddArtifact(filepath.Join(path+"/", binary.Name()))
+func skip(ctx *context.Context, platform string, groups map[string][]context.Binary) error {
+	for _, binaries := range groups {
+		for _, binary := range binaries {
+			log.WithField("binary", binary.Name).Info("skip archiving")
+			ctx.AddArtifact(binary.Path)
+		}
 	}
 	return nil
 }

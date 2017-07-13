@@ -10,10 +10,8 @@ import (
 	"text/template"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/client"
 )
 
@@ -141,30 +139,31 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 }
 
 func dataFor(ctx *context.Context, client client.Client) (result templateData, err error) {
-	var folder = ctx.Folders[platform]
-	if folder == "" {
-		return result, ErrNoDarwin64Build
-	}
-	var file = folder + "." + archiveformat.For(ctx, platform)
-	sum, err := checksum.SHA256(filepath.Join(ctx.Config.Dist, file))
-	if err != nil {
-		return
-	}
-	return templateData{
-		Name:         formulaNameFor(ctx.Config.ProjectName),
-		Desc:         ctx.Config.Brew.Description,
-		Homepage:     ctx.Config.Brew.Homepage,
-		Repo:         ctx.Config.Release.GitHub,
-		Tag:          ctx.Git.CurrentTag,
-		Version:      ctx.Version,
-		Caveats:      ctx.Config.Brew.Caveats,
-		File:         file,
-		SHA256:       sum,
-		Dependencies: ctx.Config.Brew.Dependencies,
-		Conflicts:    ctx.Config.Brew.Conflicts,
-		Plist:        ctx.Config.Brew.Plist,
-		Install:      strings.Split(ctx.Config.Brew.Install, "\n"),
-	}, err
+	// var folder = ctx.Binaries[platform]
+	// if len(folder) == 0 {
+	// 	return result, ErrNoDarwin64Build
+	// }
+	// var file = folder + "." + archiveformat.For(ctx, platform)
+	// sum, err := checksum.SHA256(filepath.Join(ctx.Config.Dist, file))
+	// if err != nil {
+	// 	return
+	// }
+	// return templateData{
+	// 	Name:         formulaNameFor(ctx.Config.ProjectName),
+	// 	Desc:         ctx.Config.Brew.Description,
+	// 	Homepage:     ctx.Config.Brew.Homepage,
+	// 	Repo:         ctx.Config.Release.GitHub,
+	// 	Tag:          ctx.Git.CurrentTag,
+	// 	Version:      ctx.Version,
+	// 	Caveats:      ctx.Config.Brew.Caveats,
+	// 	File:         file,
+	// 	SHA256:       sum,
+	// 	Dependencies: ctx.Config.Brew.Dependencies,
+	// 	Conflicts:    ctx.Config.Brew.Conflicts,
+	// 	Plist:        ctx.Config.Brew.Plist,
+	// 	Install:      strings.Split(ctx.Config.Brew.Install, "\n"),
+	// }, err
+	return
 }
 
 func formulaNameFor(name string) string {

@@ -32,13 +32,13 @@ func TestMultipleArtifactAdds(t *testing.T) {
 	assert.Contains(ctx.Artifacts, "a", "b", "c", "d")
 }
 
-func TestMultipleFolderAdds(t *testing.T) {
+func TestMultipleBinaryAdds(t *testing.T) {
 	var assert = assert.New(t)
 	var list = map[string]string{
-		"key-a": "folder/a",
-		"key-b": "folder/b",
-		"key-c": "folder/c",
-		"key-d": "folder/d",
+		"a": "folder/a",
+		"b": "folder/b",
+		"c": "folder/c",
+		"d": "folder/d",
 	}
 	var ctx = New(config.Project{
 		Dist: "dist",
@@ -48,10 +48,11 @@ func TestMultipleFolderAdds(t *testing.T) {
 		f := f
 		k := k
 		g.Go(func() error {
-			ctx.AddFolder(k, f)
+			ctx.AddBinary("linuxamd64", k, f)
 			return nil
 		})
 	}
 	assert.NoError(g.Wait())
-	assert.Len(ctx.Folders, len(list))
+	assert.Len(ctx.Binaries["linuxamd64"], len(list))
+	assert.Len(ctx.Binaries, 1)
 }
