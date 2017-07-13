@@ -48,7 +48,7 @@ func TestMultipleBinaryAdds(t *testing.T) {
 		f := f
 		k := k
 		g.Go(func() error {
-			ctx.AddBinary("linuxamd64", k, f)
+			ctx.AddBinary("linuxamd64", k, k, f)
 			return nil
 		})
 	}

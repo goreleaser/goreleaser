@@ -58,6 +58,9 @@ func (ctx *Context) AddArtifact(file string) {
 func (ctx *Context) AddBinary(key, group, name, path string) {
 	binariesLock.Lock()
 	defer binariesLock.Unlock()
+	if ctx.Binaries == nil {
+		ctx.Binaries = map[string]map[string][]Binary{}
+	}
 	if ctx.Binaries[key] == nil {
 		ctx.Binaries[key] = map[string][]Binary{}
 	}
