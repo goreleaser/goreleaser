@@ -5,6 +5,7 @@ package archive
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/archive"
@@ -41,7 +42,7 @@ func (Pipe) Run(ctx *context.Context) error {
 func create(ctx *context.Context, platform string, groups map[string][]context.Binary) error {
 	for folder, binaries := range groups {
 		var format = archiveformat.For(ctx, platform)
-		file, err := os.Create(folder + "." + format)
+		file, err := os.Create(filepath.Join(ctx.Config.Dist, folder+"."+format))
 		if err != nil {
 			return err
 		}

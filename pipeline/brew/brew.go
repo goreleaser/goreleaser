@@ -10,8 +10,10 @@ import (
 	"text/template"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/client"
 )
 
@@ -109,19 +111,32 @@ func doRun(ctx *context.Context, client client.Client) error {
 		log.Info("skipped because archive format is binary")
 		return nil
 	}
+	var group = ctx.Binaries["darwinamd64"]
+	if group == nil {
+		return ErrNoDarwin64Build
+	}
+	if len(group) > 1 {
+		log.Info("skipped because due to unexpected group state")
+		return nil
+	}
+	var folder string
+	for f := range group {
+		folder = f
+		break
+	}
 	var path = filepath.Join(ctx.Config.Brew.Folder, ctx.Config.ProjectName+".rb")
 	log.WithField("formula", path).
 		WithField("repo", ctx.Config.Brew.GitHub.String()).
 		Info("pushing")
-	content, err := buildFormula(ctx, client)
+	content, err := buildFormula(ctx, client, folder)
 	if err != nil {
 		return err
 	}
 	return client.CreateFile(ctx, content, path)
 }
 
-func buildFormula(ctx *context.Context, client client.Client) (bytes.Buffer, error) {
-	data, err := dataFor(ctx, client)
+func buildFormula(ctx *context.Context, client client.Client, folder string) (bytes.Buffer, error) {
+	data, err := dataFor(ctx, client, folder)
 	if err != nil {
 		return bytes.Buffer{}, err
 	}
@@ -138,32 +153,27 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 	return out, err
 }
 
-func dataFor(ctx *context.Context, client client.Client) (result templateData, err error) {
-	// var folder = ctx.Binaries[platform]
-	// if len(folder) == 0 {
-	// 	return result, ErrNoDarwin64Build
-	// }
-	// var file = folder + "." + archiveformat.For(ctx, platform)
-	// sum, err := checksum.SHA256(filepath.Join(ctx.Config.Dist, file))
-	// if err != nil {
-	// 	return
-	// }
-	// return templateData{
-	// 	Name:         formulaNameFor(ctx.Config.ProjectName),
-	// 	Desc:         ctx.Config.Brew.Description,
-	// 	Homepage:     ctx.Config.Brew.Homepage,
-	// 	Repo:         ctx.Config.Release.GitHub,
-	// 	Tag:          ctx.Git.CurrentTag,
-	// 	Version:      ctx.Version,
-	// 	Caveats:      ctx.Config.Brew.Caveats,
-	// 	File:         file,
-	// 	SHA256:       sum,
-	// 	Dependencies: ctx.Config.Brew.Dependencies,
-	// 	Conflicts:    ctx.Config.Brew.Conflicts,
-	// 	Plist:        ctx.Config.Brew.Plist,
-	// 	Install:      strings.Split(ctx.Config.Brew.Install, "\n"),
-	// }, err
-	return
+func dataFor(ctx *context.Context, client client.Client, folder string) (result templateData, err error) {
+	var file = folder + "." + archiveformat.For(ctx, platform)
+	sum, err := checksum.SHA256(filepath.Join(ctx.Config.Dist, file))
+	if err != nil {
+		return
+	}
+	return templateData{
+		Name:         formulaNameFor(ctx.Config.ProjectName),
+		Desc:         ctx.Config.Brew.Description,
+		Homepage:     ctx.Config.Brew.Homepage,
+		Repo:         ctx.Config.Release.GitHub,
+		Tag:          ctx.Git.CurrentTag,
+		Version:      ctx.Version,
+		Caveats:      ctx.Config.Brew.Caveats,
+		File:         file,
+		SHA256:       sum,
+		Dependencies: ctx.Config.Brew.Dependencies,
+		Conflicts:    ctx.Config.Brew.Conflicts,
+		Plist:        ctx.Config.Brew.Plist,
+		Install:      strings.Split(ctx.Config.Brew.Install, "\n"),
+	}, err
 }
 
 func formulaNameFor(name string) string {
