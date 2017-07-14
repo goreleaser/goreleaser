@@ -175,6 +175,8 @@ func TestValidState(t *testing.T) {
 		Validate: true,
 	}
 	assert.NoError(Pipe{}.Run(ctx))
+	assert.Equal("v0.0.2", ctx.Git.CurrentTag)
+	assert.NotContains("commit4", ctx.ReleaseNotes)
 	assert.NotContains("commit3", ctx.ReleaseNotes)
 }
 
