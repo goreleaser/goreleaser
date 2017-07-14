@@ -45,14 +45,10 @@ func TestRunPipe(t *testing.T) {
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(os.Mkdir(dist, 0755))
 	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	_, err = os.Create(filepath.Join(dist, "mybin", "mybin"))
+	var binPath = filepath.Join(dist, "mybin", "mybin")
+	_, err = os.Create(binPath)
 	assert.NoError(err)
 	var ctx = &context.Context{
-		Folders: map[string]string{
-			"linuxamd64":  "mybin",
-			"linux386":    "mybin",
-			"darwinamd64": "anotherbin",
-		},
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -67,6 +63,9 @@ func TestRunPipe(t *testing.T) {
 				Homepage:     "https://goreleaser.github.io",
 			},
 		},
+	}
+	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64"} {
+		ctx.AddBinary(plat, "mybin", "mybin", binPath)
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 }
@@ -96,9 +95,6 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	assert.NoError(os.Mkdir(dist, 0755))
 	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var ctx = &context.Context{
-		Folders: map[string]string{
-			"linuxamd64": "mybin",
-		},
 		Config: config.Project{
 			Dist: dist,
 			FPM: config.FPM{
@@ -106,14 +102,6 @@ func TestCreateFileDoesntExist(t *testing.T) {
 			},
 		},
 	}
+	ctx.AddBinary("linuxamd64", "mybin", "mybin", filepath.Join(dist, "mybin", "mybin"))
 	assert.Error(Pipe{}.Run(ctx))
-}
-
-func TestCreatePathDoesntExist(t *testing.T) {
-	var assert = assert.New(t)
-	var ctx = &context.Context{}
-	assert.Contains(
-		create(ctx, "tar.gz", "/nope/noooo", "windowsarm64").Error(),
-		"no such file",
-	)
 }
