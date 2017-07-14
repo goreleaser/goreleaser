@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"fmt"
-
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/stretchr/testify/assert"
@@ -97,7 +95,6 @@ func TestRunPipeBinary(t *testing.T) {
 	ctx.AddBinary("darwinamd64", "mybin_darwin", "mybin", filepath.Join(dist, "mybin_darwin", "mybin"))
 	ctx.AddBinary("windowsamd64", "mybin_win", "mybin.exe", filepath.Join(dist, "mybin_win", "mybin.exe"))
 	assert.NoError(Pipe{}.Run(ctx))
-	fmt.Println(ctx.Artifacts)
 	assert.Contains(ctx.Artifacts, "mybin_darwin/mybin")
 	assert.Contains(ctx.Artifacts, "mybin_win/mybin.exe")
 	assert.Len(ctx.Artifacts, 2)
