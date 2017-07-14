@@ -81,8 +81,7 @@ func (ctx *Context) AddBinary(platform, folder, name, path string) {
 // New context
 func New(config config.Project) *Context {
 	return &Context{
-		Context:  ctx.Background(),
-		Config:   config,
-		Binaries: map[string]map[string][]Binary{},
+		Context: ctx.Background(),
+		Config:  config,
 	}
 }
