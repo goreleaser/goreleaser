@@ -175,6 +175,7 @@ func TestValidState(t *testing.T) {
 		Validate: true,
 	}
 	assert.NoError(Pipe{}.Run(ctx))
+	assert.NotContains("commit3", ctx.ReleaseNotes)
 }
 
 func TestNoValidate(t *testing.T) {
