@@ -55,24 +55,24 @@ func (ctx *Context) AddArtifact(file string) {
 }
 
 // AddBinary adds a built binary to the current context
-func (ctx *Context) AddBinary(key, group, name, path string) {
+func (ctx *Context) AddBinary(platform, folder, name, path string) {
 	binariesLock.Lock()
 	defer binariesLock.Unlock()
 	if ctx.Binaries == nil {
 		ctx.Binaries = map[string]map[string][]Binary{}
 	}
-	if ctx.Binaries[key] == nil {
-		ctx.Binaries[key] = map[string][]Binary{}
+	if ctx.Binaries[platform] == nil {
+		ctx.Binaries[platform] = map[string][]Binary{}
 	}
-	ctx.Binaries[key][group] = append(
-		ctx.Binaries[key][group],
+	ctx.Binaries[platform][folder] = append(
+		ctx.Binaries[platform][folder],
 		Binary{
 			Name: name,
 			Path: path,
 		},
 	)
-	log.WithField("key", key).
-		WithField("group", group).
+	log.WithField("platform", platform).
+		WithField("folder", folder).
 		WithField("name", name).
 		WithField("path", path).
 		Info("new binary")
