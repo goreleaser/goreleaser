@@ -115,10 +115,6 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if group == nil {
 		return ErrNoDarwin64Build
 	}
-	if len(group) > 1 {
-		log.Info("skipped because due to unexpected group state")
-		return nil
-	}
 	var folder string
 	for f := range group {
 		folder = f

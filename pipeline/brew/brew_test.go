@@ -85,7 +85,6 @@ func TestFormulaeSimple(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	t.Skip("fix later")
 	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
@@ -104,23 +103,24 @@ func TestRunPipe(t *testing.T) {
 		},
 		Publish: true,
 	}
-	ctx.AddBinary("darwinamd64", "foo", "bar", "baz")
+	var path = filepath.Join(folder, "bin.tar.gz")
+	ctx.AddBinary("darwinamd64", "bin", "bin", path)
 	client := &DummyClient{}
 	assert.Error(doRun(ctx, client))
 	assert.False(client.CreatedFile)
 
-	_, err = os.Create(filepath.Join(folder, "bin.tar.gz"))
+	_, err = os.Create(path)
 	assert.NoError(err)
 	assert.NoError(doRun(ctx, client))
 	assert.True(client.CreatedFile)
 }
 
 func TestRunPipeFormatOverride(t *testing.T) {
-	t.Skip("Fix this test later")
 	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
-	_, err = os.Create(filepath.Join(folder, "bin.zip"))
+	var path = filepath.Join(folder, "bin.zip")
+	_, err = os.Create(path)
 	assert.NoError(err)
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -143,7 +143,7 @@ func TestRunPipeFormatOverride(t *testing.T) {
 		},
 		Publish: true,
 	}
-	ctx.AddBinary("darwinamd64", "foo", "bar", "baz")
+	ctx.AddBinary("darwinamd64", "bin", "bin", path)
 	client := &DummyClient{}
 	assert.NoError(doRun(ctx, client))
 	assert.True(client.CreatedFile)
