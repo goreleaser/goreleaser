@@ -39,8 +39,7 @@ func TestBuild(t *testing.T) {
 		},
 	}
 	var ctx = &context.Context{
-		Config:  config,
-		Folders: map[string]string{},
+		Config: config,
 	}
 	assert.NoError(doBuild(ctx, ctx.Config.Builds[0], buildtarget.Runtime))
 }
@@ -73,8 +72,7 @@ func TestRunFullPipe(t *testing.T) {
 		},
 	}
 	var ctx = &context.Context{
-		Config:  config,
-		Folders: map[string]string{},
+		Config: config,
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.True(exists(binary), binary)
@@ -107,8 +105,7 @@ func TestRunPipeFormatBinary(t *testing.T) {
 		},
 	}
 	var ctx = &context.Context{
-		Config:  config,
-		Folders: map[string]string{},
+		Config: config,
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.True(exists(binary))
@@ -140,8 +137,7 @@ func TestRunPipeArmBuilds(t *testing.T) {
 		},
 	}
 	var ctx = &context.Context{
-		Config:  config,
-		Folders: map[string]string{},
+		Config: config,
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.True(exists(binary), binary)
@@ -163,8 +159,7 @@ func TestBuildFailed(t *testing.T) {
 		},
 	}
 	var ctx = &context.Context{
-		Config:  config,
-		Folders: map[string]string{},
+		Config: config,
 	}
 	assert.Error(Pipe{}.Run(ctx))
 }
@@ -185,8 +180,7 @@ func TestRunPipeWithInvalidOS(t *testing.T) {
 		},
 	}
 	var ctx = &context.Context{
-		Config:  config,
-		Folders: map[string]string{},
+		Config: config,
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 }
@@ -222,7 +216,6 @@ func TestRunInvalidNametemplate(t *testing.T) {
 func TestRunInvalidLdflags(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
-		Folders: map[string]string{},
 		Config: config.Project{
 			Builds: []config.Build{
 				{
@@ -258,8 +251,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		},
 	}
 	var ctx = &context.Context{
-		Config:  config,
-		Folders: map[string]string{},
+		Config: config,
 	}
 	t.Run("pre-hook", func(t *testing.T) {
 		ctx.Config.Builds[0].Hooks.Pre = "exit 1"

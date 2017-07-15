@@ -101,16 +101,15 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 		},
-		Folders: map[string]string{
-			"darwinamd64": "bin",
-		},
 		Publish: true,
 	}
+	var path = filepath.Join(folder, "bin.tar.gz")
+	ctx.AddBinary("darwinamd64", "bin", "bin", path)
 	client := &DummyClient{}
 	assert.Error(doRun(ctx, client))
 	assert.False(client.CreatedFile)
 
-	_, err = os.Create(filepath.Join(folder, "bin.tar.gz"))
+	_, err = os.Create(path)
 	assert.NoError(err)
 	assert.NoError(doRun(ctx, client))
 	assert.True(client.CreatedFile)
@@ -120,7 +119,8 @@ func TestRunPipeFormatOverride(t *testing.T) {
 	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
-	_, err = os.Create(filepath.Join(folder, "bin.zip"))
+	var path = filepath.Join(folder, "bin.zip")
+	_, err = os.Create(path)
 	assert.NoError(err)
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -141,11 +141,9 @@ func TestRunPipeFormatOverride(t *testing.T) {
 				},
 			},
 		},
-		Folders: map[string]string{
-			"darwinamd64": "bin",
-		},
 		Publish: true,
 	}
+	ctx.AddBinary("darwinamd64", "bin", "bin", path)
 	client := &DummyClient{}
 	assert.NoError(doRun(ctx, client))
 	assert.True(client.CreatedFile)
@@ -199,10 +197,8 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 				},
 			},
 		},
-		Folders: map[string]string{
-			"darwinamd64": "bin",
-		},
 	}
+	ctx.AddBinary("darwinamd64", "foo", "bar", "baz")
 	client := &DummyClient{}
 	assert.NoError(doRun(ctx, client))
 	assert.False(client.CreatedFile)

@@ -36,10 +36,6 @@ func TestRunPipe(t *testing.T) {
 	_, err = os.Create(filepath.Join(folder, "README.md"))
 	assert.NoError(err)
 	var ctx = &context.Context{
-		Folders: map[string]string{
-			"darwinamd64":  "mybin_darwin_amd64",
-			"windowsamd64": "mybin_windows_amd64",
-		},
 		Config: config.Project{
 			Dist: dist,
 			Archive: config.Archive{
@@ -55,6 +51,8 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 	}
+	ctx.AddBinary("darwinamd64", "mybin_darwin_amd64", "mybin", filepath.Join(dist, "mybin_darwin_amd64", "mybin"))
+	ctx.AddBinary("windowsamd64", "mybin_windows_amd64", "mybin.exe", filepath.Join(dist, "mybin_windows_amd64", "mybin.exe"))
 	for _, format := range []string{"tar.gz", "zip"} {
 		t.Run("Archive format "+format, func(t *testing.T) {
 			ctx.Config.Archive.Format = format
@@ -84,10 +82,6 @@ func TestRunPipeBinary(t *testing.T) {
 	_, err = os.Create(filepath.Join(folder, "README.md"))
 	assert.NoError(err)
 	var ctx = &context.Context{
-		Folders: map[string]string{
-			"darwinamd64":  "mybin_darwin",
-			"windowsamd64": "mybin_win",
-		},
 		Config: config.Project{
 			Dist: dist,
 			Builds: []config.Build{
@@ -98,6 +92,8 @@ func TestRunPipeBinary(t *testing.T) {
 			},
 		},
 	}
+	ctx.AddBinary("darwinamd64", "mybin_darwin", "mybin", filepath.Join(dist, "mybin_darwin", "mybin"))
+	ctx.AddBinary("windowsamd64", "mybin_win", "mybin.exe", filepath.Join(dist, "mybin_win", "mybin.exe"))
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.Contains(ctx.Artifacts, "mybin_darwin/mybin")
 	assert.Contains(ctx.Artifacts, "mybin_win/mybin.exe")
@@ -107,9 +103,6 @@ func TestRunPipeBinary(t *testing.T) {
 func TestRunPipeDistRemoved(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
-		Folders: map[string]string{
-			"darwinamd64": "whatever",
-		},
 		Config: config.Project{
 			Dist: "/path/nope",
 			Archive: config.Archive{
@@ -117,15 +110,13 @@ func TestRunPipeDistRemoved(t *testing.T) {
 			},
 		},
 	}
+	ctx.AddBinary("windowsamd64", "nope", "no", "blah")
 	assert.Error(Pipe{}.Run(ctx))
 }
 
 func TestRunPipeInvalidGlob(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
-		Folders: map[string]string{
-			"windowsamd64": "whatever",
-		},
 		Config: config.Project{
 			Dist: "/tmp",
 			Archive: config.Archive{
@@ -135,6 +126,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 			},
 		},
 	}
+	ctx.AddBinary("windowsamd64", "whatever", "foo", "bar")
 	assert.Error(Pipe{}.Run(ctx))
 }
 
@@ -151,9 +143,6 @@ func TestRunPipeGlobFailsToAdd(t *testing.T) {
 	assert.NoError(os.MkdirAll(filepath.Join(folder, "folder", "another"), 0755))
 
 	var ctx = &context.Context{
-		Folders: map[string]string{
-			"windows386": "mybin",
-		},
 		Config: config.Project{
 			Dist: folder,
 			Archive: config.Archive{
@@ -163,5 +152,6 @@ func TestRunPipeGlobFailsToAdd(t *testing.T) {
 			},
 		},
 	}
+	ctx.AddBinary("windows386", "mybin", "mybin", "dist/mybin")
 	assert.Error(Pipe{}.Run(ctx))
 }

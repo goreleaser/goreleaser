@@ -111,19 +111,28 @@ func doRun(ctx *context.Context, client client.Client) error {
 		log.Info("skipped because archive format is binary")
 		return nil
 	}
+	var group = ctx.Binaries["darwinamd64"]
+	if group == nil {
+		return ErrNoDarwin64Build
+	}
+	var folder string
+	for f := range group {
+		folder = f
+		break
+	}
 	var path = filepath.Join(ctx.Config.Brew.Folder, ctx.Config.ProjectName+".rb")
 	log.WithField("formula", path).
 		WithField("repo", ctx.Config.Brew.GitHub.String()).
 		Info("pushing")
-	content, err := buildFormula(ctx, client)
+	content, err := buildFormula(ctx, client, folder)
 	if err != nil {
 		return err
 	}
 	return client.CreateFile(ctx, content, path)
 }
 
-func buildFormula(ctx *context.Context, client client.Client) (bytes.Buffer, error) {
-	data, err := dataFor(ctx, client)
+func buildFormula(ctx *context.Context, client client.Client, folder string) (bytes.Buffer, error) {
+	data, err := dataFor(ctx, client, folder)
 	if err != nil {
 		return bytes.Buffer{}, err
 	}
@@ -140,11 +149,7 @@ func doBuildFormula(data templateData) (bytes.Buffer, error) {
 	return out, err
 }
 
-func dataFor(ctx *context.Context, client client.Client) (result templateData, err error) {
-	var folder = ctx.Folders[platform]
-	if folder == "" {
-		return result, ErrNoDarwin64Build
-	}
+func dataFor(ctx *context.Context, client client.Client, folder string) (result templateData, err error) {
 	var file = folder + "." + archiveformat.For(ctx, platform)
 	sum, err := checksum.SHA256(filepath.Join(ctx.Config.Dist, file))
 	if err != nil {
