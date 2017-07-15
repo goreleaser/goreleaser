@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -25,6 +26,7 @@ func TestRelease(t *testing.T) {
 			"skip-publish":  "true",
 			"skip-validate": "true",
 			"debug":         "true",
+			"parallelism":   "4",
 		},
 	}
 	assert.NoError(Release(flags))
@@ -36,7 +38,8 @@ func TestSnapshotRelease(t *testing.T) {
 	defer back()
 	var flags = fakeFlags{
 		flags: map[string]string{
-			"snapshot": "true",
+			"snapshot":    "true",
+			"parallelism": "4",
 		},
 	}
 	assert.NoError(Release(flags))
@@ -89,6 +92,7 @@ func TestCustomReleaseNotesFile(t *testing.T) {
 			"release-notes": releaseNotes,
 			"skip-publish":  "true",
 			"skip-validate": "true",
+			"parallelism":   "4",
 		},
 	}
 	assert.NoError(Release(flags))
@@ -103,6 +107,7 @@ func TestBrokenPipe(t *testing.T) {
 		flags: map[string]string{
 			"skip-publish":  "true",
 			"skip-validate": "true",
+			"parallelism":   "4",
 		},
 	}
 	assert.Error(Release(flags))
@@ -150,9 +155,16 @@ type fakeFlags struct {
 func (f fakeFlags) IsSet(s string) bool {
 	return f.flags[s] != ""
 }
+
 func (f fakeFlags) String(s string) string {
 	return f.flags[s]
 }
+
+func (f fakeFlags) Int(s string) int {
+	i, _ := strconv.ParseInt(f.flags[s], 10, 32)
+	return int(i)
+}
+
 func (f fakeFlags) Bool(s string) bool {
 	return f.flags[s] == "true"
 }

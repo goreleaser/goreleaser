@@ -40,6 +40,7 @@ type Context struct {
 	Publish      bool
 	Snapshot     bool
 	RmDist       bool
+	Parallelism  int
 }
 
 var artifactsLock sync.Mutex
@@ -81,7 +82,8 @@ func (ctx *Context) AddBinary(platform, folder, name, path string) {
 // New context
 func New(config config.Project) *Context {
 	return &Context{
-		Context: ctx.Background(),
-		Config:  config,
+		Context:     ctx.Background(),
+		Config:      config,
+		Parallelism: 4,
 	}
 }

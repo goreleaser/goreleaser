@@ -38,9 +38,7 @@ func TestBuild(t *testing.T) {
 			},
 		},
 	}
-	var ctx = &context.Context{
-		Config: config,
-	}
+	var ctx = context.New(config)
 	assert.NoError(doBuild(ctx, ctx.Config.Builds[0], buildtarget.Runtime))
 }
 
@@ -71,10 +69,7 @@ func TestRunFullPipe(t *testing.T) {
 			},
 		},
 	}
-	var ctx = &context.Context{
-		Config: config,
-	}
-	assert.NoError(Pipe{}.Run(ctx))
+	assert.NoError(Pipe{}.Run(context.New(config)))
 	assert.True(exists(binary), binary)
 	assert.True(exists(pre), pre)
 	assert.True(exists(post), post)
@@ -104,10 +99,7 @@ func TestRunPipeFormatBinary(t *testing.T) {
 			NameTemplate: "binary-{{.Binary}}",
 		},
 	}
-	var ctx = &context.Context{
-		Config: config,
-	}
-	assert.NoError(Pipe{}.Run(ctx))
+	assert.NoError(Pipe{}.Run(context.New(config)))
 	assert.True(exists(binary))
 }
 
@@ -136,10 +128,7 @@ func TestRunPipeArmBuilds(t *testing.T) {
 			},
 		},
 	}
-	var ctx = &context.Context{
-		Config: config,
-	}
-	assert.NoError(Pipe{}.Run(ctx))
+	assert.NoError(Pipe{}.Run(context.New(config)))
 	assert.True(exists(binary), binary)
 }
 
@@ -158,10 +147,7 @@ func TestBuildFailed(t *testing.T) {
 			},
 		},
 	}
-	var ctx = &context.Context{
-		Config: config,
-	}
-	assert.Error(Pipe{}.Run(ctx))
+	assert.Error(Pipe{}.Run(context.New(config)))
 }
 
 func TestRunPipeWithInvalidOS(t *testing.T) {
@@ -179,49 +165,18 @@ func TestRunPipeWithInvalidOS(t *testing.T) {
 			},
 		},
 	}
-	var ctx = &context.Context{
-		Config: config,
-	}
-	assert.NoError(Pipe{}.Run(ctx))
+	assert.NoError(Pipe{}.Run(context.New(config)))
 }
 
 func TestRunInvalidNametemplate(t *testing.T) {
 	var assert = assert.New(t)
 	for _, format := range []string{"tar.gz", "zip", "binary"} {
-		var ctx = &context.Context{
-			Config: config.Project{
-				ProjectName: "nameeeee",
-				Builds: []config.Build{
-					{
-						Binary: "namet{{.est}",
-						Flags:  "-v",
-						Goos: []string{
-							runtime.GOOS,
-						},
-						Goarch: []string{
-							runtime.GOARCH,
-						},
-					},
-				},
-				Archive: config.Archive{
-					Format:       format,
-					NameTemplate: "{{.Binary}",
-				},
-			},
-		}
-		assert.Error(Pipe{}.Run(ctx))
-	}
-}
-
-func TestRunInvalidLdflags(t *testing.T) {
-	var assert = assert.New(t)
-	var ctx = &context.Context{
-		Config: config.Project{
+		var config = config.Project{
+			ProjectName: "nameeeee",
 			Builds: []config.Build{
 				{
-					Binary:  "nametest",
-					Flags:   "-v",
-					Ldflags: "-s -w -X main.version={{.Version}",
+					Binary: "namet{{.est}",
+					Flags:  "-v",
 					Goos: []string{
 						runtime.GOOS,
 					},
@@ -230,9 +185,33 @@ func TestRunInvalidLdflags(t *testing.T) {
 					},
 				},
 			},
+			Archive: config.Archive{
+				Format:       format,
+				NameTemplate: "{{.Binary}",
+			},
+		}
+		assert.Error(Pipe{}.Run(context.New(config)))
+	}
+}
+
+func TestRunInvalidLdflags(t *testing.T) {
+	var assert = assert.New(t)
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				Binary:  "nametest",
+				Flags:   "-v",
+				Ldflags: "-s -w -X main.version={{.Version}",
+				Goos: []string{
+					runtime.GOOS,
+				},
+				Goarch: []string{
+					runtime.GOARCH,
+				},
+			},
 		},
 	}
-	assert.Error(Pipe{}.Run(ctx))
+	assert.Error(Pipe{}.Run(context.New(config)))
 }
 
 func TestRunPipeFailingHooks(t *testing.T) {
@@ -250,9 +229,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 			},
 		},
 	}
-	var ctx = &context.Context{
-		Config: config,
-	}
+	var ctx = context.New(config)
 	t.Run("pre-hook", func(t *testing.T) {
 		ctx.Config.Builds[0].Hooks.Pre = "exit 1"
 		assert.Error(Pipe{}.Run(ctx))

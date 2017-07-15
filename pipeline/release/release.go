@@ -42,7 +42,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return err
 	}
 	var g errgroup.Group
-	sem := make(chan bool, 4)
+	sem := make(chan bool, ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts {
 		sem <- true
 		artifact := artifact

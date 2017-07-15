@@ -40,6 +40,7 @@ var pipes = []pipeline.Pipe{
 type Flags interface {
 	IsSet(s string) bool
 	String(s string) string
+	Int(s string) int
 	Bool(s string) bool
 }
 
@@ -61,6 +62,8 @@ func Release(flags Flags) error {
 		log.WithField("file", file).Warn("could not load config, using defaults")
 	}
 	var ctx = context.New(cfg)
+	ctx.Parallelism = flags.Int("parallelism")
+	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Validate = !flags.Bool("skip-validate")
 	ctx.Publish = !flags.Bool("skip-publish")
 	if notes != "" {

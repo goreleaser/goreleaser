@@ -51,6 +51,11 @@ func main() {
 			Name:  "rm-dist",
 			Usage: "Remove ./dist before building",
 		},
+		cli.IntFlag{
+			Name:  "parallelism, p",
+			Usage: "Amount of builds launch in parallel",
+			Value: 4,
+		},
 		cli.BoolFlag{
 			Name:  "debug",
 			Usage: "Enable debug mode",
