@@ -146,8 +146,6 @@ type Project struct {
 	// test only property indicating the path to the dist folder
 	Dist string `yaml:"-"`
 
-	Parallelism int `yaml:"-"`
-
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`
 }
