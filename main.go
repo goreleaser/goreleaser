@@ -77,7 +77,7 @@ func main() {
 				}
 
 				log.WithField("file", filename).
-					Info("config create, please edit accordingly to your needs")
+					Info("config created; please edit accordingly to your needs")
 				return nil
 			},
 		},
