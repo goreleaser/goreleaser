@@ -5,6 +5,7 @@ package brew
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -78,6 +79,7 @@ func buildFormula(ctx *context.Context, client client.Client, folder string) (by
 	if err != nil {
 		return bytes.Buffer{}, err
 	}
+	fmt.Println("testsssssss", data.Tests)
 	return doBuildFormula(data)
 }
 
@@ -109,9 +111,13 @@ func dataFor(ctx *context.Context, client client.Client, folder string) (result 
 		Dependencies: ctx.Config.Brew.Dependencies,
 		Conflicts:    ctx.Config.Brew.Conflicts,
 		Plist:        ctx.Config.Brew.Plist,
-		Install:      strings.Split(ctx.Config.Brew.Install, "\n"),
-		Tests:        strings.Split(ctx.Config.Brew.Test, "\n"),
+		Install:      split(ctx.Config.Brew.Install),
+		Tests:        split(ctx.Config.Brew.Test),
 	}, nil
+}
+
+func split(s string) []string {
+	return strings.Split(strings.TrimSpace(s), "\n")
 }
 
 func formulaNameFor(name string) string {
