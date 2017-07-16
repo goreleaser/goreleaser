@@ -41,7 +41,7 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	if err := runHook(build.Env, build.Hooks.Pre); err != nil {
 		return err
 	}
-	sem := make(chan bool, 4)
+	sem := make(chan bool, ctx.Parallelism)
 	var g errgroup.Group
 	for _, target := range buildtarget.All(build) {
 		sem <- true
