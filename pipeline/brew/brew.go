@@ -48,10 +48,11 @@ func doRun(ctx *context.Context, client client.Client) error {
 		log.Warn("skipped because release is marked as draft")
 		return nil
 	}
-	if ctx.Config.Archive.Format == "binary" { //} && len(ctx.Config.Builds) > 1 {
-		log.Warn("brew formulas can't be generated with multiple builds released in binary format")
+	if ctx.Config.Archive.Format == "binary" {
+		log.Warn("skipped because archive format is binary")
 		return nil
 	}
+
 	var group = ctx.Binaries["darwinamd64"]
 	if group == nil {
 		return ErrNoDarwin64Build
