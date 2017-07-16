@@ -2,7 +2,6 @@ package brew
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -70,9 +69,6 @@ func TestFullFormulae(t *testing.T) {
 	bts, err := ioutil.ReadAll(f)
 	assert.NoError(err)
 
-	f2, err := os.Create("testdata/full_formula.rb")
-	assert.NoError(err)
-	fmt.Fprintf(f2, formulae)
 	assert.Equal(string(bts), formulae)
 }
 

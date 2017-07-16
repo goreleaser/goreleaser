@@ -5,7 +5,6 @@ package brew
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -49,7 +48,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		log.Warn("skipped because release is marked as draft")
 		return nil
 	}
-	if ctx.Config.Archive.Format == "binary" && len(ctx.Config.Builds) > 1 {
+	if ctx.Config.Archive.Format == "binary" { //} && len(ctx.Config.Builds) > 1 {
 		log.Warn("brew formulas can't be generated with multiple builds released in binary format")
 		return nil
 	}
@@ -70,8 +69,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(content.String())
-	return nil //client.CreateFile(ctx, content, path)
+	return client.CreateFile(ctx, content, path)
 }
 
 func buildFormula(ctx *context.Context, client client.Client, folder string) (bytes.Buffer, error) {

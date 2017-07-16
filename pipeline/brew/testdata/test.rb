@@ -6,7 +6,6 @@ class Test < Formula
   sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"
 
   depends_on "gtk+"
-
   conflicts_with "svn"
 
   def install
