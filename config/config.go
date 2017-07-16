@@ -35,6 +35,7 @@ type Homebrew struct {
 	Plist        string   `yaml:",omitempty"`
 	Install      string   `yaml:",omitempty"`
 	Dependencies []string `yaml:",omitempty"`
+	Test         string   `yaml:",omitempty"`
 	Conflicts    []string `yaml:",omitempty"`
 	Description  string   `yaml:",omitempty"`
 	Homepage     string   `yaml:",omitempty"`

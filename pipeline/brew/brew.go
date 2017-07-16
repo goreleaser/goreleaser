@@ -49,17 +49,21 @@ const formula = `class {{ .Name }} < Formula
   end
 
   {{- if .Caveats }}
-
   def caveats
     "{{ .Caveats }}"
   end
   {{- end }}
 
   {{- if .Plist }}
-
   def plist; <<-EOS.undent
     {{ .Plist }}
-	EOS
+    EOS
+  end
+  {{- end }}
+
+  {{- if .Test }}
+  def test
+  {{ .Test }}
   end
   {{- end }}
 end
@@ -79,6 +83,7 @@ type templateData struct {
 	Install      []string
 	Dependencies []string
 	Conflicts    []string
+	Test         string
 }
 
 // Pipe for brew deployment
@@ -168,6 +173,7 @@ func dataFor(ctx *context.Context, client client.Client, folder string) (result 
 		Dependencies: ctx.Config.Brew.Dependencies,
 		Conflicts:    ctx.Config.Brew.Conflicts,
 		Plist:        ctx.Config.Brew.Plist,
+		Test:         ctx.Config.Brew.Test,
 		Install:      strings.Split(ctx.Config.Brew.Install, "\n"),
 	}, err
 }
