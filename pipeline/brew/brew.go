@@ -30,11 +30,13 @@ const formula = `class {{ .Name }} < Formula
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
 
+
   {{- if .Dependencies }}
   {{ range $index, $element := .Dependencies }}
   depends_on "{{ . }}"
   {{- end }}
   {{- end }}
+
 
   {{- if .Conflicts }}
   {{ range $index, $element := .Conflicts }}
@@ -48,11 +50,13 @@ const formula = `class {{ .Name }} < Formula
     {{- end }}
   end
 
+
   {{- if .Caveats }}
   def caveats
     "{{ .Caveats }}"
   end
   {{- end }}
+
 
   {{- if .Plist }}
   def plist; <<-EOS.undent
@@ -60,6 +64,7 @@ const formula = `class {{ .Name }} < Formula
     EOS
   end
   {{- end }}
+
 
   {{- if .Test }}
   def test
