@@ -83,13 +83,24 @@ func TestFormulaeSimple(t *testing.T) {
 	assert.NotContains(formulae, "def plist;")
 }
 
+func TestSplit(t *testing.T) {
+	var assert = assert.New(t)
+	var parts = split("system \"true\"\nsystem \"#{bin}/foo -h\"")
+	assert.Equal([]string{"system \"true\"", "system \"#{bin}/foo -h\""}, parts)
+}
+
 func TestRunPipe(t *testing.T) {
 	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(err)
 	var ctx = &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.0.1",
+		},
+		Version: "1.0.1",
 		Config: config.Project{
-			Dist: folder,
+			Dist:        folder,
+			ProjectName: "run-pipe",
 			Archive: config.Archive{
 				Format: "tar.gz",
 			},
@@ -98,6 +109,14 @@ func TestRunPipe(t *testing.T) {
 					Owner: "test",
 					Name:  "test",
 				},
+				Description:  "A run pipe test formula",
+				Homepage:     "https://github.com/goreleaser",
+				Caveats:      "don't do this",
+				Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
+				Plist:        `<xml>whatever</xml>`,
+				Dependencies: []string{"zsh"},
+				Conflicts:    []string{"gtk+"},
+				Install:      `bin.install "foo"`,
 			},
 		},
 		Publish: true,
@@ -112,6 +131,12 @@ func TestRunPipe(t *testing.T) {
 	assert.NoError(err)
 	assert.NoError(doRun(ctx, client))
 	assert.True(client.CreatedFile)
+
+	f, err := os.Open("testdata/run_pipe.rb")
+	assert.NoError(err)
+	bts, err := ioutil.ReadAll(f)
+	assert.NoError(err)
+	assert.Equal(string(bts), client.Content)
 }
 
 func TestRunPipeFormatOverride(t *testing.T) {
