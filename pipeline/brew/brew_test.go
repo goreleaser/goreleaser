@@ -88,6 +88,7 @@ func TestSplit(t *testing.T) {
 	var parts = split("system \"true\"\nsystem \"#{bin}/foo -h\"")
 	assert.Equal([]string{"system \"true\"", "system \"#{bin}/foo -h\""}, parts)
 }
+
 func TestRunPipe(t *testing.T) {
 	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")

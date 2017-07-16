@@ -5,7 +5,6 @@ package brew
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -79,7 +78,6 @@ func buildFormula(ctx *context.Context, client client.Client, folder string) (by
 	if err != nil {
 		return bytes.Buffer{}, err
 	}
-	fmt.Println("testsssssss", data.Tests)
 	return doBuildFormula(data)
 }
 
