@@ -2,6 +2,7 @@ package brew
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -55,25 +56,24 @@ func TestFullFormulae(t *testing.T) {
 	assert := assert.New(t)
 	data := defaultTemplateData
 	data.Caveats = "Here are some caveats"
-	data.Dependencies = []string{"gtk", "git"}
-	data.Conflicts = []string{"conflicting_dep"}
+	data.Dependencies = []string{"gtk+"}
+	data.Conflicts = []string{"svn"}
 	data.Plist = "it works"
 	data.Install = []string{"custom install script", "another install script"}
-	data.Test = `system "#{bin}/foo -version"`
+	data.Tests = []string{`system "#{bin}/foo -version"`}
 	out, err := doBuildFormula(data)
 	assert.NoError(err)
 	formulae := out.String()
-	assertDefaultTemplateData(t, formulae)
-	assert.Contains(formulae, "def caveats")
-	assert.Contains(formulae, "Here are some caveats")
-	assert.Contains(formulae, `depends_on "gtk"`)
-	assert.Contains(formulae, `depends_on "git"`)
-	assert.Contains(formulae, `conflicts_with "conflicting_dep"`)
-	assert.Contains(formulae, "custom install script")
-	assert.Contains(formulae, "another install script")
-	assert.Contains(formulae, "def plist;")
-	assert.Contains(formulae, "def test")
-	assert.Contains(formulae, `system "#{bin}/foo -version"`)
+
+	f, err := os.Open("testdata/test.rb")
+	assert.NoError(err)
+	bts, err := ioutil.ReadAll(f)
+	assert.NoError(err)
+
+	f2, err := os.Create("testdata/full_formula.rb")
+	assert.NoError(err)
+	fmt.Fprintf(f2, formulae)
+	assert.Equal(string(bts), formulae)
 }
 
 func TestFormulaeSimple(t *testing.T) {

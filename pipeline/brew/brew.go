@@ -5,13 +5,13 @@ package brew
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"text/template"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/checksum"
-	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/client"
@@ -22,74 +22,6 @@ import (
 var ErrNoDarwin64Build = errors.New("brew tap requires a darwin amd64 build")
 
 const platform = "darwinamd64"
-
-const formula = `class {{ .Name }} < Formula
-  desc "{{ .Desc }}"
-  homepage "{{ .Homepage }}"
-  url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
-  version "{{ .Version }}"
-  sha256 "{{ .SHA256 }}"
-
-
-  {{- if .Dependencies }}
-  {{ range $index, $element := .Dependencies }}
-  depends_on "{{ . }}"
-  {{- end }}
-  {{- end }}
-
-
-  {{- if .Conflicts }}
-  {{ range $index, $element := .Conflicts }}
-  conflicts_with "{{ . }}"
-  {{- end }}
-  {{- end }}
-
-  def install
-    {{- range $index, $element := .Install }}
-    {{ . -}}
-    {{- end }}
-  end
-
-
-  {{- if .Caveats }}
-  def caveats
-    "{{ .Caveats }}"
-  end
-  {{- end }}
-
-
-  {{- if .Plist }}
-  def plist; <<-EOS.undent
-    {{ .Plist }}
-    EOS
-  end
-  {{- end }}
-
-
-  {{- if .Test }}
-  def test
-  {{ .Test }}
-  end
-  {{- end }}
-end
-`
-
-type templateData struct {
-	Name         string
-	Desc         string
-	Homepage     string
-	Repo         config.Repo // FIXME: will not work for anything but github right now.
-	Tag          string
-	Version      string
-	Caveats      string
-	File         string
-	SHA256       string
-	Plist        string
-	Install      []string
-	Dependencies []string
-	Conflicts    []string
-	Test         string
-}
 
 // Pipe for brew deployment
 type Pipe struct{}
@@ -117,8 +49,8 @@ func doRun(ctx *context.Context, client client.Client) error {
 		log.Warn("skipped because release is marked as draft")
 		return nil
 	}
-	if ctx.Config.Archive.Format == "binary" {
-		log.Info("skipped because archive format is binary")
+	if ctx.Config.Archive.Format == "binary" && len(ctx.Config.Builds) > 1 {
+		log.Warn("brew formulas can't be generated with multiple builds released in binary format")
 		return nil
 	}
 	var group = ctx.Binaries["darwinamd64"]
@@ -138,7 +70,8 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if err != nil {
 		return err
 	}
-	return client.CreateFile(ctx, content, path)
+	fmt.Println(content.String())
+	return nil //client.CreateFile(ctx, content, path)
 }
 
 func buildFormula(ctx *context.Context, client client.Client, folder string) (bytes.Buffer, error) {
@@ -149,14 +82,13 @@ func buildFormula(ctx *context.Context, client client.Client, folder string) (by
 	return doBuildFormula(data)
 }
 
-func doBuildFormula(data templateData) (bytes.Buffer, error) {
-	var out bytes.Buffer
-	tmpl, err := template.New(data.Name).Parse(formula)
+func doBuildFormula(data templateData) (out bytes.Buffer, err error) {
+	tmpl, err := template.New(data.Name).Parse(formulaTemplate)
 	if err != nil {
 		return out, err
 	}
 	err = tmpl.Execute(&out, data)
-	return out, err
+	return
 }
 
 func dataFor(ctx *context.Context, client client.Client, folder string) (result templateData, err error) {
@@ -178,9 +110,9 @@ func dataFor(ctx *context.Context, client client.Client, folder string) (result 
 		Dependencies: ctx.Config.Brew.Dependencies,
 		Conflicts:    ctx.Config.Brew.Conflicts,
 		Plist:        ctx.Config.Brew.Plist,
-		Test:         ctx.Config.Brew.Test,
 		Install:      strings.Split(ctx.Config.Brew.Install, "\n"),
-	}, err
+		Tests:        strings.Split(ctx.Config.Brew.Test, "\n"),
+	}, nil
 }
 
 func formulaNameFor(name string) string {
