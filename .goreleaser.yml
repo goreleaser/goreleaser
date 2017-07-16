@@ -29,6 +29,8 @@ brew:
   folder: Formula
   homepage:  http://goreleaser.github.io
   description: Deliver Go binaries as fast and easily as possible
+  test: |
+    system "#{bin}/goreleaser -v"
   dependencies:
     - git
 fpm:

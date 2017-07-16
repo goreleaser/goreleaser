@@ -377,13 +377,18 @@ brew:
     - svn
     - bash
 
-  # Packages that run as a service
-  plist:|
+  # So you can brew test your formula. Default is empty.
+  plist: |
     <?xml version="1.0" encoding="UTF-8"?>
     ...
 
-  # Custom install script for brew. Default: "bin.install "program"
-  install:|
+  # Packages that run as a service. Default is empty.
+  test: |
+    system "#{bin}/program --version"
+    ...
+
+  # Custom install script for brew. Default is 'bin.install "program"'
+  install: |
     bin.install "program"
     ...
 ```

@@ -30,11 +30,13 @@ const formula = `class {{ .Name }} < Formula
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
 
+
   {{- if .Dependencies }}
   {{ range $index, $element := .Dependencies }}
   depends_on "{{ . }}"
   {{- end }}
   {{- end }}
+
 
   {{- if .Conflicts }}
   {{ range $index, $element := .Conflicts }}
@@ -48,18 +50,25 @@ const formula = `class {{ .Name }} < Formula
     {{- end }}
   end
 
-  {{- if .Caveats }}
 
+  {{- if .Caveats }}
   def caveats
     "{{ .Caveats }}"
   end
   {{- end }}
 
-  {{- if .Plist }}
 
+  {{- if .Plist }}
   def plist; <<-EOS.undent
     {{ .Plist }}
-	EOS
+    EOS
+  end
+  {{- end }}
+
+
+  {{- if .Test }}
+  def test
+  {{ .Test }}
   end
   {{- end }}
 end
@@ -79,6 +88,7 @@ type templateData struct {
 	Install      []string
 	Dependencies []string
 	Conflicts    []string
+	Test         string
 }
 
 // Pipe for brew deployment
@@ -168,6 +178,7 @@ func dataFor(ctx *context.Context, client client.Client, folder string) (result 
 		Dependencies: ctx.Config.Brew.Dependencies,
 		Conflicts:    ctx.Config.Brew.Conflicts,
 		Plist:        ctx.Config.Brew.Plist,
+		Test:         ctx.Config.Brew.Test,
 		Install:      strings.Split(ctx.Config.Brew.Install, "\n"),
 	}, err
 }
