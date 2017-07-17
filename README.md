@@ -377,12 +377,12 @@ brew:
     - svn
     - bash
 
-  # So you can brew test your formula. Default is empty.
+  # Packages that run as a service. Default is empty.
   plist: |
     <?xml version="1.0" encoding="UTF-8"?>
     ...
 
-  # Packages that run as a service. Default is empty.
+  # So you can brew test your formula. Default is empty.  
   test: |
     system "#{bin}/program --version"
     ...
