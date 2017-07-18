@@ -39,5 +39,3 @@ fpm:
   vendor: GoReleaser
   formats:
     - deb
-  dependencies:
-    - git
