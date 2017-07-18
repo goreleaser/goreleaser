@@ -61,6 +61,14 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		log.Warn("skipped validations because --skip-validate is set")
 		return nil
 	}
+	return validate(ctx, repo, tag, commit)
+}
+
+func validate(
+	ctx *context.Context,
+	repo *ggit.Repository,
+	tag, commit *plumbing.Reference,
+) (err error) {
 	tree, err := repo.Worktree()
 	if err != nil {
 		return
@@ -73,6 +81,9 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return ErrDirty{
 			status: status.String(),
 		}
+	}
+	if ctx.Snapshot {
+		return
 	}
 	if !regexp.MustCompile("^[0-9.]+").MatchString(ctx.Version) {
 		return ErrInvalidVersionFormat{ctx.Version}

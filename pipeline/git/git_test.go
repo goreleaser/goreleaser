@@ -67,6 +67,7 @@ func TestNoTagsSnapshot(t *testing.T) {
 		},
 		Snapshot: true,
 		Publish:  false,
+		Validate: true,
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.Contains(ctx.Version, "SNAPSHOT-")
