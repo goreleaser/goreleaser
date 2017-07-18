@@ -96,7 +96,7 @@ func validate(
 
 func getRefs(repo *ggit.Repository) (commit, tag, previous *plumbing.Reference, err error) {
 	var refs []*plumbing.Reference
-	iter, err := repo.Storer.IterReferences()
+	iter, err := repo.References()
 	if err != nil {
 		return
 	}
@@ -131,12 +131,13 @@ func getLog(
 	repo *ggit.Repository,
 	commit, previous *plumbing.Reference,
 ) (diff []string, err error) {
-	citer, err := repo.Log(&ggit.LogOptions{From: commit.Hash()})
+	iter, err := repo.Log(&ggit.LogOptions{From: commit.Hash()})
 	if err != nil {
 		return
 	}
+	defer iter.Close()
 	for {
-		commit, err := citer.Next()
+		commit, err := iter.Next()
 		if err != nil {
 			break
 		}
