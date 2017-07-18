@@ -3,7 +3,6 @@
 package git
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"sort"
@@ -30,48 +29,14 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if err != nil {
 		return
 	}
-	var refs []*plumbing.Reference
-	iter, err := repo.Storer.IterReferences()
+	commit, tag, previous, err := getRefs(repo)
 	if err != nil {
 		return
-	}
-	defer iter.Close()
-	iter.ForEach(func(ref *plumbing.Reference) error {
-		refs = append(refs, ref)
-		return nil
-	})
-	sort.Slice(refs, func(i, j int) bool {
-		return i > j
-	})
-
-	var commit *plumbing.Reference
-	var tag *plumbing.Reference
-	var previous *plumbing.Reference
-	for _, ref := range refs {
-		log.Info(ref.String())
-		if !ref.IsTag() {
-			continue
-		}
-		if tag == nil {
-			log.Info("setting as last tag")
-			tag = ref
-		}
-		if previous == nil && ref != tag {
-			log.Info("setting as previous tag")
-			previous = ref
-		}
-	}
-	commit, err = repo.Head()
-	if err != nil {
-		return
-	}
-	if previous == nil {
-		previous = refs[len(refs)-1]
 	}
 	if tag == nil && !ctx.Snapshot {
 		return ErrNoTag
 	}
-	var tagName = ""
+	var tagName string
 	if tag != nil {
 		tagName = tag.Name().Short()
 	}
@@ -84,10 +49,10 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		if err != nil {
 			return err
 		}
-		sort.Slice(diff, func(i, j int) bool {
-			return i > j
-		})
-		ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", strings.Join(diff, "\n"))
+		ctx.ReleaseNotes = fmt.Sprintf(
+			"## Changelog\n\n%v",
+			strings.Join(diff, "\n"),
+		)
 	}
 	if err = setVersion(ctx); err != nil {
 		return
@@ -112,38 +77,82 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if !regexp.MustCompile("^[0-9.]+").MatchString(ctx.Version) {
 		return ErrInvalidVersionFormat{ctx.Version}
 	}
-	log.Infof("tag: %v, commit: %v", tag, commit)
 	if tag.Hash().String() != commit.Hash().String() {
 		return ErrWrongRef{ctx.Git}
 	}
 	return nil
 }
 
-func getLog(repo *ggit.Repository, commit, previous *plumbing.Reference) (diff []string, err error) {
+func getRefs(repo *ggit.Repository) (commit, tag, previous *plumbing.Reference, err error) {
+	var refs []*plumbing.Reference
+	iter, err := repo.Storer.IterReferences()
+	if err != nil {
+		return
+	}
+	defer iter.Close()
+	iter.ForEach(func(ref *plumbing.Reference) error {
+		refs = append(refs, ref)
+		return nil
+	})
+	reverse(refs)
+	for _, ref := range refs {
+		if !ref.IsTag() {
+			continue
+		}
+		if tag == nil {
+			tag = ref
+		}
+		if previous == nil && ref != tag {
+			previous = ref
+		}
+	}
+	commit, err = repo.Head()
+	if err != nil {
+		return
+	}
+	if previous == nil {
+		previous = refs[len(refs)-1]
+	}
+	return
+}
+
+func getLog(
+	repo *ggit.Repository,
+	commit, previous *plumbing.Reference,
+) (diff []string, err error) {
 	citer, err := repo.Log(&ggit.LogOptions{From: commit.Hash()})
 	if err != nil {
 		return
 	}
-	citer.ForEach(func(commit *object.Commit) error {
-		diff = append(
-			diff,
-			fmt.Sprintf(
-				"%v %v",
-				commit.Hash.String(),
-				strings.Split(commit.Message, "\n")[0],
-			),
-		)
-		if err := commit.Parents().ForEach(func(parent *object.Commit) error {
-			if parent.Hash == previous.Hash() {
-				return errors.New("break")
-			}
-			return nil
-		}); err != nil {
-			return err
+	for {
+		commit, err := citer.Next()
+		if err != nil {
+			break
 		}
-		return nil
-	})
+		diff = append(diff, pretty(commit))
+		if isParent(commit, previous) {
+			break
+		}
+	}
+	reverse(diff)
 	return
+}
+
+func isParent(commit *object.Commit, previous *plumbing.Reference) bool {
+	for _, parent := range commit.ParentHashes {
+		if parent == previous.Hash() {
+			return true
+		}
+	}
+	return false
+}
+
+func pretty(commit *object.Commit) string {
+	return fmt.Sprintf(
+		"%v %v",
+		commit.Hash.String(),
+		strings.Split(commit.Message, "\n")[0],
+	)
 }
 
 func setVersion(ctx *context.Context) (err error) {
@@ -158,4 +167,10 @@ func setVersion(ctx *context.Context) (err error) {
 	// removes usual `v` prefix
 	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
 	return
+}
+
+func reverse(slice interface{}) {
+	sort.Slice(slice, func(i, j int) bool {
+		return i > j
+	})
 }
