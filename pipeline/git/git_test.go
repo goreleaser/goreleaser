@@ -1,8 +1,10 @@
 package git
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -314,4 +316,13 @@ func fakeGit(args ...string) (string, error) {
 	}
 	allArgs = append(allArgs, args...)
 	return git(allArgs...)
+}
+
+func git(args ...string) (output string, err error) {
+	var cmd = exec.Command("git", args...)
+	bts, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", errors.New(string(bts))
+	}
+	return string(bts), err
 }
