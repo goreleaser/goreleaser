@@ -1,6 +1,10 @@
 package git
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/goreleaser/goreleaser/context"
+)
 
 // ErrInvalidVersionFormat is return when the version isnt in a valid format
 type ErrInvalidVersionFormat struct {
@@ -22,11 +26,15 @@ func (e ErrDirty) Error() string {
 
 // ErrWrongRef happens when the HEAD reference is different from the tag being built
 type ErrWrongRef struct {
-	commit, tag string
+	info context.GitInfo
 }
 
 func (e ErrWrongRef) Error() string {
-	return fmt.Sprintf("git tag %v was not made against commit %v", e.tag, e.commit)
+	return fmt.Sprintf(
+		"git tag %v was not made against commit %v",
+		e.info.CurrentTag,
+		e.info.Commit,
+	)
 }
 
 // ErrNoTag happens if the underlying git repository doesn't contain any tags
