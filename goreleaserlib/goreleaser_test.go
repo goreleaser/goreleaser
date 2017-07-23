@@ -3,12 +3,12 @@ package goreleaserlib
 import (
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -176,30 +176,17 @@ func setup(t *testing.T) (current string, back func()) {
 	previous, err := os.Getwd()
 	assert.NoError(err)
 	assert.NoError(os.Chdir(folder))
-	var gitCmds = [][]string{
-		{"init"},
-		{"config", "commit.gpgSign", "false"},
-		{"add", "-A"},
-		{"commit", "--allow-empty", "-m", "asdf"},
-		{"tag", "v0.0.1"},
-		{"commit", "--allow-empty", "-m", "asas89d"},
-		{"commit", "--allow-empty", "-m", "assssf"},
-		{"commit", "--allow-empty", "-m", "assd"},
-		{"tag", "v0.0.2"},
-		{"remote", "add", "origin", "git@github.com:goreleaser/fake.git"},
-	}
 	createGoreleaserYaml(t)
 	createMainGo(t)
-	for _, cmd := range gitCmds {
-		var args = []string{
-			"-c",
-			"user.name='GoReleaser'",
-			"-c",
-			"user.email='test@goreleaser.github.com'",
-		}
-		args = append(args, cmd...)
-		assert.NoError(exec.Command("git", args...).Run())
-	}
+	testlib.GitInit(t)
+	testlib.GitAdd(t)
+	testlib.GitCommit(t, "asdf")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCommit(t, "asas89d")
+	testlib.GitCommit(t, "assssf")
+	testlib.GitCommit(t, "assd")
+	testlib.GitTag(t, "v0.0.2")
+	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/fake.git")
 	return folder, func() {
 		assert.NoError(os.Chdir(previous))
 	}
