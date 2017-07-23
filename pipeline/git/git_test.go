@@ -8,6 +8,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pipeline/defaults"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,7 +19,7 @@ func TestDescription(t *testing.T) {
 
 func TestNotAGitFolder(t *testing.T) {
 	var assert = assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	var ctx = &context.Context{
 		Config: config.Project{},
@@ -28,7 +29,7 @@ func TestNotAGitFolder(t *testing.T) {
 
 func TestSingleCommit(t *testing.T) {
 	var assert = assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	gitCommit(t, "commit1")
@@ -42,7 +43,7 @@ func TestSingleCommit(t *testing.T) {
 
 func TestNewRepository(t *testing.T) {
 	var assert = assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	var ctx = &context.Context{
@@ -53,7 +54,7 @@ func TestNewRepository(t *testing.T) {
 
 func TestNoTagsSnapshot(t *testing.T) {
 	assert := assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	gitCommit(t, "first")
@@ -72,7 +73,7 @@ func TestNoTagsSnapshot(t *testing.T) {
 
 func TestNoTagsSnapshotInvalidTemplate(t *testing.T) {
 	assert := assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	gitCommit(t, "first")
@@ -93,7 +94,7 @@ func TestNoTagsSnapshotInvalidTemplate(t *testing.T) {
 // to set the --snapshot flag otherwise an error is returned.
 func TestNoTagsNoSnapshot(t *testing.T) {
 	assert := assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	gitCommit(t, "first")
@@ -111,7 +112,7 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 
 func TestInvalidTagFormat(t *testing.T) {
 	var assert = assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	gitCommit(t, "commit2")
@@ -126,7 +127,7 @@ func TestInvalidTagFormat(t *testing.T) {
 
 func TestDirty(t *testing.T) {
 	var assert = assert.New(t)
-	folder, back := createAndChdir(t)
+	folder, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	dummy, err := os.Create(filepath.Join(folder, "dummy"))
@@ -146,7 +147,7 @@ func TestDirty(t *testing.T) {
 
 func TestTagIsNotLastCommit(t *testing.T) {
 	var assert = assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	gitCommit(t, "commit3")
@@ -163,7 +164,7 @@ func TestTagIsNotLastCommit(t *testing.T) {
 
 func TestValidState(t *testing.T) {
 	var assert = assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	gitCommit(t, "commit3")
@@ -182,7 +183,7 @@ func TestValidState(t *testing.T) {
 
 func TestNoValidate(t *testing.T) {
 	var assert = assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	gitAdd(t)
@@ -198,7 +199,7 @@ func TestNoValidate(t *testing.T) {
 
 func TestChangelog(t *testing.T) {
 	var assert = assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	gitCommit(t, "first")
@@ -219,7 +220,7 @@ func TestChangelog(t *testing.T) {
 
 func TestChangelogOfFirstRelease(t *testing.T) {
 	var assert = assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	var msgs = []string{
@@ -245,7 +246,7 @@ func TestChangelogOfFirstRelease(t *testing.T) {
 
 func TestCustomReleaseNotes(t *testing.T) {
 	var assert = assert.New(t)
-	_, back := createAndChdir(t)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	gitInit(t)
 	gitCommit(t, "first")
@@ -262,18 +263,6 @@ func TestCustomReleaseNotes(t *testing.T) {
 //
 // helper functions
 //
-
-func createAndChdir(t *testing.T) (current string, back func()) {
-	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(err)
-	previous, err := os.Getwd()
-	assert.NoError(err)
-	assert.NoError(os.Chdir(folder))
-	return folder, func() {
-		assert.NoError(os.Chdir(previous))
-	}
-}
 
 func gitInit(t *testing.T) {
 	var assert = assert.New(t)

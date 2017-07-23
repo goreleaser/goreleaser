@@ -1,13 +1,13 @@
 package archive
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,19 +17,13 @@ func TestDescription(t *testing.T) {
 
 func TestRunPipe(t *testing.T) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(err)
-	current, err := os.Getwd()
-	assert.NoError(err)
-	assert.NoError(os.Chdir(folder))
-	defer func() {
-		assert.NoError(os.Chdir(current))
-	}()
+	folder, back := testlib.Mktmp(t)
+	defer back()
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(os.Mkdir(dist, 0755))
 	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin_darwin_amd64"), 0755))
 	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin_windows_amd64"), 0755))
-	_, err = os.Create(filepath.Join(dist, "mybin_darwin_amd64", "mybin"))
+	_, err := os.Create(filepath.Join(dist, "mybin_darwin_amd64", "mybin"))
 	assert.NoError(err)
 	_, err = os.Create(filepath.Join(dist, "mybin_windows_amd64", "mybin.exe"))
 	assert.NoError(err)
@@ -63,19 +57,13 @@ func TestRunPipe(t *testing.T) {
 
 func TestRunPipeBinary(t *testing.T) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(err)
-	current, err := os.Getwd()
-	assert.NoError(err)
-	assert.NoError(os.Chdir(folder))
-	defer func() {
-		assert.NoError(os.Chdir(current))
-	}()
+	folder, back := testlib.Mktmp(t)
+	defer back()
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(os.Mkdir(dist, 0755))
 	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin_darwin"), 0755))
 	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin_win"), 0755))
-	_, err = os.Create(filepath.Join(dist, "mybin_darwin", "mybin"))
+	_, err := os.Create(filepath.Join(dist, "mybin_darwin", "mybin"))
 	assert.NoError(err)
 	_, err = os.Create(filepath.Join(dist, "mybin_win", "mybin.exe"))
 	assert.NoError(err)
@@ -132,14 +120,8 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 
 func TestRunPipeGlobFailsToAdd(t *testing.T) {
 	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(err)
-	current, err := os.Getwd()
-	assert.NoError(err)
-	assert.NoError(os.Chdir(folder))
-	defer func() {
-		assert.NoError(os.Chdir(current))
-	}()
+	folder, back := testlib.Mktmp(t)
+	defer back()
 	assert.NoError(os.MkdirAll(filepath.Join(folder, "folder", "another"), 0755))
 
 	var ctx = &context.Context{
