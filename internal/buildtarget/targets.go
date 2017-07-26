@@ -85,6 +85,7 @@ var validTargets = []string{
 	"linuxmipsle",
 	"linuxmips64",
 	"linuxmips64le",
+	"linuxs390x",
 	"netbsd386",
 	"netbsdamd64",
 	"netbsdarm",
