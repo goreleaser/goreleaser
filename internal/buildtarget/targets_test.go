@@ -80,6 +80,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"linux", "mips64le", true},
 		{"linux", "ppc64", true},
 		{"linux", "ppc64le", true},
+		{"linux", "s390x", true},
 		{"netbsd", "386", true},
 		{"netbsd", "amd64", true},
 		{"netbsd", "arm", true},
