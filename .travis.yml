@@ -1,8 +1,13 @@
+dist: trusty
+sudo: required
 language: go
 go: 1.8.3
 install:
   - make setup
   - gem install fpm
+  - sudo apt-get update
+  - sudo apt-get install --yes snapd
+  - sudo snap install snapcraft --candidate --classic
 script:
   - make test
   - test -n "$TRAVIS_TAG" || go run main.go --skip-validate --skip-publish
