@@ -135,10 +135,16 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 		return err
 	}
 
-	snap := metadata.Name + "_" + metadata.Version + "_" + arch + ".snap"
-	cmd := exec.Command("snapcraft", "snap", "--output", snap)
+	cmd := exec.Command("snapcraft", "clean")
 	cmd.Dir = path
 	if out, err := cmd.CombinedOutput(); err != nil {
+		return errors.New(string(out))
+	}
+
+	snap := metadata.Name + "_" + metadata.Version + "_" + arch + ".snap"
+	cmd = exec.Command("snapcraft", "snap", "--output", snap)
+	cmd.Dir = path
+	if out, err = cmd.CombinedOutput(); err != nil {
 		return errors.New(string(out))
 	}
 	ctx.AddArtifact(filepath.Join(path, snap))
