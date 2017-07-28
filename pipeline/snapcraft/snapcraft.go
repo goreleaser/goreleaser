@@ -4,6 +4,7 @@ package snapcraft
 import (
 	"errors"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -27,7 +28,6 @@ type SnapcraftMetadata struct {
 	Confinement   string `yaml:",omitempty"`
 	Architectures []string
 	Apps          map[string]AppsMetadata
-	Parts         map[string]PartsMetadata
 }
 
 // AppsMetadata for the binaries that will be in the snap package
@@ -35,13 +35,6 @@ type AppsMetadata struct {
 	Command string
 	//	Plugs []string
 	//	Daemon string
-}
-
-// PartsMetadata for the binaries that will be in the snap package
-type PartsMetadata struct {
-	Source string
-	Plugin string
-	Prime  []string
 }
 
 // Pipe for snapcraft packaging
@@ -98,9 +91,16 @@ func archFor(key string) string {
 }
 
 func create(ctx *context.Context, folder, arch string, binaries []context.Binary) error {
-	var path = filepath.Join(ctx.Config.Dist, folder)
-	var file = filepath.Join(path, "snapcraft.yaml")
-	log.WithField("file", file).Info("creating snapcraft metadata")
+	// prime is the directory that then will be compressed to make the .snap package.
+	folderDir := filepath.Join(ctx.Config.Dist, folder)
+	primeDir := filepath.Join(folderDir, "prime")
+	metaDir := filepath.Join(primeDir, "meta")
+	if err := os.MkdirAll(metaDir, 0755); err != nil {
+		return err
+	}
+
+	var file = filepath.Join(primeDir, "meta", "snap.yaml")
+	log.WithField("file", file).Info("creating snap metadata")
 
 	var metadata = &SnapcraftMetadata{
 		Name:          ctx.Config.ProjectName,
@@ -111,20 +111,16 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 		Confinement:   ctx.Config.Snapcraft.Confinement,
 		Architectures: []string{arch},
 		Apps:          make(map[string]AppsMetadata),
-		Parts:         make(map[string]PartsMetadata),
 	}
 
-	metadata.Parts[ctx.Config.ProjectName] = PartsMetadata{
-		Source: ".",
-		Plugin: "dump",
-	}
 	for _, binary := range binaries {
 		log.WithField("path", binary.Path).
 			WithField("name", binary.Name).
 			Info("passed binary to snapcraft")
 		metadata.Apps[binary.Name] = AppsMetadata{Command: binary.Name}
-		prime := metadata.Parts[ctx.Config.ProjectName].Prime
-		prime = append(prime, binary.Path)
+
+		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
+		os.Link(binary.Path, destBinaryPath)
 	}
 	out, err := yaml.Marshal(metadata)
 	if err != nil {
@@ -135,18 +131,12 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 		return err
 	}
 
-	cmd := exec.Command("snapcraft", "clean")
-	cmd.Dir = path
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return errors.New(string(out))
-	}
-
 	snap := metadata.Name + "_" + metadata.Version + "_" + arch + ".snap"
-	cmd = exec.Command("snapcraft", "snap", "--output", snap)
-	cmd.Dir = path
+	cmd := exec.Command("snapcraft", "snap", "prime", "--output", snap)
+	cmd.Dir = folderDir
 	if out, err = cmd.CombinedOutput(); err != nil {
 		return errors.New(string(out))
 	}
-	ctx.AddArtifact(filepath.Join(path, snap))
+	ctx.AddArtifact(filepath.Join(folderDir, snap))
 	return nil
 }
