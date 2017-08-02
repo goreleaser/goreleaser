@@ -179,11 +179,11 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 	if err != nil {
 		return config, err
 	}
-	err = yaml.Unmarshal(data, &config)
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return config, err
+	}
 	log.WithField("config", config).Debug("loaded config file")
-
-	err = checkOverflows(config)
-	return
+	return config, checkOverflows(config)
 }
 
 func checkOverflows(config Project) error {

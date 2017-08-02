@@ -15,28 +15,25 @@ func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.Description())
 }
 
-func TestRunPipeNoSummary(t *testing.T) {
-	var assert = assert.New(t)
-	var ctx = &context.Context{
-		Config: config.Project{
-			Snapcraft: config.Snapcraft{
-				Description: "dummy",
-			},
+func TestRunPipeMissingInfo(t *testing.T) {
+	for name, snap := range map[string]config.Snapcraft{
+		"missing summary": config.Snapcraft{
+			Description: "dummy desc",
 		},
-	}
-	assert.NoError(Pipe{}.Run(ctx))
-}
-
-func TestRunPipeNoDescription(t *testing.T) {
-	var assert = assert.New(t)
-	var ctx = &context.Context{
-		Config: config.Project{
-			Snapcraft: config.Snapcraft{
-				Summary: "dummy",
-			},
+		"missing description": config.Snapcraft{
+			Summary: "dummy summary",
 		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var assert = assert.New(t)
+			var ctx = &context.Context{
+				Config: config.Project{
+					Snapcraft: snap,
+				},
+			}
+			assert.NoError(Pipe{}.Run(ctx))
+		})
 	}
-	assert.NoError(Pipe{}.Run(ctx))
 }
 
 func TestRunPipe(t *testing.T) {
