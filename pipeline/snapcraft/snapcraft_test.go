@@ -42,9 +42,6 @@ func TestRunPipe(t *testing.T) {
 	assert.NoError(err)
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(os.Mkdir(dist, 0755))
-	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
-	_, err = os.Create(binPath)
 	assert.NoError(err)
 	var ctx = &context.Context{
 		Version: "testversion",
@@ -58,7 +55,11 @@ func TestRunPipe(t *testing.T) {
 		},
 	}
 	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64"} {
-		ctx.AddBinary(plat, "mybin", "mybin", binPath)
+		var folder = "mybin_" + plat
+		assert.NoError(os.Mkdir(filepath.Join(dist, folder), 0755))
+		var binPath = filepath.Join(dist, folder, "mybin")
+		_, err = os.Create(binPath)
+		ctx.AddBinary(plat, folder, "mybin", binPath)
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 }
