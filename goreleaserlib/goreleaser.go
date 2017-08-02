@@ -20,6 +20,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/release"
+	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -31,6 +32,7 @@ var pipes = []pipeline.Pipe{
 	build.Pipe{},     // build
 	archive.Pipe{},   // archive (tar.gz, zip, etc)
 	fpm.Pipe{},       // archive via fpm (deb, rpm, etc)
+	snapcraft.Pipe{}, // archive via snapcraft (snap)
 	checksums.Pipe{}, // checksums of the files
 	release.Pipe{},   // release to github
 	brew.Pipe{},      // push to brew tap

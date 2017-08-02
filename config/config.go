@@ -123,6 +123,17 @@ type FPM struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
+// Snapcraft config
+type Snapcraft struct {
+	Summary     string `yaml:",omitempty"`
+	Description string `yaml:",omitempty"`
+	Grade       string `yaml:",omitempty"`
+	Confinement string `yaml:",omitempty"`
+
+	// Capture all undefined fields and should be empty after loading
+	XXX map[string]interface{} `yaml:",inline"`
+}
+
 // Snapshot config
 type Snapshot struct {
 	NameTemplate string `yaml:"name_template,omitempty"`
@@ -133,13 +144,14 @@ type Snapshot struct {
 
 // Project includes all project configuration
 type Project struct {
-	ProjectName string   `yaml:"project_name,omitempty"`
-	Release     Release  `yaml:",omitempty"`
-	Brew        Homebrew `yaml:",omitempty"`
-	Builds      []Build  `yaml:",omitempty"`
-	Archive     Archive  `yaml:",omitempty"`
-	FPM         FPM      `yaml:",omitempty"`
-	Snapshot    Snapshot `yaml:",omitempty"`
+	ProjectName string    `yaml:"project_name,omitempty"`
+	Release     Release   `yaml:",omitempty"`
+	Brew        Homebrew  `yaml:",omitempty"`
+	Builds      []Build   `yaml:",omitempty"`
+	Archive     Archive   `yaml:",omitempty"`
+	FPM         FPM       `yaml:",omitempty"`
+	Snapcraft   Snapcraft `yaml:",omitempty"`
+	Snapshot    Snapshot  `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
@@ -191,6 +203,7 @@ func checkOverflows(config Project) error {
 		}
 	}
 	checker.check(config.FPM.XXX, "fpm")
+	checker.check(config.Snapcraft.XXX, "snapcraft")
 	checker.check(config.Release.XXX, "release")
 	checker.check(config.Release.GitHub.XXX, "release.github")
 	checker.check(config.SingleBuild.XXX, "build")
