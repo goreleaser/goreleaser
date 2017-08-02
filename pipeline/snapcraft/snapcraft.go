@@ -48,11 +48,11 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Snapcraft.Summary == "" {
-		log.Info("no snapcraft summary defined, skipping")
+		log.Error("no snapcraft summary defined, skipping")
 		return nil
 	}
 	if ctx.Config.Snapcraft.Summary == "" {
-		log.Info("no snapcraft description defined, skipping")
+		log.Error("no snapcraft description defined, skipping")
 		return nil
 	}
 	_, err := exec.LookPath("snapcraft")
