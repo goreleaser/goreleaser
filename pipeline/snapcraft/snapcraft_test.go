@@ -17,10 +17,10 @@ func TestDescription(t *testing.T) {
 
 func TestRunPipeMissingInfo(t *testing.T) {
 	for name, snap := range map[string]config.Snapcraft{
-		"missing summary": config.Snapcraft{
+		"missing summary": {
 			Description: "dummy desc",
 		},
-		"missing description": config.Snapcraft{
+		"missing description": {
 			Summary: "dummy summary",
 		},
 	} {
