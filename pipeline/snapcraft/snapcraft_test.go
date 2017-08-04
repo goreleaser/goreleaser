@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/stretchr/testify/assert"
+	yaml "gopkg.in/yaml.v2"
 )
 
 func TestDescription(t *testing.T) {
@@ -64,6 +65,47 @@ func TestRunPipe(t *testing.T) {
 		ctx.AddBinary(plat, folder, "mybin", binPath)
 	}
 	assert.NoError(Pipe{}.Run(ctx))
+}
+
+func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
+	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(err)
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(os.Mkdir(dist, 0755))
+	assert.NoError(err)
+	var ctx = &context.Context{
+		Version: "testversion",
+		Config: config.Project{
+			ProjectName: "mybin",
+			Dist:        dist,
+			Snapcraft: config.Snapcraft{
+				Summary:     "test summary",
+				Description: "test description",
+				Apps: map[string]config.SnapcraftAppMetadata{
+					"mybin": config.SnapcraftAppMetadata{
+						Plugs:  []string{"home", "network"},
+						Daemon: "simple",
+					},
+				},
+			},
+		},
+	}
+	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64", "linuxarm64", "linuxarmhf"} {
+		var folder = "mybin_" + plat
+		assert.NoError(os.Mkdir(filepath.Join(dist, folder), 0755))
+		var binPath = filepath.Join(dist, folder, "mybin")
+		_, err = os.Create(binPath)
+		ctx.AddBinary(plat, folder, "mybin", binPath)
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "mybin_linuxamd64", "prime", "meta", "snap.yaml"))
+	assert.NoError(err)
+	var snapcraftMetadata SnapcraftMetadata
+	err = yaml.Unmarshal(yamlFile, &snapcraftMetadata)
+	assert.NoError(err)
+	assert.Equal(snapcraftMetadata.Apps["mybin"].Plugs, []string{"home", "network"})
+	assert.Equal(snapcraftMetadata.Apps["mybin"].Daemon, "simple")
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {

@@ -123,12 +123,19 @@ type FPM struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
+// AppsMetadata for the binaries that will be in the snap package
+type SnapcraftAppMetadata struct {
+	Plugs  []string
+	Daemon string
+}
+
 // Snapcraft config
 type Snapcraft struct {
-	Summary     string `yaml:",omitempty"`
-	Description string `yaml:",omitempty"`
-	Grade       string `yaml:",omitempty"`
-	Confinement string `yaml:",omitempty"`
+	Summary     string                          `yaml:",omitempty"`
+	Description string                          `yaml:",omitempty"`
+	Grade       string                          `yaml:",omitempty"`
+	Confinement string                          `yaml:",omitempty"`
+	Apps        map[string]SnapcraftAppMetadata `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`
