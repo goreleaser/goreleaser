@@ -123,7 +123,7 @@ type FPM struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
-// AppsMetadata for the binaries that will be in the snap package
+// SnapcraftAppMetadata for the binaries that will be in the snap package
 type SnapcraftAppMetadata struct {
 	Plugs  []string
 	Daemon string
