@@ -15,28 +15,27 @@ func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.Description())
 }
 
-func TestRunPipeNoSummary(t *testing.T) {
-	var assert = assert.New(t)
-	var ctx = &context.Context{
-		Config: config.Project{
-			Snapcraft: config.Snapcraft{
-				Description: "dummy",
-			},
+func TestRunPipeMissingInfo(t *testing.T) {
+	for name, snap := range map[string]config.Snapcraft{
+		"missing summary": {
+			Description: "dummy desc",
 		},
-	}
-	assert.NoError(Pipe{}.Run(ctx))
-}
-
-func TestRunPipeNoDescription(t *testing.T) {
-	var assert = assert.New(t)
-	var ctx = &context.Context{
-		Config: config.Project{
-			Snapcraft: config.Snapcraft{
-				Summary: "dummy",
-			},
+		"missing description": {
+			Summary: "dummy summary",
 		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			var assert = assert.New(t)
+			var ctx = &context.Context{
+				Config: config.Project{
+					Snapcraft: snap,
+				},
+			}
+			// FIXME: there is no way to tell here if the pipe actually ran
+			// or if it was indeed skipped.
+			assert.NoError(Pipe{}.Run(ctx))
+		})
 	}
-	assert.NoError(Pipe{}.Run(ctx))
 }
 
 func TestRunPipe(t *testing.T) {
@@ -45,9 +44,6 @@ func TestRunPipe(t *testing.T) {
 	assert.NoError(err)
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(os.Mkdir(dist, 0755))
-	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
-	_, err = os.Create(binPath)
 	assert.NoError(err)
 	var ctx = &context.Context{
 		Version: "testversion",
@@ -60,8 +56,12 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 	}
-	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64"} {
-		ctx.AddBinary(plat, "mybin", "mybin", binPath)
+	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64", "linuxarm64", "linuxarmhf"} {
+		var folder = "mybin_" + plat
+		assert.NoError(os.Mkdir(filepath.Join(dist, folder), 0755))
+		var binPath = filepath.Join(dist, folder, "mybin")
+		_, err = os.Create(binPath)
+		ctx.AddBinary(plat, folder, "mybin", binPath)
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 }

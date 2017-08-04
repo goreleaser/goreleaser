@@ -3,6 +3,7 @@ package snapcraft
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -51,7 +52,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		log.Error("no snapcraft summary defined, skipping")
 		return nil
 	}
-	if ctx.Config.Snapcraft.Summary == "" {
+	if ctx.Config.Snapcraft.Description == "" {
 		log.Error("no snapcraft description defined, skipping")
 		return nil
 	}
@@ -120,7 +121,9 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 		metadata.Apps[binary.Name] = AppsMetadata{Command: binary.Name}
 
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
-		os.Link(binary.Path, destBinaryPath)
+		if err := os.Link(binary.Path, destBinaryPath); err != nil {
+			return err
+		}
 	}
 	out, err := yaml.Marshal(metadata)
 	if err != nil {
@@ -131,12 +134,14 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 		return err
 	}
 
-	snap := metadata.Name + "_" + metadata.Version + "_" + arch + ".snap"
-	cmd := exec.Command("snapcraft", "snap", "prime", "--output", snap)
-	cmd.Dir = folderDir
+	snap := filepath.Join(
+		ctx.Config.Dist,
+		metadata.Name+"_"+metadata.Version+"_"+arch+".snap",
+	)
+	cmd := exec.Command("snapcraft", "snap", primeDir, "--output", snap)
 	if out, err = cmd.CombinedOutput(); err != nil {
-		return errors.New(string(out))
+		return fmt.Errorf("failed to generate snap package: %s", string(out))
 	}
-	ctx.AddArtifact(filepath.Join(folderDir, snap))
+	ctx.AddArtifact(snap)
 	return nil
 }
