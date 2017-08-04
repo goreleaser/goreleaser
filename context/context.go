@@ -8,6 +8,7 @@ package context
 
 import (
 	ctx "context"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -50,7 +51,7 @@ var binariesLock sync.Mutex
 func (ctx *Context) AddArtifact(file string) {
 	artifactsLock.Lock()
 	defer artifactsLock.Unlock()
-	file = strings.TrimPrefix(file, ctx.Config.Dist+"/")
+	file = strings.TrimPrefix(file, ctx.Config.Dist+string(filepath.Separator))
 	ctx.Artifacts = append(ctx.Artifacts, file)
 	log.WithField("artifact", file).Info("new artifact")
 }
