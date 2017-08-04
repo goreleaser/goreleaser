@@ -31,6 +31,8 @@ func TestRunPipeMissingInfo(t *testing.T) {
 					Snapcraft: snap,
 				},
 			}
+			// FIXME: there is no way to tell here if the pipe actually ran
+			// or if it was indeed skipped.
 			assert.NoError(Pipe{}.Run(ctx))
 		})
 	}
@@ -54,7 +56,7 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 	}
-	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64"} {
+	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64", "linuxarm64", "linuxarmhf"} {
 		var folder = "mybin_" + plat
 		assert.NoError(os.Mkdir(filepath.Join(dist, folder), 0755))
 		var binPath = filepath.Join(dist, folder, "mybin")

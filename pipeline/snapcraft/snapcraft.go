@@ -52,7 +52,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		log.Error("no snapcraft summary defined, skipping")
 		return nil
 	}
-	if ctx.Config.Snapcraft.Summary == "" {
+	if ctx.Config.Snapcraft.Description == "" {
 		log.Error("no snapcraft description defined, skipping")
 		return nil
 	}
