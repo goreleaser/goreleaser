@@ -28,14 +28,14 @@ type SnapcraftMetadata struct {
 	Grade         string `yaml:",omitempty"`
 	Confinement   string `yaml:",omitempty"`
 	Architectures []string
-	Apps          map[string]AppsMetadata
+	Apps          map[string]AppMetadata
 }
 
-// AppsMetadata for the binaries that will be in the snap package
-type AppsMetadata struct {
+// AppMetadata for the binaries that will be in the snap package
+type AppMetadata struct {
 	Command string
-	//	Plugs []string
-	//	Daemon string
+	Plugs   []string `yaml:",omitempty"`
+	Daemon  string   `yaml:",omitempty"`
 }
 
 // Pipe for snapcraft packaging
@@ -111,14 +111,19 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 		Grade:         ctx.Config.Snapcraft.Grade,
 		Confinement:   ctx.Config.Snapcraft.Confinement,
 		Architectures: []string{arch},
-		Apps:          make(map[string]AppsMetadata),
+		Apps:          make(map[string]AppMetadata),
 	}
 
 	for _, binary := range binaries {
 		log.WithField("path", binary.Path).
 			WithField("name", binary.Name).
 			Info("passed binary to snapcraft")
-		metadata.Apps[binary.Name] = AppsMetadata{Command: binary.Name}
+		appMetadata := AppMetadata{Command: binary.Name}
+		if configAppMetadata, ok := ctx.Config.Snapcraft.Apps[binary.Name]; ok {
+			appMetadata.Plugs = configAppMetadata.Plugs
+			appMetadata.Daemon = configAppMetadata.Daemon
+		}
+		metadata.Apps[binary.Name] = appMetadata
 
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
 		if err := os.Link(binary.Path, destBinaryPath); err != nil {
