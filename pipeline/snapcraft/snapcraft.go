@@ -138,11 +138,10 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 		ctx.Config.Dist,
 		metadata.Name+"_"+metadata.Version+"_"+arch+".snap",
 	)
-	cmd := exec.Command("snapcraft", "snap", "prime", "--output", snap)
-	cmd.Dir = folderDir
+	cmd := exec.Command("snapcraft", "snap", primeDir, "--output", snap)
 	if out, err = cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to generate snap package: %s", string(out))
 	}
-	ctx.AddArtifact(filepath.Join(folderDir, snap))
+	ctx.AddArtifact(snap)
 	return nil
 }
