@@ -477,17 +477,21 @@ snapcraft:
   # we live in tweetspace and your description wants to look good in the snap
   # store.
   description: |
+    This is the best drum roll application out there.
+    Install it and awe!
   # A guardrail to prevent you from releasing a snap to all your users before
   # it is ready.
   # `devel` will let you release only to the `edge` and `beta` channels in the
   # store. `stable` will let you release also to the `candidate` and `stable`
-  # channels. More [info about channels here](https://snapcraft.io/docs/reference/channels).
+  # channels. More info about channels here:
+  # https://snapcraft.io/docs/reference/channels.
   grade: stable
   # Snaps can be setup to follow three different confinement policies:
   # `strict`, `devmode` and `classic`. A strict confinement where the snap
   # can only read and write in its own namespace is recommended. Extra
   # permissions for strict snaps can be declared as `plugs` for the app, which
-  # are explained later. More [info about confinement here](https://snapcraft.io/docs/reference/confinement).
+  # are explained later. More info about confinement here:
+  # https://snapcraft.io/docs/reference/confinement).
   confinement: strict
   # Each binary built by GoReleaser is an app inside the snap. In this section
   # you can declare extra details for those binaries. It is optional.
@@ -496,7 +500,9 @@ snapcraft:
     drumroll:
       # If your app requires extra permissions to work outside of its default
       # confined space, delcare them here.
-      # You can read the [documentation about the available plugs and the things they allow](https://snapcraft.io/docs/reference/interfaces).
+      # You can read the documentation about the available plugs and the
+      # things they allow:
+      # https://snapcraft.io/docs/reference/interfaces).
       plugs: ["home", "network"]
       # If you want your app to be autostarted and to always run in the
       # background, you can make it a simple daemon.
