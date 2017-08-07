@@ -104,7 +104,6 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 	log.WithField("file", file).Info("creating snap metadata")
 
 	var metadata = &SnapcraftMetadata{
-		Name:          ctx.Config.ProjectName,
 		Version:       ctx.Version,
 		Summary:       ctx.Config.Snapcraft.Summary,
 		Description:   ctx.Config.Snapcraft.Description,
@@ -112,6 +111,11 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 		Confinement:   ctx.Config.Snapcraft.Confinement,
 		Architectures: []string{arch},
 		Apps:          make(map[string]AppMetadata),
+	}
+	if ctx.Config.Snapcraft.Name != "" {
+		metadata.Name = ctx.Config.Snapcraft.Name
+	} else {
+		metadata.Name = ctx.Config.ProjectName
 	}
 
 	for _, binary := range binaries {
@@ -141,7 +145,7 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 
 	snap := filepath.Join(
 		ctx.Config.Dist,
-		metadata.Name+"_"+metadata.Version+"_"+arch+".snap",
+		ctx.Config.ProjectName+"_"+metadata.Version+"_"+arch+".snap",
 	)
 	cmd := exec.Command("snapcraft", "snap", primeDir, "--output", snap)
 	if out, err = cmd.CombinedOutput(); err != nil {

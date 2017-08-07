@@ -67,6 +67,41 @@ func TestRunPipe(t *testing.T) {
 	assert.NoError(Pipe{}.Run(ctx))
 }
 
+func TestRunPipeWithName(t *testing.T) {
+	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(err)
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(os.Mkdir(dist, 0755))
+	assert.NoError(err)
+	var ctx = &context.Context{
+		Version: "testversion",
+		Config: config.Project{
+			ProjectName: "testprojectname",
+			Dist:        dist,
+			Snapcraft: config.Snapcraft{
+				Name:        "testsnapname",
+				Summary:     "test summary",
+				Description: "test description",
+			},
+		},
+	}
+	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64", "linuxarm64", "linuxarmhf"} {
+		var folder = "testprojectname_" + plat
+		assert.NoError(os.Mkdir(filepath.Join(dist, folder), 0755))
+		var binPath = filepath.Join(dist, folder, "testprojectname")
+		_, err = os.Create(binPath)
+		ctx.AddBinary(plat, folder, "testprojectname", binPath)
+	}
+	assert.NoError(Pipe{}.Run(ctx))
+	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "testprojectname_linuxamd64", "prime", "meta", "snap.yaml"))
+	assert.NoError(err)
+	var snapcraftMetadata SnapcraftMetadata
+	err = yaml.Unmarshal(yamlFile, &snapcraftMetadata)
+	assert.NoError(err)
+	assert.Equal(snapcraftMetadata.Name, "testsnapname")
+}
+
 func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
 	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "archivetest")

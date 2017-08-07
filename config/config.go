@@ -131,6 +131,7 @@ type SnapcraftAppMetadata struct {
 
 // Snapcraft config
 type Snapcraft struct {
+	Name        string                          `yaml:",omitempty"`
 	Summary     string                          `yaml:",omitempty"`
 	Description string                          `yaml:",omitempty"`
 	Grade       string                          `yaml:",omitempty"`
