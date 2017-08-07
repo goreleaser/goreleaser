@@ -470,6 +470,9 @@ You can read more about it in the [snapcraft docs](https://snapcraft.io/docs/).
 # .goreleaser.yml
 snapcraft:
 
+  # The name of the snap. This is optional and defaults to the project name.
+  name: drumroll
+
   # Single-line elevator pitch for your amazing snap.
   # 79 char long at most.
   summary: Software to create fast and easy drum rolls.
