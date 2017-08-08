@@ -54,6 +54,22 @@ func For(ctx *context.Context, target buildtarget.Target) (string, error) {
 	)
 }
 
+// ForSnap returns the name for the given context, goos, goarch and goarm.
+func ForSnap(ctx *context.Context, target buildtarget.Target) (string, error) {
+	return apply(
+		nameData{
+			Os:          replace(ctx.Config.Archive.Replacements, target.OS),
+			Arch:        replace(ctx.Config.Archive.Replacements, target.Arch),
+			Arm:         replace(ctx.Config.Archive.Replacements, target.Arm),
+			Version:     ctx.Version,
+			Tag:         ctx.Git.CurrentTag,
+			Binary:      ctx.Config.ProjectName,
+			ProjectName: ctx.Config.ProjectName,
+		},
+		ctx.Config.Snapcraft.FilenameTemplate,
+	)
+}
+
 func apply(data nameData, templateStr string) (string, error) {
 	var out bytes.Buffer
 	t, err := template.New(data.ProjectName).Parse(templateStr)

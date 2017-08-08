@@ -12,6 +12,8 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/buildtarget"
+	"github.com/goreleaser/goreleaser/internal/name"
 	"golang.org/x/sync/errgroup"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -104,6 +106,7 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 	log.WithField("file", file).Info("creating snap metadata")
 
 	var metadata = &SnapcraftMetadata{
+		Name:          ctx.Config.Snapcraft.Name,
 		Version:       ctx.Version,
 		Summary:       ctx.Config.Snapcraft.Summary,
 		Description:   ctx.Config.Snapcraft.Description,
@@ -111,11 +114,6 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 		Confinement:   ctx.Config.Snapcraft.Confinement,
 		Architectures: []string{arch},
 		Apps:          make(map[string]AppMetadata),
-	}
-	if ctx.Config.Snapcraft.Name != "" {
-		metadata.Name = ctx.Config.Snapcraft.Name
-	} else {
-		metadata.Name = ctx.Config.ProjectName
 	}
 
 	for _, binary := range binaries {
@@ -143,10 +141,17 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 		return err
 	}
 
-	snap := filepath.Join(
-		ctx.Config.Dist,
-		ctx.Config.ProjectName+"_"+metadata.Version+"_"+arch+".snap",
-	)
+	var target = buildtarget.Target{OS: "linux", Arch: arch}
+	if strings.Contains(arch, "arm") {
+		target.Arch = "arm"
+		target.Arm = strings.Replace(arch, "arm", "", 1)
+	}
+	filename, err := name.ForSnap(ctx, target)
+	if err != nil {
+		return err
+	}
+
+	snap := filepath.Join(ctx.Config.Dist, filename+".snap")
 	cmd := exec.Command("snapcraft", "snap", primeDir, "--output", snap)
 	if out, err = cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to generate snap package: %s", string(out))
