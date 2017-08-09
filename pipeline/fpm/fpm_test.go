@@ -99,9 +99,24 @@ func TestCreateFileDoesntExist(t *testing.T) {
 			Dist: dist,
 			FPM: config.FPM{
 				Formats: []string{"deb"},
+				Files: map[string]string{
+					"testdata/testfile.txt": "/var/lib/test/testfile.txt",
+				},
 			},
 		},
 	}
 	ctx.AddBinary("linuxamd64", "mybin", "mybin", filepath.Join(dist, "mybin", "mybin"))
 	assert.Error(Pipe{}.Run(ctx))
+}
+
+func TestRunPipeWithExtraFiles(t *testing.T) {
+	var assert = assert.New(t)
+	var ctx = &context.Context{
+		Config: config.Project{
+			FPM: config.FPM{
+				Formats: []string{"deb"},
+			},
+		},
+	}
+	assert.NoError(Pipe{}.Run(ctx))
 }

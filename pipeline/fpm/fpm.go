@@ -112,6 +112,17 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 		))
 	}
 
+	for src, dest := range ctx.Config.FPM.Files {
+		log.WithField("src", src).
+			WithField("dest", dest).
+			Info("passed extra file to fpm")
+		options = append(options, fmt.Sprintf(
+			"%s=%s",
+			src,
+			dest,
+		))
+	}
+
 	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
 		return errors.New(string(out))
 	}

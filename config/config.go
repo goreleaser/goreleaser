@@ -110,14 +110,15 @@ type Release struct {
 
 // FPM config
 type FPM struct {
-	Formats      []string `yaml:",omitempty"`
-	Dependencies []string `yaml:",omitempty"`
-	Conflicts    []string `yaml:",omitempty"`
-	Vendor       string   `yaml:",omitempty"`
-	Homepage     string   `yaml:",omitempty"`
-	Maintainer   string   `yaml:",omitempty"`
-	Description  string   `yaml:",omitempty"`
-	License      string   `yaml:",omitempty"`
+	Formats      []string          `yaml:",omitempty"`
+	Dependencies []string          `yaml:",omitempty"`
+	Conflicts    []string          `yaml:",omitempty"`
+	Vendor       string            `yaml:",omitempty"`
+	Homepage     string            `yaml:",omitempty"`
+	Maintainer   string            `yaml:",omitempty"`
+	Description  string            `yaml:",omitempty"`
+	License      string            `yaml:",omitempty"`
+	Files        map[string]string `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`
