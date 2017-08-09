@@ -456,6 +456,11 @@ fpm:
   conflicts:
     - svn
     - bash
+
+  # Files or directories to add to your package (beyond the binary)
+  files:
+    "scripts/etc/init.d/": "/etc/init.d"
+
 ```
 
 Note that GoReleaser will not install `fpm` nor any of its dependencies for you.
