@@ -46,7 +46,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			arch := archFor(platform)
 			for folder, binaries := range groups {
 				g.Go(func() error {
-					return create(ctx, format, folder, arch, platform, binaries)
+					return create(ctx, format, folder, arch, binaries)
 				})
 			}
 		}
@@ -61,7 +61,7 @@ func archFor(key string) string {
 	return "x86_64"
 }
 
-func create(ctx *context.Context, format, folder, arch, platform string, binaries []context.Binary) error {
+func create(ctx *context.Context, format, folder, arch, binaries []context.Binary) error {
 	var path = filepath.Join(ctx.Config.Dist, folder)
 	var file = path + "." + format
 	log.WithField("file", file).Info("creating fpm archive")
@@ -100,7 +100,7 @@ func create(ctx *context.Context, format, folder, arch, platform string, binarie
 	}
 
 	// FPM requires --rpm-os=linux if your rpm target is linux
-	if format == "rpm" && strings.Contains(platform, "linux") {
+	if format == "rpm" {
 		options = append(options, "--rpm-os", "linux")
 	}
 
