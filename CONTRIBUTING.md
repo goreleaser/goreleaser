@@ -13,6 +13,7 @@ Prerequisites are:
   * `make`
   * [Go 1.8+](http://golang.org/doc/install)
   * [fpm](https://fpm.readthedocs.io/en/latest/installing.html)
+  * [snapcraft](http://snapcraft.io/)
 
 Clone `goreleaser` from source into `$GOPATH`:
 
@@ -25,13 +26,13 @@ $ cd goreleaser
 
 Install the build and lint dependencies:
 
-``` sh
+```console
 $ make setup
 ```
 
 A good way of making sure everything is all right is running the test suite:
 
-``` sh
+```console
 $ make test
 ```
 
@@ -39,13 +40,13 @@ $ make test
 
 You can create a branch for your changes and try to build from the source as you go:
 
-``` sh
+```console
 $ make build
 ```
 
 When you are satisfied with the changes, we suggest you run:
 
-``` sh
+```console
 $ make ci
 ```
 
