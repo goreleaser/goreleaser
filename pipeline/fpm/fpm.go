@@ -61,7 +61,7 @@ func archFor(key string) string {
 	return "x86_64"
 }
 
-func create(ctx *context.Context, format, folder, arch, binaries []context.Binary) error {
+func create(ctx *context.Context, format, folder, arch string, binaries []context.Binary) error {
 	var path = filepath.Join(ctx.Config.Dist, folder)
 	var file = path + "." + format
 	log.WithField("file", file).Info("creating fpm archive")
