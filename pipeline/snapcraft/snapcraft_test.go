@@ -62,6 +62,7 @@ func TestRunPipe(t *testing.T) {
 		assert.NoError(os.Mkdir(filepath.Join(dist, folder), 0755))
 		var binPath = filepath.Join(dist, folder, "mybin")
 		_, err = os.Create(binPath)
+		assert.NoError(err)
 		ctx.AddBinary(plat, folder, "mybin", binPath)
 	}
 	assert.NoError(Pipe{}.Run(ctx))
