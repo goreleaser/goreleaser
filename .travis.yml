@@ -14,11 +14,6 @@ script:
   - test -n "$TRAVIS_TAG" || go run main.go --skip-validate --skip-publish
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-deploy:
-  - provider: script
-    skip_cleanup: true
-    script: go run main.go
-    on:
-      tags: true
+  - test -n "$TRAVIS_TAG" && go run main.go
 notifications:
   email: false
