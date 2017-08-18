@@ -1,6 +1,7 @@
 package snapcraft
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -17,24 +18,23 @@ func TestDescription(t *testing.T) {
 }
 
 func TestRunPipeMissingInfo(t *testing.T) {
-	for name, snap := range map[string]config.Snapcraft{
-		"missing summary": {
+	for eerr, snap := range map[error]config.Snapcraft{
+		ErrNoSummary: {
 			Description: "dummy desc",
 		},
-		"missing description": {
+		ErrNoDescription: {
 			Summary: "dummy summary",
 		},
+		nil: {}, // should skip instead of error
 	} {
-		t.Run(name, func(t *testing.T) {
+		t.Run(fmt.Sprintf("testing if %v happens", eerr), func(t *testing.T) {
 			var assert = assert.New(t)
 			var ctx = &context.Context{
 				Config: config.Project{
 					Snapcraft: snap,
 				},
 			}
-			// FIXME: there is no way to tell here if the pipe actually ran
-			// or if it was indeed skipped.
-			assert.NoError(Pipe{}.Run(ctx))
+			assert.Equal(eerr, Pipe{}.Run(ctx))
 		})
 	}
 }

@@ -19,6 +19,12 @@ import (
 // ErrNoSnapcraft is shown when snapcraft cannot be found in $PATH
 var ErrNoSnapcraft = errors.New("snapcraft not present in $PATH")
 
+// ErrNoDescription is shown when no description provided
+var ErrNoDescription = errors.New("no description provided for snapcraft")
+
+// ErrNoSummary is shown when no summary provided
+var ErrNoSummary = errors.New("no summary provided for snapcraft")
+
 // SnapcraftMetadata to generate the snap package
 type SnapcraftMetadata struct {
 	Name          string
@@ -48,13 +54,15 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.Snapcraft.Summary == "" {
-		log.Error("no snapcraft summary defined, skipping")
+	if ctx.Config.Snapcraft.Summary == "" && ctx.Config.Snapcraft.Description == "" {
+		log.Warn("skipping because no summary nor description were provided")
 		return nil
 	}
+	if ctx.Config.Snapcraft.Summary == "" {
+		return ErrNoSummary
+	}
 	if ctx.Config.Snapcraft.Description == "" {
-		log.Error("no snapcraft description defined, skipping")
-		return nil
+		return ErrNoDescription
 	}
 	_, err := exec.LookPath("snapcraft")
 	if err != nil {
