@@ -119,7 +119,7 @@ func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
 				Summary:     "test summary",
 				Description: "test description",
 				Apps: map[string]config.SnapcraftAppMetadata{
-					"mybin": config.SnapcraftAppMetadata{
+					"mybin": {
 						Plugs:  []string{"home", "network"},
 						Daemon: "simple",
 					},
