@@ -6,7 +6,7 @@ install:
   - make setup
   - gem install fpm
   - sudo apt-get update
-  - sudo apt-get install --yes snapd
+  - sudo apt-get install --yes snapd rpm
   - export PATH=/snap/bin:$PATH
   - sudo snap install snapcraft --candidate --classic
 script:
