@@ -12,6 +12,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/git"
 )
 
 // Pipe for brew deployment
@@ -101,7 +102,7 @@ func getSnapshotName(ctx *context.Context, tag, commit string) (string, error) {
 }
 
 func validate(ctx *context.Context, commit, tag string) error {
-	out, err := git("status", "--porcelain")
+	out, err := git.Run("status", "--porcelain")
 	if strings.TrimSpace(out) != "" || err != nil {
 		return ErrDirty{out}
 	}
@@ -132,7 +133,7 @@ func getChangelog(tag string) (string, error) {
 func gitLog(refs ...string) (string, error) {
 	var args = []string{"log", "--pretty=oneline", "--abbrev-commit"}
 	args = append(args, refs...)
-	return git(args...)
+	return git.Run(args...)
 }
 
 func getInfo() (tag, commit string, err error) {
