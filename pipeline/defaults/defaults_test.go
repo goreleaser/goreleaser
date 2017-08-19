@@ -30,6 +30,8 @@ func TestFillBasicData(t *testing.T) {
 	assert.Contains(ctx.Config.Builds[0].Goos, "linux")
 	assert.Contains(ctx.Config.Builds[0].Goarch, "386")
 	assert.Contains(ctx.Config.Builds[0].Goarch, "amd64")
+	assert.NotEmpty(ctx.Config.Snapcraft.FilenameTemplate)
+	assert.NotEmpty(ctx.Config.Snapcraft.Name)
 	assert.Equal("tar.gz", ctx.Config.Archive.Format)
 	assert.Contains(ctx.Config.Brew.Install, "bin.install \"goreleaser\"")
 	assert.NotEmpty(

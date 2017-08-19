@@ -12,7 +12,7 @@ import (
 )
 
 // NameTemplate default name_template for the archive.
-const NameTemplate = "{{ .Binary }}_{{.Version}}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+const NameTemplate = "{{ .ProjectName }}_{{.Version}}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
 // SnapshotNameTemplate represents the default format for snapshot release names.
 const SnapshotNameTemplate = "SNAPSHOT-{{ .Commit }}"
@@ -36,6 +36,12 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	if ctx.Config.ProjectName == "" {
 		ctx.Config.ProjectName = ctx.Config.Release.GitHub.Name
+	}
+	if ctx.Config.Snapcraft.Name == "" {
+		ctx.Config.Snapcraft.Name = ctx.Config.ProjectName
+	}
+	if ctx.Config.Snapcraft.FilenameTemplate == "" {
+		ctx.Config.Snapcraft.FilenameTemplate = NameTemplate
 	}
 	setBuildDefaults(ctx)
 	if ctx.Config.Brew.Install == "" {
