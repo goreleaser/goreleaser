@@ -57,14 +57,7 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 	}
-	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64", "linuxarm64", "linuxarmhf"} {
-		var folder = "mybin_" + plat
-		assert.NoError(os.Mkdir(filepath.Join(dist, folder), 0755))
-		var binPath = filepath.Join(dist, folder, "mybin")
-		_, err = os.Create(binPath)
-		assert.NoError(err)
-		ctx.AddBinary(plat, folder, "mybin", binPath)
-	}
+	addBinaries(t, ctx, "mybin", dist)
 	assert.NoError(Pipe{}.Run(ctx))
 }
 
@@ -87,13 +80,7 @@ func TestRunPipeWithName(t *testing.T) {
 			},
 		},
 	}
-	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64", "linuxarm64", "linuxarmhf"} {
-		var folder = "testprojectname_" + plat
-		assert.NoError(os.Mkdir(filepath.Join(dist, folder), 0755))
-		var binPath = filepath.Join(dist, folder, "testprojectname")
-		_, err = os.Create(binPath)
-		ctx.AddBinary(plat, folder, "testprojectname", binPath)
-	}
+	addBinaries(t, ctx, "testprojectname", dist)
 	assert.NoError(Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "testprojectname_linuxamd64", "prime", "meta", "snap.yaml"))
 	assert.NoError(err)
@@ -127,13 +114,7 @@ func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
 			},
 		},
 	}
-	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64", "linuxarm64", "linuxarmhf"} {
-		var folder = "mybin_" + plat
-		assert.NoError(os.Mkdir(filepath.Join(dist, folder), 0755))
-		var binPath = filepath.Join(dist, folder, "mybin")
-		_, err = os.Create(binPath)
-		ctx.AddBinary(plat, folder, "mybin", binPath)
-	}
+	addBinaries(t, ctx, "mybin", dist)
 	assert.NoError(Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "mybin_linuxamd64", "prime", "meta", "snap.yaml"))
 	assert.NoError(err)
@@ -160,4 +141,16 @@ func TestNoSnapcraftInPath(t *testing.T) {
 		},
 	}
 	assert.EqualError(Pipe{}.Run(ctx), ErrNoSnapcraft.Error())
+}
+
+func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
+	var assert = assert.New(t)
+	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64", "linuxarm64", "linuxarmhf"} {
+		var folder = name + "_" + plat
+		assert.NoError(os.Mkdir(filepath.Join(dist, folder), 0755))
+		var binPath = filepath.Join(dist, folder, name)
+		_, err := os.Create(binPath)
+		assert.NoError(err)
+		ctx.AddBinary(plat, folder, name, binPath)
+	}
 }
