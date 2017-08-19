@@ -1,21 +1,12 @@
 package git
 
 import (
-	"errors"
-	"os/exec"
 	"strings"
+
+	"github.com/goreleaser/goreleaser/internal/git"
 )
 
-func git(args ...string) (output string, err error) {
-	var cmd = exec.Command("git", args...)
-	bts, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", errors.New(string(bts))
-	}
-	return string(bts), err
-}
-
 func cleanGit(args ...string) (output string, err error) {
-	output, err = git(args...)
+	output, err = git.Run(args...)
 	return strings.Replace(strings.Split(output, "\n")[0], "'", "", -1), err
 }
