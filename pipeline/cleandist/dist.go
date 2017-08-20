@@ -27,7 +27,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return nil
 	}
 	if ctx.RmDist {
-		log.Info("rm-dist is set, removing ./dist")
+		log.Info("--rm-dist is set, removing ./dist")
 		return os.RemoveAll(ctx.Config.Dist)
 	}
 	files, err := ioutil.ReadDir(ctx.Config.Dist)
