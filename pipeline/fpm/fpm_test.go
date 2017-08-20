@@ -8,6 +8,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,12 +17,11 @@ func TestDescription(t *testing.T) {
 }
 
 func TestRunPipeNoFormats(t *testing.T) {
-	var assert = assert.New(t)
 	var ctx = &context.Context{
 		Version: "1.0.0",
 		Config:  config.Project{},
 	}
-	assert.NoError(Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipe(t *testing.T) {
