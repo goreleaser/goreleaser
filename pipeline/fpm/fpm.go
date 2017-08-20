@@ -64,6 +64,7 @@ func archFor(key string) string {
 func create(ctx *context.Context, format, folder, arch string, binaries []context.Binary) error {
 	var path = filepath.Join(ctx.Config.Dist, folder)
 	var file = path + "." + format
+	var log = log.WithField("format", format).WithField("arch", arch)
 	log.WithField("file", file).Info("creating fpm archive")
 
 	var options = []string{
@@ -72,7 +73,6 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 		"--name", ctx.Config.ProjectName,
 		"--version", ctx.Version,
 		"--architecture", arch,
-		// "--chdir", path,
 		"--package", file,
 		"--force",
 	}
@@ -109,7 +109,7 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 		// binary=/usr/local/bin/binary
 		log.WithField("path", binary.Path).
 			WithField("name", binary.Name).
-			Info("passed binary to fpm")
+			Debug("added binary to fpm package")
 		options = append(options, fmt.Sprintf(
 			"%s=%s",
 			binary.Path,
@@ -120,7 +120,7 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 	for src, dest := range ctx.Config.FPM.Files {
 		log.WithField("src", src).
 			WithField("dest", dest).
-			Info("passed extra file to fpm")
+			Debug("added an extra file to the fpm package")
 		options = append(options, fmt.Sprintf(
 			"%s=%s",
 			src,
@@ -128,6 +128,7 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 		))
 	}
 
+	log.WithField("args", options).Debug("creating fpm package")
 	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
 		return errors.New(string(out))
 	}

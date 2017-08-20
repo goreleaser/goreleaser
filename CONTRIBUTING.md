@@ -13,6 +13,7 @@ Prerequisites are:
   * `make`
   * [Go 1.8+](http://golang.org/doc/install)
   * [fpm](https://fpm.readthedocs.io/en/latest/installing.html)
+  * rpm / rpmbuild
   * [snapcraft](http://snapcraft.io/)
 
 Clone `goreleaser` from source into `$GOPATH`:

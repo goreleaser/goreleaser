@@ -18,22 +18,8 @@ func TestDescription(t *testing.T) {
 func TestRunPipeNoFormats(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
-		Config: config.Project{},
-	}
-	assert.NoError(Pipe{}.Run(ctx))
-}
-
-func TestRunPipeFormatBinary(t *testing.T) {
-	var assert = assert.New(t)
-	var ctx = &context.Context{
-		Config: config.Project{
-			FPM: config.FPM{
-				Formats: []string{"deb"},
-			},
-			Archive: config.Archive{
-				Format: "binary",
-			},
-		},
+		Version: "1.0.0",
+		Config:  config.Project{},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 }
@@ -49,11 +35,12 @@ func TestRunPipe(t *testing.T) {
 	_, err = os.Create(binPath)
 	assert.NoError(err)
 	var ctx = &context.Context{
+		Version: "1.0.0",
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
 			FPM: config.FPM{
-				Formats:      []string{"deb"},
+				Formats:      []string{"deb", "rpm"},
 				Dependencies: []string{"make"},
 				Conflicts:    []string{"git"},
 				Description:  "Some description",
@@ -78,9 +65,10 @@ func TestNoFPMInPath(t *testing.T) {
 	}()
 	assert.NoError(os.Setenv("PATH", ""))
 	var ctx = &context.Context{
+		Version: "1.0.0",
 		Config: config.Project{
 			FPM: config.FPM{
-				Formats: []string{"deb"},
+				Formats: []string{"deb", "rpm"},
 			},
 		},
 	}
@@ -95,10 +83,11 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	assert.NoError(os.Mkdir(dist, 0755))
 	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var ctx = &context.Context{
+		Version: "1.0.0",
 		Config: config.Project{
 			Dist: dist,
 			FPM: config.FPM{
-				Formats: []string{"deb"},
+				Formats: []string{"deb", "rpm"},
 				Files: map[string]string{
 					"testdata/testfile.txt": "/var/lib/test/testfile.txt",
 				},
@@ -112,9 +101,10 @@ func TestCreateFileDoesntExist(t *testing.T) {
 func TestRunPipeWithExtraFiles(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
+		Version: "1.0.0",
 		Config: config.Project{
 			FPM: config.FPM{
-				Formats: []string{"deb"},
+				Formats: []string{"deb", "rpm"},
 			},
 		},
 	}

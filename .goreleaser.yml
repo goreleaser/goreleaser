@@ -39,6 +39,7 @@ fpm:
   vendor: GoReleaser
   formats:
     - deb
+    - rpm
   dependencies:
     - git
 snapcraft:
