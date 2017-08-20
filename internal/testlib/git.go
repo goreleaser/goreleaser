@@ -1,17 +1,16 @@
 package testlib
 
 import (
-	"errors"
-	"os/exec"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/stretchr/testify/assert"
 )
 
 // GitInit inits a new git project
 func GitInit(t *testing.T) {
 	var assert = assert.New(t)
-	out, err := git("init")
+	out, err := fakeGit("init")
 	assert.NoError(err)
 	assert.Contains(out, "Initialized empty Git repository")
 	assert.NoError(err)
@@ -44,7 +43,7 @@ func GitTag(t *testing.T, tag string) {
 // GitAdd adds all files to stage
 func GitAdd(t *testing.T) {
 	var assert = assert.New(t)
-	out, err := git("add", "-A")
+	out, err := fakeGit("add", "-A")
 	assert.NoError(err)
 	assert.Empty(out)
 }
@@ -56,14 +55,5 @@ func fakeGit(args ...string) (string, error) {
 		"-c", "commit.gpgSign=false",
 	}
 	allArgs = append(allArgs, args...)
-	return git(allArgs...)
-}
-
-func git(args ...string) (output string, err error) {
-	var cmd = exec.Command("git", args...)
-	bts, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", errors.New(string(bts))
-	}
-	return string(bts), err
+	return git.Run(allArgs...)
 }
