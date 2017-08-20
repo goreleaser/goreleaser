@@ -18,7 +18,8 @@ func TestDescription(t *testing.T) {
 func TestRunPipeNoFormats(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
-		Config: config.Project{},
+		Version: "1.0.0",
+		Config:  config.Project{},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 }
@@ -34,6 +35,7 @@ func TestRunPipe(t *testing.T) {
 	_, err = os.Create(binPath)
 	assert.NoError(err)
 	var ctx = &context.Context{
+		Version: "1.0.0",
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -63,6 +65,7 @@ func TestNoFPMInPath(t *testing.T) {
 	}()
 	assert.NoError(os.Setenv("PATH", ""))
 	var ctx = &context.Context{
+		Version: "1.0.0",
 		Config: config.Project{
 			FPM: config.FPM{
 				Formats: []string{"deb", "rpm"},
@@ -80,6 +83,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	assert.NoError(os.Mkdir(dist, 0755))
 	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var ctx = &context.Context{
+		Version: "1.0.0",
 		Config: config.Project{
 			Dist: dist,
 			FPM: config.FPM{
@@ -97,6 +101,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 func TestRunPipeWithExtraFiles(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = &context.Context{
+		Version: "1.0.0",
 		Config: config.Project{
 			FPM: config.FPM{
 				Formats: []string{"deb", "rpm"},
