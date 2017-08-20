@@ -84,7 +84,13 @@ func Release(flags Flags) error {
 	ctx.RmDist = flags.Bool("rm-dist")
 	for _, pipe := range pipes {
 		log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.Description()))
-		if err := pipe.Run(ctx); err != nil {
+		var err = pipe.Run(ctx)
+		if err == nil {
+			continue
+		}
+		if skip, ok := err.(pipeline.SkipErr); ok {
+			log.WithField("reason", skip.Error()).Warn("skipped")
+		} else {
 			return err
 		}
 	}

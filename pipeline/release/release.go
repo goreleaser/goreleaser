@@ -9,6 +9,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/pipeline"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -27,8 +28,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, client client.Client) error {
 	if !ctx.Publish {
-		log.Warn("skipped because --skip-publish is set")
-		return nil
+		return pipeline.Skip("--skip-publish is set")
 	}
 	log.WithField("tag", ctx.Git.CurrentTag).
 		WithField("repo", ctx.Config.Release.GitHub.String()).

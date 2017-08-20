@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/pipeline"
 )
 
 // ErrNoDarwin64Build when there is no build for darwin_amd64 (goos doesn't
@@ -37,20 +38,16 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, client client.Client) error {
 	if !ctx.Publish {
-		log.Warn("skipped because --skip-publish is set")
-		return nil
+		return pipeline.Skip("--skip-publish is set")
 	}
 	if ctx.Config.Brew.GitHub.Name == "" {
-		log.Warn("skipped because brew section is not configured")
-		return nil
+		return pipeline.Skip("brew section is not configured")
 	}
 	if ctx.Config.Release.Draft {
-		log.Warn("skipped because release is marked as draft")
-		return nil
+		return pipeline.Skip("release is marked as draft")
 	}
 	if ctx.Config.Archive.Format == "binary" {
-		log.Warn("skipped because archive format is binary")
-		return nil
+		return pipeline.Skip("archive format is binary")
 	}
 
 	var group = ctx.Binaries["darwinamd64"]
