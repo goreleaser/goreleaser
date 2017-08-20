@@ -88,7 +88,7 @@ func Release(flags Flags) error {
 		if err == nil {
 			continue
 		}
-		if skip, ok := err.(pipeline.SkipErr); ok {
+		if skip, ok := err.(pipeline.ErrSkip); ok {
 			log.WithField("reason", skip.Error()).Warn("skipped")
 		} else {
 			return err
