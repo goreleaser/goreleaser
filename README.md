@@ -18,7 +18,7 @@
 
 
 GoReleaser builds Go binaries for several platforms, creates a GitHub release and then
-pushes a Homebrew formula to a repository. All that wrapped in your favorite CI.
+pushes a Homebrew formula to a tap repository. All that wrapped in your favorite CI.
 
 This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
 We appreciate your contribution. Please refer to our [contributing guidelines](CONTRIBUTING.md) for further information.
@@ -39,9 +39,10 @@ GoReleaser is a release automation tool for Golang projects, the goal is to simp
 
 GoReleaser is built for CI tools; you only need to [download and execute it](#integration-with-ci) in your build script.
 You can [customize](#release-customization) your release process by createing a `.goreleaser.yml` file.
-We are also working on integrating with package managers, we currently support Homebrew.
+We are also working on integrating with package managers, we currently support Home
+.
 
-The idea started with a [simple shell script](https://github.com/goreleaser/old-go-releaser), but it quickly became more complex and I also wanted to publish binaries via Homebrew.
+The idea started with a [simple shell script](https://github.com/goreleaser/old-go-releaser), but it quickly became more complex and I also wanted to publish binaries via Homebrew taps.
 
 ##  Quick start
 
@@ -412,6 +413,10 @@ class Program < Formula
   end
 end
 ```
+
+Note that GoReleaser does not yet generate a valid homebrew-core formula. The generated formulas
+are meant to be published as [homebrew taps](https://docs.brew.sh/brew-tap.html), not in any
+of the official homebrew repositories.
 
 ### FPM build customization
 
