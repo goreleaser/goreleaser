@@ -6,8 +6,8 @@ import (
 	"errors"
 	"os"
 
-	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/pipeline"
 )
 
 // ErrMissingToken indicates an error when GITHUB_TOKEN is missing in the environment
@@ -25,12 +25,10 @@ func (Pipe) Description() string {
 func (Pipe) Run(ctx *context.Context) (err error) {
 	ctx.Token = os.Getenv("GITHUB_TOKEN")
 	if !ctx.Publish {
-		log.Warn("github token not validated because publishing has been disabled")
-		return nil
+		return pipeline.Skip("publishing is disabled")
 	}
 	if !ctx.Validate {
-		log.Warn("skipped validations because --skip-validate is set")
-		return nil
+		return pipeline.Skip("--skip-validate is set")
 	}
 	if ctx.Token == "" {
 		return ErrMissingToken

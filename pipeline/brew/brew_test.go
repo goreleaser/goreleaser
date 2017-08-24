@@ -9,6 +9,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -202,7 +203,7 @@ func TestRunPipeBrewNotSetup(t *testing.T) {
 		Publish: true,
 	}
 	client := &DummyClient{}
-	assert.NoError(doRun(ctx, client))
+	testlib.AssertSkipped(t, doRun(ctx, client))
 	assert.False(client.CreatedFile)
 }
 
@@ -224,7 +225,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	}
 	ctx.AddBinary("darwinamd64", "foo", "bar", "baz")
 	client := &DummyClient{}
-	assert.NoError(doRun(ctx, client))
+	testlib.AssertSkipped(t, doRun(ctx, client))
 	assert.False(client.CreatedFile)
 }
 
@@ -234,7 +235,7 @@ func TestRunPipeNoPublish(t *testing.T) {
 		Publish: false,
 	}
 	client := &DummyClient{}
-	assert.NoError(doRun(ctx, client))
+	testlib.AssertSkipped(t, doRun(ctx, client))
 	assert.False(client.CreatedFile)
 }
 
@@ -255,7 +256,7 @@ func TestRunPipeDraftRelease(t *testing.T) {
 		},
 	}
 	client := &DummyClient{}
-	assert.NoError(doRun(ctx, client))
+	testlib.AssertSkipped(t, doRun(ctx, client))
 	assert.False(client.CreatedFile)
 }
 
@@ -269,7 +270,7 @@ func TestRunPipeFormatBinary(t *testing.T) {
 		},
 	}
 	client := &DummyClient{}
-	assert.NoError(doRun(ctx, client))
+	testlib.AssertSkipped(t, doRun(ctx, client))
 	assert.False(client.CreatedFile)
 }
 

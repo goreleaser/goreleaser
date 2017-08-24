@@ -37,7 +37,7 @@ func TestSingleCommit(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.NoError(Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	assert.Equal("v0.0.1", ctx.Git.CurrentTag)
 }
 
@@ -67,7 +67,7 @@ func TestNoTagsSnapshot(t *testing.T) {
 		Snapshot: true,
 		Publish:  false,
 	}
-	assert.NoError(Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	assert.Contains(ctx.Version, "SNAPSHOT-")
 }
 
@@ -182,7 +182,6 @@ func TestValidState(t *testing.T) {
 }
 
 func TestNoValidate(t *testing.T) {
-	var assert = assert.New(t)
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
@@ -194,7 +193,7 @@ func TestNoValidate(t *testing.T) {
 		Config:   config.Project{},
 		Validate: false,
 	}
-	assert.NoError(Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
 func TestChangelog(t *testing.T) {
@@ -210,7 +209,7 @@ func TestChangelog(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.NoError(Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	assert.Equal("v0.0.2", ctx.Git.CurrentTag)
 	assert.Contains(ctx.ReleaseNotes, "## Changelog")
 	assert.NotContains(ctx.ReleaseNotes, "first")
@@ -236,7 +235,7 @@ func TestChangelogOfFirstRelease(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.NoError(Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	assert.Equal("v0.0.1", ctx.Git.CurrentTag)
 	assert.Contains(ctx.ReleaseNotes, "## Changelog")
 	for _, msg := range msgs {
@@ -255,7 +254,7 @@ func TestCustomReleaseNotes(t *testing.T) {
 		Config:       config.Project{},
 		ReleaseNotes: "custom",
 	}
-	assert.NoError(Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	assert.Equal("v0.0.1", ctx.Git.CurrentTag)
 	assert.Equal(ctx.ReleaseNotes, "custom")
 }

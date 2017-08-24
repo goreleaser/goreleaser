@@ -53,7 +53,7 @@ func (ctx *Context) AddArtifact(file string) {
 	defer artifactsLock.Unlock()
 	file = strings.TrimPrefix(file, ctx.Config.Dist+string(filepath.Separator))
 	ctx.Artifacts = append(ctx.Artifacts, file)
-	log.WithField("artifact", file).Info("new artifact")
+	log.WithField("artifact", file).Info("new release artifact")
 }
 
 // AddBinary adds a built binary to the current context
@@ -77,7 +77,7 @@ func (ctx *Context) AddBinary(platform, folder, name, path string) {
 		WithField("folder", folder).
 		WithField("name", name).
 		WithField("path", path).
-		Info("new binary")
+		Debug("new binary")
 }
 
 // New context

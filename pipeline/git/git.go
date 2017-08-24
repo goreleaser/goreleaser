@@ -13,6 +13,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/git"
+	"github.com/goreleaser/goreleaser/pipeline"
 )
 
 // Pipe for brew deployment
@@ -43,8 +44,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return
 	}
 	if !ctx.Validate {
-		log.Warn("skipped validations because --skip-validate is set")
-		return nil
+		return pipeline.Skip("--skip-validate is set")
 	}
 	return validate(ctx, commit, tag)
 }

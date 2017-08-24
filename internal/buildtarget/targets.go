@@ -10,12 +10,12 @@ func All(build config.Build) (targets []Target) {
 	for _, target := range allBuildTargets(build) {
 		if !valid(target) {
 			log.WithField("target", target.PrettyString()).
-				Warn("skipped invalid build")
+				Debug("skipped invalid build")
 			continue
 		}
 		if ignored(build, target) {
 			log.WithField("target", target.PrettyString()).
-				Warn("skipped ignored build")
+				Debug("skipped ignored build")
 			continue
 		}
 		targets = append(targets, target)

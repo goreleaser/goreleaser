@@ -84,12 +84,24 @@ func Release(flags Flags) error {
 	ctx.RmDist = flags.Bool("rm-dist")
 	for _, pipe := range pipes {
 		log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.Description()))
-		if err := pipe.Run(ctx); err != nil {
+		if err := handle(pipe.Run(ctx)); err != nil {
 			return err
 		}
 	}
 	log.Infof("\033[1mSUCCESS!\033[0m")
 	return nil
+}
+
+func handle(err error) error {
+	if err == nil {
+		return nil
+	}
+	skip, ok := err.(pipeline.ErrSkip)
+	if ok {
+		log.WithField("reason", skip.Error()).Warn("skipped")
+		return nil
+	}
+	return err
 }
 
 // InitProject creates an example goreleaser.yml in the current directory

@@ -10,6 +10,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -121,7 +122,7 @@ func TestSkipPublish(t *testing.T) {
 		Parallelism: 1,
 	}
 	client := &DummyClient{}
-	assert.NoError(doRun(ctx, client))
+	testlib.AssertSkipped(t, doRun(ctx, client))
 	assert.False(client.CreatedRelease)
 	assert.False(client.UploadedFile)
 }

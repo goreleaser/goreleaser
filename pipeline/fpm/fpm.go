@@ -10,6 +10,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/pipeline"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -27,8 +28,7 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	if len(ctx.Config.FPM.Formats) == 0 {
-		log.Warn("skipping because no output formats configured")
-		return nil
+		return pipeline.Skip("no output formats configured")
 	}
 	_, err := exec.LookPath("fpm")
 	if err != nil {

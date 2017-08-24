@@ -12,6 +12,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/pipeline"
 	"golang.org/x/sync/errgroup"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -55,8 +56,7 @@ func (Pipe) Description() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Snapcraft.Summary == "" && ctx.Config.Snapcraft.Description == "" {
-		log.Warn("skipping because no summary nor description were provided")
-		return nil
+		return pipeline.Skip("no summary nor description were provided")
 	}
 	if ctx.Config.Snapcraft.Summary == "" {
 		return ErrNoSummary
@@ -100,6 +100,7 @@ func archFor(key string) string {
 }
 
 func create(ctx *context.Context, folder, arch string, binaries []context.Binary) error {
+	var log = log.WithField("arch", arch)
 	// prime is the directory that then will be compressed to make the .snap package.
 	folderDir := filepath.Join(ctx.Config.Dist, folder)
 	primeDir := filepath.Join(folderDir, "prime")
@@ -109,7 +110,7 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 	}
 
 	var file = filepath.Join(primeDir, "meta", "snap.yaml")
-	log.WithField("file", file).Info("creating snap metadata")
+	log.WithField("file", file).Debug("creating snap metadata")
 
 	var metadata = &SnapcraftMetadata{
 		Version:       ctx.Version,
@@ -129,8 +130,10 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 	for _, binary := range binaries {
 		log.WithField("path", binary.Path).
 			WithField("name", binary.Name).
-			Info("passed binary to snapcraft")
-		appMetadata := AppMetadata{Command: binary.Name}
+			Debug("passed binary to snapcraft")
+		appMetadata := AppMetadata{
+			Command: binary.Name,
+		}
 		if configAppMetadata, ok := ctx.Config.Snapcraft.Apps[binary.Name]; ok {
 			appMetadata.Plugs = configAppMetadata.Plugs
 			appMetadata.Daemon = configAppMetadata.Daemon

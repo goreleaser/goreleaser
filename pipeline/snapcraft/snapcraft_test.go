@@ -9,6 +9,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/stretchr/testify/assert"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -25,7 +26,7 @@ func TestRunPipeMissingInfo(t *testing.T) {
 		ErrNoDescription: {
 			Summary: "dummy summary",
 		},
-		nil: {}, // should skip instead of error
+		pipeline.Skip("no summary nor description were provided"): {},
 	} {
 		t.Run(fmt.Sprintf("testing if %v happens", eerr), func(t *testing.T) {
 			var assert = assert.New(t)
@@ -145,7 +146,14 @@ func TestNoSnapcraftInPath(t *testing.T) {
 
 func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 	var assert = assert.New(t)
-	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64", "linuxarm64", "linuxarmhf"} {
+	for _, plat := range []string{
+		"linuxamd64",
+		"linux386",
+		"darwinamd64",
+		"linuxarm64",
+		"linuxarm6",
+		"linuxwtf",
+	} {
 		var folder = name + "_" + plat
 		assert.NoError(os.Mkdir(filepath.Join(dist, folder), 0755))
 		var binPath = filepath.Join(dist, folder, name)
