@@ -89,9 +89,9 @@ func (Pipe) Run(ctx *context.Context) error {
 func create(ctx *context.Context, folder, arch string, binaries []context.Binary) error {
 	var log = log.WithField("arch", arch)
 	// prime is the directory that then will be compressed to make the .snap package.
-	folderDir := filepath.Join(ctx.Config.Dist, folder)
-	primeDir := filepath.Join(folderDir, "prime")
-	metaDir := filepath.Join(primeDir, "meta")
+	var folderDir = filepath.Join(ctx.Config.Dist, folder)
+	var primeDir = filepath.Join(folderDir, "prime")
+	var metaDir = filepath.Join(primeDir, "meta")
 	if err := os.MkdirAll(metaDir, 0755); err != nil {
 		return err
 	}
@@ -141,11 +141,8 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 		return err
 	}
 
-	snap := filepath.Join(
-		ctx.Config.Dist,
-		ctx.Config.ProjectName+"_"+metadata.Version+"_"+arch+".snap",
-	)
-	cmd := exec.Command("snapcraft", "snap", primeDir, "--output", snap)
+	var snap = filepath.Join(ctx.Config.Dist, folder+".snap")
+	var cmd = exec.Command("snapcraft", "snap", primeDir, "--output", snap)
 	if out, err = cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to generate snap package: %s", string(out))
 	}
