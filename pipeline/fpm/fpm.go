@@ -10,6 +10,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/pipeline"
 	"golang.org/x/sync/errgroup"
 )
@@ -43,7 +44,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				continue
 			}
 			format := format
-			arch := archFor(platform)
+			arch := linux.Arch(platform)
 			for folder, binaries := range groups {
 				g.Go(func() error {
 					return create(ctx, format, folder, arch, binaries)
@@ -52,13 +53,6 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 	}
 	return g.Wait()
-}
-
-func archFor(key string) string {
-	if strings.Contains(key, "386") {
-		return "i386"
-	}
-	return "x86_64"
 }
 
 func create(ctx *context.Context, format, folder, arch string, binaries []context.Binary) error {

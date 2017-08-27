@@ -12,6 +12,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/pipeline"
 	"golang.org/x/sync/errgroup"
 	yaml "gopkg.in/yaml.v2"
@@ -75,7 +76,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			log.WithField("platform", platform).Debug("skipped non-linux builds for snapcraft")
 			continue
 		}
-		arch := archFor(platform)
+		arch := linux.Arch(platform)
 		for folder, binaries := range groups {
 			g.Go(func() error {
 				return create(ctx, folder, arch, binaries)
@@ -83,20 +84,6 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 	}
 	return g.Wait()
-}
-
-func archFor(key string) string {
-	switch {
-	case strings.Contains(key, "amd64"):
-		return "amd64"
-	case strings.Contains(key, "386"):
-		return "i386"
-	case strings.Contains(key, "arm64"):
-		return "arm64"
-	case strings.Contains(key, "arm6"):
-		return "armhf"
-	}
-	return key
 }
 
 func create(ctx *context.Context, folder, arch string, binaries []context.Binary) error {
