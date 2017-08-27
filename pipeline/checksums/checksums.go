@@ -10,6 +10,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/name"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -23,11 +24,12 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
+	filename, err := name.ForChecksums(ctx)
+	if err != nil {
+		return err
+	}
 	file, err := os.OpenFile(
-		filepath.Join(
-			ctx.Config.Dist,
-			fmt.Sprintf("%v_checksums.txt", ctx.Config.ProjectName),
-		),
+		filepath.Join(ctx.Config.Dist, filename),
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 		0644,
 	)

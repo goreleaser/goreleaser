@@ -12,10 +12,13 @@ import (
 )
 
 // NameTemplate default name_template for the archive.
-const NameTemplate = "{{ .Binary }}_{{.Version}}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+const NameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
 // SnapshotNameTemplate represents the default format for snapshot release names.
 const SnapshotNameTemplate = "SNAPSHOT-{{ .Commit }}"
+
+// ChecksumNameTemplate is the default name_template for the checksum file.
+const ChecksumNameTemplate = "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
 
 // Pipe for brew deployment
 type Pipe struct{}
@@ -30,6 +33,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	ctx.Config.Dist = "dist"
 	if ctx.Config.Snapshot.NameTemplate == "" {
 		ctx.Config.Snapshot.NameTemplate = SnapshotNameTemplate
+	}
+	if ctx.Config.Checksum.NameTemplate == "" {
+		ctx.Config.Checksum.NameTemplate = ChecksumNameTemplate
 	}
 	if err := setReleaseDefaults(ctx); err != nil {
 		return err
