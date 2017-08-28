@@ -131,7 +131,12 @@ func getConfigFile(flags Flags) string {
 	if flags.IsSet("config") {
 		return config
 	}
-	for _, f := range []string{".goreleaser.yml", "goreleaser.yml"} {
+	for _, f := range []string{
+		".goreleaser.yml",
+		".goreleaser.yaml",
+		"goreleaser.yml",
+		"goreleaser.yaml",
+	} {
 		_, ferr := os.Stat(f)
 		if ferr == nil || os.IsExist(ferr) {
 			return f
