@@ -54,6 +54,19 @@ func For(ctx *context.Context, target buildtarget.Target) (string, error) {
 	)
 }
 
+// ForChecksums returns the filename for the checksums file based on its
+// template
+func ForChecksums(ctx *context.Context) (string, error) {
+	return apply(
+		nameData{
+			ProjectName: ctx.Config.ProjectName,
+			Tag:         ctx.Git.CurrentTag,
+			Version:     ctx.Version,
+		},
+		ctx.Config.Checksum.NameTemplate,
+	)
+}
+
 func apply(data nameData, templateStr string) (string, error) {
 	var out bytes.Buffer
 	t, err := template.New(data.ProjectName).Parse(templateStr)

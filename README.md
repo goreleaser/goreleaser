@@ -339,6 +339,21 @@ snapshot:
   name_template: SNAPSHOT-{{.Commit}}
 ```
 
+### Checksums file customization
+
+```yml
+# .goreleaser.yml
+checksum:
+  # You can change the name of the checksums file.
+  # This is parsed with Golang template engine and the following variables
+  # are available:
+  # - ProjectName
+  # - Tag
+  # - Version (Tag with the `v` prefix stripped)
+  # The default is `{{ .ProjectName }}_{{ .Version }}_checksums.txt`
+  name_template: "{{ .ProjectName }}_checksums.txt"
+```
+
 ### Homebrew tap customization
 
 The brew section specifies how the formula should be created.

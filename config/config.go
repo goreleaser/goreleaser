@@ -151,6 +151,14 @@ type Snapshot struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
+// Checksum config
+type Checksum struct {
+	NameTemplate string `yaml:"name_template,omitempty"`
+
+	// Capture all undefined fields and should be empty after loading
+	XXX map[string]interface{} `yaml:",inline"`
+}
+
 // Project includes all project configuration
 type Project struct {
 	ProjectName string    `yaml:"project_name,omitempty"`
@@ -161,6 +169,7 @@ type Project struct {
 	FPM         FPM       `yaml:",omitempty"`
 	Snapcraft   Snapcraft `yaml:",omitempty"`
 	Snapshot    Snapshot  `yaml:",omitempty"`
+	Checksum    Checksum  `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
@@ -196,32 +205,33 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 }
 
 func checkOverflows(config Project) error {
-	var checker = &overflowChecker{}
-	checker.check(config.XXX, "")
-	checker.check(config.Archive.XXX, "archive")
+	var overflow = &overflowChecker{}
+	overflow.check(config.XXX, "")
+	overflow.check(config.Archive.XXX, "archive")
 	for i, ov := range config.Archive.FormatOverrides {
-		checker.check(ov.XXX, fmt.Sprintf("archive.format_overrides[%d]", i))
+		overflow.check(ov.XXX, fmt.Sprintf("archive.format_overrides[%d]", i))
 	}
-	checker.check(config.Brew.XXX, "brew")
-	checker.check(config.Brew.GitHub.XXX, "brew.github")
+	overflow.check(config.Brew.XXX, "brew")
+	overflow.check(config.Brew.GitHub.XXX, "brew.github")
 	for i, build := range config.Builds {
-		checker.check(build.XXX, fmt.Sprintf("builds[%d]", i))
-		checker.check(build.Hooks.XXX, fmt.Sprintf("builds[%d].hooks", i))
+		overflow.check(build.XXX, fmt.Sprintf("builds[%d]", i))
+		overflow.check(build.Hooks.XXX, fmt.Sprintf("builds[%d].hooks", i))
 		for j, ignored := range build.Ignore {
-			checker.check(ignored.XXX, fmt.Sprintf("builds[%d].ignored_builds[%d]", i, j))
+			overflow.check(ignored.XXX, fmt.Sprintf("builds[%d].ignored_builds[%d]", i, j))
 		}
 	}
-	checker.check(config.FPM.XXX, "fpm")
-	checker.check(config.Snapcraft.XXX, "snapcraft")
-	checker.check(config.Release.XXX, "release")
-	checker.check(config.Release.GitHub.XXX, "release.github")
-	checker.check(config.SingleBuild.XXX, "build")
-	checker.check(config.SingleBuild.Hooks.XXX, "builds.hooks")
+	overflow.check(config.FPM.XXX, "fpm")
+	overflow.check(config.Snapcraft.XXX, "snapcraft")
+	overflow.check(config.Release.XXX, "release")
+	overflow.check(config.Release.GitHub.XXX, "release.github")
+	overflow.check(config.SingleBuild.XXX, "build")
+	overflow.check(config.SingleBuild.Hooks.XXX, "builds.hooks")
 	for i, ignored := range config.SingleBuild.Ignore {
-		checker.check(ignored.XXX, fmt.Sprintf("builds.ignored_builds[%d]", i))
+		overflow.check(ignored.XXX, fmt.Sprintf("builds.ignored_builds[%d]", i))
 	}
-	checker.check(config.Snapshot.XXX, "snapshot")
-	return checker.err()
+	overflow.check(config.Snapshot.XXX, "snapshot")
+	overflow.check(config.Checksum.XXX, "checksum")
+	return overflow.err()
 }
 
 type overflowChecker struct {
