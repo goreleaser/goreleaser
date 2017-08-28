@@ -26,6 +26,9 @@ func TestPipe(t *testing.T) {
 		Config: config.Project{
 			Dist:        folder,
 			ProjectName: binary,
+			Checksum: config.Checksum{
+				NameTemplate: "{{ .ProjectName }}_checksums.txt",
+			},
 		},
 	}
 	ctx.AddArtifact(file)
@@ -43,8 +46,52 @@ func TestPipeFileNotExist(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
 			Dist: folder,
+			Checksum: config.Checksum{
+				NameTemplate: "checksums.txt",
+			},
 		},
 	}
 	ctx.AddArtifact("nope")
-	assert.Error(Pipe{}.Run(ctx))
+	err = Pipe{}.Run(ctx)
+	assert.Error(err)
+	assert.Contains(err.Error(), "/nope: no such file or directory")
+}
+
+func TestPipeInvalidNameTemplate(t *testing.T) {
+	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(err)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dist:        folder,
+			ProjectName: "name",
+			Checksum: config.Checksum{
+				NameTemplate: "{{ .Pro }_checksums.txt",
+			},
+		},
+	}
+	ctx.AddArtifact("whatever")
+	err = Pipe{}.Run(ctx)
+	assert.Error(err)
+	assert.Equal(`template: name:1: unexpected "}" in operand`, err.Error())
+}
+
+func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
+	var assert = assert.New(t)
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(err)
+	var file = filepath.Join(folder, "checksums.txt")
+	assert.NoError(ioutil.WriteFile(file, []byte("some string"), 0000))
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dist: folder,
+			Checksum: config.Checksum{
+				NameTemplate: "checksums.txt",
+			},
+		},
+	}
+	ctx.AddArtifact("nope")
+	err = Pipe{}.Run(ctx)
+	assert.Error(err)
+	assert.Contains(err.Error(), "/checksums.txt: permission denied")
 }
