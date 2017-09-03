@@ -37,6 +37,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		CurrentTag: tag,
 		Commit:     commit,
 	}
+	log.Infof("releasing %s, commit %s", tag, commit)
 	if err = setLog(ctx, tag, commit); err != nil {
 		return
 	}
