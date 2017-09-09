@@ -4,6 +4,7 @@
 package archive
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -42,9 +43,10 @@ func (Pipe) Run(ctx *context.Context) error {
 func create(ctx *context.Context, platform string, groups map[string][]context.Binary) error {
 	for folder, binaries := range groups {
 		var format = archiveformat.For(ctx, platform)
-		file, err := os.Create(filepath.Join(ctx.Config.Dist, folder+"."+format))
+		targetFolder := filepath.Join(ctx.Config.Dist, folder+"."+format)
+		file, err := os.Create(targetFolder)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create directory %s: %s", targetFolder, err.Error())
 		}
 		defer func() { _ = file.Close() }()
 		log.WithField("archive", file.Name()).Info("creating")
@@ -53,16 +55,16 @@ func create(ctx *context.Context, platform string, groups map[string][]context.B
 
 		files, err := findFiles(ctx)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to find files to archive: %s", err.Error())
 		}
 		for _, f := range files {
 			if err = archive.Add(f, f); err != nil {
-				return err
+				return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
 			}
 		}
 		for _, binary := range binaries {
 			if err := archive.Add(binary.Name, binary.Path); err != nil {
-				return err
+				return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
 			}
 		}
 		ctx.AddArtifact(file.Name())
@@ -84,7 +86,7 @@ func findFiles(ctx *context.Context) (result []string, err error) {
 	for _, glob := range ctx.Config.Archive.Files {
 		files, err := zglob.Glob(glob)
 		if err != nil {
-			return result, err
+			return result, fmt.Errorf("globbing failed for pattern %s: %s", glob, err.Error())
 		}
 		result = append(result, files...)
 	}
