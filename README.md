@@ -24,9 +24,10 @@ We appreciate your contribution. Please refer to our [contributing guidelines](C
 
 For questions join the [#goreleaser](https://gophers.slack.com/messages/goreleaser/) channel in the [Gophers Slack](https://invite.slack.golangbridge.org/).
 
-Don't forget to check the [documentation](https://goreleaser.com).
+## Documentation
 
----
+Documentation can be found in the [docs folder](docs) and live
+at https://goreleaser.com
 
 ### Stargazers over time
 
