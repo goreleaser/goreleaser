@@ -2,7 +2,8 @@ SOURCE_FILES?=$$(go list ./... | grep -v /vendor/)
 TEST_PATTERN?=.
 TEST_OPTIONS?=
 
-setup: ## Install all the build and lint dependencies
+# Install all the build and lint dependencies
+setup:
 	go get -u github.com/alecthomas/gometalinter
 	go get -u github.com/golang/dep/cmd/dep
 	go get -u github.com/pierrre/gotestcover
@@ -10,16 +11,20 @@ setup: ## Install all the build and lint dependencies
 	dep ensure
 	gometalinter --install
 
-test: ## Run all the tests
+# Run all the tests
+test:
 	gotestcover $(TEST_OPTIONS) -covermode=atomic -coverprofile=coverage.txt $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=2m
 
-cover: test ## Run all the tests and opens the coverage report
+# Run all the tests and opens the coverage report
+cover: test
 	go tool cover -html=coverage.txt
 
-fmt: ## gofmt and goimports all go files
+# gofmt and goimports all go files
+fmt:
 	find . -name '*.go' -not -wholename './vendor/*' | while read -r file; do gofmt -w -s "$$file"; goimports -w "$$file"; done
 
-lint: ## Run all the linters
+# Run all the linters
+lint:
 	gometalinter --vendor --disable-all \
 		--enable=deadcode \
 		--enable=ineffassign \
@@ -35,13 +40,29 @@ lint: ## Run all the linters
 		--deadline=10m \
 		./...
 
-ci: test lint  ## Run all the tests and code checks
+# Run all the tests and code checks
+ci: test lint
 
-build: ## Build a beta version of goreleaser
+# Build a beta version of goreleaser
+build:
 	go build
 
-# Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
-help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+HIGHLIGHT=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0
+
+# Generate the static documentation
+static:
+	@static-docs \
+		--in docs \
+		--out ../goreleaser.github.io \
+		--title GoReleaser \
+		--subtitle "Deliver Go binaries as fast and easily as possible" \
+		--google UA-106198408-1 \
+		--script "$(HIGHLIGHT)/highlight.min.js" \
+		--script "$(HIGHLIGHT)/languages/go.min.js" \
+		--script "$(HIGHLIGHT)/languages/yaml.min.js" \
+		--style "$(HIGHLIGHT)/styles/atom-one-dark.min.css" \
+		--inline-script 'hljs.initHighlightingOnLoad();' \
+		--inline-style 'pre { padding: 0; }'
+
 
 .DEFAULT_GOAL := build
