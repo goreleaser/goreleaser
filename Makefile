@@ -47,8 +47,22 @@ ci: test lint
 build:
 	go build
 
+HIGHLIGHT=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0
+
 # Generate the static documentation
 static:
-	@static-docs -in docs -out ../goreleaser.github.io -title GoReleaser -subtitle "Deliver Go binaries as fast and easily as possible"
+	@static-docs \
+		--in docs \
+		--out ../goreleaser.github.io \
+		--title GoReleaser \
+		--subtitle "Deliver Go binaries as fast and easily as possible" \
+		--google UA-106198408-1 \
+		--script "$(HIGHLIGHT)/highlight.min.js" \
+		--script "$(HIGHLIGHT)/languages/go.min.js" \
+		--script "$(HIGHLIGHT)/languages/yaml.min.js" \
+		--style "$(HIGHLIGHT)/styles/atom-one-dark.min.css" \
+		--inline-script 'hljs.initHighlightingOnLoad();' \
+		--inline-style 'pre { padding: 0; }'
+
 
 .DEFAULT_GOAL := build
