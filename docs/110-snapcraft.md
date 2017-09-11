@@ -2,7 +2,11 @@
 title: Snapcraft
 ---
 
-GoReleaser can generate `snap` packages. [Snaps](http://snapcraft.io/) are a new packaging format that will let you publish your project directly to the Ubuntu store. From there it will be installable in all the [supported Linux distros](https://snapcraft.io/docs/core/install), with automatic and transactional updates.
+GoReleaser can generate `snap` packages. [Snaps](http://snapcraft.io/) are a
+new packaging format that will let you publish your project directly to the
+Ubuntu store. From there it will be installable in all the
+[supported Linux distros](https://snapcraft.io/docs/core/install), with
+automatic and transactional updates.
 
 You can read more about it in the [snapcraft docs](https://snapcraft.io/docs/).
 
@@ -60,4 +64,5 @@ snapcraft:
       daemon: simple
 ```
 
-Note that GoReleaser will not install `snapcraft` nor any of its dependencies for you.
+Note that GoReleaser will not install `snapcraft` nor any of its dependencies
+for you.
