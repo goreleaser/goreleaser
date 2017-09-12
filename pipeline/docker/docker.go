@@ -14,7 +14,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Pipe for checksums
+// ErrNoDocker is shown when docker cannot be found in $PATH
+var ErrNoDocker = errors.New("docker not present in $PATH")
+
+// Pipe for docker
 type Pipe struct{}
 
 // Description of the pipe
@@ -23,12 +26,16 @@ func (Pipe) Description() string {
 }
 
 // Run the pipe
-func (Pipe) Run(ctx *context.Context) (err error) {
-	if ctx.Config.Dockers[0].Image == "" {
+func (Pipe) Run(ctx *context.Context) error {
+	if len(ctx.Config.Dockers) == 0 || ctx.Config.Dockers[0].Image == "" {
 		return pipeline.Skip("docker section is not configured")
 	}
 	if ctx.Config.Release.Draft {
 		return pipeline.Skip("release is marked as draft")
+	}
+	_, err := exec.LookPath("docker")
+	if err != nil {
+		return ErrNoDocker
 	}
 	for _, docker := range ctx.Config.Dockers {
 		var imagePlatform = docker.Goos + docker.Goarch + docker.Goarm
