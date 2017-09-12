@@ -32,6 +32,7 @@ func TestFillBasicData(t *testing.T) {
 	assert.Contains(ctx.Config.Builds[0].Goarch, "amd64")
 	assert.Equal("tar.gz", ctx.Config.Archive.Format)
 	assert.Contains(ctx.Config.Brew.Install, "bin.install \"goreleaser\"")
+	assert.Empty(ctx.Config.Dockers)
 	assert.NotEmpty(
 		ctx.Config.Archive.NameTemplate,
 		ctx.Config.Builds[0].Ldflags,
@@ -65,11 +66,19 @@ func TestFillPartial(t *testing.T) {
 					},
 				},
 			},
+			Dockers: []config.Docker{
+				{Image: "a/b"},
+			},
 		},
 	}
 	assert.NoError(Pipe{}.Run(ctx))
 	assert.Len(ctx.Config.Archive.Files, 1)
 	assert.Equal(`bin.install "testreleaser"`, ctx.Config.Brew.Install)
+	assert.NotEmpty(ctx.Config.Dockers[0].Binary)
+	assert.NotEmpty(ctx.Config.Dockers[0].Goos)
+	assert.NotEmpty(ctx.Config.Dockers[0].Goarch)
+	assert.NotEmpty(ctx.Config.Dockers[0].Dockerfile)
+	assert.Empty(ctx.Config.Dockers[0].Goarm)
 }
 
 func TestFillSingleBuild(t *testing.T) {
