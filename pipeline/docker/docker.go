@@ -9,10 +9,9 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
-	"github.com/pkg/errors"
-
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
+	"github.com/pkg/errors"
 )
 
 // Pipe for checksums
