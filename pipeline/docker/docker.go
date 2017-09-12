@@ -30,9 +30,6 @@ func (Pipe) Run(ctx *context.Context) error {
 	if len(ctx.Config.Dockers) == 0 || ctx.Config.Dockers[0].Image == "" {
 		return pipeline.Skip("docker section is not configured")
 	}
-	if ctx.Config.Release.Draft {
-		return pipeline.Skip("release is marked as draft")
-	}
 	_, err := exec.LookPath("docker")
 	if err != nil {
 		return ErrNoDocker
@@ -78,6 +75,9 @@ func doRun(ctx *context.Context, folder string, docker config.Docker, binary con
 	// TODO: improve this so it can log into to stdout
 	if !ctx.Publish {
 		return pipeline.Skip("--skip-publish is set")
+	}
+	if ctx.Config.Release.Draft {
+		return pipeline.Skip("release is marked as draft")
 	}
 	if err := dockerPush(image); err != nil {
 		return err
