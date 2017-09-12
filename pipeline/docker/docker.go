@@ -3,7 +3,7 @@ package docker
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -61,17 +61,13 @@ func doRun(ctx *context.Context, folder string, docker config.Docker, binary con
 	var dockerfile = filepath.Join(root, "Dockerfile")
 	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Git.CurrentTag)
 
-	bts, err := ioutil.ReadFile(docker.Dockerfile)
-	if err != nil {
-		return errors.Wrap(err, "failed to read dockerfile")
+	if err := os.Link(docker.Dockerfile, dockerfile); err != nil {
+		return errors.Wrap(err, "failed to link dockerfile")
 	}
-	if err := ioutil.WriteFile(dockerfile, bts, 0755); err != nil {
-		return err
-	}
-	log.WithField("file", dockerfile).Debug("wrote dockerfile")
 	if err := dockerBuild(root, image); err != nil {
 		return err
 	}
+
 	// TODO: improve this so it can log into to stdout
 	if !ctx.Publish {
 		return pipeline.Skip("--skip-publish is set")
