@@ -4,15 +4,21 @@ builds:
       - CGO_ENABLED=0
     goos:
       - linux
-      - darwin
-      - windows
+      # - darwin
+      # - windows
     goarch:
-      - 386
+      # - 386
       - amd64
-      - arm
-      - arm64
+      # - arm
+      # - arm64
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
+docker:
+  - goos: linux
+    goarch: amd64
+    binary: goreleaser
+    dockerfile: Dockerfile
+    image: caarlos0/goreleaser
 archive:
   name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
   replacements:

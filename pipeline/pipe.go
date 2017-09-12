@@ -12,6 +12,11 @@ type Pipe interface {
 	Run(ctx *context.Context) error
 }
 
+func IsSkip(err error) bool {
+	_, ok := err.(ErrSkip)
+	return ok
+}
+
 // ErrSkip occurs when a pipe is skipped for some reason
 type ErrSkip struct {
 	reason string

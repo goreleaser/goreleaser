@@ -1,0 +1,107 @@
+// Package docker provides a Pipe that creates and pushes a Docker image
+package docker
+
+import (
+	"fmt"
+	"io/ioutil"
+	"os/exec"
+	"path/filepath"
+
+	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/config"
+	"github.com/pkg/errors"
+
+	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/pipeline"
+)
+
+// Pipe for checksums
+type Pipe struct{}
+
+// Description of the pipe
+func (Pipe) Description() string {
+	return "Creating Docker images"
+}
+
+// Run the pipe
+func (Pipe) Run(ctx *context.Context) (err error) {
+	if ctx.Config.Docker[0].Image == "" {
+		return pipeline.Skip("docker section is not configured")
+	}
+	if ctx.Config.Release.Draft {
+		return pipeline.Skip("release is marked as draft")
+	}
+	for _, docker := range ctx.Config.Docker {
+		var imagePlatform = docker.Goos + docker.Goarch + docker.Goarm
+		for platform, groups := range ctx.Binaries {
+			if platform != imagePlatform {
+				continue
+			}
+			for folder, binaries := range groups {
+				for _, binary := range binaries {
+					if binary.Name != docker.Binary {
+						continue
+					}
+					var err = doRun(ctx, folder, docker, binary)
+					if err != nil && !pipeline.IsSkip(err) {
+						return err
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func processDocker(ctx *context.Context, docker config.Docker) error {
+
+}
+
+func doRun(ctx *context.Context, folder string, docker config.Docker, binary context.Binary) error {
+	var root = filepath.Join(ctx.Config.Dist, folder)
+	var dockerfile = filepath.Join(root, "Dockerfile")
+	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Version)
+
+	bts, err := ioutil.ReadFile(docker.Dockerfile)
+	if err != nil {
+		return errors.Wrap(err, "failed to read dockerfile")
+	}
+	if err := ioutil.WriteFile(dockerfile, bts, 0755); err != nil {
+		return err
+	}
+	log.WithField("file", dockerfile).Info("wrote dockerfile")
+	if err := dockerBuild(root, image); err != nil {
+		return err
+	}
+	if !ctx.Publish {
+		return pipeline.Skip("--skip-publish is set")
+	}
+	if err := dockerPush(image); err != nil {
+		return err
+	}
+	return nil
+}
+
+func dockerBuild(root, image string) error {
+	log.Infof("building docker image: %s", image)
+	var cmd = exec.Command("docker", "build", "-t", image, root)
+	log.WithField("cmd", cmd).Debug("executing")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return errors.Wrapf(err, "failed to build docker image: \n%s", string(out))
+	}
+	log.Debugf("docker build output: \n%s", string(out))
+	return nil
+}
+
+func dockerPush(image string) error {
+	log.Infof("pushing docker image: %s", image)
+	var cmd = exec.Command("docker", "push", image)
+	log.WithField("cmd", cmd).Debug("executing")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return errors.Wrapf(err, "failed to push docker image: \n%s", string(out))
+	}
+	log.Debugf("docker push output: \n%s", string(out))
+	return nil
+}
