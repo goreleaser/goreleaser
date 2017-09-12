@@ -13,12 +13,8 @@ builds:
       # - arm64
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
-docker:
-  - goos: linux
-    goarch: amd64
-    binary: goreleaser
-    dockerfile: Dockerfile
-    image: caarlos0/goreleaser
+dockers:
+  - image: goreleaser/goreleaser
 archive:
   name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
   replacements:

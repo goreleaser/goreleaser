@@ -183,7 +183,7 @@ type Project struct {
 	Snapcraft   Snapcraft `yaml:",omitempty"`
 	Snapshot    Snapshot  `yaml:",omitempty"`
 	Checksum    Checksum  `yaml:",omitempty"`
-	Docker      []Docker  `yaml:",omitempty"`
+	Dockers     []Docker  `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
@@ -245,7 +245,7 @@ func checkOverflows(config Project) error {
 	}
 	overflow.check(config.Snapshot.XXX, "snapshot")
 	overflow.check(config.Checksum.XXX, "checksum")
-	for i, docker := range config.Docker {
+	for i, docker := range config.Dockers {
 		overflow.check(docker.XXX, fmt.Sprintf("docker[%d]", i))
 	}
 	return overflow.err()

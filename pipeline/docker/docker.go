@@ -25,13 +25,13 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
-	if ctx.Config.Docker[0].Image == "" {
+	if ctx.Config.Dockers[0].Image == "" {
 		return pipeline.Skip("docker section is not configured")
 	}
 	if ctx.Config.Release.Draft {
 		return pipeline.Skip("release is marked as draft")
 	}
-	for _, docker := range ctx.Config.Docker {
+	for _, docker := range ctx.Config.Dockers {
 		var imagePlatform = docker.Goos + docker.Goarch + docker.Goarm
 		for platform, groups := range ctx.Binaries {
 			if platform != imagePlatform {
@@ -53,14 +53,10 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	return nil
 }
 
-func processDocker(ctx *context.Context, docker config.Docker) error {
-
-}
-
 func doRun(ctx *context.Context, folder string, docker config.Docker, binary context.Binary) error {
 	var root = filepath.Join(ctx.Config.Dist, folder)
 	var dockerfile = filepath.Join(root, "Dockerfile")
-	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Version)
+	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Git.CurrentTag)
 
 	bts, err := ioutil.ReadFile(docker.Dockerfile)
 	if err != nil {
@@ -69,7 +65,7 @@ func doRun(ctx *context.Context, folder string, docker config.Docker, binary con
 	if err := ioutil.WriteFile(dockerfile, bts, 0755); err != nil {
 		return err
 	}
-	log.WithField("file", dockerfile).Info("wrote dockerfile")
+	log.WithField("file", dockerfile).Debug("wrote dockerfile")
 	if err := dockerBuild(root, image); err != nil {
 		return err
 	}
@@ -83,7 +79,7 @@ func doRun(ctx *context.Context, folder string, docker config.Docker, binary con
 }
 
 func dockerBuild(root, image string) error {
-	log.Infof("building docker image: %s", image)
+	log.WithField("image", image).Info("building docker image")
 	var cmd = exec.Command("docker", "build", "-t", image, root)
 	log.WithField("cmd", cmd).Debug("executing")
 	out, err := cmd.CombinedOutput()
@@ -95,7 +91,7 @@ func dockerBuild(root, image string) error {
 }
 
 func dockerPush(image string) error {
-	log.Infof("pushing docker image: %s", image)
+	log.WithField("image", image).Info("pushing docker image")
 	var cmd = exec.Command("docker", "push", image)
 	log.WithField("cmd", cmd).Debug("executing")
 	out, err := cmd.CombinedOutput()
