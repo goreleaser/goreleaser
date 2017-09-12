@@ -98,9 +98,8 @@ func handle(err error) error {
 	if err == nil {
 		return nil
 	}
-	skip, ok := err.(pipeline.ErrSkip)
-	if ok {
-		log.WithField("reason", skip.Error()).Warn("skipped")
+	if pipeline.IsSkip(err) {
+		log.WithField("reason", err.Error()).Warn("skipped")
 		return nil
 	}
 	return err

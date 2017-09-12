@@ -68,6 +68,7 @@ func doRun(ctx *context.Context, folder string, docker config.Docker, binary con
 	if err := dockerBuild(root, image); err != nil {
 		return err
 	}
+	// TODO: improve this so it can log into to stdout
 	if !ctx.Publish {
 		return pipeline.Skip("--skip-publish is set")
 	}
