@@ -7,10 +7,12 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
+
+	"github.com/apex/log"
+
 	"github.com/pkg/errors"
 )
 
