@@ -58,13 +58,13 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, folder string, docker config.Docker, binary context.Binary) error {
 	var root = filepath.Join(ctx.Config.Dist, folder)
-	var dockerfile = filepath.Join(root, "Dockerfile")
+	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile))
 	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Git.CurrentTag)
 
 	if err := os.Link(docker.Dockerfile, dockerfile); err != nil {
 		return errors.Wrap(err, "failed to link dockerfile")
 	}
-	if err := dockerBuild(root, image); err != nil {
+	if err := dockerBuild(root, dockerfile, image); err != nil {
 		return err
 	}
 
@@ -81,9 +81,9 @@ func doRun(ctx *context.Context, folder string, docker config.Docker, binary con
 	return nil
 }
 
-func dockerBuild(root, image string) error {
+func dockerBuild(root, dockerfile, image string) error {
 	log.WithField("image", image).Info("building docker image")
-	var cmd = exec.Command("docker", "build", "-t", image, root)
+	var cmd = exec.Command("docker", "build", "-f", dockerfile, "-t", image, root)
 	log.WithField("cmd", cmd).Debug("executing")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
