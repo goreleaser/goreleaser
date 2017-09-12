@@ -10,12 +10,18 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
+	"github.com/goreleaser/goreleaser/pipeline/archive"
+	"github.com/goreleaser/goreleaser/pipeline/brew"
 	"github.com/goreleaser/goreleaser/pipeline/build"
+	"github.com/goreleaser/goreleaser/pipeline/checksums"
 	"github.com/goreleaser/goreleaser/pipeline/cleandist"
 	"github.com/goreleaser/goreleaser/pipeline/defaults"
 	"github.com/goreleaser/goreleaser/pipeline/docker"
 	"github.com/goreleaser/goreleaser/pipeline/env"
+	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
+	"github.com/goreleaser/goreleaser/pipeline/release"
+	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -25,13 +31,13 @@ var pipes = []pipeline.Pipe{
 	env.Pipe{},       // load and validate environment variables
 	cleandist.Pipe{}, // ensure ./dist is clean
 	build.Pipe{},     // build
-	// archive.Pipe{},   // archive (tar.gz, zip, etc)
-	// fpm.Pipe{},       // archive via fpm (deb, rpm, etc)
-	// snapcraft.Pipe{}, // archive via snapcraft (snap)
-	// checksums.Pipe{}, // checksums of the files
-	// release.Pipe{},   // release to github
-	// brew.Pipe{},      // push to brew tap
-	docker.Pipe{}, // create and push docker images
+	archive.Pipe{},   // archive (tar.gz, zip, etc)
+	fpm.Pipe{},       // archive via fpm (deb, rpm, etc)
+	snapcraft.Pipe{}, // archive via snapcraft (snap)
+	checksums.Pipe{}, // checksums of the files
+	release.Pipe{},   // release to github
+	docker.Pipe{},    // create and push docker images
+	brew.Pipe{},      // push to brew tap
 }
 
 // Flags interface represents an extractor of cli flags
