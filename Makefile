@@ -60,6 +60,7 @@ static:
 		--script "$(HIGHLIGHT)/highlight.min.js" \
 		--script "$(HIGHLIGHT)/languages/go.min.js" \
 		--script "$(HIGHLIGHT)/languages/yaml.min.js" \
+		--script "$(HIGHLIGHT)/languages/dockerfile.min.js" \
 		--style "$(HIGHLIGHT)/styles/atom-one-dark.min.css" \
 		--inline-script 'hljs.initHighlightingOnLoad();' \
 		--inline-style 'pre { padding: 0; }'
