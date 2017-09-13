@@ -159,6 +159,19 @@ type Checksum struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
+// Docker image config
+type Docker struct {
+	Binary     string `yaml:",omitempty"`
+	Goos       string `yaml:",omitempty"`
+	Goarch     string `yaml:",omitempty"`
+	Goarm      string `yaml:",omitempty"`
+	Image      string `yaml:",omitempty"`
+	Dockerfile string `yaml:",omitempty"`
+
+	// Capture all undefined fields and should be empty after loading
+	XXX map[string]interface{} `yaml:",inline"`
+}
+
 // Project includes all project configuration
 type Project struct {
 	ProjectName string    `yaml:"project_name,omitempty"`
@@ -170,6 +183,7 @@ type Project struct {
 	Snapcraft   Snapcraft `yaml:",omitempty"`
 	Snapshot    Snapshot  `yaml:",omitempty"`
 	Checksum    Checksum  `yaml:",omitempty"`
+	Dockers     []Docker  `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
@@ -231,6 +245,9 @@ func checkOverflows(config Project) error {
 	}
 	overflow.check(config.Snapshot.XXX, "snapshot")
 	overflow.check(config.Checksum.XXX, "checksum")
+	for i, docker := range config.Dockers {
+		overflow.check(docker.XXX, fmt.Sprintf("docker[%d]", i))
+	}
 	return overflow.err()
 }
 

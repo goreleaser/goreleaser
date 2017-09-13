@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/checksums"
 	"github.com/goreleaser/goreleaser/pipeline/cleandist"
 	"github.com/goreleaser/goreleaser/pipeline/defaults"
+	"github.com/goreleaser/goreleaser/pipeline/docker"
 	"github.com/goreleaser/goreleaser/pipeline/env"
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
@@ -35,6 +36,7 @@ var pipes = []pipeline.Pipe{
 	snapcraft.Pipe{}, // archive via snapcraft (snap)
 	checksums.Pipe{}, // checksums of the files
 	release.Pipe{},   // release to github
+	docker.Pipe{},    // create and push docker images
 	brew.Pipe{},      // push to brew tap
 }
 
@@ -96,9 +98,8 @@ func handle(err error) error {
 	if err == nil {
 		return nil
 	}
-	skip, ok := err.(pipeline.ErrSkip)
-	if ok {
-		log.WithField("reason", skip.Error()).Warn("skipped")
+	if pipeline.IsSkip(err) {
+		log.WithField("reason", err.Error()).Warn("skipped")
 		return nil
 	}
 	return err

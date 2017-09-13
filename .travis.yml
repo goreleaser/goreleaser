@@ -2,8 +2,11 @@ dist: trusty
 sudo: required
 language: go
 go: 1.8.3
+services:
+  - docker
 install:
   - make setup
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - gem install fpm
   - sudo apt-get update
   - sudo apt-get install --yes snapd rpm
