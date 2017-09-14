@@ -62,12 +62,18 @@ func doRun(ctx *context.Context, folder string, docker config.Docker, binary con
 	var root = filepath.Join(ctx.Config.Dist, folder)
 	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile))
 	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Version)
+	var latest = fmt.Sprintf("%s:latest", docker.Image)
 
 	if err := os.Link(docker.Dockerfile, dockerfile); err != nil {
 		return errors.Wrap(err, "failed to link dockerfile")
 	}
 	if err := dockerBuild(root, dockerfile, image); err != nil {
 		return err
+	}
+	if docker.Latest {
+		if err := dockerTag(image, latest); err != nil {
+			return err
+		}
 	}
 
 	// TODO: improve this so it can log into to stdout
@@ -79,6 +85,11 @@ func doRun(ctx *context.Context, folder string, docker config.Docker, binary con
 	}
 	if err := dockerPush(image); err != nil {
 		return err
+	}
+	if docker.Latest {
+		if err := dockerTag(image, latest); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -92,6 +103,18 @@ func dockerBuild(root, dockerfile, image string) error {
 		return errors.Wrapf(err, "failed to build docker image: \n%s", string(out))
 	}
 	log.Debugf("docker build output: \n%s", string(out))
+	return nil
+}
+
+func dockerTag(image, tag string) error {
+	log.WithField("image", image).WithField("tag", tag).Info("building docker image")
+	var cmd = exec.Command("docker", "tag", image, tag)
+	log.WithField("cmd", cmd).Debug("executing")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return errors.Wrapf(err, "failed to tag docker image: \n%s", string(out))
+	}
+	log.Debugf("docker tag output: \n%s", string(out))
 	return nil
 }
 
