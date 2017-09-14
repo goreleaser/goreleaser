@@ -27,9 +27,7 @@ func TestRunPipe(t *testing.T) {
 	// this might fail as the image doesnt exist yet, so lets ignore the error
 	_ = exec.Command("docker", "rmi", "goreleaser/test_run_pipe:v1.0.0").Run()
 	var ctx = &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.0",
-		},
+		Version: "1.0.0",
 		Publish: true,
 		Config: config.Project{
 			ProjectName: "mybin",
@@ -59,12 +57,12 @@ func TestRunPipe(t *testing.T) {
 	// this might should not fail as the image should have been created when
 	// the step ran
 	assert.NoError(
-		exec.Command("docker", "rmi", "goreleaser/test_run_pipe:v1.0.0").Run(),
+		exec.Command("docker", "rmi", "goreleaser/test_run_pipe:1.0.0").Run(),
 	)
 	// the test_run_pipe_nope image should not have been created, so deleting
 	// it should fail
 	assert.Error(
-		exec.Command("docker", "rmi", "goreleaser/test_run_pipe_nope:v1.0.0").Run(),
+		exec.Command("docker", "rmi", "goreleaser/test_run_pipe_nope:1.0.0").Run(),
 	)
 }
 

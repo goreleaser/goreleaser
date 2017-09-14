@@ -61,7 +61,7 @@ func (Pipe) Run(ctx *context.Context) error {
 func doRun(ctx *context.Context, folder string, docker config.Docker, binary context.Binary) error {
 	var root = filepath.Join(ctx.Config.Dist, folder)
 	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile))
-	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Git.CurrentTag)
+	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Version)
 
 	if err := os.Link(docker.Dockerfile, dockerfile); err != nil {
 		return errors.Wrap(err, "failed to link dockerfile")
