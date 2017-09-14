@@ -24,8 +24,14 @@ func TestRunPipe(t *testing.T) {
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	_, err = os.Create(binPath)
 	assert.NoError(err)
+	var images = []string{
+		"goreleaser/test_run_pipe:1.0.0",
+		"goreleaser/test_run_pipe:latest",
+	}
 	// this might fail as the image doesnt exist yet, so lets ignore the error
-	_ = exec.Command("docker", "rmi", "goreleaser/test_run_pipe:v1.0.0").Run()
+	for _, img := range images {
+		_ = exec.Command("docker", "rmi", img).Run()
+	}
 	var ctx = &context.Context{
 		Version: "1.0.0",
 		Publish: true,
@@ -39,6 +45,7 @@ func TestRunPipe(t *testing.T) {
 					Goarch:     "amd64",
 					Dockerfile: "testdata/Dockerfile",
 					Binary:     "mybin",
+					Latest:     true,
 				},
 				{
 					Image:      "goreleaser/test_run_pipe_nope",
@@ -54,11 +61,13 @@ func TestRunPipe(t *testing.T) {
 		ctx.AddBinary(plat, "mybin", "mybin", binPath)
 	}
 	assert.NoError(Pipe{}.Run(ctx))
+
 	// this might should not fail as the image should have been created when
 	// the step ran
-	assert.NoError(
-		exec.Command("docker", "rmi", "goreleaser/test_run_pipe:1.0.0").Run(),
-	)
+	for _, img := range images {
+		assert.NoError(exec.Command("docker", "rmi", img).Run())
+	}
+
 	// the test_run_pipe_nope image should not have been created, so deleting
 	// it should fail
 	assert.Error(

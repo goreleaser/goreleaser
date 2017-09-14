@@ -167,6 +167,7 @@ type Docker struct {
 	Goarm      string `yaml:",omitempty"`
 	Image      string `yaml:",omitempty"`
 	Dockerfile string `yaml:",omitempty"`
+	Latest     bool   `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`

@@ -50,6 +50,8 @@ dockers:
     image: myuser/myimage
     # Path to the Dockerfile (from the project root)
     dockerfile: Dockerfile
+    # Also tag and push myuser/myimage:latest
+    latest: true
 ```
 
 These settings should allow you to generate multiple docker images, using
