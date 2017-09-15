@@ -107,7 +107,7 @@ func dockerBuild(root, dockerfile, image string) error {
 }
 
 func dockerTag(image, tag string) error {
-	log.WithField("image", image).WithField("tag", tag).Info("building docker image")
+	log.WithField("image", image).WithField("tag", tag).Info("tagging docker image")
 	var cmd = exec.Command("docker", "tag", image, tag)
 	log.WithField("cmd", cmd).Debug("executing")
 	out, err := cmd.CombinedOutput()
