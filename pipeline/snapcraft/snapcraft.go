@@ -27,8 +27,8 @@ var ErrNoDescription = errors.New("no description provided for snapcraft")
 // ErrNoSummary is shown when no summary provided
 var ErrNoSummary = errors.New("no summary provided for snapcraft")
 
-// SnapcraftMetadata to generate the snap package
-type SnapcraftMetadata struct {
+// Metadata to generate the snap package
+type Metadata struct {
 	Name          string
 	Version       string
 	Summary       string
@@ -99,7 +99,7 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 	var file = filepath.Join(primeDir, "meta", "snap.yaml")
 	log.WithField("file", file).Debug("creating snap metadata")
 
-	var metadata = &SnapcraftMetadata{
+	var metadata = &Metadata{
 		Version:       ctx.Version,
 		Summary:       ctx.Config.Snapcraft.Summary,
 		Description:   ctx.Config.Snapcraft.Description,

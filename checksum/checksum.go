@@ -24,7 +24,7 @@ func calculate(hash hash.Hash, path string) (result string, err error) {
 	return doCalculate(hash, file)
 }
 
-func doCalculate(hash hash.Hash, file *os.File) (result string, err error) {
+func doCalculate(hash hash.Hash, file io.Reader) (result string, err error) {
 	_, err = io.Copy(hash, file)
 	if err != nil {
 		return
