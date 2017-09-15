@@ -28,6 +28,7 @@ func NewGitHub(ctx *context.Context, repo config.Repo) Client {
 			// TODO: return the err here
 			log.Fatal("failed to parse url")
 		}
+		// TODO: check if we need to change upload url as well
 		client.BaseURL = url
 	}
 	return &githubClient{
