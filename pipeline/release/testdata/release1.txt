@@ -1,0 +1,12 @@
+
+feature1: description
+feature2: other description
+
+Docker images:
+
+- goreleaser/goreleaser:0.40.0
+- goreleaser/godownloader:0.1.0
+
+---
+Automated with [GoReleaser](https://github.com/goreleaser)
+Built with go version go1.9 darwin/amd64

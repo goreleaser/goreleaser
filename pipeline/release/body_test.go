@@ -1,6 +1,7 @@
 package release
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -13,12 +14,35 @@ func TestDescribeBody(t *testing.T) {
 	var changelog = "\nfeature1: description\nfeature2: other description"
 	var ctx = &context.Context{
 		ReleaseNotes: changelog,
+		Dockers: []string{
+			"goreleaser/goreleaser:0.40.0",
+			"goreleaser/godownloader:0.1.0",
+		},
 	}
-	out, err := describeBody(ctx)
+	out, err := describeBodyVersion(ctx, "go version go1.9 darwin/amd64")
 	assert.NoError(err)
-	assert.Contains(out.String(), changelog)
-	assert.Contains(out.String(), "Automated with [GoReleaser]")
-	assert.Contains(out.String(), "Built with go version go1.")
+
+	bts, err := ioutil.ReadFile("testdata/release1.txt")
+	assert.NoError(err)
+	ioutil.WriteFile("testdata/release1.txt", out.Bytes(), 0755)
+
+	assert.Equal(string(bts), out.String())
+}
+
+func TestDescribeBodyNoDockerImages(t *testing.T) {
+	var assert = assert.New(t)
+	var changelog = "\nfeature1: description\nfeature2: other description"
+	var ctx = &context.Context{
+		ReleaseNotes: changelog,
+	}
+	out, err := describeBodyVersion(ctx, "go version go1.9 darwin/amd64")
+	assert.NoError(err)
+
+	bts, err := ioutil.ReadFile("testdata/release2.txt")
+	assert.NoError(err)
+	ioutil.WriteFile("testdata/release2.txt", out.Bytes(), 0755)
+
+	assert.Equal(string(bts), out.String())
 }
 
 func TestDontEscapeHTML(t *testing.T) {
