@@ -95,6 +95,7 @@ func process(ctx *context.Context, folder string, docker config.Docker, binary c
 			return err
 		}
 	}
+	ctx.AddDocker(image)
 	return nil
 }
 
