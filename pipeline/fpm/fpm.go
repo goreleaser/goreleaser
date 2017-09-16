@@ -35,7 +35,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err != nil {
 		return ErrNoFPM
 	}
+	return doRun(ctx)
+}
 
+func doRun(ctx *context.Context) error {
 	var g errgroup.Group
 	for _, format := range ctx.Config.FPM.Formats {
 		for platform, groups := range ctx.Binaries {
@@ -61,6 +64,41 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 	var log = log.WithField("format", format).WithField("arch", arch)
 	log.WithField("file", file).Info("creating fpm archive")
 
+	var options = basicOptions(ctx, format, arch, file)
+
+	for _, binary := range binaries {
+		// This basically tells fpm to put the binary in the /usr/local/bin
+		// binary=/usr/local/bin/binary
+		log.WithField("path", binary.Path).
+			WithField("name", binary.Name).
+			Debug("added binary to fpm package")
+		options = append(options, fmt.Sprintf(
+			"%s=%s",
+			binary.Path,
+			filepath.Join("/usr/local/bin", binary.Name),
+		))
+	}
+
+	for src, dest := range ctx.Config.FPM.Files {
+		log.WithField("src", src).
+			WithField("dest", dest).
+			Debug("added an extra file to the fpm package")
+		options = append(options, fmt.Sprintf(
+			"%s=%s",
+			src,
+			dest,
+		))
+	}
+
+	log.WithField("args", options).Debug("creating fpm package")
+	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
+		return errors.New(string(out))
+	}
+	ctx.AddArtifact(file)
+	return nil
+}
+
+func basicOptions(ctx *context.Context, format, arch, file string) []string {
 	var options = []string{
 		"--input-type", "dir",
 		"--output-type", format,
@@ -97,35 +135,5 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 	if format == "rpm" {
 		options = append(options, "--rpm-os", "linux")
 	}
-
-	for _, binary := range binaries {
-		// This basically tells fpm to put the binary in the /usr/local/bin
-		// binary=/usr/local/bin/binary
-		log.WithField("path", binary.Path).
-			WithField("name", binary.Name).
-			Debug("added binary to fpm package")
-		options = append(options, fmt.Sprintf(
-			"%s=%s",
-			binary.Path,
-			filepath.Join("/usr/local/bin", binary.Name),
-		))
-	}
-
-	for src, dest := range ctx.Config.FPM.Files {
-		log.WithField("src", src).
-			WithField("dest", dest).
-			Debug("added an extra file to the fpm package")
-		options = append(options, fmt.Sprintf(
-			"%s=%s",
-			src,
-			dest,
-		))
-	}
-
-	log.WithField("args", options).Debug("creating fpm package")
-	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
-		return errors.New(string(out))
-	}
-	ctx.AddArtifact(file)
-	return nil
+	return options
 }

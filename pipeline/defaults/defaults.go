@@ -57,24 +57,29 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 		ctx.Config.Brew.Install = strings.Join(installs, "\n")
 	}
-	if len(ctx.Config.Dockers) == 1 {
-		if ctx.Config.Dockers[0].Goos == "" {
-			ctx.Config.Dockers[0].Goos = "linux"
-		}
-		if ctx.Config.Dockers[0].Goarch == "" {
-			ctx.Config.Dockers[0].Goarch = "amd64"
-		}
-		if ctx.Config.Dockers[0].Binary == "" {
-			ctx.Config.Dockers[0].Binary = ctx.Config.Builds[0].Binary
-		}
-		if ctx.Config.Dockers[0].Dockerfile == "" {
-			ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
-		}
-	}
 
 	err := setArchiveDefaults(ctx)
+	setDockerDefaults(ctx)
 	log.WithField("config", ctx.Config).Debug("defaults set")
 	return err
+}
+
+func setDockerDefaults(ctx *context.Context) {
+	if len(ctx.Config.Dockers) != 1 {
+		return
+	}
+	if ctx.Config.Dockers[0].Goos == "" {
+		ctx.Config.Dockers[0].Goos = "linux"
+	}
+	if ctx.Config.Dockers[0].Goarch == "" {
+		ctx.Config.Dockers[0].Goarch = "amd64"
+	}
+	if ctx.Config.Dockers[0].Binary == "" {
+		ctx.Config.Dockers[0].Binary = ctx.Config.Builds[0].Binary
+	}
+	if ctx.Config.Dockers[0].Dockerfile == "" {
+		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
+	}
 }
 
 func isBrewBuild(build config.Build) bool {
