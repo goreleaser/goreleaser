@@ -37,9 +37,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Checksum.NameTemplate == "" {
 		ctx.Config.Checksum.NameTemplate = ChecksumNameTemplate
 	}
-	if err := setReleaseDefaults(ctx); err != nil {
-		return err
-	}
+	setReleaseDefaults(ctx)
 	if ctx.Config.ProjectName == "" {
 		ctx.Config.ProjectName = ctx.Config.Release.GitHub.Name
 	}
@@ -100,16 +98,16 @@ func contains(ss []string, s string) bool {
 	return false
 }
 
-func setReleaseDefaults(ctx *context.Context) error {
+func setReleaseDefaults(ctx *context.Context) {
 	if ctx.Config.Release.GitHub.Name != "" {
-		return nil
+		return
 	}
 	repo, err := remoteRepo()
 	if err != nil {
-		return fmt.Errorf("failed reading repo from git: %v", err.Error())
+		log.WithError(err).Warn("failed read remote from git - is the current folder a repository with a valid remote?")
+		return
 	}
 	ctx.Config.Release.GitHub = repo
-	return nil
 }
 
 func setBuildDefaults(ctx *context.Context) {
