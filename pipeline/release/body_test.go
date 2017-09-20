@@ -24,7 +24,6 @@ func TestDescribeBody(t *testing.T) {
 
 	bts, err := ioutil.ReadFile("testdata/release1.txt")
 	assert.NoError(err)
-	ioutil.WriteFile("testdata/release1.txt", out.Bytes(), 0755)
 
 	assert.Equal(string(bts), out.String())
 }
@@ -40,7 +39,6 @@ func TestDescribeBodyNoDockerImages(t *testing.T) {
 
 	bts, err := ioutil.ReadFile("testdata/release2.txt")
 	assert.NoError(err)
-	ioutil.WriteFile("testdata/release2.txt", out.Bytes(), 0755)
 
 	assert.Equal(string(bts), out.String())
 }

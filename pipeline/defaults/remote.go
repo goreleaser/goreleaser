@@ -11,7 +11,7 @@ import (
 
 // remoteRepo gets the repo name from the Git config.
 func remoteRepo() (result config.Repo, err error) {
-	if _, err := os.Stat(".git"); os.IsNotExist(err) {
+	if _, err = os.Stat(".git"); os.IsNotExist(err) {
 		return result, errors.Wrap(err, "current folder is not a git repository")
 	}
 	cmd := exec.Command("git", "config", "--get", "remote.origin.url")
