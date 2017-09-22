@@ -91,7 +91,7 @@ func process(ctx *context.Context, folder string, docker config.Docker, binary c
 		return err
 	}
 	if docker.Latest {
-		if err := dockerTag(image, latest); err != nil {
+		if err := dockerPush(latest); err != nil {
 			return err
 		}
 	}
