@@ -36,6 +36,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err != nil {
 		return ErrNoDocker
 	}
+	return doRun(ctx)
+}
+
+func doRun(ctx *context.Context) error {
 	for _, docker := range ctx.Config.Dockers {
 		var imagePlatform = docker.Goos + docker.Goarch + docker.Goarm
 		for platform, groups := range ctx.Binaries {
@@ -47,7 +51,7 @@ func (Pipe) Run(ctx *context.Context) error {
 					if binary.Name != docker.Binary {
 						continue
 					}
-					var err = doRun(ctx, folder, docker, binary)
+					var err = process(ctx, folder, docker, binary)
 					if err != nil && !pipeline.IsSkip(err) {
 						return err
 					}
@@ -58,7 +62,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	return nil
 }
 
-func doRun(ctx *context.Context, folder string, docker config.Docker, binary context.Binary) error {
+func process(ctx *context.Context, folder string, docker config.Docker, binary context.Binary) error {
 	var root = filepath.Join(ctx.Config.Dist, folder)
 	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile))
 	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Version)
@@ -91,6 +95,7 @@ func doRun(ctx *context.Context, folder string, docker config.Docker, binary con
 			return err
 		}
 	}
+	ctx.AddDocker(image)
 	return nil
 }
 

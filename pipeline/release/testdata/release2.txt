@@ -1,0 +1,7 @@
+
+feature1: description
+feature2: other description
+
+---
+Automated with [GoReleaser](https://github.com/goreleaser)
+Built with go version go1.9 darwin/amd64

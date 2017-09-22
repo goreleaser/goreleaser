@@ -15,6 +15,7 @@ checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
 dockers:
   - image: goreleaser/goreleaser
+    latest: true
 archive:
   name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
   replacements:

@@ -25,20 +25,7 @@ fmt:
 
 # Run all the linters
 lint:
-	gometalinter --vendor --disable-all \
-		--enable=deadcode \
-		--enable=ineffassign \
-		--enable=gosimple \
-		--enable=staticcheck \
-		--enable=gofmt \
-		--enable=goimports \
-		--enable=dupl \
-		--enable=misspell \
-		--enable=errcheck \
-		--enable=vet \
-		--enable=vetshadow \
-		--deadline=10m \
-		./...
+	gometalinter --vendor ./...
 
 # Run all the tests and code checks
 ci: test lint

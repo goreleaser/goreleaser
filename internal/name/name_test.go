@@ -116,9 +116,6 @@ func TestNameDefaultTemplate(t *testing.T) {
 		},
 		Version: "1.2.3",
 	}
-	type buildTarget struct {
-		goos, goarch, goarm string
-	}
 	for key, target := range map[string]buildtarget.Target{
 		"test_1.2.3_darwin_amd64": buildtarget.New("darwin", "amd64", ""),
 		"test_1.2.3_linux_arm64":  buildtarget.New("linux", "arm64", ""),

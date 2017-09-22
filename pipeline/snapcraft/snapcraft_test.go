@@ -85,10 +85,10 @@ func TestRunPipeWithName(t *testing.T) {
 	assert.NoError(Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "testprojectname_linuxamd64", "prime", "meta", "snap.yaml"))
 	assert.NoError(err)
-	var snapcraftMetadata SnapcraftMetadata
-	err = yaml.Unmarshal(yamlFile, &snapcraftMetadata)
+	var metadata Metadata
+	err = yaml.Unmarshal(yamlFile, &metadata)
 	assert.NoError(err)
-	assert.Equal(snapcraftMetadata.Name, "testsnapname")
+	assert.Equal(metadata.Name, "testsnapname")
 }
 
 func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
@@ -119,11 +119,11 @@ func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
 	assert.NoError(Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "mybin_linuxamd64", "prime", "meta", "snap.yaml"))
 	assert.NoError(err)
-	var snapcraftMetadata SnapcraftMetadata
-	err = yaml.Unmarshal(yamlFile, &snapcraftMetadata)
+	var metadata Metadata
+	err = yaml.Unmarshal(yamlFile, &metadata)
 	assert.NoError(err)
-	assert.Equal(snapcraftMetadata.Apps["mybin"].Plugs, []string{"home", "network"})
-	assert.Equal(snapcraftMetadata.Apps["mybin"].Daemon, "simple")
+	assert.Equal(metadata.Apps["mybin"].Plugs, []string{"home", "network"})
+	assert.Equal(metadata.Apps["mybin"].Daemon, "simple")
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {
