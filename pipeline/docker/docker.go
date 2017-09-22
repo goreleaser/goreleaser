@@ -124,7 +124,7 @@ func dockerTag(image, tag string) error {
 	return nil
 }
 
-func dockerPush(images string) error {
+func dockerPush(image string) error {
 	log.WithField("image", image).Info("pushing docker image")
 	var cmd = exec.Command("docker", "push", image)
 	log.WithField("cmd", cmd).Debug("executing")
