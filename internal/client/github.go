@@ -7,7 +7,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/google/go-github/github"
-	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/oauth2"
 )
@@ -17,23 +16,26 @@ type githubClient struct {
 }
 
 // NewGitHub returns a github client implementation
-func NewGitHub(ctx *context.Context, repo config.Repo) Client {
+func NewGitHub(ctx *context.Context, api, upload string) (Client, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: ctx.Token},
 	)
 	client := github.NewClient(oauth2.NewClient(ctx, ts))
-	if repo.URL != "" {
-		url, err := url.Parse(repo.URL)
+	if api != "" {
+		apiURL, err := url.Parse(api)
 		if err != nil {
-			// TODO: return the err here
-			log.Fatal("failed to parse url")
+			return &githubClient{}, err
 		}
-		// TODO: check if we need to change upload url as well
-		client.BaseURL = url
+		client.BaseURL = apiURL
 	}
-	return &githubClient{
-		client: client,
+	if upload != "" {
+		uploadURL, err := url.Parse(upload)
+		if err != nil {
+			return &githubClient{}, err
+		}
+		client.UploadURL = uploadURL
 	}
+	return &githubClient{client}, nil
 }
 
 func (c *githubClient) CreateFile(
