@@ -80,7 +80,7 @@ func process(ctx *context.Context, folder string, docker config.Docker, binary c
 		}
 	}
 
-	// TODO: improve this so it can log into to stdout
+	// TODO: improve this so it can log it to stdout
 	if !ctx.Publish {
 		return pipeline.Skip("--skip-publish is set")
 	}
@@ -90,13 +90,14 @@ func process(ctx *context.Context, folder string, docker config.Docker, binary c
 	if err := dockerPush(image); err != nil {
 		return err
 	}
-	if docker.Latest {
-		if err := dockerPush(latest); err != nil {
-			return err
-		}
-	}
 	ctx.AddDocker(image)
-	return nil
+	if !docker.Latest {
+		return nil
+	}
+	if err := dockerTag(image, latest); err != nil {
+		return err
+	}
+	return dockerPush(latest)
 }
 
 func dockerBuild(root, dockerfile, image string) error {
@@ -123,7 +124,7 @@ func dockerTag(image, tag string) error {
 	return nil
 }
 
-func dockerPush(image string) error {
+func dockerPush(images ...string) error {
 	log.WithField("image", image).Info("pushing docker image")
 	var cmd = exec.Command("docker", "push", image)
 	log.WithField("cmd", cmd).Debug("executing")
