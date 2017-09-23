@@ -22,7 +22,13 @@ type templateData struct {
 const formulaTemplate = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
+
+  {{ if .Repo.DownloadURL }}
+    url "{{ .Repo.DownloadURL }}{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
+  {{ else }}
+    url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
+  {{ end }}
+
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
 

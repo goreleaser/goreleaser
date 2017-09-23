@@ -16,6 +16,11 @@ release:
   github:
     owner: user
     name: repo
+    # endpoint urls for enterprise github.
+    # Default is github.com.
+    api_url: github api endpoint
+    uploads_url: github file uploads url
+    download_url github download url
 
   # If set to true, will not auto-publish the release.
   # Default is false
