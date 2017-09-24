@@ -2,4 +2,3 @@ dist/
 vendor
 coverage.txt
 goreleaser
-.idea/

@@ -23,8 +23,8 @@ const formulaTemplate = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
 
-  {{ if .Repo.DownloadURL }}
-    url "{{ .Repo.DownloadURL }}{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
+  {{ if .Repo.DownloadsURL }}
+    url "{{ .Repo.DownloadsURL }}{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
   {{ else }}
     url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
   {{ end }}

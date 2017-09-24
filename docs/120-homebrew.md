@@ -23,7 +23,7 @@ brew:
     # Default is github.com.
     api_url: github api endpoint
     uploads_url: github file uploads url
-    download_url github download url
+    downloads_url github download url
 
   # Folder inside the repository to put the formula.
   # Default is the root folder.

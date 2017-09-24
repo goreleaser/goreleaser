@@ -22,8 +22,8 @@ func NewGitHub(ctx *context.Context, repo config.Repo) (Client, error) {
 		&oauth2.Token{AccessToken: ctx.Token},
 	)
 	client := github.NewClient(oauth2.NewClient(ctx, ts))
-	if repo.ApiURL != "" {
-		url, err := url.Parse(repo.ApiURL)
+	if repo.APIURL != "" {
+		url, err := url.Parse(repo.APIURL)
 		if err != nil {
 			return &githubClient{}, err
 		}
