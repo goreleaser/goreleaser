@@ -35,8 +35,8 @@ var pipes = []pipeline.Pipe{
 	fpm.Pipe{},       // archive via fpm (deb, rpm, etc)
 	snapcraft.Pipe{}, // archive via snapcraft (snap)
 	checksums.Pipe{}, // checksums of the files
-	release.Pipe{},   // release to github
 	docker.Pipe{},    // create and push docker images
+	release.Pipe{},   // release to github
 	brew.Pipe{},      // push to brew tap
 }
 

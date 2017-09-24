@@ -36,6 +36,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err != nil {
 		return ErrNoDocker
 	}
+	return doRun(ctx)
+}
+
+func doRun(ctx *context.Context) error {
 	for _, docker := range ctx.Config.Dockers {
 		var imagePlatform = docker.Goos + docker.Goarch + docker.Goarm
 		for platform, groups := range ctx.Binaries {
@@ -47,7 +51,7 @@ func (Pipe) Run(ctx *context.Context) error {
 					if binary.Name != docker.Binary {
 						continue
 					}
-					var err = doRun(ctx, folder, docker, binary)
+					var err = process(ctx, folder, docker, binary)
 					if err != nil && !pipeline.IsSkip(err) {
 						return err
 					}
@@ -58,10 +62,11 @@ func (Pipe) Run(ctx *context.Context) error {
 	return nil
 }
 
-func doRun(ctx *context.Context, folder string, docker config.Docker, binary context.Binary) error {
+func process(ctx *context.Context, folder string, docker config.Docker, binary context.Binary) error {
 	var root = filepath.Join(ctx.Config.Dist, folder)
 	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile))
-	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Git.CurrentTag)
+	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Version)
+	var latest = fmt.Sprintf("%s:latest", docker.Image)
 
 	if err := os.Link(docker.Dockerfile, dockerfile); err != nil {
 		return errors.Wrap(err, "failed to link dockerfile")
@@ -69,8 +74,13 @@ func doRun(ctx *context.Context, folder string, docker config.Docker, binary con
 	if err := dockerBuild(root, dockerfile, image); err != nil {
 		return err
 	}
+	if docker.Latest {
+		if err := dockerTag(image, latest); err != nil {
+			return err
+		}
+	}
 
-	// TODO: improve this so it can log into to stdout
+	// TODO: improve this so it can log it to stdout
 	if !ctx.Publish {
 		return pipeline.Skip("--skip-publish is set")
 	}
@@ -80,7 +90,14 @@ func doRun(ctx *context.Context, folder string, docker config.Docker, binary con
 	if err := dockerPush(image); err != nil {
 		return err
 	}
-	return nil
+	ctx.AddDocker(image)
+	if !docker.Latest {
+		return nil
+	}
+	if err := dockerTag(image, latest); err != nil {
+		return err
+	}
+	return dockerPush(latest)
 }
 
 func dockerBuild(root, dockerfile, image string) error {
@@ -92,6 +109,18 @@ func dockerBuild(root, dockerfile, image string) error {
 		return errors.Wrapf(err, "failed to build docker image: \n%s", string(out))
 	}
 	log.Debugf("docker build output: \n%s", string(out))
+	return nil
+}
+
+func dockerTag(image, tag string) error {
+	log.WithField("image", image).WithField("tag", tag).Info("tagging docker image")
+	var cmd = exec.Command("docker", "tag", image, tag)
+	log.WithField("cmd", cmd).Debug("executing")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return errors.Wrapf(err, "failed to tag docker image: \n%s", string(out))
+	}
+	log.Debugf("docker tag output: \n%s", string(out))
 	return nil
 }
 

@@ -35,6 +35,7 @@ type Context struct {
 	Git          GitInfo
 	Binaries     map[string]map[string][]Binary
 	Artifacts    []string
+	Dockers      []string
 	ReleaseNotes string
 	Version      string
 	Validate     bool
@@ -45,6 +46,7 @@ type Context struct {
 }
 
 var artifactsLock sync.Mutex
+var dockersLock sync.Mutex
 var binariesLock sync.Mutex
 
 // AddArtifact adds a file to upload list
@@ -54,6 +56,14 @@ func (ctx *Context) AddArtifact(file string) {
 	file = strings.TrimPrefix(file, ctx.Config.Dist+string(filepath.Separator))
 	ctx.Artifacts = append(ctx.Artifacts, file)
 	log.WithField("artifact", file).Info("new release artifact")
+}
+
+// AddDocker adds a docker image to the docker images list
+func (ctx *Context) AddDocker(image string) {
+	dockersLock.Lock()
+	defer dockersLock.Unlock()
+	ctx.Dockers = append(ctx.Dockers, image)
+	log.WithField("image", image).Info("new docker image")
 }
 
 // AddBinary adds a built binary to the current context

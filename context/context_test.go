@@ -8,19 +8,24 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func TestMultipleArtifactAdds(t *testing.T) {
+func TestMultipleAdds(t *testing.T) {
 	var assert = assert.New(t)
-	var list = []string{
+	var artifacts = []string{
 		"dist/a",
 		"dist/b",
 		"dist/c",
 		"dist/d",
 	}
+	var dockerfiles = []string{
+		"a/b:1.0.0",
+		"c/d:2.0.0",
+		"e/f:3.0.0",
+	}
 	var ctx = New(config.Project{
 		Dist: "dist",
 	})
 	var g errgroup.Group
-	for _, f := range list {
+	for _, f := range artifacts {
 		f := f
 		g.Go(func() error {
 			ctx.AddArtifact(f)
@@ -28,8 +33,18 @@ func TestMultipleArtifactAdds(t *testing.T) {
 		})
 	}
 	assert.NoError(g.Wait())
-	assert.Len(ctx.Artifacts, len(list))
+	for _, d := range dockerfiles {
+		d := d
+		g.Go(func() error {
+			ctx.AddDocker(d)
+			return nil
+		})
+	}
+	assert.NoError(g.Wait())
+	assert.Len(ctx.Artifacts, len(artifacts))
 	assert.Contains(ctx.Artifacts, "a", "b", "c", "d")
+	assert.Len(ctx.Dockers, len(dockerfiles))
+	assert.Contains(ctx.Dockers, "a/b:1.0.0", "c/d:2.0.0", "e/f:3.0.0")
 }
 
 func TestMultipleBinaryAdds(t *testing.T) {
