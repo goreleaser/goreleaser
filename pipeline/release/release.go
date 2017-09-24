@@ -23,7 +23,7 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	client, err := client.NewGitHub(ctx, ctx.Config.Release.GitHub.APIURL, ctx.Config.Release.GitHub.UploadsURL)
+	client, err := client.NewGitHub(ctx, ctx.Config.Release.GitHub)
 	if err != nil {
 		return err
 	}

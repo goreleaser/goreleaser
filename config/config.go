@@ -15,10 +15,11 @@ import (
 
 // Repo represents any kind of repo (github, gitlab, etc)
 type Repo struct {
-	Owner      string `yaml:",omitempty"`
-	Name       string `yaml:",omitempty"`
-	APIURL     string `yaml:api_url",omitempty"`
-	UploadsURL string `yaml:uploads_url",omitempty"`
+	Owner        string `yaml:",omitempty"`
+	Name         string `yaml:",omitempty"`
+	APIURL       string `yaml:"api_url,omitempty"`
+	UploadsURL   string `yaml:"uploads_url,omitempty"`
+	DownloadsURL string `yaml:"downloads_url,omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`
