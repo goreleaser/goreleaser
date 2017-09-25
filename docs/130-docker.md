@@ -52,6 +52,10 @@ dockers:
     dockerfile: Dockerfile
     # Also tag and push myuser/myimage:latest
     latest: true
+    # If your dockerfile copies more files other than the binary itself,
+    # you should list them here as well.
+    extra_files:
+    - config.yml
 ```
 
 These settings should allow you to generate multiple docker images, using

@@ -71,6 +71,11 @@ func process(ctx *context.Context, folder string, docker config.Docker, binary c
 	if err := os.Link(docker.Dockerfile, dockerfile); err != nil {
 		return errors.Wrap(err, "failed to link dockerfile")
 	}
+	for _, file := range docker.Files {
+		if err := os.Link(file, filepath.Join(root, filepath.Base(file))); err != nil {
+			return errors.Wrapf(err, "failed to link extra file '%s'", file)
+		}
+	}
 	if err := dockerBuild(root, dockerfile, image); err != nil {
 		return err
 	}
