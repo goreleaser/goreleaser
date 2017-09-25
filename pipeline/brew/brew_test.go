@@ -105,6 +105,12 @@ func TestRunPipe(t *testing.T) {
 			Archive: config.Archive{
 				Format: "tar.gz",
 			},
+			Release: config.Release{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
 			Brew: config.Homebrew{
 				GitHub: config.Repo{
 					Owner: "test",
@@ -133,10 +139,9 @@ func TestRunPipe(t *testing.T) {
 	assert.NoError(doRun(ctx, client))
 	assert.True(client.CreatedFile)
 
-	f, err := os.Open("testdata/run_pipe.rb")
+	bts, err := ioutil.ReadFile("testdata/run_pipe.rb")
 	assert.NoError(err)
-	bts, err := ioutil.ReadAll(f)
-	assert.NoError(err)
+	assert.NoError(ioutil.WriteFile("testdata/run_pipe.rb", []byte(client.Content), 0644))
 	assert.Equal(string(bts), client.Content)
 }
 
