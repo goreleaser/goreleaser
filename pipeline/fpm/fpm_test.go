@@ -25,15 +25,14 @@ func TestRunPipeNoFormats(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(os.Mkdir(dist, 0755))
-	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	_, err = os.Create(binPath)
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var ctx = &context.Context{
 		Version: "1.0.0",
 		Config: config.Project{
@@ -54,16 +53,15 @@ func TestRunPipe(t *testing.T) {
 	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64"} {
 		ctx.AddBinary(plat, "mybin", "mybin", binPath)
 	}
-	assert.NoError(Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
 func TestNoFPMInPath(t *testing.T) {
-	var assert = assert.New(t)
 	var path = os.Getenv("PATH")
 	defer func() {
-		assert.NoError(os.Setenv("PATH", path))
+		assert.NoError(t, os.Setenv("PATH", path))
 	}()
-	assert.NoError(os.Setenv("PATH", ""))
+	assert.NoError(t, os.Setenv("PATH", ""))
 	var ctx = &context.Context{
 		Version: "1.0.0",
 		Config: config.Project{
@@ -72,16 +70,15 @@ func TestNoFPMInPath(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualError(Pipe{}.Run(ctx), ErrNoFPM.Error())
+	assert.EqualError(t, Pipe{}.Run(ctx), ErrNoFPM.Error())
 }
 
 func TestCreateFileDoesntExist(t *testing.T) {
-	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(os.Mkdir(dist, 0755))
-	assert.NoError(os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var ctx = &context.Context{
 		Version: "1.0.0",
 		Config: config.Project{
@@ -95,11 +92,10 @@ func TestCreateFileDoesntExist(t *testing.T) {
 		},
 	}
 	ctx.AddBinary("linuxamd64", "mybin", "mybin", filepath.Join(dist, "mybin", "mybin"))
-	assert.Error(Pipe{}.Run(ctx))
+	assert.Error(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeWithExtraFiles(t *testing.T) {
-	var assert = assert.New(t)
 	var ctx = &context.Context{
 		Version: "1.0.0",
 		Config: config.Project{
@@ -108,5 +104,5 @@ func TestRunPipeWithExtraFiles(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 }

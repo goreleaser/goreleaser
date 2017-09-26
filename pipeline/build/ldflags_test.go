@@ -9,7 +9,6 @@ import (
 )
 
 func TestLdFlagsFullTemplate(t *testing.T) {
-	assert := assert.New(t)
 	var config = config.Project{
 		Builds: []config.Build{
 			{
@@ -26,16 +25,15 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 		Config:  config,
 	}
 	flags, err := ldflags(ctx, ctx.Config.Builds[0])
-	assert.NoError(err)
-	assert.Contains(flags, "-s -w")
-	assert.Contains(flags, "-X main.version=1.2.3")
-	assert.Contains(flags, "-X main.tag=v1.2.3")
-	assert.Contains(flags, "-X main.commit=123")
-	assert.Contains(flags, "-X main.date=")
+	assert.NoError(t, err)
+	assert.Contains(t, flags, "-s -w")
+	assert.Contains(t, flags, "-X main.version=1.2.3")
+	assert.Contains(t, flags, "-X main.tag=v1.2.3")
+	assert.Contains(t, flags, "-X main.commit=123")
+	assert.Contains(t, flags, "-X main.date=")
 }
 
 func TestInvalidTemplate(t *testing.T) {
-	assert := assert.New(t)
 	var config = config.Project{
 		Builds: []config.Build{
 			{Ldflags: "{invalid{.Template}}}{{}}}"},
@@ -45,6 +43,6 @@ func TestInvalidTemplate(t *testing.T) {
 		Config: config,
 	}
 	flags, err := ldflags(ctx, ctx.Config.Builds[0])
-	assert.Error(err)
-	assert.Equal(flags, "")
+	assert.Error(t, err)
+	assert.Equal(t, flags, "")
 }

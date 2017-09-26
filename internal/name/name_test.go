@@ -11,8 +11,6 @@ import (
 )
 
 func TestChecksums(t *testing.T) {
-	var assert = assert.New(t)
-
 	var config = config.Project{
 		Checksum: config.Checksum{
 			NameTemplate: "{{.ProjectName }}_{{.Tag}}_{{.Version}}_checksums.txt",
@@ -28,13 +26,11 @@ func TestChecksums(t *testing.T) {
 	}
 
 	name, err := ForChecksums(ctx)
-	assert.NoError(err)
-	assert.Equal("testcheck_v1.0.0_1.0.0_checksums.txt", name)
+	assert.NoError(t, err)
+	assert.Equal(t, "testcheck_v1.0.0_1.0.0_checksums.txt", name)
 }
 
 func TestNameFor(t *testing.T) {
-	var assert = assert.New(t)
-
 	var config = config.Project{
 		Archive: config.Archive{
 			NameTemplate: "{{.Binary}}_{{.Os}}_{{.Arch}}_{{.Tag}}_{{.Version}}",
@@ -54,13 +50,11 @@ func TestNameFor(t *testing.T) {
 	}
 
 	name, err := For(ctx, buildtarget.New("darwin", "amd64", ""))
-	assert.NoError(err)
-	assert.Equal("test_Darwin_x86_64_v1.2.3_1.2.3", name)
+	assert.NoError(t, err)
+	assert.Equal(t, "test_Darwin_x86_64_v1.2.3_1.2.3", name)
 }
 
 func TestNameForBuild(t *testing.T) {
-	var assert = assert.New(t)
-
 	var ctx = &context.Context{
 		Config: config.Project{
 			Archive: config.Archive{
@@ -83,12 +77,11 @@ func TestNameForBuild(t *testing.T) {
 		config.Build{Binary: "foo"},
 		buildtarget.New("darwin", "amd64", ""),
 	)
-	assert.NoError(err)
-	assert.Equal("foo_Darwin_x86_64_v1.2.3_1.2.3", name)
+	assert.NoError(t, err)
+	assert.Equal(t, "foo_Darwin_x86_64_v1.2.3_1.2.3", name)
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
-	var assert = assert.New(t)
 	var ctx = &context.Context{
 		Config: config.Project{
 			Archive: config.Archive{
@@ -102,11 +95,10 @@ func TestInvalidNameTemplate(t *testing.T) {
 	}
 
 	_, err := For(ctx, buildtarget.New("darwin", "amd64", ""))
-	assert.Error(err)
+	assert.Error(t, err)
 }
 
 func TestNameDefaultTemplate(t *testing.T) {
-	var assert = assert.New(t)
 	var ctx = &context.Context{
 		Config: config.Project{
 			Archive: config.Archive{
@@ -123,8 +115,8 @@ func TestNameDefaultTemplate(t *testing.T) {
 	} {
 		t.Run(key, func(t *testing.T) {
 			name, err := For(ctx, target)
-			assert.NoError(err)
-			assert.Equal(key, name)
+			assert.NoError(t, err)
+			assert.Equal(t, key, name)
 		})
 	}
 }

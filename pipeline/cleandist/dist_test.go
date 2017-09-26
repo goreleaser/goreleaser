@@ -12,8 +12,8 @@ import (
 )
 
 func TestDistDoesNotExist(t *testing.T) {
-	var assert = assert.New(t)
 	assert.NoError(
+		t,
 		Pipe{}.Run(
 			&context.Context{
 				Config: config.Project{
@@ -25,42 +25,39 @@ func TestDistDoesNotExist(t *testing.T) {
 }
 
 func TestPopulatedDistExists(t *testing.T) {
-	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "disttest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(dist, 0755))
 	_, err = os.Create(filepath.Join(dist, "mybin"))
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var ctx = &context.Context{
 		Config: config.Project{
 			Dist: dist,
 		},
 	}
-	assert.Error(Pipe{}.Run(ctx))
+	assert.Error(t, Pipe{}.Run(ctx))
 	ctx.RmDist = true
-	assert.NoError(Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 	_, err = os.Stat(dist)
-	assert.False(os.IsExist(err))
+	assert.False(t, os.IsExist(err))
 }
 
 func TestEmptyDistExists(t *testing.T) {
-	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "disttest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(dist, 0755))
 	var ctx = &context.Context{
 		Config: config.Project{
 			Dist: dist,
 		},
 	}
-	assert.NoError(Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 	_, err = os.Stat(dist)
-	assert.False(os.IsExist(err))
+	assert.False(t, os.IsExist(err))
 }
 
 func TestDescription(t *testing.T) {
-	var assert = assert.New(t)
-	assert.NotEmpty(Pipe{}.Description())
+	assert.NotEmpty(t, Pipe{}.Description())
 }

@@ -16,25 +16,23 @@ func TestDescription(t *testing.T) {
 }
 
 func TestValidEnv(t *testing.T) {
-	assert := assert.New(t)
-	assert.NoError(os.Setenv("GITHUB_TOKEN", "asdf"))
+	assert.NoError(t, os.Setenv("GITHUB_TOKEN", "asdf"))
 	var ctx = &context.Context{
 		Config:   config.Project{},
 		Validate: true,
 		Publish:  true,
 	}
-	assert.NoError(Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
 func TestInvalidEnv(t *testing.T) {
-	assert := assert.New(t)
-	assert.NoError(os.Unsetenv("GITHUB_TOKEN"))
+	assert.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
 	var ctx = &context.Context{
 		Config:   config.Project{},
 		Validate: true,
 		Publish:  true,
 	}
-	assert.Error(Pipe{}.Run(ctx))
+	assert.Error(t, Pipe{}.Run(ctx))
 }
 
 type flags struct {
@@ -54,8 +52,7 @@ func TestInvalidEnvChecksSkipped(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("%v", flag), func(t *testing.T) {
-			var assert = assert.New(t)
-			assert.NoError(os.Unsetenv("GITHUB_TOKEN"))
+			assert.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
 			var ctx = &context.Context{
 				Config:   config.Project{},
 				Validate: flag.Validate,

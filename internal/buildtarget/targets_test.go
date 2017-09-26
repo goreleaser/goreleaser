@@ -9,7 +9,6 @@ import (
 )
 
 func TestAllBuildTargets(t *testing.T) {
-	var assert = assert.New(t)
 	var build = config.Build{
 		Goos: []string{
 			"linux",
@@ -41,7 +40,7 @@ func TestAllBuildTargets(t *testing.T) {
 			},
 		},
 	}
-	assert.Equal([]Target{
+	assert.Equal(t, []Target{
 		New("linux", "386", ""),
 		New("linux", "amd64", ""),
 		New("linux", "arm", "6"),

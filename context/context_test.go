@@ -9,7 +9,6 @@ import (
 )
 
 func TestMultipleAdds(t *testing.T) {
-	var assert = assert.New(t)
 	var artifacts = []string{
 		"dist/a",
 		"dist/b",
@@ -32,7 +31,7 @@ func TestMultipleAdds(t *testing.T) {
 			return nil
 		})
 	}
-	assert.NoError(g.Wait())
+	assert.NoError(t, g.Wait())
 	for _, d := range dockerfiles {
 		d := d
 		g.Go(func() error {
@@ -40,15 +39,14 @@ func TestMultipleAdds(t *testing.T) {
 			return nil
 		})
 	}
-	assert.NoError(g.Wait())
-	assert.Len(ctx.Artifacts, len(artifacts))
-	assert.Contains(ctx.Artifacts, "a", "b", "c", "d")
-	assert.Len(ctx.Dockers, len(dockerfiles))
-	assert.Contains(ctx.Dockers, "a/b:1.0.0", "c/d:2.0.0", "e/f:3.0.0")
+	assert.NoError(t, g.Wait())
+	assert.Len(t, ctx.Artifacts, len(artifacts))
+	assert.Contains(t, ctx.Artifacts, "a", "b", "c", "d")
+	assert.Len(t, ctx.Dockers, len(dockerfiles))
+	assert.Contains(t, ctx.Dockers, "a/b:1.0.0", "c/d:2.0.0", "e/f:3.0.0")
 }
 
 func TestMultipleBinaryAdds(t *testing.T) {
-	var assert = assert.New(t)
 	var list = map[string]string{
 		"a": "folder/a",
 		"b": "folder/b",
@@ -67,7 +65,7 @@ func TestMultipleBinaryAdds(t *testing.T) {
 			return nil
 		})
 	}
-	assert.NoError(g.Wait())
-	assert.Len(ctx.Binaries["linuxamd64"], len(list))
-	assert.Len(ctx.Binaries, 1)
+	assert.NoError(t, g.Wait())
+	assert.Len(t, ctx.Binaries["linuxamd64"], len(list))
+	assert.Len(t, ctx.Binaries, 1)
 }

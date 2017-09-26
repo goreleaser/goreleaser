@@ -18,7 +18,6 @@ func init() {
 }
 
 func TestRelease(t *testing.T) {
-	var assert = assert.New(t)
 	_, back := setup(t)
 	defer back()
 	var flags = fakeFlags{
@@ -29,11 +28,10 @@ func TestRelease(t *testing.T) {
 			"parallelism":   "4",
 		},
 	}
-	assert.NoError(Release(flags))
+	assert.NoError(t, Release(flags))
 }
 
 func TestSnapshotRelease(t *testing.T) {
-	var assert = assert.New(t)
 	_, back := setup(t)
 	defer back()
 	var flags = fakeFlags{
@@ -42,17 +40,16 @@ func TestSnapshotRelease(t *testing.T) {
 			"parallelism": "4",
 		},
 	}
-	assert.NoError(Release(flags))
+	assert.NoError(t, Release(flags))
 }
 
 func TestConfigFileIsSetAndDontExist(t *testing.T) {
-	var assert = assert.New(t)
 	var flags = fakeFlags{
 		flags: map[string]string{
 			"config": "/this/wont/exist",
 		},
 	}
-	assert.Error(Release(flags))
+	assert.Error(t, Release(flags))
 }
 
 func TestConfigFlagNotSetButExists(t *testing.T) {
@@ -81,17 +78,15 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 }
 
 func TestReleaseNotesFileDontExist(t *testing.T) {
-	var assert = assert.New(t)
 	var flags = fakeFlags{
 		flags: map[string]string{
 			"release-notes": "/this/also/wont/exist",
 		},
 	}
-	assert.Error(Release(flags))
+	assert.Error(t, Release(flags))
 }
 
 func TestCustomReleaseNotesFile(t *testing.T) {
-	var assert = assert.New(t)
 	folder, back := setup(t)
 	defer back()
 	var releaseNotes = filepath.Join(folder, "notes.md")
@@ -104,11 +99,10 @@ func TestCustomReleaseNotesFile(t *testing.T) {
 			"parallelism":   "4",
 		},
 	}
-	assert.NoError(Release(flags))
+	assert.NoError(t, Release(flags))
 }
 
 func TestBrokenPipe(t *testing.T) {
-	var assert = assert.New(t)
 	_, back := setup(t)
 	defer back()
 	createFile(t, "main.go", "not a valid go file")
@@ -119,41 +113,38 @@ func TestBrokenPipe(t *testing.T) {
 			"parallelism":   "4",
 		},
 	}
-	assert.Error(Release(flags))
+	assert.Error(t, Release(flags))
 }
 
 func TestInitProject(t *testing.T) {
-	var assert = assert.New(t)
 	_, back := setup(t)
 	defer back()
 	var filename = "test_goreleaser.yml"
-	assert.NoError(InitProject(filename))
+	assert.NoError(t, InitProject(filename))
 
 	file, err := os.Open(filename)
-	assert.NoError(err)
+	assert.NoError(t, err)
 	out, err := ioutil.ReadAll(file)
-	assert.NoError(err)
+	assert.NoError(t, err)
 
 	var config = config.Project{}
-	assert.NoError(yaml.Unmarshal(out, &config))
+	assert.NoError(t, yaml.Unmarshal(out, &config))
 }
 
 func TestInitProjectFileExist(t *testing.T) {
-	var assert = assert.New(t)
 	_, back := setup(t)
 	defer back()
 	var filename = "test_goreleaser.yml"
 	createFile(t, filename, "")
-	assert.Error(InitProject(filename))
+	assert.Error(t, InitProject(filename))
 }
 
 func TestInitProjectDefaultPipeFails(t *testing.T) {
-	var assert = assert.New(t)
 	_, back := setup(t)
 	defer back()
 	var filename = "test_goreleaser.yml"
-	assert.NoError(os.RemoveAll(".git"))
-	assert.Error(InitProject(filename))
+	assert.NoError(t, os.RemoveAll(".git"))
+	assert.Error(t, InitProject(filename))
 }
 
 // fakeFlags is a mock of the cli flags
@@ -179,12 +170,11 @@ func (f fakeFlags) Bool(s string) bool {
 }
 
 func setup(t *testing.T) (current string, back func()) {
-	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleaser")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	previous, err := os.Getwd()
-	assert.NoError(err)
-	assert.NoError(os.Chdir(folder))
+	assert.NoError(t, err)
+	assert.NoError(t, os.Chdir(folder))
 	createGoreleaserYaml(t)
 	createMainGo(t)
 	testlib.GitInit(t)
@@ -197,13 +187,12 @@ func setup(t *testing.T) (current string, back func()) {
 	testlib.GitTag(t, "v0.0.2")
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/fake.git")
 	return folder, func() {
-		assert.NoError(os.Chdir(previous))
+		assert.NoError(t, os.Chdir(previous))
 	}
 }
 
 func createFile(t *testing.T, filename, contents string) {
-	var assert = assert.New(t)
-	assert.NoError(ioutil.WriteFile(filename, []byte(contents), 0644))
+	assert.NoError(t, ioutil.WriteFile(filename, []byte(contents), 0644))
 }
 
 func createMainGo(t *testing.T) {

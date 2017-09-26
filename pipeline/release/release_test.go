@@ -19,13 +19,12 @@ func TestPipeDescription(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	assert.NoError(err)
+	assert.NoError(t, err)
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var config = config.Project{
 		Dist: folder,
 		Release: config.Release{
@@ -41,15 +40,14 @@ func TestRunPipe(t *testing.T) {
 	ctx.AddArtifact(tarfile.Name())
 	ctx.AddArtifact(debfile.Name())
 	client := &DummyClient{}
-	assert.NoError(doRun(ctx, client))
-	assert.True(client.CreatedRelease)
-	assert.True(client.UploadedFile)
-	assert.Contains(client.UploadedFileNames, "bin.deb")
-	assert.Contains(client.UploadedFileNames, "bin.tar.gz")
+	assert.NoError(t, doRun(ctx, client))
+	assert.True(t, client.CreatedRelease)
+	assert.True(t, client.UploadedFile)
+	assert.Contains(t, client.UploadedFileNames, "bin.deb")
+	assert.Contains(t, client.UploadedFileNames, "bin.tar.gz")
 }
 
 func TestRunPipeReleaseCreationFailed(t *testing.T) {
-	var assert = assert.New(t)
 	var config = config.Project{
 		Release: config.Release{
 			GitHub: config.Repo{
@@ -64,13 +62,12 @@ func TestRunPipeReleaseCreationFailed(t *testing.T) {
 	client := &DummyClient{
 		FailToCreateRelease: true,
 	}
-	assert.Error(doRun(ctx, client))
-	assert.False(client.CreatedRelease)
-	assert.False(client.UploadedFile)
+	assert.Error(t, doRun(ctx, client))
+	assert.False(t, client.CreatedRelease)
+	assert.False(t, client.UploadedFile)
 }
 
 func TestRunPipeWithFileThatDontExist(t *testing.T) {
-	var assert = assert.New(t)
 	var config = config.Project{
 		Release: config.Release{
 			GitHub: config.Repo{
@@ -84,17 +81,16 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 	ctx.Publish = true
 	ctx.AddArtifact("this-file-wont-exist-hopefully")
 	client := &DummyClient{}
-	assert.Error(doRun(ctx, client))
-	assert.True(client.CreatedRelease)
-	assert.False(client.UploadedFile)
+	assert.Error(t, doRun(ctx, client))
+	assert.True(t, client.CreatedRelease)
+	assert.False(t, client.UploadedFile)
 }
 
 func TestRunPipeUploadFailure(t *testing.T) {
-	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var config = config.Project{
 		Release: config.Release{
 			GitHub: config.Repo{
@@ -110,21 +106,20 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	client := &DummyClient{
 		FailToUpload: true,
 	}
-	assert.Error(doRun(ctx, client))
-	assert.True(client.CreatedRelease)
-	assert.False(client.UploadedFile)
+	assert.Error(t, doRun(ctx, client))
+	assert.True(t, client.CreatedRelease)
+	assert.False(t, client.UploadedFile)
 }
 
 func TestSkipPublish(t *testing.T) {
-	var assert = assert.New(t)
 	var ctx = &context.Context{
 		Publish:     false,
 		Parallelism: 1,
 	}
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doRun(ctx, client))
-	assert.False(client.CreatedRelease)
-	assert.False(client.UploadedFile)
+	assert.False(t, client.CreatedRelease)
+	assert.False(t, client.UploadedFile)
 }
 
 type DummyClient struct {
