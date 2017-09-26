@@ -85,6 +85,10 @@ func process(ctx *context.Context, folder string, docker config.Docker, binary c
 		}
 	}
 
+	return publish(ctx, docker, image, latest)
+}
+
+func publish(ctx *context.Context, docker config.Docker, image, latest string) error {
 	// TODO: improve this so it can log it to stdout
 	if !ctx.Publish {
 		return pipeline.Skip("--skip-publish is set")

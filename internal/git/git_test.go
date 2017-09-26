@@ -1,22 +1,18 @@
-package git_test
+package git
 
 import (
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/git"
-	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGit(t *testing.T) {
 	var assert = assert.New(t)
-	_, back := testlib.Mktmp(t)
-	defer back()
-	out, err := git.Run("init")
+	out, err := Run("status")
 	assert.NoError(err)
-	assert.Contains(out, "Initialized empty Git repository")
+	assert.Contains(out, "On branch")
 
-	out, err = git.Run("command-that-dont-exist")
+	out, err = Run("command-that-dont-exist")
 	assert.Error(err)
 	assert.Empty(out)
 	assert.Equal(
