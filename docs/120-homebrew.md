@@ -19,11 +19,6 @@ brew:
   github:
     owner: user
     name: homebrew-tap
-    # endpoint urls for github enterprise.
-    # Defaults are the github.com URLs.
-    api_url: github api endpoint
-    uploads_url: github file uploads url
-    downloads_url: github download url
 
   # Folder inside the repository to put the formula.
   # Default is the root folder.

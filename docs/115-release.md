@@ -16,11 +16,6 @@ release:
   github:
     owner: user
     name: repo
-    # endpoint urls for github enterprise.
-    # Defaults are the github.com URLs.
-    api_url: github api endpoint
-    uploads_url: github file uploads url
-    downloads_url: github download url
 
   # If set to true, will not auto-publish the release.
   # Default is false
