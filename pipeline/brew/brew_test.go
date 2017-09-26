@@ -30,9 +30,10 @@ func TestSimpleName(t *testing.T) {
 }
 
 var defaultTemplateData = templateData{
-	Desc:     "Some desc",
-	Homepage: "https://google.com",
-	Name:     "Test",
+	Desc:        "Some desc",
+	Homepage:    "https://google.com",
+	DownloadURL: "https://github.com",
+	Name:        "Test",
 	Repo: config.Repo{
 		Owner: "caarlos0",
 		Name:  "test",
@@ -46,10 +47,10 @@ var defaultTemplateData = templateData{
 func assertDefaultTemplateData(t *testing.T, formulae string) {
 	assert := assert.New(t)
 	assert.Contains(formulae, "class Test < Formula")
-	assert.Contains(formulae, "homepage \"https://google.com\"")
-	assert.Contains(formulae, "url \"https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz\"")
-	assert.Contains(formulae, "sha256 \"1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68\"")
-	assert.Contains(formulae, "version \"0.1.3\"")
+	assert.Contains(formulae, `homepage "https://google.com"`)
+	assert.Contains(formulae, `url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`)
+	assert.Contains(formulae, `sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`)
+	assert.Contains(formulae, `version "0.1.3"`)
 }
 
 func TestFullFormulae(t *testing.T) {
@@ -65,10 +66,9 @@ func TestFullFormulae(t *testing.T) {
 	assert.NoError(err)
 	formulae := out.String()
 
-	f, err := os.Open("testdata/test.rb")
+	bts, err := ioutil.ReadFile("testdata/test.rb")
 	assert.NoError(err)
-	bts, err := ioutil.ReadAll(f)
-	assert.NoError(err)
+	// ioutil.WriteFile("testdata/test.rb", []byte(formulae), 0644)
 
 	assert.Equal(string(bts), formulae)
 }
@@ -141,7 +141,7 @@ func TestRunPipe(t *testing.T) {
 
 	bts, err := ioutil.ReadFile("testdata/run_pipe.rb")
 	assert.NoError(err)
-	assert.NoError(ioutil.WriteFile("testdata/run_pipe.rb", []byte(client.Content), 0644))
+	// assert.NoError(ioutil.WriteFile("testdata/run_pipe.rb", []byte(client.Content), 0644))
 	assert.Equal(string(bts), client.Content)
 }
 
