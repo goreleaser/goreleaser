@@ -10,7 +10,7 @@ func TestGit(t *testing.T) {
 	var assert = assert.New(t)
 	out, err := Run("status")
 	assert.NoError(err)
-	assert.Contains(out, "On branch")
+	assert.NotEmpty(out)
 
 	out, err = Run("command-that-dont-exist")
 	assert.Error(err)
