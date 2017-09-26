@@ -7,7 +7,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/google/go-github/github"
-	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/oauth2"
 )
@@ -17,24 +16,22 @@ type githubClient struct {
 }
 
 // NewGitHub returns a github client implementation
-func NewGitHub(ctx *context.Context, repo config.Repo) (Client, error) {
+func NewGitHub(ctx *context.Context) (Client, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: ctx.Token},
 	)
 	client := github.NewClient(oauth2.NewClient(ctx, ts))
-	if repo.APIURL != "" {
-		url, err := url.Parse(repo.APIURL)
+	if ctx.Config.GitHubURLs.API != "" {
+		api, err := url.Parse(ctx.Config.GitHubURLs.API)
 		if err != nil {
 			return &githubClient{}, err
 		}
-		client.BaseURL = url
-	}
-	if repo.UploadsURL != "" {
-		url, err := url.Parse(repo.UploadsURL)
+		upload, err := url.Parse(ctx.Config.GitHubURLs.Upload)
 		if err != nil {
 			return &githubClient{}, err
 		}
-		client.UploadURL = url
+		client.BaseURL = api
+		client.UploadURL = upload
 	}
 
 	return &githubClient{client}, nil

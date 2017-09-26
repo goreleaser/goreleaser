@@ -6,6 +6,7 @@ type templateData struct {
 	Name         string
 	Desc         string
 	Homepage     string
+	DownloadURL  string
 	Repo         config.Repo // FIXME: will not work for anything but github right now.
 	Tag          string
 	Version      string
@@ -22,11 +23,7 @@ type templateData struct {
 const formulaTemplate = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  {{ if .Repo.DownloadsURL }}
-  url "{{ .Repo.DownloadsURL }}{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
-  {{- else -}}
-  url "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
-  {{ end -}}
+  url "{{ .DownloadsURL }}/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
 
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"

@@ -13,13 +13,17 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// GitHubURLs holds the URLs to be used when using github enterprise
+type GitHubURLs struct {
+	API      string `yaml:"api,omitempty"`
+	Upload   string `yaml:"upload,omitempty"`
+	Download string `yaml:"download,omitempty"`
+}
+
 // Repo represents any kind of repo (github, gitlab, etc)
 type Repo struct {
-	Owner        string `yaml:",omitempty"`
-	Name         string `yaml:",omitempty"`
-	APIURL       string `yaml:"api_url,omitempty"`
-	UploadsURL   string `yaml:"uploads_url,omitempty"`
-	DownloadsURL string `yaml:"downloads_url,omitempty"`
+	Owner string `yaml:",omitempty"`
+	Name  string `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`
@@ -192,6 +196,9 @@ type Project struct {
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
+
+	// should be set if using github enterprise
+	GitHubURLs GitHubURLs `yaml:"github_urls,omitempty"`
 
 	// test only property indicating the path to the dist folder
 	Dist string `yaml:"-"`
