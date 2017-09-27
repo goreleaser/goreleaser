@@ -33,7 +33,11 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	return doRun(ctx, client.NewGitHub(ctx))
+	client, err := client.NewGitHub(ctx)
+	if err != nil {
+		return err
+	}
+	return doRun(ctx, client)
 }
 
 func doRun(ctx *context.Context, client client.Client) error {
@@ -93,8 +97,13 @@ func dataFor(ctx *context.Context, client client.Client, folder string) (result 
 	if err != nil {
 		return
 	}
+	var url = "https://github.com"
+	if ctx.Config.GitHubURLs.Download != "" {
+		url = ctx.Config.GitHubURLs.Download
+	}
 	return templateData{
 		Name:         formulaNameFor(ctx.Config.ProjectName),
+		DownloadURL:  url,
 		Desc:         ctx.Config.Brew.Description,
 		Homepage:     ctx.Config.Brew.Homepage,
 		Repo:         ctx.Config.Release.GitHub,
