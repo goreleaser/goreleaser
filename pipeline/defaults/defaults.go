@@ -43,7 +43,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.ProjectName == "" {
 		ctx.Config.ProjectName = ctx.Config.Release.GitHub.Name
 	}
+
 	setBuildDefaults(ctx)
+
 	if ctx.Config.Brew.Install == "" {
 		var installs []string
 		for _, build := range ctx.Config.Builds {
@@ -56,6 +58,13 @@ func (Pipe) Run(ctx *context.Context) error {
 			)
 		}
 		ctx.Config.Brew.Install = strings.Join(installs, "\n")
+	}
+
+	if ctx.Config.Brew.CommitAuthor.Name == "" {
+		ctx.Config.Brew.CommitAuthor.Name = "goreleaserbot"
+	}
+	if ctx.Config.Brew.CommitAuthor.Email == "" {
+		ctx.Config.Brew.CommitAuthor.Email = "goreleaser@carlosbecker.com"
 	}
 
 	err := setArchiveDefaults(ctx)
