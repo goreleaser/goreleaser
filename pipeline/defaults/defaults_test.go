@@ -32,6 +32,8 @@ func TestFillBasicData(t *testing.T) {
 	assert.Contains(ctx.Config.Builds[0].Goarch, "amd64")
 	assert.Equal("tar.gz", ctx.Config.Archive.Format)
 	assert.Contains(ctx.Config.Brew.Install, "bin.install \"goreleaser\"")
+	assert.Contains(ctx.Config.Brew.CommitAuthor.Name, "goreleaserbot")
+	assert.Contains(ctx.Config.Brew.CommitAuthor.Email, "goreleaser@carlosbecker.com")
 	assert.Empty(ctx.Config.Dockers)
 	assert.NotEmpty(
 		ctx.Config.Archive.NameTemplate,
