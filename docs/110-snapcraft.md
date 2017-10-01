@@ -1,9 +1,9 @@
 ---
-title: Snapcraft packaging
+title: Snapcraft Linux Packages
 ---
 
 GoReleaser can generate `snap` packages. [Snaps](http://snapcraft.io/) are a
-new packaging format that will let you publish your project directly to the
+new packaging format, that will let you publish your project directly to the
 Ubuntu store. From there it will be installable in all the
 [supported Linux distros](https://snapcraft.io/docs/core/install), with
 automatic and transactional updates.
@@ -14,7 +14,8 @@ You can read more about it in the [snapcraft docs](https://snapcraft.io/docs/).
 # .goreleaser.yml
 snapcraft:
 
-  # The name of the snap. This is optional and defaults to the project name.
+  # The name of the snap. This is optional.
+  # Default is project name.
   name: drumroll
 
   # Single-line elevator pitch for your amazing snap.
@@ -34,7 +35,7 @@ snapcraft:
   # `devel` will let you release only to the `edge` and `beta` channels in the
   # store. `stable` will let you release also to the `candidate` and `stable`
   # channels. More info about channels here:
-  # https://snapcraft.io/docs/reference/channels.
+  # https://snapcraft.io/docs/reference/channels
   grade: stable
 
   # Snaps can be setup to follow three different confinement policies:
@@ -42,14 +43,14 @@ snapcraft:
   # can only read and write in its own namespace is recommended. Extra
   # permissions for strict snaps can be declared as `plugs` for the app, which
   # are explained later. More info about confinement here:
-  # https://snapcraft.io/docs/reference/confinement).
+  # https://snapcraft.io/docs/reference/confinement
   confinement: strict
 
   # Each binary built by GoReleaser is an app inside the snap. In this section
   # you can declare extra details for those binaries. It is optional.
   apps:
 
-    # The name of the app must be the same name of the binary built.
+    # The name of the app must be the same name as the binary built.
     drumroll:
 
       # If your app requires extra permissions to work outside of its default

@@ -2,10 +2,10 @@
 title: Snapshots
 ---
 
-Sometimes we want to generate a full build of our project for some reason,
-but don't want to validate anything nor upload it to anywhere.
-GoRelease supports this with a `--snapshot` flag and with a `snapshot`
-customization section as well.
+Sometimes we want to generate a full build of our project,
+but neither want to validate anything nor upload it to anywhere.
+GoReleaser supports this with the `--snapshot` flag
+and also with the `snapshot` customization section:
 
 ```yml
 # .goreleaser.yml
@@ -15,6 +15,6 @@ snapshot:
   # - Commit
   # - Tag
   # - Timestamp
-  # Default: SNAPSHOT-{{.Commit}}
+  # Default is `SNAPSHOT-{{.Commit}}`.
   name_template: SNAPSHOT-{{.Commit}}
 ```
