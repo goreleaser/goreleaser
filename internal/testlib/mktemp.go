@@ -12,13 +12,12 @@ import (
 // Mktmp creates a new tempdir, cd into it and provides a back function that
 // cd into the previous directory.
 func Mktmp(t *testing.T) (folder string, back func()) {
-	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	current, err := os.Getwd()
-	assert.NoError(err)
-	assert.NoError(os.Chdir(folder))
+	assert.NoError(t, err)
+	assert.NoError(t, os.Chdir(folder))
 	return folder, func() {
-		assert.NoError(os.Chdir(current))
+		assert.NoError(t, os.Chdir(current))
 	}
 }

@@ -45,16 +45,14 @@ var defaultTemplateData = templateData{
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
-	assert := assert.New(t)
-	assert.Contains(formulae, "class Test < Formula")
-	assert.Contains(formulae, `homepage "https://google.com"`)
-	assert.Contains(formulae, `url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`)
-	assert.Contains(formulae, `sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`)
-	assert.Contains(formulae, `version "0.1.3"`)
+	assert.Contains(t, formulae, "class Test < Formula")
+	assert.Contains(t, formulae, `homepage "https://google.com"`)
+	assert.Contains(t, formulae, `url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`)
+	assert.Contains(t, formulae, `sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`)
+	assert.Contains(t, formulae, `version "0.1.3"`)
 }
 
 func TestFullFormulae(t *testing.T) {
-	assert := assert.New(t)
 	data := defaultTemplateData
 	data.Caveats = "Here are some caveats"
 	data.Dependencies = []string{"gtk+"}
@@ -63,37 +61,34 @@ func TestFullFormulae(t *testing.T) {
 	data.Install = []string{"custom install script", "another install script"}
 	data.Tests = []string{`system "#{bin}/foo -version"`}
 	out, err := doBuildFormula(data)
-	assert.NoError(err)
+	assert.NoError(t, err)
 	formulae := out.String()
 
 	bts, err := ioutil.ReadFile("testdata/test.rb")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	// ioutil.WriteFile("testdata/test.rb", []byte(formulae), 0644)
-
-	assert.Equal(string(bts), formulae)
+  
+	assert.Equal(t, string(bts), formulae)
 }
 
 func TestFormulaeSimple(t *testing.T) {
-	assert := assert.New(t)
 	out, err := doBuildFormula(defaultTemplateData)
-	assert.NoError(err)
+	assert.NoError(t, err)
 	formulae := out.String()
 	assertDefaultTemplateData(t, formulae)
-	assert.NotContains(formulae, "def caveats")
-	assert.NotContains(formulae, "depends_on")
-	assert.NotContains(formulae, "def plist;")
+	assert.NotContains(t, formulae, "def caveats")
+	assert.NotContains(t, formulae, "depends_on")
+	assert.NotContains(t, formulae, "def plist;")
 }
 
 func TestSplit(t *testing.T) {
-	var assert = assert.New(t)
 	var parts = split("system \"true\"\nsystem \"#{bin}/foo -h\"")
-	assert.Equal([]string{"system \"true\"", "system \"#{bin}/foo -h\""}, parts)
+	assert.Equal(t, []string{"system \"true\"", "system \"#{bin}/foo -h\""}, parts)
 }
 
 func TestRunPipe(t *testing.T) {
-	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var ctx = &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.1",
@@ -131,27 +126,27 @@ func TestRunPipe(t *testing.T) {
 	var path = filepath.Join(folder, "bin.tar.gz")
 	ctx.AddBinary("darwinamd64", "bin", "bin", path)
 	client := &DummyClient{}
-	assert.Error(doRun(ctx, client))
-	assert.False(client.CreatedFile)
+	assert.Error(t, doRun(ctx, client))
+	assert.False(t, client.CreatedFile)
 
 	_, err = os.Create(path)
-	assert.NoError(err)
-	assert.NoError(doRun(ctx, client))
-	assert.True(client.CreatedFile)
+	assert.NoError(t, err)
+	assert.NoError(t, doRun(ctx, client))
+	assert.True(t, client.CreatedFile)
 
 	bts, err := ioutil.ReadFile("testdata/run_pipe.rb")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	// assert.NoError(ioutil.WriteFile("testdata/run_pipe.rb", []byte(client.Content), 0644))
-	assert.Equal(string(bts), client.Content)
+
+	assert.Equal(t, string(bts), client.Content)
 }
 
 func TestRunPipeFormatOverride(t *testing.T) {
-	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var path = filepath.Join(folder, "bin.zip")
 	_, err = os.Create(path)
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var ctx = &context.Context{
 		Config: config.Project{
 			Dist: folder,
@@ -175,13 +170,12 @@ func TestRunPipeFormatOverride(t *testing.T) {
 	}
 	ctx.AddBinary("darwinamd64", "bin", "bin", path)
 	client := &DummyClient{}
-	assert.NoError(doRun(ctx, client))
-	assert.True(client.CreatedFile)
-	assert.Contains(client.Content, "bin.zip")
+	assert.NoError(t, doRun(ctx, client))
+	assert.True(t, client.CreatedFile)
+	assert.Contains(t, client.Content, "bin.zip")
 }
 
 func TestRunPipeNoDarwin64Build(t *testing.T) {
-	assert := assert.New(t)
 	var ctx = &context.Context{
 		Config: config.Project{
 			Archive: config.Archive{
@@ -197,23 +191,21 @@ func TestRunPipeNoDarwin64Build(t *testing.T) {
 		Publish: true,
 	}
 	client := &DummyClient{}
-	assert.Equal(ErrNoDarwin64Build, doRun(ctx, client))
-	assert.False(client.CreatedFile)
+	assert.Equal(t, ErrNoDarwin64Build, doRun(ctx, client))
+	assert.False(t, client.CreatedFile)
 }
 
 func TestRunPipeBrewNotSetup(t *testing.T) {
-	assert := assert.New(t)
 	var ctx = &context.Context{
 		Config:  config.Project{},
 		Publish: true,
 	}
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doRun(ctx, client))
-	assert.False(client.CreatedFile)
+	assert.False(t, client.CreatedFile)
 }
 
 func TestRunPipeBinaryRelease(t *testing.T) {
-	assert := assert.New(t)
 	var ctx = &context.Context{
 		Publish: true,
 		Config: config.Project{
@@ -231,21 +223,19 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	ctx.AddBinary("darwinamd64", "foo", "bar", "baz")
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doRun(ctx, client))
-	assert.False(client.CreatedFile)
+	assert.False(t, client.CreatedFile)
 }
 
 func TestRunPipeNoPublish(t *testing.T) {
-	assert := assert.New(t)
 	var ctx = &context.Context{
 		Publish: false,
 	}
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doRun(ctx, client))
-	assert.False(client.CreatedFile)
+	assert.False(t, client.CreatedFile)
 }
 
 func TestRunPipeDraftRelease(t *testing.T) {
-	assert := assert.New(t)
 	var ctx = &context.Context{
 		Publish: true,
 		Config: config.Project{
@@ -262,11 +252,10 @@ func TestRunPipeDraftRelease(t *testing.T) {
 	}
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doRun(ctx, client))
-	assert.False(client.CreatedFile)
+	assert.False(t, client.CreatedFile)
 }
 
 func TestRunPipeFormatBinary(t *testing.T) {
-	assert := assert.New(t)
 	var ctx = &context.Context{
 		Config: config.Project{
 			Archive: config.Archive{
@@ -276,7 +265,7 @@ func TestRunPipeFormatBinary(t *testing.T) {
 	}
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doRun(ctx, client))
-	assert.False(client.CreatedFile)
+	assert.False(t, client.CreatedFile)
 }
 
 type DummyClient struct {

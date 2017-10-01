@@ -29,24 +29,22 @@ func TestRunPipeMissingInfo(t *testing.T) {
 		pipeline.Skip("no summary nor description were provided"): {},
 	} {
 		t.Run(fmt.Sprintf("testing if %v happens", eerr), func(t *testing.T) {
-			var assert = assert.New(t)
 			var ctx = &context.Context{
 				Config: config.Project{
 					Snapcraft: snap,
 				},
 			}
-			assert.Equal(eerr, Pipe{}.Run(ctx))
+			assert.Equal(t, eerr, Pipe{}.Run(ctx))
 		})
 	}
 }
 
 func TestRunPipe(t *testing.T) {
-	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(os.Mkdir(dist, 0755))
-	assert.NoError(err)
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, err)
 	var ctx = &context.Context{
 		Version: "testversion",
 		Config: config.Project{
@@ -59,16 +57,15 @@ func TestRunPipe(t *testing.T) {
 		},
 	}
 	addBinaries(t, ctx, "mybin", dist)
-	assert.NoError(Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeWithName(t *testing.T) {
-	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(os.Mkdir(dist, 0755))
-	assert.NoError(err)
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, err)
 	var ctx = &context.Context{
 		Version: "testversion",
 		Config: config.Project{
@@ -82,22 +79,21 @@ func TestRunPipeWithName(t *testing.T) {
 		},
 	}
 	addBinaries(t, ctx, "testprojectname", dist)
-	assert.NoError(Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "testprojectname_linuxamd64", "prime", "meta", "snap.yaml"))
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var metadata Metadata
 	err = yaml.Unmarshal(yamlFile, &metadata)
-	assert.NoError(err)
-	assert.Equal(metadata.Name, "testsnapname")
+	assert.NoError(t, err)
+	assert.Equal(t, metadata.Name, "testsnapname")
 }
 
 func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
-	var assert = assert.New(t)
 	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(os.Mkdir(dist, 0755))
-	assert.NoError(err)
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, err)
 	var ctx = &context.Context{
 		Version: "testversion",
 		Config: config.Project{
@@ -116,23 +112,22 @@ func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
 		},
 	}
 	addBinaries(t, ctx, "mybin", dist)
-	assert.NoError(Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "mybin_linuxamd64", "prime", "meta", "snap.yaml"))
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var metadata Metadata
 	err = yaml.Unmarshal(yamlFile, &metadata)
-	assert.NoError(err)
-	assert.Equal(metadata.Apps["mybin"].Plugs, []string{"home", "network"})
-	assert.Equal(metadata.Apps["mybin"].Daemon, "simple")
+	assert.NoError(t, err)
+	assert.Equal(t, metadata.Apps["mybin"].Plugs, []string{"home", "network"})
+	assert.Equal(t, metadata.Apps["mybin"].Daemon, "simple")
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {
-	var assert = assert.New(t)
 	var path = os.Getenv("PATH")
 	defer func() {
-		assert.NoError(os.Setenv("PATH", path))
+		assert.NoError(t, os.Setenv("PATH", path))
 	}()
-	assert.NoError(os.Setenv("PATH", ""))
+	assert.NoError(t, os.Setenv("PATH", ""))
 	var ctx = &context.Context{
 		Config: config.Project{
 			Snapcraft: config.Snapcraft{
@@ -141,11 +136,10 @@ func TestNoSnapcraftInPath(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualError(Pipe{}.Run(ctx), ErrNoSnapcraft.Error())
+	assert.EqualError(t, Pipe{}.Run(ctx), ErrNoSnapcraft.Error())
 }
 
 func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
-	var assert = assert.New(t)
 	for _, plat := range []string{
 		"linuxamd64",
 		"linux386",
@@ -155,10 +149,10 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 		"linuxwtf",
 	} {
 		var folder = name + "_" + plat
-		assert.NoError(os.Mkdir(filepath.Join(dist, folder), 0755))
+		assert.NoError(t, os.Mkdir(filepath.Join(dist, folder), 0755))
 		var binPath = filepath.Join(dist, folder, name)
 		_, err := os.Create(binPath)
-		assert.NoError(err)
+		assert.NoError(t, err)
 		ctx.AddBinary(plat, folder, name, binPath)
 	}
 }

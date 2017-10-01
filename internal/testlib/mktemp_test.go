@@ -8,13 +8,12 @@ import (
 )
 
 func TestMkTemp(t *testing.T) {
-	var assert = assert.New(t)
 	current, err := os.Getwd()
-	assert.NoError(err)
+	assert.NoError(t, err)
 	folder, back := Mktmp(t)
-	assert.NotEmpty(folder)
+	assert.NotEmpty(t, folder)
 	back()
 	newCurrent, err := os.Getwd()
-	assert.NoError(err)
-	assert.Equal(current, newCurrent)
+	assert.NoError(t, err)
+	assert.Equal(t, current, newCurrent)
 }

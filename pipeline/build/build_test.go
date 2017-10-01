@@ -28,7 +28,6 @@ func TestRunInvalidCommand(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
-	assert := assert.New(t)
 	var config = config.Project{
 		Builds: []config.Build{
 			{
@@ -39,13 +38,12 @@ func TestBuild(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
-	assert.NoError(doBuild(ctx, ctx.Config.Builds[0], buildtarget.Runtime))
+	assert.NoError(t, doBuild(ctx, ctx.Config.Builds[0], buildtarget.Runtime))
 }
 
 func TestRunFullPipe(t *testing.T) {
-	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var binary = filepath.Join(folder, "testing")
 	var pre = filepath.Join(folder, "pre")
 	var post = filepath.Join(folder, "post")
@@ -69,16 +67,15 @@ func TestRunFullPipe(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(Pipe{}.Run(context.New(config)))
-	assert.True(exists(binary), binary)
-	assert.True(exists(pre), pre)
-	assert.True(exists(post), post)
+	assert.NoError(t, Pipe{}.Run(context.New(config)))
+	assert.True(t, exists(binary), binary)
+	assert.True(t, exists(pre), pre)
+	assert.True(t, exists(post), post)
 }
 
 func TestRunPipeFormatBinary(t *testing.T) {
-	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var binary = filepath.Join(folder, "binary-testing")
 	var config = config.Project{
 		ProjectName: "testing",
@@ -99,14 +96,13 @@ func TestRunPipeFormatBinary(t *testing.T) {
 			NameTemplate: "binary-{{.Binary}}",
 		},
 	}
-	assert.NoError(Pipe{}.Run(context.New(config)))
-	assert.True(exists(binary))
+	assert.NoError(t, Pipe{}.Run(context.New(config)))
+	assert.True(t, exists(binary))
 }
 
 func TestRunPipeArmBuilds(t *testing.T) {
-	assert := assert.New(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(err)
+	assert.NoError(t, err)
 	var binary = filepath.Join(folder, "armtesting")
 	var config = config.Project{
 		Dist: folder,
@@ -128,12 +124,11 @@ func TestRunPipeArmBuilds(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(Pipe{}.Run(context.New(config)))
-	assert.True(exists(binary), binary)
+	assert.NoError(t, Pipe{}.Run(context.New(config)))
+	assert.True(t, exists(binary), binary)
 }
 
 func TestBuildFailed(t *testing.T) {
-	assert := assert.New(t)
 	var config = config.Project{
 		Builds: []config.Build{
 			{
@@ -147,11 +142,10 @@ func TestBuildFailed(t *testing.T) {
 			},
 		},
 	}
-	assert.Error(Pipe{}.Run(context.New(config)))
+	assert.Error(t, Pipe{}.Run(context.New(config)))
 }
 
 func TestRunPipeWithInvalidOS(t *testing.T) {
-	assert := assert.New(t)
 	var config = config.Project{
 		Builds: []config.Build{
 			{
@@ -165,11 +159,10 @@ func TestRunPipeWithInvalidOS(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(Pipe{}.Run(context.New(config)))
+	assert.NoError(t, Pipe{}.Run(context.New(config)))
 }
 
 func TestRunInvalidNametemplate(t *testing.T) {
-	var assert = assert.New(t)
 	for _, format := range []string{"tar.gz", "zip", "binary"} {
 		var config = config.Project{
 			ProjectName: "nameeeee",
@@ -190,12 +183,11 @@ func TestRunInvalidNametemplate(t *testing.T) {
 				NameTemplate: "{{.Binary}",
 			},
 		}
-		assert.Error(Pipe{}.Run(context.New(config)))
+		assert.Error(t, Pipe{}.Run(context.New(config)))
 	}
 }
 
 func TestRunInvalidLdflags(t *testing.T) {
-	var assert = assert.New(t)
 	var config = config.Project{
 		Builds: []config.Build{
 			{
@@ -211,11 +203,10 @@ func TestRunInvalidLdflags(t *testing.T) {
 			},
 		},
 	}
-	assert.Error(Pipe{}.Run(context.New(config)))
+	assert.Error(t, Pipe{}.Run(context.New(config)))
 }
 
 func TestRunPipeFailingHooks(t *testing.T) {
-	assert := assert.New(t)
 	var config = config.Project{
 		Builds: []config.Build{
 			{
@@ -232,11 +223,11 @@ func TestRunPipeFailingHooks(t *testing.T) {
 	var ctx = context.New(config)
 	t.Run("pre-hook", func(t *testing.T) {
 		ctx.Config.Builds[0].Hooks.Pre = "exit 1"
-		assert.Error(Pipe{}.Run(ctx))
+		assert.Error(t, Pipe{}.Run(ctx))
 	})
 	t.Run("post-hook", func(t *testing.T) {
 		ctx.Config.Builds[0].Hooks.Post = "exit 1"
-		assert.Error(Pipe{}.Run(ctx))
+		assert.Error(t, Pipe{}.Run(ctx))
 	})
 }
 
