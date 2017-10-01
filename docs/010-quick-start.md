@@ -90,7 +90,7 @@ $ git tag -a v0.1.0 -m "First release"
 $ git push origin v0.1.0
 ```
 
-**Note**: @e recommend the use of [semantic versioning](http://semver.org/). We
+**Note**: We recommend the use of [semantic versioning](http://semver.org/). We
 are not enforcing it though. We do remove the `v` prefix and then enforce
 that the next character is a number. So, `v0.1.0` and `0.1.0` are virtually the
 same and are both accepted, while `version0.1.0` is not.

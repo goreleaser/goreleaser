@@ -20,6 +20,11 @@ brew:
     owner: user
     name: homebrew-tap
 
+  # Git author used to commit to the repository.
+  commit_author:
+    name: goreleaserbot
+    email: goreleaser@carlosbecker.com
+
   # Folder inside the repository to put the formula.
   # Default is the root folder.
   folder: Formula

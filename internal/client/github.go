@@ -44,8 +44,8 @@ func (c *githubClient) CreateFile(
 ) (err error) {
 	options := &github.RepositoryContentFileOptions{
 		Committer: &github.CommitAuthor{
-			Name:  github.String("goreleaserbot"),
-			Email: github.String("goreleaser@carlosbecker.com"),
+			Name:  github.String(ctx.Config.Brew.CommitAuthor.Name),
+			Email: github.String(ctx.Config.Brew.CommitAuthor.Email),
 		},
 		Content: content.Bytes(),
 		Message: github.String(

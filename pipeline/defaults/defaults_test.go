@@ -32,6 +32,8 @@ func TestFillBasicData(t *testing.T) {
 	assert.Equal(t, "tar.gz", ctx.Config.Archive.Format)
 	assert.Contains(t, ctx.Config.Brew.Install, "bin.install \"goreleaser\"")
 	assert.Empty(t, ctx.Config.Dockers)
+	assert.Equal(t, ctx.Config.Brew.CommitAuthor.Name, "goreleaserbot")
+	assert.Equal(t, ctx.Config.Brew.CommitAuthor.Email, "goreleaser@carlosbecker.com")
 	assert.NotEmpty(
 		t,
 		ctx.Config.Archive.NameTemplate,
