@@ -2,7 +2,8 @@
 title: Quick Start
 ---
 
-In this example we will build, archive and release a Golang project.
+In this example we will build, archive and release a Go project.
+
 Create a GitHub repository and add a single main package:
 
 ```go
@@ -15,7 +16,7 @@ func main() {
 ```
 
 By default GoReleaser will build the current directory, but you can change
-the build package path in the GoReleaser configuration file.
+the package path in the GoReleaser configuration file:
 
 ```yml
 # .goreleaser.yml
@@ -30,17 +31,17 @@ builds:
       - amd64
 ```
 
-PS: Invalid GOOS/GOARCH combinations will automatically be skipped.
+GoReleaser skips invalid GOOS/GOARCH combinations.
 
-This configuration specifies the build operating systems to Windows, Linux and
-MacOS using 64bit architecture, the name of the binaries is `drum-roll`.
+With the above configuration the name of all created binaries will be `drum-roll`
+and GoReleaser will build one binary in 64bit architecture for each of the operating systems Windows, Linux and MacOS.
 
-GoReleaser will then archive the result binaries of each Os/Arch into a
+GoReleaser will then archive the resulting binaries of each OS/Arch pair into a
 separate file. The default format is `{{.ProjectName}}_{{.Os}}_{{.Arch}}`.
-You can change the archives name and format. You can also replace the OS
+You can change the archive's name and format. You can also replace the OS
 and the Architecture with your own.
-Another useful feature is to add files to archives, this is very useful for
-integrating assets like resource files.
+
+Another useful feature is to add additional files to the created archives:
 
 ```yml
 # .goreleaser.yml
@@ -65,17 +66,18 @@ archive:
     - drum-roll.licence.txt
 ```
 
-This configuration will generate tar archives, containing an additional
-file called `drum-roll.licence.txt`. The archives will be located in the `dist``
-folder:
+This configuration will generate `tar` archives, each containing an additional
+file called `drum-roll.licence.txt`.
+The archives will be located in the `dist` folder:
 
 - `./dist/drum-roll_windows_64-bit.tar.gz`
 - `./dist/drum-roll_macOS_64-bit.tar.gz`
 - `./dist/drum-roll_Tux_64-bit.tar.gz`
 
-Next export a `GITHUB_TOKEN` environment variable with the `repo` scope
-selected. This will be used to deploy releases to your GitHub repository.
-Create yours [here](https://github.com/settings/tokens/new).
+Next, you need to export a `GITHUB_TOKEN` environment variable, which should contain a
+GitHub token with the `repo` scope selected.
+It will be used to deploy releases to your GitHub repository.
+Create a token [here](https://github.com/settings/tokens/new).
 
 ```console
 $ export GITHUB_TOKEN=`YOUR_TOKEN`
@@ -93,10 +95,10 @@ $ git push origin v0.1.0
 **Note**: We recommend the use of [semantic versioning](http://semver.org/). We
 are not enforcing it though. We do remove the `v` prefix and then enforce
 that the next character is a number. So, `v0.1.0` and `0.1.0` are virtually the
-same and are both accepted, while `version0.1.0` is not.
+same and both are accepted, while `version0.1.0` is not.
 
-If you don't want to create a tag yet but instead simply create a package
-based on the latest commit, then you can also use the `--snapshot` flag.
+If you don't want to create a tag yet, you can also create a release
+based on the latest commit by using the `--snapshot` flag.
 
 Now you can run GoReleaser at the root of your repository:
 
@@ -104,7 +106,7 @@ Now you can run GoReleaser at the root of your repository:
 $ goreleaser
 ```
 
-That's it! Check your GitHub project's release page.
+That's all! Check your GitHub project's release page.
 The release should look like this:
 
 <a href="https://github.com/goreleaser/goreleaser/releases">

@@ -1,11 +1,11 @@
 ---
-title: Custom homebrew tap
+title: Homebrew
 ---
 
-After releasing to GitHub, GoReleaser can generate and publish a homebrew-tap
+After releasing to GitHub, GoReleaser can generate and publish a *homebrew-tap*
 recipe into a repository that you have access to.
 
-The brew section specifies how the formula should be created.
+The `brew` section specifies how the formula should be created.
 You can check the
 [Homebrew documentation](https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap.md)
 and the
@@ -21,6 +21,7 @@ brew:
     name: homebrew-tap
 
   # Git author used to commit to the repository.
+  # Defaults are shown.
   commit_author:
     name: goreleaserbot
     email: goreleaser@carlosbecker.com
@@ -33,35 +34,38 @@ brew:
   # Default is empty.
   caveats: "How to use this binary"
 
-  # Your app's homepage
-  # Default is empty
+  # Your app's homepage.
+  # Default is empty.
   homepage: "https://example.com/"
 
-  # Your app's description
-  # Default is empty
+  # Your app's description.
+  # Default is empty.
   description: "Software to create fast and easy drum rolls."
 
-  # Dependencies of your package
+  # Packages your package depends on.
   dependencies:
     - git
     - zsh
 
-  # Packages that conflict with your package
+  # Packages that conflict with your package.
   conflicts:
     - svn
     - bash
 
-  # Packages that run as a service. Default is empty.
+  # Specify for packages that run as a service.
+  # Default is empty.
   plist: |
     <?xml version="1.0" encoding="UTF-8"?>
     ...
 
-  # So you can brew test your formula. Default is empty.
+  # So you can `brew test` your formula.
+  # Default is empty.
   test: |
     system "#{bin}/program --version"
     ...
 
-  # Custom install script for brew. Default is 'bin.install "program"'
+  # Custom install script for brew.
+  # Default is 'bin.install "program"'.
   install: |
     bin.install "program"
     ...
@@ -69,7 +73,7 @@ brew:
 
 By defining the `brew` section, GoReleaser will take care of publishing the
 Homebrew tap.
-Assuming that the current tag is `v1.2.3`, the above config will generate a
+Assuming that the current tag is `v1.2.3`, the above configuration will generate a
 `program.rb` formula in the `Formula` folder of `user/homebrew-tap` repository:
 
 ```rb

@@ -1,8 +1,8 @@
 ---
-title: GitHub Enterprise Support
+title: GitHub Enterprise
 ---
 
-You can use GitHub Enteprise within GoReleaser by providing its URLs in
+You can use GoReleaser with GitHub Enterprise by providing its URLs in
 the `.goreleaer.yml` configuration file:
 
 ```yaml
@@ -13,4 +13,4 @@ github_urls:
     download: github.foo.bar
 ```
 
-If none is set, it will default to the public GitHub's URLs.
+If none are set, they default to GitHub's public URLs.

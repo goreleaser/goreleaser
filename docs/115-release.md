@@ -1,10 +1,9 @@
 ---
-title: Custom releasing
+title: Releasing
 ---
 
-GoRelease will create a release in GitHub with the current tag, upload all
-the archives and checksums, also generating a changelog from the commit
-log between the current and previous tags.
+GoReleaser will create a release in GitHub with the current tag, upload all
+the archives and checksums, also generate a changelog from the commits new since the last tag.
 
 Let's see what can be customized in the `release` section:
 
@@ -18,16 +17,17 @@ release:
     name: repo
 
   # If set to true, will not auto-publish the release.
-  # Default is false
+  # Default is false.
   draft: true
 ```
 
 ## Custom release notes
 
-You can have a markdown file previously created with the release notes, and
-pass it down to goreleaser with the `--release-notes=FILE` flag.
+You can specify a file containing your custom release notes, and
+pass it with the `--release-notes=FILE` flag.
 GoReleaser will then skip its own release notes generation,
 using the contents of your file instead.
+You can use Markdown to format the contents of your file.
 
 On Unix systems you can also generate the release notes in-line by using [process substitution](https://en.wikipedia.org/wiki/Process_substitution).
 To list all commits since the last tag, but skip ones starting with `Merge` or `docs`, you could run this command:
