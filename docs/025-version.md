@@ -1,5 +1,5 @@
 ---
-title: `main.version`
+title: main.version
 ---
 
 GoReleaser always sets a `main.version` *ldflag*.
