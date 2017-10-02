@@ -1,6 +1,9 @@
 package archive
 
 import (
+	"archive/tar"
+	"compress/gzip"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -51,6 +54,23 @@ func TestRunPipe(t *testing.T) {
 			ctx.Config.Archive.Format = format
 			assert.NoError(t, Pipe{}.Run(ctx))
 		})
+	}
+
+	// Check archive contents
+	f, err := os.Open(filepath.Join(dist, "mybin_darwin_amd64.tar.gz"))
+	assert.NoError(t, err)
+	defer func() { assert.NoError(t, f.Close()) }()
+	gr, err := gzip.NewReader(f)
+	assert.NoError(t, err)
+	defer func() { assert.NoError(t, gr.Close()) }()
+	r := tar.NewReader(gr)
+	for _, n := range []string{"README.md", "mybin"} {
+		h, err := r.Next()
+		if err == io.EOF {
+			break
+		}
+		assert.NoError(t, err)
+		assert.Equal(t, n, h.Name)
 	}
 }
 
@@ -131,4 +151,47 @@ func TestRunPipeGlobFailsToAdd(t *testing.T) {
 	}
 	ctx.AddBinary("windows386", "mybin", "mybin", "dist/mybin")
 	assert.Error(t, Pipe{}.Run(ctx))
+}
+
+func TestRunPipeWrap(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin_darwin_amd64"), 0755))
+	_, err := os.Create(filepath.Join(dist, "mybin_darwin_amd64", "mybin"))
+	assert.NoError(t, err)
+	_, err = os.Create(filepath.Join(folder, "README.md"))
+	assert.NoError(t, err)
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dist: dist,
+			Archive: config.Archive{
+				WrapInDirectory: true,
+				Format:          "tar.gz",
+				Files: []string{
+					"README.*",
+				},
+			},
+		},
+	}
+	ctx.AddBinary("darwinamd64", "mybin_darwin_amd64", "mybin", filepath.Join(dist, "mybin_darwin_amd64", "mybin"))
+	assert.NoError(t, Pipe{}.Run(ctx))
+
+	// Check archive contents
+	f, err := os.Open(filepath.Join(dist, "mybin_darwin_amd64.tar.gz"))
+	assert.NoError(t, err)
+	defer func() { assert.NoError(t, f.Close()) }()
+	gr, err := gzip.NewReader(f)
+	assert.NoError(t, err)
+	defer func() { assert.NoError(t, gr.Close()) }()
+	r := tar.NewReader(gr)
+	for _, n := range []string{"README.md", "mybin"} {
+		h, err := r.Next()
+		if err == io.EOF {
+			break
+		}
+		assert.NoError(t, err)
+		assert.Equal(t, filepath.Join("mybin_darwin_amd64", n), h.Name)
+	}
 }

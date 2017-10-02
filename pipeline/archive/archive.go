@@ -43,31 +43,39 @@ func (Pipe) Run(ctx *context.Context) error {
 func create(ctx *context.Context, platform string, groups map[string][]context.Binary) error {
 	for folder, binaries := range groups {
 		var format = archiveformat.For(ctx, platform)
-		targetFolder := filepath.Join(ctx.Config.Dist, folder+"."+format)
-		file, err := os.Create(targetFolder)
+		archivePath := filepath.Join(ctx.Config.Dist, folder+"."+format)
+		archiveFile, err := os.Create(archivePath)
 		if err != nil {
-			return fmt.Errorf("failed to create directory %s: %s", targetFolder, err.Error())
+			return fmt.Errorf("failed to create directory %s: %s", archivePath, err.Error())
 		}
-		defer func() { _ = file.Close() }()
-		log.WithField("archive", file.Name()).Info("creating")
-		var archive = archive.New(file)
-		defer func() { _ = archive.Close() }()
+		defer func() {
+			if e := archiveFile.Close(); e != nil {
+				log.WithField("archive", archivePath).Errorf("failed to close file: %v", e)
+			}
+		}()
+		log.WithField("archive", archivePath).Info("creating")
+		var a = archive.New(archiveFile)
+		defer func() {
+			if e := a.Close(); e != nil {
+				log.WithField("archive", archivePath).Errorf("failed to close archive: %v", e)
+			}
+		}()
 
 		files, err := findFiles(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to find files to archive: %s", err.Error())
 		}
 		for _, f := range files {
-			if err = archive.Add(f, f); err != nil {
+			if err = a.Add(wrap(ctx, f, folder), f); err != nil {
 				return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
 			}
 		}
 		for _, binary := range binaries {
-			if err := archive.Add(binary.Name, binary.Path); err != nil {
+			if err := a.Add(wrap(ctx, binary.Name, folder), binary.Path); err != nil {
 				return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
 			}
 		}
-		ctx.AddArtifact(file.Name())
+		ctx.AddArtifact(archivePath)
 	}
 	return nil
 }
@@ -91,4 +99,12 @@ func findFiles(ctx *context.Context) (result []string, err error) {
 		result = append(result, files...)
 	}
 	return
+}
+
+// Wrap archive files with folder if set in config.
+func wrap(ctx *context.Context, name, folder string) string {
+	if ctx.Config.Archive.WrapInDirectory {
+		return filepath.Join(folder, name)
+	}
+	return name
 }
