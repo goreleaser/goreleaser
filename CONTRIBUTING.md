@@ -8,14 +8,14 @@ conduct](/CODE_OF_CONDUCT.md).
 
 `goreleaser` is written in [Go](https://golang.org/).
 
-Prerequisites are:
+Prerequisites:
 
-* Build:
-  * `make`
-  * [Go 1.8+](http://golang.org/doc/install)
-  * [fpm](https://fpm.readthedocs.io/en/latest/installing.html)
-  * rpm / rpmbuild
-  * [snapcraft](http://snapcraft.io/)
+* `make`
+* [Go 1.8+](https://golang.org/doc/install)
+* [fpm](https://fpm.readthedocs.io/en/latest/installing.html)
+* rpm / rpmbuild
+* [snapcraft](https://snapcraft.io/)
+* [Docker](https://www.docker.com/)
 
 Clone `goreleaser` from source into `$GOPATH`:
 
