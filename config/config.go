@@ -106,6 +106,7 @@ type Archive struct {
 	Format          string            `yaml:",omitempty"`
 	FormatOverrides []FormatOverride  `yaml:"format_overrides,omitempty"`
 	NameTemplate    string            `yaml:"name_template,omitempty"`
+	WrapInDirectory bool              `yaml:"wrap_in_directory,omitempty"`
 	Replacements    map[string]string `yaml:",omitempty"`
 	Files           []string          `yaml:",omitempty"`
 
