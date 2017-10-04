@@ -75,7 +75,8 @@ func Release(flags Flags) error {
 		if err != nil {
 			return err
 		}
-		log.WithField("notes", notes).Info("loaded custom release notes")
+		log.WithField("file", notes).Info("loaded custom release notes")
+		log.WithField("file", notes).Debugf("custon release notes: \n%s", string(bts))
 		ctx.ReleaseNotes = string(bts)
 	}
 	ctx.Snapshot = flags.Bool("snapshot")
