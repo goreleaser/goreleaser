@@ -84,10 +84,11 @@ func (c *githubClient) CreateFile(
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
 	var release *github.RepositoryRelease
 	var data = &github.RepositoryRelease{
-		Name:    github.String(ctx.Git.CurrentTag),
-		TagName: github.String(ctx.Git.CurrentTag),
-		Body:    github.String(body),
-		Draft:   github.Bool(ctx.Config.Release.Draft),
+		Name:       github.String(ctx.Git.CurrentTag),
+		TagName:    github.String(ctx.Git.CurrentTag),
+		Body:       github.String(body),
+		Draft:      github.Bool(ctx.Config.Release.Draft),
+		Prerelease: github.Bool(ctx.Config.Release.Prerelease),
 	}
 	release, _, err = c.client.Repositories.GetReleaseByTag(
 		ctx,

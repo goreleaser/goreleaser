@@ -23,14 +23,14 @@ func (Pipe) Description() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	client, err := client.NewGitHub(ctx)
+	c, err := client.NewGitHub(ctx)
 	if err != nil {
 		return err
 	}
-	return doRun(ctx, client)
+	return doRun(ctx, c)
 }
 
-func doRun(ctx *context.Context, client client.Client) error {
+func doRun(ctx *context.Context, c client.Client) error {
 	if !ctx.Publish {
 		return pipeline.Skip("--skip-publish is set")
 	}
@@ -41,7 +41,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if err != nil {
 		return err
 	}
-	releaseID, err := client.CreateRelease(ctx, body.String())
+	releaseID, err := c.CreateRelease(ctx, body.String())
 	if err != nil {
 		return err
 	}
@@ -54,13 +54,13 @@ func doRun(ctx *context.Context, client client.Client) error {
 			defer func() {
 				<-sem
 			}()
-			return upload(ctx, client, releaseID, artifact)
+			return upload(ctx, c, releaseID, artifact)
 		})
 	}
 	return g.Wait()
 }
 
-func upload(ctx *context.Context, client client.Client, releaseID int, artifact string) error {
+func upload(ctx *context.Context, c client.Client, releaseID int, artifact string) error {
 	var path = filepath.Join(ctx.Config.Dist, artifact)
 	file, err := os.Open(path)
 	if err != nil {
@@ -69,5 +69,5 @@ func upload(ctx *context.Context, client client.Client, releaseID int, artifact 
 	defer func() { _ = file.Close() }()
 	_, name := filepath.Split(path)
 	log.WithField("file", file.Name()).WithField("name", name).Info("uploading to release")
-	return client.Upload(ctx, releaseID, name, file)
+	return c.Upload(ctx, releaseID, name, file)
 }

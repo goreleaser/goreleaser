@@ -116,8 +116,9 @@ type Archive struct {
 
 // Release config used for the GitHub release
 type Release struct {
-	GitHub Repo `yaml:",omitempty"`
-	Draft  bool `yaml:",omitempty"`
+	GitHub     Repo `yaml:",omitempty"`
+	Draft      bool `yaml:",omitempty"`
+	Prerelease bool `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`
