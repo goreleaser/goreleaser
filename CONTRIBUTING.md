@@ -20,7 +20,7 @@ Prerequisites:
 Clone `goreleaser` from source into `$GOPATH`:
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/github.com/goreleaser
+$ mkdir -p $GOPATH/src/github.com/goreleaser/goreleaser
 $ cd $_
 $ git clone git@github.com:goreleaser/goreleaser.git
 $ cd goreleaser
