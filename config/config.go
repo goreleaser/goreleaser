@@ -52,6 +52,18 @@ type Homebrew struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
+// Scoop contains the scoop.sh section
+type Scoop struct {
+	Bucket       Repo         `yaml:",omitempty"`
+	CommitAuthor CommitAuthor `yaml:"commit_author,omitempty"`
+	Dependencies []string     `yaml:",omitempty"`
+	Homepage     string       `yaml:",omitempty"`
+	Description  string       `yaml:",omitempty"`
+
+	// Capture all undefined fields and should be empty after loading
+	XXX map[string]interface{} `yaml:",inline"`
+}
+
 // CommitAuthor is the author of a Git commit
 type CommitAuthor struct {
 	Name  string `yaml:",omitempty"`
@@ -194,6 +206,7 @@ type Project struct {
 	ProjectName string    `yaml:"project_name,omitempty"`
 	Release     Release   `yaml:",omitempty"`
 	Brew        Homebrew  `yaml:",omitempty"`
+	Scoop       Scoop     `yaml:",omitempty"`
 	Builds      []Build   `yaml:",omitempty"`
 	Archive     Archive   `yaml:",omitempty"`
 	FPM         FPM       `yaml:",omitempty"`
