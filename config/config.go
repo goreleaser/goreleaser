@@ -59,6 +59,7 @@ type Scoop struct {
 	Dependencies []string     `yaml:",omitempty"`
 	Homepage     string       `yaml:",omitempty"`
 	Description  string       `yaml:",omitempty"`
+	License      string       `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`
