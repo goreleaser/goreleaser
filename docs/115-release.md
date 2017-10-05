@@ -19,6 +19,10 @@ release:
   # If set to true, will not auto-publish the release.
   # Default is false.
   draft: true
+
+  # If set to true, will mark the release as not ready for production.
+  # Default is false.
+  prerelease: true
 ```
 
 ## Custom release notes
