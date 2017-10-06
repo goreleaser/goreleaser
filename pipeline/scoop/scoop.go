@@ -4,7 +4,10 @@ package scoop
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"strings"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/pipeline"
@@ -41,7 +44,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return pipeline.Skip("archive format is binary")
 	}
 
-	path := ctx.Config.ProjectName
+	path := ctx.Config.ProjectName + ".json"
 
 	content, err := buildManifest(ctx, client)
 	if err != nil {
@@ -80,7 +83,17 @@ func buildManifest(ctx *context.Context, client client.Client) (result bytes.Buf
 	// Todo: 64/32 bit distinction
 
 	urls := []string{}
-	// Todo: Get the GitHub release binary URLs
+	for platform, groups := range ctx.Binaries {
+		if !strings.Contains(platform, "windows") {
+			log.WithField("platform", platform).Debug("skipped non-windows builds for scoop")
+			continue
+		}
+		for _, binaries := range groups {
+			for _, binary := range binaries {
+				urls = append(urls, getDownloadURL(ctx, binary.Name))
+			}
+		}
+	}
 
 	binaries := make([]string, len(ctx.Binaries["windows"]["amd64"]))
 	for i, binary := range ctx.Binaries["windows"]["amd64"] {
@@ -103,4 +116,13 @@ func buildManifest(ctx *context.Context, client client.Client) (result bytes.Buf
 	_, err = result.Write(data)
 
 	return
+}
+
+func getDownloadURL(ctx *context.Context, file string) (url string) {
+	return fmt.Sprintf("%s/%s/%s/releases/download/%s/%s",
+		ctx.Config.GitHubURLs.Download,
+		ctx.Config.Release.GitHub.Owner,
+		ctx.Config.Release.GitHub.Name,
+		ctx.Version,
+		file)
 }
