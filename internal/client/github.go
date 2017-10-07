@@ -8,6 +8,7 @@ import (
 	"github.com/apex/log"
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/name"
 	"golang.org/x/oauth2"
 )
 
@@ -83,8 +84,12 @@ func (c *githubClient) CreateFile(
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
 	var release *github.RepositoryRelease
+	releaseTitle, err := name.ForTitle(ctx)
+	if err != nil {
+		return 0, err
+	}
 	var data = &github.RepositoryRelease{
-		Name:       github.String(ctx.Git.CurrentTag),
+		Name:       github.String(releaseTitle),
 		TagName:    github.String(ctx.Git.CurrentTag),
 		Body:       github.String(body),
 		Draft:      github.Bool(ctx.Config.Release.Draft),

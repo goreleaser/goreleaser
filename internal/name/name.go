@@ -67,6 +67,18 @@ func ForChecksums(ctx *context.Context) (string, error) {
 	)
 }
 
+// ForTitle returns the release title based upon its template
+func ForTitle(ctx *context.Context) (string, error) {
+	return apply(
+		nameData{
+			ProjectName: ctx.Config.ProjectName,
+			Tag:         ctx.Git.CurrentTag,
+			Version:     ctx.Version,
+		},
+		ctx.Config.Release.NameTemplate,
+	)
+}
+
 func apply(data nameData, templateStr string) (string, error) {
 	var out bytes.Buffer
 	t, err := template.New(data.ProjectName).Parse(templateStr)

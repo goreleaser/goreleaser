@@ -23,6 +23,10 @@ release:
   # If set to true, will mark the release as not ready for production.
   # Default is false.
   prerelease: true
+
+  # Optional template to name the release
+  # Default is the version number
+  name_template: "{{.ProjectName}}-v{{.Version}}"
 ```
 
 ## Custom release notes

@@ -120,3 +120,22 @@ func TestNameDefaultTemplate(t *testing.T) {
 		})
 	}
 }
+
+func TestNameForTitle(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Release: config.Release{
+				NameTemplate: "{{.ProjectName}}-v{{.Version}}",
+			},
+			ProjectName: "test",
+		},
+		Version: "1.2.3",
+		Git: context.GitInfo{
+			CurrentTag: "v1.2.3",
+		},
+	}
+
+	name, err := ForTitle(ctx)
+	assert.NoError(t, err)
+	assert.Equal(t, "test-v1.2.3", name)
+}
