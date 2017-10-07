@@ -15,7 +15,7 @@ import (
 const NameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
 // ReleaseNameTemplate is the default name for the release.
-const ReleaseNameTemplate = "{{ .Version }}"
+const ReleaseNameTemplate = "{{.Tag}}"
 
 // SnapshotNameTemplate represents the default format for snapshot release names.
 const SnapshotNameTemplate = "SNAPSHOT-{{ .Commit }}"

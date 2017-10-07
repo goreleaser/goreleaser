@@ -24,8 +24,13 @@ release:
   # Default is false.
   prerelease: true
 
-  # Optional template to name the release
-  # Default is the version number
+   # You can change the name of the GitHub release.
+  # This is parsed with the Go template engine and the following variables
+  # are available:
+  # - ProjectName
+  # - Tag
+  # - Version (Git tag without `v` prefix)
+  # Default is ``
   name_template: "{{.ProjectName}}-v{{.Version}}"
 ```
 
