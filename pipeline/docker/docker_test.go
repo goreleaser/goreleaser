@@ -17,6 +17,7 @@ import (
 )
 
 func killAndRm() {
+	log.Info("killing registry")
 	_ = exec.Command("docker", "kill", "registry").Run()
 	_ = exec.Command("docker", "rm", "registry").Run()
 }
@@ -24,13 +25,12 @@ func killAndRm() {
 func TestMain(m *testing.M) {
 	killAndRm()
 	if err := exec.Command(
-		"docker", "run", "-d", "-p", "5000:5000", "--restart=always", "--name", "registry", "registry:2",
+		"docker", "run", "-d", "-p", "5000:5000", "--name", "registry", "registry:2",
 	).Run(); err != nil {
 		log.WithError(err).Fatal("failed to start docker registry")
 	}
-	code := m.Run()
-	killAndRm()
-	os.Exit(code)
+	defer killAndRm()
+	os.Exit(m.Run())
 }
 
 func TestRunPipe(t *testing.T) {
