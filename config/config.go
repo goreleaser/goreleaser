@@ -120,7 +120,6 @@ type Release struct {
 	Draft        bool   `yaml:",omitempty"`
 	Prerelease   bool   `yaml:",omitempty"`
 	NameTemplate string `yaml:"name_template,omitempty"`
-
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`
 }
