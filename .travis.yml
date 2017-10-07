@@ -16,7 +16,7 @@ script:
   - test -n "$TRAVIS_TAG" || go run main.go --skip-validate --skip-publish
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - test -n "$TRAVIS_TAG" && go run main.go
 notifications:
   email: false
