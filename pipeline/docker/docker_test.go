@@ -7,12 +7,31 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/apex/log"
+
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func killAndRm() {
+	log.Info("killing registry")
+	_ = exec.Command("docker", "kill", "registry").Run()
+	_ = exec.Command("docker", "rm", "registry").Run()
+}
+
+func TestMain(m *testing.M) {
+	killAndRm()
+	if err := exec.Command(
+		"docker", "run", "-d", "-p", "5000:5000", "--name", "registry", "registry:2",
+	).Run(); err != nil {
+		log.WithError(err).Fatal("failed to start docker registry")
+	}
+	defer killAndRm()
+	os.Exit(m.Run())
+}
 
 func TestRunPipe(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
@@ -24,8 +43,8 @@ func TestRunPipe(t *testing.T) {
 	_, err = os.Create(binPath)
 	assert.NoError(t, err)
 	var images = []string{
-		"goreleaser/test_run_pipe:1.0.0",
-		"goreleaser/test_run_pipe:latest",
+		"localhost:5000/goreleaser/test_run_pipe:1.0.0",
+		"localhost:5000/goreleaser/test_run_pipe:latest",
 	}
 	// this might fail as the image doesnt exist yet, so lets ignore the error
 	for _, img := range images {
@@ -39,7 +58,7 @@ func TestRunPipe(t *testing.T) {
 			Dist:        dist,
 			Dockers: []config.Docker{
 				{
-					Image:      "goreleaser/test_run_pipe",
+					Image:      "localhost:5000/goreleaser/test_run_pipe",
 					Goos:       "linux",
 					Goarch:     "amd64",
 					Dockerfile: "testdata/Dockerfile",
@@ -47,7 +66,7 @@ func TestRunPipe(t *testing.T) {
 					Latest:     true,
 				},
 				{
-					Image:      "goreleaser/test_run_pipe_nope",
+					Image:      "localhost:5000/goreleaser/test_run_pipe_nope",
 					Goos:       "linux",
 					Goarch:     "amd64",
 					Dockerfile: "testdata/Dockerfile",
@@ -70,7 +89,9 @@ func TestRunPipe(t *testing.T) {
 	// the test_run_pipe_nope image should not have been created, so deleting
 	// it should fail
 	assert.Error(t,
-		exec.Command("docker", "rmi", "goreleaser/test_run_pipe_nope:1.0.0").Run(),
+		exec.Command(
+			"docker", "rmi", "localhost:5000/goreleaser/test_run_pipe_nope:1.0.0",
+		).Run(),
 	)
 }
 
