@@ -3,7 +3,7 @@ title: GitHub Enterprise
 ---
 
 You can use GoReleaser with GitHub Enterprise by providing its URLs in
-the `.goreleaer.yml` configuration file:
+the `.goreleaser.yml` configuration file:
 
 ```yaml
 # .goreleaser.yml
