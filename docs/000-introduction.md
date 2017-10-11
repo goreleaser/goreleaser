@@ -16,3 +16,11 @@ The idea started with a
 but it quickly became more complex and I also wanted to publish binaries via
 Homebrew taps, which would have made the script even more hacky, so I let go of
 that and rewrote the whole thing in Go.
+
+## Installing Goreleaser
+
+There are three ways to get going.
+
+1. Install Goreleaser via go get (`goreleaser` command will be globally available) `go get github.com/goreleaser/goreleaser`
+2. On a Mac use [Homebrew](https://github.com/goreleaser/homebrew-tap).
+3. Install directly [from the binaries](https://github.com/goreleaser/goreleaser/releases/latest).
