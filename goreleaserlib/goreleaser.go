@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/archive"
 	"github.com/goreleaser/goreleaser/pipeline/brew"
 	"github.com/goreleaser/goreleaser/pipeline/build"
+	"github.com/goreleaser/goreleaser/pipeline/changelog"
 	"github.com/goreleaser/goreleaser/pipeline/checksums"
 	"github.com/goreleaser/goreleaser/pipeline/cleandist"
 	"github.com/goreleaser/goreleaser/pipeline/defaults"
@@ -28,6 +29,7 @@ import (
 var pipes = []pipeline.Pipe{
 	defaults.Pipe{},  // load default configs
 	git.Pipe{},       // get and validate git repo state
+	changelog.Pipe{}, // builds the release changelog
 	env.Pipe{},       // load and validate environment variables
 	cleandist.Pipe{}, // ensure ./dist is clean
 	build.Pipe{},     // build

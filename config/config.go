@@ -193,6 +193,17 @@ type Docker struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
+// Filters config
+type Filters struct {
+	Include []string `yaml:",omitempty"`
+	Exclude []string `yaml:",omitempty"`
+}
+
+// Changelog Config
+type Changelog struct {
+	Filters Filters `yaml:",omitempty"`
+}
+
 // Project includes all project configuration
 type Project struct {
 	ProjectName string    `yaml:"project_name,omitempty"`
@@ -205,6 +216,7 @@ type Project struct {
 	Snapshot    Snapshot  `yaml:",omitempty"`
 	Checksum    Checksum  `yaml:",omitempty"`
 	Dockers     []Docker  `yaml:",omitempty"`
+	Changelog   Changelog `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
