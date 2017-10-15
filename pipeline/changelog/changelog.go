@@ -3,6 +3,7 @@ package changelog
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/git"
@@ -29,8 +30,21 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", log)
+	var entries = strings.Split(log, "\n")
+	for _, filter := range ctx.Config.Changelog.Filters.Exclude {
+		entries = filterLog(filter, entries)
+	}
+	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", strings.Join(entries, "\n"))
 	return nil
+}
+
+func filterLog(filter string, entries []string) (result []string) {
+	for _, entry := range entries {
+		if !strings.Contains(entry, filter) {
+			result = append(result, entry)
+		}
+	}
+	return result
 }
 
 func getChangelog(tag string) (string, error) {
