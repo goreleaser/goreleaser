@@ -1,19 +1,23 @@
 package defaults
 
 import (
-	"errors"
+	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/config"
+	"github.com/pkg/errors"
 )
 
 // remoteRepo gets the repo name from the Git config.
 func remoteRepo() (result config.Repo, err error) {
+	if _, err = os.Stat(".git"); os.IsNotExist(err) {
+		return result, errors.Wrap(err, "current folder is not a git repository")
+	}
 	cmd := exec.Command("git", "config", "--get", "remote.origin.url")
 	bts, err := cmd.CombinedOutput()
 	if err != nil {
-		return result, errors.New(err.Error() + ": " + string(bts))
+		return result, errors.Wrap(err, "repository doesn't have an `origin` remote")
 	}
 	return extractRepoFromURL(string(bts)), nil
 }

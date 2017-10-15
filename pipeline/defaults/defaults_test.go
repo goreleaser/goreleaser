@@ -1,12 +1,11 @@
 package defaults
 
 import (
-	"io/ioutil"
-	"os"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,6 +14,11 @@ func TestDescription(t *testing.T) {
 }
 
 func TestFillBasicData(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
+
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
@@ -32,8 +36,6 @@ func TestFillBasicData(t *testing.T) {
 	assert.Equal(t, "tar.gz", ctx.Config.Archive.Format)
 	assert.Contains(t, ctx.Config.Brew.Install, "bin.install \"goreleaser\"")
 	assert.Empty(t, ctx.Config.Dockers)
-	assert.Equal(t, ctx.Config.Brew.CommitAuthor.Name, "goreleaserbot")
-	assert.Equal(t, ctx.Config.Brew.CommitAuthor.Email, "goreleaser@carlosbecker.com")
 	assert.NotEmpty(
 		t,
 		ctx.Config.Archive.NameTemplate,
@@ -43,6 +45,10 @@ func TestFillBasicData(t *testing.T) {
 }
 
 func TestFillPartial(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -83,6 +89,10 @@ func TestFillPartial(t *testing.T) {
 }
 
 func TestFillSingleBuild(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -97,16 +107,22 @@ func TestFillSingleBuild(t *testing.T) {
 }
 
 func TestNotAGitRepo(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
-	previous, err := os.Getwd()
-	assert.NoError(t, err)
-	assert.NoError(t, os.Chdir(folder))
-	defer func() {
-		assert.NoError(t, os.Chdir(previous))
-	}()
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 	assert.Error(t, Pipe{}.Run(ctx))
+	assert.Empty(t, ctx.Config.Release.GitHub.String())
+}
+
+func TestGitRepoWithoutRemote(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.Error(t, Pipe{}.Run(ctx))
+	assert.Empty(t, ctx.Config.Release.GitHub.String())
 }
