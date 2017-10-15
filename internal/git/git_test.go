@@ -28,3 +28,10 @@ func TestRepo(t *testing.T) {
 	assert.NoError(t, os.Chdir(os.TempDir()))
 	assert.False(t, IsRepo(), os.TempDir()+" folder should be a git repo")
 }
+
+func TestClean(t *testing.T) {
+	out, err := Clean("asdasd 'ssadas'\nadasd", nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "asdasd ssadas", out)
+
+}
