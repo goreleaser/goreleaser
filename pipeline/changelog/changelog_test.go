@@ -3,11 +3,10 @@ package changelog
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/config"
+	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 
-	"github.com/goreleaser/goreleaser/config"
-
-	"github.com/goreleaser/goreleaser/context"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,6 +17,12 @@ func TestDescription(t *testing.T) {
 func TestChangelogProvidedViaFlag(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.ReleaseNotes = "c0ff33 foo bar"
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+}
+
+func TestSnapshot(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
@@ -57,9 +62,18 @@ func TestChangelogOfFirstRelease(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 	assert.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	for _, msg := range msgs {
 		assert.Contains(t, ctx.ReleaseNotes, msg)
 	}
+}
+
+func TestChangelogNoTags(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "first")
+	var ctx = context.New(config.Project{})
+	assert.Error(t, Pipe{}.Run(ctx))
+	assert.Empty(t, ctx.ReleaseNotes)
 }
