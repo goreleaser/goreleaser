@@ -18,21 +18,18 @@ func (Pipe) Description() string {
 }
 
 // Run the pipe
-func (Pipe) Run(ctx *context.Context) (err error) {
+func (Pipe) Run(ctx *context.Context) error {
 	if ctx.ReleaseNotes != "" {
 		return pipeline.Skip("release notes already provided via --release-notes")
 	}
-	var log string
-	if ctx.Git.CurrentTag == "" {
-		log, err = getChangelog(ctx.Git.Commit)
-	} else {
-		log, err = getChangelog(ctx.Git.CurrentTag)
+	if ctx.Snapshot {
+		return pipeline.Skip("not available for snapshots")
 	}
+	log, err := getChangelog(ctx.Git.CurrentTag)
 	if err != nil {
 		return err
 	}
 	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", log)
-
 	return nil
 }
 
