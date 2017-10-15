@@ -167,8 +167,6 @@ func TestValidState(t *testing.T) {
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
-	assert.NotContains(t, "commit4", ctx.ReleaseNotes)
-	assert.NotContains(t, "commit3", ctx.ReleaseNotes)
 }
 
 func TestNoValidate(t *testing.T) {
@@ -186,62 +184,16 @@ func TestNoValidate(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
-func TestChangelog(t *testing.T) {
+func TestSnapshot(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
-	testlib.GitCommit(t, "first")
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCommit(t, "added feature 1")
-	testlib.GitCommit(t, "fixed bug 2")
-	testlib.GitTag(t, "v0.0.2")
+	testlib.GitAdd(t)
+	testlib.GitCommit(t, "whatever")
 	var ctx = &context.Context{
-		Config: config.Project{},
+		Config:   config.Project{},
+		Validate: true,
+		Snapshot: true,
 	}
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-	assert.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
-	assert.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	assert.NotContains(t, ctx.ReleaseNotes, "first")
-	assert.Contains(t, ctx.ReleaseNotes, "added feature 1")
-	assert.Contains(t, ctx.ReleaseNotes, "fixed bug 2")
-}
-
-func TestChangelogOfFirstRelease(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
-	testlib.GitInit(t)
-	var msgs = []string{
-		"initial commit",
-		"another one",
-		"one more",
-		"and finally this one",
-	}
-	for _, msg := range msgs {
-		testlib.GitCommit(t, msg)
-	}
-	testlib.GitTag(t, "v0.0.1")
-	var ctx = &context.Context{
-		Config: config.Project{},
-	}
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-	assert.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
-	assert.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	for _, msg := range msgs {
-		assert.Contains(t, ctx.ReleaseNotes, msg)
-	}
-}
-
-func TestCustomReleaseNotes(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
-	testlib.GitInit(t)
-	testlib.GitCommit(t, "first")
-	testlib.GitTag(t, "v0.0.1")
-	var ctx = &context.Context{
-		Config:       config.Project{},
-		ReleaseNotes: "custom",
-	}
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-	assert.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
-	assert.Equal(t, ctx.ReleaseNotes, "custom")
+	assert.NoError(t, Pipe{}.Run(ctx))
 }
