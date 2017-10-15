@@ -195,7 +195,6 @@ type Docker struct {
 
 // Filters config
 type Filters struct {
-	Include []string `yaml:",omitempty"`
 	Exclude []string `yaml:",omitempty"`
 }
 

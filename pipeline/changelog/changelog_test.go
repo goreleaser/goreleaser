@@ -34,8 +34,20 @@ func TestChangelog(t *testing.T) {
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "added feature 1")
 	testlib.GitCommit(t, "fixed bug 2")
+	testlib.GitCommit(t, "ignored: whatever")
+	testlib.GitCommit(t, "docs: whatever")
+	testlib.GitCommit(t, "feat: added that thing")
 	testlib.GitTag(t, "v0.0.2")
-	var ctx = context.New(config.Project{})
+	var ctx = context.New(config.Project{
+		Changelog: config.Changelog{
+			Filters: config.Filters{
+				Exclude: []string{
+					"docs:",
+					"ignored:",
+				},
+			},
+		},
+	})
 	ctx.Git.CurrentTag = "v0.0.2"
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
@@ -43,6 +55,8 @@ func TestChangelog(t *testing.T) {
 	assert.NotContains(t, ctx.ReleaseNotes, "first")
 	assert.Contains(t, ctx.ReleaseNotes, "added feature 1")
 	assert.Contains(t, ctx.ReleaseNotes, "fixed bug 2")
+	assert.NotContains(t, ctx.ReleaseNotes, "docs")
+	assert.NotContains(t, ctx.ReleaseNotes, "ignored")
 }
 
 func TestChangelogOfFirstRelease(t *testing.T) {
