@@ -1,6 +1,7 @@
 package git
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,4 +20,11 @@ func TestGit(t *testing.T) {
 		"git: 'command-that-dont-exist' is not a git command. See 'git --help'.\n",
 		err.Error(),
 	)
+}
+
+func TestRepo(t *testing.T) {
+	assert.True(t, IsRepo(), "goreleaser folder should be a git repo")
+
+	assert.NoError(t, os.Chdir(os.TempDir()))
+	assert.False(t, IsRepo(), os.TempDir()+" folder should be a git repo")
 }
