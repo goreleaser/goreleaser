@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/pipeline"
+	"github.com/pkg/errors"
 )
 
 // Pipe for brew deployment
@@ -54,7 +55,7 @@ func setVersion(ctx *context.Context, tag, commit string) (err error) {
 	if ctx.Snapshot {
 		snapshotName, err := getSnapshotName(ctx, tag, commit)
 		if err != nil {
-			return fmt.Errorf("failed to generate snapshot name: %s", err.Error())
+			return errors.Wrap(err, "failed to generate snapshot name")
 		}
 		ctx.Version = snapshotName
 		return nil

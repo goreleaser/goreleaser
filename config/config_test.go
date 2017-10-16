@@ -12,8 +12,15 @@ import (
 )
 
 func TestRepo(t *testing.T) {
-	r := Repo{Owner: "goreleaser", Name: "godownloader"}
-	assert.Equal(t, "goreleaser/godownloader", r.String(), "not equal")
+	assert.Equal(
+		t,
+		"goreleaser/godownloader",
+		Repo{Owner: "goreleaser", Name: "godownloader"}.String(),
+	)
+}
+
+func TestEmptyRepoNameAndOwner(t *testing.T) {
+	assert.Empty(t, Repo{}.String())
 }
 
 func TestLoadReader(t *testing.T) {

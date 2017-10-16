@@ -121,7 +121,7 @@ func setReleaseDefaults(ctx *context.Context) error {
 	}
 	repo, err := remoteRepo()
 	if err != nil {
-		return fmt.Errorf("failed reading repo from git: %v", err.Error())
+		return err
 	}
 	ctx.Config.Release.GitHub = repo
 	return nil
