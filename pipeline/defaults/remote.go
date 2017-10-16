@@ -1,7 +1,6 @@
 package defaults
 
 import (
-	"os"
 	"os/exec"
 	"strings"
 
@@ -11,11 +10,13 @@ import (
 
 // remoteRepo gets the repo name from the Git config.
 func remoteRepo() (result config.Repo, err error) {
-	if _, err = os.Stat(".git"); os.IsNotExist(err) {
-		return result, errors.Wrap(err, "current folder is not a git repository")
-	}
-	cmd := exec.Command("git", "config", "--get", "remote.origin.url")
+	cmd := exec.Command("git", "status")
 	bts, err := cmd.CombinedOutput()
+	if err != nil || strings.Contains(string(bts), "fatal: Not a git repository") {
+		return result, errors.Wrap(err, "current folder is not in a git repository")
+	}
+	cmd = exec.Command("git", "config", "--get", "remote.origin.url")
+	bts, err = cmd.CombinedOutput()
 	if err != nil {
 		return result, errors.Wrap(err, "repository doesn't have an `origin` remote")
 	}
