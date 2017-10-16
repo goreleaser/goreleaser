@@ -34,6 +34,22 @@ release:
   name_template: "{{.ProjectName}}-v{{.Version}}"
 ```
 
+## Customize the changelog
+
+You can customize how the changelog is generated using the
+`changelog` section in the config file:
+
+```yaml
+# .goreleaser.yml
+changelog:
+  filters:
+    # commit messages containing the words listed here will be removed from
+    # the changelog
+    exclude:
+      - docs
+      - typo
+```
+
 ## Custom release notes
 
 You can specify a file containing your custom release notes, and
@@ -42,8 +58,10 @@ GoReleaser will then skip its own release notes generation,
 using the contents of your file instead.
 You can use Markdown to format the contents of your file.
 
-On Unix systems you can also generate the release notes in-line by using [process substitution](https://en.wikipedia.org/wiki/Process_substitution).
-To list all commits since the last tag, but skip ones starting with `Merge` or `docs`, you could run this command:
+On Unix systems you can also generate the release notes in-line by using
+[process substitution](https://en.wikipedia.org/wiki/Process_substitution).
+To list all commits since the last tag, but skip ones starting with `Merge` or
+`docs`, you could run this command:
 
 ```sh
 goreleaser --release-notes <(git log --pretty=oneline --abbrev-commit $(git describe --tags --abbrev=0)^.. | grep -v '^[^ ]* \(Merge\|docs\)')
