@@ -24,7 +24,7 @@ release:
   # Default is false.
   prerelease: true
 
-   # You can change the name of the GitHub release.
+  # You can change the name of the GitHub release.
   # This is parsed with the Go template engine and the following variables
   # are available:
   # - ProjectName
