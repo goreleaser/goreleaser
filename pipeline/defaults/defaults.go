@@ -32,7 +32,7 @@ func (Pipe) Description() string {
 }
 
 // Run the pipe
-func (Pipe) Run(ctx *context.Context) error {
+func (Pipe) Run(ctx *context.Context) error { // nolint: gocyclo
 	ctx.Config.Dist = "dist"
 	if ctx.Config.Release.NameTemplate == "" {
 		ctx.Config.Release.NameTemplate = ReleaseNameTemplate
