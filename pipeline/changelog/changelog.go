@@ -9,7 +9,6 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/pipeline"
-	"github.com/pkg/errors"
 )
 
 // Pipe for checksums
@@ -36,7 +35,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, filter := range ctx.Config.Changelog.Filters.Exclude {
 		r, err := regexp.Compile(filter)
 		if err != nil {
-			return errors.Wrapf(err, "couldn't compile regexp %s", filter)
+			return err
 		}
 		entries = remove(r, entries)
 	}
