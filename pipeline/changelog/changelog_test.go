@@ -55,7 +55,6 @@ func TestChangelog(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v0.0.2"
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
 	assert.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	assert.NotContains(t, ctx.ReleaseNotes, "first")
 	assert.Contains(t, ctx.ReleaseNotes, "added feature 1")
@@ -87,6 +86,27 @@ func TestChangelogOfFirstRelease(t *testing.T) {
 	for _, msg := range msgs {
 		assert.Contains(t, ctx.ReleaseNotes, msg)
 	}
+}
+
+func TestChangelogFilterInvalidRegex(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "commitssss")
+	testlib.GitTag(t, "v0.0.3")
+	testlib.GitCommit(t, "commitzzz")
+	testlib.GitTag(t, "v0.0.4")
+	var ctx = context.New(config.Project{
+		Changelog: config.Changelog{
+			Filters: config.Filters{
+				Exclude: []string{
+					"(?iasdr4qasd)not a valid regex i guess",
+				},
+			},
+		},
+	})
+	ctx.Git.CurrentTag = "v0.0.4"
+	assert.EqualError(t, Pipe{}.Run(ctx), "error parsing regexp: invalid or unsupported Perl syntax: `(?ia`")
 }
 
 func TestChangelogNoTags(t *testing.T) {
