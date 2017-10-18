@@ -43,11 +43,12 @@ You can customize how the changelog is generated using the
 # .goreleaser.yml
 changelog:
   filters:
-    # commit messages containing the words listed here will be removed from
+    # commit messages matching the regexp listed here will be removed from
     # the changelog
     exclude:
-      - docs
+      - '^docs:'
       - typo
+      - (?i)foo
 ```
 
 ## Custom release notes

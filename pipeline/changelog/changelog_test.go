@@ -36,7 +36,10 @@ func TestChangelog(t *testing.T) {
 	testlib.GitCommit(t, "fixed bug 2")
 	testlib.GitCommit(t, "ignored: whatever")
 	testlib.GitCommit(t, "docs: whatever")
+	testlib.GitCommit(t, "something about cArs we dont need")
 	testlib.GitCommit(t, "feat: added that thing")
+	testlib.GitCommit(t, "Merge pull request #999 from goreleaser/some-branch")
+	testlib.GitCommit(t, "this is not a Merge pull request")
 	testlib.GitTag(t, "v0.0.2")
 	var ctx = context.New(config.Project{
 		Changelog: config.Changelog{
@@ -44,6 +47,8 @@ func TestChangelog(t *testing.T) {
 				Exclude: []string{
 					"docs:",
 					"ignored:",
+					"(?i)cars",
+					"^Merge pull request",
 				},
 			},
 		},
@@ -57,6 +62,8 @@ func TestChangelog(t *testing.T) {
 	assert.Contains(t, ctx.ReleaseNotes, "fixed bug 2")
 	assert.NotContains(t, ctx.ReleaseNotes, "docs")
 	assert.NotContains(t, ctx.ReleaseNotes, "ignored")
+	assert.NotContains(t, ctx.ReleaseNotes, "cArs")
+	assert.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
 }
 
 func TestChangelogOfFirstRelease(t *testing.T) {
