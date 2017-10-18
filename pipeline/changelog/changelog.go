@@ -3,11 +3,13 @@ package changelog
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/pipeline"
+	"github.com/pkg/errors"
 )
 
 // Pipe for checksums
@@ -32,19 +34,28 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	var entries = strings.Split(log, "\n")
 	for _, filter := range ctx.Config.Changelog.Filters.Exclude {
-		entries = filterLog(filter, entries)
+		r, err := regexp.Compile(filter)
+		if err != nil {
+			return errors.Wrapf(err, "couldn't compile regexp %s", filter)
+		}
+		entries = remove(r, entries)
 	}
 	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", strings.Join(entries, "\n"))
 	return nil
 }
 
-func filterLog(filter string, entries []string) (result []string) {
+func remove(filter *regexp.Regexp, entries []string) (result []string) {
 	for _, entry := range entries {
-		if !strings.Contains(entry, filter) {
+		if !match(filter, entry) {
 			result = append(result, entry)
 		}
 	}
 	return result
+}
+
+func match(filter *regexp.Regexp, line string) bool {
+	s := strings.Join(strings.SplitAfter(line, " ")[1:], "")
+	return filter.MatchString(s)
 }
 
 func getChangelog(tag string) (string, error) {
