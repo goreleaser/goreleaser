@@ -3,6 +3,7 @@ package changelog
 import (
 	"testing"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -63,6 +64,75 @@ func TestChangelog(t *testing.T) {
 	assert.NotContains(t, ctx.ReleaseNotes, "ignored")
 	assert.NotContains(t, ctx.ReleaseNotes, "cArs")
 	assert.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
+}
+
+func TestChangelogSort(t *testing.T) {
+	f, back := testlib.Mktmp(t)
+	log.Info(f)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "whatever")
+	testlib.GitTag(t, "v0.9.9")
+	testlib.GitCommit(t, "c: commit")
+	testlib.GitCommit(t, "a: commit")
+	testlib.GitCommit(t, "b: commit")
+	testlib.GitTag(t, "v1.0.0")
+	var ctx = context.New(config.Project{
+		Changelog: config.Changelog{},
+	})
+	ctx.Git.CurrentTag = "v1.0.0"
+
+	for _, cfg := range []struct {
+		Sort    string
+		Entries []string
+	}{
+		{
+			Sort: "",
+			Entries: []string{
+				"b: commit",
+				"a: commit",
+				"c: commit",
+			},
+		},
+		{
+			Sort: "asc",
+			Entries: []string{
+				"a: commit",
+				"b: commit",
+				"c: commit",
+			},
+		},
+		{
+			Sort: "desc",
+			Entries: []string{
+				"c: commit",
+				"b: commit",
+				"a: commit",
+			},
+		},
+	} {
+		t.Run("changelog sort='"+cfg.Sort+"'", func(t *testing.T) {
+			ctx.Config.Changelog.Sort = cfg.Sort
+			entries, err := buildChangelog(ctx)
+			assert.NoError(t, err)
+			assert.Len(t, entries, len(cfg.Entries))
+			var changes []string
+			for _, line := range entries {
+				_, msg := extractCommitInfo(line)
+				changes = append(changes, msg)
+			}
+			assert.EqualValues(t, cfg.Entries, changes)
+		})
+	}
+}
+
+func TestChangelogInvalidSort(t *testing.T) {
+	var ctx = context.New(config.Project{
+		Changelog: config.Changelog{
+			Sort: "dope",
+		},
+	})
+	assert.EqualError(t, Pipe{}.Run(ctx), ErrInvalidSortDirection.Error())
 }
 
 func TestChangelogOfFirstRelease(t *testing.T) {

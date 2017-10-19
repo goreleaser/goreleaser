@@ -45,10 +45,14 @@ changelog:
   filters:
     # commit messages matching the regexp listed here will be removed from
     # the changelog
+    # Default is emtpy
     exclude:
       - '^docs:'
       - typo
       - (?i)foo
+    # could either be asc, desc or empty
+    # Default is empty
+    sort: asc
 ```
 
 ## Custom release notes
