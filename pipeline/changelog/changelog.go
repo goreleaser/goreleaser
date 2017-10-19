@@ -2,14 +2,19 @@
 package changelog
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
+
+// ErrInvalidSortDirection happens when the sort order is invalid
+var ErrInvalidSortDirection = errors.New("invalid sort direction")
 
 // Pipe for checksums
 type Pipe struct{}
@@ -27,34 +32,85 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Snapshot {
 		return pipeline.Skip("not available for snapshots")
 	}
-	log, err := getChangelog(ctx.Git.CurrentTag)
-	if err != nil {
+	if err := checkSortDirection(ctx.Config.Changelog.Sort); err != nil {
 		return err
 	}
-	var entries = strings.Split(log, "\n")
-	for _, filter := range ctx.Config.Changelog.Filters.Exclude {
-		r, err := regexp.Compile(filter)
-		if err != nil {
-			return err
-		}
-		entries = remove(r, entries)
+	entries, err := buildChangelog(ctx)
+	if err != nil {
+		return err
 	}
 	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", strings.Join(entries, "\n"))
 	return nil
 }
 
+func checkSortDirection(mode string) error {
+	switch mode {
+	case "":
+		fallthrough
+	case "asc":
+		fallthrough
+	case "desc":
+		return nil
+	}
+	return ErrInvalidSortDirection
+}
+
+func buildChangelog(ctx *context.Context) ([]string, error) {
+	log, err := getChangelog(ctx.Git.CurrentTag)
+	if err != nil {
+		return nil, err
+	}
+	var entries = strings.Split(log, "\n")
+	entries = entries[0 : len(entries)-1]
+	entries, err = filterEntries(ctx, entries)
+	if err != nil {
+		return entries, err
+	}
+	return sortEntries(ctx, entries), nil
+}
+
+func filterEntries(ctx *context.Context, entries []string) ([]string, error) {
+	for _, filter := range ctx.Config.Changelog.Filters.Exclude {
+		r, err := regexp.Compile(filter)
+		if err != nil {
+			return entries, err
+		}
+		entries = remove(r, entries)
+	}
+	return entries, nil
+}
+
+func sortEntries(ctx *context.Context, entries []string) []string {
+	var direction = ctx.Config.Changelog.Sort
+	if direction == "" {
+		return entries
+	}
+	var result = make([]string, len(entries))
+	copy(result, entries)
+	sort.Slice(result, func(i, j int) bool {
+		_, imsg := extractCommitInfo(result[i])
+		_, jmsg := extractCommitInfo(result[j])
+		if direction == "asc" {
+			return strings.Compare(imsg, jmsg) < 0
+		}
+		return strings.Compare(imsg, jmsg) > 0
+	})
+	return result
+}
+
 func remove(filter *regexp.Regexp, entries []string) (result []string) {
 	for _, entry := range entries {
-		if !match(filter, entry) {
+		_, msg := extractCommitInfo(entry)
+		if !filter.MatchString(msg) {
 			result = append(result, entry)
 		}
 	}
 	return result
 }
 
-func match(filter *regexp.Regexp, line string) bool {
-	s := strings.Join(strings.SplitAfter(line, " ")[1:], "")
-	return filter.MatchString(s)
+func extractCommitInfo(line string) (hash, msg string) {
+	ss := strings.Split(line, " ")
+	return ss[0], strings.Join(ss[1:], " ")
 }
 
 func getChangelog(tag string) (string, error) {

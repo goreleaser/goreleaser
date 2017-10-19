@@ -201,6 +201,7 @@ type Filters struct {
 // Changelog Config
 type Changelog struct {
 	Filters Filters `yaml:",omitempty"`
+	Sort    string  `yaml:",omitempty"`
 }
 
 // Project includes all project configuration
