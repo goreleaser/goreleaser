@@ -52,5 +52,16 @@ static:
 		--inline-script 'hljs.initHighlightingOnLoad();' \
 		--inline-style 'pre { padding: 0; }'
 
+# Show to-do items per file.
+todo:
+	@grep \
+		--exclude-dir=vendor \
+		--exclude-dir=node_modules \
+		--exclude=Makefile \
+		--text \
+		--color \
+		-nRo -E ' TODO:.*|SkipNow' .
+.PHONY: todo
+
 
 .DEFAULT_GOAL := build
