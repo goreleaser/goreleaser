@@ -107,6 +107,7 @@ func basicOptions(ctx *context.Context, format, arch, file string) []string {
 		"--architecture", arch,
 		"--package", file,
 		"--force",
+		"--debug",
 	}
 
 	if ctx.Config.FPM.Vendor != "" {
