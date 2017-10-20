@@ -14,6 +14,7 @@ builds:
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
 changelog:
+  sort: asc
   filters:
     exclude:
       - docs
