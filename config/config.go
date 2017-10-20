@@ -196,12 +196,18 @@ type Docker struct {
 // Filters config
 type Filters struct {
 	Exclude []string `yaml:",omitempty"`
+
+	// Capture all undefined fields and should be empty after loading
+	XXX map[string]interface{} `yaml:",inline"`
 }
 
 // Changelog Config
 type Changelog struct {
 	Filters Filters `yaml:",omitempty"`
 	Sort    string  `yaml:",omitempty"`
+
+	// Capture all undefined fields and should be empty after loading
+	XXX map[string]interface{} `yaml:",inline"`
 }
 
 // Project includes all project configuration
@@ -284,6 +290,8 @@ func checkOverflows(config Project) error {
 	for i, docker := range config.Dockers {
 		overflow.check(docker.XXX, fmt.Sprintf("docker[%d]", i))
 	}
+	overflow.check(config.Changelog.XXX, "changelog")
+	overflow.check(config.Changelog.Filters.XXX, "changelog.filters")
 	return overflow.err()
 }
 
