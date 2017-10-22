@@ -2,10 +2,10 @@
 
 
 [[projects]]
-  branch = "master"
   name = "github.com/apex/log"
   packages = [".","handlers/cli"]
-  revision = "8f3a15d95392c8fc202d1e1059f46df21dff2992"
+  revision = "0296d6eb16bb28f8a0c55668affcf4876dc269be"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -17,13 +17,13 @@
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "6a1fa9404c0aebf36c879bc50152edcc953910d2"
+  revision = "1643683e1b54a9e88ad26d98f81400c8c9d9f4f9"
 
 [[projects]]
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "fe7d11f8add400587b6718d9f39a62e42cb04c28"
+  revision = "a021c14a5f1960591b0e1773a4a2ef8257ec93b8"
 
 [[projects]]
   branch = "master"
@@ -41,7 +41,7 @@
   branch = "master"
   name = "github.com/mattn/go-zglob"
   packages = [".","fastwalk"]
-  revision = "95345c4e1c0ebc9d16a3284177f09360f4d20fab"
+  revision = "4ecb59231939b2e499b1f2fd8f075565977d2452"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -64,30 +64,30 @@
 [[projects]]
   name = "github.com/urfave/cli"
   packages = ["."]
-  revision = "0bdeddeeb0f650497d603c4ad7b20cfe685682f6"
-  version = "v1.19.1"
+  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
+  version = "v1.20.0"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp"]
-  revision = "054b33e6527139ad5b1ec2f6232c3b175bd9a30c"
+  revision = "cd69bc3fc700721b709c3a59e16e24c67b58f6ff"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","internal"]
-  revision = "cce311a261e6fcf29de72ca96827bdb0b7d9c9e6"
+  revision = "bb50c06baba3d0c76f9d125c0719093e315b5b44"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sync"
   packages = ["errgroup"]
-  revision = "f52d1811a62927559de87708c8913c1650ce4f26"
+  revision = "8e0aa688b654ef28caa72506fa5ec8dba9fc7690"
 
 [[projects]]
   name = "google.golang.org/appengine"
-  packages = [".","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/urlfetch","urlfetch"]
+  packages = ["internal","internal/base","internal/datastore","internal/log","internal/remote_api","internal/urlfetch","urlfetch"]
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
   version = "v1.0.0"
 
@@ -95,7 +95,7 @@
   branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b"
+  revision = "eb3733d160e74a9c7e442f435eb3bea458e1d19f"
 
 [solve-meta]
   analyzer-name = "dep"
