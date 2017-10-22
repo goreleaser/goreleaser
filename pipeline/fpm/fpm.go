@@ -4,6 +4,7 @@ package fpm
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -67,9 +68,12 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 	var path = filepath.Join(ctx.Config.Dist, folder)
 	var file = path + "." + format
 	var log = log.WithField("format", format).WithField("arch", arch)
-	log.WithField("file", file).Info("creating fpm archive")
-
-	var options = basicOptions(ctx, format, arch, file)
+	dir, err := ioutil.TempDir("", "fpm")
+	if err != nil {
+		return err
+	}
+	log.WithField("file", file).WithField("workdir", dir).Info("creating fpm archive")
+	var options = basicOptions(ctx, dir, format, arch, file)
 
 	for _, binary := range binaries {
 		// This basically tells fpm to put the binary in the /usr/local/bin
@@ -103,7 +107,7 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 	return nil
 }
 
-func basicOptions(ctx *context.Context, format, arch, file string) []string {
+func basicOptions(ctx *context.Context, workdir, format, arch, file string) []string {
 	var options = []string{
 		"--input-type", "dir",
 		"--output-type", format,
@@ -112,6 +116,7 @@ func basicOptions(ctx *context.Context, format, arch, file string) []string {
 		"--architecture", arch,
 		"--package", file,
 		"--force",
+		"--workdir", workdir,
 		"--debug",
 	}
 
