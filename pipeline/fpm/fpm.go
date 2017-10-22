@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/pipeline"
+	"golang.org/x/sync/errgroup"
 )
 
 // ErrNoFPM is shown when fpm cannot be found in $PATH
@@ -38,21 +39,23 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context) error {
+	var g errgroup.Group
 	for _, format := range ctx.Config.FPM.Formats {
 		for platform, groups := range ctx.Binaries {
 			if !strings.Contains(platform, "linux") {
 				log.WithField("platform", platform).Debug("skipped non-linux builds for fpm")
 				continue
 			}
+			format := format
 			arch := linux.Arch(platform)
 			for folder, binaries := range groups {
-				if err := create(ctx, format, folder, arch, binaries); err != nil {
-					return err
-				}
+				g.Go(func() error {
+					return create(ctx, format, folder, arch, binaries)
+				})
 			}
 		}
 	}
-	return nil
+	return g.Wait()
 }
 
 func create(ctx *context.Context, format, folder, arch string, binaries []context.Binary) error {
