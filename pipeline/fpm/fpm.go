@@ -40,16 +40,21 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context) error {
 	var g errgroup.Group
+	sem := make(chan bool, ctx.Parallelism)
 	for _, format := range ctx.Config.FPM.Formats {
 		for platform, groups := range ctx.Binaries {
 			if !strings.Contains(platform, "linux") {
 				log.WithField("platform", platform).Debug("skipped non-linux builds for fpm")
 				continue
 			}
+			sem <- true
 			format := format
 			arch := linux.Arch(platform)
 			for folder, binaries := range groups {
 				g.Go(func() error {
+					defer func() {
+						<-sem
+					}()
 					return create(ctx, format, folder, arch, binaries)
 				})
 			}
