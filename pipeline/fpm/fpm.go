@@ -2,7 +2,6 @@
 package fpm
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os/exec"
@@ -13,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/pipeline"
+	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -101,7 +101,7 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 
 	log.WithField("args", options).Debug("creating fpm package")
 	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
-		return errors.New(string(out))
+		return errors.Wrap(err, string(out))
 	}
 	ctx.AddArtifact(file)
 	return nil
@@ -117,7 +117,10 @@ func basicOptions(ctx *context.Context, workdir, format, arch, file string) []st
 		"--package", file,
 		"--force",
 		"--workdir", workdir,
-		"--debug",
+	}
+
+	if ctx.Debug {
+		options = append(options, "--debug")
 	}
 
 	if ctx.Config.FPM.Vendor != "" {
