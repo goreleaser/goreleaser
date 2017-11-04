@@ -69,6 +69,7 @@ func Release(flags Flags) error {
 	}
 	var ctx = context.New(cfg)
 	ctx.Parallelism = flags.Int("parallelism")
+	ctx.Debug = flags.Bool("debug")
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Validate = !flags.Bool("skip-validate")
 	ctx.Publish = !flags.Bool("skip-publish")

@@ -42,6 +42,7 @@ type Context struct {
 	Publish      bool
 	Snapshot     bool
 	RmDist       bool
+	Debug        bool
 	Parallelism  int
 }
 
