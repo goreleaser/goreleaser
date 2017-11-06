@@ -137,6 +137,7 @@ type FPM struct {
 	Maintainer   string            `yaml:",omitempty"`
 	Description  string            `yaml:",omitempty"`
 	License      string            `yaml:",omitempty"`
+	Bindir       string            `yaml:",omitempty"`
 	Files        map[string]string `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
