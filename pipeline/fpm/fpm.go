@@ -75,8 +75,13 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 	log.WithField("file", file).WithField("workdir", dir).Info("creating fpm archive")
 	var options = basicOptions(ctx, dir, format, arch, file)
 
+	bindir := "/usr/local/bin"
+	if ctx.Config.FPM.Bindir != "" {
+		bindir = ctx.Config.FPM.Bindir
+	}
+
 	for _, binary := range binaries {
-		// This basically tells fpm to put the binary in the /usr/local/bin
+		// This basically tells fpm to put the binary in the bindir, e.g. /usr/local/bin
 		// binary=/usr/local/bin/binary
 		log.WithField("path", binary.Path).
 			WithField("name", binary.Name).
@@ -84,7 +89,7 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 		options = append(options, fmt.Sprintf(
 			"%s=%s",
 			binary.Path,
-			filepath.Join("/usr/local/bin", binary.Name),
+			filepath.Join(bindir, binary.Name),
 		))
 	}
 
