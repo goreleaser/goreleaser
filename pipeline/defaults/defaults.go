@@ -75,6 +75,7 @@ func (Pipe) Run(ctx *context.Context) error { // nolint: gocyclo
 
 	err := setArchiveDefaults(ctx)
 	setDockerDefaults(ctx)
+	setFpmDefaults(ctx)
 	log.WithField("config", ctx.Config).Debug("defaults set")
 	return err
 }
@@ -180,4 +181,10 @@ func setArchiveDefaults(ctx *context.Context) error {
 		}
 	}
 	return nil
+}
+
+func setFpmDefaults(ctx *context.Context) {
+	if ctx.Config.FPM.Bindir == "" {
+		ctx.Config.FPM.Bindir = "/usr/local/bin"
+	}
 }
