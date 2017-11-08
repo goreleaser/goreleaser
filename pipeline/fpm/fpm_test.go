@@ -38,6 +38,7 @@ func TestRunPipe(t *testing.T) {
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Parallelism: runtime.NumCPU(),
+		Debug:       true,
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
