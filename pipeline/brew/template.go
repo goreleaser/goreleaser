@@ -28,14 +28,13 @@ const formulaTemplate = `class {{ .Name }} < Formula
   sha256 "{{ .SHA256 }}"
 
   {{- if .Dependencies }}
-
-  {{ range $index, $element := .Dependencies -}}
+  {{ range $index, $element := .Dependencies }}
   depends_on "{{ . }}"
   {{- end }}
   {{- end -}}
 
   {{- if .Conflicts }}
-  {{ range $index, $element := .Conflicts -}}
+  {{ range $index, $element := .Conflicts }}
   conflicts_with "{{ . }}"
   {{- end }}
   {{- end }}
