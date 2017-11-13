@@ -67,7 +67,7 @@ func TestFullFormulae(t *testing.T) {
 	bts, err := ioutil.ReadFile("testdata/test.rb")
 	assert.NoError(t, err)
 	// ioutil.WriteFile("testdata/test.rb", []byte(formulae), 0644)
-  
+
 	assert.Equal(t, string(bts), formulae)
 }
 
@@ -116,8 +116,8 @@ func TestRunPipe(t *testing.T) {
 				Caveats:      "don't do this",
 				Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
 				Plist:        `<xml>whatever</xml>`,
-				Dependencies: []string{"zsh"},
-				Conflicts:    []string{"gtk+"},
+				Dependencies: []string{"zsh", "bash"},
+				Conflicts:    []string{"gtk+", "qt"},
 				Install:      `bin.install "foo"`,
 			},
 		},
@@ -136,7 +136,7 @@ func TestRunPipe(t *testing.T) {
 
 	bts, err := ioutil.ReadFile("testdata/run_pipe.rb")
 	assert.NoError(t, err)
-	// assert.NoError(ioutil.WriteFile("testdata/run_pipe.rb", []byte(client.Content), 0644))
+	// ioutil.WriteFile("testdata/run_pipe.rb", []byte(client.Content), 0644)
 
 	assert.Equal(t, string(bts), client.Content)
 }
