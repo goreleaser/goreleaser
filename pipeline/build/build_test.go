@@ -304,23 +304,11 @@ func exists(file string) bool {
 }
 
 func writeMainWithoutMainFunc(t *testing.T, folder string) {
-	main := `package main
-
-func foo() {
-	println("foo")
-}
-`
-	writeFile(t, folder, main)
+	writeFile(t, folder, "package main\nfunc notMain() {println(0)}")
 }
 
 func writeGoodMain(t *testing.T, folder string) {
-	main := `package main
-
-func main() {
-	println("hi")
-}
-`
-	writeFile(t, folder, main)
+	writeFile(t, folder, "package main\nfunc main() {println(0)}")
 }
 
 func writeFile(t *testing.T, folder, content string) {
