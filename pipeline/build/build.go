@@ -46,18 +46,20 @@ func (Pipe) Run(ctx *context.Context) error {
 func checkMain(ctx *context.Context, build config.Build) error {
 	var glob = build.Main
 	if !strings.HasSuffix(glob, "main.go") {
+		// TODO: in real live , glob will never be empty. Maybe this is worth
+		// guarding here anyway
 		glob = glob + "/" + "*.go"
 	}
 	log.Debugf("glob is %s", glob)
 	files, err := zglob.Glob(glob)
 	if err != nil {
-		return errors.Wrapf(err, "glob %s is not valid, please file a bug", glob)
+		return errors.Wrap(err, "failed to find go files")
 	}
-	log.Debugf("files %v", files)
+	log.WithField("files", files).Debug("go files")
 	for _, file := range files {
 		bts, err := ioutil.ReadFile(file)
 		if err != nil {
-			return errors.Wrapf(err, "failed to read main file %s", file)
+			return errors.Wrapf(err, "failed to read file: %s", file)
 		}
 		if strings.Contains(string(bts), "func main() {") {
 			return nil
