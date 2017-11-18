@@ -4,6 +4,7 @@ package build
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,6 +16,8 @@ import (
 	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/goreleaser/goreleaser/internal/name"
+	zglob "github.com/mattn/go-zglob"
+	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -30,6 +33,9 @@ func (Pipe) Description() string {
 func (Pipe) Run(ctx *context.Context) error {
 	for _, build := range ctx.Config.Builds {
 		log.WithField("build", build).Debug("building")
+		if err := checkMain(ctx, build); err != nil {
+			return err
+		}
 		if err := runPipeOnBuild(ctx, build); err != nil {
 			return err
 		}
@@ -37,9 +43,32 @@ func (Pipe) Run(ctx *context.Context) error {
 	return nil
 }
 
+func checkMain(ctx *context.Context, build config.Build) error {
+	var glob = build.Main
+	if !strings.HasSuffix(glob, "main.go") {
+		glob = glob + "/" + "*.go"
+	}
+	log.Debugf("glob is %s", glob)
+	files, err := zglob.Glob(glob)
+	if err != nil {
+		return errors.Wrapf(err, "glob %s is not valid, please file a bug", glob)
+	}
+	log.Debugf("files %v", files)
+	for _, file := range files {
+		bts, err := ioutil.ReadFile(file)
+		if err != nil {
+			return errors.Wrapf(err, "failed to read main file %s", file)
+		}
+		if strings.Contains(string(bts), "func main() {") {
+			return nil
+		}
+	}
+	return fmt.Errorf("build for %s does not contain a main function", build.Binary)
+}
+
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	if err := runHook(build.Env, build.Hooks.Pre); err != nil {
-		return err
+		return errors.Wrap(err, "pre hook failed")
 	}
 	sem := make(chan bool, ctx.Parallelism)
 	var g errgroup.Group
@@ -57,7 +86,10 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	if err := g.Wait(); err != nil {
 		return err
 	}
-	return runHook(build.Env, build.Hooks.Post)
+	if err := runHook(build.Env, build.Hooks.Post); err != nil {
+		return errors.Wrap(err, "post hook failed")
+	}
+	return nil
 }
 
 func runHook(env []string, hook string) error {
@@ -95,7 +127,10 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 		return err
 	}
 	cmd = append(cmd, "-ldflags="+flags, "-o", binary, build.Main)
-	return run(target, cmd, build.Env)
+	if err := run(target, cmd, build.Env); err != nil {
+		return errors.Wrapf(err, "failed to build for %s", target)
+	}
+	return nil
 }
 
 func run(target buildtarget.Target, command, env []string) error {
@@ -109,7 +144,7 @@ func run(target buildtarget.Target, command, env []string) error {
 	log.Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
-		return fmt.Errorf("build failed for %s:\n%v", target.PrettyString(), string(out))
+		return errors.New(string(out))
 	}
 	return nil
 }

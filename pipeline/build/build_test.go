@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/buildtarget"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,8 +43,9 @@ func TestBuild(t *testing.T) {
 }
 
 func TestRunFullPipe(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
 	var binary = filepath.Join(folder, "testing")
 	var pre = filepath.Join(folder, "pre")
 	var post = filepath.Join(folder, "post")
@@ -51,6 +53,7 @@ func TestRunFullPipe(t *testing.T) {
 		Dist: folder,
 		Builds: []config.Build{
 			{
+				Main:    ".",
 				Binary:  "testing",
 				Flags:   "-v",
 				Ldflags: "-X main.test=testing",
@@ -74,14 +77,16 @@ func TestRunFullPipe(t *testing.T) {
 }
 
 func TestRunPipeFormatBinary(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
 	var binary = filepath.Join(folder, "binary-testing")
 	var config = config.Project{
 		ProjectName: "testing",
 		Dist:        folder,
 		Builds: []config.Build{
 			{
+				Main:   ".",
 				Binary: "testing",
 				Goos: []string{
 					runtime.GOOS,
@@ -101,13 +106,15 @@ func TestRunPipeFormatBinary(t *testing.T) {
 }
 
 func TestRunPipeArmBuilds(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
 	var binary = filepath.Join(folder, "armtesting")
 	var config = config.Project{
 		Dist: folder,
 		Builds: []config.Build{
 			{
+				Main:    ".",
 				Binary:  "armtesting",
 				Flags:   "-v",
 				Ldflags: "-X main.test=armtesting",
@@ -129,9 +136,14 @@ func TestRunPipeArmBuilds(t *testing.T) {
 }
 
 func TestBuildFailed(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
 	var config = config.Project{
+		Dist: folder,
 		Builds: []config.Build{
 			{
+				Main:  ".",
 				Flags: "-flag-that-dont-exists-to-force-failure",
 				Goos: []string{
 					runtime.GOOS,
@@ -142,13 +154,18 @@ func TestBuildFailed(t *testing.T) {
 			},
 		},
 	}
-	assert.Error(t, Pipe{}.Run(context.New(config)))
+	assertContainsError(t, Pipe{}.Run(context.New(config)), `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
 }
 
 func TestRunPipeWithInvalidOS(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
 	var config = config.Project{
+		Dist: folder,
 		Builds: []config.Build{
 			{
+				Main:  ".",
 				Flags: "-v",
 				Goos: []string{
 					"windows",
@@ -163,11 +180,16 @@ func TestRunPipeWithInvalidOS(t *testing.T) {
 }
 
 func TestRunInvalidNametemplate(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
 	for _, format := range []string{"tar.gz", "zip", "binary"} {
 		var config = config.Project{
+			Dist:        folder,
 			ProjectName: "nameeeee",
 			Builds: []config.Build{
 				{
+					Main:   ".",
 					Binary: "namet{{.est}",
 					Flags:  "-v",
 					Goos: []string{
@@ -183,14 +205,19 @@ func TestRunInvalidNametemplate(t *testing.T) {
 				NameTemplate: "{{.Binary}",
 			},
 		}
-		assert.Error(t, Pipe{}.Run(context.New(config)))
+		assert.EqualError(t, Pipe{}.Run(context.New(config)), `template: nameeeee:1: unexpected "}" in operand`)
 	}
 }
 
 func TestRunInvalidLdflags(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
 	var config = config.Project{
+		Dist: folder,
 		Builds: []config.Build{
 			{
+				Main:    ".",
 				Binary:  "nametest",
 				Flags:   "-v",
 				Ldflags: "-s -w -X main.version={{.Version}",
@@ -203,14 +230,54 @@ func TestRunInvalidLdflags(t *testing.T) {
 			},
 		},
 	}
-	assert.Error(t, Pipe{}.Run(context.New(config)))
+	assert.EqualError(t, Pipe{}.Run(context.New(config)), `template: ldflags:1: unexpected "}" in operand`)
 }
 
 func TestRunPipeFailingHooks(t *testing.T) {
+	prepare := func() *context.Context {
+		folder, back := testlib.Mktmp(t)
+		defer back()
+		writeGoodMain(t, folder)
+		var config = config.Project{
+			Dist: folder,
+			Builds: []config.Build{
+				{
+					Main:   ".",
+					Binary: "hooks",
+					Hooks:  config.Hooks{},
+					Goos: []string{
+						runtime.GOOS,
+					},
+					Goarch: []string{
+						runtime.GOARCH,
+					},
+				},
+			},
+		}
+		return context.New(config)
+	}
+	t.Run("pre-hook", func(t *testing.T) {
+		var ctx = prepare()
+		ctx.Config.Builds[0].Hooks.Pre = "exit 1"
+		assert.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: `)
+	})
+	t.Run("post-hook", func(t *testing.T) {
+		var ctx = prepare()
+		ctx.Config.Builds[0].Hooks.Post = "exit 1"
+		assert.EqualError(t, Pipe{}.Run(ctx), `post hook failed: `)
+	})
+}
+
+func TestRunPipeWithouMainFunc(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeMainWithoutMainFunc(t, folder)
 	var config = config.Project{
+		Dist: folder,
 		Builds: []config.Build{
 			{
-				Hooks: config.Hooks{},
+				Binary: "no-main",
+				Hooks:  config.Hooks{},
 				Goos: []string{
 					runtime.GOOS,
 				},
@@ -221,17 +288,48 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
-	t.Run("pre-hook", func(t *testing.T) {
-		ctx.Config.Builds[0].Hooks.Pre = "exit 1"
-		assert.Error(t, Pipe{}.Run(ctx))
+	t.Run("glob", func(t *testing.T) {
+		ctx.Config.Builds[0].Main = "."
+		assert.EqualError(t, Pipe{}.Run(ctx), `build for no-main does not contain a main function`)
 	})
-	t.Run("post-hook", func(t *testing.T) {
-		ctx.Config.Builds[0].Hooks.Post = "exit 1"
-		assert.Error(t, Pipe{}.Run(ctx))
+	t.Run("fixed main.go", func(t *testing.T) {
+		ctx.Config.Builds[0].Main = "main.go"
+		assert.EqualError(t, Pipe{}.Run(ctx), `build for no-main does not contain a main function`)
 	})
 }
 
 func exists(file string) bool {
 	_, err := os.Stat(file)
 	return !os.IsNotExist(err)
+}
+
+func writeMainWithoutMainFunc(t *testing.T, folder string) {
+	main := `package main
+
+func foo() {
+	println("foo")
+}
+`
+	writeFile(t, folder, main)
+}
+
+func writeGoodMain(t *testing.T, folder string) {
+	main := `package main
+
+func main() {
+	println("hi")
+}
+`
+	writeFile(t, folder, main)
+}
+
+func writeFile(t *testing.T, folder, content string) {
+	assert.NoError(t, ioutil.WriteFile(
+		filepath.Join(folder, "main.go"), []byte(content), 0644),
+	)
+}
+
+func assertContainsError(t *testing.T, err error, s string) {
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), s)
 }
