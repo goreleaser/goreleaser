@@ -275,6 +275,10 @@ func TestRunPipeWithouMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].Main = ""
 		assert.EqualError(t, Pipe{}.Run(ctx), `build for no-main does not contain a main function`)
 	})
+	t.Run("not main.go", func(t *testing.T) {
+		ctx.Config.Builds[0].Main = "foo.go"
+		assert.EqualError(t, Pipe{}.Run(ctx), `failed dir: foo.go: open foo.go: no such file or directory`)
+	})
 	t.Run("glob", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."
 		assert.EqualError(t, Pipe{}.Run(ctx), `build for no-main does not contain a main function`)
