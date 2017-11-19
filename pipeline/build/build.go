@@ -4,7 +4,9 @@ package build
 
 import (
 	"fmt"
-	"io/ioutil"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,7 +18,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/goreleaser/goreleaser/internal/name"
-	zglob "github.com/mattn/go-zglob"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
@@ -44,25 +45,26 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func checkMain(ctx *context.Context, build config.Build) error {
-	var glob = build.Main
-	if !strings.HasSuffix(glob, "main.go") {
-		// TODO: in real live , glob will never be empty. Maybe this is worth
-		// guarding here anyway
-		glob = glob + "/" + "*.go"
+	var dir = strings.Replace(build.Main, "main.go", "", -1)
+	if dir == "" {
+		dir = "."
 	}
-	log.Debugf("glob is %s", glob)
-	files, err := zglob.Glob(glob)
+	packs, err := parser.ParseDir(token.NewFileSet(), dir, nil, 0)
 	if err != nil {
-		return errors.Wrap(err, "failed to find go files")
+		return errors.Wrapf(err, "failed dir: %s", dir)
 	}
-	log.WithField("files", files).Debug("go files")
-	for _, file := range files {
-		bts, err := ioutil.ReadFile(file)
-		if err != nil {
-			return errors.Wrapf(err, "failed to read file: %s", file)
-		}
-		if strings.Contains(string(bts), "func main() {") {
-			return nil
+	for _, pack := range packs {
+		for _, file := range pack.Files {
+			for _, decl := range file.Decls {
+				fn, ok := decl.(*ast.FuncDecl)
+				if !ok {
+					continue
+				}
+				log.Info(fn.Name.Name)
+				if fn.Name.Name == "main" && fn.Recv == nil {
+					return nil
+				}
+			}
 		}
 	}
 	return fmt.Errorf("build for %s does not contain a main function", build.Binary)

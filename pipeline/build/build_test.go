@@ -234,35 +234,33 @@ func TestRunInvalidLdflags(t *testing.T) {
 }
 
 func TestRunPipeFailingHooks(t *testing.T) {
-	prepare := func() *context.Context {
-		folder, back := testlib.Mktmp(t)
-		defer back()
-		writeGoodMain(t, folder)
-		var config = config.Project{
-			Dist: folder,
-			Builds: []config.Build{
-				{
-					Main:   ".",
-					Binary: "hooks",
-					Hooks:  config.Hooks{},
-					Goos: []string{
-						runtime.GOOS,
-					},
-					Goarch: []string{
-						runtime.GOARCH,
-					},
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
+	var config = config.Project{
+		Dist: folder,
+		Builds: []config.Build{
+			{
+				Binary: "hooks",
+				Hooks:  config.Hooks{},
+				Goos: []string{
+					runtime.GOOS,
+				},
+				Goarch: []string{
+					runtime.GOARCH,
 				},
 			},
-		}
-		return context.New(config)
+		},
 	}
 	t.Run("pre-hook", func(t *testing.T) {
-		var ctx = prepare()
+		var ctx = context.New(config)
 		ctx.Config.Builds[0].Hooks.Pre = "exit 1"
+		ctx.Config.Builds[0].Hooks.Post = "echo post"
 		assert.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: `)
 	})
 	t.Run("post-hook", func(t *testing.T) {
-		var ctx = prepare()
+		var ctx = context.New(config)
+		ctx.Config.Builds[0].Hooks.Pre = "echo pre"
 		ctx.Config.Builds[0].Hooks.Post = "exit 1"
 		assert.EqualError(t, Pipe{}.Run(ctx), `post hook failed: `)
 	})
@@ -288,6 +286,10 @@ func TestRunPipeWithouMainFunc(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
+	t.Run("empty", func(t *testing.T) {
+		ctx.Config.Builds[0].Main = ""
+		assert.EqualError(t, Pipe{}.Run(ctx), `build for no-main does not contain a main function`)
+	})
 	t.Run("glob", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."
 		assert.EqualError(t, Pipe{}.Run(ctx), `build for no-main does not contain a main function`)
@@ -304,11 +306,11 @@ func exists(file string) bool {
 }
 
 func writeMainWithoutMainFunc(t *testing.T, folder string) {
-	writeFile(t, folder, "package main\nfunc notMain() {println(0)}")
+	writeFile(t, folder, "package main\nconst a = 2\nfunc notMain() {println(0)}")
 }
 
 func writeGoodMain(t *testing.T, folder string) {
-	writeFile(t, folder, "package main\nfunc main() {println(0)}")
+	writeFile(t, folder, "package main\nvar a = 1\nfunc main() {println(0)}")
 }
 
 func writeFile(t *testing.T, folder, content string) {
