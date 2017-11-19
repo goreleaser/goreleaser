@@ -51,7 +51,7 @@ func checkMain(ctx *context.Context, build config.Build) error {
 	}
 	packs, err := parser.ParseDir(token.NewFileSet(), dir, nil, 0)
 	if err != nil {
-		return errors.Wrapf(err, "failed dir: %s", dir)
+		return errors.Wrapf(err, "failed to parse dir: %s", dir)
 	}
 	for _, pack := range packs {
 		for _, file := range pack.Files {

@@ -277,7 +277,7 @@ func TestRunPipeWithouMainFunc(t *testing.T) {
 	})
 	t.Run("not main.go", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "foo.go"
-		assert.EqualError(t, Pipe{}.Run(ctx), `failed dir: foo.go: open foo.go: no such file or directory`)
+		assert.EqualError(t, Pipe{}.Run(ctx), `failed to parse dir: foo.go: open foo.go: no such file or directory`)
 	})
 	t.Run("glob", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."
