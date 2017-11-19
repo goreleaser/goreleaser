@@ -50,10 +50,8 @@ func TestRunFullPipe(t *testing.T) {
 	var pre = filepath.Join(folder, "pre")
 	var post = filepath.Join(folder, "post")
 	var config = config.Project{
-		Dist: folder,
 		Builds: []config.Build{
 			{
-				Main:    ".",
 				Binary:  "testing",
 				Flags:   "-v",
 				Ldflags: "-X main.test=testing",
@@ -86,7 +84,6 @@ func TestRunPipeFormatBinary(t *testing.T) {
 		Dist:        folder,
 		Builds: []config.Build{
 			{
-				Main:   ".",
 				Binary: "testing",
 				Goos: []string{
 					runtime.GOOS,
@@ -111,10 +108,8 @@ func TestRunPipeArmBuilds(t *testing.T) {
 	writeGoodMain(t, folder)
 	var binary = filepath.Join(folder, "armtesting")
 	var config = config.Project{
-		Dist: folder,
 		Builds: []config.Build{
 			{
-				Main:    ".",
 				Binary:  "armtesting",
 				Flags:   "-v",
 				Ldflags: "-X main.test=armtesting",
@@ -140,10 +135,8 @@ func TestBuildFailed(t *testing.T) {
 	defer back()
 	writeGoodMain(t, folder)
 	var config = config.Project{
-		Dist: folder,
 		Builds: []config.Build{
 			{
-				Main:  ".",
 				Flags: "-flag-that-dont-exists-to-force-failure",
 				Goos: []string{
 					runtime.GOOS,
@@ -162,10 +155,8 @@ func TestRunPipeWithInvalidOS(t *testing.T) {
 	defer back()
 	writeGoodMain(t, folder)
 	var config = config.Project{
-		Dist: folder,
 		Builds: []config.Build{
 			{
-				Main:  ".",
 				Flags: "-v",
 				Goos: []string{
 					"windows",
@@ -185,11 +176,9 @@ func TestRunInvalidNametemplate(t *testing.T) {
 	writeGoodMain(t, folder)
 	for _, format := range []string{"tar.gz", "zip", "binary"} {
 		var config = config.Project{
-			Dist:        folder,
 			ProjectName: "nameeeee",
 			Builds: []config.Build{
 				{
-					Main:   ".",
 					Binary: "namet{{.est}",
 					Flags:  "-v",
 					Goos: []string{
@@ -214,10 +203,8 @@ func TestRunInvalidLdflags(t *testing.T) {
 	defer back()
 	writeGoodMain(t, folder)
 	var config = config.Project{
-		Dist: folder,
 		Builds: []config.Build{
 			{
-				Main:    ".",
 				Binary:  "nametest",
 				Flags:   "-v",
 				Ldflags: "-s -w -X main.version={{.Version}",
@@ -238,7 +225,6 @@ func TestRunPipeFailingHooks(t *testing.T) {
 	defer back()
 	writeGoodMain(t, folder)
 	var config = config.Project{
-		Dist: folder,
 		Builds: []config.Build{
 			{
 				Binary: "hooks",
@@ -271,7 +257,6 @@ func TestRunPipeWithouMainFunc(t *testing.T) {
 	defer back()
 	writeMainWithoutMainFunc(t, folder)
 	var config = config.Project{
-		Dist: folder,
 		Builds: []config.Build{
 			{
 				Binary: "no-main",
