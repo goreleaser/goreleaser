@@ -90,10 +90,7 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	if err := g.Wait(); err != nil {
 		return err
 	}
-	if err := runHook(build.Env, build.Hooks.Post); err != nil {
-		return errors.Wrap(err, "post hook failed")
-	}
-	return nil
+	return errors.Wrap(runHook(build.Env, build.Hooks.Post), "post hook failed")
 }
 
 func runHook(env []string, hook string) error {
@@ -131,10 +128,7 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 		return err
 	}
 	cmd = append(cmd, "-ldflags="+flags, "-o", binary, build.Main)
-	if err := run(target, cmd, build.Env); err != nil {
-		return errors.Wrapf(err, "failed to build for %s", target)
-	}
-	return nil
+	return errors.Wrapf(run(target, cmd, build.Env), "failed to build for %s", target)
 }
 
 func run(target buildtarget.Target, command, env []string) error {
