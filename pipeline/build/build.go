@@ -50,10 +50,10 @@ func checkMain(ctx *context.Context, build config.Build) error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to parse file: %s", build.Main)
 		}
-		if !hasMain(file) {
-			return fmt.Errorf("build for %s does not contain a main function", build.Binary)
+		if hasMain(file) {
+			return nil
 		}
-		return nil
+		return fmt.Errorf("build for %s does not contain a main function", build.Binary)
 	}
 	var dir = build.Main
 	if dir == "" {
