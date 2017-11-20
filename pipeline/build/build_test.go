@@ -277,7 +277,7 @@ func TestRunPipeWithouMainFunc(t *testing.T) {
 	})
 	t.Run("not main.go", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "foo.go"
-		assert.EqualError(t, Pipe{}.Run(ctx), `failed to parse dir: foo.go: open foo.go: no such file or directory`)
+		assert.EqualError(t, Pipe{}.Run(ctx), `failed to parse file: foo.go: open foo.go: no such file or directory`)
 	})
 	t.Run("glob", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."
@@ -289,23 +289,62 @@ func TestRunPipeWithouMainFunc(t *testing.T) {
 	})
 }
 
+func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	assert.NoError(t, ioutil.WriteFile(
+		filepath.Join(folder, "foo.go"),
+		[]byte("package main\nfunc main() {println(0)}"),
+		0644,
+	))
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				Binary: "foo",
+				Hooks:  config.Hooks{},
+				Goos: []string{
+					runtime.GOOS,
+				},
+				Goarch: []string{
+					runtime.GOARCH,
+				},
+			},
+		},
+	}
+	var ctx = context.New(config)
+	t.Run("empty", func(t *testing.T) {
+		ctx.Config.Builds[0].Main = ""
+		assert.NoError(t, Pipe{}.Run(ctx))
+	})
+	t.Run("foo.go", func(t *testing.T) {
+		ctx.Config.Builds[0].Main = "foo.go"
+		assert.NoError(t, Pipe{}.Run(ctx))
+	})
+	t.Run("glob", func(t *testing.T) {
+		ctx.Config.Builds[0].Main = "."
+		assert.NoError(t, Pipe{}.Run(ctx))
+	})
+}
+
 func exists(file string) bool {
 	_, err := os.Stat(file)
 	return !os.IsNotExist(err)
 }
 
 func writeMainWithoutMainFunc(t *testing.T, folder string) {
-	writeFile(t, folder, "package main\nconst a = 2\nfunc notMain() {println(0)}")
+	assert.NoError(t, ioutil.WriteFile(
+		filepath.Join(folder, "main.go"),
+		[]byte("package main\nconst a = 2\nfunc notMain() {println(0)}"),
+		0644,
+	))
 }
 
 func writeGoodMain(t *testing.T, folder string) {
-	writeFile(t, folder, "package main\nvar a = 1\nfunc main() {println(0)}")
-}
-
-func writeFile(t *testing.T, folder, content string) {
 	assert.NoError(t, ioutil.WriteFile(
-		filepath.Join(folder, "main.go"), []byte(content), 0644),
-	)
+		filepath.Join(folder, "main.go"),
+		[]byte("package main\nvar a = 1\nfunc main() {println(0)}"),
+		0644,
+	))
 }
 
 func assertContainsError(t *testing.T, err error, s string) {

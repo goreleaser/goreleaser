@@ -45,7 +45,17 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func checkMain(ctx *context.Context, build config.Build) error {
-	var dir = strings.Replace(build.Main, "main.go", "", -1)
+	if strings.HasSuffix(build.Main, ".go") {
+		file, err := parser.ParseFile(token.NewFileSet(), build.Main, nil, 0)
+		if err != nil {
+			return errors.Wrapf(err, "failed to parse file: %s", build.Main)
+		}
+		if !hasMain(file) {
+			return fmt.Errorf("build for %s does not contain a main function", build.Binary)
+		}
+		return nil
+	}
+	var dir = build.Main
 	if dir == "" {
 		dir = "."
 	}
@@ -55,19 +65,25 @@ func checkMain(ctx *context.Context, build config.Build) error {
 	}
 	for _, pack := range packs {
 		for _, file := range pack.Files {
-			for _, decl := range file.Decls {
-				fn, ok := decl.(*ast.FuncDecl)
-				if !ok {
-					continue
-				}
-				log.Info(fn.Name.Name)
-				if fn.Name.Name == "main" && fn.Recv == nil {
-					return nil
-				}
+			if hasMain(file) {
+				return nil
 			}
 		}
 	}
 	return fmt.Errorf("build for %s does not contain a main function", build.Binary)
+}
+
+func hasMain(file *ast.File) bool {
+	for _, decl := range file.Decls {
+		fn, isFn := decl.(*ast.FuncDecl)
+		if !isFn {
+			continue
+		}
+		if fn.Name.Name == "main" && fn.Recv == nil {
+			return true
+		}
+	}
+	return false
 }
 
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
