@@ -45,30 +45,34 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func checkMain(ctx *context.Context, build config.Build) error {
-	if strings.HasSuffix(build.Main, ".go") {
-		file, err := parser.ParseFile(token.NewFileSet(), build.Main, nil, 0)
+	var main = build.Main
+	if main == "" {
+		main = "."
+	}
+	stat, ferr := os.Stat(main)
+	if os.IsNotExist(ferr) {
+		return errors.Wrapf(ferr, "could not open %s", main)
+	}
+	if stat.IsDir() {
+		packs, err := parser.ParseDir(token.NewFileSet(), main, nil, 0)
 		if err != nil {
-			return errors.Wrapf(err, "failed to parse file: %s", build.Main)
+			return errors.Wrapf(err, "failed to parse dir: %s", main)
 		}
-		if hasMain(file) {
-			return nil
+		for _, pack := range packs {
+			for _, file := range pack.Files {
+				if hasMain(file) {
+					return nil
+				}
+			}
 		}
 		return fmt.Errorf("build for %s does not contain a main function", build.Binary)
 	}
-	var dir = build.Main
-	if dir == "" {
-		dir = "."
-	}
-	packs, err := parser.ParseDir(token.NewFileSet(), dir, nil, 0)
+	file, err := parser.ParseFile(token.NewFileSet(), build.Main, nil, 0)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse dir: %s", dir)
+		return errors.Wrapf(err, "failed to parse file: %s", build.Main)
 	}
-	for _, pack := range packs {
-		for _, file := range pack.Files {
-			if hasMain(file) {
-				return nil
-			}
-		}
+	if hasMain(file) {
+		return nil
 	}
 	return fmt.Errorf("build for %s does not contain a main function", build.Binary)
 }
