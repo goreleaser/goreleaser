@@ -211,19 +211,25 @@ type Changelog struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
+// GPG Signing config
+type GPGSigning struct {
+	KeyID string `yaml:"key_id,omitempty"`
+}
+
 // Project includes all project configuration
 type Project struct {
-	ProjectName string    `yaml:"project_name,omitempty"`
-	Release     Release   `yaml:",omitempty"`
-	Brew        Homebrew  `yaml:",omitempty"`
-	Builds      []Build   `yaml:",omitempty"`
-	Archive     Archive   `yaml:",omitempty"`
-	FPM         FPM       `yaml:",omitempty"`
-	Snapcraft   Snapcraft `yaml:",omitempty"`
-	Snapshot    Snapshot  `yaml:",omitempty"`
-	Checksum    Checksum  `yaml:",omitempty"`
-	Dockers     []Docker  `yaml:",omitempty"`
-	Changelog   Changelog `yaml:",omitempty"`
+	ProjectName string     `yaml:"project_name,omitempty"`
+	Release     Release    `yaml:",omitempty"`
+	Brew        Homebrew   `yaml:",omitempty"`
+	Builds      []Build    `yaml:",omitempty"`
+	Archive     Archive    `yaml:",omitempty"`
+	FPM         FPM        `yaml:",omitempty"`
+	Snapcraft   Snapcraft  `yaml:",omitempty"`
+	Snapshot    Snapshot   `yaml:",omitempty"`
+	Checksum    Checksum   `yaml:",omitempty"`
+	Dockers     []Docker   `yaml:",omitempty"`
+	Changelog   Changelog  `yaml:",omitempty"`
+	GPGSigning  GPGSigning `yaml:"gpg_signing,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
