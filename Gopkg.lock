@@ -44,6 +44,12 @@
   revision = "4ecb59231939b2e499b1f2fd8f075565977d2452"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/go-homedir"
+  packages = ["."]
+  revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
+
+[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
@@ -66,6 +72,12 @@
   packages = ["."]
   revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
   version = "v1.20.0"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["cast5","openpgp","openpgp/armor","openpgp/elgamal","openpgp/errors","openpgp/packet","openpgp/s2k"]
+  revision = "9f005a07e0d31d45e6656d241bb5c0f2efd4bc94"
 
 [[projects]]
   branch = "master"
@@ -100,6 +112,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "963ab95030179004b910d862fc0048503002cb1029912dbe437ee08e87b31446"
+  inputs-digest = "bf19a61949d8bcf4dd48c2cff81d0c86b985398b718ded32483bc836772c99b0"
   solver-name = "gps-cdcl"
   solver-version = 1
