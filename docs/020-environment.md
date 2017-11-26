@@ -1,5 +1,5 @@
 ---
-title: Environment Variables
+title: Environment
 ---
 
 ### GitHub Token
