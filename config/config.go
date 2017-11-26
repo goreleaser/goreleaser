@@ -224,15 +224,13 @@ type Project struct {
 	Checksum    Checksum  `yaml:",omitempty"`
 	Dockers     []Docker  `yaml:",omitempty"`
 	Changelog   Changelog `yaml:",omitempty"`
+	Dist        string    `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
 
 	// should be set if using github enterprise
 	GitHubURLs GitHubURLs `yaml:"github_urls,omitempty"`
-
-	// test only property indicating the path to the dist folder
-	Dist string `yaml:"-"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`

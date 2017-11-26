@@ -41,6 +41,7 @@ func TestFillBasicData(t *testing.T) {
 		ctx.Config.Archive.NameTemplate,
 		ctx.Config.Builds[0].Ldflags,
 		ctx.Config.Archive.Files,
+		ctx.Config.Dist,
 	)
 }
 
@@ -52,6 +53,7 @@ func TestFillPartial(t *testing.T) {
 
 	var ctx = &context.Context{
 		Config: config.Project{
+			Dist: "disttt",
 			Release: config.Release{
 				GitHub: config.Repo{
 					Owner: "goreleaser",
@@ -86,6 +88,7 @@ func TestFillPartial(t *testing.T) {
 	assert.NotEmpty(t, ctx.Config.Dockers[0].Goarch)
 	assert.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)
 	assert.Empty(t, ctx.Config.Dockers[0].Goarm)
+	assert.Equal(t, "disttt", ctx.Config.Dist)
 }
 
 func TestFillSingleBuild(t *testing.T) {
