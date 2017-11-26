@@ -21,6 +21,8 @@ func init() {
 }
 
 func main() {
+	fmt.Println()
+	defer fmt.Println()
 	var app = cli.NewApp()
 	app.Name = "goreleaser"
 	app.Version = fmt.Sprintf("%v, commit %v, built at %v", version, commit, date)
