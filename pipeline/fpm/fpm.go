@@ -100,6 +100,7 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 	}
 
 	log.WithField("args", options).Debug("creating fpm package")
+	/* #nosec */
 	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
 		return errors.Wrap(err, string(out))
 	}

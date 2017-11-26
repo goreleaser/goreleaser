@@ -92,6 +92,7 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 	var folderDir = filepath.Join(ctx.Config.Dist, folder)
 	var primeDir = filepath.Join(folderDir, "prime")
 	var metaDir = filepath.Join(primeDir, "meta")
+	// #nosec
 	if err := os.MkdirAll(metaDir, 0755); err != nil {
 		return err
 	}
@@ -142,6 +143,7 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 	}
 
 	var snap = filepath.Join(ctx.Config.Dist, folder+".snap")
+	/* #nosec */
 	var cmd = exec.Command("snapcraft", "snap", primeDir, "--output", snap)
 	if out, err = cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to generate snap package: %s", string(out))

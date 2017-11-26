@@ -15,6 +15,7 @@ func IsRepo() bool {
 
 // Run runs a git command and returns its output or errors
 func Run(args ...string) (output string, err error) {
+	/* #nosec */
 	var cmd = exec.Command("git", args...)
 	bts, err := cmd.CombinedOutput()
 	if err != nil {

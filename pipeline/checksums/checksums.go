@@ -31,13 +31,15 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	file, err := os.OpenFile(
 		filepath.Join(ctx.Config.Dist, filename),
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
-		0644,
+		0444,
 	)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		_ = file.Close()
+		if err := file.Close(); err != nil {
+			log.WithError(err).Errorf("failed to close %s", file.Name())
+		}
 		ctx.AddArtifact(file.Name())
 	}()
 	var g errgroup.Group
