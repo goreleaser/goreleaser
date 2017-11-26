@@ -152,6 +152,7 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 }
 
 func run(target buildtarget.Target, command, env []string) error {
+	/* #nosec */
 	var cmd = exec.Command(command[0], command[1:]...)
 	env = append(env, target.Env()...)
 	var log = log.WithField("target", target.PrettyString()).

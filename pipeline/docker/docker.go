@@ -111,6 +111,7 @@ func publish(ctx *context.Context, docker config.Docker, image, latest string) e
 
 func dockerBuild(root, dockerfile, image string) error {
 	log.WithField("image", image).Info("building docker image")
+	/* #nosec */
 	var cmd = exec.Command("docker", "build", "-f", dockerfile, "-t", image, root)
 	log.WithField("cmd", cmd).Debug("executing")
 	out, err := cmd.CombinedOutput()
@@ -123,6 +124,7 @@ func dockerBuild(root, dockerfile, image string) error {
 
 func dockerTag(image, tag string) error {
 	log.WithField("image", image).WithField("tag", tag).Info("tagging docker image")
+	/* #nosec */
 	var cmd = exec.Command("docker", "tag", image, tag)
 	log.WithField("cmd", cmd).Debug("executing")
 	out, err := cmd.CombinedOutput()
@@ -135,6 +137,7 @@ func dockerTag(image, tag string) error {
 
 func dockerPush(image string) error {
 	log.WithField("image", image).Info("pushing docker image")
+	/* #nosec */
 	var cmd = exec.Command("docker", "push", image)
 	log.WithField("cmd", cmd).Debug("executing")
 	out, err := cmd.CombinedOutput()
