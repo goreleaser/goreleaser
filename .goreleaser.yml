@@ -62,3 +62,4 @@ snapcraft:
     wrapped in your favorite CI.
   grade: stable
   confinement: classic
+  

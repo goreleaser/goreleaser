@@ -194,6 +194,15 @@ type Docker struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
+// Artifactory server configuration
+type Artifactory struct {
+	Target   string `yaml:",omitempty"`
+	Username string `yaml:",omitempty"`
+
+	// Capture all undefined fields and should be empty after loading
+	XXX map[string]interface{} `yaml:",inline"`
+}
+
 // Filters config
 type Filters struct {
 	Exclude []string `yaml:",omitempty"`
@@ -213,18 +222,19 @@ type Changelog struct {
 
 // Project includes all project configuration
 type Project struct {
-	ProjectName string    `yaml:"project_name,omitempty"`
-	Release     Release   `yaml:",omitempty"`
-	Brew        Homebrew  `yaml:",omitempty"`
-	Builds      []Build   `yaml:",omitempty"`
-	Archive     Archive   `yaml:",omitempty"`
-	FPM         FPM       `yaml:",omitempty"`
-	Snapcraft   Snapcraft `yaml:",omitempty"`
-	Snapshot    Snapshot  `yaml:",omitempty"`
-	Checksum    Checksum  `yaml:",omitempty"`
-	Dockers     []Docker  `yaml:",omitempty"`
-	Changelog   Changelog `yaml:",omitempty"`
-	Dist        string    `yaml:",omitempty"`
+	ProjectName   string        `yaml:"project_name,omitempty"`
+	Release       Release       `yaml:",omitempty"`
+	Brew          Homebrew      `yaml:",omitempty"`
+	Builds        []Build       `yaml:",omitempty"`
+	Archive       Archive       `yaml:",omitempty"`
+	FPM           FPM           `yaml:",omitempty"`
+	Snapcraft     Snapcraft     `yaml:",omitempty"`
+	Snapshot      Snapshot      `yaml:",omitempty"`
+	Checksum      Checksum      `yaml:",omitempty"`
+	Dockers       []Docker      `yaml:",omitempty"`
+	Artifactories []Artifactory `yaml:",omitempty"`
+	Changelog     Changelog     `yaml:",omitempty"`
+	Dist          string        `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
@@ -288,6 +298,9 @@ func checkOverflows(config Project) error {
 	overflow.check(config.Checksum.XXX, "checksum")
 	for i, docker := range config.Dockers {
 		overflow.check(docker.XXX, fmt.Sprintf("docker[%d]", i))
+	}
+	for i, artifactory := range config.Artifactories {
+		overflow.check(artifactory.XXX, fmt.Sprintf("artifactory[%d]", i))
 	}
 	overflow.check(config.Changelog.XXX, "changelog")
 	overflow.check(config.Changelog.Filters.XXX, "changelog.filters")
