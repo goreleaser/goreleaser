@@ -163,7 +163,12 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 
 		artifact, resp, err := uploadBinaryToArtifactory(ctx, uploadTarget, artifactory.Username, secret, file)
 		if err != nil {
-			log.WithError(err).Errorf("Artifactory: Upload to target %s failed (HTTP Status: %s)", uploadTarget, resp.Status)
+			if resp != nil {
+				log.WithError(err).Errorf("Artifactory: Upload to target %s failed (HTTP Status: %s)", uploadTarget, resp.Status)
+			} else {
+				log.WithError(err).Errorf("Artifactory: Upload to target %s failed", uploadTarget)
+			}
+
 			continue
 		}
 
