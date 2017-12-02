@@ -17,7 +17,7 @@ upload target and a usernameto your `.goreleaser.yml` file:
 
 ```yaml
 artifactories:
-  - target: http://<Your-Instance>:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}
+  - target: http://<Your-Instance>:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}
     username: goreleaser
 ```
 
@@ -33,13 +33,13 @@ The `target` is the final URL of _without_ the binary name.
 A configuration for `goreleaser` with the target 
 
 ```
-http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}
+http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}
 ```
 
 will result in a final deployment like
 
 ```
-http://artifacts.company.com:8081/artifactory/example-repo-local/goreleaser/Darwin/x86_64/goreleaser
+http://artifacts.company.com:8081/artifactory/example-repo-local/goreleaser/1.0.0/Darwin/x86_64/goreleaser
 ```
 
 Support variables:
@@ -71,7 +71,7 @@ artifactories:
   # You can have multiple Artifactory instances.
   -
     # URL of your Artifactory instance + path to deploy to
-    target: http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}
+    target: http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}
     # User that will be used for the deployment
 ```
 
