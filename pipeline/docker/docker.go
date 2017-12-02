@@ -23,8 +23,8 @@ var ErrNoDocker = errors.New("docker not present in $PATH")
 type Pipe struct{}
 
 // Description of the pipe
-func (Pipe) Description() string {
-	return "Creating Docker images"
+func (Pipe) String() string {
+	return "creating Docker images"
 }
 
 // Run the pipe
@@ -37,6 +37,27 @@ func (Pipe) Run(ctx *context.Context) error {
 		return ErrNoDocker
 	}
 	return doRun(ctx)
+}
+
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	// TODO: this if condition looks wrong
+	if len(ctx.Config.Dockers) != 1 {
+		return nil
+	}
+	if ctx.Config.Dockers[0].Goos == "" {
+		ctx.Config.Dockers[0].Goos = "linux"
+	}
+	if ctx.Config.Dockers[0].Goarch == "" {
+		ctx.Config.Dockers[0].Goarch = "amd64"
+	}
+	if ctx.Config.Dockers[0].Binary == "" {
+		ctx.Config.Dockers[0].Binary = ctx.Config.Builds[0].Binary
+	}
+	if ctx.Config.Dockers[0].Dockerfile == "" {
+		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
+	}
+	return nil
 }
 
 func doRun(ctx *context.Context) error {

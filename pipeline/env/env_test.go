@@ -12,7 +12,7 @@ import (
 )
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.Description())
+	assert.NotEmpty(t, Pipe{}.String())
 }
 
 func TestValidEnv(t *testing.T) {

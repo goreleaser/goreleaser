@@ -50,8 +50,8 @@ type AppMetadata struct {
 type Pipe struct{}
 
 // Description of the pipe
-func (Pipe) Description() string {
-	return "Creating Linux packages with snapcraft"
+func (Pipe) String() string {
+	return "creating Linux packages with snapcraft"
 }
 
 // Run the pipe

@@ -17,7 +17,7 @@ import (
 var emptyEnv []string
 
 func TestPipeDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.Description())
+	assert.NotEmpty(t, Pipe{}.String())
 }
 
 func TestRun(t *testing.T) {

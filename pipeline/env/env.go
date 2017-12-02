@@ -17,8 +17,8 @@ var ErrMissingToken = errors.New("missing GITHUB_TOKEN")
 type Pipe struct{}
 
 // Description of the pipe
-func (Pipe) Description() string {
-	return "Loading environment variables"
+func (Pipe) String() string {
+	return "loading environment variables"
 }
 
 // Run the pipe

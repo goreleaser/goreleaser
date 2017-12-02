@@ -18,8 +18,8 @@ import (
 type Pipe struct{}
 
 // Description of the pipe
-func (Pipe) Description() string {
-	return "Calculating checksums"
+func (Pipe) String() string {
+	return "calculating checksums"
 }
 
 // Run the pipe
@@ -50,6 +50,14 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		})
 	}
 	return g.Wait()
+}
+
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	if ctx.Config.Checksum.NameTemplate != "" {
+		ctx.Config.Checksum.NameTemplate = "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+	}
+	return nil
 }
 
 func checksums(ctx *context.Context, file *os.File, name string) error {

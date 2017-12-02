@@ -20,8 +20,8 @@ var ErrInvalidSortDirection = errors.New("invalid sort direction")
 type Pipe struct{}
 
 // Description of the pipe
-func (Pipe) Description() string {
-	return "Generating changelog"
+func (Pipe) String() string {
+	return "generating changelog"
 }
 
 // Run the pipe

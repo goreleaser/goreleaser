@@ -96,7 +96,7 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.Description())
+	assert.NotEmpty(t, Pipe{}.String())
 }
 
 func TestNoDockers(t *testing.T) {
