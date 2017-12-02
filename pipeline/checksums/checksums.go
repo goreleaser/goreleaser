@@ -54,7 +54,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Checksum.NameTemplate != "" {
+	if ctx.Config.Checksum.NameTemplate == "" {
 		ctx.Config.Checksum.NameTemplate = "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
 	}
 	return nil

@@ -91,3 +91,29 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "/checksums.txt: permission denied")
 }
+
+func TestDefault(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Checksum: config.Checksum{},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(
+		t,
+		"{{ .ProjectName }}_{{ .Version }}_checksums.txt",
+		ctx.Config.Checksum.NameTemplate,
+	)
+}
+
+func TestDefaultSet(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Checksum: config.Checksum{
+				NameTemplate: "checksums.txt",
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "checksums.txt", ctx.Config.Checksum.NameTemplate)
+}
