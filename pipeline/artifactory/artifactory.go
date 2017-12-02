@@ -105,7 +105,7 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	sem := make(chan bool, ctx.Parallelism)
 	var g errgroup.Group
 
-	// Lets generate the build matrix, , because we want to publish
+	// Lets generate the build matrix, because we want to publish
 	// every target to Artifactory
 	for _, target := range buildtarget.All(build) {
 		sem <- true
@@ -116,23 +116,27 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 				<-sem
 			}()
 
-			return doBuild(ctx, build, target)
+			return upload(ctx, build, target)
 		})
 	}
 
 	return g.Wait()
 }
 
-// doBuild runs the pipe action of the current build and the current target
-// This is where the real action take place
-func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) (err error) {
+// upload runs the pipe action of the current build and the current target.
+// This is where the real action take place.
+// The real action is
+//	- Identify the binary
+//	- Loop over all configured artifactories
+//		- Resolve all variables in the target name
+//		- Upload the binary to the artifactory
+func upload(ctx *context.Context, build config.Build, target buildtarget.Target) error {
 	binary, err := getBinaryForUploadPerBuild(ctx, target)
 	if err != nil {
 		return err
 	}
 
 	// Loop over all configured Artifactory instances
-
 	instances := len(ctx.Config.Artifactories)
 	for i := 0; i < instances; i++ {
 		artifactory := ctx.Config.Artifactories[i]
@@ -147,7 +151,7 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 
 		// The upload url to Artifactory needs the binary name
 		// Here we add the binary to the target url
-		if !strings.HasPrefix(uploadTarget, "/") {
+		if !strings.HasSuffix(uploadTarget, "/") {
 			uploadTarget += "/"
 		}
 		uploadTarget += binary.Name
@@ -157,7 +161,7 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 		if err != nil {
 			return err
 		}
-		defer func() { err = file.Close() }()
+		defer file.Close() // nolint: errcheck
 
 		artifact, resp, err := uploadBinaryToArtifactory(ctx, uploadTarget, artifactory.Username, secret, file)
 		if err != nil {
