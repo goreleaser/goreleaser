@@ -120,16 +120,12 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 		})
 	}
 
-	if err := g.Wait(); err != nil {
-		return err
-	}
-
-	return nil
+	return g.Wait()
 }
 
 // doBuild runs the pipe action of the current build and the current target
 // This is where the real action take place
-func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
+func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) (err error) {
 	binary, err := getBinaryForUploadPerBuild(ctx, target)
 	if err != nil {
 		return err
@@ -163,7 +159,7 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 		if err != nil {
 			return err
 		}
-		defer func() { _ = file.Close() }()
+		defer func() { err = file.Close() }()
 
 		artifact, resp, err := uploadBinaryToArtifactory(ctx, uploadTarget, artifactory.Username, secret, file)
 		if err != nil {
@@ -277,8 +273,8 @@ func newUploadRequest(target, username, secret string, reader io.Reader, size in
 }
 
 // executeHTTPRequest processes the http call with respect of context ctx
-func executeHTTPRequest(ctx *context.Context, req *http.Request, v interface{}) (*http.Response, error) {
-	resp, err := http.DefaultClient.Do(req)
+func executeHTTPRequest(ctx *context.Context, req *http.Request, v interface{}) (resp *http.Response, err error) {
+	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		// If we got an error, and the context has been canceled,
 		// the context's error is probably more useful.
@@ -291,7 +287,9 @@ func executeHTTPRequest(ctx *context.Context, req *http.Request, v interface{}) 
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	defer func() {
+		err = resp.Body.Close()
+	}()
 
 	err = checkResponse(resp)
 	if err != nil {
@@ -339,7 +337,10 @@ func checkResponse(r *http.Response) error {
 	errorResponse := &errorResponse{Response: r}
 	data, err := ioutil.ReadAll(r.Body)
 	if err == nil && data != nil {
-		json.Unmarshal(data, errorResponse)
+		err := json.Unmarshal(data, errorResponse)
+		if err != nil {
+			return err
+		}
 	}
 	return errorResponse
 }
