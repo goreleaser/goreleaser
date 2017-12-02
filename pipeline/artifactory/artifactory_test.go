@@ -269,6 +269,129 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	assert.Error(t, Pipe{}.Run(ctx))
 }
 
+func TestRunPipe_NoFile(t *testing.T) {
+	// Set secrets for artifactory instances
+	os.Setenv("ARTIFACTORY_0_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_0_SECRET")
+
+	var ctx = &context.Context{
+		Version: "1.0.0",
+		Publish: true,
+		Config: config.Project{
+			ProjectName: "mybin",
+			Dist:        "archivetest/dist",
+			Builds: []config.Build{
+				{
+					Env:    []string{"CGO_ENABLED=0"},
+					Goos:   []string{"darwin"},
+					Goarch: []string{"amd64"},
+				},
+			},
+			Artifactories: []config.Artifactory{
+				{
+					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+					Username: "deployuser",
+				},
+			},
+		},
+	}
+	for _, plat := range []string{"darwinamd64"} {
+		ctx.AddBinary(plat, "mybin", "mybin", "archivetest/dist/mybin/mybin")
+	}
+	ctx.Parallelism = 4
+
+	assert.Error(t, Pipe{}.Run(ctx))
+}
+
+func TestRunPipe_UnparsableTarget(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	var binPath = filepath.Join(dist, "mybin", "mybin")
+	d1 := []byte("hello\ngo\n")
+	err = ioutil.WriteFile(binPath, d1, 0666)
+	assert.NoError(t, err)
+
+	// Set secrets for artifactory instances
+	os.Setenv("ARTIFACTORY_0_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_0_SECRET")
+
+	var ctx = &context.Context{
+		Version: "1.0.0",
+		Publish: true,
+		Config: config.Project{
+			ProjectName: "mybin",
+			Dist:        dist,
+			Builds: []config.Build{
+				{
+					Env:    []string{"CGO_ENABLED=0"},
+					Goos:   []string{"darwin"},
+					Goarch: []string{"amd64"},
+				},
+			},
+			Artifactories: []config.Artifactory{
+				{
+					Target:   "://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+					Username: "deployuser",
+				},
+			},
+		},
+	}
+	for _, plat := range []string{"darwinamd64"} {
+		ctx.AddBinary(plat, "mybin", "mybin", binPath)
+	}
+	ctx.Parallelism = 4
+
+	assert.Error(t, Pipe{}.Run(ctx))
+}
+
+func TestRunPipe_DirUpload(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	var binPath = filepath.Join(dist, "mybin")
+	/*
+		d1 := []byte("hello\ngo\n")
+		err = ioutil.WriteFile(binPath, d1, 0666)
+		assert.NoError(t, err)
+	*/
+	// Set secrets for artifactory instances
+	os.Setenv("ARTIFACTORY_0_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_0_SECRET")
+
+	var ctx = &context.Context{
+		Version: "1.0.0",
+		Publish: true,
+		Config: config.Project{
+			ProjectName: "mybin",
+			Dist:        dist,
+			Builds: []config.Build{
+				{
+					Env:    []string{"CGO_ENABLED=0"},
+					Goos:   []string{"darwin"},
+					Goarch: []string{"amd64"},
+				},
+			},
+			Artifactories: []config.Artifactory{
+				{
+					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+					Username: "deployuser",
+				},
+			},
+		},
+	}
+	for _, plat := range []string{"darwinamd64"} {
+		ctx.AddBinary(plat, "mybin", "mybin", binPath)
+	}
+	ctx.Parallelism = 4
+
+	assert.Error(t, Pipe{}.Run(ctx))
+}
+
 func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.Description())
 }
