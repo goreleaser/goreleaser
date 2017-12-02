@@ -24,7 +24,7 @@ func (Pipe) String() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
-	filename, err := name.ForChecksums(ctx)
+	filename, err := filenameFor(ctx)
 	if err != nil {
 		return err
 	}
