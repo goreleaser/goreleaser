@@ -278,8 +278,8 @@ func newUploadRequest(target, username, secret string, reader io.Reader, size in
 }
 
 // executeHTTPRequest processes the http call with respect of context ctx
-func executeHTTPRequest(ctx *context.Context, req *http.Request, v interface{}) (resp *http.Response, err error) {
-	resp, err = http.DefaultClient.Do(req)
+func executeHTTPRequest(ctx *context.Context, req *http.Request, v interface{}) (*http.Response, error) {
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		// If we got an error, and the context has been canceled,
 		// the context's error is probably more useful.
@@ -292,9 +292,7 @@ func executeHTTPRequest(ctx *context.Context, req *http.Request, v interface{}) 
 		return nil, err
 	}
 
-	defer func() {
-		err = resp.Body.Close()
-	}()
+	defer resp.Body.Close() // nolint: errcheck
 
 	err = checkResponse(resp)
 	if err != nil {
