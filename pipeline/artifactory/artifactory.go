@@ -4,7 +4,6 @@ package artifactory
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -18,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/goreleaser/goreleaser/pipeline"
+	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/apex/log"
@@ -141,10 +141,8 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 		// Generate name of target
 		uploadTarget, err := buildTargetName(ctx, artifactory, target)
 		if err != nil {
-			// We log the error, but continue the process
-			// The next target name could be generated successfully
 			log.WithError(err).Error("Artifactory: Error while building the target name")
-			continue
+			return errors.Wrap(err, "Artifactory: Error while building the target name")
 		}
 
 		// The upload url to Artifactory needs the binary name
@@ -163,13 +161,14 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 
 		artifact, resp, err := uploadBinaryToArtifactory(ctx, uploadTarget, artifactory.Username, secret, file)
 		if err != nil {
+			var msg string
 			if resp != nil {
-				log.WithError(err).Errorf("Artifactory: Upload to target %s failed (HTTP Status: %s)", uploadTarget, resp.Status)
+				msg = fmt.Sprintf("Artifactory: Upload to target %s failed (HTTP Status: %s)", uploadTarget, resp.Status)
 			} else {
-				log.WithError(err).Errorf("Artifactory: Upload to target %s failed", uploadTarget)
+				msg = fmt.Sprintf("Artifactory: Upload to target %s failed", uploadTarget)
 			}
-
-			continue
+			log.WithError(err).Error(msg)
+			return errors.Wrap(err, msg)
 		}
 
 		log.WithField("uri", artifact.DownloadURI).WithField("target", target.PrettyString()).Info("uploaded successful")
