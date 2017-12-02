@@ -17,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/goreleaser/goreleaser/internal/ext"
-	"github.com/goreleaser/goreleaser/internal/name"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
@@ -158,14 +157,14 @@ func runHook(env []string, hook string) error {
 }
 
 func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
-	folder, err := name.For(ctx, target)
+	folder, err := nameFor(ctx, target, ctx.Config.ProjectName)
 	if err != nil {
 		return err
 	}
 	var binaryName = build.Binary + ext.For(target)
 	var prettyName = binaryName
 	if ctx.Config.Archive.Format == "binary" {
-		binaryName, err = name.ForBuild(ctx, build, target)
+		binaryName, err = nameFor(ctx, target, build.Binary)
 		if err != nil {
 			return err
 		}
