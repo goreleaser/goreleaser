@@ -1,4 +1,4 @@
-package defaults
+package release
 
 import (
 	"testing"

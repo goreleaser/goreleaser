@@ -26,8 +26,8 @@ import (
 type Pipe struct{}
 
 // Description of the pipe
-func (Pipe) Description() string {
-	return "Building binaries"
+func (Pipe) String() string {
+	return "building binaries"
 }
 
 // Run the pipe
@@ -42,6 +42,41 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 	}
 	return nil
+}
+
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	for i, build := range ctx.Config.Builds {
+		ctx.Config.Builds[i] = buildWithDefaults(ctx, build)
+	}
+	if len(ctx.Config.Builds) == 0 {
+		ctx.Config.Builds = []config.Build{
+			buildWithDefaults(ctx, ctx.Config.SingleBuild),
+		}
+	}
+	return nil
+}
+
+func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
+	if build.Binary == "" {
+		build.Binary = ctx.Config.Release.GitHub.Name
+	}
+	if build.Main == "" {
+		build.Main = "."
+	}
+	if len(build.Goos) == 0 {
+		build.Goos = []string{"linux", "darwin"}
+	}
+	if len(build.Goarch) == 0 {
+		build.Goarch = []string{"amd64", "386"}
+	}
+	if len(build.Goarm) == 0 {
+		build.Goarm = []string{"6"}
+	}
+	if build.Ldflags == "" {
+		build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
+	}
+	return build
 }
 
 func checkMain(ctx *context.Context, build config.Build) error {

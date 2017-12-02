@@ -26,7 +26,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-var pipes = []pipeline.Pipe{
+var pipes = []pipeline.Piper{
 	defaults.Pipe{},  // load default configs
 	git.Pipe{},       // get and validate git repo state
 	changelog.Pipe{}, // builds the release changelog
@@ -89,7 +89,7 @@ func Release(flags Flags) error {
 	}
 	ctx.RmDist = flags.Bool("rm-dist")
 	for _, pipe := range pipes {
-		log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.Description()))
+		log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.String()))
 		if err := handle(pipe.Run(ctx)); err != nil {
 			return err
 		}
