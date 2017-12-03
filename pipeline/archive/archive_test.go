@@ -195,3 +195,33 @@ func TestRunPipeWrap(t *testing.T) {
 		assert.Equal(t, filepath.Join("mybin_darwin_amd64", n), h.Name)
 	}
 }
+
+func TestDefault(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archive: config.Archive{},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.NotEmpty(t, ctx.Config.Archive.NameTemplate)
+	assert.Equal(t, "tar.gz", ctx.Config.Archive.Format)
+	assert.NotEmpty(t, ctx.Config.Archive.Files)
+}
+
+func TestDefaultSet(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archive: config.Archive{
+				NameTemplate: "foo",
+				Format:       "zip",
+				Files: []string{
+					"foo",
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "foo", ctx.Config.Archive.NameTemplate)
+	assert.Equal(t, "zip", ctx.Config.Archive.Format)
+	assert.Equal(t, "foo", ctx.Config.Archive.Files[0])
+}
