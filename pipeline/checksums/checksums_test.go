@@ -35,7 +35,7 @@ func TestPipe(t *testing.T) {
 	assert.Contains(t, ctx.Artifacts, checksums, binary)
 	bts, err := ioutil.ReadFile(filepath.Join(folder, checksums))
 	assert.NoError(t, err)
-	assert.Equal(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary\n")
+	assert.Equal(t, "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary\n", string(bts))
 }
 
 func TestPipeFileNotExist(t *testing.T) {
@@ -70,7 +70,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 	ctx.AddArtifact("whatever")
 	err = Pipe{}.Run(ctx)
 	assert.Error(t, err)
-	assert.Equal(t, `template: name:1: unexpected "}" in operand`, err.Error())
+	assert.Equal(t, `template: checksums:1: unexpected "}" in operand`, err.Error())
 }
 
 func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
