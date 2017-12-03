@@ -109,23 +109,3 @@ func TestFillSingleBuild(t *testing.T) {
 	assert.Equal(t, ctx.Config.Builds[0].Binary, "goreleaser")
 }
 
-func TestNotAGitRepo(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
-	testlib.GitInit(t)
-	var ctx = &context.Context{
-		Config: config.Project{},
-	}
-	assert.Error(t, Pipe{}.Run(ctx))
-	assert.Empty(t, ctx.Config.Release.GitHub.String())
-}
-
-func TestGitRepoWithoutRemote(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
-	var ctx = &context.Context{
-		Config: config.Project{},
-	}
-	assert.Error(t, Pipe{}.Run(ctx))
-	assert.Empty(t, ctx.Config.Release.GitHub.String())
-}
