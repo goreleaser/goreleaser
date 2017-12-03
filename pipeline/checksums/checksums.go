@@ -16,7 +16,6 @@ import (
 // Pipe for checksums
 type Pipe struct{}
 
-// Description of the pipe
 func (Pipe) String() string {
 	return "calculating checksums"
 }

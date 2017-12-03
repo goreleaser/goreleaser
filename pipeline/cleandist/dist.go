@@ -14,7 +14,6 @@ import (
 // Pipe for cleandis
 type Pipe struct{}
 
-// Description of the pipe
 func (Pipe) String() string {
 	return "checking ./dist"
 }

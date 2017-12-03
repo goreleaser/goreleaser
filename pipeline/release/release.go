@@ -16,7 +16,6 @@ import (
 // Pipe for github release
 type Pipe struct{}
 
-// Description of the pipe
 func (Pipe) String() string {
 	return "releasing to GitHub"
 }

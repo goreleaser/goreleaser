@@ -22,7 +22,6 @@ var ErrNoFPM = errors.New("fpm not present in $PATH")
 // Pipe for fpm packaging
 type Pipe struct{}
 
-// Description of the pipe
 func (Pipe) String() string {
 	return "creating Linux packages with fpm"
 }
