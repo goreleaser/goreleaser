@@ -6,7 +6,8 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 )
 
-// Defaulter interface
+// Defaulter can be implemented by a Piper to set default values for its
+// configuration.
 type Defaulter interface {
 	fmt.Stringer
 
