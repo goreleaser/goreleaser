@@ -8,11 +8,9 @@ import (
 	"testing"
 
 	"github.com/apex/log"
-
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -130,4 +128,60 @@ func TestDockerNotInPath(t *testing.T) {
 		},
 	}
 	assert.EqualError(t, Pipe{}.Run(ctx), ErrNoDocker.Error())
+}
+
+func TestDefault(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Builds: []config.Build{
+				{
+					Binary: "foo",
+				},
+			},
+			Dockers: []config.Docker{
+				{
+					Latest: true,
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Len(t, ctx.Config.Dockers, 1)
+	var docker = ctx.Config.Dockers[0]
+	assert.Equal(t, "linux", docker.Goos)
+	assert.Equal(t, "amd64", docker.Goarch)
+	assert.Equal(t, ctx.Config.Builds[0].Binary, docker.Binary)
+	assert.Equal(t, "Dockerfile", docker.Dockerfile)
+}
+
+func TestDefaultNoDockers(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dockers: []config.Docker{},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Empty(t, ctx.Config.Dockers)
+}
+
+func TestDefaultSet(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dockers: []config.Docker{
+				{
+					Goos:       "windows",
+					Goarch:     "i386",
+					Binary:     "bar",
+					Dockerfile: "Dockerfile.foo",
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Len(t, ctx.Config.Dockers, 1)
+	var docker = ctx.Config.Dockers[0]
+	assert.Equal(t, "windows", docker.Goos)
+	assert.Equal(t, "i386", docker.Goarch)
+	assert.Equal(t, "bar", docker.Binary)
+	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 }
