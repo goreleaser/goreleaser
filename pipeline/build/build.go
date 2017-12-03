@@ -1,12 +1,6 @@
-// Package build implements Pipe and can build Go projects for
-// several platforms, with pre and post hook support.
 package build
 
 import (
-	"fmt"
-	"go/ast"
-	"go/parser"
-	"go/token"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -78,52 +72,6 @@ func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 	return build
 }
 
-func checkMain(ctx *context.Context, build config.Build) error {
-	var main = build.Main
-	if main == "" {
-		main = "."
-	}
-	stat, ferr := os.Stat(main)
-	if os.IsNotExist(ferr) {
-		return errors.Wrapf(ferr, "could not open %s", main)
-	}
-	if stat.IsDir() {
-		packs, err := parser.ParseDir(token.NewFileSet(), main, nil, 0)
-		if err != nil {
-			return errors.Wrapf(err, "failed to parse dir: %s", main)
-		}
-		for _, pack := range packs {
-			for _, file := range pack.Files {
-				if hasMain(file) {
-					return nil
-				}
-			}
-		}
-		return fmt.Errorf("build for %s does not contain a main function", build.Binary)
-	}
-	file, err := parser.ParseFile(token.NewFileSet(), build.Main, nil, 0)
-	if err != nil {
-		return errors.Wrapf(err, "failed to parse file: %s", build.Main)
-	}
-	if hasMain(file) {
-		return nil
-	}
-	return fmt.Errorf("build for %s does not contain a main function", build.Binary)
-}
-
-func hasMain(file *ast.File) bool {
-	for _, decl := range file.Decls {
-		fn, isFn := decl.(*ast.FuncDecl)
-		if !isFn {
-			continue
-		}
-		if fn.Name.Name == "main" && fn.Recv == nil {
-			return true
-		}
-	}
-	return false
-}
-
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	if err := runHook(build.Env, build.Hooks.Pre); err != nil {
 		return errors.Wrap(err, "pre hook failed")
@@ -157,18 +105,18 @@ func runHook(env []string, hook string) error {
 }
 
 func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
-	folder, err := nameFor(ctx, target, ctx.Config.ProjectName)
-	if err != nil {
-		return err
-	}
 	var binaryName = build.Binary + ext.For(target)
 	var prettyName = binaryName
 	if ctx.Config.Archive.Format == "binary" {
-		binaryName, err = nameFor(ctx, target, build.Binary)
+		binaryName, err := nameFor(ctx, target, build.Binary)
 		if err != nil {
 			return err
 		}
 		binaryName = binaryName + ext.For(target)
+	}
+	folder, err := nameFor(ctx, target, ctx.Config.ProjectName)
+	if err != nil {
+		return err
 	}
 	var binary = filepath.Join(ctx.Config.Dist, folder, binaryName)
 	ctx.AddBinary(target.String(), folder, prettyName, binary)
