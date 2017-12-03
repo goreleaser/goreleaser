@@ -113,3 +113,25 @@ func TestRunPipeWithExtraFiles(t *testing.T) {
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
+
+func TestDefault(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			FPM: config.FPM{},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "/usr/local/bin", ctx.Config.FPM.Bindir)
+}
+
+func TestDefaultSet(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			FPM: config.FPM{
+				Bindir: "/bin",
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "/bin", ctx.Config.FPM.Bindir)
+}
