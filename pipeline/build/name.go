@@ -10,7 +10,7 @@ import (
 
 func nameFor(ctx *context.Context, target buildtarget.Target, name string) (string, error) {
 	var out bytes.Buffer
-	t, err := template.New(target.String()).Parse(ctx.Config.Archive.NameTemplate)
+	t, err := template.New(name).Parse(ctx.Config.Archive.NameTemplate)
 	if err != nil {
 		return "", err
 	}
