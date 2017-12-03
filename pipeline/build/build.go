@@ -108,7 +108,8 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 	var binaryName = build.Binary + ext.For(target)
 	var prettyName = binaryName
 	if ctx.Config.Archive.Format == "binary" {
-		binaryName, err := nameFor(ctx, target, build.Binary)
+		var err error
+		binaryName, err = nameFor(ctx, target, build.Binary)
 		if err != nil {
 			return err
 		}
