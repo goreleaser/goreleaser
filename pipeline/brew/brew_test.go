@@ -268,6 +268,40 @@ func TestRunPipeFormatBinary(t *testing.T) {
 	assert.False(t, client.CreatedFile)
 }
 
+func TestDefault(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+
+	var ctx = &context.Context{
+		Config: config.Project{
+			Builds: []config.Build{
+				{
+					Binary: "foo",
+					Goos:   []string{"linux", "darwin"},
+					Goarch: []string{"386", "amd64"},
+				},
+				{
+					Binary: "bar",
+					Goos:   []string{"linux", "darwin"},
+					Goarch: []string{"386", "amd64"},
+					Ignore: []config.IgnoredBuild{
+						{Goos: "darwin", Goarch: "amd64"},
+					},
+				},
+				{
+					Binary: "foobar",
+					Goos:   []string{"linux"},
+					Goarch: []string{"amd64"},
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Name)
+	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Email)
+	assert.Equal(t, `bin.install "foo"`, ctx.Config.Brew.Install)
+}
+
 type DummyClient struct {
 	CreatedFile bool
 	Content     string
