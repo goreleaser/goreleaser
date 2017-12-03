@@ -10,7 +10,6 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/name"
 	"golang.org/x/sync/errgroup"
 )
 
