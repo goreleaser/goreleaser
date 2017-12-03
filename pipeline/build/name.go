@@ -15,13 +15,14 @@ func nameFor(ctx *context.Context, target buildtarget.Target, name string) (stri
 		return "", err
 	}
 	data := struct {
-		Os, Arch, Arm, Version, Tag, ProjectName string
+		Os, Arch, Arm, Version, Tag, Binary, ProjectName string
 	}{
 		Os:          replace(ctx.Config.Archive.Replacements, target.OS),
 		Arch:        replace(ctx.Config.Archive.Replacements, target.Arch),
 		Arm:         replace(ctx.Config.Archive.Replacements, target.Arm),
 		Version:     ctx.Version,
 		Tag:         ctx.Git.CurrentTag,
+		Binary:      name, // TODO: deprecated: remove this sometime
 		ProjectName: name,
 	}
 	err = t.Execute(&out, data)
