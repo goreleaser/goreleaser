@@ -22,5 +22,5 @@ that and rewrote the whole thing in Go.
 There are three ways to get going.
 
 1. Install Goreleaser via go get (`goreleaser` command will be globally available) `go get github.com/goreleaser/goreleaser`
-2. On a Mac use [Homebrew](https://github.com/goreleaser/homebrew-tap).
-3. Install directly [from the binaries](https://github.com/goreleaser/goreleaser/releases/latest).
+1. On a Mac use [Homebrew](https://github.com/goreleaser/homebrew-tap).
+1. Install directly [from the binaries](https://github.com/goreleaser/goreleaser/releases/latest).
