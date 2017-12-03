@@ -7,12 +7,10 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
-
-	"github.com/apex/log"
-
 	"github.com/pkg/errors"
 )
 
@@ -41,7 +39,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	// TODO: this if condition looks wrong
+	// only set defaults if there is exacly 1 docker setup in the config file.
 	if len(ctx.Config.Dockers) != 1 {
 		return nil
 	}
