@@ -406,6 +406,27 @@ func TestDefaultPartialBuilds(t *testing.T) {
 	})
 }
 
+func TestDefaultFillSingleBuild(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+
+	var ctx = &context.Context{
+		Config: config.Project{
+			Release: config.Release{
+				GitHub: config.Repo{
+					Name: "foo",
+				},
+			},
+			SingleBuild: config.Build{
+				Main: "testreleaser",
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Len(t, ctx.Config.Builds, 1)
+	assert.Equal(t, ctx.Config.Builds[0].Binary, "foo")
+}
+
 func exists(file string) bool {
 	_, err := os.Stat(file)
 	return !os.IsNotExist(err)
