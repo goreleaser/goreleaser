@@ -20,7 +20,6 @@ var ErrNoDocker = errors.New("docker not present in $PATH")
 // Pipe for docker
 type Pipe struct{}
 
-// Description of the pipe
 func (Pipe) String() string {
 	return "creating Docker images"
 }

@@ -19,7 +19,6 @@ import (
 // Pipe for archive
 type Pipe struct{}
 
-// Description of the pipe
 func (Pipe) String() string {
 	return "creating archives"
 }

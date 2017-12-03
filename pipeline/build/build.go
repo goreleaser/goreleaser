@@ -18,7 +18,6 @@ import (
 // Pipe for build
 type Pipe struct{}
 
-// Description of the pipe
 func (Pipe) String() string {
 	return "building binaries"
 }

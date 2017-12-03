@@ -7,7 +7,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 )
 
-// Piper interface
+// Piper defines a pipe, which can be part of a pipeline (a serie of pipes).
 type Piper interface {
 	fmt.Stringer
 
