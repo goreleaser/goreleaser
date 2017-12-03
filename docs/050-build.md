@@ -78,3 +78,19 @@ builds:
       pre: rice embed-go
       post: ./script.sh
 ```
+
+## Passing environment variables to ldflags
+
+You can do that by using `{{ .Env.VARIABLE_NAME }}` in the template, for
+example:
+
+```yaml
+builds:
+  - ldflags: -s -w -X "main.goversion={{.Env.GOVERSION}}"
+```
+
+Then you can run:
+
+```console
+GOVERSION=$(go version) goreleaser
+```
