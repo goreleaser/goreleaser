@@ -8,6 +8,7 @@ package context
 
 import (
 	ctx "context"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -31,6 +32,7 @@ type Binary struct {
 type Context struct {
 	ctx.Context
 	Config       config.Project
+	Env          map[string]string
 	Token        string
 	Git          GitInfo
 	Binaries     map[string]map[string][]Binary
@@ -96,6 +98,16 @@ func New(config config.Project) *Context {
 	return &Context{
 		Context:     ctx.Background(),
 		Config:      config,
+		Env:         splitEnv(os.Environ()),
 		Parallelism: 4,
 	}
+}
+
+func splitEnv(env []string) map[string]string {
+	r := map[string]string{}
+	for _, e := range env {
+		p := strings.SplitN(e, "=", 2)
+		r[p[0]] = p[1]
+	}
+	return r
 }

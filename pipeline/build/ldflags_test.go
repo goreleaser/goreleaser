@@ -1,7 +1,6 @@
 package build
 
 import (
-	"os"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -17,8 +16,6 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 			},
 		},
 	}
-	os.Setenv("FOO", "123")
-	defer os.Unsetenv("FOO")
 	var ctx = &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.2.3",
@@ -26,6 +23,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 		},
 		Version: "1.2.3",
 		Config:  config,
+		Env:     map[string]string{"FOO": "123"},
 	}
 	flags, err := ldflags(ctx, ctx.Config.Builds[0])
 	assert.NoError(t, err)
