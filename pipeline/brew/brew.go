@@ -115,7 +115,19 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if err != nil {
 		return err
 	}
+	ctx.AddBrew(brewTapPath(ctx))
 	return client.CreateFile(ctx, content, path)
+}
+
+func brewTapPath(ctx *context.Context) string {
+	return strings.Join(
+		[]string{
+			ctx.Config.Brew.GitHub.Owner,
+			strings.TrimPrefix(ctx.Config.Brew.GitHub.Name, "homebrew-"),
+			ctx.Config.ProjectName,
+		},
+		"/",
+	)
 }
 
 func buildFormula(ctx *context.Context, client client.Client, folder string) (bytes.Buffer, error) {
