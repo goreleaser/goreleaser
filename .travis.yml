@@ -17,6 +17,6 @@ script:
 after_success:
   - bash <(curl -s https://codecov.io/bash)
   - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-  - test -n "$TRAVIS_TAG" && go run main.go
+  - test -n "$TRAVIS_TAG" && go run main.go && make static-push
 notifications:
   email: false
