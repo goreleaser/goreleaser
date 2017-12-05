@@ -2,11 +2,13 @@
 package docker
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 
+	"github.com/alecthomas/template"
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -38,6 +40,11 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	for i := range ctx.Config.Dockers {
+		if ctx.Config.Dockers[i].TagTemplate == "" {
+			ctx.Config.Dockers[i].TagTemplate = "{{ .Version }}"
+		}
+	}
 	// only set defaults if there is exacly 1 docker setup in the config file.
 	if len(ctx.Config.Dockers) != 1 {
 		return nil
@@ -80,10 +87,30 @@ func doRun(ctx *context.Context) error {
 	return nil
 }
 
+func tagName(ctx *context.Context, docker config.Docker) (string, error) {
+	var out bytes.Buffer
+	t, err := template.New("tag").Parse(docker.TagTemplate)
+	if err != nil {
+		return "", err
+	}
+	data := struct {
+		Version, Tag string
+	}{
+		Version: ctx.Version,
+		Tag:     ctx.Git.CurrentTag,
+	}
+	err = t.Execute(&out, data)
+	return out.String(), err
+}
+
 func process(ctx *context.Context, folder string, docker config.Docker, binary context.Binary) error {
 	var root = filepath.Join(ctx.Config.Dist, folder)
 	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile))
-	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Version)
+	tag, err := tagName(ctx, docker)
+	if err != nil {
+		return err
+	}
+	var image = fmt.Sprintf("%s:%s", docker.Image, tag)
 	var latest = fmt.Sprintf("%s:latest", docker.Image)
 
 	if err := os.Link(docker.Dockerfile, dockerfile); err != nil {
