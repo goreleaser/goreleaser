@@ -39,13 +39,14 @@ HIGHLIGHT=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0
 
 # Generate the static documentation
 static:
-	rm -rf ../goreleaser.github.io/theme
+	@rm -rf ../goreleaser.github.io/theme
 	@static-docs \
 		--in docs \
 		--out ../goreleaser.github.io \
 		--title GoReleaser \
 		--subtitle "Deliver Go binaries as fast and easily as possible" \
 		--google UA-106198408-1
+	@cd ../goreleaser.github.io && git add -A && git commit -am 'bump: docs' && git push origin master
 
 # Show to-do items per file.
 todo:
