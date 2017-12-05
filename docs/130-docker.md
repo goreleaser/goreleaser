@@ -50,6 +50,9 @@ dockers:
     image: myuser/myimage
     # Path to the Dockerfile (from the project root).
     dockerfile: Dockerfile
+    # Template of the docker tag. Defaults to `{{ .Version }}`. Other allowed
+    # fields are `.Tag`.
+    tag_template: "{{ .Tag }}"
     # Also tag and push myuser/myimage:latest.
     latest: true
     # If your Dockerfile copies files other than the binary itself,
