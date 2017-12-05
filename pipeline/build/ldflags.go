@@ -2,8 +2,6 @@ package build
 
 import (
 	"bytes"
-	"os"
-	"strings"
 	"text/template"
 	"time"
 
@@ -25,7 +23,7 @@ func ldflags(ctx *context.Context, build config.Build) (string, error) {
 		Tag:     ctx.Git.CurrentTag,
 		Version: ctx.Version,
 		Date:    time.Now().UTC().Format(time.RFC3339),
-		Env:     loadEnvs(),
+		Env:     ctx.Env,
 	}
 	var out bytes.Buffer
 	t, err := template.New("ldflags").Parse(build.Ldflags)
@@ -34,13 +32,4 @@ func ldflags(ctx *context.Context, build config.Build) (string, error) {
 	}
 	err = t.Execute(&out, data)
 	return out.String(), err
-}
-
-func loadEnvs() map[string]string {
-	r := map[string]string{}
-	for _, e := range os.Environ() {
-		env := strings.SplitN(e, "=", 2)
-		r[env[0]] = env[1]
-	}
-	return r
 }
