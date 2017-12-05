@@ -15,7 +15,12 @@ func TestDescribeBody(t *testing.T) {
 		ReleaseNotes: changelog,
 		Dockers: []string{
 			"goreleaser/goreleaser:0.40.0",
-			"goreleaser/godownloader:0.1.0",
+			"goreleaser/goreleaser:latest",
+			"goreleaser/godownloader:v0.1.0",
+		},
+		Brews: []string{
+			"caarlos0/tap/foo",
+			"goreleaser/tap/bar",
 		},
 	}
 	out, err := describeBodyVersion(ctx, "go version go1.9 darwin/amd64")
@@ -28,7 +33,7 @@ func TestDescribeBody(t *testing.T) {
 	assert.Equal(t, string(bts), out.String())
 }
 
-func TestDescribeBodyNoDockerImages(t *testing.T) {
+func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
 	var changelog = "\nfeature1: description\nfeature2: other description"
 	var ctx = &context.Context{
 		ReleaseNotes: changelog,

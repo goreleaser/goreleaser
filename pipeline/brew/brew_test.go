@@ -139,6 +139,8 @@ func TestRunPipe(t *testing.T) {
 	// ioutil.WriteFile("testdata/run_pipe.rb", []byte(client.Content), 0644)
 
 	assert.Equal(t, string(bts), client.Content)
+
+	assert.Equal(t, "test/test/run-pipe", ctx.Brews[0])
 }
 
 func TestRunPipeFormatOverride(t *testing.T) {
@@ -300,6 +302,20 @@ func TestDefault(t *testing.T) {
 	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Name)
 	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Email)
 	assert.Equal(t, `bin.install "foo"`, ctx.Config.Brew.Install)
+}
+
+func TestBrewTapPath(t *testing.T) {
+	assert.Equal(t, "goreleaser/tap/goreleaser", brewTapPath(&context.Context{
+		Config: config.Project{
+			ProjectName: "goreleaser",
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "homebrew-tap",
+				},
+			},
+		},
+	}))
 }
 
 type DummyClient struct {

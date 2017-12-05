@@ -2,10 +2,16 @@
 feature1: description
 feature2: other description
 
-Docker images:
+## Docker images
 
-- goreleaser/goreleaser:0.40.0
-- goreleaser/godownloader:0.1.0
+- `docker pull goreleaser/goreleaser:0.40.0`
+- `docker pull goreleaser/goreleaser:latest`
+- `docker pull goreleaser/godownloader:v0.1.0`
+
+## Homebrew taps
+
+- `brew install caarlos0/tap/foo`
+- `brew install goreleaser/tap/bar`
 
 ---
 Automated with [GoReleaser](https://github.com/goreleaser)
