@@ -95,9 +95,11 @@ func tagName(ctx *context.Context, docker config.Docker) (string, error) {
 	}
 	data := struct {
 		Version, Tag string
+		Env          map[string]string
 	}{
 		Version: ctx.Version,
 		Tag:     ctx.Git.CurrentTag,
+		Env:     ctx.Env,
 	}
 	err = t.Execute(&out, data)
 	return out.String(), err

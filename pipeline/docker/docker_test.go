@@ -53,7 +53,7 @@ func TestRunPipe(t *testing.T) {
 				Dockerfile:  "testdata/Dockerfile",
 				Binary:      "mybin",
 				Latest:      true,
-				TagTemplate: "{{.Tag}}",
+				TagTemplate: "{{.Tag}}-{{.Env.FOO}}",
 			},
 			err: "",
 		},
@@ -82,7 +82,7 @@ func TestRunPipe(t *testing.T) {
 		},
 	}
 	var images = []string{
-		"localhost:5000/goreleaser/test_run_pipe:v1.0.0",
+		"localhost:5000/goreleaser/test_run_pipe:v1.0.0-123",
 		"localhost:5000/goreleaser/test_run_pipe:latest",
 	}
 	// this might fail as the image doesnt exist yet, so lets ignore the error
@@ -105,6 +105,7 @@ func TestRunPipe(t *testing.T) {
 						docker.docker,
 					},
 				},
+				Env: map[string]string{"FOO": "123"},
 			}
 			for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64"} {
 				ctx.AddBinary(plat, "mybin", "mybin", binPath)
