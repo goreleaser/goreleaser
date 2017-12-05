@@ -78,7 +78,7 @@ func TestRunPipe(t *testing.T) {
 				Latest:      true,
 				TagTemplate: "{{.Tag}",
 			},
-			err: `template: tag:1: unexpected "}" in operand; missing space?`,
+			err: `template: tag:1: unexpected "}" in operand`,
 		},
 	}
 	var images = []string{
@@ -109,10 +109,10 @@ func TestRunPipe(t *testing.T) {
 			for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64"} {
 				ctx.AddBinary(plat, "mybin", "mybin", binPath)
 			}
-			if docker.err != "" {
-				assert.EqualError(t, Pipe{}.Run(ctx), docker.err)
-			} else {
+			if docker.err == "" {
 				assert.NoError(t, Pipe{}.Run(ctx))
+			} else {
+				assert.EqualError(t, Pipe{}.Run(ctx), docker.err)
 			}
 		})
 	}
