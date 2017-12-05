@@ -39,7 +39,7 @@ func ldflags(ctx *context.Context, build config.Build) (string, error) {
 func loadEnvs() map[string]string {
 	r := map[string]string{}
 	for _, e := range os.Environ() {
-		env := strings.Split(e, "=")
+		env := strings.SplitN(e, "=", 2)
 		r[env[0]] = env[1]
 	}
 	return r
