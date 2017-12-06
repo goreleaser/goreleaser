@@ -1,9 +1,7 @@
-// Package snapshot provides the snapshoting functionaly to goreleaser.
+// Package snapshot provides the snapshoting functionality to goreleaser.
 package snapshot
 
-import (
-	"github.com/goreleaser/goreleaser/context"
-)
+import "github.com/goreleaser/goreleaser/context"
 
 // Pipe for checksums
 type Pipe struct{}
