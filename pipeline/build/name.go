@@ -16,6 +16,7 @@ func nameFor(ctx *context.Context, target buildtarget.Target, name string) (stri
 	}
 	data := struct {
 		Os, Arch, Arm, Version, Tag, Binary, ProjectName string
+		Env                                              map[string]string
 	}{
 		Os:          replace(ctx.Config.Archive.Replacements, target.OS),
 		Arch:        replace(ctx.Config.Archive.Replacements, target.Arch),
@@ -24,6 +25,7 @@ func nameFor(ctx *context.Context, target buildtarget.Target, name string) (stri
 		Tag:         ctx.Git.CurrentTag,
 		Binary:      name, // TODO: deprecated: remove this sometime
 		ProjectName: name,
+		Env:         ctx.Env,
 	}
 	err = t.Execute(&out, data)
 	return out.String(), err
