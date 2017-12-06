@@ -46,7 +46,7 @@ build:
 static:
 	@rm -rf dist/goreleaser.github.io
 	@mkdir -p dist
-	@git clone git@github.com:goreleaser/goreleaser.github.io.git dist/goreleaser.github.io
+	@git clone https://github.com/goreleaser/goreleaser.github.io.git dist/goreleaser.github.io
 	@rm -rf dist/goreleaser.github.io/theme
 	@static-docs \
 		--in docs \
