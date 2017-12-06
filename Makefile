@@ -56,10 +56,6 @@ static:
 		--google UA-106198408-1
 .PHONY: static
 
-static-push: static
-	@cd dist/goreleaser.github.io && git add -A && git commit -am 'bump: docs' && git diff --exit-code origin/master..master > /dev/null || git push origin master
-.PHONY: static-push
-
 # Show to-do items per file.
 todo:
 	@grep \

@@ -17,6 +17,15 @@ script:
 after_success:
   - bash <(curl -s https://codecov.io/bash)
   - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-  - test -n "$TRAVIS_TAG" && go run main.go && make static-push
+  - test -n "$TRAVIS_TAG" && go run main.go && make static
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  repo: goreleaser/goreleaser.github.io
+  local_dir: ./dist/goreleaser.github.io
+  on:
+    # TODO: change this to tags
+    branch: master
 notifications:
   email: false
