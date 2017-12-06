@@ -40,7 +40,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Config.Dist = "dist"
 	}
 	for _, defaulter := range defaulters {
-		log.Infof("\t%s", defaulter.String())
+		log.Info(defaulter.String())
 		if err := defaulter.Default(ctx); err != nil {
 			return err
 		}
