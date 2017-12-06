@@ -13,12 +13,12 @@ install:
   - sudo snap install snapcraft --candidate --classic
 script:
   - make ci
-  - make static
   - test -n "$TRAVIS_TAG" || go run main.go --skip-validate --skip-publish
 after_success:
   - bash <(curl -s https://codecov.io/bash)
   - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - test -n "$TRAVIS_TAG" && go run main.go
+  - make static
 deploy:
   provider: pages
   skip_cleanup: true
