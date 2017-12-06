@@ -4,6 +4,7 @@ package docker
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -115,9 +116,15 @@ func process(ctx *context.Context, folder string, docker config.Docker, binary c
 	var image = fmt.Sprintf("%s:%s", docker.Image, tag)
 	var latest = fmt.Sprintf("%s:latest", docker.Image)
 
-	if err := os.Link(docker.Dockerfile, dockerfile); err != nil {
-		return errors.Wrap(err, "failed to link dockerfile")
+	// copy the Dockerfile and expand the variables in dockerEnv
+	// to inject the name of the binary executable which may have
+	// been derived from a template into the Dockerfile via the
+	// ${BINARY} variable.
+	var dockerEnv = map[string]string{"BINARY": filepath.Base(binary.Path)}
+	if err := copyAndExpand(dockerfile, docker.Dockerfile, dockerEnv); err != nil {
+		return errors.Wrap(err, "failed to copy and expand Dockerfile")
 	}
+
 	for _, file := range docker.Files {
 		if err := os.Link(file, filepath.Join(root, filepath.Base(file))); err != nil {
 			return errors.Wrapf(err, "failed to link extra file '%s'", file)
@@ -133,6 +140,17 @@ func process(ctx *context.Context, folder string, docker config.Docker, binary c
 	}
 
 	return publish(ctx, docker, image, latest)
+}
+
+func copyAndExpand(dst, src string, env map[string]string) error {
+	data, err := ioutil.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	data = []byte(os.Expand(string(data), func(key string) string {
+		return env[key]
+	}))
+	return ioutil.WriteFile(dst, data, 0644)
 }
 
 func publish(ctx *context.Context, docker config.Docker, image, latest string) error {
