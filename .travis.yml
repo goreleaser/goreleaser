@@ -25,8 +25,8 @@ deploy:
   github_token: $GITHUB_TOKEN
   repo: goreleaser/goreleaser.github.io
   local_dir: ./dist/goreleaser.github.io
+  target_branch: master
   on:
-    # TODO: change this to tags
-    branch: master
+    tags: true
 notifications:
   email: false
