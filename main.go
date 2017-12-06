@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/apex/log"
 	lcli "github.com/apex/log/handlers/cli"
@@ -64,11 +65,13 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) error {
-		log.Infof("running goreleaser %v", version)
+		start := time.Now()
+		log.Infof("\033[1mreleasing...\033[0m")
 		if err := goreleaserlib.Release(c); err != nil {
-			log.WithError(err).Error("release failed")
+			log.WithError(err).Errorf("\033[1mrelease failed after %0.2fs\033[0m", time.Since(start).Seconds())
 			return cli.NewExitError("\n", 1)
 		}
+		log.Infof("\033[1mrelease succeeded after %0.2fs\033[0m", time.Since(start).Seconds())
 		return nil
 	}
 	app.Commands = []cli.Command{

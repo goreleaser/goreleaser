@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
@@ -88,13 +89,17 @@ func Release(flags Flags) error {
 		ctx.Publish = false
 	}
 	ctx.RmDist = flags.Bool("rm-dist")
+	logger, _ := log.Log.(*log.Logger)
+	handler, _ := logger.Handler.(*cli.Handler)
 	for _, pipe := range pipes {
+		handler.Padding = 3
 		log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.String()))
+		handler.Padding = 6
 		if err := handle(pipe.Run(ctx)); err != nil {
 			return err
 		}
 	}
-	log.Infof("\033[1mSUCCESS!\033[0m")
+	handler.Padding = 3
 	return nil
 }
 
