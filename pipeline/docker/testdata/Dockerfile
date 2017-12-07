@@ -1,2 +1,2 @@
 FROM scratch
-ADD ${BINARY} /
+ADD mybin /
