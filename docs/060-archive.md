@@ -20,6 +20,7 @@ archive:
   # - Os
   # - Arch
   # - Arm (ARM version)
+  # - Env (environment variables)
   # Default is `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`.
   name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
@@ -62,4 +63,20 @@ archive:
     - CHANGELOG.md
     - docs/*
     - design/*.png
+```
+
+## Passing environment variables to name_template
+
+You can do that by using `{{ .Env.VARIABLE_NAME }}` in the template, for
+example:
+
+```yaml
+archive:
+  name_template: '{{.ProjectName}}-{{.Version}}-{{.Env.GOVERSION_NR}}'
+```
+
+Then you can run:
+
+```console
+GOVERSION_NR=$(go version | awk '{print $3;}') goreleaser
 ```
