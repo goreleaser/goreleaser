@@ -57,6 +57,18 @@ func TestRunPipe(t *testing.T) {
 			},
 			err: "",
 		},
+		"valid-inject-binary": {
+			docker: config.Docker{
+				Image:       "localhost:5000/goreleaser/test_run_pipe",
+				Goos:        "linux",
+				Goarch:      "amd64",
+				Dockerfile:  "testdata/Dockerfile-inject-binary",
+				Binary:      "mybin",
+				Latest:      true,
+				TagTemplate: "{{.Tag}}-{{.Env.FOO}}",
+			},
+			err: "",
+		},
 		"invalid": {
 			docker: config.Docker{
 				Image:       "localhost:5000/goreleaser/test_run_pipe_nope",
