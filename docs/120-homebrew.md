@@ -95,5 +95,5 @@ end
 
 **Important**": Note that GoReleaser does not yet generate a valid
 homebrew-core formula. The generated formulas are meant to be published as
-[homebrew taps](https://docs.brew.sh/brew-tap.html), and in their current
+[homebrew taps](https://docs.brew.sh/Taps.html), and in their current
 form will not be accepted in any of the official homebrew repositories.
