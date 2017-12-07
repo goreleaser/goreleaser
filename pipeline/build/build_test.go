@@ -84,7 +84,7 @@ func TestRunPipeFormatBinary(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
 	writeGoodMain(t, folder)
-	var binary = filepath.Join(folder, "binary-testing")
+	var binary = filepath.Join(folder, "binary-testing-bar")
 	var config = config.Project{
 		ProjectName: "testing",
 		Dist:        folder,
@@ -101,10 +101,12 @@ func TestRunPipeFormatBinary(t *testing.T) {
 		},
 		Archive: config.Archive{
 			Format:       "binary",
-			NameTemplate: "binary-{{.Binary}}",
+			NameTemplate: "binary-{{.Binary}}-{{.Env.Foo}}",
 		},
 	}
-	assert.NoError(t, Pipe{}.Run(context.New(config)))
+	ctx := context.New(config)
+	ctx.Env = map[string]string{"Foo": "bar"}
+	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.True(t, exists(binary))
 }
 
