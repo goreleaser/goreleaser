@@ -20,10 +20,6 @@ func TestMultipleAdds(t *testing.T) {
 		"c/d:2.0.0",
 		"e/f:3.0.0",
 	}
-	var brews = []string{
-		"foo/tap/foo",
-		"bar/bar/bar",
-	}
 	var ctx = New(config.Project{
 		Dist: "dist",
 	})
@@ -44,20 +40,10 @@ func TestMultipleAdds(t *testing.T) {
 		})
 	}
 	assert.NoError(t, g.Wait())
-	for _, b := range brews {
-		b := b
-		g.Go(func() error {
-			ctx.AddBrew(b)
-			return nil
-		})
-	}
-	assert.NoError(t, g.Wait())
 	assert.Len(t, ctx.Artifacts, len(artifacts))
 	assert.Contains(t, ctx.Artifacts, "a", "b", "c", "d")
 	assert.Len(t, ctx.Dockers, len(dockerfiles))
 	assert.Contains(t, ctx.Dockers, "a/b:1.0.0", "c/d:2.0.0", "e/f:3.0.0")
-	assert.Len(t, ctx.Brews, len(brews))
-	assert.Contains(t, ctx.Brews, "foo/tap/foo", "bar/bar/bar")
 }
 
 func TestMultipleBinaryAdds(t *testing.T) {
