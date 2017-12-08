@@ -7,10 +7,10 @@ builds:
       - darwin
       - windows
     goarch:
-      - 386
+      # - 386
       - amd64
-      - arm
-      - arm64
+      # - arm
+      # - arm64
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
 changelog:
@@ -23,9 +23,10 @@ changelog:
 dockers:
   - image: goreleaser/goreleaser
     latest: true
-    tag_template: '{{ .Tag }}'
+    tag_template: 'dev'
 archive:
-  name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+  # name_template: '{{ .ProjectName }}-{{ .Version }}-{{ .Env.GOVERSION }}-{{ .Os }}_{{ .Arch }}'
+  format: binary
   replacements:
     darwin: Darwin
     linux: Linux
