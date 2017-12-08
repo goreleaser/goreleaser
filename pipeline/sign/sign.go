@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/apex/log"
 	"github.com/mitchellh/go-homedir"
@@ -17,15 +18,12 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
-// Pipe for checksums
 type Pipe struct{}
 
-// Description of the pipe
 func (Pipe) String() string {
 	return "Signing release artifacts"
 }
 
-// Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
 	if ctx.Config.Sign.GPGKeyID == "" {
 		return pipeline.Skip("sign.gpg_key_id is not configured")
@@ -37,14 +35,15 @@ func gpgSign(ctx *context.Context) error {
 	rawKeyID := ctx.Config.Sign.GPGKeyID
 
 	if len(rawKeyID) != 16 {
-		return fmt.Errorf("invalid key_id '%s', needs to be a 8 byte long hex key id", rawKeyID)
+		return fmt.Errorf("invalid gpg_key_id %q, needs to be a 8 byte long hex key id", rawKeyID)
 	}
 
 	keyID, err := strconv.ParseUint(rawKeyID, 16, 64)
 	if err != nil {
-		return fmt.Errorf("invalid key_id '%s': %s", rawKeyID, err)
+		return fmt.Errorf("invalid gpg_key_id '%s': %s", rawKeyID, err)
 	}
 
+	// todo(fs): is this always in that location?
 	keyRingPath, err := homedir.Expand("~/.gnupg/secring.gpg")
 	if err != nil {
 		return err
@@ -62,11 +61,18 @@ func gpgSign(ctx *context.Context) error {
 	}
 
 	keys := keyList.KeysById(keyID)
-	if len(keys) < 1 {
-		return fmt.Errorf("no key with id %q found", rawKeyID)
+	if len(keys) == 0 {
+		return fmt.Errorf("no key found with id %q", rawKeyID)
 	}
 
 	key := keys[0]
+	if key.Entity.PrivateKey.Encrypted {
+		err := decrypt(key.Entity, readPassword)
+		if err != nil {
+			return fmt.Errorf("cannot decrypt private key: %s", err)
+		}
+	}
+
 	artifacts := ctx.Artifacts
 	if ctx.Config.Sign.ChecksumOnly {
 		artifacts = ctx.Checksums
@@ -97,45 +103,74 @@ func gpgSign(ctx *context.Context) error {
 	return nil
 }
 
-func signArtifact(ctx *context.Context, signer *openpgp.Entity, name string) (signaturePath string, err error) {
-	if signer.PrivateKey.Encrypted {
-		fd := int(os.Stdin.Fd())
-		state, err := terminal.MakeRaw(fd)
-		if err != nil {
-			return "", err
-		}
-		defer terminal.Restore(fd, state)
+// decrypt reads the passphrase from the readPassword function and attempts
+// to decrypt the key with it.
+func decrypt(e *openpgp.Entity, passwdFn func(string) (string, error)) error {
+	// number of retries for password entry.
+	const attempts = 3
 
-		t := terminal.NewTerminal(os.Stdin, "")
-		text, err := t.ReadPassword("Enter passphrase: ")
-		if err != nil {
-			return "", err
-		}
-		if err := signer.PrivateKey.Decrypt([]byte(text)); err != nil {
-			return "", err
-		}
+	// time between retries.
+	const delay = time.Second
+
+	if !e.PrivateKey.Encrypted {
+		return nil
 	}
 
+	var err error
+	for i := 0; i < attempts; i++ {
+		if i > 0 {
+			time.Sleep(delay)
+		}
+
+		prompt := fmt.Sprintf("Enter passphrase (%d/%d): ", i+1, attempts)
+		text, err := passwdFn(prompt)
+		if err != nil {
+			continue
+		}
+
+		err = e.PrivateKey.Decrypt([]byte(text))
+		if err != nil {
+			fmt.Println("Bad passphrase")
+			continue
+		}
+
+		// passphrase ok
+		return nil
+	}
+	return err
+}
+
+// readPassword reads a password from stdin without echoing it.
+func readPassword(prompt string) (string, error) {
+	// switch terminal to raw mode to disable echoing
+	// of passphrase and restore old state on return
+	fd := int(os.Stdin.Fd())
+	state, err := terminal.MakeRaw(fd)
+	if err != nil {
+		return "", err
+	}
+	defer terminal.Restore(fd, state)
+
+	t := terminal.NewTerminal(os.Stdin, "")
+	return t.ReadPassword(prompt)
+}
+
+func signArtifact(ctx *context.Context, signer *openpgp.Entity, name string) (signaturePath string, err error) {
 	sigExt := ctx.Config.Sign.SignatureExt
 	if sigExt == "" {
 		sigExt = ".asc"
 	}
+
 	sigFilename := name + sigExt
-	sigFile, err := os.OpenFile(
-		filepath.Join(ctx.Config.Dist, sigFilename),
-		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
-		0644,
-	)
+	sigPath := filepath.Join(ctx.Config.Dist, sigFilename)
+	sigFile, err := os.OpenFile(sigPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return "", err
 	}
 	defer sigFile.Close()
 
-	artifactFile, err := os.OpenFile(
-		filepath.Join(ctx.Config.Dist, name),
-		os.O_RDONLY,
-		0644,
-	)
+	artifactPath := filepath.Join(ctx.Config.Dist, name)
+	artifactFile, err := os.OpenFile(artifactPath, os.O_RDONLY, 0644)
 	if err != nil {
 		return "", err
 	}
@@ -143,16 +178,9 @@ func signArtifact(ctx *context.Context, signer *openpgp.Entity, name string) (si
 
 	log.WithField("file", name).WithField("signature", sigFilename).Info("signing")
 
-	err = openpgp.ArmoredDetachSign(
-		sigFile,
-		signer,
-		artifactFile,
-		nil,
-	)
-
+	err = openpgp.ArmoredDetachSign(sigFile, signer, artifactFile, nil)
 	if err != nil {
 		return "", err
 	}
-
 	return sigFile.Name(), nil
 }
