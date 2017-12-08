@@ -27,6 +27,15 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+var (
+	normalPadding    = cli.Default.Padding
+	increasedPadding = normalPadding * 2
+)
+
+func init() {
+	log.SetHandler(cli.Default)
+}
+
 var pipes = []pipeline.Piper{
 	defaults.Pipe{},  // load default configs
 	git.Pipe{},       // get and validate git repo state
@@ -89,17 +98,15 @@ func Release(flags Flags) error {
 		ctx.Publish = false
 	}
 	ctx.RmDist = flags.Bool("rm-dist")
-	logger, _ := log.Log.(*log.Logger)
-	handler, _ := logger.Handler.(*cli.Handler)
 	for _, pipe := range pipes {
-		handler.Padding = 3
+		cli.Default.Padding = normalPadding
 		log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.String()))
-		handler.Padding = 6
+		cli.Default.Padding = increasedPadding
 		if err := handle(pipe.Run(ctx)); err != nil {
 			return err
 		}
 	}
-	handler.Padding = 3
+	cli.Default.Padding = normalPadding
 	return nil
 }
 
