@@ -1,6 +1,5 @@
-// Package checksums provides a Pipe that creates .checksums files for
-// each artifact.
-package gpg_signing
+// Package sign provides a Pipe that signs .checksums files.
+package sign
 
 import (
 	"fmt"
@@ -27,33 +26,35 @@ func (Pipe) String() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
-	if ctx.Config.GPGSigning.KeyID == "" {
-		return pipeline.Skip("gpg_signing.key_id is not configured")
+	if ctx.Config.Sign.GPGKeyID == "" {
+		return pipeline.Skip("sign.gpg_key_id is not configured")
+	}
+	return gpgSign(ctx)
+}
+
+func gpgSign(ctx *context.Context) error {
+	rawKeyID := ctx.Config.Sign.GPGKeyID
+
+	if len(rawKeyID) != 16 {
+		return fmt.Errorf("invalid key_id '%s', needs to be a 8 byte long hex key id", rawKeyID)
 	}
 
-	// read key id from config
-	if len(ctx.Config.GPGSigning.KeyID) != 16 {
-		return fmt.Errorf("invalid key_id '%s', needs to be a 8 byte long hex key id", ctx.Config.GPGSigning.KeyID)
-	}
-	keyID, err := strconv.ParseUint(ctx.Config.GPGSigning.KeyID, 16, 64)
+	keyID, err := strconv.ParseUint(rawKeyID, 16, 64)
 	if err != nil {
-		return fmt.Errorf("invalid key_id '%s': %s", ctx.Config.GPGSigning.KeyID, err)
+		return fmt.Errorf("invalid key_id '%s': %s", rawKeyID, err)
 	}
 
-	// read gpg key ring
 	keyRingPath, err := homedir.Expand("~/.gnupg/secring.gpg")
 	if err != nil {
 		return err
 	}
-	keyRingFile, err := os.OpenFile(
-		keyRingPath,
-		os.O_RDONLY,
-		0644,
-	)
+
+	keyRingFile, err := os.OpenFile(keyRingPath, os.O_RDONLY, 0644)
 	if err != nil {
 		return err
 	}
 	defer keyRingFile.Close()
+
 	keyList, err := openpgp.ReadKeyRing(keyRingFile)
 	if err != nil {
 		return err
@@ -61,22 +62,15 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 
 	keys := keyList.KeysById(keyID)
 	if len(keys) < 1 {
-		return fmt.Errorf("no key with id '%s' found", ctx.Config.GPGSigning.KeyID)
+		return fmt.Errorf("no key with id %q found", rawKeyID)
 	}
 
 	key := keys[0]
 	artifacts := ctx.Artifacts
 	signatures := make([]string, len(ctx.Artifacts))
 
-	defer func() {
-		for _, signature := range signatures {
-			if signature != "" {
-				ctx.AddArtifact(signature)
-			}
-		}
-	}()
 	var g errgroup.Group
-	for i, _ := range artifacts {
+	for i := range artifacts {
 		pos := i
 		g.Go(func() error {
 			signature, err := signArtifact(ctx, key.Entity, artifacts[pos])
@@ -87,7 +81,16 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 			return nil
 		})
 	}
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	for _, sig := range signatures {
+		if sig != "" {
+			ctx.AddArtifact(sig)
+		}
+	}
+	return nil
 }
 
 func signArtifact(ctx *context.Context, signer *openpgp.Entity, name string) (signaturePath string, err error) {

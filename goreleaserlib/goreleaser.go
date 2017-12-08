@@ -24,8 +24,8 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/env"
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
-	"github.com/goreleaser/goreleaser/pipeline/gpg_signing"
 	"github.com/goreleaser/goreleaser/pipeline/release"
+	"github.com/goreleaser/goreleaser/pipeline/sign"
 	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -55,7 +55,7 @@ var pipes = []pipeline.Piper{
 	artifactory.Pipe{},     // push to artifactory
 	release.Pipe{},         // release to github
 	brew.Pipe{},            // push to brew tap
-	gpg_signing.Pipe{},     // gpg signing of the artifacts
+	sign.Pipe{},            // signing of artifacts
 }
 
 // Flags interface represents an extractor of cli flags

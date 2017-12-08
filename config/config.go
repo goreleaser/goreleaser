@@ -223,9 +223,9 @@ type Changelog struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
-// GPG Signing config
-type GPGSigning struct {
-	KeyID string `yaml:"key_id,omitempty"`
+// Signing config
+type Sign struct {
+	GPGKeyID string `yaml:"gpg_key_id,omitempty"`
 }
 
 // Project includes all project configuration
@@ -243,7 +243,7 @@ type Project struct {
 	Artifactories []Artifactory `yaml:",omitempty"`
 	Changelog     Changelog     `yaml:",omitempty"`
 	Dist          string        `yaml:",omitempty"`
-	GPGSigning    GPGSigning    `yaml:"gpg_signing,omitempty"`
+	Sign          Sign          `yaml:"sign,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
