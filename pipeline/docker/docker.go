@@ -2,17 +2,17 @@
 package docker
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"text/template"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
-
-	"github.com/apex/log"
-
 	"github.com/pkg/errors"
 )
 
@@ -22,9 +22,8 @@ var ErrNoDocker = errors.New("docker not present in $PATH")
 // Pipe for docker
 type Pipe struct{}
 
-// Description of the pipe
-func (Pipe) Description() string {
-	return "Creating Docker images"
+func (Pipe) String() string {
+	return "creating Docker images"
 }
 
 // Run the pipe
@@ -37,6 +36,32 @@ func (Pipe) Run(ctx *context.Context) error {
 		return ErrNoDocker
 	}
 	return doRun(ctx)
+}
+
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	for i := range ctx.Config.Dockers {
+		if ctx.Config.Dockers[i].TagTemplate == "" {
+			ctx.Config.Dockers[i].TagTemplate = "{{ .Version }}"
+		}
+	}
+	// only set defaults if there is exacly 1 docker setup in the config file.
+	if len(ctx.Config.Dockers) != 1 {
+		return nil
+	}
+	if ctx.Config.Dockers[0].Goos == "" {
+		ctx.Config.Dockers[0].Goos = "linux"
+	}
+	if ctx.Config.Dockers[0].Goarch == "" {
+		ctx.Config.Dockers[0].Goarch = "amd64"
+	}
+	if ctx.Config.Dockers[0].Binary == "" {
+		ctx.Config.Dockers[0].Binary = ctx.Config.Builds[0].Binary
+	}
+	if ctx.Config.Dockers[0].Dockerfile == "" {
+		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
+	}
+	return nil
 }
 
 func doRun(ctx *context.Context) error {
@@ -62,10 +87,32 @@ func doRun(ctx *context.Context) error {
 	return nil
 }
 
+func tagName(ctx *context.Context, docker config.Docker) (string, error) {
+	var out bytes.Buffer
+	t, err := template.New("tag").Parse(docker.TagTemplate)
+	if err != nil {
+		return "", err
+	}
+	data := struct {
+		Version, Tag string
+		Env          map[string]string
+	}{
+		Version: ctx.Version,
+		Tag:     ctx.Git.CurrentTag,
+		Env:     ctx.Env,
+	}
+	err = t.Execute(&out, data)
+	return out.String(), err
+}
+
 func process(ctx *context.Context, folder string, docker config.Docker, binary context.Binary) error {
 	var root = filepath.Join(ctx.Config.Dist, folder)
 	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile))
-	var image = fmt.Sprintf("%s:%s", docker.Image, ctx.Version)
+	tag, err := tagName(ctx, docker)
+	if err != nil {
+		return err
+	}
+	var image = fmt.Sprintf("%s:%s", docker.Image, tag)
 	var latest = fmt.Sprintf("%s:latest", docker.Image)
 
 	if err := os.Link(docker.Dockerfile, dockerfile); err != nil {

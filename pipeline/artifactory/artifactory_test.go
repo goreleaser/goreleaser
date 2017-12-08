@@ -393,7 +393,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 }
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.Description())
+	assert.NotEmpty(t, Pipe{}.String())
 }
 
 func TestNoArtifactories(t *testing.T) {

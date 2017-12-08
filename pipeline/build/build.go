@@ -1,12 +1,6 @@
-// Package build implements Pipe and can build Go projects for
-// several platforms, with pre and post hook support.
 package build
 
 import (
-	"fmt"
-	"go/ast"
-	"go/parser"
-	"go/token"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,7 +11,6 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/goreleaser/goreleaser/internal/ext"
-	"github.com/goreleaser/goreleaser/internal/name"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
@@ -25,9 +18,8 @@ import (
 // Pipe for build
 type Pipe struct{}
 
-// Description of the pipe
-func (Pipe) Description() string {
-	return "Building binaries"
+func (Pipe) String() string {
+	return "building binaries"
 }
 
 // Run the pipe
@@ -44,50 +36,39 @@ func (Pipe) Run(ctx *context.Context) error {
 	return nil
 }
 
-func checkMain(ctx *context.Context, build config.Build) error {
-	var main = build.Main
-	if main == "" {
-		main = "."
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	for i, build := range ctx.Config.Builds {
+		ctx.Config.Builds[i] = buildWithDefaults(ctx, build)
 	}
-	stat, ferr := os.Stat(main)
-	if os.IsNotExist(ferr) {
-		return errors.Wrapf(ferr, "could not open %s", main)
-	}
-	if stat.IsDir() {
-		packs, err := parser.ParseDir(token.NewFileSet(), main, nil, 0)
-		if err != nil {
-			return errors.Wrapf(err, "failed to parse dir: %s", main)
+	if len(ctx.Config.Builds) == 0 {
+		ctx.Config.Builds = []config.Build{
+			buildWithDefaults(ctx, ctx.Config.SingleBuild),
 		}
-		for _, pack := range packs {
-			for _, file := range pack.Files {
-				if hasMain(file) {
-					return nil
-				}
-			}
-		}
-		return fmt.Errorf("build for %s does not contain a main function", build.Binary)
 	}
-	file, err := parser.ParseFile(token.NewFileSet(), build.Main, nil, 0)
-	if err != nil {
-		return errors.Wrapf(err, "failed to parse file: %s", build.Main)
-	}
-	if hasMain(file) {
-		return nil
-	}
-	return fmt.Errorf("build for %s does not contain a main function", build.Binary)
+	return nil
 }
 
-func hasMain(file *ast.File) bool {
-	for _, decl := range file.Decls {
-		fn, isFn := decl.(*ast.FuncDecl)
-		if !isFn {
-			continue
-		}
-		if fn.Name.Name == "main" && fn.Recv == nil {
-			return true
-		}
+func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
+	if build.Binary == "" {
+		build.Binary = ctx.Config.Release.GitHub.Name
 	}
-	return false
+	if build.Main == "" {
+		build.Main = "."
+	}
+	if len(build.Goos) == 0 {
+		build.Goos = []string{"linux", "darwin"}
+	}
+	if len(build.Goarch) == 0 {
+		build.Goarch = []string{"amd64", "386"}
+	}
+	if len(build.Goarm) == 0 {
+		build.Goarm = []string{"6"}
+	}
+	if build.Ldflags == "" {
+		build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
+	}
+	return build
 }
 
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
@@ -123,18 +104,19 @@ func runHook(env []string, hook string) error {
 }
 
 func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
-	folder, err := name.For(ctx, target)
-	if err != nil {
-		return err
-	}
 	var binaryName = build.Binary + ext.For(target)
 	var prettyName = binaryName
 	if ctx.Config.Archive.Format == "binary" {
-		binaryName, err = name.ForBuild(ctx, build, target)
+		var err error
+		binaryName, err = nameFor(ctx, target, build.Binary)
 		if err != nil {
 			return err
 		}
 		binaryName = binaryName + ext.For(target)
+	}
+	folder, err := nameFor(ctx, target, ctx.Config.ProjectName)
+	if err != nil {
+		return err
 	}
 	var binary = filepath.Join(ctx.Config.Dist, folder, binaryName)
 	ctx.AddBinary(target.String(), folder, prettyName, binary)

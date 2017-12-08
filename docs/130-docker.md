@@ -50,6 +50,9 @@ dockers:
     image: myuser/myimage
     # Path to the Dockerfile (from the project root).
     dockerfile: Dockerfile
+    # Template of the docker tag. Defaults to `{{ .Version }}`. Other allowed
+    # fields are `.Tag` and `.Env.VARIABLE_NAME`.
+    tag_template: "{{ .Tag }}"
     # Also tag and push myuser/myimage:latest.
     latest: true
     # If your Dockerfile copies files other than the binary itself,
@@ -61,3 +64,20 @@ dockers:
 These settings should allow you to generate multiple Docker images,
 for example, using multiple `FROM` statements,
 as well as generate one image for each binary in your project.
+
+## Passing environment variables to tag_template
+
+You can do that by using `{{ .Env.VARIABLE_NAME }}` in the template, for
+example:
+
+```yaml
+dockers:
+  -
+    tag_template: "{{ .Tag }}-{{ .Env.GOVERSION_NR }}"
+```
+
+Then you can run:
+
+```console
+GOVERSION_NR=$(go version | awk '{print $3}') goreleaser
+```

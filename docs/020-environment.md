@@ -2,7 +2,7 @@
 title: Environment
 ---
 
-### GitHub Token
+## GitHub Token
 
 GoReleaser requires a GitHub API token with the `repo` scope selected to
 deploy the artifacts to GitHub.
@@ -12,7 +12,7 @@ This token should be added to the environment variables as `GITHUB_TOKEN`.
 Here is how to do it with Travis CI:
 [Defining Variables in Repository Settings](https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-Repository-Settings).
 
-### The dist folder
+## The dist folder
 
 By default, GoReleaser will create its artifacts in the `./dist` folder.
 If you must, you can change it by setting it in the `.goreleaser.yml` file:
@@ -23,7 +23,7 @@ If you must, you can change it by setting it in the `.goreleaser.yml` file:
 dist: another-folder-that-is-not-dist
 ```
 
-### Using the `main.version`
+## Using the `main.version`
 
 GoReleaser always sets a `main.version` *ldflag*.
 You can use it in your `main.go` file:

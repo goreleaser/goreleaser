@@ -1,12 +1,15 @@
 // Package pipeline provides a generic pipe interface.
 package pipeline
 
-import "github.com/goreleaser/goreleaser/context"
+import (
+	"fmt"
 
-// Pipe interface
-type Pipe interface {
-	// Name of the pipe
-	Description() string
+	"github.com/goreleaser/goreleaser/context"
+)
+
+// Piper defines a pipe, which can be part of a pipeline (a serie of pipes).
+type Piper interface {
+	fmt.Stringer
 
 	// Run the pipe
 	Run(ctx *context.Context) error

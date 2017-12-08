@@ -19,9 +19,8 @@ import (
 // Pipe for brew deployment
 type Pipe struct{}
 
-// Description of the pipe
-func (Pipe) Description() string {
-	return "Getting and validating git state"
+func (Pipe) String() string {
+	return "getting and validating git state"
 }
 
 // Run the pipe

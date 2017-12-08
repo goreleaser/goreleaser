@@ -5,12 +5,14 @@ package brew
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"text/template"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/checksum"
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/client"
@@ -26,9 +28,8 @@ const platform = "darwinamd64"
 // Pipe for brew deployment
 type Pipe struct{}
 
-// Description of the pipe
-func (Pipe) Description() string {
-	return "Creating homebrew formula"
+func (Pipe) String() string {
+	return "creating homebrew formula"
 }
 
 // Run the pipe
@@ -38,6 +39,49 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 	return doRun(ctx, client)
+}
+
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	if ctx.Config.Brew.Install == "" {
+		var installs []string
+		for _, build := range ctx.Config.Builds {
+			if !isBrewBuild(build) {
+				continue
+			}
+			installs = append(
+				installs,
+				fmt.Sprintf(`bin.install "%s"`, build.Binary),
+			)
+		}
+		ctx.Config.Brew.Install = strings.Join(installs, "\n")
+	}
+
+	if ctx.Config.Brew.CommitAuthor.Name == "" {
+		ctx.Config.Brew.CommitAuthor.Name = "goreleaserbot"
+	}
+	if ctx.Config.Brew.CommitAuthor.Email == "" {
+		ctx.Config.Brew.CommitAuthor.Email = "goreleaser@carlosbecker.com"
+	}
+	return nil
+}
+
+func isBrewBuild(build config.Build) bool {
+	for _, ignore := range build.Ignore {
+		if ignore.Goos == "darwin" && ignore.Goarch == "amd64" {
+			return false
+		}
+	}
+	return contains(build.Goos, "darwin") && contains(build.Goarch, "amd64")
+}
+
+func contains(ss []string, s string) bool {
+	for _, zs := range ss {
+		if zs == s {
+			return true
+		}
+	}
+	return false
 }
 
 func doRun(ctx *context.Context, client client.Client) error {
@@ -71,7 +115,19 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if err != nil {
 		return err
 	}
+	ctx.AddBrew(brewTapPath(ctx))
 	return client.CreateFile(ctx, content, path)
+}
+
+func brewTapPath(ctx *context.Context) string {
+	return strings.Join(
+		[]string{
+			ctx.Config.Brew.GitHub.Owner,
+			strings.TrimPrefix(ctx.Config.Brew.GitHub.Name, "homebrew-"),
+			ctx.Config.ProjectName,
+		},
+		"/",
+	)
 }
 
 func buildFormula(ctx *context.Context, client client.Client, folder string) (bytes.Buffer, error) {

@@ -14,7 +14,7 @@ import (
 )
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.Description())
+	assert.NotEmpty(t, Pipe{}.String())
 }
 
 func TestNameWithDash(t *testing.T) {
@@ -139,6 +139,8 @@ func TestRunPipe(t *testing.T) {
 	// ioutil.WriteFile("testdata/run_pipe.rb", []byte(client.Content), 0644)
 
 	assert.Equal(t, string(bts), client.Content)
+
+	assert.Equal(t, "test/test/run-pipe", ctx.Brews[0])
 }
 
 func TestRunPipeFormatOverride(t *testing.T) {
@@ -266,6 +268,54 @@ func TestRunPipeFormatBinary(t *testing.T) {
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doRun(ctx, client))
 	assert.False(t, client.CreatedFile)
+}
+
+func TestDefault(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+
+	var ctx = &context.Context{
+		Config: config.Project{
+			Builds: []config.Build{
+				{
+					Binary: "foo",
+					Goos:   []string{"linux", "darwin"},
+					Goarch: []string{"386", "amd64"},
+				},
+				{
+					Binary: "bar",
+					Goos:   []string{"linux", "darwin"},
+					Goarch: []string{"386", "amd64"},
+					Ignore: []config.IgnoredBuild{
+						{Goos: "darwin", Goarch: "amd64"},
+					},
+				},
+				{
+					Binary: "foobar",
+					Goos:   []string{"linux"},
+					Goarch: []string{"amd64"},
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Name)
+	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Email)
+	assert.Equal(t, `bin.install "foo"`, ctx.Config.Brew.Install)
+}
+
+func TestBrewTapPath(t *testing.T) {
+	assert.Equal(t, "goreleaser/tap/goreleaser", brewTapPath(&context.Context{
+		Config: config.Project{
+			ProjectName: "goreleaser",
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "goreleaser",
+					Name:  "homebrew-tap",
+				},
+			},
+		},
+	}))
 }
 
 type DummyClient struct {

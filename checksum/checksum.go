@@ -12,14 +12,14 @@ import (
 )
 
 // SHA256 sum of the given file
-func SHA256(path string) (result string, err error) {
+func SHA256(path string) (string, error) {
 	return calculate(sha256.New(), path)
 }
 
-func calculate(hash hash.Hash, path string) (result string, err error) {
+func calculate(hash hash.Hash, path string) (string, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return
+		return "", err
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
@@ -30,12 +30,10 @@ func calculate(hash hash.Hash, path string) (result string, err error) {
 	return doCalculate(hash, file)
 }
 
-func doCalculate(hash hash.Hash, file io.Reader) (result string, err error) {
-	_, err = io.Copy(hash, file)
+func doCalculate(hash hash.Hash, file io.Reader) (string, error) {
+	_, err := io.Copy(hash, file)
 	if err != nil {
-		return
+		return "", err
 	}
-
-	result = hex.EncodeToString(hash.Sum(nil))
-	return
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }

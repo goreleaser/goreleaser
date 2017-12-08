@@ -19,9 +19,8 @@ import (
 // Pipe for archive
 type Pipe struct{}
 
-// Description of the pipe
-func (Pipe) Description() string {
-	return "Creating archives"
+func (Pipe) String() string {
+	return "creating archives"
 }
 
 // Run the pipe
@@ -38,6 +37,29 @@ func (Pipe) Run(ctx *context.Context) error {
 		})
 	}
 	return g.Wait()
+}
+
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	if ctx.Config.Archive.NameTemplate == "" {
+		ctx.Config.Archive.NameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+	}
+	if ctx.Config.Archive.Format == "" {
+		ctx.Config.Archive.Format = "tar.gz"
+	}
+	if len(ctx.Config.Archive.Files) == 0 {
+		ctx.Config.Archive.Files = []string{
+			"licence*",
+			"LICENCE*",
+			"license*",
+			"LICENSE*",
+			"readme*",
+			"README*",
+			"changelog*",
+			"CHANGELOG*",
+		}
+	}
+	return nil
 }
 
 func create(ctx *context.Context, platform string, groups map[string][]context.Binary) error {

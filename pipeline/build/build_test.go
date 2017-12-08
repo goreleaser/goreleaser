@@ -17,7 +17,7 @@ import (
 var emptyEnv []string
 
 func TestPipeDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.Description())
+	assert.NotEmpty(t, Pipe{}.String())
 }
 
 func TestRun(t *testing.T) {
@@ -67,6 +67,12 @@ func TestRunFullPipe(t *testing.T) {
 				},
 			},
 		},
+		Archive: config.Archive{
+			Replacements: map[string]string{
+				"linux":  "linuxx",
+				"darwin": "darwinn",
+			},
+		},
 	}
 	assert.NoError(t, Pipe{}.Run(context.New(config)))
 	assert.True(t, exists(binary), binary)
@@ -78,7 +84,7 @@ func TestRunPipeFormatBinary(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
 	writeGoodMain(t, folder)
-	var binary = filepath.Join(folder, "binary-testing")
+	var binary = filepath.Join(folder, "binary-testing-bar")
 	var config = config.Project{
 		ProjectName: "testing",
 		Dist:        folder,
@@ -95,10 +101,12 @@ func TestRunPipeFormatBinary(t *testing.T) {
 		},
 		Archive: config.Archive{
 			Format:       "binary",
-			NameTemplate: "binary-{{.Binary}}",
+			NameTemplate: "binary-{{.Binary}}-{{.Env.Foo}}",
 		},
 	}
-	assert.NoError(t, Pipe{}.Run(context.New(config)))
+	ctx := context.New(config)
+	ctx.Env = map[string]string{"Foo": "bar"}
+	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.True(t, exists(binary))
 }
 
@@ -174,27 +182,33 @@ func TestRunInvalidNametemplate(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
 	writeGoodMain(t, folder)
-	for _, format := range []string{"tar.gz", "zip", "binary"} {
-		var config = config.Project{
-			ProjectName: "nameeeee",
-			Builds: []config.Build{
-				{
-					Binary: "namet{{.est}",
-					Flags:  "-v",
-					Goos: []string{
-						runtime.GOOS,
-					},
-					Goarch: []string{
-						runtime.GOARCH,
+	for format, msg := range map[string]string{
+		"binary": `template: bar:1: unexpected "}" in operand`,
+		"tar.gz": `template: foo:1: unexpected "}" in operand`,
+		"zip":    `template: foo:1: unexpected "}" in operand`,
+	} {
+		t.Run(format, func(t *testing.T) {
+			var config = config.Project{
+				ProjectName: "foo",
+				Builds: []config.Build{
+					{
+						Binary: "bar",
+						Flags:  "-v",
+						Goos: []string{
+							runtime.GOOS,
+						},
+						Goarch: []string{
+							runtime.GOARCH,
+						},
 					},
 				},
-			},
-			Archive: config.Archive{
-				Format:       format,
-				NameTemplate: "{{.Binary}",
-			},
-		}
-		assert.EqualError(t, Pipe{}.Run(context.New(config)), `template: nameeeee:1: unexpected "}" in operand`)
+				Archive: config.Archive{
+					Format:       format,
+					NameTemplate: "{{.Binary}",
+				},
+			}
+			assert.EqualError(t, Pipe{}.Run(context.New(config)), msg)
+		})
 	}
 }
 
@@ -324,6 +338,95 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."
 		assert.NoError(t, Pipe{}.Run(ctx))
 	})
+}
+
+func TestDefaultNoBuilds(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+}
+
+func TestDefaultEmptyBuild(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Release: config.Release{
+				GitHub: config.Repo{
+					Name: "foo",
+				},
+			},
+			Builds: []config.Build{
+				{},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	var build = ctx.Config.Builds[0]
+	assert.Equal(t, ctx.Config.Release.GitHub.Name, build.Binary)
+	assert.Equal(t, ".", build.Main)
+	assert.Equal(t, []string{"linux", "darwin"}, build.Goos)
+	assert.Equal(t, []string{"amd64", "386"}, build.Goarch)
+	assert.Equal(t, []string{"6"}, build.Goarm)
+	assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}", build.Ldflags)
+}
+
+func TestDefaultPartialBuilds(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Builds: []config.Build{
+				{
+					Binary: "bar",
+					Goos:   []string{"linux"},
+					Main:   "./cmd/main.go",
+				},
+				{
+					Binary:  "foo",
+					Ldflags: "-s -w",
+					Goarch:  []string{"386"},
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	t.Run("build0", func(t *testing.T) {
+		var build = ctx.Config.Builds[0]
+		assert.Equal(t, "bar", build.Binary)
+		assert.Equal(t, "./cmd/main.go", build.Main)
+		assert.Equal(t, []string{"linux"}, build.Goos)
+		assert.Equal(t, []string{"amd64", "386"}, build.Goarch)
+		assert.Equal(t, []string{"6"}, build.Goarm)
+		assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}", build.Ldflags)
+	})
+	t.Run("build1", func(t *testing.T) {
+		var build = ctx.Config.Builds[1]
+		assert.Equal(t, "foo", build.Binary)
+		assert.Equal(t, ".", build.Main)
+		assert.Equal(t, []string{"linux", "darwin"}, build.Goos)
+		assert.Equal(t, []string{"386"}, build.Goarch)
+		assert.Equal(t, []string{"6"}, build.Goarm)
+		assert.Equal(t, "-s -w", build.Ldflags)
+	})
+}
+
+func TestDefaultFillSingleBuild(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+
+	var ctx = &context.Context{
+		Config: config.Project{
+			Release: config.Release{
+				GitHub: config.Repo{
+					Name: "foo",
+				},
+			},
+			SingleBuild: config.Build{
+				Main: "testreleaser",
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Len(t, ctx.Config.Builds, 1)
+	assert.Equal(t, ctx.Config.Builds[0].Binary, "foo")
 }
 
 func exists(file string) bool {

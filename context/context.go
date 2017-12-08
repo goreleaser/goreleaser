@@ -8,6 +8,7 @@ package context
 
 import (
 	ctx "context"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -31,11 +32,13 @@ type Binary struct {
 type Context struct {
 	ctx.Context
 	Config       config.Project
+	Env          map[string]string
 	Token        string
 	Git          GitInfo
 	Binaries     map[string]map[string][]Binary
 	Artifacts    []string
 	Dockers      []string
+	Brews        []string
 	ReleaseNotes string
 	Version      string
 	Validate     bool
@@ -46,9 +49,12 @@ type Context struct {
 	Parallelism  int
 }
 
-var artifactsLock sync.Mutex
-var dockersLock sync.Mutex
-var binariesLock sync.Mutex
+var (
+	artifactsLock sync.Mutex
+	dockersLock   sync.Mutex
+	binariesLock  sync.Mutex
+	brewsLock     sync.Mutex
+)
 
 // AddArtifact adds a file to upload list
 func (ctx *Context) AddArtifact(file string) {
@@ -57,6 +63,14 @@ func (ctx *Context) AddArtifact(file string) {
 	file = strings.TrimPrefix(file, ctx.Config.Dist+string(filepath.Separator))
 	ctx.Artifacts = append(ctx.Artifacts, file)
 	log.WithField("artifact", file).Info("new release artifact")
+}
+
+// AddBrew adds a brew tap to the brews list
+func (ctx *Context) AddBrew(tap string) {
+	brewsLock.Lock()
+	defer brewsLock.Unlock()
+	ctx.Brews = append(ctx.Brews, tap)
+	log.WithField("tap", tap).Info("new brew tap")
 }
 
 // AddDocker adds a docker image to the docker images list
@@ -96,6 +110,16 @@ func New(config config.Project) *Context {
 	return &Context{
 		Context:     ctx.Background(),
 		Config:      config,
+		Env:         splitEnv(os.Environ()),
 		Parallelism: 4,
 	}
+}
+
+func splitEnv(env []string) map[string]string {
+	r := map[string]string{}
+	for _, e := range env {
+		p := strings.SplitN(e, "=", 2)
+		r[p[0]] = p[1]
+	}
+	return r
 }

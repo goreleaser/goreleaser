@@ -14,6 +14,7 @@ type ldflagsData struct {
 	Tag     string
 	Commit  string
 	Version string
+	Env     map[string]string
 }
 
 func ldflags(ctx *context.Context, build config.Build) (string, error) {
@@ -22,6 +23,7 @@ func ldflags(ctx *context.Context, build config.Build) (string, error) {
 		Tag:     ctx.Git.CurrentTag,
 		Version: ctx.Version,
 		Date:    time.Now().UTC().Format(time.RFC3339),
+		Env:     ctx.Env,
 	}
 	var out bytes.Buffer
 	t, err := template.New("ldflags").Parse(build.Ldflags)

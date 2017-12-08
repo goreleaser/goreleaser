@@ -12,7 +12,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	var config = config.Project{
 		Builds: []config.Build{
 			{
-				Ldflags: "-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}}",
+				Ldflags: `-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}"`,
 			},
 		},
 	}
@@ -23,6 +23,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 		},
 		Version: "1.2.3",
 		Config:  config,
+		Env:     map[string]string{"FOO": "123"},
 	}
 	flags, err := ldflags(ctx, ctx.Config.Builds[0])
 	assert.NoError(t, err)
@@ -31,6 +32,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	assert.Contains(t, flags, "-X main.tag=v1.2.3")
 	assert.Contains(t, flags, "-X main.commit=123")
 	assert.Contains(t, flags, "-X main.date=")
+	assert.Contains(t, flags, `-X "main.foo=123"`)
 }
 
 func TestInvalidTemplate(t *testing.T) {

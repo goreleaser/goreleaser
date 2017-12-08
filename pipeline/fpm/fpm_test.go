@@ -14,7 +14,7 @@ import (
 )
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.Description())
+	assert.NotEmpty(t, Pipe{}.String())
 }
 
 func TestRunPipeNoFormats(t *testing.T) {
@@ -112,4 +112,26 @@ func TestRunPipeWithExtraFiles(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
+}
+
+func TestDefault(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			FPM: config.FPM{},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "/usr/local/bin", ctx.Config.FPM.Bindir)
+}
+
+func TestDefaultSet(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			FPM: config.FPM{
+				Bindir: "/bin",
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "/bin", ctx.Config.FPM.Bindir)
 }

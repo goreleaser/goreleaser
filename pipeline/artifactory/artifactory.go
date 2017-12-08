@@ -50,8 +50,8 @@ type artifactoryChecksums struct {
 type Pipe struct{}
 
 // Description of the pipe
-func (Pipe) Description() string {
-	return "Releasing to Artifactory"
+func (Pipe) String() string {
+	return "releasing to Artifactory"
 }
 
 // Run the pipe

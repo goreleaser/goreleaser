@@ -19,9 +19,8 @@ var ErrInvalidSortDirection = errors.New("invalid sort direction")
 // Pipe for checksums
 type Pipe struct{}
 
-// Description of the pipe
-func (Pipe) Description() string {
-	return "Generating changelog"
+func (Pipe) String() string {
+	return "generating changelog"
 }
 
 // Run the pipe
@@ -125,7 +124,7 @@ func getChangelog(tag string) (string, error) {
 }
 
 func gitLog(refs ...string) (string, error) {
-	var args = []string{"log", "--pretty=oneline", "--abbrev-commit"}
+	var args = []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate"}
 	args = append(args, refs...)
 	return git.Run(args...)
 }

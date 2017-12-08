@@ -16,9 +16,8 @@ import (
 // Pipe for github release
 type Pipe struct{}
 
-// Description of the pipe
-func (Pipe) Description() string {
-	return "Releasing to GitHub"
+func (Pipe) String() string {
+	return "releasing to GitHub"
 }
 
 // Run the pipe
@@ -28,6 +27,22 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 	return doRun(ctx, c)
+}
+
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	if ctx.Config.Release.NameTemplate == "" {
+		ctx.Config.Release.NameTemplate = "{{.Tag}}"
+	}
+	if ctx.Config.Release.GitHub.Name != "" {
+		return nil
+	}
+	repo, err := remoteRepo()
+	if err != nil {
+		return err
+	}
+	ctx.Config.Release.GitHub = repo
+	return nil
 }
 
 func doRun(ctx *context.Context, c client.Client) error {

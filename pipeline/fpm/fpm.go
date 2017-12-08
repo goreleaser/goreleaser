@@ -22,9 +22,16 @@ var ErrNoFPM = errors.New("fpm not present in $PATH")
 // Pipe for fpm packaging
 type Pipe struct{}
 
-// Description of the pipe
-func (Pipe) Description() string {
-	return "Creating Linux packages with fpm"
+func (Pipe) String() string {
+	return "creating Linux packages with fpm"
+}
+
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	if ctx.Config.FPM.Bindir == "" {
+		ctx.Config.FPM.Bindir = "/usr/local/bin"
+	}
+	return nil
 }
 
 // Run the pipe

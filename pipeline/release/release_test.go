@@ -15,7 +15,7 @@ import (
 )
 
 func TestPipeDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.Description())
+	assert.NotEmpty(t, Pipe{}.String())
 }
 
 func TestRunPipe(t *testing.T) {
@@ -120,6 +120,62 @@ func TestSkipPublish(t *testing.T) {
 	testlib.AssertSkipped(t, doRun(ctx, client))
 	assert.False(t, client.CreatedRelease)
 	assert.False(t, client.UploadedFile)
+}
+
+func TestDefault(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
+
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
+	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
+}
+
+func TestDefaultFilled(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
+
+	var ctx = &context.Context{
+		Config: config.Project{
+			Release: config.Release{
+				GitHub: config.Repo{
+					Name:  "foo",
+					Owner: "bar",
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "foo", ctx.Config.Release.GitHub.Name)
+	assert.Equal(t, "bar", ctx.Config.Release.GitHub.Owner)
+}
+
+func TestDefaultNotAGitRepo(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.Error(t, Pipe{}.Default(ctx))
+	assert.Empty(t, ctx.Config.Release.GitHub.String())
+}
+
+func TestDefaultGitRepoWithoutRemote(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.Error(t, Pipe{}.Default(ctx))
+	assert.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
 type DummyClient struct {

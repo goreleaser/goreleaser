@@ -9,12 +9,11 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/testlib"
-	"github.com/goreleaser/goreleaser/pipeline/defaults"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.Description())
+	assert.NotEmpty(t, Pipe{}.String())
 }
 
 func TestNotAGitFolder(t *testing.T) {
@@ -57,7 +56,7 @@ func TestNoTagsSnapshot(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
 			Snapshot: config.Snapshot{
-				NameTemplate: defaults.SnapshotNameTemplate,
+				NameTemplate: "SNAPSHOT-{{.Commit}}",
 			},
 		},
 		Snapshot: true,
@@ -95,7 +94,7 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
 			Snapshot: config.Snapshot{
-				NameTemplate: defaults.SnapshotNameTemplate,
+				NameTemplate: "SNAPSHOT-{{.Commit}}",
 			},
 		},
 		Snapshot: false,
