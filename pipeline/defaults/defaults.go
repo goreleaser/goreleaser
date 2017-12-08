@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/docker"
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/release"
+	"github.com/goreleaser/goreleaser/pipeline/scoop"
 	"github.com/goreleaser/goreleaser/pipeline/snapshot"
 )
 
@@ -32,6 +33,7 @@ var defaulters = []pipeline.Defaulter{
 	checksums.Pipe{},
 	docker.Pipe{},
 	brew.Pipe{},
+	scoop.Pipe{},
 }
 
 // Run the pipe
