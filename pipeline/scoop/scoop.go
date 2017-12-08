@@ -4,14 +4,20 @@ package scoop
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"strings"
 
-	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
+
+// ErrNoWindows64Build when there is no build for windows_amd64 (goos doesn't
+// contain windows and/or goarch doesn't contain amd64)
+var ErrNoWindows64Build = errors.New("scoop requires a windows amd64 build")
+
+const platform = "windowsamd64"
 
 // Pipe for build
 type Pipe struct{}
@@ -44,13 +50,28 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return pipeline.Skip("archive format is binary")
 	}
 
+	var group = ctx.Binaries["windowsamd64"]
+	if group == nil {
+		return ErrNoWindows64Build
+	}
+	var fileName string
+	for f := range group {
+		fileName = f
+		break
+	}
+
 	path := ctx.Config.ProjectName + ".json"
 
-	content, err := buildManifest(ctx, client)
+	content, err := buildManifest(ctx, client, fileName)
 	if err != nil {
 		return err
 	}
-	return client.CreateFile(ctx, content, path)
+	return client.CreateFile(
+		ctx,
+		ctx.Config.Scoop.CommitAuthor,
+		ctx.Config.Scoop.Bucket,
+		content,
+		path)
 }
 
 // Manifest represents a scoop.sh App Manifest, more info:
@@ -79,21 +100,16 @@ type Manifest struct {
 	Description  string   `json:"persist,omitempty"`
 }
 
-func buildManifest(ctx *context.Context, client client.Client) (result bytes.Buffer, err error) {
-	// Todo: 64/32 bit distinction
+func buildManifest(ctx *context.Context, client client.Client, fileName string) (result bytes.Buffer, err error) {
+	var file = fileName + "." + archiveformat.For(ctx, platform)
 
-	urls := []string{}
-	for platform, groups := range ctx.Binaries {
-		if !strings.Contains(platform, "windows") {
-			log.WithField("platform", platform).Debug("skipped non-windows builds for scoop")
-			continue
-		}
-		for _, binaries := range groups {
-			for _, binary := range binaries {
-				urls = append(urls, getDownloadURL(ctx, binary.Name))
-			}
-		}
+	var githubURL = "https://github.com"
+	if ctx.Config.GitHubURLs.Download != "" {
+		githubURL = ctx.Config.GitHubURLs.Download
 	}
+
+	var urls []string
+	urls = append(urls, getDownloadURL(ctx, githubURL, file))
 
 	binaries := make([]string, len(ctx.Binaries["windows"]["amd64"]))
 	for i, binary := range ctx.Binaries["windows"]["amd64"] {
@@ -109,7 +125,7 @@ func buildManifest(ctx *context.Context, client client.Client) (result bytes.Buf
 		Description: ctx.Config.Scoop.Description,
 	}
 
-	data, err := json.Marshal(manifest)
+	data, err := json.MarshalIndent(manifest, "", "    ")
 	if err != nil {
 		return
 	}
@@ -118,9 +134,9 @@ func buildManifest(ctx *context.Context, client client.Client) (result bytes.Buf
 	return
 }
 
-func getDownloadURL(ctx *context.Context, file string) (url string) {
+func getDownloadURL(ctx *context.Context, githubURL, file string) (url string) {
 	return fmt.Sprintf("%s/%s/%s/releases/download/%s/%s",
-		ctx.Config.GitHubURLs.Download,
+		githubURL,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
 		ctx.Version,
