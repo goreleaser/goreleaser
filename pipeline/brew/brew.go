@@ -71,7 +71,12 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if err != nil {
 		return err
 	}
-	return client.CreateFile(ctx, content, path)
+	return client.CreateFile(
+		ctx,
+		ctx.Config.Brew.CommitAuthor,
+		ctx.Config.Brew.GitHub,
+		content,
+		path)
 }
 
 func buildFormula(ctx *context.Context, client client.Client, folder string) (bytes.Buffer, error) {

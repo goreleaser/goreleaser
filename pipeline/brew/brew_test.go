@@ -67,7 +67,7 @@ func TestFullFormulae(t *testing.T) {
 	bts, err := ioutil.ReadFile("testdata/test.rb")
 	assert.NoError(t, err)
 	// ioutil.WriteFile("testdata/test.rb", []byte(formulae), 0644)
-  
+
 	assert.Equal(t, string(bts), formulae)
 }
 
@@ -277,7 +277,7 @@ func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (rel
 	return
 }
 
-func (client *DummyClient) CreateFile(ctx *context.Context, content bytes.Buffer, path string) (err error) {
+func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content bytes.Buffer, path string) (err error) {
 	client.CreatedFile = true
 	bts, _ := ioutil.ReadAll(&content)
 	client.Content = string(bts)
