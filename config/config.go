@@ -261,6 +261,7 @@ func checkOverflows(config Project) error {
 	}
 	overflow.check(config.Brew.XXX, "brew")
 	overflow.check(config.Brew.GitHub.XXX, "brew.github")
+	overflow.check(config.Scoop.XXX, "brew")
 	for i, build := range config.Builds {
 		overflow.check(build.XXX, fmt.Sprintf("builds[%d]", i))
 		overflow.check(build.Hooks.XXX, fmt.Sprintf("builds[%d].hooks", i))

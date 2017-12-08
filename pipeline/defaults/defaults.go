@@ -67,6 +67,13 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Config.Brew.CommitAuthor.Email = "goreleaser@carlosbecker.com"
 	}
 
+	if ctx.Config.Scoop.CommitAuthor.Name == "" {
+		ctx.Config.Scoop.CommitAuthor.Name = "goreleaserbot"
+	}
+	if ctx.Config.Scoop.CommitAuthor.Email == "" {
+		ctx.Config.Scoop.CommitAuthor.Email = "goreleaser@carlosbecker.com"
+	}
+
 	err := setArchiveDefaults(ctx)
 	setDockerDefaults(ctx)
 	log.WithField("config", ctx.Config).Debug("defaults set")

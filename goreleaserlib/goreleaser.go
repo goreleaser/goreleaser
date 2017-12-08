@@ -21,6 +21,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/release"
+	"github.com/goreleaser/goreleaser/pipeline/scoop"
 	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -38,6 +39,7 @@ var pipes = []pipeline.Pipe{
 	docker.Pipe{},    // create and push docker images
 	release.Pipe{},   // release to github
 	brew.Pipe{},      // push to brew tap
+	scoop.Pipe{},     // push to a scoop bucket
 }
 
 // Flags interface represents an extractor of cli flags
