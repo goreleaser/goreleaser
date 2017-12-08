@@ -75,14 +75,16 @@ func doRun(ctx *context.Context, c client.Client) error {
 	return g.Wait()
 }
 
-func upload(ctx *context.Context, c client.Client, releaseID int, artifact string) error {
-	var path = filepath.Join(ctx.Config.Dist, artifact)
+func upload(ctx *context.Context, c client.Client, releaseID int, artifact context.Artifact) error {
+	var path = filepath.Join(ctx.Config.Dist, artifact.Path)
 	file, err := os.Open(path)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = file.Close() }()
-	_, name := filepath.Split(path)
-	log.WithField("file", file.Name()).WithField("name", name).Info("uploading to release")
-	return c.Upload(ctx, releaseID, name, file)
+	log.WithFields(log.Fields{
+		"file": file.Name(),
+		"name": artifact.Name,
+	}).Info("uploading to release")
+	return c.Upload(ctx, releaseID, artifact.Name, file)
 }

@@ -97,7 +97,7 @@ func create(ctx *context.Context, platform string, groups map[string][]context.B
 				return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
 			}
 		}
-		ctx.AddArtifact(archivePath)
+		ctx.AddArtifactFromFile(archivePath)
 	}
 	return nil
 }
@@ -106,7 +106,7 @@ func skip(ctx *context.Context, platform string, groups map[string][]context.Bin
 	for _, binaries := range groups {
 		for _, binary := range binaries {
 			log.WithField("binary", binary.Name).Info("skip archiving")
-			ctx.AddArtifact(binary.Path)
+			ctx.AddArtifact(binary.Name, binary.Path)
 		}
 	}
 	return nil

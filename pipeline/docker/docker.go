@@ -73,7 +73,7 @@ func doRun(ctx *context.Context) error {
 			}
 			for folder, binaries := range groups {
 				for _, binary := range binaries {
-					if binary.Name != docker.Binary {
+					if binary.BuildName != docker.Binary {
 						continue
 					}
 					var err = process(ctx, folder, docker, binary)

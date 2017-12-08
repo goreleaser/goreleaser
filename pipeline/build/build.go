@@ -104,22 +104,24 @@ func runHook(env []string, hook string) error {
 }
 
 func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
+	// TODO: improve variable names here
+	// right now all those names are very confusing.
 	var binaryName = build.Binary + ext.For(target)
-	var prettyName = binaryName
+	var publicName = binaryName
 	if ctx.Config.Archive.Format == "binary" {
 		var err error
-		binaryName, err = nameFor(ctx, target, build.Binary)
+		publicName, err = nameFor(ctx, target, build.Binary)
 		if err != nil {
 			return err
 		}
-		binaryName = binaryName + ext.For(target)
+		publicName = publicName + ext.For(target)
 	}
 	folder, err := nameFor(ctx, target, ctx.Config.ProjectName)
 	if err != nil {
 		return err
 	}
 	var binary = filepath.Join(ctx.Config.Dist, folder, binaryName)
-	ctx.AddBinary(target.String(), folder, prettyName, binary)
+	ctx.AddBinary(target.String(), folder, publicName, build.Binary, binary)
 	log.WithField("binary", binary).Info("building")
 	cmd := []string{"go", "build"}
 	if build.Flags != "" {
