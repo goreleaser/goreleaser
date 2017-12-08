@@ -1,12 +1,8 @@
 package scoop
 
 import (
-	"bytes"
-	"io/ioutil"
-	"os"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/context"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,22 +34,23 @@ func Test_getDownloadURL(t *testing.T) {
 	}
 }
 
-type DummyClient struct {
-	CreatedFile bool
-	Content     string
-}
+// Todo: unit tests for scoop manifest generation
+// type DummyClient struct {
+// 	CreatedFile bool
+// 	Content     string
+// }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
-	return
-}
+// func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
+// 	return
+// }
 
-func (client *DummyClient) CreateFile(ctx *context.Context, content bytes.Buffer, path string) (err error) {
-	client.CreatedFile = true
-	bts, _ := ioutil.ReadAll(&content)
-	client.Content = string(bts)
-	return
-}
+// func (client *DummyClient) CreateFile(ctx *context.Context, content bytes.Buffer, path string) (err error) {
+// 	client.CreatedFile = true
+// 	bts, _ := ioutil.ReadAll(&content)
+// 	client.Content = string(bts)
+// 	return
+// }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID int, name string, file *os.File) (err error) {
-	return
-}
+// func (client *DummyClient) Upload(ctx *context.Context, releaseID int, name string, file *os.File) (err error) {
+// 	return
+// }
