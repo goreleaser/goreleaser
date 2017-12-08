@@ -18,7 +18,7 @@ var (
 )
 
 func init() {
-	log.SetHandler(lcli.New(os.Stdout))
+	log.SetHandler(lcli.Default)
 }
 
 func main() {
