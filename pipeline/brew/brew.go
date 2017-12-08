@@ -116,7 +116,12 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return err
 	}
 	ctx.AddBrew(brewTapPath(ctx))
-	return client.CreateFile(ctx, content, path)
+	return client.CreateFile(
+		ctx,
+		ctx.Config.Brew.CommitAuthor,
+		ctx.Config.Brew.GitHub,
+		content,
+		path)
 }
 
 func brewTapPath(ctx *context.Context) string {
