@@ -67,7 +67,10 @@ func gpgSign(ctx *context.Context) error {
 
 	key := keys[0]
 	artifacts := ctx.Artifacts
-	signatures := make([]string, len(ctx.Artifacts))
+	if ctx.Config.Sign.ChecksumOnly {
+		artifacts = ctx.Checksums
+	}
+	signatures := make([]string, len(artifacts))
 
 	var g errgroup.Group
 	for i := range artifacts {
