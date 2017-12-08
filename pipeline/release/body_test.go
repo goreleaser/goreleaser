@@ -18,10 +18,6 @@ func TestDescribeBody(t *testing.T) {
 			"goreleaser/goreleaser:latest",
 			"goreleaser/godownloader:v0.1.0",
 		},
-		Brews: []string{
-			"caarlos0/tap/foo",
-			"goreleaser/tap/bar",
-		},
 	}
 	out, err := describeBodyVersion(ctx, "go version go1.9 darwin/amd64")
 	assert.NoError(t, err)

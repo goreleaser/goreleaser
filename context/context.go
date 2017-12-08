@@ -38,7 +38,6 @@ type Context struct {
 	Binaries     map[string]map[string][]Binary
 	Artifacts    []string
 	Dockers      []string
-	Brews        []string
 	ReleaseNotes string
 	Version      string
 	Validate     bool
@@ -53,7 +52,6 @@ var (
 	artifactsLock sync.Mutex
 	dockersLock   sync.Mutex
 	binariesLock  sync.Mutex
-	brewsLock     sync.Mutex
 )
 
 // AddArtifact adds a file to upload list
@@ -63,14 +61,6 @@ func (ctx *Context) AddArtifact(file string) {
 	file = strings.TrimPrefix(file, ctx.Config.Dist+string(filepath.Separator))
 	ctx.Artifacts = append(ctx.Artifacts, file)
 	log.WithField("artifact", file).Info("new release artifact")
-}
-
-// AddBrew adds a brew tap to the brews list
-func (ctx *Context) AddBrew(tap string) {
-	brewsLock.Lock()
-	defer brewsLock.Unlock()
-	ctx.Brews = append(ctx.Brews, tap)
-	log.WithField("tap", tap).Info("new brew tap")
 }
 
 // AddDocker adds a docker image to the docker images list
