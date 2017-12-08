@@ -127,9 +127,13 @@ func buildManifest(ctx *context.Context, client client.Client, fileName string) 
 		ctx.Version,
 		file))
 
-	binaries := make([]string, len(ctx.Binaries["windows"]["amd64"]))
-	for i, binary := range ctx.Binaries["windows"]["amd64"] {
-		binaries[i] = binary.Name
+	binaries := make([]string, len(ctx.Binaries["windowsamd64"]))
+	var i = 0
+	for _, binaryGroup := range ctx.Binaries["windowsamd64"] {
+		for _, binary := range binaryGroup {
+			binaries[i] = binary.Name
+			i++
+		}
 	}
 
 	manifest := Manifest{
