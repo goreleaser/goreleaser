@@ -200,6 +200,7 @@ type Artifactory struct {
 	Target   string `yaml:",omitempty"`
 	Name     string `yaml:",omitempty"`
 	Username string `yaml:",omitempty"`
+	Mode     string `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`

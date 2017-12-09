@@ -7,6 +7,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/goreleaser/goreleaser/pipeline/archive"
+	"github.com/goreleaser/goreleaser/pipeline/artifactory"
 	"github.com/goreleaser/goreleaser/pipeline/brew"
 	"github.com/goreleaser/goreleaser/pipeline/build"
 	"github.com/goreleaser/goreleaser/pipeline/checksums"
@@ -31,6 +32,7 @@ var defaulters = []pipeline.Defaulter{
 	fpm.Pipe{},
 	checksums.Pipe{},
 	docker.Pipe{},
+	artifactory.Pipe{},
 	brew.Pipe{},
 }
 

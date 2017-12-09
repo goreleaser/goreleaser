@@ -189,11 +189,13 @@ func TestRunPipe(t *testing.T) {
 			Artifactories: []config.Artifactory{
 				{
 					Name:     "production-us",
+					Mode:     "binary",
 					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
 					Username: "deployuser",
 				},
 				{
 					Name:     "production-eu",
+					Mode:     "binary",
 					Target:   fmt.Sprintf("%s/production-repo-remote/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
 					Username: "productionuser",
 				},
@@ -258,6 +260,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 			Artifactories: []config.Artifactory{
 				{
 					Name:     "production",
+					Mode:     "binary",
 					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
 					Username: "deployuser",
 				},
@@ -293,6 +296,7 @@ func TestRunPipe_NoFile(t *testing.T) {
 			Artifactories: []config.Artifactory{
 				{
 					Name:     "production",
+					Mode:     "binary",
 					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 					Username: "deployuser",
 				},
@@ -338,6 +342,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 			Artifactories: []config.Artifactory{
 				{
 					Name:     "production",
+					Mode:     "binary",
 					Target:   "://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 					Username: "deployuser",
 				},
@@ -380,6 +385,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 			Artifactories: []config.Artifactory{
 				{
 					Name:     "production",
+					Mode:     "binary",
 					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 					Username: "deployuser",
 				},

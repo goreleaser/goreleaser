@@ -18,7 +18,7 @@ upload target and a usernameto your `.goreleaser.yml` file:
 ```yaml
 artifactories:
   - name: production
-    target: http://<Your-Instance>:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}
+    target: http://<Your-Instance>:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
     username: goreleaser
 ```
 
@@ -29,15 +29,15 @@ Prerequisites:
 
 ### Target
 
-The `target` is the final URL of _without_ the binary name.
+The `target` is the URL to upload the artifacts to (_without_ the name of the artifact).
 
-A configuration for `goreleaser` with the target 
+An example configuration for `goreleaser` in upload mode `binary` with the target can look like
 
 ```
 http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}
 ```
 
-will result in a final deployment like
+and will result in a final deployment like
 
 ```
 http://artifacts.company.com:8081/artifactory/example-repo-local/goreleaser/1.0.0/Darwin/x86_64/goreleaser
@@ -45,12 +45,14 @@ http://artifacts.company.com:8081/artifactory/example-repo-local/goreleaser/1.0.
 
 Support variables:
 
-- Os
-- Arch
-- Arm
 - Version
 - Tag
 - ProjectName
+- Os
+- Arch
+- Arm
+
+*Attention*: Variables _Os_, _Arch_ and _Arm_ are only supported in upload mode `binary`.
 
 ### Password / API Key
 
@@ -78,8 +80,13 @@ artifactories:
   -
     # Unique name of your artifactory instance. Used to identify the instance
     name: production
+    # Upload mode. Valid options are `binary` and `archive`.
+    # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name are not supported.
+    # In that case these variables are empty.
+    # Default is `archive`.
+    mode: archive
     # URL of your Artifactory instance + path to deploy to
-    target: http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}
+    target: http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
     # User that will be used for the deployment
     username: deployuser
 ```
