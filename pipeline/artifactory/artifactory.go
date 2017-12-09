@@ -126,18 +126,17 @@ func doRun(ctx *context.Context) error {
 		case modeBinary:
 			// Loop over all builds, because we want to publish every build to Artifactory
 			for _, build := range ctx.Config.Builds {
-				if err := runPipeForModeBinary(ctx, instance, build); err != nil {
+				if err = runPipeForModeBinary(ctx, instance, build); err != nil {
 					return err
 				}
 			}
 
 		default:
-			err := fmt.Errorf("artifactory: mode \"%s\" not supported", v)
+			err = fmt.Errorf("artifactory: mode \"%s\" not supported", v)
 			log.WithFields(log.Fields{
 				"instance": instance.Name,
 				"mode":     v,
 			}).Error(err.Error())
-			return err
 		}
 
 		if err != nil {
