@@ -18,10 +18,10 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/goreleaser/goreleaser/pipeline"
-	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/apex/log"
+	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 )
 
 // artifactoryResponse reflects the response after an upload request

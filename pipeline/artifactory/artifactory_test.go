@@ -301,6 +301,46 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
+func TestRunPipe_TargetTemplateError(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	var binPath = filepath.Join(dist, "mybin", "mybin")
+
+	// Set secrets for artifactory instances
+	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
+
+	var ctx = &context.Context{
+		Version:     "1.0.0",
+		Publish:     true,
+		Parallelism: 4,
+		Config: config.Project{
+			ProjectName: "mybin",
+			Dist:        dist,
+			Builds: []config.Build{
+				{
+					Env:    []string{"CGO_ENABLED=0"},
+					Goos:   []string{"darwin"},
+					Goarch: []string{"amd64"},
+				},
+			},
+			Artifactories: []config.Artifactory{
+				{
+					Name: "production",
+					Mode: "binary",
+					// This template is not correct and should fail
+					Target:   "http://storage.company.com/example-repo-local/{{ .ProjectName /{{ .Version }}/",
+					Username: "deployuser",
+				},
+			},
+		},
+	}
+	ctx.AddBinary("darwinamd64", "mybin", "mybin", binPath)
+
+	assert.Error(t, Pipe{}.Run(ctx))
+}
+
 func TestRunPipe_BadCredentials(t *testing.T) {
 	setup()
 	defer teardown()
@@ -327,6 +367,72 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 			"errors" : [ {
 			  "status" : 401,
 			  "message" : "Bad credentials"
+			} ]
+		  }`)
+	})
+
+	// Set secrets for artifactory instances
+	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
+
+	var ctx = &context.Context{
+		Version:     "1.0.0",
+		Publish:     true,
+		Parallelism: 4,
+		Config: config.Project{
+			ProjectName: "mybin",
+			Dist:        dist,
+			Builds: []config.Build{
+				{
+					Env:    []string{"CGO_ENABLED=0"},
+					Goos:   []string{"darwin"},
+					Goarch: []string{"amd64"},
+				},
+			},
+			Artifactories: []config.Artifactory{
+				{
+					Name:     "production",
+					Mode:     "binary",
+					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+					Username: "deployuser",
+				},
+			},
+		},
+	}
+	for _, plat := range []string{"darwinamd64"} {
+		ctx.AddBinary(plat, "mybin", "mybin", binPath)
+	}
+
+	err = Pipe{}.Run(ctx)
+	assert.Error(t, err)
+	assert.True(t, len(err.Error()) > 0)
+}
+
+func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
+	setup()
+	defer teardown()
+
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	var binPath = filepath.Join(dist, "mybin", "mybin")
+	d1 := []byte("hello\ngo\n")
+	err = ioutil.WriteFile(binPath, d1, 0666)
+	assert.NoError(t, err)
+
+	// Dummy artifactories
+	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "PUT")
+		testHeader(t, r, "Content-Length", "9")
+		// Basic auth of user "deployuser" with secret "deployuser-secret"
+		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(w, `...{
+			"errors" : [ {
+			 ...
 			} ]
 		  }`)
 	})
@@ -542,6 +648,28 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	}
 
 	assert.Error(t, Pipe{}.Run(ctx))
+}
+
+func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
+	// Set secrets for artifactory instances
+	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
+
+	var ctx = &context.Context{
+		Publish: false,
+		Config: config.Project{
+			Artifactories: []config.Artifactory{
+				{
+					Name:     "production",
+					Mode:     "binary",
+					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+					Username: "deployuser",
+				},
+			},
+		},
+	}
+
+	assert.True(t, pipeline.IsSkip(Pipe{}.Run(ctx)))
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {
