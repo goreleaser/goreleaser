@@ -16,10 +16,11 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/build"
 	"github.com/goreleaser/goreleaser/pipeline/changelog"
 	"github.com/goreleaser/goreleaser/pipeline/checksums"
-	"github.com/goreleaser/goreleaser/pipeline/cleandist"
 	"github.com/goreleaser/goreleaser/pipeline/defaults"
+	"github.com/goreleaser/goreleaser/pipeline/dist"
 	"github.com/goreleaser/goreleaser/pipeline/docker"
 	"github.com/goreleaser/goreleaser/pipeline/env"
+	"github.com/goreleaser/goreleaser/pipeline/finalconfig"
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/release"
@@ -37,19 +38,20 @@ func init() {
 }
 
 var pipes = []pipeline.Piper{
-	defaults.Pipe{},  // load default configs
-	git.Pipe{},       // get and validate git repo state
-	changelog.Pipe{}, // builds the release changelog
-	env.Pipe{},       // load and validate environment variables
-	cleandist.Pipe{}, // ensure ./dist is clean
-	build.Pipe{},     // build
-	archive.Pipe{},   // archive (tar.gz, zip, etc)
-	fpm.Pipe{},       // archive via fpm (deb, rpm, etc)
-	snapcraft.Pipe{}, // archive via snapcraft (snap)
-	checksums.Pipe{}, // checksums of the files
-	docker.Pipe{},    // create and push docker images
-	release.Pipe{},   // release to github
-	brew.Pipe{},      // push to brew tap
+	defaults.Pipe{},    // load default configs
+	dist.Pipe{},        // ensure ./dist is clean
+	finalconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
+	git.Pipe{},         // get and validate git repo state
+	changelog.Pipe{},   // builds the release changelog
+	env.Pipe{},         // load and validate environment variables
+	build.Pipe{},       // build
+	archive.Pipe{},     // archive (tar.gz, zip, etc)
+	fpm.Pipe{},         // archive via fpm (deb, rpm, etc)
+	snapcraft.Pipe{},   // archive via snapcraft (snap)
+	checksums.Pipe{},   // checksums of the files
+	docker.Pipe{},      // create and push docker images
+	release.Pipe{},     // release to github
+	brew.Pipe{},        // push to brew tap
 }
 
 // Flags interface represents an extractor of cli flags

@@ -48,6 +48,6 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.ProjectName == "" {
 		ctx.Config.ProjectName = ctx.Config.Release.GitHub.Name
 	}
-	log.WithField("config", ctx.Config).Debug("defaults set")
 	return nil
 }
+
