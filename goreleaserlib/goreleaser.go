@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
@@ -26,6 +27,15 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
 	yaml "gopkg.in/yaml.v2"
 )
+
+var (
+	normalPadding    = cli.Default.Padding
+	increasedPadding = normalPadding * 2
+)
+
+func init() {
+	log.SetHandler(cli.Default)
+}
 
 var pipes = []pipeline.Piper{
 	defaults.Pipe{},    // load default configs
@@ -91,12 +101,14 @@ func Release(flags Flags) error {
 	}
 	ctx.RmDist = flags.Bool("rm-dist")
 	for _, pipe := range pipes {
+		cli.Default.Padding = normalPadding
 		log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.String()))
+		cli.Default.Padding = increasedPadding
 		if err := handle(pipe.Run(ctx)); err != nil {
 			return err
 		}
 	}
-	log.Infof("\033[1mSUCCESS!\033[0m")
+	cli.Default.Padding = normalPadding
 	return nil
 }
 

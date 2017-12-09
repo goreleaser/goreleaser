@@ -8,11 +8,6 @@ feature2: other description
 - `docker pull goreleaser/goreleaser:latest`
 - `docker pull goreleaser/godownloader:v0.1.0`
 
-## Homebrew taps
-
-- `brew install caarlos0/tap/foo`
-- `brew install goreleaser/tap/bar`
-
 ---
 Automated with [GoReleaser](https://github.com/goreleaser)
 Built with go version go1.9 darwin/amd64

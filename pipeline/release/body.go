@@ -18,14 +18,6 @@ const bodyTemplate = `{{ .ReleaseNotes }}
 {{- end -}}
 {{- end }}
 
-{{- if .Brews }}
-
-## Homebrew taps
-{{ range $element := .Brews }}
-- ` + "`brew install {{ . -}}`" + `
-{{- end -}}
-{{- end }}
-
 ---
 Automated with [GoReleaser](https://github.com/goreleaser)
 Built with {{ .GoVersion }}`
@@ -45,12 +37,10 @@ func describeBodyVersion(ctx *context.Context, version string) (bytes.Buffer, er
 	err := template.Execute(&out, struct {
 		ReleaseNotes, GoVersion string
 		DockerImages            []string
-		Brews                   []string
 	}{
 		ReleaseNotes: ctx.ReleaseNotes,
 		GoVersion:    version,
 		DockerImages: ctx.Dockers,
-		Brews:        ctx.Brews,
 	})
 	return out, err
 }
