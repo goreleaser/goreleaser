@@ -47,7 +47,7 @@ func testHeader(t *testing.T, r *http.Request, header string, want string) {
 	}
 }
 
-func TestRunPipe(t *testing.T) {
+func TestRunPipe_ModeBinary(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -174,8 +174,9 @@ func TestRunPipe(t *testing.T) {
 	defer os.Unsetenv("ARTIFACTORY_PRODUCTION-EU_SECRET")
 
 	var ctx = &context.Context{
-		Version: "1.0.0",
-		Publish: true,
+		Version:     "1.0.0",
+		Publish:     true,
+		Parallelism: 4,
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -205,7 +206,97 @@ func TestRunPipe(t *testing.T) {
 	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64"} {
 		ctx.AddBinary(plat, "mybin", "mybin", binPath)
 	}
-	ctx.Parallelism = 4
+
+	assert.NoError(t, Pipe{}.Run(ctx))
+}
+
+func TestRunPipe_ModeArchive(t *testing.T) {
+	setup()
+	defer teardown()
+
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(t, err)
+	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
+	assert.NoError(t, err)
+	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
+	assert.NoError(t, err)
+
+	// Set secrets for artifactory instances
+	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
+
+	var ctx = &context.Context{
+		Version:     "1.0.0",
+		Publish:     true,
+		Parallelism: 4,
+		Config: config.Project{
+			ProjectName: "goreleaser",
+			Dist:        folder,
+			Artifactories: []config.Artifactory{
+				{
+					Name:     "production",
+					Mode:     "archive",
+					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Version }}/", server.URL),
+					Username: "deployuser",
+				},
+			},
+		},
+	}
+
+	ctx.AddArtifact(tarfile.Name())
+	ctx.AddArtifact(debfile.Name())
+
+	// Dummy artifactories
+	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.tar.gz", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "PUT")
+		// Basic auth of user "deployuser" with secret "deployuser-secret"
+		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprint(w, `{
+			"repo" : "example-repo-local",
+			"path" : "/goreleaser/bin.tar.gz",
+			"created" : "2017-12-02T19:30:45.436Z",
+			"createdBy" : "deployuser",
+			"downloadUri" : "http://127.0.0.1:56563/example-repo-local/goreleaser/bin.tar.gz",
+			"mimeType" : "application/octet-stream",
+			"size" : "9",
+			"checksums" : {
+			  "sha1" : "65d01857a69f14ade727fe1ceee0f52a264b6e57",
+			  "md5" : "a55e303e7327dc871a8e2a84f30b9983",
+			  "sha256" : "ead9b172aec5c24ca6c12e85a1e6fc48dd341d8fac38c5ba00a78881eabccf0e"
+			},
+			"originalChecksums" : {
+			  "sha256" : "ead9b172aec5c24ca6c12e85a1e6fc48dd341d8fac38c5ba00a78881eabccf0e"
+			},
+			"uri" : "http://127.0.0.1:56563/example-repo-local/goreleaser/bin.tar.gz"
+		  }`)
+	})
+	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.deb", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "PUT")
+		// Basic auth of user "deployuser" with secret "deployuser-secret"
+		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprint(w, `{
+			"repo" : "example-repo-local",
+			"path" : "goreleaser/bin.deb",
+			"created" : "2017-12-02T19:30:46.436Z",
+			"createdBy" : "deployuser",
+			"downloadUri" : "http://127.0.0.1:56563/example-repo-local/goreleaser/bin.deb",
+			"mimeType" : "application/octet-stream",
+			"size" : "9",
+			"checksums" : {
+			  "sha1" : "65d01857a69f14ade727fe1ceee0f52a264b6e57",
+			  "md5" : "a55e303e7327dc871a8e2a84f30b9983",
+			  "sha256" : "ead9b172aec5c24ca6c12e85a1e6fc48dd341d8fac38c5ba00a78881eabccf0e"
+			},
+			"originalChecksums" : {
+			  "sha256" : "ead9b172aec5c24ca6c12e85a1e6fc48dd341d8fac38c5ba00a78881eabccf0e"
+			},
+			"uri" : "http://127.0.0.1:56563/example-repo-local/goreleaser/bin.deb"
+		  }`)
+	})
 
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
@@ -245,8 +336,9 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
 
 	var ctx = &context.Context{
-		Version: "1.0.0",
-		Publish: true,
+		Version:     "1.0.0",
+		Publish:     true,
+		Parallelism: 4,
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -270,7 +362,104 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	for _, plat := range []string{"darwinamd64"} {
 		ctx.AddBinary(plat, "mybin", "mybin", binPath)
 	}
-	ctx.Parallelism = 4
+
+	assert.Error(t, Pipe{}.Run(ctx))
+}
+
+func TestRunPipe_UnparsableResponse(t *testing.T) {
+	setup()
+	defer teardown()
+
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	var binPath = filepath.Join(dist, "mybin", "mybin")
+	d1 := []byte("hello\ngo\n")
+	err = ioutil.WriteFile(binPath, d1, 0666)
+	assert.NoError(t, err)
+
+	// Dummy artifactory with invalid JSON
+	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "PUT")
+		testHeader(t, r, "Content-Length", "9")
+		// Basic auth of user "deployuser" with secret "deployuser-secret"
+		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprint(w, `invalid-json{
+			"repo" : "example-repo-local",
+			...
+		  }`)
+	})
+
+	// Set secrets for artifactory instances
+	os.Setenv("ARTIFACTORY_PRODUCTIONS_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION-US_SECRET")
+
+	var ctx = &context.Context{
+		Version:     "1.0.0",
+		Publish:     true,
+		Parallelism: 4,
+		Config: config.Project{
+			ProjectName: "mybin",
+			Dist:        dist,
+			Builds: []config.Build{
+				{
+					Env:    []string{"CGO_ENABLED=0"},
+					Goos:   []string{"darwin"},
+					Goarch: []string{"amd64"},
+				},
+			},
+			Artifactories: []config.Artifactory{
+				{
+					Name:     "production",
+					Mode:     "binary",
+					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+					Username: "deployuser",
+				},
+			},
+		},
+	}
+	ctx.AddBinary("darwinamd64", "mybin", "mybin", binPath)
+
+	assert.Error(t, Pipe{}.Run(ctx))
+}
+
+func TestRunPipe_WithoutBinaryTarget(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+
+	// Set secrets for artifactory instances
+	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
+
+	var ctx = &context.Context{
+		Version:     "1.0.0",
+		Publish:     true,
+		Parallelism: 4,
+		Config: config.Project{
+			ProjectName: "mybin",
+			Dist:        dist,
+			Builds: []config.Build{
+				{
+					Env:    []string{"CGO_ENABLED=0"},
+					Goos:   []string{"darwin"},
+					Goarch: []string{"amd64"},
+				},
+			},
+			Artifactories: []config.Artifactory{
+				{
+					Name:     "production",
+					Mode:     "binary",
+					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+					Username: "deployuser",
+				},
+			},
+		},
+	}
 
 	assert.Error(t, Pipe{}.Run(ctx))
 }
@@ -281,8 +470,9 @@ func TestRunPipe_NoFile(t *testing.T) {
 	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
 
 	var ctx = &context.Context{
-		Version: "1.0.0",
-		Publish: true,
+		Version:     "1.0.0",
+		Publish:     true,
+		Parallelism: 4,
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        "archivetest/dist",
@@ -303,10 +493,7 @@ func TestRunPipe_NoFile(t *testing.T) {
 			},
 		},
 	}
-	for _, plat := range []string{"darwinamd64"} {
-		ctx.AddBinary(plat, "mybin", "mybin", "archivetest/dist/mybin/mybin")
-	}
-	ctx.Parallelism = 4
+	ctx.AddBinary("darwinamd64", "mybin", "mybin", "archivetest/dist/mybin/mybin")
 
 	assert.Error(t, Pipe{}.Run(ctx))
 }
@@ -327,8 +514,9 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
 
 	var ctx = &context.Context{
-		Version: "1.0.0",
-		Publish: true,
+		Version:     "1.0.0",
+		Publish:     true,
+		Parallelism: 4,
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -352,7 +540,6 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	for _, plat := range []string{"darwinamd64"} {
 		ctx.AddBinary(plat, "mybin", "mybin", binPath)
 	}
-	ctx.Parallelism = 4
 
 	assert.Error(t, Pipe{}.Run(ctx))
 }
@@ -370,8 +557,9 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
 
 	var ctx = &context.Context{
-		Version: "1.0.0",
-		Publish: true,
+		Version:     "1.0.0",
+		Publish:     true,
+		Parallelism: 4,
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -395,7 +583,6 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	for _, plat := range []string{"darwinamd64"} {
 		ctx.AddBinary(plat, "mybin", "mybin", binPath)
 	}
-	ctx.Parallelism = 4
 
 	assert.Error(t, Pipe{}.Run(ctx))
 }
@@ -408,7 +595,11 @@ func TestNoArtifactories(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{}))))
 }
 
-func TestNoArtifactoriesWithoutTarget(t *testing.T) {
+func TestArtifactoriesWithoutTarget(t *testing.T) {
+	// Set secrets for artifactory instances
+	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
+
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
 		Artifactories: []config.Artifactory{
 			{
@@ -419,7 +610,11 @@ func TestNoArtifactoriesWithoutTarget(t *testing.T) {
 	}))))
 }
 
-func TestNoArtifactoriesWithoutUsername(t *testing.T) {
+func TestArtifactoriesWithoutUsername(t *testing.T) {
+	// Set secrets for artifactory instances
+	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
+
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
 		Artifactories: []config.Artifactory{
 			{
@@ -430,7 +625,7 @@ func TestNoArtifactoriesWithoutUsername(t *testing.T) {
 	}))))
 }
 
-func TestNoArtifactoriesWithoutName(t *testing.T) {
+func TestArtifactoriesWithoutName(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
 		Artifactories: []config.Artifactory{
 			{
@@ -441,7 +636,7 @@ func TestNoArtifactoriesWithoutName(t *testing.T) {
 	}))))
 }
 
-func TestNoArtifactoriesWithoutSecret(t *testing.T) {
+func TestArtifactoriesWithoutSecret(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
 		Artifactories: []config.Artifactory{
 			{
@@ -451,4 +646,61 @@ func TestNoArtifactoriesWithoutSecret(t *testing.T) {
 			},
 		},
 	}))))
+}
+
+func TestArtifactoriesWithInvalidMode(t *testing.T) {
+	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "does-not-exists",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
+			},
+		},
+	}))))
+}
+
+func TestDefault(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Artifactories: []config.Artifactory{
+				{
+					Name:     "production",
+					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+					Username: "deployuser",
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Len(t, ctx.Config.Artifactories, 1)
+	var artifactory = ctx.Config.Artifactories[0]
+	assert.Equal(t, "archive", artifactory.Mode)
+}
+
+func TestDefaultNoArtifactories(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Artifactories: []config.Artifactory{},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Empty(t, ctx.Config.Artifactories)
+}
+
+func TestDefaultSet(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Artifactories: []config.Artifactory{
+				{
+					Mode: "custom",
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Len(t, ctx.Config.Artifactories, 1)
+	var artifactory = ctx.Config.Artifactories[0]
+	assert.Equal(t, "custom", artifactory.Mode)
 }
