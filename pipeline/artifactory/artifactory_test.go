@@ -168,10 +168,10 @@ func TestRunPipe(t *testing.T) {
 	})
 
 	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_0_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_0_SECRET")
-	os.Setenv("ARTIFACTORY_1_SECRET", "productionuser-apikey")
-	defer os.Unsetenv("ARTIFACTORY_1_SECRET")
+	os.Setenv("ARTIFACTORY_PRODUCTION-US_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION-US_SECRET")
+	os.Setenv("ARTIFACTORY_PRODUCTION-EU_SECRET", "productionuser-apikey")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION-EU_SECRET")
 
 	var ctx = &context.Context{
 		Version: "1.0.0",
@@ -188,10 +188,12 @@ func TestRunPipe(t *testing.T) {
 			},
 			Artifactories: []config.Artifactory{
 				{
+					Name:     "production-us",
 					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
 					Username: "deployuser",
 				},
 				{
+					Name:     "production-eu",
 					Target:   fmt.Sprintf("%s/production-repo-remote/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
 					Username: "productionuser",
 				},
@@ -237,8 +239,8 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	})
 
 	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_0_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_0_SECRET")
+	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
 
 	var ctx = &context.Context{
 		Version: "1.0.0",
@@ -255,6 +257,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 			},
 			Artifactories: []config.Artifactory{
 				{
+					Name:     "production",
 					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
 					Username: "deployuser",
 				},
@@ -271,8 +274,8 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 
 func TestRunPipe_NoFile(t *testing.T) {
 	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_0_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_0_SECRET")
+	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
 
 	var ctx = &context.Context{
 		Version: "1.0.0",
@@ -289,6 +292,7 @@ func TestRunPipe_NoFile(t *testing.T) {
 			},
 			Artifactories: []config.Artifactory{
 				{
+					Name:     "production",
 					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 					Username: "deployuser",
 				},
@@ -315,8 +319,8 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_0_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_0_SECRET")
+	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
 
 	var ctx = &context.Context{
 		Version: "1.0.0",
@@ -333,6 +337,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 			},
 			Artifactories: []config.Artifactory{
 				{
+					Name:     "production",
 					Target:   "://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 					Username: "deployuser",
 				},
@@ -354,14 +359,10 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	assert.NoError(t, os.Mkdir(dist, 0755))
 	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin")
-	/*
-		d1 := []byte("hello\ngo\n")
-		err = ioutil.WriteFile(binPath, d1, 0666)
-		assert.NoError(t, err)
-	*/
+
 	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_0_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_0_SECRET")
+	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
 
 	var ctx = &context.Context{
 		Version: "1.0.0",
@@ -378,6 +379,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 			},
 			Artifactories: []config.Artifactory{
 				{
+					Name:     "production",
 					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 					Username: "deployuser",
 				},
@@ -404,6 +406,7 @@ func TestNoArtifactoriesWithoutTarget(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
 		Artifactories: []config.Artifactory{
 			{
+				Name:     "production",
 				Username: "deployuser",
 			},
 		},
@@ -414,7 +417,19 @@ func TestNoArtifactoriesWithoutUsername(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
 		Artifactories: []config.Artifactory{
 			{
+				Name:   "production",
 				Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+			},
+		},
+	}))))
+}
+
+func TestNoArtifactoriesWithoutName(t *testing.T) {
+	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
+		Artifactories: []config.Artifactory{
+			{
+				Username: "deployuser",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 			},
 		},
 	}))))
@@ -424,6 +439,7 @@ func TestNoArtifactoriesWithoutSecret(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
 		Artifactories: []config.Artifactory{
 			{
+				Name:     "production",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 				Username: "deployuser",
 			},

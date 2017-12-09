@@ -58,26 +58,28 @@ func (Pipe) String() string {
 //
 // Docs: https://www.jfrog.com/confluence/display/RTF/Artifactory+REST+API#ArtifactoryRESTAPI-Example-DeployinganArtifact
 func (Pipe) Run(ctx *context.Context) error {
-	instances := len(ctx.Config.Artifactories)
-	if instances == 0 {
+	if l := len(ctx.Config.Artifactories); l == 0 {
 		return pipeline.Skip("artifactory section is not configured")
 	}
 
-	// Check if for every instance we have a the target,
-	// the username and a secret (password or api key)
-	// If not, we can skip this pipeline
-	for i := 0; i < instances; i++ {
-		if ctx.Config.Artifactories[i].Target == "" {
-			return pipeline.Skip(fmt.Sprintf("artifactory section is not configured properly (missing target in artifactory %d)", i))
+	// Check requirements for every instance we have configured.
+	// If not fulfilled, we can skip this pipeline
+	for _, instance := range ctx.Config.Artifactories {
+		if instance.Target == "" {
+			return pipeline.Skip("artifactory section is not configured properly (missing target)")
 		}
 
-		if ctx.Config.Artifactories[i].Username == "" {
-			return pipeline.Skip(fmt.Sprintf("artifactory section is not configured properly (missing username in artifactory %d)", i))
+		if instance.Username == "" {
+			return pipeline.Skip("artifactory section is not configured properly (missing username)")
 		}
 
-		envName := fmt.Sprintf("ARTIFACTORY_%d_SECRET", i)
+		if instance.Name == "" {
+			return pipeline.Skip("artifactory section is not configured properly (missing name)")
+		}
+
+		envName := fmt.Sprintf("ARTIFACTORY_%s_SECRET", strings.ToUpper(instance.Name))
 		if os.Getenv(envName) == "" {
-			return pipeline.Skip(fmt.Sprintf("missing secret for artifactory %d: %s", i, ctx.Config.Artifactories[i].Target))
+			return pipeline.Skip(fmt.Sprintf("missing secret for artifactory instance %s", instance.Name))
 		}
 	}
 
@@ -137,16 +139,15 @@ func upload(ctx *context.Context, build config.Build, target buildtarget.Target)
 	}
 
 	// Loop over all configured Artifactory instances
-	instances := len(ctx.Config.Artifactories)
-	for i := 0; i < instances; i++ {
-		artifactory := ctx.Config.Artifactories[i]
-		secret := os.Getenv(fmt.Sprintf("ARTIFACTORY_%d_SECRET", i))
+	for _, instance := range ctx.Config.Artifactories {
+		secret := os.Getenv(fmt.Sprintf("ARTIFACTORY_%s_SECRET", strings.ToUpper(instance.Name)))
 
 		// Generate name of target
-		uploadTarget, err := buildTargetName(ctx, artifactory, target)
+		uploadTarget, err := buildTargetName(ctx, instance, target)
 		if err != nil {
-			log.WithError(err).Error("Artifactory: Error while building the target name")
-			return errors.Wrap(err, "Artifactory: Error while building the target name")
+			msg := "artifactory: error while building the target name"
+			log.WithError(err).Error(msg)
+			return errors.Wrap(err, msg)
 		}
 
 		// The upload url to Artifactory needs the binary name
@@ -163,19 +164,22 @@ func upload(ctx *context.Context, build config.Build, target buildtarget.Target)
 		}
 		defer file.Close() // nolint: errcheck
 
-		artifact, resp, err := uploadBinaryToArtifactory(ctx, uploadTarget, artifactory.Username, secret, file)
+		artifact, _, err := uploadBinaryToArtifactory(ctx, uploadTarget, instance.Username, secret, file)
 		if err != nil {
-			var msg string
-			if resp != nil {
-				msg = fmt.Sprintf("Artifactory: Upload to target %s failed (HTTP Status: %s)", uploadTarget, resp.Status)
-			} else {
-				msg = fmt.Sprintf("Artifactory: Upload to target %s failed", uploadTarget)
-			}
-			log.WithError(err).Error(msg)
+			msg := "artifactory: upload failed"
+			log.WithError(err).WithFields(log.Fields{
+				"instance": instance.Name,
+				"username": instance.Username,
+			}).Error(msg)
 			return errors.Wrap(err, msg)
 		}
 
-		log.WithField("uri", artifact.DownloadURI).WithField("target", target.PrettyString()).Info("uploaded successful")
+		log.WithFields(log.Fields{
+			"instance": instance.Name,
+			"target":   target.PrettyString(),
+			"username": instance.Username,
+			"uri":      artifact.DownloadURI,
+		}).Info("uploaded successful")
 	}
 
 	return nil

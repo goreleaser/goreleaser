@@ -198,6 +198,7 @@ type Docker struct {
 // Artifactory server configuration
 type Artifactory struct {
 	Target   string `yaml:",omitempty"`
+	Name     string `yaml:",omitempty"`
 	Username string `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading

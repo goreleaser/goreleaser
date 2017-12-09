@@ -17,7 +17,8 @@ upload target and a usernameto your `.goreleaser.yml` file:
 
 ```yaml
 artifactories:
-  - target: http://<Your-Instance>:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}
+  - name: production
+    target: http://<Your-Instance>:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}
     username: goreleaser
 ```
 
@@ -56,10 +57,15 @@ Support variables:
 Your configured username needs to be authenticated against your Artifactory.
 
 The password or API key will be stored in a environment variable.
-If you have only one Artifactory configured, you will store the secret in `ARTIFACTORY_0_SECRET`.
+The confgured name of your Artifactory instance will be used.
+With this way we support auth for multiple instances.
+This also means that the `name` per configured instance needs to be unique
+per goreleaser configuration.
 
-If you have multiple instances configured, you store the password for the second instance in `ARTIFACTORY_1_SECRET`,
-for the third in `ARTIFACTORY_2_SECRET` and so on.
+The name of the environment variable will be `ARTIFACTORY_NAME_SECRET`.
+If your instance is named `production`, you need to store the secret in the
+environment variable `ARTIFACTORY_PRODUCTION_SECRET`.
+The name will be transformed to uppercase.
 
 ## Customization
 
@@ -70,6 +76,8 @@ Of course, you can customize a lot of things:
 artifactories:
   # You can have multiple Artifactory instances.
   -
+    # Unique name of your artifactory instance. Used to identify the instance
+    name: production
     # URL of your Artifactory instance + path to deploy to
     target: http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}
     # User that will be used for the deployment
