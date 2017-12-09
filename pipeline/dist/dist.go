@@ -1,6 +1,6 @@
-// Package cleandist provides checks to make sure the dist folder is always
+// Package dist provides checks to make sure the dist folder is always
 // empty.
-package cleandist
+package dist
 
 import (
 	"fmt"
@@ -22,12 +22,16 @@ func (Pipe) String() string {
 func (Pipe) Run(ctx *context.Context) (err error) {
 	_, err = os.Stat(ctx.Config.Dist)
 	if os.IsNotExist(err) {
-		log.Debug("./dist doesn't exist, moving on")
-		return nil
+		log.Debug("./dist doesn't exist, creating empty folder")
+		return mkdir(ctx)
 	}
 	if ctx.RmDist {
-		log.Info("--rm-dist is set, removing ./dist")
-		return os.RemoveAll(ctx.Config.Dist)
+		log.Info("--rm-dist is set, cleaning it up")
+		err = os.RemoveAll(ctx.Config.Dist)
+		if err == nil {
+			err = mkdir(ctx)
+		}
+		return err
 	}
 	files, err := ioutil.ReadDir(ctx.Config.Dist)
 	if err != nil {
@@ -41,5 +45,9 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		)
 	}
 	log.Debug("./dist is empty")
-	return
+	return mkdir(ctx)
+}
+
+func mkdir(ctx *context.Context) error {
+	return os.Mkdir(ctx.Config.Dist, 0755)
 }

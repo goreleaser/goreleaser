@@ -1,4 +1,4 @@
-package cleandist
+package dist
 
 import (
 	"io/ioutil"
