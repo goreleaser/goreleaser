@@ -170,8 +170,26 @@ func runPipeForModeArchive(ctx *context.Context, instance config.Artifactory) er
 
 // uploadArchive will upload artifact in mode archive
 func uploadArchive(ctx *context.Context, instance config.Artifactory, artifact string) error {
+	var path = filepath.Join(ctx.Config.Dist, artifact)
+	return uploadAssetAndLog(ctx, instance, path, nil)
+}
+
+// uploadBinary will upload the current build and the current target in mode binary
+func uploadBinary(ctx *context.Context, instance config.Artifactory, build config.Build, target buildtarget.Target) error {
+	binary, err := getBinaryForUploadPerBuild(ctx, target)
+	if err != nil {
+		return err
+	}
+
+	return uploadAssetAndLog(ctx, instance, binary.Path, &target)
+}
+
+// uploadAssetAndLog uploads file to target and logs all actions
+func uploadAssetAndLog(ctx *context.Context, instance config.Artifactory, path string, target *buildtarget.Target) error {
+	secret := os.Getenv(fmt.Sprintf("ARTIFACTORY_%s_SECRET", strings.ToUpper(instance.Name)))
+
 	// Generate the target url
-	targetURL, err := resolveTargetTemplate(ctx, instance, nil)
+	targetURL, err := resolveTargetTemplate(ctx, instance, target)
 	if err != nil {
 		msg := "artifactory: error while building the target url"
 		log.WithField("instance", instance.Name).WithError(err).Error(msg)
@@ -179,7 +197,6 @@ func uploadArchive(ctx *context.Context, instance config.Artifactory, artifact s
 	}
 
 	// Handle the artifact
-	var path = filepath.Join(ctx.Config.Dist, artifact)
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -193,45 +210,7 @@ func uploadArchive(ctx *context.Context, instance config.Artifactory, artifact s
 	}
 	targetURL += name
 
-	return uploadAssetAndLog(ctx, instance, targetURL, file)
-}
-
-// uploadBinary will upload the current build and the current target in mode binary
-func uploadBinary(ctx *context.Context, instance config.Artifactory, build config.Build, target buildtarget.Target) error {
-	binary, err := getBinaryForUploadPerBuild(ctx, target)
-	if err != nil {
-		return err
-	}
-
-	// Generate the target url
-	targetURL, err := resolveTargetTemplate(ctx, instance, &target)
-	if err != nil {
-		msg := "artifactory: error while building the target url"
-		log.WithField("instance", instance.Name).WithError(err).Error(msg)
-		return errors.Wrap(err, msg)
-	}
-
-	// Handle the artifact
-	file, err := os.Open(binary.Path)
-	if err != nil {
-		return err
-	}
-	defer file.Close() // nolint: errcheck
-
-	// The target url needs to contain the artifact name
-	if !strings.HasSuffix(targetURL, "/") {
-		targetURL += "/"
-	}
-	targetURL += binary.Name
-
-	return uploadAssetAndLog(ctx, instance, targetURL, file)
-}
-
-// uploadAssetAndLog uploads file to target and logs all actions
-func uploadAssetAndLog(ctx *context.Context, instance config.Artifactory, target string, file *os.File) error {
-	secret := os.Getenv(fmt.Sprintf("ARTIFACTORY_%s_SECRET", strings.ToUpper(instance.Name)))
-
-	artifact, _, err := uploadAssetToArtifactory(ctx, target, instance.Username, secret, file)
+	artifact, _, err := uploadAssetToArtifactory(ctx, targetURL, instance.Username, secret, file)
 	if err != nil {
 		msg := "artifactory: upload failed"
 		log.WithError(err).WithFields(log.Fields{
