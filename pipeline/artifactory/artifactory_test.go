@@ -649,16 +649,24 @@ func TestArtifactoriesWithoutSecret(t *testing.T) {
 }
 
 func TestArtifactoriesWithInvalidMode(t *testing.T) {
-	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
-		Artifactories: []config.Artifactory{
-			{
-				Name:     "production",
-				Mode:     "does-not-exists",
-				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-				Username: "deployuser",
+	// Set secrets for artifactory instances
+	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
+	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
+
+	var ctx = &context.Context{
+		Publish: true,
+		Config: config.Project{
+			Artifactories: []config.Artifactory{
+				{
+					Name:     "production",
+					Mode:     "does-not-exists",
+					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+					Username: "deployuser",
+				},
 			},
 		},
-	}))))
+	}
+	assert.Error(t, Pipe{}.Run(ctx))
 }
 
 func TestDefault(t *testing.T) {
