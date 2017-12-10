@@ -12,12 +12,15 @@ import (
 )
 
 func TestDistDoesNotExist(t *testing.T) {
+	folder, err := ioutil.TempDir("", "disttest")
+	assert.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
 	assert.NoError(
 		t,
 		Pipe{}.Run(
 			&context.Context{
 				Config: config.Project{
-					Dist: "/wtf-this-shouldnt-exist",
+					Dist: dist,
 				},
 			},
 		),
@@ -55,7 +58,7 @@ func TestEmptyDistExists(t *testing.T) {
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
 	_, err = os.Stat(dist)
-	assert.False(t, os.IsExist(err))
+	assert.False(t, os.IsNotExist(err))
 }
 
 func TestDescription(t *testing.T) {
