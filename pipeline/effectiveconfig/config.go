@@ -1,4 +1,4 @@
-package finalconfig
+package effectiveconfig
 
 import (
 	"io/ioutil"
@@ -9,19 +9,21 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// Pipe that writes the effective config file to dist
 type Pipe struct {
 }
 
 func (Pipe) String() string {
-	return "writing the final config file to dist folder"
+	return "writing effective config file"
 }
 
+// Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
 	var path = filepath.Join(ctx.Config.Dist, "config.yaml")
 	bts, err := yaml.Marshal(ctx.Config)
 	if err != nil {
 		return err
 	}
-	log.WithField("path", path).Info("writting")
+	log.WithField("config", path).Info("writting")
 	return ioutil.WriteFile(path, bts, 0644)
 }

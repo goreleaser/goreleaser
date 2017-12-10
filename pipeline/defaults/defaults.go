@@ -16,7 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/snapshot"
 )
 
-// Pipe for brew deployment
+// Pipe that sets the defaults
 type Pipe struct{}
 
 func (Pipe) String() string {
@@ -50,4 +50,3 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	return nil
 }
-
