@@ -1,4 +1,5 @@
 dist/
+!pipeline/dist
 vendor
 coverage.txt
 goreleaser

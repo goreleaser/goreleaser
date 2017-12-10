@@ -17,7 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/snapshot"
 )
 
-// Pipe for brew deployment
+// Pipe that sets the defaults
 type Pipe struct{}
 
 func (Pipe) String() string {
@@ -50,6 +50,5 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.ProjectName == "" {
 		ctx.Config.ProjectName = ctx.Config.Release.GitHub.Name
 	}
-	log.WithField("config", ctx.Config).Debug("defaults set")
 	return nil
 }
