@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/goreleaser/goreleaser/pipeline/archive"
+	"github.com/goreleaser/goreleaser/pipeline/artifactory"
 	"github.com/goreleaser/goreleaser/pipeline/brew"
 	"github.com/goreleaser/goreleaser/pipeline/build"
 	"github.com/goreleaser/goreleaser/pipeline/changelog"
@@ -50,6 +51,7 @@ var pipes = []pipeline.Piper{
 	snapcraft.Pipe{},       // archive via snapcraft (snap)
 	checksums.Pipe{},       // checksums of the files
 	docker.Pipe{},          // create and push docker images
+	artifactory.Pipe{},     // push to artifactory
 	release.Pipe{},         // release to github
 	brew.Pipe{},            // push to brew tap
 }
