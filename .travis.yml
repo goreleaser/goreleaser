@@ -7,11 +7,13 @@ services:
 install:
   - make setup
   - gem install fpm
+  - npm install -g prettier
   - sudo apt-get update
   - sudo apt-get install --yes snapd rpm
   - export PATH=/snap/bin:$PATH
   - sudo snap install snapcraft --candidate --classic
 script:
+  - find . -name '*.md' | grep -v vendor | xargs prettier -l || exit 1
   - make ci
   - test -n "$TRAVIS_TAG" || go run main.go --skip-validate --skip-publish
 after_success:
