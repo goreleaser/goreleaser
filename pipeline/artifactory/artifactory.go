@@ -62,7 +62,7 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if l := len(ctx.Config.Artifactories); l == 0 {
+	if len(ctx.Config.Artifactories) == 0 {
 		return nil
 	}
 
@@ -80,7 +80,7 @@ func (Pipe) Default(ctx *context.Context) error {
 //
 // Docs: https://www.jfrog.com/confluence/display/RTF/Artifactory+REST+API#ArtifactoryRESTAPI-Example-DeployinganArtifact
 func (Pipe) Run(ctx *context.Context) error {
-	if l := len(ctx.Config.Artifactories); l == 0 {
+	if len(ctx.Config.Artifactories) == 0 {
 		return pipeline.Skip("artifactory section is not configured")
 	}
 
