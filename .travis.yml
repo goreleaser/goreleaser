@@ -13,7 +13,7 @@ install:
   - export PATH=/snap/bin:$PATH
   - sudo snap install snapcraft --candidate --classic
 script:
-  - find . -name '*.md' | grep -v vendor | xargs prettier -l || exit 1
+  - find . -name '*.md' | grep -v vendor | xargs prettier -l || { echo files above are not formatted with prettier/prettier; exit 1; }
   - make ci
   - test -n "$TRAVIS_TAG" || go run main.go --skip-validate --skip-publish
 after_success:
