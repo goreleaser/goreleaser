@@ -70,9 +70,9 @@ This configuration will generate `tar` archives, each containing an additional
 file called `drum-roll.licence.txt`.
 The archives will be located in the `dist` folder:
 
-- `./dist/drum-roll_windows_64-bit.tar.gz`
-- `./dist/drum-roll_macOS_64-bit.tar.gz`
-- `./dist/drum-roll_Tux_64-bit.tar.gz`
+* `./dist/drum-roll_windows_64-bit.tar.gz`
+* `./dist/drum-roll_macOS_64-bit.tar.gz`
+* `./dist/drum-roll_Tux_64-bit.tar.gz`
 
 Next, you need to export a `GITHUB_TOKEN` environment variable, which should contain a
 GitHub token with the `repo` scope selected.

@@ -13,10 +13,9 @@ For more information, see the `CONTRIBUTING` guide.
 
 Please paste the output of:
 
-- `go version`
-- `uname -a`
-- `goreleaser --debug`
-
+* `go version`
+* `uname -a`
+* `goreleaser --debug`
 
 ### Steps to Reproduce
 
@@ -27,4 +26,3 @@ Please paste the output of:
 **Expected behavior:** [What you expected to happen]
 
 **Actual behavior:** [What actually happened]
-

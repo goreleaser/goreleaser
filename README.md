@@ -33,7 +33,6 @@ at https://goreleaser.com
 
 [![goreleaser/goreleaser stargazers over time](https://starcharts.herokuapp.com/goreleaser/goreleaser.svg)](https://starcharts.herokuapp.com/goreleaser/goreleaser)
 
-
 ---
 
 Would you like to fix something in the documentation? Feel free to open an [issue](https://github.com/goreleaser/goreleaser/issues).
