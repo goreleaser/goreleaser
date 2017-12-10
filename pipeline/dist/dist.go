@@ -49,5 +49,6 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 }
 
 func mkdir(ctx *context.Context) error {
+	// #nosec
 	return os.MkdirAll(ctx.Config.Dist, 0755)
 }
