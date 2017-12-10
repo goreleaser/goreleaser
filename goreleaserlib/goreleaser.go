@@ -40,8 +40,8 @@ func init() {
 var pipes = []pipeline.Piper{
 	defaults.Pipe{},        // load default configs
 	dist.Pipe{},            // ensure ./dist is clean
-	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
 	git.Pipe{},             // get and validate git repo state
+	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
 	changelog.Pipe{},       // builds the release changelog
 	env.Pipe{},             // load and validate environment variables
 	build.Pipe{},           // build
