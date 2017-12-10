@@ -111,7 +111,7 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
 		return errors.Wrap(err, string(out))
 	}
-	ctx.AddArtifact(file)
+	ctx.AddArtifactFromFile(file)
 	return nil
 }
 

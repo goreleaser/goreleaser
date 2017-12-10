@@ -44,22 +44,22 @@ func (Pipe) Default(ctx *context.Context) error {
 		if ctx.Config.Dockers[i].TagTemplate == "" {
 			ctx.Config.Dockers[i].TagTemplate = "{{ .Version }}"
 		}
+		if ctx.Config.Dockers[i].Goos == "" {
+			ctx.Config.Dockers[i].Goos = "linux"
+		}
+		if ctx.Config.Dockers[i].Goarch == "" {
+			ctx.Config.Dockers[i].Goarch = "amd64"
+		}
+		if ctx.Config.Dockers[i].Dockerfile == "" {
+			ctx.Config.Dockers[i].Dockerfile = "Dockerfile"
+		}
 	}
 	// only set defaults if there is exacly 1 docker setup in the config file.
 	if len(ctx.Config.Dockers) != 1 {
 		return nil
 	}
-	if ctx.Config.Dockers[0].Goos == "" {
-		ctx.Config.Dockers[0].Goos = "linux"
-	}
-	if ctx.Config.Dockers[0].Goarch == "" {
-		ctx.Config.Dockers[0].Goarch = "amd64"
-	}
 	if ctx.Config.Dockers[0].Binary == "" {
 		ctx.Config.Dockers[0].Binary = ctx.Config.Builds[0].Binary
-	}
-	if ctx.Config.Dockers[0].Dockerfile == "" {
-		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
 	}
 	return nil
 }
@@ -73,7 +73,7 @@ func doRun(ctx *context.Context) error {
 			}
 			for folder, binaries := range groups {
 				for _, binary := range binaries {
-					if binary.Name != docker.Binary {
+					if binary.BuildName != docker.Binary {
 						continue
 					}
 					var err = process(ctx, folder, docker, binary)

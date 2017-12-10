@@ -25,7 +25,7 @@ type GitInfo struct {
 
 // Binary with pretty name and path
 type Binary struct {
-	Name, Path string
+	Name, Path, BuildName string
 }
 
 // Context carries along some data through the pipes
@@ -36,7 +36,7 @@ type Context struct {
 	Token        string
 	Git          GitInfo
 	Binaries     map[string]map[string][]Binary
-	Artifacts    []string
+	Artifacts    []Artifact
 	Dockers      []string
 	ReleaseNotes string
 	Version      string
@@ -54,13 +54,22 @@ var (
 	binariesLock  sync.Mutex
 )
 
+type Artifact struct {
+	Name, Path string
+}
+
 // AddArtifact adds a file to upload list
-func (ctx *Context) AddArtifact(file string) {
+func (ctx *Context) AddArtifact(name, file string) {
 	artifactsLock.Lock()
 	defer artifactsLock.Unlock()
 	file = strings.TrimPrefix(file, ctx.Config.Dist+string(filepath.Separator))
-	ctx.Artifacts = append(ctx.Artifacts, file)
-	log.WithField("artifact", file).Info("new release artifact")
+	ctx.Artifacts = append(ctx.Artifacts, Artifact{Name: name, Path: file})
+	log.WithFields(log.Fields{"file": file, "name": name}).Info("new release artifact")
+}
+
+func (ctx *Context) AddArtifactFromFile(file string) {
+	_, name := filepath.Split(file)
+	ctx.AddArtifact(name, file)
 }
 
 // AddDocker adds a docker image to the docker images list
@@ -72,7 +81,7 @@ func (ctx *Context) AddDocker(image string) {
 }
 
 // AddBinary adds a built binary to the current context
-func (ctx *Context) AddBinary(platform, folder, name, path string) {
+func (ctx *Context) AddBinary(platform, folder, name, buildName, path string) {
 	binariesLock.Lock()
 	defer binariesLock.Unlock()
 	if ctx.Binaries == nil {
@@ -84,14 +93,16 @@ func (ctx *Context) AddBinary(platform, folder, name, path string) {
 	ctx.Binaries[platform][folder] = append(
 		ctx.Binaries[platform][folder],
 		Binary{
-			Name: name,
-			Path: path,
+			Name:      name,
+			Path:      path,
+			BuildName: buildName,
 		},
 	)
 	log.WithField("platform", platform).
 		WithField("folder", folder).
 		WithField("name", name).
 		WithField("path", path).
+		WithField("buildName", buildName).
 		Debug("new binary")
 }
 

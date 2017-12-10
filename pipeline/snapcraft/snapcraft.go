@@ -147,6 +147,6 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 	if out, err = cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to generate snap package: %s", string(out))
 	}
-	ctx.AddArtifact(snap)
+	ctx.AddArtifactFromFile(snap)
 	return nil
 }
