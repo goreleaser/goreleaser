@@ -167,16 +167,14 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		  }`)
 	})
 
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION-US_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION-US_SECRET")
-	os.Setenv("ARTIFACTORY_PRODUCTION-EU_SECRET", "productionuser-apikey")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION-EU_SECRET")
-
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION-US_SECRET": "deployuser-secret",
+			"ARTIFACTORY_PRODUCTION-EU_SECRET": "productionuser-apikey",
+		},
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -221,14 +219,13 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
 	assert.NoError(t, err)
 
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
-
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
 		Config: config.Project{
 			ProjectName: "goreleaser",
 			Dist:        folder,
@@ -307,14 +304,13 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	var dist = filepath.Join(folder, "dist")
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
-
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -371,14 +367,13 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		  }`)
 	})
 
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
-
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -437,14 +432,13 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 		  }`)
 	})
 
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
-
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -500,14 +494,13 @@ func TestRunPipe_UnparsableResponse(t *testing.T) {
 		  }`)
 	})
 
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTIONS_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION-US_SECRET")
-
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -538,14 +531,13 @@ func TestRunPipe_WithoutBinaryTarget(t *testing.T) {
 	assert.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
 
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
-
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -571,14 +563,13 @@ func TestRunPipe_WithoutBinaryTarget(t *testing.T) {
 }
 
 func TestRunPipe_NoFile(t *testing.T) {
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
-
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        "archivetest/dist",
@@ -615,14 +606,13 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	err = ioutil.WriteFile(binPath, d1, 0666)
 	assert.NoError(t, err)
 
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
-
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -651,12 +641,11 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 }
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
-
 	var ctx = &context.Context{
 		Publish: false,
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
 		Config: config.Project{
 			Artifactories: []config.Artifactory{
 				{
@@ -680,14 +669,13 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin")
 
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
-
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
@@ -724,33 +712,39 @@ func TestNoArtifactories(t *testing.T) {
 }
 
 func TestArtifactoriesWithoutTarget(t *testing.T) {
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
-
-	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
-		Artifactories: []config.Artifactory{
-			{
-				Name:     "production",
-				Username: "deployuser",
+	var ctx = &context.Context{
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
+		Config: config.Project{
+			Artifactories: []config.Artifactory{
+				{
+					Name:     "production",
+					Username: "deployuser",
+				},
 			},
 		},
-	}))))
+	}
+
+	assert.True(t, pipeline.IsSkip(Pipe{}.Run(ctx)))
 }
 
 func TestArtifactoriesWithoutUsername(t *testing.T) {
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
-
-	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
-		Artifactories: []config.Artifactory{
-			{
-				Name:   "production",
-				Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+	var ctx = &context.Context{
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
+		Config: config.Project{
+			Artifactories: []config.Artifactory{
+				{
+					Name:   "production",
+					Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				},
 			},
 		},
-	}))))
+	}
+
+	assert.True(t, pipeline.IsSkip(Pipe{}.Run(ctx)))
 }
 
 func TestArtifactoriesWithoutName(t *testing.T) {
@@ -777,12 +771,11 @@ func TestArtifactoriesWithoutSecret(t *testing.T) {
 }
 
 func TestArtifactoriesWithInvalidMode(t *testing.T) {
-	// Set secrets for artifactory instances
-	os.Setenv("ARTIFACTORY_PRODUCTION_SECRET", "deployuser-secret")
-	defer os.Unsetenv("ARTIFACTORY_PRODUCTION_SECRET")
-
 	var ctx = &context.Context{
 		Publish: true,
+		Env: map[string]string{
+			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+		},
 		Config: config.Project{
 			Artifactories: []config.Artifactory{
 				{

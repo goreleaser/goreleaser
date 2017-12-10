@@ -100,7 +100,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 
 		envName := fmt.Sprintf("ARTIFACTORY_%s_SECRET", strings.ToUpper(instance.Name))
-		if os.Getenv(envName) == "" {
+		if _, ok := ctx.Env[envName]; !ok {
 			return pipeline.Skip(fmt.Sprintf("missing secret for artifactory instance %s", instance.Name))
 		}
 	}
@@ -186,7 +186,8 @@ func uploadBinary(ctx *context.Context, instance config.Artifactory, build confi
 
 // uploadAssetAndLog uploads file to target and logs all actions
 func uploadAssetAndLog(ctx *context.Context, instance config.Artifactory, path string, target *buildtarget.Target) error {
-	secret := os.Getenv(fmt.Sprintf("ARTIFACTORY_%s_SECRET", strings.ToUpper(instance.Name)))
+	envName := fmt.Sprintf("ARTIFACTORY_%s_SECRET", strings.ToUpper(instance.Name))
+	secret := ctx.Env[envName]
 
 	// Generate the target url
 	targetURL, err := resolveTargetTemplate(ctx, instance, target)
