@@ -33,7 +33,8 @@ go get github.com/goreleaser/goreleaser
 brew install goreleaser/tap/goreleaser
 ```
 
-> [tap source](https://github.com/goreleaser/homebrew-tap)
+> Check the [tap source](https://github.com/goreleaser/homebrew-tap) for
+> more details.
 
 ## Manually
 
