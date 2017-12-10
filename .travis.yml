@@ -7,6 +7,7 @@ services:
 install:
   - make setup
   - gem install fpm
+  - npm install -g prettier
   - sudo apt-get update
   - sudo apt-get install --yes snapd rpm
   - export PATH=/snap/bin:$PATH

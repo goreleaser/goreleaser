@@ -19,8 +19,24 @@ that and rewrote the whole thing in Go.
 
 ## Installing Goreleaser
 
-There are three ways to get going.
+There are three ways to get going install GoReleaser:
 
-1. Install Goreleaser via go get (`goreleaser` command will be globally available) `go get github.com/goreleaser/goreleaser`
-1. On a Mac use [Homebrew](https://github.com/goreleaser/homebrew-tap).
-1. Install directly [from the binaries](https://github.com/goreleaser/goreleaser/releases/latest).
+### Using go get
+
+```sh
+go get github.com/goreleaser/goreleaser
+```
+
+### Using homebrew
+
+```sh
+brew install goreleaser/tap/goreleaser
+```
+
+> Check the [tap source](https://github.com/goreleaser/homebrew-tap) for
+> more details.
+
+## Manually
+
+Download your preferred flavor from the [releases page](https://github.com/goreleaser/goreleaser/releases/latest) and install
+manually.

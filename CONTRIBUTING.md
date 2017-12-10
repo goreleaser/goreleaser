@@ -3,7 +3,6 @@
 By participating to this project, you agree to abide our [code of
 conduct](/CODE_OF_CONDUCT.md).
 
-
 ## Setup your machine
 
 `goreleaser` is written in [Go](https://golang.org/).
@@ -38,7 +37,6 @@ A good way of making sure everything is all right is running the test suite:
 $ make test
 ```
 
-
 ## Test your change
 
 You can create a branch for your changes and try to build from the source as you go:
@@ -54,7 +52,6 @@ $ make ci
 ```
 
 Which runs all the linters and tests.
-
 
 ## Create a commit
 
@@ -79,7 +76,6 @@ help others to generate their own changelog.
 
 See #284
 ```
-
 
 ## Submit a pull request
 

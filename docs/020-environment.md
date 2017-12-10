@@ -17,7 +17,6 @@ Here is how to do it with Travis CI:
 By default, GoReleaser will create its artifacts in the `./dist` folder.
 If you must, you can change it by setting it in the `.goreleaser.yml` file:
 
-
 ```yaml
 # .goreleaser.yml
 dist: another-folder-that-is-not-dist
@@ -25,7 +24,7 @@ dist: another-folder-that-is-not-dist
 
 ## Using the `main.version`
 
-GoReleaser always sets a `main.version` *ldflag*.
+GoReleaser always sets a `main.version` _ldflag_.
 You can use it in your `main.go` file:
 
 ```go
