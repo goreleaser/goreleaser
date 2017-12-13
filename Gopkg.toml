@@ -97,6 +97,14 @@
   name = "golang.org/x/sync"
 
 [[constraint]]
+  branch = "master"
+  name = "golang.org/x/sys"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+
+[[constraint]]
   branch = "v2"
   name = "gopkg.in/yaml.v2"
 

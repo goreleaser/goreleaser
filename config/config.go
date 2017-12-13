@@ -223,6 +223,14 @@ type Changelog struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
+// Signing config
+type Sign struct {
+	GPGKeyID     string `yaml:"gpg_key_id,omitempty"`
+	GPGKeyring   string `yaml:"gpg_keyring,omitempty"`
+	SignAll      bool   `yaml:"sign_all_artifacts,omitempty"`
+	SignatureExt string `yaml:"signature_ext,omitempty"`
+}
+
 // Project includes all project configuration
 type Project struct {
 	ProjectName   string        `yaml:"project_name,omitempty"`
@@ -238,6 +246,7 @@ type Project struct {
 	Artifactories []Artifactory `yaml:",omitempty"`
 	Changelog     Changelog     `yaml:",omitempty"`
 	Dist          string        `yaml:",omitempty"`
+	Sign          Sign          `yaml:"sign,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
