@@ -51,11 +51,11 @@ var pipes = []pipeline.Piper{
 	fpm.Pipe{},             // archive via fpm (deb, rpm, etc)
 	snapcraft.Pipe{},       // archive via snapcraft (snap)
 	checksums.Pipe{},       // checksums of the files
+	sign.Pipe{},            // signing of artifacts
 	docker.Pipe{},          // create and push docker images
 	artifactory.Pipe{},     // push to artifactory
 	release.Pipe{},         // release to github
 	brew.Pipe{},            // push to brew tap
-	sign.Pipe{},            // signing of artifacts
 }
 
 // Flags interface represents an extractor of cli flags
