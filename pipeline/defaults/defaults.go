@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/docker"
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/release"
+	"github.com/goreleaser/goreleaser/pipeline/sign"
 	"github.com/goreleaser/goreleaser/pipeline/snapshot"
 )
 
@@ -31,6 +32,7 @@ var defaulters = []pipeline.Defaulter{
 	build.Pipe{},
 	fpm.Pipe{},
 	checksums.Pipe{},
+	sign.Pipe{},
 	docker.Pipe{},
 	artifactory.Pipe{},
 	brew.Pipe{},

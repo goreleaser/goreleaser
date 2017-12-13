@@ -144,6 +144,14 @@ type FPM struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
+// Sign config
+type Sign struct {
+	Cmd       string   `yaml:"cmd,omitempty"`
+	Args      []string `yaml:"args,omitempty"`
+	Signature string   `yaml:"signature,omitempty"`
+	Artifacts string   `yaml:"artifacts,omitempty"`
+}
+
 // SnapcraftAppMetadata for the binaries that will be in the snap package
 type SnapcraftAppMetadata struct {
 	Plugs  []string
@@ -238,6 +246,7 @@ type Project struct {
 	Artifactories []Artifactory `yaml:",omitempty"`
 	Changelog     Changelog     `yaml:",omitempty"`
 	Dist          string        `yaml:",omitempty"`
+	Sign          Sign          `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

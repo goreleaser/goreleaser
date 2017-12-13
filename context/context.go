@@ -37,6 +37,7 @@ type Context struct {
 	Git          GitInfo
 	Binaries     map[string]map[string][]Binary
 	Artifacts    []string
+	Checksums    []string
 	Dockers      []string
 	ReleaseNotes string
 	Version      string
@@ -50,6 +51,7 @@ type Context struct {
 
 var (
 	artifactsLock sync.Mutex
+	checksumsLock sync.Mutex
 	dockersLock   sync.Mutex
 	binariesLock  sync.Mutex
 )
@@ -61,6 +63,15 @@ func (ctx *Context) AddArtifact(file string) {
 	file = strings.TrimPrefix(file, ctx.Config.Dist+string(filepath.Separator))
 	ctx.Artifacts = append(ctx.Artifacts, file)
 	log.WithField("artifact", file).Info("new release artifact")
+}
+
+// AddChecksum adds a checksum file.
+func (ctx *Context) AddChecksum(file string) {
+	checksumsLock.Lock()
+	defer checksumsLock.Unlock()
+	file = strings.TrimPrefix(file, ctx.Config.Dist+string(filepath.Separator))
+	ctx.Checksums = append(ctx.Checksums, file)
+	log.WithField("checksum", file).Info("new checksum file")
 }
 
 // AddDocker adds a docker image to the docker images list
