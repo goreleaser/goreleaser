@@ -76,7 +76,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["cast5","openpgp","openpgp/armor","openpgp/elgamal","openpgp/errors","openpgp/packet","openpgp/s2k"]
+  packages = ["cast5","openpgp","openpgp/armor","openpgp/elgamal","openpgp/errors","openpgp/packet","openpgp/s2k","ssh/terminal"]
   revision = "9f005a07e0d31d45e6656d241bb5c0f2efd4bc94"
 
 [[projects]]
@@ -98,6 +98,12 @@
   revision = "8e0aa688b654ef28caa72506fa5ec8dba9fc7690"
 
 [[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix","windows"]
+  revision = "a0f4589a76f1f83070cb9e5613809e1d07b97c13"
+
+[[projects]]
   name = "google.golang.org/appengine"
   packages = ["internal","internal/base","internal/datastore","internal/log","internal/remote_api","internal/urlfetch","urlfetch"]
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
@@ -112,6 +118,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bf19a61949d8bcf4dd48c2cff81d0c86b985398b718ded32483bc836772c99b0"
+  inputs-digest = "60f017e8f86c5caaca27e1bb97c09076539af5351b71438e6df11217718bbc54"
   solver-name = "gps-cdcl"
   solver-version = 1

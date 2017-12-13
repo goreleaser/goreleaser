@@ -227,6 +227,7 @@ type Changelog struct {
 type Sign struct {
 	GPGKeyID     string `yaml:"gpg_key_id,omitempty"`
 	ChecksumOnly bool   `yaml:"checksum_only,omitempty"`
+	SignatureExt string `yaml:"signature_ext,omitempty"`
 }
 
 // Project includes all project configuration

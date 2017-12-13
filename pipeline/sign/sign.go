@@ -10,6 +10,7 @@ import (
 	"github.com/apex/log"
 	"github.com/mitchellh/go-homedir"
 	"golang.org/x/crypto/openpgp"
+	"golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/goreleaser/goreleaser/context"
@@ -97,16 +98,38 @@ func gpgSign(ctx *context.Context) error {
 }
 
 func signArtifact(ctx *context.Context, signer *openpgp.Entity, name string) (signaturePath string, err error) {
-	signatureFilename := fmt.Sprintf("%s.asc", name)
-	signatureFile, err := os.OpenFile(
-		filepath.Join(ctx.Config.Dist, signatureFilename),
+	if signer.PrivateKey.Encrypted {
+		fd := int(os.Stdin.Fd())
+		state, err := terminal.MakeRaw(fd)
+		if err != nil {
+			return "", err
+		}
+		defer terminal.Restore(fd, state)
+
+		t := terminal.NewTerminal(os.Stdin, "")
+		text, err := t.ReadPassword("Enter passphrase: ")
+		if err != nil {
+			return "", err
+		}
+		if err := signer.PrivateKey.Decrypt([]byte(text)); err != nil {
+			return "", err
+		}
+	}
+
+	sigExt := ctx.Config.Sign.SignatureExt
+	if sigExt == "" {
+		sigExt = ".asc"
+	}
+	sigFilename := name + sigExt
+	sigFile, err := os.OpenFile(
+		filepath.Join(ctx.Config.Dist, sigFilename),
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 		0644,
 	)
 	if err != nil {
 		return "", err
 	}
-	defer signatureFile.Close()
+	defer sigFile.Close()
 
 	artifactFile, err := os.OpenFile(
 		filepath.Join(ctx.Config.Dist, name),
@@ -118,10 +141,10 @@ func signArtifact(ctx *context.Context, signer *openpgp.Entity, name string) (si
 	}
 	defer artifactFile.Close()
 
-	log.WithField("file", name).WithField("signature", signatureFilename).Info("signing")
+	log.WithField("file", name).WithField("signature", sigFilename).Info("signing")
 
 	err = openpgp.ArmoredDetachSign(
-		signatureFile,
+		sigFile,
 		signer,
 		artifactFile,
 		nil,
@@ -131,5 +154,5 @@ func signArtifact(ctx *context.Context, signer *openpgp.Entity, name string) (si
 		return "", err
 	}
 
-	return signatureFile.Name(), nil
+	return sigFile.Name(), nil
 }
