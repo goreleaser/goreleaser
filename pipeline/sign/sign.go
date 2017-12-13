@@ -43,8 +43,12 @@ func gpgSign(ctx *context.Context) error {
 		return fmt.Errorf("invalid gpg_key_id '%s': %s", rawKeyID, err)
 	}
 
-	// todo(fs): is this always in that location?
-	keyRingPath, err := homedir.Expand("~/.gnupg/secring.gpg")
+	keyRingPath := ctx.Config.Sign.GPGKeyring
+	if keyRingPath == "" {
+		keyRingPath = "~/.gnupg/secring.gpg"
+	}
+
+	keyRingPath, err = homedir.Expand(keyRingPath)
 	if err != nil {
 		return err
 	}
