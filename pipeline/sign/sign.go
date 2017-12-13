@@ -10,12 +10,14 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
+// Pipe for artifact signing.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "signing artifacts"
 }
 
+// Default sets the Pipes defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	cfg := &ctx.Config.Sign
 	if cfg.Cmd == "" {
@@ -33,6 +35,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+// Run executes the Pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	switch ctx.Config.Sign.Artifacts {
 	case "checksum":
@@ -85,6 +88,10 @@ func signone(ctx *context.Context, artifact string) (string, error) {
 		args = append(args, expand(a, env))
 	}
 
+	// The GoASTScanner flags this as a security risk.
+	// However, this works as intended. The nosec annotation
+	// tells the scanner to ignore this.
+	// #nosec
 	cmd := exec.Command(cfg.Cmd, args...)
 	output, err := cmd.CombinedOutput()
 	if len(output) > 200 {
