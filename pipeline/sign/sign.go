@@ -71,17 +71,7 @@ func signone(ctx *context.Context, artifact string) (string, error) {
 	env := map[string]string{
 		"artifact": artifact,
 	}
-
-	sig := expand(cfg.Signature, env)
-	if sig == "" {
-		return "", fmt.Errorf("sign: signature file cannot be empty")
-	}
-	if sig == artifact {
-		return "", fmt.Errorf("sign: artifact and signature cannot be the same")
-	}
-	env["signature"] = sig
-
-	// todo(fs): check if $out already exists
+	env["signature"] = expand(cfg.Signature, env)
 
 	var args []string
 	for _, a := range cfg.Args {
@@ -94,13 +84,10 @@ func signone(ctx *context.Context, artifact string) (string, error) {
 	// #nosec
 	cmd := exec.Command(cfg.Cmd, args...)
 	output, err := cmd.CombinedOutput()
-	if len(output) > 200 {
-		output = output[:200]
-	}
 	if err != nil {
 		return "", fmt.Errorf("sign: %s failed with %q", cfg.Cmd, string(output))
 	}
-	return sig, nil
+	return env["signature"], nil
 }
 
 func expand(s string, env map[string]string) string {
