@@ -52,7 +52,6 @@ func TestSignArtifacts(t *testing.T) {
 		desc       string
 		ctx        *context.Context
 		signatures []string
-		artifacts  []string
 	}{
 		{
 			desc: "sign all artifacts",
@@ -102,8 +101,8 @@ func testSign(t *testing.T, ctx *context.Context, signatures []string) {
 	artifacts := ctx.Artifacts
 	for _, f := range artifacts {
 		file := filepath.Join(tmpdir, f)
-		if err := ioutil.WriteFile(file, []byte("foo"), 0644); err != nil {
-			t.Fatal("WriteFile: ", err)
+		if err2 := ioutil.WriteFile(file, []byte("foo"), 0644); err2 != nil {
+			t.Fatal("WriteFile: ", err2)
 		}
 	}
 
@@ -138,25 +137,29 @@ func testSign(t *testing.T, ctx *context.Context, signatures []string) {
 
 	// verify the signatures
 	for _, sig := range signatures {
-		artifact := sig[:len(sig)-len(".sig")]
-
-		// verify signature was made with key for usesr 'nopass'
-		cmd := exec.Command("gpg", "--homedir", keyring, "--verify", filepath.Join(ctx.Config.Dist, sig), filepath.Join(ctx.Config.Dist, artifact))
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			t.Log(string(out))
-			t.Fatal("verify: ", err)
-		}
-
-		// check if the signature matches the user we expect to do this properly we
-		// might need to have either separate keyrings or export the key from the
-		// keyring before we do the verification. For now we punt and look in the
-		// output.
-		if !bytes.Contains(out, []byte(user)) {
-			t.Fatalf("signature is not from %s", user)
-		}
+		verifySignature(t, ctx, sig)
 	}
 
 	// check signature is an artifact
 	assert.Equal(t, ctx.Artifacts, append(artifacts, signatures...))
+}
+
+func verifySignature(t *testing.T, ctx *context.Context, sig string) {
+	artifact := sig[:len(sig)-len(".sig")]
+
+	// verify signature was made with key for usesr 'nopass'
+	cmd := exec.Command("gpg", "--homedir", keyring, "--verify", filepath.Join(ctx.Config.Dist, sig), filepath.Join(ctx.Config.Dist, artifact))
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Log(string(out))
+		t.Fatal("verify: ", err)
+	}
+
+	// check if the signature matches the user we expect to do this properly we
+	// might need to have either separate keyrings or export the key from the
+	// keyring before we do the verification. For now we punt and look in the
+	// output.
+	if !bytes.Contains(out, []byte(user)) {
+		t.Fatalf("signature is not from %s", user)
+	}
 }
