@@ -39,6 +39,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 			log.WithError(err).Errorf("failed to close %s", file.Name())
 		}
 		ctx.AddArtifact(file.Name())
+		ctx.AddChecksum(file.Name())
 	}()
 	var g errgroup.Group
 	for _, artifact := range ctx.Artifacts {

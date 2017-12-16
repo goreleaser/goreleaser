@@ -25,6 +25,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/release"
+	"github.com/goreleaser/goreleaser/pipeline/sign"
 	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -50,6 +51,7 @@ var pipes = []pipeline.Piper{
 	fpm.Pipe{},             // archive via fpm (deb, rpm, etc)
 	snapcraft.Pipe{},       // archive via snapcraft (snap)
 	checksums.Pipe{},       // checksums of the files
+	sign.Pipe{},            // sign artifacts
 	docker.Pipe{},          // create and push docker images
 	artifactory.Pipe{},     // push to artifactory
 	release.Pipe{},         // release to github

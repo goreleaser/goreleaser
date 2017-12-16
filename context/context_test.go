@@ -15,6 +15,9 @@ func TestMultipleAdds(t *testing.T) {
 		"dist/c",
 		"dist/d",
 	}
+	var checksums = []string{
+		"dist/a.sha256",
+	}
 	var dockerfiles = []string{
 		"a/b:1.0.0",
 		"c/d:2.0.0",
@@ -32,6 +35,14 @@ func TestMultipleAdds(t *testing.T) {
 		})
 	}
 	assert.NoError(t, g.Wait())
+	for _, c := range checksums {
+		c := c
+		g.Go(func() error {
+			ctx.AddChecksum(c)
+			return nil
+		})
+	}
+	assert.NoError(t, g.Wait())
 	for _, d := range dockerfiles {
 		d := d
 		g.Go(func() error {
@@ -42,6 +53,8 @@ func TestMultipleAdds(t *testing.T) {
 	assert.NoError(t, g.Wait())
 	assert.Len(t, ctx.Artifacts, len(artifacts))
 	assert.Contains(t, ctx.Artifacts, "a", "b", "c", "d")
+	assert.Len(t, ctx.Checksums, len(checksums))
+	assert.Contains(t, ctx.Checksums, "a.sha256")
 	assert.Len(t, ctx.Dockers, len(dockerfiles))
 	assert.Contains(t, ctx.Dockers, "a/b:1.0.0", "c/d:2.0.0", "e/f:3.0.0")
 }
