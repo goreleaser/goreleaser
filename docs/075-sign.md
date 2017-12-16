@@ -25,7 +25,7 @@ To customize the signing pipeline you can use the following options:
 # .goreleaser.yml
 sign:
   # name of the signature file.
-  # '${in}' is the path to the artifact that should be signed.
+  # '${artifact}' is the path to the artifact that should be signed.
   #
   # signature: "${artifact}.sig"
 
