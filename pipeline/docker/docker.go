@@ -32,19 +32,20 @@ func (Pipe) String() string {
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Dockers {
-		if ctx.Config.Dockers[i].TagTemplate == "" {
-			ctx.Config.Dockers[i].TagTemplate = "{{ .Version }}"
+		var docker = &ctx.Config.Dockers[i]
+		if docker.TagTemplate == "" {
+			docker.TagTemplate = "{{ .Version }}"
+		}
+		if docker.Goos == "" {
+			docker.Goos = "linux"
+		}
+		if docker.Goarch == "" {
+			docker.Goarch = "amd64"
 		}
 	}
 	// only set defaults if there is exacly 1 docker setup in the config file.
 	if len(ctx.Config.Dockers) != 1 {
 		return nil
-	}
-	if ctx.Config.Dockers[0].Goos == "" {
-		ctx.Config.Dockers[0].Goos = "linux"
-	}
-	if ctx.Config.Dockers[0].Goarch == "" {
-		ctx.Config.Dockers[0].Goarch = "amd64"
 	}
 	if ctx.Config.Dockers[0].Binary == "" {
 		ctx.Config.Dockers[0].Binary = ctx.Config.Builds[0].Binary
@@ -70,12 +71,13 @@ func (Pipe) Run(ctx *context.Context) error {
 func doRun(ctx *context.Context) error {
 	// TODO: could be done in parallel.
 	for _, docker := range ctx.Config.Dockers {
+		log.WithField("docker", docker).Debug("looking for binaries matching")
 		var binaries = ctx.Artifacts.Filter(
 			artifact.And(
 				artifact.ByGoos(docker.Goos),
 				artifact.ByGoarch(docker.Goarch),
 				artifact.ByGoarm(docker.Goarm),
-				// artifact.ByType(artifact.Binary),
+				artifact.ByType(artifact.Binary),
 				func(a artifact.Artifact) bool {
 					return a.Extra["Binary"] == docker.Binary
 				},
