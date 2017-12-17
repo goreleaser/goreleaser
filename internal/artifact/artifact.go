@@ -7,8 +7,9 @@ import "sync"
 type Type int
 
 const (
-	// Archive is a tar.gz or zip archive
-	Archive Type = iota
+	// Uploadable is a file that should be uploaded to a release.
+	// Could be a tar.gz/zip archive or a binary.
+	Uploadable Type = iota
 	// Binary is a binary (output of a gobuild)
 	Binary
 	// DockerImage is a docker image
@@ -39,6 +40,25 @@ func New() Artifacts {
 		items: []Artifact{},
 		lock:  &sync.Mutex{},
 	}
+}
+
+// List return the actual list of artifacts
+func (artifacts *Artifacts) List() []Artifact {
+	return artifacts.items
+}
+
+// Platform returns the platform string of a given artifact
+func (a Artifact) Platform() string {
+	return a.Goos + a.Goarch + a.Goarm
+}
+
+// GroupByPlatform groups the artifacts by their platform
+func (artifacts *Artifacts) GroupByPlatform() map[string][]Artifact {
+	var result = map[string][]Artifact{}
+	for _, a := range artifacts.items {
+		result[a.Platform()] = append(result[a.Platform()], a)
+	}
+	return result
 }
 
 // Add safely adds a new artifact to an artifact list

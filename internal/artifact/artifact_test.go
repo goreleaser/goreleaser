@@ -35,7 +35,7 @@ func TestAdd(t *testing.T) {
 		})
 	}
 	assert.NoError(t, g.Wait())
-	assert.Len(t, artifacts.items, 4)
+	assert.Len(t, artifacts.List(), 4)
 }
 
 func TestFilter(t *testing.T) {
@@ -72,4 +72,37 @@ func TestFilter(t *testing.T) {
 
 	assert.Len(t, artifacts.Filter(ByType(Checksum)).items, 1)
 	assert.Len(t, artifacts.Filter(ByType(Binary)).items, 0)
+}
+
+func TestGroupByPlatform(t *testing.T) {
+	var data = []Artifact{
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "amd64",
+		},
+		{
+			Name:   "bar",
+			Goos:   "linux",
+			Goarch: "amd64",
+		},
+		{
+			Name:   "foobar",
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "6",
+		},
+		{
+			Name: "check",
+			Type: Checksum,
+		},
+	}
+	var artifacts = New()
+	for _, a := range data {
+		artifacts.Add(a)
+	}
+
+	var groups = artifacts.GroupByPlatform()
+	assert.Len(t, groups["linuxamd64"], 2)
+	assert.Len(t, groups["linuxarm6"], 1)
 }
