@@ -35,6 +35,7 @@ type Artifact struct {
 	Goarch string
 	Goarm  string
 	Type   Type
+	Extra  map[string]string
 }
 
 // Artifacts is a list of artifacts
@@ -74,6 +75,9 @@ func (artifacts Artifacts) GroupByPlatform() map[string][]Artifact {
 func (artifacts *Artifacts) Add(a Artifact) {
 	artifacts.lock.Lock()
 	defer artifacts.lock.Unlock()
+	log.WithFields(log.Fields{
+		"artifact": a,
+	}).Info("added new artifact")
 	artifacts.items = append(artifacts.items, a)
 }
 
@@ -141,8 +145,7 @@ func (artifacts *Artifacts) Filter(filter Filter) Artifacts {
 	var result = New()
 	for _, a := range artifacts.items {
 		if filter(a) {
-			log.Infof("adding %v", a)
-			result.Add(a)
+			result.items = append(result.items, a)
 		}
 	}
 	return result

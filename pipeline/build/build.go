@@ -115,6 +115,9 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 		Goos:   target.OS,
 		Goarch: target.Arch,
 		Goarm:  target.Arm,
+		Extra: map[string]string{
+			"Binary": build.Binary,
+		},
 	})
 	log.WithField("binary", binary).Info("building")
 	cmd := []string{"go", "build"}

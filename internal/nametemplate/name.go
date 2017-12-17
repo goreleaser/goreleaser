@@ -8,7 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 )
 
-func Apply(ctx *context.Context, a artifact.Artifact) (string, error) {
+func Apply(ctx *context.Context, a artifact.Artifact, name string) (string, error) {
 	var out bytes.Buffer
 	t, err := template.New("archive_name").Parse(ctx.Config.Archive.NameTemplate)
 	if err != nil {
@@ -23,7 +23,7 @@ func Apply(ctx *context.Context, a artifact.Artifact) (string, error) {
 		Arm:         replace(ctx.Config.Archive.Replacements, a.Goarm),
 		Version:     ctx.Version,
 		Tag:         ctx.Git.CurrentTag,
-		ProjectName: ctx.Config.ProjectName,
+		ProjectName: name,
 		Env:         ctx.Env,
 	}
 	err = t.Execute(&out, data)

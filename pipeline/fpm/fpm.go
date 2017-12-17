@@ -76,7 +76,7 @@ func doRun(ctx *context.Context) error {
 func create(ctx *context.Context, format, arch string, binaries []artifact.Artifact) error {
 	// TODO: should add template support here probably... for now, let's use
 	// archive's template
-	folder, err := nametemplate.Apply(ctx, binaries[0])
+	folder, err := nametemplate.Apply(ctx, binaries[0], ctx.Config.ProjectName)
 	if err != nil {
 		return err
 	}

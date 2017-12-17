@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/mattn/go-zglob"
@@ -16,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/goreleaser/goreleaser/internal/nametemplate"
 )
 
@@ -67,7 +69,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 	var format = archiveformat.For(ctx, artifacts[0].Platform())
-	folder, err := nametemplate.Apply(ctx, artifacts[0])
+	folder, err := nametemplate.Apply(ctx, artifacts[0], ctx.Config.ProjectName)
 	if err != nil {
 		return err
 	}
@@ -117,7 +119,14 @@ func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 func skip(ctx *context.Context, artifacts []artifact.Artifact) error {
 	for _, a := range artifacts {
 		log.WithField("binary", a.Name).Info("skip archiving")
+		// TODO: this should not happen here, maybe add another extra field
+		// for the extension and/or name without extension?
+		name, err := nametemplate.Apply(ctx, a, strings.TrimSuffix(a.Name, ".exe"))
+		if err != nil {
+			return err
+		}
 		a.Type = artifact.UploadableBinary
+		a.Name = name + ext.ForOS(a.Goos)
 		ctx.Artifacts.Add(a)
 	}
 	return nil

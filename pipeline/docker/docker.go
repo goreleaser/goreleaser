@@ -68,17 +68,22 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context) error {
+	// TODO: could be done in parallel.
 	for _, docker := range ctx.Config.Dockers {
 		var binaries = ctx.Artifacts.Filter(
 			artifact.And(
 				artifact.ByGoos(docker.Goos),
 				artifact.ByGoarch(docker.Goarch),
 				artifact.ByGoarm(docker.Goarm),
+				// artifact.ByType(artifact.Binary),
 				func(a artifact.Artifact) bool {
-					return a.Name == docker.Binary
+					return a.Extra["Binary"] == docker.Binary
 				},
 			),
 		).List()
+		if len(binaries) == 0 {
+			log.Warn("no binaries found")
+		}
 		for _, binary := range binaries {
 			var err = process(ctx, docker, binary)
 			if err != nil && !pipeline.IsSkip(err) {
