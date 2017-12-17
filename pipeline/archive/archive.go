@@ -17,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/nametemplate"
-	"github.com/goreleaser/goreleaser/internal/nametemplate"
 )
 
 // Pipe for archive

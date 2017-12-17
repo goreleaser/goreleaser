@@ -8,7 +8,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
+
+	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/nametemplate"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
@@ -70,23 +72,30 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	var g errgroup.Group
-	for platform, groups := range ctx.Binaries {
-		if !strings.Contains(platform, "linux") {
-			log.WithField("platform", platform).Debug("skipped non-linux builds for snapcraft")
-			continue
-		}
+	for platform, binaries := range ctx.Artifacts.Filter(
+		artifact.And(
+			artifact.ByGoos("linux"),
+			artifact.ByType(artifact.Binary),
+		),
+	).GroupByPlatform() {
+		// TODO: could use artifact.goarch here
 		arch := linux.Arch(platform)
-		for folder, binaries := range groups {
-			g.Go(func() error {
-				return create(ctx, folder, arch, binaries)
-			})
-		}
+		binaries := binaries
+		g.Go(func() error {
+			return create(ctx, arch, binaries)
+		})
 	}
 	return g.Wait()
 }
 
-func create(ctx *context.Context, folder, arch string, binaries []context.Binary) error {
+func create(ctx *context.Context, arch string, binaries []artifact.Artifact) error {
 	var log = log.WithField("arch", arch)
+	// TODO: should add template support here probably... for now, let's use
+	// archive's template
+	folder, err := nametemplate.Apply(ctx, binaries[0])
+	if err != nil {
+		return err
+	}
 	// prime is the directory that then will be compressed to make the .snap package.
 	var folderDir = filepath.Join(ctx.Config.Dist, folder)
 	var primeDir = filepath.Join(folderDir, "prime")
@@ -147,6 +156,13 @@ func create(ctx *context.Context, folder, arch string, binaries []context.Binary
 	if out, err = cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to generate snap package: %s", string(out))
 	}
-	ctx.AddArtifact(snap)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type:   artifact.LinuxPackage,
+		Name:   folder + ".snap",
+		Path:   snap,
+		Goos:   binaries[0].Goos,
+		Goarch: binaries[0].Goarch,
+		Goarm:  binaries[0].Goarm,
+	})
 	return nil
 }

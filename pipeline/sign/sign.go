@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -39,9 +40,14 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Run(ctx *context.Context) error {
 	switch ctx.Config.Sign.Artifacts {
 	case "checksum":
-		return sign(ctx, ctx.Checksums)
+		return sign(ctx, ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum)).List())
 	case "all":
-		return sign(ctx, ctx.Artifacts)
+		return sign(ctx, ctx.Artifacts.Filter(
+			artifact.Or(
+				artifact.ByType(artifact.UploadableArchive),
+				artifact.ByType(artifact.UploadableBinary),
+				artifact.ByType(artifact.LinuxPackage),
+			)).List())
 	case "none":
 		return pipeline.Skip("artifact signing disabled")
 	default:
@@ -49,7 +55,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 }
 
-func sign(ctx *context.Context, artifacts []string) error {
+func sign(ctx *context.Context, artifacts []artifact.Artifact) error {
 	var sigs []string
 	for _, a := range artifacts {
 		sig, err := signone(ctx, a)
@@ -59,17 +65,20 @@ func sign(ctx *context.Context, artifacts []string) error {
 		sigs = append(sigs, sig)
 	}
 	for _, sig := range sigs {
-		ctx.AddArtifact(sig)
+		ctx.Artifacts.Add(artifact.Artifact{
+			Type: artifact.Signature,
+			Name: sig,
+			Path: filepath.Join(ctx.Config.Dist, sig),
+		})
 	}
 	return nil
 }
 
-func signone(ctx *context.Context, artifact string) (string, error) {
+func signone(ctx *context.Context, artifact artifact.Artifact) (string, error) {
 	cfg := ctx.Config.Sign
 
-	artifact = filepath.Join(ctx.Config.Dist, artifact)
 	env := map[string]string{
-		"artifact": artifact,
+		"artifact": artifact.Path,
 	}
 	env["signature"] = expand(cfg.Signature, env)
 

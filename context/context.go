@@ -48,6 +48,7 @@ func New(config config.Project) *Context {
 		Config:      config,
 		Env:         splitEnv(os.Environ()),
 		Parallelism: 4,
+		Artifacts:   artifact.New(),
 	}
 }
 

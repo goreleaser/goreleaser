@@ -21,8 +21,10 @@ const (
 	LinuxPackage
 	// DockerImage is a docker image
 	DockerImage
-	// Checksum is a checksum file
+	// Checksum is a checksums file
 	Checksum
+	// Signature is a signature file
+	Signature
 )
 
 // Artifact represents an artifact and its relevant info
