@@ -46,7 +46,7 @@ func TestRunFullPipe(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
 	writeGoodMain(t, folder)
-	var binary = filepath.Join(folder, "testing")
+	var binary = filepath.Join(folder, buildtarget.Runtime.String(), "testing")
 	var pre = filepath.Join(folder, "pre")
 	var post = filepath.Join(folder, "post")
 	var config = config.Project{
@@ -80,11 +80,12 @@ func TestRunFullPipe(t *testing.T) {
 	assert.True(t, exists(post), post)
 }
 
+// TODO: this test is not irrelevant and could probably be removed
 func TestRunPipeFormatBinary(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
 	writeGoodMain(t, folder)
-	var binary = filepath.Join(folder, "binary-testing-bar")
+	var binary = filepath.Join(folder, buildtarget.Runtime.String(), "testing")
 	var config = config.Project{
 		ProjectName: "testing",
 		Dist:        folder,
@@ -99,22 +100,17 @@ func TestRunPipeFormatBinary(t *testing.T) {
 				},
 			},
 		},
-		Archive: config.Archive{
-			Format:       "binary",
-			NameTemplate: "binary-{{.Binary}}-{{.Env.Foo}}",
-		},
 	}
 	ctx := context.New(config)
-	ctx.Env = map[string]string{"Foo": "bar"}
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.True(t, exists(binary))
+	assert.True(t, exists(binary), "file %s does not exist", binary)
 }
 
 func TestRunPipeArmBuilds(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
 	writeGoodMain(t, folder)
-	var binary = filepath.Join(folder, "armtesting")
+	var binary = filepath.Join(folder, "linuxarm6", "armtesting")
 	var config = config.Project{
 		Builds: []config.Build{
 			{
@@ -176,40 +172,6 @@ func TestRunPipeWithInvalidOS(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Run(context.New(config)))
-}
-
-func TestRunInvalidNametemplate(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	writeGoodMain(t, folder)
-	for format, msg := range map[string]string{
-		"binary": `template: bar:1: unexpected "}" in operand`,
-		"tar.gz": `template: foo:1: unexpected "}" in operand`,
-		"zip":    `template: foo:1: unexpected "}" in operand`,
-	} {
-		t.Run(format, func(t *testing.T) {
-			var config = config.Project{
-				ProjectName: "foo",
-				Builds: []config.Build{
-					{
-						Binary: "bar",
-						Flags:  "-v",
-						Goos: []string{
-							runtime.GOOS,
-						},
-						Goarch: []string{
-							runtime.GOARCH,
-						},
-					},
-				},
-				Archive: config.Archive{
-					Format:       format,
-					NameTemplate: "{{.Binary}",
-				},
-			}
-			assert.EqualError(t, Pipe{}.Run(context.New(config)), msg)
-		})
-	}
 }
 
 func TestRunInvalidLdflags(t *testing.T) {
