@@ -9,6 +9,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
@@ -39,9 +40,14 @@ func TestRunPipe(t *testing.T) {
 		Version:     "1.0.0",
 		Parallelism: runtime.NumCPU(),
 		Debug:       true,
+		Artifacts:   artifact.New(),
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
+			// TODO: remove this when fpm have its own name template
+			Archive: config.Archive{
+				NameTemplate: "foo",
+			},
 			FPM: config.FPM{
 				Formats:      []string{"deb", "rpm"},
 				Dependencies: []string{"make"},
@@ -54,8 +60,16 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 	}
-	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64"} {
-		ctx.AddBinary(plat, "mybin", "mybin", binPath)
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386"} {
+			ctx.Artifacts.Add(artifact.Artifact{
+				Name:   "mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+			})
+		}
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
@@ -87,6 +101,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Parallelism: runtime.NumCPU(),
+		Artifacts:   artifact.New(),
 		Config: config.Project{
 			Dist: dist,
 			FPM: config.FPM{
@@ -97,10 +112,17 @@ func TestCreateFileDoesntExist(t *testing.T) {
 			},
 		},
 	}
-	ctx.AddBinary("linuxamd64", "mybin", "mybin", filepath.Join(dist, "mybin", "mybin"))
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "mybin",
+		Path:   filepath.Join(dist, "mybin", "mybin"),
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+	})
 	assert.Error(t, Pipe{}.Run(ctx))
 }
 
+// TODO: wtf?
 func TestRunPipeWithExtraFiles(t *testing.T) {
 	var ctx = &context.Context{
 		Version:     "1.0.0",
