@@ -9,6 +9,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
@@ -93,7 +94,8 @@ func TestRunPipe(t *testing.T) {
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.1",
 		},
-		Version: "1.0.1",
+		Version:   "1.0.1",
+		Artifacts: artifact.New(),
 		Config: config.Project{
 			Dist:        folder,
 			ProjectName: "run-pipe",
@@ -124,31 +126,53 @@ func TestRunPipe(t *testing.T) {
 		Publish: true,
 	}
 	var path = filepath.Join(folder, "bin.tar.gz")
-	ctx.AddBinary("darwinamd64", "bin", "bin", path)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "bin.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
 	client := &DummyClient{}
 	assert.Error(t, doRun(ctx, client))
 	assert.False(t, client.CreatedFile)
 
 	_, err = os.Create(path)
 	assert.NoError(t, err)
-	assert.NoError(t, doRun(ctx, client))
-	assert.True(t, client.CreatedFile)
 
-	bts, err := ioutil.ReadFile("testdata/run_pipe.rb")
-	assert.NoError(t, err)
-	// ioutil.WriteFile("testdata/run_pipe.rb", []byte(client.Content), 0644)
+	t.Run("default git url", func(tt *testing.T) {
+		assert.NoError(tt, doRun(ctx, client))
+		assert.True(tt, client.CreatedFile)
 
-	assert.Equal(t, string(bts), client.Content)
+		bts, err := ioutil.ReadFile("testdata/run_pipe.rb")
+		assert.NoError(tt, err)
+		// TODO: make writing this file toggleable somehow?
+		// ioutil.WriteFile("testdata/run_pipe.rb", []byte(client.Content), 0644)
+		assert.Equal(tt, string(bts), client.Content)
+	})
+
+	t.Run("github enterprise url", func(tt *testing.T) {
+		ctx.Config.GitHubURLs.Download = "http://github.example.org"
+		assert.NoError(tt, doRun(ctx, client))
+		assert.True(tt, client.CreatedFile)
+
+		bts, err := ioutil.ReadFile("testdata/run_pipe_enterprise.rb")
+		assert.NoError(tt, err)
+		// TODO: make writing this file toggleable somehow?
+		// ioutil.WriteFile("testdata/run_pipe_enterprise.rb", []byte(client.Content), 0644)
+		assert.Equal(tt, string(bts), client.Content)
+	})
 }
 
+// TODO: this test is irrelevant and can probavly be removed
 func TestRunPipeFormatOverride(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(t, err)
 	var path = filepath.Join(folder, "bin.zip")
 	_, err = os.Create(path)
 	assert.NoError(t, err)
-	var ctx = &context.Context{
-		Config: config.Project{
+	var ctx = context.New(
+		config.Project{
 			Dist: folder,
 			Archive: config.Archive{
 				Format: "tar.gz",
@@ -166,9 +190,15 @@ func TestRunPipeFormatOverride(t *testing.T) {
 				},
 			},
 		},
-		Publish: true,
-	}
-	ctx.AddBinary("darwinamd64", "bin", "bin", path)
+	)
+	ctx.Publish = true
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "bin.zip",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
 	client := &DummyClient{}
 	assert.NoError(t, doRun(ctx, client))
 	assert.True(t, client.CreatedFile)
@@ -195,6 +225,40 @@ func TestRunPipeNoDarwin64Build(t *testing.T) {
 	assert.False(t, client.CreatedFile)
 }
 
+func TestRunPipeMultipleDarwin64Build(t *testing.T) {
+	var ctx = context.New(
+		config.Project{
+			Archive: config.Archive{
+				Format: "tar.gz",
+			},
+			Brew: config.Homebrew{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+	)
+	ctx.Publish = true
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "bin1",
+		Path:   "doesnt mather",
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "bin2",
+		Path:   "doesnt mather",
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
+	client := &DummyClient{}
+	assert.Equal(t, ErrTooManyDarwin64Builds, doRun(ctx, client))
+	assert.False(t, client.CreatedFile)
+}
+
 func TestRunPipeBrewNotSetup(t *testing.T) {
 	var ctx = &context.Context{
 		Config:  config.Project{},
@@ -206,9 +270,8 @@ func TestRunPipeBrewNotSetup(t *testing.T) {
 }
 
 func TestRunPipeBinaryRelease(t *testing.T) {
-	var ctx = &context.Context{
-		Publish: true,
-		Config: config.Project{
+	var ctx = context.New(
+		config.Project{
 			Archive: config.Archive{
 				Format: "binary",
 			},
@@ -219,8 +282,15 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 				},
 			},
 		},
-	}
-	ctx.AddBinary("darwinamd64", "foo", "bar", "baz")
+	)
+	ctx.Publish = true
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "bin",
+		Path:   "doesnt mather",
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+	})
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doRun(ctx, client))
 	assert.False(t, client.CreatedFile)

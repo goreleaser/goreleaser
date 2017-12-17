@@ -1,5 +1,3 @@
-// Package brew implements the Pipe, providing formula generation and
-// uploading it to a configured repo.
 package brew
 
 import (
@@ -10,13 +8,12 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/goreleaser/goreleaser/internal/artifact"
-
 	"github.com/apex/log"
 
 	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
@@ -106,14 +103,14 @@ func doRun(ctx *context.Context, client client.Client) error {
 		artifact.And(
 			artifact.ByGoos("darwin"),
 			artifact.ByGoarch("amd64"),
-			artifact.ByGoarch(""),
+			artifact.ByGoarm(""),
 			artifact.ByType(artifact.UploadableArchive),
 		),
 	).List()
 	if len(archives) == 0 {
 		return ErrNoDarwin64Build
 	}
-	if len(archives) > 0 {
+	if len(archives) > 1 {
 		return ErrTooManyDarwin64Builds
 	}
 	var path = filepath.Join(ctx.Config.Brew.Folder, ctx.Config.ProjectName+".rb")
@@ -145,8 +142,7 @@ func doBuildFormula(data templateData) (out bytes.Buffer, err error) {
 }
 
 func dataFor(ctx *context.Context, client client.Client, artifact artifact.Artifact) (result templateData, err error) {
-	var file = artifact.Path
-	sum, err := checksum.SHA256(file)
+	sum, err := checksum.SHA256(artifact.Path)
 	if err != nil {
 		return
 	}
@@ -163,7 +159,7 @@ func dataFor(ctx *context.Context, client client.Client, artifact artifact.Artif
 		Tag:          ctx.Git.CurrentTag,
 		Version:      ctx.Version,
 		Caveats:      ctx.Config.Brew.Caveats,
-		File:         file,
+		File:         artifact.Name,
 		SHA256:       sum,
 		Dependencies: ctx.Config.Brew.Dependencies,
 		Conflicts:    ctx.Config.Brew.Conflicts,
