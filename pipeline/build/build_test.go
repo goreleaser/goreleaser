@@ -80,32 +80,6 @@ func TestRunFullPipe(t *testing.T) {
 	assert.True(t, exists(post), post)
 }
 
-// TODO: this test is not irrelevant and could probably be removed
-func TestRunPipeFormatBinary(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	writeGoodMain(t, folder)
-	var binary = filepath.Join(folder, buildtarget.Runtime.String(), "testing")
-	var config = config.Project{
-		ProjectName: "testing",
-		Dist:        folder,
-		Builds: []config.Build{
-			{
-				Binary: "testing",
-				Goos: []string{
-					runtime.GOOS,
-				},
-				Goarch: []string{
-					runtime.GOARCH,
-				},
-			},
-		},
-	}
-	ctx := context.New(config)
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.True(t, exists(binary), "file %s does not exist", binary)
-}
-
 func TestRunPipeArmBuilds(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
