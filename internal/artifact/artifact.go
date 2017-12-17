@@ -1,7 +1,10 @@
 // Package artifact provides the core artifact storage for goreleaser
 package artifact
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 // Type defines the type of an artifact
 type Type int
@@ -104,12 +107,22 @@ func ByType(t Type) Filter {
 // Filter filters the artifact list, returning a new instance.
 // There are some pre-defined filters but anything of the Type Filter
 // is accepted.
-func (artifacts *Artifacts) Filter(filter Filter) Artifacts {
+func (artifacts *Artifacts) Filter(filters ...Filter) Artifacts {
 	var result = New()
 	for _, a := range artifacts.items {
-		if filter(a) {
+		if apply(a, filters) {
+			fmt.Println("add", a)
 			result.Add(a)
 		}
 	}
 	return result
+}
+
+func apply(a Artifact, filters []Filter) bool {
+	for _, filter := range filters {
+		if !filter(a) {
+			return false
+		}
+	}
+	return true
 }
