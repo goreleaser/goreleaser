@@ -7,28 +7,17 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/stretchr/testify/assert"
 )
 
-func killAndRm() {
-	log.Info("killing registry")
+func killAndRm(t *testing.T) {
+	t.Log("killing registry")
 	_ = exec.Command("docker", "kill", "registry").Run()
 	_ = exec.Command("docker", "rm", "registry").Run()
-}
-
-func TestMain(m *testing.M) {
-	killAndRm()
-	if err := exec.Command(
-		"docker", "run", "-d", "-p", "5000:5000", "--name", "registry", "registry:2",
-	).Run(); err != nil {
-		log.WithError(err).Fatal("failed to start docker registry")
-	}
-	defer killAndRm()
-	os.Exit(m.Run())
 }
 
 func TestRunPipe(t *testing.T) {
@@ -90,11 +79,21 @@ func TestRunPipe(t *testing.T) {
 		_ = exec.Command("docker", "rmi", img).Run()
 	}
 
+	killAndRm(t)
+	if err := exec.Command(
+		"docker", "run", "-d", "-p", "5000:5000", "--name", "registry", "registry:2",
+	).Run(); err != nil {
+		t.Log("failed to start docker registry", err)
+		t.FailNow()
+	}
+	defer killAndRm(t)
+
 	for name, docker := range table {
-		t.Run(name, func(t *testing.T) {
+		t.Run(name, func(tt *testing.T) {
 			var ctx = &context.Context{
-				Version: "1.0.0",
-				Publish: true,
+				Version:   "1.0.0",
+				Publish:   true,
+				Artifacts: artifact.New(),
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.0",
 				},
@@ -107,13 +106,24 @@ func TestRunPipe(t *testing.T) {
 				},
 				Env: map[string]string{"FOO": "123"},
 			}
-			for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64"} {
-				ctx.AddBinary(plat, "mybin", "mybin", binPath)
+			for _, os := range []string{"linux", "darwin"} {
+				for _, arch := range []string{"amd64", "386"} {
+					ctx.Artifacts.Add(artifact.Artifact{
+						Name:   "mybin",
+						Path:   binPath,
+						Goarch: arch,
+						Goos:   os,
+						Type:   artifact.Binary,
+						Extra: map[string]string{
+							"Binary": "mybin",
+						},
+					})
+				}
 			}
 			if docker.err == "" {
-				assert.NoError(t, Pipe{}.Run(ctx))
+				assert.NoError(tt, Pipe{}.Run(ctx))
 			} else {
-				assert.EqualError(t, Pipe{}.Run(ctx), docker.err)
+				assert.EqualError(tt, Pipe{}.Run(ctx), docker.err)
 			}
 		})
 	}
