@@ -68,6 +68,7 @@ func doRun(ctx *context.Context, c client.Client) error {
 			artifact.ByType(artifact.UploadableArchive),
 			artifact.ByType(artifact.UploadableBinary),
 			artifact.ByType(artifact.Checksum),
+			artifact.ByType(artifact.Signature),
 		),
 	).List() {
 		sem <- true

@@ -96,7 +96,7 @@ func signone(ctx *context.Context, artifact artifact.Artifact) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("sign: %s failed with %q", cfg.Cmd, string(output))
 	}
-	return env["signature"], nil
+	return filepath.Base(env["signature"]), nil
 }
 
 func expand(s string, env map[string]string) string {
