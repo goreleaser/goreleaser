@@ -20,7 +20,7 @@ const (
 // Artifact represents an artifact and its relevant info
 type Artifact struct {
 	Name   string
-	Folder string
+	Path   string
 	Goos   string
 	Goarch string
 	Goarm  string
