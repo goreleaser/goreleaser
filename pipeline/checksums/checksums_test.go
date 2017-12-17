@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/artifact"
+
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/stretchr/testify/assert"
@@ -21,18 +23,26 @@ func TestPipe(t *testing.T) {
 	assert.NoError(t, err)
 	var file = filepath.Join(folder, binary)
 	assert.NoError(t, ioutil.WriteFile(file, []byte("some string"), 0644))
-	var ctx = &context.Context{
-		Config: config.Project{
+	var ctx = context.New(
+		config.Project{
 			Dist:        folder,
 			ProjectName: binary,
 			Checksum: config.Checksum{
 				NameTemplate: "{{ .ProjectName }}_checksums.txt",
 			},
 		},
-	}
-	ctx.AddArtifact(file)
+	)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name: binary,
+		Path: file,
+		Type: artifact.UploadableBinary,
+	})
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Contains(t, ctx.Artifacts, checksums, binary)
+	var artifacts []string
+	for _, a := range ctx.Artifacts.List() {
+		artifacts = append(artifacts, a.Name)
+	}
+	assert.Contains(t, artifacts, checksums, binary)
 	bts, err := ioutil.ReadFile(filepath.Join(folder, checksums))
 	assert.NoError(t, err)
 	assert.Equal(t, "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary\n", string(bts))
@@ -41,15 +51,19 @@ func TestPipe(t *testing.T) {
 func TestPipeFileNotExist(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(t, err)
-	var ctx = &context.Context{
-		Config: config.Project{
+	var ctx = context.New(
+		config.Project{
 			Dist: folder,
 			Checksum: config.Checksum{
 				NameTemplate: "checksums.txt",
 			},
 		},
-	}
-	ctx.AddArtifact("nope")
+	)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name: "nope",
+		Path: "/nope",
+		Type: artifact.UploadableBinary,
+	})
 	err = Pipe{}.Run(ctx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "/nope: no such file or directory")
@@ -58,16 +72,19 @@ func TestPipeFileNotExist(t *testing.T) {
 func TestPipeInvalidNameTemplate(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(t, err)
-	var ctx = &context.Context{
-		Config: config.Project{
+	var ctx = context.New(
+		config.Project{
 			Dist:        folder,
 			ProjectName: "name",
 			Checksum: config.Checksum{
 				NameTemplate: "{{ .Pro }_checksums.txt",
 			},
 		},
-	}
-	ctx.AddArtifact("whatever")
+	)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name: "whatever",
+		Type: artifact.UploadableBinary,
+	})
 	err = Pipe{}.Run(ctx)
 	assert.Error(t, err)
 	assert.Equal(t, `template: checksums:1: unexpected "}" in operand`, err.Error())
@@ -78,15 +95,18 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 	assert.NoError(t, err)
 	var file = filepath.Join(folder, "checksums.txt")
 	assert.NoError(t, ioutil.WriteFile(file, []byte("some string"), 0000))
-	var ctx = &context.Context{
-		Config: config.Project{
+	var ctx = context.New(
+		config.Project{
 			Dist: folder,
 			Checksum: config.Checksum{
 				NameTemplate: "checksums.txt",
 			},
 		},
-	}
-	ctx.AddArtifact("nope")
+	)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name: "whatever",
+		Type: artifact.UploadableBinary,
+	})
 	err = Pipe{}.Run(ctx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "/checksums.txt: permission denied")

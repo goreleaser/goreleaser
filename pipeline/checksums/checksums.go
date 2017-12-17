@@ -1,5 +1,3 @@
-// Package checksums provides a Pipe that creates .checksums files for
-// each artifact.
 package checksums
 
 import (
@@ -60,6 +58,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		artifact.Or(
 			artifact.ByType(artifact.UploadableArchive),
 			artifact.ByType(artifact.UploadableBinary),
+			artifact.ByType(artifact.LinuxPackage),
 		),
 	).List() {
 		artifact := artifact
