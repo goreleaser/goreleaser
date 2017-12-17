@@ -103,7 +103,7 @@ func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 		}
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
-		Type:   artifact.Uploadable,
+		Type:   artifact.UploadableArchive,
 		Name:   folder + "." + format,
 		Path:   archivePath,
 		Goos:   artifacts[0].Goos,
@@ -116,7 +116,7 @@ func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 func skip(ctx *context.Context, artifacts []artifact.Artifact) error {
 	for _, a := range artifacts {
 		log.WithField("binary", a.Name).Info("skip archiving")
-		a.Type = artifact.Uploadable
+		a.Type = artifact.UploadableBinary
 		ctx.Artifacts.Add(a)
 	}
 	return nil
