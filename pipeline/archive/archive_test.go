@@ -8,10 +8,12 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestDescription(t *testing.T) {
@@ -23,18 +25,19 @@ func TestRunPipe(t *testing.T) {
 	defer back()
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin_darwin_amd64"), 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin_windows_amd64"), 0755))
-	_, err := os.Create(filepath.Join(dist, "mybin_darwin_amd64", "mybin"))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "windowsamd64"), 0755))
+	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	assert.NoError(t, err)
-	_, err = os.Create(filepath.Join(dist, "mybin_windows_amd64", "mybin.exe"))
+	_, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
 	assert.NoError(t, err)
 	_, err = os.Create(filepath.Join(folder, "README.md"))
 	assert.NoError(t, err)
-	var ctx = &context.Context{
-		Config: config.Project{
+	var ctx = context.New(
+		config.Project{
 			Dist: dist,
 			Archive: config.Archive{
+				NameTemplate: "whatever",
 				Files: []string{
 					"README.*",
 				},
@@ -46,9 +49,27 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 		},
-	}
-	ctx.AddBinary("darwinamd64", "mybin_darwin_amd64", "mybin", filepath.Join(dist, "mybin_darwin_amd64", "mybin"))
-	ctx.AddBinary("windowsamd64", "mybin_windows_amd64", "mybin.exe", filepath.Join(dist, "mybin_windows_amd64", "mybin.exe"))
+	)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "mybin",
+		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]string{
+			"Binary": "mybin",
+		},
+	})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Goos:   "windows",
+		Goarch: "amd64",
+		Name:   "mybin.exe",
+		Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
+		Type:   artifact.Binary,
+		Extra: map[string]string{
+			"Binary": "mybin",
+		},
+	})
 	for _, format := range []string{"tar.gz", "zip"} {
 		t.Run("Archive format "+format, func(t *testing.T) {
 			ctx.Config.Archive.Format = format
@@ -57,7 +78,7 @@ func TestRunPipe(t *testing.T) {
 	}
 
 	// Check archive contents
-	f, err := os.Open(filepath.Join(dist, "mybin_darwin_amd64.tar.gz"))
+	f, err := os.Open(filepath.Join(dist, "whatever.tar.gz"))
 	assert.NoError(t, err)
 	defer func() { assert.NoError(t, f.Close()) }()
 	gr, err := gzip.NewReader(f)
@@ -79,16 +100,16 @@ func TestRunPipeBinary(t *testing.T) {
 	defer back()
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin_darwin"), 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin_win"), 0755))
-	_, err := os.Create(filepath.Join(dist, "mybin_darwin", "mybin"))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "windowsamd64"), 0755))
+	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	assert.NoError(t, err)
-	_, err = os.Create(filepath.Join(dist, "mybin_win", "mybin.exe"))
+	_, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
 	assert.NoError(t, err)
 	_, err = os.Create(filepath.Join(folder, "README.md"))
 	assert.NoError(t, err)
-	var ctx = &context.Context{
-		Config: config.Project{
+	var ctx = context.New(
+		config.Project{
 			Dist: dist,
 			Builds: []config.Build{
 				{Binary: "mybin"},
@@ -97,60 +118,88 @@ func TestRunPipeBinary(t *testing.T) {
 				Format: "binary",
 			},
 		},
-	}
-	ctx.AddBinary("darwinamd64", "mybin_darwin", "mybin", filepath.Join(dist, "mybin_darwin", "mybin"))
-	ctx.AddBinary("windowsamd64", "mybin_win", "mybin.exe", filepath.Join(dist, "mybin_win", "mybin.exe"))
+	)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "mybin",
+		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]string{
+			"Binary": "mybin",
+		},
+	})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Goos:   "windows",
+		Goarch: "amd64",
+		Name:   "mybin.exe",
+		Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
+		Type:   artifact.Binary,
+		Extra: map[string]string{
+			"Binary": "mybin",
+		},
+	})
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Contains(t, ctx.Artifacts, "mybin_darwin/mybin")
-	assert.Contains(t, ctx.Artifacts, "mybin_win/mybin.exe")
-	assert.Len(t, ctx.Artifacts, 2)
+	var binaries = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
+	assert.Len(t, binaries.Filter(artifact.ByGoos("darwin")).List(), 1)
+	assert.Len(t, binaries.Filter(artifact.ByGoos("windows")).List(), 1)
+	assert.Len(t, binaries.List(), 2)
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
+	var ctx = context.New(
+		config.Project{
 			Dist: "/path/nope",
 			Archive: config.Archive{
-				Format: "zip",
+				NameTemplate: "nope",
+				Format:       "zip",
 			},
 		},
-	}
-	ctx.AddBinary("windowsamd64", "nope", "no", "blah")
-	assert.Error(t, Pipe{}.Run(ctx))
+	)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Goos:   "windows",
+		Goarch: "amd64",
+		Name:   "mybin.exe",
+		Path:   filepath.Join("/path/to/nope", "windowsamd64", "mybin.exe"),
+		Type:   artifact.Binary,
+		Extra: map[string]string{
+			"Binary": "mybin",
+		},
+	})
+	assert.EqualError(t, Pipe{}.Run(ctx), `failed to create directory /path/nope/nope.zip: open /path/nope/nope.zip: no such file or directory`)
 }
 
 func TestRunPipeInvalidGlob(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
-			Dist: "/tmp",
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
+	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	assert.NoError(t, err)
+	var ctx = context.New(
+		config.Project{
+			Dist: dist,
 			Archive: config.Archive{
+				NameTemplate: "foo",
+				Format:       "zip",
 				Files: []string{
 					"[x-]",
 				},
 			},
 		},
-	}
-	ctx.AddBinary("windowsamd64", "whatever", "foo", "bar")
-	assert.Error(t, Pipe{}.Run(ctx))
-}
-
-func TestRunPipeGlobFailsToAdd(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	assert.NoError(t, os.MkdirAll(filepath.Join(folder, "folder", "another"), 0755))
-
-	var ctx = &context.Context{
-		Config: config.Project{
-			Dist: folder,
-			Archive: config.Archive{
-				Files: []string{
-					"folder",
-				},
-			},
+	)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "mybin",
+		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]string{
+			"Binary": "mybin",
 		},
-	}
-	ctx.AddBinary("windows386", "mybin", "mybin", "dist/mybin")
-	assert.Error(t, Pipe{}.Run(ctx))
+	})
+	assert.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: globbing failed for pattern [x-]: file does not exist`)
 }
 
 func TestRunPipeWrap(t *testing.T) {
@@ -158,15 +207,16 @@ func TestRunPipeWrap(t *testing.T) {
 	defer back()
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin_darwin_amd64"), 0755))
-	_, err := os.Create(filepath.Join(dist, "mybin_darwin_amd64", "mybin"))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
+	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	assert.NoError(t, err)
 	_, err = os.Create(filepath.Join(folder, "README.md"))
 	assert.NoError(t, err)
-	var ctx = &context.Context{
-		Config: config.Project{
+	var ctx = context.New(
+		config.Project{
 			Dist: dist,
 			Archive: config.Archive{
+				NameTemplate:    "foo",
 				WrapInDirectory: true,
 				Format:          "tar.gz",
 				Files: []string{
@@ -174,12 +224,21 @@ func TestRunPipeWrap(t *testing.T) {
 				},
 			},
 		},
-	}
-	ctx.AddBinary("darwinamd64", "mybin_darwin_amd64", "mybin", filepath.Join(dist, "mybin_darwin_amd64", "mybin"))
+	)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "mybin",
+		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]string{
+			"Binary": "mybin",
+		},
+	})
 	assert.NoError(t, Pipe{}.Run(ctx))
 
 	// Check archive contents
-	f, err := os.Open(filepath.Join(dist, "mybin_darwin_amd64.tar.gz"))
+	f, err := os.Open(filepath.Join(dist, "foo.tar.gz"))
 	assert.NoError(t, err)
 	defer func() { assert.NoError(t, f.Close()) }()
 	gr, err := gzip.NewReader(f)
@@ -192,7 +251,7 @@ func TestRunPipeWrap(t *testing.T) {
 			break
 		}
 		assert.NoError(t, err)
-		assert.Equal(t, filepath.Join("mybin_darwin_amd64", n), h.Name)
+		assert.Equal(t, filepath.Join("foo", n), h.Name)
 	}
 }
 
