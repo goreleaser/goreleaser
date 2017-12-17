@@ -46,6 +46,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			artifact.Or(
 				artifact.ByType(artifact.UploadableArchive),
 				artifact.ByType(artifact.UploadableBinary),
+				artifact.ByType(artifact.Checksum),
 				artifact.ByType(artifact.LinuxPackage),
 			)).List())
 	case "none":

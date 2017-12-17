@@ -6,8 +6,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
 	"testing"
+
+	"github.com/goreleaser/goreleaser/internal/artifact"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -44,9 +45,7 @@ func TestSignInvalidArtifacts(t *testing.T) {
 
 func TestSignArtifacts(t *testing.T) {
 	// fix permission on keyring dir to suppress warning about insecure permissions
-	if err := os.Chmod(keyring, 0700); err != nil {
-		t.Fatal("Chmod: ", err)
-	}
+	assert.NoError(t, os.Chmod(keyring, 0700))
 
 	tests := []struct {
 		desc       string
@@ -55,24 +54,20 @@ func TestSignArtifacts(t *testing.T) {
 	}{
 		{
 			desc: "sign all artifacts",
-			ctx: &context.Context{
-				Config: config.Project{
+			ctx: context.New(
+				config.Project{
 					Sign: config.Sign{Artifacts: "all"},
 				},
-				Artifacts: []string{"artifact1", "artifact2", "checksum"},
-				Checksums: []string{"checksum"},
-			},
+			),
 			signatures: []string{"artifact1.sig", "artifact2.sig", "checksum.sig"},
 		},
 		{
 			desc: "sign only checksums",
-			ctx: &context.Context{
-				Config: config.Project{
+			ctx: context.New(
+				config.Project{
 					Sign: config.Sign{Artifacts: "checksum"},
 				},
-				Artifacts: []string{"artifact1", "artifact2", "checksum"},
-				Checksums: []string{"checksum"},
-			},
+			),
 			signatures: []string{"checksum.sig"},
 		},
 	}
@@ -90,58 +85,54 @@ const user = "nopass"
 func testSign(t *testing.T, ctx *context.Context, signatures []string) {
 	// create temp dir for file and signature
 	tmpdir, err := ioutil.TempDir("", "goreleaser")
-	if err != nil {
-		t.Fatal("TempDir: ", err)
-	}
+	assert.NoError(t, err)
 	defer os.RemoveAll(tmpdir)
 
 	ctx.Config.Dist = tmpdir
 
 	// create some fake artifacts
-	artifacts := ctx.Artifacts
-	for _, f := range artifacts {
+	for _, f := range []string{"artifact1", "artifact2", "checksum"} {
 		file := filepath.Join(tmpdir, f)
-		if err2 := ioutil.WriteFile(file, []byte("foo"), 0644); err2 != nil {
-			t.Fatal("WriteFile: ", err2)
-		}
+		assert.NoError(t, ioutil.WriteFile(file, []byte("foo"), 0644))
 	}
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name: "artifact1",
+		Path: filepath.Join(tmpdir, "artifact1"),
+		Type: artifact.UploadableArchive,
+	})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name: "artifact2",
+		Path: filepath.Join(tmpdir, "artifact2"),
+		Type: artifact.UploadableArchive,
+	})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name: "checksum",
+		Path: filepath.Join(tmpdir, "checksum"),
+		Type: artifact.Checksum,
+	})
 
 	// configure the pipeline
 	// make sure we are using the test keyring
-	err = Pipe{}.Default(ctx)
-	if err != nil {
-		t.Fatal("Default: ", err)
-	}
+	assert.NoError(t, Pipe{}.Default(ctx))
 	ctx.Config.Sign.Args = append([]string{"--homedir", keyring}, ctx.Config.Sign.Args...)
 
 	// run the pipeline
-	err = Pipe{}.Run(ctx)
-	if err != nil {
-		t.Fatal("Run: ", err)
-	}
+	assert.NoError(t, Pipe{}.Run(ctx))
 
 	// verify that only the artifacts and the signatures are in the dist dir
 	files, err := ioutil.ReadDir(tmpdir)
-	if err != nil {
-		t.Fatal("ReadDir: ", err)
-	}
+	assert.NoError(t, err)
 	gotFiles := []string{}
 	for _, f := range files {
 		gotFiles = append(gotFiles, f.Name())
 	}
 
-	wantFiles := append(artifacts, signatures...)
-	sort.Strings(wantFiles)
-
-	assert.Equal(t, wantFiles, gotFiles)
+	assert.Contains(t, gotFiles, signatures)
 
 	// verify the signatures
 	for _, sig := range signatures {
 		verifySignature(t, ctx, sig)
 	}
-
-	// check signature is an artifact
-	assert.Equal(t, ctx.Artifacts, append(artifacts, signatures...))
 }
 
 func verifySignature(t *testing.T, ctx *context.Context, sig string) {
