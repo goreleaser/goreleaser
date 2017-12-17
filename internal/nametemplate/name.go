@@ -1,4 +1,4 @@
-package archive
+package nametemplate
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 )
 
-func nameFor(ctx *context.Context, a artifact.Artifact) (string, error) {
+func Apply(ctx *context.Context, a artifact.Artifact) (string, error) {
 	var out bytes.Buffer
 	t, err := template.New("archive_name").Parse(ctx.Config.Archive.NameTemplate)
 	if err != nil {

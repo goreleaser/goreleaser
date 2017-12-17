@@ -16,6 +16,8 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/nametemplate"
+	"github.com/goreleaser/goreleaser/internal/nametemplate"
 )
 
 // Pipe for archive
@@ -66,7 +68,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 	var format = archiveformat.For(ctx, artifacts[0].Platform())
-	folder, err := nameFor(ctx, artifacts[0])
+	folder, err := nametemplate.Apply(ctx, artifacts[0])
 	if err != nil {
 		return err
 	}

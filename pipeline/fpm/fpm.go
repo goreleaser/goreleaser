@@ -6,14 +6,16 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/linux"
-	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/linux"
+	"github.com/goreleaser/goreleaser/internal/nametemplate"
+	"github.com/goreleaser/goreleaser/pipeline"
 )
 
 // ErrNoFPM is shown when fpm cannot be found in $PATH
@@ -50,28 +52,34 @@ func doRun(ctx *context.Context) error {
 	var g errgroup.Group
 	sem := make(chan bool, ctx.Parallelism)
 	for _, format := range ctx.Config.FPM.Formats {
-		for platform, groups := range ctx.Binaries {
-			if !strings.Contains(platform, "linux") {
-				log.WithField("platform", platform).Debug("skipped non-linux builds for fpm")
-				continue
-			}
+		for platform, artifacts := range ctx.Artifacts.Filter(
+			artifact.And(
+				artifact.ByType(artifact.Binary),
+				artifact.ByGoos("linux"),
+			),
+		).GroupByPlatform() {
 			sem <- true
 			format := format
-			arch := linux.Arch(platform)
-			for folder, binaries := range groups {
-				g.Go(func() error {
-					defer func() {
-						<-sem
-					}()
-					return create(ctx, format, folder, arch, binaries)
-				})
-			}
+			arch := linux.Arch(platform) // TODO: could probably pass artifact.Goarch here
+			artifacts := artifacts
+			g.Go(func() error {
+				defer func() {
+					<-sem
+				}()
+				return create(ctx, format, arch, artifacts)
+			})
 		}
 	}
 	return g.Wait()
 }
 
-func create(ctx *context.Context, format, folder, arch string, binaries []context.Binary) error {
+func create(ctx *context.Context, format, arch string, binaries []artifact.Artifact) error {
+	// TODO: should add template support here probably... for now, let's use
+	// archive's template
+	folder, err := nametemplate.Apply(ctx, binaries[0])
+	if err != nil {
+		return err
+	}
 	var path = filepath.Join(ctx.Config.Dist, folder)
 	var file = path + "." + format
 	var log = log.WithField("format", format).WithField("arch", arch)
@@ -111,7 +119,14 @@ func create(ctx *context.Context, format, folder, arch string, binaries []contex
 	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
 		return errors.Wrap(err, string(out))
 	}
-	ctx.AddArtifact(file)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type:   artifact.LinuxPackage,
+		Name:   folder + "." + format,
+		Path:   file,
+		Goos:   binaries[0].Goos,
+		Goarch: binaries[0].Goarch,
+		Goarm:  binaries[0].Goarm,
+	})
 	return nil
 }
 
