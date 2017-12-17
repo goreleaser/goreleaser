@@ -70,12 +70,14 @@ func (Pipe) Run(ctx *context.Context) error {
 func doRun(ctx *context.Context) error {
 	for _, docker := range ctx.Config.Dockers {
 		var binaries = ctx.Artifacts.Filter(
-			artifact.ByGoos(docker.Goos),
-			artifact.ByGoarch(docker.Goarch),
-			artifact.ByGoarm(docker.Goarm),
-			func(a artifact.Artifact) bool {
-				return a.Name == docker.Binary
-			},
+			artifact.And(
+				artifact.ByGoos(docker.Goos),
+				artifact.ByGoarch(docker.Goarch),
+				artifact.ByGoarm(docker.Goarm),
+				func(a artifact.Artifact) bool {
+					return a.Name == docker.Binary
+				},
+			),
 		).List()
 		for _, binary := range binaries {
 			var err = process(ctx, docker, binary)

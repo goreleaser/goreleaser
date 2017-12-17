@@ -103,10 +103,12 @@ func doRun(ctx *context.Context, client client.Client) error {
 	}
 
 	var archives = ctx.Artifacts.Filter(
-		artifact.ByGoos("darwin"),
-		artifact.ByGoarch("amd64"),
-		artifact.ByGoarch(""),
-		artifact.ByType(artifact.UploadableArchive),
+		artifact.And(
+			artifact.ByGoos("darwin"),
+			artifact.ByGoarch("amd64"),
+			artifact.ByGoarch(""),
+			artifact.ByType(artifact.UploadableArchive),
+		),
 	).List()
 	if len(archives) == 0 {
 		return ErrNoDarwin64Build

@@ -56,14 +56,12 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	}()
 	// TODO: parallelism should be considered here as well.
 	var g errgroup.Group
-	var artifacts []artifact.Artifact
-	for _, t := range []artifact.Type{
-		artifact.UploadableArchive,
-		artifact.UploadableBinary,
-	} {
-		artifacts = append(artifacts, ctx.Artifacts.Filter(artifact.ByType(t)).List()...)
-	}
-	for _, artifact := range artifacts {
+	for _, artifact := range ctx.Artifacts.Filter(
+		artifact.Or(
+			artifact.ByType(artifact.UploadableArchive),
+			artifact.ByType(artifact.UploadableBinary),
+		),
+	).List() {
 		artifact := artifact
 		g.Go(func() error {
 			return checksums(ctx, file, artifact)

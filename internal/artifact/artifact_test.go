@@ -41,8 +41,9 @@ func TestAdd(t *testing.T) {
 func TestFilter(t *testing.T) {
 	var data = []Artifact{
 		{
-			Name: "foo",
-			Goos: "linux",
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "arm",
 		},
 		{
 			Name:   "bar",
@@ -78,9 +79,24 @@ func TestFilter(t *testing.T) {
 	assert.Len(t, artifacts.Filter(ByType(Checksum)).items, 2)
 	assert.Len(t, artifacts.Filter(ByType(Binary)).items, 0)
 
-	assert.Len(t, artifacts.Filter(ByType(Checksum), func(a Artifact) bool {
-		return a.Name == "checkzumm"
-	}).List(), 1)
+	assert.Len(t, artifacts.Filter(
+		And(
+			ByType(Checksum),
+			func(a Artifact) bool {
+				return a.Name == "checkzumm"
+			},
+		),
+	).List(), 1)
+
+	assert.Len(t, artifacts.Filter(
+		Or(
+			ByType(Checksum),
+			And(
+				ByGoos("linux"),
+				ByGoarm("arm"),
+			),
+		),
+	).List(), 2)
 }
 
 func TestGroupByPlatform(t *testing.T) {

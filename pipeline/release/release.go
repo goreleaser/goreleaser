@@ -4,7 +4,8 @@ package release
 
 import (
 	"os"
-	"path/filepath"
+
+	"github.com/goreleaser/goreleaser/internal/artifact"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
@@ -18,15 +19,6 @@ type Pipe struct{}
 
 func (Pipe) String() string {
 	return "releasing to GitHub"
-}
-
-// Run the pipe
-func (Pipe) Run(ctx *context.Context) error {
-	c, err := client.NewGitHub(ctx)
-	if err != nil {
-		return err
-	}
-	return doRun(ctx, c)
 }
 
 // Default sets the pipe defaults
@@ -43,6 +35,15 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 	ctx.Config.Release.GitHub = repo
 	return nil
+}
+
+// Run the pipe
+func (Pipe) Run(ctx *context.Context) error {
+	c, err := client.NewGitHub(ctx)
+	if err != nil {
+		return err
+	}
+	return doRun(ctx, c)
 }
 
 func doRun(ctx *context.Context, c client.Client) error {
@@ -62,7 +63,13 @@ func doRun(ctx *context.Context, c client.Client) error {
 	}
 	var g errgroup.Group
 	sem := make(chan bool, ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts {
+	for _, artifact := range ctx.Artifacts.Filter(
+		artifact.Or(
+			artifact.ByType(artifact.UploadableArchive),
+			artifact.ByType(artifact.UploadableBinary),
+			artifact.ByType(artifact.Checksum),
+		),
+	).List() {
 		sem <- true
 		artifact := artifact
 		g.Go(func() error {
@@ -75,14 +82,12 @@ func doRun(ctx *context.Context, c client.Client) error {
 	return g.Wait()
 }
 
-func upload(ctx *context.Context, c client.Client, releaseID int, artifact string) error {
-	var path = filepath.Join(ctx.Config.Dist, artifact)
-	file, err := os.Open(path)
+func upload(ctx *context.Context, c client.Client, releaseID int, artifact artifact.Artifact) error {
+	file, err := os.Open(artifact.Path)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = file.Close() }()
-	_, name := filepath.Split(path)
-	log.WithField("file", file.Name()).WithField("name", name).Info("uploading to release")
-	return c.Upload(ctx, releaseID, name, file)
+	log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
+	return c.Upload(ctx, releaseID, artifact.Name, file)
 }

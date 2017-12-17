@@ -2,8 +2,9 @@
 package artifact
 
 import (
-	"fmt"
 	"sync"
+
+	"github.com/apex/log"
 )
 
 // Type defines the type of an artifact
@@ -104,25 +105,41 @@ func ByType(t Type) Filter {
 	}
 }
 
+// Or performs an OR between all given filters
+func Or(filters ...Filter) Filter {
+	return func(a Artifact) bool {
+		for _, f := range filters {
+			if f(a) {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// And performs an AND between all given filters
+func And(filters ...Filter) Filter {
+	return func(a Artifact) bool {
+		for _, f := range filters {
+			if !f(a) {
+				return false
+			}
+		}
+		return true
+	}
+}
+
 // Filter filters the artifact list, returning a new instance.
 // There are some pre-defined filters but anything of the Type Filter
 // is accepted.
-func (artifacts *Artifacts) Filter(filters ...Filter) Artifacts {
+// You can compose filters by using the And and Or filters.
+func (artifacts *Artifacts) Filter(filter Filter) Artifacts {
 	var result = New()
 	for _, a := range artifacts.items {
-		if apply(a, filters) {
-			fmt.Println("add", a)
+		if filter(a) {
+			log.Infof("adding %v", a)
 			result.Add(a)
 		}
 	}
 	return result
-}
-
-func apply(a Artifact, filters []Filter) bool {
-	for _, filter := range filters {
-		if !filter(a) {
-			return false
-		}
-	}
-	return true
 }
