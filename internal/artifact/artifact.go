@@ -7,9 +7,10 @@ import "sync"
 type Type int
 
 const (
-	// Uploadable is a file that should be uploaded to a release.
-	// Could be a tar.gz/zip archive or a binary.
-	Uploadable Type = iota
+	// UploadableArchive a tar.gz/zip archive to be uploaded
+	UploadableArchive Type = iota
+	// UploadableBinary is a binary file to be uploaded
+	UploadableBinary
 	// Binary is a binary (output of a gobuild)
 	Binary
 	// DockerImage is a docker image
@@ -43,7 +44,7 @@ func New() Artifacts {
 }
 
 // List return the actual list of artifacts
-func (artifacts *Artifacts) List() []Artifact {
+func (artifacts Artifacts) List() []Artifact {
 	return artifacts.items
 }
 
