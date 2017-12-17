@@ -27,6 +27,29 @@ COPY mybin /
 ENTRYPOINT ["/mybin"]
 ```
 
+You can also inject the name of the binary into the `Dockerfile` as follows:
+
+```dockerfile
+FROM scratch
+COPY ${BINARY} /mybin
+ENTRYPOINT ["/mybin"]
+```
+
+`goreleaser` will copy the `Dockerfile` and replace `${BINARY}` with the name
+of the actual binary. This can be useful if you customize the name of the
+binary with `name_template` and environment variables.
+
+If you want to use the same `Dockerfile` also without `goreleaser` then you
+should add an `ENV` command with a sensible default:
+
+
+```dockerfile
+FROM scratch
+ENV BINARY "mybin"
+COPY ${BINARY} /mybin
+ENTRYPOINT ["/mybin"]
+```
+
 This configuration will build and push a Docker image named `user/repo:tagname`.
 
 ## Customization

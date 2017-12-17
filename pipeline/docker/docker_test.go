@@ -57,6 +57,18 @@ func TestRunPipe(t *testing.T) {
 			},
 			err: "",
 		},
+		"valid-inject-binary": {
+			docker: config.Docker{
+				Image:       "localhost:5000/goreleaser/test_run_pipe",
+				Goos:        "linux",
+				Goarch:      "amd64",
+				Dockerfile:  "testdata/Dockerfile-inject-binary",
+				Binary:      "mybin",
+				Latest:      true,
+				TagTemplate: "{{.Tag}}-{{.Env.FOO}}",
+			},
+			err: "",
+		},
 		"invalid": {
 			docker: config.Docker{
 				Image:       "localhost:5000/goreleaser/test_run_pipe_nope",
@@ -225,4 +237,26 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "bar", docker.Binary)
 	assert.Equal(t, "{{ .Version }}", docker.TagTemplate)
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
+}
+
+func TestCopyAndExpand(t *testing.T) {
+	f, err := ioutil.TempFile("", "goreleaser")
+	assert.Nil(t, err)
+	defer os.Remove(f.Name())
+
+	// write file
+	data := []byte(`${foo} bar ${baz}`)
+	_, err = f.Write(data)
+	assert.Nil(t, err)
+	assert.NoError(t, f.Close())
+
+	// copy file and expand vars
+	src, dst := f.Name(), f.Name()+"-expand"
+	assert.NoError(t, copyAndExpand(dst, src, map[string]string{"foo": "bar"}))
+	defer os.Remove(dst)
+
+	// read file and compare
+	dstdata, err := ioutil.ReadFile(dst)
+	assert.Nil(t, err)
+	assert.Equal(t, dstdata, []byte(`bar bar `))
 }
