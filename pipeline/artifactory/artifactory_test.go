@@ -167,6 +167,10 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 			"uri" : "http://127.0.0.1:56563/production-repo-remote/mybin/linux/amd64/mybin"
 		  }`)
 	})
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		t.Log("got an unwanted request at", r.URL.String())
+		t.FailNow()
+	})
 
 	var ctx = &context.Context{
 		Version:     "1.0.0",
@@ -196,16 +200,14 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 			},
 		},
 	}
-	for _, os := range []string{"linux", "darwin"} {
-		for _, arch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(artifact.Artifact{
-				Name:   "mybin",
-				Path:   binPath,
-				Goarch: arch,
-				Goos:   os,
-				Type:   artifact.UploadableBinary,
-			})
-		}
+	for _, goos := range []string{"linux", "darwin"} {
+		ctx.Artifacts.Add(artifact.Artifact{
+			Name:   "mybin",
+			Path:   binPath,
+			Goarch: "amd64",
+			Goos:   goos,
+			Type:   artifact.UploadableBinary,
+		})
 	}
 
 	assert.NoError(t, Pipe{}.Run(ctx))
@@ -528,46 +530,18 @@ func TestRunPipe_UnparsableResponse(t *testing.T) {
 		Path:   binPath,
 		Goarch: "amd64",
 		Goos:   "darwin",
-		Type:   artifact.Binary,
+		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Run(ctx), `asd`)
+	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: invalid character 'i' looking for beginning of value`)
 }
 
-func TestRunPipe_WithoutBinaryTarget(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
-	var dist = filepath.Join(folder, "dist")
-
+func TestRunPipe_FileNotFound(t *testing.T) {
 	var ctx = &context.Context{
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-					Username: "deployuser",
-				},
-			},
-		},
-	}
-
-	assert.Error(t, Pipe{}.Run(ctx))
-}
-
-func TestRunPipe_NoFile(t *testing.T) {
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
+		Artifacts:   artifact.New(),
 		Env: map[string]string{
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
@@ -589,7 +563,7 @@ func TestRunPipe_NoFile(t *testing.T) {
 		Path:   "archivetest/dist/mybin/mybin",
 		Goarch: "amd64",
 		Goos:   "darwin",
-		Type:   artifact.Binary,
+		Type:   artifact.UploadableBinary,
 	})
 
 	assert.Error(t, Pipe{}.Run(ctx))
@@ -610,6 +584,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
+		Artifacts:   artifact.New(),
 		Env: map[string]string{
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
@@ -631,7 +606,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Path:   binPath,
 		Goarch: "amd64",
 		Goos:   "darwin",
-		Type:   artifact.Binary,
+		Type:   artifact.UploadableBinary,
 	})
 
 	assert.Error(t, Pipe{}.Run(ctx))
@@ -643,6 +618,7 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 		Env: map[string]string{
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
+		Artifacts: artifact.New(),
 		Config: config.Project{
 			Artifactories: []config.Artifactory{
 				{
@@ -670,6 +646,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 		Version:     "1.0.0",
 		Publish:     true,
 		Parallelism: 4,
+		Artifacts:   artifact.New(),
 		Env: map[string]string{
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
@@ -688,10 +665,10 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
-		Path:   binPath,
+		Path:   filepath.Dir(binPath),
 		Goarch: "amd64",
 		Goos:   "darwin",
-		Type:   artifact.Binary,
+		Type:   artifact.UploadableBinary,
 	})
 
 	assert.Error(t, Pipe{}.Run(ctx))
