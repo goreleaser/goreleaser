@@ -10,6 +10,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
@@ -37,8 +38,16 @@ func TestRunPipe(t *testing.T) {
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 	ctx.Publish = true
-	ctx.AddArtifact(tarfile.Name())
-	ctx.AddArtifact(debfile.Name())
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "bin.tar.gz",
+		Path: tarfile.Name(),
+	})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type: artifact.LinuxPackage,
+		Name: "bin.deb",
+		Path: debfile.Name(),
+	})
 	client := &DummyClient{}
 	assert.NoError(t, doRun(ctx, client))
 	assert.True(t, client.CreatedRelease)
@@ -79,7 +88,11 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 	ctx.Publish = true
-	ctx.AddArtifact("this-file-wont-exist-hopefully")
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "bin.tar.gz",
+		Path: "/nope/nope/nope",
+	})
 	client := &DummyClient{}
 	assert.Error(t, doRun(ctx, client))
 	assert.True(t, client.CreatedRelease)
@@ -102,7 +115,11 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 	ctx.Publish = true
-	ctx.AddArtifact(tarfile.Name())
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "bin.tar.gz",
+		Path: tarfile.Name(),
+	})
 	client := &DummyClient{
 		FailToUpload: true,
 	}

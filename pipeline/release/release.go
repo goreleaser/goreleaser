@@ -1,5 +1,3 @@
-// Package release implements Pipe and manages github releases and its
-// artifacts.
 package release
 
 import (
@@ -69,6 +67,7 @@ func doRun(ctx *context.Context, c client.Client) error {
 			artifact.ByType(artifact.UploadableBinary),
 			artifact.ByType(artifact.Checksum),
 			artifact.ByType(artifact.Signature),
+			artifact.ByType(artifact.LinuxPackage),
 		),
 	).List() {
 		sem <- true
