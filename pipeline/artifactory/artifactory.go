@@ -333,10 +333,6 @@ type Error struct {
 	Message string `json:"message"` // Message describing the error.
 }
 
-func (e *Error) Error() string {
-	return fmt.Sprintf("%v (%v)", e.Message, e.Status)
-}
-
 // checkResponse checks the API response for errors, and returns them if
 // present. A response is considered an error if it has a status code outside
 // the 200 range.
