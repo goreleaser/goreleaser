@@ -77,18 +77,10 @@ func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 	if err != nil {
 		return fmt.Errorf("failed to create directory %s: %s", archivePath, err.Error())
 	}
-	defer func() {
-		if e := archiveFile.Close(); e != nil {
-			log.WithField("archive", archivePath).Errorf("failed to close file: %v", e)
-		}
-	}()
+	defer archiveFile.Close() // nolint: errcheck
 	log.WithField("archive", archivePath).Info("creating")
 	var a = archive.New(archiveFile)
-	defer func() {
-		if e := a.Close(); e != nil {
-			log.WithField("archive", archivePath).Errorf("failed to close archive: %v", e)
-		}
-	}()
+	defer a.Close() // nolint: errcheck
 
 	files, err := findFiles(ctx)
 	if err != nil {

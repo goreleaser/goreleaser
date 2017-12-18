@@ -42,16 +42,8 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			log.WithError(err).Errorf("failed to close %s", file.Name())
-		}
-		ctx.Artifacts.Add(artifact.Artifact{
-			Type: artifact.Checksum,
-			Path: file.Name(),
-			Name: filename,
-		})
-	}()
+	defer file.Close() // nolint: errcheck
+
 	// TODO: parallelism should be considered here as well.
 	var g errgroup.Group
 	for _, artifact := range ctx.Artifacts.Filter(
@@ -66,6 +58,11 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 			return checksums(ctx, file, artifact)
 		})
 	}
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type: artifact.Checksum,
+		Path: file.Name(),
+		Name: filename,
+	})
 	return g.Wait()
 }
 

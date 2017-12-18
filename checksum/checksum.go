@@ -7,8 +7,6 @@ import (
 	"hash"
 	"io"
 	"os"
-
-	"github.com/apex/log"
 )
 
 // SHA256 sum of the given file
@@ -21,11 +19,7 @@ func calculate(hash hash.Hash, path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			log.WithError(err).Errorf("failed to close %s", path)
-		}
-	}()
+	defer file.Close() // nolint: errcheck
 
 	return doCalculate(hash, file)
 }
