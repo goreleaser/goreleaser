@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -91,7 +92,8 @@ func testSign(t *testing.T, ctx *context.Context, signatures []string) {
 	ctx.Config.Dist = tmpdir
 
 	// create some fake artifacts
-	for _, f := range []string{"artifact1", "artifact2", "checksum"} {
+	var artifacts = []string{"artifact1", "artifact2", "checksum"}
+	for _, f := range artifacts {
 		file := filepath.Join(tmpdir, f)
 		assert.NoError(t, ioutil.WriteFile(file, []byte("foo"), 0644))
 	}
@@ -126,13 +128,21 @@ func testSign(t *testing.T, ctx *context.Context, signatures []string) {
 	for _, f := range files {
 		gotFiles = append(gotFiles, f.Name())
 	}
-
-	assert.Contains(t, gotFiles, signatures)
+	wantFiles := append(artifacts, signatures...)
+	sort.Strings(wantFiles)
+	assert.Equal(t, wantFiles, gotFiles)
 
 	// verify the signatures
 	for _, sig := range signatures {
 		verifySignature(t, ctx, sig)
 	}
+
+	var signArtifacts []string
+	for _, sig := range ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List() {
+		signArtifacts = append(signArtifacts, sig.Name)
+	}
+	// check signature is an artifact
+	assert.Equal(t, signArtifacts, signatures)
 }
 
 func verifySignature(t *testing.T, ctx *context.Context, sig string) {
@@ -141,10 +151,7 @@ func verifySignature(t *testing.T, ctx *context.Context, sig string) {
 	// verify signature was made with key for usesr 'nopass'
 	cmd := exec.Command("gpg", "--homedir", keyring, "--verify", filepath.Join(ctx.Config.Dist, sig), filepath.Join(ctx.Config.Dist, artifact))
 	out, err := cmd.CombinedOutput()
-	if err != nil {
-		t.Log(string(out))
-		t.Fatal("verify: ", err)
-	}
+	assert.NoError(t, err)
 
 	// check if the signature matches the user we expect to do this properly we
 	// might need to have either separate keyrings or export the key from the
