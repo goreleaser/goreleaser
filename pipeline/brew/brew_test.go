@@ -164,47 +164,6 @@ func TestRunPipe(t *testing.T) {
 	})
 }
 
-// TODO: this test is irrelevant and can probavly be removed
-func TestRunPipeFormatOverride(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
-	var path = filepath.Join(folder, "bin.zip")
-	_, err = os.Create(path)
-	assert.NoError(t, err)
-	var ctx = context.New(
-		config.Project{
-			Dist: folder,
-			Archive: config.Archive{
-				Format: "tar.gz",
-				FormatOverrides: []config.FormatOverride{
-					{
-						Format: "zip",
-						Goos:   "darwin",
-					},
-				},
-			},
-			Brew: config.Homebrew{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
-				},
-			},
-		},
-	)
-	ctx.Publish = true
-	ctx.Artifacts.Add(artifact.Artifact{
-		Name:   "bin.zip",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
-	})
-	client := &DummyClient{}
-	assert.NoError(t, doRun(ctx, client))
-	assert.True(t, client.CreatedFile)
-	assert.Contains(t, client.Content, "bin.zip")
-}
-
 func TestRunPipeNoDarwin64Build(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{

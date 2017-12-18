@@ -119,8 +119,7 @@ func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 func skip(ctx *context.Context, artifacts []artifact.Artifact) error {
 	for _, a := range artifacts {
 		log.WithField("binary", a.Name).Info("skip archiving")
-		// TODO: this should not happen here, maybe add another extra field
-		// for the extension and/or name without extension?
+		// TODO: this should not happen here, maybe add another extra field for the extension and/or name without extension?
 		name, err := nametemplate.Apply(ctx, a, strings.TrimSuffix(a.Name, ".exe"))
 		if err != nil {
 			return err
