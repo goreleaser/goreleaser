@@ -24,6 +24,6 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	log.WithField("config", path).Info("writting")
+	log.WithField("config", path).Info("writing")
 	return ioutil.WriteFile(path, bts, 0644)
 }
