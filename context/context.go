@@ -29,8 +29,6 @@ type Context struct {
 	Token        string
 	Git          GitInfo
 	Artifacts    artifact.Artifacts
-	Checksums    []string
-	Dockers      []string
 	ReleaseNotes string
 	Version      string
 	Validate     bool

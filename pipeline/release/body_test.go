@@ -5,19 +5,26 @@ import (
 	"os"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/artifact"
+
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDescribeBody(t *testing.T) {
 	var changelog = "\nfeature1: description\nfeature2: other description"
-	var ctx = &context.Context{
-		ReleaseNotes: changelog,
-		Dockers: []string{
-			"goreleaser/goreleaser:0.40.0",
-			"goreleaser/goreleaser:latest",
-			"goreleaser/godownloader:v0.1.0",
-		},
+	var ctx = context.New(config.Project{})
+	ctx.ReleaseNotes = changelog
+	for _, d := range []string{
+		"goreleaser/goreleaser:0.40.0",
+		"goreleaser/goreleaser:latest",
+		"goreleaser/godownloader:v0.1.0",
+	} {
+		ctx.Artifacts.Add(artifact.Artifact{
+			Name: d,
+			Type: artifact.DockerImage,
+		})
 	}
 	out, err := describeBodyVersion(ctx, "go version go1.9 darwin/amd64")
 	assert.NoError(t, err)
