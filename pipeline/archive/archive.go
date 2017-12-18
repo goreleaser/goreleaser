@@ -19,6 +19,8 @@ import (
 	"github.com/goreleaser/goreleaser/internal/nametemplate"
 )
 
+const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+
 // Pipe for archive
 type Pipe struct{}
 
@@ -45,7 +47,7 @@ func (Pipe) Run(ctx *context.Context) error {
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Archive.NameTemplate == "" {
-		ctx.Config.Archive.NameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+		ctx.Config.Archive.NameTemplate = defaultNameTemplate
 	}
 	if ctx.Config.Archive.Format == "" {
 		ctx.Config.Archive.Format = "tar.gz"
@@ -109,8 +111,7 @@ func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 func skip(ctx *context.Context, artifacts []artifact.Artifact) error {
 	for _, a := range artifacts {
 		log.WithField("binary", a.Name).Info("skip archiving")
-		// TODO: this should not happen here, maybe add another extra field for the extension and/or name without extension?
-		name, err := nametemplate.Apply(ctx, a, strings.TrimSuffix(a.Name, ".exe"))
+		name, err := nametemplate.Apply(ctx, a, a.Extra["Binary"])
 		if err != nil {
 			return err
 		}

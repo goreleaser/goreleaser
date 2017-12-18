@@ -33,52 +33,61 @@ func TestRunPipe(t *testing.T) {
 	assert.NoError(t, err)
 	_, err = os.Create(filepath.Join(folder, "README.md"))
 	assert.NoError(t, err)
-	var ctx = context.New(
-		config.Project{
-			Dist: dist,
-			Archive: config.Archive{
-				NameTemplate: "whatever",
-				Files: []string{
-					"README.*",
-				},
-				FormatOverrides: []config.FormatOverride{
-					{
-						Goos:   "windows",
-						Format: "zip",
+	for _, format := range []string{"tar.gz", "zip"} {
+		t.Run("Archive format "+format, func(tt *testing.T) {
+			var ctx = context.New(
+				config.Project{
+					Dist:        dist,
+					ProjectName: "foobar",
+					Archive: config.Archive{
+						NameTemplate: defaultNameTemplate,
+						Files: []string{
+							"README.*",
+						},
+						FormatOverrides: []config.FormatOverride{
+							{
+								Goos:   "windows",
+								Format: "zip",
+							},
+						},
 					},
 				},
-			},
-		},
-	)
-	ctx.Artifacts.Add(artifact.Artifact{
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Name:   "mybin",
-		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
-		Type:   artifact.Binary,
-		Extra: map[string]string{
-			"Binary": "mybin",
-		},
-	})
-	ctx.Artifacts.Add(artifact.Artifact{
-		Goos:   "windows",
-		Goarch: "amd64",
-		Name:   "mybin.exe",
-		Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
-		Type:   artifact.Binary,
-		Extra: map[string]string{
-			"Binary": "mybin",
-		},
-	})
-	for _, format := range []string{"tar.gz", "zip"} {
-		t.Run("Archive format "+format, func(t *testing.T) {
+			)
+			ctx.Artifacts.Add(artifact.Artifact{
+				Goos:   "darwin",
+				Goarch: "amd64",
+				Name:   "mybin",
+				Path:   filepath.Join(dist, "darwinamd64", "mybin"),
+				Type:   artifact.Binary,
+				Extra: map[string]string{
+					"Binary": "mybin",
+				},
+			})
+			ctx.Artifacts.Add(artifact.Artifact{
+				Goos:   "windows",
+				Goarch: "amd64",
+				Name:   "mybin.exe",
+				Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
+				Type:   artifact.Binary,
+				Extra: map[string]string{
+					"Binary":    "mybin",
+					"Extension": ".exe",
+				},
+			})
+			ctx.Version = "0.0.1"
 			ctx.Config.Archive.Format = format
-			assert.NoError(t, Pipe{}.Run(ctx))
+			assert.NoError(tt, Pipe{}.Run(ctx))
+			var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive))
+			darwin := archives.Filter(artifact.ByGoos("darwin")).List()[0]
+			windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
+			assert.Equal(tt, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
+			assert.Equal(tt, "foobar_0.0.1_windows_amd64.zip", windows.Name)
+			assert.Len(tt, archives.List(), 2)
 		})
 	}
 
 	// Check archive contents
-	f, err := os.Open(filepath.Join(dist, "whatever.tar.gz"))
+	f, err := os.Open(filepath.Join(dist, "foobar_0.0.1_darwin_amd64.tar.gz"))
 	assert.NoError(t, err)
 	defer func() { assert.NoError(t, f.Close()) }()
 	gr, err := gzip.NewReader(f)
@@ -111,14 +120,13 @@ func TestRunPipeBinary(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
-			Builds: []config.Build{
-				{Binary: "mybin"},
-			},
 			Archive: config.Archive{
-				Format: "binary",
+				Format:       "binary",
+				NameTemplate: defaultNameTemplate,
 			},
 		},
 	)
+	ctx.Version = "0.0.1"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -137,12 +145,15 @@ func TestRunPipeBinary(t *testing.T) {
 		Type:   artifact.Binary,
 		Extra: map[string]string{
 			"Binary": "mybin",
+			"Ext":    ".exe",
 		},
 	})
 	assert.NoError(t, Pipe{}.Run(ctx))
 	var binaries = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
-	assert.Len(t, binaries.Filter(artifact.ByGoos("darwin")).List(), 1)
-	assert.Len(t, binaries.Filter(artifact.ByGoos("windows")).List(), 1)
+	darwin := binaries.Filter(artifact.ByGoos("darwin")).List()[0]
+	windows := binaries.Filter(artifact.ByGoos("windows")).List()[0]
+	assert.Equal(t, "mybin_0.0.1_darwin_amd64", darwin.Name)
+	assert.Equal(t, "mybin_0.0.1_windows_amd64.exe", windows.Name)
 	assert.Len(t, binaries.List(), 2)
 }
 
@@ -163,7 +174,8 @@ func TestRunPipeDistRemoved(t *testing.T) {
 		Path:   filepath.Join("/path/to/nope", "windowsamd64", "mybin.exe"),
 		Type:   artifact.Binary,
 		Extra: map[string]string{
-			"Binary": "mybin",
+			"Binary":    "mybin",
+			"Extension": ".exe",
 		},
 	})
 	assert.EqualError(t, Pipe{}.Run(ctx), `failed to create directory /path/nope/nope.zip: open /path/nope/nope.zip: no such file or directory`)
