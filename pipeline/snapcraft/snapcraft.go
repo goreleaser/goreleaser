@@ -99,7 +99,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 	var primeDir = filepath.Join(folderDir, "prime")
 	var metaDir = filepath.Join(primeDir, "meta")
 	// #nosec
-	if err := os.MkdirAll(metaDir, 0755); err != nil {
+	if err = os.MkdirAll(metaDir, 0755); err != nil {
 		return err
 	}
 
@@ -135,7 +135,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		metadata.Apps[binary.Name] = appMetadata
 
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
-		if err := os.Link(binary.Path, destBinaryPath); err != nil {
+		if err = os.Link(binary.Path, destBinaryPath); err != nil {
 			return err
 		}
 	}
