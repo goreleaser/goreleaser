@@ -3,13 +3,13 @@ package release
 import (
 	"os"
 
-	"github.com/goreleaser/goreleaser/internal/artifact"
-
 	"github.com/apex/log"
+	"golang.org/x/sync/errgroup"
+
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/pipeline"
-	"golang.org/x/sync/errgroup"
 )
 
 // Pipe for github release
