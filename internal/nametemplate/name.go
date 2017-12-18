@@ -1,16 +1,18 @@
-package build
+package nametemplate
 
 import (
 	"bytes"
 	"text/template"
 
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/buildtarget"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 )
 
-func nameFor(ctx *context.Context, target buildtarget.Target, name string) (string, error) {
+// Apply applies the name template to the given artifact and name
+// TODO: this should be refactored alongside with other name template related todos
+func Apply(ctx *context.Context, a artifact.Artifact, name string) (string, error) {
 	var out bytes.Buffer
-	t, err := template.New(name).Parse(ctx.Config.Archive.NameTemplate)
+	t, err := template.New("archive_name").Parse(ctx.Config.Archive.NameTemplate)
 	if err != nil {
 		return "", err
 	}
@@ -18,12 +20,11 @@ func nameFor(ctx *context.Context, target buildtarget.Target, name string) (stri
 		Os, Arch, Arm, Version, Tag, Binary, ProjectName string
 		Env                                              map[string]string
 	}{
-		Os:          replace(ctx.Config.Archive.Replacements, target.OS),
-		Arch:        replace(ctx.Config.Archive.Replacements, target.Arch),
-		Arm:         replace(ctx.Config.Archive.Replacements, target.Arm),
+		Os:          replace(ctx.Config.Archive.Replacements, a.Goos),
+		Arch:        replace(ctx.Config.Archive.Replacements, a.Goarch),
+		Arm:         replace(ctx.Config.Archive.Replacements, a.Goarm),
 		Version:     ctx.Version,
 		Tag:         ctx.Git.CurrentTag,
-		Binary:      name, // TODO: deprecated: remove this sometime
 		ProjectName: name,
 		Env:         ctx.Env,
 	}

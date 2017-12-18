@@ -7,12 +7,14 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/goreleaser/config"
-	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/buildtarget"
-	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/goreleaser/goreleaser/config"
+	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/buildtarget"
+	"github.com/goreleaser/goreleaser/internal/ext"
 )
 
 // Pipe for build
@@ -104,22 +106,21 @@ func runHook(env []string, hook string) error {
 }
 
 func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
-	var binaryName = build.Binary + ext.For(target)
-	var prettyName = binaryName
-	if ctx.Config.Archive.Format == "binary" {
-		var err error
-		binaryName, err = nameFor(ctx, target, build.Binary)
-		if err != nil {
-			return err
-		}
-		binaryName = binaryName + ext.For(target)
-	}
-	folder, err := nameFor(ctx, target, ctx.Config.ProjectName)
-	if err != nil {
-		return err
-	}
-	var binary = filepath.Join(ctx.Config.Dist, folder, binaryName)
-	ctx.AddBinary(target.String(), folder, prettyName, binary)
+	var ext = ext.For(target)
+	var binaryName = build.Binary + ext
+	var binary = filepath.Join(ctx.Config.Dist, target.String(), binaryName)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type:   artifact.Binary,
+		Path:   binary,
+		Name:   binaryName,
+		Goos:   target.OS,
+		Goarch: target.Arch,
+		Goarm:  target.Arm,
+		Extra: map[string]string{
+			"Binary": build.Binary,
+			"Ext":    ext,
+		},
+	})
 	log.WithField("binary", binary).Info("building")
 	cmd := []string{"go", "build"}
 	if build.Flags != "" {

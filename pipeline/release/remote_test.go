@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/testlib"
-
 	"github.com/stretchr/testify/assert"
 )
 

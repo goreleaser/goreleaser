@@ -7,13 +7,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/apex/log"
+	"github.com/mattn/go-zglob"
+	"golang.org/x/sync/errgroup"
+
 	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/archiveformat"
-	"github.com/mattn/go-zglob"
-	"golang.org/x/sync/errgroup"
+	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/nametemplate"
 )
 
 // Pipe for archive
@@ -26,14 +30,14 @@ func (Pipe) String() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	for platform, binaries := range ctx.Binaries {
-		platform := platform
-		binaries := binaries
+	var filtered = ctx.Artifacts.Filter(artifact.ByType(artifact.Binary))
+	for _, artifacts := range filtered.GroupByPlatform() {
+		artifacts := artifacts
 		g.Go(func() error {
 			if ctx.Config.Archive.Format == "binary" {
-				return skip(ctx, platform, binaries)
+				return skip(ctx, artifacts)
 			}
-			return create(ctx, platform, binaries)
+			return create(ctx, artifacts)
 		})
 	}
 	return g.Wait()
@@ -62,52 +66,58 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func create(ctx *context.Context, platform string, groups map[string][]context.Binary) error {
-	for folder, binaries := range groups {
-		var format = archiveformat.For(ctx, platform)
-		archivePath := filepath.Join(ctx.Config.Dist, folder+"."+format)
-		archiveFile, err := os.Create(archivePath)
-		if err != nil {
-			return fmt.Errorf("failed to create directory %s: %s", archivePath, err.Error())
-		}
-		defer func() {
-			if e := archiveFile.Close(); e != nil {
-				log.WithField("archive", archivePath).Errorf("failed to close file: %v", e)
-			}
-		}()
-		log.WithField("archive", archivePath).Info("creating")
-		var a = archive.New(archiveFile)
-		defer func() {
-			if e := a.Close(); e != nil {
-				log.WithField("archive", archivePath).Errorf("failed to close archive: %v", e)
-			}
-		}()
-
-		files, err := findFiles(ctx)
-		if err != nil {
-			return fmt.Errorf("failed to find files to archive: %s", err.Error())
-		}
-		for _, f := range files {
-			if err = a.Add(wrap(ctx, f, folder), f); err != nil {
-				return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
-			}
-		}
-		for _, binary := range binaries {
-			if err := a.Add(wrap(ctx, binary.Name, folder), binary.Path); err != nil {
-				return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
-			}
-		}
-		ctx.AddArtifact(archivePath)
+func create(ctx *context.Context, artifacts []artifact.Artifact) error {
+	var format = archiveformat.For(ctx, artifacts[0].Goos)
+	folder, err := nametemplate.Apply(ctx, artifacts[0], ctx.Config.ProjectName)
+	if err != nil {
+		return err
 	}
+	archivePath := filepath.Join(ctx.Config.Dist, folder+"."+format)
+	archiveFile, err := os.Create(archivePath)
+	if err != nil {
+		return fmt.Errorf("failed to create directory %s: %s", archivePath, err.Error())
+	}
+	defer archiveFile.Close() // nolint: errcheck
+	log.WithField("archive", archivePath).Info("creating")
+	var a = archive.New(archiveFile)
+	defer a.Close() // nolint: errcheck
+
+	files, err := findFiles(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to find files to archive: %s", err.Error())
+	}
+	for _, f := range files {
+		if err = a.Add(wrap(ctx, f, folder), f); err != nil {
+			return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
+		}
+	}
+	for _, binary := range artifacts {
+		if err := a.Add(wrap(ctx, binary.Name, folder), binary.Path); err != nil {
+			return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
+		}
+	}
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type:   artifact.UploadableArchive,
+		Name:   folder + "." + format,
+		Path:   archivePath,
+		Goos:   artifacts[0].Goos,
+		Goarch: artifacts[0].Goarch,
+		Goarm:  artifacts[0].Goarm,
+	})
 	return nil
 }
 
-func skip(ctx *context.Context, platform string, groups map[string][]context.Binary) error {
-	for _, binaries := range groups {
-		for _, binary := range binaries {
-			log.WithField("binary", binary.Name).Info("skip archiving")
-			ctx.AddArtifact(binary.Path)
+func skip(ctx *context.Context, artifacts []artifact.Artifact) error {
+	for _, a := range artifacts {
+		log.WithField("binary", a.Name).Info("skip archiving")
+		// TODO: this should not happen here, maybe add another extra field for the extension and/or name without extension?
+		name, err := nametemplate.Apply(ctx, a, strings.TrimSuffix(a.Name, ".exe"))
+		if err != nil {
+			return err
 		}
+		a.Type = artifact.UploadableBinary
+		a.Name = name + a.Extra["Ext"]
+		ctx.Artifacts.Add(a)
 	}
 	return nil
 }

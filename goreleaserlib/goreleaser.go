@@ -8,6 +8,8 @@ import (
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
+	yaml "gopkg.in/yaml.v2"
+
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/pipeline"
@@ -27,7 +29,6 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/release"
 	"github.com/goreleaser/goreleaser/pipeline/sign"
 	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
-	yaml "gopkg.in/yaml.v2"
 )
 
 var (

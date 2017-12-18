@@ -1,5 +1,3 @@
-// Package checksums provides a Pipe that creates .checksums files for
-// each artifact.
 package checksums
 
 import (
@@ -8,9 +6,11 @@ import (
 	"path/filepath"
 
 	"github.com/apex/log"
+	"golang.org/x/sync/errgroup"
+
 	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/context"
-	"golang.org/x/sync/errgroup"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 )
 
 // Pipe for checksums
@@ -18,6 +18,14 @@ type Pipe struct{}
 
 func (Pipe) String() string {
 	return "calculating checksums"
+}
+
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	if ctx.Config.Checksum.NameTemplate == "" {
+		ctx.Config.Checksum.NameTemplate = "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+	}
+	return nil
 }
 
 // Run the pipe
@@ -34,38 +42,36 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			log.WithError(err).Errorf("failed to close %s", file.Name())
-		}
-		ctx.AddArtifact(file.Name())
-		ctx.AddChecksum(file.Name())
-	}()
+	defer file.Close() // nolint: errcheck
+
+	// TODO: parallelism should be considered here as well.
 	var g errgroup.Group
-	for _, artifact := range ctx.Artifacts {
+	for _, artifact := range ctx.Artifacts.Filter(
+		artifact.Or(
+			artifact.ByType(artifact.UploadableArchive),
+			artifact.ByType(artifact.UploadableBinary),
+			artifact.ByType(artifact.LinuxPackage),
+		),
+	).List() {
 		artifact := artifact
 		g.Go(func() error {
 			return checksums(ctx, file, artifact)
 		})
 	}
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type: artifact.Checksum,
+		Path: file.Name(),
+		Name: filename,
+	})
 	return g.Wait()
 }
 
-// Default sets the pipe defaults
-func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Checksum.NameTemplate == "" {
-		ctx.Config.Checksum.NameTemplate = "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
-	}
-	return nil
-}
-
-func checksums(ctx *context.Context, file *os.File, name string) error {
-	log.WithField("file", name).Info("checksumming")
-	var artifact = filepath.Join(ctx.Config.Dist, name)
-	sha, err := checksum.SHA256(artifact)
+func checksums(ctx *context.Context, file *os.File, artifact artifact.Artifact) error {
+	log.WithField("file", artifact.Name).Info("checksumming")
+	sha, err := checksum.SHA256(artifact.Path)
 	if err != nil {
 		return err
 	}
-	_, err = file.WriteString(fmt.Sprintf("%v  %v\n", sha, name))
+	_, err = file.WriteString(fmt.Sprintf("%v  %v\n", sha, artifact.Name))
 	return err
 }

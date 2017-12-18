@@ -28,6 +28,7 @@ func (t Target) Env() []string {
 }
 
 func (t Target) String() string {
+	// TODO: maybe replace this as suggested to OS_ArchArm?
 	return fmt.Sprintf("%v%v%v", t.OS, t.Arch, t.Arm)
 }
 

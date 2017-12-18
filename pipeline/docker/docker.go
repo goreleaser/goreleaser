@@ -10,10 +10,12 @@ import (
 	"text/template"
 
 	"github.com/apex/log"
+	"github.com/pkg/errors"
+
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pipeline"
-	"github.com/pkg/errors"
 )
 
 // ErrNoDocker is shown when docker cannot be found in $PATH
@@ -24,6 +26,33 @@ type Pipe struct{}
 
 func (Pipe) String() string {
 	return "creating Docker images"
+}
+
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	for i := range ctx.Config.Dockers {
+		var docker = &ctx.Config.Dockers[i]
+		if docker.TagTemplate == "" {
+			docker.TagTemplate = "{{ .Version }}"
+		}
+		if docker.Goos == "" {
+			docker.Goos = "linux"
+		}
+		if docker.Goarch == "" {
+			docker.Goarch = "amd64"
+		}
+	}
+	// only set defaults if there is exacly 1 docker setup in the config file.
+	if len(ctx.Config.Dockers) != 1 {
+		return nil
+	}
+	if ctx.Config.Dockers[0].Binary == "" {
+		ctx.Config.Dockers[0].Binary = ctx.Config.Builds[0].Binary
+	}
+	if ctx.Config.Dockers[0].Dockerfile == "" {
+		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
+	}
+	return nil
 }
 
 // Run the pipe
@@ -38,49 +67,28 @@ func (Pipe) Run(ctx *context.Context) error {
 	return doRun(ctx)
 }
 
-// Default sets the pipe defaults
-func (Pipe) Default(ctx *context.Context) error {
-	for i := range ctx.Config.Dockers {
-		if ctx.Config.Dockers[i].TagTemplate == "" {
-			ctx.Config.Dockers[i].TagTemplate = "{{ .Version }}"
-		}
-	}
-	// only set defaults if there is exacly 1 docker setup in the config file.
-	if len(ctx.Config.Dockers) != 1 {
-		return nil
-	}
-	if ctx.Config.Dockers[0].Goos == "" {
-		ctx.Config.Dockers[0].Goos = "linux"
-	}
-	if ctx.Config.Dockers[0].Goarch == "" {
-		ctx.Config.Dockers[0].Goarch = "amd64"
-	}
-	if ctx.Config.Dockers[0].Binary == "" {
-		ctx.Config.Dockers[0].Binary = ctx.Config.Builds[0].Binary
-	}
-	if ctx.Config.Dockers[0].Dockerfile == "" {
-		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
-	}
-	return nil
-}
-
 func doRun(ctx *context.Context) error {
+	// TODO: could be done in parallel.
 	for _, docker := range ctx.Config.Dockers {
-		var imagePlatform = docker.Goos + docker.Goarch + docker.Goarm
-		for platform, groups := range ctx.Binaries {
-			if platform != imagePlatform {
-				continue
-			}
-			for folder, binaries := range groups {
-				for _, binary := range binaries {
-					if binary.Name != docker.Binary {
-						continue
-					}
-					var err = process(ctx, folder, docker, binary)
-					if err != nil && !pipeline.IsSkip(err) {
-						return err
-					}
-				}
+		log.WithField("docker", docker).Debug("looking for binaries matching")
+		var binaries = ctx.Artifacts.Filter(
+			artifact.And(
+				artifact.ByGoos(docker.Goos),
+				artifact.ByGoarch(docker.Goarch),
+				artifact.ByGoarm(docker.Goarm),
+				artifact.ByType(artifact.Binary),
+				func(a artifact.Artifact) bool {
+					return a.Extra["Binary"] == docker.Binary
+				},
+			),
+		).List()
+		if len(binaries) == 0 {
+			log.Warn("no binaries found")
+		}
+		for _, binary := range binaries {
+			var err = process(ctx, docker, binary)
+			if err != nil && !pipeline.IsSkip(err) {
+				return err
 			}
 		}
 	}
@@ -105,8 +113,8 @@ func tagName(ctx *context.Context, docker config.Docker) (string, error) {
 	return out.String(), err
 }
 
-func process(ctx *context.Context, folder string, docker config.Docker, binary context.Binary) error {
-	var root = filepath.Join(ctx.Config.Dist, folder)
+func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) error {
+	var root = filepath.Dir(artifact.Path)
 	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile))
 	tag, err := tagName(ctx, docker)
 	if err != nil {
@@ -143,17 +151,16 @@ func publish(ctx *context.Context, docker config.Docker, image, latest string) e
 	if ctx.Config.Release.Draft {
 		return pipeline.Skip("release is marked as draft")
 	}
-	if err := dockerPush(image); err != nil {
+	if err := dockerPush(ctx, image); err != nil {
 		return err
 	}
-	ctx.AddDocker(image)
 	if !docker.Latest {
 		return nil
 	}
 	if err := dockerTag(image, latest); err != nil {
 		return err
 	}
-	return dockerPush(latest)
+	return dockerPush(ctx, latest)
 }
 
 func dockerBuild(root, dockerfile, image string) error {
@@ -182,7 +189,7 @@ func dockerTag(image, tag string) error {
 	return nil
 }
 
-func dockerPush(image string) error {
+func dockerPush(ctx *context.Context, image string) error {
 	log.WithField("image", image).Info("pushing docker image")
 	/* #nosec */
 	var cmd = exec.Command("docker", "push", image)
@@ -192,5 +199,10 @@ func dockerPush(image string) error {
 		return errors.Wrapf(err, "failed to push docker image: \n%s", string(out))
 	}
 	log.Debugf("docker push output: \n%s", string(out))
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type: artifact.DockerImage,
+		Name: image,
+		// TODO: are the rest of the params relevant here?
+	})
 	return nil
 }

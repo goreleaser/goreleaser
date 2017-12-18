@@ -11,8 +11,8 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pipeline"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -167,42 +167,37 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		  }`)
 	})
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION-US_SECRET": "deployuser-secret",
-			"ARTIFACTORY_PRODUCTION-EU_SECRET": "productionuser-apikey",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Builds: []config.Build{
-				{
-					Env:    []string{"CGO_ENABLED=0"},
-					Goos:   []string{"linux", "darwin"},
-					Goarch: []string{"amd64"},
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production-us",
+				Mode:     "binary",
+				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+				Username: "deployuser",
 			},
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production-us",
-					Mode:     "binary",
-					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-					Username: "deployuser",
-				},
-				{
-					Name:     "production-eu",
-					Mode:     "binary",
-					Target:   fmt.Sprintf("%s/production-repo-remote/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-					Username: "productionuser",
-				},
+			{
+				Name:     "production-eu",
+				Mode:     "binary",
+				Target:   fmt.Sprintf("%s/production-repo-remote/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+				Username: "productionuser",
 			},
 		},
+	})
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION-US_SECRET": "deployuser-secret",
+		"ARTIFACTORY_PRODUCTION-EU_SECRET": "productionuser-apikey",
 	}
-	for _, plat := range []string{"linuxamd64", "linux386", "darwinamd64"} {
-		ctx.AddBinary(plat, "mybin", "mybin", binPath)
+	ctx.Publish = true
+	for _, goos := range []string{"linux", "darwin"} {
+		ctx.Artifacts.Add(artifact.Artifact{
+			Name:   "mybin",
+			Path:   binPath,
+			Goarch: "amd64",
+			Goos:   goos,
+			Type:   artifact.UploadableBinary,
+		})
 	}
 
 	assert.NoError(t, Pipe{}.Run(ctx))
@@ -219,29 +214,33 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
 	assert.NoError(t, err)
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "goreleaser",
-			Dist:        folder,
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "archive",
-					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Version }}/", server.URL),
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "goreleaser",
+		Dist:        folder,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "archive",
+				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Version }}/", server.URL),
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-
-	ctx.AddArtifact(tarfile.Name())
-	ctx.AddArtifact(debfile.Name())
+	ctx.Publish = true
+	ctx.Version = "1.0.0"
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "bin.tar.gz",
+		Path: tarfile.Name(),
+	})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type: artifact.LinuxPackage,
+		Name: "bin.deb",
+		Path: debfile.Name(),
+	})
 
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.tar.gz", func(w http.ResponseWriter, r *http.Request) {
@@ -298,43 +297,70 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
+func TestRunPipe_ArtifactoryDown(t *testing.T) {
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(t, err)
+	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
+	assert.NoError(t, err)
+
+	var ctx = context.New(config.Project{
+		ProjectName: "goreleaser",
+		Dist:        folder,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "archive",
+				Target:   "http://localhost:1234/example-repo-local/{{ .ProjectName }}/{{ .Version }}/",
+				Username: "deployuser",
+			},
+		},
+	})
+	ctx.Version = "2.0.0"
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+	}
+	ctx.Publish = true
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "bin.tar.gz",
+		Path: tarfile.Name(),
+	})
+
+	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: Put http://localhost:1234/example-repo-local/goreleaser/2.0.0/bin.tar.gz: dial tcp 127.0.0.1:1234: getsockopt: connection refused`)
+}
+
 func TestRunPipe_TargetTemplateError(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Builds: []config.Build{
-				{
-					Env:    []string{"CGO_ENABLED=0"},
-					Goos:   []string{"darwin"},
-					Goarch: []string{"amd64"},
-				},
-			},
-			Artifactories: []config.Artifactory{
-				{
-					Name: "production",
-					Mode: "binary",
-					// This template is not correct and should fail
-					Target:   "http://storage.company.com/example-repo-local/{{ .ProjectName /{{ .Version }}/",
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name: "production",
+				Mode: "binary",
+				// This template is not correct and should fail
+				Target:   "http://storage.company.com/example-repo-local/{{ .ProjectName /{{ .Version }}/",
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Publish = true
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.AddBinary("darwinamd64", "mybin", "mybin", binPath)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "darwin",
+		Type:   artifact.UploadableBinary,
+	})
 
-	assert.Error(t, Pipe{}.Run(ctx))
+	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: error while building the target url: template: mybin:1: unexpected "/" in operand`)
 }
 
 func TestRunPipe_BadCredentials(t *testing.T) {
@@ -367,40 +393,33 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		  }`)
 	})
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Builds: []config.Build{
-				{
-					Env:    []string{"CGO_ENABLED=0"},
-					Goos:   []string{"darwin"},
-					Goarch: []string{"amd64"},
-				},
-			},
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Publish = true
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	for _, plat := range []string{"darwinamd64"} {
-		ctx.AddBinary(plat, "mybin", "mybin", binPath)
-	}
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "darwin",
+		Type:   artifact.UploadableBinary,
+	})
 
 	err = Pipe{}.Run(ctx)
 	assert.Error(t, err)
-	assert.True(t, len(err.Error()) > 0)
+	assert.Contains(t, err.Error(), "Bad credentials")
 }
 
 func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
@@ -432,38 +451,31 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 		  }`)
 	})
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Builds: []config.Build{
-				{
-					Env:    []string{"CGO_ENABLED=0"},
-					Goos:   []string{"darwin"},
-					Goarch: []string{"amd64"},
-				},
-			},
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Publish = true
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	for _, plat := range []string{"darwinamd64"} {
-		ctx.AddBinary(plat, "mybin", "mybin", binPath)
-	}
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "darwin",
+		Type:   artifact.UploadableBinary,
+	})
 
-	assert.Error(t, Pipe{}.Run(ctx))
+	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: invalid character '.' looking for beginning of value`)
 }
 
 func TestRunPipe_UnparsableResponse(t *testing.T) {
@@ -494,105 +506,59 @@ func TestRunPipe_UnparsableResponse(t *testing.T) {
 		  }`)
 	})
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Builds: []config.Build{
-				{
-					Env:    []string{"CGO_ENABLED=0"},
-					Goos:   []string{"darwin"},
-					Goarch: []string{"amd64"},
-				},
-			},
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Publish = true
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.AddBinary("darwinamd64", "mybin", "mybin", binPath)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "darwin",
+		Type:   artifact.UploadableBinary,
+	})
 
-	assert.Error(t, Pipe{}.Run(ctx))
+	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: invalid character 'i' looking for beginning of value`)
 }
 
-func TestRunPipe_WithoutBinaryTarget(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
-	var dist = filepath.Join(folder, "dist")
-
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Builds: []config.Build{
-				{
-					Env:    []string{"CGO_ENABLED=0"},
-					Goos:   []string{"darwin"},
-					Goarch: []string{"amd64"},
-				},
-			},
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-					Username: "deployuser",
-				},
+func TestRunPipe_FileNotFound(t *testing.T) {
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        "archivetest/dist",
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Publish = true
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "mybin",
+		Path:   "archivetest/dist/mybin/mybin",
+		Goarch: "amd64",
+		Goos:   "darwin",
+		Type:   artifact.UploadableBinary,
+	})
 
-	assert.Error(t, Pipe{}.Run(ctx))
-}
-
-func TestRunPipe_NoFile(t *testing.T) {
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        "archivetest/dist",
-			Builds: []config.Build{
-				{
-					Env:    []string{"CGO_ENABLED=0"},
-					Goos:   []string{"darwin"},
-					Goarch: []string{"amd64"},
-				},
-			},
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
-			},
-		},
-	}
-	ctx.AddBinary("darwinamd64", "mybin", "mybin", "archivetest/dist/mybin/mybin")
-
-	assert.Error(t, Pipe{}.Run(ctx))
+	assert.EqualError(t, Pipe{}.Run(ctx), `open archivetest/dist/mybin/mybin: no such file or directory`)
 }
 
 func TestRunPipe_UnparsableTarget(t *testing.T) {
@@ -606,59 +572,51 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	err = ioutil.WriteFile(binPath, d1, 0666)
 	assert.NoError(t, err)
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Builds: []config.Build{
-				{
-					Env:    []string{"CGO_ENABLED=0"},
-					Goos:   []string{"darwin"},
-					Goarch: []string{"amd64"},
-				},
-			},
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   "://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   "://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Publish = true
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	for _, plat := range []string{"darwinamd64"} {
-		ctx.AddBinary(plat, "mybin", "mybin", binPath)
-	}
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "mybin",
+		Path:   binPath,
+		Goarch: "amd64",
+		Goos:   "darwin",
+		Type:   artifact.UploadableBinary,
+	})
 
-	assert.Error(t, Pipe{}.Run(ctx))
+	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: parse ://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin: missing protocol scheme`)
 }
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
-	var ctx = &context.Context{
-		Publish: false,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
 
-	assert.True(t, pipeline.IsSkip(Pipe{}.Run(ctx)))
+	err := Pipe{}.Run(ctx)
+	assert.True(t, pipeline.IsSkip(err))
+	assert.Equal(t, err.Error(), "--skip-publish is set")
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {
@@ -669,38 +627,31 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin")
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Builds: []config.Build{
-				{
-					Env:    []string{"CGO_ENABLED=0"},
-					Goos:   []string{"darwin"},
-					Goarch: []string{"amd64"},
-				},
-			},
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	for _, plat := range []string{"darwinamd64"} {
-		ctx.AddBinary(plat, "mybin", "mybin", binPath)
-	}
+	ctx.Publish = true
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "mybin",
+		Path:   filepath.Dir(binPath),
+		Goarch: "amd64",
+		Goos:   "darwin",
+		Type:   artifact.UploadableBinary,
+	})
 
-	assert.Error(t, Pipe{}.Run(ctx))
+	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: the asset to upload can't be a directory`)
 }
 
 func TestDescription(t *testing.T) {
