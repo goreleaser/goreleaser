@@ -109,6 +109,19 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 	var ext = ext.For(target)
 	var binaryName = build.Binary + ext
 	var binary = filepath.Join(ctx.Config.Dist, target.String(), binaryName)
+	log.WithField("binary", binary).Info("building")
+	cmd := []string{"go", "build"}
+	if build.Flags != "" {
+		cmd = append(cmd, strings.Fields(build.Flags)...)
+	}
+	flags, err := ldflags(ctx, build)
+	if err != nil {
+		return err
+	}
+	cmd = append(cmd, "-ldflags="+flags, "-o", binary, build.Main)
+	if err := run(target, cmd, build.Env); err != nil {
+		return errors.Wrapf(err, "failed to build for %s", target)
+	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type:   artifact.Binary,
 		Path:   binary,
@@ -121,17 +134,7 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 			"Ext":    ext,
 		},
 	})
-	log.WithField("binary", binary).Info("building")
-	cmd := []string{"go", "build"}
-	if build.Flags != "" {
-		cmd = append(cmd, strings.Fields(build.Flags)...)
-	}
-	flags, err := ldflags(ctx, build)
-	if err != nil {
-		return err
-	}
-	cmd = append(cmd, "-ldflags="+flags, "-o", binary, build.Main)
-	return errors.Wrapf(run(target, cmd, build.Env), "failed to build for %s", target)
+	return nil
 }
 
 func run(target buildtarget.Target, command, env []string) error {

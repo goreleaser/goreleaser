@@ -74,7 +74,9 @@ func TestRunFullPipe(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Run(context.New(config)))
+	var ctx = context.New(config)
+	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Len(t, ctx.Artifacts.List(), 1)
 	assert.True(t, exists(binary), binary)
 	assert.True(t, exists(pre), pre)
 	assert.True(t, exists(post), post)
@@ -104,7 +106,9 @@ func TestRunPipeArmBuilds(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Run(context.New(config)))
+	var ctx = context.New(config)
+	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Len(t, ctx.Artifacts.List(), 2)
 	assert.True(t, exists(binary), binary)
 }
 
@@ -125,7 +129,9 @@ func TestBuildFailed(t *testing.T) {
 			},
 		},
 	}
-	assertContainsError(t, Pipe{}.Run(context.New(config)), `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
+	var ctx = context.New(config)
+	assertContainsError(t, Pipe{}.Run(ctx), `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
+	assert.Empty(t, ctx.Artifacts.List())
 }
 
 func TestRunPipeWithInvalidOS(t *testing.T) {
