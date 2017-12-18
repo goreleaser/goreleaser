@@ -8,6 +8,7 @@ import (
 )
 
 // Type defines the type of an artifact
+//go:generate stringer -type=Type
 type Type int
 
 const (
@@ -57,16 +58,12 @@ func (artifacts Artifacts) List() []Artifact {
 	return artifacts.items
 }
 
-// Platform returns the platform string of a given artifact
-func (a Artifact) Platform() string {
-	return a.Goos + a.Goarch + a.Goarm
-}
-
 // GroupByPlatform groups the artifacts by their platform
 func (artifacts Artifacts) GroupByPlatform() map[string][]Artifact {
 	var result = map[string][]Artifact{}
 	for _, a := range artifacts.items {
-		result[a.Platform()] = append(result[a.Platform()], a)
+		plat := a.Goos + a.Goarch + a.Goarm
+		result[plat] = append(result[plat], a)
 	}
 	return result
 }
@@ -76,7 +73,9 @@ func (artifacts *Artifacts) Add(a Artifact) {
 	artifacts.lock.Lock()
 	defer artifacts.lock.Unlock()
 	log.WithFields(log.Fields{
-		"artifact": a,
+		"name": a.Name,
+		"path": a.Path,
+		"type": a.Type,
 	}).Info("added new artifact")
 	artifacts.items = append(artifacts.items, a)
 }

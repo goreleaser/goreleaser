@@ -67,7 +67,7 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func create(ctx *context.Context, artifacts []artifact.Artifact) error {
-	var format = archiveformat.For(ctx, artifacts[0].Platform())
+	var format = archiveformat.For(ctx, artifacts[0].Goos)
 	folder, err := nametemplate.Apply(ctx, artifacts[0], ctx.Config.ProjectName)
 	if err != nil {
 		return err

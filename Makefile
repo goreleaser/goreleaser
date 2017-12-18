@@ -4,6 +4,7 @@ TEST_OPTIONS?=
 
 # Install all the build and lint dependencies
 setup:
+	go get -u golang.org/x/tools/cmd/stringer
 	go get -u github.com/alecthomas/gometalinter
 	go get -u github.com/golang/dep/cmd/dep
 	go get -u github.com/pierrre/gotestcover
@@ -41,6 +42,7 @@ ci: test lint
 
 # Build a beta version of goreleaser
 build:
+	go generate ./...
 	go build
 .PHONY: build
 
