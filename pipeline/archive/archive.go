@@ -15,7 +15,6 @@ import (
 
 	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/nametemplate"
 )
@@ -67,7 +66,7 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func create(ctx *context.Context, artifacts []artifact.Artifact) error {
-	var format = archiveformat.For(ctx, artifacts[0].Goos)
+	var format = packageFormat(ctx, artifacts[0].Goos)
 	folder, err := nametemplate.Apply(ctx, artifacts[0], ctx.Config.ProjectName)
 	if err != nil {
 		return err
@@ -139,4 +138,13 @@ func wrap(ctx *context.Context, name, folder string) string {
 		return filepath.Join(folder, name)
 	}
 	return name
+}
+
+func packageFormat(ctx *context.Context, platform string) string {
+	for _, override := range ctx.Config.Archive.FormatOverrides {
+		if strings.HasPrefix(platform, override.Goos) {
+			return override.Format
+		}
+	}
+	return ctx.Config.Archive.Format
 }
