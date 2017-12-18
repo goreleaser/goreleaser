@@ -167,39 +167,30 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 			"uri" : "http://127.0.0.1:56563/production-repo-remote/mybin/linux/amd64/mybin"
 		  }`)
 	})
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		t.Log("got an unwanted request at", r.URL.String())
-		t.FailNow()
-	})
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION-US_SECRET": "deployuser-secret",
-			"ARTIFACTORY_PRODUCTION-EU_SECRET": "productionuser-apikey",
-		},
-		Artifacts: artifact.New(),
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production-us",
-					Mode:     "binary",
-					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-					Username: "deployuser",
-				},
-				{
-					Name:     "production-eu",
-					Mode:     "binary",
-					Target:   fmt.Sprintf("%s/production-repo-remote/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-					Username: "productionuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production-us",
+				Mode:     "binary",
+				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+				Username: "deployuser",
+			},
+			{
+				Name:     "production-eu",
+				Mode:     "binary",
+				Target:   fmt.Sprintf("%s/production-repo-remote/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+				Username: "productionuser",
 			},
 		},
+	})
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION-US_SECRET": "deployuser-secret",
+		"ARTIFACTORY_PRODUCTION-EU_SECRET": "productionuser-apikey",
 	}
+	ctx.Publish = true
 	for _, goos := range []string{"linux", "darwin"} {
 		ctx.Artifacts.Add(artifact.Artifact{
 			Name:   "mybin",
@@ -224,28 +215,23 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
 	assert.NoError(t, err)
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Artifacts:   artifact.New(),
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "goreleaser",
-			Dist:        folder,
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "archive",
-					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Version }}/", server.URL),
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "goreleaser",
+		Dist:        folder,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "archive",
+				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Version }}/", server.URL),
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-
+	ctx.Publish = true
+	ctx.Version = "1.0.0"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -318,27 +304,22 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	var dist = filepath.Join(folder, "dist")
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Artifacts:   artifact.New(),
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Artifactories: []config.Artifactory{
-				{
-					Name: "production",
-					Mode: "binary",
-					// This template is not correct and should fail
-					Target:   "http://storage.company.com/example-repo-local/{{ .ProjectName /{{ .Version }}/",
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name: "production",
+				Mode: "binary",
+				// This template is not correct and should fail
+				Target:   "http://storage.company.com/example-repo-local/{{ .ProjectName /{{ .Version }}/",
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Publish = true
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
@@ -381,26 +362,21 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		  }`)
 	})
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Artifacts:   artifact.New(),
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Publish = true
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
@@ -444,26 +420,21 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 		  }`)
 	})
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Artifacts: artifact.New(),
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Publish = true
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
@@ -504,26 +475,21 @@ func TestRunPipe_UnparsableResponse(t *testing.T) {
 		  }`)
 	})
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Artifacts: artifact.New(),
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Publish = true
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
@@ -537,26 +503,21 @@ func TestRunPipe_UnparsableResponse(t *testing.T) {
 }
 
 func TestRunPipe_FileNotFound(t *testing.T) {
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Artifacts:   artifact.New(),
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        "archivetest/dist",
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        "archivetest/dist",
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Publish = true
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
@@ -566,7 +527,7 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.Error(t, Pipe{}.Run(ctx))
+	assert.EqualError(t, Pipe{}.Run(ctx), `open archivetest/dist/mybin/mybin: no such file or directory`)
 }
 
 func TestRunPipe_UnparsableTarget(t *testing.T) {
@@ -580,26 +541,21 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	err = ioutil.WriteFile(binPath, d1, 0666)
 	assert.NoError(t, err)
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Artifacts:   artifact.New(),
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   "://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   "://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Publish = true
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
@@ -609,29 +565,27 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.Error(t, Pipe{}.Run(ctx))
+	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: parse ://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin: missing protocol scheme`)
 }
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
-	var ctx = &context.Context{
-		Publish: false,
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Artifacts: artifact.New(),
-		Config: config.Project{
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
 
-	assert.True(t, pipeline.IsSkip(Pipe{}.Run(ctx)))
+	err := Pipe{}.Run(ctx)
+	assert.True(t, pipeline.IsSkip(err))
+	assert.Equal(t, err.Error(), "--skip-publish is set")
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {
@@ -642,27 +596,22 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin")
 
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Publish:     true,
-		Parallelism: 4,
-		Artifacts:   artifact.New(),
-		Env: map[string]string{
-			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-		},
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			Artifactories: []config.Artifactory{
-				{
-					Name:     "production",
-					Mode:     "binary",
-					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-					Username: "deployuser",
-				},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "binary",
+				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
+				Username: "deployuser",
 			},
 		},
+	})
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
+	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Dir(binPath),
@@ -671,7 +620,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.Error(t, Pipe{}.Run(ctx))
+	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: the asset to upload can't be a directory`)
 }
 
 func TestDescription(t *testing.T) {
