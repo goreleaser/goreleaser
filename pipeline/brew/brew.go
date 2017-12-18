@@ -24,8 +24,6 @@ var ErrNoDarwin64Build = errors.New("brew tap requires one darwin amd64 build")
 // ErrTooManyDarwin64Builds when there are too many builds for darwin_amd64
 var ErrTooManyDarwin64Builds = errors.New("brew tap requires at most one darwin amd64 build")
 
-const platform = "darwinamd64"
-
 // Pipe for brew deployment
 type Pipe struct{}
 

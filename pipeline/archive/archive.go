@@ -17,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/archiveformat"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/goreleaser/goreleaser/internal/nametemplate"
 )
 
@@ -125,7 +124,7 @@ func skip(ctx *context.Context, artifacts []artifact.Artifact) error {
 			return err
 		}
 		a.Type = artifact.UploadableBinary
-		a.Name = name + ext.ForOS(a.Goos)
+		a.Name = name + a.Extra["Ext"]
 		ctx.Artifacts.Add(a)
 	}
 	return nil

@@ -106,7 +106,8 @@ func runHook(env []string, hook string) error {
 }
 
 func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
-	var binaryName = build.Binary + ext.For(target)
+	var ext = ext.For(target)
+	var binaryName = build.Binary + ext
 	var binary = filepath.Join(ctx.Config.Dist, target.String(), binaryName)
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type:   artifact.Binary,
@@ -117,6 +118,7 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 		Goarm:  target.Arm,
 		Extra: map[string]string{
 			"Binary": build.Binary,
+			"Ext":    ext,
 		},
 	})
 	log.WithField("binary", binary).Info("building")
