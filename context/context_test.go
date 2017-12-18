@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
-	"github.com/tj/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNew(t *testing.T) {
