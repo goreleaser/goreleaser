@@ -284,3 +284,21 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "zip", ctx.Config.Archive.Format)
 	assert.Equal(t, "foo", ctx.Config.Archive.Files[0])
 }
+
+func TestFormatFor(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archive: config.Archive{
+				Format: "tar.gz",
+				FormatOverrides: []config.FormatOverride{
+					{
+						Goos:   "windows",
+						Format: "zip",
+					},
+				},
+			},
+		},
+	}
+	assert.Equal(t, "zip", packageFormat(ctx, "windows"))
+	assert.Equal(t, "tar.gz", packageFormat(ctx, "linux"))
+}
