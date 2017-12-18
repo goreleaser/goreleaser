@@ -2,6 +2,7 @@
 package artifact
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/apex/log"
@@ -10,6 +11,9 @@ import (
 // Type defines the type of an artifact
 //go:generate stringer -type=Type
 type Type int
+
+// ensure Type implements the stringer interface...
+var _ fmt.Stringer = Type(0)
 
 const (
 	// UploadableArchive a tar.gz/zip archive to be uploaded
