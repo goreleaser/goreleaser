@@ -78,8 +78,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			artifact.ByType(artifact.Binary),
 		),
 	).GroupByPlatform() {
-		// TODO: could use artifact.goarch here
-		arch := linux.Arch(platform)
+		arch := linux.Arch(platform) // TODO: could use artifact.goarch here
 		binaries := binaries
 		g.Go(func() error {
 			return create(ctx, arch, binaries)
@@ -90,8 +89,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func create(ctx *context.Context, arch string, binaries []artifact.Artifact) error {
 	var log = log.WithField("arch", arch)
-	// TODO: should add template support here probably... for now, let's use
-	// archive's template
+	// TODO: should add template support here probably... for now, let's use archive's template
 	folder, err := nametemplate.Apply(ctx, binaries[0], ctx.Config.ProjectName)
 	if err != nil {
 		return err

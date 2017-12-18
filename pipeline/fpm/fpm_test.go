@@ -122,20 +122,6 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	assert.Error(t, Pipe{}.Run(ctx))
 }
 
-// TODO: wtf?
-func TestRunPipeWithExtraFiles(t *testing.T) {
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Parallelism: runtime.NumCPU(),
-		Config: config.Project{
-			FPM: config.FPM{
-				Formats: []string{"deb", "rpm"},
-			},
-		},
-	}
-	assert.NoError(t, Pipe{}.Run(ctx))
-}
-
 func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
