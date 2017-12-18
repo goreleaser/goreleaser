@@ -37,7 +37,7 @@ lint:
 .PHONY: lint
 
 # Run all the tests and code checks
-ci: test lint
+ci: build test lint
 .PHONY: ci
 
 # Build a beta version of goreleaser
