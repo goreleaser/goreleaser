@@ -1,11 +1,15 @@
 package artifact
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/sync/errgroup"
 )
+
+// ensure Type implements the stringer interface...
+var _ fmt.Stringer = Type(0)
 
 func TestAdd(t *testing.T) {
 	var g errgroup.Group
