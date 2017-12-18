@@ -298,6 +298,38 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
+func TestRunPipe_ArtifactoryDown(t *testing.T) {
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(t, err)
+	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
+	assert.NoError(t, err)
+
+	var ctx = context.New(config.Project{
+		ProjectName: "goreleaser",
+		Dist:        folder,
+		Artifactories: []config.Artifactory{
+			{
+				Name:     "production",
+				Mode:     "archive",
+				Target:   "http://localhost:1234/example-repo-local/{{ .ProjectName }}/{{ .Version }}/",
+				Username: "deployuser",
+			},
+		},
+	})
+	ctx.Version = "2.0.0"
+	ctx.Env = map[string]string{
+		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
+	}
+	ctx.Publish = true
+	ctx.Artifacts.Add(artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "bin.tar.gz",
+		Path: tarfile.Name(),
+	})
+
+	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: Put http://localhost:1234/example-repo-local/goreleaser/2.0.0/bin.tar.gz: dial tcp 127.0.0.1:1234: getsockopt: connection refused`)
+}
+
 func TestRunPipe_TargetTemplateError(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
