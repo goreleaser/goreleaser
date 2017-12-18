@@ -1,5 +1,6 @@
 // Package archiveformat provides functions to get the format of given package
 // based on the config
+// TODO: this can be moved inside the archive pipe package
 package archiveformat
 
 import (
