@@ -44,8 +44,8 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	}
 	defer file.Close() // nolint: errcheck
 
-	// TODO: parallelism should be considered here as well.
 	var g errgroup.Group
+	var semaphore = make(chan bool, ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(
 		artifact.Or(
 			artifact.ByType(artifact.UploadableArchive),
@@ -53,8 +53,12 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 			artifact.ByType(artifact.LinuxPackage),
 		),
 	).List() {
+		semaphore <- true
 		artifact := artifact
 		g.Go(func() error {
+			defer func() {
+				<-semaphore
+			}()
 			return checksums(ctx, file, artifact)
 		})
 	}
