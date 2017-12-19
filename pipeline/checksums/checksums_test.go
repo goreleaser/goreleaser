@@ -17,7 +17,7 @@ func TestDescription(t *testing.T) {
 
 func TestPipe(t *testing.T) {
 	var binary = "binary"
-	var checksums = binary + "_checksums.txt"
+	var checksums = binary + "_bar_checksums.txt"
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(t, err)
 	var file = filepath.Join(folder, binary)
@@ -27,10 +27,11 @@ func TestPipe(t *testing.T) {
 			Dist:        folder,
 			ProjectName: binary,
 			Checksum: config.Checksum{
-				NameTemplate: "{{ .ProjectName }}_checksums.txt",
+				NameTemplate: "{{ .ProjectName }}_{{ .Env.FOO }}_checksums.txt",
 			},
 		},
 	)
+	ctx.Env = map[string]string{"FOO": "bar"}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name: binary,
 		Path: file,
