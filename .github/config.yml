@@ -1,2 +1,7 @@
 todo:
-  keyword: "TODO: "
+  keyword: "TODO:"
+  caseSensitive: true
+  blobLines: 5
+  autoAssign: true
+  label: true
+  reopenClosed: true
