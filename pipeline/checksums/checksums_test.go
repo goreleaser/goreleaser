@@ -37,6 +37,11 @@ func TestPipe(t *testing.T) {
 		Path: file,
 		Type: artifact.UploadableBinary,
 	})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name: binary + ".tar.gz",
+		Path: file,
+		Type: artifact.UploadableArchive,
+	})
 	assert.NoError(t, Pipe{}.Run(ctx))
 	var artifacts []string
 	for _, a := range ctx.Artifacts.List() {
@@ -45,7 +50,8 @@ func TestPipe(t *testing.T) {
 	assert.Contains(t, artifacts, checksums, binary)
 	bts, err := ioutil.ReadFile(filepath.Join(folder, checksums))
 	assert.NoError(t, err)
-	assert.Equal(t, "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary\n", string(bts))
+	assert.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary")
+	assert.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary.tar.gz")
 }
 
 func TestPipeFileNotExist(t *testing.T) {
