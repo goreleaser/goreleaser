@@ -16,6 +16,7 @@ checksum:
   # - ProjectName
   # - Tag
   # - Version (Git tag without `v` prefix)
+  # - Env (environment variables)
   # Default is `{{ .ProjectName }}_{{ .Version }}_checksums.txt`.
   name_template: "{{ .ProjectName }}_checksums.txt"
 ```
