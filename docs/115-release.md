@@ -45,7 +45,7 @@ changelog:
   filters:
     # commit messages matching the regexp listed here will be removed from
     # the changelog
-    # Default is emtpy
+    # Default is empty
     exclude:
       - '^docs:'
       - typo

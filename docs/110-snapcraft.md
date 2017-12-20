@@ -54,7 +54,7 @@ snapcraft:
     drumroll:
 
       # If your app requires extra permissions to work outside of its default
-      # confined space, delcare them here.
+      # confined space, declare them here.
       # You can read the documentation about the available plugs and the
       # things they allow:
       # https://snapcraft.io/docs/reference/interfaces).

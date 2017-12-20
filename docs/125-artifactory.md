@@ -13,7 +13,7 @@ each configured Artifactory.
 
 If you have only one Artifactory instance,
 the configuration is as easy as adding the
-upload target and a usernameto your `.goreleaser.yml` file:
+upload target and a username to your `.goreleaser.yml` file:
 
 ```yaml
 artifactories:
@@ -59,7 +59,7 @@ _Attention_: Variables _Os_, _Arch_ and _Arm_ are only supported in upload mode 
 Your configured username needs to be authenticated against your Artifactory.
 
 The password or API key will be stored in a environment variable.
-The confgured name of your Artifactory instance will be used.
+The configured name of your Artifactory instance will be used.
 With this way we support auth for multiple instances.
 This also means that the `name` per configured instance needs to be unique
 per goreleaser configuration.

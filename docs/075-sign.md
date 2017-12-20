@@ -10,7 +10,7 @@ Signing works in combination with checksum files and it is generally sufficient
 to sign the checksum files only.
 
 The default is configured to create a detached signature for the checksum files
-with [GunPG](https://www.gnupg.org/) and your default key. To enable signing
+with [GnuPG](https://www.gnupg.org/) and your default key. To enable signing
 just add
 
 ```yaml
