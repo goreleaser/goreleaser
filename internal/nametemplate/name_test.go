@@ -9,7 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/tj/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNameTemplate(t *testing.T) {
