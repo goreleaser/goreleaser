@@ -10,7 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 )
 
-var deprecatedBinary = regexp.MustCompile("\\{\\{ ?\\.Binary ?\\}\\}")
+var deprecatedBinary = regexp.MustCompile(`\{\{ ?\.Binary ?\}\}`)
 
 // Apply applies the name template to the given artifact and name
 // TODO: this should be refactored alongside with other name template related todos
