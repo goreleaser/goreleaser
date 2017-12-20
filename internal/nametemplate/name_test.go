@@ -1,8 +1,11 @@
 package nametemplate
 
 import (
+	"bytes"
 	"testing"
 
+	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -49,4 +52,32 @@ func TestInvalidNameTemplate(t *testing.T) {
 	}, "bin")
 	assert.EqualError(t, err, `template: archive_name:1: unexpected "}" in operand`)
 	assert.Empty(t, s)
+}
+
+func TestDeprecatedFieldOnNameTemplate(t *testing.T) {
+	for _, temp := range []string{
+		"{{.Binary}}",
+		"{{ .Binary}}",
+		"{{.Binary }}",
+		"{{ .Binary }}",
+	} {
+		t.Run(temp, func(tt *testing.T) {
+			var out bytes.Buffer
+			log.SetHandler(cli.New(&out))
+			var ctx = context.New(config.Project{
+				ProjectName: "proj",
+				Archive: config.Archive{
+					NameTemplate: temp,
+				},
+			})
+			s, err := Apply(ctx, artifact.Artifact{
+				Goos:   "windows",
+				Goarch: "amd64",
+				Name:   "winbin",
+			}, "bin")
+			assert.NoError(tt, err)
+			assert.Equal(tt, "bin", s)
+			assert.Contains(tt, out.String(), "you are using a deprecated field on your template")
+		})
+	}
 }
