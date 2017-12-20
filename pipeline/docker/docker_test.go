@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/stretchr/testify/assert"
+	"syscall"
 )
 
 func killAndRm(t *testing.T) {
@@ -235,4 +236,61 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "bar", docker.Binary)
 	assert.Equal(t, "{{ .Version }}", docker.TagTemplate)
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
+}
+
+func TestLinkFile(t *testing.T) {
+	const srcFile = "/tmp/test"
+	const dstFile = "/tmp/linked"
+	err := ioutil.WriteFile(srcFile, []byte("foo"), 0644)
+	if err != nil {
+		t.Log("Cannot setup test file")
+		t.Fail()
+	}
+	err = link(srcFile, dstFile)
+	if err != nil {
+		t.Log("Failed to link: ", err)
+		t.Fail()
+	}
+	if inode(srcFile) != inode(dstFile) {
+		t.Log("Inodes do not match, destination file is not a link")
+		t.Fail()
+	}
+	// cleanup
+	os.Remove(srcFile)
+	os.Remove(dstFile)
+}
+
+func TestLinkDirectory(t *testing.T) {
+	const srcDir = "/tmp/testdir"
+	const testFile = "test"
+	const dstDir = "/tmp/linkedDir"
+
+	os.Mkdir(srcDir, 0755)
+	err := ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
+	if err != nil {
+		t.Log("Cannot setup test file")
+		t.Fail()
+	}
+	err = directoryLink(srcDir, dstDir, nil)
+	if err != nil {
+		t.Log("Failed to link: ", err)
+		t.Fail()
+	}
+	if inode(srcDir+"/"+testFile) != inode(dstDir+"/"+testFile) {
+		t.Log("Inodes do not match, destination file is not a link")
+		t.Fail()
+	}
+
+	// cleanup
+	os.RemoveAll(srcDir)
+	os.RemoveAll(dstDir)
+}
+
+func inode(file string) uint64 {
+	fileInfo, err := os.Stat(file)
+	if err != nil {
+		return 0
+	}
+	stat := fileInfo.Sys().(*syscall.Stat_t)
+	return stat.Ino
 }
