@@ -286,6 +286,42 @@ func TestLinkDirectory(t *testing.T) {
 	os.RemoveAll(dstDir)
 }
 
+func TestLinkTwoLevelDirectory(t *testing.T) {
+	const srcDir = "/tmp/testdir"
+	const srcLevel2 = srcDir+"/level2"
+	const testFile = "test"
+	const dstDir = "/tmp/linkedDir"
+
+	os.Mkdir(srcDir, 0755)
+	os.Mkdir(srcLevel2, 0755)
+	err := ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
+	if err != nil {
+		t.Log("Cannot setup test file")
+		t.Fail()
+	}
+	err = ioutil.WriteFile(srcLevel2+"/"+testFile, []byte("foo"), 0644)
+	if err != nil {
+		t.Log("Cannot setup test file")
+		t.Fail()
+	}
+	err = directoryLink(srcDir, dstDir, nil)
+	if err != nil {
+		t.Log("Failed to link: ", err)
+		t.Fail()
+	}
+	if inode(srcDir+"/"+testFile) != inode(dstDir+"/"+testFile) {
+		t.Log("Inodes do not match")
+		t.Fail()
+	}
+	if inode(srcLevel2+"/"+testFile) != inode(dstDir+"/level2/"+testFile) {
+		t.Log("Inodes do not match")
+		t.Fail()
+	}
+	// cleanup
+	os.RemoveAll(srcDir)
+	os.RemoveAll(dstDir)
+}
+
 func inode(file string) uint64 {
 	fileInfo, err := os.Stat(file)
 	if err != nil {
