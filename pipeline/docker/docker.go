@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"text/template"
 
 	"github.com/apex/log"
@@ -16,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pipeline"
-	"io/ioutil"
 )
 
 // ErrNoDocker is shown when docker cannot be found in $PATH
@@ -144,60 +144,24 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 	return publish(ctx, docker, image, latest)
 }
 
-// link a file or directory hard
+// walks the src, recreating dirs and hard-linking files
 func link(src, dest string) error {
-	info, err := os.Stat(src)
-	if err != nil {
-		return err
-	}
-	if info.IsDir() {
-		return directoryLink(src, dest, info)
-	}
-	return fileLink(src, dest)
-}
-
-// directoryLink recursively creates all subdirectories and links all files hard
-func directoryLink(src, dest string, info os.FileInfo) error {
-	if info == nil {
-		i, err := os.Stat(src)
-		if err != nil {
-			return err
-		}
-		info = i
-	}
-	if err := os.MkdirAll(dest, info.Mode()); err != nil {
-		return err
-	}
-	infos, err := ioutil.ReadDir(src)
-	if err != nil {
-		return err
-	}
-	for _, info := range infos {
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		// We have the following:
+		// - src = "a/b"
+		// - dest = "dist/linuxamd64/b"
+		// - path = "a/b/c.txt"
+		// So we join "a/b" with "c.txt" and use it as the destination.
+		var dst = filepath.Join(dest, strings.Replace(path, src, "", 1))
+		log.WithFields(log.Fields{
+			"src": path,
+			"dst": dst,
+		}).Info("extra file")
 		if info.IsDir() {
-			err := directoryLink(
-				filepath.Join(src, info.Name()),
-				filepath.Join(dest, info.Name()),
-				info,
-			)
-			if err != nil {
-				return err
-			}
-		} else {
-			err := fileLink(
-				filepath.Join(src, info.Name()),
-				filepath.Join(dest, info.Name()),
-			)
-			if err != nil {
-				return err
-			}
+			return os.MkdirAll(dst, info.Mode())
 		}
-	}
-	return nil
-}
-
-// fileLink links a file hard
-func fileLink(src, dest string) error {
-	return os.Link(src, dest)
+		return os.Link(path, dst)
+	})
 }
 
 func publish(ctx *context.Context, docker config.Docker, image, latest string) error {
