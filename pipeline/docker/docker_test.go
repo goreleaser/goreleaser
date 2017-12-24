@@ -271,7 +271,7 @@ func TestLinkDirectory(t *testing.T) {
 		t.Log("Cannot setup test file")
 		t.Fail()
 	}
-	err = directoryLink(srcDir, dstDir, nil)
+	err = link(srcDir, dstDir)
 	if err != nil {
 		t.Log("Failed to link: ", err)
 		t.Fail()
@@ -304,7 +304,7 @@ func TestLinkTwoLevelDirectory(t *testing.T) {
 		t.Log("Cannot setup test file")
 		t.Fail()
 	}
-	err = directoryLink(srcDir, dstDir, nil)
+	err = link(srcDir, dstDir)
 	if err != nil {
 		t.Log("Failed to link: ", err)
 		t.Fail()
