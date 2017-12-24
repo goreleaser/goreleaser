@@ -10,9 +10,16 @@ setup:
 	go get -u github.com/pierrre/gotestcover
 	go get -u golang.org/x/tools/cmd/cover
 	go get -u github.com/apex/static/cmd/static-docs
+	go get -u github.com/caarlos0/bandep
 	dep ensure
 	gometalinter --install
+	echo "make check" > .git/hooks/pre-commit
+	chmod +x .git/hooks/pre-commit
 .PHONY: setup
+
+check:
+	bandep --ban github.com/tj/assert
+.PHONY: check
 
 # Run all the tests
 test:
