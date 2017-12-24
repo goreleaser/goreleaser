@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"text/template"
 
 	"github.com/apex/log"
@@ -127,7 +128,7 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 		return errors.Wrap(err, "failed to link dockerfile")
 	}
 	for _, file := range docker.Files {
-		if err := os.Link(file, filepath.Join(root, filepath.Base(file))); err != nil {
+		if err := link(file, filepath.Join(root, filepath.Base(file))); err != nil {
 			return errors.Wrapf(err, "failed to link extra file '%s'", file)
 		}
 	}
@@ -141,6 +142,26 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 	}
 
 	return publish(ctx, docker, image, latest)
+}
+
+// walks the src, recreating dirs and hard-linking files
+func link(src, dest string) error {
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		// We have the following:
+		// - src = "a/b"
+		// - dest = "dist/linuxamd64/b"
+		// - path = "a/b/c.txt"
+		// So we join "a/b" with "c.txt" and use it as the destination.
+		var dst = filepath.Join(dest, strings.Replace(path, src, "", 1))
+		log.WithFields(log.Fields{
+			"src": path,
+			"dst": dst,
+		}).Info("extra file")
+		if info.IsDir() {
+			return os.MkdirAll(dst, info.Mode())
+		}
+		return os.Link(path, dst)
+	})
 }
 
 func publish(ctx *context.Context, docker config.Docker, image, latest string) error {
