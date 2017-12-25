@@ -2,6 +2,7 @@ package brew
 
 import (
 	"bytes"
+	"flag"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -13,6 +14,8 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
+
+var update = flag.Bool("update", false, "update .golden files")
 
 func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.String())
@@ -143,11 +146,12 @@ func TestRunPipe(t *testing.T) {
 	t.Run("default git url", func(tt *testing.T) {
 		assert.NoError(tt, doRun(ctx, client))
 		assert.True(tt, client.CreatedFile)
-
-		bts, err := ioutil.ReadFile("testdata/run_pipe.rb")
+		var golden = "testdata/run_pipe.rb.golden"
+		if *update {
+			ioutil.WriteFile(golden, []byte(client.Content), 0655)
+		}
+		bts, err := ioutil.ReadFile(golden)
 		assert.NoError(tt, err)
-		// TODO: make writing this file toggleable somehow?
-		// ioutil.WriteFile("testdata/run_pipe.rb", []byte(client.Content), 0644)
 		assert.Equal(tt, string(bts), client.Content)
 	})
 
@@ -155,11 +159,12 @@ func TestRunPipe(t *testing.T) {
 		ctx.Config.GitHubURLs.Download = "http://github.example.org"
 		assert.NoError(tt, doRun(ctx, client))
 		assert.True(tt, client.CreatedFile)
-
-		bts, err := ioutil.ReadFile("testdata/run_pipe_enterprise.rb")
+		var golden = "testdata/run_pipe_enterprise.rb.golden"
+		if *update {
+			ioutil.WriteFile(golden, []byte(client.Content), 0644)
+		}
+		bts, err := ioutil.ReadFile(golden)
 		assert.NoError(tt, err)
-		// TODO: make writing this file toggleable somehow?
-		// ioutil.WriteFile("testdata/run_pipe_enterprise.rb", []byte(client.Content), 0644)
 		assert.Equal(tt, string(bts), client.Content)
 	})
 }
