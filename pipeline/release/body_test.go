@@ -1,6 +1,7 @@
 package release
 
 import (
+	"flag"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -10,6 +11,8 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/stretchr/testify/assert"
 )
+
+var update = flag.Bool("update", false, "update .golden files")
 
 func TestDescribeBody(t *testing.T) {
 	var changelog = "\nfeature1: description\nfeature2: other description"
@@ -28,10 +31,12 @@ func TestDescribeBody(t *testing.T) {
 	out, err := describeBodyVersion(ctx, "go version go1.9 darwin/amd64")
 	assert.NoError(t, err)
 
-	bts, err := ioutil.ReadFile("testdata/release1.txt")
+	var golden = "testdata/release1.golden"
+	if *update {
+		ioutil.WriteFile(golden, out.Bytes(), 0755)
+	}
+	bts, err := ioutil.ReadFile(golden)
 	assert.NoError(t, err)
-	// ioutil.WriteFile("testdata/release1.txt", out.Bytes(), 0755)
-
 	assert.Equal(t, string(bts), out.String())
 }
 
@@ -43,9 +48,12 @@ func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
 	out, err := describeBodyVersion(ctx, "go version go1.9 darwin/amd64")
 	assert.NoError(t, err)
 
-	bts, err := ioutil.ReadFile("testdata/release2.txt")
+	var golden = "testdata/release2.golden"
+	if *update {
+		ioutil.WriteFile(golden, out.Bytes(), 0655)
+	}
+	bts, err := ioutil.ReadFile(golden)
 	assert.NoError(t, err)
-	// ioutil.WriteFile("testdata/release2.txt", out.Bytes(), 0755)
 
 	assert.Equal(t, string(bts), out.String())
 }
