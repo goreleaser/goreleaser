@@ -175,7 +175,6 @@ func link(src, dest string) error {
 }
 
 func publish(ctx *context.Context, docker config.Docker, image, latest string) error {
-	// TODO: improve this so it can log it to stdout
 	if !ctx.Publish {
 		log.Warn("skipping push because --skip-publish is set")
 		return nil
