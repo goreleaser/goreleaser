@@ -129,6 +129,8 @@ type Release struct {
 
 // FPM config
 type FPM struct {
+	NameTemplate string            `yaml:"name_template,omitempty"`
+	Replacements map[string]string `yaml:",omitempty"`
 	Formats      []string          `yaml:",omitempty"`
 	Dependencies []string          `yaml:",omitempty"`
 	Conflicts    []string          `yaml:",omitempty"`

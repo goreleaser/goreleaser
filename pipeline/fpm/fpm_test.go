@@ -44,11 +44,8 @@ func TestRunPipe(t *testing.T) {
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
-			// TODO: remove this when fpm have its own name template
-			Archive: config.Archive{
-				NameTemplate: "foo",
-			},
 			FPM: config.FPM{
+				NameTemplate: defaultNameTemplate,
 				Formats:      []string{"deb", "rpm"},
 				Dependencies: []string{"make"},
 				Conflicts:    []string{"git"},
@@ -92,6 +89,27 @@ func TestNoFPMInPath(t *testing.T) {
 	assert.EqualError(t, Pipe{}.Run(ctx), ErrNoFPM.Error())
 }
 
+func TestInvalidNameTemplate(t *testing.T) {
+	var ctx = &context.Context{
+		Parallelism: runtime.NumCPU(),
+		Artifacts:   artifact.New(),
+		Config: config.Project{
+			FPM: config.FPM{
+				NameTemplate: "{{.Foo}",
+				Formats: []string{"deb"},
+			},
+		},
+	}
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "mybin",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+	})
+	assert.Contains(t, Pipe{}.Run(ctx).Error(), `template: {{.Foo}:1: unexpected "}" in operand`)
+}
+
+
 func TestCreateFileDoesntExist(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
@@ -119,7 +137,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.Binary,
 	})
-	assert.Error(t, Pipe{}.Run(ctx))
+	assert.Contains(t, Pipe{}.Run(ctx).Error(), `dist/mybin/mybin', does it exist?`)
 }
 
 func TestDefault(t *testing.T) {
@@ -130,6 +148,7 @@ func TestDefault(t *testing.T) {
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, "/usr/local/bin", ctx.Config.FPM.Bindir)
+	assert.Equal(t, defaultNameTemplate, ctx.Config.FPM.NameTemplate)
 }
 
 func TestDefaultSet(t *testing.T) {
@@ -137,9 +156,11 @@ func TestDefaultSet(t *testing.T) {
 		Config: config.Project{
 			FPM: config.FPM{
 				Bindir: "/bin",
+				NameTemplate: "foo",
 			},
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, "/bin", ctx.Config.FPM.Bindir)
+	assert.Equal(t, "foo", ctx.Config.FPM.NameTemplate)
 }
