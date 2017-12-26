@@ -49,10 +49,13 @@ func killAndRm(t *testing.T) {
 
 func TestRunPipe(t *testing.T) {
 	var table = map[string]struct {
-		docker config.Docker
-		err    string
+		docker  config.Docker
+		publish bool
+		expect  []string
+		err     string
 	}{
 		"valid": {
+			publish: true,
 			docker: config.Docker{
 				Image:       registry + "goreleaser/test_run_pipe",
 				Goos:        "linux",
@@ -65,22 +68,67 @@ func TestRunPipe(t *testing.T) {
 					"testdata/extra_file.txt",
 				},
 			},
-			err: "",
-		},
-		"invalid": {
-			docker: config.Docker{
-				Image:       registry + "goreleaser/test_run_pipe_nope",
-				Goos:        "linux",
-				Goarch:      "amd64",
-				Dockerfile:  "testdata/Dockerfile",
-				Binary:      "otherbin",
-				TagTemplate: "{{.Version}}",
+			expect: []string{
+				registry + "goreleaser/test_run_pipe:v1.0.0-123",
+				registry + "goreleaser/test_run_pipe:latest",
 			},
 			err: "",
 		},
-		"template_error": {
+		"valid_no_latest": {
+			publish: true,
 			docker: config.Docker{
-				Image:       registry + "goreleaser/test_run_pipe_template_error",
+				Image:       registry + "goreleaser/test_run_pipe",
+				Goos:        "linux",
+				Goarch:      "amd64",
+				Dockerfile:  "testdata/Dockerfile",
+				Binary:      "mybin",
+				Latest:      false,
+				TagTemplate: "{{.Version}}",
+				Files: []string{
+					"testdata/extra_file.txt",
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_run_pipe:1.0.0",
+			},
+			err: "",
+		},
+		"valid_dont_publish": {
+			publish: false,
+			docker: config.Docker{
+				Image:       registry + "goreleaser/test_run_pipe",
+				Goos:        "linux",
+				Goarch:      "amd64",
+				Dockerfile:  "testdata/Dockerfile",
+				Binary:      "mybin",
+				Latest:      true,
+				TagTemplate: "{{.Tag}}-{{.Env.FOO}}",
+				Files: []string{
+					"testdata/extra_file.txt",
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_run_pipe:v1.0.0-123",
+				registry + "goreleaser/test_run_pipe:latest",
+			},
+			err: "",
+		},
+		"bad_dockerfile": {
+			publish: true,
+			docker: config.Docker{
+				Image:       registry + "goreleaser/test_run_pipe",
+				Goos:        "linux",
+				Goarch:      "amd64",
+				Dockerfile:  "testdata/Dockerfile.bad",
+				Binary:      "mybin",
+				TagTemplate: "{{.Version}}",
+			},
+			err: "pull access denied for nope, repository does not exist",
+		},
+		"template_error": {
+			publish: true,
+			docker: config.Docker{
+				Image:       registry + "goreleaser/test_run_pipe",
 				Goos:        "linux",
 				Goarch:      "amd64",
 				Dockerfile:  "testdata/Dockerfile",
@@ -91,17 +139,23 @@ func TestRunPipe(t *testing.T) {
 			err: `template: tag:1: unexpected "}" in operand`,
 		},
 		"no_permissions": {
+			publish: true,
 			docker: config.Docker{
-				Image:       "docker.io/nope/nope",
+				Image:       "docker.io/nope",
 				Goos:        "linux",
 				Goarch:      "amd64",
 				Binary:      "mybin",
 				Dockerfile:  "testdata/Dockerfile",
 				TagTemplate: "{{.Tag}}",
 			},
+			expect: []string{
+				"docker.io/nope:latest",
+				"docker.io/nope:v1.0.0",
+			},
 			err: `requested access to the resource is denied`,
 		},
 		"dockerfile_doesnt_exist": {
+			publish: true,
 			docker: config.Docker{
 				Image:       "whatever",
 				Goos:        "linux",
@@ -113,6 +167,7 @@ func TestRunPipe(t *testing.T) {
 			err: `failed to link dockerfile`,
 		},
 		"extra_file_doesnt_exist": {
+			publish: true,
 			docker: config.Docker{
 				Image:  "whatever",
 				Goos:   "linux",
@@ -127,6 +182,7 @@ func TestRunPipe(t *testing.T) {
 			err: `failed to link extra file 'testdata/nope.txt'`,
 		},
 		"no_matching_binaries": {
+			publish: true,
 			docker: config.Docker{
 				Image:      "whatever",
 				Goos:       "darwin",
@@ -136,14 +192,6 @@ func TestRunPipe(t *testing.T) {
 			},
 			err: "",
 		},
-	}
-	var images = []string{
-		registry + "goreleaser/test_run_pipe:v1.0.0-123",
-		registry + "goreleaser/test_run_pipe:latest",
-	}
-	// this might fail as the image doesnt exist yet, so lets ignore the error
-	for _, img := range images {
-		_ = exec.Command("docker", "rmi", img).Run()
 	}
 
 	killAndRm(t)
@@ -163,7 +211,7 @@ func TestRunPipe(t *testing.T) {
 
 			var ctx = &context.Context{
 				Version:     "1.0.0",
-				Publish:     true,
+				Publish:     docker.publish,
 				Parallelism: 4,
 				Artifacts:   artifact.New(),
 				Git: context.GitInfo{
@@ -192,27 +240,28 @@ func TestRunPipe(t *testing.T) {
 					})
 				}
 			}
+
+			// this might fail as the image doesnt exist yet, so lets ignore the error
+			for _, img := range docker.expect {
+				_ = exec.Command("docker", "rmi", img).Run()
+			}
+
 			err = Pipe{}.Run(ctx)
 			if docker.err == "" {
 				assert.NoError(tt, err)
 			} else {
 				assert.Contains(tt, err.Error(), docker.err)
 			}
+
+			// this might should not fail as the image should have been created when
+			// the step ran
+			for _, img := range docker.expect {
+				t.Log("removing docker image", img)
+				assert.NoError(t, exec.Command("docker", "rmi", img).Run(), "could not delete image", img)
+			}
+
 		})
 	}
-
-	// this might should not fail as the image should have been created when
-	// the step ran
-	for _, img := range images {
-		assert.NoError(t, exec.Command("docker", "rmi", img).Run())
-	}
-	// the test_run_pipe_nope image should not have been created, so deleting
-	// it should fail
-	assert.Error(t,
-		exec.Command(
-			"docker", "rmi", registry+"goreleaser/test_run_pipe_nope:1.0.0",
-		).Run(),
-	)
 }
 
 func TestDescription(t *testing.T) {

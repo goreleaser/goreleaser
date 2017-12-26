@@ -1,0 +1,3 @@
+FROM nope
+ADD mybin /
+
