@@ -16,16 +16,47 @@ import (
 	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/nametemplate"
+	"github.com/goreleaser/goreleaser/internal/template"
 )
 
-const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+const (
+	defaultNameTemplate       = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+	defaultBinaryNameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+)
 
 // Pipe for archive
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "creating archives"
+}
+
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	var archive = &ctx.Config.Archive
+	if archive.Format == "" {
+		archive.Format = "tar.gz"
+	}
+	if len(archive.Files) == 0 {
+		archive.Files = []string{
+			"licence*",
+			"LICENCE*",
+			"license*",
+			"LICENSE*",
+			"readme*",
+			"README*",
+			"changelog*",
+			"CHANGELOG*",
+		}
+	}
+	if archive.NameTemplate == "" {
+		if archive.Format == "binary" {
+			archive.NameTemplate = defaultBinaryNameTemplate
+		} else {
+			archive.NameTemplate = defaultNameTemplate
+		}
+	}
+	return nil
 }
 
 // Run the pipe
@@ -44,32 +75,12 @@ func (Pipe) Run(ctx *context.Context) error {
 	return g.Wait()
 }
 
-// Default sets the pipe defaults
-func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Archive.NameTemplate == "" {
-		ctx.Config.Archive.NameTemplate = defaultNameTemplate
-	}
-	if ctx.Config.Archive.Format == "" {
-		ctx.Config.Archive.Format = "tar.gz"
-	}
-	if len(ctx.Config.Archive.Files) == 0 {
-		ctx.Config.Archive.Files = []string{
-			"licence*",
-			"LICENCE*",
-			"license*",
-			"LICENSE*",
-			"readme*",
-			"README*",
-			"changelog*",
-			"CHANGELOG*",
-		}
-	}
-	return nil
-}
-
 func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 	var format = packageFormat(ctx, artifacts[0].Goos)
-	folder, err := nametemplate.Apply(ctx, artifacts[0], ctx.Config.ProjectName)
+	folder, err := template.Apply(
+		ctx.Config.Archive.NameTemplate,
+		template.NewFields(ctx, artifacts[0], ctx.Config.Archive.Replacements),
+	)
 	if err != nil {
 		return err
 	}
@@ -111,7 +122,8 @@ func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 func skip(ctx *context.Context, artifacts []artifact.Artifact) error {
 	for _, a := range artifacts {
 		log.WithField("binary", a.Name).Info("skip archiving")
-		name, err := nametemplate.Apply(ctx, a, a.Extra["Binary"])
+		var fields = template.NewFields(ctx, a, ctx.Config.Archive.Replacements)
+		name, err := template.Apply(ctx.Config.Archive.NameTemplate, fields)
 		if err != nil {
 			return err
 		}

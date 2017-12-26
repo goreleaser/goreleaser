@@ -8,12 +8,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDescription(t *testing.T) {
@@ -122,7 +121,7 @@ func TestRunPipeBinary(t *testing.T) {
 			Dist: dist,
 			Archive: config.Archive{
 				Format:       "binary",
-				NameTemplate: defaultNameTemplate,
+				NameTemplate: defaultBinaryNameTemplate,
 			},
 		},
 	)
@@ -295,6 +294,18 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "foo", ctx.Config.Archive.NameTemplate)
 	assert.Equal(t, "zip", ctx.Config.Archive.Format)
 	assert.Equal(t, "foo", ctx.Config.Archive.Files[0])
+}
+
+func TestDefaultFormatBinary(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archive: config.Archive{
+				Format: "binary",
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, defaultBinaryNameTemplate, ctx.Config.Archive.NameTemplate)
 }
 
 func TestFormatFor(t *testing.T) {

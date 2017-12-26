@@ -25,7 +25,7 @@ func NewFields(ctx *context.Context, a artifact.Artifact, replacements map[strin
 		Version:     ctx.Version,
 		Tag:         ctx.Git.CurrentTag,
 		ProjectName: ctx.Config.ProjectName,
-		Binary:      a.Name,
+		Binary:      a.Extra["Binary"],
 		Os:          replace(replacements, a.Goos),
 		Arch:        replace(replacements, a.Goarch),
 		Arm:         replace(replacements, a.Goarm),

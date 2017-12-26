@@ -15,14 +15,29 @@ archive:
   # This is parsed with the Go template engine and the following variables
   # are available:
   # - ProjectName
+  # - Binary (Name of the binary if the packaging format is binary)
   # - Tag
   # - Version (Git tag without `v` prefix)
   # - Os
   # - Arch
   # - Arm (ARM version)
   # - Env (environment variables)
-  # Default is `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`.
+  # Defaults:
+  # - if format is `tar.gz` or `zip`:
+  #   - `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
+  # - if format is `binary`:
+  #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
   name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+  # Replacements for GOOS and GOARCH in the archive name.
+  # Keys should be valid GOOSs or GOARCHs.
+  # Values are the respective replacements.
+  # Default is empty.
+  replacements:
+    amd64: 64-bit
+    386: 32-bit
+    darwin: macOS
+    linux: Tux
 
   # Set to true, if you want all files in the archive to be in a single directory.
   # If set to true and you extract the archive 'goreleaser_Linux_arm64.tar.gz',
@@ -43,16 +58,6 @@ archive:
   format_overrides:
     - goos: windows
       format: zip
-
-  # Replacements for GOOS and GOARCH in the archive name.
-  # Keys should be valid GOOSs or GOARCHs.
-  # Values are the respective replacements.
-  # Default is empty.
-  replacements:
-    amd64: 64-bit
-    386: 32-bit
-    darwin: macOS
-    linux: Tux
 
   # Additional files/globs you want to add to the archive.
   # Defaults are any files matching `LICENCE*`, `LICENSE*`,
