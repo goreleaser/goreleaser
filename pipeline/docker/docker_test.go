@@ -7,12 +7,13 @@ import (
 	"path/filepath"
 	"testing"
 
+	"syscall"
+
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/stretchr/testify/assert"
-	"syscall"
 )
 
 func killAndRm(t *testing.T) {
@@ -92,9 +93,10 @@ func TestRunPipe(t *testing.T) {
 	for name, docker := range table {
 		t.Run(name, func(tt *testing.T) {
 			var ctx = &context.Context{
-				Version:   "1.0.0",
-				Publish:   true,
-				Artifacts: artifact.New(),
+				Version:     "1.0.0",
+				Publish:     true,
+				Parallelism: 4,
+				Artifacts:   artifact.New(),
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.0",
 				},
@@ -288,7 +290,7 @@ func TestLinkDirectory(t *testing.T) {
 
 func TestLinkTwoLevelDirectory(t *testing.T) {
 	const srcDir = "/tmp/testdir"
-	const srcLevel2 = srcDir+"/level2"
+	const srcLevel2 = srcDir + "/level2"
 	const testFile = "test"
 	const dstDir = "/tmp/linkedDir"
 

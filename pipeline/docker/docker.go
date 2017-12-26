@@ -12,6 +12,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -69,31 +70,39 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context) error {
-	// TODO: could be done in parallel.
+	var g errgroup.Group
+	sem := make(chan bool, ctx.Parallelism)
 	for _, docker := range ctx.Config.Dockers {
-		log.WithField("docker", docker).Debug("looking for binaries matching")
-		var binaries = ctx.Artifacts.Filter(
-			artifact.And(
-				artifact.ByGoos(docker.Goos),
-				artifact.ByGoarch(docker.Goarch),
-				artifact.ByGoarm(docker.Goarm),
-				artifact.ByType(artifact.Binary),
-				func(a artifact.Artifact) bool {
-					return a.Extra["Binary"] == docker.Binary
-				},
-			),
-		).List()
-		if len(binaries) == 0 {
-			log.Warn("no binaries found")
-		}
-		for _, binary := range binaries {
-			var err = process(ctx, docker, binary)
-			if err != nil && !pipeline.IsSkip(err) {
-				return err
+		docker := docker
+		sem <- true
+		g.Go(func() error {
+			defer func() {
+				<-sem
+			}()
+			log.WithField("docker", docker).Debug("looking for binaries matching")
+			var binaries = ctx.Artifacts.Filter(
+				artifact.And(
+					artifact.ByGoos(docker.Goos),
+					artifact.ByGoarch(docker.Goarch),
+					artifact.ByGoarm(docker.Goarm),
+					artifact.ByType(artifact.Binary),
+					func(a artifact.Artifact) bool {
+						return a.Extra["Binary"] == docker.Binary
+					},
+				),
+			).List()
+			if len(binaries) == 0 {
+				log.Warnf("no binaries found for %s", docker.Binary)
 			}
-		}
+			for _, binary := range binaries {
+				if err := process(ctx, docker, binary); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
 	}
-	return nil
+	return g.Wait()
 }
 
 func tagName(ctx *context.Context, docker config.Docker) (string, error) {
@@ -165,12 +174,9 @@ func link(src, dest string) error {
 }
 
 func publish(ctx *context.Context, docker config.Docker, image, latest string) error {
-	// TODO: improve this so it can log it to stdout
 	if !ctx.Publish {
-		return pipeline.Skip("--skip-publish is set")
-	}
-	if ctx.Config.Release.Draft {
-		return pipeline.Skip("release is marked as draft")
+		log.Warn("skipping push because --skip-publish is set")
+		return nil
 	}
 	if err := dockerPush(ctx, image); err != nil {
 		return err
