@@ -1,13 +1,13 @@
 package docker
 
 import (
+	"flag"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"testing"
-
 	"syscall"
+	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -16,41 +16,60 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var it = flag.Bool("it", false, "push images to docker hub")
+var registry = "localhost:5000/"
+
+func TestMain(m *testing.M) {
+	if !*it {
+		registry = "docker.io/"
+	}
+	os.Exit(m.Run())
+}
+
+func start(t *testing.T) {
+	if !*it {
+		return
+	}
+	if err := exec.Command(
+		"docker", "run", "-d", "-p", "5000:5000", "--name", "registry", "registry:2",
+	).Run(); err != nil {
+		t.Log("failed to start docker registry", err)
+		t.FailNow()
+	}
+}
+
 func killAndRm(t *testing.T) {
+	if !*it {
+		return
+	}
 	t.Log("killing registry")
 	_ = exec.Command("docker", "kill", "registry").Run()
 	_ = exec.Command("docker", "rm", "registry").Run()
 }
 
 func TestRunPipe(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
-	var dist = filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
-	_, err = os.Create(binPath)
-	assert.NoError(t, err)
-
 	var table = map[string]struct {
 		docker config.Docker
 		err    string
 	}{
 		"valid": {
 			docker: config.Docker{
-				Image:       "localhost:5000/goreleaser/test_run_pipe",
+				Image:       registry + "goreleaser/test_run_pipe",
 				Goos:        "linux",
 				Goarch:      "amd64",
 				Dockerfile:  "testdata/Dockerfile",
 				Binary:      "mybin",
 				Latest:      true,
 				TagTemplate: "{{.Tag}}-{{.Env.FOO}}",
+				Files: []string{
+					"testdata/extra_file.txt",
+				},
 			},
 			err: "",
 		},
 		"invalid": {
 			docker: config.Docker{
-				Image:       "localhost:5000/goreleaser/test_run_pipe_nope",
+				Image:       registry + "goreleaser/test_run_pipe_nope",
 				Goos:        "linux",
 				Goarch:      "amd64",
 				Dockerfile:  "testdata/Dockerfile",
@@ -61,7 +80,7 @@ func TestRunPipe(t *testing.T) {
 		},
 		"template_error": {
 			docker: config.Docker{
-				Image:       "localhost:5000/goreleaser/test_run_pipe_template_error",
+				Image:       registry + "goreleaser/test_run_pipe_template_error",
 				Goos:        "linux",
 				Goarch:      "amd64",
 				Dockerfile:  "testdata/Dockerfile",
@@ -71,10 +90,56 @@ func TestRunPipe(t *testing.T) {
 			},
 			err: `template: tag:1: unexpected "}" in operand`,
 		},
+		"no_permissions": {
+			docker: config.Docker{
+				Image:       "docker.io/nope/nope",
+				Goos:        "linux",
+				Goarch:      "amd64",
+				Binary:      "mybin",
+				Dockerfile:  "testdata/Dockerfile",
+				TagTemplate: "{{.Tag}}",
+			},
+			err: `requested access to the resource is denied`,
+		},
+		"dockerfile_doesnt_exist": {
+			docker: config.Docker{
+				Image:       "whatever",
+				Goos:        "linux",
+				Goarch:      "amd64",
+				Binary:      "mybin",
+				Dockerfile:  "testdata/Dockerfilezzz",
+				TagTemplate: "{{.Tag}}",
+			},
+			err: `failed to link dockerfile`,
+		},
+		"extra_file_doesnt_exist": {
+			docker: config.Docker{
+				Image:  "whatever",
+				Goos:   "linux",
+				Goarch: "amd64",
+				Binary: "mybin",
+				Files: []string{
+					"testdata/nope.txt",
+				},
+				Dockerfile:  "testdata/Dockerfile",
+				TagTemplate: "{{.Tag}}",
+			},
+			err: `failed to link extra file 'testdata/nope.txt'`,
+		},
+		"no_matching_binaries": {
+			docker: config.Docker{
+				Image:      "whatever",
+				Goos:       "darwin",
+				Goarch:     "amd64",
+				Binary:     "mybinnnn",
+				Dockerfile: "testdata/Dockerfile",
+			},
+			err: "",
+		},
 	}
 	var images = []string{
-		"localhost:5000/goreleaser/test_run_pipe:v1.0.0-123",
-		"localhost:5000/goreleaser/test_run_pipe:latest",
+		registry + "goreleaser/test_run_pipe:v1.0.0-123",
+		registry + "goreleaser/test_run_pipe:latest",
 	}
 	// this might fail as the image doesnt exist yet, so lets ignore the error
 	for _, img := range images {
@@ -82,16 +147,20 @@ func TestRunPipe(t *testing.T) {
 	}
 
 	killAndRm(t)
-	if err := exec.Command(
-		"docker", "run", "-d", "-p", "5000:5000", "--name", "registry", "registry:2",
-	).Run(); err != nil {
-		t.Log("failed to start docker registry", err)
-		t.FailNow()
-	}
+	start(t)
 	defer killAndRm(t)
 
 	for name, docker := range table {
 		t.Run(name, func(tt *testing.T) {
+			folder, err := ioutil.TempDir("", "archivetest")
+			assert.NoError(t, err)
+			var dist = filepath.Join(folder, "dist")
+			assert.NoError(t, os.Mkdir(dist, 0755))
+			assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+			var binPath = filepath.Join(dist, "mybin", "mybin")
+			_, err = os.Create(binPath)
+			assert.NoError(t, err)
+
 			var ctx = &context.Context{
 				Version:     "1.0.0",
 				Publish:     true,
@@ -123,10 +192,11 @@ func TestRunPipe(t *testing.T) {
 					})
 				}
 			}
+			err = Pipe{}.Run(ctx)
 			if docker.err == "" {
-				assert.NoError(tt, Pipe{}.Run(ctx))
+				assert.NoError(tt, err)
 			} else {
-				assert.EqualError(tt, Pipe{}.Run(ctx), docker.err)
+				assert.Contains(tt, err.Error(), docker.err)
 			}
 		})
 	}
@@ -140,7 +210,7 @@ func TestRunPipe(t *testing.T) {
 	// it should fail
 	assert.Error(t,
 		exec.Command(
-			"docker", "rmi", "localhost:5000/goreleaser/test_run_pipe_nope:1.0.0",
+			"docker", "rmi", registry+"goreleaser/test_run_pipe_nope:1.0.0",
 		).Run(),
 	)
 }
