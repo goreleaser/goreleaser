@@ -20,7 +20,8 @@ var it = flag.Bool("it", false, "push images to docker hub")
 var registry = "localhost:5000/"
 
 func TestMain(m *testing.M) {
-	if !*it {
+	flag.Parse()
+	if *it {
 		registry = "docker.io/"
 	}
 	os.Exit(m.Run())
