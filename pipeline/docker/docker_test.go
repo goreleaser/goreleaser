@@ -148,6 +148,7 @@ func TestRunPipe(t *testing.T) {
 				Binary:      "mybin",
 				Dockerfile:  "testdata/Dockerfile",
 				TagTemplate: "{{.Tag}}",
+				Latest:      true,
 			},
 			expect: []string{
 				"docker.io/nope:latest",
@@ -258,7 +259,7 @@ func TestRunPipe(t *testing.T) {
 			// the step ran
 			for _, img := range docker.expect {
 				t.Log("removing docker image", img)
-				assert.NoError(t, exec.Command("docker", "rmi", img).Run(), "could not delete image", img)
+				assert.NoError(t, exec.Command("docker", "rmi", img).Run(), "could not delete image %s", img)
 			}
 
 		})
