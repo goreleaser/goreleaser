@@ -16,7 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/linux"
-	"github.com/goreleaser/goreleaser/internal/nametemplate"
+	"github.com/goreleaser/goreleaser/internal/template"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -48,11 +48,22 @@ type AppMetadata struct {
 	Daemon  string   `yaml:",omitempty"`
 }
 
+const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+
 // Pipe for snapcraft packaging
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "creating Linux packages with snapcraft"
+}
+
+// Default sets the pipe defaults
+func (Pipe) Default(ctx *context.Context) error {
+	var snap = &ctx.Config.Snapcraft
+	if snap.NameTemplate == "" {
+		snap.NameTemplate = defaultNameTemplate
+	}
+	return nil
 }
 
 // Run the pipe
@@ -89,8 +100,10 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func create(ctx *context.Context, arch string, binaries []artifact.Artifact) error {
 	var log = log.WithField("arch", arch)
-	// TODO: should add template support here probably... for now, let's use archive's template
-	folder, err := nametemplate.Apply(ctx, binaries[0], ctx.Config.ProjectName)
+	folder, err := template.Apply(
+		ctx.Config.Snapcraft.NameTemplate,
+		template.NewFields(ctx, binaries[0], ctx.Config.Snapcraft.Replacements),
+	)
 	if err != nil {
 		return err
 	}

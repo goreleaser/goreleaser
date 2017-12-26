@@ -162,12 +162,14 @@ type SnapcraftAppMetadata struct {
 
 // Snapcraft config
 type Snapcraft struct {
-	Name        string                          `yaml:",omitempty"`
-	Summary     string                          `yaml:",omitempty"`
-	Description string                          `yaml:",omitempty"`
-	Grade       string                          `yaml:",omitempty"`
-	Confinement string                          `yaml:",omitempty"`
-	Apps        map[string]SnapcraftAppMetadata `yaml:",omitempty"`
+	NameTemplate string                          `yaml:"name_template,omitempty"`
+	Replacements map[string]string               `yaml:",omitempty"`
+	Name         string                          `yaml:",omitempty"`
+	Summary      string                          `yaml:",omitempty"`
+	Description  string                          `yaml:",omitempty"`
+	Grade        string                          `yaml:",omitempty"`
+	Confinement  string                          `yaml:",omitempty"`
+	Apps         map[string]SnapcraftAppMetadata `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`
