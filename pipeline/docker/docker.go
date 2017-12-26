@@ -156,6 +156,9 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 // walks the src, recreating dirs and hard-linking files
 func link(src, dest string) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 		// We have the following:
 		// - src = "a/b"
 		// - dest = "dist/linuxamd64/b"
