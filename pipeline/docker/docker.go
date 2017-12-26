@@ -92,11 +92,10 @@ func doRun(ctx *context.Context) error {
 				),
 			).List()
 			if len(binaries) == 0 {
-				log.Warn("no binaries found")
+				log.Warnf("no binaries found for %s", docker.Binary)
 			}
 			for _, binary := range binaries {
-				var err = process(ctx, docker, binary)
-				if err != nil {
+				if err := process(ctx, docker, binary); err != nil {
 					return err
 				}
 			}
