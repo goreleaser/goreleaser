@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 }
 
 func start(t *testing.T) {
-	if !*it {
+	if *it {
 		return
 	}
 	if err := exec.Command(
@@ -40,7 +40,7 @@ func start(t *testing.T) {
 }
 
 func killAndRm(t *testing.T) {
-	if !*it {
+	if *it {
 		return
 	}
 	t.Log("killing registry")
