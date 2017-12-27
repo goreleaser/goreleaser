@@ -124,7 +124,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 
 func TestCmd(t *testing.T) {
 	cmd := cmd([]string{"--help"})
-	assert.Len(t, cmd.Env, 1)
+	assert.NotEmpty(t, cmd.Env)
 	assert.Contains(t, cmd.Env[0], gnuTarPath)
 }
 

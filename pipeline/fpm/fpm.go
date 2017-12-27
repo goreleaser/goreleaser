@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/pkg/errors"
@@ -136,6 +137,12 @@ func cmd(options []string) *exec.Cmd {
 	/* #nosec */
 	var cmd = exec.Command("fpm", options...)
 	cmd.Env = []string{fmt.Sprintf("PATH=%s:%s", gnuTarPath, os.Getenv("PATH"))}
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "PATH=") {
+			continue
+		}
+		cmd.Env = append(cmd.Env, env)
+	}
 	return cmd
 }
 
