@@ -16,15 +16,18 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/linux"
-	"github.com/goreleaser/goreleaser/internal/nametemplate"
+	"github.com/goreleaser/goreleaser/internal/template"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
 // ErrNoFPM is shown when fpm cannot be found in $PATH
 var ErrNoFPM = errors.New("fpm not present in $PATH")
 
-// path to gnu-tar on macOS when installed with homebrew
-const gnuTarPath = "/usr/local/opt/gnu-tar/libexec/gnubin"
+const (
+	defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+	// path to gnu-tar on macOS when installed with homebrew
+	gnuTarPath = "/usr/local/opt/gnu-tar/libexec/gnubin"
+)
 
 // Pipe for fpm packaging
 type Pipe struct{}
@@ -35,8 +38,12 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.FPM.Bindir == "" {
-		ctx.Config.FPM.Bindir = "/usr/local/bin"
+	var fpm = &ctx.Config.FPM
+	if fpm.Bindir == "" {
+		fpm.Bindir = "/usr/local/bin"
+	}
+	if fpm.NameTemplate == "" {
+		fpm.NameTemplate = defaultNameTemplate
 	}
 	return nil
 }
@@ -79,12 +86,14 @@ func doRun(ctx *context.Context) error {
 }
 
 func create(ctx *context.Context, format, arch string, binaries []artifact.Artifact) error {
-	// TODO: should add template support here probably... for now, let's use archive's template
-	folder, err := nametemplate.Apply(ctx, binaries[0], ctx.Config.ProjectName)
+	name, err := template.Apply(
+		ctx.Config.FPM.NameTemplate,
+		template.NewFields(ctx, binaries[0], ctx.Config.FPM.Replacements),
+	)
 	if err != nil {
 		return err
 	}
-	var path = filepath.Join(ctx.Config.Dist, folder)
+	var path = filepath.Join(ctx.Config.Dist, name)
 	var file = path + "." + format
 	var log = log.WithField("format", format).WithField("arch", arch)
 	dir, err := ioutil.TempDir("", "fpm")
@@ -124,7 +133,7 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type:   artifact.LinuxPackage,
-		Name:   folder + "." + format,
+		Name:   name + "." + format,
 		Path:   file,
 		Goos:   binaries[0].Goos,
 		Goarch: binaries[0].Goarch,

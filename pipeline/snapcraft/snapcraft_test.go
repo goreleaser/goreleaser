@@ -52,11 +52,8 @@ func TestRunPipe(t *testing.T) {
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
-			// TODO: remove this when we start using our own name template
-			Archive: config.Archive{
-				NameTemplate: "foo_{{.Arch}}",
-			},
 			Snapcraft: config.Snapcraft{
+				NameTemplate: "foo_{{.Arch}}",
 				Summary:     "test summary",
 				Description: "test description",
 			},
@@ -64,6 +61,29 @@ func TestRunPipe(t *testing.T) {
 	}
 	addBinaries(t, ctx, "mybin", dist)
 	assert.NoError(t, Pipe{}.Run(ctx))
+}
+
+func TestRunPipeInvalidNameTemplate(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, err)
+	var ctx = &context.Context{
+		Version:   "testversion",
+		Artifacts: artifact.New(),
+		Config: config.Project{
+			ProjectName: "mybin",
+			Dist:        dist,
+			Snapcraft: config.Snapcraft{
+				NameTemplate: "foo_{{.Arch}",
+				Summary:     "test summary",
+				Description: "test description",
+			},
+		},
+	}
+	addBinaries(t, ctx, "mybin", dist)
+	assert.EqualError(t, Pipe{}.Run(ctx), `template: foo_{{.Arch}:1: unexpected "}" in operand`)
 }
 
 func TestRunPipeWithName(t *testing.T) {
@@ -78,11 +98,8 @@ func TestRunPipeWithName(t *testing.T) {
 		Config: config.Project{
 			ProjectName: "testprojectname",
 			Dist:        dist,
-			// TODO: remove this when we start using our own name template
-			Archive: config.Archive{
-				NameTemplate: "foo_{{.Arch}}",
-			},
 			Snapcraft: config.Snapcraft{
+				NameTemplate: "foo_{{.Arch}}",
 				Name:        "testsnapname",
 				Summary:     "test summary",
 				Description: "test description",
@@ -111,11 +128,8 @@ func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
 		Config: config.Project{
 			ProjectName: "mybin",
 			Dist:        dist,
-			// TODO: remove this when we start using our own name template
-			Archive: config.Archive{
-				NameTemplate: "foo_{{.Arch}}",
-			},
 			Snapcraft: config.Snapcraft{
+				NameTemplate: "foo_{{.Arch}}",
 				Summary:     "test summary",
 				Description: "test description",
 				Apps: map[string]config.SnapcraftAppMetadata{
@@ -153,6 +167,22 @@ func TestNoSnapcraftInPath(t *testing.T) {
 		},
 	}
 	assert.EqualError(t, Pipe{}.Run(ctx), ErrNoSnapcraft.Error())
+}
+
+func TestDefault(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	assert.NoError(t,Pipe{}.Default(ctx))
+	assert.Equal(t, defaultNameTemplate, ctx.Config.Snapcraft.NameTemplate)
+}
+
+func TestDefaultSet(t *testing.T) {
+	var ctx = context.New(config.Project{
+		Snapcraft: config.Snapcraft{
+			NameTemplate: "foo",
+		},
+	})
+	assert.NoError(t,Pipe{}.Default(ctx))
+	assert.Equal(t, "foo", ctx.Config.Snapcraft.NameTemplate)
 }
 
 func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {

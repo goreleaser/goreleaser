@@ -7,7 +7,7 @@ import "github.com/goreleaser/goreleaser/context"
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "generating changelog"
+	return "snapshoting"
 }
 
 // Default sets the pipe defaults
