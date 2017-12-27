@@ -4,8 +4,10 @@ package fpm
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/pkg/errors"
@@ -20,6 +22,9 @@ import (
 
 // ErrNoFPM is shown when fpm cannot be found in $PATH
 var ErrNoFPM = errors.New("fpm not present in $PATH")
+
+// path to gnu-tar on macOS when installed with homebrew
+const gnuTarPath = "/usr/local/opt/gnu-tar/libexec/gnubin"
 
 // Pipe for fpm packaging
 type Pipe struct{}
@@ -114,8 +119,7 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	}
 
 	log.WithField("args", options).Debug("creating fpm package")
-	/* #nosec */
-	if out, err := exec.Command("fpm", options...).CombinedOutput(); err != nil {
+	if out, err := cmd(options).CombinedOutput(); err != nil {
 		return errors.Wrap(err, string(out))
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -127,6 +131,19 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		Goarm:  binaries[0].Goarm,
 	})
 	return nil
+}
+
+func cmd(options []string) *exec.Cmd {
+	/* #nosec */
+	var cmd = exec.Command("fpm", options...)
+	cmd.Env = []string{fmt.Sprintf("PATH=%s:%s", gnuTarPath, os.Getenv("PATH"))}
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "PATH=") {
+			continue
+		}
+		cmd.Env = append(cmd.Env, env)
+	}
+	return cmd
 }
 
 func basicOptions(ctx *context.Context, workdir, format, arch, file string) []string {

@@ -122,6 +122,12 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	assert.Error(t, Pipe{}.Run(ctx))
 }
 
+func TestCmd(t *testing.T) {
+	cmd := cmd([]string{"--help"})
+	assert.NotEmpty(t, cmd.Env)
+	assert.Contains(t, cmd.Env[0], gnuTarPath)
+}
+
 func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
