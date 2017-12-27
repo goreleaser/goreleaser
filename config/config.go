@@ -106,12 +106,13 @@ type FormatOverride struct {
 
 // Archive config used for the archive
 type Archive struct {
-	Format          string            `yaml:",omitempty"`
-	FormatOverrides []FormatOverride  `yaml:"format_overrides,omitempty"`
-	NameTemplate    string            `yaml:"name_template,omitempty"`
-	WrapInDirectory bool              `yaml:"wrap_in_directory,omitempty"`
-	Replacements    map[string]string `yaml:",omitempty"`
-	Files           []string          `yaml:",omitempty"`
+	NameTemplate string            `yaml:"name_template,omitempty"`
+	Replacements map[string]string `yaml:",omitempty"`
+
+	Format          string           `yaml:",omitempty"`
+	FormatOverrides []FormatOverride `yaml:"format_overrides,omitempty"`
+	WrapInDirectory bool             `yaml:"wrap_in_directory,omitempty"`
+	Files           []string         `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`
@@ -131,6 +132,7 @@ type Release struct {
 type FPM struct {
 	NameTemplate string            `yaml:"name_template,omitempty"`
 	Replacements map[string]string `yaml:",omitempty"`
+
 	Formats      []string          `yaml:",omitempty"`
 	Dependencies []string          `yaml:",omitempty"`
 	Conflicts    []string          `yaml:",omitempty"`
@@ -162,14 +164,15 @@ type SnapcraftAppMetadata struct {
 
 // Snapcraft config
 type Snapcraft struct {
-	NameTemplate string                          `yaml:"name_template,omitempty"`
-	Replacements map[string]string               `yaml:",omitempty"`
-	Name         string                          `yaml:",omitempty"`
-	Summary      string                          `yaml:",omitempty"`
-	Description  string                          `yaml:",omitempty"`
-	Grade        string                          `yaml:",omitempty"`
-	Confinement  string                          `yaml:",omitempty"`
-	Apps         map[string]SnapcraftAppMetadata `yaml:",omitempty"`
+	NameTemplate string            `yaml:"name_template,omitempty"`
+	Replacements map[string]string `yaml:",omitempty"`
+
+	Name        string                          `yaml:",omitempty"`
+	Summary     string                          `yaml:",omitempty"`
+	Description string                          `yaml:",omitempty"`
+	Grade       string                          `yaml:",omitempty"`
+	Confinement string                          `yaml:",omitempty"`
+	Apps        map[string]SnapcraftAppMetadata `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`
