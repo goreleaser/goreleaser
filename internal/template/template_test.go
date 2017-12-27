@@ -19,10 +19,13 @@ func TestTemplate(t *testing.T) {
 	ctx.Version = "1.0.0"
 	ctx.Git.CurrentTag = "v1.0.0"
 	var fields = NewFields(ctx, artifact.Artifact{
-		Name:   "binary",
+		Name:   "not-this-binary",
 		Goarch: "amd64",
 		Goos:   "linux",
 		Goarm:  "6",
+		Extra: map[string]string{
+			"Binary": "binary",
+		},
 	}, map[string]string{
 		"linux": "Linux",
 	})
