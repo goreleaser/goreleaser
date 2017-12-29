@@ -75,11 +75,11 @@ func (Pipe) Run(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func create(ctx *context.Context, artifacts []artifact.Artifact) error {
-	var format = packageFormat(ctx, artifacts[0].Goos)
+func create(ctx *context.Context, binaries []artifact.Artifact) error {
+	var format = packageFormat(ctx, binaries[0].Goos)
 	folder, err := filenametemplate.Apply(
 		ctx.Config.Archive.NameTemplate,
-		filenametemplate.NewFields(ctx, artifacts[0], ctx.Config.Archive.Replacements),
+		filenametemplate.NewFields(ctx, ctx.Config.Archive.Replacements, binaries...),
 	)
 	if err != nil {
 		return err
@@ -103,7 +103,7 @@ func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 			return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
 		}
 	}
-	for _, binary := range artifacts {
+	for _, binary := range binaries {
 		if err := a.Add(wrap(ctx, binary.Name, folder), binary.Path); err != nil {
 			return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
 		}
@@ -112,24 +112,24 @@ func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 		Type:   artifact.UploadableArchive,
 		Name:   folder + "." + format,
 		Path:   archivePath,
-		Goos:   artifacts[0].Goos,
-		Goarch: artifacts[0].Goarch,
-		Goarm:  artifacts[0].Goarm,
+		Goos:   binaries[0].Goos,
+		Goarch: binaries[0].Goarch,
+		Goarm:  binaries[0].Goarm,
 	})
 	return nil
 }
 
-func skip(ctx *context.Context, artifacts []artifact.Artifact) error {
-	for _, a := range artifacts {
-		log.WithField("binary", a.Name).Info("skip archiving")
-		var fields = filenametemplate.NewFields(ctx, a, ctx.Config.Archive.Replacements)
+func skip(ctx *context.Context, binaries []artifact.Artifact) error {
+	for _, binary := range binaries {
+		log.WithField("binary", binary.Name).Info("skip archiving")
+		var fields = filenametemplate.NewFields(ctx, ctx.Config.Archive.Replacements, binary)
 		name, err := filenametemplate.Apply(ctx.Config.Archive.NameTemplate, fields)
 		if err != nil {
 			return err
 		}
-		a.Type = artifact.UploadableBinary
-		a.Name = name + a.Extra["Ext"]
-		ctx.Artifacts.Add(a)
+		binary.Type = artifact.UploadableBinary
+		binary.Name = name + binary.Extra["Ext"]
+		ctx.Artifacts.Add(binary)
 	}
 	return nil
 }

@@ -102,7 +102,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 	var log = log.WithField("arch", arch)
 	folder, err := filenametemplate.Apply(
 		ctx.Config.Snapcraft.NameTemplate,
-		filenametemplate.NewFields(ctx, binaries[0], ctx.Config.Snapcraft.Replacements),
+		filenametemplate.NewFields(ctx, ctx.Config.Snapcraft.Replacements, binaries...),
 	)
 	if err != nil {
 		return err

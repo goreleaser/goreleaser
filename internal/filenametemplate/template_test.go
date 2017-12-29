@@ -18,7 +18,7 @@ func TestTemplate(t *testing.T) {
 	}
 	ctx.Version = "1.0.0"
 	ctx.Git.CurrentTag = "v1.0.0"
-	var fields = NewFields(ctx, artifact.Artifact{
+	var artifact = artifact.Artifact{
 		Name:   "not-this-binary",
 		Goarch: "amd64",
 		Goos:   "linux",
@@ -26,9 +26,8 @@ func TestTemplate(t *testing.T) {
 		Extra: map[string]string{
 			"Binary": "binary",
 		},
-	}, map[string]string{
-		"linux": "Linux",
-	})
+	}
+	var fields = NewFields(ctx, map[string]string{"linux": "Linux"}, artifact)
 	for expect, tmpl := range map[string]string{
 		"bar":    "{{.Env.FOO}}",
 		"Linux":  "{{.Os}}",
@@ -50,9 +49,28 @@ func TestTemplate(t *testing.T) {
 	}
 }
 
+func TestNewFields(t *testing.T) {
+	var ctx = context.New(config.Project{
+		ProjectName: "proj",
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git.CurrentTag = "v1.0.0"
+	var artifact = artifact.Artifact{
+		Name:   "not-this-binary",
+		Goarch: "amd64",
+		Goos:   "linux",
+		Goarm:  "6",
+		Extra: map[string]string{
+			"Binary": "binary",
+		},
+	}
+	var fields = NewFields(ctx, map[string]string{}, artifact, artifact)
+	assert.Equal(t, "proj", fields.Binary)
+}
+
 func TestInvalidTemplate(t *testing.T) {
 	var ctx = context.New(config.Project{})
-	var fields = NewFields(ctx, artifact.Artifact{}, map[string]string{})
+	var fields = NewFields(ctx, map[string]string{}, artifact.Artifact{})
 	result, err := Apply("{{.Foo}", fields)
 	assert.Empty(t, result)
 	assert.EqualError(t, err, `template: {{.Foo}:1: unexpected "}" in operand`)

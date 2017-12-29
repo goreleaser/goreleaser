@@ -88,7 +88,7 @@ func doRun(ctx *context.Context) error {
 func create(ctx *context.Context, format, arch string, binaries []artifact.Artifact) error {
 	name, err := filenametemplate.Apply(
 		ctx.Config.FPM.NameTemplate,
-		filenametemplate.NewFields(ctx, binaries[0], ctx.Config.FPM.Replacements),
+		filenametemplate.NewFields(ctx, ctx.Config.FPM.Replacements, binaries...),
 	)
 	if err != nil {
 		return err

@@ -23,16 +23,21 @@ type Fields struct {
 }
 
 // NewFields returns a Fields instances filled with the data provided
-func NewFields(ctx *context.Context, a artifact.Artifact, replacements map[string]string) Fields {
+func NewFields(ctx *context.Context, replacements map[string]string, artifacts ...artifact.Artifact) Fields {
+	// This will fail if artifacts is empty - should never be though...
+	var binary = artifacts[0].Extra["Binary"]
+	if len(artifacts) > 1 {
+		binary = ctx.Config.ProjectName
+	}
 	return Fields{
 		Env:         ctx.Env,
 		Version:     ctx.Version,
 		Tag:         ctx.Git.CurrentTag,
 		ProjectName: ctx.Config.ProjectName,
-		Binary:      a.Extra["Binary"],
-		Os:          replace(replacements, a.Goos),
-		Arch:        replace(replacements, a.Goarch),
-		Arm:         replace(replacements, a.Goarm),
+		Os:          replace(replacements, artifacts[0].Goos),
+		Arch:        replace(replacements, artifacts[0].Goarch),
+		Arm:         replace(replacements, artifacts[0].Goarm),
+		Binary:      binary,
 	}
 }
 
