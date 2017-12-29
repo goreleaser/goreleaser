@@ -36,27 +36,22 @@ func TestRunPipe(t *testing.T) {
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	_, err = os.Create(binPath)
 	assert.NoError(t, err)
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Parallelism: runtime.NumCPU(),
-		Debug:       true,
-		Artifacts:   artifact.New(),
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			FPM: config.FPM{
-				NameTemplate: defaultNameTemplate,
-				Formats:      []string{"deb", "rpm"},
-				Dependencies: []string{"make"},
-				Conflicts:    []string{"git"},
-				Description:  "Some description",
-				License:      "MIT",
-				Maintainer:   "me@me",
-				Vendor:       "asdf",
-				Homepage:     "https://goreleaser.github.io",
-			},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		FPM: config.FPM{
+			NameTemplate: defaultNameTemplate,
+			Formats:      []string{"deb", "rpm"},
+			Dependencies: []string{"make"},
+			Conflicts:    []string{"git"},
+			Description:  "Some description",
+			License:      "MIT",
+			Maintainer:   "me@me",
+			Vendor:       "asdf",
+			Homepage:     "https://goreleaser.github.io",
 		},
-	}
+	})
+	ctx.Version = "1.0.0"
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(artifact.Artifact{
@@ -115,20 +110,16 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(t, os.Mkdir(dist, 0755))
 	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Parallelism: runtime.NumCPU(),
-		Artifacts:   artifact.New(),
-		Config: config.Project{
-			Dist: dist,
-			FPM: config.FPM{
-				Formats: []string{"deb", "rpm"},
-				Files: map[string]string{
-					"testdata/testfile.txt": "/var/lib/test/testfile.txt",
-				},
+	var ctx = context.New(config.Project{
+		Dist: dist,
+		FPM: config.FPM{
+			Formats: []string{"deb", "rpm"},
+			Files: map[string]string{
+				"testdata/testfile.txt": "/var/lib/test/testfile.txt",
 			},
 		},
-	}
+	})
+	ctx.Version = "1.0.0"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "mybin", "mybin"),

@@ -24,6 +24,7 @@ func TestRelease(t *testing.T) {
 	var flags = fakeFlags{
 		t: t,
 		flags: map[string]string{
+			"timeout":       "1m",
 			"skip-publish":  "true",
 			"skip-validate": "true",
 			"debug":         "true",
@@ -39,6 +40,7 @@ func TestSnapshotRelease(t *testing.T) {
 	var flags = fakeFlags{
 		t: t,
 		flags: map[string]string{
+			"timeout":     "1m",
 			"snapshot":    "true",
 			"parallelism": "4",
 		},
@@ -50,7 +52,8 @@ func TestConfigFileIsSetAndDontExist(t *testing.T) {
 	var flags = fakeFlags{
 		t: t,
 		flags: map[string]string{
-			"config": "/this/wont/exist",
+			"timeout": "1m",
+			"config":  "/this/wont/exist",
 		},
 	}
 	assert.Error(t, Release(flags))
@@ -74,8 +77,10 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 				),
 			)
 			var flags = fakeFlags{
-				t:     t,
-				flags: map[string]string{},
+				t: t,
+				flags: map[string]string{
+					"timeout": "1m",
+				},
 			}
 			assert.Equal(t, name, getConfigFile(flags))
 		})
@@ -86,6 +91,7 @@ func TestReleaseNotesFileDontExist(t *testing.T) {
 	var flags = fakeFlags{
 		t: t,
 		flags: map[string]string{
+			"timeout":       "1m",
 			"release-notes": "/this/also/wont/exist",
 		},
 	}
@@ -100,6 +106,7 @@ func TestCustomReleaseNotesFile(t *testing.T) {
 	var flags = fakeFlags{
 		t: t,
 		flags: map[string]string{
+			"timeout":       "1m",
 			"release-notes": releaseNotes,
 			"skip-publish":  "true",
 			"skip-validate": "true",
@@ -116,6 +123,7 @@ func TestBrokenPipe(t *testing.T) {
 	var flags = fakeFlags{
 		t: t,
 		flags: map[string]string{
+			"timeout":       "1m",
 			"skip-publish":  "true",
 			"skip-validate": "true",
 			"parallelism":   "4",
