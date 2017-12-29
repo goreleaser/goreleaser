@@ -132,9 +132,7 @@ func Release(flags Flags) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	case sig := <-signals:
-		restoreOutputPadding()
-		log.Infof("stopping: %s", sig)
-		return nil
+		return fmt.Errorf("canceled due to %s", sig)
 	}
 }
 
