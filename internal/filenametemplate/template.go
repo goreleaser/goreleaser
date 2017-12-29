@@ -1,10 +1,10 @@
-// Package template contains the code used to template names of goreleaser's
-// packages and archives.
-package template
+// Package filenametemplate contains the code used to template names of
+// goreleaser's  packages and archives.
+package filenametemplate
 
 import (
 	"bytes"
-	gotemplate "text/template"
+	"text/template"
 
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -39,7 +39,7 @@ func NewFields(ctx *context.Context, a artifact.Artifact, replacements map[strin
 // Apply applies the given fields to the given template and returns the
 // evaluation and any error that might occur.
 func Apply(tmpl string, fields Fields) (string, error) {
-	t, err := gotemplate.New(tmpl).Parse(tmpl)
+	t, err := template.New(tmpl).Parse(tmpl)
 	if err != nil {
 		return "", err
 	}

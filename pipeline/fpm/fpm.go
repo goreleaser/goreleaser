@@ -15,8 +15,8 @@ import (
 
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/filenametemplate"
 	"github.com/goreleaser/goreleaser/internal/linux"
-	"github.com/goreleaser/goreleaser/internal/template"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -86,9 +86,9 @@ func doRun(ctx *context.Context) error {
 }
 
 func create(ctx *context.Context, format, arch string, binaries []artifact.Artifact) error {
-	name, err := template.Apply(
+	name, err := filenametemplate.Apply(
 		ctx.Config.FPM.NameTemplate,
-		template.NewFields(ctx, binaries[0], ctx.Config.FPM.Replacements),
+		filenametemplate.NewFields(ctx, binaries[0], ctx.Config.FPM.Replacements),
 	)
 	if err != nil {
 		return err

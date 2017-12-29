@@ -16,7 +16,7 @@ import (
 	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/template"
+	"github.com/goreleaser/goreleaser/internal/filenametemplate"
 )
 
 const (
@@ -77,9 +77,9 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 	var format = packageFormat(ctx, artifacts[0].Goos)
-	folder, err := template.Apply(
+	folder, err := filenametemplate.Apply(
 		ctx.Config.Archive.NameTemplate,
-		template.NewFields(ctx, artifacts[0], ctx.Config.Archive.Replacements),
+		filenametemplate.NewFields(ctx, artifacts[0], ctx.Config.Archive.Replacements),
 	)
 	if err != nil {
 		return err
@@ -122,8 +122,8 @@ func create(ctx *context.Context, artifacts []artifact.Artifact) error {
 func skip(ctx *context.Context, artifacts []artifact.Artifact) error {
 	for _, a := range artifacts {
 		log.WithField("binary", a.Name).Info("skip archiving")
-		var fields = template.NewFields(ctx, a, ctx.Config.Archive.Replacements)
-		name, err := template.Apply(ctx.Config.Archive.NameTemplate, fields)
+		var fields = filenametemplate.NewFields(ctx, a, ctx.Config.Archive.Replacements)
+		name, err := filenametemplate.Apply(ctx.Config.Archive.NameTemplate, fields)
 		if err != nil {
 			return err
 		}
