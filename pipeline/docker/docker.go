@@ -181,7 +181,7 @@ func publish(ctx *context.Context, docker config.Docker, image, latest string) e
 		log.Warn("skipping push because --skip-publish is set")
 		return nil
 	}
-	if err := dockerPush(ctx, image); err != nil {
+	if err := dockerPush(ctx, docker, image); err != nil {
 		return err
 	}
 	if !docker.Latest {
@@ -190,7 +190,7 @@ func publish(ctx *context.Context, docker config.Docker, image, latest string) e
 	if err := dockerTag(image, latest); err != nil {
 		return err
 	}
-	return dockerPush(ctx, latest)
+	return dockerPush(ctx, docker, latest)
 }
 
 func dockerBuild(root, dockerfile, image string) error {
@@ -219,7 +219,7 @@ func dockerTag(image, tag string) error {
 	return nil
 }
 
-func dockerPush(ctx *context.Context, image string) error {
+func dockerPush(ctx *context.Context, docker config.Docker, image string) error {
 	log.WithField("image", image).Info("pushing docker image")
 	/* #nosec */
 	var cmd = exec.Command("docker", "push", image)
@@ -230,9 +230,12 @@ func dockerPush(ctx *context.Context, image string) error {
 	}
 	log.Debugf("docker push output: \n%s", string(out))
 	ctx.Artifacts.Add(artifact.Artifact{
-		Type: artifact.DockerImage,
-		Name: image,
-		// TODO: are the rest of the params relevant here?
+		Type:   artifact.DockerImage,
+		Name:   image,
+		Path:   image,
+		Goarch: docker.Goarch,
+		Goos:   docker.Goos,
+		Goarm:  docker.Goarm,
 	})
 	return nil
 }
