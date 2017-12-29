@@ -89,7 +89,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			artifact.ByType(artifact.Binary),
 		),
 	).GroupByPlatform() {
-		arch := linux.Arch(platform) // TODO: could use artifact.goarch here
+		arch := linux.Arch(platform)
 		binaries := binaries
 		g.Go(func() error {
 			return create(ctx, arch, binaries)

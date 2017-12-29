@@ -72,7 +72,7 @@ func doRun(ctx *context.Context) error {
 		).GroupByPlatform() {
 			sem <- true
 			format := format
-			arch := linux.Arch(platform) // TODO: could probably pass artifact.Goarch here
+			arch := linux.Arch(platform)
 			artifacts := artifacts
 			g.Go(func() error {
 				defer func() {
