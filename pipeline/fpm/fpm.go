@@ -128,7 +128,7 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	}
 
 	log.WithField("args", options).Debug("creating fpm package")
-	if out, err := cmd(options).CombinedOutput(); err != nil {
+	if out, err := cmd(ctx, options).CombinedOutput(); err != nil {
 		return errors.Wrap(err, string(out))
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -142,9 +142,9 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	return nil
 }
 
-func cmd(options []string) *exec.Cmd {
+func cmd(ctx *context.Context, options []string) *exec.Cmd {
 	/* #nosec */
-	var cmd = exec.Command("fpm", options...)
+	var cmd = exec.CommandContext(ctx, "fpm", options...)
 	cmd.Env = []string{fmt.Sprintf("PATH=%s:%s", gnuTarPath, os.Getenv("PATH"))}
 	for _, env := range os.Environ() {
 		if strings.HasPrefix(env, "PATH=") {

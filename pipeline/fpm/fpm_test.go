@@ -96,7 +96,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 		Config: config.Project{
 			FPM: config.FPM{
 				NameTemplate: "{{.Foo}",
-				Formats: []string{"deb"},
+				Formats:      []string{"deb"},
 			},
 		},
 	}
@@ -108,7 +108,6 @@ func TestInvalidNameTemplate(t *testing.T) {
 	})
 	assert.Contains(t, Pipe{}.Run(ctx).Error(), `template: {{.Foo}:1: unexpected "}" in operand`)
 }
-
 
 func TestCreateFileDoesntExist(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
@@ -141,7 +140,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 }
 
 func TestCmd(t *testing.T) {
-	cmd := cmd([]string{"--help"})
+	cmd := cmd(context.New(config.Project{}), []string{"--help"})
 	assert.NotEmpty(t, cmd.Env)
 	assert.Contains(t, cmd.Env[0], gnuTarPath)
 }
@@ -161,7 +160,7 @@ func TestDefaultSet(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
 			FPM: config.FPM{
-				Bindir: "/bin",
+				Bindir:       "/bin",
 				NameTemplate: "foo",
 			},
 		},

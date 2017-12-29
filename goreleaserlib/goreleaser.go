@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
@@ -65,6 +68,7 @@ type Flags interface {
 	String(s string) string
 	Int(s string) int
 	Bool(s string) bool
+	Duration(s string) time.Duration
 }
 
 // Release runs the release process with the given flags
@@ -84,7 +88,8 @@ func Release(flags Flags) error {
 		}
 		log.WithField("file", file).Warn("could not load config, using defaults")
 	}
-	var ctx = context.New(cfg)
+	ctx, cancel := context.NewWithTimeout(cfg, flags.Duration("timeout"))
+	defer cancel()
 	ctx.Parallelism = flags.Int("parallelism")
 	ctx.Debug = flags.Bool("debug")
 	log.Debugf("parallelism: %v", ctx.Parallelism)
@@ -105,16 +110,36 @@ func Release(flags Flags) error {
 		ctx.Publish = false
 	}
 	ctx.RmDist = flags.Bool("rm-dist")
-	for _, pipe := range pipes {
-		cli.Default.Padding = normalPadding
-		log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.String()))
-		cli.Default.Padding = increasedPadding
-		if err := handle(pipe.Run(ctx)); err != nil {
-			return err
+	var errs = make(chan error)
+	go func() {
+		for _, pipe := range pipes {
+			restoreOutputPadding()
+			log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.String()))
+			cli.Default.Padding = increasedPadding
+			if err := handle(pipe.Run(ctx)); err != nil {
+				errs <- err
+				return
+			}
 		}
+		errs <- nil
+	}()
+	defer restoreOutputPadding()
+	var signals = make(chan os.Signal)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+	select {
+	case err := <-errs:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	case sig := <-signals:
+		restoreOutputPadding()
+		log.Infof("stopping: %s", sig)
+		return nil
 	}
+}
+
+func restoreOutputPadding() {
 	cli.Default.Padding = normalPadding
-	return nil
 }
 
 func handle(err error) error {

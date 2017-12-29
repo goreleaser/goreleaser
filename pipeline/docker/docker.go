@@ -141,11 +141,11 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 			return errors.Wrapf(err, "failed to link extra file '%s'", file)
 		}
 	}
-	if err := dockerBuild(root, dockerfile, image); err != nil {
+	if err := dockerBuild(ctx, root, dockerfile, image); err != nil {
 		return err
 	}
 	if docker.Latest {
-		if err := dockerTag(image, latest); err != nil {
+		if err := dockerTag(ctx, image, latest); err != nil {
 			return err
 		}
 	}
@@ -187,16 +187,16 @@ func publish(ctx *context.Context, docker config.Docker, image, latest string) e
 	if !docker.Latest {
 		return nil
 	}
-	if err := dockerTag(image, latest); err != nil {
+	if err := dockerTag(ctx, image, latest); err != nil {
 		return err
 	}
 	return dockerPush(ctx, docker, latest)
 }
 
-func dockerBuild(root, dockerfile, image string) error {
+func dockerBuild(ctx *context.Context, root, dockerfile, image string) error {
 	log.WithField("image", image).Info("building docker image")
 	/* #nosec */
-	var cmd = exec.Command("docker", "build", "-f", dockerfile, "-t", image, root)
+	var cmd = exec.CommandContext(ctx, "docker", "build", "-f", dockerfile, "-t", image, root)
 	log.WithField("cmd", cmd).Debug("executing")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -206,10 +206,10 @@ func dockerBuild(root, dockerfile, image string) error {
 	return nil
 }
 
-func dockerTag(image, tag string) error {
+func dockerTag(ctx *context.Context, image, tag string) error {
 	log.WithField("image", image).WithField("tag", tag).Info("tagging docker image")
 	/* #nosec */
-	var cmd = exec.Command("docker", "tag", image, tag)
+	var cmd = exec.CommandContext(ctx, "docker", "tag", image, tag)
 	log.WithField("cmd", cmd).Debug("executing")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -222,7 +222,7 @@ func dockerTag(image, tag string) error {
 func dockerPush(ctx *context.Context, docker config.Docker, image string) error {
 	log.WithField("image", image).Info("pushing docker image")
 	/* #nosec */
-	var cmd = exec.Command("docker", "push", image)
+	var cmd = exec.CommandContext(ctx, "docker", "push", image)
 	log.WithField("cmd", cmd).Debug("executing")
 	out, err := cmd.CombinedOutput()
 	if err != nil {

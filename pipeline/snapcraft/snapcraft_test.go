@@ -54,8 +54,8 @@ func TestRunPipe(t *testing.T) {
 			Dist:        dist,
 			Snapcraft: config.Snapcraft{
 				NameTemplate: "foo_{{.Arch}}",
-				Summary:     "test summary",
-				Description: "test description",
+				Summary:      "test summary",
+				Description:  "test description",
 			},
 		},
 	}
@@ -77,8 +77,8 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 			Dist:        dist,
 			Snapcraft: config.Snapcraft{
 				NameTemplate: "foo_{{.Arch}",
-				Summary:     "test summary",
-				Description: "test description",
+				Summary:      "test summary",
+				Description:  "test description",
 			},
 		},
 	}
@@ -100,9 +100,9 @@ func TestRunPipeWithName(t *testing.T) {
 			Dist:        dist,
 			Snapcraft: config.Snapcraft{
 				NameTemplate: "foo_{{.Arch}}",
-				Name:        "testsnapname",
-				Summary:     "test summary",
-				Description: "test description",
+				Name:         "testsnapname",
+				Summary:      "test summary",
+				Description:  "test description",
 			},
 		},
 	}
@@ -130,8 +130,8 @@ func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
 			Dist:        dist,
 			Snapcraft: config.Snapcraft{
 				NameTemplate: "foo_{{.Arch}}",
-				Summary:     "test summary",
-				Description: "test description",
+				Summary:      "test summary",
+				Description:  "test description",
 				Apps: map[string]config.SnapcraftAppMetadata{
 					"mybin": {
 						Plugs:  []string{"home", "network"},
@@ -171,7 +171,7 @@ func TestNoSnapcraftInPath(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	var ctx = context.New(config.Project{})
-	assert.NoError(t,Pipe{}.Default(ctx))
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, defaultNameTemplate, ctx.Config.Snapcraft.NameTemplate)
 }
 
@@ -181,7 +181,7 @@ func TestDefaultSet(t *testing.T) {
 			NameTemplate: "foo",
 		},
 	})
-	assert.NoError(t,Pipe{}.Default(ctx))
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, "foo", ctx.Config.Snapcraft.NameTemplate)
 }
 

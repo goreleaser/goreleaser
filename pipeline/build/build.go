@@ -74,7 +74,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 }
 
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
-	if err := runHook(build.Env, build.Hooks.Pre); err != nil {
+	if err := runHook(ctx, build.Env, build.Hooks.Pre); err != nil {
 		return errors.Wrap(err, "pre hook failed")
 	}
 	sem := make(chan bool, ctx.Parallelism)
@@ -93,16 +93,16 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	if err := g.Wait(); err != nil {
 		return err
 	}
-	return errors.Wrap(runHook(build.Env, build.Hooks.Post), "post hook failed")
+	return errors.Wrap(runHook(ctx, build.Env, build.Hooks.Post), "post hook failed")
 }
 
-func runHook(env []string, hook string) error {
+func runHook(ctx *context.Context, env []string, hook string) error {
 	if hook == "" {
 		return nil
 	}
 	log.WithField("hook", hook).Info("running hook")
 	cmd := strings.Fields(hook)
-	return run(buildtarget.Runtime, cmd, env)
+	return run(ctx, buildtarget.Runtime, cmd, env)
 }
 
 func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
@@ -119,7 +119,7 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 		return err
 	}
 	cmd = append(cmd, "-ldflags="+flags, "-o", binary, build.Main)
-	if err := run(target, cmd, build.Env); err != nil {
+	if err := run(ctx, target, cmd, build.Env); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", target)
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -137,9 +137,9 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 	return nil
 }
 
-func run(target buildtarget.Target, command, env []string) error {
+func run(ctx *context.Context, target buildtarget.Target, command, env []string) error {
 	/* #nosec */
-	var cmd = exec.Command(command[0], command[1:]...)
+	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
 	env = append(env, target.Env()...)
 	var log = log.WithField("target", target.PrettyString()).
 		WithField("env", env).

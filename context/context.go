@@ -10,6 +10,7 @@ import (
 	ctx "context"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -41,8 +42,18 @@ type Context struct {
 
 // New context
 func New(config config.Project) *Context {
+	return wrap(ctx.Background(), config)
+}
+
+// NewWithTimeout new context with the given timeout
+func NewWithTimeout(config config.Project, timeout time.Duration) (*Context, ctx.CancelFunc) {
+	ctx, cancel := ctx.WithTimeout(ctx.Background(), timeout)
+	return wrap(ctx, config), cancel
+}
+
+func wrap(ctx ctx.Context, config config.Project) *Context {
 	return &Context{
-		Context:     ctx.Background(),
+		Context:     ctx,
 		Config:      config,
 		Env:         splitEnv(os.Environ()),
 		Parallelism: 4,
