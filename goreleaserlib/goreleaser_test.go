@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -21,6 +22,7 @@ func TestRelease(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	var flags = fakeFlags{
+		t: t,
 		flags: map[string]string{
 			"skip-publish":  "true",
 			"skip-validate": "true",
@@ -35,6 +37,7 @@ func TestSnapshotRelease(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	var flags = fakeFlags{
+		t: t,
 		flags: map[string]string{
 			"snapshot":    "true",
 			"parallelism": "4",
@@ -45,6 +48,7 @@ func TestSnapshotRelease(t *testing.T) {
 
 func TestConfigFileIsSetAndDontExist(t *testing.T) {
 	var flags = fakeFlags{
+		t: t,
 		flags: map[string]string{
 			"config": "/this/wont/exist",
 		},
@@ -70,6 +74,7 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 				),
 			)
 			var flags = fakeFlags{
+				t:     t,
 				flags: map[string]string{},
 			}
 			assert.Equal(t, name, getConfigFile(flags))
@@ -79,6 +84,7 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 
 func TestReleaseNotesFileDontExist(t *testing.T) {
 	var flags = fakeFlags{
+		t: t,
 		flags: map[string]string{
 			"release-notes": "/this/also/wont/exist",
 		},
@@ -92,6 +98,7 @@ func TestCustomReleaseNotesFile(t *testing.T) {
 	var releaseNotes = filepath.Join(folder, "notes.md")
 	createFile(t, releaseNotes, "nothing important at all")
 	var flags = fakeFlags{
+		t: t,
 		flags: map[string]string{
 			"release-notes": releaseNotes,
 			"skip-publish":  "true",
@@ -107,6 +114,7 @@ func TestBrokenPipe(t *testing.T) {
 	defer back()
 	createFile(t, "main.go", "not a valid go file")
 	var flags = fakeFlags{
+		t: t,
 		flags: map[string]string{
 			"skip-publish":  "true",
 			"skip-validate": "true",
@@ -149,6 +157,7 @@ func TestInitProjectDefaultPipeFails(t *testing.T) {
 
 // fakeFlags is a mock of the cli flags
 type fakeFlags struct {
+	t     *testing.T
 	flags map[string]string
 }
 
@@ -167,6 +176,12 @@ func (f fakeFlags) Int(s string) int {
 
 func (f fakeFlags) Bool(s string) bool {
 	return f.flags[s] == "true"
+}
+
+func (f fakeFlags) Duration(s string) time.Duration {
+	result, err := time.ParseDuration(f.flags[s])
+	assert.NoError(f.t, err)
+	return result
 }
 
 func setup(t *testing.T) (current string, back func()) {

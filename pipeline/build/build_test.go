@@ -21,11 +21,21 @@ func TestPipeDescription(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	assert.NoError(t, run(buildtarget.Runtime, []string{"go", "list", "./..."}, emptyEnv))
+	assert.NoError(t, run(
+		context.New(config.Project{}),
+		buildtarget.Runtime,
+		[]string{"go", "list", "./..."},
+		emptyEnv,
+	))
 }
 
 func TestRunInvalidCommand(t *testing.T) {
-	assert.Error(t, run(buildtarget.Runtime, []string{"gggggo", "nope"}, emptyEnv))
+	assert.Error(t, run(
+		context.New(config.Project{}),
+		buildtarget.Runtime,
+		[]string{"gggggo", "nope"},
+		emptyEnv,
+	))
 }
 
 func TestBuild(t *testing.T) {
