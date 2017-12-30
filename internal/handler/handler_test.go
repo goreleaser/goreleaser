@@ -52,6 +52,5 @@ func TestHandlerSignals(t *testing.T) {
 			h.signals <- signal
 			assert.EqualError(tt, <-errs, fmt.Sprintf("received: %s", signal))
 		})
-
 	}
 }
