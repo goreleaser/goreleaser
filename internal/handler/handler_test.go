@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/sync/errgroup"
 )
 
 func TestHandlerOK(t *testing.T) {
@@ -53,4 +54,19 @@ func TestHandlerSignals(t *testing.T) {
 			assert.EqualError(tt, <-errs, fmt.Sprintf("received: %s", signal))
 		})
 	}
+}
+
+func BenchmarkHandler(b *testing.B) {
+	var task Task = func() error {
+		return nil
+	}
+	var h = New()
+	var ctx = context.Background()
+	var wg errgroup.Group
+	for i := 0; i < 10000; i++ {
+		wg.Go(func() error {
+			return h.Run(ctx, task)
+		})
+	}
+	assert.NoError(b, wg.Wait())
 }
