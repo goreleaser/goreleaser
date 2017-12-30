@@ -24,14 +24,6 @@ func TestRelease(t *testing.T) {
 	assert.NoError(t, Release(newFlags(t, testParams())))
 }
 
-func TestReleaseTimeout(t *testing.T) {
-	_, back := setup(t)
-	defer back()
-	params := testParams()
-	params["timeout"] = "1s"
-	assert.EqualError(t, Release(newFlags(t, params)), `context deadline exceeded`)
-}
-
 func TestSnapshotRelease(t *testing.T) {
 	_, back := setup(t)
 	defer back()
