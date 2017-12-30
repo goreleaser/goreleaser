@@ -110,7 +110,11 @@ func Release(flags Flags) error {
 		ctx.Publish = false
 	}
 	ctx.RmDist = flags.Bool("rm-dist")
-	var errs = make(chan error)
+	return doRelease(ctx)
+}
+
+func doRelease(ctx *context.Context) error {
+	var errs = make(chan error, 1)
 	go func() {
 		for _, pipe := range pipes {
 			restoreOutputPadding()
@@ -124,7 +128,7 @@ func Release(flags Flags) error {
 		errs <- nil
 	}()
 	defer restoreOutputPadding()
-	var signals = make(chan os.Signal)
+	var signals = make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 	select {
 	case err := <-errs:
