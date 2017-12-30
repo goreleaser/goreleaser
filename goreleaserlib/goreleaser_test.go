@@ -21,42 +21,29 @@ func init() {
 func TestRelease(t *testing.T) {
 	_, back := setup(t)
 	defer back()
-	var flags = fakeFlags{
-		t: t,
-		flags: map[string]string{
-			"timeout":       "1m",
-			"skip-publish":  "true",
-			"skip-validate": "true",
-			"debug":         "true",
-			"parallelism":   "4",
-		},
-	}
-	assert.NoError(t, Release(flags))
+	assert.NoError(t, Release(newFlags(t, testParams())))
+}
+
+func TestReleaseTimeout(t *testing.T) {
+	_, back := setup(t)
+	defer back()
+	params := testParams()
+	params["timeout"] = "1s"
+	assert.EqualError(t, Release(newFlags(t, params)), `context deadline exceeded`)
 }
 
 func TestSnapshotRelease(t *testing.T) {
 	_, back := setup(t)
 	defer back()
-	var flags = fakeFlags{
-		t: t,
-		flags: map[string]string{
-			"timeout":     "1m",
-			"snapshot":    "true",
-			"parallelism": "4",
-		},
-	}
-	assert.NoError(t, Release(flags))
+	params := testParams()
+	params["snapshot"] = "true"
+	assert.NoError(t, Release(newFlags(t, params)))
 }
 
 func TestConfigFileIsSetAndDontExist(t *testing.T) {
-	var flags = fakeFlags{
-		t: t,
-		flags: map[string]string{
-			"timeout": "1m",
-			"config":  "/this/wont/exist",
-		},
-	}
-	assert.Error(t, Release(flags))
+	params := testParams()
+	params["config"] = "/this/wont/exist"
+	assert.Error(t, Release(newFlags(t, params)))
 }
 
 func TestConfigFlagNotSetButExists(t *testing.T) {
@@ -76,26 +63,15 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 					filepath.Join(folder, name),
 				),
 			)
-			var flags = fakeFlags{
-				t: t,
-				flags: map[string]string{
-					"timeout": "1m",
-				},
-			}
-			assert.Equal(t, name, getConfigFile(flags))
+			assert.Equal(t, name, getConfigFile(newFlags(t, testParams())))
 		})
 	}
 }
 
 func TestReleaseNotesFileDontExist(t *testing.T) {
-	var flags = fakeFlags{
-		t: t,
-		flags: map[string]string{
-			"timeout":       "1m",
-			"release-notes": "/this/also/wont/exist",
-		},
-	}
-	assert.Error(t, Release(flags))
+	params := testParams()
+	params["release-notes"] = "/this/also/wont/exist"
+	assert.Error(t, Release(newFlags(t, params)))
 }
 
 func TestCustomReleaseNotesFile(t *testing.T) {
@@ -103,33 +79,16 @@ func TestCustomReleaseNotesFile(t *testing.T) {
 	defer back()
 	var releaseNotes = filepath.Join(folder, "notes.md")
 	createFile(t, releaseNotes, "nothing important at all")
-	var flags = fakeFlags{
-		t: t,
-		flags: map[string]string{
-			"timeout":       "1m",
-			"release-notes": releaseNotes,
-			"skip-publish":  "true",
-			"skip-validate": "true",
-			"parallelism":   "4",
-		},
-	}
-	assert.NoError(t, Release(flags))
+	var params = testParams()
+	params["release-notes"] = releaseNotes
+	assert.NoError(t, Release(newFlags(t, params)))
 }
 
 func TestBrokenPipe(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	createFile(t, "main.go", "not a valid go file")
-	var flags = fakeFlags{
-		t: t,
-		flags: map[string]string{
-			"timeout":       "1m",
-			"skip-publish":  "true",
-			"skip-validate": "true",
-			"parallelism":   "4",
-		},
-	}
-	assert.Error(t, Release(flags))
+	assert.Error(t, Release(newFlags(t, testParams())))
 }
 
 func TestInitProject(t *testing.T) {
@@ -169,6 +128,13 @@ type fakeFlags struct {
 	flags map[string]string
 }
 
+func newFlags(t *testing.T, params map[string]string) Flags {
+	return fakeFlags{
+		t:     t,
+		flags: params,
+	}
+}
+
 func (f fakeFlags) IsSet(s string) bool {
 	return f.flags[s] != ""
 }
@@ -190,6 +156,16 @@ func (f fakeFlags) Duration(s string) time.Duration {
 	result, err := time.ParseDuration(f.flags[s])
 	assert.NoError(f.t, err)
 	return result
+}
+
+func testParams() map[string]string {
+	return map[string]string{
+		"debug":         "true",
+		"parallelism":   "4",
+		"skip-publish":  "true",
+		"skip-validate": "true",
+		"timeout":       "1m",
+	}
 }
 
 func setup(t *testing.T) (current string, back func()) {

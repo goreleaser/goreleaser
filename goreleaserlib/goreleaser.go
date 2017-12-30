@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/apex/log"
@@ -15,6 +13,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/handler"
 	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/goreleaser/goreleaser/pipeline/archive"
 	"github.com/goreleaser/goreleaser/pipeline/artifactory"
@@ -114,30 +113,18 @@ func Release(flags Flags) error {
 }
 
 func doRelease(ctx *context.Context) error {
-	var errs = make(chan error, 1)
-	go func() {
+	defer restoreOutputPadding()
+	return handler.New().Run(ctx, func() error {
 		for _, pipe := range pipes {
 			restoreOutputPadding()
 			log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.String()))
 			cli.Default.Padding = increasedPadding
 			if err := handle(pipe.Run(ctx)); err != nil {
-				errs <- err
-				return
+				return err
 			}
 		}
-		errs <- nil
-	}()
-	defer restoreOutputPadding()
-	var signals = make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-	select {
-	case err := <-errs:
-		return err
-	case <-ctx.Done():
-		return ctx.Err()
-	case sig := <-signals:
-		return fmt.Errorf("canceled due to %s", sig)
-	}
+		return nil
+	})
 }
 
 func restoreOutputPadding() {
