@@ -35,11 +35,7 @@ func New() *Handler {
 // if a SIGTERM or SIGINT is received and of course if the task itself fails.
 func (h *Handler) Run(ctx context.Context, task Task) error {
 	go func() {
-		if err := task(); err != nil {
-			h.errs <- err
-			return
-		}
-		h.errs <- nil
+		h.errs <- task()
 	}()
 	signal.Notify(h.signals, syscall.SIGINT, syscall.SIGTERM)
 	select {
