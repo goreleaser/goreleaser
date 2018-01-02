@@ -17,7 +17,8 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - docs
+      - '^docs:'
+      - '^test:'
       - Merge pull request
       - Merge branch
 dockers:
@@ -63,4 +64,4 @@ snapcraft:
     wrapped in your favorite CI.
   grade: stable
   confinement: classic
-  
+
