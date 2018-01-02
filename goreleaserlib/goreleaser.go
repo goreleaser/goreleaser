@@ -5,9 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
+	"github.com/caarlos0/ctrlc"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -65,6 +67,7 @@ type Flags interface {
 	String(s string) string
 	Int(s string) int
 	Bool(s string) bool
+	Duration(s string) time.Duration
 }
 
 // Release runs the release process with the given flags
@@ -84,7 +87,8 @@ func Release(flags Flags) error {
 		}
 		log.WithField("file", file).Warn("could not load config, using defaults")
 	}
-	var ctx = context.New(cfg)
+	ctx, cancel := context.NewWithTimeout(cfg, flags.Duration("timeout"))
+	defer cancel()
 	ctx.Parallelism = flags.Int("parallelism")
 	ctx.Debug = flags.Bool("debug")
 	log.Debugf("parallelism: %v", ctx.Parallelism)
@@ -105,16 +109,26 @@ func Release(flags Flags) error {
 		ctx.Publish = false
 	}
 	ctx.RmDist = flags.Bool("rm-dist")
-	for _, pipe := range pipes {
-		cli.Default.Padding = normalPadding
-		log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.String()))
-		cli.Default.Padding = increasedPadding
-		if err := handle(pipe.Run(ctx)); err != nil {
-			return err
+	return doRelease(ctx)
+}
+
+func doRelease(ctx *context.Context) error {
+	defer restoreOutputPadding()
+	return ctrlc.Default.Run(ctx, func() error {
+		for _, pipe := range pipes {
+			restoreOutputPadding()
+			log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.String()))
+			cli.Default.Padding = increasedPadding
+			if err := handle(pipe.Run(ctx)); err != nil {
+				return err
+			}
 		}
-	}
+		return nil
+	})
+}
+
+func restoreOutputPadding() {
 	cli.Default.Padding = normalPadding
-	return nil
 }
 
 func handle(err error) error {

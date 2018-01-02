@@ -163,7 +163,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 
 	var snap = filepath.Join(ctx.Config.Dist, folder+".snap")
 	/* #nosec */
-	var cmd = exec.Command("snapcraft", "snap", primeDir, "--output", snap)
+	var cmd = exec.CommandContext(ctx, "snapcraft", "snap", primeDir, "--output", snap)
 	if out, err = cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to generate snap package: %s", string(out))
 	}

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -20,36 +21,21 @@ func init() {
 func TestRelease(t *testing.T) {
 	_, back := setup(t)
 	defer back()
-	var flags = fakeFlags{
-		flags: map[string]string{
-			"skip-publish":  "true",
-			"skip-validate": "true",
-			"debug":         "true",
-			"parallelism":   "4",
-		},
-	}
-	assert.NoError(t, Release(flags))
+	assert.NoError(t, Release(newFlags(t, testParams())))
 }
 
 func TestSnapshotRelease(t *testing.T) {
 	_, back := setup(t)
 	defer back()
-	var flags = fakeFlags{
-		flags: map[string]string{
-			"snapshot":    "true",
-			"parallelism": "4",
-		},
-	}
-	assert.NoError(t, Release(flags))
+	params := testParams()
+	params["snapshot"] = "true"
+	assert.NoError(t, Release(newFlags(t, params)))
 }
 
 func TestConfigFileIsSetAndDontExist(t *testing.T) {
-	var flags = fakeFlags{
-		flags: map[string]string{
-			"config": "/this/wont/exist",
-		},
-	}
-	assert.Error(t, Release(flags))
+	params := testParams()
+	params["config"] = "/this/wont/exist"
+	assert.Error(t, Release(newFlags(t, params)))
 }
 
 func TestConfigFlagNotSetButExists(t *testing.T) {
@@ -69,21 +55,15 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 					filepath.Join(folder, name),
 				),
 			)
-			var flags = fakeFlags{
-				flags: map[string]string{},
-			}
-			assert.Equal(t, name, getConfigFile(flags))
+			assert.Equal(t, name, getConfigFile(newFlags(t, testParams())))
 		})
 	}
 }
 
 func TestReleaseNotesFileDontExist(t *testing.T) {
-	var flags = fakeFlags{
-		flags: map[string]string{
-			"release-notes": "/this/also/wont/exist",
-		},
-	}
-	assert.Error(t, Release(flags))
+	params := testParams()
+	params["release-notes"] = "/this/also/wont/exist"
+	assert.Error(t, Release(newFlags(t, params)))
 }
 
 func TestCustomReleaseNotesFile(t *testing.T) {
@@ -91,29 +71,16 @@ func TestCustomReleaseNotesFile(t *testing.T) {
 	defer back()
 	var releaseNotes = filepath.Join(folder, "notes.md")
 	createFile(t, releaseNotes, "nothing important at all")
-	var flags = fakeFlags{
-		flags: map[string]string{
-			"release-notes": releaseNotes,
-			"skip-publish":  "true",
-			"skip-validate": "true",
-			"parallelism":   "4",
-		},
-	}
-	assert.NoError(t, Release(flags))
+	var params = testParams()
+	params["release-notes"] = releaseNotes
+	assert.NoError(t, Release(newFlags(t, params)))
 }
 
 func TestBrokenPipe(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	createFile(t, "main.go", "not a valid go file")
-	var flags = fakeFlags{
-		flags: map[string]string{
-			"skip-publish":  "true",
-			"skip-validate": "true",
-			"parallelism":   "4",
-		},
-	}
-	assert.Error(t, Release(flags))
+	assert.Error(t, Release(newFlags(t, testParams())))
 }
 
 func TestInitProject(t *testing.T) {
@@ -149,7 +116,15 @@ func TestInitProjectDefaultPipeFails(t *testing.T) {
 
 // fakeFlags is a mock of the cli flags
 type fakeFlags struct {
+	t     *testing.T
 	flags map[string]string
+}
+
+func newFlags(t *testing.T, params map[string]string) Flags {
+	return fakeFlags{
+		t:     t,
+		flags: params,
+	}
 }
 
 func (f fakeFlags) IsSet(s string) bool {
@@ -167,6 +142,22 @@ func (f fakeFlags) Int(s string) int {
 
 func (f fakeFlags) Bool(s string) bool {
 	return f.flags[s] == "true"
+}
+
+func (f fakeFlags) Duration(s string) time.Duration {
+	result, err := time.ParseDuration(f.flags[s])
+	assert.NoError(f.t, err)
+	return result
+}
+
+func testParams() map[string]string {
+	return map[string]string{
+		"debug":         "true",
+		"parallelism":   "4",
+		"skip-publish":  "true",
+		"skip-validate": "true",
+		"timeout":       "1m",
+	}
 }
 
 func setup(t *testing.T) (current string, back func()) {

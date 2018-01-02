@@ -60,9 +60,9 @@ func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
 
 func TestDontEscapeHTML(t *testing.T) {
 	var changelog = "<h1>test</h1>"
-	var ctx = &context.Context{
-		ReleaseNotes: changelog,
-	}
+	var ctx = context.New(config.Project{})
+	ctx.ReleaseNotes = changelog
+
 	out, err := describeBody(ctx)
 	assert.NoError(t, err)
 	assert.Contains(t, out.String(), changelog)

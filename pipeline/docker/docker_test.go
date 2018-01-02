@@ -203,30 +203,28 @@ func TestRunPipe(t *testing.T) {
 	for name, docker := range table {
 		t.Run(name, func(tt *testing.T) {
 			folder, err := ioutil.TempDir("", "archivetest")
-			assert.NoError(t, err)
+			assert.NoError(tt, err)
 			var dist = filepath.Join(folder, "dist")
-			assert.NoError(t, os.Mkdir(dist, 0755))
-			assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+			assert.NoError(tt, os.Mkdir(dist, 0755))
+			assert.NoError(tt, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 			var binPath = filepath.Join(dist, "mybin", "mybin")
 			_, err = os.Create(binPath)
-			assert.NoError(t, err)
+			assert.NoError(tt, err)
 
-			var ctx = &context.Context{
-				Version:     "1.0.0",
-				Publish:     docker.publish,
-				Parallelism: 4,
-				Artifacts:   artifact.New(),
-				Git: context.GitInfo{
-					CurrentTag: "v1.0.0",
+			var ctx = context.New(config.Project{
+				ProjectName: "mybin",
+				Dist:        dist,
+				Dockers: []config.Docker{
+					docker.docker,
 				},
-				Config: config.Project{
-					ProjectName: "mybin",
-					Dist:        dist,
-					Dockers: []config.Docker{
-						docker.docker,
-					},
-				},
-				Env: map[string]string{"FOO": "123"},
+			})
+			ctx.Publish = true
+			ctx.Env = map[string]string{
+				"FOO": "123",
+			}
+			ctx.Version = "1.0.0"
+			ctx.Git = context.GitInfo{
+				CurrentTag: "v1.0.0",
 			}
 			for _, os := range []string{"linux", "darwin"} {
 				for _, arch := range []string{"amd64", "386"} {
@@ -252,14 +250,17 @@ func TestRunPipe(t *testing.T) {
 			if docker.err == "" {
 				assert.NoError(tt, err)
 			} else {
-				assert.Contains(tt, err.Error(), docker.err)
+				assert.Error(tt, err)
+				if err != nil {
+					assert.Contains(tt, err.Error(), docker.err)
+				}
 			}
 
 			// this might should not fail as the image should have been created when
 			// the step ran
 			for _, img := range docker.expect {
-				t.Log("removing docker image", img)
-				assert.NoError(t, exec.Command("docker", "rmi", img).Run(), "could not delete image %s", img)
+				tt.Log("removing docker image", img)
+				assert.NoError(tt, exec.Command("docker", "rmi", img).Run(), "could not delete image %s", img)
 			}
 
 		})

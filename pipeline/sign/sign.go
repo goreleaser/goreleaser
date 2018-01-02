@@ -92,7 +92,7 @@ func signone(ctx *context.Context, artifact artifact.Artifact) (string, error) {
 	// However, this works as intended. The nosec annotation
 	// tells the scanner to ignore this.
 	// #nosec
-	cmd := exec.Command(cfg.Cmd, args...)
+	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("sign: %s failed with %q", cfg.Cmd, string(output))

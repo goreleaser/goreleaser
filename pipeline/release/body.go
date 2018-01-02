@@ -25,7 +25,7 @@ Built with {{ .GoVersion }}`
 
 func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 	/* #nosec */
-	bts, err := exec.Command("go", "version").CombinedOutput()
+	bts, err := exec.CommandContext(ctx, "go", "version").CombinedOutput()
 	if err != nil {
 		return bytes.Buffer{}, err
 	}

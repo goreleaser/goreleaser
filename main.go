@@ -63,6 +63,11 @@ func main() {
 			Name:  "debug",
 			Usage: "Enable debug mode",
 		},
+		cli.DurationFlag{
+			Name:  "timeout",
+			Usage: "How much time the entire release process is allowed to take",
+			Value: 30 * time.Minute,
+		},
 	}
 	app.Action = func(c *cli.Context) error {
 		start := time.Now()

@@ -36,27 +36,22 @@ func TestRunPipe(t *testing.T) {
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	_, err = os.Create(binPath)
 	assert.NoError(t, err)
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Parallelism: runtime.NumCPU(),
-		Debug:       true,
-		Artifacts:   artifact.New(),
-		Config: config.Project{
-			ProjectName: "mybin",
-			Dist:        dist,
-			FPM: config.FPM{
-				NameTemplate: defaultNameTemplate,
-				Formats:      []string{"deb", "rpm"},
-				Dependencies: []string{"make"},
-				Conflicts:    []string{"git"},
-				Description:  "Some description",
-				License:      "MIT",
-				Maintainer:   "me@me",
-				Vendor:       "asdf",
-				Homepage:     "https://goreleaser.github.io",
-			},
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		FPM: config.FPM{
+			NameTemplate: defaultNameTemplate,
+			Formats:      []string{"deb", "rpm"},
+			Dependencies: []string{"make"},
+			Conflicts:    []string{"git"},
+			Description:  "Some description",
+			License:      "MIT",
+			Maintainer:   "me@me",
+			Vendor:       "asdf",
+			Homepage:     "https://goreleaser.github.io",
 		},
-	}
+	})
+	ctx.Version = "1.0.0"
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(artifact.Artifact{
@@ -96,7 +91,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 		Config: config.Project{
 			FPM: config.FPM{
 				NameTemplate: "{{.Foo}",
-				Formats: []string{"deb"},
+				Formats:      []string{"deb"},
 			},
 		},
 	}
@@ -109,27 +104,22 @@ func TestInvalidNameTemplate(t *testing.T) {
 	assert.Contains(t, Pipe{}.Run(ctx).Error(), `template: {{.Foo}:1: unexpected "}" in operand`)
 }
 
-
 func TestCreateFileDoesntExist(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(t, os.Mkdir(dist, 0755))
 	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var ctx = &context.Context{
-		Version:     "1.0.0",
-		Parallelism: runtime.NumCPU(),
-		Artifacts:   artifact.New(),
-		Config: config.Project{
-			Dist: dist,
-			FPM: config.FPM{
-				Formats: []string{"deb", "rpm"},
-				Files: map[string]string{
-					"testdata/testfile.txt": "/var/lib/test/testfile.txt",
-				},
+	var ctx = context.New(config.Project{
+		Dist: dist,
+		FPM: config.FPM{
+			Formats: []string{"deb", "rpm"},
+			Files: map[string]string{
+				"testdata/testfile.txt": "/var/lib/test/testfile.txt",
 			},
 		},
-	}
+	})
+	ctx.Version = "1.0.0"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "mybin", "mybin"),
@@ -141,7 +131,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 }
 
 func TestCmd(t *testing.T) {
-	cmd := cmd([]string{"--help"})
+	cmd := cmd(context.New(config.Project{}), []string{"--help"})
 	assert.NotEmpty(t, cmd.Env)
 	assert.Contains(t, cmd.Env[0], gnuTarPath)
 }
@@ -161,7 +151,7 @@ func TestDefaultSet(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
 			FPM: config.FPM{
-				Bindir: "/bin",
+				Bindir:       "/bin",
 				NameTemplate: "foo",
 			},
 		},

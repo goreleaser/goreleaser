@@ -2,9 +2,18 @@
 
 
 [[projects]]
+  branch = "master"
   name = "github.com/apex/log"
-  packages = [".","handlers/cli"]
-  revision = "0296d6eb16bb28f8a0c55668affcf4876dc269be"
+  packages = [
+    ".",
+    "handlers/cli"
+  ]
+  revision = "bf81de4b2280680c3ccdf5520047f055cdafc7e0"
+
+[[projects]]
+  name = "github.com/caarlos0/ctrlc"
+  packages = ["."]
+  revision = "70dc48d5d792f20f684a8f1d29bbac298f4b2ef4"
   version = "v1.0.0"
 
 [[projects]]
@@ -33,14 +42,21 @@
 
 [[projects]]
   name = "github.com/goreleaser/archive"
-  packages = [".","tar","zip"]
+  packages = [
+    ".",
+    "tar",
+    "zip"
+  ]
   revision = "caa5f3f5742eb0535631e94fa5e171c74c0144b7"
   version = "v1.0.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/mattn/go-zglob"
-  packages = [".","fastwalk"]
+  packages = [
+    ".",
+    "fastwalk"
+  ]
   revision = "4ecb59231939b2e499b1f2fd8f075565977d2452"
 
 [[projects]]
@@ -70,13 +86,19 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp"]
+  packages = [
+    "context",
+    "context/ctxhttp"
+  ]
   revision = "cd69bc3fc700721b709c3a59e16e24c67b58f6ff"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
-  packages = [".","internal"]
+  packages = [
+    ".",
+    "internal"
+  ]
   revision = "bb50c06baba3d0c76f9d125c0719093e315b5b44"
 
 [[projects]]
@@ -87,7 +109,15 @@
 
 [[projects]]
   name = "google.golang.org/appengine"
-  packages = ["internal","internal/base","internal/datastore","internal/log","internal/remote_api","internal/urlfetch","urlfetch"]
+  packages = [
+    "internal",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch"
+  ]
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
   version = "v1.0.0"
 
@@ -100,6 +130,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "963ab95030179004b910d862fc0048503002cb1029912dbe437ee08e87b31446"
+  inputs-digest = "7c274a0e93e3a9ae90db19694e64c254f25763565b80c965de42dda3eacf77e8"
   solver-name = "gps-cdcl"
   solver-version = 1
