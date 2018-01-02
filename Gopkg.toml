@@ -40,5 +40,6 @@
 
 
 [[constraint]]
-  branch = "master"
   name = "github.com/caarlos0/ctrlc"
+  version = "1.0.0"
+

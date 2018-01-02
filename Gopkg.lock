@@ -11,10 +11,10 @@
   revision = "bf81de4b2280680c3ccdf5520047f055cdafc7e0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/caarlos0/ctrlc"
   packages = ["."]
-  revision = "6fe1e9620de6169f9b7a2caacb96598dd48315ce"
+  revision = "70dc48d5d792f20f684a8f1d29bbac298f4b2ef4"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -130,6 +130,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a9900479518274dcc57ff328eacbb4c91f7f1e88c243d52aa792a9e6986f8de0"
+  inputs-digest = "7c274a0e93e3a9ae90db19694e64c254f25763565b80c965de42dda3eacf77e8"
   solver-name = "gps-cdcl"
   solver-version = 1
