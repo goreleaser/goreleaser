@@ -38,3 +38,7 @@
   branch = "master"
   name = "github.com/apex/log"
 
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/caarlos0/ctrlc"

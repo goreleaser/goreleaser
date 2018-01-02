@@ -9,11 +9,11 @@ import (
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
+	"github.com/caarlos0/ctrlc"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/handler"
 	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/goreleaser/goreleaser/pipeline/archive"
 	"github.com/goreleaser/goreleaser/pipeline/artifactory"
@@ -114,7 +114,7 @@ func Release(flags Flags) error {
 
 func doRelease(ctx *context.Context) error {
 	defer restoreOutputPadding()
-	return handler.New().Run(ctx, func() error {
+	return ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipes {
 			restoreOutputPadding()
 			log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.String()))
