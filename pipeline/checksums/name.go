@@ -9,7 +9,9 @@ import (
 
 func filenameFor(ctx *context.Context) (string, error) {
 	var out bytes.Buffer
-	t, err := template.New("checksums").Parse(ctx.Config.Checksum.NameTemplate)
+	t, err := template.New("checksums").
+		Option("missingkey=error").
+		Parse(ctx.Config.Checksum.NameTemplate)
 	if err != nil {
 		return "", err
 	}

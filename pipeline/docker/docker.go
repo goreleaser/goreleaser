@@ -107,7 +107,9 @@ func doRun(ctx *context.Context) error {
 
 func tagName(ctx *context.Context, docker config.Docker) (string, error) {
 	var out bytes.Buffer
-	t, err := template.New("tag").Parse(docker.TagTemplate)
+	t, err := template.New("tag").
+		Option("missingkey=error").
+		Parse(docker.TagTemplate)
 	if err != nil {
 		return "", err
 	}

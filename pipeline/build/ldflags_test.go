@@ -36,15 +36,22 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 }
 
 func TestInvalidTemplate(t *testing.T) {
-	var config = config.Project{
-		Builds: []config.Build{
-			{Ldflags: "{invalid{.Template}}}{{}}}"},
-		},
+	for template, eerr := range map[string]string{
+		"{{ .Nope }":    `template: ldflags:1: unexpected "}" in operand`,
+		"{{.Env.NOPE}}": `template: ldflags:1:6: executing "ldflags" at <.Env.NOPE>: map has no entry for key "NOPE"`,
+	} {
+		t.Run(template, func(tt *testing.T) {
+			var config = config.Project{
+				Builds: []config.Build{
+					{Ldflags: template},
+				},
+			}
+			var ctx = &context.Context{
+				Config: config,
+			}
+			flags, err := ldflags(ctx, ctx.Config.Builds[0])
+			assert.EqualError(tt, err, eerr)
+			assert.Empty(tt, flags)
+		})
 	}
-	var ctx = &context.Context{
-		Config: config,
-	}
-	flags, err := ldflags(ctx, ctx.Config.Builds[0])
-	assert.Error(t, err)
-	assert.Equal(t, flags, "")
 }
