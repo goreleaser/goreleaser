@@ -44,7 +44,7 @@ func NewFields(ctx *context.Context, replacements map[string]string, artifacts .
 // Apply applies the given fields to the given template and returns the
 // evaluation and any error that might occur.
 func Apply(tmpl string, fields Fields) (string, error) {
-	t, err := template.New(tmpl).Parse(tmpl)
+	t, err := template.New(tmpl).Option("missingkey=error").Parse(tmpl)
 	if err != nil {
 		return "", err
 	}

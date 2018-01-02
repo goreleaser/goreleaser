@@ -76,24 +76,31 @@ func TestPipeFileNotExist(t *testing.T) {
 }
 
 func TestPipeInvalidNameTemplate(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
-	var ctx = context.New(
-		config.Project{
-			Dist:        folder,
-			ProjectName: "name",
-			Checksum: config.Checksum{
-				NameTemplate: "{{ .Pro }_checksums.txt",
-			},
-		},
-	)
-	ctx.Artifacts.Add(artifact.Artifact{
-		Name: "whatever",
-		Type: artifact.UploadableBinary,
-	})
-	err = Pipe{}.Run(ctx)
-	assert.Error(t, err)
-	assert.Equal(t, `template: checksums:1: unexpected "}" in operand`, err.Error())
+	for template, eerr := range map[string]string{
+		"{{ .Pro }_checksums.txt": `template: checksums:1: unexpected "}" in operand`,
+		"{{.Env.NOPE}}":           `template: checksums:1:6: executing "checksums" at <.Env.NOPE>: map has no entry for key "NOPE"`,
+	} {
+		t.Run(template, func(tt *testing.T) {
+			folder, err := ioutil.TempDir("", "goreleasertest")
+			assert.NoError(tt, err)
+			var ctx = context.New(
+				config.Project{
+					Dist:        folder,
+					ProjectName: "name",
+					Checksum: config.Checksum{
+						NameTemplate: template,
+					},
+				},
+			)
+			ctx.Artifacts.Add(artifact.Artifact{
+				Name: "whatever",
+				Type: artifact.UploadableBinary,
+			})
+			err = Pipe{}.Run(ctx)
+			assert.Error(tt, err)
+			assert.Equal(tt, eerr, err.Error())
+		})
+	}
 }
 
 func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {

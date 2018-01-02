@@ -139,6 +139,19 @@ func TestRunPipe(t *testing.T) {
 			},
 			err: `template: tag:1: unexpected "}" in operand`,
 		},
+		"missing_env_on_template": {
+			publish: true,
+			docker: config.Docker{
+				Image:       registry + "goreleaser/test_run_pipe",
+				Goos:        "linux",
+				Goarch:      "amd64",
+				Dockerfile:  "testdata/Dockerfile",
+				Binary:      "mybin",
+				Latest:      true,
+				TagTemplate: "{{.Env.NOPE}}",
+			},
+			err: `template: tag:1:6: executing "tag" at <.Env.NOPE>: map has no entry for key "NOPE"`,
+		},
 		"no_permissions": {
 			publish: true,
 			docker: config.Docker{

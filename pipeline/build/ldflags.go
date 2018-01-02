@@ -26,7 +26,9 @@ func ldflags(ctx *context.Context, build config.Build) (string, error) {
 		Env:     ctx.Env,
 	}
 	var out bytes.Buffer
-	t, err := template.New("ldflags").Parse(build.Ldflags)
+	t, err := template.New("ldflags").
+		Option("missingkey=error").
+		Parse(build.Ldflags)
 	if err != nil {
 		return "", err
 	}

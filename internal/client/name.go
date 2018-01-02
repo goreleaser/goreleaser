@@ -9,7 +9,9 @@ import (
 
 func releaseTitle(ctx *context.Context) (string, error) {
 	var out bytes.Buffer
-	t, err := template.New("github").Parse(ctx.Config.Release.NameTemplate)
+	t, err := template.New("github").
+		Option("missingkey=error").
+		Parse(ctx.Config.Release.NameTemplate)
 	if err != nil {
 		return "", err
 	}

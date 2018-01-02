@@ -75,3 +75,11 @@ func TestInvalidTemplate(t *testing.T) {
 	assert.Empty(t, result)
 	assert.EqualError(t, err, `template: {{.Foo}:1: unexpected "}" in operand`)
 }
+
+func TestEnvNotFound(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	var fields = NewFields(ctx, map[string]string{}, artifact.Artifact{})
+	result, err := Apply("{{.Env.FOO}}", fields)
+	assert.Empty(t, result)
+	assert.EqualError(t, err, `template: {{.Env.FOO}}:1:6: executing "{{.Env.FOO}}" at <.Env.FOO>: map has no entry for key "FOO"`)
+}
