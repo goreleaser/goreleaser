@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -111,14 +112,23 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if len(archives) > 1 {
 		return ErrTooManyDarwin64Builds
 	}
-	var path = filepath.Join(ctx.Config.Brew.Folder, ctx.Config.ProjectName+".rb")
-	log.WithField("formula", path).
-		WithField("repo", ctx.Config.Brew.GitHub.String()).
-		Info("pushing")
+
 	content, err := buildFormula(ctx, client, archives[0])
 	if err != nil {
 		return err
 	}
+
+	var filename = ctx.Config.ProjectName + ".rb"
+	var path = filepath.Join(ctx.Config.Dist, filename)
+	log.WithField("formula", path).Info("writing")
+	if err := ioutil.WriteFile(path, content.Bytes(), 0644); err != nil {
+		return err
+	}
+
+	path = filepath.Join(ctx.Config.Brew.Folder, filename)
+	log.WithField("formula", path).
+		WithField("repo", ctx.Config.Brew.GitHub.String()).
+		Info("pushing")
 	return client.CreateFile(ctx, content, path)
 }
 

@@ -145,6 +145,8 @@ func TestRunPipe(t *testing.T) {
 	_, err = os.Create(path)
 	assert.NoError(t, err)
 
+	var distFile = filepath.Join(folder, "run-pipe.rb")
+
 	t.Run("default git url", func(tt *testing.T) {
 		assert.NoError(tt, doRun(ctx, client))
 		assert.True(tt, client.CreatedFile)
@@ -155,6 +157,10 @@ func TestRunPipe(t *testing.T) {
 		bts, err := ioutil.ReadFile(golden)
 		assert.NoError(tt, err)
 		assert.Equal(tt, string(bts), client.Content)
+
+		distBts, err := ioutil.ReadFile(distFile)
+		assert.NoError(tt, err)
+		assert.Equal(tt, string(bts), string(distBts))
 	})
 
 	t.Run("github enterprise url", func(tt *testing.T) {
@@ -168,6 +174,10 @@ func TestRunPipe(t *testing.T) {
 		bts, err := ioutil.ReadFile(golden)
 		assert.NoError(tt, err)
 		assert.Equal(tt, string(bts), client.Content)
+
+		distBts, err := ioutil.ReadFile(distFile)
+		assert.NoError(tt, err)
+		assert.Equal(tt, string(bts), string(distBts))
 	})
 }
 
