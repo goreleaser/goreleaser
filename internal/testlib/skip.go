@@ -10,5 +10,5 @@ import (
 // AssertSkipped asserts that a pipe was skipped
 func AssertSkipped(t *testing.T, err error) {
 	_, ok := err.(pipeline.ErrSkip)
-	assert.True(t, ok)
+	assert.True(t, ok, "expected a pipeline.ErrSkip but got %v", err)
 }

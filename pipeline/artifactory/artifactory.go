@@ -109,7 +109,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context) error {
 	if !ctx.Publish {
-		return pipeline.Skip("--skip-publish is set")
+		return pipeline.ErrSkipPublish
 	}
 
 	// Handle every configured artifactory instance

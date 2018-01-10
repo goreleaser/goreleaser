@@ -272,33 +272,50 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	assert.False(t, client.CreatedFile)
 }
 
-func TestRunPipeNoPublish(t *testing.T) {
-	var ctx = &context.Context{
-		Publish: false,
-	}
-	client := &DummyClient{}
-	testlib.AssertSkipped(t, doRun(ctx, client))
-	assert.False(t, client.CreatedFile)
-}
-
-func TestRunPipeDraftRelease(t *testing.T) {
-	var ctx = &context.Context{
-		Publish: true,
-		Config: config.Project{
-			Release: config.Release{
-				Draft: true,
-			},
-			Brew: config.Homebrew{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
-				},
+func TestRunPipeNoUpload(t *testing.T) {
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(t, err)
+	var ctx = context.New(config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		Release:     config.Release{},
+		Brew: config.Homebrew{
+			GitHub: config.Repo{
+				Owner: "test",
+				Name:  "test",
 			},
 		},
-	}
+	})
+	var path = filepath.Join(folder, "whatever.tar.gz")
+	_, err = os.Create(path)
+	assert.NoError(t, err)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "bin",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+	})
 	client := &DummyClient{}
-	testlib.AssertSkipped(t, doRun(ctx, client))
-	assert.False(t, client.CreatedFile)
+
+	var assertNoPublish = func(t *testing.T) {
+		testlib.AssertSkipped(t, doRun(ctx, client))
+		assert.False(t, client.CreatedFile)
+	}
+	t.Run("skip upload", func(tt *testing.T) {
+		ctx.Publish = true
+		ctx.Config.Brew.SkipUpload = true
+		assertNoPublish(tt)
+	})
+	t.Run("skip publish", func(tt *testing.T) {
+		ctx.Publish = false
+		assertNoPublish(tt)
+	})
+	t.Run("draft release", func(tt *testing.T) {
+		ctx.Publish = true
+		ctx.Config.Release.Draft = true
+		assertNoPublish(tt)
+	})
 }
 
 func TestRunPipeFormatBinary(t *testing.T) {

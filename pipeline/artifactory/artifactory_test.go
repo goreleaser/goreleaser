@@ -616,7 +616,7 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 
 	err := Pipe{}.Run(ctx)
 	assert.True(t, pipeline.IsSkip(err))
-	assert.Equal(t, err.Error(), "--skip-publish is set")
+	assert.EqualError(t, err, pipeline.ErrSkipPublish.Error())
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {

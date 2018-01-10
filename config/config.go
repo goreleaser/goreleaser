@@ -50,6 +50,7 @@ type Homebrew struct {
 	Conflicts    []string     `yaml:",omitempty"`
 	Description  string       `yaml:",omitempty"`
 	Homepage     string       `yaml:",omitempty"`
+	SkipUpload   bool         `yaml:"skip_upload,omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`

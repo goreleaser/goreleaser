@@ -42,6 +42,11 @@ brew:
   # Default is empty.
   description: "Software to create fast and easy drum rolls."
 
+  # Setting this will prevent goreleaser to actually try to commit the updated
+  # formula - instead, the formula file will be stored on the dist folder only,
+  # leaving the responsibility of publishing it to the user.
+  skip_upload: true
+
   # Packages your package depends on.
   dependencies:
     - git
