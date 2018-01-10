@@ -85,14 +85,8 @@ func contains(ss []string, s string) bool {
 }
 
 func doRun(ctx *context.Context, client client.Client) error {
-	if !ctx.Publish {
-		return pipeline.Skip("--skip-publish is set")
-	}
 	if ctx.Config.Brew.GitHub.Name == "" {
 		return pipeline.Skip("brew section is not configured")
-	}
-	if ctx.Config.Release.Draft {
-		return pipeline.Skip("release is marked as draft")
 	}
 	if ctx.Config.Archive.Format == "binary" {
 		return pipeline.Skip("archive format is binary")
@@ -123,6 +117,16 @@ func doRun(ctx *context.Context, client client.Client) error {
 	log.WithField("formula", path).Info("writing")
 	if err := ioutil.WriteFile(path, content.Bytes(), 0644); err != nil {
 		return err
+	}
+
+	if ctx.Config.Brew.SkipUpload {
+		return pipeline.Skip("brew.skip_upload is set")
+	}
+	if !ctx.Publish {
+		return pipeline.ErrSkipPublish
+	}
+	if ctx.Config.Release.Draft {
+		return pipeline.Skip("release is marked as draft")
 	}
 
 	path = filepath.Join(ctx.Config.Brew.Folder, filename)

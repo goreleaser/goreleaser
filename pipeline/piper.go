@@ -14,6 +14,10 @@ type Piper interface {
 	Run(ctx *context.Context) error
 }
 
+// ErrSkipPublish happens when skip publish is set and a pipe is refusing
+// to proceed because of that.
+var ErrSkipPublish = Skip("--skip-publish is set")
+
 // IsSkip returns true if the error is an ErrSkip
 func IsSkip(err error) bool {
 	_, ok := err.(ErrSkip)
