@@ -3,7 +3,7 @@ title: Links
 ---
 
 * Follow the progress on the [GitHub repository](https://github.com/goreleaser/goreleaser)
-* Follow [@caarlos0](https://twitter.com/caarlos0) on Twitter for updates
+* Follow [@goreleaser](https://twitter.com/goreleaser) on Twitter for updates
 * [Slack](https://gophers.slack.com/messages/goreleaser/) to chat about GoReleaser,
   questions, etc. Join using [this link](https://invite.slack.golangbridge.org/)
 * [Contributing Guidelines](https://github.com/goreleaser/goreleaser/blob/master/CONTRIBUTING.md)
