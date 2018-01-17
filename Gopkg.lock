@@ -8,7 +8,7 @@
     ".",
     "handlers/cli"
   ]
-  revision = "bf81de4b2280680c3ccdf5520047f055cdafc7e0"
+  revision = "17c1d7658c4e2dec69e5c27fe7869da5df744a49"
 
 [[projects]]
   name = "github.com/caarlos0/ctrlc"
@@ -23,16 +23,22 @@
   version = "v1.1.0"
 
 [[projects]]
+  name = "github.com/fatih/color"
+  packages = ["."]
+  revision = "570b54cabe6b8eb0bc2dfce68d964677d63b5260"
+  version = "v1.5.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "1643683e1b54a9e88ad26d98f81400c8c9d9f4f9"
+  revision = "1e59b77b52bf8e4b449a57e6f79f21226d571845"
 
 [[projects]]
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "a021c14a5f1960591b0e1773a4a2ef8257ec93b8"
+  revision = "922ceac0585d40f97d283d921f872fc50480e06e"
 
 [[projects]]
   branch = "master"
@@ -51,13 +57,25 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/mattn/go-colorable"
+  packages = ["."]
+  revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
+  version = "v0.0.9"
+
+[[projects]]
+  name = "github.com/mattn/go-isatty"
+  packages = ["."]
+  revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
+  version = "v0.0.3"
+
+[[projects]]
   branch = "master"
   name = "github.com/mattn/go-zglob"
   packages = [
     ".",
     "fastwalk"
   ]
-  revision = "4ecb59231939b2e499b1f2fd8f075565977d2452"
+  revision = "4959821b481786922ac53e7ef25c61ae19fb7c36"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -74,8 +92,8 @@
 [[projects]]
   name = "github.com/stretchr/testify"
   packages = ["assert"]
-  revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
-  version = "v1.1.4"
+  revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
+  version = "v1.2.0"
 
 [[projects]]
   name = "github.com/urfave/cli"
@@ -90,7 +108,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "cd69bc3fc700721b709c3a59e16e24c67b58f6ff"
+  revision = "5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec"
 
 [[projects]]
   branch = "master"
@@ -99,13 +117,19 @@
     ".",
     "internal"
   ]
-  revision = "bb50c06baba3d0c76f9d125c0719093e315b5b44"
+  revision = "30785a2c434e431ef7c507b54617d6a951d5f2b4"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sync"
   packages = ["errgroup"]
-  revision = "8e0aa688b654ef28caa72506fa5ec8dba9fc7690"
+  revision = "fd80eb99c8f653c847d294a001bdf2a3a6f768f5"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  revision = "2c42eef0765b9837fbdab12011af7830f55f88f0"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -125,7 +149,7 @@
   branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "eb3733d160e74a9c7e442f435eb3bea458e1d19f"
+  revision = "d670f9405373e636a5a2765eea47fac0c9bc91a4"
 
 [solve-meta]
   analyzer-name = "dep"

@@ -10,6 +10,7 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/caarlos0/ctrlc"
+	"github.com/fatih/color"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -117,7 +118,7 @@ func doRelease(ctx *context.Context) error {
 	return ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipes {
 			restoreOutputPadding()
-			log.Infof("\033[1m%s\033[0m", strings.ToUpper(pipe.String()))
+			log.Infof(color.New(color.Bold).Sprint(strings.ToUpper(pipe.String())))
 			cli.Default.Padding = increasedPadding
 			if err := handle(pipe.Run(ctx)); err != nil {
 				return err
