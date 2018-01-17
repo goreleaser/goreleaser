@@ -43,3 +43,7 @@
   name = "github.com/caarlos0/ctrlc"
   version = "1.0.0"
 
+
+[[constraint]]
+  name = "github.com/fatih/color"
+  version = "1.5.0"

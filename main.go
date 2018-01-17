@@ -7,6 +7,7 @@ import (
 
 	"github.com/apex/log"
 	lcli "github.com/apex/log/handlers/cli"
+	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/goreleaserlib"
 	"github.com/urfave/cli"
 )
@@ -15,6 +16,8 @@ var (
 	version = "dev"
 	commit  = "none"
 	date    = "unknown"
+
+	bold = color.New(color.Bold)
 )
 
 func init() {
@@ -71,12 +74,12 @@ func main() {
 	}
 	app.Action = func(c *cli.Context) error {
 		start := time.Now()
-		log.Infof("\033[1mreleasing...\033[0m")
+		log.Infof(bold.Sprint("releasing..."))
 		if err := goreleaserlib.Release(c); err != nil {
-			log.WithError(err).Errorf("\033[1mrelease failed after %0.2fs\033[0m", time.Since(start).Seconds())
+			log.WithError(err).Errorf(bold.Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
 			return cli.NewExitError("\n", 1)
 		}
-		log.Infof("\033[1mrelease succeeded after %0.2fs\033[0m", time.Since(start).Seconds())
+		log.Infof(bold.Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds()))
 		return nil
 	}
 	app.Commands = []cli.Command{
