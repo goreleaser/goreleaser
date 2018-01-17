@@ -20,6 +20,10 @@ brew:
     owner: user
     name: homebrew-tap
 
+  # Allows you to set a custom download strategy.
+  # Default is empty.
+  download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
+
   # Git author used to commit to the repository.
   # Defaults are shown.
   commit_author:
@@ -45,6 +49,7 @@ brew:
   # Setting this will prevent goreleaser to actually try to commit the updated
   # formula - instead, the formula file will be stored on the dist folder only,
   # leaving the responsibility of publishing it to the user.
+  # Default is false.
   skip_upload: true
 
   # Packages your package depends on.
