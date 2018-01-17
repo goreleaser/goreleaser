@@ -179,6 +179,23 @@ func TestRunPipe(t *testing.T) {
 		assert.NoError(tt, err)
 		assert.Equal(tt, string(bts), string(distBts))
 	})
+
+	t.Run("custom download strategy", func(tt *testing.T) {
+		ctx.Config.Brew.DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
+		assert.NoError(tt, doRun(ctx, client))
+		assert.True(tt, client.CreatedFile)
+		var golden = "testdata/run_pipe_download_strategy.rb.golden"
+		if *update {
+			ioutil.WriteFile(golden, []byte(client.Content), 0655)
+		}
+		bts, err := ioutil.ReadFile(golden)
+		assert.NoError(tt, err)
+		assert.Equal(tt, string(bts), client.Content)
+
+		distBts, err := ioutil.ReadFile(distFile)
+		assert.NoError(tt, err)
+		assert.Equal(tt, string(bts), string(distBts))
+	})
 }
 
 func TestRunPipeNoDarwin64Build(t *testing.T) {

@@ -39,18 +39,19 @@ func (r Repo) String() string {
 
 // Homebrew contains the brew section
 type Homebrew struct {
-	GitHub       Repo         `yaml:",omitempty"`
-	CommitAuthor CommitAuthor `yaml:"commit_author,omitempty"`
-	Folder       string       `yaml:",omitempty"`
-	Caveats      string       `yaml:",omitempty"`
-	Plist        string       `yaml:",omitempty"`
-	Install      string       `yaml:",omitempty"`
-	Dependencies []string     `yaml:",omitempty"`
-	Test         string       `yaml:",omitempty"`
-	Conflicts    []string     `yaml:",omitempty"`
-	Description  string       `yaml:",omitempty"`
-	Homepage     string       `yaml:",omitempty"`
-	SkipUpload   bool         `yaml:"skip_upload,omitempty"`
+	GitHub           Repo         `yaml:",omitempty"`
+	CommitAuthor     CommitAuthor `yaml:"commit_author,omitempty"`
+	Folder           string       `yaml:",omitempty"`
+	Caveats          string       `yaml:",omitempty"`
+	Plist            string       `yaml:",omitempty"`
+	Install          string       `yaml:",omitempty"`
+	Dependencies     []string     `yaml:",omitempty"`
+	Test             string       `yaml:",omitempty"`
+	Conflicts        []string     `yaml:",omitempty"`
+	Description      string       `yaml:",omitempty"`
+	Homepage         string       `yaml:",omitempty"`
+	SkipUpload       bool         `yaml:"skip_upload,omitempty"`
+	DownloadStrategy string       `yaml:"download_strategy,omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`

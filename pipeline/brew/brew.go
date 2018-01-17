@@ -162,22 +162,24 @@ func dataFor(ctx *context.Context, client client.Client, artifact artifact.Artif
 	if ctx.Config.GitHubURLs.Download != "" {
 		url = ctx.Config.GitHubURLs.Download
 	}
+	var cfg = ctx.Config.Brew
 	return templateData{
-		Name:         formulaNameFor(ctx.Config.ProjectName),
-		DownloadURL:  url,
-		Desc:         ctx.Config.Brew.Description,
-		Homepage:     ctx.Config.Brew.Homepage,
-		Repo:         ctx.Config.Release.GitHub,
-		Tag:          ctx.Git.CurrentTag,
-		Version:      ctx.Version,
-		Caveats:      ctx.Config.Brew.Caveats,
-		File:         artifact.Name,
-		SHA256:       sum,
-		Dependencies: ctx.Config.Brew.Dependencies,
-		Conflicts:    ctx.Config.Brew.Conflicts,
-		Plist:        ctx.Config.Brew.Plist,
-		Install:      split(ctx.Config.Brew.Install),
-		Tests:        split(ctx.Config.Brew.Test),
+		Name:             formulaNameFor(ctx.Config.ProjectName),
+		DownloadURL:      url,
+		Desc:             cfg.Description,
+		Homepage:         cfg.Homepage,
+		Repo:             ctx.Config.Release.GitHub,
+		Tag:              ctx.Git.CurrentTag,
+		Version:          ctx.Version,
+		Caveats:          cfg.Caveats,
+		File:             artifact.Name,
+		SHA256:           sum,
+		Dependencies:     cfg.Dependencies,
+		Conflicts:        cfg.Conflicts,
+		Plist:            cfg.Plist,
+		Install:          split(cfg.Install),
+		Tests:            split(cfg.Test),
+		DownloadStrategy: cfg.DownloadStrategy,
 	}, nil
 }
 
