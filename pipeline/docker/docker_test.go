@@ -247,7 +247,7 @@ func TestRunPipe(t *testing.T) {
 					docker.docker,
 				},
 			})
-			ctx.Publish = true
+			ctx.Publish = docker.publish
 			ctx.Env = map[string]string{
 				"FOO": "123",
 			}
@@ -391,6 +391,26 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "bar", docker.Binary)
 	assert.Empty(t, docker.OldTagTemplate)
 	assert.Equal(t, []string{"{{ .Version }}"}, docker.TagTemplates)
+	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
+}
+
+func TestDefaultWithOldTagTemplateSet(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dockers: []config.Docker{
+				{
+					Dockerfile:     "Dockerfile.foo",
+					OldTagTemplate: "{{.Tag}}",
+					Latest:         true,
+					Binary:         "foo",
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Len(t, ctx.Config.Dockers, 1)
+	var docker = ctx.Config.Dockers[0]
+	assert.Equal(t, []string{"{{.Tag}}", "latest"}, docker.TagTemplates)
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 }
 
