@@ -52,9 +52,10 @@ dockers:
     dockerfile: Dockerfile
     # Template of the docker tag. Defaults to `{{ .Version }}`. Other allowed
     # fields are `.Tag` and `.Env.VARIABLE_NAME`.
-    tag_template: "{{ .Tag }}"
-    # Also tag and push myuser/myimage:latest.
-    latest: true
+    tag_templates:
+    - "{{ .Tag }}"
+    - "{{ .Tag }}-{{ .Env.GO_VERSION }}"
+    - latest
     # If your Dockerfile copies files other than the binary itself,
     # you should list them here as well.
     extra_files:
