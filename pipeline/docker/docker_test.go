@@ -58,13 +58,15 @@ func TestRunPipe(t *testing.T) {
 		"valid": {
 			publish: true,
 			docker: config.Docker{
-				Image:       registry + "goreleaser/test_run_pipe",
-				Goos:        "linux",
-				Goarch:      "amd64",
-				Dockerfile:  "testdata/Dockerfile",
-				Binary:      "mybin",
-				Latest:      true,
-				TagTemplate: "{{.Tag}}-{{.Env.FOO}}",
+				Image:      registry + "goreleaser/test_run_pipe",
+				Goos:       "linux",
+				Goarch:     "amd64",
+				Dockerfile: "testdata/Dockerfile",
+				Binary:     "mybin",
+				TagTemplates: []string{
+					"{{.Tag}}-{{.Env.FOO}}",
+					"latest",
+				},
 				Files: []string{
 					"testdata/extra_file.txt",
 				},
@@ -78,13 +80,14 @@ func TestRunPipe(t *testing.T) {
 		"valid_no_latest": {
 			publish: true,
 			docker: config.Docker{
-				Image:       registry + "goreleaser/test_run_pipe",
-				Goos:        "linux",
-				Goarch:      "amd64",
-				Dockerfile:  "testdata/Dockerfile",
-				Binary:      "mybin",
-				Latest:      false,
-				TagTemplate: "{{.Version}}",
+				Image:      registry + "goreleaser/test_run_pipe",
+				Goos:       "linux",
+				Goarch:     "amd64",
+				Dockerfile: "testdata/Dockerfile",
+				Binary:     "mybin",
+				TagTemplates: []string{
+					"{{.Version}}",
+				},
 				Files: []string{
 					"testdata/extra_file.txt",
 				},
@@ -97,13 +100,15 @@ func TestRunPipe(t *testing.T) {
 		"valid_dont_publish": {
 			publish: false,
 			docker: config.Docker{
-				Image:       registry + "goreleaser/test_run_pipe",
-				Goos:        "linux",
-				Goarch:      "amd64",
-				Dockerfile:  "testdata/Dockerfile",
-				Binary:      "mybin",
-				Latest:      true,
-				TagTemplate: "{{.Tag}}-{{.Env.FOO}}",
+				Image:      registry + "goreleaser/test_run_pipe",
+				Goos:       "linux",
+				Goarch:     "amd64",
+				Dockerfile: "testdata/Dockerfile",
+				Binary:     "mybin",
+				TagTemplates: []string{
+					"{{.Tag}}-{{.Env.FOO}}",
+					"latest",
+				},
 				Files: []string{
 					"testdata/extra_file.txt",
 				},
@@ -117,51 +122,58 @@ func TestRunPipe(t *testing.T) {
 		"bad_dockerfile": {
 			publish: true,
 			docker: config.Docker{
-				Image:       registry + "goreleaser/test_run_pipe",
-				Goos:        "linux",
-				Goarch:      "amd64",
-				Dockerfile:  "testdata/Dockerfile.bad",
-				Binary:      "mybin",
-				TagTemplate: "{{.Version}}",
+				Image:      registry + "goreleaser/test_run_pipe",
+				Goos:       "linux",
+				Goarch:     "amd64",
+				Dockerfile: "testdata/Dockerfile.bad",
+				Binary:     "mybin",
+				TagTemplates: []string{
+					"{{.Version}}",
+				},
 			},
 			err: "pull access denied for nope, repository does not exist",
 		},
 		"template_error": {
 			publish: true,
 			docker: config.Docker{
-				Image:       registry + "goreleaser/test_run_pipe",
-				Goos:        "linux",
-				Goarch:      "amd64",
-				Dockerfile:  "testdata/Dockerfile",
-				Binary:      "mybin",
-				Latest:      true,
-				TagTemplate: "{{.Tag}",
+				Image:      registry + "goreleaser/test_run_pipe",
+				Goos:       "linux",
+				Goarch:     "amd64",
+				Dockerfile: "testdata/Dockerfile",
+				Binary:     "mybin",
+				TagTemplates: []string{
+					"{{.Tag}",
+				},
 			},
 			err: `template: tag:1: unexpected "}" in operand`,
 		},
 		"missing_env_on_template": {
 			publish: true,
 			docker: config.Docker{
-				Image:       registry + "goreleaser/test_run_pipe",
-				Goos:        "linux",
-				Goarch:      "amd64",
-				Dockerfile:  "testdata/Dockerfile",
-				Binary:      "mybin",
-				Latest:      true,
-				TagTemplate: "{{.Env.NOPE}}",
+				Image:      registry + "goreleaser/test_run_pipe",
+				Goos:       "linux",
+				Goarch:     "amd64",
+				Dockerfile: "testdata/Dockerfile",
+				Binary:     "mybin",
+				TagTemplates: []string{
+					"{{.Env.NOPE}}",
+				},
 			},
 			err: `template: tag:1:6: executing "tag" at <.Env.NOPE>: map has no entry for key "NOPE"`,
 		},
 		"no_permissions": {
 			publish: true,
 			docker: config.Docker{
-				Image:       "docker.io/nope",
-				Goos:        "linux",
-				Goarch:      "amd64",
-				Binary:      "mybin",
-				Dockerfile:  "testdata/Dockerfile",
-				TagTemplate: "{{.Tag}}",
-				Latest:      true,
+				Image:      "docker.io/nope",
+				Goos:       "linux",
+				Goarch:     "amd64",
+				Binary:     "mybin",
+				Dockerfile: "testdata/Dockerfile",
+				TagTemplates: []string{
+					"{{.Tag}}",
+					"latest",
+				},
+				Latest: true,
 			},
 			expect: []string{
 				"docker.io/nope:latest",
@@ -172,12 +184,14 @@ func TestRunPipe(t *testing.T) {
 		"dockerfile_doesnt_exist": {
 			publish: true,
 			docker: config.Docker{
-				Image:       "whatever",
-				Goos:        "linux",
-				Goarch:      "amd64",
-				Binary:      "mybin",
-				Dockerfile:  "testdata/Dockerfilezzz",
-				TagTemplate: "{{.Tag}}",
+				Image:      "whatever",
+				Goos:       "linux",
+				Goarch:     "amd64",
+				Binary:     "mybin",
+				Dockerfile: "testdata/Dockerfilezzz",
+				TagTemplates: []string{
+					"{{.Tag}}",
+				},
 			},
 			err: `failed to link dockerfile`,
 		},
@@ -191,8 +205,10 @@ func TestRunPipe(t *testing.T) {
 				Files: []string{
 					"testdata/nope.txt",
 				},
-				Dockerfile:  "testdata/Dockerfile",
-				TagTemplate: "{{.Tag}}",
+				Dockerfile: "testdata/Dockerfile",
+				TagTemplates: []string{
+					"{{.Tag}}",
+				},
 			},
 			err: `failed to link extra file 'testdata/nope.txt'`,
 		},
@@ -339,7 +355,9 @@ func TestDefault(t *testing.T) {
 	assert.Equal(t, "amd64", docker.Goarch)
 	assert.Equal(t, ctx.Config.Builds[0].Binary, docker.Binary)
 	assert.Equal(t, "Dockerfile", docker.Dockerfile)
-	assert.Equal(t, "{{ .Version }}", docker.TagTemplate)
+	assert.Empty(t, docker.OldTagTemplate)
+	assert.Equal(t, []string{"{{ .Version }}", "latest"}, docker.TagTemplates)
+
 }
 
 func TestDefaultNoDockers(t *testing.T) {
@@ -371,7 +389,8 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "windows", docker.Goos)
 	assert.Equal(t, "i386", docker.Goarch)
 	assert.Equal(t, "bar", docker.Binary)
-	assert.Equal(t, "{{ .Version }}", docker.TagTemplate)
+	assert.Empty(t, docker.OldTagTemplate)
+	assert.Equal(t, []string{"{{ .Version }}"}, docker.TagTemplates)
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 }
 

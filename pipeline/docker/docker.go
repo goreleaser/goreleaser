@@ -34,14 +34,22 @@ func (Pipe) String() string {
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Dockers {
 		var docker = &ctx.Config.Dockers[i]
-		if docker.TagTemplate == "" {
-			docker.TagTemplate = "{{ .Version }}"
+		if docker.OldTagTemplate != "" {
+			// TODO: deprecate docker.tag_template in favor of docker.tag_templates
+			docker.TagTemplates = append(docker.TagTemplates, docker.OldTagTemplate)
+		}
+		if len(docker.TagTemplates) == 0 {
+			docker.TagTemplates = append(docker.TagTemplates, "{{ .Version }}")
 		}
 		if docker.Goos == "" {
 			docker.Goos = "linux"
 		}
 		if docker.Goarch == "" {
 			docker.Goarch = "amd64"
+		}
+		if docker.Latest {
+			// TODO: deprecate docker.Latest in favor of multiple tags?
+			docker.TagTemplates = append(docker.TagTemplates, "latest")
 		}
 	}
 	// only set defaults if there is exacly 1 docker setup in the config file.
@@ -105,11 +113,9 @@ func doRun(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func tagName(ctx *context.Context, docker config.Docker) (string, error) {
+func tagName(ctx *context.Context, tagTemplate string) (string, error) {
 	var out bytes.Buffer
-	t, err := template.New("tag").
-		Option("missingkey=error").
-		Parse(docker.TagTemplate)
+	t, err := template.New("tag").Option("missingkey=error").Parse(tagTemplate)
 	if err != nil {
 		return "", err
 	}
@@ -128,13 +134,14 @@ func tagName(ctx *context.Context, docker config.Docker) (string, error) {
 func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) error {
 	var root = filepath.Dir(artifact.Path)
 	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile))
-	tag, err := tagName(ctx, docker)
-	if err != nil {
-		return err
+	var images []string
+	for _, tagTemplate := range docker.TagTemplates {
+		tag, err := tagName(ctx, tagTemplate)
+		if err != nil {
+			return errors.Wrapf(err, "failed to execute tag template '%s'", tagTemplate)
+		}
+		images = append(images, fmt.Sprintf("%s:%s", docker.Image, tag))
 	}
-	var image = fmt.Sprintf("%s:%s", docker.Image, tag)
-	var latest = fmt.Sprintf("%s:latest", docker.Image)
-
 	if err := os.Link(docker.Dockerfile, dockerfile); err != nil {
 		return errors.Wrap(err, "failed to link dockerfile")
 	}
@@ -143,16 +150,15 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 			return errors.Wrapf(err, "failed to link extra file '%s'", file)
 		}
 	}
-	if err := dockerBuild(ctx, root, dockerfile, image); err != nil {
+	if err := dockerBuild(ctx, root, dockerfile, images[0]); err != nil {
 		return err
 	}
-	if docker.Latest {
-		if err := dockerTag(ctx, image, latest); err != nil {
+	for _, img := range images[1:] {
+		if err := dockerTag(ctx, images[0], img); err != nil {
 			return err
 		}
 	}
-
-	return publish(ctx, docker, image, latest)
+	return publish(ctx, docker, images)
 }
 
 // walks the src, recreating dirs and hard-linking files
@@ -178,21 +184,17 @@ func link(src, dest string) error {
 	})
 }
 
-func publish(ctx *context.Context, docker config.Docker, image, latest string) error {
+func publish(ctx *context.Context, docker config.Docker, images []string) error {
 	if !ctx.Publish {
 		log.Warn("skipping push because --skip-publish is set")
 		return nil
 	}
-	if err := dockerPush(ctx, docker, image); err != nil {
-		return err
+	for _, image := range images {
+		if err := dockerPush(ctx, docker, image); err != nil {
+			return err
+		}
 	}
-	if !docker.Latest {
-		return nil
-	}
-	if err := dockerTag(ctx, image, latest); err != nil {
-		return err
-	}
-	return dockerPush(ctx, docker, latest)
+	return nil
 }
 
 func dockerBuild(ctx *context.Context, root, dockerfile, image string) error {
