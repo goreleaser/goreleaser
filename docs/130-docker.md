@@ -51,10 +51,12 @@ dockers:
     # Path to the Dockerfile (from the project root).
     dockerfile: Dockerfile
     # Template of the docker tag. Defaults to `{{ .Version }}`. Other allowed
-    # fields are `.Tag` and `.Env.VARIABLE_NAME`.
+    # fields are `.Tag`, `.Major`, `.Minor` and `.Patch` and
+    # `.Env.VARIABLE_NAME`.
     tag_templates:
     - "{{ .Tag }}"
     - "{{ .Tag }}-{{ .Env.GO_VERSION }}"
+    - "v{{ .Major }}"
     - latest
     # If your Dockerfile copies files other than the binary itself,
     # you should list them here as well.
@@ -82,3 +84,36 @@ Then you can run:
 ```console
 GOVERSION_NR=$(go version | awk '{print $3}') goreleaser
 ```
+
+## Keeping docker images updated for current major
+
+Some users might want to when version to push docker tags `:v1`, `:v1.6`,
+`:v1.6.4` and `:latest` when `v1.6.4` (for example) is built. That can be
+accomplished by using multiple `tag_templates`:
+
+```yaml
+# .goreleaser.yml
+dockers:
+  -
+    binary: mybinary
+    image: myuser/myimage
+    tag_templates:
+    - "{{ .Tag }}"
+    - "v{{ .Major }}"
+    - "v{{ .Major }}.{{ .Minor }}"
+    - latest
+```
+
+This will build and publish the following images:
+
+* myuser/myimage:v1.6.4
+* myuser/myimage:v1
+* myuser/myimage:v1.6
+* myuser/myimage:latest
+
+Hope this feature serves you well!
+
+More info:
+
+* [#461](https://github.com/goreleaser/goreleaser/issues/461)
+* [#505](https://github.com/goreleaser/goreleaser/issues/505)
