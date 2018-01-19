@@ -65,6 +65,8 @@ func TestRunPipe(t *testing.T) {
 				Binary:     "mybin",
 				TagTemplates: []string{
 					"{{.Tag}}-{{.Env.FOO}}",
+					"v{{.Major}}",
+					"v{{.Major}}.{{.Minor}}",
 					"latest",
 				},
 				Files: []string{
@@ -73,6 +75,8 @@ func TestRunPipe(t *testing.T) {
 			},
 			expect: []string{
 				registry + "goreleaser/test_run_pipe:v1.0.0-123",
+				registry + "goreleaser/test_run_pipe:v1",
+				registry + "goreleaser/test_run_pipe:v1.0",
 				registry + "goreleaser/test_run_pipe:latest",
 			},
 			err: "",
