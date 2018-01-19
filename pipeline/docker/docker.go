@@ -11,6 +11,8 @@ import (
 	"text/template"
 
 	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
+	"github.com/fatih/color"
 	"github.com/masterminds/semver"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
@@ -31,12 +33,20 @@ func (Pipe) String() string {
 	return "creating Docker images"
 }
 
+func deprecateWarn(format string, a ...interface{}) {
+	cli.Default.Padding *= 2
+	defer func() {
+		cli.Default.Padding /= 2
+	}()
+	log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(format, a...))
+}
+
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Dockers {
 		var docker = &ctx.Config.Dockers[i]
 		if docker.OldTagTemplate != "" {
-			// TODO: deprecate docker.tag_template in favor of docker.tag_templates
+			deprecateWarn("`dockers[%d].tag_template` is deprecated. Please consider using `dockers[%d].tag_templates` instead", i, i)
 			docker.TagTemplates = append(docker.TagTemplates, docker.OldTagTemplate)
 		}
 		if len(docker.TagTemplates) == 0 {
@@ -49,7 +59,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			docker.Goarch = "amd64"
 		}
 		if docker.Latest {
-			// TODO: deprecate docker.Latest in favor of multiple tags?
+			deprecateWarn("`dockers[%d].latest` is deprecated. Please consider adding a `latest` tag to the `dockers[%d].tag_templates` list instead", i, i)
 			docker.TagTemplates = append(docker.TagTemplates, "latest")
 		}
 	}
