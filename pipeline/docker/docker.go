@@ -13,6 +13,7 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/fatih/color"
+	"github.com/masterminds/semver"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
@@ -129,13 +130,21 @@ func tagName(ctx *context.Context, tagTemplate string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	sv, err := semver.NewVersion(ctx.Git.CurrentTag)
+	if err != nil {
+		return "", err
+	}
 	data := struct {
-		Version, Tag string
-		Env          map[string]string
+		Version, Tag        string
+		Major, Minor, Patch int64
+		Env                 map[string]string
 	}{
 		Version: ctx.Version,
 		Tag:     ctx.Git.CurrentTag,
 		Env:     ctx.Env,
+		Major:   sv.Major(),
+		Minor:   sv.Minor(),
+		Patch:   sv.Patch(),
 	}
 	err = t.Execute(&out, data)
 	return out.String(), err

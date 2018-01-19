@@ -25,6 +25,7 @@ dockers:
   - image: goreleaser/goreleaser
     tag_templates:
     - '{{ .Tag }}'
+    - 'v{{ .Major }}.{{ .Minor }}'
     - 'latest'
 archive:
   name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
