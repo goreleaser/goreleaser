@@ -57,6 +57,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/masterminds/semver"
+  packages = ["."]
+  revision = "15d8430ab86497c5c0da827b748823945e1cf1e1"
+  version = "v1.4.0"
+
+[[projects]]
   name = "github.com/mattn/go-colorable"
   packages = ["."]
   revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
@@ -154,6 +160,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bce4694edbb58fe9615c3e2eff7fe9e2f041a6fac7be441ee28988416413cdc0"
+  inputs-digest = "29cc5012bc98dd429a87d7a638a221b2d0f5b12eaf5bea67576ffd362d88105b"
   solver-name = "gps-cdcl"
   solver-version = 1
