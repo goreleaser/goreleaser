@@ -11,6 +11,7 @@ import (
 	"text/template"
 
 	"github.com/apex/log"
+	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
@@ -32,10 +33,11 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	var deprecate = color.New(color.Bold, color.FgHiYellow)
 	for i := range ctx.Config.Dockers {
 		var docker = &ctx.Config.Dockers[i]
 		if docker.OldTagTemplate != "" {
-			// TODO: deprecate docker.tag_template in favor of docker.tag_templates
+			log.Warn(deprecate.Sprintf("`dockers[%d].tag_template` is deprecated. Please consider using `dockers[%d].tag_templates` instead", i, i))
 			docker.TagTemplates = append(docker.TagTemplates, docker.OldTagTemplate)
 		}
 		if len(docker.TagTemplates) == 0 {
@@ -48,7 +50,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			docker.Goarch = "amd64"
 		}
 		if docker.Latest {
-			// TODO: deprecate docker.Latest in favor of multiple tags?
+			log.Warn(deprecate.Sprintf("`dockers[%d].latest` is deprecated. Please consider adding a `latest` tag to the `dockers[%d].tag_templates` list instead", i, i))
 			docker.TagTemplates = append(docker.TagTemplates, "latest")
 		}
 	}
