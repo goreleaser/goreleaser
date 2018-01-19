@@ -23,8 +23,10 @@ changelog:
       - Merge branch
 dockers:
   - image: goreleaser/goreleaser
-    latest: true
-    tag_template: '{{ .Tag }}'
+    tag_templates:
+    - '{{ .Tag }}'
+    - 'v{{ .Major }}.{{ .Minor }}'
+    - 'latest'
 archive:
   name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
   replacements:
