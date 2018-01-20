@@ -1,6 +1,7 @@
 package rust
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -127,17 +128,11 @@ func doBuild(ctx *context.Context, build config.Rust, target string) error {
 		return errors.Wrapf(err, "failed to build for %s", target)
 	}
 
-	// Copy binary
-	log.Debugf("FROM: Open %s ", "./target/"+target+"/release/"+binaryName)
-	from, err := os.Open("./target/" + target + "/release/" + binaryName)
-	if err != nil {
-		panic(err)
-	}
-	defer from.Close()
-
-	// Create dir
+	// The folder dist/$target don't exist at this point,
+	// because Rust compiles into a different folder (target).
+	// We need to create the right folder.
 	binaryPath := filepath.Join(ctx.Config.Dist, target)
-	_, err = os.Stat(binaryPath)
+	_, err := os.Stat(binaryPath)
 	if os.IsNotExist(err) {
 		log.Debugf("./%s doesn't exist, creating empty folder", binaryPath)
 		err := os.MkdirAll(binaryPath, 0755)
@@ -146,18 +141,14 @@ func doBuild(ctx *context.Context, build config.Rust, target string) error {
 		}
 	}
 
-	log.Debugf("TO: Open %s ", binary)
-	to, err := os.OpenFile(binary, os.O_RDWR|os.O_CREATE, 0666)
+	// When you compile a rust app with cargo
+	// the result is stored in a `target` folder.
+	// To enable this tool to build archives,
+	// we copy the binary into the dist/-folder.
+	err = copyBinary(target, binary, binaryName)
 	if err != nil {
-		panic(err)
+		return nil
 	}
-	defer to.Close()
-
-	written, err := io.Copy(to, from)
-	if err != nil {
-		panic(err)
-	}
-	log.Debugf("Written: %v ", written)
 
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.Binary,
@@ -187,6 +178,31 @@ func run(ctx *context.Context, target string, command, env []string) error {
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
 		return errors.New(string(out))
+	}
+	return nil
+}
+
+func copyBinary(target, binary, binaryName string) error {
+	source := fmt.Sprintf("./target/%s/release/%s", target, binaryName)
+	log.Debugf("Copy binary from %s to %s for target %s", source, binary, target)
+
+	from, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+	defer from.Close()
+
+	// 0755 because the `cargo build` command creates
+	// binaries with these permissions
+	to, err := os.OpenFile(binary, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil {
+		return err
+	}
+	defer to.Close()
+
+	_, err = io.Copy(to, from)
+	if err != nil {
+		return err
 	}
 	return nil
 }
