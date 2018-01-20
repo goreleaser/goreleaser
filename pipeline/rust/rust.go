@@ -143,10 +143,17 @@ func doBuild(ctx *context.Context, build config.Rust, target string) error {
 		Type: artifact.Binary,
 		Path: binary,
 		Name: binaryName,
-		// TODO This is a hack right now
+
+		// TODO Check and refactor this
+		// This is a Go specific part. Rust doesn't
+		// have a "Goos" or "Goarch" or "Goarm".
+		// It has targets like x86_64-apple-darwin.
+		// For now a workaround is to apply the target of Rust
+		// as Goos and the arch as "rust"
 		Goos:   target,
-		Goarch: "goarch",
+		Goarch: "",
 		Goarm:  "",
+
 		Extra: map[string]string{
 			"Binary": build.Binary,
 			"Ext":    ext,
