@@ -46,7 +46,7 @@ func (Pipe) Run(ctx *context.Context) error {
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
 	// only set defaults if there are builds in the config file.
-	if len(ctx.Config.Builds) != 1 {
+	if len(ctx.Config.Builds) == 0 {
 		return nil
 	}
 
