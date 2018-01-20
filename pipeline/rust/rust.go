@@ -179,7 +179,7 @@ func copyBinary(target, binary, binaryName string) error {
 	if err != nil {
 		return err
 	}
-	defer from.Close()
+	defer from.Close() // nolint: errcheck
 
 	// 0755 because the `cargo build` command creates
 	// binaries with these permissions
@@ -187,7 +187,7 @@ func copyBinary(target, binary, binaryName string) error {
 	if err != nil {
 		return err
 	}
-	defer to.Close()
+	defer to.Close() // nolint: errcheck
 
 	_, err = io.Copy(to, from)
 	if err != nil {
