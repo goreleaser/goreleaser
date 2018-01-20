@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/pkg/errors"
@@ -77,11 +78,10 @@ func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 */
 
 func runPipeOnBuild(ctx *context.Context, rust config.Rust) error {
-	/*
-		if err := runHook(ctx, build.Env, build.Hooks.Pre); err != nil {
-			return errors.Wrap(err, "pre hook failed")
-		}
-	*/
+	if err := runHook(ctx, rust.Env, rust.Hooks.Pre); err != nil {
+		return errors.Wrap(err, "pre hook failed")
+	}
+
 	sem := make(chan bool, ctx.Parallelism)
 	var g errgroup.Group
 	for _, target := range rust.Target {
@@ -98,20 +98,22 @@ func runPipeOnBuild(ctx *context.Context, rust config.Rust) error {
 	if err := g.Wait(); err != nil {
 		return err
 	}
-	return nil
-	//return errors.Wrap(runHook(ctx, build.Env, build.Hooks.Post), "post hook failed")
+
+	return errors.Wrap(runHook(ctx, rust.Env, rust.Hooks.Post), "post hook failed")
 }
 
-/*
 func runHook(ctx *context.Context, env []string, hook string) error {
 	if hook == "" {
 		return nil
 	}
 	log.WithField("hook", hook).Info("running hook")
 	cmd := strings.Fields(hook)
-	return run(ctx, buildtarget.Runtime, cmd, env)
+	// Normally we would include "buildtarget.Runtime"
+	// as a second argument here.
+	// But this is not supported in the Rust pipe
+	return run(ctx, "", cmd, env)
 }
-*/
+
 func doBuild(ctx *context.Context, build config.Rust, target string) error {
 	//var ext = ext.For(target)
 	// TODO Support for windows (exe)
@@ -176,7 +178,6 @@ func doBuild(ctx *context.Context, build config.Rust, target string) error {
 func run(ctx *context.Context, target string, command, env []string) error {
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
-	//env = append(env, target.Env()...)
 	var log = log.WithField("target", target).
 		WithField("env", env).
 		WithField("cmd", command)
