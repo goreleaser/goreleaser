@@ -40,43 +40,30 @@ func (Pipe) Run(ctx *context.Context) error {
 	return nil
 }
 
-/*
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	for i, build := range ctx.Config.Builds {
-		ctx.Config.Builds[i] = buildWithDefaults(ctx, build)
+	// only set defaults if there are rusts in the config file.
+	if len(ctx.Config.Rust) == 0 {
+		return nil
 	}
-	if len(ctx.Config.Builds) == 0 {
-		ctx.Config.Builds = []config.Build{
-			buildWithDefaults(ctx, ctx.Config.SingleBuild),
-		}
+
+	for i, rust := range ctx.Config.Rust {
+		ctx.Config.Rust[i] = buildWithDefaults(ctx, rust)
 	}
 	return nil
 }
-*/
-/*
-func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
-	if build.Binary == "" {
-		build.Binary = ctx.Config.Release.GitHub.Name
+
+func buildWithDefaults(ctx *context.Context, rust config.Rust) config.Rust {
+	if rust.Binary == "" {
+		rust.Binary = ctx.Config.Release.GitHub.Name
 	}
-	if build.Main == "" {
-		build.Main = "."
-	}
-	if len(build.Goos) == 0 {
-		build.Goos = []string{"linux", "darwin"}
-	}
-	if len(build.Goarch) == 0 {
-		build.Goarch = []string{"amd64", "386"}
-	}
-	if len(build.Goarm) == 0 {
-		build.Goarm = []string{"6"}
-	}
-	if build.Ldflags == "" {
-		build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
-	}
-	return build
+
+	// One idea would be, if no rust.Target are defined
+	// to add the default target for the current OS.
+	// E.g. hit `rustup show`. The default host is shown.
+	// For an up to date Mac is will show "Default host: x86_64-apple-darwin"
+	return rust
 }
-*/
 
 func runPipeOnBuild(ctx *context.Context, rust config.Rust) error {
 	if err := runHook(ctx, rust.Env, rust.Hooks.Pre); err != nil {
