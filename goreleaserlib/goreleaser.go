@@ -30,6 +30,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/release"
+	"github.com/goreleaser/goreleaser/pipeline/rust"
 	"github.com/goreleaser/goreleaser/pipeline/sign"
 	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
 )
@@ -51,6 +52,7 @@ var pipes = []pipeline.Piper{
 	changelog.Pipe{},       // builds the release changelog
 	env.Pipe{},             // load and validate environment variables
 	build.Pipe{},           // build
+	rust.Pipe{},            // build for Rust programming language
 	archive.Pipe{},         // archive (tar.gz, zip, etc)
 	fpm.Pipe{},             // archive via fpm (deb, rpm, etc)
 	snapcraft.Pipe{},       // archive via snapcraft (snap)

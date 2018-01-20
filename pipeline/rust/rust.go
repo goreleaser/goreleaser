@@ -1,10 +1,10 @@
-package build
+package rust
 
 import (
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/apex/log"
 	"github.com/pkg/errors"
@@ -13,43 +13,34 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/buildtarget"
-	"github.com/goreleaser/goreleaser/internal/ext"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
-// Pipe for build
+// Pipe for rust
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "building binaries"
+	return "building rust binaries"
 }
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if len(ctx.Config.Builds) == 0 {
-		return pipeline.Skip("build section is not configured")
+	if len(ctx.Config.Rust) == 0 {
+		return pipeline.Skip("rust section is not configured")
 	}
 
-	for _, build := range ctx.Config.Builds {
-		log.WithField("build", build).Debug("building")
-		if err := checkMain(ctx, build); err != nil {
-			return err
-		}
-		if err := runPipeOnBuild(ctx, build); err != nil {
+	for _, rust := range ctx.Config.Rust {
+		log.WithField("rust", rust).Debug("building")
+		if err := runPipeOnBuild(ctx, rust); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
+/*
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	// only set defaults if there are builds in the config file.
-	if len(ctx.Config.Builds) != 1 {
-		return nil
-	}
-
 	for i, build := range ctx.Config.Builds {
 		ctx.Config.Builds[i] = buildWithDefaults(ctx, build)
 	}
@@ -60,7 +51,8 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 	return nil
 }
-
+*/
+/*
 func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 	if build.Binary == "" {
 		build.Binary = ctx.Config.Release.GitHub.Name
@@ -82,30 +74,35 @@ func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 	}
 	return build
 }
+*/
 
-func runPipeOnBuild(ctx *context.Context, build config.Build) error {
-	if err := runHook(ctx, build.Env, build.Hooks.Pre); err != nil {
-		return errors.Wrap(err, "pre hook failed")
-	}
+func runPipeOnBuild(ctx *context.Context, rust config.Rust) error {
+	/*
+		if err := runHook(ctx, build.Env, build.Hooks.Pre); err != nil {
+			return errors.Wrap(err, "pre hook failed")
+		}
+	*/
 	sem := make(chan bool, ctx.Parallelism)
 	var g errgroup.Group
-	for _, target := range buildtarget.All(build) {
+	for _, target := range rust.Target {
 		sem <- true
 		target := target
-		build := build
+		rust := rust
 		g.Go(func() error {
 			defer func() {
 				<-sem
 			}()
-			return doBuild(ctx, build, target)
+			return doBuild(ctx, rust, target)
 		})
 	}
 	if err := g.Wait(); err != nil {
 		return err
 	}
-	return errors.Wrap(runHook(ctx, build.Env, build.Hooks.Post), "post hook failed")
+	return nil
+	//return errors.Wrap(runHook(ctx, build.Env, build.Hooks.Post), "post hook failed")
 }
 
+/*
 func runHook(ctx *context.Context, env []string, hook string) error {
 	if hook == "" {
 		return nil
@@ -114,31 +111,60 @@ func runHook(ctx *context.Context, env []string, hook string) error {
 	cmd := strings.Fields(hook)
 	return run(ctx, buildtarget.Runtime, cmd, env)
 }
-
-func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
-	var ext = ext.For(target)
+*/
+func doBuild(ctx *context.Context, build config.Rust, target string) error {
+	//var ext = ext.For(target)
+	// TODO Support for windows (exe)
+	var ext = ""
 	var binaryName = build.Binary + ext
-	var binary = filepath.Join(ctx.Config.Dist, target.String(), binaryName)
+	var binary = filepath.Join(ctx.Config.Dist, target, binaryName)
 	log.WithField("binary", binary).Info("building")
-	cmd := []string{"go", "build"}
-	if build.Flags != "" {
-		cmd = append(cmd, strings.Fields(build.Flags)...)
-	}
-	flags, err := ldflags(ctx, build)
-	if err != nil {
-		return err
-	}
-	cmd = append(cmd, "-ldflags="+flags, "-o", binary, build.Main)
+	cmd := []string{"cargo", "build"}
+	cmd = append(cmd, "--release", "--bin", binaryName, "--target", target)
 	if err := run(ctx, target, cmd, build.Env); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", target)
 	}
+
+	// Copy binary
+	log.Debugf("FROM: Open %s ", "./target/"+target+"/release/"+binaryName)
+	from, err := os.Open("./target/" + target + "/release/" + binaryName)
+	if err != nil {
+		panic(err)
+	}
+	defer from.Close()
+
+	// Create dir
+	binaryPath := filepath.Join(ctx.Config.Dist, target)
+	_, err = os.Stat(binaryPath)
+	if os.IsNotExist(err) {
+		log.Debugf("./%s doesn't exist, creating empty folder", binaryPath)
+		err := os.MkdirAll(binaryPath, 0755)
+		if err != nil {
+			return err
+		}
+	}
+
+	log.Debugf("TO: Open %s ", binary)
+	to, err := os.OpenFile(binary, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		panic(err)
+	}
+	defer to.Close()
+
+	written, err := io.Copy(to, from)
+	if err != nil {
+		panic(err)
+	}
+	log.Debugf("Written: %v ", written)
+
 	ctx.Artifacts.Add(artifact.Artifact{
-		Type:   artifact.Binary,
-		Path:   binary,
-		Name:   binaryName,
-		Goos:   target.OS,
-		Goarch: target.Arch,
-		Goarm:  target.Arm,
+		Type: artifact.Binary,
+		Path: binary,
+		Name: binaryName,
+		// TODO This is a hack right now
+		Goos:   target,
+		Goarch: "goarch",
+		Goarm:  "",
 		Extra: map[string]string{
 			"Binary": build.Binary,
 			"Ext":    ext,
@@ -147,11 +173,11 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 	return nil
 }
 
-func run(ctx *context.Context, target buildtarget.Target, command, env []string) error {
+func run(ctx *context.Context, target string, command, env []string) error {
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
-	env = append(env, target.Env()...)
-	var log = log.WithField("target", target.PrettyString()).
+	//env = append(env, target.Env()...)
+	var log = log.WithField("target", target).
 		WithField("env", env).
 		WithField("cmd", command)
 	cmd.Env = append(cmd.Env, os.Environ()...)
