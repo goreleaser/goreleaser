@@ -116,9 +116,7 @@ func runHook(ctx *context.Context, env []string, hook string) error {
 }
 
 func doBuild(ctx *context.Context, build config.Rust, target string) error {
-	//var ext = ext.For(target)
-	// TODO Support for windows (exe)
-	var ext = ""
+	var ext = extFor(target)
 	var binaryName = build.Binary + ext
 	var binary = filepath.Join(ctx.Config.Dist, target, binaryName)
 	log.WithField("binary", binary).Info("building")
@@ -205,4 +203,13 @@ func copyBinary(target, binary, binaryName string) error {
 		return err
 	}
 	return nil
+}
+
+// For returns the binary extension for the given target
+// Right now this is a modified version of goreleaser/internal/ext
+func extFor(target string) string {
+	if strings.Contains(target, "windows") {
+		return ".exe"
+	}
+	return ""
 }
