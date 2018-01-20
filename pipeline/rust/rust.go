@@ -32,6 +32,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	for _, rust := range ctx.Config.Rust {
+		if len(rust.Target) == 0 {
+			return pipeline.Skip("rust section is not configured properly (missing targets)")
+		}
+
 		log.WithField("rust", rust).Debug("building")
 		if err := runPipeOnBuild(ctx, rust); err != nil {
 			return err
