@@ -38,7 +38,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return
 	}
 	if len(files) > 0 {
-		log.WithField("files", len(files)).Debug("./dist is not empty")
+		log.Debugf("there are %d files on ./dist", len(files))
 		return fmt.Errorf(
 			"%s is not empty, remove it before running goreleaser or use the --rm-dist flag",
 			ctx.Config.Dist,
