@@ -40,7 +40,8 @@ func (*Builder) Build(ctx *context.Context, cfg config.Build, options build.Opti
 		return err
 	}
 	cmd = append(cmd, "-ldflags="+flags, "-o", options.Path, cfg.Main)
-	if err := build.Run(ctx, options.Target, cmd, cfg.Env); err != nil {
+	var env = append(cfg.Env, options.Target.Env()...)
+	if err := build.Run(ctx, options.Target, cmd, env); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", options.Target)
 	}
 	ctx.Artifacts.Add(artifact.Artifact{

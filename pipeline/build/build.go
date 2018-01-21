@@ -104,7 +104,7 @@ func runHook(ctx *context.Context, env []string, hook string) error {
 	}
 	log.WithField("hook", hook).Info("running hook")
 	cmd := strings.Fields(hook)
-	return builders.Run(ctx, buildtarget.Runtime, cmd, env)
+	return builders.Run(ctx, cmd, env)
 }
 
 func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {

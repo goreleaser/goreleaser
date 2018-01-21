@@ -36,14 +36,10 @@ type Builder interface {
 	Build(ctx *context.Context, build config.Build, options Options) error
 }
 
-func Run(ctx *context.Context, target buildtarget.Target, command, env []string) error {
-
+func Run(ctx *context.Context, command, env []string) error {
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
-	env = append(env, target.Env()...)
-	var log = log.WithField("target", target.PrettyString()).
-		WithField("env", env).
-		WithField("cmd", command)
+	var log = log.WithField("env", env).WithField("cmd", command)
 	cmd.Env = append(cmd.Env, os.Environ()...)
 	cmd.Env = append(cmd.Env, env...)
 	log.Debug("running")
