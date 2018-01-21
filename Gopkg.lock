@@ -17,6 +17,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/campoy/unique"
+  packages = ["."]
+  revision = "8da0a74979c676510b9de445041ce14b6e450e24"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -53,8 +59,8 @@
     "tar",
     "zip"
   ]
-  revision = "407d9188600f1b6584964bc532a5ce882cefdaba"
-  version = "v1.0.1"
+  revision = "35c6d4e271a22e46cc7133b7a6ae58b8e52acc01"
+  version = "v1.0.2"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -160,6 +166,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "29cc5012bc98dd429a87d7a638a221b2d0f5b12eaf5bea67576ffd362d88105b"
+  inputs-digest = "dd48a71cfd5292f26507d405996eb4ee06aea79c2308e6ee16e54fa6cd493832"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/campoy/unique"
 	"github.com/mattn/go-zglob"
 	"golang.org/x/sync/errgroup"
 
@@ -99,12 +100,15 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 		return fmt.Errorf("failed to find files to archive: %s", err.Error())
 	}
 	for _, f := range files {
+		log.Debugf("adding %s", f)
 		if err = a.Add(wrap(ctx, f, folder), f); err != nil {
 			return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
 		}
 	}
 	for _, binary := range binaries {
-		if err := a.Add(wrap(ctx, binary.Name, folder), binary.Path); err != nil {
+		var bin = wrap(ctx, binary.Name, folder)
+		log.Debugf("adding %s", bin)
+		if err := a.Add(bin, binary.Path); err != nil {
 			return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
 		}
 	}
@@ -142,6 +146,10 @@ func findFiles(ctx *context.Context) (result []string, err error) {
 		}
 		result = append(result, files...)
 	}
+	// remove duplicates
+	unique.Slice(&result, func(i, j int) bool {
+		return strings.Compare(result[i], result[j]) < 0
+	})
 	return
 }
 
