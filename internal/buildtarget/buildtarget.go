@@ -5,10 +5,10 @@ import (
 	"runtime"
 )
 
-// Runtime is the current runtime buildTarget
+// Runtime is the current runtime build target
 var Runtime = Target{runtime.GOOS, runtime.GOARCH, ""}
 
-// New builtarget
+// New build Target
 func New(goos, goarch, goarm string) Target {
 	return Target{goos, goarch, goarm}
 }
