@@ -92,6 +92,7 @@ type Build struct {
 	Binary  string         `yaml:",omitempty"`
 	Hooks   Hooks          `yaml:",omitempty"`
 	Env     []string       `yaml:",omitempty"`
+	Lang    string         `yaml:",omitempty"`
 
 	// Capture all undefined fields and should be empty after loading
 	XXX map[string]interface{} `yaml:",inline"`

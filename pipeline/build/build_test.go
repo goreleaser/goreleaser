@@ -7,9 +7,9 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/build/buildtarget"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,24 +18,6 @@ var emptyEnv []string
 
 func TestPipeDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.String())
-}
-
-func TestRun(t *testing.T) {
-	assert.NoError(t, run(
-		context.New(config.Project{}),
-		buildtarget.Runtime,
-		[]string{"go", "list", "./..."},
-		emptyEnv,
-	))
-}
-
-func TestRunInvalidCommand(t *testing.T) {
-	assert.Error(t, run(
-		context.New(config.Project{}),
-		buildtarget.Runtime,
-		[]string{"gggggo", "nope"},
-		emptyEnv,
-	))
 }
 
 func TestBuild(t *testing.T) {

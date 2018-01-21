@@ -1,8 +1,7 @@
+// Package build needs to be documented
 package build
 
 import (
-	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -10,11 +9,14 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
+	builders "github.com/goreleaser/goreleaser/build"
+	"github.com/goreleaser/goreleaser/build/buildtarget"
+	"github.com/goreleaser/goreleaser/build/ext"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/buildtarget"
-	"github.com/goreleaser/goreleaser/internal/ext"
+
+	// langs to init
+	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
 )
 
 // Pipe for build
@@ -28,9 +30,6 @@ func (Pipe) String() string {
 func (Pipe) Run(ctx *context.Context) error {
 	for _, build := range ctx.Config.Builds {
 		log.WithField("build", build).Debug("building")
-		if err := checkMain(ctx, build); err != nil {
-			return err
-		}
 		if err := runPipeOnBuild(ctx, build); err != nil {
 			return err
 		}
@@ -52,6 +51,9 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
+	if build.Lang == "" {
+		build.Lang = "go"
+	}
 	if build.Binary == "" {
 		build.Binary = ctx.Config.Release.GitHub.Name
 	}
@@ -102,7 +104,7 @@ func runHook(ctx *context.Context, env []string, hook string) error {
 	}
 	log.WithField("hook", hook).Info("running hook")
 	cmd := strings.Fields(hook)
-	return run(ctx, buildtarget.Runtime, cmd, env)
+	return builders.Run(ctx, buildtarget.Runtime, cmd, env)
 }
 
 func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
@@ -110,46 +112,10 @@ func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target
 	var binaryName = build.Binary + ext
 	var binary = filepath.Join(ctx.Config.Dist, target.String(), binaryName)
 	log.WithField("binary", binary).Info("building")
-	cmd := []string{"go", "build"}
-	if build.Flags != "" {
-		cmd = append(cmd, strings.Fields(build.Flags)...)
-	}
-	flags, err := ldflags(ctx, build)
-	if err != nil {
-		return err
-	}
-	cmd = append(cmd, "-ldflags="+flags, "-o", binary, build.Main)
-	if err := run(ctx, target, cmd, build.Env); err != nil {
-		return errors.Wrapf(err, "failed to build for %s", target)
-	}
-	ctx.Artifacts.Add(artifact.Artifact{
-		Type:   artifact.Binary,
-		Path:   binary,
+	return builders.For(build.Lang).Build(ctx, build, builders.Options{
+		Target: target,
 		Name:   binaryName,
-		Goos:   target.OS,
-		Goarch: target.Arch,
-		Goarm:  target.Arm,
-		Extra: map[string]string{
-			"Binary": build.Binary,
-			"Ext":    ext,
-		},
+		Path:   binary,
+		Ext:    ext,
 	})
-	return nil
-}
-
-func run(ctx *context.Context, target buildtarget.Target, command, env []string) error {
-	/* #nosec */
-	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
-	env = append(env, target.Env()...)
-	var log = log.WithField("target", target.PrettyString()).
-		WithField("env", env).
-		WithField("cmd", command)
-	cmd.Env = append(cmd.Env, os.Environ()...)
-	cmd.Env = append(cmd.Env, env...)
-	log.Debug("running")
-	if out, err := cmd.CombinedOutput(); err != nil {
-		log.WithError(err).Debug("failed")
-		return errors.New(string(out))
-	}
-	return nil
 }

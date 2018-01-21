@@ -1,6 +1,6 @@
 package ext
 
-import "github.com/goreleaser/goreleaser/internal/buildtarget"
+import "github.com/goreleaser/goreleaser/build/buildtarget"
 
 // For returns the binary extension for the given platform
 func For(target buildtarget.Target) string {

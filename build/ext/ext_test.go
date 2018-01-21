@@ -3,7 +3,7 @@ package ext
 import (
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/buildtarget"
+	"github.com/goreleaser/goreleaser/build/buildtarget"
 	"github.com/stretchr/testify/assert"
 )
 
