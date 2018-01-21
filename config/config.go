@@ -292,6 +292,7 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 	return config, checkOverflows(config)
 }
 
+// TODO: check if we can use UnmarshalStrict instead of the manual checkOverflow
 func checkOverflows(config Project) error {
 	var overflow = &overflowChecker{}
 	overflow.check(config.XXX, "")
