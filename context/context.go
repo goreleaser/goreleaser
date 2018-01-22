@@ -42,16 +42,17 @@ type Context struct {
 
 // New context
 func New(config config.Project) *Context {
-	return wrap(ctx.Background(), config)
+	return Wrap(ctx.Background(), config)
 }
 
 // NewWithTimeout new context with the given timeout
 func NewWithTimeout(config config.Project, timeout time.Duration) (*Context, ctx.CancelFunc) {
 	ctx, cancel := ctx.WithTimeout(ctx.Background(), timeout)
-	return wrap(ctx, config), cancel
+	return Wrap(ctx, config), cancel
 }
 
-func wrap(ctx ctx.Context, config config.Project) *Context {
+// Wrap wraps an existing context
+func Wrap(ctx ctx.Context, config config.Project) *Context {
 	return &Context{
 		Context:     ctx,
 		Config:      config,
