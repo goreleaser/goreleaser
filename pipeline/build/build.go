@@ -1,4 +1,5 @@
-// Package build needs to be documented
+// Package build provides a pipe that can build binaries for several
+// languages.
 package build
 
 import (

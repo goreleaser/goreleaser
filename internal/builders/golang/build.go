@@ -11,22 +11,24 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/goreleaser/goreleaser/build"
+	api "github.com/goreleaser/goreleaser/build"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/pkg/errors"
 )
 
+// Default builder instance
 var Default = &Builder{}
 
 func init() {
-	build.Register("go", Default)
+	api.Register("go", Default)
 }
 
-type Builder struct {
-}
+// Builder is golang builder
+type Builder struct{}
 
+// Default set the defaults for a golang build
 func (*Builder) Default(build config.Build) config.Build {
 	if build.Main == "" {
 		build.Main = "."
@@ -43,28 +45,29 @@ func (*Builder) Default(build config.Build) config.Build {
 	if build.Ldflags == "" {
 		build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
 	}
-	if build.Lang == "go" && len(build.Targets) == 0 {
+	if len(build.Targets) == 0 {
 		build.Targets = matrix(build)
 	}
 	return build
 }
 
-func (*Builder) Build(ctx *context.Context, cfg config.Build, options build.Options) error {
-	if err := checkMain(ctx, cfg); err != nil {
+// Build builds a golang build
+func (*Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
+	if err := checkMain(ctx, build); err != nil {
 		return err
 	}
 	cmd := []string{"go", "build"}
-	if cfg.Flags != "" {
-		cmd = append(cmd, strings.Fields(cfg.Flags)...)
+	if build.Flags != "" {
+		cmd = append(cmd, strings.Fields(build.Flags)...)
 	}
-	flags, err := ldflags(ctx, cfg)
+	flags, err := ldflags(ctx, build)
 	if err != nil {
 		return err
 	}
-	cmd = append(cmd, "-ldflags="+flags, "-o", options.Path, cfg.Main)
+	cmd = append(cmd, "-ldflags="+flags, "-o", options.Path, build.Main)
 	var target = newBuildTarget(options.Target)
-	var env = append(cfg.Env, target.Env()...)
-	if err := build.Run(ctx, cmd, env); err != nil {
+	var env = append(build.Env, target.Env()...)
+	if err := api.Run(ctx, cmd, env); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", options.Target)
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -75,7 +78,7 @@ func (*Builder) Build(ctx *context.Context, cfg config.Build, options build.Opti
 		Goarch: target.arch,
 		Goarm:  target.arm,
 		Extra: map[string]string{
-			"Binary": cfg.Binary,
+			"Binary": build.Binary,
 			"Ext":    options.Ext,
 		},
 	})
