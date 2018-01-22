@@ -27,6 +27,28 @@ func init() {
 type Builder struct {
 }
 
+func (*Builder) Default(build config.Build) config.Build {
+	if build.Main == "" {
+		build.Main = "."
+	}
+	if len(build.Goos) == 0 {
+		build.Goos = []string{"linux", "darwin"}
+	}
+	if len(build.Goarch) == 0 {
+		build.Goarch = []string{"amd64", "386"}
+	}
+	if len(build.Goarm) == 0 {
+		build.Goarm = []string{"6"}
+	}
+	if build.Ldflags == "" {
+		build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
+	}
+	if build.Lang == "go" && len(build.Targets) == 0 {
+		build.Targets = matrix(build)
+	}
+	return build
+}
+
 func (*Builder) Build(ctx *context.Context, cfg config.Build, options build.Options) error {
 	if err := checkMain(ctx, cfg); err != nil {
 		return err

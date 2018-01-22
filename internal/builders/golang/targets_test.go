@@ -1,4 +1,4 @@
-package buildmatrix
+package golang
 
 import (
 	"fmt"
@@ -52,7 +52,7 @@ func TestAllBuildTargets(t *testing.T) {
 		"freebsd_arm_7",
 		"openbsd_386",
 		"openbsd_amd64",
-	}, All(build))
+	}, matrix(build))
 }
 
 func TestGoosGoarchCombos(t *testing.T) {

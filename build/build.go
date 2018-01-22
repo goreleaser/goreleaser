@@ -31,6 +31,7 @@ type Options struct {
 }
 
 type Builder interface {
+	Default(build config.Build) config.Build
 	Build(ctx *context.Context, build config.Build, options Options) error
 }
 

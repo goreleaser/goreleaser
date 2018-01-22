@@ -1,4 +1,4 @@
-package buildmatrix
+package golang
 
 import (
 	"fmt"
@@ -18,8 +18,7 @@ func (t target) String() string {
 	return fmt.Sprintf("%s_%s", t.os, t.arch)
 }
 
-// All returns all valid build targets for a given build
-func All(build config.Build) (result []string) {
+func matrix(build config.Build) (result []string) {
 	var targets []target
 	for _, target := range allBuildTargets(build) {
 		if !valid(target) {

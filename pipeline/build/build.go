@@ -15,7 +15,6 @@ import (
 
 	// langs to init
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
-	"github.com/goreleaser/goreleaser/internal/builders/golang/buildmatrix"
 )
 
 // Pipe for build
@@ -56,25 +55,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 	if build.Binary == "" {
 		build.Binary = ctx.Config.Release.GitHub.Name
 	}
-	if build.Main == "" {
-		build.Main = "."
-	}
-	if len(build.Goos) == 0 {
-		build.Goos = []string{"linux", "darwin"}
-	}
-	if len(build.Goarch) == 0 {
-		build.Goarch = []string{"amd64", "386"}
-	}
-	if len(build.Goarm) == 0 {
-		build.Goarm = []string{"6"}
-	}
-	if build.Ldflags == "" {
-		build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
-	}
-	if build.Lang == "go" && len(build.Targets) == 0 {
-		build.Targets = buildmatrix.All(build)
-	}
-	return build
+	return builders.For(build.Lang).Default(build)
 }
 
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
