@@ -5,12 +5,9 @@ builds:
     goos:
       - linux
       - darwin
-      - windows
     goarch:
       - 386
       - amd64
-      - arm
-      - arm64
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
 changelog:

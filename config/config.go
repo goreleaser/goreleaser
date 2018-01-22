@@ -85,6 +85,7 @@ type Build struct {
 	Goos    []string       `yaml:",omitempty"`
 	Goarch  []string       `yaml:",omitempty"`
 	Goarm   []string       `yaml:",omitempty"`
+	Targets []string       `yaml:",omitempty"`
 	Ignore  []IgnoredBuild `yaml:",omitempty"`
 	Main    string         `yaml:",omitempty"`
 	Ldflags string         `yaml:",omitempty"`

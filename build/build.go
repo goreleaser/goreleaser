@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/goreleaser/build/buildtarget"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 )
@@ -28,8 +27,7 @@ func For(lang string) Builder {
 }
 
 type Options struct {
-	Target          buildtarget.Target
-	Name, Path, Ext string
+	Name, Path, Ext, Target string
 }
 
 type Builder interface {

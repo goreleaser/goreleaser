@@ -10,13 +10,12 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	builders "github.com/goreleaser/goreleaser/build"
-	"github.com/goreleaser/goreleaser/build/buildtarget"
-	"github.com/goreleaser/goreleaser/build/ext"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 
 	// langs to init
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
+	"github.com/goreleaser/goreleaser/internal/builders/golang/buildmatrix"
 )
 
 // Pipe for build
@@ -72,6 +71,9 @@ func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 	if build.Ldflags == "" {
 		build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
 	}
+	if build.Lang == "go" && len(build.Targets) == 0 {
+		build.Targets = buildmatrix.All(build)
+	}
 	return build
 }
 
@@ -81,7 +83,7 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	}
 	sem := make(chan bool, ctx.Parallelism)
 	var g errgroup.Group
-	for _, target := range buildtarget.All(build) {
+	for _, target := range build.Targets {
 		sem <- true
 		target := target
 		build := build
@@ -107,15 +109,22 @@ func runHook(ctx *context.Context, env []string, hook string) error {
 	return builders.Run(ctx, cmd, env)
 }
 
-func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
-	var ext = ext.For(target)
-	var binaryName = build.Binary + ext
-	var binary = filepath.Join(ctx.Config.Dist, target.String(), binaryName)
-	log.WithField("binary", binary).Info("building")
+func doBuild(ctx *context.Context, build config.Build, target string) error {
+	var ext = extFor(target)
+	var name = build.Binary + ext
+	var path = filepath.Join(ctx.Config.Dist, target, name)
+	log.WithField("binary", path).Info("building")
 	return builders.For(build.Lang).Build(ctx, build, builders.Options{
 		Target: target,
-		Name:   binaryName,
-		Path:   binary,
+		Name:   name,
+		Path:   path,
 		Ext:    ext,
 	})
+}
+
+func extFor(target string) string {
+	if strings.Contains(target, "windows") {
+		return ".exe"
+	}
+	return ""
 }

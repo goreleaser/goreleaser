@@ -7,7 +7,6 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/build/buildtarget"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -387,4 +386,15 @@ func writeGoodMain(t *testing.T, folder string) {
 func assertContainsError(t *testing.T, err error, s string) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), s)
+}
+
+func TestExtWindows(t *testing.T) {
+	assert.Equal(t, ".exe", extFor("windows_amd64"))
+	assert.Equal(t, ".exe", extFor("windows_386"))
+}
+
+func TestExtOthers(t *testing.T) {
+	assert.Empty(t, "", extFor("linux_amd64"))
+	assert.Empty(t, "", extFor("linuxwin_386"))
+	assert.Empty(t, "", extFor("winasdasd_sad"))
 }

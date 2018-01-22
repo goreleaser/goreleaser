@@ -40,17 +40,18 @@ func (*Builder) Build(ctx *context.Context, cfg config.Build, options build.Opti
 		return err
 	}
 	cmd = append(cmd, "-ldflags="+flags, "-o", options.Path, cfg.Main)
-	var env = append(cfg.Env, options.Target.Env()...)
-	if err := build.Run(ctx, options.Target, cmd, env); err != nil {
+	var target = newBuildTarget(options.Target)
+	var env = append(cfg.Env, target.Env()...)
+	if err := build.Run(ctx, cmd, env); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", options.Target)
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type:   artifact.Binary,
 		Path:   options.Path,
 		Name:   options.Name,
-		Goos:   options.Target.OS,
-		Goarch: options.Target.Arch,
-		Goarm:  options.Target.Arm,
+		Goos:   target.os,
+		Goarch: target.arch,
+		Goarm:  target.arm,
 		Extra: map[string]string{
 			"Binary": cfg.Binary,
 			"Ext":    options.Ext,
@@ -59,16 +60,14 @@ func (*Builder) Build(ctx *context.Context, cfg config.Build, options build.Opti
 	return nil
 }
 
-type ldflagsData struct {
-	Date    string
-	Tag     string
-	Commit  string
-	Version string
-	Env     map[string]string
-}
-
 func ldflags(ctx *context.Context, build config.Build) (string, error) {
-	var data = ldflagsData{
+	var data = struct {
+		Commit  string
+		Tag     string
+		Version string
+		Date    string
+		Env     map[string]string
+	}{
 		Commit:  ctx.Git.Commit,
 		Tag:     ctx.Git.CurrentTag,
 		Version: ctx.Version,
@@ -84,6 +83,29 @@ func ldflags(ctx *context.Context, build config.Build) (string, error) {
 	}
 	err = t.Execute(&out, data)
 	return out.String(), err
+}
+
+type buildTarget struct {
+	os, arch, arm string
+}
+
+func newBuildTarget(s string) buildTarget {
+	var t = buildTarget{}
+	parts := strings.Split(s, "_")
+	t.os = parts[0]
+	t.arch = parts[1]
+	if len(parts) == 3 {
+		t.arm = parts[2]
+	}
+	return t
+}
+
+func (b buildTarget) Env() []string {
+	return []string{
+		"GOOS=" + b.os,
+		"GOARCH=" + b.arch,
+		"GOARM=" + b.arm,
+	}
 }
 
 func checkMain(ctx *context.Context, build config.Build) error {
