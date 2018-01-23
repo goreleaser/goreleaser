@@ -3,12 +3,12 @@ package build
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 
 	api "github.com/goreleaser/goreleaser/build"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
@@ -22,6 +22,7 @@ func (*fakeBuilder) Default(build config.Build) config.Build {
 }
 
 func (*fakeBuilder) Build(ctx *context.Context, build config.Build, options api.Options) error {
+	ctx.Artifacts.Add(artifact.Artifact{})
 	return nil
 }
 
@@ -50,12 +51,9 @@ func TestBuild(t *testing.T) {
 	assert.NoError(t, doBuild(ctx, ctx.Config.Builds[0], "darwin_amd64"))
 }
 
-// FIXME: test is wrong
 func TestRunFullPipe(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
-	writeGoodMain(t, folder)
-	var binary = filepath.Join(folder, "darwin_amd64", "testing")
 	var pre = filepath.Join(folder, "pre")
 	var post = filepath.Join(folder, "post")
 	var config = config.Project{
@@ -69,12 +67,7 @@ func TestRunFullPipe(t *testing.T) {
 					Pre:  "touch " + pre,
 					Post: "touch " + post,
 				},
-				Goos: []string{
-					runtime.GOOS,
-				},
-				Goarch: []string{
-					runtime.GOARCH,
-				},
+				Targets: []string{"whatever"},
 			},
 		},
 		Archive: config.Archive{
@@ -87,57 +80,18 @@ func TestRunFullPipe(t *testing.T) {
 	var ctx = context.New(config)
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Len(t, ctx.Artifacts.List(), 1)
-	assert.True(t, exists(binary), binary)
 	assert.True(t, exists(pre), pre)
 	assert.True(t, exists(post), post)
 }
 
-func TestRunPipeArmBuilds(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	writeGoodMain(t, folder)
-	var binary = filepath.Join(folder, "linuxarm6", "armtesting")
-	var config = config.Project{
-		Builds: []config.Build{
-			{
-				Binary:  "armtesting",
-				Flags:   "-v",
-				Ldflags: "-X main.test=armtesting",
-				Goos: []string{
-					"linux",
-				},
-				Goarch: []string{
-					"arm",
-					"arm64",
-				},
-				Goarm: []string{
-					"6",
-				},
-			},
-		},
-	}
-	var ctx = context.New(config)
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Len(t, ctx.Artifacts.List(), 2)
-	assert.True(t, exists(binary), binary)
-}
-
-// FIXME: probably can use fake builder here
 func TestRunPipeFailingHooks(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	// writeGoodMain(t, folder)
 	var config = config.Project{
 		Builds: []config.Build{
 			{
-				Binary: "hooks",
-				Hooks:  config.Hooks{},
-				Goos: []string{
-					runtime.GOOS,
-				},
-				Goarch: []string{
-					runtime.GOARCH,
-				},
+				Lang:    "fake",
+				Binary:  "hooks",
+				Hooks:   config.Hooks{},
+				Targets: []string{"whatever"},
 			},
 		},
 	}
