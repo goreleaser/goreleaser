@@ -13,8 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var emptyEnv []string
-
 type fakeBuilder struct{}
 
 func (*fakeBuilder) Default(build config.Build) config.Build {
@@ -216,9 +214,4 @@ func TestExtOthers(t *testing.T) {
 func exists(file string) bool {
 	_, err := os.Stat(file)
 	return !os.IsNotExist(err)
-}
-
-func assertContainsError(t *testing.T, err error, s string) {
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), s)
 }
