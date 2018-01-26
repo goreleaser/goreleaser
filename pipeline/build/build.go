@@ -58,7 +58,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 	if build.Binary == "" {
 		build.Binary = ctx.Config.Release.GitHub.Name
 	}
-	return builders.For(build.Lang).Default(build)
+	return builders.For(build.Lang).WithDefaults(build)
 }
 
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {

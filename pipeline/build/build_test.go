@@ -18,7 +18,7 @@ type fakeBuilder struct {
 	fail bool
 }
 
-func (*fakeBuilder) Default(build config.Build) config.Build {
+func (*fakeBuilder) WithDefaults(build config.Build) config.Build {
 	return build
 }
 

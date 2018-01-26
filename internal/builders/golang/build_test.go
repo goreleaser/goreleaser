@@ -15,7 +15,7 @@ import (
 
 var runtimeTarget = runtime.GOOS + "_" + runtime.GOARCH
 
-func TestDefault(t *testing.T) {
+func TestWithDefaults(t *testing.T) {
 	for name, testcase := range map[string]struct {
 		build   config.Build
 		targets []string
@@ -62,7 +62,7 @@ func TestDefault(t *testing.T) {
 				},
 			}
 			var ctx = context.New(config)
-			var build = Default.Default(ctx.Config.Builds[0])
+			var build = Default.WithDefaults(ctx.Config.Builds[0])
 			assert.ElementsMatch(t, build.Targets, testcase.targets)
 		})
 	}

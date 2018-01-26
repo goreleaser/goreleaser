@@ -12,7 +12,7 @@ var emptyEnv []string
 
 type dummy struct{}
 
-func (*dummy) Default(build config.Build) config.Build {
+func (*dummy) WithDefaults(build config.Build) config.Build {
 	return build
 }
 func (*dummy) Build(ctx *context.Context, build config.Build, options Options) error {

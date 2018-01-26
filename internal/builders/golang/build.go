@@ -30,8 +30,8 @@ func init() {
 // Builder is golang builder
 type Builder struct{}
 
-// Default set the defaults for a golang build
-func (*Builder) Default(build config.Build) config.Build {
+// WithDefaults set the defaults for a golang build
+func (*Builder) WithDefaults(build config.Build) config.Build {
 	if build.Main == "" {
 		build.Main = "."
 	}
