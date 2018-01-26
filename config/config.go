@@ -232,9 +232,7 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 	if err != nil {
 		return config, err
 	}
-	if err := yaml.UnmarshalStrict(data, &config); err != nil {
-		return config, err
-	}
+	err = yaml.UnmarshalStrict(data, &config)
 	log.WithField("config", config).Debug("loaded config file")
-	return config, nil
+	return config, err
 }
