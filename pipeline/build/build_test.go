@@ -1,6 +1,7 @@
 package build
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -13,19 +14,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type fakeBuilder struct{}
+type fakeBuilder struct {
+	fail bool
+}
 
 func (*fakeBuilder) Default(build config.Build) config.Build {
 	return build
 }
 
-func (*fakeBuilder) Build(ctx *context.Context, build config.Build, options api.Options) error {
+var errFailedBuild = errors.New("fake builder failed")
+
+func (f *fakeBuilder) Build(ctx *context.Context, build config.Build, options api.Options) error {
+	if f.fail {
+		return errFailedBuild
+	}
 	ctx.Artifacts.Add(artifact.Artifact{})
 	return nil
 }
 
 func init() {
 	api.Register("fake", &fakeBuilder{})
+	api.Register("fakeFail", &fakeBuilder{
+		fail: true,
+	})
 }
 
 func TestPipeDescription(t *testing.T) {
@@ -33,8 +44,6 @@ func TestPipeDescription(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
-	var builder = &fakeBuilder{}
-	api.Register("fake", builder)
 	var config = config.Project{
 		Builds: []config.Build{
 			{
@@ -47,6 +56,23 @@ func TestBuild(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	assert.NoError(t, doBuild(ctx, ctx.Config.Builds[0], "darwin_amd64"))
+}
+
+func TestRunPipe(t *testing.T) {
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				Lang:    "fake",
+				Binary:  "testing",
+				Flags:   "-v",
+				Ldflags: "-X main.test=testing",
+				Targets: []string{"whatever"},
+			},
+		},
+	}
+	var ctx = context.New(config)
+	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Len(t, ctx.Artifacts.List(), 1)
 }
 
 func TestRunFullPipe(t *testing.T) {
@@ -68,18 +94,39 @@ func TestRunFullPipe(t *testing.T) {
 				Targets: []string{"whatever"},
 			},
 		},
-		Archive: config.Archive{
-			Replacements: map[string]string{
-				"linux":  "linuxx",
-				"darwin": "darwinn",
-			},
-		},
 	}
 	var ctx = context.New(config)
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Len(t, ctx.Artifacts.List(), 1)
 	assert.True(t, exists(pre), pre)
 	assert.True(t, exists(post), post)
+}
+
+func TestRunFullPipeFail(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var pre = filepath.Join(folder, "pre")
+	var post = filepath.Join(folder, "post")
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				Lang:    "fakeFail",
+				Binary:  "testing",
+				Flags:   "-v",
+				Ldflags: "-X main.test=testing",
+				Hooks: config.Hooks{
+					Pre:  "touch " + pre,
+					Post: "touch " + post,
+				},
+				Targets: []string{"whatever"},
+			},
+		},
+	}
+	var ctx = context.New(config)
+	assert.EqualError(t, Pipe{}.Run(ctx), errFailedBuild.Error())
+	assert.Len(t, ctx.Artifacts.List(), 0)
+	assert.True(t, exists(pre), pre)
+	assert.False(t, exists(post), post)
 }
 
 func TestRunPipeFailingHooks(t *testing.T) {
