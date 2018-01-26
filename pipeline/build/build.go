@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/buildtarget"
 	"github.com/goreleaser/goreleaser/internal/ext"
+	"github.com/goreleaser/goreleaser/pipeline"
 )
 
 // Pipe for build
@@ -26,6 +27,10 @@ func (Pipe) String() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	if len(ctx.Config.Builds) == 0 {
+		return pipeline.Skip("build section is not configured")
+	}
+
 	for _, build := range ctx.Config.Builds {
 		log.WithField("build", build).Debug("building")
 		if err := checkMain(ctx, build); err != nil {
@@ -40,6 +45,11 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	// only set defaults if there are builds in the config file.
+	if len(ctx.Config.Builds) == 0 {
+		return nil
+	}
+
 	for i, build := range ctx.Config.Builds {
 		ctx.Config.Builds[i] = buildWithDefaults(ctx, build)
 	}

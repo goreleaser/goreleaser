@@ -97,6 +97,17 @@ type Build struct {
 	XXX map[string]interface{} `yaml:",inline"`
 }
 
+// Rust contains the build configuration section for the rust language
+type Rust struct {
+	Target []string `yaml:",omitempty"`
+	Binary string   `yaml:",omitempty"`
+	Hooks  Hooks    `yaml:",omitempty"`
+	Env    []string `yaml:",omitempty"`
+
+	// Capture all undefined fields and should be empty after loading
+	XXX map[string]interface{} `yaml:",inline"`
+}
+
 // FormatOverride is used to specify a custom format for a specific GOOS.
 type FormatOverride struct {
 	Goos   string `yaml:",omitempty"`
@@ -247,6 +258,7 @@ type Project struct {
 	Release       Release       `yaml:",omitempty"`
 	Brew          Homebrew      `yaml:",omitempty"`
 	Builds        []Build       `yaml:",omitempty"`
+	Rust          []Rust        `yaml:",omitempty"`
 	Archive       Archive       `yaml:",omitempty"`
 	FPM           FPM           `yaml:",omitempty"`
 	Snapcraft     Snapcraft     `yaml:",omitempty"`
@@ -307,6 +319,10 @@ func checkOverflows(config Project) error {
 		for j, ignored := range build.Ignore {
 			overflow.check(ignored.XXX, fmt.Sprintf("builds[%d].ignored_builds[%d]", i, j))
 		}
+	}
+	for i, rust := range config.Rust {
+		overflow.check(rust.XXX, fmt.Sprintf("rust[%d]", i))
+		overflow.check(rust.Hooks.XXX, fmt.Sprintf("rust[%d].hooks", i))
 	}
 	overflow.check(config.FPM.XXX, "fpm")
 	overflow.check(config.Snapcraft.XXX, "snapcraft")
