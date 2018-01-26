@@ -88,6 +88,3 @@ Would you like to fix something in the documentation? Feel free to open an [issu
 
 This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
 <a href="graphs/contributors"><img src="https://opencollective.com/goreleaser/contributors.svg?width=890" /></a>
-
-
-
