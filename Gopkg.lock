@@ -20,7 +20,7 @@
   branch = "master"
   name = "github.com/campoy/unique"
   packages = ["."]
-  revision = "8da0a74979c676510b9de445041ce14b6e450e24"
+  revision = "88950e537e7e644cd746a3102037b5d2b723e9f5"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -38,13 +38,13 @@
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "1e59b77b52bf8e4b449a57e6f79f21226d571845"
+  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
 
 [[projects]]
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "922ceac0585d40f97d283d921f872fc50480e06e"
+  revision = "e48060a28fac52d0f1cb758bc8b87c07bac4a87d"
 
 [[projects]]
   branch = "master"
@@ -120,7 +120,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec"
+  revision = "0ed95abb35c445290478a5348a7b38bb154135fd"
 
 [[projects]]
   branch = "master"
@@ -141,7 +141,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "2c42eef0765b9837fbdab12011af7830f55f88f0"
+  revision = "03467258950d845cd1877eab69461b98e8c09219"
 
 [[projects]]
   name = "google.golang.org/appengine"

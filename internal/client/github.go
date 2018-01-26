@@ -81,7 +81,7 @@ func (c *githubClient) CreateFile(
 	return
 }
 
-func (c *githubClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
+func (c *githubClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
 	var release *github.RepositoryRelease
 	title, err := releaseTitle(ctx)
 	if err != nil {
@@ -122,7 +122,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (release
 
 func (c *githubClient) Upload(
 	ctx *context.Context,
-	releaseID int,
+	releaseID int64,
 	name string,
 	file *os.File,
 ) (err error) {
