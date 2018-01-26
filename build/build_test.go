@@ -24,19 +24,3 @@ func TestRegisterAndGet(t *testing.T) {
 	Register("dummy", builder)
 	assert.Equal(t, builder, For("dummy"))
 }
-
-func TestRun(t *testing.T) {
-	assert.NoError(t, Run(
-		context.New(config.Project{}),
-		[]string{"go", "list", "./..."},
-		emptyEnv,
-	))
-}
-
-func TestRunInvalidCommand(t *testing.T) {
-	assert.Error(t, Run(
-		context.New(config.Project{}),
-		[]string{"gggggo", "nope"},
-		emptyEnv,
-	))
-}

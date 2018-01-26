@@ -3,6 +3,8 @@
 package build
 
 import (
+	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -88,7 +90,7 @@ func runHook(ctx *context.Context, env []string, hook string) error {
 	}
 	log.WithField("hook", hook).Info("running hook")
 	cmd := strings.Fields(hook)
-	return builders.Run(ctx, cmd, env)
+	return run(ctx, cmd, env)
 }
 
 func doBuild(ctx *context.Context, build config.Build, target string) error {
@@ -109,4 +111,18 @@ func extFor(target string) string {
 		return ".exe"
 	}
 	return ""
+}
+
+func run(ctx *context.Context, command, env []string) error {
+	/* #nosec */
+	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
+	var log = log.WithField("env", env).WithField("cmd", command)
+	cmd.Env = append(cmd.Env, os.Environ()...)
+	cmd.Env = append(cmd.Env, env...)
+	log.WithField("cmd", command).WithField("env", env).Debug("running")
+	if out, err := cmd.CombinedOutput(); err != nil {
+		log.WithError(err).Debug("failed")
+		return errors.New(string(out))
+	}
+	return nil
 }

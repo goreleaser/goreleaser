@@ -7,10 +7,12 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"os/exec"
 	"strings"
 	"text/template"
 	"time"
 
+	"github.com/apex/log"
 	api "github.com/goreleaser/goreleaser/build"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -67,7 +69,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	cmd = append(cmd, "-ldflags="+flags, "-o", options.Path, build.Main)
 	var target = newBuildTarget(options.Target)
 	var env = append(build.Env, target.Env()...)
-	if err := api.Run(ctx, cmd, env); err != nil {
+	if err := run(ctx, cmd, env); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", options.Target)
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -108,6 +110,20 @@ func ldflags(ctx *context.Context, build config.Build) (string, error) {
 	}
 	err = t.Execute(&out, data)
 	return out.String(), err
+}
+
+func run(ctx *context.Context, command, env []string) error {
+	/* #nosec */
+	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
+	var log = log.WithField("env", env).WithField("cmd", command)
+	cmd.Env = append(cmd.Env, os.Environ()...)
+	cmd.Env = append(cmd.Env, env...)
+	log.WithField("cmd", command).WithField("env", env).Debug("running")
+	if out, err := cmd.CombinedOutput(); err != nil {
+		log.WithError(err).Debug("failed")
+		return errors.New(string(out))
+	}
+	return nil
 }
 
 type buildTarget struct {
