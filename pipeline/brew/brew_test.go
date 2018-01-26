@@ -387,7 +387,7 @@ type DummyClient struct {
 	Content     string
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int, err error) {
+func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
 	return
 }
 
@@ -398,6 +398,6 @@ func (client *DummyClient) CreateFile(ctx *context.Context, content bytes.Buffer
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID int, name string, file *os.File) (err error) {
+func (client *DummyClient) Upload(ctx *context.Context, releaseID int64, name string, file *os.File) (err error) {
 	return
 }

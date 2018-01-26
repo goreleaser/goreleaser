@@ -59,10 +59,15 @@ func TestFileNotFound(t *testing.T) {
 
 func TestInvalidFields(t *testing.T) {
 	_, err := Load("testdata/invalid_config.yml")
-	assert.EqualError(t, err, "unknown fields in the config file: invalid_root, archive.invalid_archive, archive.format_overrides[0].invalid_archive_fmtoverrides, brew.invalid_brew, brew.github.invalid_brew_github, builds[0].invalid_builds, builds[0].hooks.invalid_builds_hooks, builds[0].ignored_builds[0].invalid_builds_ignore, fpm.invalid_fpm, release.invalid_release, release.github.invalid_release_github, build.invalid_build, builds.hooks.invalid_build_hook, builds.ignored_builds[0].invalid_build_ignore, snapshot.invalid_snapshot, docker[0].invalid_docker, artifactory[0].invalid_artifactory, changelog.invalid_changelog, changelog.filters.invalid_filters")
+	assert.EqualError(t, err, "yaml: unmarshal errors:\n  line 2: field invalid_yaml not found in struct config.Build")
 }
 
 func TestInvalidYaml(t *testing.T) {
 	_, err := Load("testdata/invalid.yml")
 	assert.EqualError(t, err, "yaml: line 1: did not find expected node content")
+}
+
+func TestConfigWithAnchors(t *testing.T) {
+	_, err := Load("testdata/anchor.yaml")
+	assert.NoError(t, err)
 }

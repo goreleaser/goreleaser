@@ -17,7 +17,7 @@ type Info struct {
 
 // Client interface
 type Client interface {
-	CreateRelease(ctx *context.Context, body string) (releaseID int, err error)
+	CreateRelease(ctx *context.Context, body string) (releaseID int64, err error)
 	CreateFile(ctx *context.Context, content bytes.Buffer, path string) (err error)
-	Upload(ctx *context.Context, releaseID int, name string, file *os.File) (err error)
+	Upload(ctx *context.Context, releaseID int64, name string, file *os.File) (err error)
 }

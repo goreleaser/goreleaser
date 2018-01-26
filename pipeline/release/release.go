@@ -82,7 +82,7 @@ func doRun(ctx *context.Context, c client.Client) error {
 	return g.Wait()
 }
 
-func upload(ctx *context.Context, c client.Client, releaseID int, artifact artifact.Artifact) error {
+func upload(ctx *context.Context, c client.Client, releaseID int64, artifact artifact.Artifact) error {
 	file, err := os.Open(artifact.Path)
 	if err != nil {
 		return err
