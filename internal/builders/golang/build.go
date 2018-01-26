@@ -30,7 +30,7 @@ func init() {
 // Builder is golang builder
 type Builder struct{}
 
-// WithDefaults set the defaults for a golang build
+// WithDefaults sets the defaults for a golang build and returns it
 func (*Builder) WithDefaults(build config.Build) config.Build {
 	if build.Main == "" {
 		build.Main = "."
@@ -67,7 +67,10 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 	cmd = append(cmd, "-ldflags="+flags, "-o", options.Path, build.Main)
-	var target = newBuildTarget(options.Target)
+	target, err := newBuildTarget(options.Target)
+	if err != nil {
+		return err
+	}
 	var env = append(build.Env, target.Env()...)
 	if err := run(ctx, cmd, env); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", options.Target)
@@ -130,15 +133,18 @@ type buildTarget struct {
 	os, arch, arm string
 }
 
-func newBuildTarget(s string) buildTarget {
+func newBuildTarget(s string) (buildTarget, error) {
 	var t = buildTarget{}
 	parts := strings.Split(s, "_")
+	if len(parts) < 2 {
+		return t, fmt.Errorf("%s is not a valid build target", s)
+	}
 	t.os = parts[0]
 	t.arch = parts[1]
 	if len(parts) == 3 {
 		t.arm = parts[2]
 	}
-	return t
+	return t, nil
 }
 
 func (b buildTarget) Env() []string {
@@ -172,9 +178,9 @@ func checkMain(ctx *context.Context, build config.Build) error {
 		}
 		return fmt.Errorf("build for %s does not contain a main function", build.Binary)
 	}
-	file, err := parser.ParseFile(token.NewFileSet(), build.Main, nil, 0)
+	file, err := parser.ParseFile(token.NewFileSet(), main, nil, 0)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse file: %s", build.Main)
+		return errors.Wrapf(err, "failed to parse file: %s", main)
 	}
 	if hasMain(file) {
 		return nil

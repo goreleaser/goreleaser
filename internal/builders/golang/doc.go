@@ -1,2 +1,2 @@
-// Package golang providers a Builder implementation for golang.
+// Package golang provides a Builder implementation for golang.
 package golang

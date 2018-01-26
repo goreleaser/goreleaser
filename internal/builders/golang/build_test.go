@@ -68,7 +68,7 @@ func TestWithDefaults(t *testing.T) {
 	}
 }
 
-func TestDefaultAndBuild(t *testing.T) {
+func TestBuild(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
 	writeGoodMain(t, folder)
@@ -118,6 +118,30 @@ func TestBuildFailed(t *testing.T) {
 	})
 	assertContainsError(t, err, `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
 	assert.Empty(t, ctx.Artifacts.List())
+}
+
+func TestBuildInvalidTarget(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
+	var target = "linux"
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				Binary:  "foo",
+				Targets: []string{target},
+			},
+		},
+	}
+	var ctx = context.New(config)
+	var build = ctx.Config.Builds[0]
+	var err = Default.Build(ctx, build, api.Options{
+		Target: target,
+		Name:   build.Binary,
+		Path:   filepath.Join(folder, "dist", target, build.Binary),
+	})
+	assert.EqualError(t, err, "linux is not a valid build target")
+	assert.Len(t, ctx.Artifacts.List(), 0)
 }
 
 func TestRunInvalidLdflags(t *testing.T) {

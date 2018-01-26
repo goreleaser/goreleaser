@@ -13,14 +13,14 @@ var (
 	lock     sync.Mutex
 )
 
-// Register register a builder to a given lang
+// Register registers a builder to a given lang
 func Register(lang string, builder Builder) {
 	lock.Lock()
 	builders[lang] = builder
 	lock.Unlock()
 }
 
-// For gets the previously register builder for the given lang
+// For gets the previously registered builder for the given lang
 func For(lang string) Builder {
 	return builders[lang]
 }
