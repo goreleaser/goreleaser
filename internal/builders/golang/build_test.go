@@ -15,13 +15,13 @@ import (
 
 var runtimeTarget = runtime.GOOS + "_" + runtime.GOARCH
 
-func TestBuild(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	writeGoodMain(t, folder)
-	var config = config.Project{
-		Builds: []config.Build{
-			{
+func TestDefault(t *testing.T) {
+	for name, testcase := range map[string]struct {
+		build   config.Build
+		targets []string
+	}{
+		"full": {
+			build: config.Build{
 				Binary: "foo",
 				Goos: []string{
 					"linux",
@@ -36,16 +36,57 @@ func TestBuild(t *testing.T) {
 					"6",
 				},
 			},
+			targets: []string{
+				"linux_amd64",
+				"darwin_amd64",
+				"windows_amd64",
+				"linux_arm_6",
+			},
+		},
+		"empty": {
+			build: config.Build{
+				Binary: "foo",
+			},
+			targets: []string{
+				"linux_amd64",
+				"linux_386",
+				"darwin_amd64",
+				"darwin_386",
+			},
+		},
+	} {
+		t.Run(name, func(tt *testing.T) {
+			var config = config.Project{
+				Builds: []config.Build{
+					testcase.build,
+				},
+			}
+			var ctx = context.New(config)
+			var build = Default.Default(ctx.Config.Builds[0])
+			assert.ElementsMatch(t, build.Targets, testcase.targets)
+		})
+	}
+}
+
+func TestDefaultAndBuild(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				Binary: "foo",
+				Targets: []string{
+					"linux_amd64",
+					"darwin_amd64",
+					"windows_amd64",
+					"linux_arm_6",
+				},
+			},
 		},
 	}
 	var ctx = context.New(config)
-	var build = Default.Default(ctx.Config.Builds[0])
-	assert.ElementsMatch(t, build.Targets, []string{
-		"linux_amd64",
-		"darwin_amd64",
-		"windows_amd64",
-		"linux_arm_6",
-	})
+	var build = ctx.Config.Builds[0]
 	for _, target := range build.Targets {
 		var err = Default.Build(ctx, build, api.Options{
 			Target: target,
@@ -54,7 +95,6 @@ func TestBuild(t *testing.T) {
 		})
 		assert.NoError(t, err)
 	}
-
 	assert.Len(t, ctx.Artifacts.List(), len(build.Targets))
 }
 
@@ -183,31 +223,6 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 			Target: runtimeTarget,
 		}))
 	})
-}
-
-func TestRunPipeWithInvalidOS(t *testing.T) {
-	// FIXME: probably should be refactored
-	t.SkipNow()
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	writeGoodMain(t, folder)
-	var config = config.Project{
-		Builds: []config.Build{
-			{
-				Lang:  "go",
-				Flags: "-v",
-				Goos: []string{
-					"windows",
-				},
-				Goarch: []string{
-					"arm",
-				},
-			},
-		},
-	}
-	assert.NoError(t, Default.Build(context.New(config), config.Builds[0], api.Options{
-		Target: "windows_arm",
-	}))
 }
 
 func TestLdFlagsFullTemplate(t *testing.T) {
