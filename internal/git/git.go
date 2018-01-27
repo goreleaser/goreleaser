@@ -5,6 +5,8 @@ import (
 	"errors"
 	"os/exec"
 	"strings"
+
+	"github.com/apex/log"
 )
 
 // IsRepo returns true if current folder is a git repository
@@ -17,10 +19,12 @@ func IsRepo() bool {
 func Run(args ...string) (output string, err error) {
 	/* #nosec */
 	var cmd = exec.Command("git", args...)
+	log.WithField("args", args).Debug("running git")
 	bts, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", errors.New(string(bts))
 	}
+	log.WithField("output", string(bts)).Debug("result")
 	return string(bts), err
 }
 
