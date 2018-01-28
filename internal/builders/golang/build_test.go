@@ -4,11 +4,13 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	api "github.com/goreleaser/goreleaser/build"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
@@ -88,14 +90,65 @@ func TestBuild(t *testing.T) {
 	var ctx = context.New(config)
 	var build = ctx.Config.Builds[0]
 	for _, target := range build.Targets {
+		var ext string
+		if strings.HasPrefix(target, "windows") {
+			ext = ".exe"
+		}
 		var err = Default.Build(ctx, build, api.Options{
 			Target: target,
 			Name:   build.Binary,
 			Path:   filepath.Join(folder, "dist", target, build.Binary),
+			Ext:    ext,
 		})
 		assert.NoError(t, err)
 	}
-	assert.Len(t, ctx.Artifacts.List(), len(build.Targets))
+	assert.ElementsMatch(t, ctx.Artifacts.List(), []artifact.Artifact{
+		{
+			Name:   "foo",
+			Path:   filepath.Join(folder, "dist", "linux_amd64", "foo"),
+			Goos:   "linux",
+			Goarch: "amd64",
+			Type:   artifact.Binary,
+			Extra: map[string]string{
+				"Ext":    "",
+				"Binary": "foo",
+			},
+		},
+		{
+			Name:   "foo",
+			Path:   filepath.Join(folder, "dist", "darwin_amd64", "foo"),
+			Goos:   "darwin",
+			Goarch: "amd64",
+			Type:   artifact.Binary,
+			Extra: map[string]string{
+				"Ext":    "",
+				"Binary": "foo",
+			},
+		},
+		{
+			Name:   "foo",
+			Path:   filepath.Join(folder, "dist", "linux_arm_6", "foo"),
+			Goos:   "linux",
+			Goarch: "arm",
+			Goarm:  "6",
+			Type:   artifact.Binary,
+			Extra: map[string]string{
+				"Ext":    "",
+				"Binary": "foo",
+			},
+		},
+		{
+			Name:   "foo",
+			Path:   filepath.Join(folder, "dist", "windows_amd64", "foo"),
+			Goos:   "windows",
+			Goarch: "amd64",
+			Type:   artifact.Binary,
+			Extra: map[string]string{
+				"Ext":    ".exe",
+				"Binary": "foo",
+			},
+		},
+	})
 }
 
 func TestBuildFailed(t *testing.T) {
