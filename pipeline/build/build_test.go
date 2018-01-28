@@ -14,6 +14,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var fakeArtifact = artifact.Artifact{
+	Name: "fake",
+}
+
 type fakeBuilder struct {
 	fail bool
 }
@@ -28,7 +32,7 @@ func (f *fakeBuilder) Build(ctx *context.Context, build config.Build, options ap
 	if f.fail {
 		return errFailedBuild
 	}
-	ctx.Artifacts.Add(artifact.Artifact{})
+	ctx.Artifacts.Add(fakeArtifact)
 	return nil
 }
 
@@ -72,7 +76,7 @@ func TestRunPipe(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Len(t, ctx.Artifacts.List(), 1)
+	assert.Equal(t, ctx.Artifacts.List(), []artifact.Artifact{fakeArtifact})
 }
 
 func TestRunFullPipe(t *testing.T) {
@@ -97,7 +101,7 @@ func TestRunFullPipe(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Len(t, ctx.Artifacts.List(), 1)
+	assert.Equal(t, ctx.Artifacts.List(), []artifact.Artifact{fakeArtifact})
 	assert.True(t, exists(pre), pre)
 	assert.True(t, exists(post), post)
 }
@@ -124,7 +128,7 @@ func TestRunFullPipeFail(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	assert.EqualError(t, Pipe{}.Run(ctx), errFailedBuild.Error())
-	assert.Len(t, ctx.Artifacts.List(), 0)
+	assert.Empty(t, ctx.Artifacts.List())
 	assert.True(t, exists(pre), pre)
 	assert.False(t, exists(post), post)
 }
