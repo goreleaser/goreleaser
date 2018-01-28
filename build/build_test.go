@@ -8,8 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var emptyEnv []string
-
 type dummy struct{}
 
 func (*dummy) WithDefaults(build config.Build) config.Build {
