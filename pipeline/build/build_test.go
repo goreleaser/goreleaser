@@ -1,47 +1,57 @@
 package build
 
 import (
-	"io/ioutil"
+	"errors"
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 
+	api "github.com/goreleaser/goreleaser/build"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/buildtarget"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
 
-var emptyEnv []string
+var fakeArtifact = artifact.Artifact{
+	Name: "fake",
+}
+
+type fakeBuilder struct {
+	fail bool
+}
+
+func (*fakeBuilder) WithDefaults(build config.Build) config.Build {
+	return build
+}
+
+var errFailedBuild = errors.New("fake builder failed")
+
+func (f *fakeBuilder) Build(ctx *context.Context, build config.Build, options api.Options) error {
+	if f.fail {
+		return errFailedBuild
+	}
+	ctx.Artifacts.Add(fakeArtifact)
+	return nil
+}
+
+func init() {
+	api.Register("fake", &fakeBuilder{})
+	api.Register("fakeFail", &fakeBuilder{
+		fail: true,
+	})
+}
 
 func TestPipeDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.String())
-}
-
-func TestRun(t *testing.T) {
-	assert.NoError(t, run(
-		context.New(config.Project{}),
-		buildtarget.Runtime,
-		[]string{"go", "list", "./..."},
-		emptyEnv,
-	))
-}
-
-func TestRunInvalidCommand(t *testing.T) {
-	assert.Error(t, run(
-		context.New(config.Project{}),
-		buildtarget.Runtime,
-		[]string{"gggggo", "nope"},
-		emptyEnv,
-	))
 }
 
 func TestBuild(t *testing.T) {
 	var config = config.Project{
 		Builds: []config.Build{
 			{
+				Lang:   "fake",
 				Binary: "testing",
 				Flags:  "-n",
 				Env:    []string{"BLAH=1"},
@@ -49,19 +59,35 @@ func TestBuild(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
-	assert.NoError(t, doBuild(ctx, ctx.Config.Builds[0], buildtarget.Runtime))
+	assert.NoError(t, doBuild(ctx, ctx.Config.Builds[0], "darwin_amd64"))
+}
+
+func TestRunPipe(t *testing.T) {
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				Lang:    "fake",
+				Binary:  "testing",
+				Flags:   "-v",
+				Ldflags: "-X main.test=testing",
+				Targets: []string{"whatever"},
+			},
+		},
+	}
+	var ctx = context.New(config)
+	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Equal(t, ctx.Artifacts.List(), []artifact.Artifact{fakeArtifact})
 }
 
 func TestRunFullPipe(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
-	writeGoodMain(t, folder)
-	var binary = filepath.Join(folder, buildtarget.Runtime.String(), "testing")
 	var pre = filepath.Join(folder, "pre")
 	var post = filepath.Join(folder, "post")
 	var config = config.Project{
 		Builds: []config.Build{
 			{
+				Lang:    "fake",
 				Binary:  "testing",
 				Flags:   "-v",
 				Ldflags: "-X main.test=testing",
@@ -69,138 +95,52 @@ func TestRunFullPipe(t *testing.T) {
 					Pre:  "touch " + pre,
 					Post: "touch " + post,
 				},
-				Goos: []string{
-					runtime.GOOS,
-				},
-				Goarch: []string{
-					runtime.GOARCH,
-				},
-			},
-		},
-		Archive: config.Archive{
-			Replacements: map[string]string{
-				"linux":  "linuxx",
-				"darwin": "darwinn",
+				Targets: []string{"whatever"},
 			},
 		},
 	}
 	var ctx = context.New(config)
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Len(t, ctx.Artifacts.List(), 1)
-	assert.True(t, exists(binary), binary)
+	assert.Equal(t, ctx.Artifacts.List(), []artifact.Artifact{fakeArtifact})
 	assert.True(t, exists(pre), pre)
 	assert.True(t, exists(post), post)
 }
 
-func TestRunPipeArmBuilds(t *testing.T) {
+func TestRunFullPipeFail(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
-	writeGoodMain(t, folder)
-	var binary = filepath.Join(folder, "linuxarm6", "armtesting")
+	var pre = filepath.Join(folder, "pre")
+	var post = filepath.Join(folder, "post")
 	var config = config.Project{
 		Builds: []config.Build{
 			{
-				Binary:  "armtesting",
+				Lang:    "fakeFail",
+				Binary:  "testing",
 				Flags:   "-v",
-				Ldflags: "-X main.test=armtesting",
-				Goos: []string{
-					"linux",
+				Ldflags: "-X main.test=testing",
+				Hooks: config.Hooks{
+					Pre:  "touch " + pre,
+					Post: "touch " + post,
 				},
-				Goarch: []string{
-					"arm",
-					"arm64",
-				},
-				Goarm: []string{
-					"6",
-				},
+				Targets: []string{"whatever"},
 			},
 		},
 	}
 	var ctx = context.New(config)
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Len(t, ctx.Artifacts.List(), 2)
-	assert.True(t, exists(binary), binary)
-}
-
-func TestBuildFailed(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	writeGoodMain(t, folder)
-	var config = config.Project{
-		Builds: []config.Build{
-			{
-				Flags: "-flag-that-dont-exists-to-force-failure",
-				Goos: []string{
-					runtime.GOOS,
-				},
-				Goarch: []string{
-					runtime.GOARCH,
-				},
-			},
-		},
-	}
-	var ctx = context.New(config)
-	assertContainsError(t, Pipe{}.Run(ctx), `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
+	assert.EqualError(t, Pipe{}.Run(ctx), errFailedBuild.Error())
 	assert.Empty(t, ctx.Artifacts.List())
-}
-
-func TestRunPipeWithInvalidOS(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	writeGoodMain(t, folder)
-	var config = config.Project{
-		Builds: []config.Build{
-			{
-				Flags: "-v",
-				Goos: []string{
-					"windows",
-				},
-				Goarch: []string{
-					"arm",
-				},
-			},
-		},
-	}
-	assert.NoError(t, Pipe{}.Run(context.New(config)))
-}
-
-func TestRunInvalidLdflags(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	writeGoodMain(t, folder)
-	var config = config.Project{
-		Builds: []config.Build{
-			{
-				Binary:  "nametest",
-				Flags:   "-v",
-				Ldflags: "-s -w -X main.version={{.Version}",
-				Goos: []string{
-					runtime.GOOS,
-				},
-				Goarch: []string{
-					runtime.GOARCH,
-				},
-			},
-		},
-	}
-	assert.EqualError(t, Pipe{}.Run(context.New(config)), `template: ldflags:1: unexpected "}" in operand`)
+	assert.True(t, exists(pre), pre)
+	assert.False(t, exists(post), post)
 }
 
 func TestRunPipeFailingHooks(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	writeGoodMain(t, folder)
 	var config = config.Project{
 		Builds: []config.Build{
 			{
-				Binary: "hooks",
-				Hooks:  config.Hooks{},
-				Goos: []string{
-					runtime.GOOS,
-				},
-				Goarch: []string{
-					runtime.GOARCH,
-				},
+				Lang:    "fake",
+				Binary:  "hooks",
+				Hooks:   config.Hooks{},
+				Targets: []string{"whatever"},
 			},
 		},
 	}
@@ -215,80 +155,6 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		ctx.Config.Builds[0].Hooks.Pre = "echo pre"
 		ctx.Config.Builds[0].Hooks.Post = "exit 1"
 		assert.EqualError(t, Pipe{}.Run(ctx), `post hook failed: `)
-	})
-}
-
-func TestRunPipeWithouMainFunc(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	writeMainWithoutMainFunc(t, folder)
-	var config = config.Project{
-		Builds: []config.Build{
-			{
-				Binary: "no-main",
-				Hooks:  config.Hooks{},
-				Goos: []string{
-					runtime.GOOS,
-				},
-				Goarch: []string{
-					runtime.GOARCH,
-				},
-			},
-		},
-	}
-	var ctx = context.New(config)
-	t.Run("empty", func(t *testing.T) {
-		ctx.Config.Builds[0].Main = ""
-		assert.EqualError(t, Pipe{}.Run(ctx), `build for no-main does not contain a main function`)
-	})
-	t.Run("not main.go", func(t *testing.T) {
-		ctx.Config.Builds[0].Main = "foo.go"
-		assert.EqualError(t, Pipe{}.Run(ctx), `could not open foo.go: stat foo.go: no such file or directory`)
-	})
-	t.Run("glob", func(t *testing.T) {
-		ctx.Config.Builds[0].Main = "."
-		assert.EqualError(t, Pipe{}.Run(ctx), `build for no-main does not contain a main function`)
-	})
-	t.Run("fixed main.go", func(t *testing.T) {
-		ctx.Config.Builds[0].Main = "main.go"
-		assert.EqualError(t, Pipe{}.Run(ctx), `build for no-main does not contain a main function`)
-	})
-}
-
-func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
-	assert.NoError(t, ioutil.WriteFile(
-		filepath.Join(folder, "foo.go"),
-		[]byte("package main\nfunc main() {println(0)}"),
-		0644,
-	))
-	var config = config.Project{
-		Builds: []config.Build{
-			{
-				Binary: "foo",
-				Hooks:  config.Hooks{},
-				Goos: []string{
-					runtime.GOOS,
-				},
-				Goarch: []string{
-					runtime.GOARCH,
-				},
-			},
-		},
-	}
-	var ctx = context.New(config)
-	t.Run("empty", func(t *testing.T) {
-		ctx.Config.Builds[0].Main = ""
-		assert.NoError(t, Pipe{}.Run(ctx))
-	})
-	t.Run("foo.go", func(t *testing.T) {
-		ctx.Config.Builds[0].Main = "foo.go"
-		assert.NoError(t, Pipe{}.Run(ctx))
-	})
-	t.Run("glob", func(t *testing.T) {
-		ctx.Config.Builds[0].Main = "."
-		assert.NoError(t, Pipe{}.Run(ctx))
 	})
 }
 
@@ -381,28 +247,22 @@ func TestDefaultFillSingleBuild(t *testing.T) {
 	assert.Equal(t, ctx.Config.Builds[0].Binary, "foo")
 }
 
+func TestExtWindows(t *testing.T) {
+	assert.Equal(t, ".exe", extFor("windows_amd64"))
+	assert.Equal(t, ".exe", extFor("windows_386"))
+}
+
+func TestExtOthers(t *testing.T) {
+	assert.Empty(t, "", extFor("linux_amd64"))
+	assert.Empty(t, "", extFor("linuxwin_386"))
+	assert.Empty(t, "", extFor("winasdasd_sad"))
+}
+
+//
+// Helpers
+//
+
 func exists(file string) bool {
 	_, err := os.Stat(file)
 	return !os.IsNotExist(err)
-}
-
-func writeMainWithoutMainFunc(t *testing.T, folder string) {
-	assert.NoError(t, ioutil.WriteFile(
-		filepath.Join(folder, "main.go"),
-		[]byte("package main\nconst a = 2\nfunc notMain() {println(0)}"),
-		0644,
-	))
-}
-
-func writeGoodMain(t *testing.T, folder string) {
-	assert.NoError(t, ioutil.WriteFile(
-		filepath.Join(folder, "main.go"),
-		[]byte("package main\nvar a = 1\nfunc main() {println(0)}"),
-		0644,
-	))
-}
-
-func assertContainsError(t *testing.T, err error, s string) {
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), s)
 }

@@ -1,4 +1,4 @@
-package buildtarget
+package golang
 
 import (
 	"fmt"
@@ -40,19 +40,19 @@ func TestAllBuildTargets(t *testing.T) {
 			},
 		},
 	}
-	assert.Equal(t, []Target{
-		New("linux", "386", ""),
-		New("linux", "amd64", ""),
-		New("linux", "arm", "6"),
-		New("linux", "arm64", ""),
-		New("darwin", "amd64", ""),
-		New("freebsd", "386", ""),
-		New("freebsd", "amd64", ""),
-		New("freebsd", "arm", "6"),
-		New("freebsd", "arm", "7"),
-		New("openbsd", "386", ""),
-		New("openbsd", "amd64", ""),
-	}, All(build))
+	assert.Equal(t, []string{
+		"linux_386",
+		"linux_amd64",
+		"linux_arm_6",
+		"linux_arm64",
+		"darwin_amd64",
+		"freebsd_386",
+		"freebsd_amd64",
+		"freebsd_arm_6",
+		"freebsd_arm_7",
+		"openbsd_386",
+		"openbsd_amd64",
+	}, matrix(build))
 }
 
 func TestGoosGoarchCombos(t *testing.T) {
@@ -99,7 +99,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 	}
 	for _, p := range platforms {
 		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {
-			assert.Equal(t, p.valid, valid(New(p.os, p.arch, "")))
+			assert.Equal(t, p.valid, valid(target{p.os, p.arch, ""}))
 		})
 	}
 }

@@ -1,52 +1,70 @@
-package buildtarget
+package golang
 
 import (
+	"fmt"
+
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 )
 
-// All returns all valid build targets for a given build
-func All(build config.Build) (targets []Target) {
+type target struct {
+	os, arch, arm string
+}
+
+func (t target) String() string {
+	if t.arm != "" {
+		return fmt.Sprintf("%s_%s_%s", t.os, t.arch, t.arm)
+	}
+	return fmt.Sprintf("%s_%s", t.os, t.arch)
+}
+
+func matrix(build config.Build) (result []string) {
+	var targets []target
 	for _, target := range allBuildTargets(build) {
 		if !valid(target) {
-			log.WithField("target", target.PrettyString()).
+			log.WithField("target", target).
 				Debug("skipped invalid build")
 			continue
 		}
 		if ignored(build, target) {
-			log.WithField("target", target.PrettyString()).
+			log.WithField("target", target).
 				Debug("skipped ignored build")
 			continue
 		}
 		targets = append(targets, target)
 	}
+	for _, target := range targets {
+		result = append(result, target.String())
+	}
 	return
 }
 
-func allBuildTargets(build config.Build) (targets []Target) {
+func allBuildTargets(build config.Build) (targets []target) {
 	for _, goos := range build.Goos {
 		for _, goarch := range build.Goarch {
 			if goarch == "arm" {
 				for _, goarm := range build.Goarm {
-					targets = append(targets, New(goos, goarch, goarm))
+					targets = append(targets, target{goos, goarch, goarm})
 				}
 				continue
 			}
-			targets = append(targets, New(goos, goarch, ""))
+			targets = append(targets, target{goos, goarch, ""})
 		}
 	}
 	return
 }
 
-func ignored(build config.Build, target Target) bool {
+// TODO: this could be improved by using a map
+// https://github.com/goreleaser/goreleaser/pull/522#discussion_r164245014
+func ignored(build config.Build, target target) bool {
 	for _, ig := range build.Ignore {
-		if ig.Goos != "" && ig.Goos != target.OS {
+		if ig.Goos != "" && ig.Goos != target.os {
 			continue
 		}
-		if ig.Goarch != "" && ig.Goarch != target.Arch {
+		if ig.Goarch != "" && ig.Goarch != target.arch {
 			continue
 		}
-		if ig.Goarm != "" && ig.Goarm != target.Arm {
+		if ig.Goarm != "" && ig.Goarm != target.arm {
 			continue
 		}
 		return true
@@ -54,8 +72,8 @@ func ignored(build config.Build, target Target) bool {
 	return false
 }
 
-func valid(target Target) bool {
-	var s = target.OS + target.Arch
+func valid(target target) bool {
+	var s = target.os + target.arch
 	for _, a := range validTargets {
 		if a == s {
 			return true

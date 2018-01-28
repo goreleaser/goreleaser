@@ -1,3 +1,5 @@
+// Package build provides a pipe that can build binaries for several
+// languages.
 package build
 
 import (
@@ -10,11 +12,12 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
+	builders "github.com/goreleaser/goreleaser/build"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/buildtarget"
-	"github.com/goreleaser/goreleaser/internal/ext"
+
+	// langs to init
+	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
 )
 
 // Pipe for build
@@ -28,9 +31,6 @@ func (Pipe) String() string {
 func (Pipe) Run(ctx *context.Context) error {
 	for _, build := range ctx.Config.Builds {
 		log.WithField("build", build).Debug("building")
-		if err := checkMain(ctx, build); err != nil {
-			return err
-		}
 		if err := runPipeOnBuild(ctx, build); err != nil {
 			return err
 		}
@@ -52,25 +52,13 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
+	if build.Lang == "" {
+		build.Lang = "go"
+	}
 	if build.Binary == "" {
 		build.Binary = ctx.Config.Release.GitHub.Name
 	}
-	if build.Main == "" {
-		build.Main = "."
-	}
-	if len(build.Goos) == 0 {
-		build.Goos = []string{"linux", "darwin"}
-	}
-	if len(build.Goarch) == 0 {
-		build.Goarch = []string{"amd64", "386"}
-	}
-	if len(build.Goarm) == 0 {
-		build.Goarm = []string{"6"}
-	}
-	if build.Ldflags == "" {
-		build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
-	}
-	return build
+	return builders.For(build.Lang).WithDefaults(build)
 }
 
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
@@ -79,7 +67,7 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	}
 	sem := make(chan bool, ctx.Parallelism)
 	var g errgroup.Group
-	for _, target := range buildtarget.All(build) {
+	for _, target := range build.Targets {
 		sem <- true
 		target := target
 		build := build
@@ -102,51 +90,36 @@ func runHook(ctx *context.Context, env []string, hook string) error {
 	}
 	log.WithField("hook", hook).Info("running hook")
 	cmd := strings.Fields(hook)
-	return run(ctx, buildtarget.Runtime, cmd, env)
+	return run(ctx, cmd, env)
 }
 
-func doBuild(ctx *context.Context, build config.Build, target buildtarget.Target) error {
-	var ext = ext.For(target)
-	var binaryName = build.Binary + ext
-	var binary = filepath.Join(ctx.Config.Dist, target.String(), binaryName)
-	log.WithField("binary", binary).Info("building")
-	cmd := []string{"go", "build"}
-	if build.Flags != "" {
-		cmd = append(cmd, strings.Fields(build.Flags)...)
-	}
-	flags, err := ldflags(ctx, build)
-	if err != nil {
-		return err
-	}
-	cmd = append(cmd, "-ldflags="+flags, "-o", binary, build.Main)
-	if err := run(ctx, target, cmd, build.Env); err != nil {
-		return errors.Wrapf(err, "failed to build for %s", target)
-	}
-	ctx.Artifacts.Add(artifact.Artifact{
-		Type:   artifact.Binary,
-		Path:   binary,
-		Name:   binaryName,
-		Goos:   target.OS,
-		Goarch: target.Arch,
-		Goarm:  target.Arm,
-		Extra: map[string]string{
-			"Binary": build.Binary,
-			"Ext":    ext,
-		},
+func doBuild(ctx *context.Context, build config.Build, target string) error {
+	var ext = extFor(target)
+	var name = build.Binary + ext
+	var path = filepath.Join(ctx.Config.Dist, target, name)
+	log.WithField("binary", path).Info("building")
+	return builders.For(build.Lang).Build(ctx, build, builders.Options{
+		Target: target,
+		Name:   name,
+		Path:   path,
+		Ext:    ext,
 	})
-	return nil
 }
 
-func run(ctx *context.Context, target buildtarget.Target, command, env []string) error {
+func extFor(target string) string {
+	if strings.Contains(target, "windows") {
+		return ".exe"
+	}
+	return ""
+}
+
+func run(ctx *context.Context, command, env []string) error {
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
-	env = append(env, target.Env()...)
-	var log = log.WithField("target", target.PrettyString()).
-		WithField("env", env).
-		WithField("cmd", command)
+	var log = log.WithField("env", env).WithField("cmd", command)
 	cmd.Env = append(cmd.Env, os.Environ()...)
 	cmd.Env = append(cmd.Env, env...)
-	log.Debug("running")
+	log.WithField("cmd", command).WithField("env", env).Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
 		return errors.New(string(out))

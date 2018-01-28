@@ -71,6 +71,7 @@ type Build struct {
 	Goos    []string       `yaml:",omitempty"`
 	Goarch  []string       `yaml:",omitempty"`
 	Goarm   []string       `yaml:",omitempty"`
+	Targets []string       `yaml:",omitempty"`
 	Ignore  []IgnoredBuild `yaml:",omitempty"`
 	Main    string         `yaml:",omitempty"`
 	Ldflags string         `yaml:",omitempty"`
@@ -78,6 +79,7 @@ type Build struct {
 	Binary  string         `yaml:",omitempty"`
 	Hooks   Hooks          `yaml:",omitempty"`
 	Env     []string       `yaml:",omitempty"`
+	Lang    string         `yaml:",omitempty"`
 }
 
 // FormatOverride is used to specify a custom format for a specific GOOS.
