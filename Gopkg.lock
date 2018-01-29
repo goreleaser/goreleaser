@@ -59,8 +59,8 @@
     "tar",
     "zip"
   ]
-  revision = "35c6d4e271a22e46cc7133b7a6ae58b8e52acc01"
-  version = "v1.0.2"
+  revision = "a0333715c7d5ee99eac4c71f457155f2b0c0c4f8"
+  version = "v1.0.3"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -129,7 +129,7 @@
     ".",
     "internal"
   ]
-  revision = "b28fcf2b08a19742b43084fb40ab78ac6c3d8067"
+  revision = "a032972e28060ca4f5644acffae3dfc268cc09db"
 
 [[projects]]
   branch = "master"
@@ -141,7 +141,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "03467258950d845cd1877eab69461b98e8c09219"
+  revision = "ff2a66f350cefa5c93a634eadb5d25bb60c85a9c"
 
 [[projects]]
   name = "google.golang.org/appengine"
