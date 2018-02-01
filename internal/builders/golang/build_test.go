@@ -246,7 +246,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].Main = "foo.go"
 		assert.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
-		}), `could not open foo.go: stat foo.go: no such file or directory`)
+		}), `stat foo.go: no such file or directory`)
 	})
 	t.Run("glob", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."

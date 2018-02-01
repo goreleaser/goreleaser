@@ -161,8 +161,8 @@ func checkMain(ctx *context.Context, build config.Build) error {
 		main = "."
 	}
 	stat, ferr := os.Stat(main)
-	if os.IsNotExist(ferr) {
-		return errors.Wrapf(ferr, "could not open %s", main)
+	if ferr != nil {
+		return ferr
 	}
 	if stat.IsDir() {
 		packs, err := parser.ParseDir(token.NewFileSet(), main, nil, 0)
