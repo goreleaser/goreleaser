@@ -52,19 +52,19 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func loadEnv(env, path string) (string, error) {
 	val := os.Getenv(env)
-	if val == "" {
-		path, err := homedir.Expand(path)
-		if err != nil {
-			return "", err
-		}
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			return "", nil
-		}
-		bts, err := ioutil.ReadFile(path)
-		if err != nil {
-			return "", err
-		}
-		val = string(bts)
+	if val != "" {
+		return val, nil
 	}
-	return val, nil
+	path, err := homedir.Expand(path)
+	if err != nil {
+		return "", err
+	}
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return "", nil
+	}
+	bts, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return string(bts), nil
 }

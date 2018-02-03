@@ -194,6 +194,7 @@ type Changelog struct {
 	Sort    string  `yaml:",omitempty"`
 }
 
+// EnvFile is the
 type EnvFiles struct {
 	GitHubToken string `yaml:"github_token,omitempty"`
 }
