@@ -59,10 +59,10 @@ func loadEnv(env, path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if _, err := os.Stat(path); os.IsNotExist(err) {
+	bts, err := ioutil.ReadFile(path)
+	if os.IsNotExist(err) {
 		return "", nil
 	}
-	bts, err := ioutil.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
