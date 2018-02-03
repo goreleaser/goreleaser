@@ -126,6 +126,16 @@ func TestLoadEnv(t *testing.T) {
 		assert.NoError(tt, err)
 		assert.Equal(tt, "123", v)
 	})
+	t.Run("env file with an empty line at the end", func(tt *testing.T) {
+		var env = "SUPER_SECRET_ENV_NOPE"
+		assert.NoError(tt, os.Unsetenv(env))
+		f, err := ioutil.TempFile("", "token")
+		assert.NoError(t, err)
+		fmt.Fprintf(f, "123\n")
+		v, err := loadEnv(env, f.Name())
+		assert.NoError(tt, err)
+		assert.Equal(tt, "123", v)
+	})
 	t.Run("env file is not readable", func(tt *testing.T) {
 		var env = "SUPER_SECRET_ENV_NOPE"
 		assert.NoError(tt, os.Unsetenv(env))
