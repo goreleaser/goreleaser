@@ -44,10 +44,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Token == "" && err == nil {
 		return ErrMissingToken
 	}
-	if err != nil {
-		return errors.Wrap(err, "failed to load github token")
-	}
-	return nil
+	return errors.Wrap(err, "failed to load github token")
 }
 
 func loadEnv(env, path string) (string, error) {
