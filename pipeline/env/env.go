@@ -3,7 +3,7 @@
 package env
 
 import (
-	"io/ioutil"
+	"bufio"
 	"os"
 
 	"github.com/goreleaser/goreleaser/context"
@@ -59,12 +59,13 @@ func loadEnv(env, path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	bts, err := ioutil.ReadFile(path)
+	f, err := os.Open(path)
 	if os.IsNotExist(err) {
 		return "", nil
 	}
 	if err != nil {
 		return "", err
 	}
-	return string(bts), nil
+	bts, _, err := bufio.NewReader(f).ReadLine()
+	return string(bts), err
 }
