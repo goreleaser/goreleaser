@@ -194,7 +194,8 @@ type Changelog struct {
 	Sort    string  `yaml:",omitempty"`
 }
 
-// EnvFile is the
+// EnvFiles holds paths to files that contains environment variables
+// values like the github token for example
 type EnvFiles struct {
 	GitHubToken string `yaml:"github_token,omitempty"`
 }
