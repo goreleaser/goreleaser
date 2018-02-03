@@ -47,3 +47,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/campoy/unique"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/mitchellh/go-homedir"

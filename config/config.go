@@ -194,6 +194,10 @@ type Changelog struct {
 	Sort    string  `yaml:",omitempty"`
 }
 
+type EnvFiles struct {
+	GitHubToken string `yaml:"github_token,omitempty"`
+}
+
 // Project includes all project configuration
 type Project struct {
 	ProjectName   string        `yaml:"project_name,omitempty"`
@@ -210,6 +214,7 @@ type Project struct {
 	Changelog     Changelog     `yaml:",omitempty"`
 	Dist          string        `yaml:",omitempty"`
 	Sign          Sign          `yaml:",omitempty"`
+	EnvFiles      EnvFiles      `yaml:"env_files,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
