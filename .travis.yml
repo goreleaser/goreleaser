@@ -11,7 +11,7 @@ install:
   - sudo apt-get update
   - sudo apt-get install --yes snapd rpm
   - export PATH=/snap/bin:$PATH
-  - sudo snap install snapcraft --candidate --classic
+  - sudo snap install snapcraft --classic
 script:
   - make ci
   - test -n "$TRAVIS_TAG" || go run main.go --skip-validate --skip-publish
