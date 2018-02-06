@@ -20,7 +20,7 @@ class Test < Formula
 
   plist_options :startup => false
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     it works
     EOS
   end

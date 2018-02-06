@@ -21,7 +21,7 @@ class RunPipe < Formula
 
   plist_options :startup => false
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     <xml>whatever</xml>
     EOS
   end
