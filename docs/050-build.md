@@ -17,6 +17,13 @@ builds:
     main: ./cmd/main.go
 
     # Name of the binary.
+    # This is parsed with the Go template engine and the following variables
+    # are available:
+    # - Date
+    # - Commit
+    # - Tag
+    # - Version (Git tag without `v` prefix)
+    # Date format is `2006-01-02_15:04:05`.
     # Default is the name of the project directory.
     binary: program
 
