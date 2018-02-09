@@ -9,7 +9,7 @@ install:
   - gem install fpm
   - npm install -g prettier
   - sudo apt-get update
-  - sudo apt-get install --yes snapd rpm
+  - sudo apt-get install --yes snapd rpm liblz4-dev
   - export PATH=/snap/bin:$PATH
   - sudo snap install snapcraft --classic
 script:
