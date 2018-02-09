@@ -76,6 +76,11 @@ Love our work and community? [Become a backer](https://opencollective.com/gorele
 <a href="https://opencollective.com/goreleaser/backers/28/website" target="_blank"><img src="https://opencollective.com/goreleaser/backers/28/avatar"></a>
 <a href="https://opencollective.com/goreleaser/backers/29/website" target="_blank"><img src="https://opencollective.com/goreleaser/backers/29/avatar"></a>
 
+## Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="graphs/contributors"><img src="https://opencollective.com/goreleaser/contributors.svg?width=890" /></a>
+
 ## Stargazers over time
 
 [![goreleaser/goreleaser stargazers over time](https://starcharts.herokuapp.com/goreleaser/goreleaser.svg)](https://starcharts.herokuapp.com/goreleaser/goreleaser)
@@ -83,8 +88,3 @@ Love our work and community? [Become a backer](https://opencollective.com/gorele
 ---
 
 Would you like to fix something in the documentation? Feel free to open an [issue](https://github.com/goreleaser/goreleaser/issues).
-
-## Contributors
-
-This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
-<a href="graphs/contributors"><img src="https://opencollective.com/goreleaser/contributors.svg?width=890" /></a>
