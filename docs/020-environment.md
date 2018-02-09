@@ -12,6 +12,15 @@ This token should be added to the environment variables as `GITHUB_TOKEN`.
 Here is how to do it with Travis CI:
 [Defining Variables in Repository Settings](https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-Repository-Settings).
 
+Alternatively, you can provide the GitHub token in a file. GoReleaser will check `~/.config/goreleaser/github_token` by default, you can change that in
+the `.goreleaser.yml` file:
+
+```yaml
+# .goreleaser.yml
+env_files:
+  github_token: ~/.path/to/my/token
+```
+
 ## The dist folder
 
 By default, GoReleaser will create its artifacts in the `./dist` folder.

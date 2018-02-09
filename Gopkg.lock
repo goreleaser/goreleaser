@@ -35,16 +35,16 @@
   version = "v1.5.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "925541529c1fa6821df4e44ce2723319eb2be768"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "e48060a28fac52d0f1cb758bc8b87c07bac4a87d"
+  revision = "897969cdc831052c4694e205e24a033fe7248c2f"
 
 [[projects]]
   branch = "master"
@@ -90,6 +90,12 @@
   revision = "4959821b481786922ac53e7ef25c61ae19fb7c36"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/go-homedir"
+  packages = ["."]
+  revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
+
+[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
@@ -104,8 +110,8 @@
 [[projects]]
   name = "github.com/stretchr/testify"
   packages = ["assert"]
-  revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
-  version = "v1.2.0"
+  revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
+  version = "v1.2.1"
 
 [[projects]]
   name = "github.com/urfave/cli"
@@ -120,7 +126,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "0ed95abb35c445290478a5348a7b38bb154135fd"
+  revision = "2fb46b16b8dda405028c50f7c7f0f9dd1fa6bfb1"
 
 [[projects]]
   branch = "master"
@@ -141,7 +147,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "ff2a66f350cefa5c93a634eadb5d25bb60c85a9c"
+  revision = "37707fdb30a5b38865cfb95e5aab41707daec7fd"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -166,6 +172,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "dd48a71cfd5292f26507d405996eb4ee06aea79c2308e6ee16e54fa6cd493832"
+  inputs-digest = "503ca2b65156ad338879d612768c325176abafb95f1d425bb9f6e01f5dcb1327"
   solver-name = "gps-cdcl"
   solver-version = 1
