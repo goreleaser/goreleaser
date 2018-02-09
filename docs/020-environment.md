@@ -15,7 +15,6 @@ Here is how to do it with Travis CI:
 Alternatively, you can provide the GitHub token in a file. GoReleaser will check `~/.config/goreleaser/github_token` by default, you can change that in
 the `.goreleaser.yml` file:
 
-
 ```yaml
 # .goreleaser.yml
 env_files:
