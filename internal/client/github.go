@@ -7,6 +7,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/google/go-github/github"
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/oauth2"
 )
@@ -39,6 +40,8 @@ func NewGitHub(ctx *context.Context) (Client, error) {
 
 func (c *githubClient) CreateFile(
 	ctx *context.Context,
+	commitAuthor config.CommitAuthor,
+	repo config.Repo,
 	content bytes.Buffer,
 	path string,
 ) (err error) {
