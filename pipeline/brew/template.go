@@ -58,7 +58,7 @@ const formulaTemplate = `class {{ .Name }} < Formula
 
   plist_options :startup => false
 
-  def plist; <<-EOS.undent
+  def plist; <<~EOS
     {{ .Plist }}
     EOS
   end
