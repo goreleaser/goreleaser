@@ -167,6 +167,95 @@ func Test_doRun(t *testing.T) {
 						Archive: config.Archive{
 							Format: "tar.gz",
 						},
+						Release: config.Release{
+							GitHub: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+						},
+					},
+					Publish: true,
+				},
+				&DummyClient{},
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
+				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+			},
+			true,
+		},
+		{
+			"no publish",
+			args{
+				&context.Context{
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.1",
+					},
+					Version:   "1.0.1",
+					Artifacts: artifact.New(),
+					Config: config.Project{
+						Builds: []config.Build{
+							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
+						},
+						Dist:        ".",
+						ProjectName: "run-pipe",
+						Archive: config.Archive{
+							Format: "tar.gz",
+						},
+						Release: config.Release{
+							GitHub: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+						},
+						Scoop: config.Scoop{
+							Bucket: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						},
+					},
+					Publish: false,
+				},
+				&DummyClient{},
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
+				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+			},
+			true,
+		},
+		{
+			"is draft",
+			args{
+				&context.Context{
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.1",
+					},
+					Version:   "1.0.1",
+					Artifacts: artifact.New(),
+					Config: config.Project{
+						Builds: []config.Build{
+							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
+						},
+						Dist:        ".",
+						ProjectName: "run-pipe",
+						Archive: config.Archive{
+							Format: "tar.gz",
+						},
+						Release: config.Release{
+							Draft: true,
+						},
+						Scoop: config.Scoop{
+							Bucket: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						},
 					},
 					Publish: true,
 				},
