@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
@@ -42,24 +41,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Scoop.CommitAuthor.Email = "goreleaser@carlosbecker.com"
 	}
 	return nil
-}
-
-func isScoopBuild(build config.Build) bool {
-	for _, ignore := range build.Ignore {
-		if ignore.Goos == "windows" {
-			return false
-		}
-	}
-	return contains(build.Goos, "darwin")
-}
-
-func contains(ss []string, s string) bool {
-	for _, zs := range ss {
-		if zs == s {
-			return true
-		}
-	}
-	return false
 }
 
 func doRun(ctx *context.Context, client client.Client) error {
