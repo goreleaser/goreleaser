@@ -11,8 +11,46 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestDescription(t *testing.T) {
+	assert.NotEmpty(t, Pipe{}.String())
+}
+
+func TestDefault(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+
+	var ctx = &context.Context{
+		Config: config.Project{
+			Builds: []config.Build{
+				{
+					Binary: "foo",
+					Goos:   []string{"linux", "darwin"},
+					Goarch: []string{"386", "amd64"},
+				},
+				{
+					Binary: "bar",
+					Goos:   []string{"linux", "darwin"},
+					Goarch: []string{"386", "amd64"},
+					Ignore: []config.IgnoredBuild{
+						{Goos: "darwin", Goarch: "amd64"},
+					},
+				},
+				{
+					Binary: "foobar",
+					Goos:   []string{"linux"},
+					Goarch: []string{"amd64"},
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Name)
+	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Email)
+}
 
 func Test_buildManifest(t *testing.T) {
 	type args struct {
