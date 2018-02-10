@@ -52,6 +52,148 @@ func TestDefault(t *testing.T) {
 	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Email)
 }
 
+func Test_doRun(t *testing.T) {
+	type args struct {
+		ctx    *context.Context
+		client client.Client
+	}
+	tests := []struct {
+		name      string
+		args      args
+		artifacts []artifact.Artifact
+		wantErr   bool
+	}{
+		{
+			"valid",
+			args{
+				&context.Context{
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.1",
+					},
+					Version:   "1.0.1",
+					Artifacts: artifact.New(),
+					Config: config.Project{
+						Builds: []config.Build{
+							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
+						},
+						Dist:        ".",
+						ProjectName: "run-pipe",
+						Archive: config.Archive{
+							Format: "tar.gz",
+						},
+						Release: config.Release{
+							GitHub: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+						},
+						Scoop: config.Scoop{
+							Bucket: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						},
+					},
+					Publish: true,
+				},
+				&DummyClient{},
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
+				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+			},
+			false,
+		},
+		{
+			"no windows build",
+			args{
+				&context.Context{
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.1",
+					},
+					Version:   "1.0.1",
+					Artifacts: artifact.New(),
+					Config: config.Project{
+						Builds: []config.Build{
+							{Binary: "test"},
+						},
+						Dist:        ".",
+						ProjectName: "run-pipe",
+						Archive: config.Archive{
+							Format: "tar.gz",
+						},
+						Release: config.Release{
+							GitHub: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+						},
+						Scoop: config.Scoop{
+							Bucket: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						},
+					},
+					Publish: true,
+				},
+				&DummyClient{},
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1_linux_amd64.tar.gz", Goos: "linux", Goarch: "amd64"},
+				{Name: "foo_1.0.1_linux_386.tar.gz", Goos: "linux", Goarch: "386"},
+			},
+			true,
+		},
+		{
+			"no scoop",
+			args{
+				&context.Context{
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.1",
+					},
+					Version:   "1.0.1",
+					Artifacts: artifact.New(),
+					Config: config.Project{
+						Builds: []config.Build{
+							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
+						},
+						Dist:        ".",
+						ProjectName: "run-pipe",
+						Archive: config.Archive{
+							Format: "tar.gz",
+						},
+					},
+					Publish: true,
+				},
+				&DummyClient{},
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
+				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+			},
+			true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, a := range tt.artifacts {
+				tt.args.ctx.Artifacts.Add(a)
+			}
+			err := doRun(tt.args.ctx, tt.args.client)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func Test_buildManifest(t *testing.T) {
 	type args struct {
 		ctx       *context.Context
