@@ -7,6 +7,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/google/go-github/github"
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"golang.org/x/oauth2"
 )
@@ -39,13 +40,15 @@ func NewGitHub(ctx *context.Context) (Client, error) {
 
 func (c *githubClient) CreateFile(
 	ctx *context.Context,
+	commitAuthor config.CommitAuthor,
+	repo config.Repo,
 	content bytes.Buffer,
 	path string,
 ) (err error) {
 	options := &github.RepositoryContentFileOptions{
 		Committer: &github.CommitAuthor{
-			Name:  github.String(ctx.Config.Brew.CommitAuthor.Name),
-			Email: github.String(ctx.Config.Brew.CommitAuthor.Email),
+			Name:  github.String(commitAuthor.Name),
+			Email: github.String(commitAuthor.Email),
 		},
 		Content: content.Bytes(),
 		Message: github.String(
@@ -55,16 +58,16 @@ func (c *githubClient) CreateFile(
 
 	file, _, res, err := c.client.Repositories.GetContents(
 		ctx,
-		ctx.Config.Brew.GitHub.Owner,
-		ctx.Config.Brew.GitHub.Name,
+		repo.Owner,
+		repo.Name,
 		path,
 		&github.RepositoryContentGetOptions{},
 	)
 	if err != nil && res.StatusCode == 404 {
 		_, _, err = c.client.Repositories.CreateFile(
 			ctx,
-			ctx.Config.Brew.GitHub.Owner,
-			ctx.Config.Brew.GitHub.Name,
+			repo.Owner,
+			repo.Name,
 			path,
 			options,
 		)
@@ -73,8 +76,8 @@ func (c *githubClient) CreateFile(
 	options.SHA = file.SHA
 	_, _, err = c.client.Repositories.UpdateFile(
 		ctx,
-		ctx.Config.Brew.GitHub.Owner,
-		ctx.Config.Brew.GitHub.Name,
+		repo.Owner,
+		repo.Name,
 		path,
 		options,
 	)
