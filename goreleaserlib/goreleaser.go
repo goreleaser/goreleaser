@@ -30,6 +30,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/release"
+	"github.com/goreleaser/goreleaser/pipeline/scoop"
 	"github.com/goreleaser/goreleaser/pipeline/sign"
 	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
 )
@@ -60,6 +61,7 @@ var pipes = []pipeline.Piper{
 	artifactory.Pipe{},     // push to artifactory
 	release.Pipe{},         // release to github
 	brew.Pipe{},            // push to brew tap
+	scoop.Pipe{},           // push to scoop bucket
 }
 
 // Flags interface represents an extractor of cli flags
