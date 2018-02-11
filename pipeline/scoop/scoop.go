@@ -101,6 +101,7 @@ type Resource struct {
 
 func buildManifest(ctx *context.Context, client client.Client, artifacts []artifact.Artifact) (result bytes.Buffer, err error) {
 	var githubURL = "https://github.com"
+	// TODO: Make this default global
 	if ctx.Config.GitHubURLs.Download != "" {
 		githubURL = ctx.Config.GitHubURLs.Download
 	}
