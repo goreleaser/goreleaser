@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/build"
 	"github.com/goreleaser/goreleaser/pipeline/checksums"
 	"github.com/goreleaser/goreleaser/pipeline/docker"
+	"github.com/goreleaser/goreleaser/pipeline/env"
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/release"
 	"github.com/goreleaser/goreleaser/pipeline/sign"
@@ -27,6 +28,7 @@ func (Pipe) String() string {
 }
 
 var defaulters = []pipeline.Defaulter{
+	env.Pipe{},
 	snapshot.Pipe{},
 	release.Pipe{},
 	archive.Pipe{},
