@@ -100,6 +100,7 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		Homepage:    ctx.Config.NFPM.Homepage,
 		License:     ctx.Config.NFPM.License,
 		Files:       ctx.Config.NFPM.Files,
+		Bindir:      ctx.Config.NFPM.Bindir,
 		// ConfigFiles: "",
 	}
 	for _, binary := range binaries {
