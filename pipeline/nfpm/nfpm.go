@@ -103,7 +103,10 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		// ConfigFiles: "",
 	}
 	for _, binary := range binaries {
-		info.Files[binary.Path] = filepath.Join(ctx.Config.NFPM.Bindir, binary.Name)
+		src := binary.Path
+		dst := filepath.Join(ctx.Config.NFPM.Bindir, binary.Name)
+		log.WithField("src", src).WithField("dst", dst).Info("adding binary to package")
+		info.Files[src] = dst
 	}
 
 	packager, err := nfpm.Get(format)

@@ -40,6 +40,7 @@ func TestRunPipe(t *testing.T) {
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPM: config.FPM{
+			Bindir:       "/usr/bin",
 			NameTemplate: defaultNameTemplate,
 			Formats:      []string{"deb", "rpm"},
 			Dependencies: []string{"make"},
