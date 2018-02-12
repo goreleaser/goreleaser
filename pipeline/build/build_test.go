@@ -165,6 +165,24 @@ func TestDefaultNoBuilds(t *testing.T) {
 	assert.NoError(t, Pipe{}.Default(ctx))
 }
 
+func TestDefaultExpandEnv(t *testing.T) {
+	assert.NoError(t, os.Setenv("BAR", "FOOBAR"))
+	var ctx = &context.Context{
+		Config: config.Project{
+			Builds: []config.Build{
+				{
+					Env: []string{
+						"FOO=bar_$BAR",
+					},
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	var env = ctx.Config.Builds[0].Env[0]
+	assert.Equal(t, "FOO=bar_FOOBAR", env)
+}
+
 func TestDefaultEmptyBuild(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{

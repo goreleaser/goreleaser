@@ -58,6 +58,9 @@ func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 	if build.Binary == "" {
 		build.Binary = ctx.Config.Release.GitHub.Name
 	}
+	for k, v := range build.Env {
+		build.Env[k] = os.ExpandEnv(v)
+	}
 	return builders.For(build.Lang).WithDefaults(build)
 }
 
