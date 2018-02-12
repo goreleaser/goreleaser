@@ -33,6 +33,13 @@ go get github.com/goreleaser/goreleaser
 brew install goreleaser/tap/goreleaser
 ```
 
+### Using Scoop
+
+```sh
+scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git;
+scoop install goreleaser
+```
+
 > Check the [tap source](https://github.com/goreleaser/homebrew-tap) for
 > more details.
 
