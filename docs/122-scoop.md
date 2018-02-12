@@ -3,9 +3,9 @@ title: Scoop
 ---
 
 After releasing to GitHub, GoReleaser can generate and publish a _Scoop App
-Manifest_ recipe into a repository that you have access to.
+Manifest_ into a repository that you have access to.
 
-The `scoop` section specifies how the formula should be created. You can check
+The `scoop` section specifies how the manifest should be created. You can check
 the [Scoop documentation](https://github.com/lukesampson/scoop/wiki) for more
 details.
 
