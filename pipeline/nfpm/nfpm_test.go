@@ -27,6 +27,29 @@ func TestRunPipeNoFormats(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
+func TestRunPipeInvalidFormat(t *testing.T) {
+	var ctx = context.New(config.Project{
+		NFPM: config.FPM{
+			Bindir:       "/usr/bin",
+			NameTemplate: defaultNameTemplate,
+			Formats:      []string{"nope"},
+			Files:        map[string]string{},
+		},
+	})
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386"} {
+			ctx.Artifacts.Add(artifact.Artifact{
+				Name:   "mybin",
+				Path:   "whatever",
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+			})
+		}
+	}
+	assert.Contains(t, Pipe{}.Run(ctx).Error(), `no packager registered for the format nope`)
+}
+
 func TestRunPipe(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
@@ -111,7 +134,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.Binary,
 	})
-	assert.Contains(t, Pipe{}.Run(ctx).Error(), `dist/mybin/mybin', does it exist?`)
+	assert.Contains(t, Pipe{}.Run(ctx).Error(), `dist/mybin/mybin: no such file or directory`)
 }
 
 func TestDefault(t *testing.T) {

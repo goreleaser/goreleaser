@@ -9,6 +9,10 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/nfpm"
+	"github.com/pkg/errors"
+
+	// blank imports here because the formats implementations need register
+	// themselves
 	_ "github.com/goreleaser/nfpm/deb"
 	_ "github.com/goreleaser/nfpm/rpm"
 
@@ -101,7 +105,7 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		License:     ctx.Config.NFPM.License,
 		Files:       ctx.Config.NFPM.Files,
 		Bindir:      ctx.Config.NFPM.Bindir,
-		// ConfigFiles: "",
+		// ConfigFiles: "" TODO: add this config_files to nfpm settings,
 	}
 	for _, binary := range binaries {
 		src := binary.Path
@@ -121,8 +125,8 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	if err != nil {
 		return err
 	}
-	if err := packager.Package(info, w); err != nil {
-		return err
+	if err := packager.Package(nfpm.WithDefaults(info), w); err != nil {
+		return errors.Wrap(err, "nfpm failed")
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type:   artifact.LinuxPackage,
