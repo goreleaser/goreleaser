@@ -11,6 +11,12 @@
   revision = "ff0f66940b829dc66c81dad34746d4349b83eb9e"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/blakesmith/ar"
+  packages = ["."]
+  revision = "8bd4349a67f2533b078dbc524689d15dba0f4659"
+
+[[projects]]
   name = "github.com/caarlos0/ctrlc"
   packages = ["."]
   revision = "70dc48d5d792f20f684a8f1d29bbac298f4b2ef4"
@@ -61,6 +67,16 @@
   ]
   revision = "a0333715c7d5ee99eac4c71f457155f2b0c0c4f8"
   version = "v1.0.3"
+
+[[projects]]
+  name = "github.com/goreleaser/nfpm"
+  packages = [
+    ".",
+    "deb",
+    "rpm"
+  ]
+  revision = "37a2dbf86bc30fce37fdb68fef410f267a15ee37"
+  version = "v0.1.0"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -172,6 +188,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "503ca2b65156ad338879d612768c325176abafb95f1d425bb9f6e01f5dcb1327"
+  inputs-digest = "058e44db1c18902aef5f8bb3890e5e43478a56a0fb7a02f0252ff6557b3109e6"
   solver-name = "gps-cdcl"
   solver-version = 1
