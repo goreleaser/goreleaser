@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/env"
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/release"
+	"github.com/goreleaser/goreleaser/pipeline/scoop"
 	"github.com/goreleaser/goreleaser/pipeline/sign"
 	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
 	"github.com/goreleaser/goreleaser/pipeline/snapshot"
@@ -40,6 +41,7 @@ var defaulters = []pipeline.Defaulter{
 	docker.Pipe{},
 	artifactory.Pipe{},
 	brew.Pipe{},
+	scoop.Pipe{},
 }
 
 // Run the pipe
