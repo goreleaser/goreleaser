@@ -36,7 +36,7 @@ brew install goreleaser/tap/goreleaser
 ### Using Scoop
 
 ```sh
-scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git;
+scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
 scoop install goreleaser
 ```
 
