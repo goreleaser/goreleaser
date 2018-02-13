@@ -220,7 +220,7 @@ func dockerBuild(ctx *context.Context, root, dockerfile, image string) error {
 	log.WithField("image", image).Info("building docker image")
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "docker", "build", "-f", dockerfile, "-t", image, root)
-	log.WithField("cmd", cmd.Args).Debug("executing docker")
+	log.WithField("cmd", cmd.Args).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return errors.Wrapf(err, "failed to build docker image: \n%s", string(out))
@@ -233,7 +233,7 @@ func dockerTag(ctx *context.Context, image, tag string) error {
 	log.WithField("image", image).WithField("tag", tag).Info("tagging docker image")
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "docker", "tag", image, tag)
-	log.WithField("cmd", cmd.Args).Debug("executing docker")
+	log.WithField("cmd", cmd.Args).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return errors.Wrapf(err, "failed to tag docker image: \n%s", string(out))
@@ -246,7 +246,7 @@ func dockerPush(ctx *context.Context, docker config.Docker, image string) error 
 	log.WithField("image", image).Info("pushing docker image")
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "docker", "push", image)
-	log.WithField("cmd", cmd.Args).Debug("executing docker")
+	log.WithField("cmd", cmd.Args).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return errors.Wrapf(err, "failed to push docker image: \n%s", string(out))
