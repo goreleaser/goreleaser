@@ -29,6 +29,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/env"
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
+	"github.com/goreleaser/goreleaser/pipeline/nfpm"
 	"github.com/goreleaser/goreleaser/pipeline/release"
 	"github.com/goreleaser/goreleaser/pipeline/scoop"
 	"github.com/goreleaser/goreleaser/pipeline/sign"
@@ -52,8 +53,9 @@ var pipes = []pipeline.Piper{
 	changelog.Pipe{},       // builds the release changelog
 	env.Pipe{},             // load and validate environment variables
 	build.Pipe{},           // build
-	archive.Pipe{},         // archive (tar.gz, zip, etc)
-	fpm.Pipe{},             // archive via fpm (deb, rpm, etc)
+	archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
+	fpm.Pipe{},             // archive via fpm (deb, rpm) using fpm
+	nfpm.Pipe{},            // archive via fpm (deb, rpm) using "native" go impl
 	snapcraft.Pipe{},       // archive via snapcraft (snap)
 	checksums.Pipe{},       // checksums of the files
 	sign.Pipe{},            // sign artifacts
