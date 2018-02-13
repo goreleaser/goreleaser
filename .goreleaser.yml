@@ -54,7 +54,7 @@ scoop:
   homepage:  https://goreleaser.com
   description: Deliver Go binaries as fast and easily as possible
   license: MIT
-fpm:
+nfpm:
   name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
   homepage:  https://goreleaser.com
   description: Deliver Go binaries as fast and easily as possible
