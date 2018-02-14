@@ -121,7 +121,6 @@ func doRun(ctx *context.Context) error {
 		switch v := strings.ToLower(instance.Mode); v {
 		case modeArchive:
 			err = runPipeByFilter(ctx, instance, artifact.ByType(artifact.UploadableArchive))
-
 		case modeBinary:
 			err = runPipeByFilter(ctx, instance, artifact.ByType(artifact.UploadableBinary))
 
