@@ -331,8 +331,9 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
-
-	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: Put http://localhost:1234/example-repo-local/goreleaser/2.0.0/bin.tar.gz: dial tcp 127.0.0.1:1234: getsockopt: connection refused`)
+	err = Pipe{}.Run(ctx)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), ":1234: getsockopt: connection refused")
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {
