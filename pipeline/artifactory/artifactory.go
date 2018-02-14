@@ -117,22 +117,25 @@ func doRun(ctx *context.Context) error {
 		// We support two different modes
 		//	- "archive": Upload all artifacts
 		//	- "binary": Upload only the raw binaries
-		var err error
+		var filter artifact.Filter
 		switch v := strings.ToLower(instance.Mode); v {
 		case modeArchive:
-			err = runPipeByFilter(ctx, instance, artifact.ByType(artifact.UploadableArchive))
+			filter = artifact.Or(
+				artifact.ByType(artifact.UploadableArchive),
+				artifact.ByType(artifact.LinuxPackage),
+			)
 		case modeBinary:
-			err = runPipeByFilter(ctx, instance, artifact.ByType(artifact.UploadableBinary))
-
+			filter = artifact.ByType(artifact.UploadableBinary)
 		default:
-			err = fmt.Errorf("artifactory: mode \"%s\" not supported", v)
+			err := fmt.Errorf("artifactory: mode \"%s\" not supported", v)
 			log.WithFields(log.Fields{
 				"instance": instance.Name,
 				"mode":     v,
 			}).Error(err.Error())
+			return err
 		}
 
-		if err != nil {
+		if err := runPipeByFilter(ctx, instance, filter); err != nil {
 			return err
 		}
 	}
