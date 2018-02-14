@@ -242,6 +242,8 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		Path: debfile.Name(),
 	})
 
+	var uploads = map[string]bool{}
+
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.tar.gz", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "PUT")
@@ -267,6 +269,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 			},
 			"uri" : "http://127.0.0.1:56563/example-repo-local/goreleaser/bin.tar.gz"
 		  }`)
+		uploads["targz"] = true
 	})
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.deb", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "PUT")
@@ -292,9 +295,12 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 			},
 			"uri" : "http://127.0.0.1:56563/example-repo-local/goreleaser/bin.deb"
 		  }`)
+		uploads["deb"] = true
 	})
 
 	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.True(t, uploads["targz"], "tar.gz file was not uploaded")
+	assert.True(t, uploads["deb"], "deb file was not uploaded")
 }
 
 func TestRunPipe_ArtifactoryDown(t *testing.T) {
