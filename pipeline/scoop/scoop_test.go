@@ -2,7 +2,7 @@ package scoop
 
 import (
 	"bytes"
-	"encoding/json"
+	"flag"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -14,6 +14,8 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
+
+var update = flag.Bool("update", false, "update .golden files")
 
 func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.String())
@@ -368,95 +370,53 @@ func Test_doRun(t *testing.T) {
 }
 
 func Test_buildManifest(t *testing.T) {
-	type args struct {
-		ctx       *context.Context
-		client    client.Client
-		artifacts []artifact.Artifact
-	}
-	tests := []struct {
-		name       string
-		args       args
-		wantResult Manifest
-		wantErr    bool
-	}{
-		{
-			"simple",
-			args{
-				&context.Context{
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
-					Config: config.Project{
-						GitHubURLs: config.GitHubURLs{
-							Download: "https://github.com",
-						},
-						Builds: []config.Build{
-							{Binary: "test"},
-						},
-						Dist:        ".",
-						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
-						},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
-						Scoop: config.Scoop{
-							Bucket: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
-						},
-					},
-					Publish: true,
-				},
-				&DummyClient{},
-				[]artifact.Artifact{
-					{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
-					{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
-				},
-			},
-			Manifest{
-				Version: "1.0.1",
-				Architecture: map[string]Resource{
-					"64bit": {
-						URL: "https://github.com/test/test/releases/download/1.0.1/foo_1.0.1_windows_amd64.tar.gz",
-						Bin: "test.exe",
-					},
-					"32bit": {
-						URL: "https://github.com/test/test/releases/download/1.0.1/foo_1.0.1_windows_386.tar.gz",
-						Bin: "test.exe",
-					},
-				},
-				Homepage:    "https://github.com/goreleaser",
-				Description: "A run pipe test formula",
-			},
-			false,
+	var ctx = &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.0.1",
 		},
+		Version:   "1.0.1",
+		Artifacts: artifact.New(),
+		Config: config.Project{
+			GitHubURLs: config.GitHubURLs{
+				Download: "https://github.com",
+			},
+			Builds: []config.Build{
+				{Binary: "test"},
+			},
+			Dist:        ".",
+			ProjectName: "run-pipe",
+			Archive: config.Archive{
+				Format: "tar.gz",
+			},
+			Release: config.Release{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+			Scoop: config.Scoop{
+				Bucket: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+				Description: "A run pipe test formula",
+				Homepage:    "https://github.com/goreleaser",
+			},
+		},
+		Publish: true,
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotResult, err := buildManifest(tt.args.ctx, tt.args.client, tt.args.artifacts)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-			var gotResultAsObject Manifest
-			err = json.Unmarshal(gotResult.Bytes(), &gotResultAsObject)
-			if err != nil {
-				t.Error(err)
-			}
-			assert.Equal(t, tt.wantResult, gotResultAsObject)
-		})
+	out, err := buildManifest(ctx, &DummyClient{}, []artifact.Artifact{
+		{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
+		{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+	})
+	assert.NoError(t, err)
+	var golden = "testdata/test_buildmanifest.json.golden"
+	if *update {
+		ioutil.WriteFile(golden, out.Bytes(), 0655)
 	}
+	bts, err := ioutil.ReadFile(golden)
+	assert.NoError(t, err)
+	assert.Equal(t, string(bts), out.String())
 }
 
 func Test_getDownloadURL(t *testing.T) {
