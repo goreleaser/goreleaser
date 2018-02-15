@@ -156,6 +156,9 @@ func InitProject(filename string) error {
 
 	var ctx = context.New(config.Project{})
 	var pipe = defaults.Pipe{}
+	defer restoreOutputPadding()
+	log.Infof(color.New(color.Bold).Sprint(strings.ToUpper(pipe.String())))
+	cli.Default.Padding = increasedPadding
 	if err := pipe.Run(ctx); err != nil {
 		return err
 	}
