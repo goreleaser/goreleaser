@@ -52,14 +52,23 @@ func TestBuild(t *testing.T) {
 		Builds: []config.Build{
 			{
 				Lang:   "fake",
-				Binary: "testing",
+				Binary: "testing.v{{.Version}}",
 				Flags:  "-n",
 				Env:    []string{"BLAH=1"},
 			},
 		},
 	}
-	var ctx = context.New(config)
-	assert.NoError(t, doBuild(ctx, ctx.Config.Builds[0], "darwin_amd64"))
+	var ctx = &context.Context{
+		Artifacts: artifact.New(),
+		Git: context.GitInfo{
+			CurrentTag: "v1.2.3",
+			Commit:     "123",
+		},
+		Version: "1.2.3",
+		Config:  config,
+	}
+	error := doBuild(ctx, ctx.Config.Builds[0], "darwin_amd64")
+	assert.NoError(t, error)
 }
 
 func TestRunPipe(t *testing.T) {
@@ -274,6 +283,33 @@ func TestExtOthers(t *testing.T) {
 	assert.Empty(t, "", extFor("linux_amd64"))
 	assert.Empty(t, "", extFor("linuxwin_386"))
 	assert.Empty(t, "", extFor("winasdasd_sad"))
+}
+
+func TestBinaryFullTemplate(t *testing.T) {
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				Binary: `-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}"`,
+			},
+		},
+	}
+	var ctx = &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.2.3",
+			Commit:     "123",
+		},
+		Version: "1.2.3",
+		Config:  config,
+		Env:     map[string]string{"FOO": "123"},
+	}
+	binary, err := binary(ctx, ctx.Config.Builds[0])
+	assert.NoError(t, err)
+	assert.Contains(t, binary, "-s -w")
+	assert.Contains(t, binary, "-X main.version=1.2.3")
+	assert.Contains(t, binary, "-X main.tag=v1.2.3")
+	assert.Contains(t, binary, "-X main.commit=123")
+	assert.Contains(t, binary, "-X main.date=")
+	assert.Contains(t, binary, `-X "main.foo=123"`)
 }
 
 //
