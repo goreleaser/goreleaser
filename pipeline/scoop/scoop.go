@@ -111,12 +111,12 @@ func buildManifest(ctx *context.Context, client client.Client, artifacts []artif
 	for _, artifact := range artifacts {
 		if artifact.Goarch == "amd64" {
 			manifest.Architecture["64bit"] = Resource{
-				URL: getDownloadURL(ctx, githubURL, artifact.Name),
+				URL: getDownloadURL(ctx, ctx.Config.GitHubURLs.Download, artifact.Name),
 				Bin: ctx.Config.Builds[0].Binary + ".exe",
 			}
 		} else if artifact.Goarch == "386" {
 			manifest.Architecture["32bit"] = Resource{
-				URL: getDownloadURL(ctx, githubURL, artifact.Name),
+				URL: getDownloadURL(ctx, ctx.Config.GitHubURLs.Download, artifact.Name),
 				Bin: ctx.Config.Builds[0].Binary + ".exe",
 			}
 		}
