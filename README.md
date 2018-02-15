@@ -26,6 +26,9 @@ We appreciate your contribution. Please refer to our [contributing guidelines](C
 
 For questions join the [#goreleaser](https://gophers.slack.com/messages/goreleaser/) channel in the [Gophers Slack](https://invite.slack.golangbridge.org/).
 
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgoreleaser%2Fgoreleaser.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgoreleaser%2Fgoreleaser?ref=badge_large)
+
 ## Documentation
 
 Documentation can be found in the [docs folder](docs) and live
@@ -84,6 +87,7 @@ This project exists thanks to all the people who contribute. [[Contribute](CONTR
 ## Stargazers over time
 
 [![goreleaser/goreleaser stargazers over time](https://starcharts.herokuapp.com/goreleaser/goreleaser.svg)](https://starcharts.herokuapp.com/goreleaser/goreleaser)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fgoreleaser%2Fgoreleaser.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fgoreleaser%2Fgoreleaser?ref=badge_shield)
 
 ---
 
