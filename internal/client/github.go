@@ -63,7 +63,11 @@ func (c *githubClient) CreateFile(
 		path,
 		&github.RepositoryContentGetOptions{},
 	)
-	if err != nil && res.StatusCode == 404 {
+	if err != nil && res.StatusCode != 404 {
+		return
+	}
+
+	if res.StatusCode == 404 {
 		_, _, err = c.client.Repositories.CreateFile(
 			ctx,
 			repo.Owner,
@@ -71,16 +75,16 @@ func (c *githubClient) CreateFile(
 			path,
 			options,
 		)
-		return
+	} else {
+		options.SHA = file.SHA
+		_, _, err = c.client.Repositories.UpdateFile(
+			ctx,
+			repo.Owner,
+			repo.Name,
+			path,
+			options,
+		)
 	}
-	options.SHA = file.SHA
-	_, _, err = c.client.Repositories.UpdateFile(
-		ctx,
-		repo.Owner,
-		repo.Name,
-		path,
-		options,
-	)
 	return
 }
 
