@@ -389,6 +389,9 @@ func Test_buildManifest(t *testing.T) {
 					Version:   "1.0.1",
 					Artifacts: artifact.New(),
 					Config: config.Project{
+						GitHubURLs: config.GitHubURLs{
+							Download: "https://github.com",
+						},
 						Builds: []config.Build{
 							{Binary: "test"},
 						},

@@ -158,14 +158,10 @@ func dataFor(ctx *context.Context, client client.Client, artifact artifact.Artif
 	if err != nil {
 		return
 	}
-	var url = "https://github.com"
-	if ctx.Config.GitHubURLs.Download != "" {
-		url = ctx.Config.GitHubURLs.Download
-	}
 	var cfg = ctx.Config.Brew
 	return templateData{
 		Name:             formulaNameFor(ctx.Config.ProjectName),
-		DownloadURL:      url,
+		DownloadURL:      ctx.Config.GitHubURLs.Download,
 		Desc:             cfg.Description,
 		Homepage:         cfg.Homepage,
 		Repo:             ctx.Config.Release.GitHub,

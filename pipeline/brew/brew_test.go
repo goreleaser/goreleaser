@@ -148,6 +148,7 @@ func TestRunPipe(t *testing.T) {
 	var distFile = filepath.Join(folder, "run-pipe.rb")
 
 	t.Run("default git url", func(tt *testing.T) {
+		ctx.Config.GitHubURLs.Download = "https://github.com"
 		assert.NoError(tt, doRun(ctx, client))
 		assert.True(tt, client.CreatedFile)
 		var golden = "testdata/run_pipe.rb.golden"

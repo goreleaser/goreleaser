@@ -58,5 +58,8 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.ProjectName == "" {
 		ctx.Config.ProjectName = ctx.Config.Release.GitHub.Name
 	}
+	if ctx.Config.GitHubURLs.Download == "" {
+		ctx.Config.GitHubURLs.Download = "https://github.com"
+	}
 	return nil
 }
