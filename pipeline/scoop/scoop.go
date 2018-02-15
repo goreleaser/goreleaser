@@ -80,7 +80,8 @@ func doRun(ctx *context.Context, client client.Client) error {
 		ctx.Config.Scoop.CommitAuthor,
 		ctx.Config.Scoop.Bucket,
 		content,
-		path)
+		path,
+	)
 }
 
 // Manifest represents a scoop.sh App Manifest, more info:
@@ -109,16 +110,13 @@ func buildManifest(ctx *context.Context, client client.Client, artifacts []artif
 	}
 
 	for _, artifact := range artifacts {
-		if artifact.Goarch == "amd64" {
-			manifest.Architecture["64bit"] = Resource{
-				URL: getDownloadURL(ctx, ctx.Config.GitHubURLs.Download, artifact.Name),
-				Bin: ctx.Config.Builds[0].Binary + ".exe",
-			}
-		} else if artifact.Goarch == "386" {
-			manifest.Architecture["32bit"] = Resource{
-				URL: getDownloadURL(ctx, ctx.Config.GitHubURLs.Download, artifact.Name),
-				Bin: ctx.Config.Builds[0].Binary + ".exe",
-			}
+		var arch = "64bit"
+		if artifact.Goarch == "386" {
+			arch = "32bit"
+		}
+		manifest.Architecture[arch] = Resource{
+			URL: getDownloadURL(ctx, ctx.Config.GitHubURLs.Download, artifact.Name),
+			Bin: ctx.Config.Builds[0].Binary + ".exe",
 		}
 	}
 
@@ -127,15 +125,16 @@ func buildManifest(ctx *context.Context, client client.Client, artifacts []artif
 		return
 	}
 	_, err = result.Write(data)
-
 	return
 }
 
-func getDownloadURL(ctx *context.Context, githubURL, file string) (url string) {
-	return fmt.Sprintf("%s/%s/%s/releases/download/%s/%s",
+func getDownloadURL(ctx *context.Context, githubURL, file string) string {
+	return fmt.Sprintf(
+		"%s/%s/%s/releases/download/%s/%s",
 		githubURL,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
 		ctx.Version,
-		file)
+		file,
+	)
 }
