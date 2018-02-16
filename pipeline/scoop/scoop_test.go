@@ -55,15 +55,25 @@ func TestDefault(t *testing.T) {
 }
 
 func Test_doRun(t *testing.T) {
+	type errChecker func(*testing.T, error)
+	var shouldErr = func(msg string) errChecker {
+		return func(t *testing.T, err error) {
+			assert.Error(t, err)
+			assert.EqualError(t, err, msg)
+		}
+	}
+	var shouldNotErr = func(t *testing.T, err error) {
+		assert.NoError(t, err)
+	}
 	type args struct {
 		ctx    *context.Context
 		client client.Client
 	}
 	tests := []struct {
-		name      string
-		args      args
-		artifacts []artifact.Artifact
-		wantErr   bool
+		name        string
+		args        args
+		artifacts   []artifact.Artifact
+		assertError errChecker
 	}{
 		{
 			"valid",
@@ -106,7 +116,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
-			false,
+			shouldNotErr,
 		},
 		{
 			"valid",
@@ -150,7 +160,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
-			false,
+			shouldNotErr,
 		},
 		{
 			"no windows build",
@@ -193,7 +203,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_linux_amd64.tar.gz", Goos: "linux", Goarch: "amd64"},
 				{Name: "foo_1.0.1_linux_386.tar.gz", Goos: "linux", Goarch: "386"},
 			},
-			true,
+			shouldErr("scoop requires a windows build"),
 		},
 		{
 			"no scoop",
@@ -228,7 +238,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
-			true,
+			shouldErr("scoop section is not configured"),
 		},
 		{
 			"no publish",
@@ -271,7 +281,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
-			true,
+			shouldErr("--skip-publish is set"),
 		},
 		{
 			"is draft",
@@ -311,7 +321,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
-			true,
+			shouldErr("release is marked as draft"),
 		},
 		{
 			"no archive",
@@ -351,7 +361,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
-			true,
+			shouldErr("archive format is binary"),
 		},
 	}
 	for _, tt := range tests {
@@ -359,12 +369,7 @@ func Test_doRun(t *testing.T) {
 			for _, a := range tt.artifacts {
 				tt.args.ctx.Artifacts.Add(a)
 			}
-			err := doRun(tt.args.ctx, tt.args.client)
-			if tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
+			tt.assertError(t, doRun(tt.args.ctx, tt.args.client))
 		})
 	}
 }

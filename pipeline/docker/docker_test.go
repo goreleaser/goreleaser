@@ -49,11 +49,22 @@ func killAndRm(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
+	type errChecker func(*testing.T, error)
+	var shouldErr = func(msg string) errChecker {
+		return func(t *testing.T, err error) {
+			assert.Error(t, err)
+			assert.Contains(t, err.Error(), msg)
+		}
+	}
+	var shouldNotErr = func(t *testing.T, err error) {
+		assert.NoError(t, err)
+	}
+
 	var table = map[string]struct {
-		docker  config.Docker
-		publish bool
-		expect  []string
-		err     string
+		docker      config.Docker
+		publish     bool
+		expect      []string
+		assertError errChecker
 	}{
 		"valid": {
 			publish: true,
@@ -79,7 +90,7 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/test_run_pipe:v1.0",
 				registry + "goreleaser/test_run_pipe:latest",
 			},
-			err: "",
+			assertError: shouldNotErr,
 		},
 		"valid_no_latest": {
 			publish: true,
@@ -99,7 +110,7 @@ func TestRunPipe(t *testing.T) {
 			expect: []string{
 				registry + "goreleaser/test_run_pipe:1.0.0",
 			},
-			err: "",
+			assertError: shouldNotErr,
 		},
 		"valid_dont_publish": {
 			publish: false,
@@ -121,7 +132,7 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/test_run_pipe:v1.0.0-123",
 				registry + "goreleaser/test_run_pipe:latest",
 			},
-			err: "",
+			assertError: shouldNotErr,
 		},
 		"bad_dockerfile": {
 			publish: true,
@@ -135,7 +146,7 @@ func TestRunPipe(t *testing.T) {
 					"{{.Version}}",
 				},
 			},
-			err: "pull access denied for nope, repository does not exist",
+			assertError: shouldErr("pull access denied for nope, repository does not exist"),
 		},
 		"template_error": {
 			publish: true,
@@ -149,7 +160,7 @@ func TestRunPipe(t *testing.T) {
 					"{{.Tag}",
 				},
 			},
-			err: `template: tag:1: unexpected "}" in operand`,
+			assertError: shouldErr(`template: tag:1: unexpected "}" in operand`),
 		},
 		"missing_env_on_template": {
 			publish: true,
@@ -163,7 +174,7 @@ func TestRunPipe(t *testing.T) {
 					"{{.Env.NOPE}}",
 				},
 			},
-			err: `template: tag:1:6: executing "tag" at <.Env.NOPE>: map has no entry for key "NOPE"`,
+			assertError: shouldErr(`template: tag:1:6: executing "tag" at <.Env.NOPE>: map has no entry for key "NOPE"`),
 		},
 		"no_permissions": {
 			publish: true,
@@ -183,7 +194,7 @@ func TestRunPipe(t *testing.T) {
 				"docker.io/nope:latest",
 				"docker.io/nope:v1.0.0",
 			},
-			err: `requested access to the resource is denied`,
+			assertError: shouldErr(`requested access to the resource is denied`),
 		},
 		"dockerfile_doesnt_exist": {
 			publish: true,
@@ -197,7 +208,7 @@ func TestRunPipe(t *testing.T) {
 					"{{.Tag}}",
 				},
 			},
-			err: `failed to link dockerfile`,
+			assertError: shouldErr(`failed to link dockerfile`),
 		},
 		"extra_file_doesnt_exist": {
 			publish: true,
@@ -214,7 +225,7 @@ func TestRunPipe(t *testing.T) {
 					"{{.Tag}}",
 				},
 			},
-			err: `failed to link extra file 'testdata/nope.txt'`,
+			assertError: shouldErr(`failed to link extra file 'testdata/nope.txt'`),
 		},
 		"no_matching_binaries": {
 			publish: true,
@@ -225,7 +236,7 @@ func TestRunPipe(t *testing.T) {
 				Binary:     "mybinnnn",
 				Dockerfile: "testdata/Dockerfile",
 			},
-			err: "",
+			assertError: shouldNotErr,
 		},
 	}
 
@@ -279,15 +290,7 @@ func TestRunPipe(t *testing.T) {
 				_ = exec.Command("docker", "rmi", img).Run()
 			}
 
-			err = Pipe{}.Run(ctx)
-			if docker.err == "" {
-				assert.NoError(tt, err)
-			} else {
-				assert.Error(tt, err)
-				if err != nil {
-					assert.Contains(tt, err.Error(), docker.err)
-				}
-			}
+			docker.assertError(t, Pipe{}.Run(ctx))
 
 			// this might should not fail as the image should have been created when
 			// the step ran

@@ -44,7 +44,7 @@ func (c *githubClient) CreateFile(
 	repo config.Repo,
 	content bytes.Buffer,
 	path string,
-) (err error) {
+) error {
 	options := &github.RepositoryContentFileOptions{
 		Committer: &github.CommitAuthor{
 			Name:  github.String(commitAuthor.Name),
@@ -64,7 +64,7 @@ func (c *githubClient) CreateFile(
 		&github.RepositoryContentGetOptions{},
 	)
 	if err != nil && res.StatusCode != 404 {
-		return
+		return err
 	}
 
 	if res.StatusCode == 404 {
@@ -75,20 +75,20 @@ func (c *githubClient) CreateFile(
 			path,
 			options,
 		)
-	} else {
-		options.SHA = file.SHA
-		_, _, err = c.client.Repositories.UpdateFile(
-			ctx,
-			repo.Owner,
-			repo.Name,
-			path,
-			options,
-		)
+		return err
 	}
-	return
+	options.SHA = file.SHA
+	_, _, err = c.client.Repositories.UpdateFile(
+		ctx,
+		repo.Owner,
+		repo.Name,
+		path,
+		options,
+	)
+	return err
 }
 
-func (c *githubClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
+func (c *githubClient) CreateRelease(ctx *context.Context, body string) (int64, error) {
 	var release *github.RepositoryRelease
 	title, err := releaseTitle(ctx)
 	if err != nil {
@@ -132,8 +132,8 @@ func (c *githubClient) Upload(
 	releaseID int64,
 	name string,
 	file *os.File,
-) (err error) {
-	_, _, err = c.client.Repositories.UploadReleaseAsset(
+) error {
+	_, _, err := c.client.Repositories.UploadReleaseAsset(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
@@ -143,5 +143,5 @@ func (c *githubClient) Upload(
 		},
 		file,
 	)
-	return
+	return err
 }
