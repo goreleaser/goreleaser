@@ -37,8 +37,8 @@
 [[projects]]
   name = "github.com/fatih/color"
   packages = ["."]
-  revision = "570b54cabe6b8eb0bc2dfce68d964677d63b5260"
-  version = "v1.5.0"
+  revision = "507f6050b8568533fb3f5504de8e5205fa62a114"
+  version = "v1.6.0"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -75,8 +75,8 @@
     "deb",
     "rpm"
   ]
-  revision = "37a2dbf86bc30fce37fdb68fef410f267a15ee37"
-  version = "v0.1.0"
+  revision = "4b73ac9428cd413b36fd962aa4fd9faf7ad9f179"
+  version = "v0.2.0"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -142,7 +142,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "f5dfe339be1d06f81b22525fe34671ee7d2c8904"
+  revision = "dc948dff8834a7fe1ca525f8d04e261c2b56e70d"
 
 [[projects]]
   branch = "master"
@@ -188,6 +188,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "058e44db1c18902aef5f8bb3890e5e43478a56a0fb7a02f0252ff6557b3109e6"
+  inputs-digest = "5bfb7f4991e958fe8f53a9dd255326b0010940d2c245227b28f37a9883696dfe"
   solver-name = "gps-cdcl"
   solver-version = 1
