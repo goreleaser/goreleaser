@@ -47,6 +47,10 @@ func testHeader(t *testing.T, r *http.Request, header string, want string) {
 	}
 }
 
+// TODO: improve all tests bellow by checking wether the mocked handlers
+// were called or not.
+
+
 func TestRunPipe_ModeBinary(t *testing.T) {
 	setup()
 	defer teardown()
@@ -242,6 +246,8 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		Path: debfile.Name(),
 	})
 
+	var uploads = map[string]bool{}
+
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.tar.gz", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "PUT")
@@ -267,6 +273,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 			},
 			"uri" : "http://127.0.0.1:56563/example-repo-local/goreleaser/bin.tar.gz"
 		  }`)
+		uploads["targz"] = true
 	})
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.deb", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "PUT")
@@ -292,9 +299,12 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 			},
 			"uri" : "http://127.0.0.1:56563/example-repo-local/goreleaser/bin.deb"
 		  }`)
+		uploads["deb"] = true
 	})
 
 	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.True(t, uploads["targz"], "tar.gz file was not uploaded")
+	assert.True(t, uploads["deb"], "deb file was not uploaded")
 }
 
 func TestRunPipe_ArtifactoryDown(t *testing.T) {
@@ -325,8 +335,9 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
-
-	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: Put http://localhost:1234/example-repo-local/goreleaser/2.0.0/bin.tar.gz: dial tcp 127.0.0.1:1234: getsockopt: connection refused`)
+	err = Pipe{}.Run(ctx)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), ":1234: getsockopt: connection refused")
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {

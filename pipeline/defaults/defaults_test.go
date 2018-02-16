@@ -36,6 +36,7 @@ func TestFillBasicData(t *testing.T) {
 	assert.Equal(t, "tar.gz", ctx.Config.Archive.Format)
 	assert.Contains(t, ctx.Config.Brew.Install, "bin.install \"goreleaser\"")
 	assert.Empty(t, ctx.Config.Dockers)
+	assert.Equal(t, "https://github.com", ctx.Config.GitHubURLs.Download)
 	assert.NotEmpty(
 		t,
 		ctx.Config.Archive.NameTemplate,
@@ -53,6 +54,9 @@ func TestFillPartial(t *testing.T) {
 
 	var ctx = &context.Context{
 		Config: config.Project{
+			GitHubURLs: config.GitHubURLs{
+				Download: "https://github.company.com",
+			},
 			Dist: "disttt",
 			Release: config.Release{
 				GitHub: config.Repo{
@@ -89,4 +93,5 @@ func TestFillPartial(t *testing.T) {
 	assert.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)
 	assert.Empty(t, ctx.Config.Dockers[0].Goarm)
 	assert.Equal(t, "disttt", ctx.Config.Dist)
+	assert.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
 }
