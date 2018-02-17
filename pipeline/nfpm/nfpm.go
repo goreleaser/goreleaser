@@ -56,15 +56,14 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context) error {
+	var linuxBinaries = ctx.Artifacts.Filter(artifact.And(
+		artifact.ByType(artifact.Binary),
+		artifact.ByGoos("linux"),
+	)).GroupByPlatform()
 	var g errgroup.Group
 	sem := make(chan bool, ctx.Parallelism)
 	for _, format := range ctx.Config.NFPM.Formats {
-		for platform, artifacts := range ctx.Artifacts.Filter(
-			artifact.And(
-				artifact.ByType(artifact.Binary),
-				artifact.ByGoos("linux"),
-			),
-		).GroupByPlatform() {
+		for platform, artifacts := range linuxBinaries {
 			sem <- true
 			format := format
 			arch := linux.Arch(platform)
@@ -107,6 +106,8 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		Bindir:      ctx.Config.NFPM.Bindir,
 		// ConfigFiles: "" TODO: add this config_files to nfpm settings,
 	}
+
+	var log = log.WithField("package", name+"."+format)
 	for _, binary := range binaries {
 		src := binary.Path
 		dst := filepath.Join(ctx.Config.NFPM.Bindir, binary.Name)
@@ -125,8 +126,12 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	if err != nil {
 		return err
 	}
+	defer w.Close() // nolint: errcheck
 	if err := packager.Package(nfpm.WithDefaults(info), w); err != nil {
 		return errors.Wrap(err, "nfpm failed")
+	}
+	if err := w.Close(); err != nil {
+		return errors.Wrap(err, "could not close package file")
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type:   artifact.LinuxPackage,
