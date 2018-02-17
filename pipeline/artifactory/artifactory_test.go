@@ -50,7 +50,6 @@ func testHeader(t *testing.T, r *http.Request, header string, want string) {
 // TODO: improve all tests bellow by checking wether the mocked handlers
 // were called or not.
 
-
 func TestRunPipe_ModeBinary(t *testing.T) {
 	setup()
 	defer teardown()
@@ -337,7 +336,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	})
 	err = Pipe{}.Run(ctx)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), ":1234: getsockopt: connection refused")
+	assert.Contains(t, err.Error(), "connection refused")
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {
