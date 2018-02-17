@@ -87,6 +87,18 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	if err != nil {
 		return err
 	}
+	var files = map[string]string{}
+	for k, v := range ctx.Config.NFPM.Files {
+		files[k] = v
+	}
+	var log = log.WithField("package", name+"."+format)
+	for _, binary := range binaries {
+		src := binary.Path
+		dst := filepath.Join(ctx.Config.NFPM.Bindir, binary.Name)
+		log.WithField("src", src).WithField("dst", dst).Debug("adding binary to package")
+		files[src] = dst
+	}
+	log.WithField("files", files).Debug("all archive files")
 
 	var info = nfpm.Info{
 		Arch:        arch,
@@ -102,17 +114,9 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		Vendor:      ctx.Config.NFPM.Vendor,
 		Homepage:    ctx.Config.NFPM.Homepage,
 		License:     ctx.Config.NFPM.License,
-		Files:       ctx.Config.NFPM.Files,
 		Bindir:      ctx.Config.NFPM.Bindir,
+		Files:       files,
 		// ConfigFiles: "" TODO: add this config_files to nfpm settings,
-	}
-
-	var log = log.WithField("package", name+"."+format)
-	for _, binary := range binaries {
-		src := binary.Path
-		dst := filepath.Join(ctx.Config.NFPM.Bindir, binary.Name)
-		log.WithField("src", src).WithField("dst", dst).Info("adding binary to package")
-		info.Files[src] = dst
 	}
 
 	packager, err := nfpm.Get(format)
