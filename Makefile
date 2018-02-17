@@ -9,7 +9,7 @@ setup:
 	go get -u github.com/golang/dep/cmd/dep
 	go get -u github.com/pierrre/gotestcover
 	go get -u golang.org/x/tools/cmd/cover
-	go get -u github.com/apex/static/cmd/static-docs
+	go get -u github.com/caarlos0/static/cmd/static-docs
 	go get -u github.com/caarlos0/bandep
 	dep ensure
 	gometalinter --install
@@ -60,6 +60,7 @@ static:
 	@git clone https://github.com/goreleaser/goreleaser.github.io.git dist/goreleaser.github.io
 	@rm -rf dist/goreleaser.github.io/theme
 	@static-docs \
+		--syntax dracula \
 		--in docs \
 		--out dist/goreleaser.github.io \
 		--title GoReleaser \
