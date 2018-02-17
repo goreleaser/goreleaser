@@ -4,7 +4,53 @@ title: Deprecation notices
 
 This page will be used to list deprecation notices accross GoReleaser.
 
+<!--
+
+Template for new deprecations:
+
+## property
+
+> since yyyy-mm-dd
+
+Description.
+
+Change this:
+
+```yaml
+```
+
+to this:
+
+```yaml
+```
+
+ -->
+
+## fpm
+
+> since 2018-02-17
+
+FPM is deprecated in favor of nfpm.
+
+Just replace the `fpm` keyword by `nfpm` in your `goreleaser.yaml` file.
+
+Change this:
+
+```yaml
+fpm:
+  # ...
+```
+
+to this:
+
+```yaml
+nfpm:
+  # ...
+```
+
 ## docker.name_template
+
+> since 2018-01-19
 
 This property was deprecated in favor of the pluralized `name_templates`.
 
@@ -27,6 +73,8 @@ dockers:
 
 ## docker.latest
 
+> since 2018-01-19
+
 The `latest` field in Docker config is deprecated in favor of the newer
 `tag_templates` field.
 
@@ -46,24 +94,4 @@ dockers:
   tag_templates:
     - '{{ .Tag }}'
     - latest
-```
-
-## fpm
-
-FPM is deprecated in favor of nfpm.
-
-Just replace the `fpm` keyword by `nfpm` in your `goreleaser.yaml` file.
-
-Change this:
-
-```yaml
-fpm:
-  # ...
-```
-
-to this:
-
-```yaml
-nfpm:
-  # ...
 ```

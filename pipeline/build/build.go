@@ -17,10 +17,11 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 
 	// langs to init
-	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
-	"time"
 	"bytes"
 	"text/template"
+	"time"
+
+	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
 )
 
 // Pipe for build
