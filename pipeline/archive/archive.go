@@ -51,10 +51,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 	}
 	if archive.NameTemplate == "" {
+		archive.NameTemplate = defaultNameTemplate
 		if archive.Format == "binary" {
 			archive.NameTemplate = defaultBinaryNameTemplate
-		} else {
-			archive.NameTemplate = defaultNameTemplate
 		}
 	}
 	return nil

@@ -128,10 +128,10 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		Architectures: []string{arch},
 		Apps:          make(map[string]AppMetadata),
 	}
+
+	metadata.Name = ctx.Config.ProjectName
 	if ctx.Config.Snapcraft.Name != "" {
 		metadata.Name = ctx.Config.Snapcraft.Name
-	} else {
-		metadata.Name = ctx.Config.ProjectName
 	}
 
 	for _, binary := range binaries {
