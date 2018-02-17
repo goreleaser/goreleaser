@@ -3,10 +3,13 @@
 package build
 
 import (
+	"bytes"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"text/template"
+	"time"
 
 	"github.com/apex/log"
 	"github.com/pkg/errors"
@@ -18,9 +21,6 @@ import (
 
 	// langs to init
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
-	"time"
-	"bytes"
-	"text/template"
 )
 
 // Pipe for build

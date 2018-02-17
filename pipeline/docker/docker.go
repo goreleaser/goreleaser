@@ -11,8 +11,6 @@ import (
 	"text/template"
 
 	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
-	"github.com/fatih/color"
 	"github.com/masterminds/semver"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
@@ -20,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -33,20 +32,12 @@ func (Pipe) String() string {
 	return "creating Docker images"
 }
 
-func deprecateWarn(format string, a ...interface{}) {
-	cli.Default.Padding *= 2
-	defer func() {
-		cli.Default.Padding /= 2
-	}()
-	log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(format, a...))
-}
-
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Dockers {
 		var docker = &ctx.Config.Dockers[i]
 		if docker.OldTagTemplate != "" {
-			deprecateWarn("`dockers[%d].tag_template` is deprecated. Please consider using `dockers[%d].tag_templates` instead", i, i)
+			deprecate.Notice("docker.tag_template")
 			docker.TagTemplates = append(docker.TagTemplates, docker.OldTagTemplate)
 		}
 		if len(docker.TagTemplates) == 0 {
@@ -59,7 +50,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			docker.Goarch = "amd64"
 		}
 		if docker.Latest {
-			deprecateWarn("`dockers[%d].latest` is deprecated. Please consider adding a `latest` tag to the `dockers[%d].tag_templates` list instead", i, i)
+			deprecate.Notice("docker.latest")
 			docker.TagTemplates = append(docker.TagTemplates, "latest")
 		}
 	}
