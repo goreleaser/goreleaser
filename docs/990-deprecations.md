@@ -30,7 +30,9 @@ to this:
 
 > since 2018-02-17
 
-FPM is deprecated in favor of nfpm.
+FPM is deprecated in favor of nfpm, which is a simpler alternative written
+in Go. The objective is to remove the ruby dependency thus simplify the
+CI/CD pipelines.
 
 Just replace the `fpm` keyword by `nfpm` in your `goreleaser.yaml` file.
 
@@ -53,6 +55,7 @@ nfpm:
 > since 2018-01-19
 
 This property was deprecated in favor of the pluralized `name_templates`.
+The idea is to be able to define several tags instead of just one.
 
 Change this:
 
