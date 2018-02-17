@@ -131,6 +131,7 @@ type FPM struct {
 	License      string            `yaml:",omitempty"`
 	Bindir       string            `yaml:",omitempty"`
 	Files        map[string]string `yaml:",omitempty"`
+	ConfigFiles  map[string]string `yaml:"config_files,omitempty"`
 }
 
 // Sign config

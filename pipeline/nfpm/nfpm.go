@@ -116,7 +116,7 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		License:     ctx.Config.NFPM.License,
 		Bindir:      ctx.Config.NFPM.Bindir,
 		Files:       files,
-		// ConfigFiles: "" TODO: add this config_files to nfpm settings,
+		ConfigFiles: ctx.Config.NFPM.ConfigFiles,
 	}
 
 	packager, err := nfpm.Get(format)
