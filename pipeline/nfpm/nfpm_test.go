@@ -73,7 +73,12 @@ func TestRunPipe(t *testing.T) {
 			Maintainer:   "me@me",
 			Vendor:       "asdf",
 			Homepage:     "https://goreleaser.github.io",
-			Files:        map[string]string{},
+			Files: map[string]string{
+				"./testdata/testfile.txt": "/usr/share/testfile.txt",
+			},
+			ConfigFiles: map[string]string{
+				"./testdata/testfile.txt": "/etc/nope.conf",
+			},
 		},
 	})
 	ctx.Version = "1.0.0"
@@ -89,7 +94,7 @@ func TestRunPipe(t *testing.T) {
 		}
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Empty(t, ctx.Config.NFPM.Files, "should not modify the config file list")
+	assert.Len(t, ctx.Config.NFPM.Files, 1, "should not modify the config file list")
 }
 
 func TestInvalidNameTemplate(t *testing.T) {

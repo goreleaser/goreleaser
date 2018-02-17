@@ -75,8 +75,8 @@
     "deb",
     "rpm"
   ]
-  revision = "cb781e182dd5a49482ff65f5ca2d6e1a532ce72c"
-  version = "v0.3.1"
+  revision = "4f995bd813a38e5271ee1c5287309637fb98bc74"
+  version = "v0.4.1"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -188,6 +188,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e285c44ad7f186982ec9664758175370a3d8f710ef20e665dcdb993dbea7f4cf"
+  inputs-digest = "12fbbded2568c173b0a125ed5fd89c7ce2782586910277eb29d64efc8f7749f7"
   solver-name = "gps-cdcl"
   solver-version = 1
