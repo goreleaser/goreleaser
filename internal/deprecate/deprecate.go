@@ -3,6 +3,8 @@
 package deprecate
 
 import (
+	"strings"
+
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/fatih/color"
@@ -14,7 +16,7 @@ func Notice(property string) {
 	defer func() {
 		cli.Default.Padding -= 3
 	}()
-	url := "https://goreleaser.com/#deprecation_notices." + property
+	url := "https://goreleaser.com/#deprecation_notices." + strings.Replace(property, ".", "_", -1)
 	log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
 		"DEPRECATED: `%s` should not be used anymore, check %s for more info.",
 		property,
