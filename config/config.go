@@ -218,6 +218,7 @@ type Project struct {
 	Builds        []Build       `yaml:",omitempty"`
 	Archive       Archive       `yaml:",omitempty"`
 	FPM           FPM           `yaml:",omitempty"`
+	NFPM          FPM           `yaml:",omitempty"`
 	Snapcraft     Snapcraft     `yaml:",omitempty"`
 	Snapshot      Snapshot      `yaml:",omitempty"`
 	Checksum      Checksum      `yaml:",omitempty"`

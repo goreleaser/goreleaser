@@ -11,6 +11,12 @@
   revision = "ff0f66940b829dc66c81dad34746d4349b83eb9e"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/blakesmith/ar"
+  packages = ["."]
+  revision = "8bd4349a67f2533b078dbc524689d15dba0f4659"
+
+[[projects]]
   name = "github.com/caarlos0/ctrlc"
   packages = ["."]
   revision = "70dc48d5d792f20f684a8f1d29bbac298f4b2ef4"
@@ -31,8 +37,8 @@
 [[projects]]
   name = "github.com/fatih/color"
   packages = ["."]
-  revision = "570b54cabe6b8eb0bc2dfce68d964677d63b5260"
-  version = "v1.5.0"
+  revision = "507f6050b8568533fb3f5504de8e5205fa62a114"
+  version = "v1.6.0"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -61,6 +67,16 @@
   ]
   revision = "a0333715c7d5ee99eac4c71f457155f2b0c0c4f8"
   version = "v1.0.3"
+
+[[projects]]
+  name = "github.com/goreleaser/nfpm"
+  packages = [
+    ".",
+    "deb",
+    "rpm"
+  ]
+  revision = "cb781e182dd5a49482ff65f5ca2d6e1a532ce72c"
+  version = "v0.3.1"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -126,7 +142,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "f5dfe339be1d06f81b22525fe34671ee7d2c8904"
+  revision = "136a25c244d3019482a795d728110278d6ba09a4"
 
 [[projects]]
   branch = "master"
@@ -172,6 +188,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "503ca2b65156ad338879d612768c325176abafb95f1d425bb9f6e01f5dcb1327"
+  inputs-digest = "e285c44ad7f186982ec9664758175370a3d8f710ef20e665dcdb993dbea7f4cf"
   solver-name = "gps-cdcl"
   solver-version = 1
