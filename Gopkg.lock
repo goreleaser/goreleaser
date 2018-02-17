@@ -75,8 +75,8 @@
     "deb",
     "rpm"
   ]
-  revision = "4b73ac9428cd413b36fd962aa4fd9faf7ad9f179"
-  version = "v0.2.0"
+  revision = "8bbb5913ccde1ae01391be001b4c3de340ae57be"
+  version = "v0.3.0"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -142,7 +142,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "dc948dff8834a7fe1ca525f8d04e261c2b56e70d"
+  revision = "136a25c244d3019482a795d728110278d6ba09a4"
 
 [[projects]]
   branch = "master"
@@ -188,6 +188,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5bfb7f4991e958fe8f53a9dd255326b0010940d2c245227b28f37a9883696dfe"
+  inputs-digest = "e285c44ad7f186982ec9664758175370a3d8f710ef20e665dcdb993dbea7f4cf"
   solver-name = "gps-cdcl"
   solver-version = 1
