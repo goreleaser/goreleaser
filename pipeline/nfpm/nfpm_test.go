@@ -89,6 +89,7 @@ func TestRunPipe(t *testing.T) {
 		}
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Empty(t, ctx.Config.NFPM.Files, "should not modify the config file list")
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
