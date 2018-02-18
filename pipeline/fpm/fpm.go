@@ -2,19 +2,8 @@
 package fpm
 
 import (
-	"github.com/pkg/errors"
-
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
-)
-
-// ErrNoFPM is shown when fpm cannot be found in $PATH
-var ErrNoFPM = errors.New("fpm not present in $PATH")
-
-const (
-	defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
-	// path to gnu-tar on macOS when installed with homebrew
-	gnuTarPath = "/usr/local/opt/gnu-tar/libexec/gnubin"
 )
 
 // Pipe for fpm packaging
