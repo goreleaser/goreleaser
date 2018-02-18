@@ -85,6 +85,14 @@ nfpm:
   # Values are the destination locations of the files in the package.
   files:
     "scripts/etc/init.d/": "/etc/init.d"
+
+  # Config files to add to your package. They are about the same as
+  # the files keyword, except package managers treat them differently (while
+  # uninstalling, mostly).
+  # Keys are source paths to get the files from.
+  # Values are the destination locations of the files in the package.
+  config_files:
+    "conf/app.conf": "/etc/app.conf"
 ```
 
 Note that GoReleaser will not install `rpmbuild` or any dependencies for you.
