@@ -67,6 +67,8 @@ func TestRunPipe(t *testing.T) {
 			NameTemplate: defaultNameTemplate,
 			Formats:      []string{"deb", "rpm"},
 			Dependencies: []string{"make"},
+			Recommends:   []string{"svn"},
+			Suggests:     []string{"bzr"},
 			Conflicts:    []string{"git"},
 			Description:  "Some description",
 			License:      "MIT",

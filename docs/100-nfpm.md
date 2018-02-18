@@ -1,17 +1,12 @@
 ---
-title: FPM and nFPM
+title: NFPM
 ---
 
-GoReleaser can be wired to [nfpm](https://github.com/goreleaser/nfpm) and
-[fpm](https://github.com/jordansissel/fpm) to generate `.deb` and `.rpm`
-archives.
-
-FPM support will be removed soon, and if everything goes well only
-nFPM will be supported in future version of GoReleaser.
+GoReleaser can be wired to [nfpm](https://github.com/goreleaser/nfpm) to
+generate and publish `.deb` and `.rpm` packages.
 
 ```yml
 # .goreleaser.yml
-# change the key to fpm if you want to use fpm instead of nfpm
 nfpm:
   # You can change the name of the package.
   # This is parsed with the Go template engine and the following variables
@@ -65,6 +60,16 @@ nfpm:
     - git
     - zsh
 
+  # Packages your package recommends installing.
+  recommends:
+    - bzr
+    - gtk
+
+  # Packages your package suggests installing.
+  suggests:
+    - cvs
+    - ksh
+
   # Packages that conflict with your package.
   conflicts:
     - svn
@@ -80,7 +85,6 @@ nfpm:
     "scripts/etc/init.d/": "/etc/init.d"
 ```
 
-Note that GoReleaser will not install `fpm`, `rpmbuild` or any of their
-dependencies for you. `nfpm` is used as a lib, so it is included in
-GoReleaser binaries, but you still need to install `rpmbuild` to generate
-RPM packages.
+Note that GoReleaser will not install `rpmbuild` or any dependencies for you.
+As for now, `rpmbuild` is recommended if you want to generate rpm packages.
+You can install it with `apt-get install rpm` or `brew install rpm`.

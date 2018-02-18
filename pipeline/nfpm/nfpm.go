@@ -105,6 +105,8 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		Platform:    "linux",
 		Conflicts:   ctx.Config.NFPM.Conflicts,
 		Depends:     ctx.Config.NFPM.Dependencies,
+		Recommends:  ctx.Config.NFPM.Recommends,
+		Suggests:    ctx.Config.NFPM.Suggests,
 		Name:        ctx.Config.ProjectName,
 		Version:     ctx.Version,
 		Section:     "",
