@@ -30,7 +30,7 @@ deploy:
       master: true
   - provider: script
     skip_cleanup: true
-    script: go run main.go
+    script: go run main.go --rm-dist
     on:
       tags: true
 notifications:
