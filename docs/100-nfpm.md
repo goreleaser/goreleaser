@@ -61,11 +61,13 @@ nfpm:
     - zsh
 
   # Packages your package recommends installing.
+  # For RPM packages rpmbuild >= 4.13 is required
   recommends:
     - bzr
     - gtk
 
   # Packages your package suggests installing.
+  # For RPM packages rpmbuild >= 4.13 is required
   suggests:
     - cvs
     - ksh
