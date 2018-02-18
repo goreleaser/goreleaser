@@ -31,6 +31,7 @@ deploy:
     local_dir: ./dist/goreleaser.github.io
     target_branch: master
     on:
+      tags: true
       master: true
   - provider: script
     skip_cleanup: true
