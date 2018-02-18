@@ -27,7 +27,6 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/docker"
 	"github.com/goreleaser/goreleaser/pipeline/effectiveconfig"
 	"github.com/goreleaser/goreleaser/pipeline/env"
-	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/nfpm"
 	"github.com/goreleaser/goreleaser/pipeline/release"
@@ -54,7 +53,6 @@ var pipes = []pipeline.Piper{
 	env.Pipe{},             // load and validate environment variables
 	build.Pipe{},           // build
 	archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
-	fpm.Pipe{},             // archive via fpm (deb, rpm) using fpm
 	nfpm.Pipe{},            // archive via fpm (deb, rpm) using "native" go impl
 	snapcraft.Pipe{},       // archive via snapcraft (snap)
 	checksums.Pipe{},       // checksums of the files
