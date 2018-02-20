@@ -26,11 +26,12 @@ func extractRepoFromURL(s string) config.Repo {
 		".git", "",
 		"\n", "",
 	).Replace(s)
-	// if the url contains a :, indicating a ssh config,
+	// if the URL contains a :, indicating a SSH config,
 	// remove all chars until it, including itself
-	if strings.Contains(s, ":") {
-		s = s[strings.LastIndex(s, ":")+1:]
-	}
+	// on HTTP and HTTPS URLs it will remove the http(s): prefix,
+	// which is ok. On SSH URLs the whole user@server will be removed,
+	// which is required.
+	s = s[strings.LastIndex(s, ":")+1:]
 	// split by /, the last to parts should be the owner and name
 	ss := strings.Split(s, "/")
 	return config.Repo{
