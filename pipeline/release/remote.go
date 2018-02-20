@@ -21,21 +21,20 @@ func remoteRepo() (result config.Repo, err error) {
 }
 
 func extractRepoFromURL(s string) config.Repo {
-	for _, r := range []string{
-		"git@github.com:",
-		".git",
-		"https://github.com/",
-		"\n",
-	} {
-		s = strings.Replace(s, r, "", -1)
+	// removes the .git suffix and any new lines
+	s = strings.NewReplacer(
+		".git", "",
+		"\n", "",
+	).Replace(s)
+	// if the url contains a :, indicating a ssh config,
+	// remove all chars until it, including itself
+	if strings.Contains(s, ":") {
+		s = s[strings.LastIndex(s, ":")+1:]
 	}
-	return toRepo(s)
-}
-
-func toRepo(s string) config.Repo {
-	var ss = strings.Split(s, "/")
+	// split by /, the last to parts should be the owner and name
+	ss := strings.Split(s, "/")
 	return config.Repo{
-		Owner: ss[0],
-		Name:  ss[1],
+		Owner: ss[len(ss)-2],
+		Name:  ss[len(ss)-1],
 	}
 }
