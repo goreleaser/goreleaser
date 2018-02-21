@@ -9,11 +9,11 @@ import (
 
 	"github.com/apex/log"
 	lcli "github.com/apex/log/handlers/cli"
-	"github.com/caarlos0/ctrlc"
-	yaml "gopkg.in/yaml.v2"
 
+	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
 	"github.com/urfave/cli"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -186,10 +186,6 @@ func releaseProject(flags Flags) error {
 		ctx.ReleaseNotes = string(bts)
 	}
 	ctx.Snapshot = flags.Bool("snapshot")
-	if ctx.Snapshot {
-		log.Info("publishing disabled in snapshot mode")
-		ctx.Publish = false
-	}
 	ctx.RmDist = flags.Bool("rm-dist")
 	return doRelease(ctx)
 }

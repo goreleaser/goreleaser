@@ -24,14 +24,6 @@ func TestReleaseProject(t *testing.T) {
 	assert.NoError(t, releaseProject(newFlags(t, testParams())))
 }
 
-func TestSnapshotreleaseProject(t *testing.T) {
-	_, back := setup(t)
-	defer back()
-	params := testParams()
-	params["snapshot"] = "true"
-	assert.NoError(t, releaseProject(newFlags(t, params)))
-}
-
 func TestConfigFileIsSetAndDontExist(t *testing.T) {
 	params := testParams()
 	params["config"] = "/this/wont/exist"
@@ -67,12 +59,13 @@ func TestReleaseNotesFileDontExist(t *testing.T) {
 }
 
 func TestCustomReleaseNotesFile(t *testing.T) {
-	folder, back := setup(t)
+	_, back := setup(t)
 	defer back()
-	var releaseNotes = filepath.Join(folder, "notes.md")
-	createFile(t, releaseNotes, "nothing important at all")
+	releaseNotes, err := ioutil.TempFile("", "")
+	assert.NoError(t, err)
+	createFile(t, releaseNotes.Name(), "nothing important at all")
 	var params = testParams()
-	params["release-notes"] = releaseNotes
+	params["release-notes"] = releaseNotes.Name()
 	assert.NoError(t, releaseProject(newFlags(t, params)))
 }
 
@@ -152,11 +145,10 @@ func (f fakeFlags) Duration(s string) time.Duration {
 
 func testParams() map[string]string {
 	return map[string]string{
-		"debug":         "true",
-		"parallelism":   "4",
-		"skip-publish":  "true",
-		"skip-validate": "true",
-		"timeout":       "1m",
+		"debug":       "true",
+		"parallelism": "4",
+		"snapshot":    "true",
+		"timeout":     "1m",
 	}
 }
 

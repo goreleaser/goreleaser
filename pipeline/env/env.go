@@ -36,7 +36,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	token, err := loadEnv("GITHUB_TOKEN", ctx.Config.EnvFiles.GitHubToken)
 	ctx.Token = token
 	if ctx.Snapshot {
-		return pipeline.Skip("disable during snapshots")
+		return pipeline.ErrSnapshotEnabled
 	}
 	if ctx.Token == "" && err == nil {
 		return ErrMissingToken
