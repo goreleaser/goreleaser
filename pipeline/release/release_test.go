@@ -37,7 +37,6 @@ func TestRunPipe(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -67,7 +66,6 @@ func TestRunPipeReleaseCreationFailed(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Publish = true
 	client := &DummyClient{
 		FailToCreateRelease: true,
 	}
@@ -87,7 +85,6 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -114,7 +111,6 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -130,7 +126,7 @@ func TestRunPipeUploadFailure(t *testing.T) {
 
 func TestSkipPublish(t *testing.T) {
 	var ctx = &context.Context{
-		Publish:     false,
+		Snapshot:    true,
 		Parallelism: 1,
 	}
 	client := &DummyClient{}
