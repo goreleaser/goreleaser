@@ -10,7 +10,6 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/git"
-	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/pkg/errors"
 )
 
@@ -37,9 +36,6 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	log.Infof("releasing %s, commit %s", tag, commit)
 	if err = setVersion(ctx, tag, commit); err != nil {
 		return
-	}
-	if !ctx.Validate {
-		return pipeline.Skip("--skip-validate is set")
 	}
 	return validate(ctx, commit, tag)
 }

@@ -128,7 +128,6 @@ func TestRunPipe(t *testing.T) {
 				Install:      `bin.install "foo"`,
 			},
 		},
-		Publish: true,
 	}
 	var path = filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -212,7 +211,6 @@ func TestRunPipeNoDarwin64Build(t *testing.T) {
 				},
 			},
 		},
-		Publish: true,
 	}
 	client := &DummyClient{}
 	assert.Equal(t, ErrNoDarwin64Build, doRun(ctx, client))
@@ -233,7 +231,6 @@ func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 			},
 		},
 	)
-	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "bin1",
 		Path:   "doesnt mather",
@@ -255,8 +252,7 @@ func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 
 func TestRunPipeBrewNotSetup(t *testing.T) {
 	var ctx = &context.Context{
-		Config:  config.Project{},
-		Publish: true,
+		Config: config.Project{},
 	}
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doRun(ctx, client))
@@ -277,7 +273,6 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 			},
 		},
 	)
-	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "bin",
 		Path:   "doesnt mather",
@@ -321,16 +316,14 @@ func TestRunPipeNoUpload(t *testing.T) {
 		assert.False(t, client.CreatedFile)
 	}
 	t.Run("skip upload", func(tt *testing.T) {
-		ctx.Publish = true
 		ctx.Config.Brew.SkipUpload = true
 		assertNoPublish(tt)
 	})
-	t.Run("skip publish", func(tt *testing.T) {
-		ctx.Publish = false
+	t.Run("snapshot", func(tt *testing.T) {
+		ctx.Snapshot = true
 		assertNoPublish(tt)
 	})
 	t.Run("draft release", func(tt *testing.T) {
-		ctx.Publish = true
 		ctx.Config.Release.Draft = true
 		assertNoPublish(tt)
 	})

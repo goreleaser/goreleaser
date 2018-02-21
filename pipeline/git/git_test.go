@@ -60,7 +60,6 @@ func TestNoTagsSnapshot(t *testing.T) {
 			},
 		},
 		Snapshot: true,
-		Publish:  false,
 	}
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	assert.Contains(t, ctx.Version, "SNAPSHOT-")
@@ -78,7 +77,6 @@ func TestNoTagsSnapshotInvalidTemplate(t *testing.T) {
 			},
 		},
 		Snapshot: true,
-		Publish:  false,
 	}
 	assert.Error(t, Pipe{}.Run(ctx))
 }
@@ -98,7 +96,6 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 			},
 		},
 		Snapshot: false,
-		Publish:  false,
 	}
 	assert.Error(t, Pipe{}.Run(ctx))
 }
@@ -111,7 +108,7 @@ func TestInvalidTagFormat(t *testing.T) {
 	testlib.GitTag(t, "sadasd")
 	var ctx = &context.Context{
 		Config:   config.Project{},
-		Validate: true,
+		Snapshot: true,
 	}
 	assert.EqualError(t, Pipe{}.Run(ctx), "sadasd is not in a valid version format")
 	assert.Equal(t, "sadasd", ctx.Git.CurrentTag)
@@ -129,7 +126,7 @@ func TestDirty(t *testing.T) {
 	assert.NoError(t, ioutil.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0644))
 	var ctx = &context.Context{
 		Config:   config.Project{},
-		Validate: true,
+		Snapshot: true,
 	}
 	err = Pipe{}.Run(ctx)
 	assert.Error(t, err)
@@ -145,7 +142,7 @@ func TestTagIsNotLastCommit(t *testing.T) {
 	testlib.GitCommit(t, "commit4")
 	var ctx = &context.Context{
 		Config:   config.Project{},
-		Validate: true,
+		Snapshot: true,
 	}
 	err := Pipe{}.Run(ctx)
 	assert.Error(t, err)
@@ -162,7 +159,7 @@ func TestValidState(t *testing.T) {
 	testlib.GitTag(t, "v0.0.2")
 	var ctx = &context.Context{
 		Config:   config.Project{},
-		Validate: true,
+		Snapshot: true,
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
@@ -178,7 +175,7 @@ func TestNoValidate(t *testing.T) {
 	testlib.GitCommit(t, "commit6")
 	var ctx = &context.Context{
 		Config:   config.Project{},
-		Validate: false,
+		Snapshot: true,
 	}
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
@@ -191,7 +188,6 @@ func TestSnapshot(t *testing.T) {
 	testlib.GitCommit(t, "whatever")
 	var ctx = &context.Context{
 		Config:   config.Project{},
-		Validate: true,
 		Snapshot: true,
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))

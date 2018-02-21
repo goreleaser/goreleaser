@@ -100,20 +100,12 @@ func main() {
 			Usage: "Load custom release notes from a markdown `FILE`",
 		},
 		cli.BoolFlag{
-			Name:  "skip-validate",
-			Usage: "Skip all the validations against the release",
-		},
-		cli.BoolFlag{
-			Name:  "skip-publish",
-			Usage: "Skip all publishing pipes of the release",
-		},
-		cli.BoolFlag{
 			Name:  "snapshot",
 			Usage: "Generate an unversioned snapshot release",
 		},
 		cli.BoolFlag{
 			Name:  "rm-dist",
-			Usage: "Remove ./dist before building",
+			Usage: "Remove the dist folder before building",
 		},
 		cli.IntFlag{
 			Name:  "parallelism, p",
@@ -184,8 +176,6 @@ func releaseProject(flags Flags) error {
 	ctx.Parallelism = flags.Int("parallelism")
 	ctx.Debug = flags.Bool("debug")
 	log.Debugf("parallelism: %v", ctx.Parallelism)
-	ctx.Validate = !flags.Bool("skip-validate")
-	ctx.Publish = !flags.Bool("skip-publish")
 	if notes != "" {
 		bts, err := ioutil.ReadFile(notes)
 		if err != nil {

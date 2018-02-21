@@ -1,9 +1,13 @@
+// Package checksums provides a Pipe that creates .checksums files for
+// each artifact.
 package checksums
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
+	"text/template"
 
 	"github.com/apex/log"
 	"golang.org/x/sync/errgroup"
@@ -78,4 +82,26 @@ func checksums(ctx *context.Context, file *os.File, artifact artifact.Artifact) 
 	}
 	_, err = file.WriteString(fmt.Sprintf("%v  %v\n", sha, artifact.Name))
 	return err
+}
+
+func filenameFor(ctx *context.Context) (string, error) {
+	var out bytes.Buffer
+	t, err := template.New("checksums").
+		Option("missingkey=error").
+		Parse(ctx.Config.Checksum.NameTemplate)
+	if err != nil {
+		return "", err
+	}
+	err = t.Execute(&out, struct {
+		ProjectName string
+		Tag         string
+		Version     string
+		Env         map[string]string
+	}{
+		ProjectName: ctx.Config.ProjectName,
+		Tag:         ctx.Git.CurrentTag,
+		Version:     ctx.Version,
+		Env:         ctx.Env,
+	})
+	return out.String(), err
 }

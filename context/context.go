@@ -32,8 +32,6 @@ type Context struct {
 	Artifacts    artifact.Artifacts
 	ReleaseNotes string
 	Version      string
-	Validate     bool
-	Publish      bool
 	Snapshot     bool
 	RmDist       bool
 	Debug        bool

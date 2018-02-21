@@ -262,7 +262,8 @@ func TestRunPipe(t *testing.T) {
 					docker.docker,
 				},
 			})
-			ctx.Publish = docker.publish
+			// TODO: ideally refactor this as well
+			ctx.Snapshot = !docker.publish
 			ctx.Env = map[string]string{
 				"FOO": "123",
 			}
