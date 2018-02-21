@@ -1,4 +1,4 @@
-package goreleaserlib
+package main
 
 import (
 	"io/ioutil"
