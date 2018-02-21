@@ -1,4 +1,4 @@
-package goreleaserlib
+package main
 
 import (
 	"io/ioutil"
@@ -18,24 +18,24 @@ func init() {
 	_ = os.Unsetenv("GITHUB_TOKEN")
 }
 
-func TestRelease(t *testing.T) {
+func TestReleaseProject(t *testing.T) {
 	_, back := setup(t)
 	defer back()
-	assert.NoError(t, Release(newFlags(t, testParams())))
+	assert.NoError(t, releaseProject(newFlags(t, testParams())))
 }
 
-func TestSnapshotRelease(t *testing.T) {
+func TestSnapshotreleaseProject(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	params := testParams()
 	params["snapshot"] = "true"
-	assert.NoError(t, Release(newFlags(t, params)))
+	assert.NoError(t, releaseProject(newFlags(t, params)))
 }
 
 func TestConfigFileIsSetAndDontExist(t *testing.T) {
 	params := testParams()
 	params["config"] = "/this/wont/exist"
-	assert.Error(t, Release(newFlags(t, params)))
+	assert.Error(t, releaseProject(newFlags(t, params)))
 }
 
 func TestConfigFlagNotSetButExists(t *testing.T) {
@@ -63,7 +63,7 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 func TestReleaseNotesFileDontExist(t *testing.T) {
 	params := testParams()
 	params["release-notes"] = "/this/also/wont/exist"
-	assert.Error(t, Release(newFlags(t, params)))
+	assert.Error(t, releaseProject(newFlags(t, params)))
 }
 
 func TestCustomReleaseNotesFile(t *testing.T) {
@@ -73,21 +73,21 @@ func TestCustomReleaseNotesFile(t *testing.T) {
 	createFile(t, releaseNotes, "nothing important at all")
 	var params = testParams()
 	params["release-notes"] = releaseNotes
-	assert.NoError(t, Release(newFlags(t, params)))
+	assert.NoError(t, releaseProject(newFlags(t, params)))
 }
 
 func TestBrokenPipe(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	createFile(t, "main.go", "not a valid go file")
-	assert.Error(t, Release(newFlags(t, testParams())))
+	assert.Error(t, releaseProject(newFlags(t, testParams())))
 }
 
 func TestInitProject(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	var filename = "test_goreleaser.yml"
-	assert.NoError(t, InitProject(filename))
+	assert.NoError(t, initProject(filename))
 
 	file, err := os.Open(filename)
 	assert.NoError(t, err)
@@ -103,7 +103,7 @@ func TestInitProjectFileExist(t *testing.T) {
 	defer back()
 	var filename = "test_goreleaser.yml"
 	createFile(t, filename, "")
-	assert.Error(t, InitProject(filename))
+	assert.Error(t, initProject(filename))
 }
 
 func TestInitProjectDefaultPipeFails(t *testing.T) {
@@ -111,7 +111,7 @@ func TestInitProjectDefaultPipeFails(t *testing.T) {
 	defer back()
 	var filename = "test_goreleaser.yml"
 	assert.NoError(t, os.RemoveAll(".git"))
-	assert.Error(t, InitProject(filename))
+	assert.Error(t, initProject(filename))
 }
 
 // fakeFlags is a mock of the cli flags
