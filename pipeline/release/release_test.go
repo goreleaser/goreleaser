@@ -124,7 +124,7 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	assert.False(t, client.UploadedFile)
 }
 
-func TestSkipPublish(t *testing.T) {
+func TestSnapshot(t *testing.T) {
 	var ctx = &context.Context{
 		Snapshot:    true,
 		Parallelism: 1,
