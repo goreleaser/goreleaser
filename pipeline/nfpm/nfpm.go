@@ -108,7 +108,7 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		Recommends:  ctx.Config.NFPM.Recommends,
 		Suggests:    ctx.Config.NFPM.Suggests,
 		Name:        ctx.Config.ProjectName,
-		Version:     ctx.Version,
+		Version:     ctx.Git.CurrentTag,
 		Section:     "",
 		Priority:    "",
 		Maintainer:  ctx.Config.NFPM.Maintainer,
