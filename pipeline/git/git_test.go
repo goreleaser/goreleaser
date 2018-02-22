@@ -152,3 +152,5 @@ func TestSnapshot(t *testing.T) {
 	ctx.Snapshot = true
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
+
+// TODO: missing a test case for a dirty git tree and snapshot

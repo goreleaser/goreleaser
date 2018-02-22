@@ -76,12 +76,12 @@ func getSnapshotName(ctx *context.Context, tag, commit string) (string, error) {
 }
 
 func validate(ctx *context.Context, commit, tag string) error {
+	if ctx.Snapshot {
+		return nil
+	}
 	out, err := git.Run("status", "--porcelain")
 	if strings.TrimSpace(out) != "" || err != nil {
 		return ErrDirty{out}
-	}
-	if ctx.Snapshot {
-		return nil
 	}
 	if !regexp.MustCompile("^[0-9.]+").MatchString(ctx.Version) {
 		return ErrInvalidVersionFormat{ctx.Version}
