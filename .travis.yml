@@ -14,7 +14,7 @@ install:
   - sudo snap install snapcraft --classic
 script:
   - make ci
-  - test -n "$TRAVIS_TAG" || go run main.go --skip-validate --skip-publish
+  - test -n "$TRAVIS_TAG" || go run main.go --snapshot
 after_success:
   - bash <(curl -s https://codecov.io/bash)
   - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"

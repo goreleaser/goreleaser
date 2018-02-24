@@ -192,7 +192,6 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		"ARTIFACTORY_PRODUCTION-US_SECRET": "deployuser-secret",
 		"ARTIFACTORY_PRODUCTION-EU_SECRET": "productionuser-apikey",
 	}
-	ctx.Publish = true
 	for _, goos := range []string{"linux", "darwin"} {
 		ctx.Artifacts.Add(artifact.Artifact{
 			Name:   "mybin",
@@ -232,7 +231,6 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Publish = true
 	ctx.Version = "1.0.0"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
@@ -328,7 +326,6 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -358,7 +355,6 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 			},
 		},
 	})
-	ctx.Publish = true
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
@@ -415,7 +411,6 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 			},
 		},
 	})
-	ctx.Publish = true
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
@@ -473,7 +468,6 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 			},
 		},
 	})
-	ctx.Publish = true
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
@@ -528,7 +522,6 @@ func TestRunPipe_UnparsableResponse(t *testing.T) {
 			},
 		},
 	})
-	ctx.Publish = true
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
@@ -556,7 +549,6 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 			},
 		},
 	})
-	ctx.Publish = true
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
@@ -594,7 +586,6 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 			},
 		},
 	})
-	ctx.Publish = true
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
@@ -623,10 +614,11 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
+	ctx.Snapshot = true
 
 	err := Pipe{}.Run(ctx)
 	assert.True(t, pipeline.IsSkip(err))
-	assert.EqualError(t, err, pipeline.ErrSkipPublish.Error())
+	assert.EqualError(t, err, pipeline.ErrSnapshotEnabled.Error())
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {
@@ -652,7 +644,6 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Dir(binPath),
@@ -733,7 +724,6 @@ func TestArtifactoriesWithoutSecret(t *testing.T) {
 
 func TestArtifactoriesWithInvalidMode(t *testing.T) {
 	var ctx = &context.Context{
-		Publish: true,
 		Env: map[string]string{
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},

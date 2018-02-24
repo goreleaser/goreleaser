@@ -9,11 +9,11 @@ import (
 
 	"github.com/apex/log"
 	lcli "github.com/apex/log/handlers/cli"
-	"github.com/caarlos0/ctrlc"
-	yaml "gopkg.in/yaml.v2"
 
+	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
 	"github.com/urfave/cli"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -100,20 +100,12 @@ func main() {
 			Usage: "Load custom release notes from a markdown `FILE`",
 		},
 		cli.BoolFlag{
-			Name:  "skip-validate",
-			Usage: "Skip all the validations against the release",
-		},
-		cli.BoolFlag{
-			Name:  "skip-publish",
-			Usage: "Skip all publishing pipes of the release",
-		},
-		cli.BoolFlag{
 			Name:  "snapshot",
 			Usage: "Generate an unversioned snapshot release",
 		},
 		cli.BoolFlag{
 			Name:  "rm-dist",
-			Usage: "Remove ./dist before building",
+			Usage: "Remove the dist folder before building",
 		},
 		cli.IntFlag{
 			Name:  "parallelism, p",
@@ -184,8 +176,6 @@ func releaseProject(flags Flags) error {
 	ctx.Parallelism = flags.Int("parallelism")
 	ctx.Debug = flags.Bool("debug")
 	log.Debugf("parallelism: %v", ctx.Parallelism)
-	ctx.Validate = !flags.Bool("skip-validate")
-	ctx.Publish = !flags.Bool("skip-publish")
 	if notes != "" {
 		bts, err := ioutil.ReadFile(notes)
 		if err != nil {
@@ -196,10 +186,6 @@ func releaseProject(flags Flags) error {
 		ctx.ReleaseNotes = string(bts)
 	}
 	ctx.Snapshot = flags.Bool("snapshot")
-	if ctx.Snapshot {
-		log.Info("publishing disabled in snapshot mode")
-		ctx.Publish = false
-	}
 	ctx.RmDist = flags.Bool("rm-dist")
 	return doRelease(ctx)
 }

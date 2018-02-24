@@ -45,8 +45,8 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context, c client.Client) error {
-	if !ctx.Publish {
-		return pipeline.ErrSkipPublish
+	if ctx.Snapshot {
+		return pipeline.ErrSnapshotEnabled
 	}
 	log.WithField("tag", ctx.Git.CurrentTag).
 		WithField("repo", ctx.Config.Release.GitHub.String()).

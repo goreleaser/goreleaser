@@ -108,8 +108,8 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context) error {
-	if !ctx.Publish {
-		return pipeline.ErrSkipPublish
+	if ctx.Snapshot {
+		return pipeline.ErrSnapshotEnabled
 	}
 
 	// Handle every configured artifactory instance

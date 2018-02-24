@@ -22,7 +22,7 @@ func TestNotAGitFolder(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.Error(t, Pipe{}.Run(ctx))
+	assert.EqualError(t, Pipe{}.Run(ctx), "fatal: Not a git repository (or any of the parent directories): .git\n")
 }
 
 func TestSingleCommit(t *testing.T) {
@@ -34,7 +34,7 @@ func TestSingleCommit(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 }
 
@@ -45,7 +45,8 @@ func TestNewRepository(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.Error(t, Pipe{}.Run(ctx))
+	// TODO: improve this error handling
+	assert.Contains(t, Pipe{}.Run(ctx).Error(), `fatal: ambiguous argument 'HEAD'`)
 }
 
 func TestNoTagsSnapshot(t *testing.T) {
@@ -53,16 +54,13 @@ func TestNoTagsSnapshot(t *testing.T) {
 	defer back()
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
-	var ctx = &context.Context{
-		Config: config.Project{
-			Snapshot: config.Snapshot{
-				NameTemplate: "SNAPSHOT-{{.Commit}}",
-			},
+	var ctx = context.New(config.Project{
+		Snapshot: config.Snapshot{
+			NameTemplate: "SNAPSHOT-{{.Commit}}",
 		},
-		Snapshot: true,
-		Publish:  false,
-	}
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	})
+	ctx.Snapshot = true
+	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Contains(t, ctx.Version, "SNAPSHOT-")
 }
 
@@ -71,16 +69,13 @@ func TestNoTagsSnapshotInvalidTemplate(t *testing.T) {
 	defer back()
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
-	var ctx = &context.Context{
-		Config: config.Project{
-			Snapshot: config.Snapshot{
-				NameTemplate: "{{",
-			},
+	var ctx = context.New(config.Project{
+		Snapshot: config.Snapshot{
+			NameTemplate: "{{",
 		},
-		Snapshot: true,
-		Publish:  false,
-	}
-	assert.Error(t, Pipe{}.Run(ctx))
+	})
+	ctx.Snapshot = true
+	assert.EqualError(t, Pipe{}.Run(ctx), `failed to generate snapshot name: template: snapshot:1: unexpected unclosed action in command`)
 }
 
 // TestNoTagsNoSnapshot covers the situation where a repository
@@ -91,16 +86,9 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 	defer back()
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
-	var ctx = &context.Context{
-		Config: config.Project{
-			Snapshot: config.Snapshot{
-				NameTemplate: "SNAPSHOT-{{.Commit}}",
-			},
-		},
-		Snapshot: false,
-		Publish:  false,
-	}
-	assert.Error(t, Pipe{}.Run(ctx))
+	var ctx = context.New(config.Project{})
+	ctx.Snapshot = false
+	assert.EqualError(t, Pipe{}.Run(ctx), `git doesn't contain any tags. Either add a tag or use --snapshot`)
 }
 
 func TestInvalidTagFormat(t *testing.T) {
@@ -109,10 +97,7 @@ func TestInvalidTagFormat(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "commit2")
 	testlib.GitTag(t, "sadasd")
-	var ctx = &context.Context{
-		Config:   config.Project{},
-		Validate: true,
-	}
+	var ctx = context.New(config.Project{})
 	assert.EqualError(t, Pipe{}.Run(ctx), "sadasd is not in a valid version format")
 	assert.Equal(t, "sadasd", ctx.Git.CurrentTag)
 }
@@ -127,11 +112,7 @@ func TestDirty(t *testing.T) {
 	testlib.GitCommit(t, "commit2")
 	testlib.GitTag(t, "v0.0.1")
 	assert.NoError(t, ioutil.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0644))
-	var ctx = &context.Context{
-		Config:   config.Project{},
-		Validate: true,
-	}
-	err = Pipe{}.Run(ctx)
+	err = Pipe{}.Run(context.New(config.Project{}))
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "git is currently in a dirty state:")
 }
@@ -143,11 +124,7 @@ func TestTagIsNotLastCommit(t *testing.T) {
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "commit4")
-	var ctx = &context.Context{
-		Config:   config.Project{},
-		Validate: true,
-	}
-	err := Pipe{}.Run(ctx)
+	err := Pipe{}.Run(context.New(config.Project{}))
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "git tag v0.0.1 was not made against commit")
 }
@@ -160,27 +137,9 @@ func TestValidState(t *testing.T) {
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "commit4")
 	testlib.GitTag(t, "v0.0.2")
-	var ctx = &context.Context{
-		Config:   config.Project{},
-		Validate: true,
-	}
+	var ctx = context.New(config.Project{})
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
-}
-
-func TestNoValidate(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
-	testlib.GitInit(t)
-	testlib.GitAdd(t)
-	testlib.GitCommit(t, "commit5")
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCommit(t, "commit6")
-	var ctx = &context.Context{
-		Config:   config.Project{},
-		Validate: false,
-	}
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
 func TestSnapshot(t *testing.T) {
@@ -189,10 +148,9 @@ func TestSnapshot(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "whatever")
-	var ctx = &context.Context{
-		Config:   config.Project{},
-		Validate: true,
-		Snapshot: true,
-	}
+	var ctx = context.New(config.Project{})
+	ctx.Snapshot = true
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
+
+// TODO: missing a test case for a dirty git tree and snapshot

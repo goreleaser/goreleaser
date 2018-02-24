@@ -195,8 +195,9 @@ func link(src, dest string) error {
 }
 
 func publish(ctx *context.Context, docker config.Docker, images []string) error {
-	if !ctx.Publish {
-		log.Warn("skipping push because --skip-publish is set")
+	if ctx.Snapshot {
+		// TODO: this should be better handled
+		log.Warn(pipeline.ErrSnapshotEnabled.Error())
 		return nil
 	}
 	for _, image := range images {
