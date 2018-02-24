@@ -101,7 +101,7 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:  "snapshot",
-			Usage: "Generate an unversioned snapshot release",
+			Usage: "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts",
 		},
 		cli.BoolFlag{
 			Name:  "rm-dist",
