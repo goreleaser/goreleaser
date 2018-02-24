@@ -7,13 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gobuffalo/packr"
-
 	"github.com/apex/log"
 	lcli "github.com/apex/log/handlers/cli"
-
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
+	"github.com/gobuffalo/packr"
 	"github.com/urfave/cli"
 
 	"github.com/goreleaser/goreleaser/config"
