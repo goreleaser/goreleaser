@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -201,6 +202,7 @@ type DummyClient struct {
 	CreatedRelease      bool
 	UploadedFile        bool
 	UploadedFileNames   []string
+	Lock                sync.Mutex
 }
 
 func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
@@ -216,6 +218,8 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 }
 
 func (client *DummyClient) Upload(ctx *context.Context, releaseID int64, name string, file *os.File) (err error) {
+	client.Lock.Lock()
+	defer client.Lock.Unlock()
 	if client.FailToUpload {
 		return errors.New("upload failed")
 	}
