@@ -7,13 +7,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gobuffalo/packr"
+
 	"github.com/apex/log"
 	lcli "github.com/apex/log/handlers/cli"
 
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
 	"github.com/urfave/cli"
-	yaml "gopkg.in/yaml.v2"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -228,21 +229,8 @@ func initProject(filename string) error {
 		}
 		return fmt.Errorf("%s already exists", filename)
 	}
-
-	var ctx = context.New(config.Project{})
-	var pipe = defaults.Pipe{}
-	defer restoreOutputPadding()
-	log.Infof(color.New(color.Bold).Sprint(strings.ToUpper(pipe.String())))
-	lcli.Default.Padding = increasedPadding
-	if err := pipe.Run(ctx); err != nil {
-		return err
-	}
-	out, err := yaml.Marshal(ctx.Config)
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(filename, out, 0644)
+	log.Infof(color.New(color.Bold).Sprint("Generating .goreleaser.yml file"))
+	return ioutil.WriteFile(filename, packr.NewBox("example.goreleaser.yml").Bytes("."), 0644)
 }
 
 func getConfigFile(flags Flags) string {
