@@ -59,7 +59,7 @@ func TestFileNotFound(t *testing.T) {
 
 func TestInvalidFields(t *testing.T) {
 	_, err := Load("testdata/invalid_config.yml")
-	assert.EqualError(t, err, "yaml: unmarshal errors:\n  line 2: field invalid_yaml not found in struct config.Build")
+	assert.EqualError(t, err, "yaml: unmarshal errors:\n  line 2: field invalid_yaml not found in type config.Build")
 }
 
 func TestInvalidYaml(t *testing.T) {
