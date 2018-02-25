@@ -28,7 +28,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		return nil
 	}
 	repo, err := remoteRepo()
-	if err != nil {
+	if err != nil && !ctx.Snapshot {
 		return err
 	}
 	ctx.Config.Release.GitHub = repo

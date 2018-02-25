@@ -174,11 +174,32 @@ func TestDefaultFilled(t *testing.T) {
 func TestDefaultNotAGitRepo(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
-	testlib.GitInit(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.Error(t, Pipe{}.Default(ctx))
+	assert.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
+	assert.Empty(t, ctx.Config.Release.GitHub.String())
+}
+
+func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	testlib.GitInit(t)
+	assert.EqualError(t, Pipe{}.Default(ctx), "repository doesn't have an `origin` remote")
+	assert.Empty(t, ctx.Config.Release.GitHub.String())
+}
+
+func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	ctx.Snapshot = true
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
 }
 

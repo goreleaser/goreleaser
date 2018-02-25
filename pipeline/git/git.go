@@ -21,28 +21,57 @@ func (Pipe) String() string {
 }
 
 // Run the pipe
-func (Pipe) Run(ctx *context.Context) (err error) {
-	tag, commit, err := getInfo()
+func (Pipe) Run(ctx *context.Context) error {
+	info, err := getInfo(ctx)
 	if err != nil {
-		return
+		return err
 	}
-	if tag == "" && !ctx.Snapshot {
-		return ErrNoTag
+	ctx.Git = info
+	log.Infof("releasing %s, commit %s", info.CurrentTag, info.Commit)
+	if err := setVersion(ctx); err != nil {
+		return err
 	}
-	ctx.Git = context.GitInfo{
-		CurrentTag: tag,
-		Commit:     commit,
-	}
-	log.Infof("releasing %s, commit %s", tag, commit)
-	if err = setVersion(ctx, tag, commit); err != nil {
-		return
-	}
-	return validate(ctx, commit, tag)
+	return validate(ctx)
 }
 
-func setVersion(ctx *context.Context, tag, commit string) (err error) {
+func getInfo(ctx *context.Context) (context.GitInfo, error) {
+	if !git.IsRepo() && ctx.Snapshot {
+		log.Warn("running against a folder that is not a git repo")
+		return context.GitInfo{
+			CurrentTag: "v0.0.0",
+			Commit:     "none",
+		}, nil
+	}
+	if !git.IsRepo() {
+		return context.GitInfo{}, ErrNotRepository
+	}
+	info, err := getGitInfo(ctx)
+	if err != nil && ctx.Snapshot {
+		return info, nil
+	}
+	return info, err
+}
+
+func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
+	commit, err := getCommit()
+	if err != nil {
+		return context.GitInfo{}, errors.Wrap(err, "couldn't get current commit")
+	}
+	tag, err := getTag()
+	if err != nil {
+		return context.GitInfo{
+			Commit: commit,
+		}, ErrNoTag
+	}
+	return context.GitInfo{
+		CurrentTag: tag,
+		Commit:     commit,
+	}, nil
+}
+
+func setVersion(ctx *context.Context) error {
 	if ctx.Snapshot {
-		snapshotName, err := getSnapshotName(ctx, tag, commit)
+		snapshotName, err := getSnapshotName(ctx)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate snapshot name")
 		}
@@ -50,8 +79,8 @@ func setVersion(ctx *context.Context, tag, commit string) (err error) {
 		return nil
 	}
 	// removes usual `v` prefix
-	ctx.Version = strings.TrimPrefix(tag, "v")
-	return
+	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
+	return nil
 }
 
 type snapshotNameData struct {
@@ -60,22 +89,22 @@ type snapshotNameData struct {
 	Timestamp int64
 }
 
-func getSnapshotName(ctx *context.Context, tag, commit string) (string, error) {
+func getSnapshotName(ctx *context.Context) (string, error) {
 	tmpl, err := template.New("snapshot").Parse(ctx.Config.Snapshot.NameTemplate)
 	var out bytes.Buffer
 	if err != nil {
 		return "", err
 	}
 	var data = snapshotNameData{
-		Commit:    commit,
-		Tag:       tag,
+		Commit:    ctx.Git.Commit,
+		Tag:       ctx.Git.CurrentTag,
 		Timestamp: time.Now().Unix(),
 	}
 	err = tmpl.Execute(&out, data)
 	return out.String(), err
 }
 
-func validate(ctx *context.Context, commit, tag string) error {
+func validate(ctx *context.Context) error {
 	if ctx.Snapshot {
 		return nil
 	}
@@ -86,18 +115,17 @@ func validate(ctx *context.Context, commit, tag string) error {
 	if !regexp.MustCompile("^[0-9.]+").MatchString(ctx.Version) {
 		return ErrInvalidVersionFormat{ctx.Version}
 	}
-	_, err = git.Clean(git.Run("describe", "--exact-match", "--tags", "--match", tag))
+	_, err = git.Clean(git.Run("describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag))
 	if err != nil {
-		return ErrWrongRef{commit, tag}
+		return ErrWrongRef{ctx.Git.Commit, ctx.Git.CurrentTag}
 	}
 	return nil
 }
 
-func getInfo() (tag, commit string, err error) {
-	tag, err = git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
-	if err != nil {
-		log.WithError(err).Info("failed to retrieve current tag")
-	}
-	commit, err = git.Clean(git.Run("show", "--format='%H'", "HEAD"))
-	return
+func getCommit() (string, error) {
+	return git.Clean(git.Run("show", "--format='%H'", "HEAD"))
+}
+
+func getTag() (string, error) {
+	return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
 }
