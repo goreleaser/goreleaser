@@ -50,7 +50,7 @@
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "632a2caf6d3d380753dc7e422748202982ad18a3"
+  revision = "b1658317c4f5c8dd7000d94ab8a9b56039412cc6"
 
 [[projects]]
   branch = "master"
@@ -75,8 +75,8 @@
     "deb",
     "rpm"
   ]
-  revision = "7094e234cc76f76ba3a2228c28aaeebb7330e89c"
-  version = "v0.5.1"
+  revision = "3fb90ada0a6a7509ac094f489bbdcd668f3f28f7"
+  version = "v0.5.3"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -163,7 +163,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "37707fdb30a5b38865cfb95e5aab41707daec7fd"
+  revision = "f6cff0780e542efa0c8e864dc8fa522808f6a598"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -180,10 +180,10 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "d670f9405373e636a5a2765eea47fac0c9bc91a4"
+  revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
+  version = "v2.1.1"
 
 [solve-meta]
   analyzer-name = "dep"
