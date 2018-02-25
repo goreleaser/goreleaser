@@ -75,8 +75,8 @@
     "deb",
     "rpm"
   ]
-  revision = "3fb90ada0a6a7509ac094f489bbdcd668f3f28f7"
-  version = "v0.5.3"
+  revision = "3c6c7d3efc1372c7d2c92a82dec83c6df7c0a30e"
+  version = "v0.5.4"
 
 [[projects]]
   name = "github.com/masterminds/semver"
