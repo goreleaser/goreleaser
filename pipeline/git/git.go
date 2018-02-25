@@ -23,7 +23,7 @@ func (Pipe) String() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
 	tag, commit, err := getInfo()
-	if err != nil && !ctx.Snapshot {
+	if err != nil {
 		return
 	}
 	if tag == "" && !ctx.Snapshot {
