@@ -10,6 +10,7 @@ setup:
 	go get -u golang.org/x/tools/cmd/cover
 	go get -u github.com/caarlos0/static/cmd/static-docs
 	go get -u github.com/caarlos0/bandep
+	go get -u github.com/gobuffalo/packr/...
 	dep ensure
 	gometalinter --install
 	echo "make check" > .git/hooks/pre-commit

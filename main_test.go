@@ -100,11 +100,11 @@ func TestInitProjectFileExist(t *testing.T) {
 }
 
 func TestInitProjectDefaultPipeFails(t *testing.T) {
-	_, back := setup(t)
+	folder, back := setup(t)
 	defer back()
 	var filename = "test_goreleaser.yml"
-	assert.NoError(t, os.RemoveAll(".git"))
-	assert.Error(t, initProject(filename))
+	assert.NoError(t, os.Chmod(folder, 0000))
+	assert.EqualError(t, initProject(filename), `stat test_goreleaser.yml: permission denied`)
 }
 
 // fakeFlags is a mock of the cli flags
@@ -153,7 +153,7 @@ func testParams() map[string]string {
 }
 
 func setup(t *testing.T) (current string, back func()) {
-	folder, err := ioutil.TempDir("", "goreleaser")
+	folder, err := ioutil.TempDir("", "")
 	assert.NoError(t, err)
 	previous, err := os.Getwd()
 	assert.NoError(t, err)
