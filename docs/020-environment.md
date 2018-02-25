@@ -65,3 +65,16 @@ func main() {
 the snapshot, if you're using the `--snapshot` flag.
 
 You can override this by changing the `ldflags` option in the `build` section.
+
+## Customizing Git
+
+By default, GoReleaser uses full length commit hashes when setting a `main.commit`
+_ldflag_ or creating filenames in `--snapshot` mode.
+
+You can use short, 7 character long commit hashes by setting it in the `.goreleaser.yml`:
+
+```yaml
+# .goreleaser.yml
+git:
+  short_hash: true
+```
