@@ -181,6 +181,17 @@ func TestDefaultNotAGitRepo(t *testing.T) {
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
+func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	testlib.GitInit(t)
+	assert.EqualError(t, Pipe{}.Default(ctx), "repository doesn't have an `origin` remote")
+	assert.Empty(t, ctx.Config.Release.GitHub.String())
+}
+
 func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()

@@ -1,6 +1,7 @@
 package release
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -15,7 +16,7 @@ func remoteRepo() (result config.Repo, err error) {
 	}
 	out, err := git.Run("config", "--get", "remote.origin.url")
 	if err != nil {
-		return result, errors.Wrap(err, "repository doesn't have an `origin` remote")
+		return result, fmt.Errorf("repository doesn't have an `origin` remote")
 	}
 	return extractRepoFromURL(out), nil
 }
