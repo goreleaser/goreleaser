@@ -22,7 +22,7 @@ func TestNotAGitFolder(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.EqualError(t, Pipe{}.Run(ctx), "fatal: Not a git repository (or any of the parent directories): .git\n")
+	assert.EqualError(t, Pipe{}.Run(ctx), ErrNotRepository.Error())
 }
 
 func TestSingleCommit(t *testing.T) {
@@ -142,7 +142,7 @@ func TestValidState(t *testing.T) {
 	assert.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
 }
 
-func TestSnapshot(t *testing.T) {
+func TestSnapshotNoTags(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
@@ -153,4 +153,23 @@ func TestSnapshot(t *testing.T) {
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
-// TODO: missing a test case for a dirty git tree and snapshot
+func TestSnapshotWithoutRepo(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	var ctx = context.New(config.Project{})
+	ctx.Snapshot = true
+	assert.NoError(t, Pipe{}.Run(ctx))
+}
+
+func TestSnapshotDirty(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitAdd(t)
+	testlib.GitCommit(t, "whatever")
+	testlib.GitTag(t, "v0.0.1")
+	assert.NoError(t, ioutil.WriteFile(filepath.Join(folder, "foo"), []byte("foobar"), 0644))
+	var ctx = context.New(config.Project{})
+	ctx.Snapshot = true
+	assert.NoError(t, Pipe{}.Run(ctx))
+}
