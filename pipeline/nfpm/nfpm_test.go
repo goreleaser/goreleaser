@@ -31,7 +31,7 @@ func TestRunPipeNoFormats(t *testing.T) {
 
 func TestRunPipeInvalidFormat(t *testing.T) {
 	var ctx = context.New(config.Project{
-		NFPM: config.FPM{
+		NFPM: config.NFPM{
 			Bindir:       "/usr/bin",
 			NameTemplate: defaultNameTemplate,
 			Formats:      []string{"nope"},
@@ -64,7 +64,7 @@ func TestRunPipe(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		NFPM: config.FPM{
+		NFPM: config.NFPM{
 			Bindir:       "/usr/bin",
 			NameTemplate: defaultNameTemplate,
 			Formats:      []string{"deb", "rpm"},
@@ -106,7 +106,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 		Parallelism: runtime.NumCPU(),
 		Artifacts:   artifact.New(),
 		Config: config.Project{
-			NFPM: config.FPM{
+			NFPM: config.NFPM{
 				NameTemplate: "{{.Foo}",
 				Formats:      []string{"deb"},
 			},
@@ -129,7 +129,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var ctx = context.New(config.Project{
 		Dist: dist,
-		NFPM: config.FPM{
+		NFPM: config.NFPM{
 			Formats: []string{"deb", "rpm"},
 			Files: map[string]string{
 				"testdata/testfile.txt": "/var/lib/test/testfile.txt",
@@ -150,7 +150,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			NFPM: config.FPM{},
+			NFPM: config.NFPM{},
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
@@ -161,7 +161,7 @@ func TestDefault(t *testing.T) {
 func TestDefaultSet(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			NFPM: config.FPM{
+			NFPM: config.NFPM{
 				Bindir:       "/bin",
 				NameTemplate: "foo",
 			},

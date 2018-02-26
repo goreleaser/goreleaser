@@ -11,8 +11,7 @@ Prerequisites:
 
 * `make`
 * [Go 1.8+](https://golang.org/doc/install)
-* [fpm](https://fpm.readthedocs.io/en/latest/installing.html)
-* rpm / rpmbuild
+* `rpmbuild` (`apt get install rpm`/`brew install rpm`)
 * [snapcraft](https://snapcraft.io/)
 * [Docker](https://www.docker.com/)
 

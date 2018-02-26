@@ -4,13 +4,17 @@ language: go
 go: '1.10'
 services:
   - docker
+addons:
+  apt:
+    packages:
+    - rpm
+    - snapd
+    - liblz4-dev
+env:
+  - PATH=/snap/bin:$PATH
 install:
   - make setup
-  - gem install fpm
   - npm install -g prettier
-  - sudo apt-get update
-  - sudo apt-get install --yes snapd rpm liblz4-dev
-  - export PATH=/snap/bin:$PATH
   - sudo snap install snapcraft --classic
 script:
   - make ci
@@ -27,6 +31,7 @@ deploy:
     local_dir: ./dist/goreleaser.github.io
     target_branch: master
     on:
+      tags: true
       master: true
   - provider: script
     skip_cleanup: true
