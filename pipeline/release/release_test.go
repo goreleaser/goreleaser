@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -37,7 +38,6 @@ func TestRunPipe(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -67,7 +67,6 @@ func TestRunPipeReleaseCreationFailed(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Publish = true
 	client := &DummyClient{
 		FailToCreateRelease: true,
 	}
@@ -87,7 +86,6 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -114,7 +112,6 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -128,9 +125,9 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	assert.False(t, client.UploadedFile)
 }
 
-func TestSkipPublish(t *testing.T) {
+func TestSnapshot(t *testing.T) {
 	var ctx = &context.Context{
-		Publish:     false,
+		Snapshot:    true,
 		Parallelism: 1,
 	}
 	client := &DummyClient{}
@@ -177,11 +174,32 @@ func TestDefaultFilled(t *testing.T) {
 func TestDefaultNotAGitRepo(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
-	testlib.GitInit(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.Error(t, Pipe{}.Default(ctx))
+	assert.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
+	assert.Empty(t, ctx.Config.Release.GitHub.String())
+}
+
+func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	testlib.GitInit(t)
+	assert.EqualError(t, Pipe{}.Default(ctx), "repository doesn't have an `origin` remote")
+	assert.Empty(t, ctx.Config.Release.GitHub.String())
+}
+
+func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	ctx.Snapshot = true
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
@@ -201,6 +219,7 @@ type DummyClient struct {
 	CreatedRelease      bool
 	UploadedFile        bool
 	UploadedFileNames   []string
+	Lock                sync.Mutex
 }
 
 func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
@@ -216,6 +235,8 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 }
 
 func (client *DummyClient) Upload(ctx *context.Context, releaseID int64, name string, file *os.File) (err error) {
+	client.Lock.Lock()
+	defer client.Lock.Unlock()
 	if client.FailToUpload {
 		return errors.New("upload failed")
 	}

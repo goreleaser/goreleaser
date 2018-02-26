@@ -1,9 +1,10 @@
 ---
-title: Releasing
+title: Release
 ---
 
-GoReleaser will create a release in GitHub with the current tag, upload all
-the archives and checksums, also generate a changelog from the commits new since the last tag.
+GoReleaser will create a GitHub release with the current tag, upload all
+the artifacts and generate the changelog based on the new commits since the
+previous tag.
 
 Let's see what can be customized in the `release` section:
 
@@ -68,6 +69,6 @@ On Unix systems you can also generate the release notes in-line by using
 To list all commits since the last tag, but skip ones starting with `Merge` or
 `docs`, you could run this command:
 
-```sh
-goreleaser --release-notes <(git log --pretty=oneline --abbrev-commit $(git describe --tags --abbrev=0)^.. | grep -v '^[^ ]* \(Merge\|docs\)')
+```console
+$ goreleaser --release-notes <(some_changelog_generator)
 ```

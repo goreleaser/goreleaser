@@ -68,8 +68,8 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	if !ctx.Publish {
-		return pipeline.ErrSkipPublish
+	if ctx.Snapshot {
+		return pipeline.ErrSnapshotEnabled
 	}
 	if ctx.Config.Release.Draft {
 		return pipeline.Skip("release is marked as draft")

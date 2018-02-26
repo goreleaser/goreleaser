@@ -41,6 +41,12 @@
   version = "v1.6.0"
 
 [[projects]]
+  name = "github.com/gobuffalo/packr"
+  packages = ["."]
+  revision = "6434a292ac52e6964adebfdce3f9ce6d9f16be01"
+  version = "v1.10.4"
+
+[[projects]]
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "925541529c1fa6821df4e44ce2723319eb2be768"
@@ -50,7 +56,7 @@
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "632a2caf6d3d380753dc7e422748202982ad18a3"
+  revision = "b1658317c4f5c8dd7000d94ab8a9b56039412cc6"
 
 [[projects]]
   branch = "master"
@@ -75,8 +81,8 @@
     "deb",
     "rpm"
   ]
-  revision = "7094e234cc76f76ba3a2228c28aaeebb7330e89c"
-  version = "v0.5.1"
+  revision = "3c6c7d3efc1372c7d2c92a82dec83c6df7c0a30e"
+  version = "v0.5.4"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -163,7 +169,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "37707fdb30a5b38865cfb95e5aab41707daec7fd"
+  revision = "f6cff0780e542efa0c8e864dc8fa522808f6a598"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -180,14 +186,14 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "d670f9405373e636a5a2765eea47fac0c9bc91a4"
+  revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
+  version = "v2.1.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "380c1fe14a422668b4ec2370927eb9996d007fc61d8f52245d78c8b44533664b"
+  inputs-digest = "1efd844c1426d5768f3142ec3b25f02d2d231f0a46034564a7e6f50a806c1272"
   solver-name = "gps-cdcl"
   solver-version = 1

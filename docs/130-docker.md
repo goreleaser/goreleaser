@@ -111,9 +111,5 @@ This will build and publish the following images:
 * myuser/myimage:v1.6
 * myuser/myimage:latest
 
-Hope this feature serves you well!
-
-More info:
-
-* [#461](https://github.com/goreleaser/goreleaser/issues/461)
-* [#505](https://github.com/goreleaser/goreleaser/issues/505)
+With these settings you can hopefully push several different docker images
+with multiple tags.

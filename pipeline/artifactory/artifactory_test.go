@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -192,7 +193,6 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		"ARTIFACTORY_PRODUCTION-US_SECRET": "deployuser-secret",
 		"ARTIFACTORY_PRODUCTION-EU_SECRET": "productionuser-apikey",
 	}
-	ctx.Publish = true
 	for _, goos := range []string{"linux", "darwin"} {
 		ctx.Artifacts.Add(artifact.Artifact{
 			Name:   "mybin",
@@ -232,7 +232,6 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Publish = true
 	ctx.Version = "1.0.0"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
@@ -245,7 +244,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		Path: debfile.Name(),
 	})
 
-	var uploads = map[string]bool{}
+	var uploads sync.Map
 
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.tar.gz", func(w http.ResponseWriter, r *http.Request) {
@@ -272,7 +271,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 			},
 			"uri" : "http://127.0.0.1:56563/example-repo-local/goreleaser/bin.tar.gz"
 		  }`)
-		uploads["targz"] = true
+		uploads.Store("targz", true)
 	})
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.deb", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "PUT")
@@ -298,12 +297,14 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 			},
 			"uri" : "http://127.0.0.1:56563/example-repo-local/goreleaser/bin.deb"
 		  }`)
-		uploads["deb"] = true
+		uploads.Store("deb", true)
 	})
 
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.True(t, uploads["targz"], "tar.gz file was not uploaded")
-	assert.True(t, uploads["deb"], "deb file was not uploaded")
+	_, ok := uploads.Load("targz")
+	assert.True(t, ok, "tar.gz file was not uploaded")
+	_, ok = uploads.Load("deb")
+	assert.True(t, ok, "deb file was not uploaded")
 }
 
 func TestRunPipe_ArtifactoryDown(t *testing.T) {
@@ -328,7 +329,6 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -358,7 +358,6 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 			},
 		},
 	})
-	ctx.Publish = true
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
@@ -415,7 +414,6 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 			},
 		},
 	})
-	ctx.Publish = true
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
@@ -473,7 +471,6 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 			},
 		},
 	})
-	ctx.Publish = true
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
@@ -528,7 +525,6 @@ func TestRunPipe_UnparsableResponse(t *testing.T) {
 			},
 		},
 	})
-	ctx.Publish = true
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
@@ -556,7 +552,6 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 			},
 		},
 	})
-	ctx.Publish = true
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
@@ -594,7 +589,6 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 			},
 		},
 	})
-	ctx.Publish = true
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
@@ -623,10 +617,11 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
+	ctx.Snapshot = true
 
 	err := Pipe{}.Run(ctx)
 	assert.True(t, pipeline.IsSkip(err))
-	assert.EqualError(t, err, pipeline.ErrSkipPublish.Error())
+	assert.EqualError(t, err, pipeline.ErrSnapshotEnabled.Error())
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {
@@ -652,7 +647,6 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Publish = true
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Dir(binPath),
@@ -733,7 +727,6 @@ func TestArtifactoriesWithoutSecret(t *testing.T) {
 
 func TestArtifactoriesWithInvalidMode(t *testing.T) {
 	var ctx = &context.Context{
-		Publish: true,
 		Env: map[string]string{
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},

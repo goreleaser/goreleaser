@@ -34,5 +34,9 @@ func Run(args ...string) (string, error) {
 
 // Clean the output
 func Clean(output string, err error) (string, error) {
-	return strings.Replace(strings.Split(output, "\n")[0], "'", "", -1), err
+	output = strings.Replace(strings.Split(output, "\n")[0], "'", "", -1)
+	if err != nil {
+		err = errors.New(strings.TrimSuffix(err.Error(), "\n"))
+	}
+	return output, err
 }

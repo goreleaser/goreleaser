@@ -31,10 +31,10 @@ func start(t *testing.T) {
 	if *it {
 		return
 	}
-	if err := exec.Command(
+	if out, err := exec.Command(
 		"docker", "run", "-d", "-p", "5000:5000", "--name", "registry", "registry:2",
-	).Run(); err != nil {
-		t.Log("failed to start docker registry", err)
+	).CombinedOutput(); err != nil {
+		t.Log("failed to start docker registry", string(out), err)
 		t.FailNow()
 	}
 }
@@ -262,7 +262,8 @@ func TestRunPipe(t *testing.T) {
 					docker.docker,
 				},
 			})
-			ctx.Publish = docker.publish
+			// TODO: ideally refactor this as well
+			ctx.Snapshot = !docker.publish
 			ctx.Env = map[string]string{
 				"FOO": "123",
 			}

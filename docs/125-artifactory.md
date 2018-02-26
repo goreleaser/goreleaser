@@ -33,17 +33,14 @@ The `target` is the URL to upload the artifacts to (_without_ the name of the ar
 
 An example configuration for `goreleaser` in upload mode `binary` with the target can look like
 
-```
-http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}
-```
-
-and will result in a final deployment like
-
-```
-http://artifacts.company.com:8081/artifactory/example-repo-local/goreleaser/1.0.0/Darwin/x86_64/goreleaser
+```yaml
+- mode: binary
+  target: 'http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}'
 ```
 
-Support variables:
+and will result in a final deployment like `http://artifacts.company.com:8081/artifactory/example-repo-local/goreleaser/1.0.0/Darwin/x86_64/goreleaser`.
+
+Supported variables:
 
 * Version
 * Tag
@@ -52,7 +49,8 @@ Support variables:
 * Arch
 * Arm
 
-_Attention_: Variables _Os_, _Arch_ and _Arm_ are only supported in upload mode `binary`.
+_Attention_: Variables _Os_, _Arch_ and _Arm_ are only supported in upload
+mode `binary`.
 
 ### Password / API Key
 

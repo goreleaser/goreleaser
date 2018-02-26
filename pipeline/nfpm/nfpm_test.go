@@ -20,7 +20,9 @@ func TestDescription(t *testing.T) {
 
 func TestRunPipeNoFormats(t *testing.T) {
 	var ctx = &context.Context{
-		Version:     "1.0.0",
+		Git: context.GitInfo{
+			CurrentTag: "v1.0.0",
+		},
 		Config:      config.Project{},
 		Parallelism: runtime.NumCPU(),
 	}
@@ -83,7 +85,7 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 	})
-	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(artifact.Artifact{

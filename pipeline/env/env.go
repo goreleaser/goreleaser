@@ -35,11 +35,8 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Run(ctx *context.Context) error {
 	token, err := loadEnv("GITHUB_TOKEN", ctx.Config.EnvFiles.GitHubToken)
 	ctx.Token = token
-	if !ctx.Publish {
-		return pipeline.Skip("publishing is disabled")
-	}
-	if !ctx.Validate {
-		return pipeline.Skip("--skip-validate is set")
+	if ctx.Snapshot {
+		return pipeline.ErrSnapshotEnabled
 	}
 	if ctx.Token == "" && err == nil {
 		return ErrMissingToken

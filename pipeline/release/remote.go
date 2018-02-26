@@ -1,6 +1,7 @@
 package release
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -15,27 +16,27 @@ func remoteRepo() (result config.Repo, err error) {
 	}
 	out, err := git.Run("config", "--get", "remote.origin.url")
 	if err != nil {
-		return result, errors.Wrap(err, "repository doesn't have an `origin` remote")
+		return result, fmt.Errorf("repository doesn't have an `origin` remote")
 	}
 	return extractRepoFromURL(out), nil
 }
 
 func extractRepoFromURL(s string) config.Repo {
-	for _, r := range []string{
-		"git@github.com:",
-		".git",
-		"https://github.com/",
-		"\n",
-	} {
-		s = strings.Replace(s, r, "", -1)
-	}
-	return toRepo(s)
-}
-
-func toRepo(s string) config.Repo {
-	var ss = strings.Split(s, "/")
+	// removes the .git suffix and any new lines
+	s = strings.NewReplacer(
+		".git", "",
+		"\n", "",
+	).Replace(s)
+	// if the URL contains a :, indicating a SSH config,
+	// remove all chars until it, including itself
+	// on HTTP and HTTPS URLs it will remove the http(s): prefix,
+	// which is ok. On SSH URLs the whole user@server will be removed,
+	// which is required.
+	s = s[strings.LastIndex(s, ":")+1:]
+	// split by /, the last to parts should be the owner and name
+	ss := strings.Split(s, "/")
 	return config.Repo{
-		Owner: ss[0],
-		Name:  ss[1],
+		Owner: ss[len(ss)-2],
+		Name:  ss[len(ss)-1],
 	}
 }

@@ -124,7 +124,7 @@ func getChangelog(tag string) (string, error) {
 }
 
 func gitLog(refs ...string) (string, error) {
-	var args = []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate"}
+	var args = []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
 	args = append(args, refs...)
 	return git.Run(args...)
 }

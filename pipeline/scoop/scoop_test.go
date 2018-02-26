@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -108,7 +109,6 @@ func Test_doRun(t *testing.T) {
 							Homepage:    "https://github.com/goreleaser",
 						},
 					},
-					Publish: true,
 				},
 				&DummyClient{},
 			},
@@ -152,7 +152,6 @@ func Test_doRun(t *testing.T) {
 							Homepage:    "https://github.com/goreleaser",
 						},
 					},
-					Publish: true,
 				},
 				&DummyClient{},
 			},
@@ -195,7 +194,6 @@ func Test_doRun(t *testing.T) {
 							Homepage:    "https://github.com/goreleaser",
 						},
 					},
-					Publish: true,
 				},
 				&DummyClient{},
 			},
@@ -230,7 +228,6 @@ func Test_doRun(t *testing.T) {
 							},
 						},
 					},
-					Publish: true,
 				},
 				&DummyClient{},
 			},
@@ -273,7 +270,7 @@ func Test_doRun(t *testing.T) {
 							Homepage:    "https://github.com/goreleaser",
 						},
 					},
-					Publish: false,
+					Snapshot: true,
 				},
 				&DummyClient{},
 			},
@@ -281,7 +278,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
-			shouldErr("--skip-publish is set"),
+			shouldErr(pipeline.ErrSnapshotEnabled.Error()),
 		},
 		{
 			"is draft",
@@ -313,7 +310,6 @@ func Test_doRun(t *testing.T) {
 							Homepage:    "https://github.com/goreleaser",
 						},
 					},
-					Publish: true,
 				},
 				&DummyClient{},
 			},
@@ -353,7 +349,6 @@ func Test_doRun(t *testing.T) {
 							Homepage:    "https://github.com/goreleaser",
 						},
 					},
-					Publish: true,
 				},
 				&DummyClient{},
 			},
@@ -408,7 +403,6 @@ func Test_buildManifest(t *testing.T) {
 				Homepage:    "https://github.com/goreleaser",
 			},
 		},
-		Publish: true,
 	}
 	out, err := buildManifest(ctx, &DummyClient{}, []artifact.Artifact{
 		{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
