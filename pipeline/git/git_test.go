@@ -153,6 +153,15 @@ func TestSnapshotNoTags(t *testing.T) {
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
+func TestSnapshotNoCommits(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	var ctx = context.New(config.Project{})
+	ctx.Snapshot = true
+	assert.NoError(t, Pipe{}.Run(ctx))
+}
+
 func TestSnapshotWithoutRepo(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
