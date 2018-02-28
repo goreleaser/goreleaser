@@ -56,7 +56,7 @@
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "b1658317c4f5c8dd7000d94ab8a9b56039412cc6"
+  revision = "ddf9d548a0f4d9b3fd42dd2add86e2c804860fef"
 
 [[projects]]
   branch = "master"
@@ -81,8 +81,8 @@
     "deb",
     "rpm"
   ]
-  revision = "3c6c7d3efc1372c7d2c92a82dec83c6df7c0a30e"
-  version = "v0.5.4"
+  revision = "e16d0005f7f007b11fdcb1eea9e7efbf80746973"
+  version = "v0.5.5"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -157,7 +157,7 @@
     ".",
     "internal"
   ]
-  revision = "543e37812f10c46c622c9575afd7ad22f22a12ba"
+  revision = "d7d64896b5ff88e703f289390e3e98cd010a837e"
 
 [[projects]]
   branch = "master"
