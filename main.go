@@ -187,7 +187,7 @@ func releaseProject(flags Flags) error {
 		ctx.ReleaseNotes = string(bts)
 	}
 	ctx.Snapshot = flags.Bool("snapshot")
-	ctx.SkipPublish = flags.Bool("snapshot") || flags.Bool("skip-publish")
+	ctx.SkipPublish = ctx.Snapshot || flags.Bool("skip-publish")
 	ctx.RmDist = flags.Bool("rm-dist")
 	return doRelease(ctx)
 }
