@@ -21,7 +21,6 @@ that and rewrote the whole thing in Go.
 
 There are three ways to get going install GoReleaser:
 
-
 ### Using homebrew
 
 ```sh
