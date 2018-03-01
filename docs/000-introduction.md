@@ -21,11 +21,6 @@ that and rewrote the whole thing in Go.
 
 There are three ways to get going install GoReleaser:
 
-### Using go get
-
-```sh
-go get github.com/goreleaser/goreleaser
-```
 
 ### Using homebrew
 
@@ -47,3 +42,14 @@ scoop install goreleaser
 
 Download your preferred flavor from the [releases page](https://github.com/goreleaser/goreleaser/releases/latest) and install
 manually.
+
+### Using go get
+
+Note: this method requires Go 1.10+.
+
+```console
+$ go get github.com/goreleaser/goreleaser
+```
+
+It is recommended to also run `dep ensure` to make sure that the dependencies
+are in the correct versions.
