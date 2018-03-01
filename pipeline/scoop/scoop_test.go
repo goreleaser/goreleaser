@@ -270,7 +270,7 @@ func Test_doRun(t *testing.T) {
 							Homepage:    "https://github.com/goreleaser",
 						},
 					},
-					Snapshot: true,
+					SkipPublish: true,
 				},
 				&DummyClient{},
 			},
@@ -278,7 +278,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
-			shouldErr(pipeline.ErrSnapshotEnabled.Error()),
+			shouldErr(pipeline.ErrSkipPublishEnabled.Error()),
 		},
 		{
 			"is draft",

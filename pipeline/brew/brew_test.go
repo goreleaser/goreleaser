@@ -319,8 +319,8 @@ func TestRunPipeNoUpload(t *testing.T) {
 		ctx.Config.Brew.SkipUpload = true
 		assertNoPublish(tt)
 	})
-	t.Run("snapshot", func(tt *testing.T) {
-		ctx.Snapshot = true
+	t.Run("skip publish", func(tt *testing.T) {
+		ctx.SkipPublish = true
 		assertNoPublish(tt)
 	})
 	t.Run("draft release", func(tt *testing.T) {

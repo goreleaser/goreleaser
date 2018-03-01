@@ -127,7 +127,7 @@ func TestRunPipeUploadFailure(t *testing.T) {
 
 func TestSnapshot(t *testing.T) {
 	var ctx = &context.Context{
-		Snapshot:    true,
+		SkipPublish: true,
 		Parallelism: 1,
 	}
 	client := &DummyClient{}

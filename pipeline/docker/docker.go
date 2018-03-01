@@ -195,9 +195,9 @@ func link(src, dest string) error {
 }
 
 func publish(ctx *context.Context, docker config.Docker, images []string) error {
-	if ctx.Snapshot {
+	if ctx.SkipPublish {
 		// TODO: this should be better handled
-		log.Warn(pipeline.ErrSnapshotEnabled.Error())
+		log.Warn(pipeline.ErrSkipPublishEnabled.Error())
 		return nil
 	}
 	for _, image := range images {
