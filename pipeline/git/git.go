@@ -34,19 +34,25 @@ func (Pipe) Run(ctx *context.Context) error {
 	return validate(ctx)
 }
 
+var fakeInfo = context.GitInfo{
+	CurrentTag: "v0.0.0",
+	Commit:     "none",
+}
+
 func getInfo(ctx *context.Context) (context.GitInfo, error) {
 	if !git.IsRepo() && ctx.Snapshot {
-		log.Warn("running against a folder that is not a git repo")
-		return context.GitInfo{
-			CurrentTag: "v0.0.0",
-			Commit:     "none",
-		}, nil
+		log.Warn("accepting to run without a git repo because this is a snapshot")
+		return fakeInfo, nil
 	}
 	if !git.IsRepo() {
 		return context.GitInfo{}, ErrNotRepository
 	}
 	info, err := getGitInfo(ctx)
 	if err != nil && ctx.Snapshot {
+		log.WithError(err).Warn("ignoring errors because this is a snapshot")
+		if info.Commit == "" {
+			info = fakeInfo
+		}
 		return info, nil
 	}
 	return info, err
@@ -60,7 +66,8 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 	tag, err := getTag()
 	if err != nil {
 		return context.GitInfo{
-			Commit: commit,
+			Commit:     commit,
+			CurrentTag: "v0.0.0",
 		}, ErrNoTag
 	}
 	return context.GitInfo{
