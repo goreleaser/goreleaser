@@ -24,6 +24,15 @@ func TestReleaseProject(t *testing.T) {
 	assert.NoError(t, releaseProject(newFlags(t, testParams())))
 }
 
+func TestReleaseProjectSkipPublish(t *testing.T) {
+	_, back := setup(t)
+	defer back()
+	params := testParams()
+	params["snapshot"] = "false"
+	params["skip-publish"] = "true"
+	assert.NoError(t, releaseProject(newFlags(t, params)))
+}
+
 func TestConfigFileIsSetAndDontExist(t *testing.T) {
 	params := testParams()
 	params["config"] = "/this/wont/exist"
