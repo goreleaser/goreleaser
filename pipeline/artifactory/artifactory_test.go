@@ -617,11 +617,11 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Snapshot = true
+	ctx.SkipPublish = true
 
 	err := Pipe{}.Run(ctx)
 	assert.True(t, pipeline.IsSkip(err))
-	assert.EqualError(t, err, pipeline.ErrSnapshotEnabled.Error())
+	assert.EqualError(t, err, pipeline.ErrSkipPublishEnabled.Error())
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {

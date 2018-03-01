@@ -122,8 +122,8 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Brew.SkipUpload {
 		return pipeline.Skip("brew.skip_upload is set")
 	}
-	if ctx.Snapshot {
-		return pipeline.ErrSnapshotEnabled
+	if ctx.SkipPublish {
+		return pipeline.ErrSkipPublishEnabled
 	}
 	if ctx.Config.Release.Draft {
 		return pipeline.Skip("release is marked as draft")
