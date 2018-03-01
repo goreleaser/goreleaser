@@ -151,6 +151,7 @@ func TestSnapshotNoTags(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
 	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
 }
 
 func TestSnapshotNoCommits(t *testing.T) {
@@ -160,6 +161,7 @@ func TestSnapshotNoCommits(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
 	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Equal(t, fakeInfo, ctx.Git)
 }
 
 func TestSnapshotWithoutRepo(t *testing.T) {
@@ -168,6 +170,7 @@ func TestSnapshotWithoutRepo(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
 	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Equal(t, fakeInfo, ctx.Git)
 }
 
 func TestSnapshotDirty(t *testing.T) {
