@@ -76,8 +76,8 @@ func TestEmptyEnvFile(t *testing.T) {
 func TestInvalidEnvChecksSkipped(t *testing.T) {
 	assert.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
 	var ctx = &context.Context{
-		Config:   config.Project{},
-		Snapshot: true,
+		Config:      config.Project{},
+		SkipPublish: true,
 	}
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }

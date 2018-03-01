@@ -33,6 +33,7 @@ type Context struct {
 	ReleaseNotes string
 	Version      string
 	Snapshot     bool
+	SkipPublish  bool
 	RmDist       bool
 	Debug        bool
 	Parallelism  int

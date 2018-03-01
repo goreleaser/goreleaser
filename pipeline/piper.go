@@ -18,6 +18,10 @@ type Piper interface {
 // It usually means that publishing and maybe some validations were skipped.
 var ErrSnapshotEnabled = Skip("disabled during snapshot mode")
 
+// ErrSkipPublishEnabled happens if --skip-publish is set.
+// It means that the part of a Piper that publishes its artifacts was not run.
+var ErrSkipPublishEnabled = Skip("publishing is disabled")
+
 // IsSkip returns true if the error is an ErrSkip
 func IsSkip(err error) bool {
 	_, ok := err.(ErrSkip)

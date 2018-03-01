@@ -316,15 +316,21 @@ func TestRunPipeNoUpload(t *testing.T) {
 		assert.False(t, client.CreatedFile)
 	}
 	t.Run("skip upload", func(tt *testing.T) {
+		ctx.Config.Release.Draft = false
 		ctx.Config.Brew.SkipUpload = true
+		ctx.SkipPublish = false
 		assertNoPublish(tt)
 	})
-	t.Run("snapshot", func(tt *testing.T) {
-		ctx.Snapshot = true
+	t.Run("skip publish", func(tt *testing.T) {
+		ctx.Config.Release.Draft = false
+		ctx.Config.Brew.SkipUpload = false
+		ctx.SkipPublish = true
 		assertNoPublish(tt)
 	})
 	t.Run("draft release", func(tt *testing.T) {
 		ctx.Config.Release.Draft = true
+		ctx.Config.Brew.SkipUpload = false
+		ctx.SkipPublish = false
 		assertNoPublish(tt)
 	})
 }
