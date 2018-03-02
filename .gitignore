@@ -4,4 +4,3 @@ vendor
 coverage.txt
 goreleaser
 debug.test
-main-packr.go

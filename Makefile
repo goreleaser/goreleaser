@@ -1,16 +1,20 @@
 SOURCE_FILES?=./...
 TEST_PATTERN?=.
 TEST_OPTIONS?=
+OS=$(shell uname -s)
 
 # Install all the build and lint dependencies
 setup:
 	go get -u golang.org/x/tools/cmd/stringer
-	go get -u github.com/alecthomas/gometalinter
-	go get -u github.com/golang/dep/cmd/dep
 	go get -u golang.org/x/tools/cmd/cover
 	go get -u github.com/caarlos0/static/cmd/static-docs
 	go get -u github.com/caarlos0/bandep
-	go get -u github.com/gobuffalo/packr/...
+	go get -u gopkg.in/alecthomas/gometalinter.v2
+ifeq ($(OS), Darwin)
+	brew install dep
+else
+	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+endif
 	dep ensure
 	gometalinter --install
 	echo "make check" > .git/hooks/pre-commit
