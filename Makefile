@@ -39,7 +39,7 @@ fmt:
 
 # Run all the linters
 lint:
-	gometalinter --vendor --exclude main-packr.go ./...
+	gometalinter --vendor ./...
 	find . -name '*.md' -not -wholename './vendor/*' | xargs prettier -l
 .PHONY: lint
 
