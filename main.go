@@ -1,4 +1,3 @@
-//go:generate packr
 package main
 
 import (
@@ -12,7 +11,6 @@ import (
 	lcli "github.com/apex/log/handlers/cli"
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
-	"github.com/gobuffalo/packr"
 	"github.com/urfave/cli"
 
 	"github.com/goreleaser/goreleaser/config"
@@ -232,7 +230,7 @@ func initProject(filename string) error {
 		return fmt.Errorf("%s already exists", filename)
 	}
 	log.Infof(color.New(color.Bold).Sprint("Generating .goreleaser.yml file"))
-	return ioutil.WriteFile(filename, packr.NewBox("example.goreleaser.yml").Bytes("."), 0644)
+	return ioutil.WriteFile(filename, []byte(exampleConfig), 0644)
 }
 
 func getConfigFile(flags Flags) string {
@@ -253,3 +251,27 @@ func getConfigFile(flags Flags) string {
 	}
 	return config
 }
+
+var exampleConfig = `# This is an example goreleaser.yaml file with some sane defaults.
+# Make sure to check the documentation at http://goreleaser.com
+builds:
+- env:
+  - CGO_ENABLED=0
+archive:
+  replacements:
+    darwin: Darwin
+    linux: Linux
+    windows: Windows
+    386: i386
+    amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+`

@@ -34,11 +34,9 @@
   branch = "master"
   name = "github.com/apex/log"
 
-
 [[constraint]]
   name = "github.com/caarlos0/ctrlc"
   version = "1.0.0"
-
 
 [[constraint]]
   name = "github.com/fatih/color"

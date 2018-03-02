@@ -1,6 +1,5 @@
 builds:
-  - main: ./main.go
-    hooks:
+  - hooks:
       pre: go generate
     env:
       - CGO_ENABLED=0
