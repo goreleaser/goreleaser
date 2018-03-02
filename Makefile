@@ -10,15 +10,13 @@ setup:
 	go get -u github.com/caarlos0/static/cmd/static-docs
 	go get -u github.com/caarlos0/bandep
 	go get -u gopkg.in/alecthomas/gometalinter.v2
-	which bandep
-	which gometalinter
 ifeq ($(OS), Darwin)
 	brew install dep
 else
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 endif
 	dep ensure
-	gometalinter --install
+	gometalinter.v2 --install
 	echo "make check" > .git/hooks/pre-commit
 	chmod +x .git/hooks/pre-commit
 .PHONY: setup
