@@ -1,6 +1,7 @@
 builds:
-  - hooks:
-      pre: packr
+  - main: ./main.go
+    hooks:
+      pre: go generate
     env:
       - CGO_ENABLED=0
     goos:
