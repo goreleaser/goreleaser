@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/apex/log"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 // GitHubURLs holds the URLs to be used when using github enterprise
@@ -212,6 +212,11 @@ type EnvFiles struct {
 	GitHubToken string `yaml:"github_token,omitempty"`
 }
 
+// Git config
+type Git struct {
+	ShortHash bool `yaml:"short_hash,omitempty"`
+}
+
 // Project includes all project configuration
 type Project struct {
 	ProjectName   string        `yaml:"project_name,omitempty"`
@@ -231,6 +236,7 @@ type Project struct {
 	Dist          string        `yaml:",omitempty"`
 	Sign          Sign          `yaml:",omitempty"`
 	EnvFiles      EnvFiles      `yaml:"env_files,omitempty"`
+	Git           Git           `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

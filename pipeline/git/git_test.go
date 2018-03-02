@@ -185,3 +185,19 @@ func TestSnapshotDirty(t *testing.T) {
 	ctx.Snapshot = true
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
+
+func TestShortCommitHash(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "first")
+	var ctx = context.New(config.Project{
+		Snapshot: config.Snapshot{
+			NameTemplate: "{{.Commit}}",
+		},
+	})
+	ctx.Snapshot = true
+	ctx.Config.Git.ShortHash = true
+	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Len(t, ctx.Version, 7)
+}

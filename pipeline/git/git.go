@@ -2,6 +2,7 @@ package git
 
 import (
 	"bytes"
+	"fmt"
 	"regexp"
 	"strings"
 	"text/template"
@@ -59,7 +60,7 @@ func getInfo(ctx *context.Context) (context.GitInfo, error) {
 }
 
 func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
-	commit, err := getCommit()
+	commit, err := getCommit(ctx)
 	if err != nil {
 		return context.GitInfo{}, errors.Wrap(err, "couldn't get current commit")
 	}
@@ -129,8 +130,12 @@ func validate(ctx *context.Context) error {
 	return nil
 }
 
-func getCommit() (string, error) {
-	return git.Clean(git.Run("show", "--format='%H'", "HEAD"))
+func getCommit(ctx *context.Context) (string, error) {
+	format := "%H"
+	if ctx.Config.Git.ShortHash {
+		format = "%h"
+	}
+	return git.Clean(git.Run("show", fmt.Sprintf("--format='%s'", format), "HEAD"))
 }
 
 func getTag() (string, error) {
