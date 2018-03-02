@@ -10,6 +10,8 @@ setup:
 	go get -u github.com/caarlos0/static/cmd/static-docs
 	go get -u github.com/caarlos0/bandep
 	go get -u gopkg.in/alecthomas/gometalinter.v2
+	which bandep
+	which gometalinter
 ifeq ($(OS), Darwin)
 	brew install dep
 else
