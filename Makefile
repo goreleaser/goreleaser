@@ -80,7 +80,7 @@ todo:
 		--exclude=Makefile \
 		--text \
 		--color \
-		-nRo -E ' TODO:.*|SkipNow|nolint:.*' .
+		-nRo -E ' TODO:.*|SkipNow' .
 .PHONY: todo
 
 
