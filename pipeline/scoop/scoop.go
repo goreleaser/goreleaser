@@ -134,7 +134,7 @@ func getDownloadURL(ctx *context.Context, githubURL, file string) string {
 		githubURL,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
-		ctx.Version,
+		ctx.Git.CurrentTag,
 		file,
 	)
 }
