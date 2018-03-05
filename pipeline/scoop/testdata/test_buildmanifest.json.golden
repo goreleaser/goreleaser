@@ -2,11 +2,11 @@
     "version": "1.0.1",
     "architecture": {
         "32bit": {
-            "url": "https://github.com/test/test/releases/download/1.0.1/foo_1.0.1_windows_386.tar.gz",
+            "url": "https://github.com/test/test/releases/download/v1.0.1/foo_1.0.1_windows_386.tar.gz",
             "bin": "test.exe"
         },
         "64bit": {
-            "url": "https://github.com/test/test/releases/download/1.0.1/foo_1.0.1_windows_amd64.tar.gz",
+            "url": "https://github.com/test/test/releases/download/v1.0.1/foo_1.0.1_windows_amd64.tar.gz",
             "bin": "test.exe"
         }
     },

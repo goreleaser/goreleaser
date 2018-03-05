@@ -431,13 +431,47 @@ func Test_getDownloadURL(t *testing.T) {
 	}{
 		{
 			"simple",
-			args{&context.Context{Version: "1.0.0", Config: config.Project{Release: config.Release{GitHub: config.Repo{Owner: "user", Name: "repo"}}}}, "https://github.com", "file.tar.gz"},
-			"https://github.com/user/repo/releases/download/1.0.0/file.tar.gz",
+			args{
+				&context.Context{
+					Version: "1.0.0",
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.0",
+					},
+					Config: config.Project{
+						Release: config.Release{
+							GitHub: config.Repo{
+								Owner: "user",
+								Name:  "repo",
+							},
+						},
+					},
+				},
+				"https://github.com",
+				"file.tar.gz",
+			},
+			"https://github.com/user/repo/releases/download/v1.0.0/file.tar.gz",
 		},
 		{
 			"custom",
-			args{&context.Context{Version: "1.0.0", Config: config.Project{Release: config.Release{GitHub: config.Repo{Owner: "user", Name: "repo"}}}}, "https://git.my.company.com", "file.tar.gz"},
-			"https://git.my.company.com/user/repo/releases/download/1.0.0/file.tar.gz",
+			args{
+				&context.Context{
+					Version: "1.0.0",
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.0",
+					},
+					Config: config.Project{
+						Release: config.Release{
+							GitHub: config.Repo{
+								Owner: "user",
+								Name:  "repo",
+							},
+						},
+					},
+				},
+				"https://git.my.company.com",
+				"file.tar.gz",
+			},
+			"https://git.my.company.com/user/repo/releases/download/v1.0.0/file.tar.gz",
 		},
 	}
 	for _, tt := range tests {
