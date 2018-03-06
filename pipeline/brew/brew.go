@@ -113,6 +113,9 @@ func doRun(ctx *context.Context, client client.Client) error {
 	}
 
 	var filename = ctx.Config.ProjectName + ".rb"
+	if ctx.Config.Brew.Name != "" {
+		filename = ctx.Config.Brew.Name + ".rb"
+	}
 	var path = filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
 	if err := ioutil.WriteFile(path, content.Bytes(), 0644); err != nil {
