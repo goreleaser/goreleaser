@@ -114,6 +114,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			Brew: config.Homebrew{
+				Name: "run-pipe",
 				GitHub: config.Repo{
 					Owner: "test",
 					Name:  "test",
@@ -363,6 +364,7 @@ func TestDefault(t *testing.T) {
 
 	var ctx = &context.Context{
 		Config: config.Project{
+			ProjectName: "myproject",
 			Builds: []config.Build{
 				{
 					Binary: "foo",
@@ -386,6 +388,7 @@ func TestDefault(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, ctx.Config.ProjectName, ctx.Config.Brew.Name)
 	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Name)
 	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Email)
 	assert.Equal(t, `bin.install "foo"`, ctx.Config.Brew.Install)

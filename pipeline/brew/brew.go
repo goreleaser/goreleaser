@@ -63,6 +63,9 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Brew.CommitAuthor.Email == "" {
 		ctx.Config.Brew.CommitAuthor.Email = "goreleaser@carlosbecker.com"
 	}
+	if ctx.Config.Brew.Name == "" {
+		ctx.Config.Brew.Name = ctx.Config.ProjectName
+	}
 	return nil
 }
 
@@ -112,10 +115,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	var filename = ctx.Config.ProjectName + ".rb"
-	if ctx.Config.Brew.Name != "" {
-		filename = ctx.Config.Brew.Name + ".rb"
-	}
+	var filename = ctx.Config.Brew.Name + ".rb"
 	var path = filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
 	if err := ioutil.WriteFile(path, content.Bytes(), 0644); err != nil {
