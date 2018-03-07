@@ -196,6 +196,15 @@ func TestRunPipe(t *testing.T) {
 		assert.NoError(tt, err)
 		assert.Equal(tt, string(bts), string(distBts))
 	})
+
+	t.Run("custom name", func(tt *testing.T) {
+		ctx.Config.Brew.Name = "custom-brew-name"
+		assert.NoError(tt, doRun(ctx, client))
+		assert.True(tt, client.CreatedFile)
+
+		_, err := os.Stat(filepath.Join(folder, "custom-brew-name.rb"))
+		assert.NoError(t, err)
+	})
 }
 
 func TestRunPipeNoDarwin64Build(t *testing.T) {

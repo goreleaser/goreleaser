@@ -34,6 +34,7 @@ func (r Repo) String() string {
 
 // Homebrew contains the brew section
 type Homebrew struct {
+	Name             string       `yaml:",omitempty"`
 	GitHub           Repo         `yaml:",omitempty"`
 	CommitAuthor     CommitAuthor `yaml:"commit_author,omitempty"`
 	Folder           string       `yaml:",omitempty"`
