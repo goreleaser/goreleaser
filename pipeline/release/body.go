@@ -20,8 +20,9 @@ const bodyTemplateText = `{{ .ReleaseNotes }}
 {{- end }}
 
 ---
-Automated with [GoReleaser](https://github.com/goreleaser)
-Built with {{ .GoVersion }}`
+Automated with [GoReleaser](https://github.com/goreleaser) {{ .GoReleaserVersion }}
+Built with {{ .GoVersion }}
+`
 
 var bodyTemplate *template.Template
 
@@ -45,12 +46,15 @@ func describeBodyVersion(ctx *context.Context, version string) (bytes.Buffer, er
 		dockers = append(dockers, a.Name)
 	}
 	err := bodyTemplate.Execute(&out, struct {
-		ReleaseNotes, GoVersion string
-		DockerImages            []string
+		ReleaseNotes      string
+		GoVersion         string
+		GoReleaserVersion string
+		DockerImages      []string
 	}{
-		ReleaseNotes: ctx.ReleaseNotes,
-		GoVersion:    version,
-		DockerImages: dockers,
+		ReleaseNotes:      ctx.ReleaseNotes,
+		GoVersion:         version,
+		DockerImages:      dockers,
+		GoReleaserVersion: ctx.GoReleaserVersion,
 	})
 	return out, err
 }
