@@ -3,5 +3,5 @@ feature1: description
 feature2: other description
 
 ---
-Automated with [GoReleaser](https://github.com/goreleaser)
+Automated with [GoReleaser](https://github.com/goreleaser) v0.60.1
 Built with go version go1.9 darwin/amd64

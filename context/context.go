@@ -25,18 +25,19 @@ type GitInfo struct {
 // Context carries along some data through the pipes
 type Context struct {
 	ctx.Context
-	Config       config.Project
-	Env          map[string]string
-	Token        string
-	Git          GitInfo
-	Artifacts    artifact.Artifacts
-	ReleaseNotes string
-	Version      string
-	Snapshot     bool
-	SkipPublish  bool
-	RmDist       bool
-	Debug        bool
-	Parallelism  int
+	Config            config.Project
+	Env               map[string]string
+	Token             string
+	Git               GitInfo
+	Artifacts         artifact.Artifacts
+	ReleaseNotes      string
+	Version           string
+	Snapshot          bool
+	SkipPublish       bool
+	RmDist            bool
+	Debug             bool
+	Parallelism       int
+	GoReleaserVersion string
 }
 
 // New context

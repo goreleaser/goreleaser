@@ -18,6 +18,7 @@ func TestDescribeBody(t *testing.T) {
 	var changelog = "\nfeature1: description\nfeature2: other description"
 	var ctx = context.New(config.Project{})
 	ctx.ReleaseNotes = changelog
+	ctx.GoReleaserVersion = "v0.60.1"
 	for _, d := range []string{
 		"goreleaser/goreleaser:0.40.0",
 		"goreleaser/goreleaser:latest",
@@ -43,7 +44,8 @@ func TestDescribeBody(t *testing.T) {
 func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
 	var changelog = "\nfeature1: description\nfeature2: other description"
 	var ctx = &context.Context{
-		ReleaseNotes: changelog,
+		ReleaseNotes:      changelog,
+		GoReleaserVersion: "v0.60.1",
 	}
 	out, err := describeBodyVersion(ctx, "go version go1.9 darwin/amd64")
 	assert.NoError(t, err)

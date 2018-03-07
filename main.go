@@ -175,6 +175,7 @@ func releaseProject(flags Flags) error {
 	defer cancel()
 	ctx.Parallelism = flags.Int("parallelism")
 	ctx.Debug = flags.Bool("debug")
+	ctx.GoReleaserVersion = version
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	if notes != "" {
 		bts, err := ioutil.ReadFile(notes)
