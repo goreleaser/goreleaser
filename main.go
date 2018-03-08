@@ -104,6 +104,10 @@ func main() {
 			Usage: "Generates all artifacts but does not publish them anywhere",
 		},
 		cli.BoolFlag{
+			Name:  "skip-validate",
+			Usage: "Skips all git state checks",
+		},
+		cli.BoolFlag{
 			Name:  "rm-dist",
 			Usage: "Remove the dist folder before building",
 		},
@@ -187,6 +191,7 @@ func releaseProject(flags Flags) error {
 	}
 	ctx.Snapshot = flags.Bool("snapshot")
 	ctx.SkipPublish = ctx.Snapshot || flags.Bool("skip-publish")
+	ctx.SkipValidate = ctx.Snapshot || flags.Bool("skip-validate")
 	ctx.RmDist = flags.Bool("rm-dist")
 	return doRelease(ctx)
 }
