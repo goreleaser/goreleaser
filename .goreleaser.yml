@@ -1,6 +1,6 @@
 builds:
   - hooks:
-      pre: go generate
+      pre: go generate ./...
     env:
       - CGO_ENABLED=0
     goos:
