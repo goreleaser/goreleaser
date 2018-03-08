@@ -44,7 +44,7 @@ var (
 	normalPadding    = lcli.Default.Padding
 	increasedPadding = normalPadding * 2
 
-	pipes = []pipeline.Piper{
+	pipes = []Piper{
 		defaults.Pipe{},        // load default configs
 		dist.Pipe{},            // ensure ./dist is clean
 		git.Pipe{},             // get and validate git repo state
@@ -64,6 +64,14 @@ var (
 		scoop.Pipe{},           // push to scoop bucket
 	}
 )
+
+// Piper defines a pipe, which can be part of a pipeline (a serie of pipes).
+type Piper interface {
+	fmt.Stringer
+
+	// Run the pipe
+	Run(ctx *context.Context) error
+}
 
 // Flags interface represents an extractor of cli flags
 type Flags interface {

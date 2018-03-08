@@ -1,18 +1,5 @@
+// Package pipeline provides generic erros for pipes to use.
 package pipeline
-
-import (
-	"fmt"
-
-	"github.com/goreleaser/goreleaser/context"
-)
-
-// Piper defines a pipe, which can be part of a pipeline (a serie of pipes).
-type Piper interface {
-	fmt.Stringer
-
-	// Run the pipe
-	Run(ctx *context.Context) error
-}
 
 // ErrSnapshotEnabled happens when goreleaser is running in snapshot mode.
 // It usually means that publishing and maybe some validations were skipped.
