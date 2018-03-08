@@ -32,6 +32,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		return err
 	}
 	ctx.Config.Release.GitHub = repo
+	if ctx.Config.ProjectName == "" {
+		ctx.Config.ProjectName = repo.Name
+	}
 	return nil
 }
 

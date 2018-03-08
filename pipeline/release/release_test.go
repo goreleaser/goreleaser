@@ -146,6 +146,7 @@ func TestDefault(t *testing.T) {
 		Config: config.Project{},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "goreleaser", ctx.Config.ProjectName)
 	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
 	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
 }
