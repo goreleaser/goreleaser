@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alecthomas/kingpin"
 	"github.com/apex/log"
-	lcli "github.com/apex/log/handlers/cli"
+	"github.com/apex/log/handlers/cli"
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
-	"github.com/urfave/cli"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -73,97 +73,62 @@ type Piper interface {
 	Run(ctx *context.Context) error
 }
 
-// Flags interface represents an extractor of cli flags
-type Flags interface {
-	IsSet(s string) bool
-	String(s string) string
-	Int(s string) int
-	Bool(s string) bool
-	Duration(s string) time.Duration
-}
-
 func init() {
-	log.SetHandler(lcli.Default)
+	log.SetHandler(cli.Default)
 }
 
 func main() {
 	fmt.Println()
 	defer fmt.Println()
-	var app = cli.NewApp()
-	app.Name = "goreleaser"
-	app.Version = fmt.Sprintf("%v, commit %v, built at %v", version, commit, date)
-	app.Usage = "Deliver Go binaries as fast and easily as possible"
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "config, file, c, f",
-			Usage: "Load configuration from `FILE`",
-			Value: ".goreleaser.yml",
-		},
-		cli.StringFlag{
-			Name:  "release-notes",
-			Usage: "Load custom release notes from a markdown `FILE`",
-		},
-		cli.BoolFlag{
-			Name:  "snapshot",
-			Usage: "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts",
-		},
-		cli.BoolFlag{
-			Name:  "skip-publish",
-			Usage: "Generates all artifacts but does not publish them anywhere",
-		},
-		cli.BoolFlag{
-			Name:  "skip-validate",
-			Usage: "Skips all git state checks",
-		},
-		cli.BoolFlag{
-			Name:  "rm-dist",
-			Usage: "Remove the dist folder before building",
-		},
-		cli.IntFlag{
-			Name:  "parallelism, p",
-			Usage: "Amount of builds launch in parallel",
-			Value: 4,
-		},
-		cli.BoolFlag{
-			Name:  "debug",
-			Usage: "Enable debug mode",
-		},
-		cli.DurationFlag{
-			Name:  "timeout",
-			Usage: "How much time the entire release process is allowed to take",
-			Value: 30 * time.Minute,
-		},
-	}
-	app.Action = func(c *cli.Context) error {
+	var app = kingpin.New("goreleaser", "Deliver Go binaries as fast and easily as possible")
+	app.Version(fmt.Sprintf("%v, commit %v, built at %v", version, commit, date))
+	app.VersionFlag.Short('v')
+	app.HelpFlag.Short('h')
+	var initCmd = app.Command("init", "Generates a .goreleaser.yml file")
+	var releaseCmd = app.Command("release", "Release the current project").Default()
+	var config = releaseCmd.Flag("config", "Load configuration from `FILE`").
+		Short('c').
+		Short('f').
+		Default(".goreleaser.yml").
+		String()
+	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown `FILE`").
+		String()
+	var snapshot = releaseCmd.Flag("snapshot", "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts").
+		Bool()
+	var skipPublish = releaseCmd.Flag("skip-publish", "Generates all artifacts but does not publish them anywhere").
+		Bool()
+	var skipValidate = releaseCmd.Flag("skip-validate", "Skips all git state checks").
+		Bool()
+	var rmDist = releaseCmd.Flag("rm-dist", "Remove the dist folder before building").
+		Bool()
+	var parallelism = releaseCmd.Flag("parallelism", "Amount of slow task to do in concurrently").
+		Short('p').
+		Default("4"). // TODO: use runtime.NumCPU here?
+		Int()
+	var debug = releaseCmd.Flag("debug", "Enable debug mode").
+		Bool()
+	var timeout = releaseCmd.Flag("timeout", "Timeout to the entire process").
+		Default("30m").
+		Duration()
+
+	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
+	case initCmd.FullCommand():
+		var filename = ".goreleaser.yml"
+		if err := initProject(filename); err != nil {
+			// TODO: check how this works out
+			log.WithError(err).Error("failed to init project")
+			kingpin.Fatalf(err.Error())
+		}
+		log.WithField("file", filename).Info("config created; please edit accordingly to your needs")
+	case releaseCmd.FullCommand():
 		start := time.Now()
 		log.Infof(bold.Sprint("releasing..."))
 		if err := releaseProject(c); err != nil {
 			log.WithError(err).Errorf(bold.Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
-			return cli.NewExitError("\n", 1)
+			// TODO: check how this works out
+			kingpin.Fatalf(err.Error())
 		}
 		log.Infof(bold.Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds()))
-		return nil
-	}
-	app.Commands = []cli.Command{
-		{
-			Name:    "init",
-			Aliases: []string{"i"},
-			Usage:   "generate .goreleaser.yml",
-			Action: func(c *cli.Context) error {
-				var filename = ".goreleaser.yml"
-				if err := initProject(filename); err != nil {
-					log.WithError(err).Error("failed to init project")
-					return cli.NewExitError("\n", 1)
-				}
-
-				log.WithField("file", filename).
-					Info("config created; please edit accordingly to your needs")
-				return nil
-			},
-		},
-	}
-	if err := app.Run(os.Args); err != nil {
-		log.WithError(err).Fatal("failed")
 	}
 }
 
