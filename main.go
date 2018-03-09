@@ -40,10 +40,6 @@ var (
 	commit  = "none"
 	date    = "unknown"
 
-	bold             = color.New(color.Bold)
-	normalPadding    = cli.Default.Padding
-	increasedPadding = normalPadding + 3
-
 	pipes = []Piper{
 		defaults.Pipe{},        // load default configs
 		dist.Pipe{},            // ensure ./dist is clean
@@ -92,37 +88,23 @@ func init() {
 func main() {
 	fmt.Println()
 	defer fmt.Println()
+
 	var app = kingpin.New("goreleaser", "Deliver Go binaries as fast and easily as possible")
+	var initCmd = app.Command("init", "Generates a .goreleaser.yml file")
+	var releaseCmd = app.Command("release", "Release the current project").Default()
+	var config = releaseCmd.Flag("config", "Load configuration from `FILE`").Short('c').Short('f').PlaceHolder(".goreleaser.yml").String()
+	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown `FILE`").String()
+	var snapshot = releaseCmd.Flag("snapshot", "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts").Bool()
+	var skipPublish = releaseCmd.Flag("skip-publish", "Generates all artifacts but does not publish them anywhere").Bool()
+	var skipValidate = releaseCmd.Flag("skip-validate", "Skips all git sanity checks").Bool()
+	var rmDist = releaseCmd.Flag("rm-dist", "Remove the dist folder before building").Bool()
+	var parallelism = releaseCmd.Flag("parallelism", "Amount of slow tasks to do in concurrently").Short('p').Default("4").Int() // TODO: use runtime.NumCPU here?
+	var debug = releaseCmd.Flag("debug", "Enable debug mode").Bool()
+	var timeout = releaseCmd.Flag("timeout", "Timeout to the entire release process").Default("30m").Duration()
+
 	app.Version(fmt.Sprintf("%v, commit %v, built at %v", version, commit, date))
 	app.VersionFlag.Short('v')
 	app.HelpFlag.Short('h')
-	var initCmd = app.Command("init", "Generates a .goreleaser.yml file")
-	var releaseCmd = app.Command("release", "Release the current project").Default()
-
-	var config = releaseCmd.Flag("config", "Load configuration from `FILE`").
-		Short('c').
-		Short('f').
-		PlaceHolder(".goreleaser.yml").
-		String()
-	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown `FILE`").
-		String()
-	var snapshot = releaseCmd.Flag("snapshot", "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts").
-		Bool()
-	var skipPublish = releaseCmd.Flag("skip-publish", "Generates all artifacts but does not publish them anywhere").
-		Bool()
-	var skipValidate = releaseCmd.Flag("skip-validate", "Skips all git state checks").
-		Bool()
-	var rmDist = releaseCmd.Flag("rm-dist", "Remove the dist folder before building").
-		Bool()
-	var parallelism = releaseCmd.Flag("parallelism", "Amount of slow tasks to do in concurrently").
-		Short('p').
-		Default("4"). // TODO: use runtime.NumCPU here?
-		Int()
-	var debug = releaseCmd.Flag("debug", "Enable debug mode").
-		Bool()
-	var timeout = releaseCmd.Flag("timeout", "Timeout to the entire process").
-		Default("30m").
-		Duration()
 
 	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
 	case initCmd.FullCommand():
@@ -134,7 +116,7 @@ func main() {
 		log.WithField("file", filename).Info("config created; please edit accordingly to your needs")
 	case releaseCmd.FullCommand():
 		start := time.Now()
-		log.Infof(bold.Sprint("releasing..."))
+		log.Infof(color.New(color.Bold).Sprint("releasing..."))
 		var options = releaseOptions{
 			Config:       *config,
 			ReleaseNotes: *releaseNotes,
@@ -147,10 +129,10 @@ func main() {
 			Timeout:      *timeout,
 		}
 		if err := releaseProject(options); err != nil {
-			log.WithError(err).Errorf(bold.Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
+			log.WithError(err).Errorf(color.New(color.Bold).Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
 			os.Exit(1)
 		}
-		log.Infof(bold.Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds()))
+		log.Infof(color.New(color.Bold).Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds()))
 	}
 }
 
@@ -184,22 +166,18 @@ func releaseProject(options releaseOptions) error {
 }
 
 func doRelease(ctx *context.Context) error {
-	defer restoreOutputPadding()
+	defer func() { cli.Default.Padding = 3 }()
 	return ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipes {
-			restoreOutputPadding()
+			cli.Default.Padding = 3
 			log.Infof(color.New(color.Bold).Sprint(strings.ToUpper(pipe.String())))
-			cli.Default.Padding = increasedPadding
+			cli.Default.Padding = 6
 			if err := handle(pipe.Run(ctx)); err != nil {
 				return err
 			}
 		}
 		return nil
 	})
-}
-
-func restoreOutputPadding() {
-	cli.Default.Padding = normalPadding
 }
 
 func handle(err error) error {
