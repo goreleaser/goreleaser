@@ -76,8 +76,8 @@ type releaseOptions struct {
 	SkipPublish  bool
 	SkipValidate bool
 	RmDist       bool
-	Parallelism  int
 	Debug        bool
+	Parallelism  int
 	Timeout      time.Duration
 }
 
@@ -199,7 +199,7 @@ func initProject(filename string) error {
 		}
 		return fmt.Errorf("%s already exists", filename)
 	}
-	log.Infof(color.New(color.Bold).Sprint("Generating %s file", filename))
+	log.Infof(color.New(color.Bold).Sprintf("Generating %s file", filename))
 	return ioutil.WriteFile(filename, []byte(exampleConfig), 0644)
 }
 
