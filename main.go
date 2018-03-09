@@ -41,8 +41,8 @@ var (
 	date    = "unknown"
 
 	bold             = color.New(color.Bold)
-	normalPadding    = lcli.Default.Padding
-	increasedPadding = normalPadding * 2
+	normalPadding    = cli.Default.Padding
+	increasedPadding = normalPadding + 3
 
 	pipes = []Piper{
 		defaults.Pipe{},        // load default configs
@@ -73,6 +73,18 @@ type Piper interface {
 	Run(ctx *context.Context) error
 }
 
+type releaseOptions struct {
+	Config       string
+	ReleaseNotes string
+	Snapshot     bool
+	SkipPublish  bool
+	SkipValidate bool
+	RmDist       bool
+	Parallelism  int
+	Debug        bool
+	Timeout      time.Duration
+}
+
 func init() {
 	log.SetHandler(cli.Default)
 }
@@ -86,10 +98,11 @@ func main() {
 	app.HelpFlag.Short('h')
 	var initCmd = app.Command("init", "Generates a .goreleaser.yml file")
 	var releaseCmd = app.Command("release", "Release the current project").Default()
+
 	var config = releaseCmd.Flag("config", "Load configuration from `FILE`").
 		Short('c').
 		Short('f').
-		Default(".goreleaser.yml").
+		PlaceHolder(".goreleaser.yml").
 		String()
 	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown `FILE`").
 		String()
@@ -101,7 +114,7 @@ func main() {
 		Bool()
 	var rmDist = releaseCmd.Flag("rm-dist", "Remove the dist folder before building").
 		Bool()
-	var parallelism = releaseCmd.Flag("parallelism", "Amount of slow task to do in concurrently").
+	var parallelism = releaseCmd.Flag("parallelism", "Amount of slow tasks to do in concurrently").
 		Short('p').
 		Default("4"). // TODO: use runtime.NumCPU here?
 		Int()
@@ -115,57 +128,58 @@ func main() {
 	case initCmd.FullCommand():
 		var filename = ".goreleaser.yml"
 		if err := initProject(filename); err != nil {
-			// TODO: check how this works out
 			log.WithError(err).Error("failed to init project")
-			kingpin.Fatalf(err.Error())
+			os.Exit(1)
 		}
 		log.WithField("file", filename).Info("config created; please edit accordingly to your needs")
 	case releaseCmd.FullCommand():
 		start := time.Now()
 		log.Infof(bold.Sprint("releasing..."))
-		if err := releaseProject(c); err != nil {
+		var options = releaseOptions{
+			Config:       *config,
+			ReleaseNotes: *releaseNotes,
+			Snapshot:     *snapshot,
+			SkipPublish:  *skipPublish,
+			SkipValidate: *skipValidate,
+			RmDist:       *rmDist,
+			Parallelism:  *parallelism,
+			Debug:        *debug,
+			Timeout:      *timeout,
+		}
+		if err := releaseProject(options); err != nil {
 			log.WithError(err).Errorf(bold.Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
-			// TODO: check how this works out
-			kingpin.Fatalf(err.Error())
+			os.Exit(1)
 		}
 		log.Infof(bold.Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds()))
 	}
 }
 
-func releaseProject(flags Flags) error {
-	var file = getConfigFile(flags)
-	var notes = flags.String("release-notes")
-	if flags.Bool("debug") {
+func releaseProject(options releaseOptions) error {
+	if options.Debug {
 		log.SetLevel(log.DebugLevel)
 	}
-	cfg, err := config.Load(file)
+	cfg, err := loadConfig(options.Config)
 	if err != nil {
-		// Allow file not found errors if config file was not
-		// explicitly specified
-		_, statErr := os.Stat(file)
-		if !os.IsNotExist(statErr) || flags.IsSet("config") {
-			return err
-		}
-		log.WithField("file", file).Warn("could not load config, using defaults")
+		return err
 	}
-	ctx, cancel := context.NewWithTimeout(cfg, flags.Duration("timeout"))
+	ctx, cancel := context.NewWithTimeout(cfg, options.Timeout)
 	defer cancel()
-	ctx.Parallelism = flags.Int("parallelism")
-	ctx.Debug = flags.Bool("debug")
+	ctx.Parallelism = options.Parallelism
+	ctx.Debug = options.Debug
 	log.Debugf("parallelism: %v", ctx.Parallelism)
-	if notes != "" {
-		bts, err := ioutil.ReadFile(notes)
+	if options.ReleaseNotes != "" {
+		bts, err := ioutil.ReadFile(options.ReleaseNotes)
 		if err != nil {
 			return err
 		}
-		log.WithField("file", notes).Info("loaded custom release notes")
-		log.WithField("file", notes).Debugf("custom release notes: \n%s", string(bts))
+		log.WithField("file", options.ReleaseNotes).Info("loaded custom release notes")
+		log.WithField("file", options.ReleaseNotes).Debugf("custom release notes: \n%s", string(bts))
 		ctx.ReleaseNotes = string(bts)
 	}
-	ctx.Snapshot = flags.Bool("snapshot")
-	ctx.SkipPublish = ctx.Snapshot || flags.Bool("skip-publish")
-	ctx.SkipValidate = ctx.Snapshot || flags.Bool("skip-validate")
-	ctx.RmDist = flags.Bool("rm-dist")
+	ctx.Snapshot = options.Snapshot
+	ctx.SkipPublish = ctx.Snapshot || options.SkipPublish
+	ctx.SkipValidate = ctx.Snapshot || options.SkipValidate
+	ctx.RmDist = options.RmDist
 	return doRelease(ctx)
 }
 
@@ -175,7 +189,7 @@ func doRelease(ctx *context.Context) error {
 		for _, pipe := range pipes {
 			restoreOutputPadding()
 			log.Infof(color.New(color.Bold).Sprint(strings.ToUpper(pipe.String())))
-			lcli.Default.Padding = increasedPadding
+			cli.Default.Padding = increasedPadding
 			if err := handle(pipe.Run(ctx)); err != nil {
 				return err
 			}
@@ -185,7 +199,7 @@ func doRelease(ctx *context.Context) error {
 }
 
 func restoreOutputPadding() {
-	lcli.Default.Padding = normalPadding
+	cli.Default.Padding = normalPadding
 }
 
 func handle(err error) error {
@@ -211,10 +225,9 @@ func initProject(filename string) error {
 	return ioutil.WriteFile(filename, []byte(exampleConfig), 0644)
 }
 
-func getConfigFile(flags Flags) string {
-	var config = flags.String("config")
-	if flags.IsSet("config") {
-		return config
+func loadConfig(path string) (config.Project, error) {
+	if path != "" {
+		return config.Load(path)
 	}
 	for _, f := range []string{
 		".goreleaser.yml",
@@ -222,12 +235,16 @@ func getConfigFile(flags Flags) string {
 		"goreleaser.yml",
 		"goreleaser.yaml",
 	} {
-		_, ferr := os.Stat(f)
-		if ferr == nil || os.IsExist(ferr) {
-			return f
+		proj, err := config.Load(f)
+		if err != nil && os.IsNotExist(err) {
+			continue
 		}
+		return proj, err
 	}
-	return config
+	// the user didn't specified a config file and the known files
+	// doest not exist, so, return an empty config and a nil err.
+	log.Warn("could not load config, using defaults")
+	return config.Project{}, nil
 }
 
 var exampleConfig = `# This is an example goreleaser.yaml file with some sane defaults.
