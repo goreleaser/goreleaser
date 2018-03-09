@@ -199,7 +199,7 @@ func initProject(filename string) error {
 		}
 		return fmt.Errorf("%s already exists", filename)
 	}
-	log.Infof(color.New(color.Bold).Sprint("Generating .goreleaser.yml file"))
+	log.Infof(color.New(color.Bold).Sprint("Generating %s file", filename))
 	return ioutil.WriteFile(filename, []byte(exampleConfig), 0644)
 }
 
