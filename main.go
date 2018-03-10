@@ -91,8 +91,8 @@ func main() {
 
 	var app = kingpin.New("goreleaser", "Deliver Go binaries as fast and easily as possible")
 	var initCmd = app.Command("init", "Generates a .goreleaser.yml file")
-	var releaseCmd = app.Command("release", "Release the current project").Default()
-	var config = releaseCmd.Flag("config", "Load configuration from `FILE`").Short('c').Short('f').PlaceHolder(".goreleaser.yml").String()
+	var releaseCmd = app.Command("release", "Releases the current project").Default()
+	var config = releaseCmd.Flag("config", "Load configuration from file").Short('c').Short('f').PlaceHolder(".goreleaser.yml").String()
 	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown file").String()
 	var snapshot = releaseCmd.Flag("snapshot", "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts").Bool()
 	var skipPublish = releaseCmd.Flag("skip-publish", "Generates all artifacts but does not publish them anywhere").Bool()
@@ -116,7 +116,7 @@ func main() {
 		log.WithField("file", filename).Info("config created; please edit accordingly to your needs")
 	case releaseCmd.FullCommand():
 		start := time.Now()
-		log.Infof(color.New(color.Bold).Sprint("releasing..."))
+		log.Infof(color.New(color.Bold).Sprintf("releasing using goreleaser %s...", version))
 		var options = releaseOptions{
 			Config:       *config,
 			ReleaseNotes: *releaseNotes,
@@ -167,7 +167,7 @@ func releaseProject(options releaseOptions) error {
 
 func doRelease(ctx *context.Context) error {
 	defer func() { cli.Default.Padding = 3 }()
-	return ctrlc.Default.Run(ctx, func() error {
+	var release = func() error {
 		for _, pipe := range pipes {
 			cli.Default.Padding = 3
 			log.Infof(color.New(color.Bold).Sprint(strings.ToUpper(pipe.String())))
@@ -177,7 +177,8 @@ func doRelease(ctx *context.Context) error {
 			}
 		}
 		return nil
-	})
+	}
+	return ctrlc.Default.Run(ctx, release)
 }
 
 func handle(err error) error {
@@ -207,7 +208,7 @@ func loadConfig(path string) (config.Project, error) {
 	if path != "" {
 		return config.Load(path)
 	}
-	for _, f := range []string{
+	for _, f := range [4]string{
 		".goreleaser.yml",
 		".goreleaser.yaml",
 		"goreleaser.yml",
