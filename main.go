@@ -111,7 +111,8 @@ func main() {
 		var filename = ".goreleaser.yml"
 		if err := initProject(filename); err != nil {
 			log.WithError(err).Error("failed to init project")
-			os.Exit(1)
+			terminate(1)
+			return
 		}
 		log.WithField("file", filename).Info("config created; please edit accordingly to your needs")
 	case releaseCmd.FullCommand():
@@ -130,10 +131,15 @@ func main() {
 		}
 		if err := releaseProject(options); err != nil {
 			log.WithError(err).Errorf(color.New(color.Bold).Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
-			os.Exit(1)
+			terminate(1)
+			return
 		}
 		log.Infof(color.New(color.Bold).Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds()))
 	}
+}
+
+func terminate(status int) {
+	os.Exit(status)
 }
 
 func releaseProject(options releaseOptions) error {
