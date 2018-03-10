@@ -136,7 +136,8 @@ func doRun(ctx *context.Context, client client.Client) error {
 	log.WithField("formula", path).
 		WithField("repo", ctx.Config.Brew.GitHub.String()).
 		Info("pushing")
-	return client.CreateFile(ctx, ctx.Config.Brew.CommitAuthor, ctx.Config.Brew.GitHub, content, path)
+	msg := ctx.Config.ProjectName + " version " + ctx.Git.CurrentTag
+	return client.CreateFile(ctx, ctx.Config.Brew.CommitAuthor, ctx.Config.Brew.GitHub, content, path, msg)
 }
 
 func buildFormula(ctx *context.Context, client client.Client, artifact artifact.Artifact) (bytes.Buffer, error) {
