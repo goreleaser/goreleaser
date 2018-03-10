@@ -80,7 +80,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		ctx.Config.Scoop.Bucket,
 		content,
 		path,
-		ctx.Config.ProjectName+" version "+ctx.Git.CurrentTag,
+		fmt.Sprintf("Scoop update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag),
 	)
 }
 
