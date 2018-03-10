@@ -74,13 +74,13 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Release.Draft {
 		return pipeline.Skip("release is marked as draft")
 	}
-
 	return client.CreateFile(
 		ctx,
 		ctx.Config.Scoop.CommitAuthor,
 		ctx.Config.Scoop.Bucket,
 		content,
 		path,
+		fmt.Sprintf("Scoop update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag),
 	)
 }
 
