@@ -39,27 +39,27 @@ var (
 	version = "dev"
 	commit  = "none"
 	date    = "unknown"
-
-	pipes = []Piper{
-		defaults.Pipe{},        // load default configs
-		dist.Pipe{},            // ensure ./dist is clean
-		git.Pipe{},             // get and validate git repo state
-		effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
-		changelog.Pipe{},       // builds the release changelog
-		env.Pipe{},             // load and validate environment variables
-		build.Pipe{},           // build
-		archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
-		nfpm.Pipe{},            // archive via fpm (deb, rpm) using "native" go impl
-		snapcraft.Pipe{},       // archive via snapcraft (snap)
-		checksums.Pipe{},       // checksums of the files
-		sign.Pipe{},            // sign artifacts
-		docker.Pipe{},          // create and push docker images
-		artifactory.Pipe{},     // push to artifactory
-		release.Pipe{},         // release to github
-		brew.Pipe{},            // push to brew tap
-		scoop.Pipe{},           // push to scoop bucket
-	}
 )
+
+var pipes = []Piper{
+	defaults.Pipe{},        // load default configs
+	dist.Pipe{},            // ensure ./dist is clean
+	git.Pipe{},             // get and validate git repo state
+	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
+	changelog.Pipe{},       // builds the release changelog
+	env.Pipe{},             // load and validate environment variables
+	build.Pipe{},           // build
+	archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
+	nfpm.Pipe{},            // archive via fpm (deb, rpm) using "native" go impl
+	snapcraft.Pipe{},       // archive via snapcraft (snap)
+	checksums.Pipe{},       // checksums of the files
+	sign.Pipe{},            // sign artifacts
+	docker.Pipe{},          // create and push docker images
+	artifactory.Pipe{},     // push to artifactory
+	release.Pipe{},         // release to github
+	brew.Pipe{},            // push to brew tap
+	scoop.Pipe{},           // push to scoop bucket
+}
 
 // Piper defines a pipe, which can be part of a pipeline (a serie of pipes).
 type Piper interface {
