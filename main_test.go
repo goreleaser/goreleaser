@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"testing"
 	"time"
 
@@ -21,22 +20,22 @@ func init() {
 func TestReleaseProject(t *testing.T) {
 	_, back := setup(t)
 	defer back()
-	assert.NoError(t, releaseProject(newFlags(t, testParams())))
+	assert.NoError(t, releaseProject(testParams()))
 }
 
 func TestReleaseProjectSkipPublish(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	params := testParams()
-	params["snapshot"] = "false"
-	params["skip-publish"] = "true"
-	assert.NoError(t, releaseProject(newFlags(t, params)))
+	params.Snapshot = true
+	params.SkipPublish = true
+	assert.NoError(t, releaseProject(params))
 }
 
 func TestConfigFileIsSetAndDontExist(t *testing.T) {
 	params := testParams()
-	params["config"] = "/this/wont/exist"
-	assert.Error(t, releaseProject(newFlags(t, params)))
+	params.Config = "/this/wont/exist"
+	assert.Error(t, releaseProject(params))
 }
 
 func TestConfigFlagNotSetButExists(t *testing.T) {
@@ -49,22 +48,32 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			folder, back := setup(t)
 			defer back()
-			assert.NoError(
-				t,
-				os.Rename(
-					filepath.Join(folder, "goreleaser.yml"),
-					filepath.Join(folder, name),
-				),
+			err := os.Rename(
+				filepath.Join(folder, "goreleaser.yml"),
+				filepath.Join(folder, name),
 			)
-			assert.Equal(t, name, getConfigFile(newFlags(t, testParams())))
+			assert.NoError(t, err)
+			proj, err := loadConfig("")
+			assert.NoError(t, err)
+			assert.NotEqual(t, config.Project{}, proj)
 		})
 	}
 }
 
+func TestConfigFileDoesntExist(t *testing.T) {
+	folder, back := setup(t)
+	defer back()
+	err := os.Remove(filepath.Join(folder, "goreleaser.yml"))
+	assert.NoError(t, err)
+	proj, err := loadConfig("")
+	assert.NoError(t, err)
+	assert.Equal(t, config.Project{}, proj)
+}
+
 func TestReleaseNotesFileDontExist(t *testing.T) {
 	params := testParams()
-	params["release-notes"] = "/this/also/wont/exist"
-	assert.Error(t, releaseProject(newFlags(t, params)))
+	params.ReleaseNotes = "/this/also/wont/exist"
+	assert.Error(t, releaseProject(params))
 }
 
 func TestCustomReleaseNotesFile(t *testing.T) {
@@ -74,15 +83,15 @@ func TestCustomReleaseNotesFile(t *testing.T) {
 	assert.NoError(t, err)
 	createFile(t, releaseNotes.Name(), "nothing important at all")
 	var params = testParams()
-	params["release-notes"] = releaseNotes.Name()
-	assert.NoError(t, releaseProject(newFlags(t, params)))
+	params.ReleaseNotes = releaseNotes.Name()
+	assert.NoError(t, releaseProject(params))
 }
 
 func TestBrokenPipe(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	createFile(t, "main.go", "not a valid go file")
-	assert.Error(t, releaseProject(newFlags(t, testParams())))
+	assert.Error(t, releaseProject(testParams()))
 }
 
 func TestInitProject(t *testing.T) {
@@ -116,48 +125,12 @@ func TestInitProjectDefaultPipeFails(t *testing.T) {
 	assert.EqualError(t, initProject(filename), `stat test_goreleaser.yml: permission denied`)
 }
 
-// fakeFlags is a mock of the cli flags
-type fakeFlags struct {
-	t     *testing.T
-	flags map[string]string
-}
-
-func newFlags(t *testing.T, params map[string]string) Flags {
-	return fakeFlags{
-		t:     t,
-		flags: params,
-	}
-}
-
-func (f fakeFlags) IsSet(s string) bool {
-	return f.flags[s] != ""
-}
-
-func (f fakeFlags) String(s string) string {
-	return f.flags[s]
-}
-
-func (f fakeFlags) Int(s string) int {
-	i, _ := strconv.ParseInt(f.flags[s], 10, 32)
-	return int(i)
-}
-
-func (f fakeFlags) Bool(s string) bool {
-	return f.flags[s] == "true"
-}
-
-func (f fakeFlags) Duration(s string) time.Duration {
-	result, err := time.ParseDuration(f.flags[s])
-	assert.NoError(f.t, err)
-	return result
-}
-
-func testParams() map[string]string {
-	return map[string]string{
-		"debug":       "true",
-		"parallelism": "4",
-		"snapshot":    "true",
-		"timeout":     "1m",
+func testParams() releaseOptions {
+	return releaseOptions{
+		Debug:       true,
+		Parallelism: 4,
+		Snapshot:    true,
+		Timeout:     time.Minute,
 	}
 }
 

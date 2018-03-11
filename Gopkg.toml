@@ -15,10 +15,6 @@
   version = "1.1.4"
 
 [[constraint]]
-  name = "github.com/urfave/cli"
-  version = "1.19.1"
-
-[[constraint]]
   branch = "master"
   name = "golang.org/x/oauth2"
 
@@ -53,3 +49,7 @@
 [[constraint]]
   name = "github.com/goreleaser/nfpm"
   version = "~0.5.0"
+
+[[constraint]]
+  name = "github.com/alecthomas/kingpin"
+  version = "~2.2.6"

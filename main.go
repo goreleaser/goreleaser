@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alecthomas/kingpin"
 	"github.com/apex/log"
-	lcli "github.com/apex/log/handlers/cli"
+	"github.com/apex/log/handlers/cli"
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
-	"github.com/urfave/cli"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
@@ -39,31 +39,27 @@ var (
 	version = "dev"
 	commit  = "none"
 	date    = "unknown"
-
-	bold             = color.New(color.Bold)
-	normalPadding    = lcli.Default.Padding
-	increasedPadding = normalPadding * 2
-
-	pipes = []Piper{
-		defaults.Pipe{},        // load default configs
-		dist.Pipe{},            // ensure ./dist is clean
-		git.Pipe{},             // get and validate git repo state
-		effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
-		changelog.Pipe{},       // builds the release changelog
-		env.Pipe{},             // load and validate environment variables
-		build.Pipe{},           // build
-		archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
-		nfpm.Pipe{},            // archive via fpm (deb, rpm) using "native" go impl
-		snapcraft.Pipe{},       // archive via snapcraft (snap)
-		checksums.Pipe{},       // checksums of the files
-		sign.Pipe{},            // sign artifacts
-		docker.Pipe{},          // create and push docker images
-		artifactory.Pipe{},     // push to artifactory
-		release.Pipe{},         // release to github
-		brew.Pipe{},            // push to brew tap
-		scoop.Pipe{},           // push to scoop bucket
-	}
 )
+
+var pipes = []Piper{
+	defaults.Pipe{},        // load default configs
+	dist.Pipe{},            // ensure ./dist is clean
+	git.Pipe{},             // get and validate git repo state
+	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
+	changelog.Pipe{},       // builds the release changelog
+	env.Pipe{},             // load and validate environment variables
+	build.Pipe{},           // build
+	archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
+	nfpm.Pipe{},            // archive via fpm (deb, rpm) using "native" go impl
+	snapcraft.Pipe{},       // archive via snapcraft (snap)
+	checksums.Pipe{},       // checksums of the files
+	sign.Pipe{},            // sign artifacts
+	docker.Pipe{},          // create and push docker images
+	artifactory.Pipe{},     // push to artifactory
+	release.Pipe{},         // release to github
+	brew.Pipe{},            // push to brew tap
+	scoop.Pipe{},           // push to scoop bucket
+}
 
 // Piper defines a pipe, which can be part of a pipeline (a serie of pipes).
 type Piper interface {
@@ -73,154 +69,122 @@ type Piper interface {
 	Run(ctx *context.Context) error
 }
 
-// Flags interface represents an extractor of cli flags
-type Flags interface {
-	IsSet(s string) bool
-	String(s string) string
-	Int(s string) int
-	Bool(s string) bool
-	Duration(s string) time.Duration
+type releaseOptions struct {
+	Config       string
+	ReleaseNotes string
+	Snapshot     bool
+	SkipPublish  bool
+	SkipValidate bool
+	RmDist       bool
+	Debug        bool
+	Parallelism  int
+	Timeout      time.Duration
 }
 
 func init() {
-	log.SetHandler(lcli.Default)
+	log.SetHandler(cli.Default)
 }
 
 func main() {
 	fmt.Println()
 	defer fmt.Println()
-	var app = cli.NewApp()
-	app.Name = "goreleaser"
-	app.Version = fmt.Sprintf("%v, commit %v, built at %v", version, commit, date)
-	app.Usage = "Deliver Go binaries as fast and easily as possible"
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "config, file, c, f",
-			Usage: "Load configuration from `FILE`",
-			Value: ".goreleaser.yml",
-		},
-		cli.StringFlag{
-			Name:  "release-notes",
-			Usage: "Load custom release notes from a markdown `FILE`",
-		},
-		cli.BoolFlag{
-			Name:  "snapshot",
-			Usage: "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts",
-		},
-		cli.BoolFlag{
-			Name:  "skip-publish",
-			Usage: "Generates all artifacts but does not publish them anywhere",
-		},
-		cli.BoolFlag{
-			Name:  "skip-validate",
-			Usage: "Skips all git state checks",
-		},
-		cli.BoolFlag{
-			Name:  "rm-dist",
-			Usage: "Remove the dist folder before building",
-		},
-		cli.IntFlag{
-			Name:  "parallelism, p",
-			Usage: "Amount of builds launch in parallel",
-			Value: 4,
-		},
-		cli.BoolFlag{
-			Name:  "debug",
-			Usage: "Enable debug mode",
-		},
-		cli.DurationFlag{
-			Name:  "timeout",
-			Usage: "How much time the entire release process is allowed to take",
-			Value: 30 * time.Minute,
-		},
-	}
-	app.Action = func(c *cli.Context) error {
-		start := time.Now()
-		log.Infof(bold.Sprint("releasing..."))
-		if err := releaseProject(c); err != nil {
-			log.WithError(err).Errorf(bold.Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
-			return cli.NewExitError("\n", 1)
-		}
-		log.Infof(bold.Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds()))
-		return nil
-	}
-	app.Commands = []cli.Command{
-		{
-			Name:    "init",
-			Aliases: []string{"i"},
-			Usage:   "generate .goreleaser.yml",
-			Action: func(c *cli.Context) error {
-				var filename = ".goreleaser.yml"
-				if err := initProject(filename); err != nil {
-					log.WithError(err).Error("failed to init project")
-					return cli.NewExitError("\n", 1)
-				}
 
-				log.WithField("file", filename).
-					Info("config created; please edit accordingly to your needs")
-				return nil
-			},
-		},
-	}
-	if err := app.Run(os.Args); err != nil {
-		log.WithError(err).Fatal("failed")
+	var app = kingpin.New("goreleaser", "Deliver Go binaries as fast and easily as possible")
+	var initCmd = app.Command("init", "Generates a .goreleaser.yml file")
+	var releaseCmd = app.Command("release", "Releases the current project").Default()
+	var config = releaseCmd.Flag("config", "Load configuration from file").Short('c').Short('f').PlaceHolder(".goreleaser.yml").String()
+	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown file").String()
+	var snapshot = releaseCmd.Flag("snapshot", "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts").Bool()
+	var skipPublish = releaseCmd.Flag("skip-publish", "Generates all artifacts but does not publish them anywhere").Bool()
+	var skipValidate = releaseCmd.Flag("skip-validate", "Skips all git sanity checks").Bool()
+	var rmDist = releaseCmd.Flag("rm-dist", "Remove the dist folder before building").Bool()
+	var parallelism = releaseCmd.Flag("parallelism", "Amount of slow tasks to do in concurrently").Short('p').Default("4").Int() // TODO: use runtime.NumCPU here?
+	var debug = releaseCmd.Flag("debug", "Enable debug mode").Bool()
+	var timeout = releaseCmd.Flag("timeout", "Timeout to the entire release process").Default("30m").Duration()
+
+	app.Version(fmt.Sprintf("%v, commit %v, built at %v", version, commit, date))
+	app.VersionFlag.Short('v')
+	app.HelpFlag.Short('h')
+
+	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
+	case initCmd.FullCommand():
+		var filename = ".goreleaser.yml"
+		if err := initProject(filename); err != nil {
+			log.WithError(err).Error("failed to init project")
+			terminate(1)
+			return
+		}
+		log.WithField("file", filename).Info("config created; please edit accordingly to your needs")
+	case releaseCmd.FullCommand():
+		start := time.Now()
+		log.Infof(color.New(color.Bold).Sprintf("releasing using goreleaser %s...", version))
+		var options = releaseOptions{
+			Config:       *config,
+			ReleaseNotes: *releaseNotes,
+			Snapshot:     *snapshot,
+			SkipPublish:  *skipPublish,
+			SkipValidate: *skipValidate,
+			RmDist:       *rmDist,
+			Parallelism:  *parallelism,
+			Debug:        *debug,
+			Timeout:      *timeout,
+		}
+		if err := releaseProject(options); err != nil {
+			log.WithError(err).Errorf(color.New(color.Bold).Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
+			terminate(1)
+			return
+		}
+		log.Infof(color.New(color.Bold).Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds()))
 	}
 }
 
-func releaseProject(flags Flags) error {
-	var file = getConfigFile(flags)
-	var notes = flags.String("release-notes")
-	if flags.Bool("debug") {
+func terminate(status int) {
+	os.Exit(status)
+}
+
+func releaseProject(options releaseOptions) error {
+	if options.Debug {
 		log.SetLevel(log.DebugLevel)
 	}
-	cfg, err := config.Load(file)
+	cfg, err := loadConfig(options.Config)
 	if err != nil {
-		// Allow file not found errors if config file was not
-		// explicitly specified
-		_, statErr := os.Stat(file)
-		if !os.IsNotExist(statErr) || flags.IsSet("config") {
-			return err
-		}
-		log.WithField("file", file).Warn("could not load config, using defaults")
+		return err
 	}
-	ctx, cancel := context.NewWithTimeout(cfg, flags.Duration("timeout"))
+	ctx, cancel := context.NewWithTimeout(cfg, options.Timeout)
 	defer cancel()
-	ctx.Parallelism = flags.Int("parallelism")
-	ctx.Debug = flags.Bool("debug")
+	ctx.Parallelism = options.Parallelism
+	ctx.Debug = options.Debug
 	log.Debugf("parallelism: %v", ctx.Parallelism)
-	if notes != "" {
-		bts, err := ioutil.ReadFile(notes)
+	if options.ReleaseNotes != "" {
+		bts, err := ioutil.ReadFile(options.ReleaseNotes)
 		if err != nil {
 			return err
 		}
-		log.WithField("file", notes).Info("loaded custom release notes")
-		log.WithField("file", notes).Debugf("custom release notes: \n%s", string(bts))
+		log.WithField("file", options.ReleaseNotes).Info("loaded custom release notes")
+		log.WithField("file", options.ReleaseNotes).Debugf("custom release notes: \n%s", string(bts))
 		ctx.ReleaseNotes = string(bts)
 	}
-	ctx.Snapshot = flags.Bool("snapshot")
-	ctx.SkipPublish = ctx.Snapshot || flags.Bool("skip-publish")
-	ctx.SkipValidate = ctx.Snapshot || flags.Bool("skip-validate")
-	ctx.RmDist = flags.Bool("rm-dist")
+	ctx.Snapshot = options.Snapshot
+	ctx.SkipPublish = ctx.Snapshot || options.SkipPublish
+	ctx.SkipValidate = ctx.Snapshot || options.SkipValidate
+	ctx.RmDist = options.RmDist
 	return doRelease(ctx)
 }
 
 func doRelease(ctx *context.Context) error {
-	defer restoreOutputPadding()
-	return ctrlc.Default.Run(ctx, func() error {
+	defer func() { cli.Default.Padding = 3 }()
+	var release = func() error {
 		for _, pipe := range pipes {
-			restoreOutputPadding()
+			cli.Default.Padding = 3
 			log.Infof(color.New(color.Bold).Sprint(strings.ToUpper(pipe.String())))
-			lcli.Default.Padding = increasedPadding
+			cli.Default.Padding = 6
 			if err := handle(pipe.Run(ctx)); err != nil {
 				return err
 			}
 		}
 		return nil
-	})
-}
-
-func restoreOutputPadding() {
-	lcli.Default.Padding = normalPadding
+	}
+	return ctrlc.Default.Run(ctx, release)
 }
 
 func handle(err error) error {
@@ -242,27 +206,30 @@ func initProject(filename string) error {
 		}
 		return fmt.Errorf("%s already exists", filename)
 	}
-	log.Infof(color.New(color.Bold).Sprint("Generating .goreleaser.yml file"))
+	log.Infof(color.New(color.Bold).Sprintf("Generating %s file", filename))
 	return ioutil.WriteFile(filename, []byte(exampleConfig), 0644)
 }
 
-func getConfigFile(flags Flags) string {
-	var config = flags.String("config")
-	if flags.IsSet("config") {
-		return config
+func loadConfig(path string) (config.Project, error) {
+	if path != "" {
+		return config.Load(path)
 	}
-	for _, f := range []string{
+	for _, f := range [4]string{
 		".goreleaser.yml",
 		".goreleaser.yaml",
 		"goreleaser.yml",
 		"goreleaser.yaml",
 	} {
-		_, ferr := os.Stat(f)
-		if ferr == nil || os.IsExist(ferr) {
-			return f
+		proj, err := config.Load(f)
+		if err != nil && os.IsNotExist(err) {
+			continue
 		}
+		return proj, err
 	}
-	return config
+	// the user didn't specified a config file and the known files
+	// doest not exist, so, return an empty config and a nil err.
+	log.Warn("could not load config, using defaults")
+	return config.Project{}, nil
 }
 
 var exampleConfig = `# This is an example goreleaser.yaml file with some sane defaults.
