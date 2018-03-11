@@ -90,8 +90,8 @@ func main() {
 	defer fmt.Println()
 
 	var app = kingpin.New("goreleaser", "Deliver Go binaries as fast and easily as possible")
-	var initCmd = app.Command("init", "Generates a .goreleaser.yml file")
-	var releaseCmd = app.Command("release", "Releases the current project").Default()
+	var initCmd = app.Command("init", "Generates a .goreleaser.yml file").Alias("i")
+	var releaseCmd = app.Command("release", "Releases the current project").Alias("r").Default()
 	var config = releaseCmd.Flag("config", "Load configuration from file").Short('c').Short('f').PlaceHolder(".goreleaser.yml").String()
 	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown file").PlaceHolder("notes.md").String()
 	var snapshot = releaseCmd.Flag("snapshot", "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts").Bool()
