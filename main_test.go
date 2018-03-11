@@ -60,6 +60,16 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 	}
 }
 
+func TestConfigFileDoesntExist(t *testing.T) {
+	folder, back := setup(t)
+	defer back()
+	err := os.Remove(filepath.Join(folder, "goreleaser.yml"))
+	assert.NoError(t, err)
+	proj, err := loadConfig("")
+	assert.NoError(t, err)
+	assert.Equal(t, config.Project{}, proj)
+}
+
 func TestReleaseNotesFileDontExist(t *testing.T) {
 	params := testParams()
 	params.ReleaseNotes = "/this/also/wont/exist"
