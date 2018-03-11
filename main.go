@@ -93,7 +93,7 @@ func main() {
 	var initCmd = app.Command("init", "Generates a .goreleaser.yml file")
 	var releaseCmd = app.Command("release", "Releases the current project").Default()
 	var config = releaseCmd.Flag("config", "Load configuration from file").Short('c').Short('f').PlaceHolder(".goreleaser.yml").String()
-	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown file").String()
+	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown file").PlaceHolder("notes.md").String()
 	var snapshot = releaseCmd.Flag("snapshot", "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts").Bool()
 	var skipPublish = releaseCmd.Flag("skip-publish", "Generates all artifacts but does not publish them anywhere").Bool()
 	var skipValidate = releaseCmd.Flag("skip-validate", "Skips all git sanity checks").Bool()
