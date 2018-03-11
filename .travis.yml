@@ -25,16 +25,17 @@ after_success:
   - make static
 deploy:
   - provider: pages
-    skip-cleanup: true
+    skip_cleanup: true
+    keep-history: true
     verbose: true
-    github-token: $GITHUB_TOKEN
+    github_token: $GITHUB_TOKEN
     repo: goreleaser/goreleaser.github.io
-    local-dir: ./dist/goreleaser.github.io
-    target-branch: master
+    local_dir: ./dist/goreleaser.github.io
+    target_branch: master
     on:
       master: true
   - provider: script
-    skip-cleanup: true
+    skip_cleanup: true
     script: go run main.go --rm-dist
     on:
       tags: true
