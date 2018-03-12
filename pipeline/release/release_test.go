@@ -168,6 +168,7 @@ func TestDefaultFilled(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "foo", ctx.Config.ProjectName)
 	assert.Equal(t, "foo", ctx.Config.Release.GitHub.Name)
 	assert.Equal(t, "bar", ctx.Config.Release.GitHub.Owner)
 }
