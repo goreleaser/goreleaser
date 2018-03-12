@@ -25,9 +25,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Release.NameTemplate = "{{.Tag}}"
 	}
 	if ctx.Config.Release.GitHub.Name != "" {
-		if ctx.Config.ProjectName == "" {
-			ctx.Config.ProjectName = ctx.Config.Release.GitHub.Name
-		}
 		return nil
 	}
 	repo, err := remoteRepo()
@@ -35,9 +32,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		return err
 	}
 	ctx.Config.Release.GitHub = repo
-	if ctx.Config.ProjectName == "" {
-		ctx.Config.ProjectName = repo.Name
-	}
 	return nil
 }
 

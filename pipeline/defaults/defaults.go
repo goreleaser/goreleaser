@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/env"
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/nfpm"
+	"github.com/goreleaser/goreleaser/pipeline/project"
 	"github.com/goreleaser/goreleaser/pipeline/release"
 	"github.com/goreleaser/goreleaser/pipeline/scoop"
 	"github.com/goreleaser/goreleaser/pipeline/sign"
@@ -43,6 +44,7 @@ var defaulters = []Defaulter{
 	env.Pipe{},
 	snapshot.Pipe{},
 	release.Pipe{},
+	project.Pipe{},
 	archive.Pipe{},
 	build.Pipe{},
 	fpm.Pipe{},
