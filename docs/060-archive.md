@@ -85,3 +85,24 @@ Then you can run:
 ```console
 GOVERSION_NR=$(go version | awk '{print $3;}') goreleaser
 ```
+
+## Packaging only the binaries
+
+Since GoReleaser will always add the `README` and `LICENSE` files to the
+archive if the file list is empty, you'll need to provide a filled `files`
+on the archive section.
+
+A working hack is to use something like this:
+
+```yaml
+# goreleaser.yml
+archive:
+  files:
+  - none*
+```
+
+This would add all files matching the glob `none*`, provide that you don't
+have any files matching that glob, only the binary will be added to the
+archive.
+
+For more information, check [#602](https://github.com/goreleaser/goreleaser/issues/602)
