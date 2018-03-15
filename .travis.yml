@@ -14,7 +14,7 @@ env:
 install:
   - make setup
   - npm install -g prettier
-  - sudo snap install snapcraft --classic --channel=edge/1752964-fix-trusty
+  - sudo snap install snapcraft --classic
 script:
   - make ci
   - test -n "$TRAVIS_TAG" || go run main.go --snapshot
