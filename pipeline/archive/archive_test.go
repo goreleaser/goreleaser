@@ -325,3 +325,73 @@ func TestFormatFor(t *testing.T) {
 	assert.Equal(t, "zip", packageFormat(ctx, "windows"))
 	assert.Equal(t, "tar.gz", packageFormat(ctx, "linux"))
 }
+
+func TestBinaryOverride(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "windowsamd64"), 0755))
+	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	assert.NoError(t, err)
+	_, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
+	assert.NoError(t, err)
+	_, err = os.Create(filepath.Join(folder, "README.md"))
+	assert.NoError(t, err)
+	for _, format := range []string{"tar.gz", "zip"} {
+		t.Run("Archive format "+format, func(tt *testing.T) {
+			var ctx = context.New(
+				config.Project{
+					Dist:        dist,
+					ProjectName: "foobar",
+					Archive: config.Archive{
+						NameTemplate: defaultNameTemplate,
+						Files: []string{
+							"README.*",
+						},
+						FormatOverrides: []config.FormatOverride{
+							{
+								Goos:   "windows",
+								Format: "binary",
+							},
+						},
+					},
+				},
+			)
+			ctx.Artifacts.Add(artifact.Artifact{
+				Goos:   "darwin",
+				Goarch: "amd64",
+				Name:   "mybin",
+				Path:   filepath.Join(dist, "darwinamd64", "mybin"),
+				Type:   artifact.Binary,
+				Extra: map[string]string{
+					"Binary": "mybin",
+				},
+			})
+			ctx.Artifacts.Add(artifact.Artifact{
+				Goos:   "windows",
+				Goarch: "amd64",
+				Name:   "mybin.exe",
+				Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
+				Type:   artifact.Binary,
+				Extra: map[string]string{
+					"Binary": "mybin",
+					"Ext":    ".exe",
+				},
+			})
+			ctx.Version = "0.0.1"
+			ctx.Config.Archive.Format = format
+
+			assert.NoError(tt, Pipe{}.Run(ctx))
+			var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive))
+			darwin := archives.Filter(artifact.ByGoos("darwin")).List()[0]
+			assert.Equal(tt, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
+
+			archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
+			windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
+			assert.Equal(tt, "foobar_0.0.1_windows_amd64.exe", windows.Name)
+
+		})
+	}
+}
