@@ -92,6 +92,33 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertError: shouldNotErr,
 		},
+		"valid_skip_push": {
+			publish: true,
+			docker: config.Docker{
+				Image:      registry + "goreleaser/test_run_pipe",
+				Goos:       "linux",
+				Goarch:     "amd64",
+				Dockerfile: "testdata/Dockerfile",
+				Binary:     "mybin",
+				SkipPush:   true,
+				TagTemplates: []string{
+					"{{.Tag}}-{{.Env.FOO}}",
+					"v{{.Major}}",
+					"v{{.Major}}.{{.Minor}}",
+					"latest",
+				},
+				Files: []string{
+					"testdata/extra_file.txt",
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_run_pipe:v1.0.0-123",
+				registry + "goreleaser/test_run_pipe:v1",
+				registry + "goreleaser/test_run_pipe:v1.0",
+				registry + "goreleaser/test_run_pipe:latest",
+			},
+			assertError: shouldNotErr,
+		},
 		"valid_no_latest": {
 			publish: true,
 			docker: config.Docker{
