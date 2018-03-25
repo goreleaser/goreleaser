@@ -203,8 +203,13 @@ func TestRunPipe(t *testing.T) {
 		assert.NoError(tt, doRun(ctx, client))
 		assert.True(tt, client.CreatedFile)
 
-		_, err := os.Stat(filepath.Join(folder, "custom-brew-name.rb"))
+		distFile := filepath.Join(folder, "custom-brew-name.rb")
+		_, err := os.Stat(distFile)
 		assert.NoError(t, err)
+
+		distBts, err := ioutil.ReadFile(distFile)
+		assert.NoError(tt, err)
+		assert.Contains(tt, string(distBts), "class CustomBrewName < Formula")
 	})
 }
 

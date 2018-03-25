@@ -165,7 +165,7 @@ func dataFor(ctx *context.Context, client client.Client, artifact artifact.Artif
 	}
 	var cfg = ctx.Config.Brew
 	return templateData{
-		Name:             formulaNameFor(ctx.Config.ProjectName),
+		Name:             formulaNameFor(ctx.Config.Brew.Name),
 		DownloadURL:      ctx.Config.GitHubURLs.Download,
 		Desc:             cfg.Description,
 		Homepage:         cfg.Homepage,
