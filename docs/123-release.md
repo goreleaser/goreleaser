@@ -72,3 +72,7 @@ To list all commits since the last tag, but skip ones starting with `Merge` or
 ```console
 $ goreleaser --release-notes <(some_changelog_generator)
 ```
+
+Some changelog generators you can use:
+
+- [buchanae/github-release-notes](https://github.com/buchanae/github-release-notes)
