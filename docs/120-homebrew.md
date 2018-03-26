@@ -15,6 +15,10 @@ for more details.
 ```yml
 # .goreleaser.yml
 brew:
+  # Name of the recipe
+  # Default to project name
+  name: myproject
+
   # Reporitory to push the tap to.
   github:
     owner: user

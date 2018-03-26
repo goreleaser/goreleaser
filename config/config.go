@@ -34,6 +34,7 @@ func (r Repo) String() string {
 
 // Homebrew contains the brew section
 type Homebrew struct {
+	Name             string       `yaml:",omitempty"`
 	GitHub           Repo         `yaml:",omitempty"`
 	CommitAuthor     CommitAuthor `yaml:"commit_author,omitempty"`
 	Folder           string       `yaml:",omitempty"`
@@ -182,6 +183,7 @@ type Docker struct {
 	Image          string   `yaml:",omitempty"`
 	Dockerfile     string   `yaml:",omitempty"`
 	Latest         bool     `yaml:",omitempty"`
+	SkipPush       bool     `yaml:"skip_push,omitempty"`
 	OldTagTemplate string   `yaml:"tag_template,omitempty"`
 	TagTemplates   []string `yaml:"tag_templates,omitempty"`
 	Files          []string `yaml:"extra_files,omitempty"`

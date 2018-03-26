@@ -2,6 +2,27 @@
 
 
 [[projects]]
+  name = "github.com/alecthomas/kingpin"
+  packages = ["."]
+  revision = "947dcec5ba9c011838740e680966fd7087a71d0d"
+  version = "v2.2.6"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/alecthomas/template"
+  packages = [
+    ".",
+    "parse"
+  ]
+  revision = "a0175ee3bccc567396460bf5acd36800cb10c49c"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/alecthomas/units"
+  packages = ["."]
+  revision = "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
+
+[[projects]]
   branch = "master"
   name = "github.com/apex/log"
   packages = [
@@ -75,8 +96,8 @@
     "deb",
     "rpm"
   ]
-  revision = "0c6b7821812f13134ac062a82b45c863ada261a0"
-  version = "v0.5.7"
+  revision = "abbeff965dca4a62182014b9105fe305d2f26af4"
+  version = "v0.5.12"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -125,15 +146,12 @@
 
 [[projects]]
   name = "github.com/stretchr/testify"
-  packages = ["assert"]
+  packages = [
+    "assert",
+    "require"
+  ]
   revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
   version = "v1.2.1"
-
-[[projects]]
-  name = "github.com/urfave/cli"
-  packages = ["."]
-  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
-  version = "v1.20.0"
 
 [[projects]]
   branch = "master"
@@ -188,6 +206,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "380c1fe14a422668b4ec2370927eb9996d007fc61d8f52245d78c8b44533664b"
+  inputs-digest = "f69dfbd5276a87d1c8e99075ccfa815be67b23067d5b83fd64612765bccc526b"
   solver-name = "gps-cdcl"
   solver-version = 1

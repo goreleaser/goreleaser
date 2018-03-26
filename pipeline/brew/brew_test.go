@@ -114,6 +114,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			Brew: config.Homebrew{
+				Name: "run-pipe",
 				GitHub: config.Repo{
 					Owner: "test",
 					Name:  "test",
@@ -195,6 +196,20 @@ func TestRunPipe(t *testing.T) {
 		distBts, err := ioutil.ReadFile(distFile)
 		assert.NoError(tt, err)
 		assert.Equal(tt, string(bts), string(distBts))
+	})
+
+	t.Run("custom name", func(tt *testing.T) {
+		ctx.Config.Brew.Name = "custom-brew-name"
+		assert.NoError(tt, doRun(ctx, client))
+		assert.True(tt, client.CreatedFile)
+
+		distFile := filepath.Join(folder, "custom-brew-name.rb")
+		_, err := os.Stat(distFile)
+		assert.NoError(t, err)
+
+		distBts, err := ioutil.ReadFile(distFile)
+		assert.NoError(tt, err)
+		assert.Contains(tt, string(distBts), "class CustomBrewName < Formula")
 	})
 }
 
@@ -354,6 +369,7 @@ func TestDefault(t *testing.T) {
 
 	var ctx = &context.Context{
 		Config: config.Project{
+			ProjectName: "myproject",
 			Builds: []config.Build{
 				{
 					Binary: "foo",
@@ -377,6 +393,7 @@ func TestDefault(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, ctx.Config.ProjectName, ctx.Config.Brew.Name)
 	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Name)
 	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Email)
 	assert.Equal(t, `bin.install "foo"`, ctx.Config.Brew.Install)
@@ -391,7 +408,7 @@ func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (rel
 	return
 }
 
-func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content bytes.Buffer, path string) (err error) {
+func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content bytes.Buffer, path, msg string) (err error) {
 	client.CreatedFile = true
 	bts, _ := ioutil.ReadAll(&content)
 	client.Content = string(bts)

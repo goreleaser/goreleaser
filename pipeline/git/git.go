@@ -11,6 +11,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/git"
+	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/pkg/errors"
 )
 
@@ -114,7 +115,10 @@ func getSnapshotName(ctx *context.Context) (string, error) {
 
 func validate(ctx *context.Context) error {
 	if ctx.Snapshot {
-		return nil
+		return pipeline.ErrSnapshotEnabled
+	}
+	if ctx.SkipValidate {
+		return pipeline.ErrSkipValidateEnabled
 	}
 	out, err := git.Run("status", "--porcelain")
 	if strings.TrimSpace(out) != "" || err != nil {

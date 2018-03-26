@@ -200,6 +200,11 @@ func publish(ctx *context.Context, docker config.Docker, images []string) error 
 		log.Warn(pipeline.ErrSkipPublishEnabled.Error())
 		return nil
 	}
+	if docker.SkipPush {
+		// TODO: this should also be better handled
+		log.Warn(pipeline.Skip("skip_push is set").Error())
+		return nil
+	}
 	for _, image := range images {
 		if err := dockerPush(ctx, docker, image); err != nil {
 			return err

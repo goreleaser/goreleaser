@@ -3,9 +3,10 @@
 package defaults
 
 import (
+	"fmt"
+
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/goreleaser/goreleaser/pipeline/archive"
 	"github.com/goreleaser/goreleaser/pipeline/artifactory"
 	"github.com/goreleaser/goreleaser/pipeline/brew"
@@ -15,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/env"
 	"github.com/goreleaser/goreleaser/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/pipeline/nfpm"
+	"github.com/goreleaser/goreleaser/pipeline/project"
 	"github.com/goreleaser/goreleaser/pipeline/release"
 	"github.com/goreleaser/goreleaser/pipeline/scoop"
 	"github.com/goreleaser/goreleaser/pipeline/sign"
@@ -29,10 +31,20 @@ func (Pipe) String() string {
 	return "setting defaults for:"
 }
 
-var defaulters = []pipeline.Defaulter{
+// Defaulter can be implemented by a Piper to set default values for its
+// configuration.
+type Defaulter interface {
+	fmt.Stringer
+
+	// Default sets the configuration defaults
+	Default(ctx *context.Context) error
+}
+
+var defaulters = []Defaulter{
 	env.Pipe{},
 	snapshot.Pipe{},
 	release.Pipe{},
+	project.Pipe{},
 	archive.Pipe{},
 	build.Pipe{},
 	fpm.Pipe{},
@@ -51,17 +63,14 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Dist == "" {
 		ctx.Config.Dist = "dist"
 	}
+	if ctx.Config.GitHubURLs.Download == "" {
+		ctx.Config.GitHubURLs.Download = "https://github.com"
+	}
 	for _, defaulter := range defaulters {
 		log.Info(defaulter.String())
 		if err := defaulter.Default(ctx); err != nil {
 			return err
 		}
-	}
-	if ctx.Config.ProjectName == "" {
-		ctx.Config.ProjectName = ctx.Config.Release.GitHub.Name
-	}
-	if ctx.Config.GitHubURLs.Download == "" {
-		ctx.Config.GitHubURLs.Download = "https://github.com"
 	}
 	return nil
 }

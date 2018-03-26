@@ -66,7 +66,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, artifacts := range filtered.GroupByPlatform() {
 		artifacts := artifacts
 		g.Go(func() error {
-			if ctx.Config.Archive.Format == "binary" {
+			if packageFormat(ctx, artifacts[0].Goos) == "binary" {
 				return skip(ctx, artifacts)
 			}
 			return create(ctx, artifacts)

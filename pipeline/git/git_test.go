@@ -60,7 +60,7 @@ func TestNoTagsSnapshot(t *testing.T) {
 		},
 	})
 	ctx.Snapshot = true
-	assert.NoError(t, Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	assert.Contains(t, ctx.Version, "SNAPSHOT-")
 }
 
@@ -112,9 +112,23 @@ func TestDirty(t *testing.T) {
 	testlib.GitCommit(t, "commit2")
 	testlib.GitTag(t, "v0.0.1")
 	assert.NoError(t, ioutil.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0644))
-	err = Pipe{}.Run(context.New(config.Project{}))
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "git is currently in a dirty state:")
+	t.Run("all checks up", func(t *testing.T) {
+		err = Pipe{}.Run(context.New(config.Project{}))
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "git is currently in a dirty state:")
+	})
+	t.Run("skip validate is set", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		ctx.SkipValidate = true
+		err = Pipe{}.Run(ctx)
+		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	})
+	t.Run("snapshot", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		ctx.Snapshot = true
+		err = Pipe{}.Run(ctx)
+		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	})
 }
 
 func TestTagIsNotLastCommit(t *testing.T) {
@@ -150,7 +164,7 @@ func TestSnapshotNoTags(t *testing.T) {
 	testlib.GitCommit(t, "whatever")
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
-	assert.NoError(t, Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	assert.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
 }
 
@@ -160,7 +174,7 @@ func TestSnapshotNoCommits(t *testing.T) {
 	testlib.GitInit(t)
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
-	assert.NoError(t, Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	assert.Equal(t, fakeInfo, ctx.Git)
 }
 
@@ -169,7 +183,7 @@ func TestSnapshotWithoutRepo(t *testing.T) {
 	defer back()
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
-	assert.NoError(t, Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	assert.Equal(t, fakeInfo, ctx.Git)
 }
 
@@ -183,7 +197,7 @@ func TestSnapshotDirty(t *testing.T) {
 	assert.NoError(t, ioutil.WriteFile(filepath.Join(folder, "foo"), []byte("foobar"), 0644))
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
-	assert.NoError(t, Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
 func TestShortCommitHash(t *testing.T) {
@@ -198,6 +212,6 @@ func TestShortCommitHash(t *testing.T) {
 	})
 	ctx.Snapshot = true
 	ctx.Config.Git.ShortHash = true
-	assert.NoError(t, Pipe{}.Run(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	assert.Len(t, ctx.Version, 7)
 }

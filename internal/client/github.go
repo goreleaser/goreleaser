@@ -44,6 +44,7 @@ func (c *githubClient) CreateFile(
 	repo config.Repo,
 	content bytes.Buffer,
 	path string,
+	message string,
 ) error {
 	options := &github.RepositoryContentFileOptions{
 		Committer: &github.CommitAuthor{
@@ -51,9 +52,7 @@ func (c *githubClient) CreateFile(
 			Email: github.String(commitAuthor.Email),
 		},
 		Content: content.Bytes(),
-		Message: github.String(
-			ctx.Config.ProjectName + " version " + ctx.Git.CurrentTag,
-		),
+		Message: github.String(message),
 	}
 
 	file, _, res, err := c.client.Repositories.GetContents(

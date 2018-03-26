@@ -63,6 +63,9 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Brew.CommitAuthor.Email == "" {
 		ctx.Config.Brew.CommitAuthor.Email = "goreleaser@carlosbecker.com"
 	}
+	if ctx.Config.Brew.Name == "" {
+		ctx.Config.Brew.Name = ctx.Config.ProjectName
+	}
 	return nil
 }
 
@@ -112,7 +115,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	var filename = ctx.Config.ProjectName + ".rb"
+	var filename = ctx.Config.Brew.Name + ".rb"
 	var path = filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
 	if err := ioutil.WriteFile(path, content.Bytes(), 0644); err != nil {
@@ -133,7 +136,9 @@ func doRun(ctx *context.Context, client client.Client) error {
 	log.WithField("formula", path).
 		WithField("repo", ctx.Config.Brew.GitHub.String()).
 		Info("pushing")
-	return client.CreateFile(ctx, ctx.Config.Brew.CommitAuthor, ctx.Config.Brew.GitHub, content, path)
+
+	var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
+	return client.CreateFile(ctx, ctx.Config.Brew.CommitAuthor, ctx.Config.Brew.GitHub, content, path, msg)
 }
 
 func buildFormula(ctx *context.Context, client client.Client, artifact artifact.Artifact) (bytes.Buffer, error) {
@@ -160,7 +165,7 @@ func dataFor(ctx *context.Context, client client.Client, artifact artifact.Artif
 	}
 	var cfg = ctx.Config.Brew
 	return templateData{
-		Name:             formulaNameFor(ctx.Config.ProjectName),
+		Name:             formulaNameFor(ctx.Config.Brew.Name),
 		DownloadURL:      ctx.Config.GitHubURLs.Download,
 		Desc:             cfg.Description,
 		Homepage:         cfg.Homepage,
