@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/goreleaser/goreleaser/pipeline/archive"
 	"github.com/goreleaser/goreleaser/pipeline/artifactory"
+	"github.com/goreleaser/goreleaser/pipeline/before"
 	"github.com/goreleaser/goreleaser/pipeline/brew"
 	"github.com/goreleaser/goreleaser/pipeline/build"
 	"github.com/goreleaser/goreleaser/pipeline/changelog"
@@ -43,6 +44,7 @@ var (
 
 var pipes = []Piper{
 	defaults.Pipe{},        // load default configs
+	before.Pipe{},          // run global hooks before build
 	dist.Pipe{},            // ensure ./dist is clean
 	git.Pipe{},             // get and validate git repo state
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist

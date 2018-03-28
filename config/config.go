@@ -219,6 +219,11 @@ type Git struct {
 	ShortHash bool `yaml:"short_hash,omitempty"`
 }
 
+// Before config
+type Before struct {
+	Hooks []string `yaml:",omitempty"`
+}
+
 // Project includes all project configuration
 type Project struct {
 	ProjectName   string        `yaml:"project_name,omitempty"`
@@ -239,6 +244,7 @@ type Project struct {
 	Sign          Sign          `yaml:",omitempty"`
 	EnvFiles      EnvFiles      `yaml:"env_files,omitempty"`
 	Git           Git           `yaml:",omitempty"`
+	Before        Before        `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
