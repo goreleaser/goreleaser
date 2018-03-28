@@ -22,6 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/sign"
 	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
 	"github.com/goreleaser/goreleaser/pipeline/snapshot"
+	"github.com/goreleaser/goreleaser/pipeline/source"
 )
 
 // Pipe that sets the defaults
@@ -56,6 +57,7 @@ var defaulters = []Defaulter{
 	artifactory.Pipe{},
 	brew.Pipe{},
 	scoop.Pipe{},
+	source.Pipe{},
 }
 
 // Run the pipe

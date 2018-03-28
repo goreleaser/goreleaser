@@ -48,6 +48,7 @@ type Homebrew struct {
 	Homepage         string       `yaml:",omitempty"`
 	SkipUpload       bool         `yaml:"skip_upload,omitempty"`
 	DownloadStrategy string       `yaml:"download_strategy,omitempty"`
+	SourceTarball    string       `yaml:"-"`
 }
 
 // Scoop contains the scoop.sh section
@@ -107,6 +108,13 @@ type Archive struct {
 	FormatOverrides []FormatOverride `yaml:"format_overrides,omitempty"`
 	WrapInDirectory bool             `yaml:"wrap_in_directory,omitempty"`
 	Files           []string         `yaml:",omitempty"`
+}
+
+// Source config used for the source archives
+type Source struct {
+	Format       string   `yaml:",omitempty"`
+	NameTemplate string   `yaml:"name_template,omitempty"`
+	Excludes     []string `yaml:",omitempty"`
 }
 
 // Release config used for the GitHub release
@@ -227,6 +235,7 @@ type Project struct {
 	Scoop         Scoop         `yaml:",omitempty"`
 	Builds        []Build       `yaml:",omitempty"`
 	Archive       Archive       `yaml:",omitempty"`
+	Source        Source        `yaml:",omitempty"`
 	FPM           NFPM          `yaml:",omitempty"` // deprecated
 	NFPM          NFPM          `yaml:",omitempty"`
 	Snapcraft     Snapcraft     `yaml:",omitempty"`
