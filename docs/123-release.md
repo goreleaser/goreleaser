@@ -75,4 +75,4 @@ $ goreleaser --release-notes <(some_changelog_generator)
 
 Some changelog generators you can use:
 
-- [buchanae/github-release-notes](https://github.com/buchanae/github-release-notes)
+* [buchanae/github-release-notes](https://github.com/buchanae/github-release-notes)
