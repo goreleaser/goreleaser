@@ -31,6 +31,8 @@ release:
   # - ProjectName
   # - Tag
   # - Version (Git tag without `v` prefix)
+  # There is also a template function "time" that takes a Go time format
+  # string to insert a formated timestamp into the release name.
   # Default is ``
   name_template: "{{.ProjectName}}-v{{.Version}}"
 ```
