@@ -115,6 +115,7 @@ type Release struct {
 	Draft        bool   `yaml:",omitempty"`
 	Prerelease   bool   `yaml:",omitempty"`
 	NameTemplate string `yaml:"name_template,omitempty"`
+	BodyTemplate string `yaml:"body_template,omitempty"`
 }
 
 // NFPM config
