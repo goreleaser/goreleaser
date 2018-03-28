@@ -58,7 +58,7 @@ func assertDefaultTemplateData(t *testing.T, formulae string) {
 
 func TestFullFormulae(t *testing.T) {
 	data := defaultTemplateData
-	data.Caveats = "Here are some caveats"
+	data.Caveats = []string{"Here are some caveats"}
 	data.Dependencies = []string{"gtk+"}
 	data.Conflicts = []string{"svn"}
 	data.Plist = "it works"

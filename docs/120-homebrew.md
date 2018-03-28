@@ -61,6 +61,11 @@ brew:
     - git
     - zsh
 
+  # Packages your source package depends on.
+  build_dependencies:
+    - make
+    - gcc
+
   # Packages that conflict with your package.
   conflicts:
     - svn
@@ -76,6 +81,12 @@ brew:
   # Default is empty.
   test: |
     system "#{bin}/program --version"
+    ...
+
+  # Specify any additional formula content in the special section.
+  # Default is empty.
+  special: |
+    system "make completion"
     ...
 
   # Custom install script for brew.
