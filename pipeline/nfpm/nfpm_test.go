@@ -144,7 +144,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.Binary,
 	})
-	assert.Contains(t, Pipe{}.Run(ctx).Error(), `dist/mybin/mybin: no such file or directory`)
+	assert.Contains(t, Pipe{}.Run(ctx).Error(), `dist/mybin/mybin: file does not exist`)
 }
 
 func TestDefault(t *testing.T) {

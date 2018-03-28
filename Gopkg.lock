@@ -97,8 +97,8 @@
     "glob",
     "rpm"
   ]
-  revision = "368ee0bd578c9ebf4fae1641104be7bd1d7c2967"
-  version = "v0.6.0"
+  revision = "7f4d7686a070c1288f5136fa67619c6cac8dd530"
+  version = "v0.6.1"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -199,10 +199,10 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
-  version = "v2.1.1"
+  revision = "4fc5987536ef307a24ca299aee7ae301cde3d221"
 
 [solve-meta]
   analyzer-name = "dep"
