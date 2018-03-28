@@ -89,18 +89,20 @@ nfpm:
   bindir: /usr/bin
 
   # Files or directories to add to your package (beyond the binary).
-  # Keys are source paths to get the files from.
+  # Keys are source paths/globs to get the files from.
   # Values are the destination locations of the files in the package.
   files:
     "scripts/etc/init.d/": "/etc/init.d"
+    "path/**/glob": "/var/foo/glob"
 
   # Config files to add to your package. They are about the same as
   # the files keyword, except package managers treat them differently (while
   # uninstalling, mostly).
-  # Keys are source paths to get the files from.
+  # Keys are source paths/globs to get the files from.
   # Values are the destination locations of the files in the package.
   config_files:
-    "conf/app.conf": "/etc/app.conf"
+    "tmp/app_generated.conf": "/etc/app.conf"
+    "conf/*.conf": "/etc/foo/"
 ```
 
 Note that GoReleaser will not install `rpmbuild` or any dependencies for you.
