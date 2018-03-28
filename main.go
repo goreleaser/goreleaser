@@ -77,6 +77,7 @@ type releaseOptions struct {
 	SkipValidate bool
 	RmDist       bool
 	Debug        bool
+	Prerelease   bool
 	Parallelism  int
 	Timeout      time.Duration
 }
@@ -101,6 +102,7 @@ func main() {
 	var parallelism = releaseCmd.Flag("parallelism", "Amount of slow tasks to do in concurrently").Short('p').Default("4").Int() // TODO: use runtime.NumCPU here?
 	var debug = releaseCmd.Flag("debug", "Enable debug mode").Bool()
 	var timeout = releaseCmd.Flag("timeout", "Timeout to the entire release process").Default("30m").Duration()
+	var prerelease = releaseCmd.Flag("prerelease", "Issue a pre-release").Default("true").Bool()
 
 	app.Version(fmt.Sprintf("%v, commit %v, built at %v", version, commit, date))
 	app.VersionFlag.Short('v')
@@ -128,6 +130,7 @@ func main() {
 			Parallelism:  *parallelism,
 			Debug:        *debug,
 			Timeout:      *timeout,
+			Prerelease:   *prerelease,
 		}
 		if err := releaseProject(options); err != nil {
 			log.WithError(err).Errorf(color.New(color.Bold).Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
@@ -168,6 +171,7 @@ func releaseProject(options releaseOptions) error {
 	ctx.SkipPublish = ctx.Snapshot || options.SkipPublish
 	ctx.SkipValidate = ctx.Snapshot || options.SkipValidate
 	ctx.RmDist = options.RmDist
+	ctx.Config.Release.Prerelease = options.Prerelease
 	return doRelease(ctx)
 }
 

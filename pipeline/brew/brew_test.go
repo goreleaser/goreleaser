@@ -399,6 +399,15 @@ func TestDefault(t *testing.T) {
 	assert.Equal(t, `bin.install "foo"`, ctx.Config.Brew.Install)
 }
 
+func TestRunPipePrerelease(t *testing.T) {
+	ctx := context.New(config.Project{
+		Release: config.Release{
+			Prerelease: true,
+		},
+	})
+	assert.Error(t, Pipe{}.Run(ctx))
+}
+
 type DummyClient struct {
 	CreatedFile bool
 	Content     string
