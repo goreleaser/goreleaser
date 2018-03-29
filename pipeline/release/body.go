@@ -40,11 +40,19 @@ func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 
 func describeBodyVersion(ctx *context.Context, version string) (bytes.Buffer, error) {
 	var out bytes.Buffer
+	tpl := bodyTemplate
+	if ctx.Config.Release.BodyTemplate != "" {
+		var err error
+		tpl, err = template.New("release").Parse(ctx.Config.Release.BodyTemplate)
+		if err != nil {
+			return out, err
+		}
+	}
 	var dockers []string
 	for _, a := range ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImage)).List() {
 		dockers = append(dockers, a.Name)
 	}
-	err := bodyTemplate.Execute(&out, struct {
+	err := tpl.Execute(&out, struct {
 		ReleaseNotes, GoVersion string
 		DockerImages            []string
 	}{
