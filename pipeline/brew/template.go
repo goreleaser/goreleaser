@@ -26,32 +26,36 @@ type templateData struct {
 const formulaTemplate = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
+  {{- if .BuildDependencies }}
+  url "{{ .DownloadURL }}/{{ .Repo.Owner }}/{{ .Repo.Name }}/archive/{{ .Tag }}.tar.gz"
+  {{ else }}
   url "{{ .DownloadURL }}/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
   {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+  {{- end }}
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
   head "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}.git"
 
-  {{- if .BuildDependencies }}
-  {{ range $index, $element := .BuildDependencies }}
+  {{- with .BuildDependencies }}
+  {{ range $index, $element := . }}
   depends_on "{{ . }}" => :build
   {{- end }}
   {{- end -}}
 
-  {{- if .Dependencies }}
-  {{ range $index, $element := .Dependencies }}
+  {{- with .Dependencies }}
+  {{ range $index, $element := . }}
   depends_on "{{ . }}"
   {{- end }}
   {{- end -}}
 
-  {{- if .Conflicts }}
-  {{ range $index, $element := .Conflicts }}
+  {{- with .Conflicts }}
+  {{ range $index, $element := . }}
   conflicts_with "{{ . }}"
   {{- end }}
   {{- end }}
 
-  {{- if .Special }}
-  {{- range $index, $element := .Special }}
+  {{- with .Special }}
+  {{- range $index, $element := . }}
   {{ . -}}
   {{- end -}}
   {{- end }}
@@ -62,22 +66,22 @@ const formulaTemplate = `class {{ .Name }} < Formula
     {{- end }}
   end
 
-  {{- if .Caveats }}
+  {{- with .Caveats }}
 
   def caveats; <<-EOS.undent
-    {{- range $index, $element := .Caveats }}
+    {{- range $index, $element := . }}
     {{ . -}}
     {{- end }}
   EOS
   end
   {{- end -}}
 
-  {{- if .Plist }}
+  {{- with .Plist }}
 
   plist_options :startup => false
 
   def plist; <<~EOS
-    {{ .Plist }}
+    {{ . }}
   EOS
   end
   {{- end -}}
