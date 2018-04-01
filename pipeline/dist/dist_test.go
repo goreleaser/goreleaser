@@ -64,3 +64,25 @@ func TestEmptyDistExists(t *testing.T) {
 func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.String())
 }
+
+func TestDistIsSneaky(t *testing.T) {
+	for _, dist := range []string{"/", "", "/etc/../"} {
+		ctx := &context.Context{
+			Config: config.Project{
+				Dist: dist,
+			},
+		}
+		assert.Error(t, Pipe{}.Run(ctx))
+	}
+}
+
+func TestDistIsNoSneaky(t *testing.T) {
+	for _, dist := range []string{"/home/john", ".", "/tmp/foo/../bar/"} {
+		ctx := &context.Context{
+			Config: config.Project{
+				Dist: dist,
+			},
+		}
+		assert.NoError(t, isSneaky(ctx))
+	}
+}
