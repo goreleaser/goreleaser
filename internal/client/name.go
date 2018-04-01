@@ -33,11 +33,8 @@ func releaseTitle(ctx *context.Context) (string, error) {
 
 func mkFuncMap() template.FuncMap {
 	return template.FuncMap{
-		"time": func(s ...string) (string, error) {
-			if len(s) < 1 {
-				return "", nil
-			}
-			return timeNow().Format(s[0]), nil
+		"time": func(s string) string {
+			return timeNow().Format(s)
 		},
 	}
 }
