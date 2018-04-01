@@ -44,7 +44,6 @@ type Homebrew struct {
 	Dependencies      []string     `yaml:",omitempty"`
 	BuildDependencies []string     `yaml:"build_dependencies,omitempty"`
 	Test              string       `yaml:",omitempty"`
-	Special           string       `yaml:",omitempty"`
 	Conflicts         []string     `yaml:",omitempty"`
 	Description       string       `yaml:",omitempty"`
 	Homepage          string       `yaml:",omitempty"`
