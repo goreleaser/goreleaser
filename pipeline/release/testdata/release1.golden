@@ -1,4 +1,3 @@
-
 feature1: description
 feature2: other description
 
@@ -7,7 +6,3 @@ feature2: other description
 - `docker pull goreleaser/goreleaser:0.40.0`
 - `docker pull goreleaser/goreleaser:latest`
 - `docker pull goreleaser/godownloader:v0.1.0`
-
----
-Automated with [GoReleaser](https://github.com/goreleaser)
-Built with go version go1.9 darwin/amd64
