@@ -16,7 +16,8 @@ const bodyTemplateText = `{{ .ReleaseNotes }}
 {{ range $element := . }}
 - ` + "`docker pull {{ . -}}`" + `
 {{- end -}}
-{{- end }}`
+{{- end }}
+`
 
 var bodyTemplate *template.Template
 
