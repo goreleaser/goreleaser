@@ -3,6 +3,7 @@ package brew
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -93,124 +94,89 @@ func TestSplit(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
-	var ctx = &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
+	for name, fn := range map[string]func(ctx *context.Context){
+		"default": func(ctx *context.Context) {},
+		"github_enterprise_url": func(ctx *context.Context) {
+			ctx.Config.GitHubURLs.Download = "http://github.example.org"
 		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Config: config.Project{
-			Dist:        folder,
-			ProjectName: "run-pipe",
-			Archive: config.Archive{
-				Format: "tar.gz",
-			},
-			Release: config.Release{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
-				},
-			},
-			Brew: config.Homebrew{
-				Name: "run-pipe",
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
-				},
-				Description:  "A run pipe test formula",
-				Homepage:     "https://github.com/goreleaser",
-				Caveats:      "don't do this",
-				Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
-				Plist:        `<xml>whatever</xml>`,
-				Dependencies: []string{"zsh", "bash"},
-				Conflicts:    []string{"gtk+", "qt"},
-				Install:      `bin.install "foo"`,
-			},
+		"custom_download_strategy": func(ctx *context.Context) {
+			ctx.Config.Brew.DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
 		},
+		"build_from_source": func(ctx *context.Context) {
+			ctx.Config.Brew.BuildDependencies = []string{"go"}
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder, err := ioutil.TempDir("", "goreleasertest")
+			assert.NoError(t, err)
+			var ctx = &context.Context{
+				Git: context.GitInfo{
+					CurrentTag: "v1.0.1",
+				},
+				Version:   "1.0.1",
+				Artifacts: artifact.New(),
+				Config: config.Project{
+					Dist:        folder,
+					ProjectName: name,
+					GitHubURLs: config.GitHubURLs{
+						Download: "https://github.com",
+					},
+					Archive: config.Archive{
+						Format: "tar.gz",
+					},
+					Release: config.Release{
+						GitHub: config.Repo{
+							Owner: "test",
+							Name:  "test",
+						},
+					},
+					Brew: config.Homebrew{
+						Name: name,
+						GitHub: config.Repo{
+							Owner: "test",
+							Name:  "test",
+						},
+						Description:  "A run pipe test formula",
+						Homepage:     "https://github.com/goreleaser",
+						Caveats:      "don't do this",
+						Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
+						Plist:        `<xml>whatever</xml>`,
+						Dependencies: []string{"zsh", "bash"},
+						Conflicts:    []string{"gtk+", "qt"},
+						Install:      `bin.install "foo"`,
+					},
+				},
+			}
+			fn(ctx)
+			var path = filepath.Join(folder, "bin.tar.gz")
+			ctx.Artifacts.Add(artifact.Artifact{
+				Name:   "bin.tar.gz",
+				Path:   path,
+				Goos:   "darwin",
+				Goarch: "amd64",
+				Type:   artifact.UploadableArchive,
+			})
+
+			_, err = os.Create(path)
+			assert.NoError(t, err)
+			client := &DummyClient{}
+			var distFile = filepath.Join(folder, name+".rb")
+
+			assert.NoError(t, doRun(ctx, client))
+			assert.True(t, client.CreatedFile)
+			var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
+			if *update {
+				ioutil.WriteFile(golden, []byte(client.Content), 0655)
+			}
+			bts, err := ioutil.ReadFile(golden)
+			assert.NoError(t, err)
+			assert.Equal(t, string(bts), client.Content)
+
+			distBts, err := ioutil.ReadFile(distFile)
+			assert.NoError(t, err)
+			assert.Equal(t, string(bts), string(distBts))
+		})
 	}
-	var path = filepath.Join(folder, "bin.tar.gz")
-	ctx.Artifacts.Add(artifact.Artifact{
-		Name:   "bin.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
-	})
-	client := &DummyClient{}
-	assert.Error(t, doRun(ctx, client))
-	assert.False(t, client.CreatedFile)
-
-	_, err = os.Create(path)
-	assert.NoError(t, err)
-
-	var distFile = filepath.Join(folder, "run-pipe.rb")
-
-	t.Run("default git url", func(tt *testing.T) {
-		ctx.Config.GitHubURLs.Download = "https://github.com"
-		assert.NoError(tt, doRun(ctx, client))
-		assert.True(tt, client.CreatedFile)
-		var golden = "testdata/run_pipe.rb.golden"
-		if *update {
-			ioutil.WriteFile(golden, []byte(client.Content), 0655)
-		}
-		bts, err := ioutil.ReadFile(golden)
-		assert.NoError(tt, err)
-		assert.Equal(tt, string(bts), client.Content)
-
-		distBts, err := ioutil.ReadFile(distFile)
-		assert.NoError(tt, err)
-		assert.Equal(tt, string(bts), string(distBts))
-	})
-
-	t.Run("github enterprise url", func(tt *testing.T) {
-		ctx.Config.GitHubURLs.Download = "http://github.example.org"
-		assert.NoError(tt, doRun(ctx, client))
-		assert.True(tt, client.CreatedFile)
-		var golden = "testdata/run_pipe_enterprise.rb.golden"
-		if *update {
-			ioutil.WriteFile(golden, []byte(client.Content), 0644)
-		}
-		bts, err := ioutil.ReadFile(golden)
-		assert.NoError(tt, err)
-		assert.Equal(tt, string(bts), client.Content)
-
-		distBts, err := ioutil.ReadFile(distFile)
-		assert.NoError(tt, err)
-		assert.Equal(tt, string(bts), string(distBts))
-	})
-
-	t.Run("custom download strategy", func(tt *testing.T) {
-		ctx.Config.Brew.DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
-		assert.NoError(tt, doRun(ctx, client))
-		assert.True(tt, client.CreatedFile)
-		var golden = "testdata/run_pipe_download_strategy.rb.golden"
-		if *update {
-			ioutil.WriteFile(golden, []byte(client.Content), 0655)
-		}
-		bts, err := ioutil.ReadFile(golden)
-		assert.NoError(tt, err)
-		assert.Equal(tt, string(bts), client.Content)
-
-		distBts, err := ioutil.ReadFile(distFile)
-		assert.NoError(tt, err)
-		assert.Equal(tt, string(bts), string(distBts))
-	})
-
-	t.Run("custom name", func(tt *testing.T) {
-		ctx.Config.Brew.Name = "custom-brew-name"
-		assert.NoError(tt, doRun(ctx, client))
-		assert.True(tt, client.CreatedFile)
-
-		distFile := filepath.Join(folder, "custom-brew-name.rb")
-		_, err := os.Stat(distFile)
-		assert.NoError(t, err)
-
-		distBts, err := ioutil.ReadFile(distFile)
-		assert.NoError(tt, err)
-		assert.Contains(tt, string(distBts), "class CustomBrewName < Formula")
-	})
 }
 
 func TestRunPipeNoDarwin64Build(t *testing.T) {

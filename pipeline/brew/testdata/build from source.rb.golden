@@ -1,10 +1,13 @@
-class RunPipe < Formula
+class BuildFromSource < Formula
   desc "A run pipe test formula"
   homepage "https://github.com/goreleaser"
-  url "http://github.example.org/test/test/releases/download/v1.0.1/bin.tar.gz"
+  url "https://github.com/test/test/archive/v1.0.1.tar.gz"
+  
   version "1.0.1"
   sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   head "https://github.com/test/test.git"
+  
+  depends_on "go" => :build
   
   depends_on "zsh"
   depends_on "bash"
