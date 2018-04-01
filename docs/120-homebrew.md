@@ -83,12 +83,6 @@ brew:
     system "#{bin}/program --version"
     ...
 
-  # Specify any additional formula content in the special section.
-  # Default is empty.
-  special: |
-    system "make completion"
-    ...
-
   # Custom install script for brew.
   # Default is 'bin.install "program"'.
   install: |

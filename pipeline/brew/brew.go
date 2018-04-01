@@ -181,7 +181,6 @@ func dataFor(ctx *context.Context, client client.Client, artifact artifact.Artif
 		Plist:             cfg.Plist,
 		Install:           split(cfg.Install),
 		Tests:             split(cfg.Test),
-		Special:           split(cfg.Special),
 		DownloadStrategy:  cfg.DownloadStrategy,
 	}, nil
 }
