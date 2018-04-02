@@ -4,26 +4,29 @@ class RunPipe < Formula
   url "http://github.example.org/test/test/releases/download/v1.0.1/bin.tar.gz", :using => GitHubPrivateRepositoryReleaseDownloadStrategy
   version "1.0.1"
   sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  head "https://github.com/test/test.git"
   
   depends_on "zsh"
   depends_on "bash"
   
   conflicts_with "gtk+"
   conflicts_with "qt"
+  
 
   def install
     bin.install "foo"
   end
 
-  def caveats
-    "don't do this"
+  def caveats; <<-EOS.undent
+    don't do this
+  EOS
   end
 
   plist_options :startup => false
 
   def plist; <<~EOS
     <xml>whatever</xml>
-    EOS
+  EOS
   end
 
   test do
