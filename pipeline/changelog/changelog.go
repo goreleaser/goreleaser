@@ -2,8 +2,10 @@
 package changelog
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 	"sort"
 	"strings"
@@ -31,6 +33,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Snapshot {
 		return pipeline.Skip("not available for snapshots")
 	}
+	if ctx.Config.Changelog.Extract != "" {
+		return extractChangelog(ctx)
+	}
+
 	if err := checkSortDirection(ctx.Config.Changelog.Sort); err != nil {
 		return err
 	}
@@ -39,6 +45,30 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", strings.Join(entries, "\n"))
+	return nil
+}
+
+func extractChangelog(ctx *context.Context) error {
+	fh, err := os.Open(ctx.Config.Changelog.Extract)
+	if err != nil {
+		return err
+	}
+	defer fh.Close()
+	var relNotes strings.Builder
+	scanner := bufio.NewScanner(fh)
+	cnt := 0
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "##") {
+			cnt++
+		}
+		if cnt > 1 {
+			break
+		}
+		relNotes.WriteString(line)
+		relNotes.WriteString("\n")
+	}
+	ctx.ReleaseNotes = relNotes.String()
 	return nil
 }
 
