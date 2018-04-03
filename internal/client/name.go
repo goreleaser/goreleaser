@@ -8,10 +8,6 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 )
 
-var (
-	timeNow = time.Now
-)
-
 func releaseTitle(ctx *context.Context) (string, error) {
 	var out bytes.Buffer
 	t, err := template.New("github").
@@ -34,7 +30,7 @@ func releaseTitle(ctx *context.Context) (string, error) {
 func mkFuncMap() template.FuncMap {
 	return template.FuncMap{
 		"time": func(s string) string {
-			return timeNow().Format(s)
+			return time.Now().Format(s)
 		},
 	}
 }
