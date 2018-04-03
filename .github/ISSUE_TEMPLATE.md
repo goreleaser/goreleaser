@@ -1,8 +1,8 @@
 ⚠️ Attention points before opening the issue:
 
-- make sure there isn't an issue already about what you need
-- if you have a question, try our #goreleaser on gophers slack first
-- make sure to read our Code of Conduct
+* make sure there isn't an issue already about what you need
+* if you have a question, try our #goreleaser on gophers slack first
+* make sure to read our Code of Conduct
 
 ---
 
@@ -15,6 +15,6 @@ In any case, please search before opening!
 
 Thank you.
 
-Love goreleaser? Please consider supporting our collective: 
+Love goreleaser? Please consider supporting our collective:
 
-👉  https://opencollective.com/goreleaser/donate
+👉 https://opencollective.com/goreleaser/donate
