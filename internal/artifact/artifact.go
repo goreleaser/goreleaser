@@ -26,6 +26,8 @@ const (
 	Checksum
 	// Signature is a signature file
 	Signature
+	// Source is a source archive
+	Source
 )
 
 // Artifact represents an artifact and its relevant info

@@ -33,6 +33,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/scoop"
 	"github.com/goreleaser/goreleaser/pipeline/sign"
 	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
+	"github.com/goreleaser/goreleaser/pipeline/source"
 )
 
 var (
@@ -48,6 +49,7 @@ var pipes = []Piper{
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
 	changelog.Pipe{},       // builds the release changelog
 	env.Pipe{},             // load and validate environment variables
+	source.Pipe{},          // source code archive
 	build.Pipe{},           // build
 	archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
 	nfpm.Pipe{},            // archive via fpm (deb, rpm) using "native" go impl
