@@ -35,8 +35,8 @@ const formulaTemplate = `class {{ .Name }} < Formula
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
 
-  {{ with .Dependencies -}}
-  {{ range $index, $element := . -}}
+  {{- with .Dependencies }}
+  {{ range $index, $element := . }}
   depends_on "{{ . }}"
   {{- end }}
   {{- end -}}
