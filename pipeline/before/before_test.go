@@ -15,9 +15,9 @@ func TestDescription(t *testing.T) {
 func TestRunPipe(t *testing.T) {
 	for _, tc := range [][]string{
 		nil,
-		[]string{},
-		[]string{"go version"},
-		[]string{"go version", "go list"},
+		{},
+		{"go version"},
+		{"go version", "go list"},
 	} {
 		ctx := context.New(
 			config.Project{
@@ -32,7 +32,7 @@ func TestRunPipe(t *testing.T) {
 
 func TestRunPipeFail(t *testing.T) {
 	for _, tc := range [][]string{
-		[]string{"go tool foobar"},
+		{"go tool foobar"},
 	} {
 		ctx := context.New(
 			config.Project{

@@ -17,4 +17,3 @@ before:
 ```
 
 If any of the hooks fails the build process is aborted.
-
