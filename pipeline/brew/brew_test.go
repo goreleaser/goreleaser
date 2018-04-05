@@ -45,6 +45,7 @@ var defaultTemplateData = templateData{
 	},
 	Tag:     "v0.1.3",
 	Version: "0.1.3",
+	Caveats: []string{},
 	File:    "test_Darwin_x86_64.tar.gz",
 	SHA256:  "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
 }
@@ -91,6 +92,10 @@ func TestFormulaeSimple(t *testing.T) {
 func TestSplit(t *testing.T) {
 	var parts = split("system \"true\"\nsystem \"#{bin}/foo -h\"")
 	assert.Equal(t, []string{"system \"true\"", "system \"#{bin}/foo -h\""}, parts)
+	parts = split("")
+	assert.Equal(t, []string{}, parts)
+	parts = split("\n  ")
+	assert.Equal(t, []string{}, parts)
 }
 
 func TestRunPipe(t *testing.T) {
