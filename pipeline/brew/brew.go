@@ -186,7 +186,11 @@ func dataFor(ctx *context.Context, client client.Client, artifact artifact.Artif
 }
 
 func split(s string) []string {
-	return strings.Split(strings.TrimSpace(s), "\n")
+	strings := strings.Split(strings.TrimSpace(s), "\n")
+	if len(strings) == 1 && strings[0] == "" {
+		return []string{}
+	}
+	return strings
 }
 
 func formulaNameFor(name string) string {
