@@ -31,6 +31,7 @@ func TestRunPipeNoFormats(t *testing.T) {
 
 func TestRunPipeInvalidFormat(t *testing.T) {
 	var ctx = context.New(config.Project{
+		ProjectName: "nope",
 		NFPM: config.NFPM{
 			Bindir:       "/usr/bin",
 			NameTemplate: defaultNameTemplate,
@@ -38,6 +39,9 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 			Files:        map[string]string{},
 		},
 	})
+	ctx.Git = context.GitInfo{
+		CurrentTag: "v1.2.3",
+	}
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(artifact.Artifact{
@@ -128,7 +132,8 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	assert.NoError(t, os.Mkdir(dist, 0755))
 	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var ctx = context.New(config.Project{
-		Dist: dist,
+		Dist:        dist,
+		ProjectName: "asd",
 		NFPM: config.NFPM{
 			Formats: []string{"deb", "rpm"},
 			Files: map[string]string{
@@ -136,7 +141,9 @@ func TestCreateFileDoesntExist(t *testing.T) {
 			},
 		},
 	})
-	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{
+		CurrentTag: "v1.2.3",
+	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "mybin", "mybin"),
@@ -145,6 +152,28 @@ func TestCreateFileDoesntExist(t *testing.T) {
 		Type:   artifact.Binary,
 	})
 	assert.Contains(t, Pipe{}.Run(ctx).Error(), `dist/mybin/mybin: file does not exist`)
+}
+
+func TestInvalidConfig(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	var ctx = context.New(config.Project{
+		Dist: dist,
+		NFPM: config.NFPM{
+			Formats: []string{"deb"},
+		},
+	})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "mybin",
+		Path:   filepath.Join(dist, "mybin", "mybin"),
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+	})
+	assert.Contains(t, Pipe{}.Run(ctx).Error(), `invalid nfpm config: package name cannot be empty`)
 }
 
 func TestDefault(t *testing.T) {

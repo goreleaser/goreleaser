@@ -121,6 +121,10 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		ConfigFiles: ctx.Config.NFPM.ConfigFiles,
 	}
 
+	if err := nfpm.Validate(info); err != nil {
+		return errors.Wrap(err, "invalid nfpm config")
+	}
+
 	packager, err := nfpm.Get(format)
 	if err != nil {
 		return err

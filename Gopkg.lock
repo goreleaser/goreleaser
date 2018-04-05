@@ -97,8 +97,8 @@
     "glob",
     "rpm"
   ]
-  revision = "c52d07bcc82976b0206e6ab8dc9c12a23e1b142e"
-  version = "v0.6.2"
+  revision = "672aa2bd659a22558aa5d727bd6e76ec5d3aafb2"
+  version = "v0.6.3"
 
 [[projects]]
   name = "github.com/masterminds/semver"
