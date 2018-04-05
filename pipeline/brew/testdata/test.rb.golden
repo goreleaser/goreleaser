@@ -14,7 +14,7 @@ class Test < Formula
     another install script
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     Here are some caveats
   EOS
   end

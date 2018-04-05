@@ -60,7 +60,7 @@ const formulaTemplate = `class {{ .Name }} < Formula
 
   {{- with .Caveats }}
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     {{- range $index, $element := . }}
     {{ . -}}
     {{- end }}
