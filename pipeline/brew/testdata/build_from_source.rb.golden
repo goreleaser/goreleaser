@@ -17,7 +17,7 @@ class BuildFromSource < Formula
     bin.install "foo"
   end
 
-  def caveats; <<-EOS.undent
+  def caveats; <<~EOS
     don't do this
   EOS
   end
