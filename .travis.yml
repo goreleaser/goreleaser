@@ -9,7 +9,6 @@ addons:
     packages:
     - rpm
     - snapd
-    - liblz4-dev
 env:
   - PATH=/snap/bin:$PATH
 install:
