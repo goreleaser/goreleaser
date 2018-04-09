@@ -71,7 +71,7 @@
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "ddf9d548a0f4d9b3fd42dd2add86e2c804860fef"
+  revision = "88eb4e9dc91cb2db1bbc56c936f1ee39bbe72ba5"
 
 [[projects]]
   branch = "master"
@@ -97,14 +97,14 @@
     "glob",
     "rpm"
   ]
-  revision = "672aa2bd659a22558aa5d727bd6e76ec5d3aafb2"
-  version = "v0.6.3"
+  revision = "b3e51e12b4c878c076ab7dcedcd980e88b538368"
+  version = "v0.7.0"
 
 [[projects]]
   name = "github.com/masterminds/semver"
   packages = ["."]
-  revision = "15d8430ab86497c5c0da827b748823945e1cf1e1"
-  version = "v1.4.0"
+  revision = "8d82589cda2d7b5b9167396841975c4535c9bec6"
+  version = "v1.4.1"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -161,7 +161,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "cbe0f9307d0156177f9dd5dc85da1a31abc5f2fb"
+  revision = "61147c48b25b599e5b561d2e9c4f3e1ef489ca41"
 
 [[projects]]
   branch = "master"
@@ -170,19 +170,19 @@
     ".",
     "internal"
   ]
-  revision = "d7d64896b5ff88e703f289390e3e98cd010a837e"
+  revision = "921ae394b9430ed4fb549668d7b087601bd60a81"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sync"
   packages = ["errgroup"]
-  revision = "fd80eb99c8f653c847d294a001bdf2a3a6f768f5"
+  revision = "1d60e4601c6fd243af51cc01ddf169918a5407ca"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "f6cff0780e542efa0c8e864dc8fa522808f6a598"
+  revision = "3b87a42e500a6dc65dae1a55d0b641295971163e"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -199,14 +199,14 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "4fc5987536ef307a24ca299aee7ae301cde3d221"
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bb51670e0409b47f0935f25032d6403f3efd81e91073a37e1c561436f9152755"
+  inputs-digest = "706366379db14a54b10afe7d89030cc1c235e91c7dc3313421ccf5db4cf4ddce"
   solver-name = "gps-cdcl"
   solver-version = 1
