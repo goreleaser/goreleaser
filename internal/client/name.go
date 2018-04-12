@@ -30,7 +30,7 @@ func releaseTitle(ctx *context.Context) (string, error) {
 func mkFuncMap() template.FuncMap {
 	return template.FuncMap{
 		"time": func(s string) string {
-			return time.Now().Format(s)
+			return time.Now().UTC().Format(s)
 		},
 	}
 }
