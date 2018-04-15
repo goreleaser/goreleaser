@@ -106,6 +106,11 @@ func ldflags(ctx *context.Context, build config.Build) (string, error) {
 	}
 	var out bytes.Buffer
 	t, err := template.New("ldflags").
+		Funcs(template.FuncMap{
+			"time": func(s string) string {
+				return time.Now().UTC().Format(s)
+			},
+		}).
 		Option("missingkey=error").
 		Parse(build.Ldflags)
 	if err != nil {

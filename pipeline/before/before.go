@@ -25,8 +25,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		args := strings.Fields(step)
 		log.Infof("running %s", color.CyanString(step))
 		cmd := exec.Command(args[0], args[1:]...)
-		if out, err := cmd.CombinedOutput(); err != nil {
-			log.Debug(string(out))
+		out, err := cmd.CombinedOutput()
+		log.Debug(string(out))
+		if err != nil {
 			return fmt.Errorf("hook failed: %s\n%v", step, string(out))
 		}
 	}
