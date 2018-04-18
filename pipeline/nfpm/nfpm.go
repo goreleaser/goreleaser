@@ -119,6 +119,12 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		Bindir:      ctx.Config.NFPM.Bindir,
 		Files:       files,
 		ConfigFiles: ctx.Config.NFPM.ConfigFiles,
+		Scripts: nfpm.Scripts{
+			PreInstall:  ctx.Config.NFPM.Scripts.PreInstall,
+			PostInstall: ctx.Config.NFPM.Scripts.PostInstall,
+			PreRemove:   ctx.Config.NFPM.Scripts.PreRemove,
+			PostRemove:  ctx.Config.NFPM.Scripts.PostRemove,
+		},
 	}
 
 	if err = nfpm.Validate(info); err != nil {
