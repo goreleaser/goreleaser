@@ -94,11 +94,12 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (int64, 
 		return 0, err
 	}
 	var data = &github.RepositoryRelease{
-		Name:       github.String(title),
-		TagName:    github.String(ctx.Git.CurrentTag),
-		Body:       github.String(body),
-		Draft:      github.Bool(ctx.Config.Release.Draft),
-		Prerelease: github.Bool(ctx.Config.Release.Prerelease),
+		Name:            github.String(title),
+		TagName:         github.String(ctx.Git.CurrentTag),
+		TargetCommitish: github.String(ctx.Git.Commit),
+		Body:            github.String(body),
+		Draft:           github.Bool(ctx.Config.Release.Draft),
+		Prerelease:      github.Bool(ctx.Config.Release.Prerelease),
 	}
 	release, _, err = c.client.Repositories.GetReleaseByTag(
 		ctx,
