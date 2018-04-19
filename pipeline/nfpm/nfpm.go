@@ -103,10 +103,6 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	var info = nfpm.Info{
 		Arch:        arch,
 		Platform:    "linux",
-		Conflicts:   ctx.Config.NFPM.Conflicts,
-		Depends:     ctx.Config.NFPM.Dependencies,
-		Recommends:  ctx.Config.NFPM.Recommends,
-		Suggests:    ctx.Config.NFPM.Suggests,
 		Name:        ctx.Config.ProjectName,
 		Version:     ctx.Git.CurrentTag,
 		Section:     "",
@@ -117,13 +113,19 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		Homepage:    ctx.Config.NFPM.Homepage,
 		License:     ctx.Config.NFPM.License,
 		Bindir:      ctx.Config.NFPM.Bindir,
-		Files:       files,
-		ConfigFiles: ctx.Config.NFPM.ConfigFiles,
-		Scripts: nfpm.Scripts{
-			PreInstall:  ctx.Config.NFPM.Scripts.PreInstall,
-			PostInstall: ctx.Config.NFPM.Scripts.PostInstall,
-			PreRemove:   ctx.Config.NFPM.Scripts.PreRemove,
-			PostRemove:  ctx.Config.NFPM.Scripts.PostRemove,
+		Overridables: nfpm.Overridables{
+			Conflicts:   ctx.Config.NFPM.Conflicts,
+			Depends:     ctx.Config.NFPM.Dependencies,
+			Recommends:  ctx.Config.NFPM.Recommends,
+			Suggests:    ctx.Config.NFPM.Suggests,
+			Files:       files,
+			ConfigFiles: ctx.Config.NFPM.ConfigFiles,
+			Scripts: nfpm.Scripts{
+				PreInstall:  ctx.Config.NFPM.Scripts.PreInstall,
+				PostInstall: ctx.Config.NFPM.Scripts.PostInstall,
+				PreRemove:   ctx.Config.NFPM.Scripts.PreRemove,
+				PostRemove:  ctx.Config.NFPM.Scripts.PostRemove,
+			},
 		},
 	}
 

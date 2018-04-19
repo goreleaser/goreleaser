@@ -97,8 +97,14 @@
     "glob",
     "rpm"
   ]
-  revision = "3c679196cdf0e95cb23e307ee903fd81aec1579d"
-  version = "v0.7.2"
+  revision = "651ac59abfff6ffc1c96ff87851038f35e4ad2a4"
+  version = "v0.8.1"
+
+[[projects]]
+  name = "github.com/imdario/mergo"
+  packages = ["."]
+  revision = "9d5f1277e9a8ed20c3684bda8fde67c05628518c"
+  version = "v0.3.4"
 
 [[projects]]
   name = "github.com/masterminds/semver"
@@ -207,6 +213,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "706366379db14a54b10afe7d89030cc1c235e91c7dc3313421ccf5db4cf4ddce"
+  inputs-digest = "d7be0f4be72b68e90e9ab88fd2dedb81fd687d09309e5855e8a928a11c76d35e"
   solver-name = "gps-cdcl"
   solver-version = 1
