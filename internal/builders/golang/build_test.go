@@ -306,7 +306,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	var config = config.Project{
 		Builds: []config.Build{
 			{
-				Ldflags: `-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}"`,
+				Ldflags: `-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }}`,
 			},
 		},
 	}
@@ -325,7 +325,9 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	assert.Contains(t, flags, "-X main.version=1.2.3")
 	assert.Contains(t, flags, "-X main.tag=v1.2.3")
 	assert.Contains(t, flags, "-X main.commit=123")
-	assert.Contains(t, flags, "-X main.date=")
+	// TODO: this will break in 2019
+	assert.Contains(t, flags, "-X main.date=2018")
+	assert.Contains(t, flags, "-X main.time=2018")
 	assert.Contains(t, flags, `-X "main.foo=123"`)
 }
 

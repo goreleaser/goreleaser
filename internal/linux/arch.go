@@ -13,6 +13,8 @@ func Arch(key string) string {
 	case strings.Contains(key, "arm64"):
 		return "arm64"
 	case strings.Contains(key, "arm6"):
+		return "armel"
+	case strings.Contains(key, "arm7"):
 		return "armhf"
 	}
 	return key

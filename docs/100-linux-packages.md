@@ -103,6 +103,15 @@ nfpm:
   config_files:
     "tmp/app_generated.conf": "/etc/app.conf"
     "conf/*.conf": "/etc/foo/"
+
+  # Scripts to execute during the installation of the package.
+  # Keys are the possible targets during the installation process
+  # Values are the paths to the scripts which will be executed
+  scripts:
+    preinstall: "scripts/preinstall.sh"
+    postinstall: "scripts/postinstall.sh"
+    preremove: "scripts/preremove.sh"
+    postremove: "scripts/postremove.sh"
 ```
 
 Note that GoReleaser will not install `rpmbuild` or any dependencies for you.

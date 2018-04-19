@@ -137,6 +137,15 @@ type NFPM struct {
 	Bindir       string            `yaml:",omitempty"`
 	Files        map[string]string `yaml:",omitempty"`
 	ConfigFiles  map[string]string `yaml:"config_files,omitempty"`
+	Scripts      NFPMScripts       `yaml:"scripts,omitempty"`
+}
+
+// NFPMScripts is used to specify maintainer scripts
+type NFPMScripts struct {
+	PreInstall  string `yaml:"preinstall,omitempty"`
+	PostInstall string `yaml:"postinstall,omitempty"`
+	PreRemove   string `yaml:"preremove,omitempty"`
+	PostRemove  string `yaml:"postremove,omitempty"`
 }
 
 // Sign config

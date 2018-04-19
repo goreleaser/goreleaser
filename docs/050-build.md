@@ -39,6 +39,9 @@ builds:
     # - Tag
     # - Version (Git tag without `v` prefix)
     # Date format is `2006-01-02_15:04:05`.
+    # You can use the `time` function instead of `Date`, for example:
+    # `time "2006-01-02"` too if you need custom formats
+    #
     # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`.
     ldflags: -s -w -X main.build={{.Version}}
 
