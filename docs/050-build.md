@@ -31,6 +31,36 @@ builds:
     # Default is empty.
     flags: -tags dev
 
+    # Custom asmflags template.
+    # This is parsed with the Go template engine and the following variables
+    # are available:
+    # - Date
+    # - Commit
+    # - Tag
+    # - Version (Git tag without `v` prefix)
+    # - Env (environment variables)
+    # Date format is `2006-01-02_15:04:05`.
+    # You can use the `time` function instead of `Date`, for example:
+    # `time "2006-01-02"` too if you need custom formats
+    #
+    # Default is empty.
+    asmflags: all=-trimpath={{.Env.GOPATH}}
+
+    # Custom gcflags template.
+    # This is parsed with the Go template engine and the following variables
+    # are available:
+    # - Date
+    # - Commit
+    # - Tag
+    # - Version (Git tag without `v` prefix)
+    # - Env (environment variables)
+    # Date format is `2006-01-02_15:04:05`.
+    # You can use the `time` function instead of `Date`, for example:
+    # `time "2006-01-02"` too if you need custom formats
+    #
+    # Default is empty.
+    gcflags: all=-trimpath={{.Env.GOPATH}}
+
     # Custom ldflags template.
     # This is parsed with the Go template engine and the following variables
     # are available:
@@ -38,6 +68,7 @@ builds:
     # - Commit
     # - Tag
     # - Version (Git tag without `v` prefix)
+    # - Env (environment variables)
     # Date format is `2006-01-02_15:04:05`.
     # You can use the `time` function instead of `Date`, for example:
     # `time "2006-01-02"` too if you need custom formats

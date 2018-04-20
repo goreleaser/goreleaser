@@ -62,7 +62,24 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	if build.Flags != "" {
 		cmd = append(cmd, strings.Fields(build.Flags)...)
 	}
-	flags, err := ldflags(ctx, build)
+
+	if build.Asmflags != "" {
+		flags, err := processField(ctx, build.Asmflags, "asmflags")
+		if err != nil {
+			return err
+		}
+		cmd = append(cmd, "-asmflags="+flags)
+	}
+
+	if build.Gcflags != "" {
+		flags, err := processField(ctx, build.Gcflags, "gcflags")
+		if err != nil {
+			return err
+		}
+		cmd = append(cmd, "-gcflags="+flags)
+	}
+
+	flags, err := processField(ctx, build.Ldflags, "ldflags")
 	if err != nil {
 		return err
 	}
@@ -90,7 +107,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
-func ldflags(ctx *context.Context, build config.Build) (string, error) {
+func processField(ctx *context.Context, field string, fieldName string) (string, error) {
 	var data = struct {
 		Commit  string
 		Tag     string
@@ -105,14 +122,14 @@ func ldflags(ctx *context.Context, build config.Build) (string, error) {
 		Env:     ctx.Env,
 	}
 	var out bytes.Buffer
-	t, err := template.New("ldflags").
+	t, err := template.New(fieldName).
 		Funcs(template.FuncMap{
 			"time": func(s string) string {
 				return time.Now().UTC().Format(s)
 			},
 		}).
 		Option("missingkey=error").
-		Parse(build.Ldflags)
+		Parse(field)
 	if err != nil {
 		return "", err
 	}

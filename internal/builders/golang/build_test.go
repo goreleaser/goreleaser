@@ -84,6 +84,8 @@ func TestBuild(t *testing.T) {
 					"windows_amd64",
 					"linux_arm_6",
 				},
+				Asmflags: "all=",
+				Gcflags:  "all=",
 			},
 		},
 	}
@@ -195,6 +197,50 @@ func TestBuildInvalidTarget(t *testing.T) {
 	})
 	assert.EqualError(t, err, "linux is not a valid build target")
 	assert.Len(t, ctx.Artifacts.List(), 0)
+}
+
+func TestRunInvalidAsmflags(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				Binary:   "nametest",
+				Asmflags: "{{.Version}",
+				Targets: []string{
+					runtimeTarget,
+				},
+			},
+		},
+	}
+	var ctx = context.New(config)
+	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		Target: runtimeTarget,
+	})
+	assert.EqualError(t, err, `template: asmflags:1: unexpected "}" in operand`)
+}
+
+func TestRunInvalidGcflags(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				Binary:  "nametest",
+				Gcflags: "{{.Version}",
+				Targets: []string{
+					runtimeTarget,
+				},
+			},
+		},
+	}
+	var ctx = context.New(config)
+	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		Target: runtimeTarget,
+	})
+	assert.EqualError(t, err, `template: gcflags:1: unexpected "}" in operand`)
 }
 
 func TestRunInvalidLdflags(t *testing.T) {
@@ -319,7 +365,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 		Config:  config,
 		Env:     map[string]string{"FOO": "123"},
 	}
-	flags, err := ldflags(ctx, ctx.Config.Builds[0])
+	flags, err := processField(ctx, ctx.Config.Builds[0].Ldflags, "ldflags")
 	assert.NoError(t, err)
 	assert.Contains(t, flags, "-s -w")
 	assert.Contains(t, flags, "-X main.version=1.2.3")
@@ -345,7 +391,7 @@ func TestInvalidTemplate(t *testing.T) {
 			var ctx = &context.Context{
 				Config: config,
 			}
-			flags, err := ldflags(ctx, ctx.Config.Builds[0])
+			flags, err := processField(ctx, template, "ldflags")
 			assert.EqualError(tt, err, eerr)
 			assert.Empty(tt, flags)
 		})
