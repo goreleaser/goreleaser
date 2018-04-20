@@ -80,18 +80,20 @@ type IgnoredBuild struct {
 
 // Build contains the build configuration section
 type Build struct {
-	Goos    []string       `yaml:",omitempty"`
-	Goarch  []string       `yaml:",omitempty"`
-	Goarm   []string       `yaml:",omitempty"`
-	Targets []string       `yaml:",omitempty"`
-	Ignore  []IgnoredBuild `yaml:",omitempty"`
-	Main    string         `yaml:",omitempty"`
-	Ldflags string         `yaml:",omitempty"`
-	Flags   string         `yaml:",omitempty"`
-	Binary  string         `yaml:",omitempty"`
-	Hooks   Hooks          `yaml:",omitempty"`
-	Env     []string       `yaml:",omitempty"`
-	Lang    string         `yaml:",omitempty"`
+	Goos     []string       `yaml:",omitempty"`
+	Goarch   []string       `yaml:",omitempty"`
+	Goarm    []string       `yaml:",omitempty"`
+	Targets  []string       `yaml:",omitempty"`
+	Ignore   []IgnoredBuild `yaml:",omitempty"`
+	Main     string         `yaml:",omitempty"`
+	Ldflags  string         `yaml:",omitempty"`
+	Flags    string         `yaml:",omitempty"`
+	Binary   string         `yaml:",omitempty"`
+	Hooks    Hooks          `yaml:",omitempty"`
+	Env      []string       `yaml:",omitempty"`
+	Lang     string         `yaml:",omitempty"`
+	Asmflags string         `yaml:",omitempty"`
+	Gcflags  string         `yaml:",omitempty"`
 }
 
 // FormatOverride is used to specify a custom format for a specific GOOS.
