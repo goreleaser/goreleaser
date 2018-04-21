@@ -123,23 +123,16 @@ type Release struct {
 
 // NFPM config
 type NFPM struct {
-	NameTemplate string            `yaml:"name_template,omitempty"`
-	Replacements map[string]string `yaml:",omitempty"`
+	NFPMOverridables `yaml:",inline"`
+	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty"`
 
-	Formats      []string          `yaml:",omitempty"`
-	Dependencies []string          `yaml:",omitempty"`
-	Recommends   []string          `yaml:",omitempty"`
-	Suggests     []string          `yaml:",omitempty"`
-	Conflicts    []string          `yaml:",omitempty"`
-	Vendor       string            `yaml:",omitempty"`
-	Homepage     string            `yaml:",omitempty"`
-	Maintainer   string            `yaml:",omitempty"`
-	Description  string            `yaml:",omitempty"`
-	License      string            `yaml:",omitempty"`
-	Bindir       string            `yaml:",omitempty"`
-	Files        map[string]string `yaml:",omitempty"`
-	ConfigFiles  map[string]string `yaml:"config_files,omitempty"`
-	Scripts      NFPMScripts       `yaml:"scripts,omitempty"`
+	Formats     []string `yaml:",omitempty"`
+	Vendor      string   `yaml:",omitempty"`
+	Homepage    string   `yaml:",omitempty"`
+	Maintainer  string   `yaml:",omitempty"`
+	Description string   `yaml:",omitempty"`
+	License     string   `yaml:",omitempty"`
+	Bindir      string   `yaml:",omitempty"`
 }
 
 // NFPMScripts is used to specify maintainer scripts
@@ -148,6 +141,19 @@ type NFPMScripts struct {
 	PostInstall string `yaml:"postinstall,omitempty"`
 	PreRemove   string `yaml:"preremove,omitempty"`
 	PostRemove  string `yaml:"postremove,omitempty"`
+}
+
+// NFPMOverridables is used to specify per package format settings
+type NFPMOverridables struct {
+	NameTemplate string            `yaml:"name_template,omitempty"`
+	Replacements map[string]string `yaml:",omitempty"`
+	Dependencies []string          `yaml:",omitempty"`
+	Recommends   []string          `yaml:",omitempty"`
+	Suggests     []string          `yaml:",omitempty"`
+	Conflicts    []string          `yaml:",omitempty"`
+	Files        map[string]string `yaml:",omitempty"`
+	ConfigFiles  map[string]string `yaml:"config_files,omitempty"`
+	Scripts      NFPMScripts       `yaml:"scripts,omitempty"`
 }
 
 // Sign config
