@@ -112,6 +112,28 @@ nfpm:
     postinstall: "scripts/postinstall.sh"
     preremove: "scripts/preremove.sh"
     postremove: "scripts/postremove.sh"
+
+  # Some attributes can be overrided per package format.
+  overrides:
+    deb:
+      conflicts:
+        - subversion
+      dependencies:
+        - git
+      suggests:
+        - gitk
+      recommends:
+        - tig
+    rpm:
+      replacements:
+        amd64: x86_64
+      name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Arch }}"
+      files:
+        "tmp/man.gz": "/usr/share/man/man8/app.8.gz"
+      config_files:
+        "tmp/app_generated.conf": /etc/app-rpm.conf"
+      scripts:
+        preinstall: "scripts/preinstall-rpm.sh"
 ```
 
 Note that GoReleaser will not install `rpmbuild` or any dependencies for you.
