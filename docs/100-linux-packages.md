@@ -131,7 +131,7 @@ nfpm:
       files:
         "tmp/man.gz": "/usr/share/man/man8/app.8.gz"
       config_files:
-        "tmp/app_generated.conf": /etc/app-rpm.conf"
+        "tmp/app_generated.conf": "/etc/app-rpm.conf"
       scripts:
         preinstall: "scripts/preinstall-rpm.sh"
 ```
