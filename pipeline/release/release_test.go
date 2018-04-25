@@ -136,6 +136,18 @@ func TestSnapshot(t *testing.T) {
 	assert.False(t, client.UploadedFile)
 }
 
+func TestPipeDisabled(t *testing.T) {
+	var ctx = context.New(config.Project{
+		Release: config.Release{
+			Disable: true,
+		},
+	})
+	client := &DummyClient{}
+	testlib.AssertSkipped(t, doRun(ctx, client))
+	assert.False(t, client.CreatedRelease)
+	assert.False(t, client.UploadedFile)
+}
+
 func TestDefault(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
