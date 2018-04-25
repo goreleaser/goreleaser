@@ -92,7 +92,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			Overrides: map[string]config.NFPMOverridables{
-				"rpm": config.NFPMOverridables{
+				"rpm": {
 					ConfigFiles: map[string]string{
 						"./testdata/testfile.txt": "/etc/nope-rpm.conf",
 					},
@@ -225,7 +225,7 @@ func TestOverrides(t *testing.T) {
 					NameTemplate: "foo",
 				},
 				Overrides: map[string]config.NFPMOverridables{
-					"deb": config.NFPMOverridables{
+					"deb": {
 						NameTemplate: "bar",
 					},
 				},
