@@ -4,3 +4,4 @@ vendor
 coverage.txt
 goreleaser
 debug.test
+./bin/

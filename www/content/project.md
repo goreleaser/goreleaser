@@ -1,5 +1,8 @@
 ---
 title: Project Name
+series: customization
+hideFromIndex: true
+weight: 10
 ---
 
 The project name is used in the name of the Brew formula, archives, etc.

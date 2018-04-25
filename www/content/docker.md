@@ -1,5 +1,8 @@
 ---
 title: Docker
+series: customization
+hideFromIndex: true
+weight: 140
 ---
 
 Since [v0.31.0](https://github.com/goreleaser/goreleaser/releases/tag/v0.31.0),

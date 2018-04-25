@@ -1,5 +1,8 @@
 ---
 title: Archive
+series: customization
+hideFromIndex: true
+weight: 40
 ---
 
 The binaries built will be archived together with the `README` and `LICENSE` files into a

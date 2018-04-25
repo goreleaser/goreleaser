@@ -1,5 +1,8 @@
 ---
 title: Checksum
+series: customization
+hideFromIndex: true
+weight: 50
 ---
 
 GoReleaser generates a `project_1.0.0_checksums.txt` file and uploads it with the

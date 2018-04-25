@@ -1,5 +1,8 @@
 ---
 title: Linux Packages
+series: customization
+hideFromIndex: true
+weight: 80
 ---
 
 GoReleaser can generate RPM, Deb and Snap packages for your projects.

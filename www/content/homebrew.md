@@ -1,5 +1,8 @@
 ---
 title: Homebrew
+series: customization
+hideFromIndex: true
+weight: 90
 ---
 
 After releasing to GitHub, GoReleaser can generate and publish a _homebrew-tap_

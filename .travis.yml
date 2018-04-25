@@ -23,18 +23,20 @@ after_success:
   - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - make static
 deploy:
-  - provider: pages
+  - deploy:
+    provider: pages
     skip_cleanup: true
     github_token: $GITHUB_TOKEN
-    repo: goreleaser/goreleaser.github.io
-    local_dir: ./dist/goreleaser.github.io
+    local_dir: www/public
     target_branch: master
+    repo: goreleaser/goreleaser.github.io
+    verbose: true
+    fqdn: goreleaser.com
     on:
-      tags: true
-      master: true
+      branch: master
   - provider: script
     skip_cleanup: true
-    script: go run main.go --rm-dist
+    script: go run main.go
     on:
       tags: true
 notifications:

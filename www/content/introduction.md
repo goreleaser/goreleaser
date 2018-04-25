@@ -1,5 +1,7 @@
 ---
 title: Introduction
+weight: 1
+menu: true
 ---
 
 [GoReleaser](https://github.com/goreleaser/goreleaser) is a release automation
