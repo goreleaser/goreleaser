@@ -3,20 +3,21 @@ TEST_PATTERN?=.
 TEST_OPTIONS?=
 OS=$(shell uname -s)
 
+export PATH := ./bin:$(PATH)
+
 # Install all the build and lint dependencies
 setup:
 	go get -u golang.org/x/tools/cmd/stringer
 	go get -u golang.org/x/tools/cmd/cover
-	go get -u github.com/caarlos0/static/cmd/static-docs
-	go get -u github.com/caarlos0/bandep
-	go get -u gopkg.in/alecthomas/gometalinter.v2
+	curl -sfL https://install.goreleaser.com/github.com/gohugoio/hugo.sh | bash
+	curl -sfL https://install.goreleaser.com/github.com/alecthomas/gometalinter.sh | bash
+	curl -sfL https://install.goreleaser.com/github.com/caarlos0/bandep.sh | bash
 ifeq ($(OS), Darwin)
 	brew install dep
 else
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 endif
 	dep ensure
-	gometalinter.v2 --install
 	echo "make check" > .git/hooks/pre-commit
 	chmod +x .git/hooks/pre-commit
 .PHONY: setup
@@ -43,7 +44,7 @@ fmt:
 
 # Run all the linters
 lint:
-	gometalinter.v2 --vendor ./...
+	gometalinter --vendor ./...
 	find . -name '*.md' -not -wholename './vendor/*' | xargs prettier -l
 .PHONY: lint
 
@@ -59,17 +60,7 @@ build:
 
 # Generate the static documentation
 static:
-	@rm -rf dist/goreleaser.github.io
-	@mkdir -p dist
-	@git clone https://github.com/goreleaser/goreleaser.github.io.git dist/goreleaser.github.io
-	@rm -rf dist/goreleaser.github.io/theme
-	@static-docs \
-		--syntax dracula \
-		--in docs \
-		--out dist/goreleaser.github.io \
-		--title GoReleaser \
-		--subtitle "Deliver Go binaries as fast and easily as possible" \
-		--google UA-106198408-1
+	@hugo --source www
 .PHONY: static
 
 # Show to-do items per file.

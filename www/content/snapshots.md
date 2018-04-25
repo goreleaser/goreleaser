@@ -1,5 +1,8 @@
 ---
 title: Snapshots
+series: customization
+hideFromIndex: true
+weight: 70
 ---
 
 Sometimes we want to generate a full build of our project,

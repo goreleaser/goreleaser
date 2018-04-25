@@ -1,5 +1,8 @@
 ---
 title: Global Hooks
+series: customization
+hideFromIndex: true
+weight: 20
 ---
 
 Some builds may need pre-build steps before building, e.g. `go generate`.

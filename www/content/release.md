@@ -1,5 +1,8 @@
 ---
 title: Release
+series: customization
+hideFromIndex: true
+weight: 110
 ---
 
 GoReleaser will create a GitHub release with the current tag, upload all

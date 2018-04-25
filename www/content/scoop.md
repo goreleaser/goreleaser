@@ -1,5 +1,8 @@
 ---
 title: Scoop
+series: customization
+hideFromIndex: true
+weight: 100
 ---
 
 After releasing to GitHub, GoReleaser can generate and publish a

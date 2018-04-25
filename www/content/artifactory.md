@@ -1,5 +1,8 @@
 ---
 title: Artifactory
+series: customization
+hideFromIndex: true
+weight: 120
 ---
 
 Since [v0.38.0](https://github.com/goreleaser/goreleaser/releases/tag/v0.38.0),

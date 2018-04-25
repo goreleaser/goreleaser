@@ -1,5 +1,8 @@
 ---
 title: Signing
+series: customization
+hideFromIndex: true
+weight: 60
 ---
 
 GoReleaser can sign some or all of the generated artifacts. Signing ensures

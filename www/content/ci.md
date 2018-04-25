@@ -1,5 +1,7 @@
 ---
 title: Continuous Integration
+menu: true
+weight: 140
 ---
 
 GoReleaser was built from the very first commit with the idea of

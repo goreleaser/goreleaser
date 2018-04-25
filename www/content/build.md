@@ -1,5 +1,8 @@
 ---
 title: Builds
+series: customization
+hideFromIndex: true
+weight: 30
 ---
 
 Builds can be customized in multiple ways. You can specify for which `GOOS` and

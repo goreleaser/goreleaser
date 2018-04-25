@@ -1,5 +1,7 @@
 ---
 title: Environment
+weight: 20
+menu: true
 ---
 
 ## GitHub Token
