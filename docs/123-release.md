@@ -35,6 +35,11 @@ release:
   # string to insert a formated timestamp into the release name.
   # Default is ``
   name_template: "{{.ProjectName}}-v{{.Version}}"
+
+  # You can disable this pipe in order to not upload any artifacts to
+  # GitHub.
+  # Defaults to false.
+  disable: true
 ```
 
 ## Customize the changelog
