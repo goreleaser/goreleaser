@@ -21,6 +21,7 @@ import (
 
 	// langs to init
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
+	_ "github.com/goreleaser/goreleaser/internal/builders/php"
 )
 
 // Pipe for build
