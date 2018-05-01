@@ -63,6 +63,10 @@ static:
 	@hugo --source www
 .PHONY: static
 
+serve:
+	@hugo server -w -s www
+.PHONY: serve
+
 # Show to-do items per file.
 todo:
 	@grep \
