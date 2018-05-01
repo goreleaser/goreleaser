@@ -78,6 +78,7 @@ func TestRunPipe(t *testing.T) {
 					"{{.Tag}}-{{.Env.FOO}}",
 					"v{{.Major}}",
 					"v{{.Major}}.{{.Minor}}",
+					"commint-{{.Commit}}",
 					"latest",
 				},
 				Files: []string{

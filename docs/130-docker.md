@@ -53,9 +53,14 @@ dockers:
     skip_push: false
     # Path to the Dockerfile (from the project root).
     dockerfile: Dockerfile
-    # Template of the docker tag. Defaults to `{{ .Version }}`. Other allowed
-    # fields are `.Tag`, `.Major`, `.Minor` and `.Patch` and
-    # `.Env.VARIABLE_NAME`.
+    # Template of the docker tag. Defaults to `{{ .Version }}`.
+    # Other allowed fields are:
+    # - `.Commint`
+    # - `.Tag`
+    # - `.Major`
+    # - `.Minor`
+    # - `.Patch`
+    # - `.Env.VARIABLE_NAME`
     tag_templates:
     - "{{ .Tag }}"
     - "{{ .Tag }}-{{ .Env.GO_VERSION }}"

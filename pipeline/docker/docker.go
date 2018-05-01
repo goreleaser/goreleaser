@@ -126,11 +126,16 @@ func tagName(ctx *context.Context, tagTemplate string) (string, error) {
 		return "", err
 	}
 	data := struct {
-		Version, Tag        string
-		Major, Minor, Patch int64
-		Env                 map[string]string
+		Version string
+		Tag     string
+		Commit  string
+		Major   int64
+		Minor   int64
+		Patch   int64
+		Env     map[string]string
 	}{
 		Version: ctx.Version,
+		Commit:  ctx.Git.Commit,
 		Tag:     ctx.Git.CurrentTag,
 		Env:     ctx.Env,
 		Major:   sv.Major(),
