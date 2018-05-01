@@ -19,6 +19,6 @@ func TestNotice(t *testing.T) {
 	log.Info("last")
 
 	assert.Contains(t, out.String(), "   • first")
-	assert.Contains(t, out.String(), "      • DEPRECATED: `foo.bar.whatever` should not be used anymore, check https://goreleaser.com/#deprecation_notices.foo_bar_whatever for more info.")
+	assert.Contains(t, out.String(), "      • DEPRECATED: `foo.bar.whatever` should not be used anymore, check https://goreleaser.com/deprecations#foo-bar-whatever for more info.")
 	assert.Contains(t, out.String(), "   • last")
 }
