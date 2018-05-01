@@ -10,7 +10,7 @@ import (
 	"github.com/fatih/color"
 )
 
-const baseURL = "https://goreleaser.com/#deprecation_notices."
+const baseURL = "https://goreleaser.com/deprecations#"
 
 // Notice warns the user about the deprecation of the given property
 func Notice(property string) {
@@ -18,7 +18,11 @@ func Notice(property string) {
 	defer func() {
 		cli.Default.Padding -= 3
 	}()
-	url := baseURL + strings.Replace(property, ".", "_", -1)
+	// replaces . and _ with -
+	url := baseURL + strings.NewReplacer(
+		".", "-",
+		"_", "-",
+	).Replace(property)
 	log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
 		"DEPRECATED: `%s` should not be used anymore, check %s for more info.",
 		property,
