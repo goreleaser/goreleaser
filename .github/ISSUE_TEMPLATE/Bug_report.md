@@ -1,7 +1,6 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-
 ---
 
 **Describe the bug**
@@ -21,9 +20,10 @@ your goreleaser config file
 A clear and concise description of what you expected to happen.
 
 **Environment (please complete the following information):**
- - OS: [e.g. mac, linux]
- - OS version: [uname -a]
- - GoReleaser Version [goreleaser --version]
+
+* OS: [e.g. mac, linux]
+* OS version: [uname -a]
+* GoReleaser Version [goreleaser --version]
 
 **Additional context**
 Add any other context about the problem here.
