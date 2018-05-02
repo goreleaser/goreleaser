@@ -20,8 +20,9 @@ script:
   - test -n "$TRAVIS_TAG" || go run main.go --snapshot
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - make static
+  - test -z "$(git status --porcelain)"
+  - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 deploy:
   - deploy:
     provider: pages
