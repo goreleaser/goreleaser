@@ -1,7 +1,7 @@
 dist/
+bin/
 !pipeline/dist
 vendor
 coverage.txt
 goreleaser
 debug.test
-./bin/
