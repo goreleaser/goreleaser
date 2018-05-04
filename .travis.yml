@@ -9,7 +9,6 @@ addons:
     packages:
     - rpm
     - snapd
-    - liblz4-dev
 env:
   - PATH=/snap/bin:$PATH
 install:
@@ -21,21 +20,24 @@ script:
   - test -n "$TRAVIS_TAG" || go run main.go --snapshot
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - make static
+  - test -z "$(git status --porcelain)"
+  - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 deploy:
-  - provider: pages
+  - deploy:
+    provider: pages
     skip_cleanup: true
     github_token: $GITHUB_TOKEN
-    repo: goreleaser/goreleaser.github.io
-    local_dir: ./dist/goreleaser.github.io
+    local_dir: www/public
     target_branch: master
+    repo: goreleaser/goreleaser.github.io
+    verbose: true
+    fqdn: goreleaser.com
     on:
-      tags: true
-      master: true
+      branch: master
   - provider: script
     skip_cleanup: true
-    script: go run main.go --rm-dist
+    script: go run main.go
     on:
       tags: true
 notifications:

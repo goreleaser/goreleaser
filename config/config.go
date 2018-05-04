@@ -34,20 +34,22 @@ func (r Repo) String() string {
 
 // Homebrew contains the brew section
 type Homebrew struct {
-	Name             string       `yaml:",omitempty"`
-	GitHub           Repo         `yaml:",omitempty"`
-	CommitAuthor     CommitAuthor `yaml:"commit_author,omitempty"`
-	Folder           string       `yaml:",omitempty"`
-	Caveats          string       `yaml:",omitempty"`
-	Plist            string       `yaml:",omitempty"`
-	Install          string       `yaml:",omitempty"`
-	Dependencies     []string     `yaml:",omitempty"`
-	Test             string       `yaml:",omitempty"`
-	Conflicts        []string     `yaml:",omitempty"`
-	Description      string       `yaml:",omitempty"`
-	Homepage         string       `yaml:",omitempty"`
-	SkipUpload       bool         `yaml:"skip_upload,omitempty"`
-	DownloadStrategy string       `yaml:"download_strategy,omitempty"`
+	Name              string       `yaml:",omitempty"`
+	GitHub            Repo         `yaml:",omitempty"`
+	CommitAuthor      CommitAuthor `yaml:"commit_author,omitempty"`
+	Folder            string       `yaml:",omitempty"`
+	Caveats           string       `yaml:",omitempty"`
+	Plist             string       `yaml:",omitempty"`
+	Install           string       `yaml:",omitempty"`
+	Dependencies      []string     `yaml:",omitempty"`
+	BuildDependencies []string     `yaml:"build_dependencies,omitempty"`
+	Test              string       `yaml:",omitempty"`
+	Conflicts         []string     `yaml:",omitempty"`
+	Description       string       `yaml:",omitempty"`
+	Homepage          string       `yaml:",omitempty"`
+	SkipUpload        bool         `yaml:"skip_upload,omitempty"`
+	DownloadStrategy  string       `yaml:"download_strategy,omitempty"`
+	SourceTarball     string       `yaml:"-"`
 }
 
 // Scoop contains the scoop.sh section
@@ -78,18 +80,20 @@ type IgnoredBuild struct {
 
 // Build contains the build configuration section
 type Build struct {
-	Goos    []string       `yaml:",omitempty"`
-	Goarch  []string       `yaml:",omitempty"`
-	Goarm   []string       `yaml:",omitempty"`
-	Targets []string       `yaml:",omitempty"`
-	Ignore  []IgnoredBuild `yaml:",omitempty"`
-	Main    string         `yaml:",omitempty"`
-	Ldflags string         `yaml:",omitempty"`
-	Flags   string         `yaml:",omitempty"`
-	Binary  string         `yaml:",omitempty"`
-	Hooks   Hooks          `yaml:",omitempty"`
-	Env     []string       `yaml:",omitempty"`
-	Lang    string         `yaml:",omitempty"`
+	Goos     []string       `yaml:",omitempty"`
+	Goarch   []string       `yaml:",omitempty"`
+	Goarm    []string       `yaml:",omitempty"`
+	Targets  []string       `yaml:",omitempty"`
+	Ignore   []IgnoredBuild `yaml:",omitempty"`
+	Main     string         `yaml:",omitempty"`
+	Ldflags  string         `yaml:",omitempty"`
+	Flags    string         `yaml:",omitempty"`
+	Binary   string         `yaml:",omitempty"`
+	Hooks    Hooks          `yaml:",omitempty"`
+	Env      []string       `yaml:",omitempty"`
+	Lang     string         `yaml:",omitempty"`
+	Asmflags string         `yaml:",omitempty"`
+	Gcflags  string         `yaml:",omitempty"`
 }
 
 // FormatOverride is used to specify a custom format for a specific GOOS.
@@ -114,27 +118,43 @@ type Release struct {
 	GitHub       Repo   `yaml:",omitempty"`
 	Draft        bool   `yaml:",omitempty"`
 	Prerelease   bool   `yaml:",omitempty"`
+	Disable      bool   `yaml:",omitempty"`
 	NameTemplate string `yaml:"name_template,omitempty"`
 }
 
 // NFPM config
 type NFPM struct {
+	NFPMOverridables `yaml:",inline"`
+	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty"`
+
+	Formats     []string `yaml:",omitempty"`
+	Vendor      string   `yaml:",omitempty"`
+	Homepage    string   `yaml:",omitempty"`
+	Maintainer  string   `yaml:",omitempty"`
+	Description string   `yaml:",omitempty"`
+	License     string   `yaml:",omitempty"`
+	Bindir      string   `yaml:",omitempty"`
+}
+
+// NFPMScripts is used to specify maintainer scripts
+type NFPMScripts struct {
+	PreInstall  string `yaml:"preinstall,omitempty"`
+	PostInstall string `yaml:"postinstall,omitempty"`
+	PreRemove   string `yaml:"preremove,omitempty"`
+	PostRemove  string `yaml:"postremove,omitempty"`
+}
+
+// NFPMOverridables is used to specify per package format settings
+type NFPMOverridables struct {
 	NameTemplate string            `yaml:"name_template,omitempty"`
 	Replacements map[string]string `yaml:",omitempty"`
-
-	Formats      []string          `yaml:",omitempty"`
 	Dependencies []string          `yaml:",omitempty"`
 	Recommends   []string          `yaml:",omitempty"`
 	Suggests     []string          `yaml:",omitempty"`
 	Conflicts    []string          `yaml:",omitempty"`
-	Vendor       string            `yaml:",omitempty"`
-	Homepage     string            `yaml:",omitempty"`
-	Maintainer   string            `yaml:",omitempty"`
-	Description  string            `yaml:",omitempty"`
-	License      string            `yaml:",omitempty"`
-	Bindir       string            `yaml:",omitempty"`
 	Files        map[string]string `yaml:",omitempty"`
 	ConfigFiles  map[string]string `yaml:"config_files,omitempty"`
+	Scripts      NFPMScripts       `yaml:"scripts,omitempty"`
 }
 
 // Sign config
@@ -219,6 +239,11 @@ type Git struct {
 	ShortHash bool `yaml:"short_hash,omitempty"`
 }
 
+// Before config
+type Before struct {
+	Hooks []string `yaml:",omitempty"`
+}
+
 // Project includes all project configuration
 type Project struct {
 	ProjectName   string        `yaml:"project_name,omitempty"`
@@ -239,6 +264,7 @@ type Project struct {
 	Sign          Sign          `yaml:",omitempty"`
 	EnvFiles      EnvFiles      `yaml:"env_files,omitempty"`
 	Git           Git           `yaml:",omitempty"`
+	Before        Before        `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

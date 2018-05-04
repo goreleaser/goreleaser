@@ -1,6 +1,8 @@
 package changelog
 
 import (
+	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"github.com/apex/log"
@@ -27,7 +29,7 @@ func TestSnapshot(t *testing.T) {
 }
 
 func TestChangelog(t *testing.T) {
-	_, back := testlib.Mktmp(t)
+	folder, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
@@ -42,6 +44,7 @@ func TestChangelog(t *testing.T) {
 	testlib.GitCommit(t, "this is not a Merge pull request")
 	testlib.GitTag(t, "v0.0.2")
 	var ctx = context.New(config.Project{
+		Dist: folder,
 		Changelog: config.Changelog{
 			Filters: config.Filters{
 				Exclude: []string{
@@ -63,6 +66,10 @@ func TestChangelog(t *testing.T) {
 	assert.NotContains(t, ctx.ReleaseNotes, "ignored")
 	assert.NotContains(t, ctx.ReleaseNotes, "cArs")
 	assert.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
+
+	bts, err := ioutil.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, string(bts))
 }
 
 func TestChangelogSort(t *testing.T) {

@@ -1,33 +1,34 @@
+before:
+  hooks:
+  - go generate ./...
 builds:
-  - hooks:
-      pre: go generate ./...
-    env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - darwin
-      - windows
-    goarch:
-      - 386
-      - amd64
-      - arm
-      - arm64
+- env:
+    - CGO_ENABLED=0
+  goos:
+    - linux
+    - darwin
+    - windows
+  goarch:
+    - 386
+    - amd64
+    - arm
+    - arm64
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
-      - Merge pull request
-      - Merge branch
+    - '^docs:'
+    - '^test:'
+    - Merge pull request
+    - Merge branch
 dockers:
-  - image: goreleaser/goreleaser
-    tag_templates:
-    - '{{ .Tag }}'
-    - 'v{{ .Major }}.{{ .Minor }}'
-    - 'latest'
+- image: goreleaser/goreleaser
+  tag_templates:
+  - '{{ .Tag }}'
+  - 'v{{ .Major }}.{{ .Minor }}'
+  - 'latest'
 archive:
   name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
   replacements:
@@ -37,8 +38,8 @@ archive:
     386: i386
     amd64: x86_64
   format_overrides:
-    - goos: windows
-      format: zip
+  - goos: windows
+    format: zip
 brew:
   github:
     owner: goreleaser
@@ -63,12 +64,12 @@ nfpm:
   license: MIT
   vendor: GoReleaser
   formats:
-    - deb
-    - rpm
+  - deb
+  - rpm
   dependencies:
-    - git
+  - git
   recommends:
-    - rpm
+  - rpm
 snapcraft:
   name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
   summary: Deliver Go binaries as fast and easily as possible
@@ -78,4 +79,3 @@ snapcraft:
     wrapped in your favorite CI.
   grade: stable
   confinement: classic
-

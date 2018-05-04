@@ -9,6 +9,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/nfpm"
+	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
 
 	// blank imports here because the formats implementations need register
@@ -16,6 +17,7 @@ import (
 	_ "github.com/goreleaser/nfpm/deb"
 	_ "github.com/goreleaser/nfpm/rpm"
 
+	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/filenametemplate"
@@ -79,16 +81,35 @@ func doRun(ctx *context.Context) error {
 	return g.Wait()
 }
 
+func mergeOverrides(ctx *context.Context, format string) (*config.NFPMOverridables, error) {
+	var overrided config.NFPMOverridables
+	if err := mergo.Merge(&overrided, ctx.Config.NFPM.NFPMOverridables); err != nil {
+		return nil, err
+	}
+	perFormat, ok := ctx.Config.NFPM.Overrides[format]
+	if ok {
+		err := mergo.Merge(&overrided, perFormat, mergo.WithOverride)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &overrided, nil
+}
+
 func create(ctx *context.Context, format, arch string, binaries []artifact.Artifact) error {
+	overrided, err := mergeOverrides(ctx, format)
+	if err != nil {
+		return err
+	}
 	name, err := filenametemplate.Apply(
-		ctx.Config.NFPM.NameTemplate,
-		filenametemplate.NewFields(ctx, ctx.Config.NFPM.Replacements, binaries...),
+		overrided.NameTemplate,
+		filenametemplate.NewFields(ctx, overrided.Replacements, binaries...),
 	)
 	if err != nil {
 		return err
 	}
 	var files = map[string]string{}
-	for k, v := range ctx.Config.NFPM.Files {
+	for k, v := range overrided.Files {
 		files[k] = v
 	}
 	var log = log.WithField("package", name+"."+format)
@@ -103,10 +124,6 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	var info = nfpm.Info{
 		Arch:        arch,
 		Platform:    "linux",
-		Conflicts:   ctx.Config.NFPM.Conflicts,
-		Depends:     ctx.Config.NFPM.Dependencies,
-		Recommends:  ctx.Config.NFPM.Recommends,
-		Suggests:    ctx.Config.NFPM.Suggests,
 		Name:        ctx.Config.ProjectName,
 		Version:     ctx.Git.CurrentTag,
 		Section:     "",
@@ -117,8 +134,24 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		Homepage:    ctx.Config.NFPM.Homepage,
 		License:     ctx.Config.NFPM.License,
 		Bindir:      ctx.Config.NFPM.Bindir,
-		Files:       files,
-		ConfigFiles: ctx.Config.NFPM.ConfigFiles,
+		Overridables: nfpm.Overridables{
+			Conflicts:   overrided.Conflicts,
+			Depends:     overrided.Dependencies,
+			Recommends:  overrided.Recommends,
+			Suggests:    overrided.Suggests,
+			Files:       files,
+			ConfigFiles: overrided.ConfigFiles,
+			Scripts: nfpm.Scripts{
+				PreInstall:  overrided.Scripts.PreInstall,
+				PostInstall: overrided.Scripts.PostInstall,
+				PreRemove:   overrided.Scripts.PreRemove,
+				PostRemove:  overrided.Scripts.PostRemove,
+			},
+		},
+	}
+
+	if err = nfpm.Validate(info); err != nil {
+		return errors.Wrap(err, "invalid nfpm config")
 	}
 
 	packager, err := nfpm.Get(format)

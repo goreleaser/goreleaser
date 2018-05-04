@@ -168,27 +168,32 @@ func dataFor(ctx *context.Context, client client.Client, artifact artifact.Artif
 	}
 	var cfg = ctx.Config.Brew
 	return templateData{
-		Name:             formulaNameFor(ctx.Config.Brew.Name),
-		DownloadURL:      ctx.Config.GitHubURLs.Download,
-		Desc:             cfg.Description,
-		Homepage:         cfg.Homepage,
-		Repo:             ctx.Config.Release.GitHub,
-		Tag:              ctx.Git.CurrentTag,
-		Version:          ctx.Version,
-		Caveats:          cfg.Caveats,
-		File:             artifact.Name,
-		SHA256:           sum,
-		Dependencies:     cfg.Dependencies,
-		Conflicts:        cfg.Conflicts,
-		Plist:            cfg.Plist,
-		Install:          split(cfg.Install),
-		Tests:            split(cfg.Test),
-		DownloadStrategy: cfg.DownloadStrategy,
+		Name:              formulaNameFor(ctx.Config.Brew.Name),
+		DownloadURL:       ctx.Config.GitHubURLs.Download,
+		Desc:              cfg.Description,
+		Homepage:          cfg.Homepage,
+		Repo:              ctx.Config.Release.GitHub,
+		Tag:               ctx.Git.CurrentTag,
+		Version:           ctx.Version,
+		Caveats:           split(cfg.Caveats),
+		File:              artifact.Name,
+		SHA256:            sum,
+		Dependencies:      cfg.Dependencies,
+		BuildDependencies: cfg.BuildDependencies,
+		Conflicts:         cfg.Conflicts,
+		Plist:             cfg.Plist,
+		Install:           split(cfg.Install),
+		Tests:             split(cfg.Test),
+		DownloadStrategy:  cfg.DownloadStrategy,
 	}, nil
 }
 
 func split(s string) []string {
-	return strings.Split(strings.TrimSpace(s), "\n")
+	strings := strings.Split(strings.TrimSpace(s), "\n")
+	if len(strings) == 1 && strings[0] == "" {
+		return []string{}
+	}
+	return strings
 }
 
 func formulaNameFor(name string) string {

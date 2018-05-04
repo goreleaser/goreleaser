@@ -21,6 +21,9 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	if ctx.Config.Release.Disable {
+		return nil
+	}
 	if ctx.Config.Release.NameTemplate == "" {
 		ctx.Config.Release.NameTemplate = "{{.Tag}}"
 	}
@@ -45,6 +48,9 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context, c client.Client) error {
+	if ctx.Config.Release.Disable {
+		return pipeline.Skip("release pipe is disabled")
+	}
 	if ctx.SkipPublish {
 		return pipeline.ErrSkipPublishEnabled
 	}

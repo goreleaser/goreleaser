@@ -4,10 +4,13 @@ package changelog
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/pipeline"
@@ -39,7 +42,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", strings.Join(entries, "\n"))
-	return nil
+	var path = filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
+	log.WithField("changelog", path).Info("writing")
+	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0644)
 }
 
 func checkSortDirection(mode string) error {

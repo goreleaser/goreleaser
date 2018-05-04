@@ -1,4 +1,5 @@
 dist/
+bin/
 !pipeline/dist
 vendor
 coverage.txt

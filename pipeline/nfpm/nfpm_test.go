@@ -31,13 +31,19 @@ func TestRunPipeNoFormats(t *testing.T) {
 
 func TestRunPipeInvalidFormat(t *testing.T) {
 	var ctx = context.New(config.Project{
+		ProjectName: "nope",
 		NFPM: config.NFPM{
-			Bindir:       "/usr/bin",
-			NameTemplate: defaultNameTemplate,
-			Formats:      []string{"nope"},
-			Files:        map[string]string{},
+			Bindir:  "/usr/bin",
+			Formats: []string{"nope"},
+			NFPMOverridables: config.NFPMOverridables{
+				NameTemplate: defaultNameTemplate,
+				Files:        map[string]string{},
+			},
 		},
 	})
+	ctx.Git = context.GitInfo{
+		CurrentTag: "v1.2.3",
+	}
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(artifact.Artifact{
@@ -65,23 +71,32 @@ func TestRunPipe(t *testing.T) {
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPM: config.NFPM{
-			Bindir:       "/usr/bin",
-			NameTemplate: defaultNameTemplate,
-			Formats:      []string{"deb", "rpm"},
-			Dependencies: []string{"make"},
-			Recommends:   []string{"svn"},
-			Suggests:     []string{"bzr"},
-			Conflicts:    []string{"git"},
-			Description:  "Some description",
-			License:      "MIT",
-			Maintainer:   "me@me",
-			Vendor:       "asdf",
-			Homepage:     "https://goreleaser.github.io",
-			Files: map[string]string{
-				"./testdata/testfile.txt": "/usr/share/testfile.txt",
+			Bindir:      "/usr/bin",
+			Formats:     []string{"deb", "rpm"},
+			Description: "Some description",
+			License:     "MIT",
+			Maintainer:  "me@me",
+			Vendor:      "asdf",
+			Homepage:    "https://goreleaser.github.io",
+			NFPMOverridables: config.NFPMOverridables{
+				NameTemplate: defaultNameTemplate,
+				Dependencies: []string{"make"},
+				Recommends:   []string{"svn"},
+				Suggests:     []string{"bzr"},
+				Conflicts:    []string{"git"},
+				Files: map[string]string{
+					"./testdata/testfile.txt": "/usr/share/testfile.txt",
+				},
+				ConfigFiles: map[string]string{
+					"./testdata/testfile.txt": "/etc/nope.conf",
+				},
 			},
-			ConfigFiles: map[string]string{
-				"./testdata/testfile.txt": "/etc/nope.conf",
+			Overrides: map[string]config.NFPMOverridables{
+				"rpm": {
+					ConfigFiles: map[string]string{
+						"./testdata/testfile.txt": "/etc/nope-rpm.conf",
+					},
+				},
 			},
 		},
 	})
@@ -107,8 +122,8 @@ func TestInvalidNameTemplate(t *testing.T) {
 		Artifacts:   artifact.New(),
 		Config: config.Project{
 			NFPM: config.NFPM{
-				NameTemplate: "{{.Foo}",
-				Formats:      []string{"deb"},
+				NFPMOverridables: config.NFPMOverridables{NameTemplate: "{{.Foo}"},
+				Formats:          []string{"deb"},
 			},
 		},
 	}
@@ -128,15 +143,20 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	assert.NoError(t, os.Mkdir(dist, 0755))
 	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var ctx = context.New(config.Project{
-		Dist: dist,
+		Dist:        dist,
+		ProjectName: "asd",
 		NFPM: config.NFPM{
 			Formats: []string{"deb", "rpm"},
-			Files: map[string]string{
-				"testdata/testfile.txt": "/var/lib/test/testfile.txt",
+			NFPMOverridables: config.NFPMOverridables{
+				Files: map[string]string{
+					"testdata/testfile.txt": "/var/lib/test/testfile.txt",
+				},
 			},
 		},
 	})
-	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{
+		CurrentTag: "v1.2.3",
+	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "mybin", "mybin"),
@@ -145,6 +165,28 @@ func TestCreateFileDoesntExist(t *testing.T) {
 		Type:   artifact.Binary,
 	})
 	assert.Contains(t, Pipe{}.Run(ctx).Error(), `dist/mybin/mybin: file does not exist`)
+}
+
+func TestInvalidConfig(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	var ctx = context.New(config.Project{
+		Dist: dist,
+		NFPM: config.NFPM{
+			Formats: []string{"deb"},
+		},
+	})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "mybin",
+		Path:   filepath.Join(dist, "mybin", "mybin"),
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+	})
+	assert.Contains(t, Pipe{}.Run(ctx).Error(), `invalid nfpm config: package name cannot be empty`)
 }
 
 func TestDefault(t *testing.T) {
@@ -162,12 +204,39 @@ func TestDefaultSet(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
 			NFPM: config.NFPM{
-				Bindir:       "/bin",
-				NameTemplate: "foo",
+				Bindir: "/bin",
+				NFPMOverridables: config.NFPMOverridables{
+					NameTemplate: "foo",
+				},
 			},
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, "/bin", ctx.Config.NFPM.Bindir)
 	assert.Equal(t, "foo", ctx.Config.NFPM.NameTemplate)
+}
+
+func TestOverrides(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			NFPM: config.NFPM{
+				Bindir: "/bin",
+				NFPMOverridables: config.NFPMOverridables{
+					NameTemplate: "foo",
+				},
+				Overrides: map[string]config.NFPMOverridables{
+					"deb": {
+						NameTemplate: "bar",
+					},
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	merged, err := mergeOverrides(ctx, "deb")
+	assert.NoError(t, err)
+	assert.Equal(t, "/bin", ctx.Config.NFPM.Bindir)
+	assert.Equal(t, "foo", ctx.Config.NFPM.NameTemplate)
+	assert.Equal(t, "bar", ctx.Config.NFPM.Overrides["deb"].NameTemplate)
+	assert.Equal(t, "bar", merged.NameTemplate)
 }
