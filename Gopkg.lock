@@ -64,14 +64,14 @@
 [[projects]]
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
-  version = "v1.0.0"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "88eb4e9dc91cb2db1bbc56c936f1ee39bbe72ba5"
+  revision = "eafdb6578137f78fe186e486a4bc633e1434cc89"
 
 [[projects]]
   branch = "master"
@@ -97,8 +97,8 @@
     "glob",
     "rpm"
   ]
-  revision = "651ac59abfff6ffc1c96ff87851038f35e4ad2a4"
-  version = "v0.8.1"
+  revision = "8faa8e2e621115b3b560688a72d9c37bff4acb9f"
+  version = "v0.8.2"
 
 [[projects]]
   name = "github.com/imdario/mergo"
@@ -109,8 +109,8 @@
 [[projects]]
   name = "github.com/masterminds/semver"
   packages = ["."]
-  revision = "8d82589cda2d7b5b9167396841975c4535c9bec6"
-  version = "v1.4.1"
+  revision = "c7af12943936e8c39859482e61f0574c2fd7fc75"
+  version = "v1.4.2"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -131,7 +131,7 @@
     ".",
     "fastwalk"
   ]
-  revision = "4959821b481786922ac53e7ef25c61ae19fb7c36"
+  revision = "9960a25705902198f55789b9b689a686682798b5"
 
 [[projects]]
   branch = "master"
@@ -167,7 +167,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "61147c48b25b599e5b561d2e9c4f3e1ef489ca41"
+  revision = "640f4622ab692b87c2f3a94265e6f579fe38263d"
 
 [[projects]]
   branch = "master"
@@ -176,7 +176,7 @@
     ".",
     "internal"
   ]
-  revision = "921ae394b9430ed4fb549668d7b087601bd60a81"
+  revision = "cdc340f7c179dbbfa4afd43b7614e8fcadde4269"
 
 [[projects]]
   branch = "master"
@@ -188,7 +188,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "3b87a42e500a6dc65dae1a55d0b641295971163e"
+  revision = "78d5f264b493f125018180c204871ecf58a2dce1"
 
 [[projects]]
   name = "google.golang.org/appengine"
