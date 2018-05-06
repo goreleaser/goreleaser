@@ -50,21 +50,30 @@ dist: another-folder-that-is-not-dist
 
 ## Using the `main.version`
 
-GoReleaser always sets a `main.version` _ldflag_.
+Default wise GoReleaser sets three  _ldflags_:
+
+- `main.version`: Current Git tag (the `v` prefix is stripped) or the name of
+the snapshot, if you're using the `--snapshot` flag
+- `main.commit`: Current git commit SHA
+- `main.date`: Date according [RFC3339](https://golang.org/pkg/time/#pkg-constants)
+
 You can use it in your `main.go` file:
 
 ```go
 package main
 
-var version = "master"
+import "fmt"
+
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
 
 func main() {
-  println(version)
+  fmt.Printf("%v, commit %v, built at %v", version, commit, date)
 }
 ```
-
-`version` will be set to the current Git tag (the `v` prefix is stripped) or the name of
-the snapshot, if you're using the `--snapshot` flag.
 
 You can override this by changing the `ldflags` option in the `build` section.
 
