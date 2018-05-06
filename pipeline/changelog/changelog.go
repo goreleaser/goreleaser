@@ -41,7 +41,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v", strings.Join(entries, "\n"))
+	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v\n", strings.Join(entries, "\n"))
 	var path = filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
 	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0644)
