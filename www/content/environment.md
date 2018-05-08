@@ -31,12 +31,18 @@ the `.goreleaser.yml` configuration file:
 ```yaml
 # .goreleaser.yml
 github_urls:
-    api: api.github.foo.bar
-    upload: uploads.github.foo.bar
-    download: github.foo.bar
+  api: https://git.company.com/api/v3/
+  upload: https://git.company.com/api/uploads/
+  download: https://git.company.com/
 ```
 
 If none are set, they default to GitHub's public URLs.
+
+**IMPORTANT**: be careful with the URLs, they may change from one instalation
+to another. If they are wrong, goreleaser will fail at some point, so, make
+sure they're right before opening an issue. See for example [#472][472].
+
+[472]: https://github.com/goreleaser/goreleaser/issues/472
 
 ## The dist folder
 
