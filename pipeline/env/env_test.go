@@ -82,6 +82,18 @@ func TestInvalidEnvChecksSkipped(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
+func TestInvalidEnvReleaseDisabled(t *testing.T) {
+	assert.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
+	var ctx = &context.Context{
+		Config: config.Project{
+			Release: config.Release{
+				Disable: true,
+			},
+		},
+	}
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+}
+
 func TestLoadEnv(t *testing.T) {
 	t.Run("env exists", func(tt *testing.T) {
 		var env = "SUPER_SECRET_ENV"

@@ -38,6 +38,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipeline.ErrSkipPublishEnabled
 	}
+	if ctx.Config.Release.Disable {
+		return pipeline.Skip("release pipe is disabled")
+	}
 	if ctx.Token == "" && err == nil {
 		return ErrMissingToken
 	}
