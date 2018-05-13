@@ -78,10 +78,18 @@ func TestUpload(t *testing.T) {
 		Name: "bin.deb",
 		Path: debpath,
 	})
-	start(t)
-	defer stop(t)
+	// start(t)
+	// defer stop(t)
+	setCredentials(t)
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.NoError(t, Pipe{}.Run(ctx))
+}
+
+func setCredentials(t *testing.T) {
+	// this comes from the testdata/config/config.json file - not real aws keys
+	os.Setenv("AWS_ACCESS_KEY_ID", "IWA0WZQ1QJ2I8I1ALW64")
+	os.Setenv("AWS_SECRET_ACCESS_KEY", "zcK4QQegvYwVGJaBm2E6k20WRLIQZqHOKOPP2npT")
+	os.Setenv("AWS_REGION", "us-east-1")
 }
 
 func start(t *testing.T) {
@@ -101,11 +109,8 @@ func start(t *testing.T) {
 		t.FailNow()
 	}
 	// TODO: check if the container is healthy instead of sleeping an arbitrary amount of time
+	t.Log("waiting for minio to be healthy")
 	time.Sleep(5 * time.Second)
-	// this comes from the testdata/config/config.json file - not real aws keys
-	os.Setenv("AWS_ACCESS_KEY_ID", "IWA0WZQ1QJ2I8I1ALW64")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", "zcK4QQegvYwVGJaBm2E6k20WRLIQZqHOKOPP2npT")
-	os.Setenv("AWS_REGION", "us-east-1")
 }
 
 func stop(t *testing.T) {
