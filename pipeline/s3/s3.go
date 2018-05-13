@@ -56,7 +56,12 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func upload(ctx *context.Context, conf config.S3) error {
-	sess := session.Must(session.NewSession())
+	var awsConfig = aws.Config{}
+	if conf.Endpoint != "" {
+		awsConfig.Endpoint = aws.String(conf.Endpoint)
+		awsConfig.S3ForcePathStyle = aws.Bool(true)
+	}
+	sess := session.Must(session.NewSession(&awsConfig))
 	svc := s3.New(sess, &aws.Config{
 		Region: aws.String(conf.Region),
 	})

@@ -81,4 +81,5 @@ snapcraft:
   confinement: classic
 s3:
 - bucket: goreleaser
+  endpoint: http://localhost:9000
 
