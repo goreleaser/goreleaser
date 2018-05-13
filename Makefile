@@ -44,7 +44,7 @@ fmt:
 
 # Run all the linters
 lint:
-	gometalinter --vendor ./...
+	gometalinter --deadline 2m --vendor ./...
 	find . -name '*.md' -not -wholename './vendor/*' | xargs prettier -l
 .PHONY: lint
 
