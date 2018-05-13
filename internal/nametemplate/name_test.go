@@ -1,4 +1,4 @@
-package client
+package nametemplate
 
 import (
 	"testing"
@@ -29,8 +29,7 @@ func TestFuncMap(t *testing.T) {
 			Name:     "MM/DD/YYYY",
 		},
 	} {
-		ctx.Config.Release.NameTemplate = tc.Template
-		out, err := releaseTitle(ctx)
+		out, err := Apply(ctx, "foo", tc.Template)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 	}
