@@ -7,6 +7,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/goreleaser/goreleaser/config"
@@ -60,9 +61,14 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func upload(ctx *context.Context, conf config.S3) error {
 	var awsConfig = aws.NewConfig()
+	// TODO: add a test for this
 	if conf.Endpoint != "" {
 		awsConfig.Endpoint = aws.String(conf.Endpoint)
 		awsConfig.S3ForcePathStyle = aws.Bool(true)
+	}
+	// TODO: add a test for this
+	if conf.Profile != "" {
+		awsConfig.Credentials = credentials.NewSharedCredentials("", conf.Profile)
 	}
 	sess := session.Must(session.NewSession(awsConfig))
 	svc := s3.New(sess, &aws.Config{
