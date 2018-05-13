@@ -29,8 +29,13 @@ func TestFuncMap(t *testing.T) {
 			Name:     "MM/DD/YYYY",
 		},
 	} {
-		out, err := Apply(ctx, "foo", tc.Template)
+		out, err := Apply(ctx, tc.Template)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, out)
 	}
+}
+
+func TestInvalidTemplate(t *testing.T) {
+	_, err := Apply(context.New(config.Project{}), "{{{.Foo}")
+	assert.EqualError(t, err, "template: release:1: unexpected \"{\" in command")
 }

@@ -90,7 +90,7 @@ func (c *githubClient) CreateFile(
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (int64, error) {
 	var release *github.RepositoryRelease
-	title, err := nametemplate.Apply(ctx, "github", ctx.Config.Release.NameTemplate)
+	title, err := nametemplate.Apply(ctx, ctx.Config.Release.NameTemplate)
 	if err != nil {
 		return 0, err
 	}
