@@ -249,6 +249,7 @@ type S3 struct {
 	Region   string
 	Bucket   string
 	Folder   string
+	Profile  string
 	Endpoint string // used for minio for example
 }
 
