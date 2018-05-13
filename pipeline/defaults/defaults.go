@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/nfpm"
 	"github.com/goreleaser/goreleaser/pipeline/project"
 	"github.com/goreleaser/goreleaser/pipeline/release"
+	"github.com/goreleaser/goreleaser/pipeline/s3"
 	"github.com/goreleaser/goreleaser/pipeline/scoop"
 	"github.com/goreleaser/goreleaser/pipeline/sign"
 	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
@@ -54,6 +55,7 @@ var defaulters = []Defaulter{
 	sign.Pipe{},
 	docker.Pipe{},
 	artifactory.Pipe{},
+	s3.Pipe{},
 	brew.Pipe{},
 	scoop.Pipe{},
 }

@@ -1,4 +1,4 @@
-package client
+package nametemplate
 
 import (
 	"bytes"
@@ -8,12 +8,12 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 )
 
-func releaseTitle(ctx *context.Context) (string, error) {
+func Apply(ctx *context.Context, name, tmpl string) (string, error) {
 	var out bytes.Buffer
-	t, err := template.New("github").
+	t, err := template.New(name).
 		Option("missingkey=error").
 		Funcs(mkFuncMap()).
-		Parse(ctx.Config.Release.NameTemplate)
+		Parse(tmpl)
 	if err != nil {
 		return "", err
 	}

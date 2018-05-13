@@ -244,6 +244,13 @@ type Before struct {
 	Hooks []string `yaml:",omitempty"`
 }
 
+// S3 contains s3 config
+type S3 struct {
+	Region string
+	Bucket string
+	Folder string
+}
+
 // Project includes all project configuration
 type Project struct {
 	ProjectName   string        `yaml:"project_name,omitempty"`
@@ -259,6 +266,7 @@ type Project struct {
 	Checksum      Checksum      `yaml:",omitempty"`
 	Dockers       []Docker      `yaml:",omitempty"`
 	Artifactories []Artifactory `yaml:",omitempty"`
+	S3            []S3          `yaml:"s3,omitempty"`
 	Changelog     Changelog     `yaml:",omitempty"`
 	Dist          string        `yaml:",omitempty"`
 	Sign          Sign          `yaml:",omitempty"`

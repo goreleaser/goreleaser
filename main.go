@@ -31,6 +31,7 @@ import (
 	"github.com/goreleaser/goreleaser/pipeline/git"
 	"github.com/goreleaser/goreleaser/pipeline/nfpm"
 	"github.com/goreleaser/goreleaser/pipeline/release"
+	"github.com/goreleaser/goreleaser/pipeline/s3"
 	"github.com/goreleaser/goreleaser/pipeline/scoop"
 	"github.com/goreleaser/goreleaser/pipeline/sign"
 	"github.com/goreleaser/goreleaser/pipeline/snapcraft"
@@ -58,6 +59,7 @@ var pipes = []Piper{
 	sign.Pipe{},            // sign artifacts
 	docker.Pipe{},          // create and push docker images
 	artifactory.Pipe{},     // push to artifactory
+	s3.Pipe{},              // push to s3/minio
 	release.Pipe{},         // release to github
 	brew.Pipe{},            // push to brew tap
 	scoop.Pipe{},           // push to scoop bucket
