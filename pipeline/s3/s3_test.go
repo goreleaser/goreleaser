@@ -78,8 +78,8 @@ func TestUpload(t *testing.T) {
 		Name: "bin.deb",
 		Path: debpath,
 	})
-	// start(t)
-	// defer stop(t)
+	start(t)
+	defer stop(t)
 	setCredentials(t)
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.NoError(t, Pipe{}.Run(ctx))
