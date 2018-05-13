@@ -23,12 +23,12 @@ changelog:
     - '^test:'
     - Merge pull request
     - Merge branch
-# dockers:
-# - image: goreleaser/goreleaser
-#   tag_templates:
-#   - '{{ .Tag }}'
-#   - 'v{{ .Major }}.{{ .Minor }}'
-#   - 'latest'
+dockers:
+- image: goreleaser/goreleaser
+  tag_templates:
+  - '{{ .Tag }}'
+  - 'v{{ .Major }}.{{ .Minor }}'
+  - 'latest'
 archive:
   name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
   replacements:
@@ -79,7 +79,4 @@ snapcraft:
     wrapped in your favorite CI.
   grade: stable
   confinement: classic
-s3:
-- bucket: goreleaser
-  endpoint: http://localhost:9000
 
