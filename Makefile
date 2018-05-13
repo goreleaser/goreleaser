@@ -44,7 +44,6 @@ fmt:
 
 # Run all the linters
 lint:
-	rm -rf pipeline/s3/testdata/config/certs
 	gometalinter --vendor ./...
 	find . -name '*.md' -not -wholename './vendor/*' | xargs prettier -l
 .PHONY: lint
