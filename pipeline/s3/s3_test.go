@@ -5,9 +5,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -95,7 +97,7 @@ func setCredentials(t *testing.T) {
 func start(t *testing.T) {
 	dir, err := os.Getwd()
 	assert.NoError(t, err)
-	t.Log("wd:", dir)
+	log.Info("wd: " + dir)
 	if out, err := exec.Command(
 		"docker", "run", "-d", "--rm",
 		"--name", "minio",
@@ -105,17 +107,27 @@ func start(t *testing.T) {
 		"minio/minio",
 		"server", "/data",
 	).CombinedOutput(); err != nil {
-		t.Log("failed to start minio", string(out), err)
+		log.WithError(err).Errorf("failed to start minio: %s", string(out))
 		t.FailNow()
 	}
-	// TODO: check if the container is healthy instead of sleeping an arbitrary amount of time
-	t.Log("waiting for minio to be healthy")
-	time.Sleep(5 * time.Second)
+
+	for range time.Tick(time.Second) {
+		out, err := exec.Command("docker", "inspect", "--format='{{json .State.Health}}'", "minio").CombinedOutput()
+		if err != nil {
+			log.WithError(err).Errorf("failed to check minio status: %s", string(out))
+			t.FailNow()
+		}
+		if strings.Contains(string(out), `"Status":"healthy"`) {
+			log.Info("minio is healthy")
+			break
+		}
+		log.Info("waiting for minio to be healthy")
+	}
 }
 
 func stop(t *testing.T) {
 	if out, err := exec.Command("docker", "stop", "minio").CombinedOutput(); err != nil {
-		t.Log("failed to stop minio", string(out), err)
+		log.WithError(err).Errorf("failed to stop minio: %s", string(out))
 		t.FailNow()
 	}
 }
