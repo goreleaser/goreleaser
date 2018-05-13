@@ -28,6 +28,9 @@ func (Pipe) String() string {
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.S3 {
 		s3 := &ctx.Config.S3[i]
+		if s3.Bucket == "" {
+			continue
+		}
 		if s3.Folder == "" {
 			s3.Folder = "{{ .ProjectName }}/{{ .Tag }}"
 		}
