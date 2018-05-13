@@ -246,9 +246,10 @@ type Before struct {
 
 // S3 contains s3 config
 type S3 struct {
-	Region string
-	Bucket string
-	Folder string
+	Region   string
+	Bucket   string
+	Folder   string
+	Endpoint string // used for minio for example
 }
 
 // Project includes all project configuration
