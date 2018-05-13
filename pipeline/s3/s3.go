@@ -74,7 +74,7 @@ func upload(ctx *context.Context, conf config.S3) error {
 	svc := s3.New(sess, &aws.Config{
 		Region: aws.String(conf.Region),
 	})
-	folder, err := nametemplate.Apply(ctx, "s3", conf.Folder)
+	folder, err := nametemplate.Apply(ctx, conf.Folder)
 	if err != nil {
 		return err
 	}
