@@ -63,7 +63,7 @@ func TestUpload(t *testing.T) {
 		S3: []config.S3{
 			{
 				Bucket:   "test",
-				Endpoint: "http://localhost:9000",
+				Endpoint: "http://localhost:6000",
 			},
 		},
 	})
@@ -99,7 +99,7 @@ func start(t *testing.T) {
 	if out, err := exec.Command(
 		"docker", "run", "-d", "--rm",
 		"--name", "minio",
-		"-p", "9000:9000",
+		"-p", "6000:6000",
 		"-v", dir+"/testdata/data:/data",
 		"-v", dir+"/testdata/config:/root/.minio",
 		"minio/minio",
