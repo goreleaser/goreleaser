@@ -17,7 +17,7 @@ ifeq ($(OS), Darwin)
 else
 	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 endif
-	dep ensure
+	dep ensure -vendor-only
 	echo "make check" > .git/hooks/pre-commit
 	chmod +x .git/hooks/pre-commit
 .PHONY: setup
