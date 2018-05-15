@@ -37,13 +37,10 @@ func TestFillBasicData(t *testing.T) {
 	assert.Contains(t, ctx.Config.Brew.Install, "bin.install \"goreleaser\"")
 	assert.Empty(t, ctx.Config.Dockers)
 	assert.Equal(t, "https://github.com", ctx.Config.GitHubURLs.Download)
-	assert.NotEmpty(
-		t,
-		ctx.Config.Archive.NameTemplate,
-		ctx.Config.Builds[0].Ldflags,
-		ctx.Config.Archive.Files,
-		ctx.Config.Dist,
-	)
+	assert.NotEmpty(t, ctx.Config.Archive.NameTemplate)
+	assert.NotEmpty(t, ctx.Config.Builds[0].Ldflags)
+	assert.NotEmpty(t, ctx.Config.Archive.Files)
+	assert.NotEmpty(t, ctx.Config.Dist)
 }
 
 func TestFillPartial(t *testing.T) {
