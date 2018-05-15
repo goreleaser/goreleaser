@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/apex/log"
 	"gopkg.in/yaml.v2"
@@ -78,6 +79,42 @@ type IgnoredBuild struct {
 	Goos, Goarch, Goarm string
 }
 
+// StringArray is a wrapper for an array of strings
+type StringArray []string
+
+// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays
+func (a *StringArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var strings []string
+	if err := unmarshal(&strings); err != nil {
+		var str string
+		if err := unmarshal(&str); err != nil {
+			return err
+		}
+		*a = []string{str}
+	} else {
+		*a = strings
+	}
+	return nil
+}
+
+// FlagArray is a wrapper for an array of strings
+type FlagArray []string
+
+// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays
+func (a *FlagArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var flags []string
+	if err := unmarshal(&flags); err != nil {
+		var flagstr string
+		if err := unmarshal(&flagstr); err != nil {
+			return err
+		}
+		*a = strings.Fields(flagstr)
+	} else {
+		*a = flags
+	}
+	return nil
+}
+
 // Build contains the build configuration section
 type Build struct {
 	Goos     []string       `yaml:",omitempty"`
@@ -86,14 +123,14 @@ type Build struct {
 	Targets  []string       `yaml:",omitempty"`
 	Ignore   []IgnoredBuild `yaml:",omitempty"`
 	Main     string         `yaml:",omitempty"`
-	Ldflags  string         `yaml:",omitempty"`
-	Flags    string         `yaml:",omitempty"`
+	Ldflags  StringArray    `yaml:",omitempty"`
+	Flags    FlagArray      `yaml:",omitempty"`
 	Binary   string         `yaml:",omitempty"`
 	Hooks    Hooks          `yaml:",omitempty"`
 	Env      []string       `yaml:",omitempty"`
 	Lang     string         `yaml:",omitempty"`
-	Asmflags string         `yaml:",omitempty"`
-	Gcflags  string         `yaml:",omitempty"`
+	Asmflags StringArray    `yaml:",omitempty"`
+	Gcflags  StringArray    `yaml:",omitempty"`
 }
 
 // FormatOverride is used to specify a custom format for a specific GOOS.

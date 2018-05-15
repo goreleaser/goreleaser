@@ -53,7 +53,7 @@ func TestBuild(t *testing.T) {
 			{
 				Lang:   "fake",
 				Binary: "testing.v{{.Version}}",
-				Flags:  "-n",
+				Flags:  []string{"-n"},
 				Env:    []string{"BLAH=1"},
 			},
 		},
@@ -77,8 +77,8 @@ func TestRunPipe(t *testing.T) {
 			{
 				Lang:    "fake",
 				Binary:  "testing",
-				Flags:   "-v",
-				Ldflags: "-X main.test=testing",
+				Flags:   []string{"-v"},
+				Ldflags: []string{"-X main.test=testing"},
 				Targets: []string{"whatever"},
 			},
 		},
@@ -98,8 +98,8 @@ func TestRunFullPipe(t *testing.T) {
 			{
 				Lang:    "fake",
 				Binary:  "testing",
-				Flags:   "-v",
-				Ldflags: "-X main.test=testing",
+				Flags:   []string{"-v"},
+				Ldflags: []string{"-X main.test=testing"},
 				Hooks: config.Hooks{
 					Pre:  "touch " + pre,
 					Post: "touch " + post,
@@ -125,8 +125,8 @@ func TestRunFullPipeFail(t *testing.T) {
 			{
 				Lang:    "fakeFail",
 				Binary:  "testing",
-				Flags:   "-v",
-				Ldflags: "-X main.test=testing",
+				Flags:   []string{"-v"},
+				Ldflags: []string{"-X main.test=testing"},
 				Hooks: config.Hooks{
 					Pre:  "touch " + pre,
 					Post: "touch " + post,
@@ -212,7 +212,8 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	assert.Equal(t, []string{"linux", "darwin"}, build.Goos)
 	assert.Equal(t, []string{"amd64", "386"}, build.Goarch)
 	assert.Equal(t, []string{"6"}, build.Goarm)
-	assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}", build.Ldflags)
+	assert.Len(t, build.Ldflags, 1)
+	assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}", build.Ldflags[0])
 }
 
 func TestDefaultPartialBuilds(t *testing.T) {
@@ -226,7 +227,7 @@ func TestDefaultPartialBuilds(t *testing.T) {
 				},
 				{
 					Binary:  "foo",
-					Ldflags: "-s -w",
+					Ldflags: []string{"-s -w"},
 					Goarch:  []string{"386"},
 				},
 			},
@@ -240,7 +241,8 @@ func TestDefaultPartialBuilds(t *testing.T) {
 		assert.Equal(t, []string{"linux"}, build.Goos)
 		assert.Equal(t, []string{"amd64", "386"}, build.Goarch)
 		assert.Equal(t, []string{"6"}, build.Goarm)
-		assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}", build.Ldflags)
+		assert.Len(t, build.Ldflags, 1)
+		assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}", build.Ldflags[0])
 	})
 	t.Run("build1", func(t *testing.T) {
 		var build = ctx.Config.Builds[1]
@@ -249,7 +251,8 @@ func TestDefaultPartialBuilds(t *testing.T) {
 		assert.Equal(t, []string{"linux", "darwin"}, build.Goos)
 		assert.Equal(t, []string{"386"}, build.Goarch)
 		assert.Equal(t, []string{"6"}, build.Goarm)
-		assert.Equal(t, "-s -w", build.Ldflags)
+		assert.Len(t, build.Ldflags, 1)
+		assert.Equal(t, "-s -w", build.Ldflags[0])
 	})
 }
 

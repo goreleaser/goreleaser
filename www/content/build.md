@@ -32,10 +32,12 @@ builds:
 
     # Set flags for custom build tags.
     # Default is empty.
-    flags: -tags dev
+    flags:
+      - -tags
+      - dev
 
-    # Custom asmflags template.
-    # This is parsed with the Go template engine and the following variables
+    # Custom asmflags templates.
+    # These are parsed with the Go template engine and the following variables
     # are available:
     # - Date
     # - Commit
@@ -47,10 +49,12 @@ builds:
     # `time "2006-01-02"` too if you need custom formats
     #
     # Default is empty.
-    asmflags: all=-trimpath={{.Env.GOPATH}}
+    asmflags:
+      - -D mysymbol
+      - all=-trimpath={{.Env.GOPATH}}
 
-    # Custom gcflags template.
-    # This is parsed with the Go template engine and the following variables
+    # Custom gcflags templates.
+    # These are parsed with the Go template engine and the following variables
     # are available:
     # - Date
     # - Commit
@@ -62,10 +66,12 @@ builds:
     # `time "2006-01-02"` too if you need custom formats
     #
     # Default is empty.
-    gcflags: all=-trimpath={{.Env.GOPATH}}
+    gcflags:
+      - all=-trimpath={{.Env.GOPATH}}
+      - ./dontoptimizeme=-N
 
-    # Custom ldflags template.
-    # This is parsed with the Go template engine and the following variables
+    # Custom ldflags templates.
+    # These are parsed with the Go template engine and the following variables
     # are available:
     # - Date
     # - Commit
@@ -77,7 +83,9 @@ builds:
     # `time "2006-01-02"` too if you need custom formats
     #
     # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`.
-    ldflags: -s -w -X main.build={{.Version}}
+    ldflags:
+     - -s -w -X main.build={{.Version}}
+     - ./usemsan=-msan
 
     # Custom environment variables to be set during the builds.
     # Default is empty.
@@ -130,7 +138,8 @@ example:
 
 ```yaml
 builds:
-  - ldflags: -s -w -X "main.goversion={{.Env.GOVERSION}}"
+  - ldflags:
+   - -s -w -X "main.goversion={{.Env.GOVERSION}}"
 ```
 
 Then you can run:

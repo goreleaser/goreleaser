@@ -44,8 +44,8 @@ func (*Builder) WithDefaults(build config.Build) config.Build {
 	if len(build.Goarm) == 0 {
 		build.Goarm = []string{"6"}
 	}
-	if build.Ldflags == "" {
-		build.Ldflags = "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"
+	if len(build.Ldflags) == 0 {
+		build.Ldflags = []string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"}
 	}
 	if len(build.Targets) == 0 {
 		build.Targets = matrix(build)
@@ -59,31 +59,29 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 	cmd := []string{"go", "build"}
-	if build.Flags != "" {
-		cmd = append(cmd, strings.Fields(build.Flags)...)
-	}
 
-	if build.Asmflags != "" {
-		flags, err := processField(ctx, build.Asmflags, "asmflags")
-		if err != nil {
-			return err
-		}
-		cmd = append(cmd, "-asmflags="+flags)
-	}
+	cmd = append(cmd, build.Flags...)
 
-	if build.Gcflags != "" {
-		flags, err := processField(ctx, build.Gcflags, "gcflags")
-		if err != nil {
-			return err
-		}
-		cmd = append(cmd, "-gcflags="+flags)
-	}
-
-	flags, err := processField(ctx, build.Ldflags, "ldflags")
+	asmflags, err := processFlags(ctx, build.Asmflags, "asmflags", "-asmflags=")
 	if err != nil {
 		return err
 	}
-	cmd = append(cmd, "-ldflags="+flags, "-o", options.Path, build.Main)
+	cmd = append(cmd, asmflags...)
+
+	gcflags, err := processFlags(ctx, build.Gcflags, "gcflags", "-gcflags=")
+	if err != nil {
+		return err
+	}
+	cmd = append(cmd, gcflags...)
+
+	ldflags, err := processFlags(ctx, build.Ldflags, "ldflags", "-ldflags=")
+	if err != nil {
+		return err
+	}
+	cmd = append(cmd, ldflags...)
+
+	cmd = append(cmd, "-o", options.Path, build.Main)
+
 	target, err := newBuildTarget(options.Target)
 	if err != nil {
 		return err
@@ -105,6 +103,18 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		},
 	})
 	return nil
+}
+
+func processFlags(ctx *context.Context, flags []string, flagName string, flagPrefix string) ([]string, error) {
+	processed := make([]string, 0, len(flags))
+	for _, rawFlag := range flags {
+		flag, err := processField(ctx, rawFlag, flagName)
+		if err != nil {
+			return nil, err
+		}
+		processed = append(processed, flagPrefix+flag)
+	}
+	return processed, nil
 }
 
 func processField(ctx *context.Context, field string, fieldName string) (string, error) {
