@@ -84,8 +84,8 @@ func TestBuild(t *testing.T) {
 					"windows_amd64",
 					"linux_arm_6",
 				},
-				Asmflags: "all=",
-				Gcflags:  "all=",
+				Asmflags: []string{".=", "all="},
+				Gcflags:  []string{"all="},
 			},
 		},
 	}
@@ -160,7 +160,7 @@ func TestBuildFailed(t *testing.T) {
 	var config = config.Project{
 		Builds: []config.Build{
 			{
-				Flags: "-flag-that-dont-exists-to-force-failure",
+				Flags: []string{"-flag-that-dont-exists-to-force-failure"},
 				Targets: []string{
 					runtimeTarget,
 				},
@@ -207,7 +207,7 @@ func TestRunInvalidAsmflags(t *testing.T) {
 		Builds: []config.Build{
 			{
 				Binary:   "nametest",
-				Asmflags: "{{.Version}",
+				Asmflags: []string{"{{.Version}"},
 				Targets: []string{
 					runtimeTarget,
 				},
@@ -229,7 +229,7 @@ func TestRunInvalidGcflags(t *testing.T) {
 		Builds: []config.Build{
 			{
 				Binary:  "nametest",
-				Gcflags: "{{.Version}",
+				Gcflags: []string{"{{.Version}"},
 				Targets: []string{
 					runtimeTarget,
 				},
@@ -251,8 +251,8 @@ func TestRunInvalidLdflags(t *testing.T) {
 		Builds: []config.Build{
 			{
 				Binary:  "nametest",
-				Flags:   "-v",
-				Ldflags: "-s -w -X main.version={{.Version}",
+				Flags:   []string{"-v"},
+				Ldflags: []string{"-s -w -X main.version={{.Version}"},
 				Targets: []string{
 					runtimeTarget,
 				},
@@ -352,7 +352,9 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	var config = config.Project{
 		Builds: []config.Build{
 			{
-				Ldflags: `-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }}`,
+				Ldflags: []string{
+					`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }}`,
+				},
 			},
 		},
 	}
@@ -365,7 +367,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 		Config:  config,
 		Env:     map[string]string{"FOO": "123"},
 	}
-	flags, err := processField(ctx, ctx.Config.Builds[0].Ldflags, "ldflags")
+	flags, err := processField(ctx, ctx.Config.Builds[0].Ldflags[0], "ldflags")
 	assert.NoError(t, err)
 	assert.Contains(t, flags, "-s -w")
 	assert.Contains(t, flags, "-X main.version=1.2.3")
@@ -385,7 +387,7 @@ func TestInvalidTemplate(t *testing.T) {
 		t.Run(template, func(tt *testing.T) {
 			var config = config.Project{
 				Builds: []config.Build{
-					{Ldflags: template},
+					{Ldflags: []string{template}},
 				},
 			}
 			var ctx = &context.Context{
@@ -396,6 +398,41 @@ func TestInvalidTemplate(t *testing.T) {
 			assert.Empty(tt, flags)
 		})
 	}
+}
+
+func TestProcessFlags(t *testing.T) {
+	var ctx = &context.Context{
+		Version: "1.2.3",
+	}
+
+	var source = []string{
+		"{{.Version}}",
+		"flag",
+	}
+
+	var expected = []string{
+		"-testflag=1.2.3",
+		"-testflag=flag",
+	}
+
+	flags, err := processFlags(ctx, source, "testflag", "-testflag=")
+	assert.NoError(t, err)
+	assert.Len(t, flags, 2)
+	assert.Equal(t, expected, flags)
+}
+
+func TestProcessFlagsInvalid(t *testing.T) {
+	var ctx = &context.Context{}
+
+	var source = []string{
+		"{{.Version}",
+	}
+
+	var expected = `template: testflag:1: unexpected "}" in operand`
+
+	flags, err := processFlags(ctx, source, "testflag", "-testflag=")
+	assert.EqualError(t, err, expected)
+	assert.Nil(t, flags)
 }
 
 //
