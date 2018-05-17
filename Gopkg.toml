@@ -48,7 +48,7 @@
 
 [[constraint]]
   name = "github.com/goreleaser/nfpm"
-  version = "~0.8.0"
+  version = "~0.9.0"
 
 [[constraint]]
   name = "github.com/alecthomas/kingpin"
