@@ -28,8 +28,7 @@ For questions join the [#goreleaser](https://gophers.slack.com/messages/goreleas
 
 ## Documentation
 
-Documentation can be found in the [docs folder](docs) and live
-at https://goreleaser.com
+Documentation is hosted live at https://goreleaser.com
 
 ## Sponsors
 
