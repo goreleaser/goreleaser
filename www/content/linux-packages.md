@@ -91,6 +91,12 @@ nfpm:
   # Override default /usr/local/bin destination for binaries
   bindir: /usr/bin
 
+  # Empty folders that should be created and managed by the packager
+  # implementation.
+  # Default is empty.
+  empty_folders:
+  - /var/log/foobar
+
   # Files or directories to add to your package (beyond the binary).
   # Keys are source paths/globs to get the files from.
   # Values are the destination locations of the files in the package.
@@ -127,6 +133,8 @@ nfpm:
         - gitk
       recommends:
         - tig
+      empty_folders:
+      - /var/log/bar
     rpm:
       replacements:
         amd64: x86_64
