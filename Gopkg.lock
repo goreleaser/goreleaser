@@ -137,8 +137,8 @@
     "glob",
     "rpm"
   ]
-  revision = "8faa8e2e621115b3b560688a72d9c37bff4acb9f"
-  version = "v0.8.2"
+  revision = "d2eaeef92bdb3ead4ee45852b10b81f4c650f4fc"
+  version = "v0.9.0"
 
 [[projects]]
   name = "github.com/imdario/mergo"
@@ -258,6 +258,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3fac5f0b013f4e66674db9d8ac7781f82ffdb4d46e3e004cfab2728b78c37a84"
+  inputs-digest = "f8fe5bd56d1929f1592ca556cb199eec1d49bbc99d1b1cd5796a9a2be7d6bb22"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -84,6 +84,7 @@ func TestRunPipe(t *testing.T) {
 				Recommends:   []string{"svn"},
 				Suggests:     []string{"bzr"},
 				Conflicts:    []string{"git"},
+				EmptyFolders: []string{"/var/log/foobar"},
 				Files: map[string]string{
 					"./testdata/testfile.txt": "/usr/share/testfile.txt",
 				},
