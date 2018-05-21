@@ -290,6 +290,14 @@ type S3 struct {
 	Endpoint string // used for minio for example
 }
 
+// HTTPUpload server configuration
+type HTTPUpload struct {
+	Target   string `yaml:",omitempty"`
+	Name     string `yaml:",omitempty"`
+	Username string `yaml:",omitempty"`
+	Mode     string `yaml:",omitempty"`
+}
+
 // Project includes all project configuration
 type Project struct {
 	ProjectName   string        `yaml:"project_name,omitempty"`
@@ -305,6 +313,7 @@ type Project struct {
 	Checksum      Checksum      `yaml:",omitempty"`
 	Dockers       []Docker      `yaml:",omitempty"`
 	Artifactories []Artifactory `yaml:",omitempty"`
+	HTTPUploads   []HTTPUpload  `yaml:",omitempty"`
 	S3            []S3          `yaml:"s3,omitempty"`
 	Changelog     Changelog     `yaml:",omitempty"`
 	Dist          string        `yaml:",omitempty"`
