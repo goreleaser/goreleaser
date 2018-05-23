@@ -82,8 +82,9 @@ func (Pipe) Run(ctx *context.Context) error {
 func doRun(ctx *context.Context) error {
 	var g errgroup.Group
 	sem := make(chan bool, ctx.Parallelism)
-	for _, docker := range ctx.Config.Dockers {
+	for i, docker := range ctx.Config.Dockers {
 		docker := docker
+		seed := i
 		sem <- true
 		g.Go(func() error {
 			defer func() {
@@ -105,7 +106,7 @@ func doRun(ctx *context.Context) error {
 				log.Warnf("no binaries found for %s", docker.Binary)
 			}
 			for _, binary := range binaries {
-				if err := process(ctx, docker, binary); err != nil {
+				if err := process(ctx, docker, binary, seed); err != nil {
 					return err
 				}
 			}
@@ -146,9 +147,9 @@ func tagName(ctx *context.Context, tagTemplate string) (string, error) {
 	return out.String(), err
 }
 
-func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) error {
+func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact, seed int) error {
 	var root = filepath.Dir(artifact.Path)
-	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile))
+	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile)) + fmt.Sprintf(".%d", seed)
 	var images []string
 	for _, tagTemplate := range docker.TagTemplates {
 		tag, err := tagName(ctx, tagTemplate)
