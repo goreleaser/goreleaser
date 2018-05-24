@@ -32,7 +32,14 @@ func TestSignDisabled(t *testing.T) {
 	ctx := &context.Context{}
 	ctx.Config.Sign.Artifacts = "none"
 	err := Pipe{}.Run(ctx)
-	assert.EqualError(t, err, "artifact signing disabled")
+	assert.EqualError(t, err, "artifact signing is disabled")
+}
+
+func TestSignSkipped(t *testing.T) {
+	ctx := &context.Context{}
+	ctx.SkipSign = true
+	err := Pipe{}.Run(ctx)
+	assert.EqualError(t, err, "artifact signing is disabled")
 }
 
 func TestSignInvalidArtifacts(t *testing.T) {
