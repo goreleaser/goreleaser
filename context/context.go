@@ -34,6 +34,7 @@ type Context struct {
 	Version      string
 	Snapshot     bool
 	SkipPublish  bool
+	SkipSign     bool
 	SkipValidate bool
 	RmDist       bool
 	Debug        bool

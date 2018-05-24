@@ -38,6 +38,10 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run executes the Pipe.
 func (Pipe) Run(ctx *context.Context) error {
+	if ctx.SkipSign {
+		return pipeline.ErrSkipSignEnabled
+	}
+
 	switch ctx.Config.Sign.Artifacts {
 	case "checksum":
 		return sign(ctx, ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum)).List())
@@ -50,7 +54,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				artifact.ByType(artifact.LinuxPackage),
 			)).List())
 	case "none":
-		return pipeline.Skip("artifact signing disabled")
+		return pipeline.ErrSkipSignEnabled
 	default:
 		return fmt.Errorf("invalid list of artifacts to sign: %s", ctx.Config.Sign.Artifacts)
 	}

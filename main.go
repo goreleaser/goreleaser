@@ -78,6 +78,7 @@ type releaseOptions struct {
 	ReleaseNotes string
 	Snapshot     bool
 	SkipPublish  bool
+	SkipSign     bool
 	SkipValidate bool
 	RmDist       bool
 	Debug        bool
@@ -100,6 +101,7 @@ func main() {
 	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown file").PlaceHolder("notes.md").String()
 	var snapshot = releaseCmd.Flag("snapshot", "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts").Bool()
 	var skipPublish = releaseCmd.Flag("skip-publish", "Generates all artifacts but does not publish them anywhere").Bool()
+	var skipSign = releaseCmd.Flag("skip-sign", "Skips signing the artifacts").Bool()
 	var skipValidate = releaseCmd.Flag("skip-validate", "Skips all git sanity checks").Bool()
 	var rmDist = releaseCmd.Flag("rm-dist", "Remove the dist folder before building").Bool()
 	var parallelism = releaseCmd.Flag("parallelism", "Amount of slow tasks to do in concurrently").Short('p').Default("4").Int() // TODO: use runtime.NumCPU here?
@@ -128,6 +130,7 @@ func main() {
 			Snapshot:     *snapshot,
 			SkipPublish:  *skipPublish,
 			SkipValidate: *skipValidate,
+			SkipSign:     *skipSign,
 			RmDist:       *rmDist,
 			Parallelism:  *parallelism,
 			Debug:        *debug,
@@ -171,6 +174,7 @@ func releaseProject(options releaseOptions) error {
 	ctx.Snapshot = options.Snapshot
 	ctx.SkipPublish = ctx.Snapshot || options.SkipPublish
 	ctx.SkipValidate = ctx.Snapshot || options.SkipValidate
+	ctx.SkipSign = options.SkipSign
 	ctx.RmDist = options.RmDist
 	return doRelease(ctx)
 }
