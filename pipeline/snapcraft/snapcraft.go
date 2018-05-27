@@ -83,15 +83,20 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	var g errgroup.Group
+	sem := make(chan bool, ctx.Parallelism)
 	for platform, binaries := range ctx.Artifacts.Filter(
 		artifact.And(
 			artifact.ByGoos("linux"),
 			artifact.ByType(artifact.Binary),
 		),
 	).GroupByPlatform() {
+		sem <- true
 		arch := linux.Arch(platform)
 		binaries := binaries
 		g.Go(func() error {
+			go func() {
+				<-sem
+			}()
 			return create(ctx, arch, binaries)
 		})
 	}
