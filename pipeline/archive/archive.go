@@ -62,7 +62,10 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	var filtered = ctx.Artifacts.Filter(artifact.ByType(artifact.Binary))
+	var filtered = ctx.Artifacts.Filter(artifact.Or(
+		artifact.ByType(artifact.Binary),
+		artifact.ByType(artifact.Folder),
+	))
 	for _, artifacts := range filtered.GroupByPlatform() {
 		artifacts := artifacts
 		g.Go(func() error {
@@ -104,13 +107,19 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 			return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
 		}
 	}
+
 	for _, binary := range binaries {
+		// Skip this part, e.g. when we package a folder
+		if binary.Type != artifact.Binary {
+			continue
+		}
 		var bin = wrap(ctx, binary.Name, folder)
 		log.Debugf("adding %s", bin)
 		if err := a.Add(bin, binary.Path); err != nil {
 			return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
 		}
 	}
+
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type:   artifact.UploadableArchive,
 		Name:   folder + "." + format,

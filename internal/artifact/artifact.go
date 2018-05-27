@@ -26,6 +26,8 @@ const (
 	Checksum
 	// Signature is a signature file
 	Signature
+	// Folder is a complete folder
+	Folder
 )
 
 // Artifact represents an artifact and its relevant info
