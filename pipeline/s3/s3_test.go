@@ -28,11 +28,11 @@ func TestDefaultsNoS3(t *testing.T) {
 	var assert = assert.New(t)
 	var ctx = context.New(config.Project{
 		S3: []config.S3{
-			config.S3{},
+			{},
 		},
 	})
 	assert.NoError(Pipe{}.Default(ctx))
-	assert.Equal([]config.S3{config.S3{}}, ctx.Config.S3)
+	assert.Equal([]config.S3{{}}, ctx.Config.S3)
 }
 
 func TestDefaults(t *testing.T) {
@@ -45,7 +45,7 @@ func TestDefaults(t *testing.T) {
 		},
 	})
 	assert.NoError(Pipe{}.Default(ctx))
-	assert.Equal([]config.S3{config.S3{
+	assert.Equal([]config.S3{{
 		Bucket: "foo",
 		Region: "us-east-1",
 		Folder: "{{ .ProjectName }}/{{ .Tag }}",

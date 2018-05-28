@@ -58,10 +58,10 @@ dist: another-folder-that-is-not-dist
 
 Default wise GoReleaser sets three _ldflags_:
 
-* `main.version`: Current Git tag (the `v` prefix is stripped) or the name of
+- `main.version`: Current Git tag (the `v` prefix is stripped) or the name of
   the snapshot, if you're using the `--snapshot` flag
-* `main.commit`: Current git commit SHA
-* `main.date`: Date according [RFC3339](https://golang.org/pkg/time/#pkg-constants)
+- `main.commit`: Current git commit SHA
+- `main.date`: Date according [RFC3339](https://golang.org/pkg/time/#pkg-constants)
 
 You can use it in your `main.go` file:
 
