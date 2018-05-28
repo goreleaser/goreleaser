@@ -9,8 +9,8 @@ export PATH := ./bin:$(PATH)
 setup:
 	go get -u golang.org/x/tools/cmd/stringer
 	go get -u golang.org/x/tools/cmd/cover
+	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 	curl -sfL https://install.goreleaser.com/github.com/gohugoio/hugo.sh | sh
-	curl -sfL https://install.goreleaser.com/github.com/alecthomas/gometalinter.sh | sh
 	curl -sfL https://install.goreleaser.com/github.com/caarlos0/bandep.sh | sh
 ifeq ($(OS), Darwin)
 	brew install dep
@@ -44,7 +44,7 @@ fmt:
 
 # Run all the linters
 lint:
-	gometalinter --deadline 2m --vendor ./...
+	golangci-lint run --enable-all ./...
 	find . -name '*.md' -not -wholename './vendor/*' | xargs prettier -l
 .PHONY: lint
 
