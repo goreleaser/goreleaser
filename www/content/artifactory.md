@@ -27,8 +27,8 @@ artifactories:
 
 Prerequisites:
 
-* A running Artifactory instances
-* A user + password / API key with grants to upload an artifact
+- A running Artifactory instances
+- A user + password / API key with grants to upload an artifact
 
 ### Target
 
@@ -45,12 +45,12 @@ and will result in a final deployment like `http://artifacts.company.com:8081/ar
 
 Supported variables:
 
-* Version
-* Tag
-* ProjectName
-* Os
-* Arch
-* Arm
+- Version
+- Tag
+- ProjectName
+- Os
+- Arch
+- Arm
 
 _Attention_: Variables _Os_, _Arch_ and _Arm_ are only supported in upload
 mode `binary`.

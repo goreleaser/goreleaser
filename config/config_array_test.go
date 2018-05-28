@@ -101,14 +101,14 @@ func TestStringArray(t *testing.T) {
 }
 
 // func TestStringArrayFailure(t *testing.T) {
-	// var source = `
+// var source = `
 // strings:
-  // key: val
+// key: val
 // `
 
-	// var actual Unmarshaled
-	// err := yaml.UnmarshalStrict([]byte(source), &actual)
-	// // assert.EqualError(t, err, )
+// var actual Unmarshaled
+// err := yaml.UnmarshalStrict([]byte(source), &actual)
+// // assert.EqualError(t, err, )
 // }
 
 func TestFlagArray(t *testing.T) {
