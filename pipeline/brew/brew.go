@@ -131,6 +131,9 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Release.Draft {
 		return pipeline.Skip("release is marked as draft")
 	}
+	if ctx.Config.Release.Prerelease {
+		return pipeline.Skip("release is marked as prerelease")
+	}
 
 	path = filepath.Join(ctx.Config.Brew.Folder, filename)
 	log.WithField("formula", path).
