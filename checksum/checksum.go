@@ -14,6 +14,10 @@ func SHA256(path string) (string, error) {
 	return calculate(sha256.New(), path)
 }
 
+func SHA256Reader(r io.Reader) (string, error) {
+	return doCalculate(sha256.New(), r)
+}
+
 func calculate(hash hash.Hash, path string) (string, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -24,8 +28,8 @@ func calculate(hash hash.Hash, path string) (string, error) {
 	return doCalculate(hash, file)
 }
 
-func doCalculate(hash hash.Hash, file io.Reader) (string, error) {
-	_, err := io.Copy(hash, file)
+func doCalculate(hash hash.Hash, r io.Reader) (string, error) {
+	_, err := io.Copy(hash, r)
 	if err != nil {
 		return "", err
 	}

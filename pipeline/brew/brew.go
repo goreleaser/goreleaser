@@ -2,14 +2,15 @@ package brew
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"path/filepath"
 	"strings"
 	"text/template"
 
 	"github.com/apex/log"
+	"github.com/pkg/errors"
 
 	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/config"
@@ -158,8 +159,22 @@ func doBuildFormula(data templateData) (out bytes.Buffer, err error) {
 	return
 }
 
+func sha256RemoteArchive(ctx *context.Context) (string, error) {
+	url := ctx.Config.GitHubURLs.Download + "/" + ctx.Config.Release.GitHub.String() + "/archive/" + ctx.Git.CurrentTag + ".tar.gz"
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", errors.Wrapf(err, "could not download %s", url)
+	}
+	defer resp.Body.Close()
+	return checksum.SHA256Reader(resp.Body)
+}
+
 func dataFor(ctx *context.Context, client client.Client, artifact artifact.Artifact) (result templateData, err error) {
 	sum, err := checksum.SHA256(artifact.Path)
+	if err != nil {
+		return
+	}
+	asum, err := sha256RemoteArchive(ctx)
 	if err != nil {
 		return
 	}
@@ -175,6 +190,7 @@ func dataFor(ctx *context.Context, client client.Client, artifact artifact.Artif
 		Caveats:           split(cfg.Caveats),
 		File:              artifact.Name,
 		SHA256:            sum,
+		ArchiveSHA256:     asum,
 		Dependencies:      cfg.Dependencies,
 		BuildDependencies: cfg.BuildDependencies,
 		Conflicts:         cfg.Conflicts,

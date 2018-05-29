@@ -13,6 +13,7 @@ type templateData struct {
 	Caveats           []string
 	File              string
 	SHA256            string
+	ArchiveSHA256     string
 	Plist             string
 	DownloadStrategy  string
 	Install           []string
@@ -28,12 +29,13 @@ const formulaTemplate = `class {{ .Name }} < Formula
   {{ if .BuildDependencies -}}
   url "{{ .DownloadURL }}/{{ .Repo.Owner }}/{{ .Repo.Name }}/archive/{{ .Tag }}.tar.gz"
   head "https://github.com/{{ .Repo.Owner }}/{{ .Repo.Name }}.git"
+  sha256 "{{ .ArchiveSHA256 }}"
   {{- else -}}
   url "{{ .DownloadURL }}/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
+  sha256 "{{ .SHA256 }}"
   {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
   {{- end }}
   version "{{ .Version }}"
-  sha256 "{{ .SHA256 }}"
 
   {{- with .Dependencies }}
   {{ range $index, $element := . }}
