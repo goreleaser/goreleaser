@@ -9,7 +9,7 @@ export PATH := ./bin:$(PATH)
 setup:
 	go get -u golang.org/x/tools/cmd/stringer
 	go get -u golang.org/x/tools/cmd/cover
-	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
 	curl -sfL https://install.goreleaser.com/github.com/gohugoio/hugo.sh | sh
 	curl -sfL https://install.goreleaser.com/github.com/caarlos0/bandep.sh | sh
 ifeq ($(OS), Darwin)
