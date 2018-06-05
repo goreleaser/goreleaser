@@ -52,7 +52,7 @@ Note: this method requires Go 1.10+.
 $ go get -d github.com/goreleaser/goreleaser
 $ cd $GOPATH/src/github.com/goreleaser/goreleaser
 $ dep ensure -vendor-only
-$ make build
+$ make setup build
 ```
 
 It is recommended to also run `dep ensure` to make sure that the dependencies
