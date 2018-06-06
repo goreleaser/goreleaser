@@ -38,6 +38,11 @@ install:
 services:
 - docker
 
+after_success:
+# docker login is required if you want to push docker images.
+# DOCKER_PASSWORD should be a secret in your .travis.yml configuration.
+- test -n "$TRAVIS_TAG" && docker login -u=myuser -p="$DOCKER_PASSWORD"
+
 # calls goreleaser
 deploy:
 - provider: script

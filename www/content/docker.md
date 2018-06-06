@@ -32,6 +32,10 @@ ENTRYPOINT ["/mybin"]
 
 This configuration will build and push a Docker image named `user/repo:tagname`.
 
+> **Attention**: Note that were are not building any go files in the docker
+> build phase, we are merely copying the binary to a `scratch` image and
+> setting up the entrypoint.
+
 ## Customization
 
 Of course, you can customize a lot of things:
@@ -117,10 +121,10 @@ dockers:
 
 This will build and publish the following images:
 
-- myuser/myimage:v1.6.4
-- myuser/myimage:v1
-- myuser/myimage:v1.6
-- myuser/myimage:latest
+- `myuser/myimage:v1.6.4`
+- `myuser/myimage:v1`
+- `myuser/myimage:v1.6`
+- `myuser/myimage:latest`
 
 With these settings you can hopefully push several different docker images
 with multiple tags.
