@@ -72,7 +72,7 @@ func TestFullFormulae(t *testing.T) {
 
 	var golden = "testdata/test.rb.golden"
 	if *update {
-		ioutil.WriteFile(golden, []byte(formulae), 0655)
+		ioutil.WriteFile(golden, []byte(formulae), 0655) //nolint:errcheck
 	}
 	bts, err := ioutil.ReadFile(golden)
 	assert.NoError(t, err)
@@ -171,7 +171,7 @@ func TestRunPipe(t *testing.T) {
 			assert.True(t, client.CreatedFile)
 			var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
 			if *update {
-				ioutil.WriteFile(golden, []byte(client.Content), 0655)
+				ioutil.WriteFile(golden, []byte(client.Content), 0655) //nolint:errcheck
 			}
 			bts, err := ioutil.ReadFile(golden)
 			assert.NoError(t, err)

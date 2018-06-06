@@ -31,7 +31,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		cfg.Args = []string{"--output", "$signature", "--detach-sig", "$artifact"}
 	}
 	if cfg.Artifacts == "" {
-		cfg.Artifacts = "none"
+		cfg.Artifacts = "none" // nolint:goconst
 	}
 	return nil
 }

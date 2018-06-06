@@ -522,7 +522,7 @@ func TestLinkDirectory(t *testing.T) {
 	const testFile = "test"
 	const dstDir = "/tmp/linkedDir"
 
-	os.Mkdir(srcDir, 0755)
+	os.Mkdir(srcDir, 0755) //nolint:errcheck
 	err := ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
 	if err != nil {
 		t.Log("Cannot setup test file")
@@ -549,8 +549,8 @@ func TestLinkTwoLevelDirectory(t *testing.T) {
 	const testFile = "test"
 	const dstDir = "/tmp/linkedDir"
 
-	os.Mkdir(srcDir, 0755)
-	os.Mkdir(srcLevel2, 0755)
+	os.Mkdir(srcDir, 0755)    //nolint:errcheck
+	os.Mkdir(srcLevel2, 0755) //nolint:errcheck
 	err := ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
 	if err != nil {
 		t.Log("Cannot setup test file")

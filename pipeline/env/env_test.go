@@ -128,7 +128,7 @@ func TestLoadEnv(t *testing.T) {
 		f, err := ioutil.TempFile("", "token")
 		assert.NoError(t, err)
 		fmt.Fprintf(f, "123")
-		os.Chmod(f.Name(), 0377)
+		os.Chmod(f.Name(), 0377) //nolint:errcheck
 		v, err := loadEnv(env, f.Name())
 		assert.EqualError(tt, err, fmt.Sprintf("open %s: permission denied", f.Name()))
 		assert.Equal(tt, "", v)
