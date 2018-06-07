@@ -8,6 +8,35 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestEnv(t *testing.T) {
+	testCases := []struct {
+		desc string
+		in   string
+		out  string
+	}{
+		{
+			desc: "with env",
+			in:   "{{ .Env.FOO }}",
+			out:  "BAR",
+		},
+		{
+			desc: "with env",
+			in:   "{{ .Env.BAR }}",
+			out:  "",
+		},
+	}
+	var ctx = context.New(config.Project{})
+	ctx.Env = map[string]string{
+		"FOO": "BAR",
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			out, _ := Apply(ctx, tC.in)
+			assert.Equal(t, tC.out, out)
+		})
+	}
+}
+
 func TestFuncMap(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "proj",

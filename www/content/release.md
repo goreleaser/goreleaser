@@ -34,10 +34,11 @@ release:
   # - ProjectName
   # - Tag
   # - Version (Git tag without `v` prefix)
+  # - Env (environment variables)
   # There is also a template function "time" that takes a Go time format
   # string to insert a formated timestamp into the release name.
   # Default is ``
-  name_template: "{{.ProjectName}}-v{{.Version}}"
+  name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not upload any artifacts to
   # GitHub.

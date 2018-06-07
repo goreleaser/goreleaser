@@ -24,11 +24,15 @@ func Apply(ctx *context.Context, tmpl string) (string, error) {
 		return "", err
 	}
 	err = t.Execute(&out, struct {
-		ProjectName, Tag, Version string
+		ProjectName string
+		Tag         string
+		Version     string
+		Env         map[string]string
 	}{
 		ProjectName: ctx.Config.ProjectName,
 		Tag:         ctx.Git.CurrentTag,
 		Version:     ctx.Version,
+		Env:         ctx.Env,
 	})
 	return out.String(), err
 }
