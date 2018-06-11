@@ -126,8 +126,8 @@
     "tar",
     "zip"
   ]
-  revision = "c373877947a8e6aeca89a9baf33c313c8371a7b8"
-  version = "v1.1.1"
+  revision = "f83c3f651b008c42ee5d316770ebf54f383ffe13"
+  version = "v1.1.2"
 
 [[projects]]
   name = "github.com/goreleaser/nfpm"
