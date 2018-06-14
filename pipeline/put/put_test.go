@@ -1,4 +1,4 @@
-package httpupload
+package put
 
 import (
 	"fmt"
@@ -72,6 +72,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
 		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
+		w.Header().Set("Location", "/production-repo-remote/mybin/linux/amd64/mybin")
 		w.WriteHeader(http.StatusCreated)
 	})
 	mux.HandleFunc("/example-repo-local/mybin/linux/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -80,6 +81,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
 		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
+		w.Header().Set("Location", "/production-repo-remote/mybin/linux/amd64/mybin")
 		w.WriteHeader(http.StatusCreated)
 	})
 	mux.HandleFunc("/production-repo-remote/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -88,6 +90,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		// Basic auth of user "productionuser" with secret "productionuser-apikey"
 		testHeader(t, r, "Authorization", "Basic cHJvZHVjdGlvbnVzZXI6cHJvZHVjdGlvbnVzZXItYXBpa2V5")
 
+		w.Header().Set("Location", "/production-repo-remote/mybin/linux/amd64/mybin")
 		w.WriteHeader(http.StatusCreated)
 	})
 	mux.HandleFunc("/production-repo-remote/mybin/linux/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -96,13 +99,14 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		// Basic auth of user "productionuser" with secret "productionuser-apikey"
 		testHeader(t, r, "Authorization", "Basic cHJvZHVjdGlvbnVzZXI6cHJvZHVjdGlvbnVzZXItYXBpa2V5")
 
+		w.Header().Set("Location", "/production-repo-remote/mybin/linux/amd64/mybin")
 		w.WriteHeader(http.StatusCreated)
 	})
 
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		HTTPUploads: []config.HTTPUpload{
+		Puts: []config.Put{
 			{
 				Name:     "production-us",
 				Mode:     "binary",
@@ -118,8 +122,8 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		},
 	})
 	ctx.Env = map[string]string{
-		"HTTP_UPLOAD_PRODUCTION-US_SECRET": "deployuser-secret",
-		"HTTP_UPLOAD_PRODUCTION-EU_SECRET": "productionuser-apikey",
+		"PUT_PRODUCTION-US_SECRET": "deployuser-secret",
+		"PUT_PRODUCTION-EU_SECRET": "productionuser-apikey",
 	}
 	for _, goos := range []string{"linux", "darwin"} {
 		ctx.Artifacts.Add(artifact.Artifact{
@@ -148,7 +152,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
-		HTTPUploads: []config.HTTPUpload{
+		Puts: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "archive",
@@ -158,7 +162,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		},
 	})
 	ctx.Env = map[string]string{
-		"HTTP_UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Version = "1.0.0"
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -180,6 +184,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
 		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
+		w.Header().Set("Location", "/example-repo-local/goreleaser/1.0.0/bin.tar.gz")
 		w.WriteHeader(http.StatusCreated)
 		uploads.Store("targz", true)
 	})
@@ -188,6 +193,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
 		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
+		w.Header().Set("Location", "/example-repo-local/goreleaser/1.0.0/bin.deb")
 		w.WriteHeader(http.StatusCreated)
 		uploads.Store("deb", true)
 	})
@@ -208,7 +214,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
-		HTTPUploads: []config.HTTPUpload{
+		Puts: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "archive",
@@ -219,7 +225,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	})
 	ctx.Version = "2.0.0"
 	ctx.Env = map[string]string{
-		"HTTP_UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
@@ -240,7 +246,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		HTTPUploads: []config.HTTPUpload{
+		Puts: []config.Put{
 			{
 				Name: "production",
 				Mode: "binary",
@@ -251,7 +257,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 		},
 	})
 	ctx.Env = map[string]string{
-		"HTTP_UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
@@ -262,7 +268,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	})
 	err = Pipe{}.Run(ctx)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), `httpupload: error while building the target url: template: mybin:1: unexpected "/" in operand`)
+	assert.Contains(t, err.Error(), `put: error while building the target url: template: mybin:1: unexpected "/" in operand`)
 }
 
 func TestRunPipe_BadCredentials(t *testing.T) {
@@ -292,7 +298,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		HTTPUploads: []config.HTTPUpload{
+		Puts: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -302,7 +308,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		},
 	})
 	ctx.Env = map[string]string{
-		"HTTP_UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
@@ -321,7 +327,7 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        "archivetest/dist",
-		HTTPUploads: []config.HTTPUpload{
+		Puts: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -331,7 +337,7 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 		},
 	})
 	ctx.Env = map[string]string{
-		"HTTP_UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
@@ -358,7 +364,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		HTTPUploads: []config.HTTPUpload{
+		Puts: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -368,7 +374,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		},
 	})
 	ctx.Env = map[string]string{
-		"HTTP_UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
@@ -378,12 +384,12 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Run(ctx), `httpupload: upload failed: parse ://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin: missing protocol scheme`)
+	assert.EqualError(t, Pipe{}.Run(ctx), `put: upload failed: parse ://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin: missing protocol scheme`)
 }
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 	var ctx = context.New(config.Project{
-		HTTPUploads: []config.HTTPUpload{
+		Puts: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -393,7 +399,7 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 		},
 	})
 	ctx.Env = map[string]string{
-		"HTTP_UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.SkipPublish = true
 
@@ -413,7 +419,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		HTTPUploads: []config.HTTPUpload{
+		Puts: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -423,7 +429,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 		},
 	})
 	ctx.Env = map[string]string{
-		"HTTP_UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
@@ -433,24 +439,24 @@ func TestRunPipe_DirUpload(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Run(ctx), `httpupload: upload failed: the asset to upload can't be a directory`)
+	assert.EqualError(t, Pipe{}.Run(ctx), `put: upload failed: the asset to upload can't be a directory`)
 }
 
 func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.String())
 }
 
-func TestNoHTTPUploads(t *testing.T) {
+func TestNoPuts(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{}))))
 }
 
-func TestHTTPUploadsWithoutTarget(t *testing.T) {
+func TestPutsWithoutTarget(t *testing.T) {
 	var ctx = &context.Context{
 		Env: map[string]string{
-			"HTTP_UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+			"PUT_PRODUCTION_SECRET": "deployuser-secret",
 		},
 		Config: config.Project{
-			HTTPUploads: []config.HTTPUpload{
+			Puts: []config.Put{
 				{
 					Name:     "production",
 					Username: "deployuser",
@@ -462,13 +468,13 @@ func TestHTTPUploadsWithoutTarget(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(ctx)))
 }
 
-func TestHTTPUploadsWithoutUsername(t *testing.T) {
+func TestPutsWithoutUsername(t *testing.T) {
 	var ctx = &context.Context{
 		Env: map[string]string{
-			"HTTP_UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+			"PUT_PRODUCTION_SECRET": "deployuser-secret",
 		},
 		Config: config.Project{
-			HTTPUploads: []config.HTTPUpload{
+			Puts: []config.Put{
 				{
 					Name:   "production",
 					Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -480,9 +486,9 @@ func TestHTTPUploadsWithoutUsername(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(ctx)))
 }
 
-func TestHTTPUploadsWithoutName(t *testing.T) {
+func TestPutsWithoutName(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
-		HTTPUploads: []config.HTTPUpload{
+		Puts: []config.Put{
 			{
 				Username: "deployuser",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -491,9 +497,9 @@ func TestHTTPUploadsWithoutName(t *testing.T) {
 	}))))
 }
 
-func TestHTTPUploadsWithoutSecret(t *testing.T) {
+func TestPutsWithoutSecret(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
-		HTTPUploads: []config.HTTPUpload{
+		Puts: []config.Put{
 			{
 				Name:     "production",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -503,13 +509,13 @@ func TestHTTPUploadsWithoutSecret(t *testing.T) {
 	}))))
 }
 
-func TestHTTPUploadsWithInvalidMode(t *testing.T) {
+func TestPutsWithInvalidMode(t *testing.T) {
 	var ctx = &context.Context{
 		Env: map[string]string{
-			"HTTP_UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
+			"PUT_PRODUCTION_SECRET": "deployuser-secret",
 		},
 		Config: config.Project{
-			HTTPUploads: []config.HTTPUpload{
+			Puts: []config.Put{
 				{
 					Name:     "production",
 					Mode:     "does-not-exists",
@@ -525,7 +531,7 @@ func TestHTTPUploadsWithInvalidMode(t *testing.T) {
 func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			HTTPUploads: []config.HTTPUpload{
+			Puts: []config.Put{
 				{
 					Name:     "production",
 					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -535,25 +541,25 @@ func TestDefault(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.HTTPUploads, 1)
-	var httpupload = ctx.Config.HTTPUploads[0]
-	assert.Equal(t, "archive", httpupload.Mode)
+	assert.Len(t, ctx.Config.Puts, 1)
+	var put = ctx.Config.Puts[0]
+	assert.Equal(t, "archive", put.Mode)
 }
 
-func TestDefaultNoHTTPUploads(t *testing.T) {
+func TestDefaultNoPuts(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			HTTPUploads: []config.HTTPUpload{},
+			Puts: []config.Put{},
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Empty(t, ctx.Config.HTTPUploads)
+	assert.Empty(t, ctx.Config.Puts)
 }
 
 func TestDefaultSet(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			HTTPUploads: []config.HTTPUpload{
+			Puts: []config.Put{
 				{
 					Mode: "custom",
 				},
@@ -561,7 +567,7 @@ func TestDefaultSet(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.HTTPUploads, 1)
-	var httpupload = ctx.Config.HTTPUploads[0]
-	assert.Equal(t, "custom", httpupload.Mode)
+	assert.Len(t, ctx.Config.Puts, 1)
+	var put = ctx.Config.Puts[0]
+	assert.Equal(t, "custom", put.Mode)
 }

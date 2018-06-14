@@ -174,7 +174,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Name:     "production-us",
 				Mode:     "binary",
@@ -220,7 +220,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "archive",
@@ -316,7 +316,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "archive",
@@ -348,7 +348,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Name: "production",
 				Mode: "binary",
@@ -405,7 +405,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -462,7 +462,7 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -516,7 +516,7 @@ func TestRunPipe_UnparsableResponse(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -543,7 +543,7 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        "archivetest/dist",
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -580,7 +580,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -605,7 +605,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 	var ctx = context.New(config.Project{
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -635,7 +635,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -672,7 +672,7 @@ func TestArtifactoriesWithoutTarget(t *testing.T) {
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
 		Config: config.Project{
-			Artifactories: []config.Artifactory{
+			Artifactories: []config.Put{
 				{
 					Name:     "production",
 					Username: "deployuser",
@@ -690,7 +690,7 @@ func TestArtifactoriesWithoutUsername(t *testing.T) {
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
 		Config: config.Project{
-			Artifactories: []config.Artifactory{
+			Artifactories: []config.Put{
 				{
 					Name:   "production",
 					Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -704,7 +704,7 @@ func TestArtifactoriesWithoutUsername(t *testing.T) {
 
 func TestArtifactoriesWithoutName(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Username: "deployuser",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -715,7 +715,7 @@ func TestArtifactoriesWithoutName(t *testing.T) {
 
 func TestArtifactoriesWithoutSecret(t *testing.T) {
 	assert.True(t, pipeline.IsSkip(Pipe{}.Run(context.New(config.Project{
-		Artifactories: []config.Artifactory{
+		Artifactories: []config.Put{
 			{
 				Name:     "production",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -731,7 +731,7 @@ func TestArtifactoriesWithInvalidMode(t *testing.T) {
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
 		Config: config.Project{
-			Artifactories: []config.Artifactory{
+			Artifactories: []config.Put{
 				{
 					Name:     "production",
 					Mode:     "does-not-exists",
@@ -747,7 +747,7 @@ func TestArtifactoriesWithInvalidMode(t *testing.T) {
 func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Artifactories: []config.Artifactory{
+			Artifactories: []config.Put{
 				{
 					Name:     "production",
 					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -765,7 +765,7 @@ func TestDefault(t *testing.T) {
 func TestDefaultNoArtifactories(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Artifactories: []config.Artifactory{},
+			Artifactories: []config.Put{},
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
@@ -775,7 +775,7 @@ func TestDefaultNoArtifactories(t *testing.T) {
 func TestDefaultSet(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Artifactories: []config.Artifactory{
+			Artifactories: []config.Put{
 				{
 					Mode: "custom",
 				},
