@@ -246,14 +246,6 @@ type Docker struct {
 	Files          []string `yaml:"extra_files,omitempty"`
 }
 
-// Artifactory server configuration
-type Artifactory struct {
-	Target   string `yaml:",omitempty"`
-	Name     string `yaml:",omitempty"`
-	Username string `yaml:",omitempty"`
-	Mode     string `yaml:",omitempty"`
-}
-
 // Filters config
 type Filters struct {
 	Exclude []string `yaml:",omitempty"`
@@ -290,37 +282,37 @@ type S3 struct {
 	Endpoint string // used for minio for example
 }
 
-// HTTPUpload server configuration
-type HTTPUpload struct {
-	Target   string `yaml:",omitempty"`
+// Put HTTP upload configuration
+type Put struct {
 	Name     string `yaml:",omitempty"`
+	Target   string `yaml:",omitempty"`
 	Username string `yaml:",omitempty"`
 	Mode     string `yaml:",omitempty"`
 }
 
 // Project includes all project configuration
 type Project struct {
-	ProjectName   string        `yaml:"project_name,omitempty"`
-	Release       Release       `yaml:",omitempty"`
-	Brew          Homebrew      `yaml:",omitempty"`
-	Scoop         Scoop         `yaml:",omitempty"`
-	Builds        []Build       `yaml:",omitempty"`
-	Archive       Archive       `yaml:",omitempty"`
-	FPM           NFPM          `yaml:",omitempty"` // deprecated
-	NFPM          NFPM          `yaml:",omitempty"`
-	Snapcraft     Snapcraft     `yaml:",omitempty"`
-	Snapshot      Snapshot      `yaml:",omitempty"`
-	Checksum      Checksum      `yaml:",omitempty"`
-	Dockers       []Docker      `yaml:",omitempty"`
-	Artifactories []Artifactory `yaml:",omitempty"`
-	HTTPUploads   []HTTPUpload  `yaml:",omitempty"`
-	S3            []S3          `yaml:"s3,omitempty"`
-	Changelog     Changelog     `yaml:",omitempty"`
-	Dist          string        `yaml:",omitempty"`
-	Sign          Sign          `yaml:",omitempty"`
-	EnvFiles      EnvFiles      `yaml:"env_files,omitempty"`
-	Git           Git           `yaml:",omitempty"`
-	Before        Before        `yaml:",omitempty"`
+	ProjectName   string    `yaml:"project_name,omitempty"`
+	Release       Release   `yaml:",omitempty"`
+	Brew          Homebrew  `yaml:",omitempty"`
+	Scoop         Scoop     `yaml:",omitempty"`
+	Builds        []Build   `yaml:",omitempty"`
+	Archive       Archive   `yaml:",omitempty"`
+	FPM           NFPM      `yaml:",omitempty"` // deprecated
+	NFPM          NFPM      `yaml:",omitempty"`
+	Snapcraft     Snapcraft `yaml:",omitempty"`
+	Snapshot      Snapshot  `yaml:",omitempty"`
+	Checksum      Checksum  `yaml:",omitempty"`
+	Dockers       []Docker  `yaml:",omitempty"`
+	Artifactories []Put     `yaml:",omitempty"`
+	Puts          []Put     `yaml:",omitempty"`
+	S3            []S3      `yaml:"s3,omitempty"`
+	Changelog     Changelog `yaml:",omitempty"`
+	Dist          string    `yaml:",omitempty"`
+	Sign          Sign      `yaml:",omitempty"`
+	EnvFiles      EnvFiles  `yaml:"env_files,omitempty"`
+	Git           Git       `yaml:",omitempty"`
+	Before        Before    `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

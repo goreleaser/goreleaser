@@ -2,24 +2,13 @@
 package artifactory
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"html/template"
-	"io"
 	"io/ioutil"
-	"net/http"
-	"net/url"
-	"os"
-	"strings"
+	h "net/http"
 
-	"github.com/apex/log"
-	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
-
-	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/http"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -46,11 +35,6 @@ type artifactoryChecksums struct {
 	SHA256 string `json:"sha256,omitempty"`
 }
 
-const (
-	modeBinary  = "binary"
-	modeArchive = "archive"
-)
-
 // Pipe for Artifactory
 type Pipe struct{}
 
@@ -61,24 +45,14 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if len(ctx.Config.Artifactories) == 0 {
-		return nil
-	}
-
-	// Check if a mode was set
-	for i := range ctx.Config.Artifactories {
-		if ctx.Config.Artifactories[i].Mode == "" {
-			ctx.Config.Artifactories[i].Mode = modeArchive
-		}
-	}
-
-	return nil
+	return http.Defaults(ctx.Config.Artifactories)
 }
 
 // Run the pipe
 //
 // Docs: https://www.jfrog.com/confluence/display/RTF/Artifactory+REST+API#ArtifactoryRESTAPI-Example-DeployinganArtifact
 func (Pipe) Run(ctx *context.Context) error {
+
 	if len(ctx.Config.Artifactories) == 0 {
 		return pipeline.Skip("artifactory section is not configured")
 	}
@@ -86,241 +60,26 @@ func (Pipe) Run(ctx *context.Context) error {
 	// Check requirements for every instance we have configured.
 	// If not fulfilled, we can skip this pipeline
 	for _, instance := range ctx.Config.Artifactories {
-		if instance.Target == "" {
-			return pipeline.Skip("artifactory section is not configured properly (missing target)")
-		}
-
-		if instance.Username == "" {
-			return pipeline.Skip("artifactory section is not configured properly (missing username)")
-		}
-
-		if instance.Name == "" {
-			return pipeline.Skip("artifactory section is not configured properly (missing name)")
-		}
-
-		envName := fmt.Sprintf("ARTIFACTORY_%s_SECRET", strings.ToUpper(instance.Name))
-		if _, ok := ctx.Env[envName]; !ok {
-			return pipeline.Skip(fmt.Sprintf("missing secret for artifactory instance %s", instance.Name))
+		if skip := http.CheckConfig(ctx, &instance, "artifactory"); skip != nil {
+			return pipeline.Skip(skip.Error())
 		}
 	}
 
-	return doRun(ctx)
-}
-
-func doRun(ctx *context.Context) error {
-	if ctx.SkipPublish {
-		return pipeline.ErrSkipPublishEnabled
-	}
-
-	// Handle every configured artifactory instance
-	for _, instance := range ctx.Config.Artifactories {
-		// We support two different modes
-		//	- "archive": Upload all artifacts
-		//	- "binary": Upload only the raw binaries
-		var filter artifact.Filter
-		switch v := strings.ToLower(instance.Mode); v {
-		case modeArchive:
-			filter = artifact.Or(
-				artifact.ByType(artifact.UploadableArchive),
-				artifact.ByType(artifact.LinuxPackage),
-			)
-		case modeBinary:
-			filter = artifact.ByType(artifact.UploadableBinary)
-		default:
-			err := fmt.Errorf("artifactory: mode \"%s\" not supported", v)
-			log.WithFields(log.Fields{
-				"instance": instance.Name,
-				"mode":     v,
-			}).Error(err.Error())
-			return err
+	return http.Upload(ctx, ctx.Config.Artifactories, "artifactory", func(res *h.Response) (string, error) {
+		if err := checkResponse(res); err != nil {
+			return "", err
 		}
+		var r artifactoryResponse
+		err := json.NewDecoder(res.Body).Decode(&r)
+		return r.DownloadURI, err
+	})
 
-		if err := runPipeByFilter(ctx, instance, filter); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func runPipeByFilter(ctx *context.Context, instance config.Artifactory, filter artifact.Filter) error {
-	sem := make(chan bool, ctx.Parallelism)
-	var g errgroup.Group
-	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
-		sem <- true
-		artifact := artifact
-		g.Go(func() error {
-			defer func() {
-				<-sem
-			}()
-			return uploadAsset(ctx, instance, artifact)
-		})
-	}
-	return g.Wait()
-}
-
-// uploadAsset uploads file to target and logs all actions
-func uploadAsset(ctx *context.Context, instance config.Artifactory, artifact artifact.Artifact) error {
-	envName := fmt.Sprintf("ARTIFACTORY_%s_SECRET", strings.ToUpper(instance.Name))
-	secret := ctx.Env[envName]
-
-	// Generate the target url
-	targetURL, err := resolveTargetTemplate(ctx, instance, artifact)
-	if err != nil {
-		msg := "artifactory: error while building the target url"
-		log.WithField("instance", instance.Name).WithError(err).Error(msg)
-		return errors.Wrap(err, msg)
-	}
-
-	// Handle the artifact
-	file, err := os.Open(artifact.Path)
-	if err != nil {
-		return err
-	}
-	defer file.Close() // nolint: errcheck
-
-	// The target url needs to contain the artifact name
-	if !strings.HasSuffix(targetURL, "/") {
-		targetURL += "/"
-	}
-	targetURL += artifact.Name
-
-	uploaded, _, err := uploadAssetToArtifactory(ctx, targetURL, instance.Username, secret, file)
-	if err != nil {
-		msg := "artifactory: upload failed"
-		log.WithError(err).WithFields(log.Fields{
-			"instance": instance.Name,
-			"username": instance.Username,
-		}).Error(msg)
-		return errors.Wrap(err, msg)
-	}
-
-	log.WithFields(log.Fields{
-		"instance": instance.Name,
-		"mode":     instance.Mode,
-		"uri":      uploaded.DownloadURI,
-	}).Info("uploaded successful")
-
-	return nil
-}
-
-// targetData is used as a template struct for
-// Artifactory.Target
-type targetData struct {
-	Version     string
-	Tag         string
-	ProjectName string
-
-	// Only supported in mode binary
-	Os   string
-	Arch string
-	Arm  string
-}
-
-// resolveTargetTemplate returns the resolved target template with replaced variables
-// Those variables can be replaced by the given context, goos, goarch, goarm and more
-func resolveTargetTemplate(ctx *context.Context, artifactory config.Artifactory, artifact artifact.Artifact) (string, error) {
-	data := targetData{
-		Version:     ctx.Version,
-		Tag:         ctx.Git.CurrentTag,
-		ProjectName: ctx.Config.ProjectName,
-	}
-
-	if artifactory.Mode == modeBinary {
-		data.Os = replace(ctx.Config.Archive.Replacements, artifact.Goos)
-		data.Arch = replace(ctx.Config.Archive.Replacements, artifact.Goarch)
-		data.Arm = replace(ctx.Config.Archive.Replacements, artifact.Goarm)
-	}
-
-	var out bytes.Buffer
-	t, err := template.New(ctx.Config.ProjectName).Parse(artifactory.Target)
-	if err != nil {
-		return "", err
-	}
-	err = t.Execute(&out, data)
-	return out.String(), err
-}
-
-func replace(replacements map[string]string, original string) string {
-	result := replacements[original]
-	if result == "" {
-		return original
-	}
-	return result
-}
-
-// uploadAssetToArtifactory uploads the asset file to target
-func uploadAssetToArtifactory(ctx *context.Context, target, username, secret string, file *os.File) (*artifactoryResponse, *http.Response, error) {
-	stat, err := file.Stat()
-	if err != nil {
-		return nil, nil, err
-	}
-	if stat.IsDir() {
-		return nil, nil, errors.New("the asset to upload can't be a directory")
-	}
-
-	req, err := newUploadRequest(target, username, secret, file, stat.Size())
-	if err != nil {
-		return nil, nil, err
-	}
-
-	asset := new(artifactoryResponse)
-	resp, err := executeHTTPRequest(ctx, req, asset)
-	if err != nil {
-		return nil, resp, err
-	}
-	return asset, resp, nil
-}
-
-// newUploadRequest creates a new http.Request for uploading
-func newUploadRequest(target, username, secret string, reader io.Reader, size int64) (*http.Request, error) {
-	u, err := url.Parse(target)
-	if err != nil {
-		return nil, err
-	}
-	req, err := http.NewRequest("PUT", u.String(), reader)
-	if err != nil {
-		return nil, err
-	}
-
-	req.ContentLength = size
-	req.SetBasicAuth(username, secret)
-
-	return req, err
-}
-
-// executeHTTPRequest processes the http call with respect of context ctx
-func executeHTTPRequest(ctx *context.Context, req *http.Request, v interface{}) (*http.Response, error) {
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		// If we got an error, and the context has been canceled,
-		// the context's error is probably more useful.
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
-		}
-
-		return nil, err
-	}
-
-	defer resp.Body.Close() // nolint: errcheck
-
-	err = checkResponse(resp)
-	if err != nil {
-		// even though there was an error, we still return the response
-		// in case the caller wants to inspect it further
-		return resp, err
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(v)
-	return resp, err
 }
 
 // An ErrorResponse reports one or more errors caused by an API request.
 type errorResponse struct {
-	Response *http.Response // HTTP response that caused this error
-	Errors   []Error        `json:"errors"` // more detail on individual errors
+	Response *h.Response // HTTP response that caused this error
+	Errors   []Error     `json:"errors"` // more detail on individual errors
 }
 
 func (r *errorResponse) Error() string {
@@ -341,7 +100,7 @@ type Error struct {
 // API error responses are expected to have either no response
 // body, or a JSON response body that maps to ErrorResponse. Any other
 // response body will be silently ignored.
-func checkResponse(r *http.Response) error {
+func checkResponse(r *h.Response) error {
 	if c := r.StatusCode; 200 <= c && c <= 299 {
 		return nil
 	}
