@@ -104,7 +104,7 @@ func start(t *testing.T) {
 		"-p", "9000:9000",
 		"-v", dir+"/testdata/data:/data",
 		"-v", dir+"/testdata/config:/root/.minio",
-		"minio/minio",
+		"minio/minio:RELEASE.2018-06-09T03-43-35Z",
 		"server", "/data",
 	).CombinedOutput(); err != nil {
 		log.WithError(err).Errorf("failed to start minio: %s", string(out))
