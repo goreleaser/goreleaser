@@ -36,7 +36,7 @@ func NewGitHub(ctx *context.Context) (Client, error) {
 		client.UploadURL = upload
 	}
 
-	return &githubClient{client}, nil
+	return &githubClient{client: client}, nil
 }
 
 func (c *githubClient) CreateFile(

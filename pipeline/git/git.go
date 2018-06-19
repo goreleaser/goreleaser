@@ -122,14 +122,17 @@ func validate(ctx *context.Context) error {
 	}
 	out, err := git.Run("status", "--porcelain")
 	if strings.TrimSpace(out) != "" || err != nil {
-		return ErrDirty{out}
+		return ErrDirty{status: out}
 	}
 	if !regexp.MustCompile("^[0-9.]+").MatchString(ctx.Version) {
-		return ErrInvalidVersionFormat{ctx.Version}
+		return ErrInvalidVersionFormat{version: ctx.Version}
 	}
 	_, err = git.Clean(git.Run("describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag))
 	if err != nil {
-		return ErrWrongRef{ctx.Git.Commit, ctx.Git.CurrentTag}
+		return ErrWrongRef{
+			commit: ctx.Git.Commit,
+			tag:    ctx.Git.CurrentTag,
+		}
 	}
 	return nil
 }

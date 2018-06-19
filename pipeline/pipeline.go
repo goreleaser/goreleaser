@@ -35,5 +35,5 @@ func (e ErrSkip) Error() string {
 
 // Skip skips this pipe with the given reason
 func Skip(reason string) ErrSkip {
-	return ErrSkip{reason}
+	return ErrSkip{reason: reason}
 }

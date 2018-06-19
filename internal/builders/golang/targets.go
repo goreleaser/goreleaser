@@ -44,11 +44,18 @@ func allBuildTargets(build config.Build) (targets []target) {
 		for _, goarch := range build.Goarch {
 			if goarch == "arm" {
 				for _, goarm := range build.Goarm {
-					targets = append(targets, target{goos, goarch, goarm})
+					targets = append(targets, target{
+						os:   goos,
+						arch: goarch,
+						arm:  goarm,
+					})
 				}
 				continue
 			}
-			targets = append(targets, target{goos, goarch, ""})
+			targets = append(targets, target{
+				os:   goos,
+				arch: goarch,
+			})
 		}
 	}
 	return
