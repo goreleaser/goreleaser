@@ -173,7 +173,7 @@ func TestDefaultSet(t *testing.T) {
 
 func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386"} {
+		for _, goarch := range []string{"amd64", "386", "arm6"} {
 			var folder = goos + goarch
 			assert.NoError(t, os.Mkdir(filepath.Join(dist, folder), 0755))
 			var binPath = filepath.Join(dist, folder, name)

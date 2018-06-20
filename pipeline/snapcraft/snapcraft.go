@@ -92,6 +92,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	).GroupByPlatform() {
 		sem <- true
 		arch := linux.Arch(platform)
+		if arch == "armel" {
+			log.WithField("arch", arch).Warn("ignored unsupported arch")
+			continue
+		}
 		binaries := binaries
 		g.Go(func() error {
 			go func() {
