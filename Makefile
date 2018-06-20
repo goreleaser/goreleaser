@@ -63,6 +63,12 @@ static:
 	@hugo --source www
 .PHONY: static
 
+favicon:
+	wget -O www/static/avatar.png https://avatars2.githubusercontent.com/u/24697112
+	convert www/static/avatar.png -define icon:auto-resize=64,48,32,16 www/static/favicon.ico
+	convert www/static/avatar.png -resize x120 www/static/apple-touch-icon.png
+.PHONY: favicon
+
 serve:
 	@hugo server -w -s www
 .PHONY: serve
