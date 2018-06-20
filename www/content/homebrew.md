@@ -64,11 +64,6 @@ brew:
     - git
     - zsh
 
-  # Packages your source package depends on.
-  build_dependencies:
-    - make
-    - gcc
-
   # Packages that conflict with your package.
   conflicts:
     - svn

@@ -107,9 +107,6 @@ func TestRunPipe(t *testing.T) {
 		"custom_download_strategy": func(ctx *context.Context) {
 			ctx.Config.Brew.DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
 		},
-		"build_from_source": func(ctx *context.Context) {
-			ctx.Config.Brew.BuildDependencies = []string{"go"}
-		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder, err := ioutil.TempDir("", "goreleasertest")

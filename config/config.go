@@ -35,22 +35,21 @@ func (r Repo) String() string {
 
 // Homebrew contains the brew section
 type Homebrew struct {
-	Name              string       `yaml:",omitempty"`
-	GitHub            Repo         `yaml:",omitempty"`
-	CommitAuthor      CommitAuthor `yaml:"commit_author,omitempty"`
-	Folder            string       `yaml:",omitempty"`
-	Caveats           string       `yaml:",omitempty"`
-	Plist             string       `yaml:",omitempty"`
-	Install           string       `yaml:",omitempty"`
-	Dependencies      []string     `yaml:",omitempty"`
-	BuildDependencies []string     `yaml:"build_dependencies,omitempty"`
-	Test              string       `yaml:",omitempty"`
-	Conflicts         []string     `yaml:",omitempty"`
-	Description       string       `yaml:",omitempty"`
-	Homepage          string       `yaml:",omitempty"`
-	SkipUpload        bool         `yaml:"skip_upload,omitempty"`
-	DownloadStrategy  string       `yaml:"download_strategy,omitempty"`
-	SourceTarball     string       `yaml:"-"`
+	Name             string       `yaml:",omitempty"`
+	GitHub           Repo         `yaml:",omitempty"`
+	CommitAuthor     CommitAuthor `yaml:"commit_author,omitempty"`
+	Folder           string       `yaml:",omitempty"`
+	Caveats          string       `yaml:",omitempty"`
+	Plist            string       `yaml:",omitempty"`
+	Install          string       `yaml:",omitempty"`
+	Dependencies     []string     `yaml:",omitempty"`
+	Test             string       `yaml:",omitempty"`
+	Conflicts        []string     `yaml:",omitempty"`
+	Description      string       `yaml:",omitempty"`
+	Homepage         string       `yaml:",omitempty"`
+	SkipUpload       bool         `yaml:"skip_upload,omitempty"`
+	DownloadStrategy string       `yaml:"download_strategy,omitempty"`
+	SourceTarball    string       `yaml:"-"`
 }
 
 // Scoop contains the scoop.sh section
