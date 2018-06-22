@@ -55,7 +55,7 @@ func TestRunPipe(t *testing.T) {
 			Description:  "test description",
 		},
 	})
-	ctx.Version = "testversion"
+	ctx.Version = "fooversion"
 	addBinaries(t, ctx, "mybin", dist)
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
@@ -75,7 +75,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 			Description:  "test description",
 		},
 	})
-	ctx.Version = "testversion"
+	ctx.Version = "barversion"
 	addBinaries(t, ctx, "mybin", dist)
 	assert.EqualError(t, Pipe{}.Run(ctx), `template: foo_{{.Arch}:1: unexpected "}" in operand`)
 }

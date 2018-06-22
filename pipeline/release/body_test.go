@@ -32,7 +32,7 @@ func TestDescribeBody(t *testing.T) {
 
 	var golden = "testdata/release1.golden"
 	if *update {
-		ioutil.WriteFile(golden, out.Bytes(), 0755)
+		ioutil.WriteFile(golden, out.Bytes(), 0755) //nolint:errcheck
 	}
 	bts, err := ioutil.ReadFile(golden)
 	assert.NoError(t, err)
@@ -49,7 +49,7 @@ func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
 
 	var golden = "testdata/release2.golden"
 	if *update {
-		ioutil.WriteFile(golden, out.Bytes(), 0655)
+		ioutil.WriteFile(golden, out.Bytes(), 0655) //nolint:errcheck
 	}
 	bts, err := ioutil.ReadFile(golden)
 	assert.NoError(t, err)

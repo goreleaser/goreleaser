@@ -411,7 +411,7 @@ func Test_buildManifest(t *testing.T) {
 	assert.NoError(t, err)
 	var golden = "testdata/test_buildmanifest.json.golden"
 	if *update {
-		ioutil.WriteFile(golden, out.Bytes(), 0655)
+		ioutil.WriteFile(golden, out.Bytes(), 0655) //nolint:errcheck
 	}
 	bts, err := ioutil.ReadFile(golden)
 	assert.NoError(t, err)

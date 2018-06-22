@@ -73,14 +73,14 @@ func TestRunPipe(t *testing.T) {
 					"Extension": ".exe",
 				},
 			})
-			ctx.Version = "0.0.1"
+			ctx.Version = "0.0.3"
 			ctx.Config.Archive.Format = format
 			assert.NoError(tt, Pipe{}.Run(ctx))
 			var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive))
 			darwin := archives.Filter(artifact.ByGoos("darwin")).List()[0]
 			windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
-			assert.Equal(tt, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
-			assert.Equal(tt, "foobar_0.0.1_windows_amd64.zip", windows.Name)
+			assert.Equal(tt, "foobar_0.0.3_darwin_amd64."+format, darwin.Name)
+			assert.Equal(tt, "foobar_0.0.3_windows_amd64.zip", windows.Name)
 			assert.Len(tt, archives.List(), 2)
 		})
 	}
@@ -125,7 +125,7 @@ func TestRunPipeBinary(t *testing.T) {
 			},
 		},
 	)
-	ctx.Version = "0.0.1"
+	ctx.Version = "0.0.2"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -151,8 +151,8 @@ func TestRunPipeBinary(t *testing.T) {
 	var binaries = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
 	darwin := binaries.Filter(artifact.ByGoos("darwin")).List()[0]
 	windows := binaries.Filter(artifact.ByGoos("windows")).List()[0]
-	assert.Equal(t, "mybin_0.0.1_darwin_amd64", darwin.Name)
-	assert.Equal(t, "mybin_0.0.1_windows_amd64.exe", windows.Name)
+	assert.Equal(t, "mybin_0.0.2_darwin_amd64", darwin.Name)
+	assert.Equal(t, "mybin_0.0.2_windows_amd64.exe", windows.Name)
 	assert.Len(t, binaries.List(), 2)
 }
 

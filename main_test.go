@@ -13,8 +13,9 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-func init() {
+func TestMain(m *testing.M) {
 	_ = os.Unsetenv("GITHUB_TOKEN")
+	os.Exit(m.Run())
 }
 
 func TestReleaseProject(t *testing.T) {
