@@ -206,6 +206,7 @@ type Sign struct {
 type SnapcraftAppMetadata struct {
 	Plugs  []string
 	Daemon string
+	Args   string
 }
 
 // Snapcraft config

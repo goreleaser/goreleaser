@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/apex/log"
 	"golang.org/x/sync/errgroup"
@@ -153,6 +154,10 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		if configAppMetadata, ok := ctx.Config.Snapcraft.Apps[binary.Name]; ok {
 			appMetadata.Plugs = configAppMetadata.Plugs
 			appMetadata.Daemon = configAppMetadata.Daemon
+			appMetadata.Command = strings.Join([]string{
+				appMetadata.Command,
+				configAppMetadata.Args,
+			}, " ")
 		}
 		metadata.Apps[binary.Name] = appMetadata
 
