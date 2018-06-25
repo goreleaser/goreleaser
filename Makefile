@@ -60,7 +60,7 @@ build:
 
 # Generate the static documentation
 static:
-	@hugo --source www
+	@hugo --enableGitInfo --source www
 .PHONY: static
 
 favicon:
@@ -70,7 +70,7 @@ favicon:
 .PHONY: favicon
 
 serve:
-	@hugo server -w -s www
+	@hugo server --enableGitInfo --watch --source www
 .PHONY: serve
 
 # Show to-do items per file.
