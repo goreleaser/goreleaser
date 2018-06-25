@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/semaphore"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -157,15 +158,13 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 }
 
 func runPipeByFilter(ctx *context.Context, put config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
-	sem := make(chan bool, ctx.Parallelism)
+	var sem = semaphore.New(ctx.Parallelism)
 	var g errgroup.Group
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
-		sem <- true
+		sem.Acquire()
 		artifact := artifact
 		g.Go(func() error {
-			defer func() {
-				<-sem
-			}()
+			defer sem.Release()
 			return uploadAsset(ctx, put, artifact, kind, check)
 		})
 	}

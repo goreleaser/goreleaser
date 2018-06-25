@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/semaphore"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -66,7 +67,7 @@ func doRun(ctx *context.Context, c client.Client) error {
 		return err
 	}
 	var g errgroup.Group
-	sem := make(chan bool, ctx.Parallelism)
+	var sem = semaphore.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(
 		artifact.Or(
 			artifact.ByType(artifact.UploadableArchive),
@@ -76,12 +77,10 @@ func doRun(ctx *context.Context, c client.Client) error {
 			artifact.ByType(artifact.LinuxPackage),
 		),
 	).List() {
-		sem <- true
+		sem.Acquire()
 		artifact := artifact
 		g.Go(func() error {
-			defer func() {
-				<-sem
-			}()
+			defer sem.Release()
 			return upload(ctx, c, releaseID, artifact)
 		})
 	}

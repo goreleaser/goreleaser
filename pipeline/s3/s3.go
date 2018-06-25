@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/nametemplate"
+	"github.com/goreleaser/goreleaser/internal/semaphore"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -45,14 +46,12 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	sem := make(chan bool, ctx.Parallelism)
+	var sem = semaphore.New(ctx.Parallelism)
 	for _, conf := range ctx.Config.S3 {
 		conf := conf
-		sem <- true
+		sem.Acquire()
 		g.Go(func() error {
-			defer func() {
-				<-sem
-			}()
+			defer sem.Release()
 			return upload(ctx, conf)
 		})
 	}
@@ -80,7 +79,7 @@ func upload(ctx *context.Context, conf config.S3) error {
 	}
 
 	var g errgroup.Group
-	sem := make(chan bool, ctx.Parallelism)
+	var sem = semaphore.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(
 		artifact.Or(
 			artifact.ByType(artifact.UploadableArchive),
@@ -90,12 +89,10 @@ func upload(ctx *context.Context, conf config.S3) error {
 			artifact.ByType(artifact.LinuxPackage),
 		),
 	).List() {
-		sem <- true
+		sem.Acquire()
 		artifact := artifact
 		g.Go(func() error {
-			defer func() {
-				<-sem
-			}()
+			defer sem.Release()
 			f, err := os.Open(artifact.Path)
 			if err != nil {
 				return err

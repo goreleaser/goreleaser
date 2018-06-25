@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/semaphore"
 )
 
 // Pipe for checksums
@@ -49,7 +50,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	defer file.Close() // nolint: errcheck
 
 	var g errgroup.Group
-	var semaphore = make(chan bool, ctx.Parallelism)
+	var sem = semaphore.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(
 		artifact.Or(
 			artifact.ByType(artifact.UploadableArchive),
@@ -57,12 +58,10 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 			artifact.ByType(artifact.LinuxPackage),
 		),
 	).List() {
-		semaphore <- true
+		sem.Acquire()
 		artifact := artifact
 		g.Go(func() error {
-			defer func() {
-				<-semaphore
-			}()
+			defer sem.Release()
 			return checksums(ctx, file, artifact)
 		})
 	}

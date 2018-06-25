@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/filenametemplate"
 	"github.com/goreleaser/goreleaser/internal/linux"
+	"github.com/goreleaser/goreleaser/internal/semaphore"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -84,14 +85,14 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	var g errgroup.Group
-	sem := make(chan bool, ctx.Parallelism)
+	var sem = semaphore.New(ctx.Parallelism)
 	for platform, binaries := range ctx.Artifacts.Filter(
 		artifact.And(
 			artifact.ByGoos("linux"),
 			artifact.ByType(artifact.Binary),
 		),
 	).GroupByPlatform() {
-		sem <- true
+		sem.Acquire()
 		arch := linux.Arch(platform)
 		if arch == "armel" {
 			log.WithField("arch", arch).Warn("ignored unsupported arch")
@@ -99,9 +100,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 		binaries := binaries
 		g.Go(func() error {
-			go func() {
-				<-sem
-			}()
+			defer sem.Release()
 			return create(ctx, arch, binaries)
 		})
 	}

@@ -22,6 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/filenametemplate"
 	"github.com/goreleaser/goreleaser/internal/linux"
+	"github.com/goreleaser/goreleaser/internal/semaphore"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -63,17 +64,15 @@ func doRun(ctx *context.Context) error {
 		artifact.ByGoos("linux"),
 	)).GroupByPlatform()
 	var g errgroup.Group
-	sem := make(chan bool, ctx.Parallelism)
+	var sem = semaphore.New(ctx.Parallelism)
 	for _, format := range ctx.Config.NFPM.Formats {
 		for platform, artifacts := range linuxBinaries {
-			sem <- true
+			sem.Acquire()
 			format := format
 			arch := linux.Arch(platform)
 			artifacts := artifacts
 			g.Go(func() error {
-				defer func() {
-					<-sem
-				}()
+				defer sem.Release()
 				return create(ctx, format, arch, artifacts)
 			})
 		}

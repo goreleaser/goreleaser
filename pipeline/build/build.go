@@ -21,6 +21,7 @@ import (
 
 	// langs to init
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
+	"github.com/goreleaser/goreleaser/internal/semaphore"
 )
 
 // Pipe for build
@@ -71,16 +72,14 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	if err := runHook(ctx, build.Env, build.Hooks.Pre); err != nil {
 		return errors.Wrap(err, "pre hook failed")
 	}
-	sem := make(chan bool, ctx.Parallelism)
+	var sem = semaphore.New(ctx.Parallelism)
 	var g errgroup.Group
 	for _, target := range build.Targets {
-		sem <- true
+		sem.Acquire()
 		target := target
 		build := build
 		g.Go(func() error {
-			defer func() {
-				<-sem
-			}()
+			defer sem.Release()
 			return doBuild(ctx, build, target)
 		})
 	}

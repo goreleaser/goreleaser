@@ -19,6 +19,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
+	"github.com/goreleaser/goreleaser/internal/semaphore"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -81,15 +82,13 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context) error {
 	var g errgroup.Group
-	sem := make(chan bool, ctx.Parallelism)
+	var sem = semaphore.New(ctx.Parallelism)
 	for i, docker := range ctx.Config.Dockers {
 		docker := docker
 		seed := i
-		sem <- true
+		sem.Acquire()
 		g.Go(func() error {
-			defer func() {
-				<-sem
-			}()
+			defer sem.Release()
 			log.WithField("docker", docker).Debug("looking for binaries matching")
 			var binaries = ctx.Artifacts.Filter(
 				artifact.And(
