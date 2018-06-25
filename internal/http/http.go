@@ -76,37 +76,40 @@ func misconfigured(kind string, upload *config.Put, reason string) error {
 type ResponseChecker func(*h.Response) (string, error)
 
 // Upload does the actual uploading work
-func Upload(ctx *context.Context, uploads []config.Put, kind string, check ResponseChecker) error {
+func Upload(ctx *context.Context, puts []config.Put, kind string, check ResponseChecker) error {
 	if ctx.SkipPublish {
 		return pipeline.ErrSkipPublishEnabled
 	}
 
-	// Handle every configured artifactory instance
-	for _, instance := range uploads {
+	// Handle every configured put
+	for _, put := range puts {
+		filters := []artifact.Filter{}
+		if put.Checksum {
+			filters = append(filters, artifact.ByType(artifact.Checksum))
+		}
+		if put.Signature {
+			filters = append(filters, artifact.ByType(artifact.Signature))
+		}
 		// We support two different modes
 		//	- "archive": Upload all artifacts
 		//	- "binary": Upload only the raw binaries
-		var filter artifact.Filter
-		switch v := strings.ToLower(instance.Mode); v {
+		switch v := strings.ToLower(put.Mode); v {
 		case ModeArchive:
-			filter = artifact.Or(
+			filters = append(filters,
 				artifact.ByType(artifact.UploadableArchive),
-				artifact.ByType(artifact.LinuxPackage),
-				artifact.ByType(artifact.Checksum),
-				artifact.ByType(artifact.Signature),
-			)
+				artifact.ByType(artifact.LinuxPackage))
 		case ModeBinary:
-			filter = artifact.ByType(artifact.UploadableBinary)
+			filters = append(filters,
+				artifact.ByType(artifact.UploadableBinary))
 		default:
 			err := fmt.Errorf("%s: mode \"%s\" not supported", kind, v)
 			log.WithFields(log.Fields{
-				"instance": instance.Name,
-				"mode":     v,
+				kind:   put.Name,
+				"mode": v,
 			}).Error(err.Error())
 			return err
 		}
-
-		if err := runPipeByFilter(ctx, instance, filter, kind, check); err != nil {
+		if err := runPipeByFilter(ctx, put, artifact.Or(filters...), kind, check); err != nil {
 			return err
 		}
 	}

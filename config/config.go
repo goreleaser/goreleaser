@@ -284,10 +284,12 @@ type S3 struct {
 
 // Put HTTP upload configuration
 type Put struct {
-	Name     string `yaml:",omitempty"`
-	Target   string `yaml:",omitempty"`
-	Username string `yaml:",omitempty"`
-	Mode     string `yaml:",omitempty"`
+	Name      string `yaml:",omitempty"`
+	Target    string `yaml:",omitempty"`
+	Username  string `yaml:",omitempty"`
+	Mode      string `yaml:",omitempty"`
+	Checksum  bool   `yaml:",omitempty"`
+	Signature bool   `yaml:",omitempty"`
 }
 
 // Project includes all project configuration
