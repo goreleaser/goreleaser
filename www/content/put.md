@@ -87,6 +87,10 @@ puts:
     target: http://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
     # User that will be used for the deployment
     username: deployuser
+    # Upload checksums (defaults to false)
+    checksum: true
+    # Upload signatures (defaults to false)
+    signature: true
 ```
 
 These settings should allow you to push your artifacts into multiple HTTP servers.
