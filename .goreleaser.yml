@@ -78,5 +78,5 @@ snapcraft:
     release and then pushes a Homebrew formula to a repository. All that
     wrapped in your favorite CI.
   grade: stable
-  confinement: classic
+  confinement: strict 
 
