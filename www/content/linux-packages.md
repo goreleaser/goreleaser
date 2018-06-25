@@ -239,6 +239,10 @@ snapcraft:
       # If you want your app to be autostarted and to always run in the
       # background, you can make it a simple daemon.
       daemon: simple
+
+      # If you any to pass args to your binary, you can add them with the
+      # args option.
+      args: --foo
 ```
 
 Note that GoReleaser will not install `snapcraft` nor any of its dependencies

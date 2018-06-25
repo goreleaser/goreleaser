@@ -107,7 +107,7 @@ func TestRunPipeWithName(t *testing.T) {
 	assert.Equal(t, metadata.Name, "testsnapname")
 }
 
-func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
+func TestRunPipeMetadata(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
@@ -124,6 +124,7 @@ func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
 				"mybin": {
 					Plugs:  []string{"home", "network"},
 					Daemon: "simple",
+					Args:   "--foo --bar",
 				},
 			},
 		},
@@ -138,6 +139,7 @@ func TestRunPipeWithPlugsAndDaemon(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, metadata.Apps["mybin"].Plugs, []string{"home", "network"})
 	assert.Equal(t, metadata.Apps["mybin"].Daemon, "simple")
+	assert.Equal(t, metadata.Apps["mybin"].Command, "mybin --foo --bar")
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {
