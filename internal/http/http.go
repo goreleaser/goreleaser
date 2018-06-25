@@ -28,6 +28,41 @@ const (
 	ModeArchive = "archive"
 )
 
+type asset struct {
+	ReadCloser io.ReadCloser
+	Size       int64
+}
+
+type assetOpenFunc func(string, *artifact.Artifact) (*asset, error)
+
+var assetOpen assetOpenFunc
+
+func init() {
+	assetOpenReset()
+}
+
+func assetOpenReset() {
+	assetOpen = assetOpenDefault
+}
+
+func assetOpenDefault(kind string, a *artifact.Artifact) (*asset, error) {
+	f, err := os.Open(a.Path)
+	if err != nil {
+		return nil, err
+	}
+	s, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if s.IsDir() {
+		return nil, errors.Errorf("%s: upload failed: the asset to upload can't be a directory", kind)
+	}
+	return &asset{
+		ReadCloser: f,
+		Size:       s.Size(),
+	}, nil
+}
+
 // Defaults sets default configuration options on Put structs
 func Defaults(puts []config.Put) error {
 	for i := range puts {
@@ -42,24 +77,28 @@ func defaults(put *config.Put) {
 	}
 }
 
-// CheckConfig validates an HTTPUpload configuration returning a descriptive error when appropriate
-func CheckConfig(ctx *context.Context, upload *config.Put, kind string) error {
+// CheckConfig validates a Put configuration returning a descriptive error when appropriate
+func CheckConfig(ctx *context.Context, put *config.Put, kind string) error {
 
-	if upload.Target == "" {
-		return misconfigured(kind, upload, "missing target")
+	if put.Target == "" {
+		return misconfigured(kind, put, "missing target")
 	}
 
-	if upload.Username == "" {
-		return misconfigured(kind, upload, "missing username")
+	if put.Username == "" {
+		return misconfigured(kind, put, "missing username")
 	}
 
-	if upload.Name == "" {
-		return misconfigured(kind, upload, "missing name")
+	if put.Name == "" {
+		return misconfigured(kind, put, "missing name")
 	}
 
-	envName := fmt.Sprintf("%s_%s_SECRET", strings.ToUpper(kind), strings.ToUpper(upload.Name))
+	if put.Mode != ModeArchive && put.Mode != ModeBinary {
+		return misconfigured(kind, put, "mode must be 'binary' or 'archive'")
+	}
+
+	envName := fmt.Sprintf("%s_%s_SECRET", strings.ToUpper(kind), strings.ToUpper(put.Name))
 	if _, ok := ctx.Env[envName]; !ok {
-		return misconfigured(kind, upload, fmt.Sprintf("missing %s environment variable", envName))
+		return misconfigured(kind, put, fmt.Sprintf("missing %s environment variable", envName))
 	}
 
 	return nil
@@ -117,7 +156,7 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 	return nil
 }
 
-func runPipeByFilter(ctx *context.Context, instance config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
+func runPipeByFilter(ctx *context.Context, put config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
 	sem := make(chan bool, ctx.Parallelism)
 	var g errgroup.Group
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
@@ -127,31 +166,31 @@ func runPipeByFilter(ctx *context.Context, instance config.Put, filter artifact.
 			defer func() {
 				<-sem
 			}()
-			return uploadAsset(ctx, instance, artifact, kind, check)
+			return uploadAsset(ctx, put, artifact, kind, check)
 		})
 	}
 	return g.Wait()
 }
 
 // uploadAsset uploads file to target and logs all actions
-func uploadAsset(ctx *context.Context, instance config.Put, artifact artifact.Artifact, kind string, check ResponseChecker) error {
-	envName := fmt.Sprintf("%s_%s_SECRET", strings.ToUpper(kind), strings.ToUpper(instance.Name))
+func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifact, kind string, check ResponseChecker) error {
+	envName := fmt.Sprintf("%s_%s_SECRET", strings.ToUpper(kind), strings.ToUpper(put.Name))
 	secret := ctx.Env[envName]
 
 	// Generate the target url
-	targetURL, err := resolveTargetTemplate(ctx, instance, artifact)
+	targetURL, err := resolveTargetTemplate(ctx, put, artifact)
 	if err != nil {
 		msg := fmt.Sprintf("%s: error while building the target url", kind)
-		log.WithField("instance", instance.Name).WithError(err).Error(msg)
+		log.WithField("instance", put.Name).WithError(err).Error(msg)
 		return errors.Wrap(err, msg)
 	}
 
 	// Handle the artifact
-	file, err := os.Open(artifact.Path)
+	asset, err := assetOpen(kind, &artifact)
 	if err != nil {
 		return err
 	}
-	defer file.Close() // nolint: errcheck
+	defer asset.ReadCloser.Close() // nolint: errcheck
 
 	// The target url needs to contain the artifact name
 	if !strings.HasSuffix(targetURL, "/") {
@@ -159,19 +198,19 @@ func uploadAsset(ctx *context.Context, instance config.Put, artifact artifact.Ar
 	}
 	targetURL += artifact.Name
 
-	location, _, err := uploadAssetToServer(ctx, targetURL, instance.Username, secret, file, check)
+	location, _, err := uploadAssetToServer(ctx, targetURL, put.Username, secret, asset, check)
 	if err != nil {
 		msg := fmt.Sprintf("%s: upload failed", kind)
 		log.WithError(err).WithFields(log.Fields{
-			"instance": instance.Name,
-			"username": instance.Username,
+			"instance": put.Name,
+			"username": put.Username,
 		}).Error(msg)
 		return errors.Wrap(err, msg)
 	}
 
 	log.WithFields(log.Fields{
-		"instance": instance.Name,
-		"mode":     instance.Mode,
+		"instance": put.Name,
+		"mode":     put.Mode,
 		"uri":      location,
 	}).Info("uploaded successful")
 
@@ -179,16 +218,8 @@ func uploadAsset(ctx *context.Context, instance config.Put, artifact artifact.Ar
 }
 
 // uploadAssetToServer uploads the asset file to target
-func uploadAssetToServer(ctx *context.Context, target, username, secret string, file *os.File, check ResponseChecker) (string, *h.Response, error) {
-	stat, err := file.Stat()
-	if err != nil {
-		return "", nil, err
-	}
-	if stat.IsDir() {
-		return "", nil, errors.New("the asset to upload can't be a directory")
-	}
-
-	req, err := newUploadRequest(target, username, secret, file, stat.Size())
+func uploadAssetToServer(ctx *context.Context, target, username, secret string, a *asset, check ResponseChecker) (string, *h.Response, error) {
+	req, err := newUploadRequest(target, username, secret, a)
 	if err != nil {
 		return "", nil, err
 	}
@@ -201,17 +232,17 @@ func uploadAssetToServer(ctx *context.Context, target, username, secret string, 
 }
 
 // newUploadRequest creates a new h.Request for uploading
-func newUploadRequest(target, username, secret string, reader io.Reader, size int64) (*h.Request, error) {
+func newUploadRequest(target, username, secret string, a *asset) (*h.Request, error) {
 	u, err := url.Parse(target)
 	if err != nil {
 		return nil, err
 	}
-	req, err := h.NewRequest("PUT", u.String(), reader)
+	req, err := h.NewRequest("PUT", u.String(), a.ReadCloser)
 	if err != nil {
 		return nil, err
 	}
 
-	req.ContentLength = size
+	req.ContentLength = a.Size
 	req.SetBasicAuth(username, secret)
 
 	return req, err
