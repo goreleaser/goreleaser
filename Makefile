@@ -44,7 +44,7 @@ fmt:
 
 # Run all the linters
 lint:
-	golangci-lint run --tests=false --enable-all ./...
+	./bin/golangci-lint run --tests=false --enable-all --disable=lll ./...
 	find . -name '*.md' -not -wholename './vendor/*' | xargs prettier -l
 .PHONY: lint
 
