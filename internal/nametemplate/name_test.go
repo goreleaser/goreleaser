@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEnv(t *testing.T) {
+func TestComplexTemplates(t *testing.T) {
 	testCases := []struct {
 		desc string
 		in   string
@@ -24,11 +24,17 @@ func TestEnv(t *testing.T) {
 			in:   "{{ .Env.BAR }}",
 			out:  "",
 		},
+		{
+			desc: "semver",
+			in:   "{{.Major}}-{{.Minor}}-{{.Patch}}",
+			out:  "1-2-3",
+		},
 	}
 	var ctx = context.New(config.Project{})
 	ctx.Env = map[string]string{
 		"FOO": "BAR",
 	}
+	ctx.Git.CurrentTag = "v1.2.3"
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			out, _ := Apply(ctx, tC.in)
