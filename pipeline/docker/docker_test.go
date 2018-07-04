@@ -244,26 +244,26 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertError: shouldErr(`'{{.Env.NOPE}}': template: release:1:6: executing "release" at <.Env.NOPE>: map has no entry for key "NOPE"`),
 		},
-		// "lots_of_fields_in_template": {
-		// 	publish: true,
-		// 	dockers: []config.Docker{
-		// 		{
-		// 			Image:      registry + "goreleaser/test_run_pipe",
-		// 			Goos:       "linux",
-		// 			Goarch:     "amd64",
-		// 			Dockerfile: "testdata/Dockerfile",
-		// 			Binary:     "mybin",
-		// 			TagTemplates: []string{
-		// 				"{{.ProjectName}}_{{.Minor}}",
-		// 			},
-		// 		},
-		// 	},
-		// 	expect: []string{
-		// 		registry + "goreleaser/test_run_pipe:v1.0.0-123",
-		// 		registry + "goreleaser/test_run_pipe:latest",
-		// 	},
-		// 	assertError: shouldNotErr,
-		// },
+		"new_fields_added_to_template": {
+			publish: true,
+			dockers: []config.Docker{
+				{
+					Image:      registry + "goreleaser/new_fields_added_to_template",
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binary:     "mybin",
+					TagTemplates: []string{
+						"{{.ProjectName}}_{{.Minor}}",
+					},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_run_pipe:v1.0.0-123",
+				registry + "goreleaser/test_run_pipe:latest",
+			},
+			assertError: shouldNotErr,
+		},
 		"no_permissions": {
 			publish: true,
 			dockers: []config.Docker{
