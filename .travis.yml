@@ -1,7 +1,7 @@
 dist: trusty
 sudo: required
 language: go
-go: '1.10'
+go: '1.10.3'
 services:
   - docker
 addons:
