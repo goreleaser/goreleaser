@@ -25,10 +25,13 @@ func Run(args ...string) (string, error) {
 	var stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
+	err := cmd.Run()
+	log.WithField("stdout", stdout.String()).
+		WithField("stderr", stderr.String()).
+		Debug("git result")
+	if err != nil {
 		return "", errors.New(stderr.String())
 	}
-	log.WithField("output", stdout.String()).Debug("git result")
 	return stdout.String(), nil
 }
 
