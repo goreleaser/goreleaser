@@ -9,6 +9,8 @@ export PATH := ./bin:$(PATH)
 setup:
 	go get -u golang.org/x/tools/cmd/stringer
 	go get -u golang.org/x/tools/cmd/cover
+	# TODO: temporary hack for https://github.com/golang/go/issues/21387
+	(cd $$GOPATH/src/golang.org/x/tools; git checkout ae8cc594552814363a7aeeb4f2825515a771fa38; go install ./cmd/stringer/... ; go install ./cmd/cover/...)
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
 	curl -sfL https://install.goreleaser.com/github.com/gohugoio/hugo.sh | sh
 	curl -sfL https://install.goreleaser.com/github.com/caarlos0/bandep.sh | sh
