@@ -61,6 +61,7 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func sign(ctx *context.Context, artifacts []artifact.Artifact) error {
+	// nolint:prealloc
 	var sigs []string
 	for _, a := range artifacts {
 		sig, err := signone(ctx, a)
@@ -87,6 +88,7 @@ func signone(ctx *context.Context, artifact artifact.Artifact) (string, error) {
 	}
 	env["signature"] = expand(cfg.Signature, env)
 
+	// nolint:prealloc
 	var args []string
 	for _, a := range cfg.Args {
 		args = append(args, expand(a, env))

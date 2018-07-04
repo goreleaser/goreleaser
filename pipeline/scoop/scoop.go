@@ -63,7 +63,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 
 	path := ctx.Config.ProjectName + ".json"
 
-	content, err := buildManifest(ctx, client, archives)
+	content, err := buildManifest(ctx, archives)
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ type Resource struct {
 	Bin string `json:"bin"` // name of binary inside the archive
 }
 
-func buildManifest(ctx *context.Context, client client.Client, artifacts []artifact.Artifact) (result bytes.Buffer, err error) {
+func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (result bytes.Buffer, err error) {
 	manifest := Manifest{
 		Version:      ctx.Version,
 		Architecture: make(map[string]Resource),
