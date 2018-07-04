@@ -404,7 +404,7 @@ func Test_buildManifest(t *testing.T) {
 			},
 		},
 	}
-	out, err := buildManifest(ctx, &DummyClient{}, []artifact.Artifact{
+	out, err := buildManifest(ctx, []artifact.Artifact{
 		{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 		{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 	})
