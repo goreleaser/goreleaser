@@ -62,7 +62,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		artifact := artifact
 		g.Go(func() error {
 			defer sem.Release()
-			return checksums(ctx, file, artifact)
+			return checksums(file, artifact)
 		})
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -73,7 +73,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	return g.Wait()
 }
 
-func checksums(ctx *context.Context, file *os.File, artifact artifact.Artifact) error {
+func checksums(file *os.File, artifact artifact.Artifact) error {
 	log.WithField("file", artifact.Name).Info("checksumming")
 	sha, err := checksum.SHA256(artifact.Path)
 	if err != nil {

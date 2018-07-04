@@ -19,6 +19,7 @@ func (t target) String() string {
 }
 
 func matrix(build config.Build) (result []string) {
+	// nolint:prealloc
 	var targets []target
 	for _, target := range allBuildTargets(build) {
 		if !valid(target) {

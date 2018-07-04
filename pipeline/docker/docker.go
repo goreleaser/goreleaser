@@ -149,6 +149,7 @@ func tagName(ctx *context.Context, tagTemplate string) (string, error) {
 func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact, seed int) error {
 	var root = filepath.Dir(artifact.Path)
 	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile)) + fmt.Sprintf(".%d", seed)
+	// nolint:prealloc
 	var images []string
 	for _, tagTemplate := range docker.TagTemplates {
 		tag, err := tagName(ctx, tagTemplate)

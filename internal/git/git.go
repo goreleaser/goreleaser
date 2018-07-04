@@ -2,7 +2,6 @@
 package git
 
 import (
-	"bytes"
 	"errors"
 	"os/exec"
 	"strings"
@@ -18,18 +17,17 @@ func IsRepo() bool {
 
 // Run runs a git command and returns its output or errors
 func Run(args ...string) (string, error) {
+	// TODO: use exex.CommandContext here and refactor.
 	/* #nosec */
 	var cmd = exec.Command("git", args...)
 	log.WithField("args", args).Debug("running git")
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		return "", errors.New(stderr.String())
+	bts, err := cmd.CombinedOutput()
+	log.WithField("output", string(bts)).
+		Debug("git result")
+	if err != nil {
+		return "", errors.New(string(bts))
 	}
-	log.WithField("output", stdout.String()).Debug("git result")
-	return stdout.String(), nil
+	return string(bts), nil
 }
 
 // Clean the output
