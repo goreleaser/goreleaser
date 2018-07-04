@@ -110,7 +110,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return ErrTooManyDarwin64Builds
 	}
 
-	content, err := buildFormula(ctx, client, archives[0])
+	content, err := buildFormula(ctx, archives[0])
 	if err != nil {
 		return err
 	}
@@ -141,8 +141,8 @@ func doRun(ctx *context.Context, client client.Client) error {
 	return client.CreateFile(ctx, ctx.Config.Brew.CommitAuthor, ctx.Config.Brew.GitHub, content, path, msg)
 }
 
-func buildFormula(ctx *context.Context, client client.Client, artifact artifact.Artifact) (bytes.Buffer, error) {
-	data, err := dataFor(ctx, client, artifact)
+func buildFormula(ctx *context.Context, artifact artifact.Artifact) (bytes.Buffer, error) {
+	data, err := dataFor(ctx, artifact)
 	if err != nil {
 		return bytes.Buffer{}, err
 	}
@@ -158,7 +158,7 @@ func doBuildFormula(data templateData) (out bytes.Buffer, err error) {
 	return
 }
 
-func dataFor(ctx *context.Context, client client.Client, artifact artifact.Artifact) (result templateData, err error) {
+func dataFor(ctx *context.Context, artifact artifact.Artifact) (result templateData, err error) {
 	sum, err := checksum.SHA256(artifact.Path)
 	if err != nil {
 		return

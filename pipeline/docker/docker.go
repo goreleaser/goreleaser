@@ -117,6 +117,7 @@ func doRun(ctx *context.Context) error {
 func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact, seed int) error {
 	var root = filepath.Dir(artifact.Path)
 	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile)) + fmt.Sprintf(".%d", seed)
+	// nolint:prealloc
 	var images []string
 	for _, tagTemplate := range docker.TagTemplates {
 		tag, err := nametemplate.Apply(ctx, tagTemplate)

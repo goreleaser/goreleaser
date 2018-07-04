@@ -29,7 +29,7 @@
     ".",
     "handlers/cli"
   ]
-  revision = "ff0f66940b829dc66c81dad34746d4349b83eb9e"
+  revision = "941dea75d3ebfbdd905a5d8b7b232965c5e5c684"
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
@@ -44,6 +44,7 @@
     "aws/credentials/ec2rolecreds",
     "aws/credentials/endpointcreds",
     "aws/credentials/stscreds",
+    "aws/csm",
     "aws/defaults",
     "aws/ec2metadata",
     "aws/endpoints",
@@ -54,6 +55,8 @@
     "internal/sdkrand",
     "internal/shareddefaults",
     "private/protocol",
+    "private/protocol/eventstream",
+    "private/protocol/eventstream/eventstreamapi",
     "private/protocol/query",
     "private/protocol/query/queryutil",
     "private/protocol/rest",
@@ -62,8 +65,8 @@
     "service/s3",
     "service/sts"
   ]
-  revision = "31a85efbe3bc741eb539d6310c8e66030b7c5cb7"
-  version = "v1.13.47"
+  revision = "e4f914808a9655ef3220bb0082002239cc7f3561"
+  version = "v1.14.19"
 
 [[projects]]
   branch = "master"
@@ -92,14 +95,14 @@
 [[projects]]
   name = "github.com/fatih/color"
   packages = ["."]
-  revision = "507f6050b8568533fb3f5504de8e5205fa62a114"
-  version = "v1.6.0"
+  revision = "5b77d2a35fb0ede96d138fc9a99f5c9b6aef11b4"
+  version = "v1.7.0"
 
 [[projects]]
   name = "github.com/go-ini/ini"
   packages = ["."]
-  revision = "6529cf7c58879c08d927016dde4477f18a0634cb"
-  version = "v1.36.0"
+  revision = "06f5f3d67269ccec1fe5fe4134ba6e982984f7f5"
+  version = "v1.37.0"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -111,7 +114,7 @@
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "eafdb6578137f78fe186e486a4bc633e1434cc89"
+  revision = "e96c8d145b73ef0bc15d2d3f0327ce6d88a17c5a"
 
 [[projects]]
   branch = "master"
@@ -137,14 +140,14 @@
     "glob",
     "rpm"
   ]
-  revision = "d2eaeef92bdb3ead4ee45852b10b81f4c650f4fc"
-  version = "v0.9.0"
+  revision = "25eddcb1759ae5b07e79bb55727075fe43492a17"
+  version = "v0.9.2"
 
 [[projects]]
   name = "github.com/imdario/mergo"
   packages = ["."]
-  revision = "9d5f1277e9a8ed20c3684bda8fde67c05628518c"
-  version = "v0.3.4"
+  revision = "9316a62528ac99aaecb4e47eadd6dc8aa6533d58"
+  version = "v0.3.5"
 
 [[projects]]
   name = "github.com/jmespath/go-jmespath"
@@ -176,13 +179,13 @@
     ".",
     "fastwalk"
   ]
-  revision = "9960a25705902198f55789b9b689a686682798b5"
+  revision = "c436403c742d0b6d8fc37e69eadf33e024fe74fa"
 
 [[projects]]
   branch = "master"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
-  revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
+  revision = "3864e76763d94a6df2f9960b16a20a33da9f9a66"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -202,8 +205,8 @@
     "assert",
     "require"
   ]
-  revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
-  version = "v1.2.1"
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [[projects]]
   branch = "master"
@@ -212,7 +215,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "640f4622ab692b87c2f3a94265e6f579fe38263d"
+  revision = "ed29d75add3d7c4bf7ca65aac0c6df3d1420216f"
 
 [[projects]]
   branch = "master"
@@ -221,7 +224,7 @@
     ".",
     "internal"
   ]
-  revision = "cdc340f7c179dbbfa4afd43b7614e8fcadde4269"
+  revision = "ef147856a6ddbb60760db74283d2424e98c87bff"
 
 [[projects]]
   branch = "master"
@@ -233,7 +236,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
-  revision = "78d5f264b493f125018180c204871ecf58a2dce1"
+  revision = "7138fd3d9dc8335c567ca206f4333fb75eb05d56"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -246,8 +249,8 @@
     "internal/urlfetch",
     "urlfetch"
   ]
-  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
-  version = "v1.0.0"
+  revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
+  version = "v1.1.0"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
