@@ -31,6 +31,7 @@ func TestPipe(t *testing.T) {
 			},
 		},
 	)
+	ctx.Git.CurrentTag = "1.2.3"
 	ctx.Env = map[string]string{"FOO": "bar"}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name: binary,
@@ -65,6 +66,7 @@ func TestPipeFileNotExist(t *testing.T) {
 			},
 		},
 	)
+	ctx.Git.CurrentTag = "1.2.3"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name: "nope",
 		Path: "/nope",
@@ -77,8 +79,8 @@ func TestPipeFileNotExist(t *testing.T) {
 
 func TestPipeInvalidNameTemplate(t *testing.T) {
 	for template, eerr := range map[string]string{
-		"{{ .Pro }_checksums.txt": `template: checksums:1: unexpected "}" in operand`,
-		"{{.Env.NOPE}}":           `template: checksums:1:6: executing "checksums" at <.Env.NOPE>: map has no entry for key "NOPE"`,
+		"{{ .Pro }_checksums.txt": `template: tmpl:1: unexpected "}" in operand`,
+		"{{.Env.NOPE}}":           `template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`,
 	} {
 		t.Run(template, func(tt *testing.T) {
 			folder, err := ioutil.TempDir("", "goreleasertest")
@@ -92,6 +94,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 					},
 				},
 			)
+			ctx.Git.CurrentTag = "1.2.3"
 			ctx.Artifacts.Add(artifact.Artifact{
 				Name: "whatever",
 				Type: artifact.UploadableBinary,
@@ -116,6 +119,7 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 			},
 		},
 	)
+	ctx.Git.CurrentTag = "1.2.3"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name: "whatever",
 		Type: artifact.UploadableBinary,
