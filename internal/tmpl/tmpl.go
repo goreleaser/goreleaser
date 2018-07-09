@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Template holds data that can be applied to a template string
 type Template struct {
 	fields fields
 }
@@ -33,6 +34,7 @@ type fields struct {
 	Binary string
 }
 
+// New Template
 func New(ctx *context.Context) *Template {
 	return &Template{
 		fields: fields{
@@ -45,6 +47,7 @@ func New(ctx *context.Context) *Template {
 	}
 }
 
+// WithArtifacts populate fields from the artifact and replacements
 func (t *Template) WithArtifact(a artifact.Artifact, replacements map[string]string) *Template {
 	var binary = a.Extra["Binary"]
 	if binary == "" {
@@ -57,6 +60,7 @@ func (t *Template) WithArtifact(a artifact.Artifact, replacements map[string]str
 	return t
 }
 
+// Apply applies the given string against the fields stored in the template.
 func (t *Template) Apply(s string) (string, error) {
 	var out bytes.Buffer
 	tmpl, err := template.New("tmpl").
