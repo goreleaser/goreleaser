@@ -62,6 +62,13 @@ func TestWithArtifact(t *testing.T) {
 		assert.NoError(tt, err)
 		assert.Equal(tt, ctx.Config.ProjectName, result)
 	})
+
+	t.Run("template using artifact fields with no artifact", func(tt *testing.T) {
+		tt.Parallel()
+		result, err := New(ctx).Apply("{{ .Os }}")
+		assert.EqualError(tt, err, `template: tmpl:1:3: executing "tmpl" at <.Os>: map has no entry for key "Os"`)
+		assert.Empty(tt, result)
+	})
 }
 
 func TestEnv(t *testing.T) {
