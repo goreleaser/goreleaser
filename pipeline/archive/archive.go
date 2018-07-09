@@ -17,7 +17,7 @@ import (
 	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/filenametemplate"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 )
 
 const (
@@ -77,10 +77,9 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func create(ctx *context.Context, binaries []artifact.Artifact) error {
 	var format = packageFormat(ctx, binaries[0].Goos)
-	folder, err := filenametemplate.Apply(
-		ctx.Config.Archive.NameTemplate,
-		filenametemplate.NewFields(ctx, ctx.Config.Archive.Replacements, binaries...),
-	)
+	folder, err := tmpl.New(ctx).
+		WithArtifact(binaries[0], ctx.Config.Archive.Replacements).
+		Apply(ctx.Config.Archive.NameTemplate)
 	if err != nil {
 		return err
 	}
@@ -125,8 +124,9 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 func skip(ctx *context.Context, binaries []artifact.Artifact) error {
 	for _, binary := range binaries {
 		log.WithField("binary", binary.Name).Info("skip archiving")
-		var fields = filenametemplate.NewFields(ctx, ctx.Config.Archive.Replacements, binary)
-		name, err := filenametemplate.Apply(ctx.Config.Archive.NameTemplate, fields)
+		name, err := tmpl.New(ctx).
+			WithArtifact(binary, ctx.Config.Archive.Replacements).
+			Apply(ctx.Config.Archive.NameTemplate)
 		if err != nil {
 			return err
 		}

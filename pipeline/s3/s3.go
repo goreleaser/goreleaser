@@ -13,7 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/nametemplate"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -74,7 +74,7 @@ func upload(ctx *context.Context, conf config.S3) error {
 	svc := s3.New(sess, &aws.Config{
 		Region: aws.String(conf.Region),
 	})
-	folder, err := nametemplate.Apply(ctx, conf.Folder)
+	folder, err := tmpl.New(ctx).Apply(conf.Folder)
 	if err != nil {
 		return err
 	}

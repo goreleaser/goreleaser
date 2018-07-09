@@ -55,7 +55,8 @@ func TestRunPipe(t *testing.T) {
 			Description:  "test description",
 		},
 	})
-	ctx.Version = "testversion"
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Version = "v1.2.3"
 	addBinaries(t, ctx, "mybin", dist)
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
@@ -75,9 +76,10 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 			Description:  "test description",
 		},
 	})
-	ctx.Version = "testversion"
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Version = "v1.2.3"
 	addBinaries(t, ctx, "mybin", dist)
-	assert.EqualError(t, Pipe{}.Run(ctx), `template: foo_{{.Arch}:1: unexpected "}" in operand`)
+	assert.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunPipeWithName(t *testing.T) {
@@ -96,7 +98,8 @@ func TestRunPipeWithName(t *testing.T) {
 			Description:  "test description",
 		},
 	})
-	ctx.Version = "testversion"
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Version = "v1.2.3"
 	addBinaries(t, ctx, "testprojectname", dist)
 	assert.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -129,7 +132,8 @@ func TestRunPipeMetadata(t *testing.T) {
 			},
 		},
 	})
-	ctx.Version = "testversion"
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Version = "v1.2.3"
 	addBinaries(t, ctx, "mybin", dist)
 	assert.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))

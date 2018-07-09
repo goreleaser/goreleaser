@@ -80,6 +80,7 @@ func TestRunPipe(t *testing.T) {
 						"v{{.Major}}",
 						"v{{.Major}}.{{.Minor}}",
 						"commint-{{.Commit}}",
+						"le-{{.Os}}",
 						"latest",
 					},
 					Files: []string{
@@ -91,6 +92,7 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/test_run_pipe:v1.0.0-123",
 				registry + "goreleaser/test_run_pipe:v1",
 				registry + "goreleaser/test_run_pipe:v1.0",
+				registry + "goreleaser/test_run_pipe:le-linux",
 				registry + "goreleaser/test_run_pipe:latest",
 			},
 			assertError: shouldNotErr,
@@ -226,7 +228,7 @@ func TestRunPipe(t *testing.T) {
 					},
 				},
 			},
-			assertError: shouldErr(`template: tag:1: unexpected "}" in operand`),
+			assertError: shouldErr(`template: tmpl:1: unexpected "}" in operand`),
 		},
 		"missing_env_on_template": {
 			publish: true,
@@ -242,7 +244,7 @@ func TestRunPipe(t *testing.T) {
 					},
 				},
 			},
-			assertError: shouldErr(`template: tag:1:6: executing "tag" at <.Env.NOPE>: map has no entry for key "NOPE"`),
+			assertError: shouldErr(`template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`),
 		},
 		"no_permissions": {
 			publish: true,

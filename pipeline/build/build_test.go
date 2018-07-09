@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -84,6 +85,7 @@ func TestRunPipe(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "2.4.5"
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Equal(t, ctx.Artifacts.List(), []artifact.Artifact{fakeArtifact})
 }
@@ -109,6 +111,7 @@ func TestRunFullPipe(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "2.4.5"
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Equal(t, ctx.Artifacts.List(), []artifact.Artifact{fakeArtifact})
 	assert.True(t, exists(pre), pre)
@@ -136,6 +139,7 @@ func TestRunFullPipeFail(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "2.4.5"
 	assert.EqualError(t, Pipe{}.Run(ctx), errFailedBuild.Error())
 	assert.Empty(t, ctx.Artifacts.List())
 	assert.True(t, exists(pre), pre)
@@ -155,12 +159,14 @@ func TestRunPipeFailingHooks(t *testing.T) {
 	}
 	t.Run("pre-hook", func(t *testing.T) {
 		var ctx = context.New(config)
+		ctx.Git.CurrentTag = "2.3.4"
 		ctx.Config.Builds[0].Hooks.Pre = "exit 1"
 		ctx.Config.Builds[0].Hooks.Post = "echo post"
 		assert.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: `)
 	})
 	t.Run("post-hook", func(t *testing.T) {
 		var ctx = context.New(config)
+		ctx.Git.CurrentTag = "2.3.4"
 		ctx.Config.Builds[0].Hooks.Pre = "echo pre"
 		ctx.Config.Builds[0].Hooks.Post = "exit 1"
 		assert.EqualError(t, Pipe{}.Run(ctx), `post hook failed: `)
@@ -288,24 +294,16 @@ func TestExtOthers(t *testing.T) {
 	assert.Empty(t, "", extFor("winasdasd_sad"))
 }
 
-func TestBinaryFullTemplate(t *testing.T) {
-	var config = config.Project{
-		Builds: []config.Build{
-			{
-				Binary: `-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}"`,
-			},
-		},
+func TestTemplate(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	ctx.Git = context.GitInfo{
+		CurrentTag: "v1.2.3",
+		Commit:     "123",
 	}
-	var ctx = &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.2.3",
-			Commit:     "123",
-		},
-		Version: "1.2.3",
-		Config:  config,
-		Env:     map[string]string{"FOO": "123"},
-	}
-	binary, err := binary(ctx, ctx.Config.Builds[0])
+	ctx.Version = "1.2.3"
+	ctx.Env = map[string]string{"FOO": "123"}
+	binary, err := tmpl.New(ctx).
+		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}"`)
 	assert.NoError(t, err)
 	assert.Contains(t, binary, "-s -w")
 	assert.Contains(t, binary, "-X main.version=1.2.3")

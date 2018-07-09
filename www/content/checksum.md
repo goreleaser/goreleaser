@@ -14,12 +14,8 @@ The `checksum` section allows customizations of the filename:
 # .goreleaser.yml
 checksum:
   # You can change the name of the checksums file.
-  # This is parsed with the Go template engine and the following variables
-  # are available:
-  # - ProjectName
-  # - Tag
-  # - Version (Git tag without `v` prefix)
-  # - Env (environment variables)
   # Default is `{{ .ProjectName }}_{{ .Version }}_checksums.txt`.
   name_template: "{{ .ProjectName }}_checksums.txt"
 ```
+
+> Learn more about the [name template engine](/templates).

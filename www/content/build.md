@@ -19,14 +19,7 @@ builds:
     # Default is `.`.
     main: ./cmd/main.go
 
-    # Name of the binary.
-    # This is parsed with the Go template engine and the following variables
-    # are available:
-    # - Date
-    # - Commit
-    # - Tag
-    # - Version (Git tag without `v` prefix)
-    # Date format is `2006-01-02_15:04:05`.
+    # Name template for the binary final name.
     # Default is the name of the project directory.
     binary: program
 
@@ -37,51 +30,18 @@ builds:
       - dev
 
     # Custom asmflags templates.
-    # These are parsed with the Go template engine and the following variables
-    # are available:
-    # - Date
-    # - Commit
-    # - Tag
-    # - Version (Git tag without `v` prefix)
-    # - Env (environment variables)
-    # Date format is `2006-01-02_15:04:05`.
-    # You can use the `time` function instead of `Date`, for example:
-    # `time "2006-01-02"` too if you need custom formats
-    #
     # Default is empty.
     asmflags:
       - -D mysymbol
       - all=-trimpath={{.Env.GOPATH}}
 
     # Custom gcflags templates.
-    # These are parsed with the Go template engine and the following variables
-    # are available:
-    # - Date
-    # - Commit
-    # - Tag
-    # - Version (Git tag without `v` prefix)
-    # - Env (environment variables)
-    # Date format is `2006-01-02_15:04:05`.
-    # You can use the `time` function instead of `Date`, for example:
-    # `time "2006-01-02"` too if you need custom formats
-    #
     # Default is empty.
     gcflags:
       - all=-trimpath={{.Env.GOPATH}}
       - ./dontoptimizeme=-N
 
     # Custom ldflags templates.
-    # These are parsed with the Go template engine and the following variables
-    # are available:
-    # - Date
-    # - Commit
-    # - Tag
-    # - Version (Git tag without `v` prefix)
-    # - Env (environment variables)
-    # Date format is `2006-01-02_15:04:05`.
-    # You can use the `time` function instead of `Date`, for example:
-    # `time "2006-01-02"` too if you need custom formats
-    #
     # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`.
     ldflags:
      - -s -w -X main.build={{.Version}}
@@ -130,6 +90,8 @@ builds:
       pre: rice embed-go
       post: ./script.sh
 ```
+
+> Learn more about the [name template engine](/templates).
 
 ## Passing environment variables to ldflags
 

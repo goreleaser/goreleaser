@@ -143,7 +143,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.Binary,
 	})
-	assert.Contains(t, Pipe{}.Run(ctx).Error(), `template: {{.Foo}:1: unexpected "}" in operand`)
+	assert.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestCreateFileDoesntExist(t *testing.T) {
@@ -189,6 +189,8 @@ func TestInvalidConfig(t *testing.T) {
 			Formats: []string{"deb"},
 		},
 	})
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Version = "v1.2.3"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "mybin", "mybin"),

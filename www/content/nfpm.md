@@ -14,15 +14,6 @@ Available options:
 # .goreleaser.yml
 nfpm:
   # You can change the name of the package.
-  # This is parsed with the Go template engine and the following variables
-  # are available:
-  # - ProjectName
-  # - Tag
-  # - Version (Git tag without `v` prefix)
-  # - Os
-  # - Arch
-  # - Arm (ARM version)
-  # - Env (environment variables)
   # Default: `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
   name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
@@ -140,6 +131,8 @@ nfpm:
       scripts:
         preinstall: "scripts/preinstall-rpm.sh"
 ```
+
+> Learn more about the [name template engine](/templates).
 
 Note that GoReleaser will not install `rpmbuild` or any dependencies for you.
 As for now, `rpmbuild` is recommended if you want to generate rpm packages.

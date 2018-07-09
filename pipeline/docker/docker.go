@@ -2,16 +2,13 @@
 package docker
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"text/template"
 
 	"github.com/apex/log"
-	"github.com/masterminds/semver"
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 
@@ -19,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -116,44 +114,16 @@ func doRun(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func tagName(ctx *context.Context, tagTemplate string) (string, error) {
-	var out bytes.Buffer
-	t, err := template.New("tag").Option("missingkey=error").Parse(tagTemplate)
-	if err != nil {
-		return "", err
-	}
-	sv, err := semver.NewVersion(ctx.Git.CurrentTag)
-	if err != nil {
-		return "", err
-	}
-	data := struct {
-		Version string
-		Tag     string
-		Commit  string
-		Major   int64
-		Minor   int64
-		Patch   int64
-		Env     map[string]string
-	}{
-		Version: ctx.Version,
-		Commit:  ctx.Git.Commit,
-		Tag:     ctx.Git.CurrentTag,
-		Env:     ctx.Env,
-		Major:   sv.Major(),
-		Minor:   sv.Minor(),
-		Patch:   sv.Patch(),
-	}
-	err = t.Execute(&out, data)
-	return out.String(), err
-}
-
 func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact, seed int) error {
 	var root = filepath.Dir(artifact.Path)
 	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile)) + fmt.Sprintf(".%d", seed)
 	// nolint:prealloc
 	var images []string
 	for _, tagTemplate := range docker.TagTemplates {
-		tag, err := tagName(ctx, tagTemplate)
+		// TODO: add overrides support to config
+		tag, err := tmpl.New(ctx).
+			WithArtifact(artifact, map[string]string{}).
+			Apply(tagTemplate)
 		if err != nil {
 			return errors.Wrapf(err, "failed to execute tag template '%s'", tagTemplate)
 		}
