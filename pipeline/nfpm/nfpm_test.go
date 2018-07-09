@@ -91,6 +91,9 @@ func TestRunPipe(t *testing.T) {
 				ConfigFiles: map[string]string{
 					"./testdata/testfile.txt": "/etc/nope.conf",
 				},
+				Replacements: map[string]string{
+					"linux": "Tux",
+				},
 			},
 			Overrides: map[string]config.NFPMOverridables{
 				"rpm": {
@@ -101,6 +104,7 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 	})
+	ctx.Version = "1.0.0"
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
@@ -114,6 +118,11 @@ func TestRunPipe(t *testing.T) {
 		}
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
+	var packages = ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	assert.Len(t, packages, 4)
+	for _, pkg := range packages {
+		assert.Contains(t, pkg.Name, "mybin_1.0.0_Tux_", "linux should have been replaced by Tux")
+	}
 	assert.Len(t, ctx.Config.NFPM.Files, 1, "should not modify the config file list")
 }
 
