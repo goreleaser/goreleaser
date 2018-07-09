@@ -18,18 +18,6 @@ func TestWithArtifact(t *testing.T) {
 	}
 	ctx.Version = "1.0.0"
 	ctx.Git.CurrentTag = "v1.0.0"
-	var instance = New(ctx).WithArtifact(
-		artifact.Artifact{
-			Name:   "not-this-binary",
-			Goarch: "amd64",
-			Goos:   "linux",
-			Goarm:  "6",
-			Extra: map[string]string{
-				"Binary": "binary",
-			},
-		},
-		map[string]string{"linux": "Linux"},
-	)
 	for expect, tmpl := range map[string]string{
 		"bar":    "{{.Env.FOO}}",
 		"Linux":  "{{.Os}}",
@@ -44,7 +32,18 @@ func TestWithArtifact(t *testing.T) {
 		expect := expect
 		t.Run(expect, func(tt *testing.T) {
 			tt.Parallel()
-			result, err := instance.Apply(tmpl)
+			result, err := New(ctx).WithArtifact(
+				artifact.Artifact{
+					Name:   "not-this-binary",
+					Goarch: "amd64",
+					Goos:   "linux",
+					Goarm:  "6",
+					Extra: map[string]string{
+						"Binary": "binary",
+					},
+				},
+				map[string]string{"linux": "Linux"},
+			).Apply(tmpl)
 			assert.NoError(tt, err)
 			assert.Equal(tt, expect, result)
 		})

@@ -7,6 +7,7 @@ export PATH := ./bin:$(PATH)
 
 # Install all the build and lint dependencies
 setup:
+	rm -rf $$GOPATH/src/golang.org/x/tools
 	go get -u golang.org/x/tools/cmd/stringer
 	go get -u golang.org/x/tools/cmd/cover
 	# TODO: temporary hack for https://github.com/golang/go/issues/21387
