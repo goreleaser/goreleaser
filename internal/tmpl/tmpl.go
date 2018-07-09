@@ -29,6 +29,8 @@ const (
 	kMinor       = "Minor"
 	kPatch       = "Patch"
 	kEnv         = "Env"
+	kDate        = "Date"
+	kTimestamp   = "Timestamp"
 
 	// artifact-only keys
 	kOs     = "Os"
@@ -46,6 +48,8 @@ func New(ctx *context.Context) *Template {
 			kTag:         ctx.Git.CurrentTag,
 			kCommit:      ctx.Git.Commit,
 			kEnv:         ctx.Env,
+			kDate:        time.Now().UTC().Format(time.RFC3339),
+			kTimestamp:   time.Now().UTC().Unix(),
 		},
 	}
 }

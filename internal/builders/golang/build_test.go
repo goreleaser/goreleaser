@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -64,6 +65,7 @@ func TestWithDefaults(t *testing.T) {
 				},
 			}
 			var ctx = context.New(config)
+			ctx.Git.CurrentTag = "5.6.7"
 			var build = Default.WithDefaults(ctx.Config.Builds[0])
 			assert.ElementsMatch(t, build.Targets, testcase.targets)
 		})
@@ -90,6 +92,7 @@ func TestBuild(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
 	var build = ctx.Config.Builds[0]
 	for _, target := range build.Targets {
 		var ext string
@@ -168,6 +171,7 @@ func TestBuildFailed(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
 	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: "darwin_amd64",
 	})
@@ -189,6 +193,7 @@ func TestBuildInvalidTarget(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
 	var build = ctx.Config.Builds[0]
 	var err = Default.Build(ctx, build, api.Options{
 		Target: target,
@@ -215,10 +220,11 @@ func TestRunInvalidAsmflags(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
 	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
-	assert.EqualError(t, err, `template: asmflags:1: unexpected "}" in operand`)
+	assert.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunInvalidGcflags(t *testing.T) {
@@ -237,10 +243,11 @@ func TestRunInvalidGcflags(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
 	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
-	assert.EqualError(t, err, `template: gcflags:1: unexpected "}" in operand`)
+	assert.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunInvalidLdflags(t *testing.T) {
@@ -260,10 +267,11 @@ func TestRunInvalidLdflags(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
 	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
-	assert.EqualError(t, err, `template: ldflags:1: unexpected "}" in operand`)
+	assert.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunPipeWithoutMainFunc(t *testing.T) {
@@ -282,6 +290,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
 	t.Run("empty", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = ""
 		assert.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
@@ -328,6 +337,7 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 		},
 	}
 	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
 	t.Run("empty", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = ""
 		assert.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
@@ -349,25 +359,16 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 }
 
 func TestLdFlagsFullTemplate(t *testing.T) {
-	var config = config.Project{
-		Builds: []config.Build{
-			{
-				Ldflags: []string{
-					`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }}`,
-				},
-			},
-		},
-	}
 	var ctx = &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.2.3",
 			Commit:     "123",
 		},
 		Version: "1.2.3",
-		Config:  config,
 		Env:     map[string]string{"FOO": "123"},
 	}
-	flags, err := processField(ctx, ctx.Config.Builds[0].Ldflags[0], "ldflags")
+	flags, err := tmpl.New(ctx).
+		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }}`)
 	assert.NoError(t, err)
 	assert.Contains(t, flags, "-s -w")
 	assert.Contains(t, flags, "-X main.version=1.2.3")
@@ -381,19 +382,13 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 
 func TestInvalidTemplate(t *testing.T) {
 	for template, eerr := range map[string]string{
-		"{{ .Nope }":    `template: ldflags:1: unexpected "}" in operand`,
-		"{{.Env.NOPE}}": `template: ldflags:1:6: executing "ldflags" at <.Env.NOPE>: map has no entry for key "NOPE"`,
+		"{{ .Nope }":    `template: tmpl:1: unexpected "}" in operand`,
+		"{{.Env.NOPE}}": `template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`,
 	} {
 		t.Run(template, func(tt *testing.T) {
-			var config = config.Project{
-				Builds: []config.Build{
-					{Ldflags: []string{template}},
-				},
-			}
-			var ctx = &context.Context{
-				Config: config,
-			}
-			flags, err := processField(ctx, template, "ldflags")
+			var ctx = context.New(config.Project{})
+			ctx.Git.CurrentTag = "3.4.1"
+			flags, err := tmpl.New(ctx).Apply(template)
 			assert.EqualError(tt, err, eerr)
 			assert.Empty(tt, flags)
 		})
@@ -404,6 +399,7 @@ func TestProcessFlags(t *testing.T) {
 	var ctx = &context.Context{
 		Version: "1.2.3",
 	}
+	ctx.Git.CurrentTag = "5.6.7"
 
 	var source = []string{
 		"{{.Version}}",
@@ -428,7 +424,7 @@ func TestProcessFlagsInvalid(t *testing.T) {
 		"{{.Version}",
 	}
 
-	var expected = `template: testflag:1: unexpected "}" in operand`
+	var expected = `template: tmpl:1: unexpected "}" in operand`
 
 	flags, err := processFlags(ctx, source, "testflag", "-testflag=")
 	assert.EqualError(t, err, expected)

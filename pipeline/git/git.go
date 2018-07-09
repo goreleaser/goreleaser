@@ -1,16 +1,14 @@
 package git
 
 import (
-	"bytes"
 	"fmt"
 	"regexp"
 	"strings"
-	"text/template"
-	"time"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/git"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pipeline"
 	"github.com/pkg/errors"
 )
@@ -80,7 +78,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 
 func setVersion(ctx *context.Context) error {
 	if ctx.Snapshot {
-		snapshotName, err := getSnapshotName(ctx)
+		snapshotName, err := tmpl.New(ctx).Apply(ctx.Config.Snapshot.NameTemplate)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate snapshot name")
 		}
@@ -90,27 +88,6 @@ func setVersion(ctx *context.Context) error {
 	// removes usual `v` prefix
 	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
 	return nil
-}
-
-type snapshotNameData struct {
-	Commit    string
-	Tag       string
-	Timestamp int64
-}
-
-func getSnapshotName(ctx *context.Context) (string, error) {
-	tmpl, err := template.New("snapshot").Parse(ctx.Config.Snapshot.NameTemplate)
-	var out bytes.Buffer
-	if err != nil {
-		return "", err
-	}
-	var data = snapshotNameData{
-		Commit:    ctx.Git.Commit,
-		Tag:       ctx.Git.CurrentTag,
-		Timestamp: time.Now().Unix(),
-	}
-	err = tmpl.Execute(&out, data)
-	return out.String(), err
 }
 
 func validate(ctx *context.Context) error {

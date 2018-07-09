@@ -1,7 +1,6 @@
 package golang
 
 import (
-	"bytes"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -9,14 +8,13 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"text/template"
-	"time"
 
 	"github.com/apex/log"
 	api "github.com/goreleaser/goreleaser/build"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/pkg/errors"
 )
 
@@ -108,43 +106,13 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 func processFlags(ctx *context.Context, flags []string, flagName string, flagPrefix string) ([]string, error) {
 	processed := make([]string, 0, len(flags))
 	for _, rawFlag := range flags {
-		flag, err := processField(ctx, rawFlag, flagName)
+		flag, err := tmpl.New(ctx).Apply(rawFlag)
 		if err != nil {
 			return nil, err
 		}
 		processed = append(processed, flagPrefix+flag)
 	}
 	return processed, nil
-}
-
-func processField(ctx *context.Context, field string, fieldName string) (string, error) {
-	var data = struct {
-		Commit  string
-		Tag     string
-		Version string
-		Date    string
-		Env     map[string]string
-	}{
-		Commit:  ctx.Git.Commit,
-		Tag:     ctx.Git.CurrentTag,
-		Version: ctx.Version,
-		Date:    time.Now().UTC().Format(time.RFC3339),
-		Env:     ctx.Env,
-	}
-	var out bytes.Buffer
-	t, err := template.New(fieldName).
-		Funcs(template.FuncMap{
-			"time": func(s string) string {
-				return time.Now().UTC().Format(s)
-			},
-		}).
-		Option("missingkey=error").
-		Parse(field)
-	if err != nil {
-		return "", err
-	}
-	err = t.Execute(&out, data)
-	return out.String(), err
 }
 
 func run(ctx *context.Context, command, env []string) error {
