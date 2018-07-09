@@ -17,46 +17,49 @@ type Template struct {
 	fields fields
 }
 
-type fields struct {
-	ProjectName string
-	Version     string
-	Tag         string
-	Commit      string
-	Major       int64
-	Minor       int64
-	Patch       int64
-	Env         map[string]string
+type fields map[string]interface{}
 
-	// artifact-only fields
-	Os     string
-	Arch   string
-	Arm    string
-	Binary string
-}
+const (
+	// general keys
+	kProjectName = "ProjectName"
+	kVersion     = "Version"
+	kTag         = "Tag"
+	kCommit      = "Commit"
+	kMajor       = "Major"
+	kMinor       = "Minor"
+	kPatch       = "Patch"
+	kEnv         = "Env"
+
+	// artifact-only keys
+	kOs     = "Os"
+	kArch   = "Arch"
+	kArm    = "Arm"
+	kBinary = "Binary"
+)
 
 // New Template
 func New(ctx *context.Context) *Template {
 	return &Template{
 		fields: fields{
-			ProjectName: ctx.Config.ProjectName,
-			Version:     ctx.Version,
-			Tag:         ctx.Git.CurrentTag,
-			Commit:      ctx.Git.Commit,
-			Env:         ctx.Env,
+			kProjectName: ctx.Config.ProjectName,
+			kVersion:     ctx.Version,
+			kTag:         ctx.Git.CurrentTag,
+			kCommit:      ctx.Git.Commit,
+			kEnv:         ctx.Env,
 		},
 	}
 }
 
 // WithArtifacts populate fields from the artifact and replacements
 func (t *Template) WithArtifact(a artifact.Artifact, replacements map[string]string) *Template {
-	var binary = a.Extra["Binary"]
+	var binary = a.Extra[kBinary]
 	if binary == "" {
-		binary = t.fields.ProjectName
+		binary = t.fields[kProjectName].(string)
 	}
-	t.fields.Os = replace(replacements, a.Goos)
-	t.fields.Arch = replace(replacements, a.Goarch)
-	t.fields.Arm = replace(replacements, a.Goarm)
-	t.fields.Binary = binary
+	t.fields[kOs] = replace(replacements, a.Goos)
+	t.fields[kArch] = replace(replacements, a.Goarch)
+	t.fields[kArm] = replace(replacements, a.Goarm)
+	t.fields[kBinary] = binary
 	return t
 }
 
@@ -75,13 +78,13 @@ func (t *Template) Apply(s string) (string, error) {
 		return "", err
 	}
 
-	sv, err := semver.NewVersion(t.fields.Tag)
+	sv, err := semver.NewVersion(t.fields[kTag].(string))
 	if err != nil {
 		return "", errors.Wrap(err, "tmpl")
 	}
-	t.fields.Major = sv.Major()
-	t.fields.Minor = sv.Minor()
-	t.fields.Patch = sv.Patch()
+	t.fields[kMajor] = sv.Major()
+	t.fields[kMinor] = sv.Minor()
+	t.fields[kPatch] = sv.Patch()
 
 	err = tmpl.Execute(&out, t.fields)
 	return out.String(), err
