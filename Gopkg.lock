@@ -140,8 +140,8 @@
     "glob",
     "rpm"
   ]
-  revision = "25eddcb1759ae5b07e79bb55727075fe43492a17"
-  version = "v0.9.2"
+  revision = "923d6a7473bfdbe7a583b7f3df1f3f780b1b73ab"
+  version = "v0.9.3"
 
 [[projects]]
   name = "github.com/imdario/mergo"
