@@ -20,8 +20,8 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/filenametemplate"
 	"github.com/goreleaser/goreleaser/internal/linux"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -101,10 +101,9 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	if err != nil {
 		return err
 	}
-	name, err := filenametemplate.Apply(
-		overrided.NameTemplate,
-		filenametemplate.NewFields(ctx, overrided.Replacements, binaries...),
-	)
+	name, err := tmpl.New(ctx).
+		WithArtifact(binaries[0], overrided.Replacements).
+		Apply(overrided.NameTemplate)
 	if err != nil {
 		return err
 	}
