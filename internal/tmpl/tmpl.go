@@ -21,49 +21,49 @@ type fields map[string]interface{}
 
 const (
 	// general keys
-	kProjectName = "ProjectName"
-	kVersion     = "Version"
-	kTag         = "Tag"
-	kCommit      = "Commit"
-	kMajor       = "Major"
-	kMinor       = "Minor"
-	kPatch       = "Patch"
-	kEnv         = "Env"
-	kDate        = "Date"
-	kTimestamp   = "Timestamp"
+	projectName = "ProjectName"
+	version     = "Version"
+	tag         = "Tag"
+	commit      = "Commit"
+	major       = "Major"
+	minor       = "Minor"
+	patch       = "Patch"
+	env         = "Env"
+	date        = "Date"
+	timestamp   = "Timestamp"
 
 	// artifact-only keys
-	kOs     = "Os"
-	kArch   = "Arch"
-	kArm    = "Arm"
-	kBinary = "Binary"
+	os     = "Os"
+	arch   = "Arch"
+	arm    = "Arm"
+	binary = "Binary"
 )
 
 // New Template
 func New(ctx *context.Context) *Template {
 	return &Template{
 		fields: fields{
-			kProjectName: ctx.Config.ProjectName,
-			kVersion:     ctx.Version,
-			kTag:         ctx.Git.CurrentTag,
-			kCommit:      ctx.Git.Commit,
-			kEnv:         ctx.Env,
-			kDate:        time.Now().UTC().Format(time.RFC3339),
-			kTimestamp:   time.Now().UTC().Unix(),
+			projectName: ctx.Config.ProjectName,
+			version:     ctx.Version,
+			tag:         ctx.Git.CurrentTag,
+			commit:      ctx.Git.Commit,
+			env:         ctx.Env,
+			date:        time.Now().UTC().Format(time.RFC3339),
+			timestamp:   time.Now().UTC().Unix(),
 		},
 	}
 }
 
 // WithArtifacts populate fields from the artifact and replacements
 func (t *Template) WithArtifact(a artifact.Artifact, replacements map[string]string) *Template {
-	var binary = a.Extra[kBinary]
+	var binary = a.Extra[binary]
 	if binary == "" {
-		binary = t.fields[kProjectName].(string)
+		binary = t.fields[projectName].(string)
 	}
-	t.fields[kOs] = replace(replacements, a.Goos)
-	t.fields[kArch] = replace(replacements, a.Goarch)
-	t.fields[kArm] = replace(replacements, a.Goarm)
-	t.fields[kBinary] = binary
+	t.fields[os] = replace(replacements, a.Goos)
+	t.fields[arch] = replace(replacements, a.Goarch)
+	t.fields[arm] = replace(replacements, a.Goarm)
+	t.fields[binary] = binary
 	return t
 }
 
@@ -82,13 +82,13 @@ func (t *Template) Apply(s string) (string, error) {
 		return "", err
 	}
 
-	sv, err := semver.NewVersion(t.fields[kTag].(string))
+	sv, err := semver.NewVersion(t.fields[tag].(string))
 	if err != nil {
 		return "", errors.Wrap(err, "tmpl")
 	}
-	t.fields[kMajor] = sv.Major()
-	t.fields[kMinor] = sv.Minor()
-	t.fields[kPatch] = sv.Patch()
+	t.fields[major] = sv.Major()
+	t.fields[minor] = sv.Minor()
+	t.fields[patch] = sv.Patch()
 
 	err = tmpl.Execute(&out, t.fields)
 	return out.String(), err

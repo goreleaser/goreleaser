@@ -60,19 +60,19 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 
 	cmd = append(cmd, build.Flags...)
 
-	asmflags, err := processFlags(ctx, build.Asmflags, "asmflags", "-asmflags=")
+	asmflags, err := processFlags(ctx, build.Asmflags, "-asmflags=")
 	if err != nil {
 		return err
 	}
 	cmd = append(cmd, asmflags...)
 
-	gcflags, err := processFlags(ctx, build.Gcflags, "gcflags", "-gcflags=")
+	gcflags, err := processFlags(ctx, build.Gcflags, "-gcflags=")
 	if err != nil {
 		return err
 	}
 	cmd = append(cmd, gcflags...)
 
-	ldflags, err := processFlags(ctx, build.Ldflags, "ldflags", "-ldflags=")
+	ldflags, err := processFlags(ctx, build.Ldflags, "-ldflags=")
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
-func processFlags(ctx *context.Context, flags []string, flagName string, flagPrefix string) ([]string, error) {
+func processFlags(ctx *context.Context, flags []string, flagPrefix string) ([]string, error) {
 	processed := make([]string, 0, len(flags))
 	for _, rawFlag := range flags {
 		flag, err := tmpl.New(ctx).Apply(rawFlag)

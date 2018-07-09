@@ -13,33 +13,33 @@ templating is available.
 
 On fields that support templating, this fields are always available:
 
-| Key | Description |
-|:-:|:-:|
-| `.ProjectName` | the project name |
-| `.Version` | the version being released (`v` prefix stripped) |
-| `.Tag` | the current git tag |
-| `.Commit` | the git commit hash |
-| `.Major` | the major part of the version |
-| `.Minor` | the minor part of the version |
-| `.Patch` | the patch part of the version |
-| `.Env` | a map with system's environment variables |
-| `.Date` | current UTC date in RFC3339 format |
-| `.Timestamp` | current UTC time in Unix format |
+|      Key       |                   Description                    |
+| :------------: | :----------------------------------------------: |
+| `.ProjectName` |                 the project name                 |
+|   `.Version`   | the version being released (`v` prefix stripped) |
+|     `.Tag`     |               the current git tag                |
+|   `.Commit`    |               the git commit hash                |
+|    `.Major`    |          the major part of the version           |
+|    `.Minor`    |          the minor part of the version           |
+|    `.Patch`    |          the patch part of the version           |
+|     `.Env`     |    a map with system's environment variables     |
+|    `.Date`     |        current UTC date in RFC3339 format        |
+|  `.Timestamp`  |         current UTC time in Unix format          |
 
 On fields that are related to a single artifact (e.g., the binary name), you
 may have some extra fields:
 
-| Key | Description |
-|:-:|:-:|
-| `.Os` | `GOOS` (usually allow replacements) |
-| `.Arch` | `GOARCH` (usually allow replacements) |
-| `.Arm` | `GOARM` (usually allow replacements) |
-| `.Binary ` | Binary name |
+|    Key    |              Description              |
+| :-------: | :-----------------------------------: |
+|   `.Os`   |  `GOOS` (usually allow replacements)  |
+|  `.Arch`  | `GOARCH` (usually allow replacements) |
+|  `.Arm`   | `GOARM` (usually allow replacements)  |
+| `.Binary` |              Binary name              |
 
 On all fields, you have these available functions:
 
-| Usage | Description |
-|:-:|:-:|
+|        Usage        |               Description                |
+| :-----------------: | :--------------------------------------: |
 | `time "01/02/2006"` | current UTC time in the specified format |
 
 With all those fields, you may be able to compose the name of your artifacts
