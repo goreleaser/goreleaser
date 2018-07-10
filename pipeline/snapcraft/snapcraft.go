@@ -11,13 +11,12 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"golang.org/x/sync/errgroup"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/linux"
-	"github.com/goreleaser/goreleaser/internal/semaphore"
+	"github.com/goreleaser/goreleaser/internal/parallelerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
@@ -84,15 +83,13 @@ func (Pipe) Run(ctx *context.Context) error {
 		return ErrNoSnapcraft
 	}
 
-	var g errgroup.Group
-	var sem = semaphore.New(ctx.Parallelism)
+	var g = parallelerrgroup.New(ctx.Parallelism)
 	for platform, binaries := range ctx.Artifacts.Filter(
 		artifact.And(
 			artifact.ByGoos("linux"),
 			artifact.ByType(artifact.Binary),
 		),
 	).GroupByPlatform() {
-		sem.Acquire()
 		arch := linux.Arch(platform)
 		if arch == "armel" {
 			log.WithField("arch", arch).Warn("ignored unsupported arch")
@@ -100,7 +97,6 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 		binaries := binaries
 		g.Go(func() error {
-			defer sem.Release()
 			return create(ctx, arch, binaries)
 		})
 	}

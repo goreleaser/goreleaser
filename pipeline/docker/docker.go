@@ -10,13 +10,12 @@ import (
 
 	"github.com/apex/log"
 	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
-	"github.com/goreleaser/goreleaser/internal/semaphore"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
@@ -79,14 +78,11 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context) error {
-	var g errgroup.Group
-	var sem = semaphore.New(ctx.Parallelism)
+	var g = semerrgroup.New(ctx.Parallelism)
 	for i, docker := range ctx.Config.Dockers {
 		docker := docker
 		seed := i
-		sem.Acquire()
 		g.Go(func() error {
-			defer sem.Release()
 			log.WithField("docker", docker).Debug("looking for binaries matching")
 			var binaries = ctx.Artifacts.Filter(
 				artifact.And(

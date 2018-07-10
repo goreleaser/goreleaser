@@ -13,12 +13,11 @@ import (
 
 	"github.com/apex/log"
 	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/semaphore"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -158,13 +157,10 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 }
 
 func runPipeByFilter(ctx *context.Context, put config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
-	var sem = semaphore.New(ctx.Parallelism)
-	var g errgroup.Group
+	var g = semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
-		sem.Acquire()
 		artifact := artifact
 		g.Go(func() error {
-			defer sem.Release()
 			return uploadAsset(ctx, put, artifact, kind, check)
 		})
 	}

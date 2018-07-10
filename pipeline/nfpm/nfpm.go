@@ -5,8 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/apex/log"
 	"github.com/goreleaser/nfpm"
 	"github.com/imdario/mergo"
@@ -21,7 +19,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/linux"
-	"github.com/goreleaser/goreleaser/internal/semaphore"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
@@ -63,16 +61,13 @@ func doRun(ctx *context.Context) error {
 		artifact.ByType(artifact.Binary),
 		artifact.ByGoos("linux"),
 	)).GroupByPlatform()
-	var g errgroup.Group
-	var sem = semaphore.New(ctx.Parallelism)
+	var g = semerrgroup.New(ctx.Parallelism)
 	for _, format := range ctx.Config.NFPM.Formats {
 		for platform, artifacts := range linuxBinaries {
-			sem.Acquire()
 			format := format
 			arch := linux.Arch(platform)
 			artifacts := artifacts
 			g.Go(func() error {
-				defer sem.Release()
 				return create(ctx, format, arch, artifacts)
 			})
 		}

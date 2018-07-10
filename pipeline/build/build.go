@@ -10,7 +10,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
 
 	builders "github.com/goreleaser/goreleaser/build"
 	"github.com/goreleaser/goreleaser/config"
@@ -18,7 +17,7 @@ import (
 
 	// langs to init
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
-	"github.com/goreleaser/goreleaser/internal/semaphore"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 )
 
@@ -70,14 +69,11 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	if err := runHook(ctx, build.Env, build.Hooks.Pre); err != nil {
 		return errors.Wrap(err, "pre hook failed")
 	}
-	var sem = semaphore.New(ctx.Parallelism)
-	var g errgroup.Group
+	var g = semerrgroup.New(ctx.Parallelism)
 	for _, target := range build.Targets {
-		sem.Acquire()
 		target := target
 		build := build
 		g.Go(func() error {
-			defer sem.Release()
 			return doBuild(ctx, build, target)
 		})
 	}
