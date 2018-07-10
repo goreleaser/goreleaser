@@ -16,7 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/linux"
-	"github.com/goreleaser/goreleaser/internal/parallelerrgroup"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
@@ -83,7 +83,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		return ErrNoSnapcraft
 	}
 
-	var g = parallelerrgroup.New(ctx.Parallelism)
+	var g = semerrgroup.New(ctx.Parallelism)
 	for platform, binaries := range ctx.Artifacts.Filter(
 		artifact.And(
 			artifact.ByGoos("linux"),
