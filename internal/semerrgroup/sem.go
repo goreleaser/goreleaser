@@ -1,9 +1,10 @@
-// Package semerrgroup provides a small and simple semaphore lib for goreleaser.
+// Package semerrgroup wraps a error group with a semaphore with configurable
+// size, so you can control the number of tasks being executed simultaneously.
 package semerrgroup
 
 import "golang.org/x/sync/errgroup"
 
-// Group is the Group itself
+// Group is the Semphore ErrorGroup itself
 type Group struct {
 	ch chan bool
 	g  errgroup.Group
@@ -19,8 +20,8 @@ func New(size int) *Group {
 
 // Go execs one function respecting the group and semaphore.
 func (s *Group) Go(fn func() error) {
-	s.ch <- true
 	s.g.Go(func() error {
+		s.ch <- true
 		defer func() {
 			<-s.ch
 		}()
@@ -28,7 +29,7 @@ func (s *Group) Go(fn func() error) {
 	})
 }
 
-// Release releases one Group permit
+// Wait waits for the group to complete and return an error if any.
 func (s *Group) Wait() error {
 	return s.g.Wait()
 }
