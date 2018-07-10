@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDescription(t *testing.T) {
@@ -74,14 +75,15 @@ func TestRunPipe(t *testing.T) {
 				},
 			})
 			ctx.Version = "0.0.1"
+			ctx.Git.CurrentTag = "v0.0.1"
 			ctx.Config.Archive.Format = format
 			assert.NoError(tt, Pipe{}.Run(ctx))
 			var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive))
+			require.Len(tt, archives.List(), 2)
 			darwin := archives.Filter(artifact.ByGoos("darwin")).List()[0]
 			windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
 			assert.Equal(tt, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
 			assert.Equal(tt, "foobar_0.0.1_windows_amd64.zip", windows.Name)
-			assert.Len(tt, archives.List(), 2)
 		})
 	}
 
@@ -126,6 +128,7 @@ func TestRunPipeBinary(t *testing.T) {
 		},
 	)
 	ctx.Version = "0.0.1"
+	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -166,6 +169,7 @@ func TestRunPipeDistRemoved(t *testing.T) {
 			},
 		},
 	)
+	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Goos:   "windows",
 		Goarch: "amd64",
@@ -200,6 +204,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 			},
 		},
 	)
+	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -236,6 +241,7 @@ func TestRunPipeWrap(t *testing.T) {
 			},
 		},
 	)
+	ctx.Git.CurrentTag = "v0.0.1"
 	ctx.Artifacts.Add(artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -359,6 +365,7 @@ func TestBinaryOverride(t *testing.T) {
 					},
 				},
 			)
+			ctx.Git.CurrentTag = "v0.0.1"
 			ctx.Artifacts.Add(artifact.Artifact{
 				Goos:   "darwin",
 				Goarch: "amd64",

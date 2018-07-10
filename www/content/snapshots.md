@@ -14,10 +14,8 @@ and also with the `snapshot` customization section:
 # .goreleaser.yml
 snapshot:
   # Allows you to change the name of the generated snapshot
-  # releases. The following variables are available:
-  # - Commit
-  # - Tag
-  # - Timestamp
   # Default is `SNAPSHOT-{{.Commit}}`.
   name_template: SNAPSHOT-{{.Commit}}
 ```
+
+> Learn more about the [name template engine](/templates).

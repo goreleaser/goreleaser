@@ -3,11 +3,9 @@
 package checksums
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
-	"text/template"
 
 	"github.com/apex/log"
 	"golang.org/x/sync/errgroup"
@@ -16,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/semaphore"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 )
 
 // Pipe for checksums
@@ -35,7 +34,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
-	filename, err := filenameFor(ctx)
+	filename, err := tmpl.New(ctx).Apply(ctx.Config.Checksum.NameTemplate)
 	if err != nil {
 		return err
 	}
@@ -81,26 +80,4 @@ func checksums(file *os.File, artifact artifact.Artifact) error {
 	}
 	_, err = file.WriteString(fmt.Sprintf("%v  %v\n", sha, artifact.Name))
 	return err
-}
-
-func filenameFor(ctx *context.Context) (string, error) {
-	var out bytes.Buffer
-	t, err := template.New("checksums").
-		Option("missingkey=error").
-		Parse(ctx.Config.Checksum.NameTemplate)
-	if err != nil {
-		return "", err
-	}
-	err = t.Execute(&out, struct {
-		ProjectName string
-		Tag         string
-		Version     string
-		Env         map[string]string
-	}{
-		ProjectName: ctx.Config.ProjectName,
-		Tag:         ctx.Git.CurrentTag,
-		Version:     ctx.Version,
-		Env:         ctx.Env,
-	})
-	return out.String(), err
 }

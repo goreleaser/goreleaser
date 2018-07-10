@@ -16,9 +16,9 @@ import (
 
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/filenametemplate"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/semaphore"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -109,10 +109,9 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func create(ctx *context.Context, arch string, binaries []artifact.Artifact) error {
 	var log = log.WithField("arch", arch)
-	folder, err := filenametemplate.Apply(
-		ctx.Config.Snapcraft.NameTemplate,
-		filenametemplate.NewFields(ctx, ctx.Config.Snapcraft.Replacements, binaries...),
-	)
+	folder, err := tmpl.New(ctx).
+		WithArtifact(binaries[0], ctx.Config.Snapcraft.Replacements).
+		Apply(ctx.Config.Snapcraft.NameTemplate)
 	if err != nil {
 		return err
 	}
