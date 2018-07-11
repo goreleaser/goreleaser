@@ -73,12 +73,12 @@ deployment:
 
 ## Drone
 
-By default, drone does not fetch tags. `plugins/git` is used with default values, 
-in most cases we'll need overwrite the `clone` step enabling tags in order to make 
+By default, drone does not fetch tags. `plugins/git` is used with default values,
+in most cases we'll need overwrite the `clone` step enabling tags in order to make
 `goreleaser` work correctly.
 
 In this example we're creating a new release every time a new tag is pushed.
-Note that you'll need to enable `tags` in repo settings and add `github_token` 
+Note that you'll need to enable `tags` in repo settings and add `github_token`
 secret.
 
 ```yml
