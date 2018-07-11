@@ -107,6 +107,15 @@ func TestRunPipe(t *testing.T) {
 		"custom_download_strategy": func(ctx *context.Context) {
 			ctx.Config.Brew.DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
 		},
+		"binary_overriden": func(ctx *context.Context) {
+			ctx.Config.Archive.Format = "binary"
+			ctx.Config.Archive.FormatOverrides = []config.FormatOverride{
+				{
+					Goos:   "darwin",
+					Format: "zip",
+				},
+			}
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder, err := ioutil.TempDir("", "goreleasertest")
@@ -150,9 +159,10 @@ func TestRunPipe(t *testing.T) {
 				},
 			}
 			fn(ctx)
-			var path = filepath.Join(folder, "bin.tar.gz")
+			var format = getFormat(ctx)
+			var path = filepath.Join(folder, "bin."+format)
 			ctx.Artifacts.Add(artifact.Artifact{
-				Name:   "bin.tar.gz",
+				Name:   "bin." + format,
 				Path:   path,
 				Goos:   "darwin",
 				Goarch: "amd64",
@@ -168,7 +178,7 @@ func TestRunPipe(t *testing.T) {
 			assert.True(t, client.CreatedFile)
 			var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
 			if *update {
-				ioutil.WriteFile(golden, []byte(client.Content), 0655)
+				assert.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
 			}
 			bts, err := ioutil.ReadFile(golden)
 			assert.NoError(t, err)
