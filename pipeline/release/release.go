@@ -4,11 +4,11 @@ import (
 	"os"
 
 	"github.com/apex/log"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -65,8 +65,7 @@ func doRun(ctx *context.Context, c client.Client) error {
 	if err != nil {
 		return err
 	}
-	var g errgroup.Group
-	sem := make(chan bool, ctx.Parallelism)
+	var g = semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(
 		artifact.Or(
 			artifact.ByType(artifact.UploadableArchive),
@@ -76,12 +75,8 @@ func doRun(ctx *context.Context, c client.Client) error {
 			artifact.ByType(artifact.LinuxPackage),
 		),
 	).List() {
-		sem <- true
 		artifact := artifact
 		g.Go(func() error {
-			defer func() {
-				<-sem
-			}()
 			return upload(ctx, c, releaseID, artifact)
 		})
 	}
