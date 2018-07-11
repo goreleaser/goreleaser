@@ -91,7 +91,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Brew.GitHub.Name == "" {
 		return pipeline.Skip("brew section is not configured")
 	}
-	if ctx.Config.Archive.Format == "binary" {
+	if getFormat(ctx) == "binary" {
 		return pipeline.Skip("archive format is binary")
 	}
 
@@ -139,6 +139,15 @@ func doRun(ctx *context.Context, client client.Client) error {
 
 	var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
 	return client.CreateFile(ctx, ctx.Config.Brew.CommitAuthor, ctx.Config.Brew.GitHub, content, path, msg)
+}
+
+func getFormat(ctx *context.Context) string {
+	for _, override := range ctx.Config.Archive.FormatOverrides {
+		if strings.HasPrefix("darwin", override.Goos) {
+			return override.Format
+		}
+	}
+	return ctx.Config.Archive.Format
 }
 
 func buildFormula(ctx *context.Context, artifact artifact.Artifact) (bytes.Buffer, error) {
