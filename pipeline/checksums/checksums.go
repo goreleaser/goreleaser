@@ -3,18 +3,17 @@
 package checksums
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
-	"text/template"
 
 	"github.com/apex/log"
-	"golang.org/x/sync/errgroup"
 
 	"github.com/goreleaser/goreleaser/checksum"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 )
 
 // Pipe for checksums
@@ -34,7 +33,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
-	filename, err := filenameFor(ctx)
+	filename, err := tmpl.New(ctx).Apply(ctx.Config.Checksum.NameTemplate)
 	if err != nil {
 		return err
 	}
@@ -48,8 +47,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	}
 	defer file.Close() // nolint: errcheck
 
-	var g errgroup.Group
-	var semaphore = make(chan bool, ctx.Parallelism)
+	var g = semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(
 		artifact.Or(
 			artifact.ByType(artifact.UploadableArchive),
@@ -57,13 +55,9 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 			artifact.ByType(artifact.LinuxPackage),
 		),
 	).List() {
-		semaphore <- true
 		artifact := artifact
 		g.Go(func() error {
-			defer func() {
-				<-semaphore
-			}()
-			return checksums(ctx, file, artifact)
+			return checksums(file, artifact)
 		})
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -74,7 +68,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	return g.Wait()
 }
 
-func checksums(ctx *context.Context, file *os.File, artifact artifact.Artifact) error {
+func checksums(file *os.File, artifact artifact.Artifact) error {
 	log.WithField("file", artifact.Name).Info("checksumming")
 	sha, err := checksum.SHA256(artifact.Path)
 	if err != nil {
@@ -82,26 +76,4 @@ func checksums(ctx *context.Context, file *os.File, artifact artifact.Artifact) 
 	}
 	_, err = file.WriteString(fmt.Sprintf("%v  %v\n", sha, artifact.Name))
 	return err
-}
-
-func filenameFor(ctx *context.Context) (string, error) {
-	var out bytes.Buffer
-	t, err := template.New("checksums").
-		Option("missingkey=error").
-		Parse(ctx.Config.Checksum.NameTemplate)
-	if err != nil {
-		return "", err
-	}
-	err = t.Execute(&out, struct {
-		ProjectName string
-		Tag         string
-		Version     string
-		Env         map[string]string
-	}{
-		ProjectName: ctx.Config.ProjectName,
-		Tag:         ctx.Git.CurrentTag,
-		Version:     ctx.Version,
-		Env:         ctx.Env,
-	})
-	return out.String(), err
 }

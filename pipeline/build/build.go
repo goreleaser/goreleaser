@@ -3,17 +3,13 @@
 package build
 
 import (
-	"bytes"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"text/template"
-	"time"
 
 	"github.com/apex/log"
 	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
 
 	builders "github.com/goreleaser/goreleaser/build"
 	"github.com/goreleaser/goreleaser/config"
@@ -21,6 +17,8 @@ import (
 
 	// langs to init
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 )
 
 // Pipe for build
@@ -71,16 +69,11 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	if err := runHook(ctx, build.Env, build.Hooks.Pre); err != nil {
 		return errors.Wrap(err, "pre hook failed")
 	}
-	sem := make(chan bool, ctx.Parallelism)
-	var g errgroup.Group
+	var g = semerrgroup.New(ctx.Parallelism)
 	for _, target := range build.Targets {
-		sem <- true
 		target := target
 		build := build
 		g.Go(func() error {
-			defer func() {
-				<-sem
-			}()
 			return doBuild(ctx, build, target)
 		})
 	}
@@ -102,7 +95,7 @@ func runHook(ctx *context.Context, env []string, hook string) error {
 func doBuild(ctx *context.Context, build config.Build, target string) error {
 	var ext = extFor(target)
 
-	binary, err := binary(ctx, build)
+	binary, err := tmpl.New(ctx).Apply(build.Binary)
 	if err != nil {
 		return err
 	}
@@ -117,31 +110,6 @@ func doBuild(ctx *context.Context, build config.Build, target string) error {
 		Path:   path,
 		Ext:    ext,
 	})
-}
-
-func binary(ctx *context.Context, build config.Build) (string, error) {
-	var data = struct {
-		Commit  string
-		Tag     string
-		Version string
-		Date    string
-		Env     map[string]string
-	}{
-		Commit:  ctx.Git.Commit,
-		Tag:     ctx.Git.CurrentTag,
-		Version: ctx.Version,
-		Date:    time.Now().UTC().Format(time.RFC3339),
-		Env:     ctx.Env,
-	}
-	var out bytes.Buffer
-	t, err := template.New("binary").
-		Option("missingkey=error").
-		Parse(build.Binary)
-	if err != nil {
-		return "", err
-	}
-	err = t.Execute(&out, data)
-	return out.String(), err
 }
 
 func extFor(target string) string {

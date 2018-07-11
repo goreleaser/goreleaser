@@ -14,17 +14,7 @@ Here is a commented `archive` section with all fields specified:
 ```yml
 # .goreleaser.yml
 archive:
-  # You can change the name of the archive.
-  # This is parsed with the Go template engine and the following variables
-  # are available:
-  # - ProjectName
-  # - Binary (Name of the binary if the packaging format is binary)
-  # - Tag
-  # - Version (Git tag without `v` prefix)
-  # - Os
-  # - Arch
-  # - Arm (ARM version)
-  # - Env (environment variables)
+  # Archive name template.
   # Defaults:
   # - if format is `tar.gz` or `zip`:
   #   - `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
@@ -73,21 +63,7 @@ archive:
     - design/*.png
 ```
 
-## Passing environment variables to name_template
-
-You can do that by using `{{ .Env.VARIABLE_NAME }}` in the template, for
-example:
-
-```yaml
-archive:
-  name_template: '{{.ProjectName}}-{{.Version}}-{{.Env.GOVERSION_NR}}'
-```
-
-Then you can run:
-
-```console
-GOVERSION_NR=$(go version | awk '{print $3;}') goreleaser
-```
+> Learn more about the [name template engine](/templates).
 
 ## Packaging only the binaries
 

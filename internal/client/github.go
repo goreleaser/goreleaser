@@ -9,7 +9,7 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
-	"github.com/goreleaser/goreleaser/internal/nametemplate"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"golang.org/x/oauth2"
 )
 
@@ -90,7 +90,7 @@ func (c *githubClient) CreateFile(
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (int64, error) {
 	var release *github.RepositoryRelease
-	title, err := nametemplate.Apply(ctx, ctx.Config.Release.NameTemplate)
+	title, err := tmpl.New(ctx).Apply(ctx.Config.Release.NameTemplate)
 	if err != nil {
 		return 0, err
 	}

@@ -29,14 +29,6 @@ release:
   prerelease: true
 
   # You can change the name of the GitHub release.
-  # This is parsed with the Go template engine and the following variables
-  # are available:
-  # - ProjectName
-  # - Tag
-  # - Version (Git tag without `v` prefix)
-  # - Env (environment variables)
-  # There is also a template function "time" that takes a Go time format
-  # string to insert a formated timestamp into the release name.
   # Default is ``
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
@@ -45,6 +37,8 @@ release:
   # Defaults to false.
   disable: true
 ```
+
+> Learn more about the [name template engine](/templates).
 
 ## Customize the changelog
 

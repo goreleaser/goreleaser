@@ -5,8 +5,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/apex/log"
 	"github.com/goreleaser/nfpm"
 	"github.com/imdario/mergo"
@@ -20,8 +18,9 @@ import (
 	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/filenametemplate"
 	"github.com/goreleaser/goreleaser/internal/linux"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -62,18 +61,13 @@ func doRun(ctx *context.Context) error {
 		artifact.ByType(artifact.Binary),
 		artifact.ByGoos("linux"),
 	)).GroupByPlatform()
-	var g errgroup.Group
-	sem := make(chan bool, ctx.Parallelism)
+	var g = semerrgroup.New(ctx.Parallelism)
 	for _, format := range ctx.Config.NFPM.Formats {
 		for platform, artifacts := range linuxBinaries {
-			sem <- true
 			format := format
 			arch := linux.Arch(platform)
 			artifacts := artifacts
 			g.Go(func() error {
-				defer func() {
-					<-sem
-				}()
 				return create(ctx, format, arch, artifacts)
 			})
 		}
@@ -101,10 +95,9 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	if err != nil {
 		return err
 	}
-	name, err := filenametemplate.Apply(
-		overrided.NameTemplate,
-		filenametemplate.NewFields(ctx, overrided.Replacements, binaries...),
-	)
+	name, err := tmpl.New(ctx).
+		WithArtifact(binaries[0], overrided.Replacements).
+		Apply(overrided.NameTemplate)
 	if err != nil {
 		return err
 	}

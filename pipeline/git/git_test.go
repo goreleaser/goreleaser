@@ -75,7 +75,7 @@ func TestNoTagsSnapshotInvalidTemplate(t *testing.T) {
 		},
 	})
 	ctx.Snapshot = true
-	assert.EqualError(t, Pipe{}.Run(ctx), `failed to generate snapshot name: template: snapshot:1: unexpected unclosed action in command`)
+	assert.EqualError(t, Pipe{}.Run(ctx), `failed to generate snapshot name: template: tmpl:1: unexpected unclosed action in command`)
 }
 
 // TestNoTagsNoSnapshot covers the situation where a repository

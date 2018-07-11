@@ -20,15 +20,6 @@ Available options:
 # .goreleaser.yml
 snapcraft:
   # You can change the name of the package.
-  # This is parsed with the Go template engine and the following variables
-  # are available:
-  # - ProjectName
-  # - Tag
-  # - Version (Git tag without `v` prefix)
-  # - Os
-  # - Arch
-  # - Arm (ARM version)
-  # - Env (environment variables)
   # Default: `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
   name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
@@ -96,6 +87,8 @@ snapcraft:
       # args option.
       args: --foo
 ```
+
+> Learn more about the [name template engine](/templates).
 
 Note that GoReleaser will not install `snapcraft` nor any of its dependencies
 for you.

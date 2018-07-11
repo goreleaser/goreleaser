@@ -1,5 +1,5 @@
 ---
-title: Put
+title: HTTP Put
 series: customization
 hideFromIndex: true
 weight: 120
