@@ -107,6 +107,15 @@ func TestRunPipe(t *testing.T) {
 		"custom_download_strategy": func(ctx *context.Context) {
 			ctx.Config.Brew.DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
 		},
+		"binary_overriden": func(ctx *context.Context) {
+			ctx.Config.Archive.Format = "binary"
+			ctx.Config.Archive.FormatOverrides = []config.FormatOverride{
+				{
+					Goos:   "darwin",
+					Format: "zip",
+				},
+			}
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder, err := ioutil.TempDir("", "goreleasertest")
