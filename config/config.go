@@ -266,7 +266,8 @@ type EnvFiles struct {
 
 // Git config
 type Git struct {
-	ShortHash bool `yaml:"short_hash,omitempty"`
+	TagsPrefix string `yaml:"tags_prefix,omitempty"`
+	ShortHash  bool   `yaml:"short_hash,omitempty"`
 }
 
 // Before config

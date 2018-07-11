@@ -63,7 +63,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 	if err != nil {
 		return context.GitInfo{}, errors.Wrap(err, "couldn't get current commit")
 	}
-	tag, err := getTag()
+	tag, err := getTag(ctx.Config.Git.TagsPrefix)
 	if err != nil {
 		return context.GitInfo{
 			Commit:     commit,
@@ -86,7 +86,10 @@ func setVersion(ctx *context.Context) error {
 		return nil
 	}
 	// removes usual `v` prefix
-	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
+	ctx.Version = strings.TrimPrefix(
+		strings.TrimPrefix(ctx.Git.CurrentTag, ctx.Config.Git.TagsPrefix),
+		"v",
+	)
 	return nil
 }
 
@@ -122,6 +125,9 @@ func getCommit(ctx *context.Context) (string, error) {
 	return git.Clean(git.Run("show", fmt.Sprintf("--format='%s'", format), "HEAD"))
 }
 
-func getTag() (string, error) {
-	return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
+func getTag(prefix string) (string, error) {
+	match := fmt.Sprintf("--match=%s*", prefix)
+	tag, err := git.Clean(git.Run("describe", "--tags", "--abbrev=0", match))
+	log.Infof("git tag with prefix %q: %q", prefix, tag)
+	return tag, err
 }

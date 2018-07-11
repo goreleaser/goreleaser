@@ -82,7 +82,7 @@ func (t *Template) Apply(s string) (string, error) {
 		return "", err
 	}
 
-	sv, err := semver.NewVersion(t.fields[tag].(string))
+	sv, err := semver.NewVersion(t.fields[version].(string))
 	if err != nil {
 		return "", errors.Wrap(err, "tmpl")
 	}
