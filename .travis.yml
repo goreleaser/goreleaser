@@ -1,7 +1,13 @@
 dist: trusty
 sudo: required
 language: go
-go: '1.10.3'
+go:
+  - '1.10.3'
+  - tip
+matrix:
+  fast_finish: true
+  allow_failures:
+    - go: tip
 services:
   - docker
 addons:
