@@ -95,15 +95,14 @@ func doRun(ctx *context.Context) error {
 					},
 				),
 			).List()
-			if len(binaries) == 0 {
-				log.Warnf("no binaries found for %s", docker.Binary)
+			if len(binaries) != 1 {
+				return fmt.Errorf(
+					"%d binaries match docker definition: %s: %s_%s_%s",
+					len(binaries),
+					docker.Binary, docker.Goos, docker.Goarch, docker.Goarm,
+				)
 			}
-			for _, binary := range binaries {
-				if err := process(ctx, docker, binary, seed); err != nil {
-					return err
-				}
-			}
-			return nil
+			return process(ctx, docker, binaries[0], seed)
 		})
 	}
 	return g.Wait()

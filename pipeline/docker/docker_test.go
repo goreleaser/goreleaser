@@ -314,7 +314,7 @@ func TestRunPipe(t *testing.T) {
 					Dockerfile: "testdata/Dockerfile",
 				},
 			},
-			assertError: shouldNotErr,
+			assertError: shouldErr(`0 binaries match docker definition: mybinnnn: darwin_amd64_`),
 		},
 	}
 
