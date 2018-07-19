@@ -65,6 +65,9 @@ archive:
 
 > Learn more about the [name template engine](/templates).
 
+You can add entire folders by using the glob notation like `myfolder/*`, for
+example.
+
 ## Packaging only the binaries
 
 Since GoReleaser will always add the `README` and `LICENSE` files to the
