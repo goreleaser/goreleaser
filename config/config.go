@@ -281,7 +281,7 @@ type S3 struct {
 	Folder   string
 	Profile  string
 	Endpoint string // used for minio for example
-	ACL		 string
+	ACL      string
 }
 
 // Put HTTP upload configuration
