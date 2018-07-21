@@ -61,12 +61,13 @@ archive:
     - CHANGELOG.md
     - docs/*
     - design/*.png
+    - templates/**/*
 ```
 
 > Learn more about the [name template engine](/templates).
 
-You can add entire folders by using the glob notation like `myfolder/*`, for
-example.
+You can add entire folders, its subfolders and files by using the glob notation,
+for example: `myfolder/**/*`.
 
 ## Packaging only the binaries
 
