@@ -17,75 +17,60 @@ func main() {
 }
 ```
 
-By default GoReleaser will build the current directory, but you can change
-the package path in the GoReleaser configuration file:
+Run `goreleaser init` to create an example `.goreleaser.yaml` file:
 
-```yml
-# .goreleaser.yml
-# Build customization
-builds:
-  - binary: drum-roll
-    goos:
-      - windows
-      - darwin
-      - linux
-    goarch:
-      - amd64
+```console
+$ goreleaser init
+
+   • Generating .goreleaser.yml file
+   • config created; please edit accordingly to your needs file=.goreleaser.yml
 ```
 
-GoReleaser skips invalid GOOS/GOARCH combinations.
-
-With the above configuration the name of all created binaries will be `drum-roll`
-and GoReleaser will build one binary in 64bit architecture for each of the operating systems Windows, Linux and MacOS.
-
-GoReleaser will then archive the resulting binaries of each OS/Arch pair into a
-separate file. The default format is `{{.ProjectName}}_{{.Os}}_{{.Arch}}`.
-You can change the archive's name and format. You can also replace the OS
-and the Architecture with your own.
-
-Another useful feature is to add additional files to the created archives:
+The generated config file will look like this:
 
 ```yml
-# .goreleaser.yml
-# Build customization
+# This is an example goreleaser.yaml file with some sane defaults.
+# Make sure to check the documentation at http://goreleaser.com
 builds:
-  - main: main.go
-    binary: drum-roll
-    goos:
-      - windows
-      - darwin
-      - linux
-    goarch:
-      - amd64
-# Archive customization
+- env:
+  - CGO_ENABLED=0
 archive:
-  format: tar.gz
   replacements:
-    amd64: 64-bit
-    darwin: macOS
-    linux: Tux
-  files:
-    - drum-roll.licence.txt
+    darwin: Darwin
+    linux: Linux
+    windows: Windows
+    386: i386
+    amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
 ```
 
-This configuration will generate `tar` archives, each containing an additional
-file called `drum-roll.licence.txt`.
-The archives will be located in the `dist` folder:
+GoReleaser will build the binaries for your app for Windows, Linux and macOS,
+both amd64 and i386 architectures. You can customize that by changing the
+`builds` section. Check the [documentation](/build) for more information.
 
-- `./dist/drum-roll_windows_64-bit.tar.gz`
-- `./dist/drum-roll_macOS_64-bit.tar.gz`
-- `./dist/drum-roll_Tux_64-bit.tar.gz`
+After building the binaries, GoReleaser will create an archive for each OS/Arch
+pair into a separate file. You can customize several things by changing
+the `archive` section. Check the [documentation](/archive) for more information.
 
-Next, you need to export a `GITHUB_TOKEN` environment variable, which should contain a
-GitHub token with the `repo` scope selected.
+You'll need to export a `GITHUB_TOKEN` environment variable, which should
+contain a valid GitHub token with the `repo` scope.
 It will be used to deploy releases to your GitHub repository.
-Create a token [here](https://github.com/settings/tokens/new).
+You can create a token [here](https://github.com/settings/tokens/new).
 
 ```console
 $ export GITHUB_TOKEN=`YOUR_TOKEN`
 ```
 
-GoReleaser uses the latest
+GoReleaser will use the latest
 [Git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of your repository.
 Create a tag and push it to GitHub:
 
@@ -94,10 +79,9 @@ $ git tag -a v0.1.0 -m "First release"
 $ git push origin v0.1.0
 ```
 
-**Note**: We recommend the use of [semantic versioning](http://semver.org/). We
-are not enforcing it though. We do remove the `v` prefix and then enforce
-that the next character is a number. So, `v0.1.0` and `0.1.0` are virtually the
-same and both are accepted, while `version0.1.0` is not.
+> **Attention**: Your tag should be a valid
+> [semantic version](http://semver.org/). If it is not, it is likely things
+> will fail.
 
 If you don't want to create a tag yet, you can also create a release
 based on the latest commit by using the `--snapshot` flag.
