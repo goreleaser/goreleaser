@@ -61,9 +61,13 @@ func upload(ctx *context.Context, conf config.S3) error {
 		awsConfig.Endpoint = aws.String(conf.Endpoint)
 		awsConfig.S3ForcePathStyle = aws.Bool(true)
 	}
-	// TODO: add a test for this
-	if conf.Profile != "" {
-		awsConfig.Credentials = credentials.NewSharedCredentials("", conf.Profile)
+	if conf.UseEnvVars {
+		awsConfig.Credentials = credentials.NewEnvCredentials()
+	} else {
+		// TODO: add a test for this
+		if conf.Profile != "" {
+			awsConfig.Credentials = credentials.NewSharedCredentials("", conf.Profile)
+		}
 	}
 	sess := session.Must(session.NewSession(awsConfig))
 	svc := s3.New(sess, &aws.Config{
