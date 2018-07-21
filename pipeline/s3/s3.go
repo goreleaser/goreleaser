@@ -38,6 +38,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if s3.Region == "" {
 			s3.Region = "us-east-1"
 		}
+		if s3.ACL == "" {
+			s3.ACL = "private"
+		}
 	}
 	return nil
 }
@@ -99,6 +102,7 @@ func upload(ctx *context.Context, conf config.S3) error {
 				Bucket: aws.String(conf.Bucket),
 				Key:    aws.String(filepath.Join(folder, artifact.Name)),
 				Body:   f,
+				ACL:    aws.String(conf.ACL),
 			})
 			return err
 		})

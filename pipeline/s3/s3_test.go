@@ -49,6 +49,7 @@ func TestDefaults(t *testing.T) {
 		Bucket: "foo",
 		Region: "us-east-1",
 		Folder: "{{ .ProjectName }}/{{ .Tag }}",
+		ACL: 	"private",
 	}}, ctx.Config.S3)
 }
 
