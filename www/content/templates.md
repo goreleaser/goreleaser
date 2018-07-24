@@ -29,12 +29,13 @@ On fields that support templating, this fields are always available:
 On fields that are related to a single artifact (e.g., the binary name), you
 may have some extra fields:
 
-|    Key    |              Description              |
-| :-------: | :-----------------------------------: |
-|   `.Os`   |  `GOOS` (usually allow replacements)  |
-|  `.Arch`  | `GOARCH` (usually allow replacements) |
-|  `.Arm`   | `GOARM` (usually allow replacements)  |
-| `.Binary` |              Binary name              |
+|       Key       |              Description              |
+| :-------------: | :-----------------------------------: |
+|      `.Os`      |  `GOOS` (usually allow replacements)  |
+|     `.Arch`     | `GOARCH` (usually allow replacements) |
+|     `.Arm`      | `GOARM` (usually allow replacements)  |
+|    `.Binary`    |              Binary name              |
+| `.ArtifactName` |              Archive name             |
 
 On all fields, you have these available functions:
 

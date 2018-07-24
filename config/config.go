@@ -50,6 +50,7 @@ type Homebrew struct {
 	SkipUpload       bool         `yaml:"skip_upload,omitempty"`
 	DownloadStrategy string       `yaml:"download_strategy,omitempty"`
 	SourceTarball    string       `yaml:"-"`
+	URLTemplate      string       `yaml:"url_template,omitempty"`
 }
 
 // Scoop contains the scoop.sh section

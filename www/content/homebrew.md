@@ -27,6 +27,10 @@ brew:
     owner: user
     name: homebrew-tap
 
+  # Template for the url.
+  # Default is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+  url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
+
   # Allows you to set a custom download strategy.
   # Default is empty.
   download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy

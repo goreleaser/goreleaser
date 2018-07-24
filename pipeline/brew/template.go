@@ -1,17 +1,12 @@
 package brew
 
-import "github.com/goreleaser/goreleaser/config"
-
 type templateData struct {
 	Name             string
 	Desc             string
 	Homepage         string
 	DownloadURL      string
-	Repo             config.Repo // FIXME: will not work for anything but github right now.
-	Tag              string
 	Version          string
 	Caveats          []string
-	File             string
 	SHA256           string
 	Plist            string
 	DownloadStrategy string
@@ -24,7 +19,7 @@ type templateData struct {
 const formulaTemplate = `class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
-  url "{{ .DownloadURL }}/{{ .Repo.Owner }}/{{ .Repo.Name }}/releases/download/{{ .Tag }}/{{ .File }}"
+  url "{{ .DownloadURL }}"
   {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
