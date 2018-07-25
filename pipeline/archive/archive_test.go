@@ -2,6 +2,7 @@ package archive
 
 import (
 	"archive/tar"
+	"archive/zip"
 	"compress/gzip"
 	"io"
 	"os"
@@ -33,6 +34,9 @@ func TestRunPipe(t *testing.T) {
 	assert.NoError(t, err)
 	_, err = os.Create(filepath.Join(folder, "README.md"))
 	assert.NoError(t, err)
+	assert.NoError(t, os.MkdirAll(filepath.Join(folder, "foo", "bar", "foobar"), 0755))
+	_, err = os.Create(filepath.Join(filepath.Join(folder, "foo", "bar", "foobar", "blah.txt")))
+	assert.NoError(t, err)
 	for _, format := range []string{"tar.gz", "zip"} {
 		t.Run("Archive format "+format, func(tt *testing.T) {
 			var ctx = context.New(
@@ -43,6 +47,7 @@ func TestRunPipe(t *testing.T) {
 						NameTemplate: defaultNameTemplate,
 						Files: []string{
 							"README.*",
+							"./foo/**/*",
 						},
 						FormatOverrides: []config.FormatOverride{
 							{
@@ -88,21 +93,60 @@ func TestRunPipe(t *testing.T) {
 	}
 
 	// Check archive contents
-	f, err := os.Open(filepath.Join(dist, "foobar_0.0.1_darwin_amd64.tar.gz"))
-	assert.NoError(t, err)
-	defer func() { assert.NoError(t, f.Close()) }()
+	assert.Equal(
+		t,
+		[]string{
+			"README.md",
+			"foo/bar",
+			"foo/bar/foobar",
+			"foo/bar/foobar/blah.txt",
+			"mybin",
+		},
+		tarFiles(t, filepath.Join(dist, "foobar_0.0.1_darwin_amd64.tar.gz")),
+	)
+	assert.Equal(
+		t,
+		[]string{
+			"README.md",
+			"foo/bar/foobar/blah.txt",
+			"mybin.exe",
+		},
+		zipFiles(t, filepath.Join(dist, "foobar_0.0.1_windows_amd64.zip")),
+	)
+}
+
+func zipFiles(t *testing.T, path string) []string {
+	f, err := os.Open(path)
+	require.NoError(t, err)
+	info, err := f.Stat()
+	require.NoError(t, err)
+	r, err := zip.NewReader(f, info.Size())
+	require.NoError(t, err)
+	var paths = make([]string, len(r.File))
+	for i, zf := range r.File {
+		paths[i] = zf.Name
+	}
+	return paths
+}
+
+func tarFiles(t *testing.T, path string) []string {
+	f, err := os.Open(path)
+	require.NoError(t, err)
+	defer f.Close()
 	gr, err := gzip.NewReader(f)
-	assert.NoError(t, err)
-	defer func() { assert.NoError(t, gr.Close()) }()
-	r := tar.NewReader(gr)
-	for _, n := range []string{"README.md", "mybin"} {
-		h, err := r.Next()
+	require.NoError(t, err)
+	defer gr.Close()
+	var r = tar.NewReader(gr)
+	var paths []string
+	for {
+		next, err := r.Next()
 		if err == io.EOF {
 			break
 		}
-		assert.NoError(t, err)
-		assert.Equal(t, n, h.Name)
+		require.NoError(t, err)
+		paths = append(paths, next.Name)
 	}
+	return paths
 }
 
 func TestRunPipeBinary(t *testing.T) {
