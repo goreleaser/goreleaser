@@ -35,7 +35,7 @@ may have some extra fields:
 |     `.Arch`     | `GOARCH` (usually allow replacements) |
 |     `.Arm`      | `GOARM` (usually allow replacements)  |
 |    `.Binary`    |              Binary name              |
-| `.ArtifactName` |              Archive name             |
+| `.ArtifactName` |             Archive name              |
 
 On all fields, you have these available functions:
 
