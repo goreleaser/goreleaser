@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pipeline"
 )
 
@@ -159,11 +160,11 @@ func buildFormula(ctx *context.Context, artifact artifact.Artifact) (bytes.Buffe
 }
 
 func doBuildFormula(data templateData) (out bytes.Buffer, err error) {
-	tmpl, err := template.New(data.Name).Parse(formulaTemplate)
+	t, err := template.New(data.Name).Parse(formulaTemplate)
 	if err != nil {
 		return out, err
 	}
-	err = tmpl.Execute(&out, data)
+	err = t.Execute(&out, data)
 	return
 }
 
@@ -173,16 +174,25 @@ func dataFor(ctx *context.Context, artifact artifact.Artifact) (result templateD
 		return
 	}
 	var cfg = ctx.Config.Brew
+
+	if ctx.Config.Brew.URLTemplate == "" {
+		ctx.Config.Brew.URLTemplate = fmt.Sprintf("%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+			ctx.Config.GitHubURLs.Download,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name)
+	}
+	url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(ctx.Config.Brew.URLTemplate)
+	if err != nil {
+		return
+	}
+
 	return templateData{
 		Name:             formulaNameFor(ctx.Config.Brew.Name),
-		DownloadURL:      ctx.Config.GitHubURLs.Download,
+		DownloadURL:      url,
 		Desc:             cfg.Description,
 		Homepage:         cfg.Homepage,
-		Repo:             ctx.Config.Release.GitHub,
-		Tag:              ctx.Git.CurrentTag,
 		Version:          ctx.Version,
 		Caveats:          split(cfg.Caveats),
-		File:             artifact.Name,
 		SHA256:           sum,
 		Dependencies:     cfg.Dependencies,
 		Conflicts:        cfg.Conflicts,

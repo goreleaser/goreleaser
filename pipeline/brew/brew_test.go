@@ -37,17 +37,11 @@ func TestSimpleName(t *testing.T) {
 var defaultTemplateData = templateData{
 	Desc:        "Some desc",
 	Homepage:    "https://google.com",
-	DownloadURL: "https://github.com",
+	DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
 	Name:        "Test",
-	Repo: config.Repo{
-		Owner: "caarlos0",
-		Name:  "test",
-	},
-	Tag:     "v0.1.3",
-	Version: "0.1.3",
-	Caveats: []string{},
-	File:    "test_Darwin_x86_64.tar.gz",
-	SHA256:  "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
+	Version:     "0.1.3",
+	Caveats:     []string{},
+	SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
@@ -292,6 +286,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 			},
 		},
 	})
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
 	_, err = os.Create(path)
 	assert.NoError(t, err)

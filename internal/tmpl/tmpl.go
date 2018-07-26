@@ -33,10 +33,11 @@ const (
 	timestamp   = "Timestamp"
 
 	// artifact-only keys
-	os     = "Os"
-	arch   = "Arch"
-	arm    = "Arm"
-	binary = "Binary"
+	os           = "Os"
+	arch         = "Arch"
+	arm          = "Arm"
+	binary       = "Binary"
+	artifactName = "ArtifactName"
 )
 
 // New Template
@@ -64,6 +65,7 @@ func (t *Template) WithArtifact(a artifact.Artifact, replacements map[string]str
 	t.fields[arch] = replace(replacements, a.Goarch)
 	t.fields[arm] = replace(replacements, a.Goarm)
 	t.fields[binary] = bin
+	t.fields[artifactName] = a.Name
 	return t
 }
 
