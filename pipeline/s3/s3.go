@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
+	"github.com/goreleaser/goreleaser/pipeline"
 )
 
 // Pipe for Artifactory
@@ -47,6 +48,9 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	if ctx.SkipPublish {
+		return pipeline.ErrSkipPublishEnabled
+	}
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, conf := range ctx.Config.S3 {
 		conf := conf
