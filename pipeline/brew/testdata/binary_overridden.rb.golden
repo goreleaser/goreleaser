@@ -1,4 +1,4 @@
-class BinaryOverriden < Formula
+class BinaryOverridden < Formula
   desc "A run pipe test formula"
   homepage "https://github.com/goreleaser"
   url "https://github.com/test/test/releases/download/v1.0.1/bin.zip"
