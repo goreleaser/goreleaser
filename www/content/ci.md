@@ -57,9 +57,32 @@ Note the last line (`condition: $TRAVIS_OS_NAME = linux`): it is important
 if you run a build matrix with multiple Go versions and/or multiple OSes. If
 that's the case you will want to make sure GoReleaser is run just once.
 
-# Circle
+## CircleCI
 
-Here is how to do it with [CircleCI](https://circleci.com):
+Here is how to do it with [CircleCI 2.0](https://circleci.com):
+
+```yml
+# .circleci/config.yml
+jobs:
+  release:
+    docker:
+      - image: circleci/golang:1.10
+    steps:
+      - checkout
+      - run: curl -sL https://git.io/goreleaser | bash
+workflows:
+  version: 2
+  release:
+    jobs:
+      - release:
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+```
+
+For CircleCI 1.0:
 
 ```yml
 # circle.yml
