@@ -55,7 +55,7 @@ func New(ctx *context.Context) *Template {
 	}
 }
 
-// WithArtifacts populate fields from the artifact and replacements
+// WithArtifact populates fields from the artifact and replacements
 func (t *Template) WithArtifact(a artifact.Artifact, replacements map[string]string) *Template {
 	var bin = a.Extra[binary]
 	if bin == "" {
