@@ -76,7 +76,7 @@ snapcraft:
       # confined space, declare them here.
       # You can read the documentation about the available plugs and the
       # things they allow:
-      # https://snapcraft.io/docs/reference/interfaces).
+      # https://snapcraft.io/docs/reference/interfaces.
       plugs: ["home", "network"]
 
       # If you want your app to be autostarted and to always run in the
