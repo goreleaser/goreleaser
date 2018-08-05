@@ -1,8 +1,4 @@
 [[constraint]]
-  name = "github.com/goreleaser/archive"
-  version = "^1.0.0"
-
-[[constraint]]
   branch = "master"
   name = "github.com/google/go-github"
 

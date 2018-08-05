@@ -124,16 +124,6 @@
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 
 [[projects]]
-  name = "github.com/goreleaser/archive"
-  packages = [
-    ".",
-    "tar",
-    "zip"
-  ]
-  revision = "9c6b0c177751034bab579499b81c69993ddfe563"
-  version = "v1.1.3"
-
-[[projects]]
   name = "github.com/goreleaser/nfpm"
   packages = [
     ".",
@@ -262,6 +252,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f8fe5bd56d1929f1592ca556cb199eec1d49bbc99d1b1cd5796a9a2be7d6bb22"
+  inputs-digest = "c2930bf7f01a483d6510c5de94e117a16965ae17a44510c60e488da4778d77b9"
   solver-name = "gps-cdcl"
   solver-version = 1
