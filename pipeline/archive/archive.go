@@ -11,13 +11,13 @@ import (
 
 	"github.com/apex/log"
 	"github.com/campoy/unique"
-	"github.com/mattn/go-zglob"
+	zglob "github.com/mattn/go-zglob"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/goreleaser/archive"
 	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
+	"github.com/goreleaser/goreleaser/pkg/archive"
 )
 
 const (
