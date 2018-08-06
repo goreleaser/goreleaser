@@ -44,6 +44,7 @@ func (a Archive) Add(name, path string) (err error) {
 		return err
 	}
 	header.Name = name
+	header.Method = zip.Deflate
 	w, err := a.z.CreateHeader(header)
 	if err != nil {
 		return err
