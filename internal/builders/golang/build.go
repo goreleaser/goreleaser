@@ -10,11 +10,11 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	api "github.com/goreleaser/goreleaser/build"
-	"github.com/goreleaser/goreleaser/config"
-	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
+	api "github.com/goreleaser/goreleaser/pkg/build"
+	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/pkg/errors"
 )
 

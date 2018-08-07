@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goreleaser/goreleaser/config"
 	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/assert"
 	yaml "gopkg.in/yaml.v2"
 )

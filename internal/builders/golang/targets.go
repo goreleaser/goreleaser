@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/goreleaser/config"
+	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
 type target struct {
