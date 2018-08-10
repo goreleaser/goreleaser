@@ -8,6 +8,7 @@ import (
 	"github.com/apex/log"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -74,7 +75,20 @@ func upload(ctx *context.Context, conf config.S3) error {
 			Profile: conf.Profile,
 		},
 	})
-	sess := session.Must(session.NewSession(awsConfig))
+
+	_, err := awsConfig.Credentials.Get()
+	var sess *session.Session
+	if err == nil {
+		sess = session.Must(session.NewSession(awsConfig))
+	} else {
+		// Specify profile and assume an IAM role with MFA prompting for token code on stdin
+		sess = session.Must(session.NewSessionWithOptions(session.Options{
+			AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
+			SharedConfigState:       session.SharedConfigEnable,
+			Profile:                 conf.Profile,
+		}))
+	}
+
 	svc := s3.New(sess, &aws.Config{
 		Region: aws.String(conf.Region),
 	})
