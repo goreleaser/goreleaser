@@ -12,7 +12,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -34,10 +33,6 @@ func (Pipe) String() string {
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Dockers {
 		var docker = &ctx.Config.Dockers[i]
-		if docker.OldTagTemplate != "" {
-			deprecate.Notice("docker.tag_template")
-			docker.TagTemplates = append(docker.TagTemplates, docker.OldTagTemplate)
-		}
 		if len(docker.TagTemplates) == 0 {
 			docker.TagTemplates = append(docker.TagTemplates, "{{ .Version }}")
 		}
@@ -46,10 +41,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if docker.Goarch == "" {
 			docker.Goarch = "amd64"
-		}
-		if docker.Latest {
-			deprecate.Notice("docker.latest")
-			docker.TagTemplates = append(docker.TagTemplates, "latest")
 		}
 	}
 	// only set defaults if there is exacly 1 docker setup in the config file.
@@ -188,7 +179,7 @@ func dockerBuild(ctx *context.Context, root, dockerfile, image string) error {
 	log.WithField("image", image).Info("building docker image")
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "docker", "build", "-f", dockerfile, "-t", image, root)
-	log.WithField("cmd", cmd.Args).Debug("running")
+	log.WithField("cmd", cmd.Args).Info("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return errors.Wrapf(err, "failed to build docker image: \n%s", string(out))

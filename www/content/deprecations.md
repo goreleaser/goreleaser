@@ -62,11 +62,12 @@ nfpm:
   # ...
 ```
 
-## docker.name_template
+## docker.tag_template
 
 > since 2018-01-19
+> removed 2017-08-15
 
-This property was deprecated in favor of the pluralized `name_templates`.
+This property was deprecated in favor of the pluralized `tag_templates`.
 The idea is to be able to define several tags instead of just one.
 
 Change this:
@@ -74,7 +75,7 @@ Change this:
 ```yaml
 dockers:
 - image: foo/bar
-  name_template: '{{ .Tag }}'
+  tag_template: '{{ .Tag }}'
 ```
 
 to this:
@@ -89,6 +90,7 @@ dockers:
 ## docker.latest
 
 > since 2018-01-19
+> removed 2017-08-15
 
 The `latest` field in Docker config is deprecated in favor of the newer
 `tag_templates` field.

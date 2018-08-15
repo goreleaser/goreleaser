@@ -235,17 +235,15 @@ type Checksum struct {
 
 // Docker image config
 type Docker struct {
-	Binary         string   `yaml:",omitempty"`
-	Goos           string   `yaml:",omitempty"`
-	Goarch         string   `yaml:",omitempty"`
-	Goarm          string   `yaml:",omitempty"`
-	Image          string   `yaml:",omitempty"`
-	Dockerfile     string   `yaml:",omitempty"`
-	Latest         bool     `yaml:",omitempty"`
-	SkipPush       bool     `yaml:"skip_push,omitempty"`
-	OldTagTemplate string   `yaml:"tag_template,omitempty"`
-	TagTemplates   []string `yaml:"tag_templates,omitempty"`
-	Files          []string `yaml:"extra_files,omitempty"`
+	Binary       string   `yaml:",omitempty"`
+	Goos         string   `yaml:",omitempty"`
+	Goarch       string   `yaml:",omitempty"`
+	Goarm        string   `yaml:",omitempty"`
+	Image        string   `yaml:",omitempty"`
+	Dockerfile   string   `yaml:",omitempty"`
+	SkipPush     bool     `yaml:"skip_push,omitempty"`
+	TagTemplates []string `yaml:"tag_templates,omitempty"`
+	Files        []string `yaml:"extra_files,omitempty"`
 }
 
 // Filters config
