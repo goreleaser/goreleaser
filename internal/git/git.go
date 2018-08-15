@@ -10,9 +10,9 @@ import (
 )
 
 // IsRepo returns true if current folder is a git repository
-func IsRepo() bool {
+func IsRepo() (bool, error) {
 	out, err := Run("rev-parse", "--is-inside-work-tree")
-	return err == nil && strings.TrimSpace(out) == "true"
+	return err == nil && strings.TrimSpace(out) == "true", err
 }
 
 // Run runs a git command and returns its output or errors

@@ -71,7 +71,7 @@ favicon:
 .PHONY: favicon
 
 serve:
-	@hugo server --enableGitInfo --watch --source www
+	@hugo server --enableGitInfo --watch --source www --disableFastRender
 .PHONY: serve
 
 # Show to-do items per file.
