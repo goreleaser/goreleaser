@@ -37,9 +37,12 @@ to this:
 
 # Expired deprecation notices
 
+The following options were deprecated for ~6 months and are now unsupported.
+
 ## fpm
 
 > since 2018-02-17
+>
 > removed 2017-08-15
 
 FPM is deprecated in favor of nfpm, which is a simpler alternative written
@@ -65,6 +68,7 @@ nfpm:
 ## docker.tag_template
 
 > since 2018-01-19
+>
 > removed 2017-08-15
 
 This property was deprecated in favor of the pluralized `tag_templates`.
@@ -90,6 +94,7 @@ dockers:
 ## docker.latest
 
 > since 2018-01-19
+>
 > removed 2017-08-15
 
 The `latest` field in Docker config is deprecated in favor of the newer
