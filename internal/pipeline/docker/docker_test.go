@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var it = flag.Bool("it", false, "push images to docker hub")
@@ -52,12 +53,12 @@ func TestRunPipe(t *testing.T) {
 	type errChecker func(*testing.T, error)
 	var shouldErr = func(msg string) errChecker {
 		return func(t *testing.T, err error) {
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), msg)
+			require.Error(t, err)
+			require.Contains(t, err.Error(), msg)
 		}
 	}
 	var shouldNotErr = func(t *testing.T, err error) {
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
 
 	var table = map[string]struct {
@@ -202,7 +203,7 @@ func TestRunPipe(t *testing.T) {
 			publish: true,
 			dockers: []config.Docker{
 				{
-					Image:      registry + "goreleaser/test_run_pipe",
+					Image:      registry + "goreleaser/bad_dockerfile",
 					Goos:       "linux",
 					Goarch:     "amd64",
 					Dockerfile: "testdata/Dockerfile.bad",
@@ -259,7 +260,6 @@ func TestRunPipe(t *testing.T) {
 						"{{.Tag}}",
 						"latest",
 					},
-					Latest: true,
 				},
 			},
 			expect: []string{
@@ -325,13 +325,13 @@ func TestRunPipe(t *testing.T) {
 	for name, docker := range table {
 		t.Run(name, func(tt *testing.T) {
 			folder, err := ioutil.TempDir("", "archivetest")
-			assert.NoError(tt, err)
+			require.NoError(tt, err)
 			var dist = filepath.Join(folder, "dist")
-			assert.NoError(tt, os.Mkdir(dist, 0755))
-			assert.NoError(tt, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+			require.NoError(tt, os.Mkdir(dist, 0755))
+			require.NoError(tt, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 			var binPath = filepath.Join(dist, "mybin", "mybin")
 			_, err = os.Create(binPath)
-			assert.NoError(tt, err)
+			require.NoError(tt, err)
 
 			var ctx = context.New(config.Project{
 				ProjectName: "mybin",
@@ -366,13 +366,13 @@ func TestRunPipe(t *testing.T) {
 				_ = exec.Command("docker", "rmi", img).Run()
 			}
 
-			docker.assertError(t, Pipe{}.Run(ctx))
+			docker.assertError(tt, Pipe{}.Run(ctx))
 
 			// this might should not fail as the image should have been created when
 			// the step ran
 			for _, img := range docker.expect {
 				tt.Log("removing docker image", img)
-				assert.NoError(tt, exec.Command("docker", "rmi", img).Run(), "could not delete image %s", img)
+				require.NoError(tt, exec.Command("docker", "rmi", img).Run(), "could not delete image %s", img)
 			}
 
 		})
@@ -425,9 +425,7 @@ func TestDefault(t *testing.T) {
 				},
 			},
 			Dockers: []config.Docker{
-				{
-					Latest: true,
-				},
+				{},
 			},
 		},
 	}
@@ -438,8 +436,7 @@ func TestDefault(t *testing.T) {
 	assert.Equal(t, "amd64", docker.Goarch)
 	assert.Equal(t, ctx.Config.Builds[0].Binary, docker.Binary)
 	assert.Equal(t, "Dockerfile", docker.Dockerfile)
-	assert.Empty(t, docker.OldTagTemplate)
-	assert.Equal(t, []string{"{{ .Version }}", "latest"}, docker.TagTemplates)
+	assert.Equal(t, []string{"{{ .Version }}"}, docker.TagTemplates)
 
 }
 
@@ -472,31 +469,9 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "windows", docker.Goos)
 	assert.Equal(t, "i386", docker.Goarch)
 	assert.Equal(t, "bar", docker.Binary)
-	assert.Empty(t, docker.OldTagTemplate)
 	assert.Equal(t, []string{"{{ .Version }}"}, docker.TagTemplates)
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 }
-
-func TestDefaultWithOldTagTemplateSet(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
-			Dockers: []config.Docker{
-				{
-					Dockerfile:     "Dockerfile.foo",
-					OldTagTemplate: "{{.Tag}}",
-					Latest:         true,
-					Binary:         "foo",
-				},
-			},
-		},
-	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Dockers, 1)
-	var docker = ctx.Config.Dockers[0]
-	assert.Equal(t, []string{"{{.Tag}}", "latest"}, docker.TagTemplates)
-	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
-}
-
 func TestLinkFile(t *testing.T) {
 	const srcFile = "/tmp/test"
 	const dstFile = "/tmp/linked"
