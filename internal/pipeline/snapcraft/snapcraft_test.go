@@ -108,6 +108,8 @@ func TestRunPipeWithName(t *testing.T) {
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	assert.NoError(t, err)
 	assert.Equal(t, metadata.Name, "testsnapname")
+	assert.Equal(t, metadata.Apps["mybin"].Command, "mybin")
+	assert.Equal(t, metadata.Apps["testsnapname"].Command, "mybin")
 }
 
 func TestRunPipeMetadata(t *testing.T) {
