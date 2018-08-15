@@ -13,7 +13,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipeline/checksums"
 	"github.com/goreleaser/goreleaser/internal/pipeline/docker"
 	"github.com/goreleaser/goreleaser/internal/pipeline/env"
-	"github.com/goreleaser/goreleaser/internal/pipeline/fpm"
 	"github.com/goreleaser/goreleaser/internal/pipeline/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipeline/project"
 	"github.com/goreleaser/goreleaser/internal/pipeline/release"
@@ -48,7 +47,6 @@ var defaulters = []Defaulter{
 	project.Pipe{},
 	archive.Pipe{},
 	build.Pipe{},
-	fpm.Pipe{},
 	nfpm.Pipe{},
 	snapcraft.Pipe{},
 	checksums.Pipe{},
