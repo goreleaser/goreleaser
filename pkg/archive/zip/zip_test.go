@@ -46,7 +46,7 @@ func TestZipFile(t *testing.T) {
 		paths[i] = zf.Name
 		t.Logf("%s: %v", zf.Name, zf.Mode())
 		if zf.Name == "sub1/executable" {
-			assert.Equal("-rwxrwxr-x", zf.Mode().String())
+			assert.Equal("-rwxr-xr-x", zf.Mode().String())
 		}
 	}
 	assert.Equal([]string{

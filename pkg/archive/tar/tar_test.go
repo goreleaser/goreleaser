@@ -52,7 +52,7 @@ func TestTarGzFile(t *testing.T) {
 		paths = append(paths, next.Name)
 		t.Logf("%s: %v", next.Name, next.FileInfo().Mode())
 		if next.Name == "sub1/executable" {
-			assert.Equal("-rwxrwxr-x", next.FileInfo().Mode().String())
+			assert.Equal("-rwxr-xr-x", next.FileInfo().Mode().String())
 		}
 	}
 	assert.Equal([]string{
