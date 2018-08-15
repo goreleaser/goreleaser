@@ -63,6 +63,7 @@ Here is how to do it with [CircleCI 2.0](https://circleci.com):
 
 ```yml
 # .circleci/config.yml
+version: 2
 jobs:
   release:
     docker:
@@ -75,11 +76,11 @@ workflows:
   release:
     jobs:
       - release:
-        filters:
-          branches:
-            ignore: /.*/
-          tags:
-            only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*(-.*)*/
 ```
 
 For CircleCI 1.0:
