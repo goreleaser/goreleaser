@@ -120,8 +120,8 @@ func TestUpload(t *testing.T) {
 
 func setCredentials(t *testing.T) {
 	// this comes from the testdata/config/config.json file - not real aws keys
-	os.Setenv("AWS_ACCESS_KEY_ID", "IWA0WZQ1QJ2I8I1ALW64")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", "zcK4QQegvYwVGJaBm2E6k20WRLIQZqHOKOPP2npT")
+	os.Setenv("AWS_ACCESS_KEY_ID", "WPXKJC7CZQCFPKY5727N")
+	os.Setenv("AWS_SECRET_ACCESS_KEY", "eHCSajxLvl94l36gIMlzZ/oW2O0rYYK+cVn5jNT2")
 	os.Setenv("AWS_REGION", "us-east-1")
 }
 
