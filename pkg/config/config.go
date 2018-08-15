@@ -303,7 +303,6 @@ type Project struct {
 	Scoop         Scoop     `yaml:",omitempty"`
 	Builds        []Build   `yaml:",omitempty"`
 	Archive       Archive   `yaml:",omitempty"`
-	FPM           NFPM      `yaml:",omitempty"` // deprecated
 	NFPM          NFPM      `yaml:",omitempty"`
 	Snapcraft     Snapcraft `yaml:",omitempty"`
 	Snapshot      Snapshot  `yaml:",omitempty"`

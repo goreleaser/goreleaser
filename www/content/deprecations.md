@@ -7,6 +7,12 @@ hideFromIndex: true
 
 This page will be used to list deprecation notices accross GoReleaser.
 
+Deprecate code will be removed after ~6 months from the time it was deprecated.
+
+# Active deprecation notices
+
+No active deprecation notices at this time.
+
 <!--
 
 Template for new deprecations:
@@ -29,9 +35,12 @@ to this:
 
  -->
 
+# Expired deprecation notices
+
 ## fpm
 
 > since 2018-02-17
+> removed 2017-08-15
 
 FPM is deprecated in favor of nfpm, which is a simpler alternative written
 in Go. The objective is to remove the ruby dependency thus simplify the
