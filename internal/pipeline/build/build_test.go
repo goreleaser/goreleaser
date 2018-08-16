@@ -201,11 +201,7 @@ func TestDefaultExpandEnv(t *testing.T) {
 func TestDefaultEmptyBuild(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Release: config.Release{
-				GitHub: config.Repo{
-					Name: "foo",
-				},
-			},
+			ProjectName: "foo",
 			Builds: []config.Build{
 				{},
 			},
@@ -213,7 +209,7 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
 	var build = ctx.Config.Builds[0]
-	assert.Equal(t, ctx.Config.Release.GitHub.Name, build.Binary)
+	assert.Equal(t, ctx.Config.ProjectName, build.Binary)
 	assert.Equal(t, ".", build.Main)
 	assert.Equal(t, []string{"linux", "darwin"}, build.Goos)
 	assert.Equal(t, []string{"amd64", "386"}, build.Goarch)
@@ -268,11 +264,7 @@ func TestDefaultFillSingleBuild(t *testing.T) {
 
 	var ctx = &context.Context{
 		Config: config.Project{
-			Release: config.Release{
-				GitHub: config.Repo{
-					Name: "foo",
-				},
-			},
+			ProjectName: "foo",
 			SingleBuild: config.Build{
 				Main: "testreleaser",
 			},

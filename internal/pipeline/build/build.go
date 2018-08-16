@@ -57,7 +57,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 		build.Lang = "go"
 	}
 	if build.Binary == "" {
-		build.Binary = ctx.Config.Release.GitHub.Name
+		build.Binary = ctx.Config.ProjectName
 	}
 	for k, v := range build.Env {
 		build.Env[k] = os.ExpandEnv(v)
