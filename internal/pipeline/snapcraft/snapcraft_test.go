@@ -119,7 +119,7 @@ func TestRunPipeMetadata(t *testing.T) {
 	assert.NoError(t, os.Mkdir(dist, 0755))
 	assert.NoError(t, err)
 	var ctx = context.New(config.Project{
-		ProjectName: "mybin",
+		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcraft: config.Snapcraft{
 			NameTemplate: "foo_{{.Arch}}",
@@ -146,6 +146,9 @@ func TestRunPipeMetadata(t *testing.T) {
 	assert.Equal(t, metadata.Apps["mybin"].Plugs, []string{"home", "network"})
 	assert.Equal(t, metadata.Apps["mybin"].Daemon, "simple")
 	assert.Equal(t, metadata.Apps["mybin"].Command, "mybin --foo --bar")
+	assert.Equal(t, metadata.Apps["testprojectname"].Plugs, []string{"home", "network"})
+	assert.Equal(t, metadata.Apps["testprojectname"].Daemon, "simple")
+	assert.Equal(t, metadata.Apps["testprojectname"].Command, "mybin --foo --bar")
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {
