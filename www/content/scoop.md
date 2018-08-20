@@ -14,6 +14,10 @@ the commented example bellow:
 ```yml
 # .goreleaser.yml
 scoop:
+  # Template for the url.
+  # Default is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+  url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
+
   # Repository to push the app manifest to.
   bucket:
     owner: user

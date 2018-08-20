@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -109,13 +110,27 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (result 
 		Description:  ctx.Config.Scoop.Description,
 	}
 
+	var url string
+	if ctx.Config.Scoop.URLTemplate == "" {
+		ctx.Config.Scoop.URLTemplate = fmt.Sprintf("%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+			ctx.Config.GitHubURLs.Download,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name)
+	}
+
 	for _, artifact := range artifacts {
 		var arch = "64bit"
 		if artifact.Goarch == "386" {
 			arch = "32bit"
 		}
+
+		url, err = tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(ctx.Config.Scoop.URLTemplate)
+		if err != nil {
+			return
+		}
+
 		manifest.Architecture[arch] = Resource{
-			URL: getDownloadURL(ctx, ctx.Config.GitHubURLs.Download, artifact.Name),
+			URL: url,
 			Bin: ctx.Config.Builds[0].Binary + ".exe",
 		}
 	}
@@ -126,15 +141,4 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (result 
 	}
 	_, err = result.Write(data)
 	return
-}
-
-func getDownloadURL(ctx *context.Context, githubURL, file string) string {
-	return fmt.Sprintf(
-		"%s/%s/%s/releases/download/%s/%s",
-		githubURL,
-		ctx.Config.Release.GitHub.Owner,
-		ctx.Config.Release.GitHub.Name,
-		ctx.Git.CurrentTag,
-		file,
-	)
 }
