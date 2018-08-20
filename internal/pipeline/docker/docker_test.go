@@ -98,6 +98,42 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertError: shouldNotErr,
 		},
+		"multiple images with same extra file": {
+			publish: true,
+			dockers: []config.Docker{
+				{
+					Image:      registry + "goreleaser/multiplefiles1",
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binary:     "mybin",
+					TagTemplates: []string{
+						"latest",
+					},
+					Files: []string{
+						"testdata/extra_file.txt",
+					},
+				},
+				{
+					Image:      registry + "goreleaser/multiplefiles2",
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binary:     "mybin",
+					TagTemplates: []string{
+						"latest",
+					},
+					Files: []string{
+						"testdata/extra_file.txt",
+					},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/multiplefiles1:latest",
+				registry + "goreleaser/multiplefiles2:latest",
+			},
+			assertError: shouldNotErr,
+		},
 		"multiple images with same dockerfile": {
 			publish: true,
 			dockers: []config.Docker{
