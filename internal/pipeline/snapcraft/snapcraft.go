@@ -162,9 +162,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 	}
 
 	if _, ok := metadata.Apps[metadata.Name]; !ok {
-		metadata.Apps[metadata.Name] = AppMetadata{
-			Command: binaries[0].Name,
-		}
+		metadata.Apps[metadata.Name] = metadata.Apps[binaries[0].Name]
 	}
 
 	out, err := yaml.Marshal(metadata)
