@@ -3,6 +3,7 @@ package docker
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -70,9 +71,8 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context) error {
 	var g = semerrgroup.New(ctx.Parallelism)
-	for i, docker := range ctx.Config.Dockers {
+	for _, docker := range ctx.Config.Dockers {
 		docker := docker
-		seed := i
 		g.Go(func() error {
 			log.WithField("docker", docker).Debug("looking for binaries matching")
 			var binaries = ctx.Artifacts.Filter(
@@ -93,15 +93,18 @@ func doRun(ctx *context.Context) error {
 					docker.Binary, docker.Goos, docker.Goarch, docker.Goarm,
 				)
 			}
-			return process(ctx, docker, binaries[0], seed)
+			return process(ctx, docker, binaries[0])
 		})
 	}
 	return g.Wait()
 }
 
-func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact, seed int) error {
-	var root = filepath.Dir(artifact.Path)
-	var dockerfile = filepath.Join(root, filepath.Base(docker.Dockerfile)) + fmt.Sprintf(".%d", seed)
+func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) error {
+	tmp, err := ioutil.TempDir("", "goreleaserdocker")
+	if err != nil {
+		return errors.Wrap(err, "failed to create temporaty dir")
+	}
+	log.Info("tempdir: " + tmp)
 	// nolint:prealloc
 	var images []string
 	for _, tagTemplate := range docker.TagTemplates {
@@ -114,15 +117,18 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 		}
 		images = append(images, fmt.Sprintf("%s:%s", docker.Image, tag))
 	}
-	if err := os.Link(docker.Dockerfile, dockerfile); err != nil {
+	if err := os.Link(docker.Dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
 		return errors.Wrap(err, "failed to link dockerfile")
 	}
 	for _, file := range docker.Files {
-		if err := link(file, filepath.Join(root, filepath.Base(file))); err != nil {
+		if err := link(file, filepath.Join(tmp, filepath.Base(file))); err != nil {
 			return errors.Wrapf(err, "failed to link extra file '%s'", file)
 		}
 	}
-	if err := dockerBuild(ctx, root, dockerfile, images[0]); err != nil {
+	if err := os.Link(artifact.Path, filepath.Join(tmp, filepath.Base(artifact.Path))); err != nil {
+		return errors.Wrap(err, "failed to link binary")
+	}
+	if err := dockerBuild(ctx, tmp, images[0]); err != nil {
 		return err
 	}
 	for _, img := range images[1:] {
@@ -175,11 +181,12 @@ func publish(ctx *context.Context, docker config.Docker, images []string) error 
 	return nil
 }
 
-func dockerBuild(ctx *context.Context, root, dockerfile, image string) error {
+func dockerBuild(ctx *context.Context, root, image string) error {
 	log.WithField("image", image).Info("building docker image")
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, "docker", "build", "-f", dockerfile, "-t", image, root)
-	log.WithField("cmd", cmd.Args).Info("running")
+	var cmd = exec.CommandContext(ctx, "docker", "build", "-t", image, ".")
+	cmd.Dir = root
+	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return errors.Wrapf(err, "failed to build docker image: \n%s", string(out))
