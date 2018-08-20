@@ -71,9 +71,8 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func doRun(ctx *context.Context) error {
 	var g = semerrgroup.New(ctx.Parallelism)
-	for i, docker := range ctx.Config.Dockers {
+	for _, docker := range ctx.Config.Dockers {
 		docker := docker
-		seed := i
 		g.Go(func() error {
 			log.WithField("docker", docker).Debug("looking for binaries matching")
 			var binaries = ctx.Artifacts.Filter(
@@ -94,13 +93,13 @@ func doRun(ctx *context.Context) error {
 					docker.Binary, docker.Goos, docker.Goarch, docker.Goarm,
 				)
 			}
-			return process(ctx, docker, binaries[0], seed)
+			return process(ctx, docker, binaries[0])
 		})
 	}
 	return g.Wait()
 }
 
-func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact, seed int) error {
+func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) error {
 	tmp, err := ioutil.TempDir("", "goreleaserdocker")
 	if err != nil {
 		return errors.Wrap(err, "failed to create temporaty dir")
