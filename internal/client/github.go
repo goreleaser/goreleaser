@@ -7,9 +7,9 @@ import (
 
 	"github.com/apex/log"
 	"github.com/google/go-github/github"
-	"github.com/goreleaser/goreleaser/config"
-	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
+	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/pkg/context"
 	"golang.org/x/oauth2"
 )
 

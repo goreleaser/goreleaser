@@ -79,9 +79,7 @@ $ git tag -a v0.1.0 -m "First release"
 $ git push origin v0.1.0
 ```
 
-> **Attention**: Your tag should be a valid
-> [semantic version](http://semver.org/). If it is not, it is likely things
-> will fail.
+> **Attention**: Check if your tag adheres to [semantic versioning](/semver).
 
 If you don't want to create a tag yet, you can also create a release
 based on the latest commit by using the `--snapshot` flag.

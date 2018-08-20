@@ -69,7 +69,7 @@ snapcraft:
   # you can declare extra details for those binaries. It is optional.
   apps:
 
-    # The name of the app must be the same name as the binary built.
+    # The name of the app must be the same name as the binary built or the snapcraft name.
     drumroll:
 
       # If your app requires extra permissions to work outside of its default

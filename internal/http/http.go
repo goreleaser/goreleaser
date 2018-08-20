@@ -14,11 +14,11 @@ import (
 	"github.com/apex/log"
 	"github.com/pkg/errors"
 
-	"github.com/goreleaser/goreleaser/config"
-	"github.com/goreleaser/goreleaser/context"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
-	"github.com/goreleaser/goreleaser/pipeline"
+	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
 const (
@@ -148,7 +148,7 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 			}).Error(err.Error())
 			return err
 		}
-		if err := runPipeByFilter(ctx, put, artifact.Or(filters...), kind, check); err != nil {
+		if err := uploadWithFilter(ctx, put, artifact.Or(filters...), kind, check); err != nil {
 			return err
 		}
 	}
@@ -156,7 +156,7 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 	return nil
 }
 
-func runPipeByFilter(ctx *context.Context, put config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
+func uploadWithFilter(ctx *context.Context, put config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
 		artifact := artifact

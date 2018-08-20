@@ -28,7 +28,7 @@ check:
 
 # Run all the tests
 test:
-	go test $(TEST_OPTIONS) -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=2m
+	go test $(TEST_OPTIONS) -v -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=2m
 .PHONY: test
 
 # Run all the tests and opens the coverage report
@@ -71,7 +71,7 @@ favicon:
 .PHONY: favicon
 
 serve:
-	@hugo server --enableGitInfo --watch --source www
+	@hugo server --enableGitInfo --watch --source www --disableFastRender
 .PHONY: serve
 
 # Show to-do items per file.

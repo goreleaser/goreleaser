@@ -3,7 +3,7 @@ package testlib
 import (
 	"testing"
 
-	"github.com/goreleaser/goreleaser/pipeline"
+	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/stretchr/testify/assert"
 )
 
