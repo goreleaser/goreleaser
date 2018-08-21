@@ -2,6 +2,7 @@ package git
 
 import (
 	"fmt"
+	"os/exec"
 	"regexp"
 	"strings"
 
@@ -22,6 +23,9 @@ func (Pipe) String() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	if _, err := exec.LookPath("git"); err != nil {
+		return ErrNoGit
+	}
 	info, err := getInfo(ctx)
 	if err != nil {
 		return err
