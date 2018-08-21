@@ -786,4 +786,5 @@ func TestDefaultSet(t *testing.T) {
 	assert.Len(t, ctx.Config.Artifactories, 1)
 	var artifactory = ctx.Config.Artifactories[0]
 	assert.Equal(t, "custom", artifactory.Mode)
+	assert.Equal(t, "X-Checksum-SHA256", artifactory.ChecksumHeader)
 }

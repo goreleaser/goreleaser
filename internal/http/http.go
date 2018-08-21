@@ -193,7 +193,16 @@ func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifac
 	}
 	targetURL += artifact.Name
 
-	location, _, err := uploadAssetToServer(ctx, targetURL, put.Username, secret, asset, check)
+	var headers = map[string]string{}
+	if put.ChecksumHeader != "" {
+		sum, err := artifact.Checksum()
+		if err != nil {
+			return err
+		}
+		headers[put.ChecksumHeader] = sum
+	}
+
+	location, _, err := uploadAssetToServer(ctx, targetURL, put.Username, secret, headers, asset, check)
 	if err != nil {
 		msg := fmt.Sprintf("%s: upload failed", kind)
 		log.WithError(err).WithFields(log.Fields{
@@ -213,8 +222,8 @@ func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifac
 }
 
 // uploadAssetToServer uploads the asset file to target
-func uploadAssetToServer(ctx *context.Context, target, username, secret string, a *asset, check ResponseChecker) (string, *h.Response, error) {
-	req, err := newUploadRequest(target, username, secret, a)
+func uploadAssetToServer(ctx *context.Context, target, username, secret string, headers map[string]string, a *asset, check ResponseChecker) (string, *h.Response, error) {
+	req, err := newUploadRequest(target, username, secret, headers, a)
 	if err != nil {
 		return "", nil, err
 	}
@@ -227,7 +236,7 @@ func uploadAssetToServer(ctx *context.Context, target, username, secret string, 
 }
 
 // newUploadRequest creates a new h.Request for uploading
-func newUploadRequest(target, username, secret string, a *asset) (*h.Request, error) {
+func newUploadRequest(target, username, secret string, headers map[string]string, a *asset) (*h.Request, error) {
 	u, err := url.Parse(target)
 	if err != nil {
 		return nil, err
@@ -236,9 +245,12 @@ func newUploadRequest(target, username, secret string, a *asset) (*h.Request, er
 	if err != nil {
 		return nil, err
 	}
-
 	req.ContentLength = a.Size
 	req.SetBasicAuth(username, secret)
+
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
 
 	return req, err
 }
