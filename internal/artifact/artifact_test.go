@@ -2,9 +2,12 @@ package artifact
 
 import (
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -134,4 +137,28 @@ func TestGroupByPlatform(t *testing.T) {
 	var groups = artifacts.GroupByPlatform()
 	assert.Len(t, groups["linuxamd64"], 2)
 	assert.Len(t, groups["linuxarm6"], 1)
+}
+
+func TestChecksum(t *testing.T) {
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	require.NoError(t, err)
+	var file = filepath.Join(folder, "subject")
+	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+
+	var artifact = Artifact{
+		Path: file,
+	}
+
+	sum, err := artifact.Checksum()
+	require.NoError(t, err)
+	require.Equal(t, "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269", sum)
+}
+
+func TestChecksumFileDoesntExist(t *testing.T) {
+	var artifact = Artifact{
+		Path: "/tmp/adasdasdas/asdasd/asdas",
+	}
+	sum, err := artifact.Checksum()
+	require.EqualError(t, err, `open /tmp/adasdasdas/asdasd/asdas: no such file or directory`)
+	require.Empty(t, sum)
 }
