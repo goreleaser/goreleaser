@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var update = flag.Bool("update", false, "update .golden files")
@@ -361,10 +362,12 @@ func Test_doRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var ctx = tt.args.ctx
 			for _, a := range tt.artifacts {
-				tt.args.ctx.Artifacts.Add(a)
+				ctx.Artifacts.Add(a)
 			}
-			tt.assertError(t, doRun(tt.args.ctx, tt.args.client))
+			require.NoError(t, Pipe{}.Default(ctx))
+			tt.assertError(t, doRun(ctx, tt.args.client))
 		})
 	}
 }
@@ -452,19 +455,21 @@ func Test_buildManifest(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		out, err := buildManifest(tt.ctx, []artifact.Artifact{
+		var ctx = tt.ctx
+		Pipe{}.Default(ctx)
+		out, err := buildManifest(ctx, []artifact.Artifact{
 			{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 			{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		if *update {
-			ioutil.WriteFile(tt.filename, out.Bytes(), 0655)
+			require.NoError(t, ioutil.WriteFile(tt.filename, out.Bytes(), 0655))
 		}
 		bts, err := ioutil.ReadFile(tt.filename)
-		assert.NoError(t, err)
-		assert.Equal(t, string(bts), out.String())
+		require.NoError(t, err)
+		require.Equal(t, string(bts), out.String())
 	}
 }
 

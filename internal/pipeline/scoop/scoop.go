@@ -41,6 +41,14 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Scoop.CommitAuthor.Email == "" {
 		ctx.Config.Scoop.CommitAuthor.Email = "goreleaser@carlosbecker.com"
 	}
+	if ctx.Config.Scoop.URLTemplate == "" {
+		ctx.Config.Scoop.URLTemplate = fmt.Sprintf(
+			"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+			ctx.Config.GitHubURLs.Download,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+		)
+	}
 	return nil
 }
 
@@ -101,21 +109,14 @@ type Resource struct {
 	Bin string `json:"bin"` // name of binary inside the archive
 }
 
-func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (result bytes.Buffer, err error) {
-	manifest := Manifest{
+func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.Buffer, error) {
+	var result bytes.Buffer
+	var manifest = Manifest{
 		Version:      ctx.Version,
 		Architecture: make(map[string]Resource),
 		Homepage:     ctx.Config.Scoop.Homepage,
 		License:      ctx.Config.Scoop.License,
 		Description:  ctx.Config.Scoop.Description,
-	}
-
-	var url string
-	if ctx.Config.Scoop.URLTemplate == "" {
-		ctx.Config.Scoop.URLTemplate = fmt.Sprintf("%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
-			ctx.Config.GitHubURLs.Download,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name)
 	}
 
 	for _, artifact := range artifacts {
@@ -124,9 +125,11 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (result 
 			arch = "32bit"
 		}
 
-		url, err = tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(ctx.Config.Scoop.URLTemplate)
+		url, err := tmpl.New(ctx).
+			WithArtifact(artifact, map[string]string{}).
+			Apply(ctx.Config.Scoop.URLTemplate)
 		if err != nil {
-			return
+			return result, err
 		}
 
 		manifest.Architecture[arch] = Resource{
@@ -137,8 +140,8 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (result 
 
 	data, err := json.MarshalIndent(manifest, "", "    ")
 	if err != nil {
-		return
+		return result, err
 	}
 	_, err = result.Write(data)
-	return
+	return result, err
 }
