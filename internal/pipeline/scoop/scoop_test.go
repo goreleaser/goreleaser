@@ -370,115 +370,101 @@ func Test_doRun(t *testing.T) {
 }
 
 func Test_buildManifest(t *testing.T) {
-	var ctx = &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
-		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Config: config.Project{
-			GitHubURLs: config.GitHubURLs{
-				Download: "https://github.com",
-			},
-			Builds: []config.Build{
-				{Binary: "test"},
-			},
-			Dist:        ".",
-			ProjectName: "run-pipe",
-			Archive: config.Archive{
-				Format: "tar.gz",
-			},
-			Release: config.Release{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
-				},
-			},
-			Scoop: config.Scoop{
-				Bucket: config.Repo{
-					Owner: "test",
-					Name:  "test",
-				},
-				Description: "A run pipe test formula",
-				Homepage:    "https://github.com/goreleaser",
-			},
-		},
-	}
-	out, err := buildManifest(ctx, []artifact.Artifact{
-		{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
-		{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
-	})
-	assert.NoError(t, err)
-	var golden = "testdata/test_buildmanifest.json.golden"
-	if *update {
-		ioutil.WriteFile(golden, out.Bytes(), 0655)
-	}
-	bts, err := ioutil.ReadFile(golden)
-	assert.NoError(t, err)
-	assert.Equal(t, string(bts), out.String())
-}
-
-func Test_getDownloadURL(t *testing.T) {
-	type args struct {
-		ctx       *context.Context
-		githubURL string
-		file      string
-	}
 	tests := []struct {
-		name    string
-		args    args
-		wantURL string
+		filename string
+		ctx      *context.Context
 	}{
 		{
-			"simple",
-			args{
-				&context.Context{
-					Version: "1.0.0",
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.0",
+			"testdata/test_buildmanifest.json.golden",
+			&context.Context{
+				Git: context.GitInfo{
+					CurrentTag: "v1.0.1",
+				},
+				Version:   "1.0.1",
+				Artifacts: artifact.New(),
+				Config: config.Project{
+					GitHubURLs: config.GitHubURLs{
+						Download: "https://github.com",
 					},
-					Config: config.Project{
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "user",
-								Name:  "repo",
-							},
+					Builds: []config.Build{
+						{Binary: "test"},
+					},
+					Dist:        ".",
+					ProjectName: "run-pipe",
+					Archive: config.Archive{
+						Format: "tar.gz",
+					},
+					Release: config.Release{
+						GitHub: config.Repo{
+							Owner: "test",
+							Name:  "test",
 						},
 					},
+					Scoop: config.Scoop{
+						Bucket: config.Repo{
+							Owner: "test",
+							Name:  "test",
+						},
+						Description: "A run pipe test formula",
+						Homepage:    "https://github.com/goreleaser",
+					},
 				},
-				"https://github.com",
-				"file.tar.gz",
 			},
-			"https://github.com/user/repo/releases/download/v1.0.0/file.tar.gz",
 		},
 		{
-			"custom",
-			args{
-				&context.Context{
-					Version: "1.0.0",
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.0",
+			"testdata/test_buildmanifest_url_template.json.golden",
+			&context.Context{
+				Git: context.GitInfo{
+					CurrentTag: "v1.0.1",
+				},
+				Version:   "1.0.1",
+				Artifacts: artifact.New(),
+				Config: config.Project{
+					GitHubURLs: config.GitHubURLs{
+						Download: "https://github.com",
 					},
-					Config: config.Project{
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "user",
-								Name:  "repo",
-							},
+					Builds: []config.Build{
+						{Binary: "test"},
+					},
+					Dist:        ".",
+					ProjectName: "run-pipe",
+					Archive: config.Archive{
+						Format: "tar.gz",
+					},
+					Release: config.Release{
+						GitHub: config.Repo{
+							Owner: "test",
+							Name:  "test",
 						},
 					},
+					Scoop: config.Scoop{
+						Bucket: config.Repo{
+							Owner: "test",
+							Name:  "test",
+						},
+						Description: "A run pipe test formula",
+						Homepage:    "https://github.com/goreleaser",
+						URLTemplate: "http://github.mycompany.com/foo/bar/{{ .Tag }}/{{ .ArtifactName }}",
+					},
 				},
-				"https://git.my.company.com",
-				"file.tar.gz",
 			},
-			"https://git.my.company.com/user/repo/releases/download/v1.0.0/file.tar.gz",
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotURL := getDownloadURL(tt.args.ctx, tt.args.githubURL, tt.args.file)
-			assert.Equal(t, tt.wantURL, gotURL)
+		out, err := buildManifest(tt.ctx, []artifact.Artifact{
+			{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
+			{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 		})
+
+		assert.NoError(t, err)
+
+		if *update {
+			ioutil.WriteFile(tt.filename, out.Bytes(), 0655)
+		}
+		bts, err := ioutil.ReadFile(tt.filename)
+		assert.NoError(t, err)
+		assert.Equal(t, string(bts), out.String())
 	}
 }
 
