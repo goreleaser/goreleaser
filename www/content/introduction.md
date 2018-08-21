@@ -39,6 +39,25 @@ scoop install goreleaser
 > Check the [tap source](https://github.com/goreleaser/homebrew-tap) for
 > more details.
 
+### Using Docker
+
+You can use Docker to do simple releases. Currently, the provided docker
+image does not provide support for docker-in-docker and snapcraft.
+
+```console
+$ docker run \
+  -v $PWD:/go/src/github.com/user/repo \
+  -w /go/src/github.com/user/repo \
+  goreleaser/goreleaser --help
+```
+
+Note that the image will almost always have the last stable Go version.
+
+If you need more things, you are encouraged to have your own image. You can
+always use GoReleaser's [own Dockerfile][dockerfile] as an example though.
+
+[dockerfile]: https://github.com/goreleaser/goreleaser/blob/master/Dockerfile
+
 ## Manually
 
 Download your preferred flavor from the [releases page](https://github.com/goreleaser/goreleaser/releases/latest) and install
