@@ -7,9 +7,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
@@ -63,31 +60,13 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func upload(ctx *context.Context, conf config.S3) error {
-	var awsConfig = aws.NewConfig()
-	// TODO: add a test for this
+	builder := newSessionBuilder()
+	builder.Profile(conf.Profile)
 	if conf.Endpoint != "" {
-		awsConfig.Endpoint = aws.String(conf.Endpoint)
-		awsConfig.S3ForcePathStyle = aws.Bool(true)
+		builder.Endpoint(conf.Endpoint)
+		builder.S3ForcePathStyle(true)
 	}
-	awsConfig.Credentials = credentials.NewChainCredentials([]credentials.Provider{
-		&credentials.EnvProvider{},
-		&credentials.SharedCredentialsProvider{
-			Profile: conf.Profile,
-		},
-	})
-
-	_, err := awsConfig.Credentials.Get()
-	var sess *session.Session
-	if err == nil {
-		sess = session.Must(session.NewSession(awsConfig))
-	} else {
-		// Specify profile and assume an IAM role with MFA prompting for token code on stdin
-		sess = session.Must(session.NewSessionWithOptions(session.Options{
-			AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
-			SharedConfigState:       session.SharedConfigEnable,
-			Profile:                 conf.Profile,
-		}))
-	}
+	sess := builder.Build()
 
 	svc := s3.New(sess, &aws.Config{
 		Region: aws.String(conf.Region),
