@@ -60,6 +60,7 @@ type Scoop struct {
 	Homepage     string       `yaml:",omitempty"`
 	Description  string       `yaml:",omitempty"`
 	License      string       `yaml:",omitempty"`
+	URLTemplate  string       `yaml:"url_template,omitempty"`
 }
 
 // CommitAuthor is the author of a Git commit

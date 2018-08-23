@@ -1,6 +1,9 @@
 package git
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // ErrInvalidVersionFormat is return when the version isnt in a valid format
 type ErrInvalidVersionFormat struct {
@@ -31,8 +34,11 @@ func (e ErrWrongRef) Error() string {
 
 // ErrNoTag happens if the underlying git repository doesn't contain any tags
 // but no snapshot-release was requested.
-var ErrNoTag = fmt.Errorf("git doesn't contain any tags. Either add a tag or use --snapshot")
+var ErrNoTag = errors.New("git doesn't contain any tags. Either add a tag or use --snapshot")
 
 // ErrNotRepository happens if you try to run goreleaser against a folder
 // which is not a git repository.
-var ErrNotRepository = fmt.Errorf("current folder is not a git repository")
+var ErrNotRepository = errors.New("current folder is not a git repository")
+
+// ErrNoGit happens when git is not present in PATH.
+var ErrNoGit = errors.New("git not present in PATH")

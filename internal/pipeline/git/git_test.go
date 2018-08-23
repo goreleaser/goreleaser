@@ -215,3 +215,12 @@ func TestShortCommitHash(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	assert.Len(t, ctx.Version, 7)
 }
+
+func TestGitNotInPath(t *testing.T) {
+	var path = os.Getenv("PATH")
+	defer func() {
+		assert.NoError(t, os.Setenv("PATH", path))
+	}()
+	assert.NoError(t, os.Setenv("PATH", ""))
+	assert.EqualError(t, Pipe{}.Run(context.New(config.Project{})), ErrNoGit.Error())
+}

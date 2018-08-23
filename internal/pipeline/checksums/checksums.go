@@ -10,7 +10,6 @@ import (
 	"github.com/apex/log"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/checksum"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -70,7 +69,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 
 func checksums(file *os.File, artifact artifact.Artifact) error {
 	log.WithField("file", artifact.Name).Info("checksumming")
-	sha, err := checksum.SHA256(artifact.Path)
+	sha, err := artifact.Checksum()
 	if err != nil {
 		return err
 	}
