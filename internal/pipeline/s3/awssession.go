@@ -69,17 +69,16 @@ func (sb *sessionBuilder) Build() *session.Session {
 	_, err := sb.awsConfig.Credentials.Get()
 	if err == nil {
 		return session.Must(session.NewSession(sb.awsConfig))
-	} else {
-		if sb.options == nil {
-			sb.options = &session.Options{
-				AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
-				SharedConfigState:       session.SharedConfigEnable,
-				Profile:                 sb.profile,
-			}
-		}
-
-		return session.Must(session.NewSessionWithOptions(*sb.options))
 	}
+	if sb.options == nil {
+		sb.options = &session.Options{
+			AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
+			SharedConfigState:       session.SharedConfigEnable,
+			Profile:                 sb.profile,
+		}
+	}
+
+	return session.Must(session.NewSessionWithOptions(*sb.options))
 }
 
 func newSessionBuilder() SessionBuilder {
