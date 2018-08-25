@@ -4,19 +4,27 @@ import (
 	"testing"
 
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/stretchr/testify/assert"
 )
 
 func setEnv() {
 	os.Setenv("AWS_ACCESS_KEY_ID", "accessKey")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "secret")
+}
+
+func clearnEnv() {
+	os.Unsetenv("AWS_ACCESS_KEY_ID")
+	os.Unsetenv("AWS_SECRET_ACCESS_KEY")
+	os.Unsetenv("AWS_SHARED_CREDENTIALS_FILE")
+	os.Unsetenv("AWS_CONFIG_FILE")
 }
 
 func Test_awsSession(t *testing.T) {
@@ -55,7 +63,7 @@ func Test_awsSession(t *testing.T) {
 		{
 			name: "test default shared credentials provider",
 			before: func() {
-				os.Clearenv()
+				clearnEnv()
 				os.Setenv("AWS_SHARED_CREDENTIALS_FILE", filepath.Join("testdata", "credentials.ini"))
 			},
 			expectToken: "token",
@@ -63,7 +71,7 @@ func Test_awsSession(t *testing.T) {
 		{
 			name: "test default shared credentials provider",
 			before: func() {
-				os.Clearenv()
+				clearnEnv()
 				os.Setenv("AWS_SHARED_CREDENTIALS_FILE", filepath.Join("testdata", "credentials.ini"))
 			},
 			expectToken: "token",
@@ -71,7 +79,7 @@ func Test_awsSession(t *testing.T) {
 		{
 			name: "test profile with shared credentials provider",
 			before: func() {
-				os.Clearenv()
+				clearnEnv()
 				os.Setenv("AWS_SHARED_CREDENTIALS_FILE", filepath.Join("testdata", "credentials.ini"))
 			},
 			args: args{
@@ -83,8 +91,8 @@ func Test_awsSession(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Clearenv()
-			defer os.Clearenv()
+			clearnEnv()
+			defer clearnEnv()
 			if tt.before != nil {
 				tt.before()
 			}
@@ -130,8 +138,8 @@ const assumeRoleRespMsg = `
 `
 
 func Test_awsSession_mfa(t *testing.T) {
-	os.Clearenv()
-	defer os.Clearenv()
+	clearnEnv()
+	defer clearnEnv()
 	os.Setenv("AWS_SHARED_CREDENTIALS_FILE", filepath.Join("testdata", "credentials.ini"))
 	os.Setenv("AWS_CONFIG_FILE", filepath.Join("testdata", "config.ini"))
 
@@ -180,8 +188,8 @@ func Test_awsSession_fail(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Clearenv()
-			defer os.Clearenv()
+			clearnEnv()
+			defer clearnEnv()
 
 			builder := newSessionBuilder()
 			sess := builder.Build()
