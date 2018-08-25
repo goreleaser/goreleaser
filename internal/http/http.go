@@ -84,10 +84,6 @@ func CheckConfig(ctx *context.Context, put *config.Put, kind string) error {
 		return misconfigured(kind, put, "missing target")
 	}
 
-	if put.Username == "" {
-		return misconfigured(kind, put, "missing username")
-	}
-
 	if put.Name == "" {
 		return misconfigured(kind, put, "missing name")
 	}
@@ -169,8 +165,13 @@ func uploadWithFilter(ctx *context.Context, put config.Put, filter artifact.Filt
 
 // uploadAsset uploads file to target and logs all actions
 func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifact, kind string, check ResponseChecker) error {
-	envName := fmt.Sprintf("%s_%s_SECRET", strings.ToUpper(kind), strings.ToUpper(put.Name))
-	secret := ctx.Env[envName]
+	envBase := fmt.Sprintf("%s_%s_", strings.ToUpper(kind), strings.ToUpper(put.Name))
+	username := put.Username
+	if username == "" {
+		// username not configured: using env
+		username = ctx.Env[envBase+"USERNAME"]
+	}
+	secret := ctx.Env[envBase+"SECRET"]
 
 	// Generate the target url
 	targetURL, err := resolveTargetTemplate(ctx, put, artifact)
@@ -193,12 +194,12 @@ func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifac
 	}
 	targetURL += artifact.Name
 
-	location, _, err := uploadAssetToServer(ctx, targetURL, put.Username, secret, asset, check)
+	location, _, err := uploadAssetToServer(ctx, targetURL, username, secret, asset, check)
 	if err != nil {
 		msg := fmt.Sprintf("%s: upload failed", kind)
 		log.WithError(err).WithFields(log.Fields{
 			"instance": put.Name,
-			"username": put.Username,
+			"username": username,
 		}).Error(msg)
 		return errors.Wrap(err, msg)
 	}
