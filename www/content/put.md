@@ -52,9 +52,27 @@ Supported variables:
 
 _Attention_: Variables _Os_, _Arch_ and _Arm_ are only supported in upload mode `binary`.
 
-### Password
+### Username
 
 Your configured username needs to be valid against your HTTP server.
+
+You can have the username set in the configuration file as shown above
+or you can have it read from and environment variable.
+The configured name of your HTTP server will be used to build the environment
+variable name.
+This way we support auth for multiple instances.
+This also means that the `name` per configured instance needs to be unique
+per goreleaser configuration.
+
+The name of the environment variable will be `PUT_NAME_USERNAME`.
+If your instance is named `production`, you can store the username in the
+environment variable `PUT_PRODUCTION_USERNAME`.
+The name will be transformed to uppercase.
+
+If a configured username is found in the configuration file, then the
+environment variable is not used at all.
+
+### Password
 
 The password will be stored in a environment variable.
 The configured name of your HTTP server will be used.
@@ -62,7 +80,7 @@ This way we support auth for multiple instances.
 This also means that the `name` per configured instance needs to be unique
 per goreleaser configuration.
 
-The name of the environment variable will be `PUT_<NAME>_SECRET`.
+The name of the environment variable will be `PUT_NAME_SECRET`.
 If your instance is named `production`, you need to store the secret in the
 environment variable `PUT_PRODUCTION_SECRET`.
 The name will be transformed to uppercase.
