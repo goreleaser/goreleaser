@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	h "net/http"
 	"net/http/httptest"
+	"os"
 	"sync"
 	"testing"
 
@@ -29,6 +30,42 @@ func setup() {
 
 func teardown() {
 	srv.Close()
+}
+
+func TestAssetOpenDefault(t *testing.T) {
+	tf, err := ioutil.TempFile("", "")
+	if err != nil {
+		t.Fatalf("can not create tmp file: %v", err)
+		return
+	}
+	fmt.Fprint(tf, "a")
+	tf.Close()
+	a, err := assetOpenDefault("blah", &artifact.Artifact{
+		Path: tf.Name(),
+	})
+	if err != nil {
+		t.Fatalf("can not open asset: %v", err)
+	}
+	bs, err := ioutil.ReadAll(a.ReadCloser)
+	if err != nil {
+		t.Fatalf("can not read asset: %v", err)
+	}
+	if string(bs) != "a" {
+		t.Fatalf("unexpected read content")
+	}
+	os.Remove(tf.Name())
+	_, err = assetOpenDefault("blah", &artifact.Artifact{
+		Path: "blah",
+	})
+	if err == nil {
+		t.Fatalf("should fail on missing file")
+	}
+	_, err = assetOpenDefault("blah", &artifact.Artifact{
+		Path: os.TempDir(),
+	})
+	if err == nil {
+		t.Fatalf("should fail on existing dir")
+	}
 }
 
 func TestDefaults(t *testing.T) {
@@ -193,6 +230,7 @@ func TestUpload(t *testing.T) {
 	}
 	ctx := context.New(config.Project{ProjectName: "blah"})
 	ctx.Env["TEST_A_SECRET"] = "x"
+	ctx.Env["TEST_A_USERNAME"] = "u2"
 	ctx.Version = "2.1.0"
 	ctx.Artifacts = artifact.New()
 	for _, a := range []struct {
@@ -216,6 +254,17 @@ func TestUpload(t *testing.T) {
 		put     config.Put
 		check   func(r []*h.Request) error
 	}{
+		{"wrong-mode", ctx, true,
+			config.Put{Mode: "wrong-mode", Name: "a", Target: srv.URL + "/{{.ProjectName}}/{{.Version}}/", Username: "u1"},
+			checks(),
+		},
+		{"username-from-env", ctx, false,
+			config.Put{Mode: ModeArchive, Name: "a", Target: srv.URL + "/{{.ProjectName}}/{{.Version}}/"},
+			checks(
+				check{"/blah/2.1.0/a.deb", "u2", "x", content},
+				check{"/blah/2.1.0/a.tar", "u2", "x", content},
+			),
+		},
 		{"archive", ctx, false,
 			config.Put{Mode: ModeArchive, Name: "a", Target: srv.URL + "/{{.ProjectName}}/{{.Version}}/", Username: "u1"},
 			checks(
