@@ -101,6 +101,7 @@ type Manifest struct {
 	Homepage     string              `json:"homepage,omitempty"`    // `homepage`: The home page for the program.
 	License      string              `json:"license,omitempty"`     // `license`: The software license for the program. For well-known licenses, this will be a string like "MIT" or "GPL2". For custom licenses, this should be the URL of the license.
 	Description  string              `json:"description,omitempty"` // Description of the app
+	Persist      []string            `json:"persist,omitempty"`     // Persist data between updates
 }
 
 // Resource represents a combination of a url and a binary name for an architecture
@@ -117,6 +118,7 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 		Homepage:     ctx.Config.Scoop.Homepage,
 		License:      ctx.Config.Scoop.License,
 		Description:  ctx.Config.Scoop.Description,
+		Persist:      ctx.Config.Scoop.Persist,
 	}
 
 	for _, artifact := range artifacts {

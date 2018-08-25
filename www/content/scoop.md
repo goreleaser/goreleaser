@@ -40,6 +40,11 @@ scoop:
   # Your app's license
   # Default is empty.
   license: MIT
+
+  # Persist data between application updates
+  persist:
+  - "data"
+  - "config.toml"
 ```
 
 By defining the `scoop` section, GoReleaser will take care of publishing the
