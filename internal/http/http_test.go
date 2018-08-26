@@ -72,7 +72,6 @@ func TestCheckConfig(t *testing.T) {
 		{"ok", args{ctx, &config.Put{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, false},
 		{"secret missing", args{ctx, &config.Put{Name: "b", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"target missing", args{ctx, &config.Put{Name: "a", Username: "pepe", Mode: ModeArchive}, "test"}, true},
-		{"username missing", args{ctx, &config.Put{Name: "a", Target: "http://blabla", Mode: ModeArchive}, "test"}, true},
 		{"name missing", args{ctx, &config.Put{Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"mode missing", args{ctx, &config.Put{Name: "a", Target: "http://blabla", Username: "pepe"}, "test"}, true},
 		{"mode invalid", args{ctx, &config.Put{Name: "a", Target: "http://blabla", Username: "pepe", Mode: "blabla"}, "test"}, true},

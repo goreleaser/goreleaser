@@ -12,7 +12,6 @@ import (
 	"github.com/apex/log"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/checksum"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -169,7 +168,7 @@ func doBuildFormula(data templateData) (out bytes.Buffer, err error) {
 }
 
 func dataFor(ctx *context.Context, artifact artifact.Artifact) (result templateData, err error) {
-	sum, err := checksum.SHA256(artifact.Path)
+	sum, err := artifact.Checksum()
 	if err != nil {
 		return
 	}

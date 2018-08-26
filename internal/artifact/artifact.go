@@ -2,6 +2,10 @@
 package artifact
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
+	"os"
 	"sync"
 
 	"github.com/apex/log"
@@ -37,6 +41,22 @@ type Artifact struct {
 	Goarm  string
 	Type   Type
 	Extra  map[string]string
+}
+
+// Checksum calculates the SHA256 checksum of the artifact.
+func (a Artifact) Checksum() (string, error) {
+	log.Debugf("calculating sha256sum for %s", a.Path)
+	file, err := os.Open(a.Path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close() // nolint: errcheck
+	var hash = sha256.New()
+	_, err = io.Copy(hash, file)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
 // Artifacts is a list of artifacts

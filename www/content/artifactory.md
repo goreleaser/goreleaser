@@ -55,9 +55,27 @@ Supported variables:
 _Attention_: Variables _Os_, _Arch_ and _Arm_ are only supported in upload
 mode `binary`.
 
-### Password / API Key
+### Username
 
 Your configured username needs to be authenticated against your Artifactory.
+
+You can have the username set in the configuration file as shown above
+or you can have it read from an environment variable.
+The configured name of your Artifactory instance will be used to build
+the environment variable name.
+This way we support auth for multiple instances.
+This also means that the `name` per configured instance needs to be unique
+per goreleaser configuration.
+
+The name of the environment variable will be `ARTIFACTORY_NAME_USERNAME`.
+If your instance is named `production`, you can store the username in the
+environment variable `ARTIFACTORY_PRODUCTION_USERNAME`.
+The name will be transformed to uppercase.
+
+If a configured username is found in the configuration file, then the
+environment variable is not used at all.
+
+### Password / API Key
 
 The password or API key will be stored in a environment variable.
 The configured name of your Artifactory instance will be used.
