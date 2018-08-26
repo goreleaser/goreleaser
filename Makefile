@@ -3,6 +3,7 @@ TEST_PATTERN?=.
 TEST_OPTIONS?=
 
 export PATH := ./bin:$(PATH)
+export GO111MODULE := on
 
 # Install all the build and lint dependencies
 setup:
@@ -38,7 +39,7 @@ fmt:
 # Run all the linters
 lint:
 	# TODO: fix tests and lll issues
-	./bin/golangci-lint run --tests=false --enable-all --disable=lll ./...
+	golangci-lint run --tests=false --enable-all --disable=lll ./...
 	# find . -name '*.md' -not -wholename './vendor/*' | xargs prettier -l
 .PHONY: lint
 
