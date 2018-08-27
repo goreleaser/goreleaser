@@ -124,3 +124,61 @@ pipeline:
     when:
       event: tag
 ```
+
+## Google CloudBuild
+
+CloudBuild works off a different clone than your github repo: it seems that
+your changes are pulled to a repo like 
+source.developers.google.com/p/YourProjectId/r/github-YourGithubUser-YourGithubRepo, and that's what
+you're building off.  
+
+This repo does not have your tags, which prevents goreleaser from running at
+all, and it has the wrong name, so if it did run it would try to publish to
+the wrong github repo.
+
+To address the issue with the wrong name, in your .goreleaser.yml file's release section add:
+
+```yml
+release:
+  github:
+    owner: YourGithubUser
+    name: YourGithubRepo
+```
+
+Create two build triggers:
+- a "push to any branch" trigger for your regular CI (doesn't invoke goreleaser)
+- a "push to tag" trigger which invokes goreleaser
+
+The push to any branch trigger could use a Dockerfile or a cloudbuild.yaml,
+whichever you prefer.
+
+You should have a dedicated cloudbuild.release.yaml that is only used by the "push to
+tag" trigger.
+
+In this example we're creating a new release every time a new tag is pushed.
+See [Using Encrypted Resources](https://cloud.google.com/cloud-build/docs/securing-builds/use-encrypted-secrets-credentials) for how to encrypt and base64-encode your github token.
+
+```yml
+steps:
+~ # Setup the workspace so we have a viable place to point GOPATH at.
+~ - name: gcr.io/cloud-builders/go
+~   env: ['PROJECT_ROOT=github.com/YourGithubUser/YourGithubRepo']
+~_  args: ['env']
+  
+~ # Create github release.
+~ - name: goreleaser/goreleaser
+~   entrypoint: /bin/sh
+~   dir: gopath/src/github.com
+~   env: ['GOPATH=/workspace/gopath']
+~   args: ['-c', 'cd YourGithubUser/YourGithubRepo && git tag $TAG_NAME && /goreleaser' ] 
+~_  secretEnv: ['GITHUB_TOKEN']
+  
+  secrets:
+~ - kmsKeyName: projects/YourProjectId/locations/global/keyRings/YourKeyRing/cryptoKeys/YourKey
+~   secretEnv:
+~     GITHUB_TOKEN: | 
+~       ICAgICAgICBDaVFBZUhVdUVoRUtBdmZJSGxVWnJDZ0hOU2NtMG1ES0k4WjF3L04zT3pEazhRbDZr
+~       QVVTVVFEM3dVYXU3cVJjK0g3T25UVW82YjJaCiAgICAgICAgREtBMWVNS0hOZzcyOUtmSGoyWk1x
+~_      ICAgICAgIEgwYndIaGUxR1E9PQo=
+
+```
