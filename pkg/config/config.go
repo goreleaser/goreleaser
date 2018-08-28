@@ -317,6 +317,7 @@ type Project struct {
 	EnvFiles      EnvFiles  `yaml:"env_files,omitempty"`
 	Git           Git       `yaml:",omitempty"`
 	Before        Before    `yaml:",omitempty"`
+	TrustedCerts  string    `yaml:"trusted_certificates,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

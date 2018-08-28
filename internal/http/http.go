@@ -3,6 +3,8 @@ package http
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"html/template"
 	"io"
@@ -95,6 +97,10 @@ func CheckConfig(ctx *context.Context, put *config.Put, kind string) error {
 	envName := fmt.Sprintf("%s_%s_SECRET", strings.ToUpper(kind), strings.ToUpper(put.Name))
 	if _, ok := ctx.Env[envName]; !ok {
 		return misconfigured(kind, put, fmt.Sprintf("missing %s environment variable", envName))
+	}
+
+	if ctx.Config.TrustedCerts != "" && !x509.NewCertPool().AppendCertsFromPEM([]byte(ctx.Config.TrustedCerts)) {
+		return misconfigured(kind, put, "no certificate could be added from the specified trusted_certificates configuration")
 	}
 
 	return nil
@@ -240,7 +246,22 @@ func newUploadRequest(target, username, secret string, a *asset) (*h.Request, er
 
 // executeHTTPRequest processes the http call with respect of context ctx
 func executeHTTPRequest(ctx *context.Context, req *h.Request, check ResponseChecker) (*h.Response, error) {
-	resp, err := h.DefaultClient.Do(req)
+	client := h.DefaultClient
+	if ctx.Config.TrustedCerts != "" {
+		pool, err := loadSystemRoots()
+		if err != nil {
+			return "", nil, err
+		}
+		pool.AppendCertsFromPEM([]byte(ctx.Config.TrustedCerts)) // already validated certs checked by CheckConfig
+		client = &h.Client{
+			Transport: &h.Transport{
+				TLSClientConfig: &tls.Config{
+					RootCAs: pool,
+				},
+			},
+		}
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		// If we got an error, and the context has been canceled,
 		// the context's error is probably more useful.
@@ -249,7 +270,6 @@ func executeHTTPRequest(ctx *context.Context, req *h.Request, check ResponseChec
 			return nil, ctx.Err()
 		default:
 		}
-
 		return nil, err
 	}
 
