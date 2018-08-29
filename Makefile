@@ -49,6 +49,7 @@ ci: build test lint
 
 # Build a beta version of goreleaser
 build:
+	go mod download
 	go generate ./...
 	go build
 .PHONY: build
