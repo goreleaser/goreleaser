@@ -28,7 +28,6 @@ generate:
 
 # Run all the tests
 test: generate
-	go generate ./...
 	go test $(TEST_OPTIONS) -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=2m
 .PHONY: test
 
