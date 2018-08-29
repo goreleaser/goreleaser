@@ -1,7 +1,6 @@
 dist/
 !internal/pipeline/dist
 bin/
-vendor
 coverage.txt
 goreleaser
 debug.test

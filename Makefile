@@ -2,13 +2,14 @@ SOURCE_FILES?=./...
 TEST_PATTERN?=.
 TEST_OPTIONS?=
 
-export PATH := ./bin:$(PATH)
 export GO111MODULE := on
+export GOBIN       := $(PWD)/bin
+export PATH        := $(PWD)/bin:$(PATH)
 
 # Install all the build and lint dependencies
 setup:
-	go get -u golang.org/x/tools/cmd/stringer
-	go get -u golang.org/x/tools/cmd/cover
+	go install golang.org/x/tools/cmd/stringer
+	go install golang.org/x/tools/cmd/cover
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
 	curl -sfL https://install.goreleaser.com/github.com/gohugoio/hugo.sh | sh
 	curl -sfL https://install.goreleaser.com/github.com/caarlos0/bandep.sh | sh
@@ -20,8 +21,14 @@ check:
 	bandep --ban github.com/tj/assert
 .PHONY: check
 
+# Runs go generate
+generate:
+	go generate ./...
+.PHONY: generate
+
 # Run all the tests
-test:
+test: generate
+	go generate ./...
 	go test $(TEST_OPTIONS) -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=2m
 .PHONY: test
 
@@ -44,13 +51,11 @@ lint:
 .PHONY: lint
 
 # Run all the tests and code checks
-ci: build test lint
+ci: generate build test lint
 .PHONY: ci
 
 # Build a beta version of goreleaser
-build:
-	go mod download
-	go generate ./...
+build: generate
 	go build
 .PHONY: build
 

@@ -16,7 +16,7 @@ require (
 	github.com/golang/protobuf v1.1.0 // indirect
 	github.com/google/go-github v0.0.0-20180715235332-b14883f2b71b
 	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135 // indirect
-	github.com/gopherjs/gopherjs v0.0.0-20180820052304-89baedc74dd7 // indirect
+	github.com/gopherjs/gopherjs v0.0.0-20180825215210-0210a2f0f73c // indirect
 	github.com/goreleaser/nfpm v0.9.3
 	github.com/imdario/mergo v0.3.5
 	github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8 // indirect
@@ -36,8 +36,8 @@ require (
 	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f
 	golang.org/x/sys v0.0.0-20180715085529-ac767d655b30 // indirect
 	golang.org/x/text v0.3.0 // indirect
-	golang.org/x/tools v0.0.0-20180826000951-f6ba57429505 // indirect
+	golang.org/x/tools v0.0.0-20180828015842-6cd1fcedba52
 	google.golang.org/appengine v1.1.0 // indirect
-	gopkg.in/ini.v1 v1.38.1 // indirect
+	gopkg.in/ini.v1 v1.38.2 // indirect
 	gopkg.in/yaml.v2 v2.2.1
 )
