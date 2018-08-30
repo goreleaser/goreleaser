@@ -248,7 +248,7 @@ type DummyClient struct {
 	Lock                sync.Mutex
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
+func (client *DummyClient) CreateRelease(ctx *context.Context, body string, pre bool) (releaseID int64, err error) {
 	if client.FailToCreateRelease {
 		return 0, errors.New("release failed")
 	}

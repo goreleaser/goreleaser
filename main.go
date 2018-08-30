@@ -174,7 +174,7 @@ func releaseProject(options releaseOptions) error {
 		ctx.ReleaseNotes = string(bts)
 	}
 	ctx.Snapshot = options.Snapshot
-	ctx.SkipPublish = ctx.Snapshot || options.SkipPublish
+	ctx.SkipPublish = options.SkipPublish
 	ctx.SkipValidate = ctx.Snapshot || options.SkipValidate
 	ctx.SkipSign = options.SkipSign
 	ctx.RmDist = options.RmDist
@@ -216,7 +216,8 @@ func initProject(filename string) error {
 		}
 		return fmt.Errorf("%s already exists", filename)
 	}
-	log.Infof(color.New(color.Bold).Sprintf("Generating %s file", filename))
+	log.Infof(color.New(color.Bold).
+		Sprintf("Writing %s, edit it to fit your needs", filename))
 	return ioutil.WriteFile(filename, []byte(exampleConfig), 0644)
 }
 
@@ -258,6 +259,7 @@ checksum:
   name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ .Tag }}-next"
+  publish: true
 changelog:
   sort: asc
   filters:

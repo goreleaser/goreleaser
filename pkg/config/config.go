@@ -228,6 +228,7 @@ type Snapcraft struct {
 // Snapshot config
 type Snapshot struct {
 	NameTemplate string `yaml:"name_template,omitempty"`
+	Publish      bool   `yaml:"publish,omitempty"`
 }
 
 // Checksum config

@@ -88,24 +88,28 @@ func (c *githubClient) CreateFile(
 	return err
 }
 
-func (c *githubClient) CreateRelease(ctx *context.Context, body string) (int64, error) {
+func (c *githubClient) CreateRelease(ctx *context.Context, body string, prerelease bool) (int64, error) {
 	var release *github.RepositoryRelease
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Release.NameTemplate)
 	if err != nil {
 		return 0, err
 	}
+	var tag = ctx.Git.CurrentTag
+	if prerelease {
+		tag = ctx.Version
+	}
 	var data = &github.RepositoryRelease{
 		Name:       github.String(title),
-		TagName:    github.String(ctx.Git.CurrentTag),
 		Body:       github.String(body),
 		Draft:      github.Bool(ctx.Config.Release.Draft),
-		Prerelease: github.Bool(ctx.Config.Release.Prerelease),
+		Prerelease: github.Bool(prerelease),
+		TagName:    github.String(tag),
 	}
 	release, _, err = c.client.Repositories.GetReleaseByTag(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
-		ctx.Git.CurrentTag,
+		tag,
 	)
 	if err != nil {
 		release, _, err = c.client.Repositories.CreateRelease(

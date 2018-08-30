@@ -15,5 +15,8 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Snapshot.NameTemplate == "" {
 		ctx.Config.Snapshot.NameTemplate = "SNAPSHOT-{{ .Commit }}"
 	}
+	if !ctx.Config.Snapshot.Publish && ctx.Snapshot {
+		ctx.SkipPublish = true
+	}
 	return nil
 }

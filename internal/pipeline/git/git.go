@@ -105,6 +105,7 @@ func validate(ctx *context.Context) error {
 	if strings.TrimSpace(out) != "" || err != nil {
 		return ErrDirty{status: out}
 	}
+	// TODO: semver?
 	if !regexp.MustCompile("^[0-9.]+").MatchString(ctx.Version) {
 		return ErrInvalidVersionFormat{version: ctx.Version}
 	}

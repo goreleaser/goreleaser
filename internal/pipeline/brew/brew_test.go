@@ -377,7 +377,7 @@ type DummyClient struct {
 	Content     string
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
+func (client *DummyClient) CreateRelease(ctx *context.Context, body string, pre bool) (releaseID int64, err error) {
 	return
 }
 

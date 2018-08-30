@@ -25,13 +25,13 @@ func (Pipe) Default(ctx *context.Context) error {
 		return nil
 	}
 	if ctx.Config.Release.NameTemplate == "" {
-		ctx.Config.Release.NameTemplate = "{{.Tag}}"
+		ctx.Config.Release.NameTemplate = "{{.Version}}"
 	}
 	if ctx.Config.Release.GitHub.Name != "" {
 		return nil
 	}
 	repo, err := remoteRepo()
-	if err != nil && !ctx.Snapshot {
+	if err != nil {
 		return err
 	}
 	ctx.Config.Release.GitHub = repo
@@ -61,7 +61,7 @@ func doRun(ctx *context.Context, c client.Client) error {
 	if err != nil {
 		return err
 	}
-	releaseID, err := c.CreateRelease(ctx, body.String())
+	releaseID, err := c.CreateRelease(ctx, body.String(), ctx.Config.Release.Prerelease || ctx.Snapshot)
 	if err != nil {
 		return err
 	}
