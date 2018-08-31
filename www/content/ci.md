@@ -132,11 +132,8 @@ your changes are pulled to a repo like
 source.developers.google.com/p/YourProjectId/r/github-YourGithubUser-YourGithubRepo, and that's what
 you're building off.  
 
-This repo does not have your tags, which prevents goreleaser from running at
-all, and it has the wrong name, so if it did run it would try to publish to
-the wrong github repo.
-
-To address the issue with the wrong name, in your .goreleaser.yml file's release section add:
+This repo has the wrong name, so to prevent Goreleaser from publishing to
+the wrong github repo, put in the your .goreleaser.yml file's release section:
 
 ```yml
 release:
@@ -157,6 +154,13 @@ tag" trigger.
 
 In this example we're creating a new release every time a new tag is pushed.
 See [Using Encrypted Resources](https://cloud.google.com/cloud-build/docs/securing-builds/use-encrypted-secrets-credentials) for how to encrypt and base64-encode your github token.
+
+The clone that the build uses [has no
+tags](https://issuetracker.google.com/u/1/issues/113668706), which is why we
+must explicitly run git tag $TAG_NAME (note that $TAG_NAME is only set when
+your build is triggered by a "push to tag".) This will allow goreleaser to
+create a release with that version, but it won't be able to build a proper
+changelog containing just the messages from the commits since the prior tag.
 
 ```yml
 steps:
