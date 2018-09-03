@@ -100,10 +100,11 @@ func doRun(ctx *context.Context) error {
 }
 
 func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) error {
-	tmp, err := ioutil.TempDir("", "goreleaserdocker")
+	tmp, err := ioutil.TempDir(ctx.Config.Dist, "goreleaserdocker")
 	if err != nil {
 		return errors.Wrap(err, "failed to create temporaty dir")
 	}
+	defer os.RemoveAll(tmp)
 	log.Info("tempdir: " + tmp)
 	// nolint:prealloc
 	var images []string
@@ -209,6 +210,9 @@ func dockerTag(ctx *context.Context, image, tag string) error {
 }
 
 func dockerPush(ctx *context.Context, docker config.Docker, image string) error {
+	if err := dockerLogin(ctx, docker); err != nil {
+		return errors.Wrap(err, "could not log in to the docker registry")
+	}
 	log.WithField("image", image).Info("pushing docker image")
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "docker", "push", image)
@@ -226,5 +230,27 @@ func dockerPush(ctx *context.Context, docker config.Docker, image string) error 
 		Goos:   docker.Goos,
 		Goarm:  docker.Goarm,
 	})
+	return nil
+}
+
+func dockerLogin(ctx *context.Context, docker config.Docker) error {
+	if docker.Login == "" || docker.Password == "" {
+		log.Info("docker credentials not set")
+		return nil
+	}
+	login, err := tmpl.New(ctx).Apply(docker.Login)
+	if err != nil {
+		return errors.Wrap(err, "could not apply login template")
+	}
+	pass, err := tmpl.New(ctx).Apply(docker.Password)
+	if err != nil {
+		return errors.Wrap(err, "could not apply password template")
+	}
+	// #nosec
+	cmd := exec.CommandContext(ctx, "docker", "login", "-p", pass, "-u", login)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return errors.Wrapf(err, "could not execute command: \n%s", out)
+	}
 	return nil
 }

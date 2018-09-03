@@ -55,6 +55,10 @@ dockers:
     binary: mybinary
     # Docker image name.
     image: myuser/myimage
+    # Docker registry login. Could be useful if you use goreleaser in the docker container.
+    login: "{{ .Env.DOCKER_LOGIN }}"
+    # Docker registry password. Could be useful if you use goreleaser in the docker container.
+    password: "{{ .Env.DOCKER_PASSWORD }}"
     # Skips the docker push. Could be useful if you also do draft releases.
     # Defaults to false.
     skip_push: false
