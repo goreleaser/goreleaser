@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/apex/log"
@@ -15,8 +16,10 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/archive"
+	archivelib "github.com/goreleaser/goreleaser/pkg/archive"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -34,27 +37,33 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	var archive = &ctx.Config.Archive
-	if archive.Format == "" {
-		archive.Format = "tar.gz"
+	if reflect.DeepEqual(ctx.Config.OldArchive, config.Archive{}) {
+		deprecate.Notice("archive")
 	}
-	if len(archive.Files) == 0 {
-		archive.Files = []string{
-			"licence*",
-			"LICENCE*",
-			"license*",
-			"LICENSE*",
-			"readme*",
-			"README*",
-			"changelog*",
-			"CHANGELOG*",
+	ctx.Config.Archives = append(ctx.Config.Archives, ctx.Config.OldArchive)
+	for i, archive := range ctx.Config.Archives {
+		if archive.Format == "" {
+			archive.Format = "tar.gz"
 		}
-	}
-	if archive.NameTemplate == "" {
-		archive.NameTemplate = defaultNameTemplate
-		if archive.Format == "binary" {
-			archive.NameTemplate = defaultBinaryNameTemplate
+		if len(archive.Files) == 0 {
+			archive.Files = []string{
+				"licence*",
+				"LICENCE*",
+				"license*",
+				"LICENSE*",
+				"readme*",
+				"README*",
+				"changelog*",
+				"CHANGELOG*",
+			}
 		}
+		if archive.NameTemplate == "" {
+			archive.NameTemplate = defaultNameTemplate
+			if archive.Format == "binary" {
+				archive.NameTemplate = defaultBinaryNameTemplate
+			}
+		}
+		ctx.Config.Archives[i] = archive
 	}
 	return nil
 }
@@ -62,24 +71,41 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	var filtered = ctx.Artifacts.Filter(artifact.ByType(artifact.Binary))
-	for _, artifacts := range filtered.GroupByPlatform() {
-		artifacts := artifacts
-		g.Go(func() error {
-			if packageFormat(ctx, artifacts[0].Goos) == "binary" {
-				return skip(ctx, artifacts)
-			}
-			return create(ctx, artifacts)
-		})
+	for _, archive := range ctx.Config.Archives {
+		var archive = archive
+		var filter = artifact.ByType(artifact.Binary)
+		if len(archive.Binaries) > 0 {
+			filter = artifact.And(filter, filterByName(archive.Binaries))
+		}
+		for _, artifacts := range ctx.Artifacts.Filter(filter).GroupByPlatform() {
+			artifacts := artifacts
+			g.Go(func() error {
+				if packageFormat(ctx, archive, artifacts[0].Goos) == "binary" {
+					return skip(ctx, archive, artifacts)
+				}
+				return create(ctx, archive, artifacts)
+			})
+		}
 	}
 	return g.Wait()
 }
 
-func create(ctx *context.Context, binaries []artifact.Artifact) error {
-	var format = packageFormat(ctx, binaries[0].Goos)
+func filterByName(names []string) artifact.Filter {
+	return func(a artifact.Artifact) bool {
+		for _, name := range names {
+			if name == a.Extra["Binary"] {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+func create(ctx *context.Context, archive config.Archive, binaries []artifact.Artifact) error {
+	var format = packageFormat(ctx, archive, binaries[0].Goos)
 	folder, err := tmpl.New(ctx).
-		WithArtifact(binaries[0], ctx.Config.Archive.Replacements).
-		Apply(ctx.Config.Archive.NameTemplate)
+		WithArtifact(binaries[0], archive.Replacements).
+		Apply(archive.NameTemplate)
 	if err != nil {
 		return err
 	}
@@ -90,21 +116,21 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 	}
 	defer archiveFile.Close() // nolint: errcheck
 	log.WithField("archive", archivePath).Info("creating")
-	var a = archive.New(archiveFile)
+	var a = archivelib.New(archiveFile)
 	defer a.Close() // nolint: errcheck
 
-	files, err := findFiles(ctx)
+	files, err := findFiles(ctx, archive)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %s", err.Error())
 	}
 	for _, f := range files {
 		log.Debugf("adding %s", f)
-		if err = a.Add(wrap(ctx, f, folder), f); err != nil {
+		if err = a.Add(wrap(ctx, archive, f, folder), f); err != nil {
 			return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
 		}
 	}
 	for _, binary := range binaries {
-		var bin = wrap(ctx, binary.Name, folder)
+		var bin = wrap(ctx, archive, binary.Name, folder)
 		log.Debugf("adding %s", bin)
 		if err := a.Add(bin, binary.Path); err != nil {
 			return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
@@ -121,12 +147,12 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 	return nil
 }
 
-func skip(ctx *context.Context, binaries []artifact.Artifact) error {
+func skip(ctx *context.Context, archive config.Archive, binaries []artifact.Artifact) error {
 	for _, binary := range binaries {
 		log.WithField("binary", binary.Name).Info("skip archiving")
 		name, err := tmpl.New(ctx).
-			WithArtifact(binary, ctx.Config.Archive.Replacements).
-			Apply(ctx.Config.Archive.NameTemplate)
+			WithArtifact(binary, archive.Replacements).
+			Apply(archive.NameTemplate)
 		if err != nil {
 			return err
 		}
@@ -137,8 +163,8 @@ func skip(ctx *context.Context, binaries []artifact.Artifact) error {
 	return nil
 }
 
-func findFiles(ctx *context.Context) (result []string, err error) {
-	for _, glob := range ctx.Config.Archive.Files {
+func findFiles(ctx *context.Context, archive config.Archive) (result []string, err error) {
+	for _, glob := range archive.Files {
 		files, err := zglob.Glob(glob)
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %s", glob, err.Error())
@@ -153,18 +179,18 @@ func findFiles(ctx *context.Context) (result []string, err error) {
 }
 
 // Wrap archive files with folder if set in config.
-func wrap(ctx *context.Context, name, folder string) string {
-	if ctx.Config.Archive.WrapInDirectory {
+func wrap(ctx *context.Context, archive config.Archive, name, folder string) string {
+	if archive.WrapInDirectory {
 		return filepath.Join(folder, name)
 	}
 	return name
 }
 
-func packageFormat(ctx *context.Context, platform string) string {
-	for _, override := range ctx.Config.Archive.FormatOverrides {
+func packageFormat(ctx *context.Context, archive config.Archive, platform string) string {
+	for _, override := range archive.FormatOverrides {
 		if strings.HasPrefix(platform, override.Goos) {
 			return override.Format
 		}
 	}
-	return ctx.Config.Archive.Format
+	return archive.Format
 }
