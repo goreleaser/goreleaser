@@ -48,10 +48,9 @@ image does not provide support for snapcraft.
 $ docker run --rm --privileged \
   -v $PWD:/go/src/github.com/user/repo \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -v $(shell which docker):/usr/bin/docker \
   -w /go/src/github.com/user/repo \
   -e GITHUB_TOKEN \
-  -e DOCKER_LOGIN \
+  -e DOCKER_USERNAME \
   -e DOCKER_PASSWORD \
   goreleaser/goreleaser release
 ```
