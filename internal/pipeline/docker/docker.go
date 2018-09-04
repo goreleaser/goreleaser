@@ -100,10 +100,11 @@ func doRun(ctx *context.Context) error {
 }
 
 func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) error {
-	tmp, err := ioutil.TempDir("", "goreleaserdocker")
+	tmp, err := ioutil.TempDir(ctx.Config.Dist, "goreleaserdocker")
 	if err != nil {
 		return errors.Wrap(err, "failed to create temporaty dir")
 	}
+	defer os.RemoveAll(tmp)
 	log.Info("tempdir: " + tmp)
 	// nolint:prealloc
 	var images []string

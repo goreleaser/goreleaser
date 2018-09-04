@@ -42,13 +42,17 @@ scoop install goreleaser
 ### Using Docker
 
 You can use Docker to do simple releases. Currently, the provided docker
-image does not provide support for docker-in-docker and snapcraft.
+image does not provide support for snapcraft.
 
 ```console
-$ docker run \
+$ docker run --rm --privileged \
   -v $PWD:/go/src/github.com/user/repo \
+  -v /var/run/docker.sock:/var/run/docker.sock \
   -w /go/src/github.com/user/repo \
-  goreleaser/goreleaser --help
+  -e GITHUB_TOKEN \
+  -e DOCKER_USERNAME \
+  -e DOCKER_PASSWORD \
+  goreleaser/goreleaser release
 ```
 
 Note that the image will almost always have the last stable Go version.
