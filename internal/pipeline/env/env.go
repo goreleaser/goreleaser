@@ -56,7 +56,7 @@ func loadEnv(env, path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	f, err := os.Open(path)
+	f, err := os.Open(path) // #nosec
 	if os.IsNotExist(err) {
 		return "", nil
 	}

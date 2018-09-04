@@ -327,7 +327,7 @@ type Project struct {
 
 // Load config file
 func Load(file string) (config Project, err error) {
-	f, err := os.Open(file)
+	f, err := os.Open(file) // #nosec
 	if err != nil {
 		return
 	}

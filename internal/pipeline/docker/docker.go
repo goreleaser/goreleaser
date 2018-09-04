@@ -104,8 +104,7 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 	if err != nil {
 		return errors.Wrap(err, "failed to create temporaty dir")
 	}
-	defer os.RemoveAll(tmp)
-	log.Info("tempdir: " + tmp)
+	log.Debug("tempdir: " + tmp)
 	// nolint:prealloc
 	var images []string
 	for _, tagTemplate := range docker.TagTemplates {
