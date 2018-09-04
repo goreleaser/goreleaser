@@ -12,6 +12,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestNoS3(t *testing.T) {
-	assert.NoError(t, Pipe{}.Run(context.New(config.Project{})))
+	testlib.AssertSkipped(t, Pipe{}.Run(context.New(config.Project{})))
 }
 
 func TestDefaultsNoS3(t *testing.T) {
