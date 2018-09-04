@@ -49,6 +49,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipeline.ErrSkipPublishEnabled
 	}
+	if len(ctx.Config.S3) == 0 {
+		return pipeline.Skip("s3 section is not configured")
+	}
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, conf := range ctx.Config.S3 {
 		conf := conf
