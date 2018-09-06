@@ -7,6 +7,8 @@ import (
 	"os"
 	"testing"
 
+	"path/filepath"
+
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
@@ -57,6 +59,11 @@ func TestDefault(t *testing.T) {
 }
 
 func Test_doRun(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var file = filepath.Join(folder, "archive")
+	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+
 	type errChecker func(*testing.T, error)
 	var shouldErr = func(msg string) errChecker {
 		return func(t *testing.T, err error) {
@@ -114,8 +121,8 @@ func Test_doRun(t *testing.T) {
 				&DummyClient{},
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
+				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldNotErr,
 		},
@@ -157,8 +164,8 @@ func Test_doRun(t *testing.T) {
 				&DummyClient{},
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
+				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldNotErr,
 		},
@@ -276,8 +283,8 @@ func Test_doRun(t *testing.T) {
 				&DummyClient{},
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
+				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldErr(pipeline.ErrSkipPublishEnabled.Error()),
 		},
@@ -315,8 +322,8 @@ func Test_doRun(t *testing.T) {
 				&DummyClient{},
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
+				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldErr("release is marked as draft"),
 		},
@@ -373,6 +380,11 @@ func Test_doRun(t *testing.T) {
 }
 
 func Test_buildManifest(t *testing.T) {
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	require.NoError(t, err)
+	var file = filepath.Join(folder, "archive")
+	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+
 	tests := []struct {
 		filename string
 		ctx      *context.Context
@@ -460,8 +472,8 @@ func Test_buildManifest(t *testing.T) {
 		var ctx = tt.ctx
 		Pipe{}.Default(ctx)
 		out, err := buildManifest(ctx, []artifact.Artifact{
-			{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
-			{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+			{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
+			{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 		})
 
 		require.NoError(t, err)

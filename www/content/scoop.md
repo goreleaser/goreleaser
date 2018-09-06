@@ -59,12 +59,14 @@ the root of the repository specified in the `bucket` section.
     "64bit": {
       "url":
         "https://github.com/user/drumroll/releases/download/1.2.3/drumroll_1.2.3_windows_amd64.tar.gz",
-      "bin": "drumroll.exe"
+      "bin": "drumroll.exe",
+      "hash": "86920b1f04173ee08773136df31305c0dae2c9927248ac259e02aafd92b6008a"
     },
     "32bit": {
       "url":
         "https://github.com/user/drumroll/releases/download/1.2.3/drumroll_1.2.3_windows_386.tar.gz",
-      "bin": "drumroll.exe"
+      "bin": "drumroll.exe",
+      "hash": "283faa524ef41987e51c8786c61bb56658a489f63512b32139d222b3ee1d18e6"
     }
   },
   "homepage": "https://example.com/"
