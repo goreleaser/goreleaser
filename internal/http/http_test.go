@@ -222,11 +222,11 @@ func TestUpload(t *testing.T) {
 		}, nil
 	}
 	defer assetOpenReset()
-	var is2xx ResponseChecker = func(r *h.Response) (string, error) {
+	var is2xx ResponseChecker = func(r *h.Response) error {
 		if r.StatusCode/100 == 2 {
-			return r.Header.Get("Location"), nil
+			return nil
 		}
-		return "", errors.Errorf("unexpected http status code: %v", r.StatusCode)
+		return errors.Errorf("unexpected http status code: %v", r.StatusCode)
 	}
 	ctx := context.New(config.Project{ProjectName: "blah"})
 	ctx.Env["TEST_A_SECRET"] = "x"

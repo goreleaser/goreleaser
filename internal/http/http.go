@@ -106,9 +106,8 @@ func misconfigured(kind string, upload *config.Put, reason string) error {
 }
 
 // ResponseChecker is a function capable of validating an http server response.
-// It must return the location of the uploaded asset or the error when the
-// response must be considered a failure.
-type ResponseChecker func(*h.Response) (string, error)
+// It must return and error when the response must be considered a failure.
+type ResponseChecker func(*h.Response) error
 
 // Upload does the actual uploading work
 func Upload(ctx *context.Context, puts []config.Put, kind string, check ResponseChecker) error {
@@ -194,7 +193,7 @@ func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifac
 	}
 	targetURL += artifact.Name
 
-	location, _, err := uploadAssetToServer(ctx, targetURL, username, secret, asset, check)
+	_, err = uploadAssetToServer(ctx, targetURL, username, secret, asset, check)
 	if err != nil {
 		msg := fmt.Sprintf("%s: upload failed", kind)
 		log.WithError(err).WithFields(log.Fields{
@@ -207,24 +206,19 @@ func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifac
 	log.WithFields(log.Fields{
 		"instance": put.Name,
 		"mode":     put.Mode,
-		"uri":      location,
 	}).Info("uploaded successful")
 
 	return nil
 }
 
 // uploadAssetToServer uploads the asset file to target
-func uploadAssetToServer(ctx *context.Context, target, username, secret string, a *asset, check ResponseChecker) (string, *h.Response, error) {
+func uploadAssetToServer(ctx *context.Context, target, username, secret string, a *asset, check ResponseChecker) (*h.Response, error) {
 	req, err := newUploadRequest(target, username, secret, a)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 
-	loc, resp, err := executeHTTPRequest(ctx, req, check)
-	if err != nil {
-		return "", resp, err
-	}
-	return loc, resp, nil
+	return executeHTTPRequest(ctx, req, check)
 }
 
 // newUploadRequest creates a new h.Request for uploading
@@ -245,30 +239,30 @@ func newUploadRequest(target, username, secret string, a *asset) (*h.Request, er
 }
 
 // executeHTTPRequest processes the http call with respect of context ctx
-func executeHTTPRequest(ctx *context.Context, req *h.Request, check ResponseChecker) (string, *h.Response, error) {
+func executeHTTPRequest(ctx *context.Context, req *h.Request, check ResponseChecker) (*h.Response, error) {
 	resp, err := h.DefaultClient.Do(req)
 	if err != nil {
 		// If we got an error, and the context has been canceled,
 		// the context's error is probably more useful.
 		select {
 		case <-ctx.Done():
-			return "", nil, ctx.Err()
+			return nil, ctx.Err()
 		default:
 		}
 
-		return "", nil, err
+		return nil, err
 	}
 
 	defer resp.Body.Close() // nolint: errcheck
 
-	loc, err := check(resp)
+	err = check(resp)
 	if err != nil {
 		// even though there was an error, we still return the response
 		// in case the caller wants to inspect it further
-		return "", resp, err
+		return resp, err
 	}
 
-	return loc, resp, err
+	return resp, err
 }
 
 // targetData is used as a template struct for
