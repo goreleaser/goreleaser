@@ -287,12 +287,13 @@ type S3 struct {
 
 // Put HTTP upload configuration
 type Put struct {
-	Name      string `yaml:",omitempty"`
-	Target    string `yaml:",omitempty"`
-	Username  string `yaml:",omitempty"`
-	Mode      string `yaml:",omitempty"`
-	Checksum  bool   `yaml:",omitempty"`
-	Signature bool   `yaml:",omitempty"`
+	Name         string `yaml:",omitempty"`
+	Target       string `yaml:",omitempty"`
+	Username     string `yaml:",omitempty"`
+	Mode         string `yaml:",omitempty"`
+	Checksum     bool   `yaml:",omitempty"`
+	Signature    bool   `yaml:",omitempty"`
+	TrustedCerts string `yaml:"trusted_certificates,omitempty"`
 }
 
 // Project includes all project configuration
@@ -317,7 +318,6 @@ type Project struct {
 	EnvFiles      EnvFiles  `yaml:"env_files,omitempty"`
 	Git           Git       `yaml:",omitempty"`
 	Before        Before    `yaml:",omitempty"`
-	TrustedCerts  string    `yaml:"trusted_certificates,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

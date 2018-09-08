@@ -5,7 +5,6 @@ hideFromIndex: true
 weight: 120
 ---
 
-Since [vX.Y.Z](https://github.com/goreleaser/goreleaser/releases/tag/vX.Y.Z),
 GoReleaser supports building and pushing artifacts to HTTP servers using simple HTTP PUT requests.
 
 ## How it works
@@ -88,25 +87,29 @@ The name will be transformed to uppercase.
 ### Server authentication
 
 You can authenticate your TLS server adding a trusted X.509 certificate chain
-in your configuration.
+in your put configuration.
 
 The trusted certificate chain will be used to validate the server certificates.
 
-You can set the trusted certificate chain using the global `trusted_certificates`
-setting and PEM encoded certificates on a YAML literal block like this:
+You can set the trusted certificate chain using the `trusted_certificates`
+setting the put section with PEM encoded certificates on a YAML literal block
+like this:
 
 ```yaml
-trusted_certificates: |
-  -----BEGIN CERTIFICATE-----
-  MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
-  ...(edited content)...
-  TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
-  -----END CERTIFICATE-----
-  -----BEGIN CERTIFICATE-----
-  MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
-  ...(edited content)...
-  TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
-  -----END CERTIFICATE-----
+puts:
+  - name: "some HTTP/TLS server"
+    #...(other settings)...
+    trusted_certificates: |
+      -----BEGIN CERTIFICATE-----
+      MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
+      ...(edited content)...
+      TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
+      -----END CERTIFICATE-----
+      -----BEGIN CERTIFICATE-----
+      MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
+      ...(edited content)...
+      TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
+      -----END CERTIFICATE-----
 ```
 
 ## Customization
@@ -133,13 +136,13 @@ puts:
     checksum: true
     # Upload signatures (defaults to false)
     signature: true
-# Certificate chain used to validate server certificates
-trusted_certificates: |
-  -----BEGIN CERTIFICATE-----
-  MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
-  ...(edited content)...
-  TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
-  -----END CERTIFICATE-----
+    # Certificate chain used to validate server certificates
+    trusted_certificates: |
+      -----BEGIN CERTIFICATE-----
+      MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
+      ...(edited content)...
+      TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
+      -----END CERTIFICATE-----
 ```
 
 These settings should allow you to push your artifacts into multiple HTTP servers.
