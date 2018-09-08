@@ -9,7 +9,6 @@ import (
 	"html/template"
 	"io"
 	h "net/http"
-	"net/url"
 	"os"
 	"strings"
 
@@ -99,7 +98,7 @@ func CheckConfig(ctx *context.Context, put *config.Put, kind string) error {
 		return misconfigured(kind, put, fmt.Sprintf("missing %s environment variable", envName))
 	}
 
-	if ctx.Config.TrustedCerts != "" && !x509.NewCertPool().AppendCertsFromPEM([]byte(ctx.Config.TrustedCerts)) {
+	if put.TrustedCerts != "" && !x509.NewCertPool().AppendCertsFromPEM([]byte(put.TrustedCerts)) {
 		return misconfigured(kind, put, "no certificate could be added from the specified trusted_certificates configuration")
 	}
 
@@ -149,7 +148,7 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 			}).Error(err.Error())
 			return err
 		}
-		if err := uploadWithFilter(ctx, put, artifact.Or(filters...), kind, check); err != nil {
+		if err := uploadWithFilter(ctx, &put, artifact.Or(filters...), kind, check); err != nil {
 			return err
 		}
 	}
@@ -157,7 +156,7 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 	return nil
 }
 
-func uploadWithFilter(ctx *context.Context, put config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
+func uploadWithFilter(ctx *context.Context, put *config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
 		artifact := artifact
@@ -169,7 +168,7 @@ func uploadWithFilter(ctx *context.Context, put config.Put, filter artifact.Filt
 }
 
 // uploadAsset uploads file to target and logs all actions
-func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifact, kind string, check ResponseChecker) error {
+func uploadAsset(ctx *context.Context, put *config.Put, artifact artifact.Artifact, kind string, check ResponseChecker) error {
 	envBase := fmt.Sprintf("%s_%s_", strings.ToUpper(kind), strings.ToUpper(put.Name))
 	username := put.Username
 	if username == "" {
@@ -199,7 +198,7 @@ func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifac
 	}
 	targetURL += artifact.Name
 
-	_, err = uploadAssetToServer(ctx, targetURL, username, secret, asset, check)
+	_, err = uploadAssetToServer(ctx, put, targetURL, username, secret, asset, check)
 	if err != nil {
 		msg := fmt.Sprintf("%s: upload failed", kind)
 		log.WithError(err).WithFields(log.Fields{
@@ -218,22 +217,18 @@ func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifac
 }
 
 // uploadAssetToServer uploads the asset file to target
-func uploadAssetToServer(ctx *context.Context, target, username, secret string, a *asset, check ResponseChecker) (*h.Response, error) {
+func uploadAssetToServer(ctx *context.Context, put *config.Put, target, username, secret string, a *asset, check ResponseChecker) (*h.Response, error) {
 	req, err := newUploadRequest(target, username, secret, a)
 	if err != nil {
 		return nil, err
 	}
 
-	return executeHTTPRequest(ctx, req, check)
+	return executeHTTPRequest(ctx, put, req, check)
 }
 
 // newUploadRequest creates a new h.Request for uploading
 func newUploadRequest(target, username, secret string, a *asset) (*h.Request, error) {
-	u, err := url.Parse(target)
-	if err != nil {
-		return nil, err
-	}
-	req, err := h.NewRequest("PUT", u.String(), a.ReadCloser)
+	req, err := h.NewRequest("PUT", target, a.ReadCloser)
 	if err != nil {
 		return nil, err
 	}
@@ -244,22 +239,29 @@ func newUploadRequest(target, username, secret string, a *asset) (*h.Request, er
 	return req, err
 }
 
-// executeHTTPRequest processes the http call with respect of context ctx
-func executeHTTPRequest(ctx *context.Context, req *h.Request, check ResponseChecker) (*h.Response, error) {
-	client := h.DefaultClient
-	if ctx.Config.TrustedCerts != "" {
-		pool, err := loadSystemRoots()
-		if err != nil {
-			return "", nil, err
-		}
-		pool.AppendCertsFromPEM([]byte(ctx.Config.TrustedCerts)) // already validated certs checked by CheckConfig
-		client = &h.Client{
-			Transport: &h.Transport{
-				TLSClientConfig: &tls.Config{
-					RootCAs: pool,
-				},
+func getHTTPClient(put *config.Put) (*h.Client, error) {
+	if put.TrustedCerts == "" {
+		return h.DefaultClient, nil
+	}
+	pool, err := loadSystemRoots()
+	if err != nil {
+		return nil, err
+	}
+	pool.AppendCertsFromPEM([]byte(put.TrustedCerts)) // already validated certs checked by CheckConfig
+	return &h.Client{
+		Transport: &h.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: pool,
 			},
-		}
+		},
+	}, nil
+}
+
+// executeHTTPRequest processes the http call with respect of context ctx
+func executeHTTPRequest(ctx *context.Context, put *config.Put, req *h.Request, check ResponseChecker) (*h.Response, error) {
+	client, err := getHTTPClient(put)
+	if err != nil {
+		return nil, err
 	}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -300,21 +302,21 @@ type targetData struct {
 
 // resolveTargetTemplate returns the resolved target template with replaced variables
 // Those variables can be replaced by the given context, goos, goarch, goarm and more
-func resolveTargetTemplate(ctx *context.Context, artifactory config.Put, artifact artifact.Artifact) (string, error) {
+func resolveTargetTemplate(ctx *context.Context, put *config.Put, artifact artifact.Artifact) (string, error) {
 	data := targetData{
 		Version:     ctx.Version,
 		Tag:         ctx.Git.CurrentTag,
 		ProjectName: ctx.Config.ProjectName,
 	}
 
-	if artifactory.Mode == ModeBinary {
+	if put.Mode == ModeBinary {
 		data.Os = replace(ctx.Config.Archive.Replacements, artifact.Goos)
 		data.Arch = replace(ctx.Config.Archive.Replacements, artifact.Goarch)
 		data.Arm = replace(ctx.Config.Archive.Replacements, artifact.Goarm)
 	}
 
 	var out bytes.Buffer
-	t, err := template.New(ctx.Config.ProjectName).Parse(artifactory.Target)
+	t, err := template.New(ctx.Config.ProjectName).Parse(put.Target)
 	if err != nil {
 		return "", err
 	}
