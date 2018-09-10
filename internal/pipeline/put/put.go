@@ -38,15 +38,11 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 	}
 
-	return http.Upload(ctx, ctx.Config.Puts, "put", func(res *h.Response) (string, error) {
+	return http.Upload(ctx, ctx.Config.Puts, "put", func(res *h.Response) error {
 		if c := res.StatusCode; c < 200 || 299 < c {
-			return "", errors.Errorf("unexpected http response status: %s", res.Status)
+			return errors.Errorf("unexpected http response status: %s", res.Status)
 		}
-		loc, err := res.Location()
-		if err != nil {
-			return "", errors.Errorf("getting http response location: %s", err)
-		}
-		return loc.String(), err
+		return nil
 	})
 
 }
