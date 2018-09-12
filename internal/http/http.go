@@ -15,7 +15,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/pipeline"
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -102,7 +102,7 @@ func CheckConfig(ctx *context.Context, put *config.Put, kind string) error {
 }
 
 func misconfigured(kind string, upload *config.Put, reason string) error {
-	return pipeline.Skip(fmt.Sprintf("%s section '%s' is not configured properly (%s)", kind, upload.Name, reason))
+	return pipe.Skip(fmt.Sprintf("%s section '%s' is not configured properly (%s)", kind, upload.Name, reason))
 }
 
 // ResponseChecker is a function capable of validating an http server response.
@@ -112,7 +112,7 @@ type ResponseChecker func(*h.Response) error
 // Upload does the actual uploading work
 func Upload(ctx *context.Context, puts []config.Put, kind string, check ResponseChecker) error {
 	if ctx.SkipPublish {
-		return pipeline.ErrSkipPublishEnabled
+		return pipe.ErrSkipPublishEnabled
 	}
 
 	// Handle every configured put
