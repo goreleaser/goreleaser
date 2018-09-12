@@ -76,7 +76,7 @@ serve:
 
 depgraph:
 	go get github.com/kisielk/godepgraph
-	godepgraph -horizontal -s -o github.com/goreleaser github.com/goreleaser/goreleaser | dot -Tpng -o www/static/deps.png
+	godepgraph -horizontal -s -o github.com/goreleaser github.com/goreleaser/goreleaser | dot -Tsvg -o www/static/deps.svg
 .PHONY: depgraph
 
 # Show to-do items per file.

@@ -9,4 +9,4 @@ to the project.
 
 ## Package graph
 
-[![](/deps.png)](/deps.png)
+[![](/deps.svg)](/deps.svg)
