@@ -152,7 +152,7 @@
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 
 [[projects]]
-  digest = "1:20ea4614e292903a7edabb4facfa4c10a1f059d2a3faa47875c47b0eb0b67c39"
+  digest = "1:5a6348747c2538045137cdc0cf1f18ef09c5bf44fe01b0341b8cb4e380c3a988"
   name = "github.com/goreleaser/nfpm"
   packages = [
     ".",
@@ -161,8 +161,8 @@
     "rpm",
   ]
   pruneopts = ""
-  revision = "923d6a7473bfdbe7a583b7f3df1f3f780b1b73ab"
-  version = "v0.9.3"
+  revision = "e9205e74c0a6892241aafdf16bee50bfd56ff94f"
+  version = "v0.9.4"
 
 [[projects]]
   digest = "1:302c6eb8e669c997bec516a138b8fc496018faa1ece4c13e445a2749fbe079bb"
@@ -320,6 +320,7 @@
     "github.com/apex/log/handlers/cli",
     "github.com/aws/aws-sdk-go/aws",
     "github.com/aws/aws-sdk-go/aws/credentials",
+    "github.com/aws/aws-sdk-go/aws/credentials/stscreds",
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/s3",
     "github.com/caarlos0/ctrlc",
