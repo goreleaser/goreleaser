@@ -10,6 +10,7 @@ import (
 	"io"
 	h "net/http"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/apex/log"
@@ -243,9 +244,14 @@ func getHTTPClient(put *config.Put) (*h.Client, error) {
 	if put.TrustedCerts == "" {
 		return h.DefaultClient, nil
 	}
-	pool, err := loadSystemRoots()
+	pool, err := x509.SystemCertPool()
 	if err != nil {
-		return nil, err
+		if runtime.GOOS == "windows" {
+			// on windows ignore errors until golang issues #16736 & #18609 get fixed
+			pool = x509.NewCertPool()
+		} else {
+			return nil, err
+		}
 	}
 	pool.AppendCertsFromPEM([]byte(put.TrustedCerts)) // already validated certs checked by CheckConfig
 	return &h.Client{
