@@ -269,6 +269,7 @@ func executeHTTPRequest(ctx *context.Context, put *config.Put, req *h.Request, c
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("executing request: %s %s (headers: %v)", req.Method, req.URL, req.Header)
 	resp, err := client.Do(req)
 	if err != nil {
 		// If we got an error, and the context has been canceled,
