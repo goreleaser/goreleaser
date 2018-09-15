@@ -69,6 +69,11 @@ serve:
 	@hugo server --enableGitInfo --watch --source www --disableFastRender
 .PHONY: serve
 
+depgraph:
+	go get github.com/kisielk/godepgraph
+	godepgraph -horizontal -s -o github.com/goreleaser/goreleaser . | dot -Tsvg -o www/static/deps.svg
+.PHONY: depgraph
+
 # Show to-do items per file.
 todo:
 	@grep \

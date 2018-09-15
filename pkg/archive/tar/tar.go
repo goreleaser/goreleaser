@@ -35,7 +35,7 @@ func New(target io.Writer) Archive {
 
 // Add file to the archive
 func (a Archive) Add(name, path string) error {
-	file, err := os.Open(path)
+	file, err := os.Open(path) // #nosec
 	if err != nil {
 		return err
 	}
