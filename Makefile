@@ -2,8 +2,9 @@ SOURCE_FILES?=./...
 TEST_PATTERN?=.
 TEST_OPTIONS?=
 
-export PATH := ./bin:$(PATH)
 export GO111MODULE := on
+export GOBIN       := $(PWD)/bin
+export PATH        := $(PWD)/bin:$(PATH)
 
 # Install all the build and lint dependencies
 setup:
