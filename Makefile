@@ -20,7 +20,7 @@ check:
 .PHONY: check
 
 # Run all the tests
-test:
+test: deps
 	go test $(TEST_OPTIONS) -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=2m
 .PHONY: test
 
@@ -46,9 +46,12 @@ lint:
 ci: build test lint
 .PHONY: ci
 
-# Build a beta version of goreleaser
-build:
+deps:
 	go mod download
+.PHONY: deps
+
+# Build a beta version of goreleaser
+build: deps
 	go build
 .PHONY: build
 
