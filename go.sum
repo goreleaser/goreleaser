@@ -31,6 +31,7 @@ github.com/gopherjs/gopherjs v0.0.0-20180820052304-89baedc74dd7 h1:WF7x3tAe0mEb4
 github.com/gopherjs/gopherjs v0.0.0-20180820052304-89baedc74dd7/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/goreleaser/nfpm v0.9.3 h1:clQAayuzBos480VGbNjqIedNdmo2Stlnug4B8Gi6C8E=
 github.com/goreleaser/nfpm v0.9.3/go.mod h1:kn0Dps10Osi7V2icEXFTBRZhmiuGPUizzZVw/WQtQ/k=
+github.com/goreleaser/nfpm v0.9.5/go.mod h1:kn0Dps10Osi7V2icEXFTBRZhmiuGPUizzZVw/WQtQ/k=
 github.com/imdario/mergo v0.3.5 h1:JboBksRwiiAJWvIYJVo46AfV+IAIKZpfrSzVKj42R4Q=
 github.com/imdario/mergo v0.3.5/go.mod h1:2EnlNZ0deacrJVfApfmtdGgDfMuh/nq6Ok1EcJh5FfA=
 github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8 h1:12VvqtR6Aowv3l/EQUlocDHW2Cp4G9WJVH7uyH8QFJE=

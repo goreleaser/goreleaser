@@ -17,7 +17,7 @@ require (
 	github.com/google/go-github v0.0.0-20180715235332-b14883f2b71b
 	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20180820052304-89baedc74dd7 // indirect
-	github.com/goreleaser/nfpm v0.9.3
+	github.com/goreleaser/nfpm v0.9.5
 	github.com/imdario/mergo v0.3.5
 	github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8 // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
