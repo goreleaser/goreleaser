@@ -7,8 +7,6 @@ export PATH := ./bin:$(PATH)
 
 # Install all the build and lint dependencies
 setup:
-	go get -u golang.org/x/tools/cmd/stringer
-	go get -u golang.org/x/tools/cmd/cover
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
 	curl -sfL https://install.goreleaser.com/github.com/gohugoio/hugo.sh | sh
 	curl -sfL https://install.goreleaser.com/github.com/caarlos0/bandep.sh | sh
@@ -55,7 +53,6 @@ ci: build test lint
 
 # Build a beta version of goreleaser
 build:
-	go generate ./...
 	go build
 .PHONY: build
 
