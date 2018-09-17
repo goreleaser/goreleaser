@@ -7,9 +7,9 @@ weight: 140
 GoReleaser was built from the very first commit with the idea of
 running it as part of the CI pipeline in mind.
 
-Let's see how we can get it working on popular CI softwares.
+Let's see how we can get it working on popular CI software.
 
-## Travis
+## Travis CI
 
 You may want to setup your project to auto-deploy your new tags on
 [Travis](https://travis-ci.org), for example:
@@ -83,17 +83,6 @@ workflows:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
 ```
 
-For CircleCI 1.0:
-
-```yml
-# circle.yml
-deployment:
-  tag:
-    tag: /v[0-9]+(\.[0-9]+)*(-.*)*/
-    owner: user
-    commands:
-      - curl -sL https://git.io/goreleaser | bash
-```
 
 ## Drone
 
