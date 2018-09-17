@@ -26,16 +26,17 @@ var (
 )
 
 type releaseOptions struct {
-	Config       string
-	ReleaseNotes string
-	Snapshot     bool
-	SkipPublish  bool
-	SkipSign     bool
-	SkipValidate bool
-	RmDist       bool
-	Debug        bool
-	Parallelism  int
-	Timeout      time.Duration
+	Config           string
+	ReleaseNotes     string
+	Snapshot         bool
+	SkipPublish      bool
+	PublishSnapshots bool
+	SkipSign         bool
+	SkipValidate     bool
+	RmDist           bool
+	Debug            bool
+	Parallelism      int
+	Timeout          time.Duration
 }
 
 func init() {
@@ -52,6 +53,7 @@ func main() {
 	var config = releaseCmd.Flag("config", "Load configuration from file").Short('c').Short('f').PlaceHolder(".goreleaser.yml").String()
 	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown file").PlaceHolder("notes.md").String()
 	var snapshot = releaseCmd.Flag("snapshot", "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts").Bool()
+	var publishSnapshots = releaseCmd.Flag("publish-snapshots", "Publish all artifacts even if they are snapshots").Bool()
 	var skipPublish = releaseCmd.Flag("skip-publish", "Generates all artifacts but does not publish them anywhere").Bool()
 	var skipSign = releaseCmd.Flag("skip-sign", "Skips signing the artifacts").Bool()
 	var skipValidate = releaseCmd.Flag("skip-validate", "Skips all git sanity checks").Bool()
@@ -77,16 +79,17 @@ func main() {
 		start := time.Now()
 		log.Infof(color.New(color.Bold).Sprintf("releasing using goreleaser %s...", version))
 		var options = releaseOptions{
-			Config:       *config,
-			ReleaseNotes: *releaseNotes,
-			Snapshot:     *snapshot,
-			SkipPublish:  *skipPublish,
-			SkipValidate: *skipValidate,
-			SkipSign:     *skipSign,
-			RmDist:       *rmDist,
-			Parallelism:  *parallelism,
-			Debug:        *debug,
-			Timeout:      *timeout,
+			Config:           *config,
+			ReleaseNotes:     *releaseNotes,
+			Snapshot:         *snapshot,
+			SkipPublish:      *skipPublish,
+			PublishSnapshots: *publishSnapshots,
+			SkipValidate:     *skipValidate,
+			SkipSign:         *skipSign,
+			RmDist:           *rmDist,
+			Parallelism:      *parallelism,
+			Debug:            *debug,
+			Timeout:          *timeout,
 		}
 		if err := releaseProject(options); err != nil {
 			log.WithError(err).Errorf(color.New(color.Bold).Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
@@ -124,7 +127,7 @@ func releaseProject(options releaseOptions) error {
 		ctx.ReleaseNotes = string(bts)
 	}
 	ctx.Snapshot = options.Snapshot
-	ctx.SkipPublish = ctx.Snapshot || options.SkipPublish
+	ctx.SkipPublish = (ctx.Snapshot && !options.PublishSnapshots) || options.SkipPublish
 	ctx.SkipValidate = ctx.Snapshot || options.SkipValidate
 	ctx.SkipSign = options.SkipSign
 	ctx.RmDist = options.RmDist
