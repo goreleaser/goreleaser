@@ -12,7 +12,6 @@ import (
 )
 
 // Type defines the type of an artifact
-//go:generate stringer -type=Type
 type Type int
 
 const (
