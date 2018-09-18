@@ -137,10 +137,10 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 		case ModeArchive:
 			filters = append(filters,
 				artifact.ByType(artifact.UploadableArchive),
-				artifact.ByType(artifact.LinuxPackage))
+				artifact.ByType(artifact.LinuxPackage),
+			)
 		case ModeBinary:
-			filters = append(filters,
-				artifact.ByType(artifact.UploadableBinary))
+			filters = append(filters, artifact.ByType(artifact.UploadableBinary))
 		default:
 			err := fmt.Errorf("%s: mode \"%s\" not supported", kind, v)
 			log.WithFields(log.Fields{
@@ -158,8 +158,10 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 }
 
 func uploadWithFilter(ctx *context.Context, put *config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
+	var artifacts = ctx.Artifacts.Filter(filter).List()
+	log.Infof("will upload %d artifacts", len(artifacts))
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
+	for _, artifact := range artifacts {
 		artifact := artifact
 		g.Go(func() error {
 			return uploadAsset(ctx, put, artifact, kind, check)
