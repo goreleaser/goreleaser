@@ -88,6 +88,34 @@ If your instance is named `production`, you need to store the secret in the
 environment variable `ARTIFACTORY_PRODUCTION_SECRET`.
 The name will be transformed to uppercase.
 
+### Server authentication
+
+You can authenticate your Artifactory TLS server adding a trusted X.509
+certificate chain in your configuration.
+
+The trusted certificate chain will be used to validate the server certificates.
+
+You can set the trusted certificate chain using the `trusted_certificates`
+setting the artifactory section with PEM encoded certificates on a YAML literal
+block like this:
+
+```yaml
+puts:
+  - name: "some artifactory server with a private TLS certificate"
+    #...(other settings)...
+    trusted_certificates: |
+      -----BEGIN CERTIFICATE-----
+      MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
+      ...(edited content)...
+      TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
+      -----END CERTIFICATE-----
+      -----BEGIN CERTIFICATE-----
+      MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
+      ...(edited content)...
+      TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
+      -----END CERTIFICATE-----
+```
+
 ## Customization
 
 Of course, you can customize a lot of things:
@@ -112,6 +140,13 @@ artifactories:
     checksum: true
     # Upload signatures (defaults to false)
     signature: true
+    # Certificate chain used to validate server certificates
+    trusted_certificates: |
+      -----BEGIN CERTIFICATE-----
+      MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
+      ...(edited content)...
+      TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
+      -----END CERTIFICATE-----
 ```
 
 These settings should allow you to push your artifacts into multiple Artifactories.
