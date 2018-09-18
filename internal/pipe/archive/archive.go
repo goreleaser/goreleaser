@@ -37,10 +37,10 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if reflect.DeepEqual(ctx.Config.OldArchive, config.Archive{}) {
+	if !reflect.DeepEqual(ctx.Config.OldArchive, config.Archive{}) {
 		deprecate.Notice("archive")
+		ctx.Config.Archives = append(ctx.Config.Archives, ctx.Config.OldArchive)
 	}
-	ctx.Config.Archives = append(ctx.Config.Archives, ctx.Config.OldArchive)
 	for i, archive := range ctx.Config.Archives {
 		if archive.Format == "" {
 			archive.Format = "tar.gz"
@@ -75,7 +75,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		var archive = archive
 		var filter = artifact.ByType(artifact.Binary)
 		if len(archive.Binaries) > 0 {
-			filter = artifact.And(filter, filterByName(archive.Binaries))
+			filter = artifact.And(filter, artifact.ByBinaryName(archive.Binaries...))
 		}
 		for _, artifacts := range ctx.Artifacts.Filter(filter).GroupByPlatform() {
 			artifacts := artifacts
@@ -88,17 +88,6 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 	}
 	return g.Wait()
-}
-
-func filterByName(names []string) artifact.Filter {
-	return func(a artifact.Artifact) bool {
-		for _, name := range names {
-			if name == a.Extra["Binary"] {
-				return true
-			}
-		}
-		return false
-	}
 }
 
 func create(ctx *context.Context, archive config.Archive, binaries []artifact.Artifact) error {

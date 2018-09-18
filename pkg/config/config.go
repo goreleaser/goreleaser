@@ -51,6 +51,7 @@ type Homebrew struct {
 	DownloadStrategy string       `yaml:"download_strategy,omitempty"`
 	SourceTarball    string       `yaml:"-"`
 	URLTemplate      string       `yaml:"url_template,omitempty"`
+	Binaries         []string     `yaml:",omitempty"`
 }
 
 // Scoop contains the scoop.sh section
@@ -298,27 +299,28 @@ type Put struct {
 
 // Project includes all project configuration
 type Project struct {
-	ProjectName   string    `yaml:"project_name,omitempty"`
-	Release       Release   `yaml:",omitempty"`
-	Brew          Homebrew  `yaml:",omitempty"`
-	Scoop         Scoop     `yaml:",omitempty"`
-	Builds        []Build   `yaml:",omitempty"`
-	OldArchive    Archive   `yaml:",omitempty"` // TODO: deprecated
-	Archives      []Archive `yaml:",omitempty"`
-	NFPM          NFPM      `yaml:",omitempty"`
-	Snapcraft     Snapcraft `yaml:",omitempty"`
-	Snapshot      Snapshot  `yaml:",omitempty"`
-	Checksum      Checksum  `yaml:",omitempty"`
-	Dockers       []Docker  `yaml:",omitempty"`
-	Artifactories []Put     `yaml:",omitempty"`
-	Puts          []Put     `yaml:",omitempty"`
-	S3            []S3      `yaml:"s3,omitempty"`
-	Changelog     Changelog `yaml:",omitempty"`
-	Dist          string    `yaml:",omitempty"`
-	Sign          Sign      `yaml:",omitempty"`
-	EnvFiles      EnvFiles  `yaml:"env_files,omitempty"`
-	Git           Git       `yaml:",omitempty"`
-	Before        Before    `yaml:",omitempty"`
+	ProjectName   string     `yaml:"project_name,omitempty"`
+	Release       Release    `yaml:",omitempty"`
+	OldBrew       Homebrew   `yaml:",omitempty"` // TODO: deprecated
+	Brews         []Homebrew `yaml:",omitempty"`
+	Scoop         Scoop      `yaml:",omitempty"`
+	Builds        []Build    `yaml:",omitempty"`
+	OldArchive    Archive    `yaml:",omitempty"` // TODO: deprecated
+	Archives      []Archive  `yaml:",omitempty"`
+	NFPM          NFPM       `yaml:",omitempty"`
+	Snapcraft     Snapcraft  `yaml:",omitempty"`
+	Snapshot      Snapshot   `yaml:",omitempty"`
+	Checksum      Checksum   `yaml:",omitempty"`
+	Dockers       []Docker   `yaml:",omitempty"`
+	Artifactories []Put      `yaml:",omitempty"`
+	Puts          []Put      `yaml:",omitempty"`
+	S3            []S3       `yaml:"s3,omitempty"`
+	Changelog     Changelog  `yaml:",omitempty"`
+	Dist          string     `yaml:",omitempty"`
+	Sign          Sign       `yaml:",omitempty"`
+	EnvFiles      EnvFiles   `yaml:"env_files,omitempty"`
+	Git           Git        `yaml:",omitempty"`
+	Before        Before     `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

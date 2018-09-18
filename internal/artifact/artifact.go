@@ -151,6 +151,18 @@ func ByType(t Type) Filter {
 	}
 }
 
+// ByBinaryName is a predefined filter that filters by artifacts with the given
+// Binary name.
+func ByBinaryName(names ...string) Filter {
+	var filters = make([]Filter, len(names))
+	for i, name := range names {
+		filters[i] = func(a Artifact) bool {
+			return name == a.Extra["Binary"]
+		}
+	}
+	return Or(filters...)
+}
+
 // Or performs an OR between all given filters
 func Or(filters ...Filter) Filter {
 	return func(a Artifact) bool {

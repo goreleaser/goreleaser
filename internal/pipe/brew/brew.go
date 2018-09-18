@@ -6,14 +6,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"text/template"
 
 	"github.com/apex/log"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -43,37 +45,47 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Brew.Install == "" {
-		var installs []string
-		for _, build := range ctx.Config.Builds {
-			if !isBrewBuild(build) {
-				continue
+	if !reflect.DeepEqual(ctx.Config.OldBrew, config.Homebrew{}) {
+		deprecate.Notice("brew")
+		ctx.Config.Brews = append(ctx.Config.Brews, ctx.Config.OldBrew)
+	}
+	for i, brew := range ctx.Config.Brews {
+		if brew.Install == "" {
+			var installs []string
+			for _, build := range ctx.Config.Builds {
+				if !isBrewBuild(brew, build) {
+					continue
+				}
+				installs = append(
+					installs,
+					fmt.Sprintf(`bin.install "%s"`, build.Binary),
+				)
 			}
-			installs = append(
-				installs,
-				fmt.Sprintf(`bin.install "%s"`, build.Binary),
-			)
+			brew.Install = strings.Join(installs, "\n")
 		}
-		ctx.Config.Brew.Install = strings.Join(installs, "\n")
-	}
 
-	if ctx.Config.Brew.CommitAuthor.Name == "" {
-		ctx.Config.Brew.CommitAuthor.Name = "goreleaserbot"
-	}
-	if ctx.Config.Brew.CommitAuthor.Email == "" {
-		ctx.Config.Brew.CommitAuthor.Email = "goreleaser@carlosbecker.com"
-	}
-	if ctx.Config.Brew.Name == "" {
-		ctx.Config.Brew.Name = ctx.Config.ProjectName
+		if brew.CommitAuthor.Name == "" {
+			brew.CommitAuthor.Name = "goreleaserbot"
+		}
+		if brew.CommitAuthor.Email == "" {
+			brew.CommitAuthor.Email = "goreleaser@carlosbecker.com"
+		}
+		if brew.Name == "" {
+			brew.Name = ctx.Config.ProjectName
+		}
+		ctx.Config.Brews[i] = brew
 	}
 	return nil
 }
 
-func isBrewBuild(build config.Build) bool {
+func isBrewBuild(brew config.Homebrew, build config.Build) bool {
 	for _, ignore := range build.Ignore {
 		if ignore.Goos == "darwin" && ignore.Goarch == "amd64" {
 			return false
 		}
+	}
+	if len(brew.Binaries) > 0 && !contains(brew.Binaries, build.Binary) {
+		return false
 	}
 	return contains(build.Goos, "darwin") && contains(build.Goarch, "amd64")
 }
@@ -88,41 +100,21 @@ func contains(ss []string, s string) bool {
 }
 
 func doRun(ctx *context.Context, client client.Client) error {
-	if ctx.Config.Brew.GitHub.Name == "" {
+	var g = semerrgroup.New(ctx.Parallelism)
+	for _, brew := range ctx.Config.Brews {
+		brew := brew
+		g.Go(func() error {
+			return doRunForBrew(ctx, client, brew)
+		})
+	}
+	return g.Wait()
+}
+
+func doRunForBrew(ctx *context.Context, client client.Client, brew config.Homebrew) error {
+	if brew.GitHub.Name == "" {
 		return pipe.Skip("brew section is not configured")
 	}
-	if getFormat(ctx) == "binary" {
-		return pipe.Skip("archive format is binary")
-	}
-
-	var archives = ctx.Artifacts.Filter(
-		artifact.And(
-			artifact.ByGoos("darwin"),
-			artifact.ByGoarch("amd64"),
-			artifact.ByGoarm(""),
-			artifact.ByType(artifact.UploadableArchive),
-		),
-	).List()
-	if len(archives) == 0 {
-		return ErrNoDarwin64Build
-	}
-	if len(archives) > 1 {
-		return ErrTooManyDarwin64Builds
-	}
-
-	content, err := buildFormula(ctx, archives[0])
-	if err != nil {
-		return err
-	}
-
-	var filename = ctx.Config.Brew.Name + ".rb"
-	var path = filepath.Join(ctx.Config.Dist, filename)
-	log.WithField("formula", path).Info("writing")
-	if err := ioutil.WriteFile(path, content.Bytes(), 0644); err != nil {
-		return err
-	}
-
-	if ctx.Config.Brew.SkipUpload {
+	if brew.SkipUpload {
 		return pipe.Skip("brew.skip_upload is set")
 	}
 	if ctx.SkipPublish {
@@ -132,26 +124,49 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return pipe.Skip("release is marked as draft")
 	}
 
-	path = filepath.Join(ctx.Config.Brew.Folder, filename)
+	var filter = artifact.And(
+		artifact.ByGoos("darwin"),
+		artifact.ByGoarch("amd64"),
+		artifact.ByGoarm(""),
+		artifact.ByType(artifact.UploadableArchive),
+	)
+
+	if len(brew.Binaries) > 0 {
+		filter = artifact.And(filter, artifact.ByBinaryName(brew.Binaries...))
+	}
+
+	var archives = ctx.Artifacts.Filter(filter).List()
+
+	if len(archives) == 0 {
+		return ErrNoDarwin64Build
+	}
+	if len(archives) > 1 {
+		return ErrTooManyDarwin64Builds
+	}
+
+	content, err := buildFormula(ctx, brew, archives[0])
+	if err != nil {
+		return err
+	}
+
+	var filename = brew.Name + ".rb"
+	var path = filepath.Join(ctx.Config.Dist, filename)
+	log.WithField("formula", path).Info("writing")
+	if err := ioutil.WriteFile(path, content.Bytes(), 0644); err != nil {
+		return err
+	}
+
+	path = filepath.Join(brew.Folder, filename)
 	log.WithField("formula", path).
-		WithField("repo", ctx.Config.Brew.GitHub.String()).
+		WithField("repo", brew.GitHub.String()).
 		Info("pushing")
 
 	var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
-	return client.CreateFile(ctx, ctx.Config.Brew.CommitAuthor, ctx.Config.Brew.GitHub, content, path, msg)
+	return client.CreateFile(ctx, brew.CommitAuthor, brew.GitHub, content, path, msg)
 }
 
-func getFormat(ctx *context.Context) string {
-	for _, override := range ctx.Config.Archive.FormatOverrides {
-		if strings.HasPrefix("darwin", override.Goos) {
-			return override.Format
-		}
-	}
-	return ctx.Config.Archive.Format
-}
-
-func buildFormula(ctx *context.Context, artifact artifact.Artifact) (bytes.Buffer, error) {
-	data, err := dataFor(ctx, artifact)
+func buildFormula(ctx *context.Context, brew config.Homebrew, artifact artifact.Artifact) (bytes.Buffer, error) {
+	data, err := dataFor(ctx, brew, artifact)
 	if err != nil {
 		return bytes.Buffer{}, err
 	}
@@ -167,38 +182,37 @@ func doBuildFormula(data templateData) (out bytes.Buffer, err error) {
 	return
 }
 
-func dataFor(ctx *context.Context, artifact artifact.Artifact) (result templateData, err error) {
+func dataFor(ctx *context.Context, brew config.Homebrew, artifact artifact.Artifact) (result templateData, err error) {
 	sum, err := artifact.Checksum()
 	if err != nil {
 		return
 	}
-	var cfg = ctx.Config.Brew
 
-	if ctx.Config.Brew.URLTemplate == "" {
-		ctx.Config.Brew.URLTemplate = fmt.Sprintf("%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+	if brew.URLTemplate == "" {
+		brew.URLTemplate = fmt.Sprintf("%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
 			ctx.Config.GitHubURLs.Download,
 			ctx.Config.Release.GitHub.Owner,
 			ctx.Config.Release.GitHub.Name)
 	}
-	url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(ctx.Config.Brew.URLTemplate)
+	url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(brew.URLTemplate)
 	if err != nil {
 		return
 	}
 
 	return templateData{
-		Name:             formulaNameFor(ctx.Config.Brew.Name),
+		Name:             formulaNameFor(brew.Name),
 		DownloadURL:      url,
-		Desc:             cfg.Description,
-		Homepage:         cfg.Homepage,
+		Desc:             brew.Description,
+		Homepage:         brew.Homepage,
 		Version:          ctx.Version,
-		Caveats:          split(cfg.Caveats),
+		Caveats:          split(brew.Caveats),
 		SHA256:           sum,
-		Dependencies:     cfg.Dependencies,
-		Conflicts:        cfg.Conflicts,
-		Plist:            cfg.Plist,
-		Install:          split(cfg.Install),
-		Tests:            split(cfg.Test),
-		DownloadStrategy: cfg.DownloadStrategy,
+		Dependencies:     brew.Dependencies,
+		Conflicts:        brew.Conflicts,
+		Plist:            brew.Plist,
+		Install:          split(brew.Install),
+		Tests:            split(brew.Test),
+		DownloadStrategy: brew.DownloadStrategy,
 	}, nil
 }
 

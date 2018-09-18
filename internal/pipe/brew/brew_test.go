@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -99,11 +100,11 @@ func TestRunPipe(t *testing.T) {
 			ctx.Config.GitHubURLs.Download = "http://github.example.org"
 		},
 		"custom_download_strategy": func(ctx *context.Context) {
-			ctx.Config.Brew.DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
+			ctx.Config.Brews[0].DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
 		},
 		"binary_overridden": func(ctx *context.Context) {
-			ctx.Config.Archive.Format = "binary"
-			ctx.Config.Archive.FormatOverrides = []config.FormatOverride{
+			ctx.Config.Archives[0].Format = "binary"
+			ctx.Config.Archives[0].FormatOverrides = []config.FormatOverride{
 				{
 					Goos:   "darwin",
 					Format: "zip",
@@ -115,6 +116,7 @@ func TestRunPipe(t *testing.T) {
 			folder, err := ioutil.TempDir("", "goreleasertest")
 			assert.NoError(t, err)
 			var ctx = &context.Context{
+				Parallelism: runtime.NumCPU(),
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
 				},
@@ -126,8 +128,8 @@ func TestRunPipe(t *testing.T) {
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
-					Archive: config.Archive{
-						Format: "tar.gz",
+					Archives: []config.Archive{
+						{Format: "tar.gz"},
 					},
 					Release: config.Release{
 						GitHub: config.Repo{
@@ -135,28 +137,29 @@ func TestRunPipe(t *testing.T) {
 							Name:  "test",
 						},
 					},
-					Brew: config.Homebrew{
-						Name: name,
-						GitHub: config.Repo{
-							Owner: "test",
-							Name:  "test",
+					Brews: []config.Homebrew{
+						{
+							Name: name,
+							GitHub: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description:  "A run pipe test formula",
+							Homepage:     "https://github.com/goreleaser",
+							Caveats:      "don't do this",
+							Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
+							Plist:        `<xml>whatever</xml>`,
+							Dependencies: []string{"zsh", "bash"},
+							Conflicts:    []string{"gtk+", "qt"},
+							Install:      `bin.install "foo"`,
 						},
-						Description:  "A run pipe test formula",
-						Homepage:     "https://github.com/goreleaser",
-						Caveats:      "don't do this",
-						Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
-						Plist:        `<xml>whatever</xml>`,
-						Dependencies: []string{"zsh", "bash"},
-						Conflicts:    []string{"gtk+", "qt"},
-						Install:      `bin.install "foo"`,
 					},
 				},
 			}
 			fn(ctx)
-			var format = getFormat(ctx)
-			var path = filepath.Join(folder, "bin."+format)
+			var path = filepath.Join(folder, "bin.tar.gz")
 			ctx.Artifacts.Add(artifact.Artifact{
-				Name:   "bin." + format,
+				Name:   "bin.tar.gz",
 				Path:   path,
 				Goos:   "darwin",
 				Goarch: "amd64",
@@ -187,14 +190,17 @@ func TestRunPipe(t *testing.T) {
 
 func TestRunPipeNoDarwin64Build(t *testing.T) {
 	var ctx = &context.Context{
+		Parallelism: runtime.NumCPU(),
 		Config: config.Project{
-			Archive: config.Archive{
-				Format: "tar.gz",
+			Archives: []config.Archive{
+				{Format: "tar.gz"},
 			},
-			Brew: config.Homebrew{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
+			Brews: []config.Homebrew{
+				{
+					GitHub: config.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
 				},
 			},
 		},
@@ -207,13 +213,15 @@ func TestRunPipeNoDarwin64Build(t *testing.T) {
 func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
-			Archive: config.Archive{
-				Format: "tar.gz",
+			Archives: []config.Archive{
+				{Format: "tar.gz"},
 			},
-			Brew: config.Homebrew{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
+			Brews: []config.Homebrew{
+				{
+					GitHub: config.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
 				},
 			},
 		},
@@ -239,7 +247,8 @@ func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 
 func TestRunPipeBrewNotSetup(t *testing.T) {
 	var ctx = &context.Context{
-		Config: config.Project{},
+		Parallelism: runtime.NumCPU(),
+		Config:      config.Project{},
 	}
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doRun(ctx, client))
@@ -249,13 +258,15 @@ func TestRunPipeBrewNotSetup(t *testing.T) {
 func TestRunPipeBinaryRelease(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
-			Archive: config.Archive{
-				Format: "binary",
+			Archives: []config.Archive{
+				{Format: "binary"},
 			},
-			Brew: config.Homebrew{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
+			Brews: []config.Homebrew{
+				{
+					GitHub: config.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
 				},
 			},
 		},
@@ -279,10 +290,12 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
-		Brew: config.Homebrew{
-			GitHub: config.Repo{
-				Owner: "test",
-				Name:  "test",
+		Brews: []config.Homebrew{
+			{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
 			},
 		},
 	})
@@ -305,19 +318,19 @@ func TestRunPipeNoUpload(t *testing.T) {
 	}
 	t.Run("skip upload", func(tt *testing.T) {
 		ctx.Config.Release.Draft = false
-		ctx.Config.Brew.SkipUpload = true
+		ctx.Config.Brews[0].SkipUpload = true
 		ctx.SkipPublish = false
 		assertNoPublish(tt)
 	})
 	t.Run("skip publish", func(tt *testing.T) {
 		ctx.Config.Release.Draft = false
-		ctx.Config.Brew.SkipUpload = false
+		ctx.Config.Brews[0].SkipUpload = false
 		ctx.SkipPublish = true
 		assertNoPublish(tt)
 	})
 	t.Run("draft release", func(tt *testing.T) {
 		ctx.Config.Release.Draft = true
-		ctx.Config.Brew.SkipUpload = false
+		ctx.Config.Brews[0].SkipUpload = false
 		ctx.SkipPublish = false
 		assertNoPublish(tt)
 	})
@@ -325,9 +338,10 @@ func TestRunPipeNoUpload(t *testing.T) {
 
 func TestRunPipeFormatBinary(t *testing.T) {
 	var ctx = &context.Context{
+		Parallelism: runtime.NumCPU(),
 		Config: config.Project{
-			Archive: config.Archive{
-				Format: "binary",
+			Archives: []config.Archive{
+				{Format: "binary"},
 			},
 		},
 	}
@@ -341,6 +355,7 @@ func TestDefault(t *testing.T) {
 	defer back()
 
 	var ctx = &context.Context{
+		Parallelism: runtime.NumCPU(),
 		Config: config.Project{
 			ProjectName: "myproject",
 			Builds: []config.Build{
@@ -366,10 +381,10 @@ func TestDefault(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, ctx.Config.ProjectName, ctx.Config.Brew.Name)
-	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Name)
-	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Email)
-	assert.Equal(t, `bin.install "foo"`, ctx.Config.Brew.Install)
+	assert.Equal(t, ctx.Config.ProjectName, ctx.Config.Brews[0].Name)
+	assert.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
+	assert.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
+	assert.Equal(t, `bin.install "foo"`, ctx.Config.Brews[0].Install)
 }
 
 type DummyClient struct {
