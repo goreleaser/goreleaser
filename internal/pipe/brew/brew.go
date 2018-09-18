@@ -100,6 +100,9 @@ func contains(ss []string, s string) bool {
 }
 
 func doRun(ctx *context.Context, client client.Client) error {
+	if len(ctx.Config.Brews) == 0 {
+		return pipe.Skip("brews section is not configured")
+	}
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, brew := range ctx.Config.Brews {
 		brew := brew
@@ -111,9 +114,6 @@ func doRun(ctx *context.Context, client client.Client) error {
 }
 
 func doRunForBrew(ctx *context.Context, client client.Client, brew config.Homebrew) error {
-	if brew.GitHub.Name == "" {
-		return pipe.Skip("brew section is not configured")
-	}
 	if brew.SkipUpload {
 		return pipe.Skip("brew.skip_upload is set")
 	}
