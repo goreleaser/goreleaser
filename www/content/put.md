@@ -5,7 +5,6 @@ hideFromIndex: true
 weight: 120
 ---
 
-Since [vX.Y.Z](https://github.com/goreleaser/goreleaser/releases/tag/vX.Y.Z),
 GoReleaser supports building and pushing artifacts to HTTP servers using simple HTTP PUT requests.
 
 ## How it works
@@ -85,6 +84,34 @@ If your instance is named `production`, you need to store the secret in the
 environment variable `PUT_PRODUCTION_SECRET`.
 The name will be transformed to uppercase.
 
+### Server authentication
+
+You can authenticate your TLS server adding a trusted X.509 certificate chain
+in your put configuration.
+
+The trusted certificate chain will be used to validate the server certificates.
+
+You can set the trusted certificate chain using the `trusted_certificates`
+setting the put section with PEM encoded certificates on a YAML literal block
+like this:
+
+```yaml
+puts:
+  - name: "some HTTP/TLS server"
+    #...(other settings)...
+    trusted_certificates: |
+      -----BEGIN CERTIFICATE-----
+      MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
+      ...(edited content)...
+      TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
+      -----END CERTIFICATE-----
+      -----BEGIN CERTIFICATE-----
+      MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
+      ...(edited content)...
+      TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
+      -----END CERTIFICATE-----
+```
+
 ## Customization
 
 Of course, you can customize a lot of things:
@@ -102,13 +129,20 @@ puts:
     # Default is `archive`.
     mode: archive
     # URL to be used as target of the HTTP PUT request
-    target: http://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
+    target: https://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
     # User that will be used for the deployment
     username: deployuser
     # Upload checksums (defaults to false)
     checksum: true
     # Upload signatures (defaults to false)
     signature: true
+    # Certificate chain used to validate server certificates
+    trusted_certificates: |
+      -----BEGIN CERTIFICATE-----
+      MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
+      ...(edited content)...
+      TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
+      -----END CERTIFICATE-----
 ```
 
 These settings should allow you to push your artifacts into multiple HTTP servers.

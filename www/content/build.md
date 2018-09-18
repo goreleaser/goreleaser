@@ -5,8 +5,10 @@ hideFromIndex: true
 weight: 30
 ---
 
-Builds can be customized in multiple ways. You can specify for which `GOOS` and
-`GOARCH` binaries are generated, and you can changed the name of the binary, flags, `ldflags`, hooks, etc.
+Builds can be customized in multiple ways. 
+You can specify for which `GOOS`, `GOARCH` and `GOARM` binaries are built 
+(goreleaser will generate a matrix of all combinations), and you can changed 
+the name of the binary, flags, environment variables, hooks and etc.
 
 Here is a commented `builds` section with all fields specified:
 

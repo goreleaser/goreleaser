@@ -1,39 +1,60 @@
 // Package pipeline provides generic erros for pipes to use.
 package pipeline
 
-// ErrSnapshotEnabled happens when goreleaser is running in snapshot mode.
-// It usually means that publishing and maybe some validations were skipped.
-var ErrSnapshotEnabled = Skip("disabled during snapshot mode")
+import (
+	"fmt"
 
-// ErrSkipPublishEnabled happens if --skip-publish is set.
-// It means that the part of a Piper that publishes its artifacts was not run.
-var ErrSkipPublishEnabled = Skip("publishing is disabled")
+	"github.com/goreleaser/goreleaser/internal/pipe/archive"
+	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
+	"github.com/goreleaser/goreleaser/internal/pipe/before"
+	"github.com/goreleaser/goreleaser/internal/pipe/brew"
+	"github.com/goreleaser/goreleaser/internal/pipe/build"
+	"github.com/goreleaser/goreleaser/internal/pipe/changelog"
+	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
+	"github.com/goreleaser/goreleaser/internal/pipe/defaults"
+	"github.com/goreleaser/goreleaser/internal/pipe/dist"
+	"github.com/goreleaser/goreleaser/internal/pipe/docker"
+	"github.com/goreleaser/goreleaser/internal/pipe/effectiveconfig"
+	"github.com/goreleaser/goreleaser/internal/pipe/env"
+	"github.com/goreleaser/goreleaser/internal/pipe/git"
+	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
+	"github.com/goreleaser/goreleaser/internal/pipe/put"
+	"github.com/goreleaser/goreleaser/internal/pipe/release"
+	"github.com/goreleaser/goreleaser/internal/pipe/s3"
+	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
+	"github.com/goreleaser/goreleaser/internal/pipe/sign"
+	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
+	"github.com/goreleaser/goreleaser/pkg/context"
+)
 
-// ErrSkipSignEnabled happens if --skip-sign is set.
-// It means that the part of a Piper that signs some things was not run.
-var ErrSkipSignEnabled = Skip("artifact signing is disabled")
+// Piper defines a pipe, which can be part of a pipeline (a serie of pipes).
+type Piper interface {
+	fmt.Stringer
 
-// ErrSkipValidateEnabled happens if --skip-validate is set.
-// It means that the part of a Piper that validates some things was not run.
-var ErrSkipValidateEnabled = Skip("validation is disabled")
-
-// IsSkip returns true if the error is an ErrSkip
-func IsSkip(err error) bool {
-	_, ok := err.(ErrSkip)
-	return ok
+	// Run the pipe
+	Run(ctx *context.Context) error
 }
 
-// ErrSkip occurs when a pipe is skipped for some reason
-type ErrSkip struct {
-	reason string
-}
-
-// Error implements the error interface. returns the reason the pipe was skipped
-func (e ErrSkip) Error() string {
-	return e.reason
-}
-
-// Skip skips this pipe with the given reason
-func Skip(reason string) ErrSkip {
-	return ErrSkip{reason: reason}
+// Pipeline contains all pipe implementations in order
+var Pipeline = []Piper{
+	defaults.Pipe{},        // load default configs
+	before.Pipe{},          // run global hooks before build
+	dist.Pipe{},            // ensure ./dist is clean
+	git.Pipe{},             // get and validate git repo state
+	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
+	changelog.Pipe{},       // builds the release changelog
+	env.Pipe{},             // load and validate environment variables
+	build.Pipe{},           // build
+	archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
+	nfpm.Pipe{},            // archive via fpm (deb, rpm) using "native" go impl
+	snapcraft.Pipe{},       // archive via snapcraft (snap)
+	checksums.Pipe{},       // checksums of the files
+	sign.Pipe{},            // sign artifacts
+	docker.Pipe{},          // create and push docker images
+	artifactory.Pipe{},     // push to artifactory
+	put.Pipe{},             // upload to http server
+	s3.Pipe{},              // push to s3/minio
+	release.Pipe{},         // release to github
+	brew.Pipe{},            // push to brew tap
+	scoop.Pipe{},           // push to scoop bucket
 }

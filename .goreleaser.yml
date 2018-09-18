@@ -1,6 +1,3 @@
-before:
-  hooks:
-  - go generate ./...
 builds:
 - env:
     - CGO_ENABLED=0
@@ -25,6 +22,8 @@ changelog:
     - Merge branch
 dockers:
 - image: goreleaser/goreleaser
+  extra_files:
+  - scripts/entrypoint.sh
   tag_templates:
   - '{{ .Tag }}'
   - 'v{{ .Major }}.{{ .Minor }}'

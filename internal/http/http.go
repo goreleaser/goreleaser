@@ -3,19 +3,21 @@ package http
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"html/template"
 	"io"
 	h "net/http"
-	"net/url"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/apex/log"
 	"github.com/pkg/errors"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/pipeline"
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -97,23 +99,26 @@ func CheckConfig(ctx *context.Context, put *config.Put, kind string) error {
 		return misconfigured(kind, put, fmt.Sprintf("missing %s environment variable", envName))
 	}
 
+	if put.TrustedCerts != "" && !x509.NewCertPool().AppendCertsFromPEM([]byte(put.TrustedCerts)) {
+		return misconfigured(kind, put, "no certificate could be added from the specified trusted_certificates configuration")
+	}
+
 	return nil
 
 }
 
 func misconfigured(kind string, upload *config.Put, reason string) error {
-	return pipeline.Skip(fmt.Sprintf("%s section '%s' is not configured properly (%s)", kind, upload.Name, reason))
+	return pipe.Skip(fmt.Sprintf("%s section '%s' is not configured properly (%s)", kind, upload.Name, reason))
 }
 
 // ResponseChecker is a function capable of validating an http server response.
-// It must return the location of the uploaded asset or the error when the
-// response must be considered a failure.
-type ResponseChecker func(*h.Response) (string, error)
+// It must return and error when the response must be considered a failure.
+type ResponseChecker func(*h.Response) error
 
 // Upload does the actual uploading work
 func Upload(ctx *context.Context, puts []config.Put, kind string, check ResponseChecker) error {
 	if ctx.SkipPublish {
-		return pipeline.ErrSkipPublishEnabled
+		return pipe.ErrSkipPublishEnabled
 	}
 
 	// Handle every configured put
@@ -144,7 +149,7 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 			}).Error(err.Error())
 			return err
 		}
-		if err := uploadWithFilter(ctx, put, artifact.Or(filters...), kind, check); err != nil {
+		if err := uploadWithFilter(ctx, &put, artifact.Or(filters...), kind, check); err != nil {
 			return err
 		}
 	}
@@ -152,7 +157,7 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 	return nil
 }
 
-func uploadWithFilter(ctx *context.Context, put config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
+func uploadWithFilter(ctx *context.Context, put *config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
 		artifact := artifact
@@ -164,7 +169,7 @@ func uploadWithFilter(ctx *context.Context, put config.Put, filter artifact.Filt
 }
 
 // uploadAsset uploads file to target and logs all actions
-func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifact, kind string, check ResponseChecker) error {
+func uploadAsset(ctx *context.Context, put *config.Put, artifact artifact.Artifact, kind string, check ResponseChecker) error {
 	envBase := fmt.Sprintf("%s_%s_", strings.ToUpper(kind), strings.ToUpper(put.Name))
 	username := put.Username
 	if username == "" {
@@ -194,7 +199,7 @@ func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifac
 	}
 	targetURL += artifact.Name
 
-	location, _, err := uploadAssetToServer(ctx, targetURL, username, secret, asset, check)
+	_, err = uploadAssetToServer(ctx, put, targetURL, username, secret, asset, check)
 	if err != nil {
 		msg := fmt.Sprintf("%s: upload failed", kind)
 		log.WithError(err).WithFields(log.Fields{
@@ -207,33 +212,24 @@ func uploadAsset(ctx *context.Context, put config.Put, artifact artifact.Artifac
 	log.WithFields(log.Fields{
 		"instance": put.Name,
 		"mode":     put.Mode,
-		"uri":      location,
 	}).Info("uploaded successful")
 
 	return nil
 }
 
 // uploadAssetToServer uploads the asset file to target
-func uploadAssetToServer(ctx *context.Context, target, username, secret string, a *asset, check ResponseChecker) (string, *h.Response, error) {
+func uploadAssetToServer(ctx *context.Context, put *config.Put, target, username, secret string, a *asset, check ResponseChecker) (*h.Response, error) {
 	req, err := newUploadRequest(target, username, secret, a)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 
-	loc, resp, err := executeHTTPRequest(ctx, req, check)
-	if err != nil {
-		return "", resp, err
-	}
-	return loc, resp, nil
+	return executeHTTPRequest(ctx, put, req, check)
 }
 
 // newUploadRequest creates a new h.Request for uploading
 func newUploadRequest(target, username, secret string, a *asset) (*h.Request, error) {
-	u, err := url.Parse(target)
-	if err != nil {
-		return nil, err
-	}
-	req, err := h.NewRequest("PUT", u.String(), a.ReadCloser)
+	req, err := h.NewRequest("PUT", target, a.ReadCloser)
 	if err != nil {
 		return nil, err
 	}
@@ -244,31 +240,58 @@ func newUploadRequest(target, username, secret string, a *asset) (*h.Request, er
 	return req, err
 }
 
+func getHTTPClient(put *config.Put) (*h.Client, error) {
+	if put.TrustedCerts == "" {
+		return h.DefaultClient, nil
+	}
+	pool, err := x509.SystemCertPool()
+	if err != nil {
+		if runtime.GOOS == "windows" {
+			// on windows ignore errors until golang issues #16736 & #18609 get fixed
+			pool = x509.NewCertPool()
+		} else {
+			return nil, err
+		}
+	}
+	pool.AppendCertsFromPEM([]byte(put.TrustedCerts)) // already validated certs checked by CheckConfig
+	return &h.Client{
+		Transport: &h.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: pool,
+			},
+		},
+	}, nil
+}
+
 // executeHTTPRequest processes the http call with respect of context ctx
-func executeHTTPRequest(ctx *context.Context, req *h.Request, check ResponseChecker) (string, *h.Response, error) {
-	resp, err := h.DefaultClient.Do(req)
+func executeHTTPRequest(ctx *context.Context, put *config.Put, req *h.Request, check ResponseChecker) (*h.Response, error) {
+	client, err := getHTTPClient(put)
+	if err != nil {
+		return nil, err
+	}
+	log.Debugf("executing request: %s %s (headers: %v)", req.Method, req.URL, req.Header)
+	resp, err := client.Do(req)
 	if err != nil {
 		// If we got an error, and the context has been canceled,
 		// the context's error is probably more useful.
 		select {
 		case <-ctx.Done():
-			return "", nil, ctx.Err()
+			return nil, ctx.Err()
 		default:
 		}
-
-		return "", nil, err
+		return nil, err
 	}
 
 	defer resp.Body.Close() // nolint: errcheck
 
-	loc, err := check(resp)
+	err = check(resp)
 	if err != nil {
 		// even though there was an error, we still return the response
 		// in case the caller wants to inspect it further
-		return "", resp, err
+		return resp, err
 	}
 
-	return loc, resp, err
+	return resp, err
 }
 
 // targetData is used as a template struct for
@@ -286,21 +309,21 @@ type targetData struct {
 
 // resolveTargetTemplate returns the resolved target template with replaced variables
 // Those variables can be replaced by the given context, goos, goarch, goarm and more
-func resolveTargetTemplate(ctx *context.Context, artifactory config.Put, artifact artifact.Artifact) (string, error) {
+func resolveTargetTemplate(ctx *context.Context, put *config.Put, artifact artifact.Artifact) (string, error) {
 	data := targetData{
 		Version:     ctx.Version,
 		Tag:         ctx.Git.CurrentTag,
 		ProjectName: ctx.Config.ProjectName,
 	}
 
-	if artifactory.Mode == ModeBinary {
+	if put.Mode == ModeBinary {
 		data.Os = replace(ctx.Config.Archive.Replacements, artifact.Goos)
 		data.Arch = replace(ctx.Config.Archive.Replacements, artifact.Goarch)
 		data.Arm = replace(ctx.Config.Archive.Replacements, artifact.Goarm)
 	}
 
 	var out bytes.Buffer
-	t, err := template.New(ctx.Config.ProjectName).Parse(artifactory.Target)
+	t, err := template.New(ctx.Config.ProjectName).Parse(put.Target)
 	if err != nil {
 		return "", err
 	}
