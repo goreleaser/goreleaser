@@ -12,8 +12,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ErrMissingToken indicates an error when GITHUB_TOKEN is missing in the environment
-var ErrMissingToken = errors.New("missing GITHUB_TOKEN")
+// ErrMissingToken indicates an error when GITHUB_TOKEN and GITLAB_TOKEN are missing in the environment
+var ErrMissingToken = errors.New("missing GITHUB_TOKEN and GITLAB_TOKEN")
 
 // Pipe for env
 type Pipe struct{}
@@ -28,23 +28,41 @@ func (Pipe) Default(ctx *context.Context) error {
 	if env.GitHubToken == "" {
 		env.GitHubToken = "~/.config/goreleaser/github_token"
 	}
+	if env.GitLabToken == "" {
+		env.GitLabToken = "~/.config/goreleaser/gitlab_token"
+	}
 	return nil
 }
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	token, err := loadEnv("GITHUB_TOKEN", ctx.Config.EnvFiles.GitHubToken)
-	ctx.Token = token
+	githubToken, githubTokenErr := loadEnv("GITHUB_TOKEN", ctx.Config.EnvFiles.GitHubToken)
+	gitlabToken, gitlabTokenErr := loadEnv("GITLAB_TOKEN", ctx.Config.EnvFiles.GitLabToken)
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
 	if ctx.Config.Release.Disable {
 		return pipe.Skip("release pipe is disabled")
 	}
-	if ctx.Token == "" && err == nil {
+	if githubToken == "" && gitlabToken == "" && githubTokenErr == nil && gitlabTokenErr == nil {
 		return ErrMissingToken
 	}
-	return errors.Wrap(err, "failed to load github token")
+	if githubTokenErr != nil {
+		return errors.Wrap(githubTokenErr, "failed to load github token")
+	}
+	if gitlabTokenErr != nil {
+		return errors.Wrap(gitlabTokenErr, "failed to load gitlab token")
+	}
+	if githubToken != "" {
+		ctx.StorageToken = githubToken
+		ctx.StorageType = context.StorageGitHub
+	}
+	if gitlabToken != "" {
+		ctx.StorageToken = gitlabToken
+		ctx.StorageType = context.StorageGitLab
+	}
+
+	return nil
 }
 
 func loadEnv(env, path string) (string, error) {

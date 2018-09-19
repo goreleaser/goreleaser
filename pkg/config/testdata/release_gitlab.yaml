@@ -1,0 +1,5 @@
+project_name: release with gitlab
+release:
+  gitlab:
+    owner: foo
+    name: bar

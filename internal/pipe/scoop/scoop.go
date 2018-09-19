@@ -1,4 +1,4 @@
-// Package scoop provides a Pipe that generates a scoop.sh App Manifest and pushes it to a bucket
+// Package scoop provides a Pipe that generates a scoop.sh App Manifest and pushes it to a repo
 package scoop
 
 import (
@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -26,7 +27,7 @@ func (Pipe) String() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	client, err := client.NewGitHub(ctx)
+	client, err := client.New(ctx)
 	if err != nil {
 		return err
 	}
@@ -41,19 +42,11 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Scoop.CommitAuthor.Email == "" {
 		ctx.Config.Scoop.CommitAuthor.Email = "goreleaser@carlosbecker.com"
 	}
-	if ctx.Config.Scoop.URLTemplate == "" {
-		ctx.Config.Scoop.URLTemplate = fmt.Sprintf(
-			"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
-			ctx.Config.GitHubURLs.Download,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
-		)
-	}
 	return nil
 }
 
 func doRun(ctx *context.Context, client client.Client) error {
-	if ctx.Config.Scoop.Bucket.Name == "" {
+	if ctx.Config.Scoop.Repo.Name == "" {
 		return pipe.Skip("scoop section is not configured")
 	}
 	if ctx.Config.Archive.Format == "binary" {
@@ -86,7 +79,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 	return client.CreateFile(
 		ctx,
 		ctx.Config.Scoop.CommitAuthor,
-		ctx.Config.Scoop.Bucket,
+		ctx.Config.Scoop.Repo,
 		content,
 		path,
 		fmt.Sprintf("Scoop update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag),
@@ -127,10 +120,20 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 		if artifact.Goarch == "386" {
 			arch = "32bit"
 		}
+		urlTemplate := ctx.Config.Scoop.URLTemplate
+		if ctx.Config.Scoop.URLTemplate == "" {
+			artifactPath, ok := artifact.Extra[release.ArtifactDownloadPath]
+			if !ok {
+				return result, fmt.Errorf("artifact (%s) missing ArtifactDownloadPath", artifact.Name)
+			}
+			urlTemplate = fmt.Sprintf("%s%s",
+				ctx.Config.RepoURLs.Download,
+				artifactPath)
+		}
 
 		url, err := tmpl.New(ctx).
 			WithArtifact(artifact, map[string]string{}).
-			Apply(ctx.Config.Scoop.URLTemplate)
+			Apply(urlTemplate)
 		if err != nil {
 			return result, err
 		}

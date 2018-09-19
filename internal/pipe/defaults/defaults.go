@@ -63,9 +63,6 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Dist == "" {
 		ctx.Config.Dist = "dist"
 	}
-	if ctx.Config.GitHubURLs.Download == "" {
-		ctx.Config.GitHubURLs.Download = "https://github.com"
-	}
 	for _, defaulter := range defaulters {
 		log.Info(defaulter.String())
 		if err := defaulter.Default(ctx); err != nil {

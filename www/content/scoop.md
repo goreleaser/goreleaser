@@ -19,7 +19,7 @@ scoop:
   url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
   # Repository to push the app manifest to.
-  bucket:
+  github: # or gitlab
     owner: user
     name: scoop-bucket
 

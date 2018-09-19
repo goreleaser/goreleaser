@@ -1,0 +1,5 @@
+project_name: release with github
+release:
+  github:
+    owner: foo
+    name: bar

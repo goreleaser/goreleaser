@@ -25,8 +25,8 @@ func TestFillBasicData(t *testing.T) {
 	}
 
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
-	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
+	assert.Equal(t, "goreleaser", ctx.Config.Release.Repo.Owner)
+	assert.Equal(t, "goreleaser", ctx.Config.Release.Repo.Name)
 	assert.NotEmpty(t, ctx.Config.Builds)
 	assert.Equal(t, "goreleaser", ctx.Config.Builds[0].Binary)
 	assert.Equal(t, ".", ctx.Config.Builds[0].Main)
@@ -37,7 +37,6 @@ func TestFillBasicData(t *testing.T) {
 	assert.Equal(t, "tar.gz", ctx.Config.Archive.Format)
 	assert.Contains(t, ctx.Config.Brew.Install, "bin.install \"goreleaser\"")
 	assert.Empty(t, ctx.Config.Dockers)
-	assert.Equal(t, "https://github.com", ctx.Config.GitHubURLs.Download)
 	assert.NotEmpty(t, ctx.Config.Archive.NameTemplate)
 	assert.NotEmpty(t, ctx.Config.Builds[0].Ldflags)
 	assert.NotEmpty(t, ctx.Config.Archive.Files)
@@ -52,12 +51,12 @@ func TestFillPartial(t *testing.T) {
 
 	var ctx = &context.Context{
 		Config: config.Project{
-			GitHubURLs: config.GitHubURLs{
+			RepoURLs: config.RepoURLs{
 				Download: "https://github.company.com",
 			},
 			Dist: "disttt",
 			Release: config.Release{
-				GitHub: config.Repo{
+				Repo: config.Repo{
 					Owner: "goreleaser",
 					Name:  "test",
 				},
@@ -91,5 +90,5 @@ func TestFillPartial(t *testing.T) {
 	assert.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)
 	assert.Empty(t, ctx.Config.Dockers[0].Goarm)
 	assert.Equal(t, "disttt", ctx.Config.Dist)
-	assert.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
+	assert.NotEqual(t, "https://github.com", ctx.Config.RepoURLs.Download)
 }

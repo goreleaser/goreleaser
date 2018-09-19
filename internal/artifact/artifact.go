@@ -4,8 +4,10 @@ package artifact
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/apex/log"
@@ -53,6 +55,7 @@ func (t Type) String() string {
 
 // Artifact represents an artifact and its relevant info
 type Artifact struct {
+	id     int
 	Name   string
 	Path   string
 	Goos   string
@@ -76,6 +79,10 @@ func (a Artifact) Checksum() (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+
+func (a Artifact) ID() string {
+	return strconv.Itoa(a.id)
 }
 
 // Artifacts is a list of artifacts
@@ -116,7 +123,28 @@ func (artifacts *Artifacts) Add(a Artifact) {
 		"path": a.Path,
 		"type": a.Type,
 	}).Info("added new artifact")
+	a.id = len(artifacts.items)
 	artifacts.items = append(artifacts.items, a)
+}
+
+// SetExtra safely sets an extra k/v on the artifact with the given id.
+func (artifacts *Artifacts) SetExtra(id string, k, v string) error {
+	i, err := strconv.Atoi(id)
+	if err != nil {
+		return err
+	}
+	if i > (len(artifacts.items) - 1) {
+		return fmt.Errorf("artifact with id [%s] not found", id)
+	}
+	artifacts.lock.Lock()
+	defer artifacts.lock.Unlock()
+	a := artifacts.items[i]
+	if a.Extra == nil {
+		a.Extra = map[string]string{}
+	}
+	a.Extra[k] = v
+	artifacts.items[i] = a
+	return nil
 }
 
 // Filter defines an artifact filter which can be used within the Filter

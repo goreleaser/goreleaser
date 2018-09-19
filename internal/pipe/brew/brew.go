@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -34,7 +35,7 @@ func (Pipe) String() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	client, err := client.NewGitHub(ctx)
+	client, err := client.New(ctx)
 	if err != nil {
 		return err
 	}
@@ -88,7 +89,7 @@ func contains(ss []string, s string) bool {
 }
 
 func doRun(ctx *context.Context, client client.Client) error {
-	if ctx.Config.Brew.GitHub.Name == "" {
+	if ctx.Config.Brew.Repo.Name == "" {
 		return pipe.Skip("brew section is not configured")
 	}
 	if getFormat(ctx) == "binary" {
@@ -134,11 +135,12 @@ func doRun(ctx *context.Context, client client.Client) error {
 
 	path = filepath.Join(ctx.Config.Brew.Folder, filename)
 	log.WithField("formula", path).
-		WithField("repo", ctx.Config.Brew.GitHub.String()).
+		WithField("storage_type", ctx.StorageType).
+		WithField("repo", ctx.Config.Brew.Repo.String()).
 		Info("pushing")
 
 	var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
-	return client.CreateFile(ctx, ctx.Config.Brew.CommitAuthor, ctx.Config.Brew.GitHub, content, path, msg)
+	return client.CreateFile(ctx, ctx.Config.Brew.CommitAuthor, ctx.Config.Brew.Repo, content, path, msg)
 }
 
 func getFormat(ctx *context.Context) string {
@@ -175,10 +177,14 @@ func dataFor(ctx *context.Context, artifact artifact.Artifact) (result templateD
 	var cfg = ctx.Config.Brew
 
 	if ctx.Config.Brew.URLTemplate == "" {
-		ctx.Config.Brew.URLTemplate = fmt.Sprintf("%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
-			ctx.Config.GitHubURLs.Download,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name)
+		artifactPath, ok := artifact.Extra[release.ArtifactDownloadPath]
+		if !ok {
+			err = fmt.Errorf("artifact (%s) missing ArtifactDownloadPath", artifact.Name)
+			return
+		}
+		ctx.Config.Brew.URLTemplate = fmt.Sprintf("%s%s",
+			ctx.Config.RepoURLs.Download,
+			artifactPath)
 	}
 	url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(ctx.Config.Brew.URLTemplate)
 	if err != nil {

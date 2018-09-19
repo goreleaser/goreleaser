@@ -11,7 +11,39 @@ Deprecate code will be removed after ~6 months from the time it was deprecated.
 
 # Active deprecation notices
 
-No active deprecation notices at this time.
+## Scoop bucket
+
+> since 2018-09-20
+
+With the additional support of GitLab, a Scoop configuration should be explicit in whether or not a bucket is for GitHub or GitLab. The `bucket` key will continue be backwards until the next ~6 months.
+
+Change this:
+
+```yaml
+scoop:
+  bucket:
+	owner: foo
+	name: bar
+```
+
+to this:
+
+```yaml
+scoop:
+  github:
+	owner: foo
+	name: bar
+```
+
+or
+
+```yaml
+scoop:
+  gitlab:
+	owner: foo
+	name: bar
+```
+
 
 <!--
 

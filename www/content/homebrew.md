@@ -23,12 +23,13 @@ brew:
   name: myproject
 
   # Reporitory to push the tap to.
-  github:
+  github: # or gitlab
     owner: user
     name: homebrew-tap
 
   # Template for the url.
   # Default is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+  # or for GitLab "https://gitlab.com/<repo_owner>/<repo_name>/uploads/<generated upload path>"
   url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
   # Allows you to set a custom download strategy.

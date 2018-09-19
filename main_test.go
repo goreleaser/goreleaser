@@ -15,6 +15,7 @@ import (
 
 func init() {
 	_ = os.Unsetenv("GITHUB_TOKEN")
+	_ = os.Unsetenv("GITLAB_TOKEN")
 }
 
 func TestReleaseProject(t *testing.T) {

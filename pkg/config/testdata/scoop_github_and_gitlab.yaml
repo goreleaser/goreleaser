@@ -1,0 +1,9 @@
+project_name: scoop with github and gitlab
+scoop:
+  homepage: scoop homepage
+  gitlab:
+    owner: foo
+    name: bar
+  github:
+    owner: foo
+    name: bar

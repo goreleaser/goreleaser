@@ -4,23 +4,24 @@ weight: 20
 menu: true
 ---
 
-## GitHub Token
+## Storage Token
 
-GoReleaser requires a GitHub API token with the `repo` scope selected to
-deploy the artifacts to GitHub.
-You can create one [here](https://github.com/settings/tokens/new).
+GoReleaser requires a GitHub or GitLab API token with the `repo` scope selected to
+deploy the artifacts.
+You can create a [github one here](https://github.com/settings/tokens/new) or a [gitlab one here](https://gitlab.com/profile/personal_access_tokens)
 
-This token should be added to the environment variables as `GITHUB_TOKEN`.
+This token should be added to the environment variables as `GITHUB_TOKEN` or `GITLAB_TOKEN` respectively.
 Here is how to do it with Travis CI:
 [Defining Variables in Repository Settings](https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-Repository-Settings).
 
-Alternatively, you can provide the GitHub token in a file. GoReleaser will check `~/.config/goreleaser/github_token` by default, you can change that in
+Alternatively, you can provide the storage token in a file. GoReleaser will check `~/.config/goreleaser/github_token` and `~/.config/goreleaser/gitlab_token` by default, you can change that in
 the `.goreleaser.yml` file:
 
 ```yaml
 # .goreleaser.yml
 env_files:
-  github_token: ~/.path/to/my/token
+  github_token: ~/.path/to/my/github/token
+  gitlab_token: ~/.path/to/my/gitlab/token
 ```
 
 ## GitHub Enterprise
@@ -31,9 +32,9 @@ the `.goreleaser.yml` configuration file:
 ```yaml
 # .goreleaser.yml
 github_urls:
-  api: https://git.company.com/api/v3/
-  upload: https://git.company.com/api/uploads/
-  download: https://git.company.com/
+  api: https://github.company.com/api/v3/
+  upload: https://github.company.com/api/uploads/
+  download: https://github.company.com/
 ```
 
 If none are set, they default to GitHub's public URLs.
@@ -43,6 +44,21 @@ to another. If they are wrong, goreleaser will fail at some point, so, make
 sure they're right before opening an issue. See for example [#472][472].
 
 [472]: https://github.com/goreleaser/goreleaser/issues/472
+
+
+## Self-hosted GitLab
+
+You can use GoReleaser with Self-host GitLab by providing its URLs in
+the `.goreleaser.yml` configuration file:
+
+```yaml
+# .goreleaser.yml
+gitlab_urls:
+  api: https://gitlab.company.com/api/v3/
+  download: https://gitlab.company.com/
+```
+
+If none are set, they default to GitLab's public URLs. Not that unlike `github_urls` there is no `upload` key.
 
 ## The dist folder
 

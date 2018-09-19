@@ -49,7 +49,7 @@ brew:
   test: |
     system "#{bin}/goreleaser -v"
 scoop:
-  bucket:
+  github:
     owner: goreleaser
     name: scoop-bucket
   homepage:  https://goreleaser.com

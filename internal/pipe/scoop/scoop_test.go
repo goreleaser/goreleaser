@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -103,13 +104,13 @@ func Test_doRun(t *testing.T) {
 							Format: "tar.gz",
 						},
 						Release: config.Release{
-							GitHub: config.Repo{
+							Repo: config.Repo{
 								Owner: "test",
 								Name:  "test",
 							},
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Repo: config.Repo{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -136,7 +137,7 @@ func Test_doRun(t *testing.T) {
 					Version:   "1.0.1",
 					Artifacts: artifact.New(),
 					Config: config.Project{
-						GitHubURLs: config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
+						RepoURLs: config.RepoURLs{Download: "https://api.custom.github.enterprise.com"},
 						Builds: []config.Build{
 							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
 						},
@@ -146,13 +147,13 @@ func Test_doRun(t *testing.T) {
 							Format: "tar.gz",
 						},
 						Release: config.Release{
-							GitHub: config.Repo{
+							Repo: config.Repo{
 								Owner: "test",
 								Name:  "test",
 							},
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Repo: config.Repo{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -188,13 +189,13 @@ func Test_doRun(t *testing.T) {
 							Format: "tar.gz",
 						},
 						Release: config.Release{
-							GitHub: config.Repo{
+							Repo: config.Repo{
 								Owner: "test",
 								Name:  "test",
 							},
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Repo: config.Repo{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -230,7 +231,7 @@ func Test_doRun(t *testing.T) {
 							Format: "tar.gz",
 						},
 						Release: config.Release{
-							GitHub: config.Repo{
+							Repo: config.Repo{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -264,13 +265,13 @@ func Test_doRun(t *testing.T) {
 							Format: "tar.gz",
 						},
 						Release: config.Release{
-							GitHub: config.Repo{
+							Repo: config.Repo{
 								Owner: "test",
 								Name:  "test",
 							},
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Repo: config.Repo{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -310,7 +311,7 @@ func Test_doRun(t *testing.T) {
 							Draft: true,
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Repo: config.Repo{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -349,7 +350,7 @@ func Test_doRun(t *testing.T) {
 							Draft: true,
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Repo: config.Repo{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -372,6 +373,9 @@ func Test_doRun(t *testing.T) {
 			var ctx = tt.args.ctx
 			for _, a := range tt.artifacts {
 				ctx.Artifacts.Add(a)
+			}
+			for _, a := range ctx.Artifacts.List() {
+				ctx.Artifacts.SetExtra(a.ID(), release.ArtifactDownloadPath, "foo")
 			}
 			require.NoError(t, Pipe{}.Default(ctx))
 			tt.assertError(t, doRun(ctx, tt.args.client))
@@ -398,7 +402,7 @@ func Test_buildManifest(t *testing.T) {
 				Version:   "1.0.1",
 				Artifacts: artifact.New(),
 				Config: config.Project{
-					GitHubURLs: config.GitHubURLs{
+					RepoURLs: config.RepoURLs{
 						Download: "https://github.com",
 					},
 					Builds: []config.Build{
@@ -410,13 +414,13 @@ func Test_buildManifest(t *testing.T) {
 						Format: "tar.gz",
 					},
 					Release: config.Release{
-						GitHub: config.Repo{
+						Repo: config.Repo{
 							Owner: "test",
 							Name:  "test",
 						},
 					},
 					Scoop: config.Scoop{
-						Bucket: config.Repo{
+						Repo: config.Repo{
 							Owner: "test",
 							Name:  "test",
 						},
@@ -436,7 +440,7 @@ func Test_buildManifest(t *testing.T) {
 				Version:   "1.0.1",
 				Artifacts: artifact.New(),
 				Config: config.Project{
-					GitHubURLs: config.GitHubURLs{
+					RepoURLs: config.RepoURLs{
 						Download: "https://github.com",
 					},
 					Builds: []config.Build{
@@ -448,13 +452,13 @@ func Test_buildManifest(t *testing.T) {
 						Format: "tar.gz",
 					},
 					Release: config.Release{
-						GitHub: config.Repo{
+						Repo: config.Repo{
 							Owner: "test",
 							Name:  "test",
 						},
 					},
 					Scoop: config.Scoop{
-						Bucket: config.Repo{
+						Repo: config.Repo{
 							Owner: "test",
 							Name:  "test",
 						},
@@ -471,10 +475,16 @@ func Test_buildManifest(t *testing.T) {
 	for _, tt := range tests {
 		var ctx = tt.ctx
 		Pipe{}.Default(ctx)
-		out, err := buildManifest(ctx, []artifact.Artifact{
+		for _, a := range []artifact.Artifact{
 			{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 			{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
-		})
+		} {
+			ctx.Artifacts.Add(a)
+		}
+		for _, a := range ctx.Artifacts.List() {
+			ctx.Artifacts.SetExtra(a.ID(), release.ArtifactDownloadPath, "/test/test/releases/download/v1.0.1/"+a.Name)
+		}
+		out, err := buildManifest(ctx, ctx.Artifacts.List())
 
 		require.NoError(t, err)
 
@@ -492,7 +502,7 @@ type DummyClient struct {
 	Content     string
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
+func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
 	return
 }
 
@@ -503,6 +513,6 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID int64, name string, file *os.File) (err error) {
+func (client *DummyClient) Upload(ctx *context.Context, releaseID string, name string, file *os.File) (path string, err error) {
 	return
 }

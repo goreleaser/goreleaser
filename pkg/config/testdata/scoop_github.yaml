@@ -1,0 +1,6 @@
+project_name: scoop with github
+scoop:
+  homepage: scoop homepage
+  bucket:
+    owner: foo
+    name: bar

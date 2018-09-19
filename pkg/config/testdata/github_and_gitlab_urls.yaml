@@ -1,0 +1,9 @@
+project_name: project with github and gitlab urls
+github_urls:
+  api: https://git.company.com/api/v3/
+  upload: https://git.company.com/api/uploads/
+  download: https://git.company.com/
+gitlab_urls:
+  api: https://git.company.com/api/v3/
+  upload: https://git.company.com/api/uploads/
+  download: https://git.company.com/

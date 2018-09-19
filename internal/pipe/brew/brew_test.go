@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -96,7 +97,7 @@ func TestRunPipe(t *testing.T) {
 	for name, fn := range map[string]func(ctx *context.Context){
 		"default": func(ctx *context.Context) {},
 		"github_enterprise_url": func(ctx *context.Context) {
-			ctx.Config.GitHubURLs.Download = "http://github.example.org"
+			ctx.Config.RepoURLs.Download = "http://github.example.org"
 		},
 		"custom_download_strategy": func(ctx *context.Context) {
 			ctx.Config.Brew.DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
@@ -123,21 +124,21 @@ func TestRunPipe(t *testing.T) {
 				Config: config.Project{
 					Dist:        folder,
 					ProjectName: name,
-					GitHubURLs: config.GitHubURLs{
+					RepoURLs: config.RepoURLs{
 						Download: "https://github.com",
 					},
 					Archive: config.Archive{
 						Format: "tar.gz",
 					},
 					Release: config.Release{
-						GitHub: config.Repo{
+						Repo: config.Repo{
 							Owner: "test",
 							Name:  "test",
 						},
 					},
 					Brew: config.Homebrew{
 						Name: name,
-						GitHub: config.Repo{
+						Repo: config.Repo{
 							Owner: "test",
 							Name:  "test",
 						},
@@ -155,14 +156,19 @@ func TestRunPipe(t *testing.T) {
 			fn(ctx)
 			var format = getFormat(ctx)
 			var path = filepath.Join(folder, "bin."+format)
-			ctx.Artifacts.Add(artifact.Artifact{
+			a := artifact.Artifact{
 				Name:   "bin." + format,
 				Path:   path,
 				Goos:   "darwin",
 				Goarch: "amd64",
 				Type:   artifact.UploadableArchive,
-			})
-
+			}
+			ctx.Artifacts.Add(a)
+			ctx.Artifacts.SetExtra(
+				a.ID(),
+				release.ArtifactDownloadPath,
+				"/test/test/releases/download/v1.0.1/bin."+getFormat(ctx),
+			)
 			_, err = os.Create(path)
 			assert.NoError(t, err)
 			client := &DummyClient{}
@@ -192,7 +198,7 @@ func TestRunPipeNoDarwin64Build(t *testing.T) {
 				Format: "tar.gz",
 			},
 			Brew: config.Homebrew{
-				GitHub: config.Repo{
+				Repo: config.Repo{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -211,7 +217,7 @@ func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 				Format: "tar.gz",
 			},
 			Brew: config.Homebrew{
-				GitHub: config.Repo{
+				Repo: config.Repo{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -253,7 +259,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 				Format: "binary",
 			},
 			Brew: config.Homebrew{
-				GitHub: config.Repo{
+				Repo: config.Repo{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -280,7 +286,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		ProjectName: "foo",
 		Release:     config.Release{},
 		Brew: config.Homebrew{
-			GitHub: config.Repo{
+			Repo: config.Repo{
 				Owner: "test",
 				Name:  "test",
 			},
@@ -290,13 +296,19 @@ func TestRunPipeNoUpload(t *testing.T) {
 	var path = filepath.Join(folder, "whatever.tar.gz")
 	_, err = os.Create(path)
 	assert.NoError(t, err)
-	ctx.Artifacts.Add(artifact.Artifact{
+	a := artifact.Artifact{
 		Name:   "bin",
 		Path:   path,
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
-	})
+	}
+	ctx.Artifacts.Add(a)
+	ctx.Artifacts.SetExtra(
+		a.ID(),
+		release.ArtifactDownloadPath,
+		"/test/test/releases/download/v1.0.1/bin",
+	)
 	client := &DummyClient{}
 
 	var assertNoPublish = func(t *testing.T) {
@@ -377,7 +389,7 @@ type DummyClient struct {
 	Content     string
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
+func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
 	return
 }
 
@@ -388,6 +400,6 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID int64, name string, file *os.File) (err error) {
+func (client *DummyClient) Upload(ctx *context.Context, releaseID string, name string, file *os.File) (path string, err error) {
 	return
 }

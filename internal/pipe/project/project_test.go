@@ -13,7 +13,7 @@ func TestCustomProjectName(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "foo",
 		Release: config.Release{
-			GitHub: config.Repo{
+			Repo: config.Repo{
 				Owner: "bar",
 				Name:  "bar",
 			},
@@ -26,7 +26,7 @@ func TestCustomProjectName(t *testing.T) {
 func TestEmptyProjectName(t *testing.T) {
 	var ctx = context.New(config.Project{
 		Release: config.Release{
-			GitHub: config.Repo{
+			Repo: config.Repo{
 				Owner: "bar",
 				Name:  "bar",
 			},

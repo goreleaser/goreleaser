@@ -21,6 +21,7 @@ func TestDefault(t *testing.T) {
 		ctx := context.New(config.Project{})
 		assert.NoError(t, Pipe{}.Default(ctx))
 		assert.Equal(t, "~/.config/goreleaser/github_token", ctx.Config.EnvFiles.GitHubToken)
+		assert.Equal(t, "~/.config/goreleaser/gitlab_token", ctx.Config.EnvFiles.GitLabToken)
 	})
 	t.Run("custom config config", func(tt *testing.T) {
 		cfg := "what"
@@ -36,29 +37,54 @@ func TestDefault(t *testing.T) {
 
 func TestValidEnv(t *testing.T) {
 	assert.NoError(t, os.Setenv("GITHUB_TOKEN", "asdf"))
+	assert.NoError(t, os.Setenv("GITLAB_TOKEN", "asdf"))
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
-func TestInvalidEnv(t *testing.T) {
+func TestInvalidEnvFromEmptyTokens(t *testing.T) {
 	assert.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
+	assert.NoError(t, os.Unsetenv("GITLAB_TOKEN"))
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 	assert.Error(t, Pipe{}.Run(ctx))
+}
+
+func TestValidEnvWithGitHub(t *testing.T) {
+	assert.NoError(t, os.Setenv("GITHUB_TOKEN", "asdf"))
+	assert.NoError(t, os.Unsetenv("GITLAB_TOKEN"))
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Equal(t, ctx.StorageToken, "asdf")
+	assert.Equal(t, ctx.StorageType, context.StorageGitHub)
+}
+
+func TestValidEnvWithGitLab(t *testing.T) {
+	assert.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
+	assert.NoError(t, os.Setenv("GITLAB_TOKEN", "asdf"))
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Equal(t, ctx.StorageToken, "asdf")
+	assert.Equal(t, ctx.StorageType, context.StorageGitLab)
 }
 
 func TestEmptyFileEnv(t *testing.T) {
 	assert.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
+	assert.NoError(t, os.Unsetenv("GITLAB_TOKEN"))
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 	assert.Error(t, Pipe{}.Run(ctx))
 }
 
-func TestEmptyEnvFile(t *testing.T) {
+func TestEmptyEnvGitHubFile(t *testing.T) {
 	assert.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
 	f, err := ioutil.TempFile("", "token")
 	assert.NoError(t, err)
@@ -73,8 +99,24 @@ func TestEmptyEnvFile(t *testing.T) {
 	assert.EqualError(t, Pipe{}.Run(ctx), fmt.Sprintf("failed to load github token: open %s: permission denied", f.Name()))
 }
 
+func TestEmptyEnvGitLabFile(t *testing.T) {
+	assert.NoError(t, os.Unsetenv("GITLAB_TOKEN"))
+	f, err := ioutil.TempFile("", "token")
+	assert.NoError(t, err)
+	assert.NoError(t, os.Chmod(f.Name(), 0377))
+	var ctx = &context.Context{
+		Config: config.Project{
+			EnvFiles: config.EnvFiles{
+				GitLabToken: f.Name(),
+			},
+		},
+	}
+	assert.EqualError(t, Pipe{}.Run(ctx), fmt.Sprintf("failed to load gitlab token: open %s: permission denied", f.Name()))
+}
+
 func TestInvalidEnvChecksSkipped(t *testing.T) {
 	assert.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
+	assert.NoError(t, os.Unsetenv("GITLAB_TOKEN"))
 	var ctx = &context.Context{
 		Config:      config.Project{},
 		SkipPublish: true,
@@ -84,6 +126,7 @@ func TestInvalidEnvChecksSkipped(t *testing.T) {
 
 func TestInvalidEnvReleaseDisabled(t *testing.T) {
 	assert.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
+	assert.NoError(t, os.Unsetenv("GITLAB_TOKEN"))
 	var ctx = &context.Context{
 		Config: config.Project{
 			Release: config.Release{

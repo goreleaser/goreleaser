@@ -2,8 +2,10 @@ package client
 
 import (
 	"bytes"
+	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 
 	"github.com/apex/log"
 	"github.com/google/go-github/github"
@@ -19,22 +21,27 @@ type githubClient struct {
 
 // NewGitHub returns a github client implementation
 func NewGitHub(ctx *context.Context) (Client, error) {
+	if ctx.Config.RepoURLs.API == "" {
+		ctx.Config.RepoURLs.API = "https://api.github.com"
+	}
+	if ctx.Config.RepoURLs.Download == "" {
+		ctx.Config.RepoURLs.Download = "https://github.com"
+	}
+
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: ctx.Token},
+		&oauth2.Token{AccessToken: ctx.StorageToken},
 	)
 	client := github.NewClient(oauth2.NewClient(ctx, ts))
-	if ctx.Config.GitHubURLs.API != "" {
-		api, err := url.Parse(ctx.Config.GitHubURLs.API)
-		if err != nil {
-			return &githubClient{}, err
-		}
-		upload, err := url.Parse(ctx.Config.GitHubURLs.Upload)
-		if err != nil {
-			return &githubClient{}, err
-		}
-		client.BaseURL = api
-		client.UploadURL = upload
+	api, err := url.Parse(ctx.Config.RepoURLs.API)
+	if err != nil {
+		return &githubClient{}, err
 	}
+	upload, err := url.Parse(ctx.Config.RepoURLs.Upload)
+	if err != nil {
+		return &githubClient{}, err
+	}
+	client.BaseURL = api
+	client.UploadURL = upload
 
 	return &githubClient{client: client}, nil
 }
@@ -88,11 +95,11 @@ func (c *githubClient) CreateFile(
 	return err
 }
 
-func (c *githubClient) CreateRelease(ctx *context.Context, body string) (int64, error) {
+func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string, error) {
 	var release *github.RepositoryRelease
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Release.NameTemplate)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 	var data = &github.RepositoryRelease{
 		Name:       github.String(title),
@@ -103,45 +110,58 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (int64, 
 	}
 	release, _, err = c.client.Repositories.GetReleaseByTag(
 		ctx,
-		ctx.Config.Release.GitHub.Owner,
-		ctx.Config.Release.GitHub.Name,
+		ctx.Config.Release.Repo.Owner,
+		ctx.Config.Release.Repo.Name,
 		ctx.Git.CurrentTag,
 	)
 	if err != nil {
 		release, _, err = c.client.Repositories.CreateRelease(
 			ctx,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
+			ctx.Config.Release.Repo.Owner,
+			ctx.Config.Release.Repo.Name,
 			data,
 		)
 	} else {
 		release, _, err = c.client.Repositories.EditRelease(
 			ctx,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
+			ctx.Config.Release.Repo.Owner,
+			ctx.Config.Release.Repo.Name,
 			release.GetID(),
 			data,
 		)
 	}
 	log.WithField("url", release.GetHTMLURL()).Info("release updated")
-	return release.GetID(), err
+	return strconv.Itoa(int(release.GetID())), err
 }
 
 func (c *githubClient) Upload(
 	ctx *context.Context,
-	releaseID int64,
+	releaseID string,
 	name string,
 	file *os.File,
-) error {
-	_, _, err := c.client.Repositories.UploadReleaseAsset(
+) (string, error) {
+
+	release, err := strconv.ParseInt(releaseID, 10, 0)
+	if err != nil {
+		return "", err
+	}
+
+	_, _, err = c.client.Repositories.UploadReleaseAsset(
 		ctx,
-		ctx.Config.Release.GitHub.Owner,
-		ctx.Config.Release.GitHub.Name,
-		releaseID,
+		ctx.Config.Release.Repo.Owner,
+		ctx.Config.Release.Repo.Name,
+		release,
 		&github.UploadOptions{
 			Name: name,
 		},
 		file,
 	)
-	return err
+
+	path := fmt.Sprintf(
+		"/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+		ctx.Config.Release.Repo.Owner,
+		ctx.Config.Release.Repo.Name,
+	)
+
+	return path, err
 }

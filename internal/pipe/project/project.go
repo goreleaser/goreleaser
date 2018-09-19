@@ -13,7 +13,7 @@ func (Pipe) String() string {
 // Default set project defaults
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.ProjectName == "" {
-		ctx.Config.ProjectName = ctx.Config.Release.GitHub.Name
+		ctx.Config.ProjectName = ctx.Config.Release.Repo.Name
 	}
 	return nil
 }

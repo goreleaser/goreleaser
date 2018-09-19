@@ -22,12 +22,20 @@ type GitInfo struct {
 	Commit     string
 }
 
+type storageType string
+
+const (
+	StorageGitHub storageType = "github"
+	StorageGitLab storageType = "gitlab"
+)
+
 // Context carries along some data through the pipes
 type Context struct {
 	ctx.Context
 	Config       config.Project
 	Env          map[string]string
-	Token        string
+	StorageToken string
+	StorageType  storageType
 	Git          GitInfo
 	Artifacts    artifact.Artifacts
 	ReleaseNotes string

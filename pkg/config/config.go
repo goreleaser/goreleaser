@@ -3,6 +3,7 @@
 package config
 
 import (
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -12,8 +13,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// GitHubURLs holds the URLs to be used when using github enterprise
-type GitHubURLs struct {
+// RepoURLs holds the URLs to be used when using a custom git store.
+type RepoURLs struct {
 	API      string `yaml:"api,omitempty"`
 	Upload   string `yaml:"upload,omitempty"`
 	Download string `yaml:"download,omitempty"`
@@ -36,7 +37,7 @@ func (r Repo) String() string {
 // Homebrew contains the brew section
 type Homebrew struct {
 	Name             string       `yaml:",omitempty"`
-	GitHub           Repo         `yaml:",omitempty"`
+	Repo             Repo         `yaml:"-,omitempty"`
 	CommitAuthor     CommitAuthor `yaml:"commit_author,omitempty"`
 	Folder           string       `yaml:",omitempty"`
 	Caveats          string       `yaml:",omitempty"`
@@ -53,15 +54,81 @@ type Homebrew struct {
 	URLTemplate      string       `yaml:"url_template,omitempty"`
 }
 
+func (hb *Homebrew) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	type Inline Homebrew
+
+	var ihb struct {
+		Inline `yaml:",inline"`
+		GitHub *Repo `yaml:",omitempty"`
+		GitLab *Repo `yaml:",omitempty"`
+	}
+	if err := unmarshal(&ihb); err != nil {
+		return err
+	}
+	if ihb.GitHub != nil && ihb.GitLab != nil {
+		return errors.New("homebrew: cannot define both github and gitlab")
+	}
+	if ihb.GitHub != nil {
+		ihb.Inline.Repo.Owner = ihb.GitHub.Owner
+		ihb.Inline.Repo.Name = ihb.GitHub.Name
+	}
+	if ihb.GitLab != nil {
+		ihb.Inline.Repo.Owner = ihb.GitLab.Owner
+		ihb.Inline.Repo.Name = ihb.GitLab.Name
+	}
+
+	*hb = Homebrew(ihb.Inline)
+
+	return nil
+}
+
 // Scoop contains the scoop.sh section
 type Scoop struct {
-	Bucket       Repo         `yaml:",omitempty"`
+	Repo         Repo         `yaml:"-,omitempty"`
 	CommitAuthor CommitAuthor `yaml:"commit_author,omitempty"`
 	Homepage     string       `yaml:",omitempty"`
 	Description  string       `yaml:",omitempty"`
 	License      string       `yaml:",omitempty"`
 	URLTemplate  string       `yaml:"url_template,omitempty"`
 	Persist      []string     `yaml:"persist,omitempty"`
+}
+
+func (s *Scoop) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	type Inline Scoop
+
+	var is struct {
+		Inline `yaml:",inline"`
+		Bucket *Repo `yaml:",omitempty"`
+		GitHub *Repo `yaml:",omitempty"`
+		GitLab *Repo `yaml:",omitempty"`
+	}
+
+	if err := unmarshal(&is); err != nil {
+		return err
+	}
+	if (is.GitHub != nil && is.GitLab != nil) ||
+		(is.GitHub != nil && is.Bucket != nil) ||
+		(is.GitLab != nil && is.Bucket != nil) {
+		return errors.New("scoop: cannot define multiple github, gitlab, and bucket")
+	}
+	if is.Bucket != nil {
+		is.Inline.Repo.Owner = is.Bucket.Owner
+		is.Inline.Repo.Name = is.Bucket.Name
+	}
+	if is.GitHub != nil {
+		is.Inline.Repo.Owner = is.GitHub.Owner
+		is.Inline.Repo.Name = is.GitHub.Name
+	}
+	if is.GitLab != nil {
+		is.Inline.Repo.Owner = is.GitLab.Owner
+		is.Inline.Repo.Name = is.GitLab.Name
+	}
+
+	*s = Scoop(is.Inline)
+
+	return nil
 }
 
 // CommitAuthor is the author of a Git commit
@@ -152,13 +219,42 @@ type Archive struct {
 	Files           []string         `yaml:",omitempty"`
 }
 
-// Release config used for the GitHub release
+// Release config used for the GitHub/GitLab release
 type Release struct {
-	GitHub       Repo   `yaml:",omitempty"`
+	Repo         Repo   `yaml:"-,omitempty"`
 	Draft        bool   `yaml:",omitempty"`
 	Prerelease   bool   `yaml:",omitempty"`
 	Disable      bool   `yaml:",omitempty"`
 	NameTemplate string `yaml:"name_template,omitempty"`
+}
+
+func (r *Release) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	type Inline Release
+
+	var ir struct {
+		Inline `yaml:",inline"`
+		GitHub *Repo `yaml:",omitempty"`
+		GitLab *Repo `yaml:",omitempty"`
+	}
+	if err := unmarshal(&ir); err != nil {
+		return err
+	}
+	if ir.GitHub != nil && ir.GitLab != nil {
+		return errors.New("release: cannot define both github and gitlab")
+	}
+	if ir.GitHub != nil {
+		ir.Inline.Repo.Owner = ir.GitHub.Owner
+		ir.Inline.Repo.Name = ir.GitHub.Name
+	}
+	if ir.GitLab != nil {
+		ir.Inline.Repo.Owner = ir.GitLab.Owner
+		ir.Inline.Repo.Name = ir.GitLab.Name
+	}
+
+	*r = Release(ir.Inline)
+
+	return nil
 }
 
 // NFPM config
@@ -263,6 +359,7 @@ type Changelog struct {
 // values like the github token for example
 type EnvFiles struct {
 	GitHubToken string `yaml:"github_token,omitempty"`
+	GitLabToken string `yaml:"gitlab_token,omitempty"`
 }
 
 // Git config
@@ -322,8 +419,39 @@ type Project struct {
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
 
-	// should be set if using github enterprise
-	GitHubURLs GitHubURLs `yaml:"github_urls,omitempty"`
+	RepoURLs RepoURLs `yaml:"-,omitempty"`
+}
+
+func (p *Project) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	type Inline Project
+
+	var ip struct {
+		Inline `yaml:",inline"`
+		// should be set if using github enterprise
+		GitHubURLs *RepoURLs `yaml:"github_urls,omitempty"`
+		GitLabURLs *RepoURLs `yaml:"gitlab_urls,omitempty"`
+	}
+	if err := unmarshal(&ip); err != nil {
+		return err
+	}
+	if ip.GitHubURLs != nil && ip.GitLabURLs != nil {
+		return errors.New("project: cannot define both github and gitlab urls")
+	}
+	if ip.GitHubURLs != nil {
+		ip.Inline.RepoURLs.API = ip.GitHubURLs.API
+		ip.Inline.RepoURLs.Upload = ip.GitHubURLs.Upload
+		ip.Inline.RepoURLs.Download = ip.GitHubURLs.Download
+	}
+	if ip.GitLabURLs != nil {
+		ip.Inline.RepoURLs.API = ip.GitLabURLs.API
+		ip.Inline.RepoURLs.Upload = ip.GitLabURLs.Upload
+		ip.Inline.RepoURLs.Download = ip.GitLabURLs.Download
+	}
+
+	*p = Project(ip.Inline)
+
+	return nil
 }
 
 // Load config file

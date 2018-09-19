@@ -1,0 +1,9 @@
+project_name: homebrew with github and gitlab
+brew:
+  name: brew project
+  github:
+    owner: foo
+    name: bar
+  gitlab:
+    owner: foo
+    name: bar
