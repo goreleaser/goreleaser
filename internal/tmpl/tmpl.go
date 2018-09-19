@@ -8,7 +8,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/masterminds/semver"
+	"github.com/Masterminds/semver"
 	"github.com/pkg/errors"
 )
 
