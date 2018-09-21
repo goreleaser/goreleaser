@@ -61,6 +61,7 @@ type Scoop struct {
 	Description  string       `yaml:",omitempty"`
 	License      string       `yaml:",omitempty"`
 	URLTemplate  string       `yaml:"url_template,omitempty"`
+	Persist      []string     `yaml:"persist,omitempty"`
 }
 
 // CommitAuthor is the author of a Git commit
@@ -291,6 +292,7 @@ type Put struct {
 	Username       string `yaml:",omitempty"`
 	Mode           string `yaml:",omitempty"`
 	ChecksumHeader string `yaml:"checksum_header,omitempty"`
+	TrustedCerts   string `yaml:"trusted_certificates,omitempty"`
 	Checksum       bool   `yaml:",omitempty"`
 	Signature      bool   `yaml:",omitempty"`
 }
@@ -327,7 +329,7 @@ type Project struct {
 
 // Load config file
 func Load(file string) (config Project, err error) {
-	f, err := os.Open(file)
+	f, err := os.Open(file) // #nosec
 	if err != nil {
 		return
 	}

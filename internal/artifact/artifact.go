@@ -13,7 +13,6 @@ import (
 )
 
 // Type defines the type of an artifact
-//go:generate stringer -type=Type
 type Type int
 
 const (
@@ -32,6 +31,26 @@ const (
 	// Signature is a signature file
 	Signature
 )
+
+func (t Type) String() string {
+	switch t {
+	case UploadableArchive:
+		return "Archive"
+	case UploadableBinary:
+		return "Binary"
+	case Binary:
+		return "Binary"
+	case LinuxPackage:
+		return "LinuxPackage"
+	case DockerImage:
+		return "DockerImage"
+	case Checksum:
+		return "Checksum"
+	case Signature:
+		return "Signature"
+	}
+	return "unknown"
+}
 
 // Artifact represents an artifact and its relevant info
 type Artifact struct {

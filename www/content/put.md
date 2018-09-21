@@ -5,7 +5,6 @@ hideFromIndex: true
 weight: 120
 ---
 
-Since [vX.Y.Z](https://github.com/goreleaser/goreleaser/releases/tag/vX.Y.Z),
 GoReleaser supports building and pushing artifacts to HTTP servers using simple HTTP PUT requests.
 
 ## How it works
@@ -52,9 +51,27 @@ Supported variables:
 
 > **Warning**: Variables `Os`, `Arch` and `Arm` are only supported in upload mode `binary`.
 
-### Password
+### Username
 
 Your configured username needs to be valid against your HTTP server.
+
+You can have the username set in the configuration file as shown above
+or you can have it read from and environment variable.
+The configured name of your HTTP server will be used to build the environment
+variable name.
+This way we support auth for multiple instances.
+This also means that the `name` per configured instance needs to be unique
+per goreleaser configuration.
+
+The name of the environment variable will be `PUT_NAME_USERNAME`.
+If your instance is named `production`, you can store the username in the
+environment variable `PUT_PRODUCTION_USERNAME`.
+The name will be transformed to uppercase.
+
+If a configured username is found in the configuration file, then the
+environment variable is not used at all.
+
+### Password
 
 The password will be stored in a environment variable.
 The configured name of your HTTP server will be used.
@@ -62,10 +79,38 @@ This way we support auth for multiple instances.
 This also means that the `name` per configured instance needs to be unique
 per goreleaser configuration.
 
-The name of the environment variable will be `PUT_<NAME>_SECRET`.
+The name of the environment variable will be `PUT_NAME_SECRET`.
 If your instance is named `production`, you need to store the secret in the
 environment variable `PUT_PRODUCTION_SECRET`.
 The name will be transformed to uppercase.
+
+### Server authentication
+
+You can authenticate your TLS server adding a trusted X.509 certificate chain
+in your put configuration.
+
+The trusted certificate chain will be used to validate the server certificates.
+
+You can set the trusted certificate chain using the `trusted_certificates`
+setting the put section with PEM encoded certificates on a YAML literal block
+like this:
+
+```yaml
+puts:
+  - name: "some HTTP/TLS server"
+    #...(other settings)...
+    trusted_certificates: |
+      -----BEGIN CERTIFICATE-----
+      MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
+      ...(edited content)...
+      TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
+      -----END CERTIFICATE-----
+      -----BEGIN CERTIFICATE-----
+      MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
+      ...(edited content)...
+      TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
+      -----END CERTIFICATE-----
+```
 
 ## Customization
 
@@ -84,7 +129,7 @@ puts:
     # Default is `archive`.
     mode: archive
     # URL to be used as target of the HTTP PUT request
-    target: http://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
+    target: https://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
     # User that will be used for the deployment
     username: deployuser
     # An optional header you can use to tell GoReleaser to pass the artifact's
@@ -95,6 +140,13 @@ puts:
     checksum: true
     # Upload signatures (defaults to false)
     signature: true
+    # Certificate chain used to validate server certificates
+    trusted_certificates: |
+      -----BEGIN CERTIFICATE-----
+      MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
+      ...(edited content)...
+      TyzMJasj5BPZrmKjJb6O/tOtEIJ66xPSBTxPShkEYHnB7A==
+      -----END CERTIFICATE-----
 ```
 
 These settings should allow you to push your artifacts into multiple HTTP servers.

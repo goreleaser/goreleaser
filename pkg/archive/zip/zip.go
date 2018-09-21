@@ -27,7 +27,7 @@ func New(target io.Writer) Archive {
 
 // Add a file to the zip archive
 func (a Archive) Add(name, path string) (err error) {
-	file, err := os.Open(path)
+	file, err := os.Open(path) // #nosec
 	if err != nil {
 		return
 	}

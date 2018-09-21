@@ -38,7 +38,7 @@ github_urls:
 
 If none are set, they default to GitHub's public URLs.
 
-**IMPORTANT**: be careful with the URLs, they may change from one instalation
+**IMPORTANT**: be careful with the URLs, they may change from one installation
 to another. If they are wrong, goreleaser will fail at some point, so, make
 sure they're right before opening an issue. See for example [#472][472].
 
