@@ -159,7 +159,7 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 
 func uploadWithFilter(ctx *context.Context, put *config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
 	var artifacts = ctx.Artifacts.Filter(filter).List()
-	log.Infof("will upload %d artifacts", len(artifacts))
+	log.Debugf("will upload %d artifacts", len(artifacts))
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range artifacts {
 		artifact := artifact
@@ -210,7 +210,7 @@ func uploadAsset(ctx *context.Context, put *config.Put, artifact artifact.Artifa
 		headers[put.ChecksumHeader] = sum
 	}
 
-	_, err = uploadAssetToServer(ctx, put, targetURL, username, secret, headers asset, check)
+	_, err = uploadAssetToServer(ctx, put, targetURL, username, secret, headers, asset, check)
 	if err != nil {
 		msg := fmt.Sprintf("%s: upload failed", kind)
 		log.WithError(err).WithFields(log.Fields{
@@ -230,7 +230,7 @@ func uploadAsset(ctx *context.Context, put *config.Put, artifact artifact.Artifa
 
 // uploadAssetToServer uploads the asset file to target
 func uploadAssetToServer(ctx *context.Context, put *config.Put, target, username, secret string, headers map[string]string, a *asset, check ResponseChecker) (*h.Response, error) {
-	req, err := newUploadRequest(target, username, secret, a)
+	req, err := newUploadRequest(target, username, secret, headers, a)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +239,7 @@ func uploadAssetToServer(ctx *context.Context, put *config.Put, target, username
 }
 
 // newUploadRequest creates a new h.Request for uploading
-func newUploadRequest(target, username, secret string, a *asset) (*h.Request, error) {
+func newUploadRequest(target, username, secret string, headers map[string]string, a *asset) (*h.Request, error) {
 	req, err := h.NewRequest("PUT", target, a.ReadCloser)
 	if err != nil {
 		return nil, err
