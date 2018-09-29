@@ -19,7 +19,8 @@ import (
 )
 
 // ErrNoWindows when there is no build for windows (goos doesn't contain windows)
-var ErrNoWindows = errors.New("scoop requires a windows build")
+// or the windows builds were not archived as tar.gz/zip (build mode is binary)
+var ErrNoWindows = errors.New("scoop requires a windows build and a zip or tar.gz archive")
 
 // Pipe for build
 type Pipe struct{}
@@ -78,6 +79,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 			return doRunScoop(ctx, client, scoop)
 		})
 	}
+	return g.Wait()
 }
 
 func doRunScoop(ctx *context.Context, client client.Client, scoop config.Scoop) error {

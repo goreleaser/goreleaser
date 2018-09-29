@@ -5,6 +5,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"testing"
 
 	"path/filepath"
@@ -19,6 +20,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO: remove the Build sections as it is not really needed (or shouldn't be at least).
+
 var update = flag.Bool("update", false, "update .golden files")
 
 func TestDescription(t *testing.T) {
@@ -30,7 +33,13 @@ func TestDefault(t *testing.T) {
 	defer back()
 
 	var ctx = &context.Context{
+		Parallelism: runtime.NumCPU(),
 		Config: config.Project{
+			Scoops: []config.Scoop{
+				{
+					Name: "asd",
+				},
+			},
 			Builds: []config.Build{
 				{
 					Binary: "foo",
@@ -54,8 +63,8 @@ func TestDefault(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Name)
-	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Email)
+	assert.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Name)
+	assert.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Email)
 }
 
 func Test_doRun(t *testing.T) {
@@ -88,6 +97,7 @@ func Test_doRun(t *testing.T) {
 			"valid",
 			args{
 				&context.Context{
+					Parallelism: runtime.NumCPU(),
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -99,8 +109,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitHub: config.Repo{
@@ -108,21 +120,39 @@ func Test_doRun(t *testing.T) {
 								Name:  "test",
 							},
 						},
-						Scoop: config.Scoop{
-							Bucket: config.Repo{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Bucket: config.Repo{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 				},
 				&DummyClient{},
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+				{
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Path:   file,
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+				},
 			},
 			shouldNotErr,
 		},
@@ -130,6 +160,7 @@ func Test_doRun(t *testing.T) {
 			"valid",
 			args{
 				&context.Context{
+					Parallelism: runtime.NumCPU(),
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -142,8 +173,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitHub: config.Repo{
@@ -151,21 +184,39 @@ func Test_doRun(t *testing.T) {
 								Name:  "test",
 							},
 						},
-						Scoop: config.Scoop{
-							Bucket: config.Repo{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Bucket: config.Repo{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 				},
 				&DummyClient{},
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+				{
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Path:   file,
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+				},
 			},
 			shouldNotErr,
 		},
@@ -173,6 +224,7 @@ func Test_doRun(t *testing.T) {
 			"no windows build",
 			args{
 				&context.Context{
+					Parallelism: runtime.NumCPU(),
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -184,8 +236,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitHub: config.Repo{
@@ -193,28 +247,45 @@ func Test_doRun(t *testing.T) {
 								Name:  "test",
 							},
 						},
-						Scoop: config.Scoop{
-							Bucket: config.Repo{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Bucket: config.Repo{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 				},
 				&DummyClient{},
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_linux_amd64.tar.gz", Goos: "linux", Goarch: "amd64"},
-				{Name: "foo_1.0.1_linux_386.tar.gz", Goos: "linux", Goarch: "386"},
+				{
+					Name:   "foo_1.0.1_linux_amd64.tar.gz",
+					Goos:   "linux",
+					Goarch: "amd64",
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+				},
+				{
+					Name:   "foo_1.0.1_linux_386.tar.gz",
+					Goos:   "linux",
+					Goarch: "386",
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+				},
 			},
-			shouldErr("scoop requires a windows build"),
+			shouldErr(ErrNoWindows.Error()),
 		},
 		{
 			"no scoop",
 			args{
 				&context.Context{
+					Parallelism: runtime.NumCPU(),
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -226,8 +297,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitHub: config.Repo{
@@ -240,8 +313,22 @@ func Test_doRun(t *testing.T) {
 				&DummyClient{},
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+				{
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+				},
 			},
 			shouldErr("scoop section is not configured"),
 		},
@@ -249,6 +336,7 @@ func Test_doRun(t *testing.T) {
 			"no publish",
 			args{
 				&context.Context{
+					Parallelism: runtime.NumCPU(),
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -260,8 +348,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitHub: config.Repo{
@@ -269,13 +359,15 @@ func Test_doRun(t *testing.T) {
 								Name:  "test",
 							},
 						},
-						Scoop: config.Scoop{
-							Bucket: config.Repo{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Bucket: config.Repo{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 					SkipPublish: true,
@@ -283,8 +375,24 @@ func Test_doRun(t *testing.T) {
 				&DummyClient{},
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+				{
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Path:   file,
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+				},
 			},
 			shouldErr(pipe.ErrSkipPublishEnabled.Error()),
 		},
@@ -292,6 +400,7 @@ func Test_doRun(t *testing.T) {
 			"is draft",
 			args{
 				&context.Context{
+					Parallelism: runtime.NumCPU(),
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -303,27 +412,47 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							Draft: true,
 						},
-						Scoop: config.Scoop{
-							Bucket: config.Repo{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Bucket: config.Repo{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 				},
 				&DummyClient{},
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+				{
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Path:   file,
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+				},
 			},
 			shouldErr("release is marked as draft"),
 		},
@@ -331,6 +460,7 @@ func Test_doRun(t *testing.T) {
 			"no archive",
 			args{
 				&context.Context{
+					Parallelism: runtime.NumCPU(),
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -342,29 +472,49 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "binary",
+						Archives: []config.Archive{
+							{
+								Format: "binary",
+							},
 						},
 						Release: config.Release{
 							Draft: true,
 						},
-						Scoop: config.Scoop{
-							Bucket: config.Repo{
-								Owner: "test",
-								Name:  "test",
+						Scoops: []config.Scoop{
+							{
+								Bucket: config.Repo{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
 							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
 						},
 					},
 				},
 				&DummyClient{},
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+				{
+					Name:   "foo_1.0.1_windows_amd64",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+					Type: artifact.UploadableBinary,
+				},
+				{
+					Name:   "foo_1.0.1_windows_386",
+					Goos:   "windows",
+					Goarch: "386",
+					Extra: map[string]string{
+						"Binary": "foo",
+					},
+					Type: artifact.UploadableBinary,
+				},
 			},
-			shouldErr("archive format is binary"),
+			shouldErr(ErrNoWindows.Error()),
 		},
 	}
 	for _, tt := range tests {
@@ -392,6 +542,7 @@ func Test_buildManifest(t *testing.T) {
 		{
 			"testdata/test_buildmanifest.json.golden",
 			&context.Context{
+				Parallelism: runtime.NumCPU(),
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
 				},
@@ -406,8 +557,10 @@ func Test_buildManifest(t *testing.T) {
 					},
 					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archive: config.Archive{
-						Format: "tar.gz",
+					Archives: []config.Archive{
+						{
+							Format: "tar.gz",
+						},
 					},
 					Release: config.Release{
 						GitHub: config.Repo{
@@ -415,14 +568,16 @@ func Test_buildManifest(t *testing.T) {
 							Name:  "test",
 						},
 					},
-					Scoop: config.Scoop{
-						Bucket: config.Repo{
-							Owner: "test",
-							Name:  "test",
+					Scoops: []config.Scoop{
+						{
+							Bucket: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+							Persist:     []string{"data", "config", "test.ini"},
 						},
-						Description: "A run pipe test formula",
-						Homepage:    "https://github.com/goreleaser",
-						Persist:     []string{"data", "config", "test.ini"},
 					},
 				},
 			},
@@ -430,6 +585,7 @@ func Test_buildManifest(t *testing.T) {
 		{
 			"testdata/test_buildmanifest_url_template.json.golden",
 			&context.Context{
+				Parallelism: runtime.NumCPU(),
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
 				},
@@ -444,8 +600,10 @@ func Test_buildManifest(t *testing.T) {
 					},
 					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archive: config.Archive{
-						Format: "tar.gz",
+					Archives: []config.Archive{
+						{
+							Format: "tar.gz",
+						},
 					},
 					Release: config.Release{
 						GitHub: config.Repo{
@@ -453,15 +611,17 @@ func Test_buildManifest(t *testing.T) {
 							Name:  "test",
 						},
 					},
-					Scoop: config.Scoop{
-						Bucket: config.Repo{
-							Owner: "test",
-							Name:  "test",
+					Scoops: []config.Scoop{
+						{
+							Bucket: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+							URLTemplate: "http://github.mycompany.com/foo/bar/{{ .Tag }}/{{ .ArtifactName }}",
+							Persist:     []string{"data.cfg", "etc"},
 						},
-						Description: "A run pipe test formula",
-						Homepage:    "https://github.com/goreleaser",
-						URLTemplate: "http://github.mycompany.com/foo/bar/{{ .Tag }}/{{ .ArtifactName }}",
-						Persist:     []string{"data.cfg", "etc"},
 					},
 				},
 			},
@@ -472,9 +632,25 @@ func Test_buildManifest(t *testing.T) {
 		var ctx = tt.ctx
 		Pipe{}.Default(ctx)
 		out, err := buildManifest(ctx, []artifact.Artifact{
-			{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
-			{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
-		})
+			{
+				Name:   "foo_1.0.1_windows_amd64.tar.gz",
+				Goos:   "windows",
+				Goarch: "amd64",
+				Path:   file,
+				Extra: map[string]string{
+					"Binary": "foo",
+				},
+			},
+			{
+				Name:   "foo_1.0.1_windows_386.tar.gz",
+				Goos:   "windows",
+				Goarch: "386",
+				Path:   file,
+				Extra: map[string]string{
+					"Binary": "foo",
+				},
+			},
+		}, ctx.Config.Scoops[0])
 
 		require.NoError(t, err)
 
