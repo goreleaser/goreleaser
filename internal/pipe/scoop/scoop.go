@@ -6,11 +6,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -35,48 +39,74 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Scoop.CommitAuthor.Name == "" {
-		ctx.Config.Scoop.CommitAuthor.Name = "goreleaserbot"
+	if !reflect.DeepEqual(ctx.Config.OldScoop, config.Scoop{}) {
+		deprecate.Notice("scoop")
+		ctx.Config.Scoops = append(ctx.Config.Scoops, ctx.Config.OldScoop)
 	}
-	if ctx.Config.Scoop.CommitAuthor.Email == "" {
-		ctx.Config.Scoop.CommitAuthor.Email = "goreleaser@carlosbecker.com"
-	}
-	if ctx.Config.Scoop.URLTemplate == "" {
-		ctx.Config.Scoop.URLTemplate = fmt.Sprintf(
-			"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
-			ctx.Config.GitHubURLs.Download,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
-		)
+	for i, scoop := range ctx.Config.Scoops {
+		if scoop.Name == "" {
+			scoop.Name = ctx.Config.ProjectName
+		}
+		if scoop.CommitAuthor.Name == "" {
+			scoop.CommitAuthor.Name = "goreleaserbot"
+		}
+		if scoop.CommitAuthor.Email == "" {
+			scoop.CommitAuthor.Email = "goreleaser@carlosbecker.com"
+		}
+		if scoop.URLTemplate == "" {
+			scoop.URLTemplate = fmt.Sprintf(
+				"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+				ctx.Config.GitHubURLs.Download,
+				ctx.Config.Release.GitHub.Owner,
+				ctx.Config.Release.GitHub.Name,
+			)
+		}
+		ctx.Config.Scoops[i] = scoop
 	}
 	return nil
 }
 
 func doRun(ctx *context.Context, client client.Client) error {
-	if ctx.Config.Scoop.Bucket.Name == "" {
+	if len(ctx.Config.Scoops) == 0 {
 		return pipe.Skip("scoop section is not configured")
 	}
-	if ctx.Config.Archive.Format == "binary" {
-		return pipe.Skip("archive format is binary")
+
+	var g = semerrgroup.New(ctx.Parallelism)
+	for _, scoop := range ctx.Config.Scoops {
+		scoop := scoop
+		g.Go(func() error {
+			return doRunScoop(ctx, client, scoop)
+		})
+	}
+}
+
+func doRunScoop(ctx *context.Context, client client.Client, scoop config.Scoop) error {
+	var filter = artifact.And(
+		artifact.ByGoos("windows"),
+		artifact.ByType(artifact.UploadableArchive),
+	)
+
+	if len(scoop.Binaries) > 0 {
+		filter = artifact.And(filter, artifact.ByBinaryName(scoop.Binaries...))
 	}
 
-	var archives = ctx.Artifacts.Filter(
-		artifact.And(
-			artifact.ByGoos("windows"),
-			artifact.ByType(artifact.UploadableArchive),
-		),
-	).List()
+	var archives = ctx.Artifacts.Filter(filter).List()
+
+	// TODO: fix this
+	// if ctx.Config.Archive.Format == "binary" {
+	// 	return pipe.Skip("archive format is binary")
+	// }
 	if len(archives) == 0 {
 		return ErrNoWindows
 	}
 
-	path := ctx.Config.ProjectName + ".json"
-
-	content, err := buildManifest(ctx, archives)
+	var path = scoop.Name + ".json"
+	content, err := buildManifest(ctx, archives, scoop)
 	if err != nil {
 		return err
 	}
 
+	// TODO: this should be the first thing checked!
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
@@ -85,8 +115,8 @@ func doRun(ctx *context.Context, client client.Client) error {
 	}
 	return client.CreateFile(
 		ctx,
-		ctx.Config.Scoop.CommitAuthor,
-		ctx.Config.Scoop.Bucket,
+		scoop.CommitAuthor,
+		scoop.Bucket,
 		content,
 		path,
 		fmt.Sprintf("Scoop update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag),
@@ -111,15 +141,15 @@ type Resource struct {
 	Hash string `json:"hash"` // the archive checksum
 }
 
-func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.Buffer, error) {
+func buildManifest(ctx *context.Context, artifacts []artifact.Artifact, scoop config.Scoop) (bytes.Buffer, error) {
 	var result bytes.Buffer
 	var manifest = Manifest{
 		Version:      ctx.Version,
 		Architecture: make(map[string]Resource),
-		Homepage:     ctx.Config.Scoop.Homepage,
-		License:      ctx.Config.Scoop.License,
-		Description:  ctx.Config.Scoop.Description,
-		Persist:      ctx.Config.Scoop.Persist,
+		Homepage:     scoop.Homepage,
+		License:      scoop.License,
+		Description:  scoop.Description,
+		Persist:      scoop.Persist,
 	}
 
 	for _, artifact := range artifacts {
@@ -130,7 +160,7 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 
 		url, err := tmpl.New(ctx).
 			WithArtifact(artifact, map[string]string{}).
-			Apply(ctx.Config.Scoop.URLTemplate)
+			Apply(scoop.URLTemplate)
 		if err != nil {
 			return result, err
 		}
@@ -142,7 +172,7 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 
 		manifest.Architecture[arch] = Resource{
 			URL:  url,
-			Bin:  ctx.Config.Builds[0].Binary + ".exe",
+			Bin:  artifact.Extra["Binary"] + ".exe",
 			Hash: sum,
 		}
 	}

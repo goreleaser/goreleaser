@@ -56,6 +56,7 @@ type Homebrew struct {
 
 // Scoop contains the scoop.sh section
 type Scoop struct {
+	Name         string       `yaml:",omitempty"`
 	Bucket       Repo         `yaml:",omitempty"`
 	CommitAuthor CommitAuthor `yaml:"commit_author,omitempty"`
 	Homepage     string       `yaml:",omitempty"`
@@ -63,6 +64,7 @@ type Scoop struct {
 	License      string       `yaml:",omitempty"`
 	URLTemplate  string       `yaml:"url_template,omitempty"`
 	Persist      []string     `yaml:"persist,omitempty"`
+	Binaries     []string     `yaml:",omitempty"`
 }
 
 // CommitAuthor is the author of a Git commit
@@ -301,9 +303,10 @@ type Put struct {
 type Project struct {
 	ProjectName   string     `yaml:"project_name,omitempty"`
 	Release       Release    `yaml:",omitempty"`
-	OldBrew       Homebrew   `yaml:",omitempty"` // TODO: deprecated
+	OldBrew       Homebrew   `yaml:"brew,omitempty"` // TODO: deprecated
 	Brews         []Homebrew `yaml:",omitempty"`
-	Scoop         Scoop      `yaml:",omitempty"`
+	OldScoop      Scoop      `yaml:"scoop,omitempty"` // TODO: deprecated
+	Scoops        []Scoop    `yaml:",omitempty"`
 	Builds        []Build    `yaml:",omitempty"`
 	OldArchive    Archive    `yaml:",omitempty"` // TODO: deprecated
 	Archives      []Archive  `yaml:",omitempty"`
