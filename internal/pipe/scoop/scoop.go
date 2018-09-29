@@ -145,7 +145,7 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 
 		manifest.Architecture[arch] = Resource{
 			URL:  url,
-			Bin:  ctx.Config.Builds[0].Binary + ".exe",
+			Bin:  ctx.Config.Builds[0].Binary + ".exe", // TODO: this is wrong
 			Hash: sum,
 		}
 	}
