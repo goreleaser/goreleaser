@@ -55,6 +55,7 @@ type Homebrew struct {
 
 // Scoop contains the scoop.sh section
 type Scoop struct {
+	Name         string       `yaml:",omitempty"`
 	Bucket       Repo         `yaml:",omitempty"`
 	CommitAuthor CommitAuthor `yaml:"commit_author,omitempty"`
 	Homepage     string       `yaml:",omitempty"`

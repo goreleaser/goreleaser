@@ -31,6 +31,7 @@ func TestDefault(t *testing.T) {
 
 	var ctx = &context.Context{
 		Config: config.Project{
+			ProjectName: "barr",
 			Builds: []config.Build{
 				{
 					Binary: "foo",
@@ -54,6 +55,7 @@ func TestDefault(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoop.Name)
 	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Name)
 	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Email)
 }

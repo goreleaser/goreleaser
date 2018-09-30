@@ -35,6 +35,9 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	if ctx.Config.Scoop.Name == "" {
+		ctx.Config.Scoop.Name = ctx.Config.ProjectName
+	}
 	if ctx.Config.Scoop.CommitAuthor.Name == "" {
 		ctx.Config.Scoop.CommitAuthor.Name = "goreleaserbot"
 	}
@@ -70,7 +73,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return ErrNoWindows
 	}
 
-	path := ctx.Config.ProjectName + ".json"
+	var path = ctx.Config.Scoop.Name + ".json"
 
 	content, err := buildManifest(ctx, archives)
 	if err != nil {
@@ -142,7 +145,7 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 
 		manifest.Architecture[arch] = Resource{
 			URL:  url,
-			Bin:  ctx.Config.Builds[0].Binary + ".exe",
+			Bin:  ctx.Config.Builds[0].Binary + ".exe", // TODO: this is wrong
 			Hash: sum,
 		}
 	}
