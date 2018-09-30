@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
@@ -138,9 +139,9 @@ type Manifest struct {
 
 // Resource represents a combination of a url and a binary name for an architecture
 type Resource struct {
-	URL  string `json:"url"`  // URL to the archive
-	Bin  string `json:"bin"`  // name of binary inside the archive
-	Hash string `json:"hash"` // the archive checksum
+	URL  string   `json:"url"`  // URL to the archive
+	Bin  []string `json:"bin"`  // name of binary inside the archive
+	Hash string   `json:"hash"` // the archive checksum
 }
 
 func buildManifest(ctx *context.Context, artifacts []artifact.Artifact, scoop config.Scoop) (bytes.Buffer, error) {
@@ -174,7 +175,7 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact, scoop co
 
 		manifest.Architecture[arch] = Resource{
 			URL:  url,
-			Bin:  ctx.Config.Builds[0].Binary + ".exe", // TODO: this is wrong
+			Bin:  binaries(artifact),
 			Hash: sum,
 		}
 	}
@@ -185,4 +186,12 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact, scoop co
 	}
 	_, err = result.Write(data)
 	return result, err
+}
+
+func binaries(a artifact.Artifact) []string {
+	var result []string
+	for _, bin := range strings.Split(a.Extra["Binaries"], ",") {
+		result = append(result, bin+".exe")
+	}
+	return result
 }

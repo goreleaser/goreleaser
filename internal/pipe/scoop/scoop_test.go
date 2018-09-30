@@ -37,30 +37,10 @@ func TestDefault(t *testing.T) {
 		Config: config.Project{
 			Scoops: []config.Scoop{
 				{
-					Name: "asd",
+					Description: "asd",
 				},
 			},
 			ProjectName: "barr",
-			Builds: []config.Build{
-				{
-					Binary: "foo",
-					Goos:   []string{"linux", "darwin"},
-					Goarch: []string{"386", "amd64"},
-				},
-				{
-					Binary: "bar",
-					Goos:   []string{"linux", "darwin"},
-					Goarch: []string{"386", "amd64"},
-					Ignore: []config.IgnoredBuild{
-						{Goos: "darwin", Goarch: "amd64"},
-					},
-				},
-				{
-					Binary: "foobar",
-					Goos:   []string{"linux"},
-					Goarch: []string{"amd64"},
-				},
-			},
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
@@ -106,16 +86,8 @@ func Test_doRun(t *testing.T) {
 					Version:   "1.0.1",
 					Artifacts: artifact.New(),
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{
-								Format: "tar.gz",
-							},
-						},
 						Release: config.Release{
 							GitHub: config.Repo{
 								Owner: "test",
@@ -143,7 +115,7 @@ func Test_doRun(t *testing.T) {
 					Goarch: "amd64",
 					Path:   file,
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 				},
 				{
@@ -152,7 +124,7 @@ func Test_doRun(t *testing.T) {
 					Goarch: "386",
 					Path:   file,
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 				},
 			},
@@ -169,17 +141,9 @@ func Test_doRun(t *testing.T) {
 					Version:   "1.0.1",
 					Artifacts: artifact.New(),
 					Config: config.Project{
-						GitHubURLs: config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
+						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{
-								Format: "tar.gz",
-							},
-						},
 						Release: config.Release{
 							GitHub: config.Repo{
 								Owner: "test",
@@ -207,7 +171,7 @@ func Test_doRun(t *testing.T) {
 					Goarch: "amd64",
 					Path:   file,
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 				},
 				{
@@ -216,7 +180,62 @@ func Test_doRun(t *testing.T) {
 					Goarch: "386",
 					Path:   file,
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
+					},
+				},
+			},
+			shouldNotErr,
+		},
+		{
+			"valid multiple binaries",
+			args{
+				&context.Context{
+					Parallelism: runtime.NumCPU(),
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.1",
+					},
+					Version:   "1.0.1",
+					Artifacts: artifact.New(),
+					Config: config.Project{
+						Dist:        ".",
+						ProjectName: "multiplebinaries",
+						Release: config.Release{
+							GitHub: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+						},
+						Scoops: []config.Scoop{
+							{
+								Bucket: config.Repo{
+									Owner: "test",
+									Name:  "test",
+								},
+								Description: "A run pipe test formula",
+								Homepage:    "https://github.com/goreleaser",
+							},
+						},
+					},
+				},
+				&DummyClient{},
+			},
+			[]artifact.Artifact{
+				{
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Path:   file,
+					Extra: map[string]string{
+						"Binaries": "test,foo,bar",
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]string{
+						"Binaries": "test,foo,bar",
 					},
 				},
 			},
@@ -233,16 +252,8 @@ func Test_doRun(t *testing.T) {
 					Version:   "1.0.1",
 					Artifacts: artifact.New(),
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test"},
-						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{
-								Format: "tar.gz",
-							},
-						},
 						Release: config.Release{
 							GitHub: config.Repo{
 								Owner: "test",
@@ -269,7 +280,7 @@ func Test_doRun(t *testing.T) {
 					Goos:   "linux",
 					Goarch: "amd64",
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 				},
 				{
@@ -277,7 +288,7 @@ func Test_doRun(t *testing.T) {
 					Goos:   "linux",
 					Goarch: "386",
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 				},
 			},
@@ -294,16 +305,8 @@ func Test_doRun(t *testing.T) {
 					Version:   "1.0.1",
 					Artifacts: artifact.New(),
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{
-								Format: "tar.gz",
-							},
-						},
 						Release: config.Release{
 							GitHub: config.Repo{
 								Owner: "test",
@@ -320,7 +323,7 @@ func Test_doRun(t *testing.T) {
 					Goos:   "windows",
 					Goarch: "amd64",
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 				},
 				{
@@ -328,7 +331,7 @@ func Test_doRun(t *testing.T) {
 					Goos:   "windows",
 					Goarch: "386",
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 				},
 			},
@@ -345,16 +348,8 @@ func Test_doRun(t *testing.T) {
 					Version:   "1.0.1",
 					Artifacts: artifact.New(),
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{
-								Format: "tar.gz",
-							},
-						},
 						Release: config.Release{
 							GitHub: config.Repo{
 								Owner: "test",
@@ -383,7 +378,7 @@ func Test_doRun(t *testing.T) {
 					Goarch: "amd64",
 					Path:   file,
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 				},
 				{
@@ -392,7 +387,7 @@ func Test_doRun(t *testing.T) {
 					Goarch: "386",
 					Path:   file,
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 				},
 			},
@@ -409,16 +404,8 @@ func Test_doRun(t *testing.T) {
 					Version:   "1.0.1",
 					Artifacts: artifact.New(),
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{
-								Format: "tar.gz",
-							},
-						},
 						Release: config.Release{
 							Draft: true,
 						},
@@ -443,7 +430,7 @@ func Test_doRun(t *testing.T) {
 					Goarch: "amd64",
 					Path:   file,
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 				},
 				{
@@ -452,7 +439,7 @@ func Test_doRun(t *testing.T) {
 					Goarch: "386",
 					Path:   file,
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 				},
 			},
@@ -469,16 +456,8 @@ func Test_doRun(t *testing.T) {
 					Version:   "1.0.1",
 					Artifacts: artifact.New(),
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{
-								Format: "binary",
-							},
-						},
 						Release: config.Release{
 							Draft: true,
 						},
@@ -502,7 +481,7 @@ func Test_doRun(t *testing.T) {
 					Goos:   "windows",
 					Goarch: "amd64",
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 					Type: artifact.UploadableBinary,
 				},
@@ -511,7 +490,7 @@ func Test_doRun(t *testing.T) {
 					Goos:   "windows",
 					Goarch: "386",
 					Extra: map[string]string{
-						"Binary": "foo",
+						"Binaries": "test",
 					},
 					Type: artifact.UploadableBinary,
 				},
@@ -554,16 +533,8 @@ func Test_buildManifest(t *testing.T) {
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
-					Builds: []config.Build{
-						{Binary: "test"},
-					},
 					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archives: []config.Archive{
-						{
-							Format: "tar.gz",
-						},
-					},
 					Release: config.Release{
 						GitHub: config.Repo{
 							Owner: "test",
@@ -597,16 +568,8 @@ func Test_buildManifest(t *testing.T) {
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
-					Builds: []config.Build{
-						{Binary: "test"},
-					},
 					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archives: []config.Archive{
-						{
-							Format: "tar.gz",
-						},
-					},
 					Release: config.Release{
 						GitHub: config.Repo{
 							Owner: "test",
@@ -640,7 +603,7 @@ func Test_buildManifest(t *testing.T) {
 				Goarch: "amd64",
 				Path:   file,
 				Extra: map[string]string{
-					"Binary": "foo",
+					"Binaries": "test,foo,barrr",
 				},
 			},
 			{
@@ -649,7 +612,7 @@ func Test_buildManifest(t *testing.T) {
 				Goarch: "386",
 				Path:   file,
 				Extra: map[string]string{
-					"Binary": "foo",
+					"Binaries": "test,foo,barrr",
 				},
 			},
 		}, ctx.Config.Scoops[0])

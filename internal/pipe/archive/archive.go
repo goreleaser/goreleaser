@@ -118,12 +118,14 @@ func create(ctx *context.Context, archive config.Archive, binaries []artifact.Ar
 			return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
 		}
 	}
-	for _, binary := range binaries {
+	var bins = make([]string, len(binaries))
+	for i, binary := range binaries {
 		var bin = wrap(ctx, archive, binary.Name, folder)
 		log.Debugf("adding %s", bin)
 		if err := a.Add(bin, binary.Path); err != nil {
 			return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
 		}
+		bins[i] = binary.Name
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type:   artifact.UploadableArchive,
@@ -132,6 +134,9 @@ func create(ctx *context.Context, archive config.Archive, binaries []artifact.Ar
 		Goos:   binaries[0].Goos,
 		Goarch: binaries[0].Goarch,
 		Goarm:  binaries[0].Goarm,
+		Extra: map[string]string{
+			"Binaries": strings.Join(bins, ","), // TODO: should have this as a slice
+		},
 	})
 	return nil
 }
