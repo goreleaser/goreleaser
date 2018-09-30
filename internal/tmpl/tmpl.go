@@ -6,9 +6,9 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/Masterminds/semver"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/masterminds/semver"
 	"github.com/pkg/errors"
 )
 

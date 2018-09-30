@@ -40,6 +40,7 @@ func TestDefault(t *testing.T) {
 					Name: "asd",
 				},
 			},
+			ProjectName: "barr",
 			Builds: []config.Build{
 				{
 					Binary: "foo",
@@ -65,6 +66,7 @@ func TestDefault(t *testing.T) {
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Name)
 	assert.NotEmpty(t, ctx.Config.Scoops[0].CommitAuthor.Email)
+	assert.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoops[0].Name)
 }
 
 func Test_doRun(t *testing.T) {
