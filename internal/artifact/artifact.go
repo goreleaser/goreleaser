@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/apex/log"
+	"github.com/pkg/errors"
 )
 
 // Type defines the type of an artifact
@@ -67,13 +68,13 @@ func (a Artifact) Checksum() (string, error) {
 	log.Debugf("calculating sha256sum for %s", a.Path)
 	file, err := os.Open(a.Path)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "failed to checksum")
 	}
 	defer file.Close() // nolint: errcheck
 	var hash = sha256.New()
 	_, err = io.Copy(hash, file)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "failed to checksum")
 	}
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
