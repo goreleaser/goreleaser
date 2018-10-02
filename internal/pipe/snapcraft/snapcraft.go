@@ -103,6 +103,31 @@ func (Pipe) Run(ctx *context.Context) error {
 	return g.Wait()
 }
 
+// Publish previously generated snaps
+func (Pipe) Publish(ctx *context.Context) error {
+	var snaps = ctx.Artifacts.Filter(
+		artifact.ByType(artifact.PushableSnap),
+	).List()
+	var g = semerrgroup.New(ctx.Parallelism)
+	for _, snap := range snaps {
+		snap := snap
+		g.Go(func() error {
+			return push(ctx, snap)
+		})
+	}
+	return g.Wait()
+}
+
+func push(ctx *context.Context, snap artifact.Artifact) error {
+	var cmd = exec.CommandContext(ctx, "snapcraft", "push", "--release=stable", snap.Path)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to push %s package: %s", snap.Path, string(out))
+	}
+	snap.Type = artifact.Snap
+	ctx.Artifacts.Add(snap)
+	return nil
+}
+
 func create(ctx *context.Context, arch string, binaries []artifact.Artifact) error {
 	var log = log.WithField("arch", arch)
 	folder, err := tmpl.New(ctx).
@@ -180,8 +205,11 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 	if out, err = cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to generate snap package: %s", string(out))
 	}
+	if !ctx.Config.Snapcraft.Push {
+		return nil
+	}
 	ctx.Artifacts.Add(artifact.Artifact{
-		Type:   artifact.LinuxPackage,
+		Type:   artifact.PushableSnap,
 		Name:   folder + ".snap",
 		Path:   snap,
 		Goos:   binaries[0].Goos,

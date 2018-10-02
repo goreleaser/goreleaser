@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
+	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -25,6 +26,7 @@ type Publisher interface {
 }
 
 var publishers = []Publisher{
+	snapcraft.Pipe{},
 	docker.Pipe{},
 }
 
