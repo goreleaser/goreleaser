@@ -57,6 +57,25 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+func (Pipe) Publish(ctx *context.Context) error {
+	// if ctx.SkipPublish {
+	// 	// TODO: this should be better handled
+	// 	log.Warn(pipe.ErrSkipPublishEnabled.Error())
+	// 	return nil
+	// }
+	var images = ctx.Artifacts.Filter(
+		artifact.ByType(artifact.PushableDockerImage),
+	).List()
+	var g = semerrgroup.New(ctx.Parallelism)
+	for _, image := range images {
+		image := image
+		g.Go(func() error {
+			return dockerPush(ctx, image)
+		})
+	}
+	return g.Wait()
+}
+
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	if len(ctx.Config.Dockers) == 0 || ctx.Config.Dockers[0].Image == "" {
@@ -99,7 +118,7 @@ func doRun(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) error {
+func process(ctx *context.Context, docker config.Docker, bin artifact.Artifact) error {
 	tmp, err := ioutil.TempDir(ctx.Config.Dist, "goreleaserdocker")
 	if err != nil {
 		return errors.Wrap(err, "failed to create temporaty dir")
@@ -110,7 +129,7 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 	for _, tagTemplate := range docker.TagTemplates {
 		// TODO: add overrides support to config
 		tag, err := tmpl.New(ctx).
-			WithArtifact(artifact, map[string]string{}).
+			WithArtifact(bin, map[string]string{}).
 			Apply(tagTemplate)
 		if err != nil {
 			return errors.Wrapf(err, "failed to execute tag template '%s'", tagTemplate)
@@ -125,7 +144,7 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 			return errors.Wrapf(err, "failed to link extra file '%s'", file)
 		}
 	}
-	if err := os.Link(artifact.Path, filepath.Join(tmp, filepath.Base(artifact.Path))); err != nil {
+	if err := os.Link(bin.Path, filepath.Join(tmp, filepath.Base(bin.Path))); err != nil {
 		return errors.Wrap(err, "failed to link binary")
 	}
 	if err := dockerBuild(ctx, tmp, images[0]); err != nil {
@@ -136,7 +155,22 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 			return err
 		}
 	}
-	return publish(ctx, docker, images)
+	if docker.SkipPush {
+		// TODO: this should also be better handled
+		log.Warn(pipe.Skip("skip_push is set").Error())
+		return nil
+	}
+	for _, image := range images {
+		ctx.Artifacts.Add(artifact.Artifact{
+			Type:   artifact.PushableDockerImage,
+			Name:   image,
+			Path:   image,
+			Goarch: docker.Goarch,
+			Goos:   docker.Goos,
+			Goarm:  docker.Goarm,
+		})
+	}
+	return nil
 }
 
 // walks the src, recreating dirs and hard-linking files
@@ -160,25 +194,6 @@ func link(src, dest string) error {
 		}
 		return os.Link(path, dst)
 	})
-}
-
-func publish(ctx *context.Context, docker config.Docker, images []string) error {
-	if ctx.SkipPublish {
-		// TODO: this should be better handled
-		log.Warn(pipe.ErrSkipPublishEnabled.Error())
-		return nil
-	}
-	if docker.SkipPush {
-		// TODO: this should also be better handled
-		log.Warn(pipe.Skip("skip_push is set").Error())
-		return nil
-	}
-	for _, image := range images {
-		if err := dockerPush(ctx, docker, image); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func dockerBuild(ctx *context.Context, root, image string) error {
@@ -208,10 +223,10 @@ func dockerTag(ctx *context.Context, image, tag string) error {
 	return nil
 }
 
-func dockerPush(ctx *context.Context, docker config.Docker, image string) error {
+func dockerPush(ctx *context.Context, image artifact.Artifact) error {
 	log.WithField("image", image).Info("pushing docker image")
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, "docker", "push", image)
+	var cmd = exec.CommandContext(ctx, "docker", "push", image.Name)
 	log.WithField("cmd", cmd.Args).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -220,11 +235,11 @@ func dockerPush(ctx *context.Context, docker config.Docker, image string) error 
 	log.Debugf("docker push output: \n%s", string(out))
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type:   artifact.DockerImage,
-		Name:   image,
-		Path:   image,
-		Goarch: docker.Goarch,
-		Goos:   docker.Goos,
-		Goarm:  docker.Goarm,
+		Name:   image.Name,
+		Path:   image.Path,
+		Goarch: image.Goarch,
+		Goos:   image.Goos,
+		Goarm:  image.Goarm,
 	})
 	return nil
 }
