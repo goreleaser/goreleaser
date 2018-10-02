@@ -235,6 +235,47 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertError: shouldNotErr,
 		},
+		"valid build args": {
+			publish: false,
+			dockers: []config.Docker{
+				{
+					Image:      registry + "goreleaser/test_build_args",
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binary:     "mybin",
+					TagTemplates: []string{
+						"latest",
+					},
+					BuildFlags: []string{
+						"--label=foo=bar",
+					},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_build_args:latest",
+			},
+			assertError: shouldNotErr,
+		},
+		"bad build args": {
+			publish: false,
+			dockers: []config.Docker{
+				{
+					Image:      registry + "goreleaser/test_build_args",
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binary:     "mybin",
+					TagTemplates: []string{
+						"latest",
+					},
+					BuildFlags: []string{
+						"--bad-flag",
+					},
+				},
+			},
+			assertError: shouldErr("unknown flag: --bad-flag"),
+		},
 		"bad_dockerfile": {
 			publish: true,
 			dockers: []config.Docker{
@@ -415,6 +456,37 @@ func TestRunPipe(t *testing.T) {
 	}
 }
 
+func TestBuildCommand(t *testing.T) {
+	image := "goreleaser/test_build_flag"
+	tests := []struct {
+		name   string
+		flags  []string
+		expect []string
+	}{
+		{
+			name:   "no flags",
+			flags:  []string{},
+			expect: []string{"build", "-t", image, "."},
+		},
+		{
+			name:   "single flag",
+			flags:  []string{"--label=foo"},
+			expect: []string{"build", "-t", image, ".", "--label=foo"},
+		},
+		{
+			name:   "multiple flags",
+			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
+			expect: []string{"build", "-t", image, ".", "--label=foo", "--build-arg=bar=baz"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			command := buildCommand(image, tt.flags)
+			assert.Equal(t, tt.expect, command)
+		})
+	}
+}
+
 func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.String())
 }
@@ -508,6 +580,7 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, []string{"{{ .Version }}"}, docker.TagTemplates)
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 }
+
 func TestLinkFile(t *testing.T) {
 	const srcFile = "/tmp/test"
 	const dstFile = "/tmp/linked"

@@ -128,7 +128,7 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 	if err := os.Link(artifact.Path, filepath.Join(tmp, filepath.Base(artifact.Path))); err != nil {
 		return errors.Wrap(err, "failed to link binary")
 	}
-	if err := dockerBuild(ctx, tmp, images[0]); err != nil {
+	if err := dockerBuild(ctx, tmp, images[0], docker.BuildFlags); err != nil {
 		return err
 	}
 	for _, img := range images[1:] {
@@ -181,10 +181,10 @@ func publish(ctx *context.Context, docker config.Docker, images []string) error 
 	return nil
 }
 
-func dockerBuild(ctx *context.Context, root, image string) error {
+func dockerBuild(ctx *context.Context, root, image string, flags []string) error {
 	log.WithField("image", image).Info("building docker image")
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, "docker", "build", "-t", image, ".")
+	var cmd = exec.CommandContext(ctx, "docker", buildCommand(image, flags)...)
 	cmd.Dir = root
 	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
 	out, err := cmd.CombinedOutput()
@@ -193,6 +193,12 @@ func dockerBuild(ctx *context.Context, root, image string) error {
 	}
 	log.Debugf("docker build output: \n%s", string(out))
 	return nil
+}
+
+func buildCommand(image string, flags []string) []string {
+	base := []string{"build", "-t", image, "."}
+	base = append(base, flags...)
+	return base
 }
 
 func dockerTag(ctx *context.Context, image, tag string) error {

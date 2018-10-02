@@ -247,6 +247,7 @@ type Docker struct {
 	SkipPush     bool     `yaml:"skip_push,omitempty"`
 	TagTemplates []string `yaml:"tag_templates,omitempty"`
 	Files        []string `yaml:"extra_files,omitempty"`
+	BuildFlags   []string `yaml:"build_flags,omitempty"`
 }
 
 // Filters config
