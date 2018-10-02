@@ -22,7 +22,7 @@ brew:
   # Default to project name
   name: myproject
 
-  # Reporitory to push the tap to.
+  # Repository to push the tap to.
   github:
     owner: user
     name: homebrew-tap
