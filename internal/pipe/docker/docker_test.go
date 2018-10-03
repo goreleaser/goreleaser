@@ -2,10 +2,12 @@ package docker
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"syscall"
 	"testing"
 
@@ -60,12 +62,29 @@ func TestRunPipe(t *testing.T) {
 	var shouldNotErr = func(t *testing.T, err error) {
 		require.NoError(t, err)
 	}
+	type imageLabelFinder func(*testing.T, int, string)
+	var shouldFindImagesWithLabels = func(filters ...string) func(*testing.T, int, string) {
+		return func(t *testing.T, numTags int, image string) {
+			for _, filter := range filters {
+				output, err := exec.Command("docker", "images", "--filter", filter).CombinedOutput()
+				require.NoError(t, err)
+				fmt.Println(string(output))
+
+				matcher := regexp.MustCompile(image)
+				matches := matcher.FindAllStringIndex(string(output), -1)
+				require.Equal(t, numTags, len(matches))
+			}
+		}
+
+	}
+	var noLabels = func(t *testing.T, numTags int, image string) {}
 
 	var table = map[string]struct {
-		dockers     []config.Docker
-		publish     bool
-		expect      []string
-		assertError errChecker
+		dockers           []config.Docker
+		publish           bool
+		expect            []string
+		assertImageLabels imageLabelFinder
+		assertError       errChecker
 	}{
 		"valid": {
 			publish: true,
@@ -80,9 +99,16 @@ func TestRunPipe(t *testing.T) {
 						"{{.Tag}}-{{.Env.FOO}}",
 						"v{{.Major}}",
 						"v{{.Major}}.{{.Minor}}",
-						"commint-{{.Commit}}",
+						"commit-{{.Commit}}",
 						"le-{{.Os}}",
 						"latest",
+					},
+					BuildFlagTemplates: []string{
+						"--label=org.label-schema.schema-version=1.0",
+						"--label=org.label-schema.version={{.Version}}",
+						"--label=org.label-schema.vcs-ref={{.Commit}}",
+						"--label=org.label-schema.name={{.ProjectName}}",
+						"--build-arg=FRED={{.Tag}}",
 					},
 					Files: []string{
 						"testdata/extra_file.txt",
@@ -93,9 +119,15 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/test_run_pipe:v1.0.0-123",
 				registry + "goreleaser/test_run_pipe:v1",
 				registry + "goreleaser/test_run_pipe:v1.0",
+				registry + "goreleaser/test_run_pipe:commit-a1b2c3d4",
 				registry + "goreleaser/test_run_pipe:le-linux",
 				registry + "goreleaser/test_run_pipe:latest",
 			},
+			assertImageLabels: shouldFindImagesWithLabels(
+				"label=org.label-schema.schema-version=1.0",
+				"label=org.label-schema.version=1.0.0",
+				"label=org.label-schema.vcs-ref=a1b2c3d4",
+				"label=org.label-schema.name=mybin"),
 			assertError: shouldNotErr,
 		},
 		"multiple images with same extra file": {
@@ -132,7 +164,8 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/multiplefiles1:latest",
 				registry + "goreleaser/multiplefiles2:latest",
 			},
-			assertError: shouldNotErr,
+			assertImageLabels: noLabels,
+			assertError:       shouldNotErr,
 		},
 		"multiple images with same dockerfile": {
 			publish: true,
@@ -154,6 +187,7 @@ func TestRunPipe(t *testing.T) {
 					TagTemplates: []string{"latest"},
 				},
 			},
+			assertImageLabels: noLabels,
 			expect: []string{
 				registry + "goreleaser/test_run_pipe:latest",
 				registry + "goreleaser/test_run_pipe2:latest",
@@ -187,7 +221,8 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/test_run_pipe:v1.0",
 				registry + "goreleaser/test_run_pipe:latest",
 			},
-			assertError: shouldNotErr,
+			assertImageLabels: noLabels,
+			assertError:       shouldNotErr,
 		},
 		"valid_no_latest": {
 			publish: true,
@@ -209,7 +244,8 @@ func TestRunPipe(t *testing.T) {
 			expect: []string{
 				registry + "goreleaser/test_run_pipe:1.0.0",
 			},
-			assertError: shouldNotErr,
+			assertImageLabels: noLabels,
+			assertError:       shouldNotErr,
 		},
 		"valid_dont_publish": {
 			publish: false,
@@ -233,7 +269,8 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/test_run_pipe:v1.0.0-123",
 				registry + "goreleaser/test_run_pipe:latest",
 			},
-			assertError: shouldNotErr,
+			assertImageLabels: noLabels,
+			assertError:       shouldNotErr,
 		},
 		"valid build args": {
 			publish: false,
@@ -247,7 +284,7 @@ func TestRunPipe(t *testing.T) {
 					TagTemplates: []string{
 						"latest",
 					},
-					BuildFlags: []string{
+					BuildFlagTemplates: []string{
 						"--label=foo=bar",
 					},
 				},
@@ -255,7 +292,8 @@ func TestRunPipe(t *testing.T) {
 			expect: []string{
 				registry + "goreleaser/test_build_args:latest",
 			},
-			assertError: shouldNotErr,
+			assertImageLabels: noLabels,
+			assertError:       shouldNotErr,
 		},
 		"bad build args": {
 			publish: false,
@@ -269,12 +307,13 @@ func TestRunPipe(t *testing.T) {
 					TagTemplates: []string{
 						"latest",
 					},
-					BuildFlags: []string{
+					BuildFlagTemplates: []string{
 						"--bad-flag",
 					},
 				},
 			},
-			assertError: shouldErr("unknown flag: --bad-flag"),
+			assertImageLabels: noLabels,
+			assertError:       shouldErr("unknown flag: --bad-flag"),
 		},
 		"bad_dockerfile": {
 			publish: true,
@@ -290,9 +329,10 @@ func TestRunPipe(t *testing.T) {
 					},
 				},
 			},
-			assertError: shouldErr("pull access denied for nope, repository does not exist"),
+			assertImageLabels: noLabels,
+			assertError:       shouldErr("pull access denied for nope, repository does not exist"),
 		},
-		"template_error": {
+		"tag_template_error": {
 			publish: true,
 			dockers: []config.Docker{
 				{
@@ -306,9 +346,30 @@ func TestRunPipe(t *testing.T) {
 					},
 				},
 			},
-			assertError: shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+			assertImageLabels: noLabels,
+			assertError:       shouldErr(`template: tmpl:1: unexpected "}" in operand`),
 		},
-		"missing_env_on_template": {
+		"build_flag_template_error": {
+			publish: true,
+			dockers: []config.Docker{
+				{
+					Image:      registry + "goreleaser/test_run_pipe",
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binary:     "mybin",
+					TagTemplates: []string{
+						"latest",
+					},
+					BuildFlagTemplates: []string{
+						"--label=tag={{.Tag}",
+					},
+				},
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+		},
+		"missing_env_on_tag_template": {
 			publish: true,
 			dockers: []config.Docker{
 				{
@@ -322,7 +383,28 @@ func TestRunPipe(t *testing.T) {
 					},
 				},
 			},
-			assertError: shouldErr(`template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`),
+			assertImageLabels: noLabels,
+			assertError:       shouldErr(`template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`),
+		},
+		"missing_env_on_build_flag_template": {
+			publish: true,
+			dockers: []config.Docker{
+				{
+					Image:      registry + "goreleaser/test_run_pipe",
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binary:     "mybin",
+					TagTemplates: []string{
+						"latest",
+					},
+					BuildFlagTemplates: []string{
+						"--label=nope={{.Env.NOPE}}",
+					},
+				},
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldErr(`template: tmpl:1:19: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`),
 		},
 		"no_permissions": {
 			publish: true,
@@ -343,7 +425,8 @@ func TestRunPipe(t *testing.T) {
 				"docker.io/nope:latest",
 				"docker.io/nope:v1.0.0",
 			},
-			assertError: shouldErr(`requested access to the resource is denied`),
+			assertImageLabels: noLabels,
+			assertError:       shouldErr(`requested access to the resource is denied`),
 		},
 		"dockerfile_doesnt_exist": {
 			publish: true,
@@ -359,7 +442,8 @@ func TestRunPipe(t *testing.T) {
 					},
 				},
 			},
-			assertError: shouldErr(`failed to link dockerfile`),
+			assertImageLabels: noLabels,
+			assertError:       shouldErr(`failed to link dockerfile`),
 		},
 		"extra_file_doesnt_exist": {
 			publish: true,
@@ -378,7 +462,8 @@ func TestRunPipe(t *testing.T) {
 					},
 				},
 			},
-			assertError: shouldErr(`failed to link extra file 'testdata/nope.txt'`),
+			assertImageLabels: noLabels,
+			assertError:       shouldErr(`failed to link extra file 'testdata/nope.txt'`),
 		},
 		"no_matching_binaries": {
 			publish: true,
@@ -391,7 +476,8 @@ func TestRunPipe(t *testing.T) {
 					Dockerfile: "testdata/Dockerfile",
 				},
 			},
-			assertError: shouldErr(`0 binaries match docker definition: mybinnnn: darwin_amd64_`),
+			assertImageLabels: noLabels,
+			assertError:       shouldErr(`0 binaries match docker definition: mybinnnn: darwin_amd64_`),
 		},
 	}
 
@@ -422,6 +508,7 @@ func TestRunPipe(t *testing.T) {
 			ctx.Version = "1.0.0"
 			ctx.Git = context.GitInfo{
 				CurrentTag: "v1.0.0",
+				Commit:     "a1b2c3d4",
 			}
 			for _, os := range []string{"linux", "darwin"} {
 				for _, arch := range []string{"amd64", "386"} {
@@ -444,6 +531,9 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			docker.assertError(tt, Pipe{}.Run(ctx))
+			for _, d := range docker.dockers {
+				docker.assertImageLabels(tt, len(d.TagTemplates), d.Image)
+			}
 
 			// this might should not fail as the image should have been created when
 			// the step ran
