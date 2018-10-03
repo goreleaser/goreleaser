@@ -66,6 +66,12 @@ dockers:
     - "{{ .Tag }}-{{ .Env.GO_VERSION }}"
     - "v{{ .Major }}"
     - latest
+    # Template of the docker build flags.
+    build_flag_templates:
+    - "--label=org.label-schema.schema-version=1.0"
+    - "--label=org.label-schema.version={{.Version}}"
+    - "--label=org.label-schema.name={{.ProjectName}}"
+    - "--build-arg=FOO={{.ENV.Bar}}"
     # If your Dockerfile copies files other than the binary itself,
     # you should list them here as well.
     extra_files:
@@ -106,3 +112,29 @@ This will build and publish the following images:
 
 With these settings you can hopefully push several different docker images
 with multiple tags.
+
+## Applying docker build flags
+
+Build flags can be applied using `build_flag_templates`. The flags must be
+valid docker build flags.
+
+```yaml
+# .goreleaser.yml
+dockers:
+  -
+    binary: mybinary
+    image: myuser/myimage
+    build_flag_templates:
+    - "--label=org.label-schema.schema-version=1.0"
+    - "--label=org.label-schema.version={{.Version}}"
+    - "--label=org.label-schema.name={{.ProjectName}}"
+```
+
+This will execute the following command:
+
+```bash
+docker build -t myuser/myimage . \
+  --label=org.label-schema.schema-version=1.0 \
+  --label=org.label-schema.version=1.6.4 \
+  --label=org.label-schema.name=mybinary"
+```
