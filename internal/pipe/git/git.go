@@ -1,12 +1,12 @@
 package git
 
 import (
-	"fmt"
 	"os/exec"
 	"regexp"
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -26,6 +26,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	if _, err := exec.LookPath("git"); err != nil {
 		return ErrNoGit
 	}
+	if ctx.Config.Git.ShortHash {
+		deprecate.Notice("git.short_hash")
+	}
 	info, err := getInfo(ctx)
 	if err != nil {
 		return err
@@ -39,8 +42,10 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 var fakeInfo = context.GitInfo{
-	CurrentTag: "v0.0.0",
-	Commit:     "none",
+	CurrentTag:  "v0.0.0",
+	Commit:      "none",
+	ShortCommit: "none",
+	FullCommit:  "none",
 }
 
 func getInfo(ctx *context.Context) (context.GitInfo, error) {
@@ -63,20 +68,32 @@ func getInfo(ctx *context.Context) (context.GitInfo, error) {
 }
 
 func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
-	commit, err := getCommit(ctx)
+	short, err := getShortCommit()
 	if err != nil {
 		return context.GitInfo{}, errors.Wrap(err, "couldn't get current commit")
+	}
+	full, err := getFullCommit()
+	if err != nil {
+		return context.GitInfo{}, errors.Wrap(err, "couldn't get current commit")
+	}
+	var commit = full
+	if ctx.Config.Git.ShortHash {
+		commit = short
 	}
 	tag, err := getTag()
 	if err != nil {
 		return context.GitInfo{
-			Commit:     commit,
-			CurrentTag: "v0.0.0",
+			Commit:      commit,
+			FullCommit:  full,
+			ShortCommit: short,
+			CurrentTag:  "v0.0.0",
 		}, ErrNoTag
 	}
 	return context.GitInfo{
-		CurrentTag: tag,
-		Commit:     commit,
+		CurrentTag:  tag,
+		Commit:      commit,
+		FullCommit:  full,
+		ShortCommit: short,
 	}, nil
 }
 
@@ -118,12 +135,12 @@ func validate(ctx *context.Context) error {
 	return nil
 }
 
-func getCommit(ctx *context.Context) (string, error) {
-	format := "%H"
-	if ctx.Config.Git.ShortHash {
-		format = "%h"
-	}
-	return git.Clean(git.Run("show", fmt.Sprintf("--format='%s'", format), "HEAD"))
+func getShortCommit() (string, error) {
+	return git.Clean(git.Run("show", "--format='%h'", "HEAD"))
+}
+
+func getFullCommit() (string, error) {
+	return git.Clean(git.Run("show", "--format='%H'", "HEAD"))
 }
 
 func getTag() (string, error) {

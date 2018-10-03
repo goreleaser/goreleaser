@@ -18,15 +18,21 @@ func TestWithArtifact(t *testing.T) {
 	}
 	ctx.Version = "1.0.0"
 	ctx.Git.CurrentTag = "v1.0.0"
+	ctx.Git.Commit = "commit"
+	ctx.Git.FullCommit = "fullcommit"
+	ctx.Git.ShortCommit = "shortcommit"
 	for expect, tmpl := range map[string]string{
-		"bar":    "{{.Env.FOO}}",
-		"Linux":  "{{.Os}}",
-		"amd64":  "{{.Arch}}",
-		"6":      "{{.Arm}}",
-		"1.0.0":  "{{.Version}}",
-		"v1.0.0": "{{.Tag}}",
-		"binary": "{{.Binary}}",
-		"proj":   "{{.ProjectName}}",
+		"bar":         "{{.Env.FOO}}",
+		"Linux":       "{{.Os}}",
+		"amd64":       "{{.Arch}}",
+		"6":           "{{.Arm}}",
+		"1.0.0":       "{{.Version}}",
+		"v1.0.0":      "{{.Tag}}",
+		"commit":      "{{.Commit}}",
+		"fullcommit":  "{{.FullCommit}}",
+		"shortcommit": "{{.ShortCommit}}",
+		"binary":      "{{.Binary}}",
+		"proj":        "{{.ProjectName}}",
 	} {
 		tmpl := tmpl
 		expect := expect
