@@ -105,18 +105,12 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 		return errors.Wrap(err, "failed to create temporaty dir")
 	}
 	log.Debug("tempdir: " + tmp)
-	// nolint:prealloc
-	var images []string
-	for _, tagTemplate := range docker.TagTemplates {
-		// TODO: add overrides support to config
-		tag, err := tmpl.New(ctx).
-			WithArtifact(artifact, map[string]string{}).
-			Apply(tagTemplate)
-		if err != nil {
-			return errors.Wrapf(err, "failed to execute tag template '%s'", tagTemplate)
-		}
-		images = append(images, fmt.Sprintf("%s:%s", docker.Image, tag))
+
+	images, err := processTagTemplates(ctx, docker, artifact)
+	if err != nil {
+		return err
 	}
+
 	if err := os.Link(docker.Dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
 		return errors.Wrap(err, "failed to link dockerfile")
 	}
@@ -128,7 +122,13 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 	if err := os.Link(artifact.Path, filepath.Join(tmp, filepath.Base(artifact.Path))); err != nil {
 		return errors.Wrap(err, "failed to link binary")
 	}
-	if err := dockerBuild(ctx, tmp, images[0], docker.BuildFlags); err != nil {
+
+	buildFlags, err := processBuildFlagTemplates(ctx, docker, artifact)
+	if err != nil {
+		return err
+	}
+
+	if err := dockerBuild(ctx, tmp, images[0], buildFlags); err != nil {
 		return err
 	}
 	for _, img := range images[1:] {
@@ -137,6 +137,37 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 		}
 	}
 	return publish(ctx, docker, images)
+}
+
+func processTagTemplates(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) ([]string, error) {
+	// nolint:prealloc
+	var images []string
+	for _, tagTemplate := range docker.TagTemplates {
+		// TODO: add overrides support to config
+		tag, err := tmpl.New(ctx).
+			WithArtifact(artifact, map[string]string{}).
+			Apply(tagTemplate)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to execute tag template '%s'", tagTemplate)
+		}
+		images = append(images, fmt.Sprintf("%s:%s", docker.Image, tag))
+	}
+	return images, nil
+}
+
+func processBuildFlagTemplates(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) ([]string, error) {
+	// nolint:prealloc
+	var buildFlags []string
+	for _, buildFlagTemplate := range docker.BuildFlagTemplates {
+		buildFlag, err := tmpl.New(ctx).
+			WithArtifact(artifact, map[string]string{}).
+			Apply(buildFlagTemplate)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to process build flag template '%s'", buildFlagTemplate)
+		}
+		buildFlags = append(buildFlags, buildFlag)
+	}
+	return buildFlags, nil
 }
 
 // walks the src, recreating dirs and hard-linking files
