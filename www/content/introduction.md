@@ -10,7 +10,7 @@ publish steps while providing variant customization options for all steps.
 
 GoReleaser is built for CI tools; you only need to
 [download and execute it](#ci_integration) in your build script.
-You can [customize](#customization) your release process by
+You can [customize](#Customization) your release process by
 creating a `.goreleaser.yml` file.
 
 The idea started with a
