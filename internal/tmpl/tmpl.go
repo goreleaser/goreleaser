@@ -25,6 +25,8 @@ const (
 	version     = "Version"
 	tag         = "Tag"
 	commit      = "Commit"
+	shortCommit = "ShortCommit"
+	fullCommit  = "FullCommit"
 	major       = "Major"
 	minor       = "Minor"
 	patch       = "Patch"
@@ -48,6 +50,8 @@ func New(ctx *context.Context) *Template {
 			version:     ctx.Version,
 			tag:         ctx.Git.CurrentTag,
 			commit:      ctx.Git.Commit,
+			shortCommit: ctx.Git.ShortCommit,
+			fullCommit:  ctx.Git.FullCommit,
 			env:         ctx.Env,
 			date:        time.Now().UTC().Format(time.RFC3339),
 			timestamp:   time.Now().UTC().Unix(),
