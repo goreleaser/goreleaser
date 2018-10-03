@@ -35,6 +35,31 @@ to this:
 
  -->
 
+## git.short_hash
+
+> since 2018-10-03
+
+This property was being used to tell GoReleaser to use short git hashes
+instead of the full ones. This has been removed in favor of specific
+template variables (`.FullCommit` and `.ShortCommit`).
+
+Change this:
+
+```yaml
+git:
+  short_hash: true
+
+fake:
+  foo_template: 'blah {{ .Commit }}'
+```
+
+to this:
+
+```yaml
+fake:
+  foo_template: 'blah {{ .ShortCommit }}'
+```
+
 # Expired deprecation notices
 
 The following options were deprecated for ~6 months and are now unsupported.
