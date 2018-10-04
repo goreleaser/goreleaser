@@ -27,6 +27,7 @@ const (
 	commit      = "Commit"
 	shortCommit = "ShortCommit"
 	fullCommit  = "FullCommit"
+	gitURL      = "GitURL"
 	major       = "Major"
 	minor       = "Minor"
 	patch       = "Patch"
@@ -52,6 +53,7 @@ func New(ctx *context.Context) *Template {
 			commit:      ctx.Git.Commit,
 			shortCommit: ctx.Git.ShortCommit,
 			fullCommit:  ctx.Git.FullCommit,
+			gitURL:      ctx.Git.URL,
 			env:         ctx.Env,
 			date:        time.Now().UTC().Format(time.RFC3339),
 			timestamp:   time.Now().UTC().Unix(),

@@ -21,6 +21,7 @@ On fields that support templating, this fields are always available:
 | `.ShortCommit` |            the git commit short hash             |
 | `.FullCommit`  |            the git commit full hash              |
 |   `.Commit`    |       the git commit hash (deprecated)           |
+|   `.GitURL`    |               the git remote url                 |
 |    `.Major`    |          the major part of the version           |
 |    `.Minor`    |          the minor part of the version           |
 |    `.Patch`    |          the patch part of the version           |
