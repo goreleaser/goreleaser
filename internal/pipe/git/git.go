@@ -80,12 +80,17 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 	if ctx.Config.Git.ShortHash {
 		commit = short
 	}
+	url, err := getURL()
+	if err != nil {
+		return context.GitInfo{}, errors.Wrap(err, "couldn't get remote URL")
+	}
 	tag, err := getTag()
 	if err != nil {
 		return context.GitInfo{
 			Commit:      commit,
 			FullCommit:  full,
 			ShortCommit: short,
+			URL:         url,
 			CurrentTag:  "v0.0.0",
 		}, ErrNoTag
 	}
@@ -94,6 +99,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 		Commit:      commit,
 		FullCommit:  full,
 		ShortCommit: short,
+		URL:         url,
 	}, nil
 }
 
@@ -145,4 +151,8 @@ func getFullCommit() (string, error) {
 
 func getTag() (string, error) {
 	return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
+}
+
+func getURL() (string, error) {
+	return git.Clean(git.Run("ls-remote", "--get-url"))
 }
