@@ -18,8 +18,11 @@ import (
 
 // GitInfo includes tags and diffs used in some point
 type GitInfo struct {
-	CurrentTag string
-	Commit     string
+	CurrentTag  string
+	Commit      string
+	ShortCommit string
+	FullCommit  string
+	URL         string
 }
 
 // Context carries along some data through the pipes
