@@ -129,7 +129,6 @@ func setCredentials(t *testing.T) {
 func start(t *testing.T) {
 	dir, err := os.Getwd()
 	assert.NoError(t, err)
-	log.Info("wd: " + dir)
 	if out, err := exec.Command(
 		"docker", "run", "-d", "--rm",
 		"--name", "minio",

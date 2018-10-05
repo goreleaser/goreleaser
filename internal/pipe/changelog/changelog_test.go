@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/apex/log"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -74,8 +73,7 @@ func TestChangelog(t *testing.T) {
 }
 
 func TestChangelogSort(t *testing.T) {
-	f, back := testlib.Mktmp(t)
-	log.Info(f)
+	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "whatever")
