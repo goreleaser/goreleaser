@@ -384,7 +384,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`),
+			assertError:       shouldErr(`template: tmpl:1:46: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`),
 		},
 		"missing_env_on_build_flag_template": {
 			publish: true,
@@ -405,6 +405,36 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldErr(`template: tmpl:1:19: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`),
+		},
+		"image_has_projectname_template_variable": {
+			publish: true,
+			dockers: []config.Docker{
+				{
+					Image:      registry + "goreleaser/{{.ProjectName}}",
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binary:     "mybin",
+					SkipPush:   true,
+					TagTemplates: []string{
+						"{{.Tag}}-{{.Env.FOO}}",
+						"v{{.Major}}",
+						"v{{.Major}}.{{.Minor}}",
+						"latest",
+					},
+					Files: []string{
+						"testdata/extra_file.txt",
+					},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/mybin:v1.0.0-123",
+				registry + "goreleaser/mybin:v1",
+				registry + "goreleaser/mybin:v1.0",
+				registry + "goreleaser/mybin:latest",
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldNotErr,
 		},
 		"no_permissions": {
 			publish: true,
