@@ -28,7 +28,7 @@ import (
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "setting defaults for:"
+	return "setting defaults"
 }
 
 // Defaulter can be implemented by a Piper to set default values for its
@@ -67,7 +67,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Config.GitHubURLs.Download = "https://github.com"
 	}
 	for _, defaulter := range defaulters {
-		log.Info(defaulter.String())
+		log.Debug(defaulter.String())
 		if err := defaulter.Default(ctx); err != nil {
 			return err
 		}
