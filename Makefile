@@ -51,7 +51,7 @@ deps:
 .PHONY: deps
 
 # Build a beta version of goreleaser
-build: deps
+build:
 	go build
 .PHONY: build
 

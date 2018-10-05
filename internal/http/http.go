@@ -137,10 +137,10 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 		case ModeArchive:
 			filters = append(filters,
 				artifact.ByType(artifact.UploadableArchive),
-				artifact.ByType(artifact.LinuxPackage))
+				artifact.ByType(artifact.LinuxPackage),
+			)
 		case ModeBinary:
-			filters = append(filters,
-				artifact.ByType(artifact.UploadableBinary))
+			filters = append(filters, artifact.ByType(artifact.UploadableBinary))
 		default:
 			err := fmt.Errorf("%s: mode \"%s\" not supported", kind, v)
 			log.WithFields(log.Fields{
@@ -158,8 +158,10 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 }
 
 func uploadWithFilter(ctx *context.Context, put *config.Put, filter artifact.Filter, kind string, check ResponseChecker) error {
+	var artifacts = ctx.Artifacts.Filter(filter).List()
+	log.Debugf("will upload %d artifacts", len(artifacts))
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
+	for _, artifact := range artifacts {
 		artifact := artifact
 		g.Go(func() error {
 			return uploadAsset(ctx, put, artifact, kind, check)
@@ -199,7 +201,16 @@ func uploadAsset(ctx *context.Context, put *config.Put, artifact artifact.Artifa
 	}
 	targetURL += artifact.Name
 
-	_, err = uploadAssetToServer(ctx, put, targetURL, username, secret, asset, check)
+	var headers = map[string]string{}
+	if put.ChecksumHeader != "" {
+		sum, err := artifact.Checksum()
+		if err != nil {
+			return err
+		}
+		headers[put.ChecksumHeader] = sum
+	}
+
+	_, err = uploadAssetToServer(ctx, put, targetURL, username, secret, headers, asset, check)
 	if err != nil {
 		msg := fmt.Sprintf("%s: upload failed", kind)
 		log.WithError(err).WithFields(log.Fields{
@@ -218,8 +229,8 @@ func uploadAsset(ctx *context.Context, put *config.Put, artifact artifact.Artifa
 }
 
 // uploadAssetToServer uploads the asset file to target
-func uploadAssetToServer(ctx *context.Context, put *config.Put, target, username, secret string, a *asset, check ResponseChecker) (*h.Response, error) {
-	req, err := newUploadRequest(target, username, secret, a)
+func uploadAssetToServer(ctx *context.Context, put *config.Put, target, username, secret string, headers map[string]string, a *asset, check ResponseChecker) (*h.Response, error) {
+	req, err := newUploadRequest(target, username, secret, headers, a)
 	if err != nil {
 		return nil, err
 	}
@@ -228,14 +239,17 @@ func uploadAssetToServer(ctx *context.Context, put *config.Put, target, username
 }
 
 // newUploadRequest creates a new h.Request for uploading
-func newUploadRequest(target, username, secret string, a *asset) (*h.Request, error) {
+func newUploadRequest(target, username, secret string, headers map[string]string, a *asset) (*h.Request, error) {
 	req, err := h.NewRequest("PUT", target, a.ReadCloser)
 	if err != nil {
 		return nil, err
 	}
-
 	req.ContentLength = a.Size
 	req.SetBasicAuth(username, secret)
+
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
 
 	return req, err
 }

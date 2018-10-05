@@ -55,6 +55,7 @@ type Homebrew struct {
 
 // Scoop contains the scoop.sh section
 type Scoop struct {
+	Name         string       `yaml:",omitempty"`
 	Bucket       Repo         `yaml:",omitempty"`
 	CommitAuthor CommitAuthor `yaml:"commit_author,omitempty"`
 	Homepage     string       `yaml:",omitempty"`
@@ -237,15 +238,16 @@ type Checksum struct {
 
 // Docker image config
 type Docker struct {
-	Binary       string   `yaml:",omitempty"`
-	Goos         string   `yaml:",omitempty"`
-	Goarch       string   `yaml:",omitempty"`
-	Goarm        string   `yaml:",omitempty"`
-	Image        string   `yaml:",omitempty"`
-	Dockerfile   string   `yaml:",omitempty"`
-	SkipPush     bool     `yaml:"skip_push,omitempty"`
-	TagTemplates []string `yaml:"tag_templates,omitempty"`
-	Files        []string `yaml:"extra_files,omitempty"`
+	Binary             string   `yaml:",omitempty"`
+	Goos               string   `yaml:",omitempty"`
+	Goarch             string   `yaml:",omitempty"`
+	Goarm              string   `yaml:",omitempty"`
+	Image              string   `yaml:",omitempty"`
+	Dockerfile         string   `yaml:",omitempty"`
+	SkipPush           bool     `yaml:"skip_push,omitempty"`
+	TagTemplates       []string `yaml:"tag_templates,omitempty"`
+	Files              []string `yaml:"extra_files,omitempty"`
+	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
 }
 
 // Filters config
@@ -287,13 +289,14 @@ type S3 struct {
 
 // Put HTTP upload configuration
 type Put struct {
-	Name         string `yaml:",omitempty"`
-	Target       string `yaml:",omitempty"`
-	Username     string `yaml:",omitempty"`
-	Mode         string `yaml:",omitempty"`
-	Checksum     bool   `yaml:",omitempty"`
-	Signature    bool   `yaml:",omitempty"`
-	TrustedCerts string `yaml:"trusted_certificates,omitempty"`
+	Name           string `yaml:",omitempty"`
+	Target         string `yaml:",omitempty"`
+	Username       string `yaml:",omitempty"`
+	Mode           string `yaml:",omitempty"`
+	ChecksumHeader string `yaml:"checksum_header,omitempty"`
+	TrustedCerts   string `yaml:"trusted_certificates,omitempty"`
+	Checksum       bool   `yaml:",omitempty"`
+	Signature      bool   `yaml:",omitempty"`
 }
 
 // Project includes all project configuration

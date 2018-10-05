@@ -159,6 +159,6 @@ func TestChecksumFileDoesntExist(t *testing.T) {
 		Path: "/tmp/adasdasdas/asdasd/asdas",
 	}
 	sum, err := artifact.Checksum()
-	require.EqualError(t, err, `open /tmp/adasdasdas/asdasd/asdas: no such file or directory`)
+	require.EqualError(t, err, `failed to checksum: open /tmp/adasdasdas/asdasd/asdas: no such file or directory`)
 	require.Empty(t, sum)
 }
