@@ -17,6 +17,7 @@ before:
   hooks:
   - make clean
   - go generate ./...
+  - go mod download
 ```
 
 If any of the hooks fails the build process is aborted.
