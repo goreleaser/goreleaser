@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/env"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
+	"github.com/goreleaser/goreleaser/internal/pipe/publish"
 	"github.com/goreleaser/goreleaser/internal/pipe/put"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/pipe/s3"
@@ -57,4 +58,5 @@ var Pipeline = []Piper{
 	release.Pipe{},         // release to github
 	brew.Pipe{},            // push to brew tap
 	scoop.Pipe{},           // push to scoop bucket
+	publish.Pipe{},         // publishes artifacts
 }
