@@ -52,3 +52,10 @@ func fakeGit(args ...string) (string, error) {
 	allArgs = append(allArgs, args...)
 	return git.Run(allArgs...)
 }
+
+// GitCheckoutBranch allows us to change the active branch that we're using.
+func GitCheckoutBranch(t *testing.T, tag string) {
+	out, err := fakeGit("checkout", "-b", tag)
+	assert.NoError(t, err)
+	assert.Contains(t, out, tag)
+}

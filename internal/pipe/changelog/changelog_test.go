@@ -193,3 +193,27 @@ func TestChangelogNoTags(t *testing.T) {
 	assert.Error(t, Pipe{}.Run(ctx))
 	assert.Empty(t, ctx.ReleaseNotes)
 }
+
+func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	var msgs = []string{
+		"initial commit",
+		"another one",
+		"one more",
+		"and finally this one",
+	}
+	for _, msg := range msgs {
+		testlib.GitCommit(t, msg)
+	}
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCheckoutBranch(t, "v0.0.1")
+	var ctx = context.New(config.Project{})
+	ctx.Git.CurrentTag = "v0.0.1"
+	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	for _, msg := range msgs {
+		assert.Contains(t, ctx.ReleaseNotes, msg)
+	}
+}
