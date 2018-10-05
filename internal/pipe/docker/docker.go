@@ -44,7 +44,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			docker.Goarch = "amd64"
 		}
 	}
-	// only set defaults if there is exacly 1 docker setup in the config file.
+	// only set defaults if there is exactly 1 docker setup in the config file.
 	if len(ctx.Config.Dockers) != 1 {
 		return nil
 	}
@@ -102,7 +102,7 @@ func doRun(ctx *context.Context) error {
 func process(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) error {
 	tmp, err := ioutil.TempDir(ctx.Config.Dist, "goreleaserdocker")
 	if err != nil {
-		return errors.Wrap(err, "failed to create temporaty dir")
+		return errors.Wrap(err, "failed to create temporary dir")
 	}
 	log.Debug("tempdir: " + tmp)
 
@@ -143,14 +143,15 @@ func processTagTemplates(ctx *context.Context, docker config.Docker, artifact ar
 	// nolint:prealloc
 	var images []string
 	for _, tagTemplate := range docker.TagTemplates {
+		imageTemplate := fmt.Sprintf("%s:%s", docker.Image, tagTemplate)
 		// TODO: add overrides support to config
-		tag, err := tmpl.New(ctx).
+		image, err := tmpl.New(ctx).
 			WithArtifact(artifact, map[string]string{}).
-			Apply(tagTemplate)
+			Apply(imageTemplate)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to execute tag template '%s'", tagTemplate)
 		}
-		images = append(images, fmt.Sprintf("%s:%s", docker.Image, tag))
+		images = append(images, image)
 	}
 	return images, nil
 }

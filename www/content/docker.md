@@ -84,6 +84,23 @@ These settings should allow you to generate multiple Docker images,
 for example, using multiple `FROM` statements,
 as well as generate one image for each binary in your project.
 
+## Generic Image Names
+
+Some users might want to keep their image name as generic as possible.
+That can be accomplished simply by adding template language in the definition:
+
+```yaml
+# .goreleaser.yml
+dockers:
+  -
+    binary: mybinary
+    image: myuser/{{.ProjectName}}
+```
+
+This will build and public the following images:
+
+- `myuser/mybinary`
+
 ## Keeping docker images updated for current major
 
 Some users might want to when version to push docker tags `:v1`, `:v1.6`,
