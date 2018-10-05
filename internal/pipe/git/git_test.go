@@ -39,6 +39,18 @@ func TestSingleCommit(t *testing.T) {
 	assert.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 }
 
+func TestNoRemote(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.1")
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.EqualError(t, Pipe{}.Run(ctx), "couldn't get remote URL: fatal: No remote configured to list refs from.")
+}
+
 func TestNewRepository(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
