@@ -34,7 +34,7 @@ deploy:
     verbose: true
     fqdn: goreleaser.com
     on:
-      branch: master
+      tags: true
   - provider: script
     skip_cleanup: true
     script: go run main.go
