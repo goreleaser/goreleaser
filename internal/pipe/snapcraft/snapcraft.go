@@ -175,6 +175,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 	}
 
 	var snap = filepath.Join(ctx.Config.Dist, folder+".snap")
+	log.WithField("snap", snap).Info("creating")
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "snapcraft", "pack", primeDir, "--output", snap)
 	if out, err = cmd.CombinedOutput(); err != nil {
