@@ -116,7 +116,7 @@ func (artifacts *Artifacts) Add(a Artifact) {
 		"name": a.Name,
 		"path": a.Path,
 		"type": a.Type,
-	}).Info("added new artifact")
+	}).Debug("added new artifact")
 	artifacts.items = append(artifacts.items, a)
 }
 
