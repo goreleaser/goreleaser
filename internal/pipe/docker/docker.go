@@ -185,7 +185,7 @@ func link(src, dest string) error {
 		log.WithFields(log.Fields{
 			"src": path,
 			"dst": dst,
-		}).Info("extra file")
+		}).Debug("extra file")
 		if info.IsDir() {
 			return os.MkdirAll(dst, info.Mode())
 		}
