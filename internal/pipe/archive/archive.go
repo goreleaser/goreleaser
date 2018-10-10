@@ -89,7 +89,8 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 		return fmt.Errorf("failed to create directory %s: %s", archivePath, err.Error())
 	}
 	defer archiveFile.Close() // nolint: errcheck
-	log.WithField("archive", archivePath).Info("creating")
+	var log = log.WithField("archive", archivePath)
+	log.Info("creating")
 	var a = archive.New(archiveFile)
 	defer a.Close() // nolint: errcheck
 
