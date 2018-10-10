@@ -7,7 +7,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/internal/pipe/before"
-	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/changelog"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
@@ -22,7 +21,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/put"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/pipe/s3"
-	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -56,7 +54,5 @@ var Pipeline = []Piper{
 	put.Pipe{},             // upload to http server
 	s3.Pipe{},              // push to s3/minio
 	release.Pipe{},         // release to github
-	brew.Pipe{},            // push to brew tap
-	scoop.Pipe{},           // push to scoop bucket
 	publish.Pipe{},         // publishes artifacts
 }

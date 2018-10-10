@@ -32,8 +32,8 @@ func (Pipe) String() string {
 	return "creating homebrew formula"
 }
 
-// Run the pipe
-func (Pipe) Run(ctx *context.Context) error {
+// Publish brew formula
+func (Pipe) Publish(ctx *context.Context) error {
 	client, err := client.NewGitHub(ctx)
 	if err != nil {
 		return err

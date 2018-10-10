@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/pipe/brew"
+	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/pkg/errors"
 )
@@ -24,7 +26,10 @@ type Publisher interface {
 	Publish(ctx *context.Context) error
 }
 
-var publishers = []Publisher{}
+var publishers = []Publisher{
+	brew.Pipe{},
+	scoop.Pipe{},
+}
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
