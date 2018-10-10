@@ -63,7 +63,8 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
 	var filtered = ctx.Artifacts.Filter(artifact.ByType(artifact.Binary))
-	for _, artifacts := range filtered.GroupByPlatform() {
+	for group, artifacts := range filtered.GroupByPlatform() {
+		log.Debugf("group %s has %d binaries", group, len(artifacts))
 		artifacts := artifacts
 		g.Go(func() error {
 			if packageFormat(ctx, artifacts[0].Goos) == "binary" {
