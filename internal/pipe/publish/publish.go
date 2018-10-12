@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/apex/log"
+	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
@@ -32,16 +33,31 @@ var publishers = []Publisher{
 	scoop.Pipe{},
 }
 
+var bold = color.New(color.Bold)
+
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
 	for _, publisher := range publishers {
-		log.Infof("Publishing %s...", publisher.String())
-		if err := publisher.Publish(ctx); err != nil {
+		log.Infof(bold.Sprint(publisher.String()))
+		if err := handle(publisher.Publish(ctx)); err != nil {
 			return errors.Wrapf(err, "%s: failed to publish artifacts", publisher.String())
 		}
 	}
 	return nil
+}
+
+// TODO: for now this is duplicated, we should have better error handling
+// eventually.
+func handle(err error) error {
+	if err == nil {
+		return nil
+	}
+	if pipe.IsSkip(err) {
+		log.WithField("reason", err.Error()).Warn("skipped")
+		return nil
+	}
+	return err
 }
