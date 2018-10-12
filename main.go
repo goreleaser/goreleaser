@@ -131,12 +131,14 @@ func releaseProject(options releaseOptions) error {
 	return doRelease(ctx)
 }
 
+var bold = color.New(color.Bold)
+
 func doRelease(ctx *context.Context) error {
 	defer func() { cli.Default.Padding = 3 }()
 	var release = func() error {
 		for _, pipe := range pipeline.Pipeline {
 			cli.Default.Padding = 3
-			log.Infof(color.New(color.Bold).Sprint(strings.ToUpper(pipe.String())))
+			log.Infof(bold.Sprint(strings.ToUpper(pipe.String())))
 			cli.Default.Padding = 6
 			if err := handle(pipe.Run(ctx)); err != nil {
 				return err
