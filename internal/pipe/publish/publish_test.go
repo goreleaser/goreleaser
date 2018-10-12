@@ -20,3 +20,8 @@ func TestPublishDisable(t *testing.T) {
 	ctx.SkipPublish = true
 	require.EqualError(t, Pipe{}.Run(ctx), pipe.ErrSkipPublishEnabled.Error())
 }
+
+func TestPublish(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	require.NoError(t, Pipe{}.Run(ctx))
+}
