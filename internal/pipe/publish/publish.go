@@ -4,6 +4,7 @@ package publish
 import (
 	"fmt"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
@@ -37,8 +38,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		return pipe.ErrSkipPublishEnabled
 	}
 	for _, publisher := range publishers {
+		log.Infof("Publishing %s...", publisher.String())
 		if err := publisher.Publish(ctx); err != nil {
-			return errors.Wrapf(err, "failed to publish artifacts for %s", publisher.String())
+			return errors.Wrapf(err, "%s: failed to publish artifacts", publisher.String())
 		}
 	}
 	return nil
