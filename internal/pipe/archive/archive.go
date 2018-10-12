@@ -63,7 +63,8 @@ func (Pipe) Default(ctx *context.Context) error {
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
 	var filtered = ctx.Artifacts.Filter(artifact.ByType(artifact.Binary))
-	for _, artifacts := range filtered.GroupByPlatform() {
+	for group, artifacts := range filtered.GroupByPlatform() {
+		log.Debugf("group %s has %d binaries", group, len(artifacts))
 		artifacts := artifacts
 		g.Go(func() error {
 			if packageFormat(ctx, artifacts[0].Goos) == "binary" {
@@ -89,7 +90,8 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 		return fmt.Errorf("failed to create directory %s: %s", archivePath, err.Error())
 	}
 	defer archiveFile.Close() // nolint: errcheck
-	log.WithField("archive", archivePath).Info("creating")
+	var log = log.WithField("archive", archivePath)
+	log.Info("creating")
 	var a = archive.New(archiveFile)
 	defer a.Close() // nolint: errcheck
 

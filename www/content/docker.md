@@ -53,7 +53,7 @@ dockers:
     goarm: ''
     # Name of the built binary that should be used.
     binary: mybinary
-    # Docker image name.
+    # Template of the Docker image name.
     image: myuser/myimage
     # Skips the docker push. Could be useful if you also do draft releases.
     # Defaults to false.
@@ -84,6 +84,26 @@ These settings should allow you to generate multiple Docker images,
 for example, using multiple `FROM` statements,
 as well as generate one image for each binary in your project.
 
+## Generic Image Names
+
+Some users might want to keep their image name as generic as possible.
+That can be accomplished simply by adding template language in the definition:
+
+```yaml
+# .goreleaser.yml
+project: foo
+dockers:
+  -
+    binary: mybinary
+    image: myuser/{{.ProjectName}}
+```
+
+This will build and public the following images:
+
+- `myuser/foo`
+
+> Learn more about the [name template engine](/templates).
+
 ## Keeping docker images updated for current major
 
 Some users might want to when version to push docker tags `:v1`, `:v1.6`,
@@ -113,6 +133,8 @@ This will build and publish the following images:
 With these settings you can hopefully push several different docker images
 with multiple tags.
 
+> Learn more about the [name template engine](/templates).
+
 ## Applying docker build flags
 
 Build flags can be applied using `build_flag_templates`. The flags must be
@@ -138,3 +160,5 @@ docker build -t myuser/myimage . \
   --label=org.label-schema.version=1.6.4 \
   --label=org.label-schema.name=mybinary"
 ```
+
+> Learn more about the [name template engine](/templates).
