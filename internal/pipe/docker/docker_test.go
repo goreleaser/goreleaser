@@ -2,7 +2,6 @@ package docker
 
 import (
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -21,6 +20,7 @@ import (
 
 var it = flag.Bool("it", false, "push images to docker hub")
 var registry = "localhost:5000/"
+var altRegistry = "localhost:5050/"
 
 func TestMain(m *testing.M) {
 	flag.Parse()
@@ -40,6 +40,12 @@ func start(t *testing.T) {
 		t.Log("failed to start docker registry", string(out), err)
 		t.FailNow()
 	}
+	if out, err := exec.Command(
+		"docker", "run", "-d", "-p", "5050:5000", "--name", "alt_registry", "registry:2",
+	).CombinedOutput(); err != nil {
+		t.Log("failed to start alternate docker registry", string(out), err)
+		t.FailNow()
+	}
 }
 
 func killAndRm(t *testing.T) {
@@ -49,6 +55,8 @@ func killAndRm(t *testing.T) {
 	t.Log("killing registry")
 	_ = exec.Command("docker", "kill", "registry").Run()
 	_ = exec.Command("docker", "rm", "registry").Run()
+	_ = exec.Command("docker", "kill", "alt_registry").Run()
+	_ = exec.Command("docker", "rm", "alt_registry").Run()
 }
 
 func TestRunPipe(t *testing.T) {
@@ -68,7 +76,6 @@ func TestRunPipe(t *testing.T) {
 			for _, filter := range filters {
 				output, err := exec.Command("docker", "images", "--filter", filter).CombinedOutput()
 				require.NoError(t, err)
-				fmt.Println(string(output))
 
 				matcher := regexp.MustCompile(image)
 				matches := matcher.FindAllStringIndex(string(output), -1)
@@ -192,6 +199,57 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/test_run_pipe:latest",
 				registry + "goreleaser/test_run_pipe2:latest",
 			},
+			assertError: shouldNotErr,
+		},
+		"multiple registries": {
+			publish: true,
+			dockers: []config.Docker{
+				{
+					Image:                registry + "goreleaser/test_run_pipe",
+					Goos:                 "linux",
+					Goarch:               "amd64",
+					Dockerfile:           "testdata/Dockerfile",
+					Binary:               "mybin",
+					AdditionalRegistries: []string{"localhost:5050"},
+					TagTemplates: []string{
+						"{{.Tag}}-{{.Env.FOO}}",
+						"v{{.Major}}",
+						"v{{.Major}}.{{.Minor}}",
+						"commit-{{.Commit}}",
+						"le-{{.Os}}",
+						"latest",
+					},
+					BuildFlagTemplates: []string{
+						"--label=org.label-schema.schema-version=1.0",
+						"--label=org.label-schema.version={{.Version}}",
+						"--label=org.label-schema.vcs-ref={{.Commit}}",
+						"--label=org.label-schema.name={{.ProjectName}}",
+						"--build-arg=FRED={{.Tag}}",
+					},
+					Files: []string{
+						"testdata/extra_file.txt",
+					},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_run_pipe:v1.0.0-123",
+				registry + "goreleaser/test_run_pipe:v1",
+				registry + "goreleaser/test_run_pipe:v1.0",
+				registry + "goreleaser/test_run_pipe:commit-a1b2c3d4",
+				registry + "goreleaser/test_run_pipe:le-linux",
+				registry + "goreleaser/test_run_pipe:latest",
+				altRegistry + "goreleaser/test_run_pipe:v1.0.0-123",
+				altRegistry + "goreleaser/test_run_pipe:v1",
+				altRegistry + "goreleaser/test_run_pipe:v1.0",
+				altRegistry + "goreleaser/test_run_pipe:commit-a1b2c3d4",
+				altRegistry + "goreleaser/test_run_pipe:le-linux",
+				altRegistry + "goreleaser/test_run_pipe:latest",
+			},
+			assertImageLabels: shouldFindImagesWithLabels(
+				"label=org.label-schema.schema-version=1.0",
+				"label=org.label-schema.version=1.0.0",
+				"label=org.label-schema.vcs-ref=a1b2c3d4",
+				"label=org.label-schema.name=mybin"),
 			assertError: shouldNotErr,
 		},
 		"valid_skip_push": {
@@ -792,4 +850,50 @@ func inode(file string) uint64 {
 	}
 	stat := fileInfo.Sys().(*syscall.Stat_t)
 	return stat.Ino
+}
+
+func Test_parseRegistry(t *testing.T) {
+	tests := []struct {
+		input            string
+		expectedRegistry string
+		expectedImage    string
+	}{
+		{"image", "", "image"},
+		{"image:latest", "", "image:latest"},
+		{"image:v1", "", "image:v1"},
+		{"image:v1.0", "", "image:v1.0"},
+		{"image:v1.0.0", "", "image:v1.0.0"},
+		{"image:v1.0.0-RELEASE", "", "image:v1.0.0-RELEASE"},
+		{"username/image", "", "username/image"},
+		{"username/image:latest", "", "username/image:latest"},
+		{"username/image:v1", "", "username/image:v1"},
+		{"username/image:v1.0", "", "username/image:v1.0"},
+		{"username/image:v1.0.0", "", "username/image:v1.0.0"},
+		{"username/image:v1.0.0-RELEASE", "", "username/image:v1.0.0-RELEASE"},
+		{"docker.io/image", "docker.io/", "image"},
+		{"docker.io/image:latest", "docker.io/", "image:latest"},
+		{"docker.io/image:v1", "docker.io/", "image:v1"},
+		{"docker.io/image:v1.0", "docker.io/", "image:v1.0"},
+		{"docker.io/image:v1.0.0", "docker.io/", "image:v1.0.0"},
+		{"docker.io/image:v1.0.0-RELEASE", "docker.io/", "image:v1.0.0-RELEASE"},
+		{"docker.io/username/image", "docker.io/", "username/image"},
+		{"docker.io/username/image:latest", "docker.io/", "username/image:latest"},
+		{"docker.io/username/image:v1", "docker.io/", "username/image:v1"},
+		{"docker.io/username/image:v1.0", "docker.io/", "username/image:v1.0"},
+		{"docker.io/username/image:v1.0.0", "docker.io/", "username/image:v1.0.0"},
+		{"docker.io/username/image:v1.0.0-RELEASE", "docker.io/", "username/image:v1.0.0-RELEASE"},
+		{"localhost:5000/username/image", "localhost:5000/", "username/image"},
+		{"localhost:5000/username/image:latest", "localhost:5000/", "username/image:latest"},
+		{"localhost:5000/username/image:v1", "localhost:5000/", "username/image:v1"},
+		{"localhost:5000/username/image:v1.0", "localhost:5000/", "username/image:v1.0"},
+		{"localhost:5000/username/image:v1.0.0", "localhost:5000/", "username/image:v1.0.0"},
+		{"localhost:5000/username/image:v1.0.0-RELEASE", "localhost:5000/", "username/image:v1.0.0-RELEASE"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			registry, image := parseRegistry(tt.input)
+			assert.Equal(t, tt.expectedRegistry, registry)
+			assert.Equal(t, tt.expectedImage, image)
+		})
+	}
 }
