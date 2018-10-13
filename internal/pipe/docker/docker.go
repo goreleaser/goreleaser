@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/apex/log"
@@ -140,18 +141,26 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 }
 
 func processTagTemplates(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) ([]string, error) {
+	baseRegistry, baseImage := parseRegistry(docker.Image)
+	registries := []string{baseRegistry}
+	for _, addRegistry := range docker.AdditionalRegistries {
+		registries = append(registries, fmt.Sprintf("%s/", addRegistry))
+	}
+
 	// nolint:prealloc
 	var images []string
 	for _, tagTemplate := range docker.TagTemplates {
-		imageTemplate := fmt.Sprintf("%s:%s", docker.Image, tagTemplate)
-		// TODO: add overrides support to config
-		image, err := tmpl.New(ctx).
-			WithArtifact(artifact, map[string]string{}).
-			Apply(imageTemplate)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to execute tag template '%s'", tagTemplate)
+		for _, registry := range registries {
+			imageTemplate := fmt.Sprintf("%s%s:%s", registry, baseImage, tagTemplate)
+			// TODO: add overrides support to config
+			image, err := tmpl.New(ctx).
+				WithArtifact(artifact, map[string]string{}).
+				Apply(imageTemplate)
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to execute tag template '%s'", tagTemplate)
+			}
+			images = append(images, image)
 		}
-		images = append(images, image)
 	}
 	return images, nil
 }
@@ -265,4 +274,10 @@ func dockerPush(ctx *context.Context, docker config.Docker, image string) error 
 		Goarm:  docker.Goarm,
 	})
 	return nil
+}
+
+func parseRegistry(image string) (string, string) {
+	registryMatcher := regexp.MustCompile(`(\w+[.:]\w+/)?(.*)`)
+	result := registryMatcher.FindStringSubmatch(image)
+	return result[1], result[2]
 }
