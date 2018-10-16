@@ -44,11 +44,8 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Run the pipe
-func (Pipe) Run(ctx *context.Context) error {
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
+// Publish to S3
+func (Pipe) Publish(ctx *context.Context) error {
 	if len(ctx.Config.S3) == 0 {
 		return pipe.Skip("s3 section is not configured")
 	}
