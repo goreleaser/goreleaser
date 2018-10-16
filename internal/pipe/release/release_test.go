@@ -49,7 +49,7 @@ func TestRunPipe(t *testing.T) {
 		Path: debfile.Name(),
 	})
 	client := &DummyClient{}
-	assert.NoError(t, doRun(ctx, client))
+	assert.NoError(t, doPublish(ctx, client))
 	assert.True(t, client.CreatedRelease)
 	assert.True(t, client.UploadedFile)
 	assert.Contains(t, client.UploadedFileNames, "bin.deb")
@@ -70,7 +70,7 @@ func TestRunPipeReleaseCreationFailed(t *testing.T) {
 	client := &DummyClient{
 		FailToCreateRelease: true,
 	}
-	assert.Error(t, doRun(ctx, client))
+	assert.Error(t, doPublish(ctx, client))
 	assert.False(t, client.CreatedRelease)
 	assert.False(t, client.UploadedFile)
 }
@@ -92,7 +92,7 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 		Path: "/nope/nope/nope",
 	})
 	client := &DummyClient{}
-	assert.Error(t, doRun(ctx, client))
+	assert.Error(t, doPublish(ctx, client))
 	assert.True(t, client.CreatedRelease)
 	assert.False(t, client.UploadedFile)
 }
@@ -120,7 +120,7 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	client := &DummyClient{
 		FailToUpload: true,
 	}
-	assert.Error(t, doRun(ctx, client))
+	assert.Error(t, doPublish(ctx, client))
 	assert.True(t, client.CreatedRelease)
 	assert.False(t, client.UploadedFile)
 }
@@ -131,7 +131,7 @@ func TestSnapshot(t *testing.T) {
 		Parallelism: 1,
 	}
 	client := &DummyClient{}
-	testlib.AssertSkipped(t, doRun(ctx, client))
+	testlib.AssertSkipped(t, doPublish(ctx, client))
 	assert.False(t, client.CreatedRelease)
 	assert.False(t, client.UploadedFile)
 }
@@ -143,7 +143,7 @@ func TestPipeDisabled(t *testing.T) {
 		},
 	})
 	client := &DummyClient{}
-	testlib.AssertSkipped(t, doRun(ctx, client))
+	testlib.AssertSkipped(t, doPublish(ctx, client))
 	assert.False(t, client.CreatedRelease)
 	assert.False(t, client.UploadedFile)
 }
