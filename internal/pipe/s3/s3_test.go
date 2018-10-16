@@ -24,7 +24,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestNoS3(t *testing.T) {
-	testlib.AssertSkipped(t, Pipe{}.Run(context.New(config.Project{})))
+	testlib.AssertSkipped(t, Pipe{}.Publish(context.New(config.Project{})))
 }
 
 func TestDefaultsNoS3(t *testing.T) {
@@ -79,7 +79,7 @@ func TestSkipPublish(t *testing.T) {
 	})
 	ctx.SkipPublish = true
 	require.NoError(t, Pipe{}.Default(ctx))
-	err = Pipe{}.Run(ctx)
+	err = Pipe{}.Publish(ctx)
 	assert.True(t, pipe.IsSkip(err))
 	assert.EqualError(t, err, pipe.ErrSkipPublishEnabled.Error())
 }
@@ -116,7 +116,7 @@ func TestUpload(t *testing.T) {
 	defer stop(t)
 	setCredentials(t)
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Publish(ctx))
 }
 
 func setCredentials(t *testing.T) {
