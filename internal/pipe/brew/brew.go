@@ -10,7 +10,6 @@ import (
 	"text/template"
 
 	"github.com/apex/log"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/pipe"

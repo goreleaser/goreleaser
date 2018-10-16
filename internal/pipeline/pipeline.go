@@ -19,7 +19,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
 	"github.com/goreleaser/goreleaser/internal/pipe/put"
-	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/pipe/s3"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
@@ -53,6 +52,5 @@ var Pipeline = []Piper{
 	artifactory.Pipe{},     // push to artifactory
 	put.Pipe{},             // upload to http server
 	s3.Pipe{},              // push to s3/minio
-	release.Pipe{},         // release to github
 	publish.Pipe{},         // publishes artifacts
 }

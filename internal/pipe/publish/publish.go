@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
+	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/pkg/errors"
@@ -29,6 +30,7 @@ type Publisher interface {
 }
 
 var publishers = []Publisher{
+	release.Pipe{},
 	brew.Pipe{},
 	scoop.Pipe{},
 }
