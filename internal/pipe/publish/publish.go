@@ -7,6 +7,7 @@ import (
 	"github.com/apex/log"
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/put"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
@@ -34,6 +35,7 @@ type Publisher interface {
 var publishers = []Publisher{
 	s3.Pipe{},
 	put.Pipe{},
+	artifactory.Pipe{},
 	release.Pipe{},
 	brew.Pipe{},
 	scoop.Pipe{},
