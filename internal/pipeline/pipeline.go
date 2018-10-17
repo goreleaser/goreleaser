@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
-	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/internal/pipe/before"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/changelog"
@@ -47,6 +46,5 @@ var Pipeline = []Piper{
 	checksums.Pipe{},       // checksums of the files
 	sign.Pipe{},            // sign artifacts
 	docker.Pipe{},          // create and push docker images
-	artifactory.Pipe{},     // push to artifactory
 	publish.Pipe{},         // publishes artifacts
 }
