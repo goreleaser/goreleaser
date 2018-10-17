@@ -50,9 +50,6 @@ func doPublish(ctx *context.Context, c client.Client) error {
 	if ctx.Config.Release.Disable {
 		return pipe.Skip("release pipe is disabled")
 	}
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
 	log.WithField("tag", ctx.Git.CurrentTag).
 		WithField("repo", ctx.Config.Release.GitHub.String()).
 		Info("creating or updating release")
