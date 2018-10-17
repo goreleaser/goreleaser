@@ -25,7 +25,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Publish artifacts
 func (Pipe) Publish(ctx *context.Context) error {
-
 	if len(ctx.Config.Puts) == 0 {
 		return pipe.Skip("put section is not configured")
 	}

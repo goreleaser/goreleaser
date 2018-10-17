@@ -125,17 +125,6 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	assert.False(t, client.UploadedFile)
 }
 
-func TestSnapshot(t *testing.T) {
-	var ctx = &context.Context{
-		SkipPublish: true,
-		Parallelism: 1,
-	}
-	client := &DummyClient{}
-	testlib.AssertSkipped(t, doPublish(ctx, client))
-	assert.False(t, client.CreatedRelease)
-	assert.False(t, client.UploadedFile)
-}
-
 func TestPipeDisabled(t *testing.T) {
 	var ctx = context.New(config.Project{
 		Release: config.Release{
