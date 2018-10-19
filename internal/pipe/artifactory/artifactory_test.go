@@ -203,7 +203,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		})
 	}
 
-	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Publish(ctx))
 }
 
 func TestRunPipe_ModeArchive(t *testing.T) {
@@ -300,7 +300,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		uploads.Store("deb", true)
 	})
 
-	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Publish(ctx))
 	_, ok := uploads.Load("targz")
 	assert.True(t, ok, "tar.gz file was not uploaded")
 	_, ok = uploads.Load("deb")
@@ -334,7 +334,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
-	err = Pipe{}.Run(ctx)
+	err = Pipe{}.Publish(ctx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "connection refused")
 }
@@ -369,7 +369,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: error while building the target url: template: mybin:1: unexpected "/" in operand`)
+	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: error while building the target url: template: mybin:1: unexpected "/" in operand`)
 }
 
 func TestRunPipe_BadCredentials(t *testing.T) {
@@ -425,7 +425,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	err = Pipe{}.Run(ctx)
+	err = Pipe{}.Publish(ctx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Bad credentials")
 }
@@ -482,7 +482,7 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: invalid character '.' looking for beginning of value`)
+	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: invalid character '.' looking for beginning of value`)
 }
 
 func TestRunPipe_UnparsableResponse(t *testing.T) {
@@ -536,7 +536,7 @@ func TestRunPipe_UnparsableResponse(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: invalid character 'i' looking for beginning of value`)
+	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: invalid character 'i' looking for beginning of value`)
 }
 
 func TestRunPipe_FileNotFound(t *testing.T) {
@@ -563,7 +563,7 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Run(ctx), `open archivetest/dist/mybin/mybin: no such file or directory`)
+	assert.EqualError(t, Pipe{}.Publish(ctx), `open archivetest/dist/mybin/mybin: no such file or directory`)
 }
 
 func TestRunPipe_UnparsableTarget(t *testing.T) {
@@ -600,7 +600,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: parse ://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin: missing protocol scheme`)
+	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: parse ://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin: missing protocol scheme`)
 }
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
@@ -619,7 +619,7 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 	}
 	ctx.SkipPublish = true
 
-	err := Pipe{}.Run(ctx)
+	err := Pipe{}.Publish(ctx)
 	assert.True(t, pipe.IsSkip(err))
 	assert.EqualError(t, err, pipe.ErrSkipPublishEnabled.Error())
 }
@@ -655,7 +655,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Run(ctx), `artifactory: upload failed: the asset to upload can't be a directory`)
+	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: the asset to upload can't be a directory`)
 }
 
 func TestDescription(t *testing.T) {
@@ -663,7 +663,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestNoArtifactories(t *testing.T) {
-	assert.True(t, pipe.IsSkip(Pipe{}.Run(context.New(config.Project{}))))
+	assert.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{}))))
 }
 
 func TestArtifactoriesWithoutTarget(t *testing.T) {
@@ -681,7 +681,7 @@ func TestArtifactoriesWithoutTarget(t *testing.T) {
 		},
 	}
 
-	assert.True(t, pipe.IsSkip(Pipe{}.Run(ctx)))
+	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestArtifactoriesWithoutUsername(t *testing.T) {
@@ -699,11 +699,11 @@ func TestArtifactoriesWithoutUsername(t *testing.T) {
 		},
 	}
 
-	assert.True(t, pipe.IsSkip(Pipe{}.Run(ctx)))
+	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestArtifactoriesWithoutName(t *testing.T) {
-	assert.True(t, pipe.IsSkip(Pipe{}.Run(context.New(config.Project{
+	assert.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{
 		Artifactories: []config.Put{
 			{
 				Username: "deployuser",
@@ -714,7 +714,7 @@ func TestArtifactoriesWithoutName(t *testing.T) {
 }
 
 func TestArtifactoriesWithoutSecret(t *testing.T) {
-	assert.True(t, pipe.IsSkip(Pipe{}.Run(context.New(config.Project{
+	assert.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{
 		Artifactories: []config.Put{
 			{
 				Name:     "production",
@@ -741,7 +741,7 @@ func TestArtifactoriesWithInvalidMode(t *testing.T) {
 			},
 		},
 	}
-	assert.Error(t, Pipe{}.Run(ctx))
+	assert.Error(t, Pipe{}.Publish(ctx))
 }
 
 func TestDefault(t *testing.T) {

@@ -11,12 +11,10 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestDescription(t *testing.T) {
@@ -24,7 +22,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestNoS3(t *testing.T) {
-	testlib.AssertSkipped(t, Pipe{}.Run(context.New(config.Project{})))
+	testlib.AssertSkipped(t, Pipe{}.Publish(context.New(config.Project{})))
 }
 
 func TestDefaultsNoS3(t *testing.T) {
@@ -54,34 +52,6 @@ func TestDefaults(t *testing.T) {
 		Folder: "{{ .ProjectName }}/{{ .Tag }}",
 		ACL:    "private",
 	}}, ctx.Config.S3)
-}
-
-func TestSkipPublish(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
-	artifactPath := filepath.Join(folder, "foo.tar.gz")
-	require.NoError(t, ioutil.WriteFile(artifactPath, []byte("fake\ntargz"), 0744))
-	var ctx = context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "testupload",
-		S3: []config.S3{
-			{
-				Bucket:   "test",
-				Endpoint: "http://fake.s3.example",
-			},
-		},
-	})
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Artifacts.Add(artifact.Artifact{
-		Type: artifact.UploadableArchive,
-		Name: "foo.tar.gz",
-		Path: artifactPath,
-	})
-	ctx.SkipPublish = true
-	require.NoError(t, Pipe{}.Default(ctx))
-	err = Pipe{}.Run(ctx)
-	assert.True(t, pipe.IsSkip(err))
-	assert.EqualError(t, err, pipe.ErrSkipPublishEnabled.Error())
 }
 
 func TestUpload(t *testing.T) {
@@ -116,7 +86,7 @@ func TestUpload(t *testing.T) {
 	defer stop(t)
 	setCredentials(t)
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Publish(ctx))
 }
 
 func setCredentials(t *testing.T) {
