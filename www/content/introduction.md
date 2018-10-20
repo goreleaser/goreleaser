@@ -29,6 +29,12 @@ There are three ways to get going install GoReleaser:
 brew install goreleaser/tap/goreleaser
 ```
 
+### Using snapcraft
+
+```sh
+snap install goreleaser
+```
+
 ### Using Scoop
 
 ```sh
