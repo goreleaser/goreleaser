@@ -54,7 +54,7 @@ const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arc
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "creating Linux packages with snapcraft"
+	return "Snapcraft Packages"
 }
 
 // Default sets the pipe defaults
@@ -208,6 +208,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 }
 
 func push(ctx *context.Context, snap artifact.Artifact) error {
+	log.WithField("snap", snap.Name).Info("pushing")
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "snapcraft", "push", "--release=stable", snap.Path)
 	if out, err := cmd.CombinedOutput(); err != nil {
