@@ -208,6 +208,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 }
 
 func push(ctx *context.Context, snap artifact.Artifact) error {
+	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "snapcraft", "push", "--release=stable", snap.Path)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to push %s package: %s", snap.Path, string(out))
