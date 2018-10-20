@@ -283,7 +283,7 @@ func dockerTag(ctx *context.Context, image, tag string) error {
 }
 
 func dockerPush(ctx *context.Context, image artifact.Artifact) error {
-	log.WithField("image", image).Info("pushing docker image")
+	log.WithField("image", image.Name).Info("pushing docker image")
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "docker", "push", image.Name)
 	log.WithField("cmd", cmd.Args).Debug("running")
