@@ -70,21 +70,21 @@ func TestRunPipe(t *testing.T) {
 	var shouldNotErr = func(t *testing.T, err error) {
 		require.NoError(t, err)
 	}
-	type imageLabelFinder func(*testing.T, int, string)
-	var shouldFindImagesWithLabels = func(filters ...string) func(*testing.T, int, string) {
-		return func(t *testing.T, numTags int, image string) {
+	type imageLabelFinder func(*testing.T, int)
+	var shouldFindImagesWithLabels = func(image string, filters ...string) func(*testing.T, int) {
+		return func(t *testing.T, count int) {
 			for _, filter := range filters {
 				output, err := exec.Command("docker", "images", "--filter", filter).CombinedOutput()
 				require.NoError(t, err)
 
 				matcher := regexp.MustCompile(image)
 				matches := matcher.FindAllStringIndex(string(output), -1)
-				require.Equal(t, numTags, len(matches))
+				require.Equal(t, count, len(matches))
 			}
 		}
 
 	}
-	var noLabels = func(t *testing.T, numTags int, image string) {}
+	var noLabels = func(t *testing.T, count int) {}
 
 	var table = map[string]struct {
 		dockers           []config.Docker
@@ -97,19 +97,24 @@ func TestRunPipe(t *testing.T) {
 			publish: true,
 			dockers: []config.Docker{
 				{
-					Image:      registry + "goreleaser/test_run_pipe",
+					ImageTemplates: []string{
+						registry + "goreleaser/test_run_pipe:{{.Tag}}-{{.Env.FOO}}",
+						registry + "goreleaser/test_run_pipe:v{{.Major}}",
+						registry + "goreleaser/test_run_pipe:v{{.Major}}.{{.Minor}}",
+						registry + "goreleaser/test_run_pipe:commit-{{.Commit}}",
+						registry + "goreleaser/test_run_pipe:le-{{.Os}}",
+						registry + "goreleaser/test_run_pipe:latest",
+						altRegistry + "goreleaser/test_run_pipe:{{.Tag}}-{{.Env.FOO}}",
+						altRegistry + "goreleaser/test_run_pipe:v{{.Major}}",
+						altRegistry + "goreleaser/test_run_pipe:v{{.Major}}.{{.Minor}}",
+						altRegistry + "goreleaser/test_run_pipe:commit-{{.Commit}}",
+						altRegistry + "goreleaser/test_run_pipe:le-{{.Os}}",
+						altRegistry + "goreleaser/test_run_pipe:latest",
+					},
 					Goos:       "linux",
 					Goarch:     "amd64",
 					Dockerfile: "testdata/Dockerfile",
 					Binary:     "mybin",
-					TagTemplates: []string{
-						"{{.Tag}}-{{.Env.FOO}}",
-						"v{{.Major}}",
-						"v{{.Major}}.{{.Minor}}",
-						"commit-{{.Commit}}",
-						"le-{{.Os}}",
-						"latest",
-					},
 					BuildFlagTemplates: []string{
 						"--label=org.label-schema.schema-version=1.0",
 						"--label=org.label-schema.version={{.Version}}",
@@ -129,12 +134,47 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/test_run_pipe:commit-a1b2c3d4",
 				registry + "goreleaser/test_run_pipe:le-linux",
 				registry + "goreleaser/test_run_pipe:latest",
+				altRegistry + "goreleaser/test_run_pipe:v1.0.0-123",
+				altRegistry + "goreleaser/test_run_pipe:v1",
+				altRegistry + "goreleaser/test_run_pipe:v1.0",
+				altRegistry + "goreleaser/test_run_pipe:commit-a1b2c3d4",
+				altRegistry + "goreleaser/test_run_pipe:le-linux",
+				altRegistry + "goreleaser/test_run_pipe:latest",
 			},
 			assertImageLabels: shouldFindImagesWithLabels(
+				"goreleaser/test_run_pipe",
 				"label=org.label-schema.schema-version=1.0",
 				"label=org.label-schema.version=1.0.0",
 				"label=org.label-schema.vcs-ref=a1b2c3d4",
 				"label=org.label-schema.name=mybin"),
+			assertError: shouldNotErr,
+		},
+		"with deprecated image name & tag templates": {
+			publish: true,
+			dockers: []config.Docker{
+				{
+					Image:      registry + "goreleaser/test_run_pipe",
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binary:     "mybin",
+					TagTemplates: []string{
+						"{{.Tag}}-{{.Env.FOO}}",
+						"v{{.Major}}.{{.Minor}}",
+					},
+					BuildFlagTemplates: []string{
+						"--label=org.label-schema.version={{.Version}}",
+					},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_run_pipe:v1.0.0-123",
+				registry + "goreleaser/test_run_pipe:v1.0",
+			},
+			assertImageLabels: shouldFindImagesWithLabels(
+				"goreleaser/test_run_pipe",
+				"label=org.label-schema.version=1.0.0",
+			),
 			assertError: shouldNotErr,
 		},
 		"multiple images with same extra file": {
@@ -199,57 +239,6 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/test_run_pipe:latest",
 				registry + "goreleaser/test_run_pipe2:latest",
 			},
-			assertError: shouldNotErr,
-		},
-		"multiple registries": {
-			publish: true,
-			dockers: []config.Docker{
-				{
-					Image:                registry + "goreleaser/test_run_pipe",
-					Goos:                 "linux",
-					Goarch:               "amd64",
-					Dockerfile:           "testdata/Dockerfile",
-					Binary:               "mybin",
-					AdditionalRegistries: []string{"localhost:5050"},
-					TagTemplates: []string{
-						"{{.Tag}}-{{.Env.FOO}}",
-						"v{{.Major}}",
-						"v{{.Major}}.{{.Minor}}",
-						"commit-{{.Commit}}",
-						"le-{{.Os}}",
-						"latest",
-					},
-					BuildFlagTemplates: []string{
-						"--label=org.label-schema.schema-version=1.0",
-						"--label=org.label-schema.version={{.Version}}",
-						"--label=org.label-schema.vcs-ref={{.Commit}}",
-						"--label=org.label-schema.name={{.ProjectName}}",
-						"--build-arg=FRED={{.Tag}}",
-					},
-					Files: []string{
-						"testdata/extra_file.txt",
-					},
-				},
-			},
-			expect: []string{
-				registry + "goreleaser/test_run_pipe:v1.0.0-123",
-				registry + "goreleaser/test_run_pipe:v1",
-				registry + "goreleaser/test_run_pipe:v1.0",
-				registry + "goreleaser/test_run_pipe:commit-a1b2c3d4",
-				registry + "goreleaser/test_run_pipe:le-linux",
-				registry + "goreleaser/test_run_pipe:latest",
-				altRegistry + "goreleaser/test_run_pipe:v1.0.0-123",
-				altRegistry + "goreleaser/test_run_pipe:v1",
-				altRegistry + "goreleaser/test_run_pipe:v1.0",
-				altRegistry + "goreleaser/test_run_pipe:commit-a1b2c3d4",
-				altRegistry + "goreleaser/test_run_pipe:le-linux",
-				altRegistry + "goreleaser/test_run_pipe:latest",
-			},
-			assertImageLabels: shouldFindImagesWithLabels(
-				"label=org.label-schema.schema-version=1.0",
-				"label=org.label-schema.version=1.0.0",
-				"label=org.label-schema.vcs-ref=a1b2c3d4",
-				"label=org.label-schema.name=mybin"),
 			assertError: shouldNotErr,
 		},
 		"valid_skip_push": {
@@ -619,8 +608,13 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			docker.assertError(tt, Pipe{}.Run(ctx))
+
 			for _, d := range docker.dockers {
-				docker.assertImageLabels(tt, len(d.TagTemplates), d.Image)
+				if d.ImageTemplates == nil {
+					docker.assertImageLabels(tt, len(d.TagTemplates))
+				} else {
+					docker.assertImageLabels(tt, len(d.ImageTemplates))
+				}
 			}
 
 			// this might should not fail as the image should have been created when
@@ -722,7 +716,7 @@ func TestDefault(t *testing.T) {
 	assert.Equal(t, "amd64", docker.Goarch)
 	assert.Equal(t, ctx.Config.Builds[0].Binary, docker.Binary)
 	assert.Equal(t, "Dockerfile", docker.Dockerfile)
-	assert.Equal(t, []string{"{{ .Version }}"}, docker.TagTemplates)
+	assert.Equal(t, []string{":{{ .Version }}"}, docker.ImageTemplates)
 
 }
 
@@ -755,8 +749,83 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "windows", docker.Goos)
 	assert.Equal(t, "i386", docker.Goarch)
 	assert.Equal(t, "bar", docker.Binary)
-	assert.Equal(t, []string{"{{ .Version }}"}, docker.TagTemplates)
+	assert.Equal(t, []string{":{{ .Version }}"}, docker.ImageTemplates)
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
+}
+
+func Test_processImageTemplates(t *testing.T) {
+
+	var table = map[string]struct {
+		image          string
+		tagTemplates   []string
+		imageTemplates []string
+		expectImages   []string
+	}{
+		"default": {
+			expectImages: []string{":1.0.0"},
+		},
+		"with tag template": {
+			tagTemplates: []string{"{{.Tag}}-{{.Env.FOO}}"},
+			expectImages: []string{":1.0.0", ":v1.0.0-123"},
+		},
+		"with tag templates": {
+			tagTemplates: []string{"{{.Tag}}-{{.Env.FOO}}", "v{{.Major}}.{{.Minor}}"},
+			expectImages: []string{":1.0.0", ":v1.0.0-123", ":v1.0"},
+		},
+		"with image name": {
+			image:        "my/image",
+			expectImages: []string{"my/image:1.0.0"},
+		},
+		"with image name and tag templates": {
+			image:        "my/image",
+			tagTemplates: []string{"{{.Tag}}-{{.Env.FOO}}", "v{{.Major}}.{{.Minor}}"},
+			expectImages: []string{"my/image:1.0.0", "my/image:v1.0.0-123", "my/image:v1.0"},
+		},
+		"with image templates": {
+			imageTemplates: []string{"gcr.io/image:{{.Tag}}-{{.Env.FOO}}", "gcr.io/image:v{{.Major}}.{{.Minor}}"},
+			expectImages:   []string{"gcr.io/image:v1.0.0-123", "gcr.io/image:v1.0"},
+		},
+	}
+
+	for name, tt := range table {
+		t.Run(name, func(t *testing.T) {
+
+			var ctx = &context.Context{
+				Config: config.Project{
+					Dockers: []config.Docker{
+						{
+							Binary:         "foo",
+							Image:          tt.image,
+							Dockerfile:     "Dockerfile.foo",
+							ImageTemplates: tt.imageTemplates,
+							SkipPush:       true,
+							TagTemplates:   tt.tagTemplates,
+						},
+					},
+				},
+			}
+			ctx.SkipPublish = true
+			ctx.Env = map[string]string{
+				"FOO": "123",
+			}
+			ctx.Version = "1.0.0"
+			ctx.Git = context.GitInfo{
+				CurrentTag: "v1.0.0",
+				Commit:     "a1b2c3d4",
+			}
+
+			assert.NoError(t, Pipe{}.Default(ctx))
+			assert.Len(t, ctx.Config.Dockers, 1)
+
+			docker := ctx.Config.Dockers[0]
+			assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
+
+			images, err := processImageTemplates(ctx, docker, artifact.Artifact{})
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expectImages, images)
+		})
+	}
+
 }
 
 func TestLinkFile(t *testing.T) {
