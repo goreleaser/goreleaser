@@ -17,9 +17,12 @@ If you have only one `build` setup,
 the configuration is as easy as adding the
 name of your image to your `.goreleaser.yml` file:
 
+The docker image declaration supports templating. Learn more about the [name template engine](/templates).
+
 ```yaml
 dockers:
-  - image: user/repo
+  - image_templates:
+    - user/repo
 ```
 
 You also need to create a `Dockerfile` in your project's root folder:
@@ -53,23 +56,18 @@ dockers:
     goarm: ''
     # Name of the built binary that should be used.
     binary: mybinary
-    # Template of the Docker image name.
-    image: myuser/myimage
-    # Publish to additional registries.
-    additional_registries:
-    - "gcr.io"
-    - "localhost:5000"
+    # Templates of the Docker image names.
+    image_templates:
+    - "myuser/myimage:latest"
+    - "myuser/myimage:{{ .Tag }}"
+    - "myuser/myimage:{{ .Tag }}-{{ .Env.GO_VERSION }}"
+    - "myuser/myimage:v{{ .Major }}"
+    - "gcr.io/myuser/myimage:latest"
     # Skips the docker push. Could be useful if you also do draft releases.
     # Defaults to false.
     skip_push: false
     # Path to the Dockerfile (from the project root).
     dockerfile: Dockerfile 
-    # Template of the docker tag. Defaults to `{{ .Version }}`.
-    tag_templates:
-    - "{{ .Tag }}"
-    - "{{ .Tag }}-{{ .Env.GO_VERSION }}"
-    - "v{{ .Major }}"
-    - latest
     # Template of the docker build flags.
     build_flag_templates:
     - "--label=org.label-schema.schema-version=1.0"
@@ -99,7 +97,8 @@ project: foo
 dockers:
   -
     binary: mybinary
-    image: myuser/{{.ProjectName}}
+    image_templates:
+    - "myuser/{{.ProjectName}}"
 ```
 
 This will build and public the following images:
@@ -112,19 +111,18 @@ This will build and public the following images:
 
 Some users might want to when version to push docker tags `:v1`, `:v1.6`,
 `:v1.6.4` and `:latest` when `v1.6.4` (for example) is built. That can be
-accomplished by using multiple `tag_templates`:
+accomplished by using multiple `image_templates`:
 
 ```yaml
 # .goreleaser.yml
 dockers:
   -
     binary: mybinary
-    image: myuser/myimage
-    tag_templates:
-    - "{{ .Tag }}"
-    - "v{{ .Major }}"
-    - "v{{ .Major }}.{{ .Minor }}"
-    - latest
+    image_templates:
+    - "myuser/myimage:{{ .Tag }}"
+    - "myuser/myimage:v{{ .Major }}"
+    - "myuser/myimage:v{{ .Major }}.{{ .Minor }}"
+    - "myuser/myimage:latest"
 ```
 
 This will build and publish the following images:
@@ -139,6 +137,29 @@ with multiple tags.
 
 > Learn more about the [name template engine](/templates).
 
+## Publishing to multiple docker registries
+
+Some users might want to push images to multiple docker registries. That can be
+accomplished by using multiple `image_templates`:
+
+```yaml
+# .goreleaser.yml
+dockers:
+  -
+    binary: mybinary
+    image_templates:
+    - "docker.io/myuser/myimage:{{ .Tag }}"
+    - "docker.io/myuser/myimage:latest"
+    - "gcr.io/myuser/myimage:{{ .Tag }}"
+    - "gcr.io/myuser/myimage:latest"
+```
+
+This will build and publish the following images to `docker.io` and `gcr.io`:
+
+- `myuser/myimage:v1.6.4`
+- `myuser/myimage:latest`
+
+
 ## Applying docker build flags
 
 Build flags can be applied using `build_flag_templates`. The flags must be
@@ -149,7 +170,8 @@ valid docker build flags.
 dockers:
   -
     binary: mybinary
-    image: myuser/myimage
+    image_templates:
+        - "myuser/myimage"
     build_flag_templates:
     - "--label=org.label-schema.schema-version=1.0"
     - "--label=org.label-schema.version={{.Version}}"
