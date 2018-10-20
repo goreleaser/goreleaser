@@ -22,5 +22,8 @@ func TestPublishDisable(t *testing.T) {
 func TestPublish(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.Config.Release.Disable = true
+	for i := range ctx.Config.Dockers {
+		ctx.Config.Dockers[i].SkipPush = true
+	}
 	require.NoError(t, Pipe{}.Run(ctx))
 }
