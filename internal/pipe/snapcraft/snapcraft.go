@@ -109,9 +109,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	for _, snap := range snaps {
 		snap := snap
 		g.Go(func() error {
-			// TODO
-			log.Info(snap.Path)
-			return nil
+			return push(ctx, snap)
 		})
 	}
 	return g.Wait()
@@ -203,5 +201,15 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		Goarch: binaries[0].Goarch,
 		Goarm:  binaries[0].Goarm,
 	})
+	return nil
+}
+
+func push(ctx *context.Context, snap artifact.Artifact) error {
+	var cmd = exec.CommandContext(ctx, "snapcraft", "push", "--release=stable", snap.Path)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to push %s package: %s", snap.Path, string(out))
+	}
+	snap.Type = artifact.Snapcraft
+	ctx.Artifacts.Add(snap)
 	return nil
 }
