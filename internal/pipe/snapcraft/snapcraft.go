@@ -11,14 +11,13 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // ErrNoSnapcraft is shown when snapcraft cannot be found in $PATH
@@ -103,6 +102,21 @@ func (Pipe) Run(ctx *context.Context) error {
 	return g.Wait()
 }
 
+// Publish packages
+func (Pipe) Publish(ctx *context.Context) error {
+	snaps := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List()
+	var g = semerrgroup.New(ctx.Parallelism)
+	for _, snap := range snaps {
+		snap := snap
+		g.Go(func() error {
+			// TODO
+			log.Info(snap.Path)
+			return nil
+		})
+	}
+	return g.Wait()
+}
+
 func create(ctx *context.Context, arch string, binaries []artifact.Artifact) error {
 	var log = log.WithField("arch", arch)
 	folder, err := tmpl.New(ctx).
@@ -182,7 +196,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		return fmt.Errorf("failed to generate snap package: %s", string(out))
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
-		Type:   artifact.LinuxPackage,
+		Type:   artifact.PublishableSnapcraft,
 		Name:   folder + ".snap",
 		Path:   snap,
 		Goos:   binaries[0].Goos,

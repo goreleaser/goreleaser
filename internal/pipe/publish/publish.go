@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/pipe/s3"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
+	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/pkg/errors"
 )
@@ -41,6 +42,7 @@ var publishers = []Publisher{
 	brew.Pipe{},
 	scoop.Pipe{},
 	docker.Pipe{},
+	snapcraft.Pipe{},
 }
 
 var bold = color.New(color.Bold)
