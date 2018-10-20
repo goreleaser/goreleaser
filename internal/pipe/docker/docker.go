@@ -3,6 +3,7 @@ package docker
 
 import (
 	"fmt"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -35,8 +36,14 @@ func (Pipe) String() string {
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Dockers {
 		var docker = &ctx.Config.Dockers[i]
-		if len(docker.TagTemplates) == 0 {
-			docker.TagTemplates = append(docker.TagTemplates, "{{ .Version }}")
+		if docker.Image != "" {
+			deprecate.Notice("docker.image")
+		}
+		if len(docker.TagTemplates) != 0 {
+			deprecate.Notice("docker.tag_templates")
+		}
+		if len(docker.ImageTemplates) == 0 {
+			docker.ImageTemplates = append(docker.ImageTemplates, fmt.Sprintf("%s:{{ .Version }}", docker.Image))
 		}
 		if docker.Goos == "" {
 			docker.Goos = "linux"
@@ -60,7 +67,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if len(ctx.Config.Dockers) == 0 || ctx.Config.Dockers[0].Image == "" {
+	if len(ctx.Config.Dockers) == 0 || missingImage(ctx) {
 		return pipe.Skip("docker section is not configured")
 	}
 	_, err := exec.LookPath("docker")
@@ -68,6 +75,10 @@ func (Pipe) Run(ctx *context.Context) error {
 		return ErrNoDocker
 	}
 	return doRun(ctx)
+}
+
+func missingImage(ctx *context.Context) bool {
+	return ctx.Config.Dockers[0].Image == "" && len(ctx.Config.Dockers[0].ImageTemplates) == 0
 }
 
 func doRun(ctx *context.Context) error {
@@ -107,7 +118,8 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 	}
 	log.Debug("tempdir: " + tmp)
 
-	images, err := processTagTemplates(ctx, docker, artifact)
+	images, err := processImageTemplates(ctx, docker, artifact)
+	log.Infof("processed images: %s", images)
 	if err != nil {
 		return err
 	}
@@ -140,28 +152,33 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 	return publish(ctx, docker, images)
 }
 
-func processTagTemplates(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) ([]string, error) {
-	baseRegistry, baseImage := parseRegistry(docker.Image)
-	registries := []string{baseRegistry}
-	for _, addRegistry := range docker.AdditionalRegistries {
-		registries = append(registries, fmt.Sprintf("%s/", addRegistry))
-	}
-
+func processImageTemplates(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) ([]string, error) {
 	// nolint:prealloc
 	var images []string
-	for _, tagTemplate := range docker.TagTemplates {
-		for _, registry := range registries {
-			imageTemplate := fmt.Sprintf("%s%s:%s", registry, baseImage, tagTemplate)
-			// TODO: add overrides support to config
-			image, err := tmpl.New(ctx).
-				WithArtifact(artifact, map[string]string{}).
-				Apply(imageTemplate)
-			if err != nil {
-				return nil, errors.Wrapf(err, "failed to execute tag template '%s'", tagTemplate)
-			}
-			images = append(images, image)
+	for _, imageTemplate := range docker.ImageTemplates {
+		// TODO: add overrides support to config
+		image, err := tmpl.New(ctx).
+			WithArtifact(artifact, map[string]string{}).
+			Apply(imageTemplate)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to execute image template '%s'", imageTemplate)
 		}
+
+		images = append(images, image)
 	}
+
+	for _, tagTemplate := range docker.TagTemplates {
+		imageTemplate := fmt.Sprintf("%s:%s", docker.Image, tagTemplate)
+		// TODO: add overrides support to config
+		image, err := tmpl.New(ctx).
+			WithArtifact(artifact, map[string]string{}).
+			Apply(imageTemplate)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to execute tag template '%s'", tagTemplate)
+		}
+		images = append(images, image)
+	}
+
 	return images, nil
 }
 
