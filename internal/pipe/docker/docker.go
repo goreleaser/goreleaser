@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/apex/log"
@@ -291,10 +290,4 @@ func dockerPush(ctx *context.Context, docker config.Docker, image string) error 
 		Goarm:  docker.Goarm,
 	})
 	return nil
-}
-
-func parseRegistry(image string) (string, string) {
-	registryMatcher := regexp.MustCompile(`(\w+[.:]\w+/)?(.*)`)
-	result := registryMatcher.FindStringSubmatch(image)
-	return result[1], result[2]
 }
