@@ -193,6 +193,9 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 	if out, err = cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to generate snap package: %s", string(out))
 	}
+	if !ctx.Config.Snapcraft.Publish {
+		return nil
+	}
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type:   artifact.PublishableSnapcraft,
 		Name:   folder + ".snap",

@@ -217,6 +217,7 @@ type SnapcraftAppMetadata struct {
 type Snapcraft struct {
 	NameTemplate string            `yaml:"name_template,omitempty"`
 	Replacements map[string]string `yaml:",omitempty"`
+	Publish      bool              `yaml:",omitempty"`
 
 	Name        string                          `yaml:",omitempty"`
 	Summary     string                          `yaml:",omitempty"`
