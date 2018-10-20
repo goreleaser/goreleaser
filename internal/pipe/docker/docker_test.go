@@ -498,6 +498,24 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels: noLabels,
 			assertError:       shouldErr(`0 binaries match docker definition: mybinnnn: darwin_amd64_`),
 		},
+		"mixed image and image template": {
+			publish: true,
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/test_run_pipe:latest",
+					},
+					Image:        registry + "goreleaser/test_run_pipe",
+					Goos:         "darwin",
+					Goarch:       "amd64",
+					Binary:       "mybin",
+					Dockerfile:   "testdata/Dockerfile",
+					TagTemplates: []string{"latest"},
+				},
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldErr("failed to process image, use either image_templates (preferred) or image, not both"),
+		},
 	}
 
 	killAndRm(t)
@@ -658,7 +676,6 @@ func TestDefault(t *testing.T) {
 	assert.Equal(t, "amd64", docker.Goarch)
 	assert.Equal(t, ctx.Config.Builds[0].Binary, docker.Binary)
 	assert.Equal(t, "Dockerfile", docker.Dockerfile)
-	assert.Equal(t, []string{":{{ .Version }}"}, docker.ImageTemplates)
 }
 
 func TestDefaultNoDockers(t *testing.T) {
@@ -690,7 +707,30 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "windows", docker.Goos)
 	assert.Equal(t, "i386", docker.Goarch)
 	assert.Equal(t, "bar", docker.Binary)
-	assert.Equal(t, []string{":{{ .Version }}"}, docker.ImageTemplates)
+	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
+}
+
+func TestDefaultWithImage(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dockers: []config.Docker{
+				{
+					Goos:       "windows",
+					Goarch:     "i386",
+					Binary:     "bar",
+					Dockerfile: "Dockerfile.foo",
+					Image:      "my/image",
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Len(t, ctx.Config.Dockers, 1)
+	var docker = ctx.Config.Dockers[0]
+	assert.Equal(t, "windows", docker.Goos)
+	assert.Equal(t, "i386", docker.Goarch)
+	assert.Equal(t, "bar", docker.Binary)
+	assert.Equal(t, []string{"{{ .Version }}"}, docker.TagTemplates)
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 }
 
@@ -702,29 +742,14 @@ func Test_processImageTemplates(t *testing.T) {
 		imageTemplates []string
 		expectImages   []string
 	}{
-		"default": {
-			expectImages: []string{":1.0.0"},
-		},
-		"with tag template": {
-			tagTemplates: []string{"{{.Tag}}-{{.Env.FOO}}"},
-			expectImages: []string{":1.0.0", ":v1.0.0-123"},
-		},
-		"with tag templates": {
-			tagTemplates: []string{"{{.Tag}}-{{.Env.FOO}}", "v{{.Major}}.{{.Minor}}"},
-			expectImages: []string{":1.0.0", ":v1.0.0-123", ":v1.0"},
-		},
-		"with image name": {
-			image:        "my/image",
-			expectImages: []string{"my/image:1.0.0"},
-		},
-		"with image name and tag templates": {
-			image:        "my/image",
-			tagTemplates: []string{"{{.Tag}}-{{.Env.FOO}}", "v{{.Major}}.{{.Minor}}"},
-			expectImages: []string{"my/image:1.0.0", "my/image:v1.0.0-123", "my/image:v1.0"},
-		},
 		"with image templates": {
-			imageTemplates: []string{"gcr.io/image:{{.Tag}}-{{.Env.FOO}}", "gcr.io/image:v{{.Major}}.{{.Minor}}"},
-			expectImages:   []string{"gcr.io/image:v1.0.0-123", "gcr.io/image:v1.0"},
+			imageTemplates: []string{"user/image:{{.Tag}}", "gcr.io/image:{{.Tag}}-{{.Env.FOO}}", "gcr.io/image:v{{.Major}}.{{.Minor}}"},
+			expectImages:   []string{"user/image:v1.0.0", "gcr.io/image:v1.0.0-123", "gcr.io/image:v1.0"},
+		},
+		"with image name and tag template": {
+			image:        "my/image",
+			tagTemplates: []string{"{{.Tag}}-{{.Env.FOO}}", "v{{.Major}}.{{.Minor}}"},
+			expectImages: []string{"my/image:v1.0.0-123", "my/image:v1.0"},
 		},
 	}
 

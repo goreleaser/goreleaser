@@ -35,15 +35,17 @@ func (Pipe) String() string {
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Dockers {
 		var docker = &ctx.Config.Dockers[i]
+
 		if docker.Image != "" {
 			deprecate.Notice("docker.image")
+
+			if len(docker.TagTemplates) != 0 {
+				deprecate.Notice("docker.tag_templates")
+			} else {
+				docker.TagTemplates = []string{"{{ .Version }}"}
+			}
 		}
-		if len(docker.TagTemplates) != 0 {
-			deprecate.Notice("docker.tag_templates")
-		}
-		if len(docker.ImageTemplates) == 0 {
-			docker.ImageTemplates = append(docker.ImageTemplates, fmt.Sprintf("%s:{{ .Version }}", docker.Image))
-		}
+
 		if docker.Goos == "" {
 			docker.Goos = "linux"
 		}
@@ -118,7 +120,6 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 	log.Debug("tempdir: " + tmp)
 
 	images, err := processImageTemplates(ctx, docker, artifact)
-	log.Infof("processed images: %s", images)
 	if err != nil {
 		return err
 	}
@@ -152,6 +153,10 @@ func process(ctx *context.Context, docker config.Docker, artifact artifact.Artif
 }
 
 func processImageTemplates(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) ([]string, error) {
+	if len(docker.ImageTemplates) != 0 && docker.Image != "" {
+		return nil, errors.New("failed to process image, use either image_templates (preferred) or image, not both")
+	}
+
 	// nolint:prealloc
 	var images []string
 	for _, imageTemplate := range docker.ImageTemplates {
