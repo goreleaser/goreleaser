@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
+	"github.com/goreleaser/goreleaser/internal/pipe/docker"
 	"github.com/goreleaser/goreleaser/internal/pipe/put"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/pipe/s3"
@@ -39,6 +40,7 @@ var publishers = []Publisher{
 	release.Pipe{},
 	brew.Pipe{},
 	scoop.Pipe{},
+	docker.Pipe{},
 }
 
 var bold = color.New(color.Bold)
