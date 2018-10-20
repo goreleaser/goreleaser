@@ -92,6 +92,7 @@ func TestRunPipe(t *testing.T) {
 		expect            []string
 		assertImageLabels imageLabelFinder
 		assertError       errChecker
+		pubAssertError    errChecker
 	}{
 		"valid": {
 			publish: true,
@@ -147,7 +148,8 @@ func TestRunPipe(t *testing.T) {
 				"label=org.label-schema.version=1.0.0",
 				"label=org.label-schema.vcs-ref=a1b2c3d4",
 				"label=org.label-schema.name=mybin"),
-			assertError: shouldNotErr,
+			assertError:    shouldNotErr,
+			pubAssertError: shouldNotErr,
 		},
 		"with deprecated image name & tag templates": {
 			publish: true,
@@ -173,7 +175,8 @@ func TestRunPipe(t *testing.T) {
 				"goreleaser/test_run_pipe",
 				"label=org.label-schema.version=1.0.0",
 			),
-			assertError: shouldNotErr,
+			assertError:    shouldNotErr,
+			pubAssertError: shouldNotErr,
 		},
 		"multiple images with same extra file": {
 			publish: true,
@@ -203,6 +206,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldNotErr,
+			pubAssertError:    shouldNotErr,
 		},
 		"multiple images with same dockerfile": {
 			publish: true,
@@ -229,7 +233,8 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/test_run_pipe:latest",
 				registry + "goreleaser/test_run_pipe2:latest",
 			},
-			assertError: shouldNotErr,
+			assertError:    shouldNotErr,
+			pubAssertError: shouldNotErr,
 		},
 		"valid_skip_push": {
 			publish: true,
@@ -249,6 +254,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldNotErr,
+			pubAssertError:    shouldNotErr,
 		},
 		"valid_no_latest": {
 			publish: true,
@@ -267,6 +273,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldNotErr,
+			pubAssertError:    shouldNotErr,
 		},
 		"valid_dont_publish": {
 			publish: false,
@@ -285,6 +292,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldNotErr,
+			pubAssertError:    shouldNotErr,
 		},
 		"valid build args": {
 			publish: false,
@@ -306,6 +314,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldNotErr,
+			pubAssertError:    shouldNotErr,
 		},
 		"bad build args": {
 			publish: false,
@@ -432,6 +441,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldNotErr,
+			pubAssertError:    shouldNotErr,
 		},
 		"no_permissions": {
 			publish: true,
@@ -449,7 +459,8 @@ func TestRunPipe(t *testing.T) {
 				"docker.io/nope:latest",
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`requested access to the resource is denied`),
+			assertError:       shouldNotErr,
+			pubAssertError:    shouldErr(`requested access to the resource is denied`),
 		},
 		"dockerfile_doesnt_exist": {
 			publish: true,
@@ -524,7 +535,7 @@ func TestRunPipe(t *testing.T) {
 
 	for name, docker := range table {
 		t.Run(name, func(tt *testing.T) {
-			folder, err := ioutil.TempDir("", "archivetest")
+			folder, err := ioutil.TempDir("", "dockertest")
 			require.NoError(tt, err)
 			var dist = filepath.Join(folder, "dist")
 			require.NoError(tt, os.Mkdir(dist, 0755))
@@ -567,7 +578,11 @@ func TestRunPipe(t *testing.T) {
 				_ = exec.Command("docker", "rmi", img).Run()
 			}
 
-			docker.assertError(tt, Pipe{}.Run(ctx))
+			err = Pipe{}.Run(ctx)
+			docker.assertError(tt, err)
+			if err == nil {
+				docker.pubAssertError(tt, Pipe{}.Publish(ctx))
+			}
 
 			for _, d := range docker.dockers {
 				if d.ImageTemplates == nil {
