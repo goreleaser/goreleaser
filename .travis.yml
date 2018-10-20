@@ -11,6 +11,8 @@ addons:
     - snapd
 env:
   - PATH=/snap/bin:$PATH
+before_install:
+  - openssl aes-256-cbc -K $encrypted_a30d538a5078_key -iv $encrypted_a30d538a5078_iv -in snap.login.enc -out snap.login -d
 install:
   - make setup
   - npm install -g prettier
@@ -23,6 +25,7 @@ after_success:
   - make static
   - test -z "$(git status --porcelain)"
   - test -n "$TRAVIS_TAG" && docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - test -n "$TRAVIS_TAG" && snapcraft login --with snap.login
 deploy:
   - deploy:
     provider: pages
