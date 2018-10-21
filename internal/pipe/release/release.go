@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/apex/log"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -38,21 +37,18 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Run the pipe
-func (Pipe) Run(ctx *context.Context) error {
+// Publish github release
+func (Pipe) Publish(ctx *context.Context) error {
 	c, err := client.NewGitHub(ctx)
 	if err != nil {
 		return err
 	}
-	return doRun(ctx, c)
+	return doPublish(ctx, c)
 }
 
-func doRun(ctx *context.Context, c client.Client) error {
+func doPublish(ctx *context.Context, c client.Client) error {
 	if ctx.Config.Release.Disable {
 		return pipe.Skip("release pipe is disabled")
-	}
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
 	}
 	log.WithField("tag", ctx.Git.CurrentTag).
 		WithField("repo", ctx.Config.Release.GitHub.String()).

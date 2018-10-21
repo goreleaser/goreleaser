@@ -12,15 +12,13 @@ import (
 
 	"github.com/apex/log"
 	"github.com/campoy/unique"
-	zglob "github.com/mattn/go-zglob"
-	"golang.org/x/sync/errgroup"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
-	archivelib "github.com/goreleaser/goreleaser/pkg/archive"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	zglob "github.com/mattn/go-zglob"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -71,21 +69,16 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group
-	for _, archive := range ctx.Config.Archives {
-		var archive = archive
-		var filter = artifact.ByType(artifact.Binary)
-		if len(archive.Binaries) > 0 {
-			filter = artifact.And(filter, artifact.ByBinaryName(archive.Binaries...))
-		}
-		for _, artifacts := range ctx.Artifacts.Filter(filter).GroupByPlatform() {
-			artifacts := artifacts
-			g.Go(func() error {
-				if packageFormat(ctx, archive, artifacts[0].Goos) == "binary" {
-					return skip(ctx, archive, artifacts)
-				}
-				return create(ctx, archive, artifacts)
-			})
-		}
+	var filtered = ctx.Artifacts.Filter(artifact.ByType(artifact.Binary))
+	for group, artifacts := range filtered.GroupByPlatform() {
+		log.Debugf("group %s has %d binaries", group, len(artifacts))
+		artifacts := artifacts
+		g.Go(func() error {
+			if packageFormat(ctx, artifacts[0].Goos) == "binary" {
+				return skip(ctx, artifacts)
+			}
+			return create(ctx, artifacts)
+		})
 	}
 	return g.Wait()
 }
@@ -104,8 +97,9 @@ func create(ctx *context.Context, archive config.Archive, binaries []artifact.Ar
 		return fmt.Errorf("failed to create directory %s: %s", archivePath, err.Error())
 	}
 	defer archiveFile.Close() // nolint: errcheck
-	log.WithField("archive", archivePath).Info("creating")
-	var a = archivelib.New(archiveFile)
+	var log = log.WithField("archive", archivePath)
+	log.Info("creating")
+	var a = archive.New(archiveFile)
 	defer a.Close() // nolint: errcheck
 
 	files, err := findFiles(ctx, archive)

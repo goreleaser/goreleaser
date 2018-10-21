@@ -11,14 +11,13 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	yaml "gopkg.in/yaml.v2"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // ErrNoSnapcraft is shown when snapcraft cannot be found in $PATH
@@ -55,7 +54,7 @@ const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arc
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "creating Linux packages with snapcraft"
+	return "Snapcraft Packages"
 }
 
 // Default sets the pipe defaults
@@ -98,6 +97,19 @@ func (Pipe) Run(ctx *context.Context) error {
 		binaries := binaries
 		g.Go(func() error {
 			return create(ctx, arch, binaries)
+		})
+	}
+	return g.Wait()
+}
+
+// Publish packages
+func (Pipe) Publish(ctx *context.Context) error {
+	snaps := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List()
+	var g = semerrgroup.New(ctx.Parallelism)
+	for _, snap := range snaps {
+		snap := snap
+		g.Go(func() error {
+			return push(ctx, snap)
 		})
 	}
 	return g.Wait()
@@ -175,18 +187,35 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 	}
 
 	var snap = filepath.Join(ctx.Config.Dist, folder+".snap")
+	log.WithField("snap", snap).Info("creating")
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "snapcraft", "pack", primeDir, "--output", snap)
 	if out, err = cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to generate snap package: %s", string(out))
 	}
+	if !ctx.Config.Snapcraft.Publish {
+		return nil
+	}
 	ctx.Artifacts.Add(artifact.Artifact{
-		Type:   artifact.LinuxPackage,
+		Type:   artifact.PublishableSnapcraft,
 		Name:   folder + ".snap",
 		Path:   snap,
 		Goos:   binaries[0].Goos,
 		Goarch: binaries[0].Goarch,
 		Goarm:  binaries[0].Goarm,
 	})
+	return nil
+}
+
+func push(ctx *context.Context, snap artifact.Artifact) error {
+	log.WithField("snap", snap.Name).Info("pushing snap")
+	// TODO: customize --release based on snap.Grade?
+	/* #nosec */
+	var cmd = exec.CommandContext(ctx, "snapcraft", "push", "--release=stable", snap.Path)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to push %s package: %s", snap.Path, string(out))
+	}
+	snap.Type = artifact.Snapcraft
+	ctx.Artifacts.Add(snap)
 	return nil
 }

@@ -97,3 +97,24 @@ The release should look like this:
   <img width="100%"
     src="https://cloud.githubusercontent.com/assets/245435/23342061/fbcbd506-fc31-11e6-9d2b-4c1b776dee9c.png">
 </a>
+
+## Dry run
+
+If you want to test everything before doing a release "for real", you can
+use the `--skip-publish` flag, which will only build and package things:
+
+```console
+$ goreleaser release --skip-publish
+```
+
+You can check the other options by running:
+
+```console
+$ goreleaser --help
+```
+
+and
+
+```console
+$ goreleaser release --help
+```

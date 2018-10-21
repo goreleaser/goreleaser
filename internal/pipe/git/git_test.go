@@ -29,6 +29,7 @@ func TestSingleCommit(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
 	var ctx = &context.Context{
@@ -36,6 +37,18 @@ func TestSingleCommit(t *testing.T) {
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
+}
+
+func TestNoRemote(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.1")
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	assert.EqualError(t, Pipe{}.Run(ctx), "couldn't get remote URL: fatal: No remote configured to list refs from.")
 }
 
 func TestNewRepository(t *testing.T) {
@@ -53,6 +66,7 @@ func TestNoTagsSnapshot(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "first")
 	var ctx = context.New(config.Project{
 		Snapshot: config.Snapshot{
@@ -68,6 +82,7 @@ func TestNoTagsSnapshotInvalidTemplate(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "first")
 	var ctx = context.New(config.Project{
 		Snapshot: config.Snapshot{
@@ -85,6 +100,7 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "first")
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = false
@@ -95,6 +111,7 @@ func TestInvalidTagFormat(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit2")
 	testlib.GitTag(t, "sadasd")
 	var ctx = context.New(config.Project{})
@@ -106,6 +123,7 @@ func TestDirty(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	dummy, err := os.Create(filepath.Join(folder, "dummy"))
 	assert.NoError(t, err)
 	testlib.GitAdd(t)
@@ -135,6 +153,7 @@ func TestTagIsNotLastCommit(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "commit4")
@@ -147,6 +166,7 @@ func TestValidState(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "commit4")
@@ -154,12 +174,14 @@ func TestValidState(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
+	assert.Equal(t, "git@github.com:foo/bar.git", ctx.Git.URL)
 }
 
 func TestSnapshotNoTags(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "whatever")
 	var ctx = context.New(config.Project{})
@@ -172,6 +194,7 @@ func TestSnapshotNoCommits(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
@@ -191,6 +214,7 @@ func TestSnapshotDirty(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "whatever")
 	testlib.GitTag(t, "v0.0.1")
@@ -204,6 +228,7 @@ func TestShortCommitHash(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
 	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "first")
 	var ctx = context.New(config.Project{
 		Snapshot: config.Snapshot{

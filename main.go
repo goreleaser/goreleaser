@@ -12,7 +12,6 @@ import (
 	"github.com/apex/log/handlers/cli"
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
-
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -131,12 +130,14 @@ func releaseProject(options releaseOptions) error {
 	return doRelease(ctx)
 }
 
+var bold = color.New(color.Bold)
+
 func doRelease(ctx *context.Context) error {
 	defer func() { cli.Default.Padding = 3 }()
 	var release = func() error {
 		for _, pipe := range pipeline.Pipeline {
 			cli.Default.Padding = 3
-			log.Infof(color.New(color.Bold).Sprint(strings.ToUpper(pipe.String())))
+			log.Infof(bold.Sprint(strings.ToUpper(pipe.String())))
 			cli.Default.Padding = 6
 			if err := handle(pipe.Run(ctx)); err != nil {
 				return err
@@ -194,6 +195,12 @@ func loadConfig(path string) (config.Project, error) {
 
 var exampleConfig = `# This is an example goreleaser.yaml file with some sane defaults.
 # Make sure to check the documentation at http://goreleaser.com
+before:
+  hooks:
+    # you may remove this if you don't use vgo
+    - go mod download
+    # you may remove this if you don't need go generate
+    - go generate ./...
 builds:
 - env:
   - CGO_ENABLED=0

@@ -45,13 +45,16 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	for i := range ctx.Config.Artifactories {
+		ctx.Config.Artifactories[i].ChecksumHeader = "X-Checksum-SHA256"
+	}
 	return http.Defaults(ctx.Config.Artifactories)
 }
 
-// Run the pipe
+// Publish artifacts to artifactory
 //
 // Docs: https://www.jfrog.com/confluence/display/RTF/Artifactory+REST+API#ArtifactoryRESTAPI-Example-DeployinganArtifact
-func (Pipe) Run(ctx *context.Context) error {
+func (Pipe) Publish(ctx *context.Context) error {
 	if len(ctx.Config.Artifactories) == 0 {
 		return pipe.Skip("artifactory section is not configured")
 	}

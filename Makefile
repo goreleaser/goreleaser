@@ -1,7 +1,6 @@
 SOURCE_FILES?=./...
 TEST_PATTERN?=.
 TEST_OPTIONS?=
-OS=$(shell uname -s)
 
 export PATH := ./bin:$(PATH)
 
@@ -9,20 +8,9 @@ export PATH := ./bin:$(PATH)
 setup:
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
 	curl -sfL https://install.goreleaser.com/github.com/gohugoio/hugo.sh | sh
-	curl -sfL https://install.goreleaser.com/github.com/caarlos0/bandep.sh | sh
-ifeq ($(OS), Darwin)
-	brew install dep
-else
-	curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-endif
+	curl -sfL https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 	dep ensure -vendor-only
-	echo "make check" > .git/hooks/pre-commit
-	chmod +x .git/hooks/pre-commit
 .PHONY: setup
-
-check:
-	bandep --ban github.com/tj/assert
-.PHONY: check
 
 # Run all the tests
 test:

@@ -27,11 +27,11 @@ var ErrNoWindows = errors.New("scoop requires a windows build and a zip or tar.g
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "creating Scoop Manifest"
+	return "creating scoop manifest"
 }
 
-// Run the pipe
-func (Pipe) Run(ctx *context.Context) error {
+// Publish scoop manifest
+func (Pipe) Publish(ctx *context.Context) error {
 	client, err := client.NewGitHub(ctx)
 	if err != nil {
 		return err

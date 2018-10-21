@@ -53,12 +53,14 @@ func TestRunPipe(t *testing.T) {
 			NameTemplate: "foo_{{.Arch}}",
 			Summary:      "test summary",
 			Description:  "test description",
+			Publish:      true,
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
 	addBinaries(t, ctx, "mybin", dist)
 	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List(), 2)
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
@@ -170,6 +172,19 @@ func TestDefault(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, defaultNameTemplate, ctx.Config.Snapcraft.NameTemplate)
+}
+
+func TestPublish(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name:   "mybin",
+		Path:   "nope.snap",
+		Goarch: "amd64",
+		Goos:   "linux",
+		Type:   artifact.PublishableSnapcraft,
+	})
+	err := Pipe{}.Publish(ctx)
+	assert.Contains(t, err.Error(), "failed to push nope.snap package")
 }
 
 func TestDefaultSet(t *testing.T) {

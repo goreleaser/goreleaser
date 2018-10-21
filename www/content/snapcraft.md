@@ -37,6 +37,11 @@ snapcraft:
   # Default is project name.
   name: drumroll
 
+  # Wether to publish the snap to the snapcraft store.
+  # Remember you need to `snapcraft login` first.
+  # Defaults to false.
+  publish: true
+
   # Single-line elevator pitch for your amazing snap.
   # 79 char long at most.
   summary: Software to create fast and easy drum rolls.

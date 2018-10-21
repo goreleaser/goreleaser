@@ -123,10 +123,10 @@ func getChangelog(tag string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if !prev.Tag {
-		return gitLog(prev.SHA, tag)
+	if isSHA1(prev) {
+		return gitLog(prev, tag)
 	}
-	return gitLog(fmt.Sprintf("%v..%v", prev.SHA, tag))
+	return gitLog(fmt.Sprintf("tags/%s..tags/%s", prev, tag))
 }
 
 func gitLog(refs ...string) (string, error) {
@@ -135,17 +135,17 @@ func gitLog(refs ...string) (string, error) {
 	return git.Run(args...)
 }
 
-func previous(tag string) (result ref, err error) {
-	result.Tag = true
-	result.SHA, err = git.Clean(git.Run("describe", "--tags", "--abbrev=0", tag+"^"))
+func previous(tag string) (result string, err error) {
+	result, err = git.Clean(git.Run("describe", "--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", tag)))
 	if err != nil {
-		result.Tag = false
-		result.SHA, err = git.Clean(git.Run("rev-list", "--max-parents=0", "HEAD"))
+		result, err = git.Clean(git.Run("rev-list", "--max-parents=0", "HEAD"))
 	}
 	return
 }
 
-type ref struct {
-	Tag bool
-	SHA string
+var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
+
+// isSHA1 te lets us know if the ref is a SHA1 or not
+func isSHA1(ref string) bool {
+	return validSHA1.MatchString(ref)
 }

@@ -49,6 +49,9 @@ func (Pipe) Default(ctx *context.Context) error {
 			buildWithDefaults(ctx, ctx.Config.SingleBuild),
 		}
 	}
+	if len(ctx.Config.Builds) > 1 {
+		log.Warn("you have more than 1 build setup: please make sure it is a not a typo on your config")
+	}
 	return nil
 }
 

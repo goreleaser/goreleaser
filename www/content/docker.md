@@ -17,9 +17,12 @@ If you have only one `build` setup,
 the configuration is as easy as adding the
 name of your image to your `.goreleaser.yml` file:
 
+The docker image declaration supports templating. Learn more about the [name template engine](/templates).
+
 ```yaml
 dockers:
-  - image: user/repo
+  - image_templates:
+    - user/repo
 ```
 
 You also need to create a `Dockerfile` in your project's root folder:
@@ -53,19 +56,24 @@ dockers:
     goarm: ''
     # Name of the built binary that should be used.
     binary: mybinary
-    # Docker image name.
-    image: myuser/myimage
+    # Templates of the Docker image names.
+    image_templates:
+    - "myuser/myimage:latest"
+    - "myuser/myimage:{{ .Tag }}"
+    - "myuser/myimage:{{ .Tag }}-{{ .Env.GO_VERSION }}"
+    - "myuser/myimage:v{{ .Major }}"
+    - "gcr.io/myuser/myimage:latest"
     # Skips the docker push. Could be useful if you also do draft releases.
     # Defaults to false.
     skip_push: false
     # Path to the Dockerfile (from the project root).
-    dockerfile: Dockerfile
-    # Template of the docker tag. Defaults to `{{ .Version }}`.
-    tag_templates:
-    - "{{ .Tag }}"
-    - "{{ .Tag }}-{{ .Env.GO_VERSION }}"
-    - "v{{ .Major }}"
-    - latest
+    dockerfile: Dockerfile 
+    # Template of the docker build flags.
+    build_flag_templates:
+    - "--label=org.label-schema.schema-version=1.0"
+    - "--label=org.label-schema.version={{.Version}}"
+    - "--label=org.label-schema.name={{.ProjectName}}"
+    - "--build-arg=FOO={{.ENV.Bar}}"
     # If your Dockerfile copies files other than the binary itself,
     # you should list them here as well.
     extra_files:
@@ -78,23 +86,43 @@ These settings should allow you to generate multiple Docker images,
 for example, using multiple `FROM` statements,
 as well as generate one image for each binary in your project.
 
+## Generic Image Names
+
+Some users might want to keep their image name as generic as possible.
+That can be accomplished simply by adding template language in the definition:
+
+```yaml
+# .goreleaser.yml
+project: foo
+dockers:
+  -
+    binary: mybinary
+    image_templates:
+    - "myuser/{{.ProjectName}}"
+```
+
+This will build and public the following images:
+
+- `myuser/foo`
+
+> Learn more about the [name template engine](/templates).
+
 ## Keeping docker images updated for current major
 
 Some users might want to when version to push docker tags `:v1`, `:v1.6`,
 `:v1.6.4` and `:latest` when `v1.6.4` (for example) is built. That can be
-accomplished by using multiple `tag_templates`:
+accomplished by using multiple `image_templates`:
 
 ```yaml
 # .goreleaser.yml
 dockers:
   -
     binary: mybinary
-    image: myuser/myimage
-    tag_templates:
-    - "{{ .Tag }}"
-    - "v{{ .Major }}"
-    - "v{{ .Major }}.{{ .Minor }}"
-    - latest
+    image_templates:
+    - "myuser/myimage:{{ .Tag }}"
+    - "myuser/myimage:v{{ .Major }}"
+    - "myuser/myimage:v{{ .Major }}.{{ .Minor }}"
+    - "myuser/myimage:latest"
 ```
 
 This will build and publish the following images:
@@ -106,3 +134,57 @@ This will build and publish the following images:
 
 With these settings you can hopefully push several different docker images
 with multiple tags.
+
+> Learn more about the [name template engine](/templates).
+
+## Publishing to multiple docker registries
+
+Some users might want to push images to multiple docker registries. That can be
+accomplished by using multiple `image_templates`:
+
+```yaml
+# .goreleaser.yml
+dockers:
+  -
+    binary: mybinary
+    image_templates:
+    - "docker.io/myuser/myimage:{{ .Tag }}"
+    - "docker.io/myuser/myimage:latest"
+    - "gcr.io/myuser/myimage:{{ .Tag }}"
+    - "gcr.io/myuser/myimage:latest"
+```
+
+This will build and publish the following images to `docker.io` and `gcr.io`:
+
+- `myuser/myimage:v1.6.4`
+- `myuser/myimage:latest`
+
+
+## Applying docker build flags
+
+Build flags can be applied using `build_flag_templates`. The flags must be
+valid docker build flags.
+
+```yaml
+# .goreleaser.yml
+dockers:
+  -
+    binary: mybinary
+    image_templates:
+        - "myuser/myimage"
+    build_flag_templates:
+    - "--label=org.label-schema.schema-version=1.0"
+    - "--label=org.label-schema.version={{.Version}}"
+    - "--label=org.label-schema.name={{.ProjectName}}"
+```
+
+This will execute the following command:
+
+```bash
+docker build -t myuser/myimage . \
+  --label=org.label-schema.schema-version=1.0 \
+  --label=org.label-schema.version=1.6.4 \
+  --label=org.label-schema.name=mybinary"
+```
+
+> Learn more about the [name template engine](/templates).

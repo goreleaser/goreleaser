@@ -49,7 +49,7 @@ Supported variables:
 - Arch
 - Arm
 
-_Attention_: Variables _Os_, _Arch_ and _Arm_ are only supported in upload mode `binary`.
+> **Warning**: Variables `Os`, `Arch` and `Arm` are only supported in upload mode `binary`.
 
 ### Username
 
@@ -132,6 +132,10 @@ puts:
     target: https://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
     # User that will be used for the deployment
     username: deployuser
+    # An optional header you can use to tell GoReleaser to pass the artifact's
+    # SHA256 checksum withing the upload request.
+    # Default is empty.
+    checksum_header: -X-SHA256-Sum
     # Upload checksums (defaults to false)
     checksum: true
     # Upload signatures (defaults to false)

@@ -5,9 +5,7 @@ import (
 	"fmt"
 
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
-	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/internal/pipe/before"
-	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/changelog"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
@@ -18,10 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/env"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
-	"github.com/goreleaser/goreleaser/internal/pipe/put"
-	"github.com/goreleaser/goreleaser/internal/pipe/release"
-	"github.com/goreleaser/goreleaser/internal/pipe/s3"
-	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
+	"github.com/goreleaser/goreleaser/internal/pipe/publish"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -51,10 +46,5 @@ var Pipeline = []Piper{
 	checksums.Pipe{},       // checksums of the files
 	sign.Pipe{},            // sign artifacts
 	docker.Pipe{},          // create and push docker images
-	artifactory.Pipe{},     // push to artifactory
-	put.Pipe{},             // upload to http server
-	s3.Pipe{},              // push to s3/minio
-	release.Pipe{},         // release to github
-	brew.Pipe{},            // push to brew tap
-	scoop.Pipe{},           // push to scoop bucket
+	publish.Pipe{},         // publishes artifacts
 }

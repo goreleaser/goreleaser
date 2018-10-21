@@ -9,11 +9,13 @@ import (
 	h "net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
 
 	"github.com/pkg/errors"
+	"github.com/stretchr/testify/require"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -133,6 +135,7 @@ type check struct {
 	user    string
 	pass    string
 	content []byte
+	headers map[string]string
 }
 
 func checks(checks ...check) func(rs []*h.Request) error {
@@ -181,6 +184,11 @@ func doCheck(c check, r *h.Request) error {
 	if u, p, ok := r.BasicAuth(); !ok || u != c.user || p != c.pass {
 		return errors.Errorf("bad basic auth credentials: %s/%s", u, p)
 	}
+	for k, v := range c.headers {
+		if r.Header.Get(k) != v {
+			return errors.Errorf("bad header value for %s: expected %s, got %s", k, v, r.Header.Get(k))
+		}
+	}
 	return nil
 }
 
@@ -221,6 +229,8 @@ func TestUpload(t *testing.T) {
 	ctx.Env["TEST_A_USERNAME"] = "u2"
 	ctx.Version = "2.1.0"
 	ctx.Artifacts = artifact.New()
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	require.NoError(t, err)
 	for _, a := range []struct {
 		ext string
 		typ artifact.Type
@@ -233,7 +243,9 @@ func TestUpload(t *testing.T) {
 		{"sum", artifact.Checksum},
 		{"sig", artifact.Signature},
 	} {
-		ctx.Artifacts.Add(artifact.Artifact{Name: "a." + a.ext, Path: "/a/a." + a.ext, Type: a.typ})
+		var file = filepath.Join(folder, "a."+a.ext)
+		require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+		ctx.Artifacts.Add(artifact.Artifact{Name: "a." + a.ext, Path: file, Type: a.typ})
 	}
 
 	tests := []struct {
@@ -267,8 +279,8 @@ func TestUpload(t *testing.T) {
 				}
 			},
 			checks(
-				check{"/blah/2.1.0/a.deb", "u2", "x", content},
-				check{"/blah/2.1.0/a.tar", "u2", "x", content},
+				check{"/blah/2.1.0/a.deb", "u2", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.tar", "u2", "x", content, map[string]string{}},
 			),
 		},
 		{"archive", true, true, false, false,
@@ -282,8 +294,8 @@ func TestUpload(t *testing.T) {
 				}
 			},
 			checks(
-				check{"/blah/2.1.0/a.deb", "u1", "x", content},
-				check{"/blah/2.1.0/a.tar", "u1", "x", content},
+				check{"/blah/2.1.0/a.deb", "u1", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
 			),
 		},
 		{"binary", true, true, false, false,
@@ -296,7 +308,7 @@ func TestUpload(t *testing.T) {
 					TrustedCerts: cert(s),
 				}
 			},
-			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content}),
+			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
 		{"binary-add-ending-bar", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Put) {
@@ -308,7 +320,7 @@ func TestUpload(t *testing.T) {
 					TrustedCerts: cert(s),
 				}
 			},
-			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content}),
+			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
 		{"archive-with-checksum-and-signature", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Put) {
@@ -323,10 +335,10 @@ func TestUpload(t *testing.T) {
 				}
 			},
 			checks(
-				check{"/blah/2.1.0/a.deb", "u3", "x", content},
-				check{"/blah/2.1.0/a.tar", "u3", "x", content},
-				check{"/blah/2.1.0/a.sum", "u3", "x", content},
-				check{"/blah/2.1.0/a.sig", "u3", "x", content},
+				check{"/blah/2.1.0/a.deb", "u3", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.tar", "u3", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.sum", "u3", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.sig", "u3", "x", content, map[string]string{}},
 			),
 		},
 		{"bad-template", true, true, true, true,
@@ -378,6 +390,19 @@ func TestUpload(t *testing.T) {
 				return &c, config.Put{}
 			},
 			checks(),
+		},
+		{"checksumheader", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Put) {
+				return ctx, config.Put{
+					Mode:           ModeBinary,
+					Name:           "a",
+					Target:         s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username:       "u2",
+					ChecksumHeader: "-x-sha256",
+					TrustedCerts:   cert(s),
+				}
+			},
+			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"-x-sha256": "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269"}}),
 		},
 	}
 
