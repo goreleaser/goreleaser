@@ -38,11 +38,13 @@ var publishers = []Publisher{
 	s3.Pipe{},
 	put.Pipe{},
 	artifactory.Pipe{},
-	release.Pipe{},
 	brew.Pipe{},
 	scoop.Pipe{},
 	docker.Pipe{},
 	snapcraft.Pipe{},
+	// This should be the last step in the pipeline to ensure that the
+	// release notes are complete.
+	release.Pipe{},
 }
 
 var bold = color.New(color.Bold)
