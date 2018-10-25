@@ -604,31 +604,32 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestBuildCommand(t *testing.T) {
-	image := "goreleaser/test_build_flag"
+	images := []string{"goreleaser/test_build_flag", "goreleaser/test_multiple_tags"}
 	tests := []struct {
 		name   string
+		images []string
 		flags  []string
 		expect []string
 	}{
 		{
 			name:   "no flags",
 			flags:  []string{},
-			expect: []string{"build", "-t", image, "."},
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1]},
 		},
 		{
 			name:   "single flag",
 			flags:  []string{"--label=foo"},
-			expect: []string{"build", "-t", image, ".", "--label=foo"},
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo"},
 		},
 		{
 			name:   "multiple flags",
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: []string{"build", "-t", image, ".", "--label=foo", "--build-arg=bar=baz"},
+			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			command := buildCommand(image, tt.flags)
+			command := buildCommand(images, tt.flags)
 			assert.Equal(t, tt.expect, command)
 		})
 	}

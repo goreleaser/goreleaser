@@ -151,13 +151,8 @@ func process(ctx *context.Context, docker config.Docker, bin artifact.Artifact) 
 		return err
 	}
 
-	if err := dockerBuild(ctx, tmp, images[0], buildFlags); err != nil {
+	if err := dockerBuild(ctx, tmp, images, buildFlags); err != nil {
 		return err
-	}
-	for _, img := range images[1:] {
-		if err := dockerTag(ctx, images[0], img); err != nil {
-			return err
-		}
 	}
 	if docker.SkipPush {
 		// TODO: this should also be better handled
@@ -249,10 +244,10 @@ func link(src, dest string) error {
 	})
 }
 
-func dockerBuild(ctx *context.Context, root, image string, flags []string) error {
-	log.WithField("image", image).Info("building docker image")
+func dockerBuild(ctx *context.Context, root string, images, flags []string) error {
+	log.WithField("image", images[0]).Info("building docker image")
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, "docker", buildCommand(image, flags)...)
+	var cmd = exec.CommandContext(ctx, "docker", buildCommand(images, flags)...)
 	cmd.Dir = root
 	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
 	out, err := cmd.CombinedOutput()
@@ -263,23 +258,13 @@ func dockerBuild(ctx *context.Context, root, image string, flags []string) error
 	return nil
 }
 
-func buildCommand(image string, flags []string) []string {
-	base := []string{"build", "-t", image, "."}
+func buildCommand(images, flags []string) []string {
+	base := []string{"build", "."}
+	for _, image := range images {
+		base = append(base, "-t", image)
+	}
 	base = append(base, flags...)
 	return base
-}
-
-func dockerTag(ctx *context.Context, image, tag string) error {
-	log.WithField("image", image).WithField("tag", tag).Info("tagging docker image")
-	/* #nosec */
-	var cmd = exec.CommandContext(ctx, "docker", "tag", image, tag)
-	log.WithField("cmd", cmd.Args).Debug("running")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return errors.Wrapf(err, "failed to tag docker image: \n%s", string(out))
-	}
-	log.Debugf("docker tag output: \n%s", string(out))
-	return nil
 }
 
 func dockerPush(ctx *context.Context, image artifact.Artifact) error {
