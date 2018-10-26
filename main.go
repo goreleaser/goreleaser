@@ -38,6 +38,10 @@ type releaseOptions struct {
 }
 
 func init() {
+	// enable colored output on travis
+	if os.Getenv("CI") == "Travis" {
+		color.NoColor = false
+	}
 	log.SetHandler(cli.Default)
 }
 
