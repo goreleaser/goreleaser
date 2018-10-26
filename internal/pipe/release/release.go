@@ -52,7 +52,7 @@ func doPublish(ctx *context.Context, c client.Client) error {
 	}
 	log.WithField("tag", ctx.Git.CurrentTag).
 		WithField("repo", ctx.Config.Release.GitHub.String()).
-		Info("creating or updating release")
+		Info("release")
 	body, err := describeBody(ctx)
 	if err != nil {
 		return err

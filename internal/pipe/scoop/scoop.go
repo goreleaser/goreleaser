@@ -21,7 +21,7 @@ var ErrNoWindows = errors.New("scoop requires a windows build")
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "creating scoop manifest"
+	return "scoop manifest"
 }
 
 // Publish scoop manifest

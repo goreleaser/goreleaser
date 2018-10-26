@@ -30,7 +30,7 @@ const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arc
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "creating Linux packages with nfpm"
+	return "Linux packages with nfpm"
 }
 
 // Default sets the pipe defaults
@@ -154,7 +154,7 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	}
 
 	var path = filepath.Join(ctx.Config.Dist, name+"."+format)
-	log.WithField("file", path).Info("creating")
+	log.WithField("file", path)
 	w, err := os.Create(path)
 	if err != nil {
 		return err

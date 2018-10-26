@@ -28,7 +28,7 @@ var ErrTooManyDarwin64Builds = errors.New("brew tap requires at most one darwin 
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "creating homebrew formula"
+	return "homebrew formula"
 }
 
 // Publish brew formula
