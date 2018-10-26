@@ -209,12 +209,12 @@
   revision = "2ea3427bfa539cca900ca2768d8663ecc8a708c1"
 
 [[projects]]
-  branch = "master"
   digest = "1:096a8a9182648da3d00ff243b88407838902b6703fc12657f76890e08d1899bf"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
   pruneopts = ""
   revision = "ae18d6b8b3205b561c79e8e5f69bff09736185f4"
+  version = "v1.0.0"
 
 [[projects]]
   digest = "1:7365acd48986e205ccb8652cc746f09c8b7876030d53710ea6ef7d0bd0dcd7ca"
