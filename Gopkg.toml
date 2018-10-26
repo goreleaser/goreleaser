@@ -39,8 +39,8 @@
   name = "github.com/campoy/unique"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/mitchellh/go-homedir"
+  version = "^1.0.0"
 
 [[constraint]]
   name = "github.com/goreleaser/nfpm"
