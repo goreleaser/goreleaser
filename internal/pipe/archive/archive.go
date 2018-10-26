@@ -29,7 +29,7 @@ const (
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "creating archives"
+	return "archives"
 }
 
 // Default sets the pipe defaults
@@ -91,7 +91,6 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 	}
 	defer archiveFile.Close() // nolint: errcheck
 	var log = log.WithField("archive", archivePath)
-	log.Info("creating")
 	var a = archive.New(archiveFile)
 	defer a.Close() // nolint: errcheck
 
