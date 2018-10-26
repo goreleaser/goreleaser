@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:b856d8248663c39265a764561c1a1a149783f6cc815feb54a1f3a591b91f6eca"
+  name = "github.com/Masterminds/semver"
+  packages = ["."]
+  pruneopts = ""
+  revision = "c7af12943936e8c39859482e61f0574c2fd7fc75"
+  version = "v1.4.2"
+
+[[projects]]
   digest = "1:15d017551627c8bb091bde628215b2861bed128855343fdd570c62d08871f6e1"
   name = "github.com/alecthomas/kingpin"
   packages = ["."]
@@ -30,17 +38,17 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:317998b1359366dda9f69cdbd108c39c7b3813a69002246fac4e3548646c1620"
+  digest = "1:d743f5ff04492330917b701b421bb60c8a865362ad51b1af867787b9afda5d26"
   name = "github.com/apex/log"
   packages = [
     ".",
     "handlers/cli",
   ]
   pruneopts = ""
-  revision = "941dea75d3ebfbdd905a5d8b7b232965c5e5c684"
+  revision = "d6c5facec1f2ae23a97782ab0ee18af58734346f"
 
 [[projects]]
-  digest = "1:27b65f2bd793139595f788a1bbc8fe0f877c89f74931b447343d856313339d9e"
+  digest = "1:335b92651d8324aa60815a814ce387e56a0f513049cbf19714f90df91a769860"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -60,6 +68,8 @@
     "aws/request",
     "aws/session",
     "aws/signer/v4",
+    "internal/ini",
+    "internal/s3err",
     "internal/sdkio",
     "internal/sdkrand",
     "internal/sdkuri",
@@ -76,8 +86,8 @@
     "service/sts",
   ]
   pruneopts = ""
-  revision = "94b80148ea4b1b136682116294b151766a3b85c2"
-  version = "v1.14.27"
+  revision = "f76d9803fd695eebf74cb23c460287fa496efc21"
+  version = "v1.15.63"
 
 [[projects]]
   branch = "master"
@@ -104,12 +114,12 @@
   revision = "88950e537e7e644cd746a3102037b5d2b723e9f5"
 
 [[projects]]
-  digest = "1:56c130d885a4aacae1dd9c7b71cfe39912c7ebc1ff7d2b46083c8812996dc43b"
+  digest = "1:0deddd908b6b4b768cfc272c16ee61e7088a60f7fe2f06c547bd3d8e1f8b8e77"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   pruneopts = ""
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
 
 [[projects]]
   digest = "1:e988ed0ca0d81f4d28772760c02ee95084961311291bdfefc1b04617c178b722"
@@ -120,39 +130,31 @@
   version = "v1.7.0"
 
 [[projects]]
-  digest = "1:858b7fe7b0f4bc7ef9953926828f2816ea52d01a88d72d1c45bc8c108f23c356"
-  name = "github.com/go-ini/ini"
-  packages = ["."]
-  pruneopts = ""
-  revision = "358ee7663966325963d4e8b2e1fbd570c5195153"
-  version = "v1.38.1"
-
-[[projects]]
-  digest = "1:f958a1c137db276e52f0b50efee41a1a389dcdded59a69711f3e872757dab34b"
+  digest = "1:3dd078fda7500c341bc26cfbc6c6a34614f295a2457149fc1045cab767cbcf18"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   pruneopts = ""
-  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
-  version = "v1.1.0"
+  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:c336d8bea62afc46474e94eb445ad1f197459443a67007cd3e99833b7e61e42c"
+  digest = "1:da6871e154a3040575f630c9dd5c05a8300e240fdd0a3799087b0c3f3a51b502"
   name = "github.com/google/go-github"
   packages = ["github"]
   pruneopts = ""
-  revision = "b14883f2b71b5f7dd303ed96d00bfaefeaeecea2"
+  revision = "68a79fc6a32bab9406083545e667a65ba67b0a3e"
 
 [[projects]]
-  branch = "master"
-  digest = "1:9abc49f39e3e23e262594bb4fb70abf74c0c99e94f99153f43b143805e850719"
+  digest = "1:cea4aa2038169ee558bf507d5ea02c94ca85bcca28a4c7bb99fd59b31e43a686"
   name = "github.com/google/go-querystring"
   packages = ["query"]
   pruneopts = ""
-  revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
+  revision = "44c6ddd0a2342c386950e880b658017258da92fc"
+  version = "v1.0.0"
 
 [[projects]]
-  digest = "1:5a6348747c2538045137cdc0cf1f18ef09c5bf44fe01b0341b8cb4e380c3a988"
+  digest = "1:87c2f1bf698b7354a75dad10a488b1a1d6d0412b801bf89964312d6a728be562"
   name = "github.com/goreleaser/nfpm"
   packages = [
     ".",
@@ -161,16 +163,16 @@
     "rpm",
   ]
   pruneopts = ""
-  revision = "e9205e74c0a6892241aafdf16bee50bfd56ff94f"
-  version = "v0.9.4"
+  revision = "de75d679901371e3ed0c0a606e160539d5a4b45e"
+  version = "v0.9.5"
 
 [[projects]]
-  digest = "1:302c6eb8e669c997bec516a138b8fc496018faa1ece4c13e445a2749fbe079bb"
+  digest = "1:7ab38c15bd21e056e3115c8b526d201eaf74e0308da9370997c6b3c187115d36"
   name = "github.com/imdario/mergo"
   packages = ["."]
   pruneopts = ""
-  revision = "9316a62528ac99aaecb4e47eadd6dc8aa6533d58"
-  version = "v0.3.5"
+  revision = "9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4"
+  version = "v0.3.6"
 
 [[projects]]
   digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"
@@ -178,14 +180,6 @@
   packages = ["."]
   pruneopts = ""
   revision = "0b12d6b5"
-
-[[projects]]
-  digest = "1:b856d8248663c39265a764561c1a1a149783f6cc815feb54a1f3a591b91f6eca"
-  name = "github.com/Masterminds/semver"
-  packages = ["."]
-  pruneopts = ""
-  revision = "c7af12943936e8c39859482e61f0574c2fd7fc75"
-  version = "v1.4.2"
 
 [[projects]]
   digest = "1:9ea83adf8e96d6304f394d40436f2eb44c1dc3250d223b74088cc253a6cd0a1c"
@@ -196,31 +190,31 @@
   version = "v0.0.9"
 
 [[projects]]
-  digest = "1:78229b46ddb7434f881390029bd1af7661294af31f6802e0e1bedaad4ab0af3c"
+  digest = "1:3140e04675a6a91d2a20ea9d10bdadf6072085502e6def6768361260aee4b967"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
   pruneopts = ""
-  revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
-  version = "v0.0.3"
+  revision = "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c"
+  version = "v0.0.4"
 
 [[projects]]
   branch = "master"
-  digest = "1:79cdce64eec1ee539878fcbf7215aa19627551356af180556ef47a5f538e749a"
+  digest = "1:c186d98ef4526297afabdf84bb02076ea2c78e3b52e88ebdac58325f4f923b8b"
   name = "github.com/mattn/go-zglob"
   packages = [
     ".",
     "fastwalk",
   ]
   pruneopts = ""
-  revision = "c436403c742d0b6d8fc37e69eadf33e024fe74fa"
+  revision = "2ea3427bfa539cca900ca2768d8663ecc8a708c1"
 
 [[projects]]
   branch = "master"
-  digest = "1:99651e95333755cbe5c9768c1b80031300acca64a80870b40309202b32585a5a"
+  digest = "1:096a8a9182648da3d00ff243b88407838902b6703fc12657f76890e08d1899bf"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
   pruneopts = ""
-  revision = "3864e76763d94a6df2f9960b16a20a33da9f9a66"
+  revision = "ae18d6b8b3205b561c79e8e5f69bff09736185f4"
 
 [[projects]]
   digest = "1:7365acd48986e205ccb8652cc746f09c8b7876030d53710ea6ef7d0bd0dcd7ca"
@@ -251,25 +245,25 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7a2d59e5fc661ccf4ae7dc301c1a7332ec59b2ee435f78aa3eaa65cacb256370"
+  digest = "1:b001b57f383ecbebb54c3916ca6b8be129a6486d3dbf2dfc722cbb0a0b2a8679"
   name = "golang.org/x/net"
   packages = [
     "context",
     "context/ctxhttp",
   ]
   pruneopts = ""
-  revision = "d0887baf81f4598189d4e12a37c6da86f0bba4d0"
+  revision = "9b4f9f5ad5197c79fd623a3638e70d8b26cef344"
 
 [[projects]]
   branch = "master"
-  digest = "1:a6237bd1fe4eed8524971a2923fcadb54e9584b19516a35d3f76f1c53f603cf9"
+  digest = "1:77478892c6d9d841c7997858d6287884c65b760000f29a25d7b1a6b6ada5f308"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
     "internal",
   ]
   pruneopts = ""
-  revision = "ef147856a6ddbb60760db74283d2424e98c87bff"
+  revision = "9dcd33a902f40452422c2367fefcb95b54f9f8f8"
 
 [[projects]]
   branch = "master"
@@ -281,14 +275,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:677e38cad6833ad266ec843739d167755eda1e6f2d8af1c63102b0426ad820db"
+  digest = "1:d374223fb7ea5917aac51ec87e538a335b8c082333d9e98d70a40a2d667d0a62"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = ""
-  revision = "ac767d655b305d4e9612f5f6e33120b9176c4ad4"
+  revision = "731415f00dce967a133e841b3079eda31c996761"
 
 [[projects]]
-  digest = "1:c1771ca6060335f9768dff6558108bc5ef6c58506821ad43377ee23ff059e472"
+  digest = "1:8c432632a230496c35a15cfdf441436f04c90e724ad99c8463ef0c82bbe93edb"
   name = "google.golang.org/appengine"
   packages = [
     "internal",
@@ -300,8 +294,8 @@
     "urlfetch",
   ]
   pruneopts = ""
-  revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
-  version = "v1.1.0"
+  revision = "ae0ab99deb4dc413a2b4bd6c8bdd0eb67f1e4d06"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "v2"
@@ -315,6 +309,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/Masterminds/semver",
     "github.com/alecthomas/kingpin",
     "github.com/apex/log",
     "github.com/apex/log/handlers/cli",
@@ -331,7 +326,6 @@
     "github.com/goreleaser/nfpm/deb",
     "github.com/goreleaser/nfpm/rpm",
     "github.com/imdario/mergo",
-    "github.com/Masterminds/semver",
     "github.com/mattn/go-zglob",
     "github.com/mitchellh/go-homedir",
     "github.com/pkg/errors",
