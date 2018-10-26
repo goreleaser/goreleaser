@@ -133,7 +133,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 	}
 
 	var file = filepath.Join(primeDir, "meta", "snap.yaml")
-	log.WithField("file", file).Debug("snap metadata")
+	log.WithField("file", file).Debug("creating snap metadata")
 
 	var metadata = &Metadata{
 		Version:       ctx.Version,
@@ -187,7 +187,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 	}
 
 	var snap = filepath.Join(ctx.Config.Dist, folder+".snap")
-	log.WithField("snap", snap)
+	log.WithField("snap", snap).Info("creating")
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "snapcraft", "pack", primeDir, "--output", snap)
 	if out, err = cmd.CombinedOutput(); err != nil {
