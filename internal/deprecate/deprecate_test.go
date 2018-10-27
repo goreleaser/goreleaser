@@ -1,7 +1,8 @@
 package deprecate
 
 import (
-	"bytes"
+	"flag"
+	"io/ioutil"
 	"testing"
 
 	"github.com/apex/log"
@@ -10,20 +11,31 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func init() {
-	color.NoColor = true
-}
+var update = flag.Bool("update", false, "update .golden files")
 
 func TestNotice(t *testing.T) {
-	var out bytes.Buffer
-	cli.Default.Writer = &out
-	log.SetHandler(cli.Default)
+	f, err := ioutil.TempFile("", "output.txt")
+	require.NoError(t, err)
+
+	color.NoColor = true
+	log.SetHandler(cli.New(f))
 
 	log.Info("first")
 	Notice("foo.bar.whatever")
 	log.Info("last")
 
-	require.Contains(t, out.String(), "   • first")
-	require.Contains(t, out.String(), "      • DEPRECATED: `foo.bar.whatever` should not be used anymore, check https://goreleaser.com/deprecations#foo-bar-whatever for more info.")
-	require.Contains(t, out.String(), "   • last")
+	require.NoError(t, f.Close())
+
+	bts, err := ioutil.ReadFile(f.Name())
+	require.NoError(t, err)
+
+	const golden = "testdata/output.txt.golden"
+	if *update {
+		require.NoError(t, ioutil.WriteFile(golden, bts, 0655))
+	}
+
+	gbts, err := ioutil.ReadFile(golden)
+	require.NoError(t, err)
+
+	require.Equal(t, string(gbts), string(bts))
 }
