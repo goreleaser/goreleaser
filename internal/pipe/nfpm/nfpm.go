@@ -6,15 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/nfpm"
-	"github.com/imdario/mergo"
-	"github.com/pkg/errors"
-
-	// blank imports here because the formats implementations need register
-	// themselves
-	_ "github.com/goreleaser/nfpm/deb"
-	_ "github.com/goreleaser/nfpm/rpm"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -22,6 +13,11 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/nfpm"
+	_ "github.com/goreleaser/nfpm/deb" // blank import to register the format
+	_ "github.com/goreleaser/nfpm/rpm" // blank import to register the format
+	"github.com/imdario/mergo"
+	"github.com/pkg/errors"
 )
 
 const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
@@ -154,7 +150,7 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	}
 
 	var path = filepath.Join(ctx.Config.Dist, name+"."+format)
-	log.WithField("file", path)
+	log.WithField("file", path).Info("creating")
 	w, err := os.Create(path)
 	if err != nil {
 		return err
