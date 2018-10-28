@@ -20,7 +20,8 @@ var fakeArtifact = artifact.Artifact{
 }
 
 type fakeBuilder struct {
-	fail bool
+	fail            bool
+	receivedOptions api.Options
 }
 
 func (*fakeBuilder) WithDefaults(build config.Build) config.Build {
@@ -30,6 +31,7 @@ func (*fakeBuilder) WithDefaults(build config.Build) config.Build {
 var errFailedBuild = errors.New("fake builder failed")
 
 func (f *fakeBuilder) Build(ctx *context.Context, build config.Build, options api.Options) error {
+	f.receivedOptions = options
 	if f.fail {
 		return errFailedBuild
 	}
@@ -49,6 +51,28 @@ func TestPipeDescription(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
+	builder := api.For("fake").(*fakeBuilder)
+
+	ctx := getBuildContext("darwin")
+
+	error := doBuild(ctx, ctx.Config.Builds[0], "{{.Env.MYOS}}_{{.Env.MYARCH}}")
+	assert.NoError(t, error)
+	assert.Equal(t, "darwin_amd64", builder.receivedOptions.Target)
+	assert.Equal(t, "/tmp/darwin_amd64/testing.v1.2.3", builder.receivedOptions.Path)
+}
+
+func TestBuildWindows(t *testing.T) {
+	builder := api.For("fake").(*fakeBuilder)
+
+	ctx := getBuildContext("windows")
+
+	error := doBuild(ctx, ctx.Config.Builds[0], "{{.Env.MYOS}}_{{.Env.MYARCH}}")
+	assert.NoError(t, error)
+	assert.Equal(t, "windows_amd64", builder.receivedOptions.Target)
+	assert.Equal(t, "/tmp/windows_amd64/testing.v1.2.3.exe", builder.receivedOptions.Path)
+}
+
+func getBuildContext(os string) *context.Context {
 	var config = config.Project{
 		Builds: []config.Build{
 			{
@@ -58,8 +82,9 @@ func TestBuild(t *testing.T) {
 				Env:    []string{"BLAH=1"},
 			},
 		},
+		Dist: "/tmp/",
 	}
-	var ctx = &context.Context{
+	return &context.Context{
 		Artifacts: artifact.New(),
 		Git: context.GitInfo{
 			CurrentTag: "v1.2.3",
@@ -67,9 +92,11 @@ func TestBuild(t *testing.T) {
 		},
 		Version: "1.2.3",
 		Config:  config,
+		Env: map[string]string{
+			"MYOS":   os,
+			"MYARCH": "amd64",
+		},
 	}
-	error := doBuild(ctx, ctx.Config.Builds[0], "darwin_amd64")
-	assert.NoError(t, error)
 }
 
 func TestRunPipe(t *testing.T) {

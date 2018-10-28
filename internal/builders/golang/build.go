@@ -7,7 +7,6 @@ import (
 	"go/token"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -80,10 +79,15 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 
 	cmd = append(cmd, "-o", options.Path, build.Main)
 
-	target, err := newBuildTarget(options.Target)
+	target, err := parseTarget(options.Target)
 	if err != nil {
 		return err
 	}
+
+	if shouldSkip(ctx, build, target) {
+		return nil
+	}
+
 	var env = append(build.Env, target.Env()...)
 	if err := run(ctx, cmd, env); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", options.Target)
@@ -103,16 +107,36 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
+func shouldSkip(ctx *context.Context, build config.Build, target target) bool {
+	if !target.valid() {
+		log.WithField("target", target).
+			Info("skipped invalid build")
+		return true
+	}
+
+	if target.ignored(ctx, build.Ignore) {
+		log.WithField("target", target).
+			Info("skipped ignored build")
+		return true
+	}
+
+	return false
+}
+
 func processFlags(ctx *context.Context, flags []string, flagPrefix string) ([]string, error) {
 	processed := make([]string, 0, len(flags))
 	for _, rawFlag := range flags {
-		flag, err := tmpl.New(ctx).Apply(rawFlag)
+		flag, err := processTemplate(ctx, rawFlag)
 		if err != nil {
 			return nil, err
 		}
 		processed = append(processed, flagPrefix+flag)
 	}
 	return processed, nil
+}
+
+func processTemplate(ctx *context.Context, template string) (string, error) {
+	return tmpl.New(ctx).Apply(template)
 }
 
 func run(ctx *context.Context, command, env []string) error {
@@ -127,32 +151,6 @@ func run(ctx *context.Context, command, env []string) error {
 		return errors.New(string(out))
 	}
 	return nil
-}
-
-type buildTarget struct {
-	os, arch, arm string
-}
-
-func newBuildTarget(s string) (buildTarget, error) {
-	var t = buildTarget{}
-	parts := strings.Split(s, "_")
-	if len(parts) < 2 {
-		return t, fmt.Errorf("%s is not a valid build target", s)
-	}
-	t.os = parts[0]
-	t.arch = parts[1]
-	if len(parts) == 3 {
-		t.arm = parts[2]
-	}
-	return t, nil
-}
-
-func (b buildTarget) Env() []string {
-	return []string{
-		"GOOS=" + b.os,
-		"GOARCH=" + b.arch,
-		"GOARM=" + b.arm,
-	}
 }
 
 func checkMain(build config.Build) error {

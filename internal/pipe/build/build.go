@@ -96,9 +96,14 @@ func runHook(ctx *context.Context, env []string, hook string) error {
 }
 
 func doBuild(ctx *context.Context, build config.Build, target string) error {
+	target, err := processTemplate(ctx, target)
+	if err != nil {
+		return err
+	}
+
 	var ext = extFor(target)
 
-	binary, err := tmpl.New(ctx).Apply(build.Binary)
+	binary, err := processTemplate(ctx, build.Binary)
 	if err != nil {
 		return err
 	}
@@ -113,6 +118,10 @@ func doBuild(ctx *context.Context, build config.Build, target string) error {
 		Path:   path,
 		Ext:    ext,
 	})
+}
+
+func processTemplate(ctx *context.Context, template string) (string, error) {
+	return tmpl.New(ctx).Apply(template)
 }
 
 func extFor(target string) string {

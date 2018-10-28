@@ -26,32 +26,28 @@ func TestAllBuildTargets(t *testing.T) {
 			"6",
 			"7",
 		},
-		Ignore: []config.IgnoredBuild{
-			{
-				Goos:   "darwin",
-				Goarch: "386",
-			}, {
-				Goos:   "linux",
-				Goarch: "arm",
-				Goarm:  "7",
-			}, {
-				Goos:   "openbsd",
-				Goarch: "arm",
-			},
-		},
 	}
 	assert.Equal(t, []string{
 		"linux_386",
 		"linux_amd64",
 		"linux_arm_6",
+		"linux_arm_7",
 		"linux_arm64",
+		"darwin_386",
 		"darwin_amd64",
+		"darwin_arm_6",
+		"darwin_arm_7",
+		"darwin_arm64",
 		"freebsd_386",
 		"freebsd_amd64",
 		"freebsd_arm_6",
 		"freebsd_arm_7",
+		"freebsd_arm64",
 		"openbsd_386",
 		"openbsd_amd64",
+		"openbsd_arm_6",
+		"openbsd_arm_7",
+		"openbsd_arm64",
 	}, matrix(build))
 }
 
@@ -99,7 +95,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 	}
 	for _, p := range platforms {
 		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {
-			assert.Equal(t, p.valid, valid(target{p.os, p.arch, ""}))
+			assert.Equal(t, p.valid, target{p.os, p.arch, ""}.valid())
 		})
 	}
 }

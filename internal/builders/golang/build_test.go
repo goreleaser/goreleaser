@@ -41,9 +41,11 @@ func TestWithDefaults(t *testing.T) {
 			},
 			targets: []string{
 				"linux_amd64",
-				"darwin_amd64",
-				"windows_amd64",
 				"linux_arm_6",
+				"darwin_amd64",
+				"darwin_arm_6",
+				"windows_amd64",
+				"windows_arm_6",
 			},
 		},
 		"empty": {
@@ -85,14 +87,25 @@ func TestBuild(t *testing.T) {
 					"darwin_amd64",
 					"windows_amd64",
 					"linux_arm_6",
+					"invalid-os_invalid-arch",
+					"windows_386",
 				},
 				Asmflags: []string{".=", "all="},
 				Gcflags:  []string{"all="},
+				Ignore: []config.IgnoredBuild{
+					{
+						Goos:   "windows",
+						Goarch: "386",
+					},
+				},
 			},
 		},
 	}
 	var ctx = context.New(config)
 	ctx.Git.CurrentTag = "5.6.7"
+	ctx.Env["GOHOSTOS"] = "linux"
+	ctx.Env["GOHOSTARCH"] = "amd64"
+
 	var build = ctx.Config.Builds[0]
 	for _, target := range build.Targets {
 		var ext string
