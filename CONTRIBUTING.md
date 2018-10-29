@@ -10,7 +10,7 @@ conduct](/CODE_OF_CONDUCT.md).
 Prerequisites:
 
 - `make`
-- [Go 1.10+](https://golang.org/doc/install)
+- [Go 1.11+](https://golang.org/doc/install)
 - `rpmbuild` (`apt get install rpm`/`brew install rpm`)
 - [snapcraft](https://snapcraft.io/)
 - [Docker](https://www.docker.com/)
