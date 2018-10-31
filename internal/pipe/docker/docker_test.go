@@ -2,6 +2,7 @@ package docker
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -811,25 +812,17 @@ func Test_processImageTemplates(t *testing.T) {
 }
 
 func TestLinkFile(t *testing.T) {
-	const srcFile = "/tmp/test"
-	const dstFile = "/tmp/linked"
-	err := ioutil.WriteFile(srcFile, []byte("foo"), 0644)
-	if err != nil {
-		t.Log("Cannot setup test file")
-		t.Fail()
-	}
-	err = link(srcFile, dstFile)
-	if err != nil {
-		t.Log("Failed to link: ", err)
-		t.Fail()
-	}
-	if inode(srcFile) != inode(dstFile) {
-		t.Log("Inodes do not match, destination file is not a link")
-		t.Fail()
-	}
-	// cleanup
-	os.Remove(srcFile)
-	os.Remove(dstFile)
+	src, err := ioutil.TempFile("", "src")
+	require.NoError(t, err)
+	require.NoError(t, src.Close())
+	defer os.Remove(src.Name())
+	dst := filepath.Join(filepath.Dir(src.Name()), "dst")
+	defer os.Remove(dst)
+	fmt.Println("src:", src.Name())
+	fmt.Println("dst:", dst)
+	require.NoError(t, ioutil.WriteFile(src.Name(), []byte("foo"), 0644))
+	require.NoError(t, link(src.Name(), dst))
+	require.Equal(t, inode(src.Name()), inode(dst))
 }
 
 func TestLinkDirectory(t *testing.T) {
