@@ -182,9 +182,9 @@ steps:
 
 ```
 
-## SemaphoreCI 2.0
+## Semaphore 2.0
 
-In [SempahoreCI 2.0](https://semaphoreci.com) each project starts with the
+In [Sempahore 2.0](https://semaphoreci.com) each project starts with the
 default pipeline specified in .semaphore/semaphore.yml.
 
 ```yml
