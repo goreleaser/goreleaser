@@ -14,12 +14,12 @@ Prerequisites:
 - `rpmbuild` (`apt get install rpm`/`brew install rpm`)
 - [snapcraft](https://snapcraft.io/)
 - [Docker](https://www.docker.com/)
+- `gpg` (probably already installed on your system)
 
-Clone `goreleaser` from source into `$GOPATH`:
+Clone `goreleaser` anywhere:
 
 ```sh
-$ go get -d github.com/goreleaser/goreleaser
-$ cd $GOPATH/src/github.com/goreleaser/goreleaser
+$ git clone git@github.com:goreleaser/goreleaser.git
 ```
 
 Install the build and lint dependencies:
