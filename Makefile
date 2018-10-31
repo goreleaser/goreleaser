@@ -45,7 +45,7 @@ build:
 .PHONY: build
 
 # Generate the static documentation
-static: favicon
+static:
 	@hugo --enableGitInfo --source www
 .PHONY: static
 
