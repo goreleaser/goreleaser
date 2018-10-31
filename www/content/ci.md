@@ -250,8 +250,8 @@ blocks:
           - curl -sL https://git.io/goreleaser | bash
 ```
 
-The following YAML file, createSecret.yml create a new secret item that is called goreleaser
-with one environment variables, named GITHUB_TOKEN:
+The following YAML file, `createSecret.yml` creates a new secret item that is called goreleaser
+with one environment variable, named GITHUB_TOKEN:
 
 ```yml
 apiVersion: v1alpha
