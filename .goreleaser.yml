@@ -24,13 +24,12 @@ changelog:
     - Merge pull request
     - Merge branch
 dockers:
-- image: goreleaser/goreleaser
+- image_templates:
+  - 'goreleaser/goreleaser:{{ .Tag }}'
+  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
+  - 'goreleaser/goreleaser:latest'
   extra_files:
   - scripts/entrypoint.sh
-  tag_templates:
-  - '{{ .Tag }}'
-  - 'v{{ .Major }}.{{ .Minor }}'
-  - 'latest'
 archive:
   name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
   replacements:
