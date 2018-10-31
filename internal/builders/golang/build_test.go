@@ -79,6 +79,7 @@ func TestBuild(t *testing.T) {
 	var config = config.Project{
 		Builds: []config.Build{
 			{
+				Env:    []string{"GO111MODULE=off"},
 				Binary: "foo",
 				Targets: []string{
 					"linux_amd64",
@@ -328,6 +329,7 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 	var config = config.Project{
 		Builds: []config.Build{
 			{
+				Env:    []string{"GO111MODULE=off"},
 				Binary: "foo",
 				Hooks:  config.Hooks{},
 				Targets: []string{
