@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -99,6 +100,7 @@ func signone(ctx *context.Context, artifact artifact.Artifact) (string, error) {
 	// tells the scanner to ignore this.
 	// #nosec
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
+	log.WithField("cmd", cmd.Args).Info("running")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("sign: %s failed with %q", cfg.Cmd, string(output))
