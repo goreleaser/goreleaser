@@ -45,9 +45,15 @@ build:
 .PHONY: build
 
 # Generate the static documentation
-static:
+static: depgraph favicon
 	@hugo --enableGitInfo --source www
 .PHONY: static
+
+# Generate the dependencies graph
+depgraph:
+	GO111MODULE=off go get github.com/kisielk/godepgraph
+	godepgraph -horizontal -s -o github.com/goreleaser/goreleaser . | dot -Tsvg -o www/static/deps.svg
+.PHONY: depgraph
 
 favicon:
 	wget -O www/static/avatar.png https://avatars2.githubusercontent.com/u/24697112
@@ -55,14 +61,9 @@ favicon:
 	convert www/static/avatar.png -resize x120 www/static/apple-touch-icon.png
 .PHONY: favicon
 
-serve:
-	@hugo server --enableGitInfo --watch --source www --disableFastRender
+serve: depgraph favicon
+	@hugo server --enableGitInfo --watch --source www
 .PHONY: serve
-
-depgraph:
-	go get github.com/kisielk/godepgraph
-	godepgraph -horizontal -s -o github.com/goreleaser/goreleaser . | dot -Tsvg -o www/static/deps.svg
-.PHONY: depgraph
 
 # Show to-do items per file.
 todo:
