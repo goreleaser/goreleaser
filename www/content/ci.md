@@ -249,5 +249,5 @@ blocks:
         commands:
           - curl -sL https://git.io/goreleaser | bash
 ```
-Check [Managing Secrets] (https://docs.semaphoreci.com/article/15-secrets) for
+Check [Managing Secrets](https://docs.semaphoreci.com/article/15-secrets) for
 how to encrypt your github token.
