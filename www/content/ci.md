@@ -182,7 +182,7 @@ steps:
 
 ```
 
-## Semaphore 2.0
+## Semaphore
 
 In [Sempahore 2.0](https://semaphoreci.com) each project starts with the
 default pipeline specified in .semaphore/semaphore.yml.
@@ -249,5 +249,20 @@ blocks:
         commands:
           - curl -sL https://git.io/goreleaser | bash
 ```
+
+The following YAML file, createSecret.yml create a new secret item that is called goreleaser
+with one environment variables, named GITHUB_TOKEN:
+
+```yml
+apiVersion: v1alpha
+kind: Secret
+metadata:
+  name: goreleaser
+data:
+  env_vars:
+    - name: GITHUB_TOKEN
+      value: "4afk4388304hfhei34950dg43245"
+```
+
 Check [Managing Secrets](https://docs.semaphoreci.com/article/15-secrets) for
-how to encrypt your github token.
+more detailed documentation.
