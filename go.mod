@@ -11,7 +11,7 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
-	github.com/goreleaser/nfpm v0.9.6
+	github.com/goreleaser/nfpm v0.9.7
 	github.com/imdario/mergo v0.3.6
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
