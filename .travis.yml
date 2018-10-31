@@ -11,6 +11,7 @@ addons:
     - snapd
 env:
   - PATH=/snap/bin:$PATH
+  - GO111MODULE=on
 install:
   - make setup
   - npm install -g prettier
