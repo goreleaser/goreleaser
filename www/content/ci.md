@@ -211,7 +211,7 @@ blocks:
         - name: "Lint"
           commands:
             - go get ./...
-            - revive -formatter friendly -config lint.toml ./...
+            - go test ./...
 
 # On Semaphore 2.0 deployment and delivery is managed with promotions,
 # which may be automatic or manual and optionally depend on conditions.
@@ -223,6 +223,7 @@ promotions:
            branch:
              - "^refs/tags/v*"
 ```
+
 Pipeline file in .semaphore/goreleaser.yml:
 
 ```yml
@@ -236,7 +237,7 @@ blocks:
   - name: "Release"
     task:
       secrets:
-        - name: GH_TOKEN
+        - name: goreleaser
       prologue:
         commands:
           - sem-version go 1.11
@@ -248,3 +249,5 @@ blocks:
         commands:
           - curl -sL https://git.io/goreleaser | bash
 ```
+Check [Managing Secrets] (https://docs.semaphoreci.com/article/15-secrets) for
+how to encrypt your github token.
