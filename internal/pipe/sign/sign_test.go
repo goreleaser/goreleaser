@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 	rand.Seed(time.Now().UnixNano())
 	keyring = fmt.Sprintf("/tmp/gorel_gpg_test.%d", rand.Int())
 	fmt.Println("copying", originKeyring, "to", keyring)
-	if _, err := exec.Command("cp", "-Rf", originKeyring, keyring).CombinedOutput(); err != nil {
+	if err := exec.Command("cp", "-Rf", originKeyring, keyring).Run(); err != nil {
 		fmt.Printf("failed to copy %s to %s: %s", originKeyring, keyring, err)
 		os.Exit(1)
 	}
