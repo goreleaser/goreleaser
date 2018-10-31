@@ -2,18 +2,36 @@ package sign
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
 )
+
+var originKeyring = "testdata/gnupg"
+var keyring string
+
+func TestMain(m *testing.M) {
+	rand.Seed(time.Now().UnixNano())
+	keyring = fmt.Sprintf("/tmp/gorel_gpg_test.%d", rand.Int())
+	fmt.Println("copying", originKeyring, "to", keyring)
+	if _, err := exec.Command("cp", "-Rf", originKeyring, keyring).CombinedOutput(); err != nil {
+		fmt.Printf("failed to copy %s to %s: %s", originKeyring, keyring, err)
+		os.Exit(1)
+	}
+	defer os.RemoveAll(keyring)
+	os.Exit(m.Run())
+}
 
 func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.String())
@@ -50,9 +68,6 @@ func TestSignInvalidArtifacts(t *testing.T) {
 }
 
 func TestSignArtifacts(t *testing.T) {
-	// fix permission on keyring dir to suppress warning about insecure permissions
-	assert.NoError(t, os.Chmod(keyring, 0700))
-
 	tests := []struct {
 		desc       string
 		ctx        *context.Context
@@ -78,14 +93,13 @@ func TestSignArtifacts(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.desc, func(t *testing.T) {
-			testSign(t, tt.ctx, tt.signatures)
+	for _, test := range tests {
+		t.Run(test.desc, func(tt *testing.T) {
+			testSign(tt, test.ctx, test.signatures)
 		})
 	}
 }
 
-const keyring = "testdata/gnupg"
 const user = "nopass"
 
 func testSign(t *testing.T, ctx *context.Context, signatures []string) {
