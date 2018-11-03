@@ -21,7 +21,7 @@ type Pipe struct{}
 
 // String returns the description of the pipe
 func (Pipe) String() string {
-	return "releasing to s3"
+	return "S3"
 }
 
 // Default sets the pipe defaults

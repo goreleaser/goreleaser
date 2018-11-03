@@ -15,7 +15,7 @@ import (
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "releasing to GitHub"
+	return "GitHub Releases"
 }
 
 // Default sets the pipe defaults

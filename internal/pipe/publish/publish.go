@@ -23,7 +23,7 @@ import (
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "publishing artifacts"
+	return "publishing"
 }
 
 // Publisher should be implemented by pipes that want to publish artifacts

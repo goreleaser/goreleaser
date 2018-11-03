@@ -40,7 +40,7 @@ type Pipe struct{}
 
 // String returns the description of the pipe
 func (Pipe) String() string {
-	return "releasing to Artifactory"
+	return "Artifactory"
 }
 
 // Default sets the pipe defaults
