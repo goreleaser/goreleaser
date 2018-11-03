@@ -161,8 +161,8 @@ func TestDefaultPipeDisabled(t *testing.T) {
 		},
 	})
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "", ctx.Config.Release.GitHub.Name)
-	assert.Equal(t, "", ctx.Config.Release.GitHub.Owner)
+	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
+	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
 }
 
 func TestDefaultFilled(t *testing.T) {
