@@ -372,6 +372,11 @@ func TestDefault(t *testing.T) {
 	assert.Equal(t, `bin.install "foo"`, ctx.Config.Brew.Install)
 }
 
+func TestGHFolder(t *testing.T) {
+	assert.Equal(t, "bar.rb", ghFormulaPath("", "bar.rb"))
+	assert.Equal(t, "fooo/bar.rb", ghFormulaPath("fooo", "bar.rb"))
+}
+
 type DummyClient struct {
 	CreatedFile bool
 	Content     string
