@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // GitHubURLs holds the URLs to be used when using github enterprise
