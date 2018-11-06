@@ -131,13 +131,20 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return pipe.Skip("release is marked as draft")
 	}
 
-	path = filepath.Join(ctx.Config.Brew.Folder, filename)
-	log.WithField("formula", path).
+	var gpath = ghFormulaPath(ctx.Config.Brew.Folder, filename)
+	log.WithField("formula", gpath).
 		WithField("repo", ctx.Config.Brew.GitHub.String()).
 		Info("pushing")
 
 	var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
-	return client.CreateFile(ctx, ctx.Config.Brew.CommitAuthor, ctx.Config.Brew.GitHub, content, path, msg)
+	return client.CreateFile(ctx, ctx.Config.Brew.CommitAuthor, ctx.Config.Brew.GitHub, content, gpath, msg)
+}
+
+func ghFormulaPath(folder, filename string) string {
+	if folder == "" {
+		return filename
+	}
+	return folder + "/" + filename
 }
 
 func getFormat(ctx *context.Context) string {
