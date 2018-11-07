@@ -92,7 +92,12 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 	defer archiveFile.Close() // nolint: errcheck
 	var log = log.WithField("archive", archivePath)
 	log.Info("creating")
-	var a = archive.New(archiveFile)
+	var a = EnhancedArchive{
+		a: archive.New(archiveFile),
+	}
+	if ctx.Config.Archive.WrapInDirectory {
+		a.wrap = folder
+	}
 	defer a.Close() // nolint: errcheck
 
 	files, err := findFiles(ctx)
@@ -100,15 +105,12 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 		return fmt.Errorf("failed to find files to archive: %s", err.Error())
 	}
 	for _, f := range files {
-		log.Debugf("adding %s", f)
-		if err = a.Add(wrap(ctx, f, folder), f); err != nil {
+		if err = a.Add(f, f); err != nil {
 			return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
 		}
 	}
 	for _, binary := range binaries {
-		var bin = wrap(ctx, binary.Name, folder)
-		log.Debugf("adding %s", bin)
-		if err := a.Add(bin, binary.Path); err != nil {
+		if err := a.Add(binary.Name, binary.Path); err != nil {
 			return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
 		}
 	}
@@ -154,14 +156,6 @@ func findFiles(ctx *context.Context) (result []string, err error) {
 	return
 }
 
-// Wrap archive files with folder if set in config.
-func wrap(ctx *context.Context, name, folder string) string {
-	if ctx.Config.Archive.WrapInDirectory {
-		return filepath.Join(folder, name)
-	}
-	return name
-}
-
 func packageFormat(ctx *context.Context, platform string) string {
 	for _, override := range ctx.Config.Archive.FormatOverrides {
 		if strings.HasPrefix(platform, override.Goos) {
@@ -169,4 +163,24 @@ func packageFormat(ctx *context.Context, platform string) string {
 		}
 	}
 	return ctx.Config.Archive.Format
+}
+
+// EnhancedArchive is an archive.Archive implementation which decorates an
+// archive.Archive adding wrap directory support, logging and windows
+// backslash fixes.
+type EnhancedArchive struct {
+	a    archive.Archive
+	wrap string
+}
+
+// Add adds a file
+func (d EnhancedArchive) Add(name, path string) error {
+	name = strings.Replace(filepath.Join(d.wrap, name), "\\", "/", -1)
+	log.Debugf("adding file: %s as %s", path, name)
+	return d.a.Add(name, path)
+}
+
+// Close closes a file
+func (d EnhancedArchive) Close() error {
+	return d.a.Close()
 }
