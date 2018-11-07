@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -141,10 +142,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 }
 
 func ghFormulaPath(folder, filename string) string {
-	if folder == "" {
-		return filename
-	}
-	return folder + "/" + filename
+	return path.Join(folder, filename)
 }
 
 func getFormat(ctx *context.Context) string {
