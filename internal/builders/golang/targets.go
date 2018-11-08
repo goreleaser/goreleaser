@@ -91,6 +91,7 @@ func valid(target target) bool {
 }
 
 // list from https://golang.org/doc/install/source#environment
+// nolint: gochecknoglobals
 var validTargets = []string{
 	"androidarm",
 	"darwin386",

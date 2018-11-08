@@ -33,6 +33,7 @@ type Defaulter interface {
 }
 
 // Defaulters is the list of defaulters
+// nolint: gochecknoglobals
 var Defaulters = []Defaulter{
 	env.Pipe{},
 	snapshot.Pipe{},
