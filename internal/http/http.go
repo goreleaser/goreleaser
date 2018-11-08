@@ -37,8 +37,11 @@ type asset struct {
 
 type assetOpenFunc func(string, *artifact.Artifact) (*asset, error)
 
+// nolint: gochecknoglobals
 var assetOpen assetOpenFunc
 
+// TODO: fix this.
+// nolint: gochecknoinits
 func init() {
 	assetOpenReset()
 }
@@ -123,6 +126,7 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 
 	// Handle every configured put
 	for _, put := range puts {
+		put := put
 		filters := []artifact.Filter{}
 		if put.Checksum {
 			filters = append(filters, artifact.ByType(artifact.Checksum))

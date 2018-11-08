@@ -31,6 +31,7 @@ type Piper interface {
 }
 
 // Pipeline contains all pipe implementations in order
+// nolint: gochecknoglobals
 var Pipeline = []Piper{
 	defaults.Pipe{},        // load default configs
 	before.Pipe{},          // run global hooks before build

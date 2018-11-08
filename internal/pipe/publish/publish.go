@@ -34,6 +34,7 @@ type Publisher interface {
 	Publish(ctx *context.Context) error
 }
 
+// nolint: gochecknoglobals
 var publishers = []Publisher{
 	s3.Pipe{},
 	put.Pipe{},
@@ -47,15 +48,13 @@ var publishers = []Publisher{
 	scoop.Pipe{},
 }
 
-var bold = color.New(color.Bold)
-
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
 	for _, publisher := range publishers {
-		log.Infof(bold.Sprint(publisher.String()))
+		log.Infof(color.New(color.Bold).Sprint(publisher.String()))
 		if err := handle(publisher.Publish(ctx)); err != nil {
 			return errors.Wrapf(err, "%s: failed to publish artifacts", publisher.String())
 		}
