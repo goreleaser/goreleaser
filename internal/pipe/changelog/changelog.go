@@ -143,6 +143,7 @@ func previous(tag string) (result string, err error) {
 	return
 }
 
+// nolint: gochecknoglobals
 var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
 
 // isSHA1 te lets us know if the ref is a SHA1 or not

@@ -19,12 +19,6 @@ const bodyTemplateText = `{{ .ReleaseNotes }}
 {{- end }}
 `
 
-var bodyTemplate *template.Template
-
-func init() {
-	bodyTemplate = template.Must(template.New("release").Parse(bodyTemplateText))
-}
-
 func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 	var out bytes.Buffer
 	// nolint:prealloc
@@ -32,6 +26,7 @@ func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 	for _, a := range ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImage)).List() {
 		dockers = append(dockers, a.Name)
 	}
+	var bodyTemplate = template.Must(template.New("release").Parse(bodyTemplateText))
 	err := bodyTemplate.Execute(&out, struct {
 		ReleaseNotes string
 		DockerImages []string
