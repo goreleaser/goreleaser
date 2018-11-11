@@ -103,12 +103,11 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 	defer archiveFile.Close() // nolint: errcheck
 	var log = log.WithField("archive", archivePath)
 	log.Info("creating")
-	var a = EnhancedArchive{
-		a: archive.New(archiveFile),
-	}
+	var wrap string
 	if ctx.Config.Archive.WrapInDirectory {
-		a.wrap = folder
+		wrap = folder
 	}
+	var a = NewEnhancedArchive(archive.New(archiveFile), wrap)
 	defer a.Close() // nolint: errcheck
 
 	files, err := findFiles(ctx)
@@ -176,22 +175,37 @@ func packageFormat(ctx *context.Context, platform string) string {
 	return ctx.Config.Archive.Format
 }
 
+// NewEnhancedArchive enhances a pre-existing archive.Archive instance
+// with this pipe specifics.
+func NewEnhancedArchive(a archive.Archive, wrap string) archive.Archive {
+	return EnhancedArchive{
+		a:     a,
+		wrap:  wrap,
+		files: map[string]string{},
+	}
+}
+
 // EnhancedArchive is an archive.Archive implementation which decorates an
 // archive.Archive adding wrap directory support, logging and windows
 // backslash fixes.
 type EnhancedArchive struct {
-	a    archive.Archive
-	wrap string
+	a     archive.Archive
+	wrap  string
+	files map[string]string
 }
 
 // Add adds a file
 func (d EnhancedArchive) Add(name, path string) error {
 	name = strings.Replace(filepath.Join(d.wrap, name), "\\", "/", -1)
 	log.Debugf("adding file: %s as %s", path, name)
+	if _, ok := d.files[name]; ok {
+		return fmt.Errorf("file %s already exists in the archive", name)
+	}
+	d.files[name] = path
 	return d.a.Add(name, path)
 }
 
-// Close closes a file
+// Close closes the underlying archive
 func (d EnhancedArchive) Close() error {
 	return d.a.Close()
 }
