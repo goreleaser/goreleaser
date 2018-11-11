@@ -261,7 +261,6 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 	})
 	assert.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: globbing failed for pattern [x-]: file does not exist`)
 }
-
 func TestRunPipeWrap(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
@@ -445,4 +444,57 @@ func TestBinaryOverride(t *testing.T) {
 
 		})
 	}
+}
+
+func TestRunPipeSameArchiveFilename(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
+	assert.NoError(t, os.Mkdir(filepath.Join(dist, "windowsamd64"), 0755))
+	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	assert.NoError(t, err)
+	_, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
+	assert.NoError(t, err)
+	var ctx = context.New(
+		config.Project{
+			Dist:        dist,
+			ProjectName: "foobar",
+			Archive: config.Archive{
+				NameTemplate: "same-filename",
+				Files: []string{
+					"README.*",
+					"./foo/**/*",
+				},
+				Format: "tar.gz",
+			},
+		},
+	)
+	ctx.Artifacts.Add(artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "mybin",
+		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]string{
+			"Binary": "mybin",
+		},
+	})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Goos:   "windows",
+		Goarch: "amd64",
+		Name:   "mybin.exe",
+		Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
+		Type:   artifact.Binary,
+		Extra: map[string]string{
+			"Binary":    "mybin",
+			"Extension": ".exe",
+		},
+	})
+	ctx.Version = "0.0.1"
+	ctx.Git.CurrentTag = "v0.0.1"
+	err = Pipe{}.Run(ctx)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "same-filename.tar.gz already exists. Check your archive name template")
 }
