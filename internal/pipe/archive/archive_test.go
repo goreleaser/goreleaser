@@ -5,12 +5,14 @@ import (
 	"archive/zip"
 	"compress/gzip"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/goreleaser/goreleaser/pkg/archive"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -500,4 +502,21 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 	err = Pipe{}.Run(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "same-filename.tar.gz already exists. Check your archive name template")
+}
+
+func TestDuplicateFilesInsideArchive(t *testing.T) {
+	f, err := ioutil.TempFile("", "")
+	require.NoError(t, err)
+	defer f.Close()
+	defer os.Remove(f.Name())
+
+	ff, err := ioutil.TempFile("", "")
+	require.NoError(t, err)
+	defer ff.Close()
+	defer os.Remove(ff.Name())
+
+	a := NewEnhancedArchive(archive.New(f), "")
+	defer a.Close()
+	require.NoError(t, a.Add("foo", ff.Name()))
+	require.EqualError(t, a.Add("foo", ff.Name()), "file foo already exists in the archive")
 }
