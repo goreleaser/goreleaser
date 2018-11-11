@@ -26,10 +26,11 @@ const (
 	defaultBinaryNameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 )
 
+// nolint: gochecknoglobals
+var lock sync.Mutex
+
 // Pipe for archive
-type Pipe struct {
-	lock sync.Mutex
-}
+type Pipe struct{}
 
 func (Pipe) String() string {
 	return "archives"
@@ -63,7 +64,7 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 // Run the pipe
-func (p Pipe) Run(ctx *context.Context) error {
+func (Pipe) Run(ctx *context.Context) error {
 	var g errgroup.Group // TODO: use semerrgroup here
 	var filtered = ctx.Artifacts.Filter(artifact.ByType(artifact.Binary))
 	for group, artifacts := range filtered.GroupByPlatform() {
@@ -73,13 +74,13 @@ func (p Pipe) Run(ctx *context.Context) error {
 			if packageFormat(ctx, artifacts[0].Goos) == "binary" {
 				return skip(ctx, artifacts)
 			}
-			return p.create(ctx, artifacts)
+			return create(ctx, artifacts)
 		})
 	}
 	return g.Wait()
 }
 
-func (p Pipe) create(ctx *context.Context, binaries []artifact.Artifact) error {
+func create(ctx *context.Context, binaries []artifact.Artifact) error {
 	var format = packageFormat(ctx, binaries[0].Goos)
 	folder, err := tmpl.New(ctx).
 		WithArtifact(binaries[0], ctx.Config.Archive.Replacements).
@@ -88,15 +89,17 @@ func (p Pipe) create(ctx *context.Context, binaries []artifact.Artifact) error {
 		return err
 	}
 	archivePath := filepath.Join(ctx.Config.Dist, folder+"."+format)
-	p.lock.Lock()
+	lock.Lock()
 	if _, err := os.Stat(archivePath); !os.IsNotExist(err) {
+		lock.Unlock()
 		return fmt.Errorf("archive named %s already exists. Check your archive name template", archivePath)
 	}
 	archiveFile, err := os.Create(archivePath)
 	if err != nil {
+		lock.Unlock()
 		return fmt.Errorf("failed to create directory %s: %s", archivePath, err.Error())
 	}
-	p.lock.Unlock()
+	lock.Unlock()
 	defer archiveFile.Close() // nolint: errcheck
 	var log = log.WithField("archive", archivePath)
 	log.Info("creating")
