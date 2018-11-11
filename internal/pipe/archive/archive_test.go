@@ -261,6 +261,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 	})
 	assert.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: globbing failed for pattern [x-]: file does not exist`)
 }
+
 func TestRunPipeWrap(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()

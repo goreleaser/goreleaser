@@ -88,7 +88,6 @@ func (p Pipe) create(ctx *context.Context, binaries []artifact.Artifact) error {
 		return err
 	}
 	archivePath := filepath.Join(ctx.Config.Dist, folder+"."+format)
-	log.Info(archivePath)
 	p.lock.Lock()
 	if _, err := os.Stat(archivePath); !os.IsNotExist(err) {
 		return fmt.Errorf("archive named %s already exists. Check your archive name template", archivePath)
