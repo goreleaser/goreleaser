@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/apex/log"
 	"github.com/campoy/unique"
@@ -26,7 +27,9 @@ const (
 )
 
 // Pipe for archive
-type Pipe struct{}
+type Pipe struct {
+	lock sync.Mutex
+}
 
 func (Pipe) String() string {
 	return "archives"
@@ -60,8 +63,8 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 // Run the pipe
-func (Pipe) Run(ctx *context.Context) error {
-	var g errgroup.Group
+func (p Pipe) Run(ctx *context.Context) error {
+	var g errgroup.Group // TODO: use semerrgroup here
 	var filtered = ctx.Artifacts.Filter(artifact.ByType(artifact.Binary))
 	for group, artifacts := range filtered.GroupByPlatform() {
 		log.Debugf("group %s has %d binaries", group, len(artifacts))
@@ -70,13 +73,13 @@ func (Pipe) Run(ctx *context.Context) error {
 			if packageFormat(ctx, artifacts[0].Goos) == "binary" {
 				return skip(ctx, artifacts)
 			}
-			return create(ctx, artifacts)
+			return p.create(ctx, artifacts)
 		})
 	}
 	return g.Wait()
 }
 
-func create(ctx *context.Context, binaries []artifact.Artifact) error {
+func (p Pipe) create(ctx *context.Context, binaries []artifact.Artifact) error {
 	var format = packageFormat(ctx, binaries[0].Goos)
 	folder, err := tmpl.New(ctx).
 		WithArtifact(binaries[0], ctx.Config.Archive.Replacements).
@@ -85,10 +88,16 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 		return err
 	}
 	archivePath := filepath.Join(ctx.Config.Dist, folder+"."+format)
+	log.Info(archivePath)
+	p.lock.Lock()
+	if _, err := os.Stat(archivePath); !os.IsNotExist(err) {
+		return fmt.Errorf("archive named %s already exists. Check your archive name template", archivePath)
+	}
 	archiveFile, err := os.Create(archivePath)
 	if err != nil {
 		return fmt.Errorf("failed to create directory %s: %s", archivePath, err.Error())
 	}
+	p.lock.Unlock()
 	defer archiveFile.Close() // nolint: errcheck
 	var log = log.WithField("archive", archivePath)
 	log.Info("creating")
