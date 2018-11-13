@@ -36,6 +36,7 @@ archive:
   # If set to true and you extract the archive 'goreleaser_Linux_arm64.tar.gz',
   # you get a folder 'goreleaser_Linux_arm64'.
   # If set to false, all files are extracted separately.
+  # You can also set it to a custom folder name.
   # Default is false.
   wrap_in_directory: true
 
