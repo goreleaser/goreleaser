@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/archive"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -90,7 +91,7 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 	}
 	archivePath := filepath.Join(ctx.Config.Dist, folder+"."+format)
 	lock.Lock()
-	if _, err := os.Stat(archivePath); !os.IsNotExist(err) {
+	if _, err = os.Stat(archivePath); !os.IsNotExist(err) {
 		lock.Unlock()
 		return fmt.Errorf("archive named %s already exists. Check your archive name template", archivePath)
 	}
@@ -101,12 +102,17 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 	}
 	lock.Unlock()
 	defer archiveFile.Close() // nolint: errcheck
+
 	var log = log.WithField("archive", archivePath)
 	log.Info("creating")
-	var wrap string
-	if ctx.Config.Archive.WrapInDirectory {
-		wrap = folder
+
+	wrap, err := tmpl.New(ctx).
+		WithArtifact(binaries[0], ctx.Config.Archive.Replacements).
+		Apply(wrapFolder(ctx.Config.Archive))
+	if err != nil {
+		return err
 	}
+
 	var a = NewEnhancedArchive(archive.New(archiveFile), wrap)
 	defer a.Close() // nolint: errcheck
 
@@ -133,6 +139,17 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 		Goarm:  binaries[0].Goarm,
 	})
 	return nil
+}
+
+func wrapFolder(a config.Archive) string {
+	switch a.WrapInDirectory {
+	case "true":
+		return a.NameTemplate
+	case "false":
+		return ""
+	default:
+		return a.WrapInDirectory
+	}
 }
 
 func skip(ctx *context.Context, binaries []artifact.Artifact) error {

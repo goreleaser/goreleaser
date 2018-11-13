@@ -282,8 +282,11 @@ func TestRunPipeWrap(t *testing.T) {
 			Dist: dist,
 			Archive: config.Archive{
 				NameTemplate:    "foo",
-				WrapInDirectory: true,
+				WrapInDirectory: "foo_{{ .Os }}",
 				Format:          "tar.gz",
+				Replacements: map[string]string{
+					"darwin": "macOS",
+				},
 				Files: []string{
 					"README.*",
 				},
@@ -317,7 +320,7 @@ func TestRunPipeWrap(t *testing.T) {
 			break
 		}
 		require.NoError(t, err)
-		require.Equal(t, filepath.Join("foo", n), h.Name)
+		require.Equal(t, filepath.Join("foo_macOS", n), h.Name)
 	}
 }
 
@@ -519,4 +522,23 @@ func TestDuplicateFilesInsideArchive(t *testing.T) {
 	defer a.Close()
 	require.NoError(t, a.Add("foo", ff.Name()))
 	require.EqualError(t, a.Add("foo", ff.Name()), "file foo already exists in the archive")
+}
+
+func TestWrapInDirectory(t *testing.T) {
+	t.Run("false", func(t *testing.T) {
+		require.Equal(t, "", wrapFolder(config.Archive{
+			WrapInDirectory: "false",
+		}))
+	})
+	t.Run("true", func(t *testing.T) {
+		require.Equal(t, "foo", wrapFolder(config.Archive{
+			WrapInDirectory: "true",
+			NameTemplate:    "foo",
+		}))
+	})
+	t.Run("custom", func(t *testing.T) {
+		require.Equal(t, "foobar", wrapFolder(config.Archive{
+			WrapInDirectory: "foobar",
+		}))
+	})
 }
