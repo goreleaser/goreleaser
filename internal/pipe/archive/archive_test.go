@@ -267,6 +267,69 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: globbing failed for pattern [x-]: file does not exist`)
 }
 
+func TestRunPipeInvalidNameTemplate(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
+	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	require.NoError(t, err)
+	var ctx = context.New(
+		config.Project{
+			Dist: dist,
+			Archive: config.Archive{
+				NameTemplate: "foo{{ .fff }",
+				Format:       "zip",
+			},
+		},
+	)
+	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Artifacts.Add(artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "mybin",
+		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]string{
+			"Binary": "mybin",
+		},
+	})
+	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
+}
+
+func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
+	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	require.NoError(t, err)
+	var ctx = context.New(
+		config.Project{
+			Dist: dist,
+			Archive: config.Archive{
+				NameTemplate:    "foo",
+				WrapInDirectory: "foo{{ .fff }",
+				Format:          "zip",
+			},
+		},
+	)
+	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Artifacts.Add(artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "mybin",
+		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]string{
+			"Binary": "mybin",
+		},
+	})
+	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
+}
+
 func TestRunPipeWrap(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
