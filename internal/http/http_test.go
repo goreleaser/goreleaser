@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/pem"
 	"fmt"
-	"io"
 	"io/ioutil"
 	h "net/http"
 	"net/http/httptest"
@@ -14,12 +13,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/require"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/pkg/errors"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAssetOpenDefault(t *testing.T) {
@@ -111,23 +109,6 @@ func TestCheckConfig(t *testing.T) {
 			}
 		})
 	}
-}
-
-func count(r io.Reader) (int64, error) {
-	var (
-		c   int64
-		b   int64
-		err error
-		buf = make([]byte, 16)
-	)
-	for b >= 0 && err == nil {
-		b, err := r.Read(buf)
-		if err != nil {
-			return c, err
-		}
-		c = c + int64(b)
-	}
-	return c, nil
 }
 
 type check struct {
