@@ -203,6 +203,7 @@ func dataFor(ctx *context.Context, artifact artifact.Artifact) (result templateD
 		Install:          split(cfg.Install),
 		Tests:            split(cfg.Test),
 		DownloadStrategy: cfg.DownloadStrategy,
+		CustomRequire:    cfg.CustomRequire,
 	}, nil
 }
 

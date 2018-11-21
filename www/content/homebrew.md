@@ -35,6 +35,10 @@ brew:
   # Default is empty.
   download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
 
+  # Allows you to add a custom require_relative at the top of the formula template
+  # Default is empty
+  custom_require: custom_download_strategy 
+
   # Git author used to commit to the repository.
   # Defaults are shown.
   commit_author:
