@@ -101,6 +101,10 @@ func TestRunPipe(t *testing.T) {
 		"custom_download_strategy": func(ctx *context.Context) {
 			ctx.Config.Brew.DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
 		},
+		"custom_require": func(ctx *context.Context) {
+			ctx.Config.Brew.DownloadStrategy = "CustomDownloadStrategy"
+			ctx.Config.Brew.CustomRequire = "custom_download_strategy"
+		},
 		"binary_overridden": func(ctx *context.Context) {
 			ctx.Config.Archive.Format = "binary"
 			ctx.Config.Archive.FormatOverrides = []config.FormatOverride{

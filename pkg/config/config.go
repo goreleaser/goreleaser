@@ -51,6 +51,7 @@ type Homebrew struct {
 	DownloadStrategy string       `yaml:"download_strategy,omitempty"`
 	SourceTarball    string       `yaml:"-"`
 	URLTemplate      string       `yaml:"url_template,omitempty"`
+	CustomRequire    string       `yaml:"custom_require,omitempty"`
 }
 
 // Scoop contains the scoop.sh section

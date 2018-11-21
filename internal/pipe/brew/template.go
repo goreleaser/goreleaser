@@ -14,9 +14,13 @@ type templateData struct {
 	Dependencies     []string
 	Conflicts        []string
 	Tests            []string
+	CustomRequire    string
 }
 
-const formulaTemplate = `class {{ .Name }} < Formula
+const formulaTemplate = `{{ if .CustomRequire -}}
+require_relative "{{ .CustomRequire }}"
+{{ end -}}
+class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
   url "{{ .DownloadURL }}"
