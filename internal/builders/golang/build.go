@@ -7,6 +7,7 @@ import (
 	"go/token"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/apex/log"
@@ -35,6 +36,9 @@ func (*Builder) WithDefaults(build config.Build) config.Build {
 	if build.Main == "" {
 		build.Main = "."
 	}
+	if build.WorkPath == "" {
+		build.WorkPath = "."
+	}
 	if len(build.Goos) == 0 {
 		build.Goos = []string{"linux", "darwin"}
 	}
@@ -55,6 +59,10 @@ func (*Builder) WithDefaults(build config.Build) config.Build {
 
 // Build builds a golang build
 func (*Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
+	if err := checkWorkPath(build.WorkPath); err != nil {
+		return err
+	}
+
 	if err := checkMain(build); err != nil {
 		return err
 	}
@@ -80,14 +88,17 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 	cmd = append(cmd, ldflags...)
 
-	cmd = append(cmd, "-o", options.Path, build.Main)
+	outputPath, _ := filepath.Abs(options.Path)
+	mainPath, _ := filepath.Abs(build.Main)
+	cmd = append(cmd, "-o", outputPath, mainPath)
 
 	target, err := newBuildTarget(options.Target)
 	if err != nil {
 		return err
 	}
 	var env = append(build.Env, target.Env()...)
-	if err := run(ctx, cmd, env); err != nil {
+	cmdDir, _ := filepath.Abs(build.WorkPath)
+	if err := run(ctx, cmd, env, cmdDir); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", options.Target)
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -117,13 +128,14 @@ func processFlags(ctx *context.Context, flags []string, flagPrefix string) ([]st
 	return processed, nil
 }
 
-func run(ctx *context.Context, command, env []string) error {
+func run(ctx *context.Context, command, env []string, cmdDir string) error {
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
 	var log = log.WithField("env", env).WithField("cmd", command)
 	cmd.Env = append(cmd.Env, os.Environ()...)
 	cmd.Env = append(cmd.Env, env...)
 	log.WithField("cmd", command).WithField("env", env).Debug("running")
+	cmd.Dir = cmdDir
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
 		return errors.New(string(out))
@@ -201,4 +213,13 @@ func hasMain(file *ast.File) bool {
 		}
 	}
 	return false
+}
+
+func checkWorkPath(path string) error {
+	var dir = path
+	if dir == "" {
+		dir = "."
+	}
+	_, err := os.Stat(dir)
+	return err
 }
