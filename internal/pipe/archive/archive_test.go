@@ -50,6 +50,14 @@ func TestRunPipe(t *testing.T) {
 							"README.*",
 							"./foo/**/*",
 						},
+						FilesOverrides: []config.FilesOverride{
+							{
+								Goos: "windows",
+								Files: []string{
+									"./foo/**/*",
+								},
+							},
+						},
 						FormatOverrides: []config.FormatOverride{
 							{
 								Goos:   "windows",
@@ -109,7 +117,6 @@ func TestRunPipe(t *testing.T) {
 				require.Equal(
 					t,
 					[]string{
-						"README.md",
 						"foo/bar/foobar/blah.txt",
 						"mybin.exe",
 					},

@@ -143,6 +143,14 @@ type FormatOverride struct {
 	Format string `yaml:",omitempty"`
 }
 
+// FilesOverride is used to specify a custom format for a specific GOOS.
+type FilesOverride struct {
+	Goos   string   `yaml:",omitempty"`
+	Goarch string   `yaml:",omitempty"`
+	Goarm  string   `yaml:",omitempty"`
+	Files  []string `yaml:",omitempty"`
+}
+
 // Archive config used for the archive
 type Archive struct {
 	NameTemplate string            `yaml:"name_template,omitempty"`
@@ -152,6 +160,7 @@ type Archive struct {
 	FormatOverrides []FormatOverride `yaml:"format_overrides,omitempty"`
 	WrapInDirectory string           `yaml:"wrap_in_directory,omitempty"`
 	Files           []string         `yaml:",omitempty"`
+	FilesOverrides  []FilesOverride  `yaml:"files_overrides,omitempty"`
 }
 
 // Release config used for the GitHub release

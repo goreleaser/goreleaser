@@ -116,7 +116,7 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 	var a = NewEnhancedArchive(archive.New(archiveFile), wrap)
 	defer a.Close() // nolint: errcheck
 
-	files, err := findFiles(ctx)
+	files, err := findFiles(ctx, binaries[0].Goos)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %s", err.Error())
 	}
@@ -168,8 +168,8 @@ func skip(ctx *context.Context, binaries []artifact.Artifact) error {
 	return nil
 }
 
-func findFiles(ctx *context.Context) (result []string, err error) {
-	for _, glob := range ctx.Config.Archive.Files {
+func findFiles(ctx *context.Context, platform string) (result []string, err error) {
+	for _, glob := range globs(ctx, platform) {
 		files, err := zglob.Glob(glob)
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %s", glob, err.Error())
@@ -181,6 +181,15 @@ func findFiles(ctx *context.Context) (result []string, err error) {
 		return strings.Compare(result[i], result[j]) < 0
 	})
 	return
+}
+
+func globs(ctx *context.Context, platform string) []string {
+	for _, override := range ctx.Config.Archive.FilesOverrides {
+		if strings.HasPrefix(platform, override.Goos) {
+			return override.Files
+		}
+	}
+	return ctx.Config.Archive.Files
 }
 
 func packageFormat(ctx *context.Context, platform string) string {

@@ -46,7 +46,8 @@ archive:
   # Default is `tar.gz`.
   format: zip
 
-  # Can be used to change the archive formats for specific GOOSs.
+  # format_overrides can be used to change the archive formats for specific a
+  # GOOS.
   # Most common use case is to archive as zip on Windows.
   # Default is empty.
   format_overrides:
@@ -63,6 +64,17 @@ archive:
     - docs/*
     - design/*.png
     - templates/**/*
+
+  # files_overrides can be used to override the file list for a specific GOOS.
+  # Use cases can be including some platform-specific pre-compiled dependency
+  # on the archive.
+  # Default is empty.
+  files_overrides:
+    - goos: darwin
+      files:
+        - LICENSE.txt
+        - README_macos.md
+        - CHANGELOG.md
 ```
 
 > Learn more about the [name template engine](/templates).
