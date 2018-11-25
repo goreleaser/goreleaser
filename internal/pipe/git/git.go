@@ -14,7 +14,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Pipe for brew deployment
+// Pipe that sets up git state
 type Pipe struct{}
 
 func (Pipe) String() string {

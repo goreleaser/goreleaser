@@ -33,10 +33,10 @@ type Piper interface {
 // Pipeline contains all pipe implementations in order
 // nolint: gochecknoglobals
 var Pipeline = []Piper{
-	defaults.Pipe{},        // load default configs
 	before.Pipe{},          // run global hooks before build
-	dist.Pipe{},            // ensure ./dist is clean
 	git.Pipe{},             // get and validate git repo state
+	defaults.Pipe{},        // load default configs
+	dist.Pipe{},            // ensure ./dist is clean
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
 	changelog.Pipe{},       // builds the release changelog
 	env.Pipe{},             // load and validate environment variables
