@@ -29,6 +29,7 @@ dockers:
   - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo'
   - 'goreleaser/goreleaser:latest-cgo'
   dockerfile: Dockerfile.cgo
+  binary: goreleaser
   extra_files:
   - scripts/entrypoint.sh
 - image_templates:
@@ -36,6 +37,7 @@ dockers:
   - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
   - 'goreleaser/goreleaser:latest'
   dockerfile: Dockerfile
+  binary: goreleaser
   extra_files:
   - scripts/entrypoint.sh
 archive:
