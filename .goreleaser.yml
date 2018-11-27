@@ -25,9 +25,17 @@ changelog:
     - Merge branch
 dockers:
 - image_templates:
+  - 'goreleaser/goreleaser:{{ .Tag }}-cgo'
+  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo'
+  - 'goreleaser/goreleaser:latest-cgo'
+  dockerfile: Dockerfile.cgo
+  extra_files:
+  - scripts/entrypoint.sh
+- image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}'
   - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
   - 'goreleaser/goreleaser:latest'
+  dockerfile: Dockerfile
   extra_files:
   - scripts/entrypoint.sh
 archive:
