@@ -30,6 +30,10 @@ dockers:
   - 'goreleaser/goreleaser:latest-cgo'
   dockerfile: Dockerfile.cgo
   binary: goreleaser
+  build_flag_templates:
+  - "--label=org.label-schema.schema-version=1.0"
+  - "--label=org.label-schema.version={{.Version}}"
+  - "--label=org.label-schema.name={{.ProjectName}}"
   extra_files:
   - scripts/entrypoint.sh
 - image_templates:
@@ -38,6 +42,10 @@ dockers:
   - 'goreleaser/goreleaser:latest'
   dockerfile: Dockerfile
   binary: goreleaser
+  build_flag_templates:
+  - "--label=org.label-schema.schema-version=1.0"
+  - "--label=org.label-schema.version={{.Version}}"
+  - "--label=org.label-schema.name={{.ProjectName}}"
   extra_files:
   - scripts/entrypoint.sh
 archive:
