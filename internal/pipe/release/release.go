@@ -3,12 +3,14 @@ package release
 import (
 	"os"
 
+	"github.com/Masterminds/semver"
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/pkg/errors"
 )
 
 // Pipe for github release
@@ -31,6 +33,28 @@ func (Pipe) Default(ctx *context.Context) error {
 		return err
 	}
 	ctx.Config.Release.GitHub = repo
+
+	ctx.PreRelease = false
+	// Check if we have to check the git tag for an indicator to mark as pre release
+	switch ctx.Config.Release.Prerelease {
+	case "auto":
+		sv, err := semver.NewVersion(ctx.Git.CurrentTag)
+		if err != nil {
+			return errors.Wrapf(err, "Failed to parse tag %s as semver", ctx.Git.CurrentTag)
+		}
+
+		if sv.Prerelease() != "" {
+			ctx.PreRelease = true
+		}
+		log.Debugf("Pre-Release was detected for tag %s: %v", ctx.Git.CurrentTag, ctx.PreRelease)
+	case "true":
+		ctx.PreRelease = true
+	case "false":
+		ctx.PreRelease = false
+	default:
+		log.Warnf("Invalid value %s for prerelease. Should be auto, true or false")
+	}
+
 	return nil
 }
 

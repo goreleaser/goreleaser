@@ -41,6 +41,7 @@ type Context struct {
 	SkipValidate bool
 	RmDist       bool
 	Debug        bool
+	PreRelease   bool
 	Parallelism  int
 }
 
