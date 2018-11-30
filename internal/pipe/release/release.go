@@ -52,7 +52,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	case "false":
 		ctx.PreRelease = false
 	default:
-		log.Warnf("Invalid value %s for prerelease. Should be auto, true or false")
+		log.Warnf("Invalid value %s for prerelease. Should be auto, true or false", ctx.Config.Release.Prerelease)
 	}
 
 	return nil
