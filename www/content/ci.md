@@ -24,7 +24,7 @@ addons:
     # needed for the nfpm pipe:
     - rpm
     # needed for the snap pipe:
-    - snapcraft
+    - snapd
 
 env:
 # needed for the snap pipe:
