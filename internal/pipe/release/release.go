@@ -34,25 +34,20 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 	ctx.Config.Release.GitHub = repo
 
-	ctx.PreRelease = false
 	// Check if we have to check the git tag for an indicator to mark as pre release
 	switch ctx.Config.Release.Prerelease {
 	case "auto":
 		sv, err := semver.NewVersion(ctx.Git.CurrentTag)
 		if err != nil {
-			return errors.Wrapf(err, "Failed to parse tag %s as semver", ctx.Git.CurrentTag)
+			return errors.Wrapf(err, "failed to parse tag %s as semver", ctx.Git.CurrentTag)
 		}
 
 		if sv.Prerelease() != "" {
 			ctx.PreRelease = true
 		}
-		log.Debugf("Pre-Release was detected for tag %s: %v", ctx.Git.CurrentTag, ctx.PreRelease)
+		log.Debugf("pre-release was detected for tag %s: %v", ctx.Git.CurrentTag, ctx.PreRelease)
 	case "true":
 		ctx.PreRelease = true
-	case "false":
-		ctx.PreRelease = false
-	default:
-		log.Warnf("Invalid value %s for prerelease. Should be auto, true or false", ctx.Config.Release.Prerelease)
 	}
 
 	return nil
