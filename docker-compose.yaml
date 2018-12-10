@@ -1,0 +1,23 @@
+version: '3.7'
+services:
+
+    app:
+        image: goreleaser/goreleaser:latest
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        restart: 'no'
+        privileged: true
+        entrypoint:
+            - "/entrypoint.sh"
+            - "-v"
+        networks:
+            - net
+        volumes:
+            - "/var/run/docker.sock:/var/run/docker.sock"
+# Edit this line so that "./%PATH/TO/REPO%:/go/src/%"
+            - "./data/go/src/github.com/user/repo:/go/src/github.com/user/repo"
+        env_file: ./env.txt
+
+networks:
+    net:
