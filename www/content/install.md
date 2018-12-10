@@ -56,10 +56,14 @@ $ docker run --rm --privileged \
   -e GITHUB_TOKEN \
   -e DOCKER_USERNAME \
   -e DOCKER_PASSWORD \
+  -e DOCKER_REGISTRY \
   goreleaser/goreleaser release
 ```
 
 Note that the image will almost always have the last stable Go version.
+
+The `DOCKER_REGISTRY` environment variables can be left empty when you are
+releasing to the public docker registry.
 
 If you need more things, you are encouraged to have your own image. You can
 always use GoReleaser's [own Dockerfile][dockerfile] as an example though.
