@@ -2,7 +2,6 @@
 package snapcraft
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -17,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -169,7 +169,10 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
 		if err = os.Link(binary.Path, destBinaryPath); err != nil {
-			return err
+			return errors.Wrap(err, "failed to link binary")
+		}
+		if err := os.Chmod(destBinaryPath, 0555); err != nil {
+			return errors.Wrap(err, "failed to change binary permissions")
 		}
 	}
 
