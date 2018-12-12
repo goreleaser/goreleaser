@@ -118,7 +118,7 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 	var result bytes.Buffer
 	var manifest = Manifest{
 		Version:      ctx.Version,
-		Architecture: make(map[string]Resource),
+		Architecture: map[string]Resource{},
 		Homepage:     ctx.Config.Scoop.Homepage,
 		License:      ctx.Config.Scoop.License,
 		Description:  ctx.Config.Scoop.Description,

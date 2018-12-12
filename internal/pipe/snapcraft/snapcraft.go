@@ -142,7 +142,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		Grade:         ctx.Config.Snapcraft.Grade,
 		Confinement:   ctx.Config.Snapcraft.Confinement,
 		Architectures: []string{arch},
-		Apps:          make(map[string]AppMetadata),
+		Apps:          map[string]AppMetadata{},
 	}
 
 	metadata.Name = ctx.Config.ProjectName

@@ -39,7 +39,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		fpm.NameTemplate = defaultNameTemplate
 	}
 	if fpm.Files == nil {
-		fpm.Files = make(map[string]string)
+		fpm.Files = map[string]string{}
 	}
 	return nil
 }
