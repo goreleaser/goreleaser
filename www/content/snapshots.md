@@ -14,7 +14,7 @@ and also with the `snapshot` customization section:
 # .goreleaser.yml
 snapshot:
   # Allows you to change the name of the generated snapshot
-  # Default is `SNAPSHOT-{{.Commit}}`.
+  # Default is `SNAPSHOT-{{.ShortCommit}}`.
   name_template: SNAPSHOT-{{.Commit}}
 ```
 
