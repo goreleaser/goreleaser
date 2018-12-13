@@ -224,23 +224,6 @@ func TestSnapshotDirty(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
-func TestShortCommitHash(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
-	testlib.GitInit(t)
-	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	testlib.GitCommit(t, "first")
-	var ctx = context.New(config.Project{
-		Snapshot: config.Snapshot{
-			NameTemplate: "{{.Commit}}",
-		},
-	})
-	ctx.Snapshot = true
-	ctx.Config.Git.ShortHash = true
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-	assert.Len(t, ctx.Version, 7)
-}
-
 func TestGitNotInPath(t *testing.T) {
 	var path = os.Getenv("PATH")
 	defer func() {

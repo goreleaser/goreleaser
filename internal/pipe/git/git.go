@@ -9,7 +9,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/pkg/errors"
 )
@@ -35,9 +34,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	ctx.Git = info
 	log.Infof("releasing %s, commit %s", info.CurrentTag, info.Commit)
-	if err := setVersion(ctx); err != nil {
-		return err
-	}
+	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
 	return validate(ctx)
 }
 
@@ -102,20 +99,6 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 		ShortCommit: short,
 		URL:         url,
 	}, nil
-}
-
-func setVersion(ctx *context.Context) error {
-	if ctx.Snapshot {
-		snapshotName, err := tmpl.New(ctx).Apply(ctx.Config.Snapshot.NameTemplate)
-		if err != nil {
-			return errors.Wrap(err, "failed to generate snapshot name")
-		}
-		ctx.Version = snapshotName
-		return nil
-	}
-	// removes usual `v` prefix
-	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
-	return nil
 }
 
 func validate(ctx *context.Context) error {
