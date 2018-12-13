@@ -150,6 +150,8 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		metadata.Name = ctx.Config.Snapcraft.Name
 	}
 
+	log.Debugf("metadata: %+v", metadata)
+
 	for _, binary := range binaries {
 		log.WithField("path", binary.Path).
 			WithField("name", binary.Name).
@@ -168,6 +170,9 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		metadata.Apps[binary.Name] = appMetadata
 
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
+		log.WithField("src", binary.Path).
+			WithField("dst", destBinaryPath).
+			Debug("linking")
 		if err = os.Link(binary.Path, destBinaryPath); err != nil {
 			return errors.Wrap(err, "failed to link binary")
 		}

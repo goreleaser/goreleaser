@@ -19,6 +19,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
+	"github.com/goreleaser/goreleaser/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -36,6 +37,7 @@ var Pipeline = []Piper{
 	before.Pipe{},          // run global hooks before build
 	git.Pipe{},             // get and validate git repo state
 	defaults.Pipe{},        // load default configs
+	snapshot.Pipe{},        // snapshot version handling
 	dist.Pipe{},            // ensure ./dist is clean
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
 	changelog.Pipe{},       // builds the release changelog
