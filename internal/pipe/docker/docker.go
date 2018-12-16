@@ -138,7 +138,10 @@ func process(ctx *context.Context, docker config.Docker, bin artifact.Artifact) 
 		return errors.Wrap(err, "failed to link dockerfile")
 	}
 	for _, file := range docker.Files {
-		if err := link(file, filepath.Join(tmp, filepath.Base(file))); err != nil {
+		if err := os.MkdirAll(filepath.Join(tmp, filepath.Dir(file)), 0755); err != nil {
+			return errors.Wrapf(err, "failed to link extra file '%s'", file)
+		}
+		if err := link(file, filepath.Join(tmp, file)); err != nil {
 			return errors.Wrapf(err, "failed to link extra file '%s'", file)
 		}
 	}

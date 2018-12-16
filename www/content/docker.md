@@ -67,7 +67,7 @@ dockers:
     # Defaults to false.
     skip_push: false
     # Path to the Dockerfile (from the project root).
-    dockerfile: Dockerfile 
+    dockerfile: Dockerfile
     # Template of the docker build flags.
     build_flag_templates:
     - "--label=org.label-schema.schema-version=1.0"
@@ -76,6 +76,13 @@ dockers:
     - "--build-arg=FOO={{.ENV.Bar}}"
     # If your Dockerfile copies files other than the binary itself,
     # you should list them here as well.
+    # Note that goreleaser will create the same structure inside the temporary
+    # folder, so if you add `foo/bar.json` here, on your Dockerfile you can
+    # `COPY foo/bar.json /whatever.json`.
+    # Also note that the paths here are relative to the folder in which
+    # goreleaser is being run.
+    # This field does not support wildcards, you can add an entire folder here
+    # and use wildcards when you `COPY`/`ADD` in your Dockerfile.
     extra_files:
     - config.yml
 ```
@@ -158,7 +165,6 @@ This will build and publish the following images to `docker.io` and `gcr.io`:
 
 - `myuser/myimage:v1.6.4`
 - `myuser/myimage:latest`
-
 
 ## Applying docker build flags
 

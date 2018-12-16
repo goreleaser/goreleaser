@@ -10,7 +10,7 @@ RUN apk add --no-cache bash \
 ENTRYPOINT ["/entrypoint.sh"]
 CMD [ "-h" ]
 
-COPY entrypoint.sh /entrypoint.sh
-COPY goreleaser /bin/goreleaser
-
+COPY scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+COPY goreleaser /bin/goreleaser
