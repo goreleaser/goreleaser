@@ -38,7 +38,7 @@ const (
 	Signature
 )
 
-func (t Type) String() string {
+func String(t Type) string {
 	switch t {
 	case UploadableArchive:
 		return "Archive"
