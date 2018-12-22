@@ -15,7 +15,7 @@ type Pipe struct{}
 
 // String returns the description of the pipe
 func (Pipe) String() string {
-	return "releasing with HTTP PUT"
+	return "HTTP PUT"
 }
 
 // Default sets the pipe defaults
@@ -46,3 +46,4 @@ func (Pipe) Publish(ctx *context.Context) error {
 	})
 
 }
+
