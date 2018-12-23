@@ -164,4 +164,3 @@ func (c *githubClient) uploadRetry(
 	}
 	return c.uploadRetry(ctx, releaseID, name, file, retry+1)
 }
-
