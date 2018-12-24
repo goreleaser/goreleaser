@@ -22,6 +22,12 @@ func TestChangelogProvidedViaFlag(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
+func TestChangelogSkip(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	ctx.Config.Changelog.Skip = true
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+}
+
 func TestSnapshot(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
