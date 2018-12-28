@@ -89,18 +89,31 @@ func doPublish(ctx *context.Context, c client.Client) error {
 	).List() {
 		artifact := artifact
 		g.Go(func() error {
-			return upload(ctx, c, releaseID, artifact)
+			return upload(ctx, c, releaseID, artifact, 1)
 		})
 	}
 	return g.Wait()
 }
 
-func upload(ctx *context.Context, c client.Client, releaseID int64, artifact artifact.Artifact) error {
+const maxTries = 10
+
+func upload(ctx *context.Context, c client.Client, releaseID int64, artifact artifact.Artifact, try int) error {
 	file, err := os.Open(artifact.Path)
 	if err != nil {
 		return err
 	}
 	defer file.Close() // nolint: errcheck
 	log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
-	return c.Upload(ctx, releaseID, artifact.Name, file)
+	err = c.Upload(ctx, releaseID, artifact.Name, file)
+	if err != nil {
+		if try == maxTries {
+			return errors.Wrapf(err, "failed to upload %s after %d retries", artifact.Name, try)
+		}
+		log.WithFields(log.Fields{
+			"try":      try,
+			"artifact": artifact.Name,
+		}).Warnf("failed to upload artifact, will retry")
+		return upload(ctx, c, releaseID, artifact, try+1)
+	}
+	return nil
 }
