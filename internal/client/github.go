@@ -134,18 +134,6 @@ func (c *githubClient) Upload(
 	name string,
 	file *os.File,
 ) error {
-	return c.uploadRetry(ctx, releaseID, name, file, 0)
-}
-
-const maxRetries = 10
-
-func (c *githubClient) uploadRetry(
-	ctx *context.Context,
-	releaseID int64,
-	name string,
-	file *os.File,
-	retry int,
-) error {
 	_, _, err := c.client.Repositories.UploadReleaseAsset(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
@@ -156,11 +144,5 @@ func (c *githubClient) uploadRetry(
 		},
 		file,
 	)
-	if err != nil {
-		if retry > maxRetries {
-			return err
-		}
-		return err
-	}
-	return c.uploadRetry(ctx, releaseID, name, file, retry+1)
+	return err
 }
