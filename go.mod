@@ -13,6 +13,7 @@ require (
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/goreleaser/nfpm v0.9.7
 	github.com/imdario/mergo v0.3.6
+	github.com/kamilsk/retry v0.0.0-20181229152359-495c1d672c93
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mattn/go-zglob v0.0.0-20180803001819-2ea3427bfa53

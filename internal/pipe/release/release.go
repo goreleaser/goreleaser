@@ -2,6 +2,7 @@ package release
 
 import (
 	"os"
+	"time"
 
 	"github.com/Masterminds/semver"
 	"github.com/apex/log"
@@ -10,6 +11,9 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/kamilsk/retry"
+	"github.com/kamilsk/retry/backoff"
+	"github.com/kamilsk/retry/strategy"
 	"github.com/pkg/errors"
 )
 
@@ -89,31 +93,37 @@ func doPublish(ctx *context.Context, c client.Client) error {
 	).List() {
 		artifact := artifact
 		g.Go(func() error {
-			return upload(ctx, c, releaseID, artifact, 1)
+			var repeats uint
+			action := func(try uint) error {
+				repeats = try + 1
+				if uploadErr := upload(ctx, c, releaseID, artifact); uploadErr != nil {
+					log.WithFields(log.Fields{
+						"try":      try,
+						"artifact": artifact.Name,
+					}).Warnf("failed to upload artifact, will retry")
+					return uploadErr
+				}
+				return nil
+			}
+			strategies := []strategy.Strategy{
+				strategy.Limit(10),
+				strategy.Backoff(backoff.Linear(50 * time.Millisecond)),
+			}
+			if retryErr := retry.Retry(ctx.Done(), action, strategies...); retryErr != nil {
+				return errors.Wrapf(retryErr, "failed to upload %s after %d retries", artifact.Name, repeats)
+			}
+			return nil
 		})
 	}
 	return g.Wait()
 }
 
-const maxTries = 10
-
-func upload(ctx *context.Context, c client.Client, releaseID int64, artifact artifact.Artifact, try int) error {
+func upload(ctx *context.Context, c client.Client, releaseID int64, artifact artifact.Artifact) error {
 	file, err := os.Open(artifact.Path)
 	if err != nil {
 		return err
 	}
 	defer file.Close() // nolint: errcheck
 	log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
-	err = c.Upload(ctx, releaseID, artifact.Name, file)
-	if err != nil {
-		if try == maxTries {
-			return errors.Wrapf(err, "failed to upload %s after %d retries", artifact.Name, try)
-		}
-		log.WithFields(log.Fields{
-			"try":      try,
-			"artifact": artifact.Name,
-		}).Warnf("failed to upload artifact, will retry")
-		return upload(ctx, c, releaseID, artifact, try+1)
-	}
-	return nil
+	return c.Upload(ctx, releaseID, artifact.Name, file)
 }
