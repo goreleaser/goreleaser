@@ -15,6 +15,7 @@ type templateData struct {
 	Conflicts        []string
 	Tests            []string
 	CustomRequire    string
+	CustomBlock      []string
 }
 
 const formulaTemplate = `{{ if .CustomRequire -}}
@@ -27,6 +28,12 @@ class {{ .Name }} < Formula
   {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
   version "{{ .Version }}"
   sha256 "{{ .SHA256 }}"
+
+  {{- with .CustomBlock }}
+  {{ range $index, $element := . }}
+  {{ . }}
+  {{- end }}
+  {{- end }}
 
   {{- with .Dependencies }}
   {{ range $index, $element := . }}
