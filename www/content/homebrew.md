@@ -67,6 +67,13 @@ brew:
   # Default is false.
   skip_upload: true
 
+  # Custom block for brew.
+  # Can be used to specify alternate downloads for devel or head releases.
+  # Default is empty.
+  custom_block: |
+    head "https://github.com/some/package.git"
+    ...
+
   # Packages your package depends on.
   dependencies:
     - git

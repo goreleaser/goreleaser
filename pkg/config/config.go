@@ -52,6 +52,7 @@ type Homebrew struct {
 	SourceTarball    string       `yaml:"-"`
 	URLTemplate      string       `yaml:"url_template,omitempty"`
 	CustomRequire    string       `yaml:"custom_require,omitempty"`
+	CustomBlock      string       `yaml:"custom_block,omitempty"`
 }
 
 // Scoop contains the scoop.sh section
