@@ -64,13 +64,13 @@ func New(ctx *context.Context) *Template {
 // WithArtifact populates fields from the artifact and replacements
 func (t *Template) WithArtifact(a artifact.Artifact, replacements map[string]string) *Template {
 	var bin = a.Extra[binary]
-	if bin == "" {
-		bin = t.fields[projectName].(string)
+	if bin == nil {
+		bin = t.fields[projectName]
 	}
 	t.fields[os] = replace(replacements, a.Goos)
 	t.fields[arch] = replace(replacements, a.Goarch)
 	t.fields[arm] = replace(replacements, a.Goarm)
-	t.fields[binary] = bin
+	t.fields[binary] = bin.(string)
 	t.fields[artifactName] = a.Name
 	return t
 }

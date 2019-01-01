@@ -162,3 +162,13 @@ func TestChecksumFileDoesntExist(t *testing.T) {
 	require.EqualError(t, err, `failed to checksum: open /tmp/adasdasdas/asdasd/asdas: no such file or directory`)
 	require.Empty(t, sum)
 }
+
+func TestExtraOr(t *testing.T) {
+	var a = Artifact{
+		Extra: map[string]interface{}{
+			"Foo": "foo",
+		},
+	}
+	require.Equal(t, "foo", a.ExtraOr("Foo", "bar"))
+	require.Equal(t, "bar", a.ExtraOr("Foobar", "bar"))
+}

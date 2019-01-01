@@ -59,27 +59,29 @@ func TestRunPipe(t *testing.T) {
 					},
 				},
 			)
-			ctx.Artifacts.Add(artifact.Artifact{
+			var darwinBuild = artifact.Artifact{
 				Goos:   "darwin",
 				Goarch: "amd64",
 				Name:   "mybin",
 				Path:   filepath.Join(dist, "darwinamd64", "mybin"),
 				Type:   artifact.Binary,
-				Extra: map[string]string{
+				Extra: map[string]interface{}{
 					"Binary": "mybin",
 				},
-			})
-			ctx.Artifacts.Add(artifact.Artifact{
+			}
+			var windowsBuild = artifact.Artifact{
 				Goos:   "windows",
 				Goarch: "amd64",
 				Name:   "mybin.exe",
 				Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
 				Type:   artifact.Binary,
-				Extra: map[string]string{
+				Extra: map[string]interface{}{
 					"Binary":    "mybin",
 					"Extension": ".exe",
 				},
-			})
+			}
+			ctx.Artifacts.Add(darwinBuild)
+			ctx.Artifacts.Add(windowsBuild)
 			ctx.Version = "0.0.1"
 			ctx.Git.CurrentTag = "v0.0.1"
 			ctx.Config.Archive.Format = format
@@ -90,6 +92,9 @@ func TestRunPipe(t *testing.T) {
 			windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
 			require.Equal(tt, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
 			require.Equal(tt, "foobar_0.0.1_windows_amd64.zip", windows.Name)
+
+			require.Equal(t, []artifact.Artifact{darwinBuild}, darwin.Extra["Builds"].([]artifact.Artifact))
+			require.Equal(t, []artifact.Artifact{windowsBuild}, windows.Extra["Builds"].([]artifact.Artifact))
 
 			if format == "tar.gz" {
 				// Check archive contents
@@ -184,7 +189,7 @@ func TestRunPipeBinary(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]string{
+		Extra: map[string]interface{}{
 			"Binary": "mybin",
 		},
 	})
@@ -194,7 +199,7 @@ func TestRunPipeBinary(t *testing.T) {
 		Name:   "mybin.exe",
 		Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
 		Type:   artifact.Binary,
-		Extra: map[string]string{
+		Extra: map[string]interface{}{
 			"Binary": "mybin",
 			"Ext":    ".exe",
 		},
@@ -225,7 +230,7 @@ func TestRunPipeDistRemoved(t *testing.T) {
 		Name:   "mybin.exe",
 		Path:   filepath.Join("/path/to/nope", "windowsamd64", "mybin.exe"),
 		Type:   artifact.Binary,
-		Extra: map[string]string{
+		Extra: map[string]interface{}{
 			"Binary":    "mybin",
 			"Extension": ".exe",
 		},
@@ -260,7 +265,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]string{
+		Extra: map[string]interface{}{
 			"Binary": "mybin",
 		},
 	})
@@ -291,7 +296,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]string{
+		Extra: map[string]interface{}{
 			"Binary": "mybin",
 		},
 	})
@@ -323,7 +328,7 @@ func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]string{
+		Extra: map[string]interface{}{
 			"Binary": "mybin",
 		},
 	})
@@ -363,7 +368,7 @@ func TestRunPipeWrap(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]string{
+		Extra: map[string]interface{}{
 			"Binary": "mybin",
 		},
 	})
@@ -487,7 +492,7 @@ func TestBinaryOverride(t *testing.T) {
 				Name:   "mybin",
 				Path:   filepath.Join(dist, "darwinamd64", "mybin"),
 				Type:   artifact.Binary,
-				Extra: map[string]string{
+				Extra: map[string]interface{}{
 					"Binary": "mybin",
 				},
 			})
@@ -497,7 +502,7 @@ func TestBinaryOverride(t *testing.T) {
 				Name:   "mybin.exe",
 				Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
 				Type:   artifact.Binary,
-				Extra: map[string]string{
+				Extra: map[string]interface{}{
 					"Binary": "mybin",
 					"Ext":    ".exe",
 				},
@@ -548,7 +553,7 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
-		Extra: map[string]string{
+		Extra: map[string]interface{}{
 			"Binary": "mybin",
 		},
 	})
@@ -558,7 +563,7 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 		Name:   "mybin.exe",
 		Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
 		Type:   artifact.Binary,
-		Extra: map[string]string{
+		Extra: map[string]interface{}{
 			"Binary":    "mybin",
 			"Extension": ".exe",
 		},

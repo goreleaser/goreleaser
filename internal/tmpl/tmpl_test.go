@@ -44,7 +44,7 @@ func TestWithArtifact(t *testing.T) {
 					Goarch: "amd64",
 					Goos:   "linux",
 					Goarm:  "6",
-					Extra: map[string]string{
+					Extra: map[string]interface{}{
 						"Binary": "binary",
 					},
 				},

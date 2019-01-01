@@ -1,11 +1,13 @@
 package golang
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -115,7 +117,7 @@ func TestBuild(t *testing.T) {
 			Goos:   "linux",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
-			Extra: map[string]string{
+			Extra: map[string]interface{}{
 				"Ext":    "",
 				"Binary": "foo",
 			},
@@ -126,7 +128,7 @@ func TestBuild(t *testing.T) {
 			Goos:   "darwin",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
-			Extra: map[string]string{
+			Extra: map[string]interface{}{
 				"Ext":    "",
 				"Binary": "foo",
 			},
@@ -138,7 +140,7 @@ func TestBuild(t *testing.T) {
 			Goarch: "arm",
 			Goarm:  "6",
 			Type:   artifact.Binary,
-			Extra: map[string]string{
+			Extra: map[string]interface{}{
 				"Ext":    "",
 				"Binary": "foo",
 			},
@@ -149,7 +151,7 @@ func TestBuild(t *testing.T) {
 			Goos:   "windows",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
-			Extra: map[string]string{
+			Extra: map[string]interface{}{
 				"Ext":    ".exe",
 				"Binary": "foo",
 			},
@@ -376,9 +378,8 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	assert.Contains(t, flags, "-X main.version=1.2.3")
 	assert.Contains(t, flags, "-X main.tag=v1.2.3")
 	assert.Contains(t, flags, "-X main.commit=123")
-	// TODO: this will break in 2019
-	assert.Contains(t, flags, "-X main.date=2018")
-	assert.Contains(t, flags, "-X main.time=2018")
+	assert.Contains(t, flags, fmt.Sprintf("-X main.date=%d", time.Now().Year()))
+	assert.Contains(t, flags, fmt.Sprintf("-X main.time=%d", time.Now().Year()))
 	assert.Contains(t, flags, `-X "main.foo=123"`)
 }
 

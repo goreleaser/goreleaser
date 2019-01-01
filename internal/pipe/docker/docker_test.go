@@ -567,7 +567,7 @@ func TestRunPipe(t *testing.T) {
 						Goarch: arch,
 						Goos:   os,
 						Type:   artifact.Binary,
-						Extra: map[string]string{
+						Extra: map[string]interface{}{
 							"Binary": "mybin",
 						},
 					})
