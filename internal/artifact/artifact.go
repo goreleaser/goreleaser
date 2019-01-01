@@ -66,7 +66,16 @@ type Artifact struct {
 	Goarch string
 	Goarm  string
 	Type   Type
-	Extra  map[string]string
+	Extra  map[string]interface{}
+}
+
+// ExtraOr returns the Extra field with the given key or the or value specified
+// if it is nil.
+func (a Artifact) ExtraOr(key string, or interface{}) interface{} {
+	if a.Extra[key] == nil {
+		return or
+	}
+	return a.Extra[key]
 }
 
 // Checksum calculates the SHA256 checksum of the artifact.

@@ -137,6 +137,9 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 		Goos:   binaries[0].Goos,
 		Goarch: binaries[0].Goarch,
 		Goarm:  binaries[0].Goarm,
+		Extra: map[string]interface{}{
+			"Builds": binaries,
+		},
 	})
 	return nil
 }
@@ -161,9 +164,17 @@ func skip(ctx *context.Context, binaries []artifact.Artifact) error {
 		if err != nil {
 			return err
 		}
-		binary.Type = artifact.UploadableBinary
-		binary.Name = name + binary.Extra["Ext"]
-		ctx.Artifacts.Add(binary)
+		ctx.Artifacts.Add(artifact.Artifact{
+			Type:   artifact.UploadableBinary,
+			Name:   name + binary.ExtraOr("Ext", "").(string),
+			Path:   binary.Path,
+			Goos:   binary.Goos,
+			Goarch: binary.Goarch,
+			Goarm:  binary.Goarm,
+			Extra: map[string]interface{}{
+				"Builds": []artifact.Artifact{binary},
+			},
+		})
 	}
 	return nil
 }

@@ -105,7 +105,7 @@ func doRun(ctx *context.Context) error {
 					artifact.ByGoarm(docker.Goarm),
 					artifact.ByType(artifact.Binary),
 					func(a artifact.Artifact) bool {
-						return a.Extra["Binary"] == docker.Binary
+						return a.ExtraOr("Binary", "").(string) == docker.Binary
 					},
 				),
 			).List()
