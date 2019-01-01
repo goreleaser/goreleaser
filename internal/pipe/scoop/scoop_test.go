@@ -5,9 +5,8 @@ import (
 	"flag"
 	"io/ioutil"
 	"os"
-	"testing"
-
 	"path/filepath"
+	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
@@ -403,9 +402,6 @@ func Test_buildManifest(t *testing.T) {
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
-					Builds: []config.Build{
-						{Binary: "test"},
-					},
 					Dist:        ".",
 					ProjectName: "run-pipe",
 					Archive: config.Archive{
@@ -471,21 +467,61 @@ func Test_buildManifest(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		var ctx = tt.ctx
-		Pipe{}.Default(ctx)
-		out, err := buildManifest(ctx, []artifact.Artifact{
-			{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
-			{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+		t.Run(tt.filename, func(t *testing.T) {
+			var ctx = tt.ctx
+			Pipe{}.Default(ctx)
+			out, err := buildManifest(ctx, []artifact.Artifact{
+				{
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"Builds": []artifact.Artifact{
+							{
+								Extra: map[string]interface{}{
+									"Binary": "foo",
+								},
+							},
+							{
+								Extra: map[string]interface{}{
+									"Binary": "bar",
+								},
+							},
+						},
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"Builds": []artifact.Artifact{
+							{
+								Extra: map[string]interface{}{
+									"Binary": "foo",
+								},
+							},
+							{
+								Extra: map[string]interface{}{
+									"Binary": "bar",
+								},
+							},
+						},
+					},
+				},
+			})
+
+			require.NoError(t, err)
+
+			if *update {
+				require.NoError(t, ioutil.WriteFile(tt.filename, out.Bytes(), 0655))
+			}
+			bts, err := ioutil.ReadFile(tt.filename)
+			require.NoError(t, err)
+			require.Equal(t, string(bts), out.String())
 		})
-
-		require.NoError(t, err)
-
-		if *update {
-			require.NoError(t, ioutil.WriteFile(tt.filename, out.Bytes(), 0655))
-		}
-		bts, err := ioutil.ReadFile(tt.filename)
-		require.NoError(t, err)
-		require.Equal(t, string(bts), out.String())
 	}
 }
 
