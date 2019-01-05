@@ -109,9 +109,9 @@ type Manifest struct {
 
 // Resource represents a combination of a url and a binary name for an architecture
 type Resource struct {
-	URL  string `json:"url"`  // URL to the archive
-	Bin  string `json:"bin"`  // name of binary inside the archive
-	Hash string `json:"hash"` // the archive checksum
+	URL  string   `json:"url"`  // URL to the archive
+	Bin  []string `json:"bin"`  // name of binary inside the archive
+	Hash string   `json:"hash"` // the archive checksum
 }
 
 func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.Buffer, error) {
@@ -145,7 +145,7 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 
 		manifest.Architecture[arch] = Resource{
 			URL:  url,
-			Bin:  ctx.Config.Builds[0].Binary + ".exe", // TODO: this is wrong
+			Bin:  binaries(artifact),
 			Hash: sum,
 		}
 	}
@@ -156,4 +156,13 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 	}
 	_, err = result.Write(data)
 	return result, err
+}
+
+func binaries(a artifact.Artifact) []string {
+	// nolint: prealloc
+	var bins []string
+	for _, b := range a.ExtraOr("Builds", []artifact.Artifact{}).([]artifact.Artifact) {
+		bins = append(bins, b.ExtraOr("Binary", "").(string)+".exe")
+	}
+	return bins
 }
