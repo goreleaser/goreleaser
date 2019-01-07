@@ -43,7 +43,7 @@ builds:
       - ./dontoptimizeme=-N
 
     # Custom ldflags templates.
-    # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`.
+    # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}`.
     ldflags:
      - -s -w -X main.build={{.Version}}
      - ./usemsan=-msan
