@@ -53,6 +53,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	case "true":
 		ctx.PreRelease = true
 	}
+	log.Debugf("pre-release for tag %s set to %v", ctx.Git.CurrentTag, ctx.PreRelease)
 
 	return nil
 }
