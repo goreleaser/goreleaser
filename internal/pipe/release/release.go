@@ -29,14 +29,13 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Release.NameTemplate == "" {
 		ctx.Config.Release.NameTemplate = "{{.Tag}}"
 	}
-	if ctx.Config.Release.GitHub.Name != "" {
-		return nil
+	if ctx.Config.Release.GitHub.Name == "" {
+		repo, err := remoteRepo()
+		if err != nil && !ctx.Snapshot {
+			return err
+		}
+		ctx.Config.Release.GitHub = repo
 	}
-	repo, err := remoteRepo()
-	if err != nil && !ctx.Snapshot {
-		return err
-	}
-	ctx.Config.Release.GitHub = repo
 
 	// Check if we have to check the git tag for an indicator to mark as pre release
 	switch ctx.Config.Release.Prerelease {
