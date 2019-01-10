@@ -204,6 +204,21 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 		assert.NoError(t, Pipe{}.Default(ctx))
 		assert.Equal(t, true, ctx.PreRelease)
 	})
+
+	t.Run("auto-rc", func(t *testing.T) {
+		var ctx = context.New(config.Project{
+			Release: config.Release{
+				GitHub: config.Repo{
+					Name:  "foo",
+					Owner: "foo",
+				},
+				Prerelease: "auto",
+			},
+		})
+		ctx.Git.CurrentTag = "v1.0.1-rc1"
+		assert.NoError(t, Pipe{}.Default(ctx))
+		assert.Equal(t, true, ctx.PreRelease)
+	})
 }
 
 func TestDefaultPipeDisabled(t *testing.T) {
