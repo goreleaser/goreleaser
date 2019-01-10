@@ -25,13 +25,13 @@ release:
   draft: true
 
   # If set to auto, will mark the release as not ready for production
-  # in case there is an indicator for this in the tag e.g. v1.0.0.-rc1
+  # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
   # If set to true, will mark the release as not ready for production.
   # Default is false.
   prerelease: auto
 
   # You can change the name of the GitHub release.
-  # Default is ``
+  # Default is `{{.Tag}}`
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not upload any artifacts to
