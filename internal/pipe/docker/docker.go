@@ -37,11 +37,17 @@ func (Pipe) Default(ctx *context.Context) error {
 
 		if docker.Image != "" {
 			deprecate.Notice("docker.image")
+			deprecate.Notice("docker.tag_templates")
 
-			if len(docker.TagTemplates) != 0 {
-				deprecate.Notice("docker.tag_templates")
-			} else {
+			if len(docker.TagTemplates) == 0 {
 				docker.TagTemplates = []string{"{{ .Version }}"}
+			}
+
+			for _, tag := range docker.TagTemplates {
+				docker.ImageTemplates = append(
+					docker.ImageTemplates,
+					fmt.Sprintf("%s:%s", docker.Image, tag),
+				)
 			}
 		}
 
@@ -121,10 +127,14 @@ func doRun(ctx *context.Context) error {
 					},
 				),
 			).List()
-			if len(binaries) == 0 {
+			// TODO: not so good of a check, if one binary match multiple
+			// binaries and the other match none, this will still pass...
+			if len(binaries) != len(docker.Binaries) {
 				return fmt.Errorf(
-					"no binaries match docker definition: %s_%s_%s and binaries %v",
-					docker.Goos, docker.Goarch, docker.Goarm, docker.Binaries,
+					"%d binaries match docker definition: %v: %s_%s_%s, should be %d",
+					len(binaries),
+					docker.Binaries, docker.Goos, docker.Goarch, docker.Goarm,
+					len(docker.Binaries),
 				)
 			}
 			return process(ctx, docker, binaries)
@@ -140,8 +150,7 @@ func process(ctx *context.Context, docker config.Docker, bins []artifact.Artifac
 	}
 	log.Debug("tempdir: " + tmp)
 
-	// TODO: templates using Binary will only work with the first binary
-	images, err := processImageTemplates(ctx, docker, bins[0])
+	images, err := processImageTemplates(ctx, docker, bins)
 	if err != nil {
 		return err
 	}
@@ -189,34 +198,20 @@ func process(ctx *context.Context, docker config.Docker, bins []artifact.Artifac
 	return nil
 }
 
-func processImageTemplates(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) ([]string, error) {
-	if len(docker.ImageTemplates) != 0 && docker.Image != "" {
-		return nil, errors.New("failed to process image, use either image_templates (preferred) or image, not both")
-	}
-
+func processImageTemplates(ctx *context.Context, docker config.Docker, artifacts []artifact.Artifact) ([]string, error) {
 	// nolint:prealloc
 	var images []string
 	for _, imageTemplate := range docker.ImageTemplates {
 		// TODO: add overrides support to config
-		image, err := tmpl.New(ctx).
-			WithArtifact(artifact, map[string]string{}).
-			Apply(imageTemplate)
+		var t = tmpl.New(ctx)
+		if len(artifacts) == 1 {
+			t = t.WithArtifact(artifacts[0], map[string]string{})
+		}
+		image, err := t.Apply(imageTemplate)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to execute image template '%s'", imageTemplate)
 		}
 
-		images = append(images, image)
-	}
-
-	for _, tagTemplate := range docker.TagTemplates {
-		imageTemplate := fmt.Sprintf("%s:%s", docker.Image, tagTemplate)
-		// TODO: add overrides support to config
-		image, err := tmpl.New(ctx).
-			WithArtifact(artifact, map[string]string{}).
-			Apply(imageTemplate)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to execute tag template '%s'", tagTemplate)
-		}
 		images = append(images, image)
 	}
 
