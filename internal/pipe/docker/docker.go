@@ -172,7 +172,7 @@ func process(ctx *context.Context, docker config.Docker, bins []artifact.Artifac
 		}
 	}
 
-	buildFlags, err := processBuildFlagTemplates(ctx, docker, bins[0])
+	buildFlags, err := processBuildFlagTemplates(ctx, docker, bins)
 	if err != nil {
 		return err
 	}
@@ -204,6 +204,7 @@ func processImageTemplates(ctx *context.Context, docker config.Docker, artifacts
 	for _, imageTemplate := range docker.ImageTemplates {
 		// TODO: add overrides support to config
 		var t = tmpl.New(ctx)
+		// TODO: add a test case and document this
 		if len(artifacts) == 1 {
 			t = t.WithArtifact(artifacts[0], map[string]string{})
 		}
@@ -218,13 +219,16 @@ func processImageTemplates(ctx *context.Context, docker config.Docker, artifacts
 	return images, nil
 }
 
-func processBuildFlagTemplates(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) ([]string, error) {
+func processBuildFlagTemplates(ctx *context.Context, docker config.Docker, artifacts []artifact.Artifact) ([]string, error) {
 	// nolint:prealloc
 	var buildFlags []string
 	for _, buildFlagTemplate := range docker.BuildFlagTemplates {
-		buildFlag, err := tmpl.New(ctx).
-			WithArtifact(artifact, map[string]string{}).
-			Apply(buildFlagTemplate)
+		var t = tmpl.New(ctx)
+		// TODO: add a test case and document this
+		if len(artifacts) == 1 {
+			t = t.WithArtifact(artifacts[0], map[string]string{})
+		}
+		buildFlag, err := t.Apply(buildFlagTemplate)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to process build flag template '%s'", buildFlagTemplate)
 		}
