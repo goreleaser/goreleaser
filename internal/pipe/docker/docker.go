@@ -202,13 +202,7 @@ func processImageTemplates(ctx *context.Context, docker config.Docker, artifacts
 	// nolint:prealloc
 	var images []string
 	for _, imageTemplate := range docker.ImageTemplates {
-		// TODO: add overrides support to config
-		var t = tmpl.New(ctx)
-		// TODO: add a test case and document this
-		if len(artifacts) == 1 {
-			t = t.WithArtifact(artifacts[0], map[string]string{})
-		}
-		image, err := t.Apply(imageTemplate)
+		image, err := tmpl.New(ctx).Apply(imageTemplate)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to execute image template '%s'", imageTemplate)
 		}
@@ -223,12 +217,7 @@ func processBuildFlagTemplates(ctx *context.Context, docker config.Docker, artif
 	// nolint:prealloc
 	var buildFlags []string
 	for _, buildFlagTemplate := range docker.BuildFlagTemplates {
-		var t = tmpl.New(ctx)
-		// TODO: add a test case and document this
-		if len(artifacts) == 1 {
-			t = t.WithArtifact(artifacts[0], map[string]string{})
-		}
-		buildFlag, err := t.Apply(buildFlagTemplate)
+		buildFlag, err := tmpl.New(ctx).Apply(buildFlagTemplate)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to process build flag template '%s'", buildFlagTemplate)
 		}
