@@ -45,6 +45,11 @@ func (Pipe) Default(ctx *context.Context) error {
 			}
 		}
 
+		if docker.Binary != "" {
+			deprecate.Notice("docker.binary")
+			docker.Binaries = append(docker.Binaries, docker.Binary)
+		}
+
 		if docker.Goos == "" {
 			docker.Goos = "linux"
 		}
@@ -56,8 +61,10 @@ func (Pipe) Default(ctx *context.Context) error {
 	if len(ctx.Config.Dockers) != 1 {
 		return nil
 	}
-	if ctx.Config.Dockers[0].Binary == "" {
-		ctx.Config.Dockers[0].Binary = ctx.Config.Builds[0].Binary
+	if len(ctx.Config.Dockers[0].Binaries) == 0 {
+		ctx.Config.Dockers[0].Binaries = []string{
+			ctx.Config.Builds[0].Binary,
+		}
 	}
 	if ctx.Config.Dockers[0].Dockerfile == "" {
 		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
@@ -105,31 +112,36 @@ func doRun(ctx *context.Context) error {
 					artifact.ByGoarm(docker.Goarm),
 					artifact.ByType(artifact.Binary),
 					func(a artifact.Artifact) bool {
-						return a.ExtraOr("Binary", "").(string) == docker.Binary
+						for _, bin := range docker.Binaries {
+							if a.ExtraOr("Binary", "").(string) == bin {
+								return true
+							}
+						}
+						return false
 					},
 				),
 			).List()
-			if len(binaries) != 1 {
+			if len(binaries) == 0 {
 				return fmt.Errorf(
-					"%d binaries match docker definition: %s: %s_%s_%s",
-					len(binaries),
-					docker.Binary, docker.Goos, docker.Goarch, docker.Goarm,
+					"no binaries match docker definition: %s_%s_%s and binaries %v",
+					docker.Goos, docker.Goarch, docker.Goarm, docker.Binaries,
 				)
 			}
-			return process(ctx, docker, binaries[0])
+			return process(ctx, docker, binaries)
 		})
 	}
 	return g.Wait()
 }
 
-func process(ctx *context.Context, docker config.Docker, bin artifact.Artifact) error {
+func process(ctx *context.Context, docker config.Docker, bins []artifact.Artifact) error {
 	tmp, err := ioutil.TempDir(ctx.Config.Dist, "goreleaserdocker")
 	if err != nil {
 		return errors.Wrap(err, "failed to create temporary dir")
 	}
 	log.Debug("tempdir: " + tmp)
 
-	images, err := processImageTemplates(ctx, docker, bin)
+	// TODO: templates using Binary will only work with the first binary
+	images, err := processImageTemplates(ctx, docker, bins[0])
 	if err != nil {
 		return err
 	}
@@ -145,11 +157,13 @@ func process(ctx *context.Context, docker config.Docker, bin artifact.Artifact) 
 			return errors.Wrapf(err, "failed to link extra file '%s'", file)
 		}
 	}
-	if err := os.Link(bin.Path, filepath.Join(tmp, filepath.Base(bin.Path))); err != nil {
-		return errors.Wrap(err, "failed to link binary")
+	for _, bin := range bins {
+		if err := os.Link(bin.Path, filepath.Join(tmp, filepath.Base(bin.Path))); err != nil {
+			return errors.Wrap(err, "failed to link binary")
+		}
 	}
 
-	buildFlags, err := processBuildFlagTemplates(ctx, docker, bin)
+	buildFlags, err := processBuildFlagTemplates(ctx, docker, bins[0])
 	if err != nil {
 		return err
 	}

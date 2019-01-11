@@ -691,8 +691,25 @@ func TestDefault(t *testing.T) {
 	var docker = ctx.Config.Dockers[0]
 	assert.Equal(t, "linux", docker.Goos)
 	assert.Equal(t, "amd64", docker.Goarch)
-	assert.Equal(t, ctx.Config.Builds[0].Binary, docker.Binary)
-	assert.Equal(t, "Dockerfile", docker.Dockerfile)
+	assert.Equal(t, []string{ctx.Config.Builds[0].Binary}, docker.Binaries)
+}
+
+func TestDefaultBinaries(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dockers: []config.Docker{
+				{
+					Binary: "foo",
+				},
+			},
+		},
+	}
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Len(t, ctx.Config.Dockers, 1)
+	var docker = ctx.Config.Dockers[0]
+	assert.Equal(t, "linux", docker.Goos)
+	assert.Equal(t, "amd64", docker.Goarch)
+	assert.Equal(t, []string{"foo"}, docker.Binaries)
 }
 
 func TestDefaultNoDockers(t *testing.T) {

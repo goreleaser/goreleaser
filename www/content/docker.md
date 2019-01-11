@@ -54,8 +54,9 @@ dockers:
     goarch: amd64
     # GOARM of the built binary that should be used.
     goarm: ''
-    # Name of the built binary that should be used.
-    binary: mybinary
+    # Name of the built binaries that should be used.
+    binaries:
+    - mybinary
     # Templates of the Docker image names.
     image_templates:
     - "myuser/myimage:latest"
@@ -103,7 +104,8 @@ That can be accomplished simply by adding template language in the definition:
 project: foo
 dockers:
   -
-    binary: mybinary
+    binaries:
+    - mybinary
     image_templates:
     - "myuser/{{.ProjectName}}"
 ```
@@ -124,7 +126,8 @@ accomplished by using multiple `image_templates`:
 # .goreleaser.yml
 dockers:
   -
-    binary: mybinary
+    binaries:
+    - mybinary
     image_templates:
     - "myuser/myimage:{{ .Tag }}"
     - "myuser/myimage:v{{ .Major }}"
@@ -153,7 +156,8 @@ accomplished by using multiple `image_templates`:
 # .goreleaser.yml
 dockers:
   -
-    binary: mybinary
+    binaries:
+    - mybinary
     image_templates:
     - "docker.io/myuser/myimage:{{ .Tag }}"
     - "docker.io/myuser/myimage:latest"
@@ -175,9 +179,10 @@ valid docker build flags.
 # .goreleaser.yml
 dockers:
   -
-    binary: mybinary
+    binaries:
+    - mybinary
     image_templates:
-        - "myuser/myimage"
+    - "myuser/myimage"
     build_flag_templates:
     - "--label=org.label-schema.schema-version=1.0"
     - "--label=org.label-schema.version={{.Version}}"
