@@ -11,6 +11,51 @@ Deprecate code will be removed after ~6 months from the time it was deprecated.
 
 # Active deprecation notices
 
+<!--
+
+Template for new deprecations:
+
+## property
+
+> since yyyy-mm-dd
+
+Description.
+
+Change this:
+
+```yaml
+```
+
+to this:
+
+```yaml
+```
+
+ -->
+
+## docker.binary
+
+> since 2018-10-01
+
+You can now create a Docker image with multiple binaries.
+
+Change this:
+
+```yaml
+dockers:
+- image: foo/bar
+  binary: foo
+```
+
+to this:
+
+```yaml
+dockers:
+- image: foo/bar
+  binaries:
+  - foo
+```
+
 ## docker.image
 
 > since 2018-10-20
@@ -59,29 +104,6 @@ dockers:
 - image_templates:
     - 'foo/bar:{{ .Tag }}'
 ```
-
-
-<!--
-
-Template for new deprecations:
-
-## property
-
-> since yyyy-mm-dd
-
-Description.
-
-Change this:
-
-```yaml
-```
-
-to this:
-
-```yaml
-```
-
- -->
 
 ## git.short_hash
 

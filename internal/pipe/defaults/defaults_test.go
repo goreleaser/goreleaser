@@ -78,14 +78,16 @@ func TestFillPartial(t *testing.T) {
 				},
 			},
 			Dockers: []config.Docker{
-				{Image: "a/b"},
+				{
+					ImageTemplates: []string{"a/b"},
+				},
 			},
 		},
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Len(t, ctx.Config.Archive.Files, 1)
 	assert.Equal(t, `bin.install "testreleaser"`, ctx.Config.Brew.Install)
-	assert.NotEmpty(t, ctx.Config.Dockers[0].Binary)
+	assert.NotEmpty(t, ctx.Config.Dockers[0].Binaries)
 	assert.NotEmpty(t, ctx.Config.Dockers[0].Goos)
 	assert.NotEmpty(t, ctx.Config.Dockers[0].Goarch)
 	assert.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)

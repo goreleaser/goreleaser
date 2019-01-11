@@ -37,12 +37,23 @@ func (Pipe) Default(ctx *context.Context) error {
 
 		if docker.Image != "" {
 			deprecate.Notice("docker.image")
+			deprecate.Notice("docker.tag_templates")
 
-			if len(docker.TagTemplates) != 0 {
-				deprecate.Notice("docker.tag_templates")
-			} else {
+			if len(docker.TagTemplates) == 0 {
 				docker.TagTemplates = []string{"{{ .Version }}"}
 			}
+
+			for _, tag := range docker.TagTemplates {
+				docker.ImageTemplates = append(
+					docker.ImageTemplates,
+					fmt.Sprintf("%s:%s", docker.Image, tag),
+				)
+			}
+		}
+
+		if docker.Binary != "" {
+			deprecate.Notice("docker.binary")
+			docker.Binaries = append(docker.Binaries, docker.Binary)
 		}
 
 		if docker.Goos == "" {
@@ -56,8 +67,10 @@ func (Pipe) Default(ctx *context.Context) error {
 	if len(ctx.Config.Dockers) != 1 {
 		return nil
 	}
-	if ctx.Config.Dockers[0].Binary == "" {
-		ctx.Config.Dockers[0].Binary = ctx.Config.Builds[0].Binary
+	if len(ctx.Config.Dockers[0].Binaries) == 0 {
+		ctx.Config.Dockers[0].Binaries = []string{
+			ctx.Config.Builds[0].Binary,
+		}
 	}
 	if ctx.Config.Dockers[0].Dockerfile == "" {
 		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
@@ -105,31 +118,39 @@ func doRun(ctx *context.Context) error {
 					artifact.ByGoarm(docker.Goarm),
 					artifact.ByType(artifact.Binary),
 					func(a artifact.Artifact) bool {
-						return a.ExtraOr("Binary", "").(string) == docker.Binary
+						for _, bin := range docker.Binaries {
+							if a.ExtraOr("Binary", "").(string) == bin {
+								return true
+							}
+						}
+						return false
 					},
 				),
 			).List()
-			if len(binaries) != 1 {
+			// TODO: not so good of a check, if one binary match multiple
+			// binaries and the other match none, this will still pass...
+			if len(binaries) != len(docker.Binaries) {
 				return fmt.Errorf(
-					"%d binaries match docker definition: %s: %s_%s_%s",
+					"%d binaries match docker definition: %v: %s_%s_%s, should be %d",
 					len(binaries),
-					docker.Binary, docker.Goos, docker.Goarch, docker.Goarm,
+					docker.Binaries, docker.Goos, docker.Goarch, docker.Goarm,
+					len(docker.Binaries),
 				)
 			}
-			return process(ctx, docker, binaries[0])
+			return process(ctx, docker, binaries)
 		})
 	}
 	return g.Wait()
 }
 
-func process(ctx *context.Context, docker config.Docker, bin artifact.Artifact) error {
+func process(ctx *context.Context, docker config.Docker, bins []artifact.Artifact) error {
 	tmp, err := ioutil.TempDir(ctx.Config.Dist, "goreleaserdocker")
 	if err != nil {
 		return errors.Wrap(err, "failed to create temporary dir")
 	}
 	log.Debug("tempdir: " + tmp)
 
-	images, err := processImageTemplates(ctx, docker, bin)
+	images, err := processImageTemplates(ctx, docker)
 	if err != nil {
 		return err
 	}
@@ -145,11 +166,13 @@ func process(ctx *context.Context, docker config.Docker, bin artifact.Artifact) 
 			return errors.Wrapf(err, "failed to link extra file '%s'", file)
 		}
 	}
-	if err := os.Link(bin.Path, filepath.Join(tmp, filepath.Base(bin.Path))); err != nil {
-		return errors.Wrap(err, "failed to link binary")
+	for _, bin := range bins {
+		if err := os.Link(bin.Path, filepath.Join(tmp, filepath.Base(bin.Path))); err != nil {
+			return errors.Wrap(err, "failed to link binary")
+		}
 	}
 
-	buildFlags, err := processBuildFlagTemplates(ctx, docker, bin)
+	buildFlags, err := processBuildFlagTemplates(ctx, docker)
 	if err != nil {
 		return err
 	}
@@ -175,18 +198,11 @@ func process(ctx *context.Context, docker config.Docker, bin artifact.Artifact) 
 	return nil
 }
 
-func processImageTemplates(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) ([]string, error) {
-	if len(docker.ImageTemplates) != 0 && docker.Image != "" {
-		return nil, errors.New("failed to process image, use either image_templates (preferred) or image, not both")
-	}
-
+func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {
 	// nolint:prealloc
 	var images []string
 	for _, imageTemplate := range docker.ImageTemplates {
-		// TODO: add overrides support to config
-		image, err := tmpl.New(ctx).
-			WithArtifact(artifact, map[string]string{}).
-			Apply(imageTemplate)
+		image, err := tmpl.New(ctx).Apply(imageTemplate)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to execute image template '%s'", imageTemplate)
 		}
@@ -194,28 +210,14 @@ func processImageTemplates(ctx *context.Context, docker config.Docker, artifact 
 		images = append(images, image)
 	}
 
-	for _, tagTemplate := range docker.TagTemplates {
-		imageTemplate := fmt.Sprintf("%s:%s", docker.Image, tagTemplate)
-		// TODO: add overrides support to config
-		image, err := tmpl.New(ctx).
-			WithArtifact(artifact, map[string]string{}).
-			Apply(imageTemplate)
-		if err != nil {
-			return nil, errors.Wrapf(err, "failed to execute tag template '%s'", tagTemplate)
-		}
-		images = append(images, image)
-	}
-
 	return images, nil
 }
 
-func processBuildFlagTemplates(ctx *context.Context, docker config.Docker, artifact artifact.Artifact) ([]string, error) {
+func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {
 	// nolint:prealloc
 	var buildFlags []string
 	for _, buildFlagTemplate := range docker.BuildFlagTemplates {
-		buildFlag, err := tmpl.New(ctx).
-			WithArtifact(artifact, map[string]string{}).
-			Apply(buildFlagTemplate)
+		buildFlag, err := tmpl.New(ctx).Apply(buildFlagTemplate)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to process build flag template '%s'", buildFlagTemplate)
 		}
