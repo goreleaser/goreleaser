@@ -782,7 +782,7 @@ func Test_processImageTemplates(t *testing.T) {
 	docker := ctx.Config.Dockers[0]
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 
-	images, err := processImageTemplates(ctx, docker, []artifact.Artifact{})
+	images, err := processImageTemplates(ctx, docker)
 	assert.NoError(t, err)
 	assert.Equal(t, []string{
 		"user/image:v1.0.0",

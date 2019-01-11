@@ -150,7 +150,7 @@ func process(ctx *context.Context, docker config.Docker, bins []artifact.Artifac
 	}
 	log.Debug("tempdir: " + tmp)
 
-	images, err := processImageTemplates(ctx, docker, bins)
+	images, err := processImageTemplates(ctx, docker)
 	if err != nil {
 		return err
 	}
@@ -172,7 +172,7 @@ func process(ctx *context.Context, docker config.Docker, bins []artifact.Artifac
 		}
 	}
 
-	buildFlags, err := processBuildFlagTemplates(ctx, docker, bins)
+	buildFlags, err := processBuildFlagTemplates(ctx, docker)
 	if err != nil {
 		return err
 	}
@@ -198,7 +198,7 @@ func process(ctx *context.Context, docker config.Docker, bins []artifact.Artifac
 	return nil
 }
 
-func processImageTemplates(ctx *context.Context, docker config.Docker, artifacts []artifact.Artifact) ([]string, error) {
+func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {
 	// nolint:prealloc
 	var images []string
 	for _, imageTemplate := range docker.ImageTemplates {
@@ -213,7 +213,7 @@ func processImageTemplates(ctx *context.Context, docker config.Docker, artifacts
 	return images, nil
 }
 
-func processBuildFlagTemplates(ctx *context.Context, docker config.Docker, artifacts []artifact.Artifact) ([]string, error) {
+func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]string, error) {
 	// nolint:prealloc
 	var buildFlags []string
 	for _, buildFlagTemplate := range docker.BuildFlagTemplates {
