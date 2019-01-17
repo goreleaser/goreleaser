@@ -91,10 +91,12 @@ func TestBuild(t *testing.T) {
 				},
 				Asmflags: []string{".=", "all="},
 				Gcflags:  []string{"all="},
+				Flags:    []string{"{{.Env.GO_FLAGS}}"},
 			},
 		},
 	}
 	var ctx = context.New(config)
+	ctx.Env["GO_FLAGS"] = "-v"
 	ctx.Git.CurrentTag = "5.6.7"
 	var build = ctx.Config.Builds[0]
 	for _, target := range build.Targets {
@@ -271,6 +273,28 @@ func TestRunInvalidLdflags(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git.CurrentTag = "5.6.7"
+	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		Target: runtimeTarget,
+	})
+	assert.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+}
+
+func TestRunInvalidFlags(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				Binary: "nametest",
+				Flags:  []string{"{{.Env.GOOS}"},
+				Targets: []string{
+					runtimeTarget,
+				},
+			},
+		},
+	}
+	var ctx = context.New(config)
 	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})

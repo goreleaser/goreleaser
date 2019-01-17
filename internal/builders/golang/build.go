@@ -60,7 +60,11 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 	cmd := []string{"go", "build"}
 
-	cmd = append(cmd, build.Flags...)
+	flags, err := processFlags(ctx, build.Flags, "")
+	if err != nil {
+		return err
+	}
+	cmd = append(cmd, flags...)
 
 	asmflags, err := processFlags(ctx, build.Asmflags, "-asmflags=")
 	if err != nil {
