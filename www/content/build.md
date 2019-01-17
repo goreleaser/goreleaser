@@ -25,10 +25,11 @@ builds:
     # Default is the name of the project directory.
     binary: program
 
-    # Set flags for custom build tags.
+    # Custom flags templates.
     # Default is empty.
     flags:
       - -tags=dev
+      - -v
 
     # Custom asmflags templates.
     # Default is empty.
