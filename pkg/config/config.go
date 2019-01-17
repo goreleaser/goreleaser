@@ -14,9 +14,10 @@ import (
 
 // GitHubURLs holds the URLs to be used when using github enterprise
 type GitHubURLs struct {
-	API      string `yaml:"api,omitempty"`
-	Upload   string `yaml:"upload,omitempty"`
-	Download string `yaml:"download,omitempty"`
+	API           string `yaml:"api,omitempty"`
+	Upload        string `yaml:"upload,omitempty"`
+	Download      string `yaml:"download,omitempty"`
+	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
 }
 
 // Repo represents any kind of repo (github, gitlab, etc)

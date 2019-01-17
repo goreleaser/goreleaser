@@ -2,6 +2,8 @@ package client
 
 import (
 	"bytes"
+	"crypto/tls"
+	"net/http"
 	"net/url"
 	"os"
 
@@ -22,7 +24,13 @@ func NewGitHub(ctx *context.Context) (Client, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: ctx.Token},
 	)
-	client := github.NewClient(oauth2.NewClient(ctx, ts))
+	httpClient := oauth2.NewClient(ctx, ts)
+	if ctx.Config.GitHubURLs.SkipTLSVerify {
+		httpClient.Transport.(*http.Transport).TLSClientConfig = &tls.Config{
+			InsecureSkipVerify: ctx.Config.GitHubURLs.SkipTLSVerify,
+		}
+	}
+	client := github.NewClient(httpClient)
 	if ctx.Config.GitHubURLs.API != "" {
 		api, err := url.Parse(ctx.Config.GitHubURLs.API)
 		if err != nil {
