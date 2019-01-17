@@ -89,6 +89,7 @@ func TestRunPipe(t *testing.T) {
 
 	var table = map[string]struct {
 		dockers           []config.Docker
+		env               map[string]string
 		publish           bool
 		expect            []string
 		assertImageLabels imageLabelFinder
@@ -97,6 +98,9 @@ func TestRunPipe(t *testing.T) {
 	}{
 		"valid": {
 			publish: true,
+			env: map[string]string{
+				"FOO": "123",
+			},
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
@@ -415,6 +419,9 @@ func TestRunPipe(t *testing.T) {
 					SkipPush:   true,
 				},
 			},
+			env: map[string]string{
+				"FOO": "123",
+			},
 			expect: []string{
 				registry + "goreleaser/mybin:v1.0.0-123",
 				registry + "goreleaser/mybin:latest",
@@ -505,6 +512,42 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		// TODO: add a test case for multiple matching binaries for the same name
+		"templated_binaries": {
+			publish: true,
+			env: map[string]string{
+				"BIN_NAME": "mybin",
+			},
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{registry + "goreleaser/templatedbins:latest"},
+					Goos:           "darwin",
+					Goarch:         "amd64",
+					Binaries:       []string{"{{.Env.BIN_NAME}}"},
+					Dockerfile:     "testdata/Dockerfile",
+				},
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldNotErr,
+			pubAssertError:    shouldNotErr,
+			expect: []string{
+				registry + "goreleaser/templatedbins:latest",
+			},
+		},
+		"binaries_template_error": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/binaries_template_error:latest",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binaries:   []string{"{{.Env.BAR}"},
+				},
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+		},
 	}
 
 	killAndRm(t)
@@ -529,9 +572,7 @@ func TestRunPipe(t *testing.T) {
 				Dockers:     docker.dockers,
 			})
 			ctx.SkipPublish = !docker.publish
-			ctx.Env = map[string]string{
-				"FOO": "123",
-			}
+			ctx.Env = docker.env
 			ctx.Version = "1.0.0"
 			ctx.Git = context.GitInfo{
 				CurrentTag: "v1.0.0",
