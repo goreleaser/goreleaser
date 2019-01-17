@@ -25,9 +25,14 @@ func NewGitHub(ctx *context.Context) (Client, error) {
 		&oauth2.Token{AccessToken: ctx.Token},
 	)
 	httpClient := oauth2.NewClient(ctx, ts)
-	httpClient.Transport.(*oauth2.Transport).Base.(*http.Transport).TLSClientConfig = &tls.Config{
+	base := httpClient.Transport.(*oauth2.Transport).Base
+	if base != nil {
+		base = http.DefaultTransport
+	}
+	base.(*http.Transport).TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: ctx.Config.GitHubURLs.SkipTLSVerify,
 	}
+	httpClient.Transport.(*oauth2.Transport).Base = base
 	client := github.NewClient(httpClient)
 	if ctx.Config.GitHubURLs.API != "" {
 		api, err := url.Parse(ctx.Config.GitHubURLs.API)
