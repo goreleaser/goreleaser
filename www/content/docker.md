@@ -54,7 +54,7 @@ dockers:
     goarch: amd64
     # GOARM of the built binary that should be used.
     goarm: ''
-    # Name of the built binaries that should be used.
+    # Name templates of the built binaries that should be used.
     binaries:
     - mybinary
     # Templates of the Docker image names.
