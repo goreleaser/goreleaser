@@ -76,18 +76,6 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 	assert.EqualError(t, Pipe{}.Run(ctx), `git doesn't contain any tags. Either add a tag or use --snapshot`)
 }
 
-func TestInvalidTagFormat(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
-	testlib.GitInit(t)
-	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	testlib.GitCommit(t, "commit2")
-	testlib.GitTag(t, "sadasd")
-	var ctx = context.New(config.Project{})
-	assert.EqualError(t, Pipe{}.Run(ctx), "sadasd is not in a valid version format")
-	assert.Equal(t, "sadasd", ctx.Git.CurrentTag)
-}
-
 func TestDirty(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
