@@ -273,11 +273,6 @@ type EnvFiles struct {
 	GitHubToken string `yaml:"github_token,omitempty"`
 }
 
-// Git config
-type Git struct {
-	ShortHash bool `yaml:"short_hash,omitempty"`
-}
-
 // Before config
 type Before struct {
 	Hooks []string `yaml:",omitempty"`
@@ -325,7 +320,6 @@ type Project struct {
 	Dist          string    `yaml:",omitempty"`
 	Sign          Sign      `yaml:",omitempty"`
 	EnvFiles      EnvFiles  `yaml:"env_files,omitempty"`
-	Git           Git       `yaml:",omitempty"`
 	Before        Before    `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯

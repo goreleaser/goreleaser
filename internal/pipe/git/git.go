@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -23,9 +22,6 @@ func (Pipe) String() string {
 func (Pipe) Run(ctx *context.Context) error {
 	if _, err := exec.LookPath("git"); err != nil {
 		return ErrNoGit
-	}
-	if ctx.Config.Git.ShortHash {
-		deprecate.Notice("git.short_hash")
 	}
 	info, err := getInfo(ctx)
 	if err != nil {
@@ -73,10 +69,6 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 	if err != nil {
 		return context.GitInfo{}, errors.Wrap(err, "couldn't get current commit")
 	}
-	var commit = full
-	if ctx.Config.Git.ShortHash {
-		commit = short
-	}
 	url, err := getURL()
 	if err != nil {
 		return context.GitInfo{}, errors.Wrap(err, "couldn't get remote URL")
@@ -84,7 +76,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 	tag, err := getTag()
 	if err != nil {
 		return context.GitInfo{
-			Commit:      commit,
+			Commit:      full,
 			FullCommit:  full,
 			ShortCommit: short,
 			URL:         url,
@@ -93,7 +85,7 @@ func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 	}
 	return context.GitInfo{
 		CurrentTag:  tag,
-		Commit:      commit,
+		Commit:      full,
 		FullCommit:  full,
 		ShortCommit: short,
 		URL:         url,

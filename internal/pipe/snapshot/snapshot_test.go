@@ -34,20 +34,6 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "snap", ctx.Config.Snapshot.NameTemplate)
 }
 
-func TestSnapshotNameShortCommitHash(t *testing.T) {
-	var ctx = context.New(config.Project{
-		Snapshot: config.Snapshot{
-			NameTemplate: "{{.ShortCommit}}",
-		},
-	})
-	ctx.Snapshot = true
-	ctx.Config.Git.ShortHash = true
-	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Git.ShortCommit = "123"
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, ctx.Version, "123")
-}
-
 func TestSnapshotInvalidNametemplate(t *testing.T) {
 	var ctx = context.New(config.Project{
 		Snapshot: config.Snapshot{
