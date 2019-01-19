@@ -50,6 +50,8 @@ You can customize how the changelog is generated using the
 ```yaml
 # .goreleaser.yml
 changelog:
+  # set it to true if you wish to skip the changelog generation
+  skip: true
   # could either be asc, desc or empty
   # Default is empty
   sort: asc
