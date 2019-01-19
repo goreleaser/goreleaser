@@ -108,6 +108,8 @@ dockers:
 ## git.short_hash
 
 > since 2018-10-03
+>
+> removed 2019-01-19
 
 This property was being used to tell GoReleaser to use short git hashes
 instead of the full ones. This has been removed in favor of specific
