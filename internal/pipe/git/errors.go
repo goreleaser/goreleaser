@@ -5,15 +5,6 @@ import (
 	"fmt"
 )
 
-// ErrInvalidVersionFormat is return when the version isnt in a valid format
-type ErrInvalidVersionFormat struct {
-	version string
-}
-
-func (e ErrInvalidVersionFormat) Error() string {
-	return fmt.Sprintf("%v is not in a valid version format", e.version)
-}
-
 // ErrDirty happens when the repo has uncommitted/unstashed changes
 type ErrDirty struct {
 	status string
