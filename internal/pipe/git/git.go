@@ -49,7 +49,7 @@ func getInfo(ctx *context.Context) (context.GitInfo, error) {
 	if !git.IsRepo() {
 		return context.GitInfo{}, ErrNotRepository
 	}
-	info, err := getGitInfo(ctx)
+	info, err := getGitInfo()
 	if err != nil && ctx.Snapshot {
 		log.WithError(err).Warn("ignoring errors because this is a snapshot")
 		if info.Commit == "" {
@@ -60,7 +60,7 @@ func getInfo(ctx *context.Context) (context.GitInfo, error) {
 	return info, err
 }
 
-func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
+func getGitInfo() (context.GitInfo, error) {
 	short, err := getShortCommit()
 	if err != nil {
 		return context.GitInfo{}, errors.Wrap(err, "couldn't get current commit")
