@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
+	"strings"
 	"syscall"
 	"testing"
 
@@ -75,12 +75,13 @@ func TestRunPipe(t *testing.T) {
 	var shouldFindImagesWithLabels = func(image string, filters ...string) func(*testing.T, int) {
 		return func(t *testing.T, count int) {
 			for _, filter := range filters {
-				output, err := exec.Command("docker", "images", "--filter", filter).CombinedOutput()
+				output, err := exec.Command(
+					"docker", "images", "-q", "*/"+image,
+					"--filter", filter,
+				).CombinedOutput()
 				require.NoError(t, err)
-
-				matcher := regexp.MustCompile(image)
-				matches := matcher.FindAllStringIndex(string(output), -1)
-				require.Equal(t, count, len(matches))
+				lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+				require.Equal(t, count, len(lines))
 			}
 		}
 
@@ -148,7 +149,8 @@ func TestRunPipe(t *testing.T) {
 				"label=org.label-schema.schema-version=1.0",
 				"label=org.label-schema.version=1.0.0",
 				"label=org.label-schema.vcs-ref=a1b2c3d4",
-				"label=org.label-schema.name=mybin"),
+				"label=org.label-schema.name=mybin",
+			),
 			assertError:    shouldNotErr,
 			pubAssertError: shouldNotErr,
 		},
