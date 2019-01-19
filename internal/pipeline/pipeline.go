@@ -4,6 +4,8 @@ package pipeline
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/internal/pipe/semver"
+
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/before"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
@@ -36,6 +38,7 @@ type Piper interface {
 var Pipeline = []Piper{
 	before.Pipe{},          // run global hooks before build
 	git.Pipe{},             // get and validate git repo state
+	semver.Pipe{},          // parse current tag to a semver
 	defaults.Pipe{},        // load default configs
 	snapshot.Pipe{},        // snapshot version handling
 	dist.Pipe{},            // ensure ./dist is clean

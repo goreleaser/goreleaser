@@ -189,7 +189,11 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 				Prerelease: "auto",
 			},
 		})
-		ctx.Git.CurrentTag = "v1.0.0"
+		ctx.Semver = context.Semver{
+			Major: 1,
+			Minor: 0,
+			Patch: 0,
+		}
 		assert.NoError(t, Pipe{}.Default(ctx))
 		assert.Equal(t, false, ctx.PreRelease)
 	})
@@ -200,12 +204,17 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 				Prerelease: "auto",
 			},
 		})
-		ctx.Git.CurrentTag = "v1.0.1-rc1"
+		ctx.Semver = context.Semver{
+			Major:      1,
+			Minor:      0,
+			Patch:      0,
+			Prerelease: "rc1",
+		}
 		assert.NoError(t, Pipe{}.Default(ctx))
 		assert.Equal(t, true, ctx.PreRelease)
 	})
 
-	t.Run("auto-rc", func(t *testing.T) {
+	t.Run("auto-rc-github-setup", func(t *testing.T) {
 		var ctx = context.New(config.Project{
 			Release: config.Release{
 				GitHub: config.Repo{
@@ -215,7 +224,12 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 				Prerelease: "auto",
 			},
 		})
-		ctx.Git.CurrentTag = "v1.0.1-rc1"
+		ctx.Semver = context.Semver{
+			Major:      1,
+			Minor:      0,
+			Patch:      0,
+			Prerelease: "rc1",
+		}
 		assert.NoError(t, Pipe{}.Default(ctx))
 		assert.Equal(t, true, ctx.PreRelease)
 	})
