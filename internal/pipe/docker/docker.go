@@ -111,6 +111,14 @@ func doRun(ctx *context.Context) error {
 		docker := docker
 		g.Go(func() error {
 			log.WithField("docker", docker).Debug("looking for binaries matching")
+			var binaryNames = make([]string, len(docker.Binaries))
+			for i := range docker.Binaries {
+				bin, err := tmpl.New(ctx).Apply(docker.Binaries[i])
+				if err != nil {
+					return errors.Wrapf(err, "failed to execute binary template '%s'", docker.Binaries[i])
+				}
+				binaryNames[i] = bin
+			}
 			var binaries = ctx.Artifacts.Filter(
 				artifact.And(
 					artifact.ByGoos(docker.Goos),
@@ -118,7 +126,7 @@ func doRun(ctx *context.Context) error {
 					artifact.ByGoarm(docker.Goarm),
 					artifact.ByType(artifact.Binary),
 					func(a artifact.Artifact) bool {
-						for _, bin := range docker.Binaries {
+						for _, bin := range binaryNames {
 							if a.ExtraOr("Binary", "").(string) == bin {
 								return true
 							}

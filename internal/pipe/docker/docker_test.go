@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
+	"strings"
 	"syscall"
 	"testing"
 
@@ -75,12 +75,13 @@ func TestRunPipe(t *testing.T) {
 	var shouldFindImagesWithLabels = func(image string, filters ...string) func(*testing.T, int) {
 		return func(t *testing.T, count int) {
 			for _, filter := range filters {
-				output, err := exec.Command("docker", "images", "--filter", filter).CombinedOutput()
+				output, err := exec.Command(
+					"docker", "images", "-q", "*/"+image,
+					"--filter", filter,
+				).CombinedOutput()
 				require.NoError(t, err)
-
-				matcher := regexp.MustCompile(image)
-				matches := matcher.FindAllStringIndex(string(output), -1)
-				require.Equal(t, count, len(matches))
+				lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+				require.Equal(t, count, len(lines))
 			}
 		}
 
@@ -89,6 +90,7 @@ func TestRunPipe(t *testing.T) {
 
 	var table = map[string]struct {
 		dockers           []config.Docker
+		env               map[string]string
 		publish           bool
 		expect            []string
 		assertImageLabels imageLabelFinder
@@ -97,6 +99,9 @@ func TestRunPipe(t *testing.T) {
 	}{
 		"valid": {
 			publish: true,
+			env: map[string]string{
+				"FOO": "123",
+			},
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
@@ -144,7 +149,8 @@ func TestRunPipe(t *testing.T) {
 				"label=org.label-schema.schema-version=1.0",
 				"label=org.label-schema.version=1.0.0",
 				"label=org.label-schema.vcs-ref=a1b2c3d4",
-				"label=org.label-schema.name=mybin"),
+				"label=org.label-schema.name=mybin",
+			),
 			assertError:    shouldNotErr,
 			pubAssertError: shouldNotErr,
 		},
@@ -415,6 +421,9 @@ func TestRunPipe(t *testing.T) {
 					SkipPush:   true,
 				},
 			},
+			env: map[string]string{
+				"FOO": "123",
+			},
 			expect: []string{
 				registry + "goreleaser/mybin:v1.0.0-123",
 				registry + "goreleaser/mybin:latest",
@@ -505,6 +514,42 @@ func TestRunPipe(t *testing.T) {
 			},
 		},
 		// TODO: add a test case for multiple matching binaries for the same name
+		"templated_binaries": {
+			publish: true,
+			env: map[string]string{
+				"BIN_NAME": "mybin",
+			},
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{registry + "goreleaser/templatedbins:latest"},
+					Goos:           "darwin",
+					Goarch:         "amd64",
+					Binaries:       []string{"{{.Env.BIN_NAME}}"},
+					Dockerfile:     "testdata/Dockerfile",
+				},
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldNotErr,
+			pubAssertError:    shouldNotErr,
+			expect: []string{
+				registry + "goreleaser/templatedbins:latest",
+			},
+		},
+		"binaries_template_error": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/binaries_template_error:latest",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binaries:   []string{"{{.Env.BAR}"},
+				},
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+		},
 	}
 
 	killAndRm(t)
@@ -529,13 +574,16 @@ func TestRunPipe(t *testing.T) {
 				Dockers:     docker.dockers,
 			})
 			ctx.SkipPublish = !docker.publish
-			ctx.Env = map[string]string{
-				"FOO": "123",
-			}
+			ctx.Env = docker.env
 			ctx.Version = "1.0.0"
 			ctx.Git = context.GitInfo{
 				CurrentTag: "v1.0.0",
 				Commit:     "a1b2c3d4",
+			}
+			ctx.Semver = context.Semver{
+				Major: 1,
+				Minor: 0,
+				Patch: 0,
 			}
 			for _, os := range []string{"linux", "darwin"} {
 				for _, arch := range []string{"amd64", "386"} {
@@ -774,6 +822,11 @@ func Test_processImageTemplates(t *testing.T) {
 	ctx.Git = context.GitInfo{
 		CurrentTag: "v1.0.0",
 		Commit:     "a1b2c3d4",
+	}
+	ctx.Semver = context.Semver{
+		Major: 1,
+		Minor: 0,
+		Patch: 0,
 	}
 
 	assert.NoError(t, Pipe{}.Default(ctx))

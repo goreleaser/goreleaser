@@ -6,10 +6,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/Masterminds/semver"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // Template holds data that can be applied to a template string
@@ -57,6 +55,10 @@ func New(ctx *context.Context) *Template {
 			env:         ctx.Env,
 			date:        time.Now().UTC().Format(time.RFC3339),
 			timestamp:   time.Now().UTC().Unix(),
+			major:       ctx.Semver.Major,
+			minor:       ctx.Semver.Minor,
+			patch:       ctx.Semver.Patch,
+			// TODO: no reason not to add prerelease here too I guess
 		},
 	}
 }
@@ -89,14 +91,6 @@ func (t *Template) Apply(s string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	sv, err := semver.NewVersion(t.fields[tag].(string))
-	if err != nil {
-		return "", errors.Wrap(err, "tmpl")
-	}
-	t.fields[major] = sv.Major()
-	t.fields[minor] = sv.Minor()
-	t.fields[patch] = sv.Patch()
 
 	err = tmpl.Execute(&out, t.fields)
 	return out.String(), err

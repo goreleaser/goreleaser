@@ -29,6 +29,9 @@ func (Pipe) String() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	if ctx.Config.Changelog.Skip {
+		return pipe.Skip("changelog should not be built")
+	}
 	if ctx.ReleaseNotes != "" {
 		return pipe.Skip("release notes already provided via --release-notes")
 	}

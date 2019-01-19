@@ -16,8 +16,13 @@ func TestWithArtifact(t *testing.T) {
 	ctx.Env = map[string]string{
 		"FOO": "bar",
 	}
-	ctx.Version = "1.0.0"
-	ctx.Git.CurrentTag = "v1.0.0"
+	ctx.Version = "1.2.3"
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Semver = context.Semver{
+		Major: 1,
+		Minor: 2,
+		Patch: 3,
+	}
 	ctx.Git.Commit = "commit"
 	ctx.Git.FullCommit = "fullcommit"
 	ctx.Git.ShortCommit = "shortcommit"
@@ -26,8 +31,9 @@ func TestWithArtifact(t *testing.T) {
 		"Linux":       "{{.Os}}",
 		"amd64":       "{{.Arch}}",
 		"6":           "{{.Arm}}",
-		"1.0.0":       "{{.Version}}",
-		"v1.0.0":      "{{.Tag}}",
+		"1.2.3":       "{{.Version}}",
+		"v1.2.3":      "{{.Tag}}",
+		"1-2-3":       "{{.Major}}-{{.Minor}}-{{.Patch}}",
 		"commit":      "{{.Commit}}",
 		"fullcommit":  "{{.FullCommit}}",
 		"shortcommit": "{{.ShortCommit}}",
@@ -136,7 +142,9 @@ func TestFuncMap(t *testing.T) {
 }
 
 func TestInvalidTemplate(t *testing.T) {
-	_, err := New(context.New(config.Project{})).Apply("{{{.Foo}")
+	ctx := context.New(config.Project{})
+	ctx.Git.CurrentTag = "v1.1.1"
+	_, err := New(ctx).Apply("{{{.Foo}")
 	assert.EqualError(t, err, "template: tmpl:1: unexpected \"{\" in command")
 }
 
@@ -146,13 +154,4 @@ func TestEnvNotFound(t *testing.T) {
 	result, err := New(ctx).Apply("{{.Env.FOO}}")
 	assert.Empty(t, result)
 	assert.EqualError(t, err, `template: tmpl:1:6: executing "tmpl" at <.Env.FOO>: map has no entry for key "FOO"`)
-}
-
-// This should actually never happen...
-func TestInvalidSemver(t *testing.T) {
-	var ctx = context.New(config.Project{})
-	ctx.Git.CurrentTag = "v1_2_3"
-	result, err := New(ctx).Apply("{{.Major}}")
-	assert.Empty(t, result)
-	assert.EqualError(t, err, `tmpl: Invalid Semantic Version`)
 }
