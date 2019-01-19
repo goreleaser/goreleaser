@@ -24,7 +24,6 @@ Documentation is hosted live at https://goreleaser.com
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=for-the-badge)](/LICENSE.md)
 [![Travis](https://img.shields.io/travis/goreleaser/goreleaser/master.svg?style=for-the-badge)](https://travis-ci.org/goreleaser/goreleaser)
 [![Codecov branch](https://img.shields.io/codecov/c/github/goreleaser/goreleaser/master.svg?style=for-the-badge)](https://codecov.io/gh/goreleaser/goreleaser)
-<!-- [![Go Report Card](https://goreportcard.com/badge/github.com/goreleaser/goreleaser?style=for-the-badge)](https://goreportcard.com/report/github.com/goreleaser/goreleaser) -->
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=for-the-badge)](http://godoc.org/github.com/goreleaser/goreleaser)
 [![SayThanks.io](https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg?style=for-the-badge)](https://saythanks.io/to/caarlos0)
 [![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=for-the-badge)](https://github.com/goreleaser)
