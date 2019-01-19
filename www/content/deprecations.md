@@ -105,11 +105,13 @@ dockers:
     - 'foo/bar:{{ .Tag }}'
 ```
 
+## Expired deprecation notices
+
+The following options were deprecated for ~6 months and are now fully removed.
+
 ### git.short_hash
 
-> since 2018-10-03
->
-> removed 2019-01-19
+> since 2018-10-03, removed 2019-01-19
 
 This property was being used to tell GoReleaser to use short git hashes
 instead of the full ones. This has been removed in favor of specific
@@ -131,10 +133,6 @@ to this:
 fake:
   foo_template: 'blah {{ .ShortCommit }}'
 ```
-
-## Expired deprecation notices
-
-The following options were deprecated for ~6 months and are now fully removed.
 
 ### fpm
 
