@@ -9,13 +9,13 @@ This page will be used to list deprecation notices accross GoReleaser.
 
 Deprecate code will be removed after ~6 months from the time it was deprecated.
 
-# Active deprecation notices
+## Active deprecation notices
 
 <!--
 
 Template for new deprecations:
 
-## property
+### property
 
 > since yyyy-mm-dd
 
@@ -31,9 +31,9 @@ to this:
 ```yaml
 ```
 
- -->
+-->
 
-## docker.binary
+### docker.binary
 
 > since 2018-10-01
 
@@ -56,7 +56,7 @@ dockers:
   - foo
 ```
 
-## docker.image
+### docker.image
 
 > since 2018-10-20
 
@@ -81,7 +81,7 @@ dockers:
     - 'foo/bar:{{ .Tag }}'
 ```
 
-## docker.tag_templates
+### docker.tag_templates
 
 > since 2018-10-20
 
@@ -105,7 +105,7 @@ dockers:
     - 'foo/bar:{{ .Tag }}'
 ```
 
-## git.short_hash
+### git.short_hash
 
 > since 2018-10-03
 >
@@ -132,15 +132,13 @@ fake:
   foo_template: 'blah {{ .ShortCommit }}'
 ```
 
-# Expired deprecation notices
+## Expired deprecation notices
 
-The following options were deprecated for ~6 months and are now unsupported.
+The following options were deprecated for ~6 months and are now fully removed.
 
-## fpm
+### fpm
 
-> since 2018-02-17
->
-> removed 2017-08-15
+> since 2018-02-17, removed 2017-08-15
 
 FPM is deprecated in favor of nfpm, which is a simpler alternative written
 in Go. The objective is to remove the ruby dependency thus simplify the
@@ -162,11 +160,9 @@ nfpm:
   # ...
 ```
 
-## docker.tag_template
+### docker.tag_template
 
-> since 2018-01-19
->
-> removed 2017-08-15
+> since 2018-01-19, removed 2017-08-15
 
 This property was deprecated in favor of the pluralized `tag_templates`.
 The idea is to be able to define several tags instead of just one.
@@ -188,11 +184,9 @@ dockers:
     - '{{ .Tag }}'
 ```
 
-## docker.latest
+### docker.latest
 
-> since 2018-01-19
->
-> removed 2017-08-15
+> since 2018-01-19, removed 2017-08-15
 
 The `latest` field in Docker config is deprecated in favor of the newer
 `tag_templates` field.
