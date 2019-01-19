@@ -34,6 +34,8 @@ github_urls:
   api: https://git.company.com/api/v3/
   upload: https://git.company.com/api/uploads/
   download: https://git.company.com/
+  # set to true if you use a self-signed certificate
+  skip_tls_verify: false
 ```
 
 If none are set, they default to GitHub's public URLs.
