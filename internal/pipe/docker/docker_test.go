@@ -580,6 +580,11 @@ func TestRunPipe(t *testing.T) {
 				CurrentTag: "v1.0.0",
 				Commit:     "a1b2c3d4",
 			}
+			ctx.Semver = context.Semver{
+				Major: 1,
+				Minor: 0,
+				Patch: 0,
+			}
 			for _, os := range []string{"linux", "darwin"} {
 				for _, arch := range []string{"amd64", "386"} {
 					for _, bin := range []string{"mybin", "anotherbin"} {
@@ -817,6 +822,11 @@ func Test_processImageTemplates(t *testing.T) {
 	ctx.Git = context.GitInfo{
 		CurrentTag: "v1.0.0",
 		Commit:     "a1b2c3d4",
+	}
+	ctx.Semver = context.Semver{
+		Major: 1,
+		Minor: 0,
+		Patch: 0,
 	}
 
 	assert.NoError(t, Pipe{}.Default(ctx))
