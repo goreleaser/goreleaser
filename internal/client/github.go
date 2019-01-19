@@ -128,6 +128,10 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (int64, 
 			data,
 		)
 	} else {
+		// keep the pre-existing release notes
+		if release.GetBody() != "" {
+			data.Body = release.Body
+		}
 		release, _, err = c.client.Repositories.EditRelease(
 			ctx,
 			ctx.Config.Release.GitHub.Owner,
