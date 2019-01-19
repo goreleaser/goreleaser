@@ -85,3 +85,7 @@ $ goreleaser --release-notes <(some_changelog_generator)
 Some changelog generators you can use:
 
 - [buchanae/github-release-notes](https://github.com/buchanae/github-release-notes)
+
+**Important**: If you create the release before running GoReleaser, and the
+said release has some text in its body, GoReleaser will not override it with
+it's release notes.
