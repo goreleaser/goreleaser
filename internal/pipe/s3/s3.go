@@ -72,12 +72,13 @@ func upload(ctx *context.Context, conf config.S3) error {
 		Region: aws.String(conf.Region),
 	})
 
-	bucket, err := tmpl.New(ctx).Apply(conf.Bucket)
+	template := tmpl.New(ctx)
+	bucket, err := template.Apply(conf.Bucket)
 	if err != nil {
 		return err
 	}
 
-	folder, err := tmpl.New(ctx).Apply(conf.Folder)
+	folder, err := template.Apply(conf.Folder)
 	if err != nil {
 		return err
 	}
