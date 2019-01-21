@@ -71,6 +71,12 @@ func upload(ctx *context.Context, conf config.S3) error {
 	svc := s3.New(sess, &aws.Config{
 		Region: aws.String(conf.Region),
 	})
+
+	bucket, err := tmpl.New(ctx).Apply(conf.Bucket)
+	if err != nil {
+		return err
+	}
+
 	folder, err := tmpl.New(ctx).Apply(conf.Folder)
 	if err != nil {
 		return err
@@ -93,12 +99,12 @@ func upload(ctx *context.Context, conf config.S3) error {
 				return err
 			}
 			log.WithFields(log.Fields{
-				"bucket":   conf.Bucket,
+				"bucket":   bucket,
 				"folder":   folder,
 				"artifact": artifact.Name,
 			}).Info("uploading")
 			_, err = svc.PutObjectWithContext(ctx, &s3.PutObjectInput{
-				Bucket: aws.String(conf.Bucket),
+				Bucket: aws.String(bucket),
 				Key:    aws.String(filepath.Join(folder, artifact.Name)),
 				Body:   f,
 				ACL:    aws.String(conf.ACL),
