@@ -7,15 +7,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alecthomas/kingpin"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
+	"github.com/goreleaser/goreleaser/internal/static"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 // nolint: gochecknoglobals
@@ -49,6 +50,7 @@ func main() {
 	defer fmt.Println()
 
 	var app = kingpin.New("goreleaser", "Deliver Go binaries as fast and easily as possible")
+	var debug = app.Flag("debug", "Enable debug mode").Bool()
 	var initCmd = app.Command("init", "Generates a .goreleaser.yml file").Alias("i")
 	var releaseCmd = app.Command("release", "Releases the current project").Alias("r").Default()
 	var config = releaseCmd.Flag("config", "Load configuration from file").Short('c').Short('f').PlaceHolder(".goreleaser.yml").String()
@@ -59,19 +61,23 @@ func main() {
 	var skipValidate = releaseCmd.Flag("skip-validate", "Skips all git sanity checks").Bool()
 	var rmDist = releaseCmd.Flag("rm-dist", "Remove the dist folder before building").Bool()
 	var parallelism = releaseCmd.Flag("parallelism", "Amount of slow tasks to do in concurrently").Short('p').Default("4").Int() // TODO: use runtime.NumCPU here?
-	var debug = releaseCmd.Flag("debug", "Enable debug mode").Bool()
 	var timeout = releaseCmd.Flag("timeout", "Timeout to the entire release process").Default("30m").Duration()
 
 	app.Version(fmt.Sprintf("%v, commit %v, built at %v", version, commit, date))
 	app.VersionFlag.Short('v')
 	app.HelpFlag.Short('h')
+	app.UsageTemplate(static.UsageTemplate)
 
-	switch kingpin.MustParse(app.Parse(os.Args[1:])) {
+	cmd := kingpin.MustParse(app.Parse(os.Args[1:]))
+	if *debug {
+		log.SetLevel(log.DebugLevel)
+	}
+	switch cmd {
 	case initCmd.FullCommand():
 		var filename = ".goreleaser.yml"
 		if err := initProject(filename); err != nil {
 			log.WithError(err).Error("failed to init project")
-			terminate(1)
+			os.Exit(1)
 			return
 		}
 		log.WithField("file", filename).Info("config created; please edit accordingly to your needs")
@@ -92,21 +98,14 @@ func main() {
 		}
 		if err := releaseProject(options); err != nil {
 			log.WithError(err).Errorf(color.New(color.Bold).Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
-			terminate(1)
+			os.Exit(1)
 			return
 		}
 		log.Infof(color.New(color.Bold).Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds()))
 	}
 }
 
-func terminate(status int) {
-	os.Exit(status)
-}
-
 func releaseProject(options releaseOptions) error {
-	if options.Debug {
-		log.SetLevel(log.DebugLevel)
-	}
 	cfg, err := loadConfig(options.Config)
 	if err != nil {
 		return err
@@ -169,7 +168,7 @@ func initProject(filename string) error {
 		return fmt.Errorf("%s already exists", filename)
 	}
 	log.Infof(color.New(color.Bold).Sprintf("Generating %s file", filename))
-	return ioutil.WriteFile(filename, []byte(exampleConfig), 0644)
+	return ioutil.WriteFile(filename, []byte(static.ExampleConfig), 0644)
 }
 
 func loadConfig(path string) (config.Project, error) {
@@ -193,34 +192,3 @@ func loadConfig(path string) (config.Project, error) {
 	log.Warn("could not load config, using defaults")
 	return config.Project{}, nil
 }
-
-// nolint: gochecknoglobals
-var exampleConfig = `# This is an example goreleaser.yaml file with some sane defaults.
-# Make sure to check the documentation at http://goreleaser.com
-before:
-  hooks:
-    # you may remove this if you don't use vgo
-    - go mod download
-    # you may remove this if you don't need go generate
-    - go generate ./...
-builds:
-- env:
-  - CGO_ENABLED=0
-archive:
-  replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
-    386: i386
-    amd64: x86_64
-checksum:
-  name_template: 'checksums.txt'
-snapshot:
-  name_template: "{{ .Tag }}-next"
-changelog:
-  sort: asc
-  filters:
-    exclude:
-    - '^docs:'
-    - '^test:'
-`
