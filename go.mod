@@ -2,7 +2,6 @@ module github.com/goreleaser/goreleaser
 
 require (
 	github.com/Masterminds/semver v1.4.2
-	github.com/alecthomas/kingpin v2.2.6+incompatible
 	github.com/apex/log v1.1.0
 	github.com/aws/aws-sdk-go v1.15.64
 	github.com/caarlos0/ctrlc v1.0.0
@@ -25,5 +24,6 @@ require (
 	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f
 	golang.org/x/sys v0.0.0-20181030150119-7e31e0c00fa0 // indirect
 	google.golang.org/appengine v1.2.0 // indirect
+	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.2.1
 )
