@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -13,13 +13,20 @@ import (
 )
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestChangelogProvidedViaFlag(t *testing.T) {
 	var ctx = context.New(config.Project{})
-	ctx.ReleaseNotes = "c0ff33 foo bar"
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	ctx.ReleaseNotes = "testdata/changes.md"
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "c0ff33 coffeee\n", ctx.ReleaseNotes)
+}
+
+func TestChangelogProvidedViaFlagDoesntExist(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	ctx.ReleaseNotes = "testdata/changes.nope"
+	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/changes.nope: no such file or directory")
 }
 
 func TestChangelogSkip(t *testing.T) {
@@ -63,19 +70,19 @@ func TestChangelog(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v0.0.2"
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	assert.NotContains(t, ctx.ReleaseNotes, "first")
-	assert.Contains(t, ctx.ReleaseNotes, "added feature 1")
-	assert.Contains(t, ctx.ReleaseNotes, "fixed bug 2")
-	assert.NotContains(t, ctx.ReleaseNotes, "docs")
-	assert.NotContains(t, ctx.ReleaseNotes, "ignored")
-	assert.NotContains(t, ctx.ReleaseNotes, "cArs")
-	assert.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.NotContains(t, ctx.ReleaseNotes, "first")
+	require.Contains(t, ctx.ReleaseNotes, "added feature 1")
+	require.Contains(t, ctx.ReleaseNotes, "fixed bug 2")
+	require.NotContains(t, ctx.ReleaseNotes, "docs")
+	require.NotContains(t, ctx.ReleaseNotes, "ignored")
+	require.NotContains(t, ctx.ReleaseNotes, "cArs")
+	require.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
 
 	bts, err := ioutil.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
-	assert.NoError(t, err)
-	assert.NotEmpty(t, string(bts))
+	require.NoError(t, err)
+	require.NotEmpty(t, string(bts))
 }
 
 func TestChangelogSort(t *testing.T) {
@@ -125,14 +132,14 @@ func TestChangelogSort(t *testing.T) {
 		t.Run("changelog sort='"+cfg.Sort+"'", func(t *testing.T) {
 			ctx.Config.Changelog.Sort = cfg.Sort
 			entries, err := buildChangelog(ctx)
-			assert.NoError(t, err)
-			assert.Len(t, entries, len(cfg.Entries))
+			require.NoError(t, err)
+			require.Len(t, entries, len(cfg.Entries))
 			var changes []string
 			for _, line := range entries {
 				_, msg := extractCommitInfo(line)
 				changes = append(changes, msg)
 			}
-			assert.EqualValues(t, cfg.Entries, changes)
+			require.EqualValues(t, cfg.Entries, changes)
 		})
 	}
 }
@@ -143,7 +150,7 @@ func TestChangelogInvalidSort(t *testing.T) {
 			Sort: "dope",
 		},
 	})
-	assert.EqualError(t, Pipe{}.Run(ctx), ErrInvalidSortDirection.Error())
+	require.EqualError(t, Pipe{}.Run(ctx), ErrInvalidSortDirection.Error())
 }
 
 func TestChangelogOfFirstRelease(t *testing.T) {
@@ -162,10 +169,10 @@ func TestChangelogOfFirstRelease(t *testing.T) {
 	testlib.GitTag(t, "v0.0.1")
 	var ctx = context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	for _, msg := range msgs {
-		assert.Contains(t, ctx.ReleaseNotes, msg)
+		require.Contains(t, ctx.ReleaseNotes, msg)
 	}
 }
 
@@ -187,7 +194,7 @@ func TestChangelogFilterInvalidRegex(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v0.0.4"
-	assert.EqualError(t, Pipe{}.Run(ctx), "error parsing regexp: invalid or unsupported Perl syntax: `(?ia`")
+	require.EqualError(t, Pipe{}.Run(ctx), "error parsing regexp: invalid or unsupported Perl syntax: `(?ia`")
 }
 
 func TestChangelogNoTags(t *testing.T) {
@@ -196,8 +203,8 @@ func TestChangelogNoTags(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
 	var ctx = context.New(config.Project{})
-	assert.Error(t, Pipe{}.Run(ctx))
-	assert.Empty(t, ctx.ReleaseNotes)
+	require.Error(t, Pipe{}.Run(ctx))
+	require.Empty(t, ctx.ReleaseNotes)
 }
 
 func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
@@ -217,9 +224,9 @@ func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
 	testlib.GitCheckoutBranch(t, "v0.0.1")
 	var ctx = context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	for _, msg := range msgs {
-		assert.Contains(t, ctx.ReleaseNotes, msg)
+		require.Contains(t, ctx.ReleaseNotes, msg)
 	}
 }

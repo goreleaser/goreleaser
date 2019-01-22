@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -32,8 +31,15 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Changelog.Skip {
 		return pipe.Skip("changelog should not be built")
 	}
+	// TODO: should probably have a different field for the filename and its
+	// contents.
 	if ctx.ReleaseNotes != "" {
-		return pipe.Skip("release notes already provided via --release-notes")
+		notes, err := loadFromFile(ctx.ReleaseNotes)
+		if err != nil {
+			return err
+		}
+		ctx.ReleaseNotes = notes
+		return nil
 	}
 	if ctx.Snapshot {
 		return pipe.Skip("not available for snapshots")
@@ -49,6 +55,16 @@ func (Pipe) Run(ctx *context.Context) error {
 	var path = filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
 	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0644)
+}
+
+func loadFromFile(file string) (string, error) {
+	bts, err := ioutil.ReadFile(file)
+	if err != nil {
+		return "", err
+	}
+	log.WithField("file", file).Info("loaded custom release notes")
+	log.WithField("file", file).Debugf("custom release notes: \n%s", string(bts))
+	return string(bts), nil
 }
 
 func checkSortDirection(mode string) error {
