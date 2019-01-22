@@ -127,7 +127,6 @@ func TestInitProjectDefaultPipeFails(t *testing.T) {
 
 func testParams() releaseOptions {
 	return releaseOptions{
-		Debug:       true,
 		Parallelism: 4,
 		Snapshot:    true,
 		Timeout:     time.Minute,
