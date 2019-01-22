@@ -3,7 +3,7 @@
 package defaults
 
 import (
-	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/goreleaser/goreleaser/pkg/defaults"
 )
@@ -24,8 +24,11 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Config.GitHubURLs.Download = "https://github.com"
 	}
 	for _, defaulter := range defaults.Defaulters {
-		log.Debug(defaulter.String())
-		if err := defaulter.Default(ctx); err != nil {
+		if err := middleware.Logging(
+			defaulter.String(),
+			middleware.ErrHandler(defaulter.Default),
+			middleware.ExtraPadding,
+		)(ctx); err != nil {
 			return err
 		}
 	}

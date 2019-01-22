@@ -33,6 +33,8 @@ func TestReleaseProjectSkipPublish(t *testing.T) {
 }
 
 func TestConfigFileIsSetAndDontExist(t *testing.T) {
+	_, back := setup(t)
+	defer back()
 	params := testParams()
 	params.Config = "/this/wont/exist"
 	assert.Error(t, releaseProject(params))
@@ -71,6 +73,8 @@ func TestConfigFileDoesntExist(t *testing.T) {
 }
 
 func TestReleaseNotesFileDontExist(t *testing.T) {
+	_, back := setup(t)
+	defer back()
 	params := testParams()
 	params.ReleaseNotes = "/this/also/wont/exist"
 	assert.Error(t, releaseProject(params))
@@ -127,7 +131,6 @@ func TestInitProjectDefaultPipeFails(t *testing.T) {
 
 func testParams() releaseOptions {
 	return releaseOptions{
-		Debug:       true,
 		Parallelism: 4,
 		Snapshot:    true,
 		Timeout:     time.Minute,

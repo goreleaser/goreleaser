@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
-	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/internal/static"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -34,7 +33,6 @@ type releaseOptions struct {
 	SkipSign     bool
 	SkipValidate bool
 	RmDist       bool
-	Debug        bool
 	Parallelism  int
 	Timeout      time.Duration
 }
@@ -56,11 +54,11 @@ func main() {
 	var config = releaseCmd.Flag("config", "Load configuration from file").Short('c').Short('f').PlaceHolder(".goreleaser.yml").String()
 	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown file").PlaceHolder("notes.md").String()
 	var snapshot = releaseCmd.Flag("snapshot", "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts").Bool()
-	var skipPublish = releaseCmd.Flag("skip-publish", "Generates all artifacts but does not publish them anywhere").Bool()
+	var skipPublish = releaseCmd.Flag("skip-publish", "Skips publishing artifacts").Bool()
 	var skipSign = releaseCmd.Flag("skip-sign", "Skips signing the artifacts").Bool()
-	var skipValidate = releaseCmd.Flag("skip-validate", "Skips all git sanity checks").Bool()
+	var skipValidate = releaseCmd.Flag("skip-validate", "Skips several sanity checks").Bool()
 	var rmDist = releaseCmd.Flag("rm-dist", "Remove the dist folder before building").Bool()
-	var parallelism = releaseCmd.Flag("parallelism", "Amount of slow tasks to do in concurrently").Short('p').Default("4").Int() // TODO: use runtime.NumCPU here?
+	var parallelism = releaseCmd.Flag("parallelism", "Amount tasks to run concurrently").Short('p').Default("4").Int()
 	var timeout = releaseCmd.Flag("timeout", "Timeout to the entire release process").Default("30m").Duration()
 
 	app.Version(fmt.Sprintf("%v, commit %v, built at %v", version, commit, date))
@@ -93,7 +91,6 @@ func main() {
 			SkipSign:     *skipSign,
 			RmDist:       *rmDist,
 			Parallelism:  *parallelism,
-			Debug:        *debug,
 			Timeout:      *timeout,
 		}
 		if err := releaseProject(options); err != nil {
@@ -113,50 +110,25 @@ func releaseProject(options releaseOptions) error {
 	ctx, cancel := context.NewWithTimeout(cfg, options.Timeout)
 	defer cancel()
 	ctx.Parallelism = options.Parallelism
-	ctx.Debug = options.Debug
 	log.Debugf("parallelism: %v", ctx.Parallelism)
-	if options.ReleaseNotes != "" {
-		bts, err := ioutil.ReadFile(options.ReleaseNotes)
-		if err != nil {
-			return err
-		}
-		log.WithField("file", options.ReleaseNotes).Info("loaded custom release notes")
-		log.WithField("file", options.ReleaseNotes).Debugf("custom release notes: \n%s", string(bts))
-		ctx.ReleaseNotes = string(bts)
-	}
+	ctx.ReleaseNotes = options.ReleaseNotes
 	ctx.Snapshot = options.Snapshot
 	ctx.SkipPublish = ctx.Snapshot || options.SkipPublish
 	ctx.SkipValidate = ctx.Snapshot || options.SkipValidate
 	ctx.SkipSign = options.SkipSign
 	ctx.RmDist = options.RmDist
-	return doRelease(ctx)
-}
-
-func doRelease(ctx *context.Context) error {
-	defer func() { cli.Default.Padding = 3 }()
-	var release = func() error {
+	return ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipeline.Pipeline {
-			cli.Default.Padding = 3
-			log.Infof(color.New(color.Bold).Sprint(strings.ToUpper(pipe.String())))
-			cli.Default.Padding = 6
-			if err := handle(pipe.Run(ctx)); err != nil {
+			if err := middleware.Logging(
+				pipe.String(),
+				middleware.ErrHandler(pipe.Run),
+				middleware.DefaultInitialPadding,
+			)(ctx); err != nil {
 				return err
 			}
 		}
 		return nil
-	}
-	return ctrlc.Default.Run(ctx, release)
-}
-
-func handle(err error) error {
-	if err == nil {
-		return nil
-	}
-	if pipe.IsSkip(err) {
-		log.WithField("reason", err.Error()).Warn("skipped")
-		return nil
-	}
-	return err
+	})
 }
 
 // InitProject creates an example goreleaser.yml in the current directory
@@ -187,8 +159,8 @@ func loadConfig(path string) (config.Project, error) {
 		}
 		return proj, err
 	}
-	// the user didn't specified a config file and the known files
-	// doest not exist, so, return an empty config and a nil err.
-	log.Warn("could not load config, using defaults")
+	// the user didn't specified a config file and the known possible file names
+	// don't exist, so, return an empty config and a nil err.
+	log.Warn("could find a config file, using defaults...")
 	return config.Project{}, nil
 }
