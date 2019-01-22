@@ -1,7 +1,7 @@
 package static
 
 // UsageTemplate for goreleaser CLI.
-var UsageTemplate = `{{define "FormatCommand"}}\
+const UsageTemplate = `{{define "FormatCommand"}}\
 {{if .FlagSummary}} {{.FlagSummary}}{{end}}\
 {{range .Args}} {{if not .Required}}[{{end}}<{{.Name}}>{{if .Value|IsCumulative}}...{{end}}{{if not .Required}}]{{end}}{{end}}\
 {{end}}\
@@ -9,7 +9,7 @@ var UsageTemplate = `{{define "FormatCommand"}}\
 {{define "FormatCommands"}}\
 {{range .FlattenedCommands}}\
 {{if not .Hidden}}\
-  {{.FullCommand}}{{if .Default}} (default command){{end}}{{template "FormatCommand" .}}
+  {{.FullCommand}}{{template "FormatCommand" .}}{{if .Default}} (default){{end}}
 {{.Help|Wrap 4}}
 {{end}}\
 {{end}}\
