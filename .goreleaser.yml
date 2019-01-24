@@ -46,6 +46,14 @@ dockers:
   - "--label=org.label-schema.schema-version=1.0"
   - "--label=org.label-schema.version={{.Version}}"
   - "--label=org.label-schema.name={{.ProjectName}}"
+  - "--label=com.github.actions.name={{.ProjectName}}"
+  - "--label=com.github.actions.description=Deliver Go binaries as fast and easily as possible"
+  - "--label=com.github.actions.icon=rocket"
+  - "--label=com.github.actions.color=blue"
+  - "--label=repository=http://github.com/goreleaser/goreleaser"
+  - "--label=homepage=http://goreleaser.com"
+  - "--label=maintainer=Carlos Becker <goreleaser@carlosbecker.com>"
+
   extra_files:
   - scripts/entrypoint.sh
 archive:
