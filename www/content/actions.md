@@ -32,8 +32,16 @@ action "goreleaser" {
 }
 ```
 
-This should support everything already supported by our [Docker image][docker].
-Check the [install](/install) section for more details.
+This should support *almost* everything already supported by GoReleaser's
+[Docker image][docker]. Check the [install](/install) section for more details.
+
+## What doesn't work
+
+Projects that depend on `$GOPATH`. GitHub Actions override the `WORKDIR`
+instruction and it seems like we can't override it.
+
+In the future releases we may hack something together to work around this,
+but, for now, only projects using Go modules are supported.
 
 [actions]: https://github.com/features/actions
 [docker]: https://hub.docker.com/r/goreleaser/goreleaser
