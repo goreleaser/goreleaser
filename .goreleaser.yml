@@ -48,7 +48,7 @@ dockers:
   - "--label=org.label-schema.name={{.ProjectName}}"
   - "--label=com.github.actions.name={{.ProjectName}}"
   - "--label=com.github.actions.description=Deliver Go binaries as fast and easily as possible"
-  - "--label=com.github.actions.icon=rocket"
+  - "--label=com.github.actions.icon=terminal"
   - "--label=com.github.actions.color=blue"
   - "--label=repository=http://github.com/goreleaser/goreleaser"
   - "--label=homepage=http://goreleaser.com"
