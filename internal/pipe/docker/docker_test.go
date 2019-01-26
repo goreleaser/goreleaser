@@ -71,6 +71,9 @@ func TestRunPipe(t *testing.T) {
 	var shouldNotErr = func(t *testing.T, err error) {
 		require.NoError(t, err)
 	}
+	var shouldNotPublish = func(t *testing.T, err error) {
+		require.EqualError(t, err, pipe.ErrSkipPublishEnabled.Error())
+	}
 	type imageLabelFinder func(*testing.T, int)
 	var shouldFindImagesWithLabels = func(image string, filters ...string) func(*testing.T, int) {
 		return func(t *testing.T, count int) {
@@ -276,7 +279,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldNotErr,
-			pubAssertError:    shouldNotErr,
+			pubAssertError:    shouldNotPublish,
 		},
 		"valid build args": {
 			publish: false,
@@ -299,7 +302,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldNotErr,
-			pubAssertError:    shouldNotErr,
+			pubAssertError:    shouldNotPublish,
 		},
 		"bad build args": {
 			publish: false,
