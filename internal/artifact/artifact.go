@@ -167,6 +167,17 @@ func ByType(t Type) Filter {
 	}
 }
 
+// ByIDs
+func ByIDs(ids []string) Filter {
+	var filters []Filter
+	for _, id := range ids {
+		filters = append(filters, func(a Artifact) bool {
+			return a.ExtraOr("ID", "") == id
+		})
+	}
+	return Or(filters...)
+}
+
 // Or performs an OR between all given filters
 func Or(filters ...Filter) Filter {
 	return func(a Artifact) bool {

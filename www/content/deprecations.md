@@ -33,6 +33,27 @@ to this:
 
 -->
 
+### archive
+
+> since 2019-01-27
+
+We now allow multiple archives, so the `archive` statement will be removed.
+
+Change this:
+
+```yaml
+archive:
+  format: zip
+```
+
+to this:
+
+```yaml
+archives:
+  -
+    format: zip
+```
+
 ### docker.binary
 
 > since 2018-10-01

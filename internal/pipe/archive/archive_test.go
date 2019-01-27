@@ -44,16 +44,19 @@ func TestRunPipe(t *testing.T) {
 				config.Project{
 					Dist:        dist,
 					ProjectName: "foobar",
-					Archive: config.Archive{
-						NameTemplate: defaultNameTemplate,
-						Files: []string{
-							"README.*",
-							"./foo/**/*",
-						},
-						FormatOverrides: []config.FormatOverride{
-							{
-								Goos:   "windows",
-								Format: "zip",
+					Archives: []config.Archive{
+						{
+							Builds:       []string{"default"},
+							NameTemplate: defaultNameTemplate,
+							Files: []string{
+								"README.*",
+								"./foo/**/*",
+							},
+							FormatOverrides: []config.FormatOverride{
+								{
+									Goos:   "windows",
+									Format: "zip",
+								},
 							},
 						},
 					},
@@ -67,6 +70,7 @@ func TestRunPipe(t *testing.T) {
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
 					"Binary": "mybin",
+					"ID":     "default",
 				},
 			}
 			var windowsBuild = artifact.Artifact{
@@ -78,13 +82,14 @@ func TestRunPipe(t *testing.T) {
 				Extra: map[string]interface{}{
 					"Binary":    "mybin",
 					"Extension": ".exe",
+					"ID":        "default",
 				},
 			}
 			ctx.Artifacts.Add(darwinBuild)
 			ctx.Artifacts.Add(windowsBuild)
 			ctx.Version = "0.0.1"
 			ctx.Git.CurrentTag = "v0.0.1"
-			ctx.Config.Archive.Format = format
+			ctx.Config.Archives[0].Format = format
 			require.NoError(tt, Pipe{}.Run(ctx))
 			var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive))
 			require.Len(tt, archives.List(), 2)
@@ -175,9 +180,12 @@ func TestRunPipeBinary(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
-			Archive: config.Archive{
-				Format:       "binary",
-				NameTemplate: defaultBinaryNameTemplate,
+			Archives: []config.Archive{
+				{
+					Format:       "binary",
+					NameTemplate: defaultBinaryNameTemplate,
+					Builds:       []string{"default"},
+				},
 			},
 		},
 	)
@@ -191,6 +199,7 @@ func TestRunPipeBinary(t *testing.T) {
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
 			"Binary": "mybin",
+			"ID":     "default",
 		},
 	})
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -202,6 +211,7 @@ func TestRunPipeBinary(t *testing.T) {
 		Extra: map[string]interface{}{
 			"Binary": "mybin",
 			"Ext":    ".exe",
+			"ID":     "default",
 		},
 	})
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -217,9 +227,12 @@ func TestRunPipeDistRemoved(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
 			Dist: "/path/nope",
-			Archive: config.Archive{
-				NameTemplate: "nope",
-				Format:       "zip",
+			Archives: []config.Archive{
+				{
+					NameTemplate: "nope",
+					Format:       "zip",
+					Builds:       []string{"default"},
+				},
 			},
 		},
 	)
@@ -233,6 +246,7 @@ func TestRunPipeDistRemoved(t *testing.T) {
 		Extra: map[string]interface{}{
 			"Binary":    "mybin",
 			"Extension": ".exe",
+			"ID":        "default",
 		},
 	})
 	require.EqualError(t, Pipe{}.Run(ctx), `failed to create directory /path/nope/nope.zip: open /path/nope/nope.zip: no such file or directory`)
@@ -249,11 +263,14 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
-			Archive: config.Archive{
-				NameTemplate: "foo",
-				Format:       "zip",
-				Files: []string{
-					"[x-]",
+			Archives: []config.Archive{
+				{
+					Builds:       []string{"default"},
+					NameTemplate: "foo",
+					Format:       "zip",
+					Files: []string{
+						"[x-]",
+					},
 				},
 			},
 		},
@@ -267,6 +284,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
 			"Binary": "mybin",
+			"ID":     "default",
 		},
 	})
 	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: globbing failed for pattern [x-]: file does not exist`)
@@ -283,9 +301,12 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
-			Archive: config.Archive{
-				NameTemplate: "foo{{ .fff }",
-				Format:       "zip",
+			Archives: []config.Archive{
+				{
+					Builds:       []string{"default"},
+					NameTemplate: "foo{{ .fff }",
+					Format:       "zip",
+				},
 			},
 		},
 	)
@@ -298,6 +319,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
 			"Binary": "mybin",
+			"ID":     "default",
 		},
 	})
 	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
@@ -314,10 +336,13 @@ func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
-			Archive: config.Archive{
-				NameTemplate:    "foo",
-				WrapInDirectory: "foo{{ .fff }",
-				Format:          "zip",
+			Archives: []config.Archive{
+				{
+					Builds:          []string{"default"},
+					NameTemplate:    "foo",
+					WrapInDirectory: "foo{{ .fff }",
+					Format:          "zip",
+				},
 			},
 		},
 	)
@@ -330,6 +355,7 @@ func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
 			"Binary": "mybin",
+			"ID":     "default",
 		},
 	})
 	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
@@ -348,15 +374,18 @@ func TestRunPipeWrap(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
-			Archive: config.Archive{
-				NameTemplate:    "foo",
-				WrapInDirectory: "foo_{{ .Os }}",
-				Format:          "tar.gz",
-				Replacements: map[string]string{
-					"darwin": "macOS",
-				},
-				Files: []string{
-					"README.*",
+			Archives: []config.Archive{
+				{
+					Builds:          []string{"default"},
+					NameTemplate:    "foo",
+					WrapInDirectory: "foo_{{ .Os }}",
+					Format:          "tar.gz",
+					Replacements: map[string]string{
+						"darwin": "macOS",
+					},
+					Files: []string{
+						"README.*",
+					},
 				},
 			},
 		},
@@ -370,6 +399,7 @@ func TestRunPipeWrap(t *testing.T) {
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
 			"Binary": "mybin",
+			"ID":     "default",
 		},
 	})
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -395,61 +425,69 @@ func TestRunPipeWrap(t *testing.T) {
 func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Archive: config.Archive{},
+			Archives: []config.Archive{},
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.NotEmpty(t, ctx.Config.Archive.NameTemplate)
-	require.Equal(t, "tar.gz", ctx.Config.Archive.Format)
-	require.NotEmpty(t, ctx.Config.Archive.Files)
+	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
+	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Format)
+	require.NotEmpty(t, ctx.Config.Archives[0].Files)
 }
 
 func TestDefaultSet(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Archive: config.Archive{
-				NameTemplate: "foo",
-				Format:       "zip",
-				Files: []string{
-					"foo",
-				},
-			},
-		},
-	}
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "foo", ctx.Config.Archive.NameTemplate)
-	require.Equal(t, "zip", ctx.Config.Archive.Format)
-	require.Equal(t, "foo", ctx.Config.Archive.Files[0])
-}
-
-func TestDefaultFormatBinary(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
-			Archive: config.Archive{
-				Format: "binary",
-			},
-		},
-	}
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, defaultBinaryNameTemplate, ctx.Config.Archive.NameTemplate)
-}
-
-func TestFormatFor(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
-			Archive: config.Archive{
-				Format: "tar.gz",
-				FormatOverrides: []config.FormatOverride{
-					{
-						Goos:   "windows",
-						Format: "zip",
+			Archives: []config.Archive{
+				{
+					Builds:       []string{"default"},
+					NameTemplate: "foo",
+					Format:       "zip",
+					Files: []string{
+						"foo",
 					},
 				},
 			},
 		},
 	}
-	require.Equal(t, "zip", packageFormat(ctx, "windows"))
-	require.Equal(t, "tar.gz", packageFormat(ctx, "linux"))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "foo", ctx.Config.Archives[0].NameTemplate)
+	require.Equal(t, "zip", ctx.Config.Archives[0].Format)
+	require.Equal(t, "foo", ctx.Config.Archives[0].Files[0])
+}
+
+func TestDefaultFormatBinary(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archives: []config.Archive{
+				{
+					Format: "binary",
+				},
+			},
+		},
+	}
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, defaultBinaryNameTemplate, ctx.Config.Archives[0].NameTemplate)
+}
+
+func TestFormatFor(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archives: []config.Archive{
+				{
+					Builds: []string{"default"},
+					Format: "tar.gz",
+					FormatOverrides: []config.FormatOverride{
+						{
+							Goos:   "windows",
+							Format: "zip",
+						},
+					},
+				},
+			},
+		},
+	}
+	require.Equal(t, "zip", packageFormat(ctx, ctx.Config.Archives[0], "windows"))
+	require.Equal(t, "tar.gz", packageFormat(ctx, ctx.Config.Archives[0], "linux"))
 }
 
 func TestBinaryOverride(t *testing.T) {
@@ -471,15 +509,18 @@ func TestBinaryOverride(t *testing.T) {
 				config.Project{
 					Dist:        dist,
 					ProjectName: "foobar",
-					Archive: config.Archive{
-						NameTemplate: defaultNameTemplate,
-						Files: []string{
-							"README.*",
-						},
-						FormatOverrides: []config.FormatOverride{
-							{
-								Goos:   "windows",
-								Format: "binary",
+					Archives: []config.Archive{
+						{
+							Builds:       []string{"default"},
+							NameTemplate: defaultNameTemplate,
+							Files: []string{
+								"README.*",
+							},
+							FormatOverrides: []config.FormatOverride{
+								{
+									Goos:   "windows",
+									Format: "binary",
+								},
 							},
 						},
 					},
@@ -494,6 +535,7 @@ func TestBinaryOverride(t *testing.T) {
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
 					"Binary": "mybin",
+					"ID":     "default",
 				},
 			})
 			ctx.Artifacts.Add(artifact.Artifact{
@@ -505,10 +547,11 @@ func TestBinaryOverride(t *testing.T) {
 				Extra: map[string]interface{}{
 					"Binary": "mybin",
 					"Ext":    ".exe",
+					"ID":     "default",
 				},
 			})
 			ctx.Version = "0.0.1"
-			ctx.Config.Archive.Format = format
+			ctx.Config.Archives[0].Format = format
 
 			require.NoError(tt, Pipe{}.Run(ctx))
 			var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive))
@@ -537,13 +580,16 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 		config.Project{
 			Dist:        dist,
 			ProjectName: "foobar",
-			Archive: config.Archive{
-				NameTemplate: "same-filename",
-				Files: []string{
-					"README.*",
-					"./foo/**/*",
+			Archives: []config.Archive{
+				{
+					Builds:       []string{"default"},
+					NameTemplate: "same-filename",
+					Files: []string{
+						"README.*",
+						"./foo/**/*",
+					},
+					Format: "tar.gz",
 				},
-				Format: "tar.gz",
 			},
 		},
 	)
@@ -555,6 +601,7 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
 			"Binary": "mybin",
+			"ID":     "default",
 		},
 	})
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -566,6 +613,7 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 		Extra: map[string]interface{}{
 			"Binary":    "mybin",
 			"Extension": ".exe",
+			"ID":        "default",
 		},
 	})
 	ctx.Version = "0.0.1"

@@ -104,6 +104,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		Extra: map[string]interface{}{
 			"Binary": build.Binary,
 			"Ext":    options.Ext,
+			"ID":     build.ID,
 		},
 	})
 	return nil

@@ -49,6 +49,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			buildWithDefaults(ctx, ctx.Config.SingleBuild),
 		}
 	}
+	// TODO: check if there are multiple builds with the same ID
 	if len(ctx.Config.Builds) > 1 {
 		log.Warn("you have more than 1 build setup: please make sure it is a not a typo on your config")
 	}
@@ -56,6 +57,9 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
+	if build.ID == "" {
+		build.ID = "default"
+	}
 	if build.Lang == "" {
 		build.Lang = "go"
 	}

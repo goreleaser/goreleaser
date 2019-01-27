@@ -7,19 +7,22 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 
+	"github.com/goreleaser/goreleaser/internal/deprecate"
+
 	"github.com/apex/log"
 	"github.com/campoy/unique"
-	zglob "github.com/mattn/go-zglob"
-	"golang.org/x/sync/errgroup"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/archive"
+	archivelib "github.com/goreleaser/goreleaser/pkg/archive"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	zglob "github.com/mattn/go-zglob"
 )
 
 const (
@@ -39,26 +42,37 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	var archive = &ctx.Config.Archive
-	if archive.Format == "" {
-		archive.Format = "tar.gz"
-	}
-	if len(archive.Files) == 0 {
-		archive.Files = []string{
-			"licence*",
-			"LICENCE*",
-			"license*",
-			"LICENSE*",
-			"readme*",
-			"README*",
-			"changelog*",
-			"CHANGELOG*",
+	if len(ctx.Config.Archives) == 0 {
+		ctx.Config.Archives = append(ctx.Config.Archives, ctx.Config.Archive)
+		if !reflect.DeepEqual(ctx.Config.Archive, config.Archive{}) {
+			deprecate.Notice("archive")
 		}
 	}
-	if archive.NameTemplate == "" {
-		archive.NameTemplate = defaultNameTemplate
-		if archive.Format == "binary" {
-			archive.NameTemplate = defaultBinaryNameTemplate
+	for i := range ctx.Config.Archives {
+		var archive = &ctx.Config.Archives[i]
+		if archive.Format == "" {
+			archive.Format = "tar.gz"
+		}
+		if len(archive.Files) == 0 {
+			archive.Files = []string{
+				"licence*",
+				"LICENCE*",
+				"license*",
+				"LICENSE*",
+				"readme*",
+				"README*",
+				"changelog*",
+				"CHANGELOG*",
+			}
+		}
+		if archive.NameTemplate == "" {
+			archive.NameTemplate = defaultNameTemplate
+			if archive.Format == "binary" {
+				archive.NameTemplate = defaultBinaryNameTemplate
+			}
+		}
+		if len(archive.Builds) == 0 {
+			archive.Builds = []string{"default"}
 		}
 	}
 	return nil
@@ -66,26 +80,34 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	var g errgroup.Group // TODO: use semerrgroup here
-	var filtered = ctx.Artifacts.Filter(artifact.ByType(artifact.Binary))
-	for group, artifacts := range filtered.GroupByPlatform() {
-		log.Debugf("group %s has %d binaries", group, len(artifacts))
-		artifacts := artifacts
-		g.Go(func() error {
-			if packageFormat(ctx, artifacts[0].Goos) == "binary" {
-				return skip(ctx, artifacts)
-			}
-			return create(ctx, artifacts)
-		})
+	var g = semerrgroup.New(ctx.Parallelism)
+	for _, archive := range ctx.Config.Archives {
+		archive := archive
+		var filtered = ctx.Artifacts.Filter(
+			artifact.And(
+				artifact.ByType(artifact.Binary),
+				artifact.ByIDs(archive.Builds),
+			),
+		)
+		for group, artifacts := range filtered.GroupByPlatform() {
+			log.Debugf("group %s has %d binaries", group, len(artifacts))
+			artifacts := artifacts
+			g.Go(func() error {
+				if packageFormat(ctx, archive, artifacts[0].Goos) == "binary" {
+					return skip(ctx, archive, artifacts)
+				}
+				return create(ctx, archive, artifacts)
+			})
+		}
 	}
 	return g.Wait()
 }
 
-func create(ctx *context.Context, binaries []artifact.Artifact) error {
-	var format = packageFormat(ctx, binaries[0].Goos)
+func create(ctx *context.Context, archive config.Archive, binaries []artifact.Artifact) error {
+	var format = packageFormat(ctx, archive, binaries[0].Goos)
 	folder, err := tmpl.New(ctx).
-		WithArtifact(binaries[0], ctx.Config.Archive.Replacements).
-		Apply(ctx.Config.Archive.NameTemplate)
+		WithArtifact(binaries[0], archive.Replacements).
+		Apply(archive.NameTemplate)
 	if err != nil {
 		return err
 	}
@@ -107,16 +129,16 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 	log.Info("creating")
 
 	wrap, err := tmpl.New(ctx).
-		WithArtifact(binaries[0], ctx.Config.Archive.Replacements).
-		Apply(wrapFolder(ctx.Config.Archive))
+		WithArtifact(binaries[0], archive.Replacements).
+		Apply(wrapFolder(archive))
 	if err != nil {
 		return err
 	}
 
-	var a = NewEnhancedArchive(archive.New(archiveFile), wrap)
+	var a = NewEnhancedArchive(archivelib.New(archiveFile), wrap)
 	defer a.Close() // nolint: errcheck
 
-	files, err := findFiles(ctx)
+	files, err := findFiles(ctx, archive)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %s", err.Error())
 	}
@@ -155,12 +177,12 @@ func wrapFolder(a config.Archive) string {
 	}
 }
 
-func skip(ctx *context.Context, binaries []artifact.Artifact) error {
+func skip(ctx *context.Context, archive config.Archive, binaries []artifact.Artifact) error {
 	for _, binary := range binaries {
 		log.WithField("binary", binary.Name).Info("skip archiving")
 		name, err := tmpl.New(ctx).
-			WithArtifact(binary, ctx.Config.Archive.Replacements).
-			Apply(ctx.Config.Archive.NameTemplate)
+			WithArtifact(binary, archive.Replacements).
+			Apply(archive.NameTemplate)
 		if err != nil {
 			return err
 		}
@@ -179,8 +201,8 @@ func skip(ctx *context.Context, binaries []artifact.Artifact) error {
 	return nil
 }
 
-func findFiles(ctx *context.Context) (result []string, err error) {
-	for _, glob := range ctx.Config.Archive.Files {
+func findFiles(ctx *context.Context, archive config.Archive) (result []string, err error) {
+	for _, glob := range archive.Files {
 		files, err := zglob.Glob(glob)
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %s", glob, err.Error())
@@ -194,13 +216,13 @@ func findFiles(ctx *context.Context) (result []string, err error) {
 	return
 }
 
-func packageFormat(ctx *context.Context, platform string) string {
-	for _, override := range ctx.Config.Archive.FormatOverrides {
+func packageFormat(ctx *context.Context, archive config.Archive, platform string) string {
+	for _, override := range archive.FormatOverrides {
 		if strings.HasPrefix(platform, override.Goos) {
 			return override.Format
 		}
 	}
-	return ctx.Config.Archive.Format
+	return archive.Format
 }
 
 // NewEnhancedArchive enhances a pre-existing archive.Archive instance
