@@ -122,7 +122,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	if ctx.Config.Brew.SkipUpload {
+	if strings.TrimSpace(ctx.Config.Brew.SkipUpload) == "true" {
 		return pipe.Skip("brew.skip_upload is set")
 	}
 	if ctx.SkipPublish {
@@ -130,6 +130,9 @@ func doRun(ctx *context.Context, client client.Client) error {
 	}
 	if ctx.Config.Release.Draft {
 		return pipe.Skip("release is marked as draft")
+	}
+	if strings.TrimSpace(ctx.Config.Brew.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
+		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
 	}
 
 	var gpath = ghFormulaPath(ctx.Config.Brew.Folder, filename)
