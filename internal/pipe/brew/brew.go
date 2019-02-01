@@ -150,7 +150,7 @@ func ghFormulaPath(folder, filename string) string {
 
 func getFormat(ctx *context.Context) string {
 	for _, override := range ctx.Config.Archive.FormatOverrides {
-		if strings.HasPrefix("darwin", override.Goos) {
+		if strings.HasPrefix(override.Goos, "darwin") {
 			return override.Format
 		}
 	}
