@@ -175,7 +175,7 @@ func doBuildFormula(data templateData) (out bytes.Buffer, err error) {
 }
 
 func dataFor(ctx *context.Context, artifact artifact.Artifact) (result templateData, err error) {
-	sum, err := artifact.Checksum()
+	sum, err := artifact.Checksum("sha256")
 	if err != nil {
 		return
 	}

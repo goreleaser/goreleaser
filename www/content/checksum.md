@@ -16,6 +16,10 @@ checksum:
   # You can change the name of the checksums file.
   # Default is `{{ .ProjectName }}_{{ .Version }}_checksums.txt`.
   name_template: "{{ .ProjectName }}_checksums.txt"
+
+  # Algorithm used.
+  # Can be sha256, sha512 or sha1.
+  algorithm: sha256
 ```
 
 > Learn more about the [name template engine](/templates).

@@ -2,8 +2,12 @@
 package artifact
 
 import (
+	"crypto/sha1"
 	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/hex"
+	"fmt"
+	"hash"
 	"io"
 	"os"
 	"sync"
@@ -78,20 +82,30 @@ func (a Artifact) ExtraOr(key string, or interface{}) interface{} {
 	return a.Extra[key]
 }
 
-// Checksum calculates the SHA256 checksum of the artifact.
-func (a Artifact) Checksum() (string, error) {
-	log.Debugf("calculating sha256sum for %s", a.Path)
+// Checksum calculates the checksum of the artifact.
+func (a Artifact) Checksum(algorithm string) (string, error) {
+	log.Debugf("calculating checksum for %s", a.Path)
 	file, err := os.Open(a.Path)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to checksum")
 	}
 	defer file.Close() // nolint: errcheck
-	var hash = sha256.New()
-	_, err = io.Copy(hash, file)
+	var h hash.Hash
+	switch algorithm {
+	case "sha256":
+		h = sha256.New()
+	case "sha1":
+		h = sha1.New()
+	case "sha512":
+		h = sha512.New()
+	default:
+		return "", fmt.Errorf("invalid algorith: %s", algorithm)
+	}
+	_, err = io.Copy(h, file)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to checksum")
 	}
-	return hex.EncodeToString(hash.Sum(nil)), nil
+	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
 // Artifacts is a list of artifacts
