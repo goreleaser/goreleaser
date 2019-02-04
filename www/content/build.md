@@ -21,7 +21,7 @@ builds:
     # Default is `.`.
     main: ./cmd/main.go
 
-    # Name template for the binary final name.
+    # Binary name.
     # Default is the name of the project directory.
     binary: program
 
