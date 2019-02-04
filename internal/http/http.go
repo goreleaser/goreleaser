@@ -207,7 +207,7 @@ func uploadAsset(ctx *context.Context, put *config.Put, artifact artifact.Artifa
 
 	var headers = map[string]string{}
 	if put.ChecksumHeader != "" {
-		sum, err := artifact.Checksum()
+		sum, err := artifact.Checksum("sha256")
 		if err != nil {
 			return err
 		}

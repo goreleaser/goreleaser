@@ -238,6 +238,7 @@ type Snapshot struct {
 // Checksum config
 type Checksum struct {
 	NameTemplate string `yaml:"name_template,omitempty"`
+	Algorithm    string `yaml:"algorithm,omitempty"`
 }
 
 // Docker image config
