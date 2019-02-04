@@ -1,13 +1,16 @@
 // Package artifact provides the core artifact storage for goreleaser
 package artifact
 
+// nolint: gosec
 import (
+	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
 	"fmt"
 	"hash"
+	"hash/crc32"
 	"io"
 	"os"
 	"sync"
@@ -83,6 +86,7 @@ func (a Artifact) ExtraOr(key string, or interface{}) interface{} {
 }
 
 // Checksum calculates the checksum of the artifact.
+// nolint: gosec
 func (a Artifact) Checksum(algorithm string) (string, error) {
 	log.Debugf("calculating checksum for %s", a.Path)
 	file, err := os.Open(a.Path)
@@ -92,14 +96,14 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	defer file.Close() // nolint: errcheck
 	var h hash.Hash
 	switch algorithm {
-		case "crc32":
-			hash = crc32.NewIEEE()
-		case "md5":
-			hash = md5.New()
-		case "sha224":
-			hash = sha256.New224()
-		case "sha384":
-			hash = sha512.New384()
+	case "crc32":
+		h = crc32.NewIEEE()
+	case "md5":
+		h = md5.New()
+	case "sha224":
+		h = sha256.New224()
+	case "sha384":
+		h = sha512.New384()
 	case "sha256":
 		h = sha256.New()
 	case "sha1":

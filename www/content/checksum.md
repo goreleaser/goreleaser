@@ -17,8 +17,9 @@ checksum:
   # Default is `{{ .ProjectName }}_{{ .Version }}_checksums.txt`.
   name_template: "{{ .ProjectName }}_checksums.txt"
 
-  # Algorithm used.
-  # Can be sha256, sha512 or sha1.
+  # Algorithm to be used.
+  # Accepted options are sha256, sha512, sha1, crc32, md5, sha224 and sha384.
+  # Default is sha256.
   algorithm: sha256
 ```
 
