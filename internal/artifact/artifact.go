@@ -92,6 +92,14 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	defer file.Close() // nolint: errcheck
 	var h hash.Hash
 	switch algorithm {
+		case "crc32":
+			hash = crc32.NewIEEE()
+		case "md5":
+			hash = md5.New()
+		case "sha224":
+			hash = sha256.New224()
+		case "sha384":
+			hash = sha512.New384()
 	case "sha256":
 		h = sha256.New()
 	case "sha1":
