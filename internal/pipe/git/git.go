@@ -114,11 +114,11 @@ func validate(ctx *context.Context) error {
 }
 
 func getShortCommit() (string, error) {
-	return git.Clean(git.Run("show", "--format='%h'", "HEAD"))
+	return git.Clean(git.Run("show", "--format='%h'", "HEAD", "-q"))
 }
 
 func getFullCommit() (string, error) {
-	return git.Clean(git.Run("show", "--format='%H'", "HEAD"))
+	return git.Clean(git.Run("show", "--format='%H'", "HEAD", "-q"))
 }
 
 func getTag() (string, error) {
