@@ -41,8 +41,8 @@ archive:
   wrap_in_directory: true
 
   # Archive format. Valid options are `tar.gz`, `zip` and `binary`.
-  # If format is `binary`, no archives are created and the binaries are instead uploaded directly.
-  # In that case name_template and the below specified files are ignored.
+  # If format is `binary`, no archives are created and the binaries are instead
+  # uploaded directly.
   # Default is `tar.gz`.
   format: zip
 
