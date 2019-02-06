@@ -138,7 +138,7 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 			return result, err
 		}
 
-		sum, err := artifact.Checksum()
+		sum, err := artifact.Checksum("sha256")
 		if err != nil {
 			return result, err
 		}

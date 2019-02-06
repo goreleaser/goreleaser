@@ -150,7 +150,7 @@ func ghFormulaPath(folder, filename string) string {
 
 func getFormat(ctx *context.Context) string {
 	for _, override := range ctx.Config.Archive.FormatOverrides {
-		if strings.HasPrefix("darwin", override.Goos) {
+		if strings.HasPrefix(override.Goos, "darwin") {
 			return override.Format
 		}
 	}
@@ -175,7 +175,7 @@ func doBuildFormula(data templateData) (out bytes.Buffer, err error) {
 }
 
 func dataFor(ctx *context.Context, artifact artifact.Artifact) (result templateData, err error) {
-	sum, err := artifact.Checksum()
+	sum, err := artifact.Checksum("sha256")
 	if err != nil {
 		return
 	}
