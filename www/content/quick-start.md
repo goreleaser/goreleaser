@@ -53,13 +53,22 @@ changelog:
     - '^test:'
 ```
 
+You can test this initial configuration by running GoReleaser with a few extra parameters to not require a version tag, skip publishing to GitHub, and remove any already-built files:
+
+```
+$ goreleaser --snapshot --skip-publish --rm-dist
+```
+
+If you are not using vgo or Go modules, then you will need to comment out the before hooks in the generated config file.  Or update them to match your setup accordingly.
+
 GoReleaser will build the binaries for your app for Windows, Linux and macOS,
 both amd64 and i386 architectures. You can customize that by changing the
 `builds` section. Check the [documentation](/build) for more information.
 
 After building the binaries, GoReleaser will create an archive for each OS/Arch
 pair into a separate file. You can customize several things by changing
-the `archive` section. Check the [documentation](/archive) for more information.
+the `archive` section, including releasing only the binaries and not creating archives at all.
+Check the [documentation](/archive) for more information.
 
 You'll need to export a `GITHUB_TOKEN` environment variable, which should
 contain a valid GitHub token with the `repo` scope.
