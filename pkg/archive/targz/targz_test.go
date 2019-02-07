@@ -1,4 +1,4 @@
-package tar
+package targz
 
 import (
 	"archive/tar"
@@ -36,11 +36,16 @@ func TestTarGzFile(t *testing.T) {
 	t.Log(f.Name())
 	f, err = os.Open(f.Name())
 	assert.NoError(err)
+	defer f.Close() // nolint: errcheck
+
 	info, err := f.Stat()
 	assert.NoError(err)
 	assert.Truef(info.Size() < 500, "archived file should be smaller than %d", info.Size())
+
 	gzf, err := gzip.NewReader(f)
 	assert.NoError(err)
+	defer gzf.Close() // nolint: errcheck
+
 	var paths []string
 	r := tar.NewReader(gzf)
 	for {
@@ -52,7 +57,7 @@ func TestTarGzFile(t *testing.T) {
 		paths = append(paths, next.Name)
 		t.Logf("%s: %v", next.Name, next.FileInfo().Mode())
 		if next.Name == "sub1/executable" {
-			var ex os.FileMode = next.FileInfo().Mode() | 0111
+			var ex = next.FileInfo().Mode() | 0111
 			assert.Equal(next.FileInfo().Mode().String(), ex.String())
 		}
 	}

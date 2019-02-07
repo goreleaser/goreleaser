@@ -16,7 +16,7 @@ Here is a commented `archive` section with all fields specified:
 archive:
   # Archive name template.
   # Defaults:
-  # - if format is `tar.gz` or `zip`:
+  # - if format is `tar.gz`, `gz` or `zip`:
   #   - `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
   # - if format is `binary`:
   #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
@@ -40,7 +40,7 @@ archive:
   # Default is false.
   wrap_in_directory: true
 
-  # Archive format. Valid options are `tar.gz`, `zip` and `binary`.
+  # Archive format. Valid options are `tar.gz`, `gz`, `zip` and `binary`.
   # If format is `binary`, no archives are created and the binaries are instead
   # uploaded directly.
   # Default is `tar.gz`.
@@ -90,3 +90,25 @@ have any files matching that glob, only the binary will be added to the
 archive.
 
 For more information, check [#602](https://github.com/goreleaser/goreleaser/issues/602)
+
+## A note about Gzip
+
+Gzip is a compression-only format, therefore, it couldn't have more than one
+file inside.
+
+Presumably, you'll want that file to be the binary, so, your archive section
+will probably look like this:
+
+```yaml
+# goreleaser.yml
+archive:
+  format: gz
+  files:
+  - none*
+```
+
+This should create `.gz` files with the binaries only, which should be
+extracted with something like `gzip -d file.gz`.
+
+Multiple builds will also not work in this case and will be handled on
+[#705](https://github.com/goreleaser/goreleaser/issues/705).
