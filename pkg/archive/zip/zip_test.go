@@ -36,17 +36,21 @@ func TestZipFile(t *testing.T) {
 	t.Log(f.Name())
 	f, err = os.Open(f.Name())
 	assert.NoError(err)
+	defer f.Close() // nolint: errcheck
+
 	info, err := f.Stat()
 	assert.NoError(err)
 	assert.Truef(info.Size() < 900, "archived file should be smaller than %d", info.Size())
+
 	r, err := zip.NewReader(f, info.Size())
 	assert.NoError(err)
+
 	var paths = make([]string, len(r.File))
 	for i, zf := range r.File {
 		paths[i] = zf.Name
 		t.Logf("%s: %v", zf.Name, zf.Mode())
 		if zf.Name == "sub1/executable" {
-			var ex os.FileMode = zf.Mode() | 0111
+			var ex = zf.Mode() | 0111
 			assert.Equal(zf.Mode().String(), ex.String())
 		}
 	}
