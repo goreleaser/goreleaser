@@ -3,8 +3,7 @@ package archive
 
 import (
 	"os"
-
-	"path/filepath"
+	"strings"
 
 	"github.com/goreleaser/goreleaser/pkg/archive/gzip"
 	"github.com/goreleaser/goreleaser/pkg/archive/targz"
@@ -17,15 +16,16 @@ type Archive interface {
 	Add(name, path string) error
 }
 
-// New archive
-// Defaults to tar.gz. Zip and GZip formats are detected from the file extension.
+// New archive.
 func New(file *os.File) Archive {
-	switch filepath.Ext(file.Name()) {
-	case ".zip":
-		return zip.New(file)
-	case ".gz":
-		return gzip.New(file)
-	default:
+	if strings.HasSuffix(file.Name(), ".tar.gz") {
 		return targz.New(file)
 	}
+	if strings.HasSuffix(file.Name(), ".gz") {
+		return gzip.New(file)
+	}
+	if strings.HasSuffix(file.Name(), ".zip") {
+		return zip.New(file)
+	}
+	return targz.New(file)
 }
