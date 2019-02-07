@@ -109,3 +109,6 @@ archive:
 
 This should create `.gz` files with the binaries only, which should be
 extracted with something like `gzip -d file.gz`.
+
+Multiple builds will also not work in this case and will be handled on
+[#705](https://github.com/goreleaser/goreleaser/issues/705).
