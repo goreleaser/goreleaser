@@ -84,34 +84,66 @@ func upload(ctx *context.Context, conf config.S3) error {
 	}
 
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(
-		artifact.Or(
-			artifact.ByType(artifact.UploadableArchive),
-			artifact.ByType(artifact.UploadableBinary),
-			artifact.ByType(artifact.Checksum),
-			artifact.ByType(artifact.Signature),
-			artifact.ByType(artifact.LinuxPackage),
-		),
-	).List() {
-		artifact := artifact
-		g.Go(func() error {
-			f, err := os.Open(artifact.Path)
-			if err != nil {
-				return err
-			}
-			log.WithFields(log.Fields{
-				"bucket":   bucket,
-				"folder":   folder,
-				"artifact": artifact.Name,
-			}).Info("uploading")
-			_, err = svc.PutObjectWithContext(ctx, &s3.PutObjectInput{
-				Bucket: aws.String(bucket),
-				Key:    aws.String(filepath.Join(folder, artifact.Name)),
-				Body:   f,
-				ACL:    aws.String(conf.ACL),
-			})
-			return err
-		})
+	if conf.Path != "" {
+		name := conf.Name
+		if conf.Name == "" {
+			name = conf.Path
+		}
+		uploadArtifact(
+			ctx,
+			g,
+			svc,
+			artifact.Artifact{
+				Name: name,
+				Path: conf.Path,
+			},
+			bucket,
+			folder,
+			conf.ACL,
+		)
+	} else {
+		for _, artifact := range ctx.Artifacts.Filter(
+			artifact.Or(
+				artifact.ByType(artifact.UploadableArchive),
+				artifact.ByType(artifact.UploadableBinary),
+				artifact.ByType(artifact.Checksum),
+				artifact.ByType(artifact.Signature),
+				artifact.ByType(artifact.LinuxPackage),
+			),
+		).List() {
+			artifact := artifact
+			uploadArtifact(
+				ctx,
+				g,
+				svc,
+				artifact,
+				bucket,
+				folder,
+				conf.ACL,
+			)
+		}
 	}
 	return g.Wait()
+}
+
+func uploadArtifact(ctx *context.Context, g *semerrgroup.Group, svc *s3.S3, artifact artifact.Artifact, bucket string, folder string, acl string) {
+	g.Go(func() error {
+		f, err := os.Open(artifact.Path)
+		if err != nil {
+			return err
+		}
+		log.WithFields(log.Fields{
+			"bucket":   bucket,
+			"folder":   folder,
+			"artifact": artifact.Name,
+		}).Info("uploading")
+		_, err = svc.PutObjectWithContext(ctx, &s3.PutObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(filepath.Join(folder, artifact.Name)),
+			Body:   f,
+			ACL:    aws.String(acl),
+		})
+		return err
+	})
+
 }
