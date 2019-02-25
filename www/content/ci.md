@@ -264,5 +264,5 @@ data:
       value: "4afk4388304hfhei34950dg43245"
 ```
 
-Check [Managing Secrets](https://docs.semaphoreci.com/article/15-secrets) for
+Check [Managing Secrets](https://docs.semaphoreci.com/article/51-secrets-yaml-reference) for
 more detailed documentation.
