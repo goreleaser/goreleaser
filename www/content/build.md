@@ -114,7 +114,7 @@ GOVERSION=$(go version) goreleaser
 
 ## Go Modules
 
- If you use Go 1.11 with go modules or vgo, when GoReleaser runs it may
+ If you use Go 1.11+ with go modules or vgo, when GoReleaser runs it may
  try to download the dependencies. Since several builds run in parallel, it is
  very likely to fail.
 
