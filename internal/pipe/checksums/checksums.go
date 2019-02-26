@@ -76,6 +76,8 @@ func checksums(algorithm string, w io.Writer, artifact artifact.Artifact) error 
 	if err != nil {
 		return err
 	}
+	// TODO: could change the signature to io.StringWriter, but will break
+	// compatibility with go versions bellow 1.12
 	_, err = io.WriteString(w, fmt.Sprintf("%v  %v\n", sha, artifact.Name))
 	return err
 }
