@@ -4,11 +4,11 @@ package checksums
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/apex/log"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -70,12 +70,12 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	return g.Wait()
 }
 
-func checksums(algorithm string, file *os.File, artifact artifact.Artifact) error {
+func checksums(algorithm string, w io.Writer, artifact artifact.Artifact) error {
 	log.WithField("file", artifact.Name).Info("checksumming")
 	sha, err := artifact.Checksum(algorithm)
 	if err != nil {
 		return err
 	}
-	_, err = file.WriteString(fmt.Sprintf("%v  %v\n", sha, artifact.Name))
+	_, err = io.WriteString(w, fmt.Sprintf("%v  %v\n", sha, artifact.Name))
 	return err
 }
