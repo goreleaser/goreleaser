@@ -90,7 +90,8 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	if err != nil {
 		return err
 	}
-	var env = append(build.Env, target.Env()...)
+	var env = append(ctx.Config.Env, build.Env...)
+	env = append(env, target.Env()...)
 	if err := run(ctx, cmd, env); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", options.Target)
 	}

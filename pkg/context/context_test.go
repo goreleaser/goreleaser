@@ -1,6 +1,7 @@
 package context
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -9,8 +10,15 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	var ctx = New(config.Project{})
-	assert.NotEmpty(t, ctx.Env)
+	assert.NoError(t, os.Setenv("FOO", "NOT BAR"))
+	assert.NoError(t, os.Setenv("BAR", "1"))
+	var ctx = New(config.Project{
+		Env: []string{
+			"FOO=BAR",
+		},
+	})
+	assert.Equal(t, "BAR", ctx.Env["FOO"])
+	assert.Equal(t, "1", ctx.Env["BAR"])
 	assert.Equal(t, 4, ctx.Parallelism)
 }
 

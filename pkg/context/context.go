@@ -69,7 +69,7 @@ func Wrap(ctx ctx.Context, config config.Project) *Context {
 	return &Context{
 		Context:     ctx,
 		Config:      config,
-		Env:         splitEnv(os.Environ()),
+		Env:         splitEnv(append(os.Environ(), config.Env...)),
 		Parallelism: 4,
 		Artifacts:   artifact.New(),
 	}
