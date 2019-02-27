@@ -10,9 +10,9 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/kamilsk/retry"
-	"github.com/kamilsk/retry/backoff"
-	"github.com/kamilsk/retry/strategy"
+	"github.com/kamilsk/retry/v3"
+	"github.com/kamilsk/retry/v3/backoff"
+	"github.com/kamilsk/retry/v3/strategy"
 	"github.com/pkg/errors"
 )
 
