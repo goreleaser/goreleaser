@@ -2,6 +2,7 @@ package before
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -31,7 +32,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		args := strings.Fields(s)
 		log.Infof("running %s", color.CyanString(step))
 		cmd := exec.Command(args[0], args[1:]...)
-		cmd.Env = ctx.Config.Env
+		cmd.Env = append(os.Environ(), ctx.Config.Env...)
 		out, err := cmd.CombinedOutput()
 		log.Debug(string(out))
 		if err != nil {
