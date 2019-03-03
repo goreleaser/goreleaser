@@ -29,7 +29,8 @@ dockers:
   - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo'
   - 'goreleaser/goreleaser:latest-cgo'
   dockerfile: Dockerfile.cgo
-  binary: goreleaser
+  binaries:
+  - goreleaser
   build_flag_templates:
   - "--label=org.label-schema.schema-version=1.0"
   - "--label=org.label-schema.version={{.Version}}"
@@ -41,7 +42,8 @@ dockers:
   - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
   - 'goreleaser/goreleaser:latest'
   dockerfile: Dockerfile
-  binary: goreleaser
+  binaries:
+  - goreleaser
   build_flag_templates:
   - "--label=org.label-schema.schema-version=1.0"
   - "--label=org.label-schema.version={{.Version}}"
