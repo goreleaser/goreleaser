@@ -20,7 +20,7 @@ the `.goreleaser.yml` file:
 ```yaml
 # .goreleaser.yml
 env_files:
-github_token: ~/.path/to/my/token
+  github_token: ~/.path/to/my/token
 ```
 
 ## GitHub Enterprise
