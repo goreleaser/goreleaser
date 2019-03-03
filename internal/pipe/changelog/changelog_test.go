@@ -23,6 +23,17 @@ func TestChangelogProvidedViaFlag(t *testing.T) {
 	require.Equal(t, "c0ff33 coffeee\n", ctx.ReleaseNotes)
 }
 
+func TestChangelogProvidedViaFlagAndSkipEnabled(t *testing.T) {
+	var ctx = context.New(config.Project{
+		Changelog: config.Changelog{
+			Skip: true,
+		},
+	})
+	ctx.ReleaseNotes = "testdata/changes.md"
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	require.Equal(t, "c0ff33 coffeee\n", ctx.ReleaseNotes)
+}
+
 func TestChangelogProvidedViaFlagDoesntExist(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.ReleaseNotes = "testdata/changes.nope"
