@@ -5,10 +5,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/goreleaser/goreleaser/internal/tmpl"
-
 	"github.com/apex/log"
 	"github.com/fatih/color"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
