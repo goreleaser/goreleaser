@@ -28,10 +28,12 @@ type Repo struct {
 
 // String of the repo, e.g. owner/name
 func (r Repo) String() string {
-	if r.Owner == "" && r.Name == "" {
-		return ""
+	switch {
+	case r.Owner == "":
+		return r.Name
+	default:
+		return r.Owner + "/" + r.Name
 	}
-	return r.Owner + "/" + r.Name
 }
 
 // Homebrew contains the brew section

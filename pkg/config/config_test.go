@@ -11,16 +11,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRepo(t *testing.T) {
-	assert.Equal(
-		t,
-		"goreleaser/godownloader",
-		Repo{Owner: "goreleaser", Name: "godownloader"}.String(),
-	)
-}
+func TestRepoString(t *testing.T) {
+	tests := []struct {
+		expected string
+		repo     Repo
+	}{
+		{
+			"",
+			Repo{},
+		},
+		{
+			"helloworld",
+			Repo{Name: "helloworld"},
+		},
+		{
+			"goreleaser/godownloader",
+			Repo{Owner: "goreleaser", Name: "godownloader"},
+		},
+	}
 
-func TestEmptyRepoNameAndOwner(t *testing.T) {
-	assert.Empty(t, Repo{}.String())
+	for _, test := range tests {
+		t.Run(test.expected, func(t *testing.T) {
+			assert.Equal(t, test.expected, test.repo.String())
+		})
+	}
 }
 
 func TestLoadReader(t *testing.T) {
