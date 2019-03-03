@@ -1,6 +1,8 @@
+env:
+  - GO111MODULE=on
 before:
   hooks:
-  - go mod download
+    - go mod download
 builds:
 - env:
     - CGO_ENABLED=0

@@ -305,6 +305,7 @@ type Put struct {
 // Project includes all project configuration
 type Project struct {
 	ProjectName   string    `yaml:"project_name,omitempty"`
+	Env           []string  `yaml:",omitempty"`
 	Release       Release   `yaml:",omitempty"`
 	Brew          Homebrew  `yaml:",omitempty"`
 	Scoop         Scoop     `yaml:",omitempty"`

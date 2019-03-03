@@ -10,14 +10,14 @@ addons:
     - rpm
     - snapd
 env:
-  - PATH=/snap/bin:$PATH GO111MODULE=on
+  - PATH=/snap/bin:$PATH
 install:
   - make setup
   - npm install -g prettier
   - sudo snap install snapcraft --classic
 script:
   - make ci
-  - test -n "$TRAVIS_TAG" || go run main.go --snapshot --debug
+  - test -n "$TRAVIS_TAG" || ./goreleaser --snapshot --debug
 after_success:
   - bash <(curl -s https://codecov.io/bash)
   - make static
