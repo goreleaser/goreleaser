@@ -188,10 +188,18 @@ func process(ctx *context.Context, docker config.Docker, bins []artifact.Artifac
 	if err := dockerBuild(ctx, tmp, images, buildFlags); err != nil {
 		return err
 	}
-	if docker.SkipPush {
-		// TODO: this should also be better handled
-		log.Warn(pipe.Skip("skip_push is set").Error())
-		return nil
+
+	if strings.TrimSpace(docker.SkipPush) == "true" {
+		return pipe.Skip("docker.skip_push is set")
+	}
+	if ctx.SkipPublish {
+		return pipe.ErrSkipPublishEnabled
+	}
+	if ctx.Config.Release.Draft {
+		return pipe.Skip("release is marked as draft")
+	}
+	if strings.TrimSpace(docker.SkipPush) == "auto" && ctx.Semver.Prerelease != "" {
+		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish")
 	}
 	for _, img := range images {
 		ctx.Artifacts.Add(artifact.Artifact{
