@@ -13,6 +13,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
@@ -223,15 +224,14 @@ func TestRunPipe(t *testing.T) {
 					Goarch:     "amd64",
 					Dockerfile: "testdata/Dockerfile",
 					Binaries:   []string{"mybin"},
-					SkipPush:   true,
+					SkipPush:   "true",
 				},
 			},
 			expect: []string{
 				registry + "goreleaser/test_run_pipe:latest",
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldNotErr,
-			pubAssertError:    shouldNotErr,
+			assertError:       testlib.AssertSkipped,
 		},
 		"valid_no_latest": {
 			dockers: []config.Docker{
@@ -384,7 +384,7 @@ func TestRunPipe(t *testing.T) {
 					Goarch:     "amd64",
 					Dockerfile: "testdata/Dockerfile",
 					Binaries:   []string{"mybin"},
-					SkipPush:   true,
+					SkipPush:   "true",
 				},
 			},
 			env: map[string]string{
@@ -395,8 +395,7 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/mybin:latest",
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldNotErr,
-			pubAssertError:    shouldNotErr,
+			assertError:       testlib.AssertSkipped,
 		},
 		"no_permissions": {
 			dockers: []config.Docker{
@@ -768,7 +767,7 @@ func Test_processImageTemplates(t *testing.T) {
 						"gcr.io/image:{{.Tag}}-{{.Env.FOO}}",
 						"gcr.io/image:v{{.Major}}.{{.Minor}}",
 					},
-					SkipPush: true,
+					SkipPush: "true",
 				},
 			},
 		},
