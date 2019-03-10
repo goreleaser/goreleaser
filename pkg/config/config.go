@@ -228,6 +228,7 @@ type Snapcraft struct {
 	Grade       string                          `yaml:",omitempty"`
 	Confinement string                          `yaml:",omitempty"`
 	Apps        map[string]SnapcraftAppMetadata `yaml:",omitempty"`
+	Plugs       map[string]interface{}          `yaml:",omitempty"`
 }
 
 // Snapshot config
