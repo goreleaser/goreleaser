@@ -129,10 +129,13 @@ func TestRunPipeMetadata(t *testing.T) {
 			Description:  "test description",
 			Apps: map[string]config.SnapcraftAppMetadata{
 				"mybin": {
-					Plugs:  []string{"home", "network"},
+					Plugs:  []string{"home", "network", "personal-files"},
 					Daemon: "simple",
 					Args:   "--foo --bar",
 				},
+			},
+			Plugs: Plugs{
+				"personal-files": []string{"$HOME/test"},
 			},
 		},
 	})
@@ -145,12 +148,13 @@ func TestRunPipeMetadata(t *testing.T) {
 	var metadata Metadata
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	assert.NoError(t, err)
-	assert.Equal(t, metadata.Apps["mybin"].Plugs, []string{"home", "network"})
+	assert.Equal(t, metadata.Apps["mybin"].Plugs, []string{"home", "network", "personal-files"})
 	assert.Equal(t, metadata.Apps["mybin"].Daemon, "simple")
 	assert.Equal(t, metadata.Apps["mybin"].Command, "mybin --foo --bar")
-	assert.Equal(t, metadata.Apps["testprojectname"].Plugs, []string{"home", "network"})
+	assert.Equal(t, metadata.Apps["testprojectname"].Plugs, []string{"home", "network", "personal-files"})
 	assert.Equal(t, metadata.Apps["testprojectname"].Daemon, "simple")
 	assert.Equal(t, metadata.Apps["testprojectname"].Command, "mybin --foo --bar")
+	assert.Equal(t, metadata.Plugs["personal-files"], []interface{}([]interface{}{"$HOME/test"}))
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {
