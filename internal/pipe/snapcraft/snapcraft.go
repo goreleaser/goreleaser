@@ -39,7 +39,7 @@ type Metadata struct {
 	Confinement   string `yaml:",omitempty"`
 	Architectures []string
 	Apps          map[string]AppMetadata
-	Plugs         map[string]interface{} `yaml:",omitempty"`
+	Plugs         Plugs `yaml:",omitempty"`
 }
 
 // AppMetadata for the binaries that will be in the snap package
