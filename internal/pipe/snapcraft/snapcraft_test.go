@@ -134,7 +134,7 @@ func TestRunPipeMetadata(t *testing.T) {
 					Args:   "--foo --bar",
 				},
 			},
-			Plugs: Plugs{
+			Plugs: map[string]interface{}{
 				"personal-files": []string{"$HOME/test"},
 			},
 		},

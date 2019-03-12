@@ -39,7 +39,7 @@ type Metadata struct {
 	Confinement   string `yaml:",omitempty"`
 	Architectures []string
 	Apps          map[string]AppMetadata
-	Plugs         Plugs `yaml:",omitempty"`
+	Plugs         map[string]interface{} `yaml:",omitempty"`
 }
 
 // AppMetadata for the binaries that will be in the snap package
@@ -48,10 +48,6 @@ type AppMetadata struct {
 	Plugs   []string `yaml:",omitempty"`
 	Daemon  string   `yaml:",omitempty"`
 }
-
-// Plugs for configuring individual plugs
-// see: https://docs.snapcraft.io/snapcraft-yaml-reference/4276
-type Plugs map[string]interface{}
 
 const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
@@ -148,7 +144,6 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		Confinement:   ctx.Config.Snapcraft.Confinement,
 		Architectures: []string{arch},
 		Apps:          map[string]AppMetadata{},
-		Plugs:         Plugs{},
 	}
 
 	metadata.Name = ctx.Config.ProjectName
