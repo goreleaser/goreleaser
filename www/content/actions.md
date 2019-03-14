@@ -22,8 +22,9 @@ action "is-tag" {
 action "goreleaser" {
   uses = "docker://goreleaser/goreleaser"
   secrets = [
+    "GITHUB_TOKEN",
     "GORELEASER_GITHUB_TOKEN",
-    # at least GORELEASER_GITHUB_TOKEN is required, you may need more though
+    # either GITHUB_TOKEN or GORELEASER_GITHUB_TOKEN is required
     "DOCKER_USERNAME",
     "DOCKER_PASSWORD",
   ]
@@ -34,6 +35,11 @@ action "goreleaser" {
 
 This should support *almost* everything already supported by GoReleaser's
 [Docker image][docker]. Check the [install](/install) section for more details.
+
+If you need to push the homebrew tap to another repository, you'll need a
+custom github token, for that, add a `GORELEASER_GITHUB_TOKEN` secret and
+remove the default `GITHUB_TOKEN`. The default, auto-generated token only
+has access to current the repo.
 
 ## What doesn't work
 
