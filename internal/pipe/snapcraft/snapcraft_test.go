@@ -109,9 +109,9 @@ func TestRunPipeWithName(t *testing.T) {
 	var metadata Metadata
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	assert.NoError(t, err)
-	assert.Equal(t, metadata.Name, "testsnapname")
-	assert.Equal(t, metadata.Apps["mybin"].Command, "mybin")
-	assert.Equal(t, metadata.Apps["testsnapname"].Command, "mybin")
+	assert.Equal(t, "testsnapname", metadata.Name)
+	assert.Equal(t, "mybin", metadata.Apps["mybin"].Command)
+	assert.Equal(t, "mybin", metadata.Apps["testsnapname"].Command)
 }
 
 func TestRunPipeMetadata(t *testing.T) {
@@ -135,7 +135,9 @@ func TestRunPipeMetadata(t *testing.T) {
 				},
 			},
 			Plugs: map[string]interface{}{
-				"personal-files": []string{"$HOME/test"},
+				"personal-files": map[string]interface{}{
+					"read": []string{"$HOME/test"},
+				},
 			},
 		},
 	})
@@ -148,13 +150,13 @@ func TestRunPipeMetadata(t *testing.T) {
 	var metadata Metadata
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	assert.NoError(t, err)
-	assert.Equal(t, metadata.Apps["mybin"].Plugs, []string{"home", "network", "personal-files"})
-	assert.Equal(t, metadata.Apps["mybin"].Daemon, "simple")
-	assert.Equal(t, metadata.Apps["mybin"].Command, "mybin --foo --bar")
-	assert.Equal(t, metadata.Apps["testprojectname"].Plugs, []string{"home", "network", "personal-files"})
-	assert.Equal(t, metadata.Apps["testprojectname"].Daemon, "simple")
-	assert.Equal(t, metadata.Apps["testprojectname"].Command, "mybin --foo --bar")
-	assert.Equal(t, metadata.Plugs["personal-files"], []interface{}([]interface{}{"$HOME/test"}))
+	assert.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["mybin"].Plugs)
+	assert.Equal(t, "simple", metadata.Apps["mybin"].Daemon)
+	assert.Equal(t, "mybin --foo --bar", metadata.Apps["mybin"].Command)
+	assert.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["testprojectname"].Plugs)
+	assert.Equal(t, "simple", metadata.Apps["testprojectname"].Daemon)
+	assert.Equal(t, "mybin --foo --bar", metadata.Apps["testprojectname"].Command)
+	assert.Equal(t, map[interface{}]interface{}(map[interface{}]interface{}{"read": []interface{}{"$HOME/test"}}), metadata.Plugs["personal-files"])
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {
