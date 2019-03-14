@@ -39,6 +39,7 @@ type Metadata struct {
 	Confinement   string `yaml:",omitempty"`
 	Architectures []string
 	Apps          map[string]AppMetadata
+	Plugs         map[string]interface{} `yaml:",omitempty"`
 }
 
 // AppMetadata for the binaries that will be in the snap package
@@ -168,6 +169,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 			}, " ")
 		}
 		metadata.Apps[binary.Name] = appMetadata
+		metadata.Plugs = ctx.Config.Snapcraft.Plugs
 
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
 		log.WithField("src", binary.Path).
