@@ -36,6 +36,11 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Release.GitHub = repo
 	}
 
+	if (ctx.Config.Release.GitHub.Owner == "" || ctx.Config.Release.GitHub.Name == "") &&
+		!(ctx.Snapshot || ctx.Config.Release.Disable) {
+		return errors.New("Releases require a repository owner and name")
+	}
+
 	// Check if we have to check the git tag for an indicator to mark as pre release
 	switch ctx.Config.Release.Prerelease {
 	case "auto":

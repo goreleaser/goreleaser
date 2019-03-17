@@ -314,6 +314,38 @@ func TestDefaultGitRepoWithoutRemote(t *testing.T) {
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
+func TestDefaultGitRepoWithoutSlash(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "user@host:myrepo.git")
+
+	var ctx = context.New(config.Project{
+		Release: config.Release{},
+	})
+	assert.EqualError(t, Pipe{}.Default(ctx), "Releases require a repository owner and name")
+	assert.Equal(t, config.Repo{
+		Name: "myrepo",
+	}, ctx.Config.Release.GitHub)
+}
+
+func TestDefaultGitRepoWithoutSlashDisable(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "user@host:myrepo.git")
+
+	var ctx = context.New(config.Project{
+		Release: config.Release{
+			Disable: true,
+		},
+	})
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, config.Repo{
+		Name: "myrepo",
+	}, ctx.Config.Release.GitHub)
+}
+
 type DummyClient struct {
 	FailToCreateRelease bool
 	FailToUpload        bool
