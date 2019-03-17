@@ -32,3 +32,20 @@ func TestExtractRepoFromURL(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractRepoFromNonURL(t *testing.T) {
+	for _, test := range []struct {
+		expected string
+		url      string
+	}{
+		{"", ""},
+		{"repo", "git@host:repo"},
+		{"repo", "git@host:repo.git"},
+		{"tmp/repo2", "file:///tmp/repo2.git"},
+	} {
+		t.Run(test.url, func(t *testing.T) {
+			repo := extractRepoFromURL(test.url)
+			assert.Equal(t, test.expected, repo.String())
+		})
+	}
+}

@@ -35,8 +35,14 @@ func extractRepoFromURL(s string) config.Repo {
 	s = s[strings.LastIndex(s, ":")+1:]
 	// split by /, the last to parts should be the owner and name
 	ss := strings.Split(s, "/")
-	return config.Repo{
-		Owner: ss[len(ss)-2],
-		Name:  ss[len(ss)-1],
+
+	repo := config.Repo{
+		Name: ss[len(ss)-1],
 	}
+
+	if len(ss) > 1 {
+		repo.Owner = ss[len(ss)-2]
+	}
+
+	return repo
 }
