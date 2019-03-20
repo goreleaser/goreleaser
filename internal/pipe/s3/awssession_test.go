@@ -190,6 +190,7 @@ func Test_awsSession_fail(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			clearnEnv()
 			defer clearnEnv()
+			os.Setenv("AWS_SHARED_CREDENTIALS_FILE", "/nope")
 
 			builder := newSessionBuilder()
 			sess := builder.Build()
