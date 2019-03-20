@@ -9,12 +9,12 @@ import (
 
 func TestArch(t *testing.T) {
 	for from, to := range map[string]string{
-		"amd64": "amd64",
-		"386":   "i386",
-		"arm64": "arm64",
-		"arm6":  "armel",
-		"arm7":  "armhf",
-		"what":  "what",
+		"linuxamd64": "amd64",
+		"linux386":   "i386",
+		"linuxarm64": "arm64",
+		"linuxarm6":  "armel",
+		"linuxarm7":  "armhf",
+		"linuxwhat":  "what",
 	} {
 		t.Run(fmt.Sprintf("%s to %s", from, to), func(t *testing.T) {
 			assert.Equal(t, to, Arch(from))

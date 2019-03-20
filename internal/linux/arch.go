@@ -4,22 +4,19 @@ package linux
 import "strings"
 
 // Arch converts a goarch to a linux-compatible arch
+//
+// list of all linux arches: `go tool dist list | grep linux`
 func Arch(key string) string {
-	switch {
-	case strings.Contains(key, "amd64"):
-		return "amd64"
-	case strings.Contains(key, "386"):
+	var arch = strings.TrimPrefix(key, "linux")
+	switch arch {
+	case "386":
 		return "i386"
-	case strings.Contains(key, "arm64"):
-		return "arm64"
-	case strings.Contains(key, "arm6"):
+	case "amd64":
+		return "amd64"
+	case "arm6": // GOARCH + GOARM
 		return "armel"
-	case strings.Contains(key, "arm7"):
+	case "arm7": // GOARCH + GOARM
 		return "armhf"
-	case strings.Contains(key, "ppc64le"):
-		return "ppc64le"
-	case strings.Contains(key, "ppc64"):
-		return "ppc64"
 	}
-	return key
+	return arch
 }
