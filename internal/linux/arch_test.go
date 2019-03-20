@@ -14,6 +14,8 @@ func TestArch(t *testing.T) {
 		"linuxarm64": "arm64",
 		"linuxarm6":  "armel",
 		"linuxarm7":  "armhf",
+		"linuxppc64":  "ppc64",
+		"linuxppc64le":  "ppc64le",
 		"linuxwhat":  "what",
 	} {
 		t.Run(fmt.Sprintf("%s to %s", from, to), func(t *testing.T) {
