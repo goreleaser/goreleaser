@@ -151,8 +151,6 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		metadata.Name = ctx.Config.Snapcraft.Name
 	}
 
-	log.Debugf("metadata: %+v", metadata)
-
 	for _, binary := range binaries {
 		log.WithField("path", binary.Path).
 			WithField("name", binary.Name).
@@ -192,6 +190,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		return err
 	}
 
+	log.WithField("file", file).Debugf("writing metadata file")
 	if err = ioutil.WriteFile(file, out, 0644); err != nil {
 		return err
 	}
