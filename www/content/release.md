@@ -78,7 +78,7 @@ On Unix systems you can also generate the release notes in-line by using
 To list all commits since the last tag, but skip ones starting with `Merge` or
 `docs`, you could run this command:
 
-```console
+```sh
 $ goreleaser --release-notes <(some_changelog_generator)
 ```
 
@@ -86,6 +86,6 @@ Some changelog generators you can use:
 
 - [buchanae/github-release-notes](https://github.com/buchanae/github-release-notes)
 
-**Important**: If you create the release before running GoReleaser, and the
-said release has some text in its body, GoReleaser will not override it with
-it's release notes.
+> **Important**: If you create the release before running GoReleaser, and the
+> said release has some text in its body, GoReleaser will not override it with
+> it's release notes.

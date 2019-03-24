@@ -36,7 +36,7 @@ deploy:
     verbose: true
     fqdn: goreleaser.com
     on:
-      tags: true
+      master: true
   - provider: script
     skip_cleanup: true
     script: ./goreleaser

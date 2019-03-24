@@ -24,13 +24,13 @@ $ git clone git@github.com:goreleaser/goreleaser.git
 
 Install the build and lint dependencies:
 
-```console
+```sh
 $ make setup
 ```
 
 A good way of making sure everything is all right is running the test suite:
 
-```console
+```sh
 $ make test
 ```
 
@@ -38,13 +38,13 @@ $ make test
 
 You can create a branch for your changes and try to build from the source as you go:
 
-```console
+```sh
 $ make build
 ```
 
 When you are satisfied with the changes, we suggest you run:
 
-```console
+```sh
 $ make ci
 ```
 

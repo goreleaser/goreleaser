@@ -108,7 +108,7 @@ builds:
 
 Then you can run:
 
-```console
+```sh
 GOVERSION=$(go version) goreleaser
 ```
 

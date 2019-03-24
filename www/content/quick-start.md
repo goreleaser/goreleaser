@@ -4,7 +4,7 @@ weight: 10
 menu: true
 ---
 
-In this example we will build, archive and release a Go project.
+In this example we will build, archive and release a sample Go project.
 
 Create a GitHub repository and add a single main package:
 
@@ -19,47 +19,27 @@ func main() {
 
 Run `goreleaser init` to create an example `.goreleaser.yaml` file:
 
-```console
+```sh
 $ goreleaser init
 
    • Generating .goreleaser.yml file
    • config created; please edit accordingly to your needs file=.goreleaser.yml
 ```
 
-The generated config file will look like this:
+You can [customize](/customization) the generated `.goreleaser.yml` or leave
+it as-is, it's up to you.
 
-```yml
-# This is an example goreleaser.yaml file with some sane defaults.
-# Make sure to check the documentation at http://goreleaser.com
-builds:
-- env:
-  - CGO_ENABLED=0
-archive:
-  replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
-    386: i386
-    amd64: x86_64
-checksum:
-  name_template: 'checksums.txt'
-snapshot:
-  name_template: "{{ .Tag }}-next"
-changelog:
-  sort: asc
-  filters:
-    exclude:
-    - '^docs:'
-    - '^test:'
-```
+You can test the configuration at any time by running GoReleaser with a few
+extra parameters to not require a version tag, skip publishing to GitHub,
+and remove any already-built files:
 
-You can test this initial configuration by running GoReleaser with a few extra parameters to not require a version tag, skip publishing to GitHub, and remove any already-built files:
-
-```
+```sh
 $ goreleaser --snapshot --skip-publish --rm-dist
 ```
 
-If you are not using vgo or Go modules, then you will need to comment out the before hooks in the generated config file.  Or update them to match your setup accordingly.
+If you are not using vgo or Go modules, then you will need to comment out the
+before hooks in the generated config file or update them to match your setup
+accordingly.
 
 GoReleaser will build the binaries for your app for Windows, Linux and macOS,
 both amd64 and i386 architectures. You can customize that by changing the
@@ -67,15 +47,15 @@ both amd64 and i386 architectures. You can customize that by changing the
 
 After building the binaries, GoReleaser will create an archive for each OS/Arch
 pair into a separate file. You can customize several things by changing
-the `archive` section, including releasing only the binaries and not creating archives at all.
-Check the [documentation](/archive) for more information.
+the `archive` section, including releasing only the binaries and not creating
+archives at all. Check the [documentation](/archive) for more information.
 
 You'll need to export a `GITHUB_TOKEN` environment variable, which should
 contain a valid GitHub token with the `repo` scope.
 It will be used to deploy releases to your GitHub repository.
 You can create a token [here](https://github.com/settings/tokens/new).
 
-```console
+```sh
 $ export GITHUB_TOKEN=`YOUR_TOKEN`
 ```
 
@@ -83,7 +63,7 @@ GoReleaser will use the latest
 [Git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of your repository.
 Create a tag and push it to GitHub:
 
-```console
+```sh
 $ git tag -a v0.1.0 -m "First release"
 $ git push origin v0.1.0
 ```
@@ -95,7 +75,7 @@ based on the latest commit by using the `--snapshot` flag.
 
 Now you can run GoReleaser at the root of your repository:
 
-```console
+```sh
 $ goreleaser
 ```
 
@@ -112,18 +92,18 @@ The release should look like this:
 If you want to test everything before doing a release "for real", you can
 use the `--skip-publish` flag, which will only build and package things:
 
-```console
+```sh
 $ goreleaser release --skip-publish
 ```
 
 You can check the other options by running:
 
-```console
+```sh
 $ goreleaser --help
 ```
 
 and
 
-```console
+```sh
 $ goreleaser release --help
 ```

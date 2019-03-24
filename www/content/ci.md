@@ -159,26 +159,26 @@ changelog containing just the messages from the commits since the prior tag.
 
 ```yml
 steps:
-~ # Setup the workspace so we have a viable place to point GOPATH at.
-~ - name: gcr.io/cloud-builders/go
-~   env: ['PROJECT_ROOT=github.com/YourGithubUser/YourGithubRepo']
-~_  args: ['env']
+# Setup the workspace so we have a viable place to point GOPATH at.
+- name: gcr.io/cloud-builders/go
+  env: ['PROJECT_ROOT=github.com/YourGithubUser/YourGithubRepo']
+  args: ['env']
 
-~ # Create github release.
-~ - name: goreleaser/goreleaser
-~   entrypoint: /bin/sh
-~   dir: gopath/src/github.com
-~   env: ['GOPATH=/workspace/gopath']
-~   args: ['-c', 'cd YourGithubUser/YourGithubRepo && git tag $TAG_NAME && /goreleaser' ]
-~_  secretEnv: ['GITHUB_TOKEN']
+# Create github release.
+- name: goreleaser/goreleaser
+  entrypoint: /bin/sh
+  dir: gopath/src/github.com
+  env: ['GOPATH=/workspace/gopath']
+  args: ['-c', 'cd YourGithubUser/YourGithubRepo && git tag $TAG_NAME && /goreleaser' ]
+  secretEnv: ['GITHUB_TOKEN']
 
   secrets:
-~ - kmsKeyName: projects/YourProjectId/locations/global/keyRings/YourKeyRing/cryptoKeys/YourKey
-~   secretEnv:
-~     GITHUB_TOKEN: |
-~       ICAgICAgICBDaVFBZUhVdUVoRUtBdmZJSGxVWnJDZ0hOU2NtMG1ES0k4WjF3L04zT3pEazhRbDZr
-~       QVVTVVFEM3dVYXU3cVJjK0g3T25UVW82YjJaCiAgICAgICAgREtBMWVNS0hOZzcyOUtmSGoyWk1x
-~_      ICAgICAgIEgwYndIaGUxR1E9PQo=
+  - kmsKeyName: projects/YourProjectId/locations/global/keyRings/YourKeyRing/cryptoKeys/YourKey
+    secretEnv:
+      GITHUB_TOKEN: |
+        ICAgICAgICBDaVFBZUhVdUVoRUtBdmZJSGxVWnJDZ0hOU2NtMG1ES0k4WjF3L04zT3pEazhRbDZr
+        QVVTVVFEM3dVYXU3cVJjK0g3T25UVW82YjJaCiAgICAgICAgREtBMWVNS0hOZzcyOUtmSGoyWk1x
+        ICAgICAgIEgwYndIaGUxR1E9PQo=
 
 ```
 

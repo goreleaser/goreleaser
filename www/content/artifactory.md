@@ -52,8 +52,8 @@ Supported variables:
 - Arch
 - Arm
 
-_Attention_: Variables _Os_, _Arch_ and _Arm_ are only supported in upload
-mode `binary`.
+> **Attention**: Variables _Os_, _Arch_ and _Arm_ are only supported in upload
+> mode `binary`.
 
 ### Username
 

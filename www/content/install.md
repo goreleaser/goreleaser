@@ -4,11 +4,14 @@ weight: 2
 menu: true
 ---
 
-You can install the pre-compiled binary, use Docker or compile from source.
+You can install the pre-compiled binary (in several different ways),
+use Docker or compile from source.
+
+Here are the steps for each of them:
 
 ## Install the pre-compiled binary
 
-**homebrew tap**:
+**homebrew tap** (only on macOS for now):
 
 ```sh
 $ brew install goreleaser/tap/goreleaser
@@ -45,8 +48,8 @@ copy to the desired location.
 
 ## Running with Docker
 
-You can use Docker to do simple releases. Currently, the provided docker
-image does not provide support for snapcraft.
+You can also use it within a Docker container. To do that, you'll need to
+execute something more-or-less like the following:
 
 ```sh
 $ docker run --rm --privileged \
@@ -60,33 +63,21 @@ $ docker run --rm --privileged \
   goreleaser/goreleaser release
 ```
 
+> **ATTENTION**: Currently, the provided docker image does not support
+> the generation of snapcraft packages.
+
 Note that the image will almost always have the last stable Go version.
 
-The `DOCKER_REGISTRY` environment variables can be left empty when you are
+The `DOCKER_REGISTRY` environment variable can be left empty when you are
 releasing to the public docker registry.
 
-If you need more things, you are encouraged to have your own image. You can
-always use GoReleaser's [own Dockerfile][dockerfile] as an example though.
+If you need more things, you are encouraged to keep your own image. You can
+always use GoReleaser's [own Dockerfile][dockerfile] as an example though
+and iterate from that.
 
 [dockerfile]: https://github.com/goreleaser/goreleaser/blob/master/Dockerfile
 [releases]: https://github.com/goreleaser/goreleaser/releases
 
 ## Compiling from source
 
-> **Note**: this method requires Go 1.11+.
-
-```sh
-$ git clone git@github.com:goreleaser/goreleaser.git
-$ cd goreleaser
-$ make setup build
-```
-
-After that, the `goreleaser` binary will be in the root folder:
-
-```sh
-$ ./goreleaser --help
-```
-
-For more information, check the [contributing guide][contrib].
-
-[contrib]: /contributing
+Please follow the relevant steps on our [contributing guide](/contributing).

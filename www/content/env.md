@@ -2,7 +2,7 @@
 title: Environment Variables
 series: customization
 hideFromIndex: true
-weight: 30
+weight: 19
 ---
 
 Global environment variables to be passed down to all hooks and builds.
