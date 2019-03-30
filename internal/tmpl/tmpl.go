@@ -3,6 +3,7 @@ package tmpl
 
 import (
 	"bytes"
+	"strings"
 	"text/template"
 	"time"
 
@@ -61,6 +62,23 @@ func New(ctx *context.Context) *Template {
 			// TODO: no reason not to add prerelease here too I guess
 		},
 	}
+}
+
+// WithEnvS overrides template's env field with the given KEY=VALUE list of
+// environment variables
+func (t *Template) WithEnvS(envs []string) *Template {
+	var result = map[string]string{}
+	for _, env := range envs {
+		var parts = strings.SplitN(env, "=", 2)
+		result[parts[0]] = parts[1]
+	}
+	return t.WithEnv(result)
+}
+
+// WithEnv overrides template's env field with the given environment map
+func (t *Template) WithEnv(e map[string]string) *Template {
+	t.fields[env] = e
+	return t
 }
 
 // WithArtifact populates fields from the artifact and replacements

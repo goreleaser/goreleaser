@@ -113,6 +113,20 @@ func TestEnv(t *testing.T) {
 	}
 }
 
+func TestWithEnv(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	ctx.Env = map[string]string{
+		"FOO": "BAR",
+	}
+	ctx.Git.CurrentTag = "v1.2.3"
+	out, err := New(ctx).WithEnvS([]string{
+		"FOO=foo",
+		"BAR=bar",
+	}).Apply("{{ .Env.FOO }}-{{ .Env.BAR }}")
+	assert.NoError(t, err)
+	assert.Equal(t, "foo-bar", out)
+}
+
 func TestFuncMap(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "proj",
