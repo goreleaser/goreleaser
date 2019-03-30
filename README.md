@@ -83,7 +83,7 @@ This project exists thanks to all the people who contribute. [[Contribute](CONTR
 
 ## Stargazers over time
 
-[![Stargazers over time](https://starcharts.herokuapp.com/goreleaser/goreleaser.svg)](https://starcharts.herokuapp.com/goreleaser/goreleaser)
+[![Stargazers over time](https://starchart.cc/goreleaser/goreleaser.svg)](https://starchart.cc/goreleaser/goreleaser)
      
 ---
 
