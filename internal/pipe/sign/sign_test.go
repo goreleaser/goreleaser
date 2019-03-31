@@ -39,7 +39,8 @@ func TestDescription(t *testing.T) {
 
 func TestSignDefault(t *testing.T) {
 	ctx := &context.Context{}
-	Pipe{}.Default(ctx)
+	err := Pipe{}.Default(ctx)
+	assert.NoError(t, err)
 	assert.Equal(t, ctx.Config.Sign.Cmd, "gpg")
 	assert.Equal(t, ctx.Config.Sign.Signature, "${artifact}.sig")
 	assert.Equal(t, ctx.Config.Sign.Args, []string{"--output", "$signature", "--detach-sig", "$artifact"})

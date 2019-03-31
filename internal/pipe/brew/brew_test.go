@@ -67,7 +67,8 @@ func TestFullFormulae(t *testing.T) {
 
 	var golden = "testdata/test.rb.golden"
 	if *update {
-		ioutil.WriteFile(golden, []byte(formulae), 0655)
+		err := ioutil.WriteFile(golden, []byte(formulae), 0655)
+		assert.NoError(t, err)
 	}
 	bts, err := ioutil.ReadFile(golden)
 	assert.NoError(t, err)

@@ -821,8 +821,12 @@ func TestLinkDirectory(t *testing.T) {
 	const testFile = "test"
 	const dstDir = "/tmp/linkedDir"
 
-	os.Mkdir(srcDir, 0755)
-	err := ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
+	err := os.Mkdir(srcDir, 0755)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot create dir: %s", srcDir))
+		t.Fail()
+	}
+	err = ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
 	if err != nil {
 		t.Log("Cannot setup test file")
 		t.Fail()
@@ -838,8 +842,16 @@ func TestLinkDirectory(t *testing.T) {
 	}
 
 	// cleanup
-	os.RemoveAll(srcDir)
-	os.RemoveAll(dstDir)
+	err = os.RemoveAll(srcDir)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot remove dir: %s", srcDir))
+		t.Fail()
+	}
+	err = os.RemoveAll(dstDir)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot remove dir: %s", dstDir))
+		t.Fail()
+	}
 }
 
 func TestLinkTwoLevelDirectory(t *testing.T) {
@@ -848,9 +860,17 @@ func TestLinkTwoLevelDirectory(t *testing.T) {
 	const testFile = "test"
 	const dstDir = "/tmp/linkedDir"
 
-	os.Mkdir(srcDir, 0755)
-	os.Mkdir(srcLevel2, 0755)
-	err := ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
+	err := os.Mkdir(srcDir, 0755)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot create dir: %s", srcDir))
+		t.Fail()
+	}
+	err = os.Mkdir(srcLevel2, 0755)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot create dir: %s", srcLevel2))
+		t.Fail()
+	}
+	err = ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
 	if err != nil {
 		t.Log("Cannot setup test file")
 		t.Fail()
@@ -873,9 +893,18 @@ func TestLinkTwoLevelDirectory(t *testing.T) {
 		t.Log("Inodes do not match")
 		t.Fail()
 	}
+
 	// cleanup
-	os.RemoveAll(srcDir)
-	os.RemoveAll(dstDir)
+	err = os.RemoveAll(srcDir)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot remove dir: %s", srcDir))
+		t.Fail()
+	}
+	err = os.RemoveAll(dstDir)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot remove dir: %s", dstDir))
+		t.Fail()
+	}
 }
 
 func inode(file string) uint64 {
