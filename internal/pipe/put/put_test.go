@@ -67,7 +67,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, "PUT")
+		testMethod(t, r, http.MethodPut)
 		testHeader(t, r, "Content-Length", "9")
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
 		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
@@ -76,7 +76,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		w.WriteHeader(http.StatusCreated)
 	})
 	mux.HandleFunc("/example-repo-local/mybin/linux/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, "PUT")
+		testMethod(t, r, http.MethodPut)
 		testHeader(t, r, "Content-Length", "9")
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
 		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
@@ -85,7 +85,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		w.WriteHeader(http.StatusCreated)
 	})
 	mux.HandleFunc("/production-repo-remote/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, "PUT")
+		testMethod(t, r, http.MethodPut)
 		testHeader(t, r, "Content-Length", "9")
 		// Basic auth of user "productionuser" with secret "productionuser-apikey"
 		testHeader(t, r, "Authorization", "Basic cHJvZHVjdGlvbnVzZXI6cHJvZHVjdGlvbnVzZXItYXBpa2V5")
@@ -94,7 +94,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		w.WriteHeader(http.StatusCreated)
 	})
 	mux.HandleFunc("/production-repo-remote/mybin/linux/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, "PUT")
+		testMethod(t, r, http.MethodPut)
 		testHeader(t, r, "Content-Length", "9")
 		// Basic auth of user "productionuser" with secret "productionuser-apikey"
 		testHeader(t, r, "Authorization", "Basic cHJvZHVjdGlvbnVzZXI6cHJvZHVjdGlvbnVzZXItYXBpa2V5")
@@ -180,7 +180,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.tar.gz", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, "PUT")
+		testMethod(t, r, http.MethodPut)
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
 		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
@@ -189,7 +189,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		uploads.Store("targz", true)
 	})
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.deb", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, "PUT")
+		testMethod(t, r, http.MethodPut)
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
 		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
@@ -287,7 +287,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, "PUT")
+		testMethod(t, r, http.MethodPut)
 		testHeader(t, r, "Content-Length", "9")
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
 		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
