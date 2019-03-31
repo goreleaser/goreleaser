@@ -84,7 +84,7 @@ func TestUpload(t *testing.T) {
 	})
 	start(t)
 	defer stop(t)
-	setCredentials(t)
+	setCredentials()
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.NoError(t, Pipe{}.Publish(ctx))
 }
@@ -122,7 +122,7 @@ func TestUploadCustomBucketID(t *testing.T) {
 	})
 	start(t)
 	defer stop(t)
-	setCredentials(t)
+	setCredentials()
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.NoError(t, Pipe{}.Publish(ctx))
 }
@@ -159,12 +159,12 @@ func TestUploadInvalidCustomBucketID(t *testing.T) {
 	})
 	start(t)
 	defer stop(t)
-	setCredentials(t)
+	setCredentials()
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Error(t, Pipe{}.Publish(ctx))
 }
 
-func setCredentials(t *testing.T) {
+func setCredentials() {
 	// this comes from the testdata/config/config.json file - not real aws keys
 	os.Setenv("AWS_ACCESS_KEY_ID", "WPXKJC7CZQCFPKY5727N")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "eHCSajxLvl94l36gIMlzZ/oW2O0rYYK+cVn5jNT2")
