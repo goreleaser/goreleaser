@@ -244,7 +244,7 @@ func uploadAssetToServer(ctx *context.Context, put *config.Put, target, username
 
 // newUploadRequest creates a new h.Request for uploading
 func newUploadRequest(target, username, secret string, headers map[string]string, a *asset) (*h.Request, error) {
-	req, err := h.NewRequest("PUT", target, a.ReadCloser)
+	req, err := h.NewRequest(h.MethodPut, target, a.ReadCloser)
 	if err != nil {
 		return nil, err
 	}
