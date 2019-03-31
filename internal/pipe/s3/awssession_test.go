@@ -147,7 +147,8 @@ func Test_awsSession_mfa(t *testing.T) {
 		assert.Equal(t, r.FormValue("SerialNumber"), "arn:aws:iam::1111111111:mfa/test")
 		assert.Equal(t, r.FormValue("TokenCode"), "tokencode")
 
-		w.Write([]byte(fmt.Sprintf(assumeRoleRespMsg, time.Now().Add(15*time.Minute).Format("2006-01-02T15:04:05Z"))))
+		_, err := w.Write([]byte(fmt.Sprintf(assumeRoleRespMsg, time.Now().Add(15*time.Minute).Format("2006-01-02T15:04:05Z"))))
+		assert.NoError(t, err)
 	}))
 
 	customProviderCalled := false
