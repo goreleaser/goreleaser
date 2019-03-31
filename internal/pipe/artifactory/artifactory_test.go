@@ -42,7 +42,7 @@ func testMethod(t *testing.T, r *http.Request, want string) {
 	}
 }
 
-func testHeader(t *testing.T, r *http.Request, header string, want string) {
+func testHeader(t *testing.T, r *http.Request, header, want string) {
 	if got := r.Header.Get(header); got != want {
 		t.Errorf("Header.Get(%q) returned %q, want %q", header, got, want)
 	}
