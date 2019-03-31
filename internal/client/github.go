@@ -56,7 +56,7 @@ func (c *githubClient) CreateFile(
 	commitAuthor config.CommitAuthor,
 	repo config.Repo,
 	content bytes.Buffer,
-	path string,
+	path,
 	message string,
 ) error {
 	options := &github.RepositoryContentFileOptions{
