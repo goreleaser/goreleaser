@@ -6,12 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"path/filepath"
 )
 
 // ErrNoWindows when there is no build for windows (goos doesn't contain windows)
@@ -145,7 +145,7 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 
 		manifest.Architecture[arch] = Resource{
 			URL:  url,
-			Bin:  binaries(artifact),
+			Bin:  binaries(artifact, *ctx),
 			Hash: sum,
 		}
 	}
@@ -158,11 +158,16 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 	return result, err
 }
 
-func binaries(a artifact.Artifact) []string {
+func binaries(a artifact.Artifact, ctx context.Context) []string {
 	// nolint: prealloc
 	var bins []string
+	binDir := ""
+	if ctx.Config.Archive.BinDirectory {
+		binDir = "bin"
+	}
 	for _, b := range a.ExtraOr("Builds", []artifact.Artifact{}).([]artifact.Artifact) {
-		bins = append(bins, b.ExtraOr("Binary", "").(string)+".exe")
+		binPath := filepath.Join(binDir, b.ExtraOr("Binary", "").(string)+".exe")
+		bins = append(bins, binPath)
 	}
 	return bins
 }

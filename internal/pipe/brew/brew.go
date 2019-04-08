@@ -49,9 +49,15 @@ func (Pipe) Default(ctx *context.Context) error {
 			if !isBrewBuild(build) {
 				continue
 			}
+
+			binaryPath := build.Binary
+			if ctx.Config.Archive.BinDirectory {
+				binaryPath = filepath.Join("bin", build.Binary)
+			}
+
 			installs = append(
 				installs,
-				fmt.Sprintf(`bin.install "%s"`, build.Binary),
+				fmt.Sprintf(`bin.install "%s"`, binaryPath),
 			)
 		}
 		ctx.Config.Brew.Install = strings.Join(installs, "\n")

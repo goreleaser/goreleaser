@@ -126,8 +126,12 @@ func create(ctx *context.Context, binaries []artifact.Artifact) error {
 		}
 	}
 	for _, binary := range binaries {
-		if err := a.Add(binary.Name, binary.Path); err != nil {
-			return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
+		dest := binary.Name
+		if ctx.Config.Archive.BinDirectory {
+			dest = filepath.Join("bin", binary.Name)
+		}
+		if err := a.Add(dest, binary.Path); err != nil {
+			return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, dest, err.Error())
 		}
 	}
 	ctx.Artifacts.Add(artifact.Artifact{

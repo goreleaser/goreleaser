@@ -152,6 +152,7 @@ type Archive struct {
 
 	Format          string           `yaml:",omitempty"`
 	FormatOverrides []FormatOverride `yaml:"format_overrides,omitempty"`
+	BinDirectory    bool             `yaml:"bin_directory,omitempty"`
 	WrapInDirectory string           `yaml:"wrap_in_directory,omitempty"`
 	Files           []string         `yaml:",omitempty"`
 }
