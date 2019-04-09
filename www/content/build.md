@@ -22,6 +22,7 @@ builds:
     main: ./cmd/main.go
 
     # Binary name.
+    # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
     # Default is the name of the project directory.
     binary: program
 

@@ -152,11 +152,12 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 	}
 
 	for _, binary := range binaries {
+		_, name := filepath.Split(binary.Name)
 		log.WithField("path", binary.Path).
 			WithField("name", binary.Name).
 			Debug("passed binary to snapcraft")
 		appMetadata := AppMetadata{
-			Command: binary.Name,
+			Command: name,
 		}
 		if configAppMetadata, ok := ctx.Config.Snapcraft.Apps[binary.Name]; ok {
 			appMetadata.Plugs = configAppMetadata.Plugs
@@ -166,7 +167,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 				configAppMetadata.Args,
 			}, " ")
 		}
-		metadata.Apps[binary.Name] = appMetadata
+		metadata.Apps[name] = appMetadata
 		metadata.Plugs = ctx.Config.Snapcraft.Plugs
 
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
@@ -182,7 +183,8 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 	}
 
 	if _, ok := metadata.Apps[metadata.Name]; !ok {
-		metadata.Apps[metadata.Name] = metadata.Apps[binaries[0].Name]
+		_, name := filepath.Split(binaries[0].Name)
+		metadata.Apps[metadata.Name] = metadata.Apps[name]
 	}
 
 	out, err := yaml.Marshal(metadata)
