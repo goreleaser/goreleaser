@@ -159,7 +159,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		appMetadata := AppMetadata{
 			Command: name,
 		}
-		if configAppMetadata, ok := ctx.Config.Snapcraft.Apps[binary.Name]; ok {
+		if configAppMetadata, ok := ctx.Config.Snapcraft.Apps[name]; ok {
 			appMetadata.Plugs = configAppMetadata.Plugs
 			appMetadata.Daemon = configAppMetadata.Daemon
 			appMetadata.Command = strings.Join([]string{
