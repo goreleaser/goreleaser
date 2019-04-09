@@ -26,6 +26,7 @@ func NewGitHub(ctx *context.Context) (Client, error) {
 	)
 	httpClient := oauth2.NewClient(ctx, ts)
 	base := httpClient.Transport.(*oauth2.Transport).Base
+	// nolint: govet
 	if &base != nil {
 		base = http.DefaultTransport
 	}
