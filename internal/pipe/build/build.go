@@ -126,9 +126,8 @@ func run(ctx *context.Context, command, env []string) error {
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
 	var log = log.WithField("env", env).WithField("cmd", command)
-	cmd.Env = append(cmd.Env, os.Environ()...)
-	cmd.Env = append(cmd.Env, env...)
-	log.WithField("cmd", command).WithField("env", env).Debug("running")
+	cmd.Env = env
+	log.Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
 		return errors.New(string(out))

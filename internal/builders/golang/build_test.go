@@ -438,7 +438,7 @@ func TestProcessFlags(t *testing.T) {
 		"-testflag=flag",
 	}
 
-	flags, err := processFlags(ctx, source, "-testflag=")
+	flags, err := processFlags(ctx, []string{}, source, "-testflag=")
 	assert.NoError(t, err)
 	assert.Len(t, flags, 2)
 	assert.Equal(t, expected, flags)
@@ -453,7 +453,7 @@ func TestProcessFlagsInvalid(t *testing.T) {
 
 	var expected = `template: tmpl:1: unexpected "}" in operand`
 
-	flags, err := processFlags(ctx, source, "-testflag=")
+	flags, err := processFlags(ctx, []string{}, source, "-testflag=")
 	assert.EqualError(t, err, expected)
 	assert.Nil(t, flags)
 }
