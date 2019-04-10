@@ -70,9 +70,10 @@ func TestSignInvalidArtifacts(t *testing.T) {
 
 func TestSignArtifacts(t *testing.T) {
 	tests := []struct {
-		desc       string
-		ctx        *context.Context
-		signatures []string
+		desc           string
+		ctx            *context.Context
+		signaturePaths []string
+		signatureNames []string
 	}{
 		{
 			desc: "sign all artifacts",
@@ -81,7 +82,8 @@ func TestSignArtifacts(t *testing.T) {
 					Sign: config.Sign{Artifacts: "all"},
 				},
 			),
-			signatures: []string{"artifact1.sig", "artifact2.sig", "checksum.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "linux_amd64/artifact4.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "artifact4_1.0.0_linux_amd64.sig"},
 		},
 		{
 			desc: "sign only checksums",
@@ -90,20 +92,21 @@ func TestSignArtifacts(t *testing.T) {
 					Sign: config.Sign{Artifacts: "checksum"},
 				},
 			),
-			signatures: []string{"checksum.sig"},
+			signaturePaths: []string{"checksum.sig"},
+			signatureNames: []string{"checksum.sig"},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.desc, func(tt *testing.T) {
-			testSign(tt, test.ctx, test.signatures)
+			testSign(tt, test.ctx, test.signaturePaths, test.signatureNames)
 		})
 	}
 }
 
 const user = "nopass"
 
-func testSign(t *testing.T, ctx *context.Context, signatures []string) {
+func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signatureNames []string) {
 	// create temp dir for file and signature
 	tmpdir, err := ioutil.TempDir("", "goreleaser")
 	assert.NoError(t, err)
@@ -112,11 +115,14 @@ func testSign(t *testing.T, ctx *context.Context, signatures []string) {
 	ctx.Config.Dist = tmpdir
 
 	// create some fake artifacts
-	var artifacts = []string{"artifact1", "artifact2", "checksum"}
+	var artifacts = []string{"artifact1", "artifact2", "artifact3", "checksum"}
+	os.Mkdir(filepath.Join(tmpdir, "linux_amd64"), os.ModePerm)
 	for _, f := range artifacts {
 		file := filepath.Join(tmpdir, f)
 		assert.NoError(t, ioutil.WriteFile(file, []byte("foo"), 0644))
 	}
+	assert.NoError(t, ioutil.WriteFile(filepath.Join(tmpdir, "linux_amd64", "artifact4"), []byte("foo"), 0644))
+	artifacts = append(artifacts, "linux_amd64/artifact4")
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name: "artifact1",
 		Path: filepath.Join(tmpdir, "artifact1"),
@@ -128,9 +134,19 @@ func testSign(t *testing.T, ctx *context.Context, signatures []string) {
 		Type: artifact.UploadableArchive,
 	})
 	ctx.Artifacts.Add(artifact.Artifact{
+		Name: "artifact3_1.0.0_linux_amd64",
+		Path: filepath.Join(tmpdir, "artifact3"),
+		Type: artifact.UploadableBinary,
+	})
+	ctx.Artifacts.Add(artifact.Artifact{
 		Name: "checksum",
 		Path: filepath.Join(tmpdir, "checksum"),
 		Type: artifact.Checksum,
+	})
+	ctx.Artifacts.Add(artifact.Artifact{
+		Name: "artifact4_1.0.0_linux_amd64",
+		Path: filepath.Join(tmpdir, "linux_amd64", "artifact4"),
+		Type: artifact.UploadableBinary,
 	})
 
 	// configure the pipeline
@@ -142,18 +158,31 @@ func testSign(t *testing.T, ctx *context.Context, signatures []string) {
 	assert.NoError(t, Pipe{}.Run(ctx))
 
 	// verify that only the artifacts and the signatures are in the dist dir
-	files, err := ioutil.ReadDir(tmpdir)
-	assert.NoError(t, err)
 	gotFiles := []string{}
-	for _, f := range files {
-		gotFiles = append(gotFiles, f.Name())
-	}
-	wantFiles := append(artifacts, signatures...)
+
+	err = filepath.Walk(tmpdir,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				return nil
+			}
+			relPath, err := filepath.Rel(tmpdir, path)
+			if err != nil {
+				return err
+			}
+			gotFiles = append(gotFiles, relPath)
+			return nil
+		})
+	assert.NoError(t, err)
+
+	wantFiles := append(artifacts, signaturePaths...)
 	sort.Strings(wantFiles)
 	assert.Equal(t, wantFiles, gotFiles)
 
 	// verify the signatures
-	for _, sig := range signatures {
+	for _, sig := range signaturePaths {
 		verifySignature(t, ctx, sig)
 	}
 
@@ -162,7 +191,7 @@ func testSign(t *testing.T, ctx *context.Context, signatures []string) {
 		signArtifacts = append(signArtifacts, sig.Name)
 	}
 	// check signature is an artifact
-	assert.Equal(t, signArtifacts, signatures)
+	assert.Equal(t, signArtifacts, signatureNames)
 }
 
 func verifySignature(t *testing.T, ctx *context.Context, sig string) {
