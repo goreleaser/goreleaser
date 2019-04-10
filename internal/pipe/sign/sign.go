@@ -62,30 +62,23 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func sign(ctx *context.Context, artifacts []artifact.Artifact) error {
-	// nolint:prealloc
-	var sigs []string
+
 	for _, a := range artifacts {
-		sig, err := signone(ctx, a)
+		artifact, err := signone(ctx, a)
 		if err != nil {
 			return err
 		}
-		sigs = append(sigs, sig)
-	}
-	for _, sig := range sigs {
-		ctx.Artifacts.Add(artifact.Artifact{
-			Type: artifact.Signature,
-			Name: sig,
-			Path: filepath.Join(ctx.Config.Dist, sig),
-		})
+
+		ctx.Artifacts.Add(*artifact)
 	}
 	return nil
 }
 
-func signone(ctx *context.Context, artifact artifact.Artifact) (string, error) {
+func signone(ctx *context.Context, a artifact.Artifact) (*artifact.Artifact, error) {
 	cfg := ctx.Config.Sign
 
 	env := map[string]string{
-		"artifact": artifact.Path,
+		"artifact": a.Path,
 	}
 	env["signature"] = expand(cfg.Signature, env)
 
@@ -103,9 +96,20 @@ func signone(ctx *context.Context, artifact artifact.Artifact) (string, error) {
 	log.WithField("cmd", cmd.Args).Debug("running")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("sign: %s failed with %q", cfg.Cmd, string(output))
+		return nil, fmt.Errorf("sign: %s failed with %q", cfg.Cmd, string(output))
 	}
-	return filepath.Base(env["signature"]), nil
+
+	artifactPathBase, _ := filepath.Split(a.Path)
+
+	env["artifact"] = a.Name
+	name := expand(cfg.Signature, env)
+
+	sigFilename := filepath.Base(env["signature"])
+	return &artifact.Artifact{
+		Type: artifact.Signature,
+		Name: name,
+		Path: filepath.Join(artifactPathBase, sigFilename),
+	}, nil
 }
 
 func expand(s string, env map[string]string) string {
