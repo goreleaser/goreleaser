@@ -3,19 +3,19 @@
 package build
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
-
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	builders "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/pkg/errors"
 
 	// langs to init
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
@@ -41,16 +41,20 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	var ids = map[string]int{}
 	for i, build := range ctx.Config.Builds {
 		ctx.Config.Builds[i] = buildWithDefaults(ctx, build)
+		ids[ctx.Config.Builds[i].ID]++
 	}
 	if len(ctx.Config.Builds) == 0 {
 		ctx.Config.Builds = []config.Build{
 			buildWithDefaults(ctx, ctx.Config.SingleBuild),
 		}
 	}
-	if len(ctx.Config.Builds) > 1 {
-		log.Warn("you have more than 1 build setup: please make sure it is a not a typo on your config")
+	for id, cont := range ids {
+		if cont > 1 {
+			return fmt.Errorf("there are more than %d builds with the ID '%s', please fix your config", cont, id)
+		}
 	}
 	return nil
 }
@@ -61,6 +65,9 @@ func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 	}
 	if build.Binary == "" {
 		build.Binary = ctx.Config.ProjectName
+	}
+	if build.ID == "" {
+		build.ID = build.Binary
 	}
 	for k, v := range build.Env {
 		build.Env[k] = os.ExpandEnv(v)

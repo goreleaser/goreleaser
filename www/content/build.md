@@ -17,6 +17,10 @@ Here is a commented `builds` section with all fields specified:
 builds:
   # You can have multiple builds defined as a yaml list
   -
+    # ID of the build.
+    # Defaults to the binary name.
+    id: "my-build"
+
     # Path to main.go file or main package.
     # Default is `.`.
     main: ./cmd/main.go

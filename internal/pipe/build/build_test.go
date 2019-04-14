@@ -218,16 +218,36 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}", build.Ldflags[0])
 }
 
+func TestSeveralBuildsWithTheSameID(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Builds: []config.Build{
+				{
+					ID:     "a",
+					Binary: "bar",
+				},
+				{
+					ID:     "a",
+					Binary: "foo",
+				},
+			},
+		},
+	}
+	assert.EqualError(t, Pipe{}.Default(ctx), "there are more than 2 builds with the ID 'a', please fix your config")
+}
+
 func TestDefaultPartialBuilds(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
 			Builds: []config.Build{
 				{
+					ID:     "build1",
 					Binary: "bar",
 					Goos:   []string{"linux"},
 					Main:   "./cmd/main.go",
 				},
 				{
+					ID:      "build2",
 					Binary:  "foo",
 					Ldflags: []string{"-s -w"},
 					Goarch:  []string{"386"},

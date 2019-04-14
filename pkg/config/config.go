@@ -123,6 +123,7 @@ func (a *FlagArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // Build contains the build configuration section
 type Build struct {
+	ID       string         `yaml:",omitempty"`
 	Goos     []string       `yaml:",omitempty"`
 	Goarch   []string       `yaml:",omitempty"`
 	Goarm    []string       `yaml:",omitempty"`

@@ -27,6 +27,7 @@ func TestWithDefaults(t *testing.T) {
 	}{
 		"full": {
 			build: config.Build{
+				ID:     "foo",
 				Binary: "foo",
 				Goos: []string{
 					"linux",
@@ -50,6 +51,7 @@ func TestWithDefaults(t *testing.T) {
 		},
 		"empty": {
 			build: config.Build{
+				ID:     "foo2",
 				Binary: "foo",
 			},
 			targets: []string{
@@ -81,6 +83,7 @@ func TestBuild(t *testing.T) {
 	var config = config.Project{
 		Builds: []config.Build{
 			{
+				ID:     "foo",
 				Env:    []string{"GO111MODULE=off"},
 				Binary: "foo",
 				Targets: []string{
@@ -122,6 +125,7 @@ func TestBuild(t *testing.T) {
 			Extra: map[string]interface{}{
 				"Ext":    "",
 				"Binary": "foo",
+				"ID":     "foo",
 			},
 		},
 		{
@@ -133,6 +137,7 @@ func TestBuild(t *testing.T) {
 			Extra: map[string]interface{}{
 				"Ext":    "",
 				"Binary": "foo",
+				"ID":     "foo",
 			},
 		},
 		{
@@ -145,6 +150,7 @@ func TestBuild(t *testing.T) {
 			Extra: map[string]interface{}{
 				"Ext":    "",
 				"Binary": "foo",
+				"ID":     "foo",
 			},
 		},
 		{
@@ -156,6 +162,7 @@ func TestBuild(t *testing.T) {
 			Extra: map[string]interface{}{
 				"Ext":    ".exe",
 				"Binary": "foo",
+				"ID":     "foo",
 			},
 		},
 	})
@@ -168,6 +175,7 @@ func TestBuildFailed(t *testing.T) {
 	var config = config.Project{
 		Builds: []config.Build{
 			{
+				ID:    "buildid",
 				Flags: []string{"-flag-that-dont-exists-to-force-failure"},
 				Targets: []string{
 					runtimeTarget,
@@ -192,6 +200,7 @@ func TestBuildInvalidTarget(t *testing.T) {
 	var config = config.Project{
 		Builds: []config.Build{
 			{
+				ID:      "foo",
 				Binary:  "foo",
 				Targets: []string{target},
 			},
