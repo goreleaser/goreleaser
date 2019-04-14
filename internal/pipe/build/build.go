@@ -3,22 +3,21 @@
 package build
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
-
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	builders "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/pkg/errors"
 
 	// langs to init
-	"fmt"
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
 )
 
