@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/alecthomas/assert"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/archive"
@@ -657,4 +658,20 @@ func TestWrapInDirectory(t *testing.T) {
 			WrapInDirectory: "foobar",
 		}))
 	})
+}
+
+func TestSeveralArchivesWithTheSameID(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Archives: []config.Archive{
+				{
+					ID: "a",
+				},
+				{
+					ID: "a",
+				},
+			},
+		},
+	}
+	assert.EqualError(t, Pipe{}.Default(ctx), "found 2 archives with the ID 'a', please fix your config")
 }

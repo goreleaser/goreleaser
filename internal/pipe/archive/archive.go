@@ -42,6 +42,7 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	var ids = map[string]int{}
 	if len(ctx.Config.Archives) == 0 {
 		ctx.Config.Archives = append(ctx.Config.Archives, ctx.Config.Archive)
 		if !reflect.DeepEqual(ctx.Config.Archive, config.Archive{}) {
@@ -52,6 +53,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		var archive = &ctx.Config.Archives[i]
 		if archive.Format == "" {
 			archive.Format = "tar.gz"
+		}
+		if archive.ID == "" {
+			archive.ID = "default"
 		}
 		if len(archive.Files) == 0 {
 			archive.Files = []string{
@@ -72,7 +76,16 @@ func (Pipe) Default(ctx *context.Context) error {
 			}
 		}
 		if len(archive.Builds) == 0 {
-			archive.Builds = []string{"default"}
+			for _, build := range ctx.Config.Builds {
+				archive.Builds = append(archive.Builds, build.ID)
+			}
+		}
+		ids[archive.ID]++
+	}
+
+	for id, cont := range ids {
+		if cont > 1 {
+			return fmt.Errorf("found %d archives with the ID '%s', please fix your config", cont, id)
 		}
 	}
 	return nil

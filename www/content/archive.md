@@ -15,6 +15,10 @@ Here is a commented `archives` section with all fields specified:
 # .goreleaser.yml
 archives:
   -
+    # ID of this archive.
+    # Defaults to `default`.
+    id: my-archive
+
     # Builds reference which build instances should be archived in this archive.
     builds:
     - default

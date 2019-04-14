@@ -53,7 +53,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 	for id, cont := range ids {
 		if cont > 1 {
-			return fmt.Errorf("there are more than %d builds with the ID '%s', please fix your config", cont, id)
+			return fmt.Errorf("found %d builds with the ID '%s', please fix your config", cont, id)
 		}
 	}
 	return nil
