@@ -338,8 +338,8 @@ func TestHookEnvs(t *testing.T) {
 	})
 
 	t.Run("env inside shell", func(t *testing.T) {
-		var shell = `#!/bin/sh
-		touch "$BAR"`
+		var shell = `#!/bin/sh -e
+touch "$BAR"`
 		ioutil.WriteFile(filepath.Join(tmp, "test.sh"), []byte(shell), 0750)
 		var err = runHook(context.New(config.Project{
 			Builds: []config.Build{
