@@ -82,7 +82,7 @@ snapcraft:
       # You can read the documentation about the available plugs and the
       # things they allow:
       # https://snapcraft.io/docs/reference/interfaces.
-      plugs: ["home", "network"]
+      plugs: ["home", "network", "personal-files"]
 
       # If you want your app to be autostarted and to always run in the
       # background, you can make it a simple daemon.
@@ -91,6 +91,16 @@ snapcraft:
       # If you any to pass args to your binary, you can add them with the
       # args option.
       args: --foo
+  # Allows plugs to be configured. Plugs like system-files and personal-files
+  # require this.
+  # Default is empty.
+  plugs:
+    personal-files:
+      read:
+      - $HOME/.foo
+      write:
+      - $HOME/.foo
+      - $HOME/.foobar
 ```
 
 > Learn more about the [name template engine](/templates).

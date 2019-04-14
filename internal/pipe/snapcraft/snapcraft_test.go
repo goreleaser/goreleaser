@@ -58,7 +58,7 @@ func TestRunPipe(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "mybin", dist)
+	addBinaries(t, ctx, "mybin", dist, "mybin")
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List(), 2)
 }
@@ -80,7 +80,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "mybin", dist)
+	addBinaries(t, ctx, "mybin", dist, "mybin")
 	assert.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
 }
 
@@ -102,16 +102,46 @@ func TestRunPipeWithName(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "testprojectname", dist)
+	addBinaries(t, ctx, "testprojectname", dist, "mybin")
 	assert.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	assert.NoError(t, err)
 	var metadata Metadata
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	assert.NoError(t, err)
-	assert.Equal(t, metadata.Name, "testsnapname")
-	assert.Equal(t, metadata.Apps["mybin"].Command, "mybin")
-	assert.Equal(t, metadata.Apps["testsnapname"].Command, "mybin")
+	assert.Equal(t, "testsnapname", metadata.Name)
+	assert.Equal(t, "mybin", metadata.Apps["mybin"].Command)
+	assert.Equal(t, "mybin", metadata.Apps["testsnapname"].Command)
+}
+
+func TestRunPipeWithBinaryInDir(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, err)
+	var ctx = context.New(config.Project{
+		ProjectName: "testprojectname",
+		Dist:        dist,
+		Snapcraft: config.Snapcraft{
+			NameTemplate: "foo_{{.Arch}}",
+			Name:         "testsnapname",
+			Summary:      "test summary",
+			Description:  "test description",
+		},
+	})
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Version = "v1.2.3"
+	addBinaries(t, ctx, "testprojectname", dist, "bin/mybin")
+	assert.NoError(t, Pipe{}.Run(ctx))
+	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
+	assert.NoError(t, err)
+	var metadata Metadata
+	err = yaml.Unmarshal(yamlFile, &metadata)
+	assert.NoError(t, err)
+	assert.Equal(t, "testsnapname", metadata.Name)
+	assert.Equal(t, "mybin", metadata.Apps["mybin"].Command)
+	assert.Equal(t, "mybin", metadata.Apps["testsnapname"].Command)
 }
 
 func TestRunPipeMetadata(t *testing.T) {
@@ -129,28 +159,34 @@ func TestRunPipeMetadata(t *testing.T) {
 			Description:  "test description",
 			Apps: map[string]config.SnapcraftAppMetadata{
 				"mybin": {
-					Plugs:  []string{"home", "network"},
+					Plugs:  []string{"home", "network", "personal-files"},
 					Daemon: "simple",
 					Args:   "--foo --bar",
+				},
+			},
+			Plugs: map[string]interface{}{
+				"personal-files": map[string]interface{}{
+					"read": []string{"$HOME/test"},
 				},
 			},
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "mybin", dist)
+	addBinaries(t, ctx, "mybin", dist, "mybin")
 	assert.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	assert.NoError(t, err)
 	var metadata Metadata
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	assert.NoError(t, err)
-	assert.Equal(t, metadata.Apps["mybin"].Plugs, []string{"home", "network"})
-	assert.Equal(t, metadata.Apps["mybin"].Daemon, "simple")
-	assert.Equal(t, metadata.Apps["mybin"].Command, "mybin --foo --bar")
-	assert.Equal(t, metadata.Apps["testprojectname"].Plugs, []string{"home", "network"})
-	assert.Equal(t, metadata.Apps["testprojectname"].Daemon, "simple")
-	assert.Equal(t, metadata.Apps["testprojectname"].Command, "mybin --foo --bar")
+	assert.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["mybin"].Plugs)
+	assert.Equal(t, "simple", metadata.Apps["mybin"].Daemon)
+	assert.Equal(t, "mybin --foo --bar", metadata.Apps["mybin"].Command)
+	assert.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["testprojectname"].Plugs)
+	assert.Equal(t, "simple", metadata.Apps["testprojectname"].Daemon)
+	assert.Equal(t, "mybin --foo --bar", metadata.Apps["testprojectname"].Command)
+	assert.Equal(t, map[interface{}]interface{}(map[interface{}]interface{}{"read": []interface{}{"$HOME/test"}}), metadata.Plugs["personal-files"])
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {
@@ -197,7 +233,7 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "foo", ctx.Config.Snapcraft.NameTemplate)
 }
 
-func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
+func addBinaries(t *testing.T, ctx *context.Context, name, dist, dest string) {
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386", "arm6"} {
 			var folder = goos + goarch
@@ -206,7 +242,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 			_, err := os.Create(binPath)
 			assert.NoError(t, err)
 			ctx.Artifacts.Add(artifact.Artifact{
-				Name:   "mybin",
+				Name:   dest,
 				Path:   binPath,
 				Goarch: goarch,
 				Goos:   goos,

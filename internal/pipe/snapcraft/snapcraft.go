@@ -39,6 +39,7 @@ type Metadata struct {
 	Confinement   string `yaml:",omitempty"`
 	Architectures []string
 	Apps          map[string]AppMetadata
+	Plugs         map[string]interface{} `yaml:",omitempty"`
 }
 
 // AppMetadata for the binaries that will be in the snap package
@@ -150,16 +151,15 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		metadata.Name = ctx.Config.Snapcraft.Name
 	}
 
-	log.Debugf("metadata: %+v", metadata)
-
 	for _, binary := range binaries {
+		_, name := filepath.Split(binary.Name)
 		log.WithField("path", binary.Path).
 			WithField("name", binary.Name).
 			Debug("passed binary to snapcraft")
 		appMetadata := AppMetadata{
-			Command: binary.Name,
+			Command: name,
 		}
-		if configAppMetadata, ok := ctx.Config.Snapcraft.Apps[binary.Name]; ok {
+		if configAppMetadata, ok := ctx.Config.Snapcraft.Apps[name]; ok {
 			appMetadata.Plugs = configAppMetadata.Plugs
 			appMetadata.Daemon = configAppMetadata.Daemon
 			appMetadata.Command = strings.Join([]string{
@@ -167,7 +167,8 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 				configAppMetadata.Args,
 			}, " ")
 		}
-		metadata.Apps[binary.Name] = appMetadata
+		metadata.Apps[name] = appMetadata
+		metadata.Plugs = ctx.Config.Snapcraft.Plugs
 
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
 		log.WithField("src", binary.Path).
@@ -182,7 +183,8 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 	}
 
 	if _, ok := metadata.Apps[metadata.Name]; !ok {
-		metadata.Apps[metadata.Name] = metadata.Apps[binaries[0].Name]
+		_, name := filepath.Split(binaries[0].Name)
+		metadata.Apps[metadata.Name] = metadata.Apps[name]
 	}
 
 	out, err := yaml.Marshal(metadata)
@@ -190,6 +192,7 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		return err
 	}
 
+	log.WithField("file", file).Debugf("writing metadata file")
 	if err = ioutil.WriteFile(file, out, 0644); err != nil {
 		return err
 	}

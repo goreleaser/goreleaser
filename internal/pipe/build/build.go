@@ -3,19 +3,19 @@
 package build
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
-
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	builders "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/pkg/errors"
 
 	// langs to init
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
@@ -41,30 +41,33 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	var ids = map[string]int{}
 	for i, build := range ctx.Config.Builds {
 		ctx.Config.Builds[i] = buildWithDefaults(ctx, build)
+		ids[ctx.Config.Builds[i].ID]++
 	}
 	if len(ctx.Config.Builds) == 0 {
 		ctx.Config.Builds = []config.Build{
 			buildWithDefaults(ctx, ctx.Config.SingleBuild),
 		}
 	}
-	// TODO: check if there are multiple builds with the same ID
-	if len(ctx.Config.Builds) > 1 {
-		log.Warn("you have more than 1 build setup: please make sure it is a not a typo on your config")
+	for id, cont := range ids {
+		if cont > 1 {
+			return fmt.Errorf("there are more than %d builds with the ID '%s', please fix your config", cont, id)
+		}
 	}
 	return nil
 }
 
 func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
-	if build.ID == "" {
-		build.ID = "default"
-	}
 	if build.Lang == "" {
 		build.Lang = "go"
 	}
 	if build.Binary == "" {
 		build.Binary = ctx.Config.ProjectName
+	}
+	if build.ID == "" {
+		build.ID = build.Binary
 	}
 	for k, v := range build.Env {
 		build.Env[k] = os.ExpandEnv(v)
@@ -94,8 +97,13 @@ func runHook(ctx *context.Context, env []string, hook string) error {
 	if hook == "" {
 		return nil
 	}
-	log.WithField("hook", hook).Info("running hook")
-	cmd := strings.Fields(hook)
+	sh, err := tmpl.New(ctx).WithEnvS(env).Apply(hook)
+	if err != nil {
+		return err
+	}
+	log.WithField("hook", sh).Info("running hook")
+	cmd := strings.Fields(sh)
+	env = append(env, ctx.Env.Strings()...)
 	return run(ctx, cmd, env)
 }
 
@@ -130,9 +138,8 @@ func run(ctx *context.Context, command, env []string) error {
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
 	var log = log.WithField("env", env).WithField("cmd", command)
-	cmd.Env = append(cmd.Env, os.Environ()...)
-	cmd.Env = append(cmd.Env, env...)
-	log.WithField("cmd", command).WithField("env", env).Debug("running")
+	cmd.Env = env
+	log.Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
 		return errors.New(string(out))

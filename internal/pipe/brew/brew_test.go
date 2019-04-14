@@ -67,7 +67,8 @@ func TestFullFormulae(t *testing.T) {
 
 	var golden = "testdata/test.rb.golden"
 	if *update {
-		ioutil.WriteFile(golden, []byte(formulae), 0655)
+		err := ioutil.WriteFile(golden, []byte(formulae), 0655)
+		assert.NoError(t, err)
 	}
 	bts, err := ioutil.ReadFile(golden)
 	assert.NoError(t, err)
@@ -313,20 +314,32 @@ func TestRunPipeNoUpload(t *testing.T) {
 	}
 	t.Run("skip upload", func(tt *testing.T) {
 		ctx.Config.Release.Draft = false
-		ctx.Config.Brew.SkipUpload = true
+		ctx.Config.Brew.SkipUpload = "true"
 		ctx.SkipPublish = false
 		assertNoPublish(tt)
 	})
 	t.Run("skip publish", func(tt *testing.T) {
 		ctx.Config.Release.Draft = false
-		ctx.Config.Brew.SkipUpload = false
+		ctx.Config.Brew.SkipUpload = "false"
 		ctx.SkipPublish = true
 		assertNoPublish(tt)
 	})
 	t.Run("draft release", func(tt *testing.T) {
 		ctx.Config.Release.Draft = true
-		ctx.Config.Brew.SkipUpload = false
+		ctx.Config.Brew.SkipUpload = "false"
 		ctx.SkipPublish = false
+		assertNoPublish(tt)
+	})
+	t.Run("skip prerelease publish", func(tt *testing.T) {
+		ctx.Config.Release.Draft = false
+		ctx.Config.Brew.SkipUpload = "auto"
+		ctx.SkipPublish = false
+		ctx.Semver = context.Semver{
+			Major:      1,
+			Minor:      0,
+			Patch:      0,
+			Prerelease: "rc1",
+		}
 		assertNoPublish(tt)
 	})
 }

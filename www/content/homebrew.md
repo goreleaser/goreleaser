@@ -37,7 +37,7 @@ brew:
 
   # Allows you to add a custom require_relative at the top of the formula template
   # Default is empty
-  custom_require: custom_download_strategy 
+  custom_require: custom_download_strategy
 
   # Git author used to commit to the repository.
   # Defaults are shown.
@@ -64,6 +64,8 @@ brew:
   # Setting this will prevent goreleaser to actually try to commit the updated
   # formula - instead, the formula file will be stored on the dist folder only,
   # leaving the responsibility of publishing it to the user.
+  # If set to auto, the release will not be uploaded to the homebrew tap
+  # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
   # Default is false.
   skip_upload: true
 
@@ -127,7 +129,7 @@ class Program < Formula
 end
 ```
 
-**Important**": Note that GoReleaser does not yet generate a valid
+**Important**: Note that GoReleaser does not yet generate a valid
 homebrew-core formula. The generated formulas are meant to be published as
 [homebrew taps](https://docs.brew.sh/Taps.html), and in their current
 form will not be accepted in any of the official homebrew repositories.

@@ -61,7 +61,7 @@ foo_template: 'foo_{{ .Env.GOVERSION }}'
 
 And then you can run:
 
-```console
+```sh
 GOVERSION_NR=$(go version | awk '{print $3;}') goreleaser
 ```
 

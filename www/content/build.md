@@ -17,11 +17,16 @@ Here is a commented `builds` section with all fields specified:
 builds:
   # You can have multiple builds defined as a yaml list
   -
+    # ID of the build.
+    # Defaults to the binary name.
+    id: "my-build"
+
     # Path to main.go file or main package.
     # Default is `.`.
     main: ./cmd/main.go
 
-    # Name template for the binary final name.
+    # Binary name.
+    # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
     # Default is the name of the project directory.
     binary: program
 
@@ -87,6 +92,7 @@ builds:
 
     # Hooks can be used to customize the final binary,
     # for example, to run generators.
+    # Those fields allow templates.
     # Default is both hooks empty.
     hooks:
       pre: rice embed-go
@@ -108,13 +114,13 @@ builds:
 
 Then you can run:
 
-```console
+```sh
 GOVERSION=$(go version) goreleaser
 ```
 
 ## Go Modules
 
- If you use Go 1.11 with go modules or vgo, when GoReleaser runs it may
+ If you use Go 1.11+ with go modules or vgo, when GoReleaser runs it may
  try to download the dependencies. Since several builds run in parallel, it is
  very likely to fail.
 

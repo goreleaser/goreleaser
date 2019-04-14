@@ -122,7 +122,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	if ctx.Config.Brew.SkipUpload {
+	if strings.TrimSpace(ctx.Config.Brew.SkipUpload) == "true" {
 		return pipe.Skip("brew.skip_upload is set")
 	}
 	if ctx.SkipPublish {
@@ -130,6 +130,9 @@ func doRun(ctx *context.Context, client client.Client) error {
 	}
 	if ctx.Config.Release.Draft {
 		return pipe.Skip("release is marked as draft")
+	}
+	if strings.TrimSpace(ctx.Config.Brew.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
+		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
 	}
 
 	var gpath = ghFormulaPath(ctx.Config.Brew.Folder, filename)
@@ -147,7 +150,7 @@ func ghFormulaPath(folder, filename string) string {
 
 func getFormat(ctx *context.Context) string {
 	for _, override := range ctx.Config.Archive.FormatOverrides {
-		if strings.HasPrefix("darwin", override.Goos) {
+		if strings.HasPrefix(override.Goos, "darwin") {
 			return override.Format
 		}
 	}
@@ -172,7 +175,7 @@ func doBuildFormula(data templateData) (out bytes.Buffer, err error) {
 }
 
 func dataFor(ctx *context.Context, artifact artifact.Artifact) (result templateData, err error) {
-	sum, err := artifact.Checksum()
+	sum, err := artifact.Checksum("sha256")
 	if err != nil {
 		return
 	}

@@ -13,6 +13,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
@@ -223,15 +224,14 @@ func TestRunPipe(t *testing.T) {
 					Goarch:     "amd64",
 					Dockerfile: "testdata/Dockerfile",
 					Binaries:   []string{"mybin"},
-					SkipPush:   true,
+					SkipPush:   "true",
 				},
 			},
 			expect: []string{
 				registry + "goreleaser/test_run_pipe:latest",
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldNotErr,
-			pubAssertError:    shouldNotErr,
+			assertError:       testlib.AssertSkipped,
 		},
 		"valid_no_latest": {
 			dockers: []config.Docker{
@@ -384,7 +384,7 @@ func TestRunPipe(t *testing.T) {
 					Goarch:     "amd64",
 					Dockerfile: "testdata/Dockerfile",
 					Binaries:   []string{"mybin"},
-					SkipPush:   true,
+					SkipPush:   "true",
 				},
 			},
 			env: map[string]string{
@@ -395,8 +395,7 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/mybin:latest",
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldNotErr,
-			pubAssertError:    shouldNotErr,
+			assertError:       testlib.AssertSkipped,
 		},
 		"no_permissions": {
 			dockers: []config.Docker{
@@ -768,7 +767,7 @@ func Test_processImageTemplates(t *testing.T) {
 						"gcr.io/image:{{.Tag}}-{{.Env.FOO}}",
 						"gcr.io/image:v{{.Major}}.{{.Minor}}",
 					},
-					SkipPush: true,
+					SkipPush: "true",
 				},
 			},
 		},
@@ -822,8 +821,12 @@ func TestLinkDirectory(t *testing.T) {
 	const testFile = "test"
 	const dstDir = "/tmp/linkedDir"
 
-	os.Mkdir(srcDir, 0755)
-	err := ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
+	err := os.Mkdir(srcDir, 0755)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot create dir: %s", srcDir))
+		t.Fail()
+	}
+	err = ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
 	if err != nil {
 		t.Log("Cannot setup test file")
 		t.Fail()
@@ -839,8 +842,16 @@ func TestLinkDirectory(t *testing.T) {
 	}
 
 	// cleanup
-	os.RemoveAll(srcDir)
-	os.RemoveAll(dstDir)
+	err = os.RemoveAll(srcDir)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot remove dir: %s", srcDir))
+		t.Fail()
+	}
+	err = os.RemoveAll(dstDir)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot remove dir: %s", dstDir))
+		t.Fail()
+	}
 }
 
 func TestLinkTwoLevelDirectory(t *testing.T) {
@@ -849,9 +860,17 @@ func TestLinkTwoLevelDirectory(t *testing.T) {
 	const testFile = "test"
 	const dstDir = "/tmp/linkedDir"
 
-	os.Mkdir(srcDir, 0755)
-	os.Mkdir(srcLevel2, 0755)
-	err := ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
+	err := os.Mkdir(srcDir, 0755)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot create dir: %s", srcDir))
+		t.Fail()
+	}
+	err = os.Mkdir(srcLevel2, 0755)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot create dir: %s", srcLevel2))
+		t.Fail()
+	}
+	err = ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
 	if err != nil {
 		t.Log("Cannot setup test file")
 		t.Fail()
@@ -874,9 +893,18 @@ func TestLinkTwoLevelDirectory(t *testing.T) {
 		t.Log("Inodes do not match")
 		t.Fail()
 	}
+
 	// cleanup
-	os.RemoveAll(srcDir)
-	os.RemoveAll(dstDir)
+	err = os.RemoveAll(srcDir)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot remove dir: %s", srcDir))
+		t.Fail()
+	}
+	err = os.RemoveAll(dstDir)
+	if err != nil {
+		t.Log(fmt.Sprintf("Cannot remove dir: %s", dstDir))
+		t.Fail()
+	}
 }
 
 func inode(file string) uint64 {

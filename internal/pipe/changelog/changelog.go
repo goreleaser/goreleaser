@@ -28,9 +28,6 @@ func (Pipe) String() string {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.Config.Changelog.Skip {
-		return pipe.Skip("changelog should not be built")
-	}
 	// TODO: should probably have a different field for the filename and its
 	// contents.
 	if ctx.ReleaseNotes != "" {
@@ -39,10 +36,15 @@ func (Pipe) Run(ctx *context.Context) error {
 			return err
 		}
 		ctx.ReleaseNotes = notes
-		return nil
+	}
+	if ctx.Config.Changelog.Skip {
+		return pipe.Skip("changelog should not be built")
 	}
 	if ctx.Snapshot {
 		return pipe.Skip("not available for snapshots")
+	}
+	if ctx.ReleaseNotes != "" {
+		return nil
 	}
 	if err := checkSortDirection(ctx.Config.Changelog.Sort); err != nil {
 		return err

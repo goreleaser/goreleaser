@@ -469,7 +469,8 @@ func Test_buildManifest(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.filename, func(t *testing.T) {
 			var ctx = tt.ctx
-			Pipe{}.Default(ctx)
+			err := Pipe{}.Default(ctx)
+			require.NoError(t, err)
 			out, err := buildManifest(ctx, []artifact.Artifact{
 				{
 					Name:   "foo_1.0.1_windows_amd64.tar.gz",

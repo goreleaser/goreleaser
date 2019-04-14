@@ -48,7 +48,7 @@ type Homebrew struct {
 	Conflicts        []string     `yaml:",omitempty"`
 	Description      string       `yaml:",omitempty"`
 	Homepage         string       `yaml:",omitempty"`
-	SkipUpload       bool         `yaml:"skip_upload,omitempty"`
+	SkipUpload       string       `yaml:"skip_upload,omitempty"`
 	DownloadStrategy string       `yaml:"download_strategy,omitempty"`
 	SourceTarball    string       `yaml:"-"`
 	URLTemplate      string       `yaml:"url_template,omitempty"`
@@ -123,7 +123,7 @@ func (a *FlagArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // Build contains the build configuration section
 type Build struct {
-	ID       string         `yaml:"id,omitempty"`
+	ID       string         `yaml:",omitempty"`
 	Goos     []string       `yaml:",omitempty"`
 	Goarch   []string       `yaml:",omitempty"`
 	Goarm    []string       `yaml:",omitempty"`
@@ -229,6 +229,7 @@ type Snapcraft struct {
 	Grade       string                          `yaml:",omitempty"`
 	Confinement string                          `yaml:",omitempty"`
 	Apps        map[string]SnapcraftAppMetadata `yaml:",omitempty"`
+	Plugs       map[string]interface{}          `yaml:",omitempty"`
 }
 
 // Snapshot config
@@ -239,6 +240,7 @@ type Snapshot struct {
 // Checksum config
 type Checksum struct {
 	NameTemplate string `yaml:"name_template,omitempty"`
+	Algorithm    string `yaml:"algorithm,omitempty"`
 }
 
 // Docker image config
@@ -251,7 +253,7 @@ type Docker struct {
 	Image              string   `yaml:",omitempty"`
 	Dockerfile         string   `yaml:",omitempty"`
 	ImageTemplates     []string `yaml:"image_templates,omitempty"`
-	SkipPush           bool     `yaml:"skip_push,omitempty"`
+	SkipPush           string   `yaml:"skip_push,omitempty"`
 	TagTemplates       []string `yaml:"tag_templates,omitempty"`
 	Files              []string `yaml:"extra_files,omitempty"`
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
@@ -305,6 +307,7 @@ type Put struct {
 // Project includes all project configuration
 type Project struct {
 	ProjectName   string    `yaml:"project_name,omitempty"`
+	Env           []string  `yaml:",omitempty"`
 	Release       Release   `yaml:",omitempty"`
 	Brew          Homebrew  `yaml:",omitempty"`
 	Scoop         Scoop     `yaml:",omitempty"`

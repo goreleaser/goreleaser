@@ -16,14 +16,14 @@ func TestArchive(t *testing.T) {
 	assert.NoError(err)
 	assert.NoError(os.Mkdir(folder+"/folder-inside", 0755))
 
-	for _, archive := range []Archive{
-		newArchive(folder, "tar.gz", t),
-		newArchive(folder, "zip", t),
-	} {
-		assert.NoError(archive.Add("empty.txt", empty.Name()))
-		assert.NoError(archive.Add("empty.txt", folder+"/folder-inside"))
-		assert.Error(archive.Add("dont.txt", empty.Name()+"_nope"))
-		assert.NoError(archive.Close())
+	for _, format := range []string{"tar.gz", "zip", "gz", "willbeatargzanyway"} {
+		format := format
+		t.Run(format, func(t *testing.T) {
+			var archive = newArchive(folder, format, t)
+			assert.NoError(archive.Add("empty.txt", empty.Name()))
+			assert.Error(archive.Add("dont.txt", empty.Name()+"_nope"))
+			assert.NoError(archive.Close())
+		})
 	}
 }
 

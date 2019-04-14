@@ -25,11 +25,24 @@ type GitInfo struct {
 	URL         string
 }
 
+// Env is the environment variables
+type Env map[string]string
+
+// Strings returns the current environment as a list of strings, suitable for
+// os executions.
+func (e Env) Strings() []string {
+	var result = make([]string, 0, len(e))
+	for k, v := range e {
+		result = append(result, k+"="+v)
+	}
+	return result
+}
+
 // Context carries along some data through the pipes
 type Context struct {
 	ctx.Context
 	Config       config.Project
-	Env          map[string]string
+	Env          Env
 	Token        string
 	Git          GitInfo
 	Artifacts    artifact.Artifacts
@@ -69,7 +82,7 @@ func Wrap(ctx ctx.Context, config config.Project) *Context {
 	return &Context{
 		Context:     ctx,
 		Config:      config,
-		Env:         splitEnv(os.Environ()),
+		Env:         splitEnv(append(os.Environ(), config.Env...)),
 		Parallelism: 4,
 		Artifacts:   artifact.New(),
 	}

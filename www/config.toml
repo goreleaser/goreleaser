@@ -8,4 +8,5 @@ pygmentsCodeFences = true
 pygmentsStyle = "dracula"
 
 [params]
-logo = "https://avatars2.githubusercontent.com/u/24697112?v=3&s=140"
+logo = "https://github.com/goreleaser.png"
+ghdocsrepo = "https://github.com/goreleaser/goreleaser/edit/master/www"

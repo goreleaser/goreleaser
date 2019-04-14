@@ -4,11 +4,11 @@ package checksums
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/apex/log"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -26,6 +26,9 @@ func (Pipe) String() string {
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Checksum.NameTemplate == "" {
 		ctx.Config.Checksum.NameTemplate = "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+	}
+	if ctx.Config.Checksum.Algorithm == "" {
+		ctx.Config.Checksum.Algorithm = "sha256"
 	}
 	return nil
 }
@@ -56,7 +59,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	).List() {
 		artifact := artifact
 		g.Go(func() error {
-			return checksums(file, artifact)
+			return checksums(ctx.Config.Checksum.Algorithm, file, artifact)
 		})
 	}
 	ctx.Artifacts.Add(artifact.Artifact{
@@ -67,12 +70,14 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	return g.Wait()
 }
 
-func checksums(file *os.File, artifact artifact.Artifact) error {
+func checksums(algorithm string, w io.Writer, artifact artifact.Artifact) error {
 	log.WithField("file", artifact.Name).Info("checksumming")
-	sha, err := artifact.Checksum()
+	sha, err := artifact.Checksum(algorithm)
 	if err != nil {
 		return err
 	}
-	_, err = file.WriteString(fmt.Sprintf("%v  %v\n", sha, artifact.Name))
+	// TODO: could change the signature to io.StringWriter, but will break
+	// compatibility with go versions bellow 1.12
+	_, err = io.WriteString(w, fmt.Sprintf("%v  %v\n", sha, artifact.Name))
 	return err
 }

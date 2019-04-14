@@ -101,7 +101,7 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	for k, v := range overrided.Files {
 		files[k] = v
 	}
-	var log = log.WithField("package", name+"."+format)
+	var log = log.WithField("package", name+"."+format).WithField("arch", arch)
 	for _, binary := range binaries {
 		src := binary.Path
 		dst := filepath.Join(ctx.Config.NFPM.Bindir, binary.Name)

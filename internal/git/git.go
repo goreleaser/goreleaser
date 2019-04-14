@@ -18,6 +18,10 @@ func IsRepo() bool {
 // Run runs a git command and returns its output or errors
 func Run(args ...string) (string, error) {
 	// TODO: use exex.CommandContext here and refactor.
+	var extraArgs = []string{
+		"-c", "log.showSignature=false",
+	}
+	args = append(extraArgs, args...)
 	/* #nosec */
 	var cmd = exec.Command("git", args...)
 	log.WithField("args", args).Debug("running git")

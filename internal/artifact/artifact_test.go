@@ -149,17 +149,40 @@ func TestChecksum(t *testing.T) {
 		Path: file,
 	}
 
-	sum, err := artifact.Checksum()
-	require.NoError(t, err)
-	require.Equal(t, "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269", sum)
+	for algo, result := range map[string]string{
+		"sha256": "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269",
+		"sha512": "f80eebd9aabb1a15fb869ed568d858a5c0dca3d5da07a410e1bd988763918d973e344814625f7c844695b2de36ffd27af290d0e34362c51dee5947d58d40527a",
+		"sha1":   "bfb7759a67daeb65410490b4d98bb9da7d1ea2ce",
+		"crc32":  "72d7748e",
+		"md5":    "80a751fde577028640c419000e33eba6",
+		"sha224": "e191edf06005712583518ced92cc2ac2fac8d6e4623b021a50736a91",
+		"sha384": "597493a6cf1289757524e54dfd6f68b332c7214a716a3358911ef5c09907adc8a654a18c1d721e183b0025f996f6e246",
+	} {
+		t.Run(algo, func(t *testing.T) {
+			sum, err := artifact.Checksum(algo)
+			require.NoError(t, err)
+			require.Equal(t, result, sum)
+		})
+	}
 }
 
 func TestChecksumFileDoesntExist(t *testing.T) {
 	var artifact = Artifact{
 		Path: "/tmp/adasdasdas/asdasd/asdas",
 	}
-	sum, err := artifact.Checksum()
+	sum, err := artifact.Checksum("sha1")
 	require.EqualError(t, err, `failed to checksum: open /tmp/adasdasdas/asdasd/asdas: no such file or directory`)
+	require.Empty(t, sum)
+}
+
+func TestInvalidAlgorithm(t *testing.T) {
+	f, err := ioutil.TempFile("", "")
+	require.NoError(t, err)
+	var artifact = Artifact{
+		Path: f.Name(),
+	}
+	sum, err := artifact.Checksum("sha1ssss")
+	require.EqualError(t, err, `invalid algorith: sha1ssss`)
 	require.Empty(t, sum)
 }
 

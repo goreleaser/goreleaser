@@ -100,17 +100,6 @@ func TestStringArray(t *testing.T) {
 	}
 }
 
-// func TestStringArrayFailure(t *testing.T) {
-// var source = `
-// strings:
-// key: val
-// `
-
-// var actual Unmarshaled
-// err := yaml.UnmarshalStrict([]byte(source), &actual)
-// // assert.EqualError(t, err, )
-// }
-
 func TestFlagArray(t *testing.T) {
 	for _, testCase := range flagArrayTests {
 		var actual Unmarshaled

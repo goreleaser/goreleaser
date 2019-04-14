@@ -29,6 +29,7 @@ func TestPipe(t *testing.T) {
 			ProjectName: binary,
 			Checksum: config.Checksum{
 				NameTemplate: "{{ .ProjectName }}_{{ .Env.FOO }}_checksums.txt",
+				Algorithm:    "sha256",
 			},
 		},
 	)
@@ -142,6 +143,7 @@ func TestDefault(t *testing.T) {
 		"{{ .ProjectName }}_{{ .Version }}_checksums.txt",
 		ctx.Config.Checksum.NameTemplate,
 	)
+	assert.Equal(t, "sha256", ctx.Config.Checksum.Algorithm)
 }
 
 func TestDefaultSet(t *testing.T) {
