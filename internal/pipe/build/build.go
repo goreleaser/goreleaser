@@ -97,8 +97,13 @@ func runHook(ctx *context.Context, env []string, hook string) error {
 	if hook == "" {
 		return nil
 	}
-	log.WithField("hook", hook).Info("running hook")
-	cmd := strings.Fields(hook)
+	sh, err := tmpl.New(ctx).WithEnvS(env).Apply(hook)
+	if err != nil {
+		return err
+	}
+	log.WithField("hook", sh).Info("running hook")
+	cmd := strings.Fields(sh)
+	env = append(env, ctx.Env.Strings()...)
 	return run(ctx, cmd, env)
 }
 

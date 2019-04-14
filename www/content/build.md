@@ -92,6 +92,7 @@ builds:
 
     # Hooks can be used to customize the final binary,
     # for example, to run generators.
+    # Those fields allow templates.
     # Default is both hooks empty.
     hooks:
       pre: rice embed-go

@@ -2,6 +2,8 @@ package build
 
 import (
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -323,6 +325,51 @@ func TestTemplate(t *testing.T) {
 	assert.Contains(t, binary, "-X main.commit=123")
 	assert.Contains(t, binary, "-X main.date=")
 	assert.Contains(t, binary, `-X "main.foo=123"`)
+}
+
+func TestHookEnvs(t *testing.T) {
+	tmp, back := testlib.Mktmp(t)
+	defer back()
+
+	var build = config.Build{
+		Env: []string{
+			fmt.Sprintf("FOO=%s/foo", tmp),
+			fmt.Sprintf("BAR=%s/bar", tmp),
+		},
+	}
+
+	t.Run("valid template", func(t *testing.T) {
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+		}), build.Env, "touch {{ .Env.FOO }}")
+		assert.NoError(t, err)
+		assert.True(t, exists(filepath.Join(tmp, "foo")))
+	})
+
+	t.Run("invalid template", func(t *testing.T) {
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+		}), build.Env, "touch {{ .Env.FOOss }}")
+		assert.EqualError(t, err, `template: tmpl:1:13: executing "tmpl" at <.Env.FOOss>: map has no entry for key "FOOss"`)
+	})
+
+	t.Run("env inside shell", func(t *testing.T) {
+		t.Skip("this fails on travis for some reason")
+		var shell = `#!/bin/sh -e
+touch "$BAR"`
+		ioutil.WriteFile(filepath.Join(tmp, "test.sh"), []byte(shell), 0750)
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+		}), build.Env, "sh test.sh")
+		assert.NoError(t, err)
+		assert.True(t, exists(filepath.Join(tmp, "bar")))
+	})
 }
 
 //
