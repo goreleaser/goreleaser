@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 )
 
 var fakeArtifact = artifact.Artifact{
@@ -303,6 +304,50 @@ func TestTemplate(t *testing.T) {
 	assert.Contains(t, binary, "-X main.commit=123")
 	assert.Contains(t, binary, "-X main.date=")
 	assert.Contains(t, binary, `-X "main.foo=123"`)
+}
+
+func TestHookEnvs(t *testing.T) {
+	tmp, back := testlib.Mktmp(t)
+	defer back()
+
+	var build = config.Build{
+		Env: []string{
+			"FOO=foo",
+			"BAR=bar",
+		},
+	}
+
+	t.Run("valid template", func(t *testing.T) {
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+		}), build.Env, "touch {{ .Env.FOO }}")
+		assert.NoError(t, err)
+		assert.True(t, exists(filepath.Join(tmp, "foo")))
+	})
+
+	t.Run("invalid template", func(t *testing.T) {
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+		}), build.Env, "touch {{ .Env.FOOss }}")
+		assert.EqualError(t, err, `template: tmpl:1:13: executing "tmpl" at <.Env.FOOss>: map has no entry for key "FOOss"`)
+	})
+
+	t.Run("env inside shell", func(t *testing.T) {
+		var shell = `#!/bin/sh
+		touch "$BAR"`
+		ioutil.WriteFile(filepath.Join(tmp, "test.sh"), []byte(shell), 0750)
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+		}), build.Env, "sh test.sh")
+		assert.NoError(t, err)
+		assert.True(t, exists(filepath.Join(tmp, "bar")))
+	})
 }
 
 //
