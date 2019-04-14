@@ -35,7 +35,7 @@ to this:
 
 ### archive
 
-> since 2019-01-27
+> since 2019-04-20
 
 We now allow multiple archives, so the `archive` statement will be removed.
 
