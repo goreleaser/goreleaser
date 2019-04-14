@@ -174,6 +174,7 @@ func create(ctx *context.Context, archive config.Archive, binaries []artifact.Ar
 		Goarm:  binaries[0].Goarm,
 		Extra: map[string]interface{}{
 			"Builds": binaries,
+			"ID":     archive.ID,
 		},
 	})
 	return nil
@@ -208,6 +209,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []artifact.Arti
 			Goarm:  binary.Goarm,
 			Extra: map[string]interface{}{
 				"Builds": []artifact.Artifact{binary},
+				"ID":     archive.ID,
 			},
 		})
 	}

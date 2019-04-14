@@ -46,6 +46,7 @@ func TestRunPipe(t *testing.T) {
 					ProjectName: "foobar",
 					Archives: []config.Archive{
 						{
+							ID:           "defaultarch",
 							Builds:       []string{"default"},
 							NameTemplate: defaultNameTemplate,
 							Files: []string{
@@ -92,6 +93,9 @@ func TestRunPipe(t *testing.T) {
 			ctx.Config.Archives[0].Format = format
 			require.NoError(tt, Pipe{}.Run(ctx))
 			var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive))
+			for _, arch := range archives.List() {
+				require.Equal(t, "defaultarch", arch.Extra["ID"].(string), "all archives should have the archive ID set")
+			}
 			require.Len(tt, archives.List(), 2)
 			darwin := archives.Filter(artifact.ByGoos("darwin")).List()[0]
 			windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
