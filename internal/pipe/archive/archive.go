@@ -99,14 +99,14 @@ func (Pipe) Run(ctx *context.Context) error {
 		var filtered = ctx.Artifacts.Filter(
 			artifact.And(
 				artifact.ByType(artifact.Binary),
-				artifact.ByIDs(archive.Builds),
+				artifact.ByIDs(archive.Builds...),
 			),
 		)
 		for group, artifacts := range filtered.GroupByPlatform() {
 			log.Debugf("group %s has %d binaries", group, len(artifacts))
 			artifacts := artifacts
 			g.Go(func() error {
-				if packageFormat(ctx, archive, artifacts[0].Goos) == "binary" {
+				if packageFormat(archive, artifacts[0].Goos) == "binary" {
 					return skip(ctx, archive, artifacts)
 				}
 				return create(ctx, archive, artifacts)
@@ -117,7 +117,7 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func create(ctx *context.Context, archive config.Archive, binaries []artifact.Artifact) error {
-	var format = packageFormat(ctx, archive, binaries[0].Goos)
+	var format = packageFormat(archive, binaries[0].Goos)
 	folder, err := tmpl.New(ctx).
 		WithArtifact(binaries[0], archive.Replacements).
 		Apply(archive.NameTemplate)
@@ -151,7 +151,7 @@ func create(ctx *context.Context, archive config.Archive, binaries []artifact.Ar
 	var a = NewEnhancedArchive(archivelib.New(archiveFile), wrap)
 	defer a.Close() // nolint: errcheck
 
-	files, err := findFiles(ctx, archive)
+	files, err := findFiles(archive)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %s", err.Error())
 	}
@@ -214,7 +214,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []artifact.Arti
 	return nil
 }
 
-func findFiles(ctx *context.Context, archive config.Archive) (result []string, err error) {
+func findFiles(archive config.Archive) (result []string, err error) {
 	for _, glob := range archive.Files {
 		files, err := zglob.Glob(glob)
 		if err != nil {
@@ -229,7 +229,7 @@ func findFiles(ctx *context.Context, archive config.Archive) (result []string, e
 	return
 }
 
-func packageFormat(ctx *context.Context, archive config.Archive, platform string) string {
+func packageFormat(archive config.Archive, platform string) string {
 	for _, override := range archive.FormatOverrides {
 		if strings.HasPrefix(platform, override.Goos) {
 			return override.Format

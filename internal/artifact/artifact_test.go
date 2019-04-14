@@ -195,3 +195,40 @@ func TestExtraOr(t *testing.T) {
 	require.Equal(t, "foo", a.ExtraOr("Foo", "bar"))
 	require.Equal(t, "bar", a.ExtraOr("Foobar", "bar"))
 }
+
+func TestByIDs(t *testing.T) {
+	var data = []Artifact{
+		{
+			Name: "foo",
+			Extra: map[string]interface{}{
+				"ID": "foo",
+			},
+		},
+		{
+			Name: "bar",
+			Extra: map[string]interface{}{
+				"ID": "bar",
+			},
+		},
+		{
+			Name: "foobar",
+			Extra: map[string]interface{}{
+				"ID": "foo",
+			},
+		},
+		{
+			Name: "check",
+			Extra: map[string]interface{}{
+				"ID": "check",
+			},
+		},
+	}
+	var artifacts = New()
+	for _, a := range data {
+		artifacts.Add(a)
+	}
+
+	require.Len(t, artifacts.Filter(ByIDs("check")).items, 1)
+	require.Len(t, artifacts.Filter(ByIDs("foo")).items, 2)
+	require.Len(t, artifacts.Filter(ByIDs("foo", "bar")).items, 3)
+}

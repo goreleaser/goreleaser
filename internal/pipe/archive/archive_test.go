@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/alecthomas/assert"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/archive"
@@ -487,8 +486,8 @@ func TestFormatFor(t *testing.T) {
 			},
 		},
 	}
-	require.Equal(t, "zip", packageFormat(ctx, ctx.Config.Archives[0], "windows"))
-	require.Equal(t, "tar.gz", packageFormat(ctx, ctx.Config.Archives[0], "linux"))
+	require.Equal(t, "zip", packageFormat(ctx.Config.Archives[0], "windows"))
+	require.Equal(t, "tar.gz", packageFormat(ctx.Config.Archives[0], "linux"))
 }
 
 func TestBinaryOverride(t *testing.T) {
@@ -673,5 +672,5 @@ func TestSeveralArchivesWithTheSameID(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualError(t, Pipe{}.Default(ctx), "found 2 archives with the ID 'a', please fix your config")
+	require.EqualError(t, Pipe{}.Default(ctx), "found 2 archives with the ID 'a', please fix your config")
 }
