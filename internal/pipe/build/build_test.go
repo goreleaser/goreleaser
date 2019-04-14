@@ -2,6 +2,8 @@ package build
 
 import (
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -13,7 +15,6 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 )
 
 var fakeArtifact = artifact.Artifact{
@@ -312,8 +313,8 @@ func TestHookEnvs(t *testing.T) {
 
 	var build = config.Build{
 		Env: []string{
-			"FOO=foo",
-			"BAR=bar",
+			fmt.Sprintf("FOO=%s/foo", tmp),
+			fmt.Sprintf("BAR=%s/bar", tmp),
 		},
 	}
 
