@@ -35,7 +35,7 @@ to this:
 
 ### archive
 
-> since 2019-04-20
+> since 2019-04-16
 
 We now allow multiple archives, so the `archive` statement will be removed.
 
@@ -50,7 +50,7 @@ to this:
 
 ```yaml
 archives:
-  -
+  - id: foo
     format: zip
 ```
 
