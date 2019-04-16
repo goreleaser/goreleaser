@@ -235,7 +235,7 @@ func TestSeveralBuildsWithTheSameID(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualError(t, Pipe{}.Default(ctx), "there are more than 2 builds with the ID 'a', please fix your config")
+	assert.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'a', please fix your config")
 }
 
 func TestDefaultPartialBuilds(t *testing.T) {

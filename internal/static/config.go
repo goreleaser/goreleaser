@@ -13,8 +13,8 @@ before:
 builds:
 - env:
   - CGO_ENABLED=0
-archive:
-  replacements:
+archives:
+- replacements:
     darwin: Darwin
     linux: Linux
     windows: Windows

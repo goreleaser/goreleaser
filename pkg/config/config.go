@@ -148,13 +148,14 @@ type FormatOverride struct {
 
 // Archive config used for the archive
 type Archive struct {
-	NameTemplate string            `yaml:"name_template,omitempty"`
-	Replacements map[string]string `yaml:",omitempty"`
-
-	Format          string           `yaml:",omitempty"`
-	FormatOverrides []FormatOverride `yaml:"format_overrides,omitempty"`
-	WrapInDirectory string           `yaml:"wrap_in_directory,omitempty"`
-	Files           []string         `yaml:",omitempty"`
+	ID              string            `yaml:",omitempty"`
+	Builds          []string          `yaml:",omitempty"`
+	NameTemplate    string            `yaml:"name_template,omitempty"`
+	Replacements    map[string]string `yaml:",omitempty"`
+	Format          string            `yaml:",omitempty"`
+	FormatOverrides []FormatOverride  `yaml:"format_overrides,omitempty"`
+	WrapInDirectory string            `yaml:"wrap_in_directory,omitempty"`
+	Files           []string          `yaml:",omitempty"`
 }
 
 // Release config used for the GitHub release
@@ -312,7 +313,8 @@ type Project struct {
 	Brew          Homebrew  `yaml:",omitempty"`
 	Scoop         Scoop     `yaml:",omitempty"`
 	Builds        []Build   `yaml:",omitempty"`
-	Archive       Archive   `yaml:",omitempty"`
+	Archive       Archive   `yaml:",omitempty"` // TODO: remove this
+	Archives      []Archive `yaml:",omitempty"`
 	NFPM          NFPM      `yaml:",omitempty"`
 	Snapcraft     Snapcraft `yaml:",omitempty"`
 	Snapshot      Snapshot  `yaml:",omitempty"`

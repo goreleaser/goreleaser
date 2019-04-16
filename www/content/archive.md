@@ -6,63 +6,72 @@ weight: 40
 ---
 
 The binaries built will be archived together with the `README` and `LICENSE` files into a
-`tar.gz` file. In the `archive` section you can customize the archive name,
+`tar.gz` file. In the `archives` section you can customize the archive name,
 additional files, and format.
 
-Here is a commented `archive` section with all fields specified:
+Here is a commented `archives` section with all fields specified:
 
 ```yml
 # .goreleaser.yml
-archive:
-  # Archive name template.
-  # Defaults:
-  # - if format is `tar.gz`, `gz` or `zip`:
-  #   - `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
-  # - if format is `binary`:
-  #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
-  name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+archives:
+  -
+    # ID of this archive.
+    # Defaults to `default`.
+    id: my-archive
 
-  # Replacements for GOOS and GOARCH in the archive name.
-  # Keys should be valid GOOSs or GOARCHs.
-  # Values are the respective replacements.
-  # Default is empty.
-  replacements:
-    amd64: 64-bit
-    386: 32-bit
-    darwin: macOS
-    linux: Tux
+    # Builds reference which build instances should be archived in this archive.
+    builds:
+    - default
 
-  # Set to true, if you want all files in the archive to be in a single directory.
-  # If set to true and you extract the archive 'goreleaser_Linux_arm64.tar.gz',
-  # you get a folder 'goreleaser_Linux_arm64'.
-  # If set to false, all files are extracted separately.
-  # You can also set it to a custom folder name (templating is supported).
-  # Default is false.
-  wrap_in_directory: true
+    # Archive name template.
+    # Defaults:
+    # - if format is `tar.gz`, `gz` or `zip`:
+    #   - `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
+    # - if format is `binary`:
+    #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
-  # Archive format. Valid options are `tar.gz`, `gz`, `zip` and `binary`.
-  # If format is `binary`, no archives are created and the binaries are instead
-  # uploaded directly.
-  # Default is `tar.gz`.
-  format: zip
+    # Replacements for GOOS and GOARCH in the archive name.
+    # Keys should be valid GOOSs or GOARCHs.
+    # Values are the respective replacements.
+    # Default is empty.
+    replacements:
+      amd64: 64-bit
+      386: 32-bit
+      darwin: macOS
+      linux: Tux
 
-  # Can be used to change the archive formats for specific GOOSs.
-  # Most common use case is to archive as zip on Windows.
-  # Default is empty.
-  format_overrides:
-    - goos: windows
-      format: zip
+    # Set to true, if you want all files in the archive to be in a single directory.
+    # If set to true and you extract the archive 'goreleaser_Linux_arm64.tar.gz',
+    # you get a folder 'goreleaser_Linux_arm64'.
+    # If set to false, all files are extracted separately.
+    # You can also set it to a custom folder name (templating is supported).
+    # Default is false.
+    wrap_in_directory: true
 
-  # Additional files/globs you want to add to the archive.
-  # Defaults are any files matching `LICENCE*`, `LICENSE*`,
-  # `README*` and `CHANGELOG*` (case-insensitive).
-  files:
-    - LICENSE.txt
-    - README.md
-    - CHANGELOG.md
-    - docs/*
-    - design/*.png
-    - templates/**/*
+    # Archive format. Valid options are `tar.gz`, `gz`, `zip` and `binary`.
+    # If format is `binary`, no archives are created and the binaries are instead
+    # uploaded directly.
+    # Default is `tar.gz`.
+    format: zip
+
+    # Can be used to change the archive formats for specific GOOSs.
+    # Most common use case is to archive as zip on Windows.
+    # Default is empty.
+    format_overrides:
+      - goos: windows
+        format: zip
+
+    # Additional files/globs you want to add to the archive.
+    # Defaults are any files matching `LICENCE*`, `LICENSE*`,
+    # `README*` and `CHANGELOG*` (case-insensitive).
+    files:
+      - LICENSE.txt
+      - README.md
+      - CHANGELOG.md
+      - docs/*
+      - design/*.png
+      - templates/**/*
 ```
 
 > Learn more about the [name template engine](/templates).
@@ -80,8 +89,8 @@ A working hack is to use something like this:
 
 ```yaml
 # goreleaser.yml
-archive:
-  files:
+archives:
+- files:
   - none*
 ```
 

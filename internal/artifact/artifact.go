@@ -193,6 +193,18 @@ func ByType(t Type) Filter {
 	}
 }
 
+// ByIDs filter artifacts by an `ID` extra field.
+func ByIDs(ids ...string) Filter {
+	var filters = make([]Filter, 0, len(ids))
+	for _, id := range ids {
+		id := id
+		filters = append(filters, func(a Artifact) bool {
+			return a.ExtraOr("ID", "") == id
+		})
+	}
+	return Or(filters...)
+}
+
 // Or performs an OR between all given filters
 func Or(filters ...Filter) Filter {
 	return func(a Artifact) bool {
