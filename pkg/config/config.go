@@ -227,6 +227,7 @@ type Snapcraft struct {
 	Name        string                          `yaml:",omitempty"`
 	Summary     string                          `yaml:",omitempty"`
 	Description string                          `yaml:",omitempty"`
+	License     string                          `yaml:",omitempty"`
 	Grade       string                          `yaml:",omitempty"`
 	Confinement string                          `yaml:",omitempty"`
 	Apps        map[string]SnapcraftAppMetadata `yaml:",omitempty"`

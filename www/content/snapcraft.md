@@ -69,6 +69,10 @@ snapcraft:
   # are explained later. More info about confinement here:
   # https://snapcraft.io/docs/reference/confinement
   confinement: strict
+  
+  # Your app's license, based on SPDX license expressions: https://spdx.org/licenses
+  # Default is empty.
+  license: MIT
 
   # Each binary built by GoReleaser is an app inside the snap. In this section
   # you can declare extra details for those binaries. It is optional.
