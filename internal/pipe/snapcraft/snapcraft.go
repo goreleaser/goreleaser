@@ -35,6 +35,7 @@ type Metadata struct {
 	Version       string
 	Summary       string
 	Description   string
+	Base          string `yaml:",omitempty"`
 	License       string `yaml:",omitempty"`
 	Grade         string `yaml:",omitempty"`
 	Confinement   string `yaml:",omitempty"`
@@ -145,6 +146,10 @@ func create(ctx *context.Context, arch string, binaries []artifact.Artifact) err
 		Confinement:   ctx.Config.Snapcraft.Confinement,
 		Architectures: []string{arch},
 		Apps:          map[string]AppMetadata{},
+	}
+
+	if ctx.Config.Snapcraft.Base != "" {
+		metadata.Base = ctx.Config.Snapcraft.Base
 	}
 
 	if ctx.Config.Snapcraft.License != "" {

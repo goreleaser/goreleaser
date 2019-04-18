@@ -96,6 +96,7 @@ func TestRunPipeWithName(t *testing.T) {
 		Snapcraft: config.Snapcraft{
 			NameTemplate: "foo_{{.Arch}}",
 			Name:         "testsnapname",
+			Base:         "core18",
 			License:      "MIT",
 			Summary:      "test summary",
 			Description:  "test description",
@@ -111,6 +112,7 @@ func TestRunPipeWithName(t *testing.T) {
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	assert.NoError(t, err)
 	assert.Equal(t, "testsnapname", metadata.Name)
+	assert.Equal(t, "core18", metadata.Base)
 	assert.Equal(t, "MIT", metadata.License)
 	assert.Equal(t, "mybin", metadata.Apps["mybin"].Command)
 	assert.Equal(t, "mybin", metadata.Apps["testsnapname"].Command)
@@ -142,6 +144,7 @@ func TestRunPipeWithBinaryInDir(t *testing.T) {
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	assert.NoError(t, err)
 	assert.Equal(t, "testsnapname", metadata.Name)
+	assert.Equal(t, "", metadata.Base)
 	assert.Equal(t, "", metadata.License)
 	assert.Equal(t, "mybin", metadata.Apps["mybin"].Command)
 	assert.Equal(t, "mybin", metadata.Apps["testsnapname"].Command)
