@@ -73,6 +73,14 @@ snapcraft:
   # Your app's license, based on SPDX license expressions: https://spdx.org/licenses
   # Default is empty.
   license: MIT
+  
+  # A snap of type base to be used as the execution environment for this snap.
+  # Valid values are:
+  # * bare - Empty base snap;
+  # * core - Ubuntu Core 16;
+  # * core18 - Ubuntu Core 18.
+  # Default is empty.
+  base: core18
 
   # Each binary built by GoReleaser is an app inside the snap. In this section
   # you can declare extra details for those binaries. It is optional.
