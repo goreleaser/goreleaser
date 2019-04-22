@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/apex/log"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v25/github"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
