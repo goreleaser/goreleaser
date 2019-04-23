@@ -50,13 +50,14 @@ static:
 	@hugo --enableGitInfo --source www
 .PHONY: static
 
-favicon:
-	wget -O www/static/avatar.png https://avatars2.githubusercontent.com/u/24697112
+imgs:
+	wget -O www/static/card.png "https://og.caarlos0.dev/**GoReleaser**%20%7C%20Deliver%20Go%20binaries%20as%20fast%20and%20easily%20as%20possible.png?theme=light&md=1&fontSize=80px&images=https://github.com/goreleaser.png"
+	wget -O www/static/avatar.png https://github.com/goreleaser.png
 	convert www/static/avatar.png -define icon:auto-resize=64,48,32,16 www/static/favicon.ico
 	convert www/static/avatar.png -resize x120 www/static/apple-touch-icon.png
-.PHONY: favicon
+.PHONY: imgs
 
-serve: favicon
+serve: imgs
 	@hugo server --enableGitInfo --watch --source www
 .PHONY: serve
 
@@ -70,9 +71,5 @@ todo:
 		--color \
 		-nRo -E ' TODO:.*|SkipNow' .
 .PHONY: todo
-
-card:
-    wget -O card.png -c "https://og.caarlos0.dev/**GoReleaser**%20%7C%20Deliver%20Go%20binaries%20as%20fast%20and%20easily%20as%20possible.png?theme=light&md=1&fontSize=80px&images=https://github.com/goreleaser.png"
-.PHONY: card
 
 .DEFAULT_GOAL := build

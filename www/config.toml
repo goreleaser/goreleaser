@@ -8,5 +8,8 @@ pygmentsCodeFences = true
 pygmentsStyle = "dracula"
 
 [params]
+name = "GoReleaser"
+description = "Deliver Go binaries as fast and easily as possible"
+twitter = "goreleaser"
 logo = "https://github.com/goreleaser.png"
 ghdocsrepo = "https://github.com/goreleaser/goreleaser/edit/master/www"
