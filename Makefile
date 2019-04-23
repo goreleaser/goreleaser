@@ -71,5 +71,8 @@ todo:
 		-nRo -E ' TODO:.*|SkipNow' .
 .PHONY: todo
 
+card:
+    wget -O card.png -c "https://og.caarlos0.dev/**GoReleaser**%20%7C%20Deliver%20Go%20binaries%20as%20fast%20and%20easily%20as%20possible.png?theme=light&md=1&fontSize=80px&images=https://github.com/goreleaser.png"
+.PHONY: card
 
 .DEFAULT_GOAL := build
