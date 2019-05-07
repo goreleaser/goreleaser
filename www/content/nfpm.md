@@ -17,6 +17,12 @@ nfpm:
   # Default: `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
   name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
+  # Build IDs for the builds you want to create NFPM packages for.
+  # Defaults to all builds.
+  builds:
+  - foo
+  - bar
+
   # Replacements for GOOS and GOARCH in the package name.
   # Keys should be valid GOOSs or GOARCHs.
   # Values are the respective replacements.

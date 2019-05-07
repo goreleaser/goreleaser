@@ -172,6 +172,7 @@ type NFPM struct {
 	NFPMOverridables `yaml:",inline"`
 	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty"`
 
+	Builds      []string `yaml:",omitempty"`
 	Formats     []string `yaml:",omitempty"`
 	Vendor      string   `yaml:",omitempty"`
 	Homepage    string   `yaml:",omitempty"`
@@ -317,7 +318,8 @@ type Project struct {
 	Builds        []Build   `yaml:",omitempty"`
 	Archive       Archive   `yaml:",omitempty"` // TODO: remove this
 	Archives      []Archive `yaml:",omitempty"`
-	NFPM          NFPM      `yaml:",omitempty"`
+	NFPM          NFPM      `yaml:",omitempty"` // TODO: remove this
+	NFPMs         []NFPM    `yaml:"nfpms,omitempty"`
 	Snapcraft     Snapcraft `yaml:",omitempty"`
 	Snapshot      Snapshot  `yaml:",omitempty"`
 	Checksum      Checksum  `yaml:",omitempty"`
