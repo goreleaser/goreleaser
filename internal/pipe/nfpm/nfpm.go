@@ -2,11 +2,14 @@
 package nfpm
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -31,52 +34,74 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	var fpm = &ctx.Config.NFPM
-	if fpm.Bindir == "" {
-		fpm.Bindir = "/usr/local/bin"
+	if len(ctx.Config.NFPMs) == 0 {
+		ctx.Config.NFPMs = append(ctx.Config.NFPMs, ctx.Config.NFPM)
+		if !reflect.DeepEqual(ctx.Config.NFPM, config.NFPM{}) {
+			deprecate.Notice("nfpm")
+		}
 	}
-	if fpm.NameTemplate == "" {
-		fpm.NameTemplate = defaultNameTemplate
-	}
-	if fpm.Files == nil {
-		fpm.Files = map[string]string{}
+	for i := range ctx.Config.NFPMs {
+		var fpm = &ctx.Config.NFPMs[i]
+		if fpm.Bindir == "" {
+			fpm.Bindir = "/usr/local/bin"
+		}
+		if fpm.NameTemplate == "" {
+			fpm.NameTemplate = defaultNameTemplate
+		}
+		if fpm.Files == nil {
+			fpm.Files = map[string]string{}
+		}
+		if len(fpm.Builds) == 0 {
+			for _, b := range ctx.Config.Builds {
+				fpm.Builds = append(fpm.Builds, b.ID)
+			}
+		}
 	}
 	return nil
 }
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if len(ctx.Config.NFPM.Formats) == 0 {
-		return pipe.Skip("no output formats configured")
+	for _, nfpm := range ctx.Config.NFPMs {
+		if len(nfpm.Formats) == 0 {
+			return pipe.Skip("no output formats configured")
+		}
+		if err := doRun(ctx, nfpm); err != nil {
+			return err
+		}
 	}
-	return doRun(ctx)
+	return nil
 }
 
-func doRun(ctx *context.Context) error {
+func doRun(ctx *context.Context, fpm config.NFPM) error {
 	var linuxBinaries = ctx.Artifacts.Filter(artifact.And(
 		artifact.ByType(artifact.Binary),
 		artifact.ByGoos("linux"),
+		artifact.ByIDs(fpm.Builds...),
 	)).GroupByPlatform()
+	if len(linuxBinaries) == 0 {
+		return fmt.Errorf("no linux binaries found for builds %v", fpm.Builds)
+	}
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, format := range ctx.Config.NFPM.Formats {
+	for _, format := range fpm.Formats {
 		for platform, artifacts := range linuxBinaries {
 			format := format
 			arch := linux.Arch(platform)
 			artifacts := artifacts
 			g.Go(func() error {
-				return create(ctx, format, arch, artifacts)
+				return create(ctx, fpm, format, arch, artifacts)
 			})
 		}
 	}
 	return g.Wait()
 }
 
-func mergeOverrides(ctx *context.Context, format string) (*config.NFPMOverridables, error) {
+func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, error) {
 	var overrided config.NFPMOverridables
-	if err := mergo.Merge(&overrided, ctx.Config.NFPM.NFPMOverridables); err != nil {
+	if err := mergo.Merge(&overrided, fpm.NFPMOverridables); err != nil {
 		return nil, err
 	}
-	perFormat, ok := ctx.Config.NFPM.Overrides[format]
+	perFormat, ok := fpm.Overrides[format]
 	if ok {
 		err := mergo.Merge(&overrided, perFormat, mergo.WithOverride)
 		if err != nil {
@@ -86,8 +111,8 @@ func mergeOverrides(ctx *context.Context, format string) (*config.NFPMOverridabl
 	return &overrided, nil
 }
 
-func create(ctx *context.Context, format, arch string, binaries []artifact.Artifact) error {
-	overrided, err := mergeOverrides(ctx, format)
+func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries []artifact.Artifact) error {
+	overrided, err := mergeOverrides(fpm, format)
 	if err != nil {
 		return err
 	}
@@ -104,7 +129,7 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 	var log = log.WithField("package", name+"."+format).WithField("arch", arch)
 	for _, binary := range binaries {
 		src := binary.Path
-		dst := filepath.Join(ctx.Config.NFPM.Bindir, binary.Name)
+		dst := filepath.Join(fpm.Bindir, binary.Name)
 		log.WithField("src", src).WithField("dst", dst).Debug("adding binary to package")
 		files[src] = dst
 	}
@@ -117,12 +142,12 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		Version:     ctx.Git.CurrentTag,
 		Section:     "",
 		Priority:    "",
-		Maintainer:  ctx.Config.NFPM.Maintainer,
-		Description: ctx.Config.NFPM.Description,
-		Vendor:      ctx.Config.NFPM.Vendor,
-		Homepage:    ctx.Config.NFPM.Homepage,
-		License:     ctx.Config.NFPM.License,
-		Bindir:      ctx.Config.NFPM.Bindir,
+		Maintainer:  fpm.Maintainer,
+		Description: fpm.Description,
+		Vendor:      fpm.Vendor,
+		Homepage:    fpm.Homepage,
+		License:     fpm.License,
+		Bindir:      fpm.Bindir,
 		Overridables: nfpm.Overridables{
 			Conflicts:    overrided.Conflicts,
 			Depends:      overrided.Dependencies,
@@ -169,6 +194,9 @@ func create(ctx *context.Context, format, arch string, binaries []artifact.Artif
 		Goos:   binaries[0].Goos,
 		Goarch: binaries[0].Goarch,
 		Goarm:  binaries[0].Goarm,
+		Extra: map[string]interface{}{
+			"Builds": binaries,
+		},
 	})
 	return nil
 }
