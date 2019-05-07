@@ -10,6 +10,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
+	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -40,8 +41,12 @@ func (Pipe) Default(ctx *context.Context) error {
 			deprecate.Notice("nfpm")
 		}
 	}
+	var ids = ids.New()
 	for i := range ctx.Config.NFPMs {
 		var fpm = &ctx.Config.NFPMs[i]
+		if fpm.ID == "" {
+			fpm.ID = "default"
+		}
 		if fpm.Bindir == "" {
 			fpm.Bindir = "/usr/local/bin"
 		}
@@ -56,8 +61,9 @@ func (Pipe) Default(ctx *context.Context) error {
 				fpm.Builds = append(fpm.Builds, b.ID)
 			}
 		}
+		ids.Inc(fpm.ID)
 	}
-	return nil
+	return ids.Validate()
 }
 
 // Run the pipe

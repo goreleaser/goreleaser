@@ -15,6 +15,9 @@ Available options:
 nfpms:
   # note that this is an array of nfpm configs
   -
+    # ID of the nfpm config, must be unique.
+    # Defaults to "default".
+    id: foo
     # You can change the name of the package.
     # Default: `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"

@@ -342,3 +342,19 @@ func TestOverrides(t *testing.T) {
 	require.Equal(t, "bar", ctx.Config.NFPMs[0].Overrides["deb"].NameTemplate)
 	require.Equal(t, "bar", merged.NameTemplate)
 }
+
+func TestSeveralNFPMsWithTheSameID(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			NFPMs: []config.NFPM{
+				{
+					ID: "a",
+				},
+				{
+					ID: "a",
+				},
+			},
+		},
+	}
+	require.EqualError(t, Pipe{}.Default(ctx), "found 2 items with the ID 'a', please fix your config")
+}
