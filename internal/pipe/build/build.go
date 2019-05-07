@@ -3,13 +3,13 @@
 package build
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	builders "github.com/goreleaser/goreleaser/pkg/build"
@@ -41,22 +41,17 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	var ids = map[string]int{}
+	var ids = ids.New()
 	for i, build := range ctx.Config.Builds {
 		ctx.Config.Builds[i] = buildWithDefaults(ctx, build)
-		ids[ctx.Config.Builds[i].ID]++
+		ids.Inc(ctx.Config.Builds[i].ID)
 	}
 	if len(ctx.Config.Builds) == 0 {
 		ctx.Config.Builds = []config.Build{
 			buildWithDefaults(ctx, ctx.Config.SingleBuild),
 		}
 	}
-	for id, cont := range ids {
-		if cont > 1 {
-			return fmt.Errorf("found %d builds with the ID '%s', please fix your config", cont, id)
-		}
-	}
-	return nil
+	return ids.Validate()
 }
 
 func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
