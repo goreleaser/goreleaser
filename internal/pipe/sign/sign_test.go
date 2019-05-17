@@ -95,6 +95,29 @@ func TestSignArtifacts(t *testing.T) {
 			signaturePaths: []string{"checksum.sig"},
 			signatureNames: []string{"checksum.sig"},
 		},
+		{
+			desc: "sign all artifacts with env",
+			ctx: context.New(
+				config.Project{
+					Sign: config.Sign{
+						Artifacts: "all",
+						Args: []string{
+							"-u",
+							"${TEST_USER}",
+							"--output",
+							"${signature}",
+							"--detach-sign",
+							"${artifact}",
+						},
+					},
+					Env: []string{
+						fmt.Sprintf("TEST_USER=%s", user),
+					},
+				},
+			),
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "linux_amd64/artifact4.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "artifact4_1.0.0_linux_amd64.sig"},
+		},
 	}
 
 	for _, test := range tests {
