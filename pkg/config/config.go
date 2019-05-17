@@ -20,6 +20,14 @@ type GitHubURLs struct {
 	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
 }
 
+// GitLabURLs holds the URLs to be used when using gitlab enterprise
+type GitLabURLs struct {
+	API           string `yaml:"api,omitempty"`
+	Upload        string `yaml:"upload,omitempty"`   // TODO mavogel
+	Download      string `yaml:"download,omitempty"` // TODO mavogel
+	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
+}
+
 // Repo represents any kind of repo (github, gitlab, etc)
 type Repo struct {
 	Owner string `yaml:",omitempty"`
@@ -278,6 +286,7 @@ type Changelog struct {
 // values like the github token for example
 type EnvFiles struct {
 	GitHubToken string `yaml:"github_token,omitempty"`
+	GitlabToken string `yaml:"gitlab_token,omitempty"`
 }
 
 // Before config
@@ -336,6 +345,9 @@ type Project struct {
 
 	// should be set if using github enterprise
 	GitHubURLs GitHubURLs `yaml:"github_urls,omitempty"`
+
+	// should be set if using gitlab enterprise
+	GitLabURLs GitLabURLs `yaml:"github_urls,omitempty"`
 }
 
 // Load config file
