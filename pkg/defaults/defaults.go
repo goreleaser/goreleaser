@@ -7,6 +7,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
+	"github.com/goreleaser/goreleaser/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
@@ -48,6 +49,7 @@ var Defaulters = []Defaulter{
 	docker.Pipe{},
 	artifactory.Pipe{},
 	s3.Pipe{},
+	blob.Pipe{},
 	brew.Pipe{},
 	scoop.Pipe{},
 }
