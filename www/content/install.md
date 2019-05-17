@@ -80,4 +80,24 @@ and iterate from that.
 
 ## Compiling from source
 
-Please follow the relevant steps on our [contributing guide](/contributing).
+Here you have two options:
+
+1. If you want to contribute to the project, please follow the
+steps on our [contributing guide](/contributing).
+2. If just want to build from source for whatever reason, follow the steps
+bellow:
+
+```sh
+# clone it outside GOPATH
+git clone https://github.com/goreleaser/goreleaser
+cd goreleaser
+
+# get dependencies using go modules (needs go 1.11+)
+go get ./...
+
+# build
+go build -o goreleaser .
+
+# check it works
+./goreleaser --version
+```

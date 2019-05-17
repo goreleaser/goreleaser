@@ -180,6 +180,8 @@ type NFPM struct {
 	NFPMOverridables `yaml:",inline"`
 	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty"`
 
+	ID          string   `yaml:",omitempty"`
+	Builds      []string `yaml:",omitempty"`
 	Formats     []string `yaml:",omitempty"`
 	Vendor      string   `yaml:",omitempty"`
 	Homepage    string   `yaml:",omitempty"`
@@ -306,14 +308,15 @@ type S3 struct {
 
 // Put HTTP upload configuration
 type Put struct {
-	Name           string `yaml:",omitempty"`
-	Target         string `yaml:",omitempty"`
-	Username       string `yaml:",omitempty"`
-	Mode           string `yaml:",omitempty"`
-	ChecksumHeader string `yaml:"checksum_header,omitempty"`
-	TrustedCerts   string `yaml:"trusted_certificates,omitempty"`
-	Checksum       bool   `yaml:",omitempty"`
-	Signature      bool   `yaml:",omitempty"`
+	Name           string   `yaml:",omitempty"`
+	IDs            []string `yaml:"ids,omitempty"`
+	Target         string   `yaml:",omitempty"`
+	Username       string   `yaml:",omitempty"`
+	Mode           string   `yaml:",omitempty"`
+	ChecksumHeader string   `yaml:"checksum_header,omitempty"`
+	TrustedCerts   string   `yaml:"trusted_certificates,omitempty"`
+	Checksum       bool     `yaml:",omitempty"`
+	Signature      bool     `yaml:",omitempty"`
 }
 
 // Project includes all project configuration
@@ -326,7 +329,8 @@ type Project struct {
 	Builds        []Build   `yaml:",omitempty"`
 	Archive       Archive   `yaml:",omitempty"` // TODO: remove this
 	Archives      []Archive `yaml:",omitempty"`
-	NFPM          NFPM      `yaml:",omitempty"`
+	NFPM          NFPM      `yaml:",omitempty"` // TODO: remove this
+	NFPMs         []NFPM    `yaml:"nfpms,omitempty"`
 	Snapcraft     Snapcraft `yaml:",omitempty"`
 	Snapshot      Snapshot  `yaml:",omitempty"`
 	Checksum      Checksum  `yaml:",omitempty"`

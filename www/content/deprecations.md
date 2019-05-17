@@ -33,6 +33,29 @@ to this:
 
 -->
 
+### nfpm
+
+> since 2019-05-07
+
+We now allow multiple NFPM config, so the `nfpm` statement will be removed.
+
+Change this:
+
+```yaml
+nfpm:
+  formats:
+    - deb
+```
+
+to this:
+
+```yaml
+nfpms:
+  -
+    formats:
+      - deb
+```
+
 ### archive
 
 > since 2019-04-16
