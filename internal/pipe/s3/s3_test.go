@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -207,15 +206,13 @@ func start(t *testing.T, name, listen string) {
 		"minio/minio:RELEASE.2019-05-14T23-57-45Z",
 		"server", "/data",
 	).CombinedOutput(); err != nil {
-		log.WithError(err).Errorf("failed to start minio: %s", string(out))
-		t.FailNow()
+		t.Fatalf("failed to start minio: %s", string(out))
 	}
 
 	for range time.Tick(time.Second) {
 		out, err := exec.Command("docker", "inspect", "--format='{{json .State.Health}}'", name).CombinedOutput()
 		if err != nil {
-			log.WithError(err).Errorf("failed to check minio status: %s", string(out))
-			t.FailNow()
+			t.Fatalf("failed to check minio status: %s", string(out))
 		}
 		if strings.Contains(string(out), `"Status":"healthy"`) {
 			t.Log("minio is healthy")
