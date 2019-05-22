@@ -223,7 +223,7 @@ func start(t *testing.T, name, listen string) {
 }
 
 func stop(t *testing.T, name string) {
-	if out, err := exec.Command("docker", "rm", "--force", name).CombinedOutput(); err != nil {
+	if out, err := exec.Command("docker", "stop", name).CombinedOutput(); err != nil {
 		t.Fatalf("failed to stop minio: %s", string(out))
 	}
 }
