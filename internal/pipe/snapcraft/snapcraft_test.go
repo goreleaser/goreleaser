@@ -59,13 +59,28 @@ func TestRunPipe(t *testing.T) {
 				Publish:      true,
 				Builds:       []string{"foo"},
 			},
+			{
+				NameTemplate: "foo_and_bar_{{.Arch}}",
+				Summary:      "test summary",
+				Description:  "test description",
+				Publish:      true,
+				Builds:       []string{"foo", "bar"},
+			},
+			{
+				NameTemplate: "bar_{{.Arch}}",
+				Summary:      "test summary",
+				Description:  "test description",
+				Publish:      true,
+				Builds:       []string{"bar"},
+			},
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "mybin", dist, "mybin", "foo")
+	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"), "foo")
+	addBinaries(t, ctx, "bar", filepath.Join(dist, "bar"), "bar")
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List(), 2)
+	assert.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List(), 6)
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
@@ -88,7 +103,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "mybin", dist, "mybin", "foo")
+	addBinaries(t, ctx, "foo", dist, "mybin")
 	assert.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
 }
 
@@ -115,7 +130,7 @@ func TestRunPipeWithName(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "testprojectname", dist, "mybin", "foo")
+	addBinaries(t, ctx, "foo", dist, "mybin")
 	assert.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	assert.NoError(t, err)
@@ -150,7 +165,7 @@ func TestRunPipeWithBinaryInDir(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "testprojectname", dist, "bin/mybin", "foo")
+	addBinaries(t, ctx, "foo", dist, "bin/mybin")
 	assert.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	assert.NoError(t, err)
@@ -196,7 +211,7 @@ func TestRunPipeMetadata(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "mybin", dist, "mybin", "foo")
+	addBinaries(t, ctx, "foo", dist, "mybin")
 	assert.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	assert.NoError(t, err)
@@ -277,11 +292,11 @@ func TestDefaultDeprecate(t *testing.T) {
 	assert.Equal(t, "foo", ctx.Config.Snapcrafts[0].NameTemplate)
 }
 
-func addBinaries(t *testing.T, ctx *context.Context, name, dist, dest, buildID string) {
+func addBinaries(t *testing.T, ctx *context.Context, name, dist, dest string) {
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386", "arm6"} {
 			var folder = goos + goarch
-			assert.NoError(t, os.Mkdir(filepath.Join(dist, folder), 0755))
+			assert.NoError(t, os.MkdirAll(filepath.Join(dist, folder), 0755))
 			var binPath = filepath.Join(dist, folder, name)
 			_, err := os.Create(binPath)
 			assert.NoError(t, err)
@@ -292,7 +307,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist, dest, buildID s
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": buildID,
+					"ID": name,
 				},
 			})
 		}
