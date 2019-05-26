@@ -280,10 +280,8 @@ stages:
 - build
 
 variables:
-  GORELEASER_IMAGE: goreleaser/goreleaser:v0.107.0
+  GORELEASER_IMAGE: goreleaser/goreleaser:latest
   DOCKER_REGISTRY: https://index.docker.io/v1/
-
-before_script:
 
 build:
   stage: build
