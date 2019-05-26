@@ -33,6 +33,29 @@ to this:
 
 -->
 
+### snapcraft
+
+> since 2019-05-39
+
+We now allow multiple Snapcraft configs, so the `snapcraft` statement will be removed.
+
+Change this:
+
+```yaml
+snapcraft:
+  publish: true
+  # ...
+```
+
+to this:
+
+```yaml
+snapcrafts:
+  -
+    publish: true
+    # ...
+```
+
 ### nfpm
 
 > since 2019-05-07

@@ -32,7 +32,9 @@ func TestRunPipeMissingInfo(t *testing.T) {
 		t.Run(fmt.Sprintf("testing if %v happens", eerr), func(t *testing.T) {
 			var ctx = &context.Context{
 				Config: config.Project{
-					Snapcraft: snap,
+					Snapcrafts: []config.Snapcraft{
+						snap,
+					},
 				},
 			}
 			assert.Equal(t, eerr, Pipe{}.Run(ctx))
@@ -49,16 +51,19 @@ func TestRunPipe(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Snapcraft: config.Snapcraft{
-			NameTemplate: "foo_{{.Arch}}",
-			Summary:      "test summary",
-			Description:  "test description",
-			Publish:      true,
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate: "foo_{{.Arch}}",
+				Summary:      "test summary",
+				Description:  "test description",
+				Publish:      true,
+				Builds:       []string{"foo"},
+			},
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "mybin", dist, "mybin")
+	addBinaries(t, ctx, "mybin", dist, "mybin", "foo")
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List(), 2)
 }
@@ -72,15 +77,18 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Snapcraft: config.Snapcraft{
-			NameTemplate: "foo_{{.Arch}",
-			Summary:      "test summary",
-			Description:  "test description",
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate: "foo_{{.Arch}",
+				Summary:      "test summary",
+				Description:  "test description",
+				Builds:       []string{"foo"},
+			},
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "mybin", dist, "mybin")
+	addBinaries(t, ctx, "mybin", dist, "mybin", "foo")
 	assert.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
 }
 
@@ -93,18 +101,21 @@ func TestRunPipeWithName(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
-		Snapcraft: config.Snapcraft{
-			NameTemplate: "foo_{{.Arch}}",
-			Name:         "testsnapname",
-			Base:         "core18",
-			License:      "MIT",
-			Summary:      "test summary",
-			Description:  "test description",
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate: "foo_{{.Arch}}",
+				Name:         "testsnapname",
+				Base:         "core18",
+				License:      "MIT",
+				Summary:      "test summary",
+				Description:  "test description",
+				Builds:       []string{"foo"},
+			},
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "testprojectname", dist, "mybin")
+	addBinaries(t, ctx, "testprojectname", dist, "mybin", "foo")
 	assert.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	assert.NoError(t, err)
@@ -127,16 +138,19 @@ func TestRunPipeWithBinaryInDir(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
-		Snapcraft: config.Snapcraft{
-			NameTemplate: "foo_{{.Arch}}",
-			Name:         "testsnapname",
-			Summary:      "test summary",
-			Description:  "test description",
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate: "foo_{{.Arch}}",
+				Name:         "testsnapname",
+				Summary:      "test summary",
+				Description:  "test description",
+				Builds:       []string{"foo"},
+			},
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "testprojectname", dist, "bin/mybin")
+	addBinaries(t, ctx, "testprojectname", dist, "bin/mybin", "foo")
 	assert.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	assert.NoError(t, err)
@@ -159,27 +173,30 @@ func TestRunPipeMetadata(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
-		Snapcraft: config.Snapcraft{
-			NameTemplate: "foo_{{.Arch}}",
-			Summary:      "test summary",
-			Description:  "test description",
-			Apps: map[string]config.SnapcraftAppMetadata{
-				"mybin": {
-					Plugs:  []string{"home", "network", "personal-files"},
-					Daemon: "simple",
-					Args:   "--foo --bar",
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate: "foo_{{.Arch}}",
+				Summary:      "test summary",
+				Description:  "test description",
+				Apps: map[string]config.SnapcraftAppMetadata{
+					"mybin": {
+						Plugs:  []string{"home", "network", "personal-files"},
+						Daemon: "simple",
+						Args:   "--foo --bar",
+					},
 				},
-			},
-			Plugs: map[string]interface{}{
-				"personal-files": map[string]interface{}{
-					"read": []string{"$HOME/test"},
+				Plugs: map[string]interface{}{
+					"personal-files": map[string]interface{}{
+						"read": []string{"$HOME/test"},
+					},
 				},
+				Builds: []string{"foo"},
 			},
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "mybin", dist, "mybin")
+	addBinaries(t, ctx, "mybin", dist, "mybin", "foo")
 	assert.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	assert.NoError(t, err)
@@ -202,18 +219,27 @@ func TestNoSnapcraftInPath(t *testing.T) {
 	}()
 	assert.NoError(t, os.Setenv("PATH", ""))
 	var ctx = context.New(config.Project{
-		Snapcraft: config.Snapcraft{
-			Summary:     "dummy",
-			Description: "dummy",
+		Snapcrafts: []config.Snapcraft{
+			{
+				Summary:     "dummy",
+				Description: "dummy",
+			},
 		},
 	})
 	assert.EqualError(t, Pipe{}.Run(ctx), ErrNoSnapcraft.Error())
 }
 
 func TestDefault(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	var ctx = context.New(config.Project{
+		Builds: []config.Build{
+			{
+				ID: "foo",
+			},
+		},
+	})
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, defaultNameTemplate, ctx.Config.Snapcraft.NameTemplate)
+	assert.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
+	assert.Equal(t, []string{"foo"}, ctx.Config.Snapcrafts[0].Builds)
 }
 
 func TestPublish(t *testing.T) {
@@ -231,15 +257,27 @@ func TestPublish(t *testing.T) {
 
 func TestDefaultSet(t *testing.T) {
 	var ctx = context.New(config.Project{
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate: "foo",
+			},
+		},
+	})
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "foo", ctx.Config.Snapcrafts[0].NameTemplate)
+}
+
+func TestDefaultDeprecate(t *testing.T) {
+	var ctx = context.New(config.Project{
 		Snapcraft: config.Snapcraft{
 			NameTemplate: "foo",
 		},
 	})
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "foo", ctx.Config.Snapcraft.NameTemplate)
+	assert.Equal(t, "foo", ctx.Config.Snapcrafts[0].NameTemplate)
 }
 
-func addBinaries(t *testing.T, ctx *context.Context, name, dist, dest string) {
+func addBinaries(t *testing.T, ctx *context.Context, name, dist, dest, buildID string) {
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386", "arm6"} {
 			var folder = goos + goarch
@@ -253,6 +291,9 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist, dest string) {
 				Goarch: goarch,
 				Goos:   goos,
 				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"ID": buildID,
+				},
 			})
 		}
 	}
