@@ -14,6 +14,11 @@ We appreciate your contribution. Please refer to our [contributing guidelines](C
 
 For questions join the [#goreleaser](https://gophers.slack.com/messages/goreleaser/) channel in the [Gophers Slack](https://invite.slack.golangbridge.org/).
 
+## Get GoReleaser
+
+- [On my machine](https://goreleaser.com/install/);
+- [On CI/CD systems](https://goreleaser.com/ci/).
+
 ## Documentation
 
 Documentation is hosted live at https://goreleaser.com
@@ -84,7 +89,7 @@ This project exists thanks to all the people who contribute. [[Contribute](CONTR
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/goreleaser/goreleaser.svg)](https://starchart.cc/goreleaser/goreleaser)
-     
+
 ---
 
 Would you like to fix something in the documentation? Feel free to open an [issue](https://github.com/goreleaser/goreleaser/issues).
