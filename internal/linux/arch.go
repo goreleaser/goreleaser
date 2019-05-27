@@ -13,8 +13,10 @@ func Arch(key string) string {
 		return "i386"
 	case "amd64":
 		return "amd64"
-	case "arm6": // GOARCH + GOARM
+	case "arm5": // GOARCH + GOARM
 		return "armel"
+	case "arm6": // GOARCH + GOARM
+		return "armhf"
 	case "arm7": // GOARCH + GOARM
 		return "armhf"
 	}
