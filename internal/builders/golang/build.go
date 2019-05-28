@@ -45,7 +45,7 @@ func (*Builder) WithDefaults(build config.Build) config.Build {
 		build.Goarm = []string{"6"}
 	}
 	if len(build.Ldflags) == 0 {
-		build.Ldflags = []string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}"}
+		build.Ldflags = []string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser"}
 	}
 	if len(build.Targets) == 0 {
 		build.Targets = matrix(build)
