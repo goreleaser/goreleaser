@@ -80,7 +80,7 @@ func TestRunPipe(t *testing.T) {
 	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"), "foo")
 	addBinaries(t, ctx, "bar", filepath.Join(dist, "bar"), "bar")
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List(), 6)
+	assert.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List(), 9)
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
