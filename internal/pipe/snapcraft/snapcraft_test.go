@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -312,4 +313,20 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist, dest string) {
 			})
 		}
 	}
+}
+
+func TestSeveralSnapssWithTheSameID(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Snapcrafts: []config.Snapcraft{
+				{
+					ID: "a",
+				},
+				{
+					ID: "a",
+				},
+			},
+		},
+	}
+	require.EqualError(t, Pipe{}.Default(ctx), "found 2 items with the ID 'a', please fix your config")
 }
