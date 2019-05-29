@@ -20,7 +20,7 @@ Available options:
 # .goreleaser.yml
 snapcrafts:
   -
-    # ID of the nfpm config, must be unique.
+    # ID of the snapcraft config, must be unique.
     # Defaults to "default".
     id: foo
 
