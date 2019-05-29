@@ -120,7 +120,7 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 		),
 	).GroupByPlatform() {
 		arch := linux.Arch(platform)
-		if arch == "armel" {
+		if arch == "armel" || arch == "arm5" {
 			log.WithField("arch", arch).Warn("ignored unsupported arch")
 			continue
 		}
