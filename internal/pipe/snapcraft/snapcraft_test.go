@@ -245,6 +245,43 @@ func TestNoSnapcraftInPath(t *testing.T) {
 	assert.EqualError(t, Pipe{}.Run(ctx), ErrNoSnapcraft.Error())
 }
 
+
+func TestRunNoArguments(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	assert.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	assert.NoError(t, os.Mkdir(dist, 0755))
+	assert.NoError(t, err)
+	var ctx = context.New(config.Project{
+		ProjectName: "testprojectname",
+		Dist:        dist,
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate: "foo_{{.Arch}}",
+				Summary:      "test summary",
+				Description:  "test description",
+				Apps: map[string]config.SnapcraftAppMetadata{
+					"mybin": {
+						Daemon: "simple",
+						Args:   "",
+					},
+				},
+				Builds: []string{"foo"},
+			},
+		},
+	})
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Version = "v1.2.3"
+	addBinaries(t, ctx, "foo", dist, "mybin")
+	assert.NoError(t, Pipe{}.Run(ctx))
+	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
+	assert.NoError(t, err)
+	var metadata Metadata
+	err = yaml.Unmarshal(yamlFile, &metadata)
+	assert.NoError(t, err)
+	assert.Equal(t, "mybin", metadata.Apps["mybin"].Command)
+}
+
 func TestDefault(t *testing.T) {
 	var ctx = context.New(config.Project{
 		Builds: []config.Build{

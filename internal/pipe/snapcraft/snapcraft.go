@@ -202,10 +202,10 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		if configAppMetadata, ok := snap.Apps[name]; ok {
 			appMetadata.Plugs = configAppMetadata.Plugs
 			appMetadata.Daemon = configAppMetadata.Daemon
-			appMetadata.Command = strings.Join([]string{
+			appMetadata.Command = strings.TrimSpace(strings.Join([]string{
 				appMetadata.Command,
 				configAppMetadata.Args,
-			}, " ")
+			}, " "))
 		}
 		metadata.Apps[name] = appMetadata
 		metadata.Plugs = snap.Plugs
