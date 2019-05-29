@@ -84,7 +84,6 @@ func defaults(put *config.Put) {
 
 // CheckConfig validates a Put configuration returning a descriptive error when appropriate
 func CheckConfig(ctx *context.Context, put *config.Put, kind string) error {
-
 	if put.Target == "" {
 		return misconfigured(kind, put, "missing target")
 	}
@@ -341,6 +340,7 @@ func resolveTargetTemplate(ctx *context.Context, put *config.Put, artifact artif
 	}
 
 	if put.Mode == ModeBinary {
+		// TODO: multiple archives here
 		data.Os = replace(ctx.Config.Archive.Replacements, artifact.Goos)
 		data.Arch = replace(ctx.Config.Archive.Replacements, artifact.Goarch)
 		data.Arm = replace(ctx.Config.Archive.Replacements, artifact.Goarm)
