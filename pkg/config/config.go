@@ -226,6 +226,7 @@ type Snapcraft struct {
 	Replacements map[string]string `yaml:",omitempty"`
 	Publish      bool              `yaml:",omitempty"`
 
+	ID          string                          `yaml:",omitempty"`
 	Builds      []string                        `yaml:",omitempty"`
 	Name        string                          `yaml:",omitempty"`
 	Summary     string                          `yaml:",omitempty"`

@@ -20,6 +20,10 @@ Available options:
 # .goreleaser.yml
 snapcrafts:
   -
+    # ID of the nfpm config, must be unique.
+    # Defaults to "default".
+    id: foo
+
     # Build IDs for the builds you want to create snapcraft packages for.
     # Defaults to all builds.
     builds:

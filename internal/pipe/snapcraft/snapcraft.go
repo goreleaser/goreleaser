@@ -10,6 +10,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/goreleaser/goreleaser/internal/ids"
+
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
@@ -71,6 +73,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			deprecate.Notice("snapcraft")
 		}
 	}
+	var ids = ids.New()
 	for i := range ctx.Config.Snapcrafts {
 		var snap = &ctx.Config.Snapcrafts[i]
 		if snap.NameTemplate == "" {
@@ -81,8 +84,9 @@ func (Pipe) Default(ctx *context.Context) error {
 				snap.Builds = append(snap.Builds, b.ID)
 			}
 		}
+		ids.Inc(snap.ID)
 	}
-	return nil
+	return ids.Validate()
 }
 
 // Run the pipe
