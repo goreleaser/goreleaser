@@ -21,8 +21,9 @@ import (
 // nolint: gochecknoglobals
 var (
 	version = "dev"
-	commit  = "none"
-	date    = "unknown"
+	commit  = ""
+	date    = ""
+	builtBy = ""
 )
 
 type releaseOptions struct {
@@ -61,7 +62,7 @@ func main() {
 	var parallelism = releaseCmd.Flag("parallelism", "Amount tasks to run concurrently").Short('p').Default("4").Int()
 	var timeout = releaseCmd.Flag("timeout", "Timeout to the entire release process").Default("30m").Duration()
 
-	app.Version(fmt.Sprintf("%v, commit %v, built at %v", version, commit, date))
+	app.Version(buildVersion(version, commit, date, builtBy))
 	app.VersionFlag.Short('v')
 	app.HelpFlag.Short('h')
 	app.UsageTemplate(static.UsageTemplate)
@@ -163,4 +164,18 @@ func loadConfig(path string) (config.Project, error) {
 	// don't exist, so, return an empty config and a nil err.
 	log.Warn("could not find a config file, using defaults...")
 	return config.Project{}, nil
+}
+
+func buildVersion(version, commit, date, builtBy string) string {
+	var result = fmt.Sprintf("version: %s", version)
+	if commit != "" {
+		result = fmt.Sprintf("%s\ncommit: %s", result, commit)
+	}
+	if date != "" {
+		result = fmt.Sprintf("%s\nbuilt at: %s", result, date)
+	}
+	if builtBy != "" {
+		result = fmt.Sprintf("%s\nbuilt by: %s", result, builtBy)
+	}
+	return result
 }

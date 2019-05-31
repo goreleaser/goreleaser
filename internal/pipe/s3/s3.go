@@ -59,7 +59,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func upload(ctx *context.Context, conf config.S3) error {
+func newS3Svc(conf config.S3) *s3.S3 {
 	builder := newSessionBuilder()
 	builder.Profile(conf.Profile)
 	if conf.Endpoint != "" {
@@ -68,9 +68,13 @@ func upload(ctx *context.Context, conf config.S3) error {
 	}
 	sess := builder.Build()
 
-	svc := s3.New(sess, &aws.Config{
+	return s3.New(sess, &aws.Config{
 		Region: aws.String(conf.Region),
 	})
+}
+
+func upload(ctx *context.Context, conf config.S3) error {
+	var svc = newS3Svc(conf)
 
 	template := tmpl.New(ctx)
 	bucket, err := template.Apply(conf.Bucket)

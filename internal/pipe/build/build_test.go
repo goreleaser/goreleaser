@@ -217,7 +217,7 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	assert.Equal(t, []string{"amd64", "386"}, build.Goarch)
 	assert.Equal(t, []string{"6"}, build.Goarm)
 	assert.Len(t, build.Ldflags, 1)
-	assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}", build.Ldflags[0])
+	assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser", build.Ldflags[0])
 }
 
 func TestSeveralBuildsWithTheSameID(t *testing.T) {
@@ -266,7 +266,7 @@ func TestDefaultPartialBuilds(t *testing.T) {
 		assert.Equal(t, []string{"amd64", "386"}, build.Goarch)
 		assert.Equal(t, []string{"6"}, build.Goarm)
 		assert.Len(t, build.Ldflags, 1)
-		assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}", build.Ldflags[0])
+		assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser", build.Ldflags[0])
 	})
 	t.Run("build1", func(t *testing.T) {
 		var build = ctx.Config.Builds[1]

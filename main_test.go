@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -180,4 +181,42 @@ release:
     name: fake
 `
 	createFile(t, "goreleaser.yml", yaml)
+}
+
+func TestVersion(t *testing.T) {
+	for name, tt := range map[string]struct {
+		version, commit, date, builtBy string
+		out                            string
+	}{
+		"all empty": {
+			out: "version: ",
+		},
+		"complete": {
+			version: "1.2.3",
+			date:    "12/12/12",
+			commit:  "aaaa",
+			builtBy: "me",
+			out:     "version: 1.2.3\ncommit: aaaa\nbuilt at: 12/12/12\nbuilt by: me",
+		},
+		"only version": {
+			version: "1.2.3",
+			out:     "version: 1.2.3",
+		},
+		"version and date": {
+			version: "1.2.3",
+			date:    "12/12/12",
+			out:     "version: 1.2.3\nbuilt at: 12/12/12",
+		},
+		"version, date, built by": {
+			version: "1.2.3",
+			date:    "12/12/12",
+			builtBy: "me",
+			out:     "version: 1.2.3\nbuilt at: 12/12/12\nbuilt by: me",
+		},
+	} {
+		tt := tt
+		t.Run(name, func(t *testing.T) {
+			require.Equal(t, tt.out, buildVersion(tt.version, tt.commit, tt.date, tt.builtBy))
+		})
+	}
 }

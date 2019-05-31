@@ -2,6 +2,7 @@ package s3
 
 import (
 	"io/ioutil"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -9,12 +10,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/apex/log"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDescription(t *testing.T) {
@@ -55,6 +58,7 @@ func TestDefaults(t *testing.T) {
 }
 
 func TestUpload(t *testing.T) {
+	var listen = randomListen(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(t, err)
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
@@ -67,7 +71,7 @@ func TestUpload(t *testing.T) {
 		S3: []config.S3{
 			{
 				Bucket:   "test",
-				Endpoint: "http://localhost:9000",
+				Endpoint: "http://" + listen,
 			},
 		},
 	})
@@ -82,14 +86,16 @@ func TestUpload(t *testing.T) {
 		Name: "bin.deb",
 		Path: debpath,
 	})
-	start(t)
-	defer stop(t)
-	setCredentials()
+	var name = "test_upload"
+	defer stop(t, name)
+	start(t, name, listen)
+	prepareEnv(t, listen)
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.NoError(t, Pipe{}.Publish(ctx))
 }
 
 func TestUploadCustomBucketID(t *testing.T) {
+	var listen = randomListen(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(t, err)
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
@@ -105,7 +111,7 @@ func TestUploadCustomBucketID(t *testing.T) {
 		S3: []config.S3{
 			{
 				Bucket:   "{{.Env.BUCKET_ID}}",
-				Endpoint: "http://localhost:9000",
+				Endpoint: "http://" + listen,
 			},
 		},
 	})
@@ -120,14 +126,16 @@ func TestUploadCustomBucketID(t *testing.T) {
 		Name: "bin.deb",
 		Path: debpath,
 	})
-	start(t)
-	defer stop(t)
-	setCredentials()
+	var name = "custom_bucket_id"
+	defer stop(t, name)
+	start(t, name, listen)
+	prepareEnv(t, listen)
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.NoError(t, Pipe{}.Publish(ctx))
 }
 
 func TestUploadInvalidCustomBucketID(t *testing.T) {
+	var listen = randomListen(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(t, err)
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
@@ -142,7 +150,7 @@ func TestUploadInvalidCustomBucketID(t *testing.T) {
 		S3: []config.S3{
 			{
 				Bucket:   "{{.Bad}}",
-				Endpoint: "http://localhost:9000",
+				Endpoint: "http://" + listen,
 			},
 		},
 	})
@@ -157,53 +165,65 @@ func TestUploadInvalidCustomBucketID(t *testing.T) {
 		Name: "bin.deb",
 		Path: debpath,
 	})
-	start(t)
-	defer stop(t)
-	setCredentials()
+	var name = "invalid_bucket_id"
+	defer stop(t, name)
+	start(t, name, listen)
+	prepareEnv(t, listen)
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Error(t, Pipe{}.Publish(ctx))
 }
 
-func setCredentials() {
-	// this comes from the testdata/config/config.json file - not real aws keys
-	os.Setenv("AWS_ACCESS_KEY_ID", "WPXKJC7CZQCFPKY5727N")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", "eHCSajxLvl94l36gIMlzZ/oW2O0rYYK+cVn5jNT2")
-	os.Setenv("AWS_REGION", "us-east-1")
+func randomListen(t *testing.T) string {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	listener.Close()
+	return listener.Addr().String()
 }
 
-func start(t *testing.T) {
-	dir, err := os.Getwd()
-	assert.NoError(t, err)
+func prepareEnv(t *testing.T, listen string) {
+	os.Setenv("AWS_ACCESS_KEY_ID", "minio")
+	os.Setenv("AWS_SECRET_ACCESS_KEY", "miniostorage")
+	os.Setenv("AWS_REGION", "us-east-1")
+
+	t.Log("creating test bucket")
+	_, err := newS3Svc(config.S3{
+		Endpoint: "http://" + listen,
+		Region:   "us-east-1",
+	}).CreateBucket(&s3.CreateBucketInput{
+		Bucket: aws.String("test"),
+	})
+	require.NoError(t, err)
+}
+
+func start(t *testing.T, name, listen string) {
 	if out, err := exec.Command(
 		"docker", "run", "-d", "--rm",
-		"--name", "minio",
-		"-p", "9000:9000",
-		"-v", dir+"/testdata/data:/data",
-		"-v", dir+"/testdata/config:/root/.minio",
-		"minio/minio:RELEASE.2018-06-09T03-43-35Z",
+		"--name", name,
+		"-p", listen+":9000",
+		"-e", "MINIO_ACCESS_KEY=minio",
+		"-e", "MINIO_SECRET_KEY=miniostorage",
+		"--health-interval", "1s",
+		"minio/minio:RELEASE.2019-05-14T23-57-45Z",
 		"server", "/data",
 	).CombinedOutput(); err != nil {
-		log.WithError(err).Errorf("failed to start minio: %s", string(out))
-		t.FailNow()
+		t.Fatalf("failed to start minio: %s", string(out))
 	}
 
 	for range time.Tick(time.Second) {
-		out, err := exec.Command("docker", "inspect", "--format='{{json .State.Health}}'", "minio").CombinedOutput()
+		out, err := exec.Command("docker", "inspect", "--format='{{json .State.Health}}'", name).CombinedOutput()
 		if err != nil {
-			log.WithError(err).Errorf("failed to check minio status: %s", string(out))
-			t.FailNow()
+			t.Fatalf("failed to check minio status: %s", string(out))
 		}
 		if strings.Contains(string(out), `"Status":"healthy"`) {
-			log.Info("minio is healthy")
+			t.Log("minio is healthy")
 			break
 		}
-		log.Info("waiting for minio to be healthy")
+		t.Log("waiting for minio to be healthy")
 	}
 }
 
-func stop(t *testing.T) {
-	if out, err := exec.Command("docker", "stop", "minio").CombinedOutput(); err != nil {
-		log.WithError(err).Errorf("failed to stop minio: %s", string(out))
-		t.FailNow()
+func stop(t *testing.T, name string) {
+	if out, err := exec.Command("docker", "stop", name).CombinedOutput(); err != nil {
+		t.Fatalf("failed to stop minio: %s", string(out))
 	}
 }
