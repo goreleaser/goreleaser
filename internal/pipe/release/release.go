@@ -60,7 +60,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	return doPublish(ctx, c)
 }
 
-func doPublish(ctx *context.Context, c client.Client) error {
+func doPublish(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Release.Disable {
 		return pipe.Skip("release pipe is disabled")
 	}
@@ -71,7 +71,7 @@ func doPublish(ctx *context.Context, c client.Client) error {
 	if err != nil {
 		return err
 	}
-	releaseID, err := c.CreateRelease(ctx, body.String())
+	releaseID, err := client.CreateRelease(ctx, body.String())
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func doPublish(ctx *context.Context, c client.Client) error {
 			var repeats uint
 			what := func(try uint) error {
 				repeats = try + 1
-				if uploadErr := upload(ctx, c, releaseID, artifact); uploadErr != nil {
+				if uploadErr := upload(ctx, client, releaseID, artifact); uploadErr != nil {
 					log.WithFields(log.Fields{
 						"try":      try,
 						"artifact": artifact.Name,
@@ -112,12 +112,12 @@ func doPublish(ctx *context.Context, c client.Client) error {
 	return g.Wait()
 }
 
-func upload(ctx *context.Context, c client.Client, releaseID int64, artifact artifact.Artifact) error {
+func upload(ctx *context.Context, client client.Client, releaseID int64, artifact artifact.Artifact) error {
 	file, err := os.Open(artifact.Path)
 	if err != nil {
 		return err
 	}
 	defer file.Close() // nolint: errcheck
 	log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
-	return c.Upload(ctx, releaseID, artifact.Name, file)
+	return client.Upload(ctx, releaseID, artifact.Name, file)
 }
