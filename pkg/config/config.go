@@ -46,6 +46,7 @@ func (r Repo) String() string {
 type Homebrew struct {
 	Name             string       `yaml:",omitempty"`
 	GitHub           Repo         `yaml:",omitempty"`
+	GitLab           Repo         `yaml:",omitempty"`
 	CommitAuthor     CommitAuthor `yaml:"commit_author,omitempty"`
 	Folder           string       `yaml:",omitempty"`
 	Caveats          string       `yaml:",omitempty"`
@@ -166,9 +167,10 @@ type Archive struct {
 	Files           []string          `yaml:",omitempty"`
 }
 
-// Release config used for the GitHub release
+// Release config used for the GitHub/GitLab release
 type Release struct {
-	GitHub       Repo   `yaml:",omitempty"`
+	GitHub       Repo   `yaml:",omitempty"` // TODO gitlab
+	GitLab       Repo   `yaml:",omitempty"`
 	Draft        bool   `yaml:",omitempty"`
 	Disable      bool   `yaml:",omitempty"`
 	Prerelease   string `yaml:",omitempty"`
@@ -353,8 +355,8 @@ type Project struct {
 	// should be set if using github enterprise
 	GitHubURLs GitHubURLs `yaml:"github_urls,omitempty"`
 
-	// should be set if using gitlab enterprise
-	GitLabURLs GitLabURLs `yaml:"github_urls,omitempty"`
+	// should be set if using a private gitlab TODO gitlab
+	GitLabURLs GitHubURLs `yaml:"gitlab_urls,omitempty"`
 }
 
 // Load config file
