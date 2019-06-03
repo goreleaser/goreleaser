@@ -84,7 +84,6 @@ func defaults(put *config.Put) {
 
 // CheckConfig validates a Put configuration returning a descriptive error when appropriate
 func CheckConfig(ctx *context.Context, put *config.Put, kind string) error {
-
 	if put.Target == "" {
 		return misconfigured(kind, put, "missing target")
 	}
@@ -153,7 +152,12 @@ func Upload(ctx *context.Context, puts []config.Put, kind string, check Response
 			}).Error(err.Error())
 			return err
 		}
-		if err := uploadWithFilter(ctx, &put, artifact.Or(filters...), kind, check); err != nil {
+
+		var filter = artifact.Or(filters...)
+		if len(put.IDs) > 0 {
+			filter = artifact.And(filter, artifact.ByIDs(put.IDs...))
+		}
+		if err := uploadWithFilter(ctx, &put, filter, kind, check); err != nil {
 			return err
 		}
 	}
@@ -327,6 +331,7 @@ type targetData struct {
 
 // resolveTargetTemplate returns the resolved target template with replaced variables
 // Those variables can be replaced by the given context, goos, goarch, goarm and more
+// TODO: replace this with our internal template pkg
 func resolveTargetTemplate(ctx *context.Context, put *config.Put, artifact artifact.Artifact) (string, error) {
 	data := targetData{
 		Version:     ctx.Version,
@@ -335,6 +340,7 @@ func resolveTargetTemplate(ctx *context.Context, put *config.Put, artifact artif
 	}
 
 	if put.Mode == ModeBinary {
+		// TODO: multiple archives here
 		data.Os = replace(ctx.Config.Archive.Replacements, artifact.Goos)
 		data.Arch = replace(ctx.Config.Archive.Replacements, artifact.Goarch)
 		data.Arm = replace(ctx.Config.Archive.Replacements, artifact.Goarm)

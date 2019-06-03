@@ -122,7 +122,7 @@ type check struct {
 func checks(checks ...check) func(rs []*h.Request) error {
 	return func(rs []*h.Request) error {
 		if len(rs) != len(checks) {
-			return errors.New("expectations mismatch requests")
+			return fmt.Errorf("expected %d requests, got %d", len(checks), len(rs))
 		}
 		for _, r := range rs {
 			found := false
@@ -226,7 +226,14 @@ func TestUpload(t *testing.T) {
 	} {
 		var file = filepath.Join(folder, "a."+a.ext)
 		require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
-		ctx.Artifacts.Add(artifact.Artifact{Name: "a." + a.ext, Path: file, Type: a.typ})
+		ctx.Artifacts.Add(artifact.Artifact{
+			Name: "a." + a.ext,
+			Path: file,
+			Type: a.typ,
+			Extra: map[string]interface{}{
+				"ID": "foo",
+			},
+		})
 	}
 
 	tests := []struct {
@@ -279,6 +286,22 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
 			),
 		},
+		{"archive_with_ids", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Put) {
+				return ctx, config.Put{
+					Mode:         ModeArchive,
+					Name:         "a",
+					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username:     "u1",
+					TrustedCerts: cert(s),
+					IDs:          []string{"foo"},
+				}
+			},
+			checks(
+				check{"/blah/2.1.0/a.deb", "u1", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
+			),
+		},
 		{"binary", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Put) {
 				return ctx, config.Put{
@@ -287,6 +310,19 @@ func TestUpload(t *testing.T) {
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
 					Username:     "u2",
 					TrustedCerts: cert(s),
+				}
+			},
+			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
+		},
+		{"binary_with_ids", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Put) {
+				return ctx, config.Put{
+					Mode:         ModeBinary,
+					Name:         "a",
+					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username:     "u2",
+					TrustedCerts: cert(s),
+					IDs:          []string{"foo"},
 				}
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
@@ -387,7 +423,7 @@ func TestUpload(t *testing.T) {
 		},
 	}
 
-	uploadAndCheck := func(setup func(*httptest.Server) (*context.Context, config.Put), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {
+	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Put), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {
 		requests = nil
 		ctx, put := setup(srv)
 		wantErr := wantErrPlain
@@ -407,7 +443,7 @@ func TestUpload(t *testing.T) {
 			t.Run(tt.name, func(t *testing.T) {
 				srv := httptest.NewServer(mux)
 				defer srv.Close()
-				uploadAndCheck(tt.setup, tt.wantErrPlain, tt.wantErrTLS, tt.check, srv)
+				uploadAndCheck(t, tt.setup, tt.wantErrPlain, tt.wantErrTLS, tt.check, srv)
 			})
 		}
 		if tt.tryTLS {
@@ -415,7 +451,7 @@ func TestUpload(t *testing.T) {
 				srv := httptest.NewUnstartedServer(mux)
 				srv.StartTLS()
 				defer srv.Close()
-				uploadAndCheck(tt.setup, tt.wantErrPlain, tt.wantErrTLS, tt.check, srv)
+				uploadAndCheck(t, tt.setup, tt.wantErrPlain, tt.wantErrTLS, tt.check, srv)
 			})
 		}
 	}

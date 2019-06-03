@@ -77,9 +77,8 @@ func sign(ctx *context.Context, artifacts []artifact.Artifact) error {
 func signone(ctx *context.Context, a artifact.Artifact) (*artifact.Artifact, error) {
 	cfg := ctx.Config.Sign
 
-	env := map[string]string{
-		"artifact": a.Path,
-	}
+	env := ctx.Env
+	env["artifact"] = a.Path
 	env["signature"] = expand(cfg.Signature, env)
 
 	// nolint:prealloc

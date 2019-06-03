@@ -89,7 +89,6 @@ workflows:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
 ```
 
-
 ## Drone
 
 By default, drone does not fetch tags. `plugins/git` is used with default values,
@@ -138,6 +137,7 @@ release:
 ```
 
 Create two build triggers:
+
 - a "push to any branch" trigger for your regular CI (doesn't invoke goreleaser)
 - a "push to tag" trigger which invokes goreleaser
 
@@ -266,3 +266,54 @@ data:
 
 Check [Managing Secrets](https://docs.semaphoreci.com/article/51-secrets-yaml-reference) for
 more detailed documentation.
+
+## GitLab CI
+
+To push releases to both GitHub and the **official** Docker registry, add a file `.gitlab-ci.yml` in the Go project directory:
+
+```yaml
+image: docker:stable
+services:
+- docker:dind
+
+stages:
+- build
+
+variables:
+  GORELEASER_IMAGE: goreleaser/goreleaser:latest
+  DOCKER_REGISTRY: https://index.docker.io/v1/
+
+build:
+  stage: build
+  script:
+    - docker pull $GORELEASER_IMAGE
+    - docker run --rm --privileged -v $PWD:/go/src/github.com/YourGithubUser/YourGithubRepo -v /var/run/docker.sock:/var/run/docker.sock -w /go/src/github.com/YourGithubUser/YourGithubRepo -e GITHUB_TOKEN -e DOCKER_USERNAME -e DOCKER_PASSWORD -e DOCKER_REGISTRY $GORELEASER_IMAGE release --rm-dist
+```
+
+Next, in the GitLab sidebar add the variables `DOCKER_USERNAME`, `DOCKER_PASSWORD` and `GITHUB_TOKEN` through Project --> Settings --> CI / CD --> Variables.\
+Make sure they are set to *Masked* (*Protection* is not needed).
+
+To push to some other Docker registry (e.g. to a GitLab registry), set different variables in the file above:
+
+```txt
+CI_REGISTRY: gitlab.example.com:4567
+DOCKER_REGISTRY: $CI_REGISTRY
+DOCKER_USERNAME: gitlab-ci-token
+DOCKER_PASSWORD: $CI_JOB_TOKEN
+```
+
+Make sure the `image_templates` in the file `.goreleaser.yml` reflect that custom registry!
+
+Example:
+
+```yaml
+dockers:
+-
+  goos: linux
+  goarch: amd64
+  binaries:
+  - program
+  image_templates:
+  - 'gitlab.example.com:4567/Group/Project:{{ .Tag }}'
+  - 'gitlab.example.com:4567/Group/Project:latest'
+```

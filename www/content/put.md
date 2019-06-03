@@ -123,24 +123,36 @@ puts:
   -
     # Unique name of your Put instance. Used to identify the instance.
     name: production
+
+    # IDs of the artifacts you want to PUT.
+    ids:
+    - foo
+    - bar
+
     # Upload mode. Valid options are `binary` and `archive`.
     # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name are not supported.
     # In that case these variables are empty.
     # Default is `archive`.
     mode: archive
+
     # URL to be used as target of the HTTP PUT request
     target: https://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
+
     # User that will be used for the deployment
     username: deployuser
+
     # An optional header you can use to tell GoReleaser to pass the artifact's
     # SHA256 checksum withing the upload request.
     # Default is empty.
     checksum_header: -X-SHA256-Sum
+
     # Upload checksums (defaults to false)
     checksum: true
+
     # Upload signatures (defaults to false)
     signature: true
-    # Certificate chain used to validate server certificates
+
+   # Certificate chain used to validate server certificates
     trusted_certificates: |
       -----BEGIN CERTIFICATE-----
       MIIDrjCCApagAwIBAgIIShr2zchZo+8wDQYJKoZIhvcNAQENBQAwNTEXMBUGA1UE
