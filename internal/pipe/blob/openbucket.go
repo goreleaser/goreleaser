@@ -96,7 +96,7 @@ func (b bucket) UploadBucket(ctx *context.Context, bucketURL string) error {
 					// Invalid GC Credentials
 				} else if errorContains(err, "invalid_grant") {
 					return fmt.Errorf("The Google App Credentials you provided is not valid")
-				} else if errorContains(err, "blob.core.windows.net: no such host") {
+				} else if errorContains(err, "no such host") {
 					return fmt.Errorf("The Azure Storage Account you provided is not valid")
 					// Not existing bucket
 				} else if errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound") {
