@@ -320,29 +320,30 @@ type Put struct {
 
 // Project includes all project configuration
 type Project struct {
-	ProjectName   string    `yaml:"project_name,omitempty"`
-	Env           []string  `yaml:",omitempty"`
-	Release       Release   `yaml:",omitempty"`
-	Brew          Homebrew  `yaml:",omitempty"`
-	Scoop         Scoop     `yaml:",omitempty"`
-	Builds        []Build   `yaml:",omitempty"`
-	Archive       Archive   `yaml:",omitempty"` // TODO: remove this
-	Archives      []Archive `yaml:",omitempty"`
-	NFPM          NFPM      `yaml:",omitempty"` // TODO: remove this
-	NFPMs         []NFPM    `yaml:"nfpms,omitempty"`
+	ProjectName   string      `yaml:"project_name,omitempty"`
+	Env           []string    `yaml:",omitempty"`
+	Release       Release     `yaml:",omitempty"`
+	Brew          Homebrew    `yaml:",omitempty"`
+	Scoop         Scoop       `yaml:",omitempty"`
+	Builds        []Build     `yaml:",omitempty"`
+	Archive       Archive     `yaml:",omitempty"` // TODO: remove this
+	Archives      []Archive   `yaml:",omitempty"`
+	NFPM          NFPM        `yaml:",omitempty"` // TODO: remove this
+	NFPMs         []NFPM      `yaml:"nfpms,omitempty"`
 	Snapcraft     Snapcraft   `yaml:",omitempty"` // TODO: remove this
-	Snapshot      Snapshot  `yaml:",omitempty"`
-	Checksum      Checksum  `yaml:",omitempty"`
-	Dockers       []Docker  `yaml:",omitempty"`
-	Artifactories []Put     `yaml:",omitempty"`
-	Puts          []Put     `yaml:",omitempty"`
-	S3            []S3      `yaml:"s3,omitempty"`
-	Blob          []Blob    `yaml:"blob,omitempty"`
-	Changelog     Changelog `yaml:",omitempty"`
-	Dist          string    `yaml:",omitempty"`
-	Sign          Sign      `yaml:",omitempty"`
-	EnvFiles      EnvFiles  `yaml:"env_files,omitempty"`
-	Before        Before    `yaml:",omitempty"`
+	Snapcrafts    []Snapcraft `yaml:",omitempty"`
+	Snapshot      Snapshot    `yaml:",omitempty"`
+	Checksum      Checksum    `yaml:",omitempty"`
+	Dockers       []Docker    `yaml:",omitempty"`
+	Artifactories []Put       `yaml:",omitempty"`
+	Puts          []Put       `yaml:",omitempty"`
+	S3            []S3        `yaml:"s3,omitempty"`
+	Blob          []Blob      `yaml:"blob,omitempty"`
+	Changelog     Changelog   `yaml:",omitempty"`
+	Dist          string      `yaml:",omitempty"`
+	Sign          Sign        `yaml:",omitempty"`
+	EnvFiles      EnvFiles    `yaml:"env_files,omitempty"`
+	Before        Before      `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
