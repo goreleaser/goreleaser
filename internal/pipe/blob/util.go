@@ -39,6 +39,7 @@ func checkEnv(envs ...string) error {
 	return nil
 }
 
+// Check if error contains specific string
 func errorContains(err error, subs ...string) bool {
 
 	for _, sub := range subs {
