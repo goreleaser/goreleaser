@@ -17,7 +17,7 @@ func checkProvider(provider string) error {
 	case "s3":
 		return checkEnv("AWS_ACCESS_KEY", "AWS_SECRET_KEY", "AWS_REGION")
 	default:
-		return fmt.Errorf("Unknown provider [%v],Currently supported providers: [azblob, gs, s3]", provider)
+		return fmt.Errorf("unknown provider [%v],currently supported providers: [azblob, gs, s3]", provider)
 	}
 
 }

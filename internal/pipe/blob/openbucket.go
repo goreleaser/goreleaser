@@ -23,17 +23,17 @@ type OpenBucket interface {
 }
 
 // Bucket is object which holds connection for Go Bucker Provider
-type bucket struct {
-	bucketConnect *gocdk.Bucket
+type Bucket struct {
+	BucketConn *gocdk.Bucket
 }
 
 // returns openbucket connection for list of providers
 func newOpenBucket() OpenBucket {
-	return bucket{}
+	return Bucket{}
 }
 
 // BucketConnect makes connection with provider
-func (b bucket) BucketConnect(ctx *context.Context, bucketURL string) (*gocdk.Bucket, error) {
+func (b Bucket) BucketConnect(ctx *context.Context, bucketURL string) (*gocdk.Bucket, error) {
 
 	bucketConnection, err := gocdk.OpenBucket(ctx, bucketURL)
 	if err != nil {
@@ -44,7 +44,7 @@ func (b bucket) BucketConnect(ctx *context.Context, bucketURL string) (*gocdk.Bu
 
 // UploadBucket takes connection initilized from newOpenBucket to upload goreleaser artifacts
 // Takes goreleaser context(which includes artificats) and bucketURL for upload destination (gs://gorelease-bucket)
-func (b bucket) UploadBucket(ctx *context.Context, bucketURL string) error {
+func (b Bucket) UploadBucket(ctx *context.Context, bucketURL string) error {
 
 	// Get the openbucket connection for specific provider
 	openbucketConn, err := b.BucketConnect(ctx, bucketURL)
@@ -77,32 +77,31 @@ func (b bucket) UploadBucket(ctx *context.Context, bucketURL string) error {
 
 			w, err := openbucketConn.NewWriter(ctx, artifact.Path, nil)
 			if err != nil {
-				return fmt.Errorf("Failed to obtain writer: %s", err)
+				return fmt.Errorf("failed to obtain writer: %s", err)
 			}
 			_, err = w.Write(data)
 			if err != nil {
 				if errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound") {
-					return fmt.Errorf("(%v) Provided bucket does not exist", bucketURL)
+					return fmt.Errorf("(%v) provided bucket does not exist", bucketURL)
 				}
-				return fmt.Errorf("Failed to write to bucket : %s", err)
+				return fmt.Errorf("failed to write to bucket : %s", err)
 			}
 			if err = w.Close(); err != nil {
 				// Invalid AWS Keys
-				if errorContains(err, "InvalidAccessKeyId") {
-					return fmt.Errorf("The AWS Access Key Id you provided does not exist in our records")
-					// Invalid AZURE_STORAGE_KEY
-				} else if errorContains(err, "AuthenticationFailed") {
-					return fmt.Errorf("The Azure Storage Key you provided is not valid")
-					// Invalid GC Credentials
-				} else if errorContains(err, "invalid_grant") {
-					return fmt.Errorf("The Google App Credentials you provided is not valid")
-				} else if errorContains(err, "no such host") {
-					return fmt.Errorf("The Azure Storage Account you provided is not valid")
-					// Not existing bucket
-				} else if errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound") {
-					return fmt.Errorf("(%v) Provided bucket does not exist", bucketURL)
-				} else {
-					return fmt.Errorf("Failed to close Bucket writer: %s", err)
+				switch {
+
+				case errorContains(err, "InvalidAccessKeyId"):
+					return fmt.Errorf("aws access key id you provided does not exist in our records")
+				case errorContains(err, "AuthenticationFailed"):
+					return fmt.Errorf("azure storage key you provided is not valid")
+				case errorContains(err, "invalid_grant"):
+					return fmt.Errorf("google app credentials you provided is not valid")
+				case errorContains(err, "no such host"):
+					return fmt.Errorf("azure storage account you provided is not valid")
+				case errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound"):
+					return fmt.Errorf("(%v) provided bucket does not exist", bucketURL)
+				default:
+					return fmt.Errorf("failed to close Bucket writer: %s", err)
 				}
 			}
 			return err

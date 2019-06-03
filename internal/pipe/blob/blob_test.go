@@ -203,7 +203,6 @@ func TestPipe_Publish(t *testing.T) {
 	}
 	tests := []struct {
 		name          string
-		p             Pipe
 		args          args
 		wantErr       bool
 		wantErrString string
@@ -212,19 +211,19 @@ func TestPipe_Publish(t *testing.T) {
 			name:          "Azure Blob Bucket test Publish",
 			args:          args{azblobctx},
 			wantErr:       false,
-			wantErrString: "The Azure Storage Account you provided is not valid",
+			wantErrString: "azure storage account you provided is not valid",
 		},
 		{
 			name:          "Google Cloud Storage Bucket Test Publish",
 			args:          args{gsctx},
 			wantErr:       false,
-			wantErrString: "The Google App Credentials you provided is not valid",
+			wantErrString: "google app credentials you provided is not valid",
 		},
 		{
 			name:          "AWS S3 Bucket Test Publish",
 			args:          args{s3ctx},
 			wantErr:       false,
-			wantErrString: "The AWS Access Key Id you provided does not exist in our records",
+			wantErrString: "aws access key id you provided does not exist in our records",
 		},
 	}
 	for _, tt := range tests {
