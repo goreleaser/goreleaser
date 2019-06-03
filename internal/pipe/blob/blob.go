@@ -15,18 +15,12 @@ import (
 )
 
 // Pipe for Artifactory
-type Pipe struct {
-	bucket OpenBucket
-}
+type Pipe struct{}
 
 // String returns the description of the pipe
 func (Pipe) String() string {
 	return "Blob"
 }
-
-var (
-	openbucket = newOpenBucket()
-)
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
@@ -54,13 +48,13 @@ func (Pipe) Publish(ctx *context.Context) error {
 	if len(ctx.Config.Blob) == 0 {
 		return pipe.Skip("Blob section is not configured")
 	}
-	// Openning connectiong to the list of buckets
-
+	// Openning connection to the list of buckets
+	o := newOpenBucket()
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, conf := range ctx.Config.Blob {
 		conf := conf
 		g.Go(func() error {
-			return openbucket.UploadBucket(ctx, fmt.Sprintf("%s://%s", conf.Provider, conf.Bucket))
+			return o.UploadBucket(ctx, fmt.Sprintf("%s://%s", conf.Provider, conf.Bucket))
 		})
 	}
 	return g.Wait()
