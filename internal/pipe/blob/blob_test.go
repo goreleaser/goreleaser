@@ -81,7 +81,7 @@ func TestDefaultsWithInvalidProvider(t *testing.T) {
 
 	// This is invalid provider, meaning not registred with GO CDK
 	invalidProvider := "bar"
-	errorString := fmt.Sprintf("Unknown provider [%v],Currently supported providers: [azblob, gs, s3]", invalidProvider)
+	errorString := fmt.Sprintf("unknown provider [%v],currently supported providers: [azblob, gs, s3]", invalidProvider)
 	var ctx = context.New(config.Project{
 		Blob: []config.Blob{
 			{
