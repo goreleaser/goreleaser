@@ -303,6 +303,7 @@ type S3 struct {
 type Blob struct {
 	Bucket   string
 	Provider string
+	Folder   string
 }
 
 // Put HTTP upload configuration
@@ -338,7 +339,7 @@ type Project struct {
 	Artifactories []Put       `yaml:",omitempty"`
 	Puts          []Put       `yaml:",omitempty"`
 	S3            []S3        `yaml:"s3,omitempty"`
-	Blob          []Blob      `yaml:"blob,omitempty"`
+	Blobs         []Blob      `yaml:"blob,omitempty"`
 	Changelog     Changelog   `yaml:",omitempty"`
 	Dist          string      `yaml:",omitempty"`
 	Sign          Sign        `yaml:",omitempty"`

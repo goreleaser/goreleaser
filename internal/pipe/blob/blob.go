@@ -6,6 +6,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 
 	// Import the blob packages we want to be able to open.
@@ -24,13 +25,14 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	for i := range ctx.Config.Blob {
-		blob := &ctx.Config.Blob[i]
-		if blob.Bucket == "" {
-			continue
+	for i := range ctx.Config.Blobs {
+		blob := &ctx.Config.Blobs[i]
+
+		if blob.Bucket == "" || blob.Provider == "" {
+			return fmt.Errorf("bucket or provider cannot be empty")
 		}
-		if blob.Provider == "" {
-			blob.Provider = "azblob"
+		if blob.Folder == "" {
+			blob.Folder = "{{ .ProjectName }}/{{ .Tag }}"
 		}
 		// Validation before opening connection to bucket
 		// gocdk also does this validation but doing it in advance for better error handling
@@ -45,16 +47,21 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Publish to specified blob bucket url
 func (Pipe) Publish(ctx *context.Context) error {
-	if len(ctx.Config.Blob) == 0 {
+	if len(ctx.Config.Blobs) == 0 {
 		return pipe.Skip("Blob section is not configured")
 	}
 	// Openning connection to the list of buckets
 	o := newOpenBucket()
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, conf := range ctx.Config.Blob {
+	for _, conf := range ctx.Config.Blobs {
 		conf := conf
+		template := tmpl.New(ctx)
+		folder, err := template.Apply(conf.Folder)
+		if err != nil {
+			return err
+		}
 		g.Go(func() error {
-			return o.UploadBucket(ctx, fmt.Sprintf("%s://%s", conf.Provider, conf.Bucket))
+			return o.Upload(ctx, fmt.Sprintf("%s://%s", conf.Provider, conf.Bucket), folder)
 		})
 	}
 	return g.Wait()

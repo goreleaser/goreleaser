@@ -17,12 +17,17 @@ blob:
     provider: azblob
     # Template for the bucket name
     bucket: goreleaser-bucket
+    # Template for the path/name inside the bucket.
+    # Default is `{{ .ProjectName }}/{{ .Tag }}`
+    folder: "foo/bar/{{.Version}}"
   -
     provider: gs
     bucket: goreleaser-bucket
+    folder: "foo/bar/{{.Version}}"
   -
     provider: s3
     bucket: goreleaser-bucket
+    folder: "foo/bar/{{.Version}}"
 ```
 
 > Learn more about the [name template engine](/templates).

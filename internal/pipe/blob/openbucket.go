@@ -3,6 +3,7 @@ package blob
 import (
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -18,8 +19,8 @@ import (
 
 // OpenBucket is the interface that wraps the BucketConnect and UploadBucket method
 type OpenBucket interface {
-	BucketConnect(ctx *context.Context, bucketURL string) (*gocdk.Bucket, error)
-	UploadBucket(ctx *context.Context, bucketURL string) error
+	Connect(ctx *context.Context, bucketURL string) (*gocdk.Bucket, error)
+	Upload(ctx *context.Context, bucketURL string, folder string) error
 }
 
 // Bucket is object which holds connection for Go Bucker Provider
@@ -33,7 +34,7 @@ func newOpenBucket() OpenBucket {
 }
 
 // BucketConnect makes connection with provider
-func (b Bucket) BucketConnect(ctx *context.Context, bucketURL string) (*gocdk.Bucket, error) {
+func (b Bucket) Connect(ctx *context.Context, bucketURL string) (*gocdk.Bucket, error) {
 
 	bucketConnection, err := gocdk.OpenBucket(ctx, bucketURL)
 	if err != nil {
@@ -44,10 +45,10 @@ func (b Bucket) BucketConnect(ctx *context.Context, bucketURL string) (*gocdk.Bu
 
 // UploadBucket takes connection initilized from newOpenBucket to upload goreleaser artifacts
 // Takes goreleaser context(which includes artificats) and bucketURL for upload destination (gs://gorelease-bucket)
-func (b Bucket) UploadBucket(ctx *context.Context, bucketURL string) error {
+func (b Bucket) Upload(ctx *context.Context, bucketURL string, folder string) error {
 
 	// Get the openbucket connection for specific provider
-	openbucketConn, err := b.BucketConnect(ctx, bucketURL)
+	openbucketConn, err := b.Connect(ctx, bucketURL)
 	if err != nil {
 		return err
 	}
@@ -75,7 +76,7 @@ func (b Bucket) UploadBucket(ctx *context.Context, bucketURL string) error {
 				"artifact": artifact.Name,
 			}).Info("uploading")
 
-			w, err := openbucketConn.NewWriter(ctx, artifact.Path, nil)
+			w, err := openbucketConn.NewWriter(ctx, filepath.Join(folder, artifact.Path), nil)
 			if err != nil {
 				return fmt.Errorf("failed to obtain writer: %s", err)
 			}
@@ -87,7 +88,6 @@ func (b Bucket) UploadBucket(ctx *context.Context, bucketURL string) error {
 				return fmt.Errorf("failed to write to bucket : %s", err)
 			}
 			if err = w.Close(); err != nil {
-				// Invalid AWS Keys
 				switch {
 
 				case errorContains(err, "InvalidAccessKeyId"):
