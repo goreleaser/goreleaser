@@ -324,9 +324,9 @@ type DummyClient struct {
 	Lock                sync.Mutex
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
+func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
 	if client.FailToCreateRelease {
-		return 0, errors.New("release failed")
+		return "", errors.New("release failed")
 	}
 	client.CreatedRelease = true
 	return
@@ -336,7 +336,7 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID int64, name string, file *os.File) error {
+func (client *DummyClient) Upload(ctx *context.Context, releaseID string, name string, file *os.File) error {
 	client.Lock.Lock()
 	defer client.Lock.Unlock()
 	// ensure file is read to better mimic real behavior
