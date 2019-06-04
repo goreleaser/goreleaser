@@ -17,7 +17,7 @@ require (
 	github.com/mitchellh/go-homedir v1.0.0
 	github.com/pkg/errors v0.8.0
 	github.com/stretchr/testify v1.3.0
-	github.com/xanzy/go-gitlab v0.16.1
+	github.com/xanzy/go-gitlab v0.18.0
 	golang.org/x/oauth2 v0.0.0-20181106182150-f42d05182288
 	golang.org/x/sync v0.0.0-20190227155943-e225da77a7e6
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
