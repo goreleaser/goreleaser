@@ -7,6 +7,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
+	"github.com/goreleaser/goreleaser/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
 	"github.com/goreleaser/goreleaser/internal/pipe/put"
@@ -36,6 +37,7 @@ type Publisher interface {
 // nolint: gochecknoglobals
 var publishers = []Publisher{
 	s3.Pipe{},
+	blob.Pipe{},
 	put.Pipe{},
 	artifactory.Pipe{},
 	docker.Pipe{},
