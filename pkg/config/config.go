@@ -292,7 +292,7 @@ type Changelog struct {
 // values like the github token for example
 type EnvFiles struct {
 	GitHubToken string `yaml:"github_token,omitempty"`
-	GitlabToken string `yaml:"gitlab_token,omitempty"`
+	GitLabToken string `yaml:"gitlab_token,omitempty"`
 }
 
 // Before config
