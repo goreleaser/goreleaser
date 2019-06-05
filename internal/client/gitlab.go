@@ -96,8 +96,8 @@ func (c *gitlabClient) Upload(
 	name string,
 	file *os.File,
 ) error {
-	gitlabBaseURL := ctx.Config.GitLabURLs.API
-	projectID := ctx.Config.Release.GitHub.Owner + "/" + ctx.Config.Release.GitHub.Owner
+	gitlabBaseURL := ctx.Config.GitLabURLs.API // TODO check
+	projectID := ctx.Config.Release.GitLab.Owner + "/" + ctx.Config.Release.GitLab.Name
 	// projectFile from upload: /uploads/<sha>/filename.txt
 	relativeUploadURL := "TODO" // from context
 	linkURL := gitlabBaseURL + "/" + projectID + relativeUploadURL
