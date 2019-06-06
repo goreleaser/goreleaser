@@ -3,6 +3,7 @@ package client
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -21,4 +22,15 @@ type Client interface {
 	CreateRelease(ctx *context.Context, body string) (releaseID string, err error)
 	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content bytes.Buffer, path, message string) (err error)
 	Upload(ctx *context.Context, releaseID string, name string, file *os.File) (err error)
+}
+
+// New creates a new client depending on the token type
+func New(ctx *context.Context) (Client, error) {
+	if ctx.TokenType == context.TokenTypeGitHub {
+		return NewGitHub(ctx)
+	}
+	if ctx.TokenType == context.TokenTypeGitLab {
+		return NewGitLab(ctx)
+	}
+	return nil, fmt.Errorf("client is not yet implemented: %s", ctx.TokenType)
 }
