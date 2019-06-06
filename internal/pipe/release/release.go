@@ -53,7 +53,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Publish github release
 func (Pipe) Publish(ctx *context.Context) error {
-	c, err := client.NewGitHub(ctx)
+	c, err := client.New(ctx)
 	if err != nil {
 		return err
 	}
