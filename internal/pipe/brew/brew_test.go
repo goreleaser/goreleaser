@@ -342,6 +342,13 @@ func TestRunPipeNoUpload(t *testing.T) {
 		}
 		assertNoPublish(tt)
 	})
+	t.Run("skip publish because not a github release", func(tt *testing.T) {
+		ctx.Config.Release.Draft = false
+		ctx.Config.Brew.SkipUpload = "false"
+		ctx.SkipPublish = false
+		ctx.TokenType = context.TokenTypeGitLab
+		assertNoPublish(tt)
+	})
 }
 
 func TestRunPipeFormatBinary(t *testing.T) {
