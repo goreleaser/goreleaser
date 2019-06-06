@@ -26,7 +26,7 @@ $ brew install goreleaser
 **snapcraft**:
 
 ```sh
-$ snap install goreleaser
+$ sudo snap install --classic goreleaser
 ```
 
 **scoop**:
