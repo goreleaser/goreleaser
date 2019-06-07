@@ -19,6 +19,10 @@ release:
   github:
     owner: user
     name: repo
+  # Note: can either be github or gitlab. Not both atm 
+  # gitlab:
+  #   owner: user
+  #   name: repo
 
   # If set to true, will not auto-publish the release.
   # Default is false.
