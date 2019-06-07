@@ -1,0 +1,7 @@
+release:
+  github:
+    owner: githubUser
+    name: githubRepo
+  gitlab:
+    owner: gitlabUser
+    name: gitlabRepo

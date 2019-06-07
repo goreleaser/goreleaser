@@ -3,6 +3,7 @@
 package config
 
 import (
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -12,6 +13,10 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// ErrMultipleReleases indicates that multiple releases are defined. ATM only one of them is allowed
+// See https://github.com/goreleaser/goreleaser/pull/809
+var ErrMultipleReleases = errors.New("both gitlab and github releases are defined. Only one is allowed")
+
 // GitHubURLs holds the URLs to be used when using github enterprise
 type GitHubURLs struct {
 	API           string `yaml:"api,omitempty"`
@@ -20,7 +25,7 @@ type GitHubURLs struct {
 	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
 }
 
-// GitLabURLs holds the URLs to be used when using gitlab enterprise
+// GitLabURLs holds the URLs to be used when using gitlab ce/enterprise
 type GitLabURLs struct {
 	API           string `yaml:"api,omitempty"`
 	Upload        string `yaml:"upload,omitempty"`   // TODO mavogel
@@ -46,7 +51,6 @@ func (r Repo) String() string {
 type Homebrew struct {
 	Name             string       `yaml:",omitempty"`
 	GitHub           Repo         `yaml:",omitempty"`
-	GitLab           Repo         `yaml:",omitempty"`
 	CommitAuthor     CommitAuthor `yaml:"commit_author,omitempty"`
 	Folder           string       `yaml:",omitempty"`
 	Caveats          string       `yaml:",omitempty"`
@@ -169,7 +173,7 @@ type Archive struct {
 
 // Release config used for the GitHub/GitLab release
 type Release struct {
-	GitHub       Repo   `yaml:",omitempty"` // TODO gitlab
+	GitHub       Repo   `yaml:",omitempty"`
 	GitLab       Repo   `yaml:",omitempty"`
 	Draft        bool   `yaml:",omitempty"`
 	Disable      bool   `yaml:",omitempty"`
@@ -355,8 +359,8 @@ type Project struct {
 	// should be set if using github enterprise
 	GitHubURLs GitHubURLs `yaml:"github_urls,omitempty"`
 
-	// should be set if using a private gitlab TODO gitlab
-	GitLabURLs GitHubURLs `yaml:"gitlab_urls,omitempty"`
+	// should be set if using a private gitlab
+	GitLabURLs GitLabURLs `yaml:"gitlab_urls,omitempty"`
 }
 
 // Load config file
@@ -377,5 +381,19 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 	}
 	err = yaml.UnmarshalStrict(data, &config)
 	log.WithField("config", config).Debug("loaded config file")
+	if err != nil {
+		return config, err
+	}
+	err = validateConfig(config)
 	return config, err
+}
+
+// validateConfig validates the config if the combination of properties
+// is valid
+func validateConfig(config Project) error {
+	if config.Release.GitHub.String() != "" && config.Release.GitLab.String() != "" {
+		return ErrMultipleReleases
+	}
+
+	return nil
 }
