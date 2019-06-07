@@ -92,7 +92,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 	// For simplicity we use this check because the functionality will be implemented later for
 	// all types of releases. See https://github.com/goreleaser/goreleaser/pull/1038#issuecomment-498891464
 	if ctx.TokenType == context.TokenTypeGitLab {
-		return pipe.Skip("brew section is only configured for github repositories")
+		return pipe.Skip("brew pipe is only configured for github releases")
 	}
 	if ctx.Config.Brew.GitHub.Name == "" {
 		return pipe.Skip("brew section is not configured")
