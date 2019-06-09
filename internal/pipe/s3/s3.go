@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -31,6 +32,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		if s3.Bucket == "" {
 			continue
 		}
+		deprecate.Notice("s3")
 		if s3.Folder == "" {
 			s3.Folder = "{{ .ProjectName }}/{{ .Tag }}"
 		}
