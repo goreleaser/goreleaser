@@ -113,15 +113,6 @@ func TestRunPipe(t *testing.T) {
 			ctx.Config.Brews[0].DownloadStrategy = "CustomDownloadStrategy"
 			ctx.Config.Brews[0].CustomRequire = "custom_download_strategy"
 		},
-		"binary_overridden": func(ctx *context.Context) {
-			ctx.Config.Archive.Format = "binary"
-			ctx.Config.Archive.FormatOverrides = []config.FormatOverride{
-				{
-					Goos:   "darwin",
-					Format: "zip",
-				},
-			}
-		},
 		"custom_block": func(ctx *context.Context) {
 			ctx.Config.Brews[0].CustomBlock = `head "https://github.com/caarlos0/test.git"`
 		},
@@ -141,9 +132,6 @@ func TestRunPipe(t *testing.T) {
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
-					Archive: config.Archive{
-						Format: "tar.gz",
-					},
 					Release: config.Release{
 						GitHub: config.Repo{
 							Owner: "test",
@@ -156,6 +144,9 @@ func TestRunPipe(t *testing.T) {
 							GitHub: config.Repo{
 								Owner: "test",
 								Name:  "test",
+							},
+							IDs: []string{
+								"foo",
 							},
 							Description:  "A run pipe test formula",
 							Homepage:     "https://github.com/goreleaser",
@@ -170,14 +161,28 @@ func TestRunPipe(t *testing.T) {
 				},
 			}
 			fn(ctx)
-			var format = "todo"
-			var path = filepath.Join(folder, "bin."+format)
 			ctx.Artifacts.Add(artifact.Artifact{
-				Name:   "bin." + format,
+				Name:   "bar_bin.tar.gz",
+				Path:   "doesnt matter",
+				Goos:   "darwin",
+				Goarch: "amd64",
+				Type:   artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					"ID":     "bar",
+					"Format": "tar.gz",
+				},
+			})
+			var path = filepath.Join(folder, "bin.tar.gz")
+			ctx.Artifacts.Add(artifact.Artifact{
+				Name:   "bin.tar.gz",
 				Path:   path,
 				Goos:   "darwin",
 				Goarch: "amd64",
 				Type:   artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					"ID":     "foo",
+					"Format": "tar.gz",
+				},
 			})
 
 			_, err = os.Create(path)
@@ -205,9 +210,6 @@ func TestRunPipe(t *testing.T) {
 func TestRunPipeNoDarwin64Build(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Archive: config.Archive{
-				Format: "tar.gz",
-			},
 			Brews: []config.Homebrew{
 				{
 					GitHub: config.Repo{
@@ -219,16 +221,13 @@ func TestRunPipeNoDarwin64Build(t *testing.T) {
 		},
 	}
 	client := &DummyClient{}
-	assert.Equal(t, ErrNoDarwin64Build, doRun(ctx, ctx.Config.Brews[0], client))
+	assert.Equal(t, ErrNoArchivesFound, doRun(ctx, ctx.Config.Brews[0], client))
 	assert.False(t, client.CreatedFile)
 }
 
 func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
-			Archive: config.Archive{
-				Format: "tar.gz",
-			},
 			Brews: []config.Homebrew{
 				{
 					GitHub: config.Repo{
@@ -239,22 +238,34 @@ func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 			},
 		},
 	)
+
+	f, err := ioutil.TempFile("", "")
+	assert.NoError(t, err)
+	defer f.Close()
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "bin1",
-		Path:   "doesnt mather",
+		Path:   f.Name(),
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID":     "foo",
+			"Format": "tar.gz",
+		},
 	})
 	ctx.Artifacts.Add(artifact.Artifact{
 		Name:   "bin2",
-		Path:   "doesnt mather",
+		Path:   f.Name(),
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID":     "bar",
+			"Format": "tar.gz",
+		},
 	})
 	client := &DummyClient{}
-	assert.Equal(t, ErrTooManyDarwin64Builds, doRun(ctx, ctx.Config.Brews[0], client))
+	assert.Equal(t, ErrMultipleArchivesSameOS, doRun(ctx, ctx.Config.Brews[0], client))
 	assert.False(t, client.CreatedFile)
 }
 
@@ -270,9 +281,6 @@ func TestRunPipeBrewNotSetup(t *testing.T) {
 func TestRunPipeBinaryRelease(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
-			Archive: config.Archive{
-				Format: "binary",
-			},
 			Brews: []config.Homebrew{
 				{
 					GitHub: config.Repo{
@@ -291,7 +299,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Type:   artifact.Binary,
 	})
 	client := &DummyClient{}
-	testlib.AssertSkipped(t, doRun(ctx, ctx.Config.Brews[0], client))
+	assert.Equal(t, ErrNoArchivesFound, doRun(ctx, ctx.Config.Brews[0], client))
 	assert.False(t, client.CreatedFile)
 }
 
@@ -321,6 +329,10 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID":     "foo",
+			"Format": "tar.gz",
+		},
 	})
 	client := &DummyClient{}
 

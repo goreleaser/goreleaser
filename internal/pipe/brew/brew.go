@@ -22,13 +22,13 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// ErrNoDarwin64Build when there is no build for darwin_amd64
-var ErrNoDarwin64Build = errors.New("brew tap requires one darwin amd64 build")
+// ErrNoArchivesFound happens when 0 archives are found
+var ErrNoArchivesFound = errors.New("brew tap: no archives found matching criteria")
 
-// ErrTooManyDarwin64Builds when there are too many builds for darwin_amd64
-var ErrTooManyDarwin64Builds = errors.New("brew tap requires at most one darwin amd64 build")
-
-var ErrNoArchivesFound = errors.New("no archives found for the brew tap")
+// ErrMultipleArchivesSameOS happens when the config yields multiple archives
+// for linux or windows.
+// TODO: improve this confusing error message
+var ErrMultipleArchivesSameOS = errors.New("brew tap: one tap can handle only 1 linux and 1 macos archive")
 
 // Pipe for brew deployment
 type Pipe struct{}
@@ -64,6 +64,8 @@ func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Brews {
 		var brew = &ctx.Config.Brews[i]
 		if brew.Install == "" {
+			// TODO: maybe replace this with a simplear also optimistic
+			// approach of just doing `bin.install "project_name"`?
 			var installs []string
 			for _, build := range ctx.Config.Builds {
 				if !isBrewBuild(build) {
@@ -118,6 +120,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 			artifact.ByGoos("darwin"),
 			artifact.ByGoos("linux"),
 		),
+		artifact.ByFormats("zip", "tar.gz"),
 		artifact.ByGoarch("amd64"),
 		artifact.ByType(artifact.UploadableArchive),
 	}
@@ -225,8 +228,14 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, artifacts []artifact.Art
 			SHA256:      sum,
 		}
 		if artifact.Goos == "darwin" {
+			if result.MacOS.DownloadURL != "" {
+				return result, ErrMultipleArchivesSameOS
+			}
 			result.MacOS = down
 		} else if artifact.Goos == "linux" {
+			if result.Linux.DownloadURL != "" {
+				return result, ErrMultipleArchivesSameOS
+			}
 			result.Linux = down
 		}
 	}
