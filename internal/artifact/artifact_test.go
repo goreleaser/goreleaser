@@ -232,3 +232,40 @@ func TestByIDs(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByIDs("foo")).items, 2)
 	require.Len(t, artifacts.Filter(ByIDs("foo", "bar")).items, 3)
 }
+
+func TestByFormats(t *testing.T) {
+	var data = []Artifact{
+		{
+			Name: "foo",
+			Extra: map[string]interface{}{
+				"Format": "zip",
+			},
+		},
+		{
+			Name: "bar",
+			Extra: map[string]interface{}{
+				"Format": "tar.gz",
+			},
+		},
+		{
+			Name: "foobar",
+			Extra: map[string]interface{}{
+				"Format": "zip",
+			},
+		},
+		{
+			Name: "bin",
+			Extra: map[string]interface{}{
+				"Format": "binary",
+			},
+		},
+	}
+	var artifacts = New()
+	for _, a := range data {
+		artifacts.Add(a)
+	}
+
+	require.Len(t, artifacts.Filter(ByFormats("binary")).items, 1)
+	require.Len(t, artifacts.Filter(ByFormats("zip")).items, 2)
+	require.Len(t, artifacts.Filter(ByFormats("zip", "tar.gz")).items, 3)
+}
