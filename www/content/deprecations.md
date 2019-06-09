@@ -33,6 +33,27 @@ to this:
 
 -->
 
+### brew
+
+> since 2019-06-09
+
+Brew was deprecated in favor of its plural form.
+
+Change this:
+
+```yaml
+brew:
+  # etc
+```
+
+to this:
+
+```yaml
+brews:
+  -
+    # etc
+```
+
 ### s3
 
 > since 2019-06-09
