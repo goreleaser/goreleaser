@@ -72,6 +72,7 @@ func TestUpload(t *testing.T) {
 			{
 				Bucket:   "test",
 				Endpoint: "http://" + listen,
+				IDs:      []string{"foo", "bar"},
 			},
 		},
 	})
@@ -80,11 +81,17 @@ func TestUpload(t *testing.T) {
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tgzpath,
+		Extra: map[string]interface{}{
+			"ID": "foo",
+		},
 	})
 	ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debpath,
+		Extra: map[string]interface{}{
+			"ID": "bar",
+		},
 	})
 	var name = "test_upload"
 	defer stop(t, name)

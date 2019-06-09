@@ -61,7 +61,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 			return err
 		}
 		g.Go(func() error {
-			return o.Upload(ctx, fmt.Sprintf("%s://%s", conf.Provider, conf.Bucket), folder)
+			return o.Upload(ctx, conf, folder)
 		})
 	}
 	return g.Wait()

@@ -15,8 +15,15 @@ blob:
     # azblob for Azure Blob Storage
     # gs for Google Cloud Storage
     provider: azblob
+
     # Template for the bucket name
     bucket: goreleaser-bucket
+
+    # IDs of the artifacts you want to upload.
+    ids:
+    - foo
+    - bar
+
     # Template for the path/name inside the bucket.
     # Default is `{{ .ProjectName }}/{{ .Tag }}`
     folder: "foo/bar/{{.Version}}"

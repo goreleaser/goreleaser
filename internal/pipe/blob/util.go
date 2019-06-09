@@ -8,7 +8,6 @@ import (
 
 // Check required ENV variables based on Blob Provider
 func checkProvider(provider string) error {
-
 	switch provider {
 	case "azblob":
 		return checkEnv("AZURE_STORAGE_ACCOUNT", "AZURE_STORAGE_KEY")
@@ -19,11 +18,9 @@ func checkProvider(provider string) error {
 	default:
 		return fmt.Errorf("unknown provider [%v],currently supported providers: [azblob, gs, s3]", provider)
 	}
-
 }
 
 func checkEnv(envs ...string) error {
-
 	var missingEnv []string
 
 	for _, env := range envs {
@@ -41,7 +38,6 @@ func checkEnv(envs ...string) error {
 
 // Check if error contains specific string
 func errorContains(err error, subs ...string) bool {
-
 	for _, sub := range subs {
 		if strings.Contains(err.Error(), sub) {
 			return true

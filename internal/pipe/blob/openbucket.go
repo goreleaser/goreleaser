@@ -8,6 +8,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	gocdk "gocloud.dev/blob"
 
@@ -20,7 +21,7 @@ import (
 // OpenBucket is the interface that wraps the BucketConnect and UploadBucket method
 type OpenBucket interface {
 	Connect(ctx *context.Context, bucketURL string) (*gocdk.Bucket, error)
-	Upload(ctx *context.Context, bucketURL string, folder string) error
+	Upload(ctx *context.Context, conf config.Blob, folder string) error
 }
 
 // Bucket is object which holds connection for Go Bucker Provider
@@ -33,9 +34,8 @@ func newOpenBucket() OpenBucket {
 	return Bucket{}
 }
 
-// BucketConnect makes connection with provider
+// Connect makes connection with provider
 func (b Bucket) Connect(ctx *context.Context, bucketURL string) (*gocdk.Bucket, error) {
-
 	bucketConnection, err := gocdk.OpenBucket(ctx, bucketURL)
 	if err != nil {
 		return nil, err
@@ -43,9 +43,10 @@ func (b Bucket) Connect(ctx *context.Context, bucketURL string) (*gocdk.Bucket, 
 	return bucketConnection, nil
 }
 
-// UploadBucket takes connection initilized from newOpenBucket to upload goreleaser artifacts
+// Upload takes connection initilized from newOpenBucket to upload goreleaser artifacts
 // Takes goreleaser context(which includes artificats) and bucketURL for upload destination (gs://gorelease-bucket)
-func (b Bucket) Upload(ctx *context.Context, bucketURL string, folder string) error {
+func (b Bucket) Upload(ctx *context.Context, conf config.Blob, folder string) error {
+	var bucketURL = fmt.Sprintf("%s://%s", conf.Provider, conf.Bucket)
 
 	// Get the openbucket connection for specific provider
 	openbucketConn, err := b.Connect(ctx, bucketURL)
@@ -54,16 +55,19 @@ func (b Bucket) Upload(ctx *context.Context, bucketURL string, folder string) er
 	}
 	defer openbucketConn.Close()
 
+	var filter = artifact.Or(
+		artifact.ByType(artifact.UploadableArchive),
+		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.Checksum),
+		artifact.ByType(artifact.Signature),
+		artifact.ByType(artifact.LinuxPackage),
+	)
+	if len(conf.IDs) > 0 {
+		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
+	}
+
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(
-		artifact.Or(
-			artifact.ByType(artifact.UploadableArchive),
-			artifact.ByType(artifact.UploadableBinary),
-			artifact.ByType(artifact.Checksum),
-			artifact.ByType(artifact.Signature),
-			artifact.ByType(artifact.LinuxPackage),
-		),
-	).List() {
+	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
 		artifact := artifact
 		g.Go(func() error {
 			// Prepare artifact for upload.
@@ -89,7 +93,6 @@ func (b Bucket) Upload(ctx *context.Context, bucketURL string, folder string) er
 			}
 			if err = w.Close(); err != nil {
 				switch {
-
 				case errorContains(err, "InvalidAccessKeyId"):
 					return fmt.Errorf("aws access key id you provided does not exist in our records")
 				case errorContains(err, "AuthenticationFailed"):
