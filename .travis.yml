@@ -17,7 +17,7 @@ install:
   - sudo snap install snapcraft --classic
 script:
   - make ci
-  - test -n "$TRAVIS_TAG" || ./goreleaser --snapshot --debug
+  - test -n "$TRAVIS_TAG" || ./goreleaser --snapshot
 after_success:
   - bash <(curl -s https://codecov.io/bash)
   - make static
