@@ -35,13 +35,19 @@ func TestSimpleName(t *testing.T) {
 }
 
 var defaultTemplateData = templateData{
-	Desc:        "Some desc",
-	Homepage:    "https://google.com",
-	DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
-	Name:        "Test",
-	Version:     "0.1.3",
-	Caveats:     []string{},
-	SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
+	Desc:     "Some desc",
+	Homepage: "https://google.com",
+	MacOS: downloadable{
+		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
+		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
+	},
+	Linux: downloadable{
+		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
+		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+	},
+	Name:    "Test",
+	Version: "0.1.3",
+	Caveats: []string{},
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
@@ -101,11 +107,11 @@ func TestRunPipe(t *testing.T) {
 			ctx.Config.GitHubURLs.Download = "http://github.example.org"
 		},
 		"custom_download_strategy": func(ctx *context.Context) {
-			ctx.Config.Brew.DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
+			ctx.Config.Brews[0].DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
 		},
 		"custom_require": func(ctx *context.Context) {
-			ctx.Config.Brew.DownloadStrategy = "CustomDownloadStrategy"
-			ctx.Config.Brew.CustomRequire = "custom_download_strategy"
+			ctx.Config.Brews[0].DownloadStrategy = "CustomDownloadStrategy"
+			ctx.Config.Brews[0].CustomRequire = "custom_download_strategy"
 		},
 		"binary_overridden": func(ctx *context.Context) {
 			ctx.Config.Archive.Format = "binary"
@@ -117,7 +123,7 @@ func TestRunPipe(t *testing.T) {
 			}
 		},
 		"custom_block": func(ctx *context.Context) {
-			ctx.Config.Brew.CustomBlock = `head "https://github.com/caarlos0/test.git"`
+			ctx.Config.Brews[0].CustomBlock = `head "https://github.com/caarlos0/test.git"`
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -144,25 +150,27 @@ func TestRunPipe(t *testing.T) {
 							Name:  "test",
 						},
 					},
-					Brew: config.Homebrew{
-						Name: name,
-						GitHub: config.Repo{
-							Owner: "test",
-							Name:  "test",
+					Brews: []config.Homebrew{
+						{
+							Name: name,
+							GitHub: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description:  "A run pipe test formula",
+							Homepage:     "https://github.com/goreleaser",
+							Caveats:      "don't do this",
+							Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
+							Plist:        `<xml>whatever</xml>`,
+							Dependencies: []string{"zsh", "bash"},
+							Conflicts:    []string{"gtk+", "qt"},
+							Install:      `bin.install "foo"`,
 						},
-						Description:  "A run pipe test formula",
-						Homepage:     "https://github.com/goreleaser",
-						Caveats:      "don't do this",
-						Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
-						Plist:        `<xml>whatever</xml>`,
-						Dependencies: []string{"zsh", "bash"},
-						Conflicts:    []string{"gtk+", "qt"},
-						Install:      `bin.install "foo"`,
 					},
 				},
 			}
 			fn(ctx)
-			var format = getFormat(ctx)
+			var format = "todo"
 			var path = filepath.Join(folder, "bin."+format)
 			ctx.Artifacts.Add(artifact.Artifact{
 				Name:   "bin." + format,
@@ -177,7 +185,7 @@ func TestRunPipe(t *testing.T) {
 			client := &DummyClient{}
 			var distFile = filepath.Join(folder, name+".rb")
 
-			assert.NoError(t, doRun(ctx, client))
+			assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
 			assert.True(t, client.CreatedFile)
 			var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
 			if *update {
@@ -200,16 +208,18 @@ func TestRunPipeNoDarwin64Build(t *testing.T) {
 			Archive: config.Archive{
 				Format: "tar.gz",
 			},
-			Brew: config.Homebrew{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
+			Brews: []config.Homebrew{
+				{
+					GitHub: config.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
 				},
 			},
 		},
 	}
 	client := &DummyClient{}
-	assert.Equal(t, ErrNoDarwin64Build, doRun(ctx, client))
+	assert.Equal(t, ErrNoDarwin64Build, doRun(ctx, ctx.Config.Brews[0], client))
 	assert.False(t, client.CreatedFile)
 }
 
@@ -219,10 +229,12 @@ func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 			Archive: config.Archive{
 				Format: "tar.gz",
 			},
-			Brew: config.Homebrew{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
+			Brews: []config.Homebrew{
+				{
+					GitHub: config.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
 				},
 			},
 		},
@@ -242,7 +254,7 @@ func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 		Type:   artifact.UploadableArchive,
 	})
 	client := &DummyClient{}
-	assert.Equal(t, ErrTooManyDarwin64Builds, doRun(ctx, client))
+	assert.Equal(t, ErrTooManyDarwin64Builds, doRun(ctx, ctx.Config.Brews[0], client))
 	assert.False(t, client.CreatedFile)
 }
 
@@ -251,7 +263,7 @@ func TestRunPipeBrewNotSetup(t *testing.T) {
 		Config: config.Project{},
 	}
 	client := &DummyClient{}
-	testlib.AssertSkipped(t, doRun(ctx, client))
+	testlib.AssertSkipped(t, doRun(ctx, config.Homebrew{}, client))
 	assert.False(t, client.CreatedFile)
 }
 
@@ -261,10 +273,12 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 			Archive: config.Archive{
 				Format: "binary",
 			},
-			Brew: config.Homebrew{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
+			Brews: []config.Homebrew{
+				{
+					GitHub: config.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
 				},
 			},
 		},
@@ -277,7 +291,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Type:   artifact.Binary,
 	})
 	client := &DummyClient{}
-	testlib.AssertSkipped(t, doRun(ctx, client))
+	testlib.AssertSkipped(t, doRun(ctx, ctx.Config.Brews[0], client))
 	assert.False(t, client.CreatedFile)
 }
 
@@ -288,10 +302,12 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
-		Brew: config.Homebrew{
-			GitHub: config.Repo{
-				Owner: "test",
-				Name:  "test",
+		Brews: []config.Homebrew{
+			{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
 			},
 		},
 	})
@@ -309,30 +325,30 @@ func TestRunPipeNoUpload(t *testing.T) {
 	client := &DummyClient{}
 
 	var assertNoPublish = func(t *testing.T) {
-		testlib.AssertSkipped(t, doRun(ctx, client))
+		testlib.AssertSkipped(t, doRun(ctx, ctx.Config.Brews[0], client))
 		assert.False(t, client.CreatedFile)
 	}
 	t.Run("skip upload", func(tt *testing.T) {
 		ctx.Config.Release.Draft = false
-		ctx.Config.Brew.SkipUpload = "true"
+		ctx.Config.Brews[0].SkipUpload = "true"
 		ctx.SkipPublish = false
 		assertNoPublish(tt)
 	})
 	t.Run("skip publish", func(tt *testing.T) {
 		ctx.Config.Release.Draft = false
-		ctx.Config.Brew.SkipUpload = "false"
+		ctx.Config.Brews[0].SkipUpload = "false"
 		ctx.SkipPublish = true
 		assertNoPublish(tt)
 	})
 	t.Run("draft release", func(tt *testing.T) {
 		ctx.Config.Release.Draft = true
-		ctx.Config.Brew.SkipUpload = "false"
+		ctx.Config.Brews[0].SkipUpload = "false"
 		ctx.SkipPublish = false
 		assertNoPublish(tt)
 	})
 	t.Run("skip prerelease publish", func(tt *testing.T) {
 		ctx.Config.Release.Draft = false
-		ctx.Config.Brew.SkipUpload = "auto"
+		ctx.Config.Brews[0].SkipUpload = "auto"
 		ctx.SkipPublish = false
 		ctx.Semver = context.Semver{
 			Major:      1,
@@ -344,19 +360,6 @@ func TestRunPipeNoUpload(t *testing.T) {
 	})
 }
 
-func TestRunPipeFormatBinary(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
-			Archive: config.Archive{
-				Format: "binary",
-			},
-		},
-	}
-	client := &DummyClient{}
-	testlib.AssertSkipped(t, doRun(ctx, client))
-	assert.False(t, client.CreatedFile)
-}
-
 func TestDefault(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
@@ -364,6 +367,7 @@ func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
 			ProjectName: "myproject",
+			Brews:       []config.Homebrew{},
 			Builds: []config.Build{
 				{
 					Binary: "foo",
@@ -387,10 +391,10 @@ func TestDefault(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, ctx.Config.ProjectName, ctx.Config.Brew.Name)
-	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Name)
-	assert.NotEmpty(t, ctx.Config.Brew.CommitAuthor.Email)
-	assert.Equal(t, `bin.install "foo"`, ctx.Config.Brew.Install)
+	assert.Equal(t, ctx.Config.ProjectName, ctx.Config.Brews[0].Name)
+	assert.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
+	assert.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
+	assert.Equal(t, `bin.install "foo"`, ctx.Config.Brews[0].Install)
 }
 
 func TestGHFolder(t *testing.T) {
