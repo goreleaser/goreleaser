@@ -31,6 +31,7 @@ class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
+
   if OS.mac?
   	{{- if .MacOS.DownloadURL }}
     url "{{ .MacOS.DownloadURL }}"
@@ -42,6 +43,7 @@ class {{ .Name }} < Formula
     sha256 "{{ .Linux.SHA256 }}"
     {{- end }}
   end
+
   {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
 
   {{- with .CustomBlock }}
