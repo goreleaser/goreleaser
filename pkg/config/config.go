@@ -297,6 +297,7 @@ type S3 struct {
 	Profile  string
 	Endpoint string // used for minio for example
 	ACL      string
+	IDs      []string `yaml:"ids,omitempty"`
 }
 
 // Blob contains config for GO CDK blob
@@ -304,6 +305,7 @@ type Blob struct {
 	Bucket   string
 	Provider string
 	Folder   string
+	IDs      []string `yaml:"ids,omitempty"`
 }
 
 // Put HTTP upload configuration

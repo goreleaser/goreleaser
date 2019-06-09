@@ -176,30 +176,6 @@ func TestPipe_Publish(t *testing.T) {
 		Path: debpath,
 	})
 
-	// Azure Blob Context Without ENV
-	var azblobctx1 = context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "testupload1",
-		Blobs: []config.Blob{
-			{
-				Bucket:   "foobar",
-				Provider: "azblob",
-			},
-		},
-	})
-
-	azblobctx1.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	azblobctx1.Artifacts.Add(artifact.Artifact{
-		Type: artifact.UploadableArchive,
-		Name: "bin.tar.gz",
-		Path: tgzpath,
-	})
-	azblobctx1.Artifacts.Add(artifact.Artifact{
-		Type: artifact.LinuxPackage,
-		Name: "bin.deb",
-		Path: debpath,
-	})
-
 	// Google Cloud Storage Context
 	var gsctx = context.New(config.Project{
 		Dist:        folder,
@@ -219,7 +195,7 @@ func TestPipe_Publish(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tgzpath,
 	})
-	azblobctx.Artifacts.Add(artifact.Artifact{
+	gsctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debpath,
@@ -236,10 +212,8 @@ func TestPipe_Publish(t *testing.T) {
 			},
 		},
 	})
-
 	s3ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-
-	gsctx.Artifacts.Add(artifact.Artifact{
+	s3ctx.Artifacts.Add(artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tgzpath,
@@ -309,9 +283,7 @@ func setEnvVariables() {
 }
 
 func setEnv(env map[string]string) {
-
 	for k, v := range env {
 		os.Setenv(k, v)
-
 	}
 }
