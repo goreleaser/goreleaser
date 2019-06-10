@@ -43,8 +43,8 @@ var Pipeline = []Piper{
 	snapshot.Pipe{},        // snapshot version handling
 	dist.Pipe{},            // ensure ./dist is clean
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
-	changelog.Pipe{},       // builds the release changelog
 	env.Pipe{},             // load and validate environment variables
+	changelog.Pipe{},       // builds the release changelog
 	build.Pipe{},           // build
 	archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
 	nfpm.Pipe{},            // archive via fpm (deb, rpm) using "native" go impl
