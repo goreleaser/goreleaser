@@ -38,17 +38,10 @@ func (c *gitlabClient) CreateFile(
 	path,
 	message string,
 ) error {
+	// Used by brew and scoop, hence those two pipes are
+	// only supported for github atm we disable it for now.
 	// TODO how to get already uploaded files/content for a project?
-	// https://docs.gitlab.com/ce/api/projects.html#upload-a-file
-	// for now we always upload the same one but gitlab genereates
-	// a new hash each time
-	projectID := repo.Owner + "/" + repo.Name
-	_, _, err := c.client.Projects.UploadFile(
-		projectID,
-		path,
-		nil,
-	)
-	return err
+	return nil
 }
 
 // CreateRelease creates a new release or updates it by keeping
@@ -59,11 +52,18 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 		return "", err
 	}
 
-	projectID := ctx.Config.Release.GitHub.Owner + "/" + ctx.Config.Release.GitHub.Owner
+	projectID := ctx.Config.Release.GitLab.Owner + "/" + ctx.Config.Release.GitLab.Name
+	log.WithFields(log.Fields{
+		"owner": ctx.Config.Release.GitLab.Owner,
+		"name":  ctx.Config.Release.GitLab.Name,
+	}).Debug("projectID")
 	name := title
 	tagName := ctx.Git.CurrentTag
 	release, resp, err := c.client.Releases.GetRelease(projectID, tagName)
 	if err != nil && resp.StatusCode == 403 {
+		log.WithFields(log.Fields{
+			"err": err.Error(),
+		}).Debug("get release")
 		desc := body
 		ref := ctx.Git.Commit
 		release, _, err = c.client.Releases.CreateRelease(projectID, &gitlab.CreateReleaseOptions{
@@ -72,10 +72,17 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 			Ref:         &ref,
 			TagName:     &tagName,
 		})
+
+		if err != nil {
+			log.WithFields(log.Fields{
+				"err": err.Error(),
+			}).Debug("create release")
+			return "", err
+		}
 		log.WithField("name", release.Name).Info("release created")
 	} else {
 		desc := body
-		if release.DescriptionHTML != "" {
+		if release != nil && release.DescriptionHTML != "" { // TODO
 			desc = release.DescriptionHTML
 		}
 
@@ -96,17 +103,47 @@ func (c *gitlabClient) Upload(
 	name string,
 	file *os.File,
 ) error {
-	gitlabBaseURL := ctx.Config.GitLabURLs.API // TODO check
+	gitlabBaseURL := "https://gitlab.com"
+	if ctx.Config.GitLabURLs.Download != "" {
+		gitlabBaseURL = ctx.Config.GitLabURLs.Download // TODO check
+	}
+	// TODO mvogel: what if not set? get from git?
 	projectID := ctx.Config.Release.GitLab.Owner + "/" + ctx.Config.Release.GitLab.Name
+
+	log.WithField("file", file.Name()).Debug("uploading file")
+	projectFile, _, err := c.client.Projects.UploadFile(
+		projectID,
+		file.Name(),
+		nil,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"file": file.Name(),
+		"url":  projectFile.URL,
+	}).Debug("uploaded file")
 	// projectFile from upload: /uploads/<sha>/filename.txt
-	relativeUploadURL := "TODO" // from context
+	relativeUploadURL := projectFile.URL
 	linkURL := gitlabBaseURL + "/" + projectID + relativeUploadURL
-	_, _, err := c.client.ReleaseLinks.CreateReleaseLink(
+	releaseLink, _, err := c.client.ReleaseLinks.CreateReleaseLink(
 		projectID,
 		releaseID,
 		&gitlab.CreateReleaseLinkOptions{
 			Name: &name,
 			URL:  &linkURL,
 		})
+
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"id":  releaseLink.ID,
+		"url": releaseLink.URL,
+	}).Debug("creating release link")
+
 	return err
 }
