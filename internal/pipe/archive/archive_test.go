@@ -561,10 +561,12 @@ func TestBinaryOverride(t *testing.T) {
 			var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive))
 			darwin := archives.Filter(artifact.ByGoos("darwin")).List()[0]
 			require.Equal(tt, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
+			require.Equal(tt, format, darwin.ExtraOr("Format", ""))
 
 			archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
 			windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
 			require.Equal(tt, "foobar_0.0.1_windows_amd64.exe", windows.Name)
+			require.Equal(tt, format, windows.ExtraOr("Format", ""))
 		})
 	}
 }

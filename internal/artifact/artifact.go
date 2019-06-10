@@ -193,6 +193,18 @@ func ByType(t Type) Filter {
 	}
 }
 
+// ByFormats filters artifacts by a `Format` extra field.
+func ByFormats(formats ...string) Filter {
+	var filters = make([]Filter, 0, len(formats))
+	for _, format := range formats {
+		format := format
+		filters = append(filters, func(a Artifact) bool {
+			return a.ExtraOr("Format", "") == format
+		})
+	}
+	return Or(filters...)
+}
+
 // ByIDs filter artifacts by an `ID` extra field.
 func ByIDs(ids ...string) Filter {
 	var filters = make([]Filter, 0, len(ids))
