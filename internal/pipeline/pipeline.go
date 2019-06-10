@@ -37,13 +37,13 @@ type Piper interface {
 // nolint: gochecknoglobals
 var Pipeline = []Piper{
 	before.Pipe{},          // run global hooks before build
+	env.Pipe{},             // load and validate environment variables
 	git.Pipe{},             // get and validate git repo state
 	semver.Pipe{},          // parse current tag to a semver
 	defaults.Pipe{},        // load default configs
 	snapshot.Pipe{},        // snapshot version handling
 	dist.Pipe{},            // ensure ./dist is clean
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
-	env.Pipe{},             // load and validate environment variables
 	changelog.Pipe{},       // builds the release changelog
 	build.Pipe{},           // build
 	archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
