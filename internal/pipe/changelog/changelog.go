@@ -58,6 +58,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.TokenType == context.TokenTypeGitLab {
 		// We need two or more whitespace to let gitlab flavoured markdown interpret
 		// it as newline. See https://docs.gitlab.com/ee/user/markdown.html#newlines for details
+		log.Debug("is gitlab changelog")
 		changelogStringJoiner = "   \n"
 	}
 	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v\n", strings.Join(entries, changelogStringJoiner))
