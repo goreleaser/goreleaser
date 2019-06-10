@@ -57,6 +57,7 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 		"owner": ctx.Config.Release.GitLab.Owner,
 		"name":  ctx.Config.Release.GitLab.Name,
 	}).Debug("projectID")
+
 	name := title
 	tagName := ctx.Git.CurrentTag
 	release, resp, err := c.client.Releases.GetRelease(projectID, tagName)
@@ -64,11 +65,20 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 		log.WithFields(log.Fields{
 			"err": err.Error(),
 		}).Debug("get release")
-		desc := body
+
+		description := body
 		ref := ctx.Git.Commit
+		gitURL := ctx.Git.URL
+
+		log.WithFields(log.Fields{
+			"name":        name,
+			"description": description,
+			"ref":         ref,
+			"url":         gitURL,
+		}).Debug("creating release")
 		release, _, err = c.client.Releases.CreateRelease(projectID, &gitlab.CreateReleaseOptions{
 			Name:        &name,
-			Description: &desc,
+			Description: &description,
 			Ref:         &ref,
 			TagName:     &tagName,
 		})
@@ -76,13 +86,14 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 		if err != nil {
 			log.WithFields(log.Fields{
 				"err": err.Error(),
-			}).Debug("create release")
+			}).Debug("error create release")
 			return "", err
 		}
 		log.WithField("name", release.Name).Info("release created")
 	} else {
+		// TODO mavogel: can release be updated in gitlab like in github?
 		desc := body
-		if release != nil && release.DescriptionHTML != "" { // TODO
+		if release != nil && release.DescriptionHTML != "" {
 			desc = release.DescriptionHTML
 		}
 
