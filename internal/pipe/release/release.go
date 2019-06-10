@@ -16,6 +16,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ErrMultipleReleases indicates that multiple releases are defined. ATM only one of them is allowed
+// See https://github.com/goreleaser/goreleaser/pull/809
+var ErrMultipleReleases = errors.New("both gitlab and github releases are defined. Only one is allowed")
+
 // Pipe for github release
 type Pipe struct{}
 
@@ -25,6 +29,10 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	if ctx.Config.Release.GitHub.String() != "" && ctx.Config.Release.GitLab.String() != "" {
+		return ErrMultipleReleases
+	}
+
 	if ctx.Config.Release.NameTemplate == "" {
 		ctx.Config.Release.NameTemplate = "{{.Tag}}"
 	}

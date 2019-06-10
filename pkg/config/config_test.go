@@ -71,8 +71,3 @@ func TestConfigWithAnchors(t *testing.T) {
 	_, err := Load("testdata/anchor.yaml")
 	assert.NoError(t, err)
 }
-
-func TestInvalidMultipleReleases(t *testing.T) {
-	_, err := Load("testdata/invalid_multiple_releases.yml")
-	assert.EqualError(t, err, ErrMultipleReleases.Error())
-}

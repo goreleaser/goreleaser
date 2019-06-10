@@ -3,7 +3,6 @@
 package config
 
 import (
-	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -12,10 +11,6 @@ import (
 	"github.com/apex/log"
 	yaml "gopkg.in/yaml.v2"
 )
-
-// ErrMultipleReleases indicates that multiple releases are defined. ATM only one of them is allowed
-// See https://github.com/goreleaser/goreleaser/pull/809
-var ErrMultipleReleases = errors.New("both gitlab and github releases are defined. Only one is allowed")
 
 // GitHubURLs holds the URLs to be used when using github enterprise
 type GitHubURLs struct {
@@ -28,8 +23,7 @@ type GitHubURLs struct {
 // GitLabURLs holds the URLs to be used when using gitlab ce/enterprise
 type GitLabURLs struct {
 	API           string `yaml:"api,omitempty"`
-	Upload        string `yaml:"upload,omitempty"`   // TODO mavogel
-	Download      string `yaml:"download,omitempty"` // TODO mavogel
+	Download      string `yaml:"download,omitempty"`
 	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
 }
 
@@ -381,19 +375,5 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 	}
 	err = yaml.UnmarshalStrict(data, &config)
 	log.WithField("config", config).Debug("loaded config file")
-	if err != nil {
-		return config, err
-	}
-	err = validateConfig(config)
 	return config, err
-}
-
-// validateConfig validates the config if the combination of properties
-// is valid
-func validateConfig(config Project) error {
-	if config.Release.GitHub.String() != "" && config.Release.GitLab.String() != "" {
-		return ErrMultipleReleases
-	}
-
-	return nil
 }

@@ -314,6 +314,22 @@ func TestDefaultGitRepoWithoutRemote(t *testing.T) {
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
+func TestDefaultMultipleReleasesDefined(t *testing.T) {
+	var ctx = context.New(config.Project{
+		Release: config.Release{
+			GitHub: config.Repo{
+				Owner: "githubName",
+				Name:  "githubName",
+			},
+			GitLab: config.Repo{
+				Owner: "gitlabOwner",
+				Name:  "gitlabName",
+			},
+		},
+	})
+	assert.EqualError(t, Pipe{}.Default(ctx), ErrMultipleReleases.Error())
+}
+
 type DummyClient struct {
 	FailToCreateRelease bool
 	FailToUpload        bool
