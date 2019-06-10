@@ -33,7 +33,7 @@ class {{ .Name }} < Formula
   version "{{ .Version }}"
 
   if OS.mac?
-  	{{- if .MacOS.DownloadURL }}
+    {{- if .MacOS.DownloadURL }}
     url "{{ .MacOS.DownloadURL }}"
     sha256 "{{ .MacOS.SHA256 }}"
     {{- end }}
