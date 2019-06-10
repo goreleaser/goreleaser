@@ -114,10 +114,6 @@ func (c *gitlabClient) Upload(
 	name string,
 	file *os.File,
 ) error {
-	gitlabBaseURL := "https://gitlab.com"
-	if ctx.Config.GitLabURLs.Download != "" {
-		gitlabBaseURL = ctx.Config.GitLabURLs.Download // TODO check
-	}
 	// TODO mvogel: what if not set? get from git?
 	projectID := ctx.Config.Release.GitLab.Owner + "/" + ctx.Config.Release.GitLab.Name
 
@@ -136,6 +132,8 @@ func (c *gitlabClient) Upload(
 		"file": file.Name(),
 		"url":  projectFile.URL,
 	}).Debug("uploaded file")
+
+	gitlabBaseURL := ctx.Config.GitLabURLs.Download
 	// projectFile from upload: /uploads/<sha>/filename.txt
 	relativeUploadURL := projectFile.URL
 	linkURL := gitlabBaseURL + "/" + projectID + relativeUploadURL
@@ -154,7 +152,7 @@ func (c *gitlabClient) Upload(
 	log.WithFields(log.Fields{
 		"id":  releaseLink.ID,
 		"url": releaseLink.URL,
-	}).Debug("creating release link")
+	}).Debug("created release link")
 
 	return err
 }
