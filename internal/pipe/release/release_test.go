@@ -172,9 +172,23 @@ func TestDefault(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
 	var ctx = context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitHub
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
 	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
+}
+
+func TestDefaultWithGitlab(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@gitlab.com:gitlabowner/gitlabrepo.git")
+
+	var ctx = context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitLab
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "gitlabrepo", ctx.Config.Release.GitLab.Name)
+	assert.Equal(t, "gitlabowner", ctx.Config.Release.GitLab.Owner)
 }
 
 func TestDefaultPreReleaseAuto(t *testing.T) {
@@ -189,6 +203,7 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 				Prerelease: "auto",
 			},
 		})
+		ctx.TokenType = context.TokenTypeGitHub
 		ctx.Semver = context.Semver{
 			Major: 1,
 			Minor: 0,
@@ -204,6 +219,7 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 				Prerelease: "auto",
 			},
 		})
+		ctx.TokenType = context.TokenTypeGitHub
 		ctx.Semver = context.Semver{
 			Major:      1,
 			Minor:      0,
@@ -224,6 +240,7 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 				Prerelease: "auto",
 			},
 		})
+		ctx.TokenType = context.TokenTypeGitHub
 		ctx.Semver = context.Semver{
 			Major:      1,
 			Minor:      0,
@@ -246,6 +263,7 @@ func TestDefaultPipeDisabled(t *testing.T) {
 			Disable: true,
 		},
 	})
+	ctx.TokenType = context.TokenTypeGitHub
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
 	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
@@ -267,6 +285,7 @@ func TestDefaultFilled(t *testing.T) {
 			},
 		},
 	}
+	ctx.TokenType = context.TokenTypeGitHub
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, "foo", ctx.Config.Release.GitHub.Name)
 	assert.Equal(t, "bar", ctx.Config.Release.GitHub.Owner)
@@ -278,6 +297,7 @@ func TestDefaultNotAGitRepo(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
+	ctx.TokenType = context.TokenTypeGitHub
 	assert.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
 }
@@ -288,6 +308,7 @@ func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
+	ctx.TokenType = context.TokenTypeGitHub
 	testlib.GitInit(t)
 	assert.EqualError(t, Pipe{}.Default(ctx), "repository doesn't have an `origin` remote")
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
@@ -299,6 +320,7 @@ func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
+	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Snapshot = true
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
@@ -310,6 +332,7 @@ func TestDefaultGitRepoWithoutRemote(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
+	ctx.TokenType = context.TokenTypeGitHub
 	assert.Error(t, Pipe{}.Default(ctx))
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
 }

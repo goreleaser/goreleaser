@@ -36,6 +36,21 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Release.NameTemplate == "" {
 		ctx.Config.Release.NameTemplate = "{{.Tag}}"
 	}
+
+	// Note: do a switch on ctx.TokenType later if more clients are added
+	if ctx.TokenType == context.TokenTypeGitLab {
+		if ctx.Config.Release.GitLab.Name == "" {
+			repo, err := remoteRepo()
+			if err != nil {
+				return err
+			}
+			ctx.Config.Release.GitLab = repo
+		}
+
+		return nil
+	}
+
+	// We keep github as default for now
 	if ctx.Config.Release.GitHub.Name == "" {
 		repo, err := remoteRepo()
 		if err != nil && !ctx.Snapshot {
