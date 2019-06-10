@@ -101,6 +101,13 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 			Name:        &name,
 			Description: &desc,
 		})
+		if err != nil {
+			log.WithFields(log.Fields{
+				"err": err.Error(),
+			}).Debug("error update release")
+			return "", err
+		}
+
 		log.WithField("name", release.Name).Info("release updated")
 	}
 
