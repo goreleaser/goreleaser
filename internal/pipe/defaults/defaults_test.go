@@ -86,7 +86,7 @@ func TestFillPartial(t *testing.T) {
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
 	assert.Len(t, ctx.Config.Archive.Files, 1)
-	assert.Equal(t, `bin.install "testreleaser"`, ctx.Config.Brew.Install)
+	assert.Equal(t, `bin.install "testreleaser"`, ctx.Config.Brews[0].Install)
 	assert.NotEmpty(t, ctx.Config.Dockers[0].Binaries)
 	assert.NotEmpty(t, ctx.Config.Dockers[0].Goos)
 	assert.NotEmpty(t, ctx.Config.Dockers[0].Goarch)
