@@ -20,7 +20,7 @@ import (
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "GitHub Releases"
+	return "GitHub/GitLab Releases"
 }
 
 // Default sets the pipe defaults
