@@ -114,8 +114,8 @@ func upload(ctx *context.Context, conf config.S3) error {
 				"artifact": artifact.Name,
 			}).Info("uploading")
 
-			if conf.SSE {
-				if conf.KMSKey {
+			if conf.SSE != "" {
+				if conf.KMSKey != "" {
 					_, err = svc.PutObjectWithContext(ctx, &s3.PutObjectInput{
 						Bucket: 			  aws.String(bucket),
 						Key:    			  aws.String(filepath.Join(folder, artifact.Name)),
