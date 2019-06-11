@@ -5,10 +5,10 @@ class CustomDownloadStrategy < Formula
   version "1.0.1"
 
   if OS.mac?
-    url "https://github.com/test/test/releases/download/v1.0.1/bin.tar.gz"
+    url "https://github.com/test/test/releases/download/v1.0.1/bin.tar.gz", :using => GitHubPrivateRepositoryReleaseDownloadStrategy
     sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   elsif OS.linux?
-  end, :using => GitHubPrivateRepositoryReleaseDownloadStrategy
+  end
   
   depends_on "zsh"
   depends_on "bash"
