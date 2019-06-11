@@ -245,7 +245,6 @@ func TestNoSnapcraftInPath(t *testing.T) {
 	assert.EqualError(t, Pipe{}.Run(ctx), ErrNoSnapcraft.Error())
 }
 
-
 func TestRunNoArguments(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
