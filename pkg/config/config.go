@@ -297,6 +297,8 @@ type S3 struct {
 	Profile  string
 	Endpoint string // used for minio for example
 	ACL      string
+	SSE      bool     `yaml:",omitempty"`
+	KMSKey   string   `yaml:",omitempty"`
 	IDs      []string `yaml:"ids,omitempty"`
 }
 

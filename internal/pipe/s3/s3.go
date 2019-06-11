@@ -113,12 +113,34 @@ func upload(ctx *context.Context, conf config.S3) error {
 				"folder":   folder,
 				"artifact": artifact.Name,
 			}).Info("uploading")
-			_, err = svc.PutObjectWithContext(ctx, &s3.PutObjectInput{
-				Bucket: aws.String(bucket),
-				Key:    aws.String(filepath.Join(folder, artifact.Name)),
-				Body:   f,
-				ACL:    aws.String(conf.ACL),
-			})
+
+			if conf.SSE {
+				if conf.KMSKey {
+					_, err = svc.PutObjectWithContext(ctx, &s3.PutObjectInput{
+						Bucket: 			  aws.String(bucket),
+						Key:    			  aws.String(filepath.Join(folder, artifact.Name)),
+						Body:   			  f,
+						ACL:    			  aws.String(conf.ACL),
+						ServerSideEncryption: aws.String("aws:kms"),
+						SSEKMSKeyId:          aws.String(conf.KMSKey),
+					})
+				} else {
+					_, err = svc.PutObjectWithContext(ctx, &s3.PutObjectInput{
+						Bucket:				  aws.String(bucket),
+						Key:   				  aws.String(filepath.Join(folder, artifact.Name)),
+						Body:  				  f,
+						ACL:   				  aws.String(conf.ACL),
+						ServerSideEncryption: aws.String("AES256"),
+					})
+				}
+			} else {
+				_, err = svc.PutObjectWithContext(ctx, &s3.PutObjectInput{
+					Bucket: aws.String(bucket),
+					Key:    aws.String(filepath.Join(folder, artifact.Name)),
+					Body:   f,
+					ACL:    aws.String(conf.ACL),
+				})
+			}
 			return err
 		})
 	}
