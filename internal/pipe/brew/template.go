@@ -35,16 +35,16 @@ class {{ .Name }} < Formula
   if OS.mac?
     {{- if .MacOS.DownloadURL }}
     url "{{ .MacOS.DownloadURL }}"
+	{{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
     sha256 "{{ .MacOS.SHA256 }}"
     {{- end }}
   elsif OS.linux?
     {{- if .Linux.DownloadURL }}
     url "{{ .Linux.DownloadURL }}"
+	{{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
     sha256 "{{ .Linux.SHA256 }}"
     {{- end }}
   end
-
-  {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
 
   {{- with .CustomBlock }}
   {{ range $index, $element := . }}
