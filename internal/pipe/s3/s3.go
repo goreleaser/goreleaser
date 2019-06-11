@@ -130,7 +130,7 @@ func upload(ctx *context.Context, conf config.S3) error {
 						Key:   				  aws.String(filepath.Join(folder, artifact.Name)),
 						Body:  				  f,
 						ACL:   				  aws.String(conf.ACL),
-						ServerSideEncryption: aws.String("AES256"),
+						ServerSideEncryption: aws.String(conf.SSE),
 					})
 				}
 			} else {
