@@ -2,6 +2,8 @@ package client
 
 import (
 	"bytes"
+	"crypto/tls"
+	"net/http"
 	"os"
 
 	"github.com/apex/log"
@@ -18,7 +20,14 @@ type gitlabClient struct {
 // NewGitLab returns a gitlab client implementation
 func NewGitLab(ctx *context.Context) (Client, error) {
 	token := ctx.Token
-	client := gitlab.NewClient(nil, token)
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			// nolint: gosec
+			InsecureSkipVerify: ctx.Config.GitLabURLs.SkipTLSVerify,
+		},
+	}
+	httpClient := &http.Client{Transport: transport}
+	client := gitlab.NewClient(httpClient, token)
 	if ctx.Config.GitLabURLs.API != "" {
 		err := client.SetBaseURL(ctx.Config.GitLabURLs.API)
 		if err != nil {
