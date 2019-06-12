@@ -50,13 +50,15 @@ pair into a separate file. You can customize several things by changing
 the `archive` section, including releasing only the binaries and not creating
 archives at all. Check the [documentation](/archive) for more information.
 
-You'll need to export a `GITHUB_TOKEN` environment variable, which should
-contain a valid GitHub token with the `repo` scope.
-It will be used to deploy releases to your GitHub repository.
-You can create a token [here](https://github.com/settings/tokens/new).
+You'll need to export either a `GITHUB_TOKEN` **or** `GITLAB_TOKEN` environment variable, which should
+contain a valid GitHub token with the `repo` scope or GitLab token with `api` scope.
+It will be used to deploy releases to your GitHub/GitLab repository.
+You can create a token [here](https://github.com/settings/tokens/new) for GitHub or [here](https://gitlab.com/profile/personal_access_tokens) for GitLab.
 
 ```sh
-$ export GITHUB_TOKEN=`YOUR_TOKEN`
+$ export GITHUB_TOKEN=`YOUR_GH_TOKEN`
+# or
+$ export GITLAB_TOKEN=`YOUR_GL_TOKEN`
 ```
 
 GoReleaser will use the latest
@@ -71,7 +73,7 @@ $ git push origin v0.1.0
 > **Attention**: Check if your tag adheres to [semantic versioning](/semver).
 
 If you don't want to create a tag yet, you can also create a release
-based on the latest commit by using the `--snapshot` flag.
+based on the latest commit by using the `--snapshot` flag. (*Note*: ony GitHub supports snapshots)
 
 Now you can run GoReleaser at the root of your repository:
 
@@ -85,6 +87,13 @@ The release should look like this:
 <a href="https://github.com/goreleaser/goreleaser/releases">
   <img width="100%"
     src="https://cloud.githubusercontent.com/assets/245435/23342061/fbcbd506-fc31-11e6-9d2b-4c1b776dee9c.png">
+</a>
+
+Or check your GitLab project's release page.
+The release should also look like this:
+<a href="https://gitlab.com/mavogel/release-testing/-/releases">
+  <img width="100%"
+    src="https://user-images.githubusercontent.com/8409778/59390011-55fcdf80-8d70-11e9-840f-c568ddc0e965.png">
 </a>
 
 ## Dry run

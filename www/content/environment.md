@@ -6,22 +6,27 @@ menu: true
 
 ## GitHub Token
 
-GoReleaser requires a GitHub API token with the `repo` scope selected to
-deploy the artifacts to GitHub.
-You can create one [here](https://github.com/settings/tokens/new).
+GoReleaser requires either a GitHub API token with the `repo` scope selected to
+deploy the artifacts to GitHub **or** a GitLab API token with `api` scope.
+You can create one [here](https://github.com/settings/tokens/new) for GitHub or [here](https://gitlab.com/profile/personal_access_tokens) for GitLab.
 
-This token should be added to the environment variables as `GITHUB_TOKEN`.
+This token should be added to the environment variables as `GITHUB_TOKEN` or a `GITLAB_TOKEN` respecively.
 Here is how to do it with Travis CI:
 [Defining Variables in Repository Settings](https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-Repository-Settings).
 
-Alternatively, you can provide the GitHub token in a file. GoReleaser will check `~/.config/goreleaser/github_token` by default, you can change that in
+Alternatively, you can provide the GitHub/GitLab token in a file. GoReleaser will check `~/.config/goreleaser/github_token` or `~/.config/goreleaser/gitlab_token` by default, you can change that in
 the `.goreleaser.yml` file:
 
 ```yaml
 # .goreleaser.yml
 env_files:
-  github_token: ~/.path/to/my/token
+  # use only one or release will fail!
+  github_token: ~/.path/to/my/gh_token
+  gitlab_token: ~/.path/to/my/gl_token
 ```
+
+**IMPORTANT**: you can define both env files, but the release process will fail
+because both tokens are defined. Use only one.
 
 ## GitHub Enterprise
 
@@ -40,11 +45,21 @@ github_urls:
 
 If none are set, they default to GitHub's public URLs.
 
-**IMPORTANT**: be careful with the URLs, they may change from one installation
-to another. If they are wrong, goreleaser will fail at some point, so, make
-sure they're right before opening an issue. See for example [#472][472].
+## GitLab Enterprise or private hosted
 
-[472]: https://github.com/goreleaser/goreleaser/issues/472
+You can use GoReleaser with GitHub Enterprise by providing its URLs in
+the `.goreleaser.yml` configuration file:
+
+```yaml
+# .goreleaser.yml
+gitlab_urls:
+  api: https://gitlab.mycompany.com/api/v4/
+  download: https://gitlab.company.com
+  # set to true if you use a self-signed certificate
+  skip_tls_verify: false
+```
+
+If none are set, they default to GitLab's public URLs.
 
 ## The dist folder
 
