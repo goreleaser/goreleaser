@@ -40,7 +40,6 @@ func (c *gitlabClient) CreateFile(
 ) error {
 	// Used by brew and scoop, hence those two pipes are
 	// only supported for github atm we disable it for now.
-	// TODO how to get already uploaded files/content for a project?
 	return nil
 }
 
@@ -61,7 +60,11 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 	name := title
 	tagName := ctx.Git.CurrentTag
 	release, resp, err := c.client.Releases.GetRelease(projectID, tagName)
-	if err != nil && resp.StatusCode == 403 {
+	if err != nil && resp.StatusCode != 403 {
+		return "", err
+	}
+
+	if resp.StatusCode == 403 {
 		log.WithFields(log.Fields{
 			"err": err.Error(),
 		}).Debug("get release")
@@ -91,7 +94,6 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 		}
 		log.WithField("name", release.Name).Info("release created")
 	} else {
-		// TODO mavogel: can release be updated in gitlab like in github?
 		desc := body
 		if release != nil && release.DescriptionHTML != "" {
 			desc = release.DescriptionHTML
@@ -121,7 +123,6 @@ func (c *gitlabClient) Upload(
 	name string,
 	file *os.File,
 ) error {
-	// TODO mvogel: what if not set? get from git?
 	projectID := ctx.Config.Release.GitLab.Owner + "/" + ctx.Config.Release.GitLab.Name
 
 	log.WithField("file", file.Name()).Debug("uploading file")
