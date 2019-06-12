@@ -218,7 +218,7 @@ func uploadAsset(ctx *context.Context, put *config.Put, artifact artifact.Artifa
 		headers[put.ChecksumHeader] = sum
 	}
 
-	_, err = uploadAssetToServer(ctx, put, targetURL, username, secret, headers, asset, check)
+	res, err := uploadAssetToServer(ctx, put, targetURL, username, secret, headers, asset, check)
 	if err != nil {
 		msg := fmt.Sprintf("%s: upload failed", kind)
 		log.WithError(err).WithFields(log.Fields{
@@ -226,6 +226,9 @@ func uploadAsset(ctx *context.Context, put *config.Put, artifact artifact.Artifa
 			"username": username,
 		}).Error(msg)
 		return errors.Wrap(err, msg)
+	}
+	if err := res.Body.Close(); err != nil {
+		log.WithError(err).Warn("failed to close response body")
 	}
 
 	log.WithFields(log.Fields{

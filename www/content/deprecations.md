@@ -33,6 +33,51 @@ to this:
 
 -->
 
+### brew
+
+> since 2019-06-09
+
+Brew was deprecated in favor of its plural form.
+
+Change this:
+
+```yaml
+brew:
+  # etc
+```
+
+to this:
+
+```yaml
+brews:
+  -
+    # etc
+```
+
+### s3
+
+> since 2019-06-09
+
+S3 was deprecated in favor of the new `blob`, which supports S3, Azure Blob and
+GCS.
+
+Change this:
+
+```yaml
+s3:
+-
+  # etc
+```
+
+to this:
+
+```yaml
+blobs:
+-
+  provider: s3
+  # etc
+```
+
 ### snapcraft
 
 > since 2019-05-39

@@ -52,8 +52,8 @@ Which runs all the linters and tests.
 
 ## Create a commit
 
-Commit messages should be well formatted, and to make that "standarized", we
-are using Convetional Commits.
+Commit messages should be well formatted, and to make that "standardized", we
+are using Conventional Commits.
 
 You can follow the documentation on
 [their website](https://www.conventionalcommits.org).
@@ -72,7 +72,7 @@ Anyone can file an expense. If the expense makes sense for the development of th
 
 ### Contributors
 
-Thank you to all the people who have already contributed to goreleaser!
+Thank you to all the people who have already contributed to GoReleaser!
 <a href="graphs/contributors"><img src="https://opencollective.com/goreleaser/contributors.svg?width=890" /></a>
 
 ### Backers

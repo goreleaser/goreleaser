@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -31,6 +32,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		if s3.Bucket == "" {
 			continue
 		}
+		deprecate.Notice("s3")
 		if s3.Folder == "" {
 			s3.Folder = "{{ .ProjectName }}/{{ .Tag }}"
 		}
@@ -87,16 +89,19 @@ func upload(ctx *context.Context, conf config.S3) error {
 		return err
 	}
 
+	var filter = artifact.Or(
+		artifact.ByType(artifact.UploadableArchive),
+		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.Checksum),
+		artifact.ByType(artifact.Signature),
+		artifact.ByType(artifact.LinuxPackage),
+	)
+	if len(conf.IDs) > 0 {
+		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
+	}
+
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(
-		artifact.Or(
-			artifact.ByType(artifact.UploadableArchive),
-			artifact.ByType(artifact.UploadableBinary),
-			artifact.ByType(artifact.Checksum),
-			artifact.ByType(artifact.Signature),
-			artifact.ByType(artifact.LinuxPackage),
-		),
-	).List() {
+	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
 		artifact := artifact
 		g.Go(func() error {
 			f, err := os.Open(artifact.Path)

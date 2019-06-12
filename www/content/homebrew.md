@@ -17,92 +17,99 @@ for more details.
 
 ```yml
 # .goreleaser.yml
-brew:
-  # Name template of the recipe
-  # Default to project name
-  name: myproject
+brews:
+  -
+    # Name template of the recipe
+    # Default to project name
+    name: myproject
 
-  # Repository to push the tap to.
-  github:
-    owner: user
-    name: homebrew-tap
+    # IDs of the archives to use.
+    # Defaults to all.
+    ids:
+    - foo
+    - bar
 
-  # Template for the url.
-  # Default is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-  url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
+    # Repository to push the tap to.
+    github:
+      owner: user
+      name: homebrew-tap
 
-  # Allows you to set a custom download strategy.
-  # Default is empty.
-  download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
+    # Template for the url.
+    # Default is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
-  # Allows you to add a custom require_relative at the top of the formula template
-  # Default is empty
-  custom_require: custom_download_strategy
+    # Allows you to set a custom download strategy.
+    # Default is empty.
+    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
 
-  # Git author used to commit to the repository.
-  # Defaults are shown.
-  commit_author:
-    name: goreleaserbot
-    email: goreleaser@carlosbecker.com
+    # Allows you to add a custom require_relative at the top of the formula template
+    # Default is empty
+    custom_require: custom_download_strategy
 
-  # Folder inside the repository to put the formula.
-  # Default is the root folder.
-  folder: Formula
+    # Git author used to commit to the repository.
+    # Defaults are shown.
+    commit_author:
+      name: goreleaserbot
+      email: goreleaser@carlosbecker.com
 
-  # Caveats for the user of your binary.
-  # Default is empty.
-  caveats: "How to use this binary"
+    # Folder inside the repository to put the formula.
+    # Default is the root folder.
+    folder: Formula
 
-  # Your app's homepage.
-  # Default is empty.
-  homepage: "https://example.com/"
+    # Caveats for the user of your binary.
+    # Default is empty.
+    caveats: "How to use this binary"
 
-  # Your app's description.
-  # Default is empty.
-  description: "Software to create fast and easy drum rolls."
+    # Your app's homepage.
+    # Default is empty.
+    homepage: "https://example.com/"
 
-  # Setting this will prevent goreleaser to actually try to commit the updated
-  # formula - instead, the formula file will be stored on the dist folder only,
-  # leaving the responsibility of publishing it to the user.
-  # If set to auto, the release will not be uploaded to the homebrew tap
-  # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
-  # Default is false.
-  skip_upload: true
+    # Your app's description.
+    # Default is empty.
+    description: "Software to create fast and easy drum rolls."
 
-  # Custom block for brew.
-  # Can be used to specify alternate downloads for devel or head releases.
-  # Default is empty.
-  custom_block: |
-    head "https://github.com/some/package.git"
-    ...
+    # Setting this will prevent goreleaser to actually try to commit the updated
+    # formula - instead, the formula file will be stored on the dist folder only,
+    # leaving the responsibility of publishing it to the user.
+    # If set to auto, the release will not be uploaded to the homebrew tap
+    # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+    # Default is false.
+    skip_upload: true
 
-  # Packages your package depends on.
-  dependencies:
-    - git
-    - zsh
+    # Custom block for brew.
+    # Can be used to specify alternate downloads for devel or head releases.
+    # Default is empty.
+    custom_block: |
+      head "https://github.com/some/package.git"
+      ...
 
-  # Packages that conflict with your package.
-  conflicts:
-    - svn
-    - bash
+    # Packages your package depends on.
+    dependencies:
+      - git
+      - zsh
 
-  # Specify for packages that run as a service.
-  # Default is empty.
-  plist: |
-    <?xml version="1.0" encoding="UTF-8"?>
-    ...
+    # Packages that conflict with your package.
+    conflicts:
+      - svn
+      - bash
 
-  # So you can `brew test` your formula.
-  # Default is empty.
-  test: |
-    system "#{bin}/program --version"
-    ...
+    # Specify for packages that run as a service.
+    # Default is empty.
+    plist: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      ...
 
-  # Custom install script for brew.
-  # Default is 'bin.install "program"'.
-  install: |
-    bin.install "program"
-    ...
+    # So you can `brew test` your formula.
+    # Default is empty.
+    test: |
+      system "#{bin}/program --version"
+      ...
+
+    # Custom install script for brew.
+    # Default is 'bin.install "program"'.
+    install: |
+      bin.install "program"
+      ...
 ```
 
 > Learn more about the [name template engine](/templates).
@@ -116,9 +123,15 @@ Assuming that the current tag is `v1.2.3`, the above configuration will generate
 class Program < Formula
   desc "How to use this binary"
   homepage "https://github.com/user/repo"
-  url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_macOs_64bit.zip"
   version "v1.2.3"
-  sha256 "9ee30fc358fae8d248a2d7538957089885da321dca3f09e3296fe2058e7fff74"
+
+  if os.Mac?
+    url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_macOs_64bit.zip"
+    sha256 "9ee30fc358fae8d248a2d7538957089885da321dca3f09e3296fe2058e7fff74"
+  elsif os.Linux?
+    url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_Linux_64bit.zip"
+    sha256 "b41bebd25fd7bb1a67dc2cd5ee12c9f67073094567fdf7b3871f05fd74a45fdd"
+  end
 
   depends_on "git"
   depends_on "zsh"
@@ -129,7 +142,7 @@ class Program < Formula
 end
 ```
 
-**Important**: Note that GoReleaser does not yet generate a valid
+**Important**: Note that GoReleaser does not generate a valid
 homebrew-core formula. The generated formulas are meant to be published as
 [homebrew taps](https://docs.brew.sh/Taps.html), and in their current
 form will not be accepted in any of the official homebrew repositories.
