@@ -48,7 +48,7 @@ Seconds let's see what can be customized in the `release` section for GitLab:
 release:
   # Same as for github
   # Note: it can only be one: either github or gitlab
-  github:
+  gitlab:
     owner: user
     name: repo
 
