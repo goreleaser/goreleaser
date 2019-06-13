@@ -48,7 +48,7 @@ func (c *gitlabClient) CreateFile(
 	message string,
 ) error {
 	// Used by brew and scoop, hence those two pipes are
-	// only supported for github atm we disable it for now.
+	// only supported for github atm. So we disable it for now.
 	return nil
 }
 
