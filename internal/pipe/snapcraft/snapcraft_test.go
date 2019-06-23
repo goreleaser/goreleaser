@@ -245,7 +245,6 @@ func TestNoSnapcraftInPath(t *testing.T) {
 	assert.EqualError(t, Pipe{}.Run(ctx), ErrNoSnapcraft.Error())
 }
 
-
 func TestRunNoArguments(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
@@ -280,6 +279,44 @@ func TestRunNoArguments(t *testing.T) {
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	assert.NoError(t, err)
 	assert.Equal(t, "mybin", metadata.Apps["mybin"].Command)
+}
+
+func TestCompleter(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	require.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, err)
+	var ctx = context.New(config.Project{
+		ProjectName: "testprojectname",
+		Dist:        dist,
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate: "foo_{{.Arch}}",
+				Summary:      "test summary",
+				Description:  "test description",
+				Apps: map[string]config.SnapcraftAppMetadata{
+					"mybin": {
+						Daemon:    "simple",
+						Args:      "",
+						Completer: "mybin-completer.bash",
+					},
+				},
+				Builds: []string{"foo"},
+			},
+		},
+	})
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Version = "v1.2.3"
+	addBinaries(t, ctx, "foo", dist, "mybin")
+	require.NoError(t, Pipe{}.Run(ctx))
+	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
+	require.NoError(t, err)
+	var metadata Metadata
+	err = yaml.Unmarshal(yamlFile, &metadata)
+	require.NoError(t, err)
+	assert.Equal(t, "mybin", metadata.Apps["mybin"].Command)
+	assert.Equal(t, "mybin-completer.bash", metadata.Apps["mybin"].Completer)
 }
 
 func TestDefault(t *testing.T) {

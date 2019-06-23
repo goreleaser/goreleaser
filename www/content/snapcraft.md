@@ -112,6 +112,11 @@ snapcrafts:
         # If you any to pass args to your binary, you can add them with the
         # args option.
         args: --foo
+
+        # Bash completion snippet. More information about completion here:
+        # https://docs.snapcraft.io/tab-completion-for-snaps.
+        completer: drumroll-completion.bash
+
     # Allows plugs to be configured. Plugs like system-files and personal-files
     # require this.
     # Default is empty.
