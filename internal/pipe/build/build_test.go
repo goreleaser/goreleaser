@@ -229,6 +229,7 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
 	var build = ctx.Config.Builds[0]
+	assert.Equal(t, ctx.Config.ProjectName, build.ID)
 	assert.Equal(t, ctx.Config.ProjectName, build.Binary)
 	assert.Equal(t, ".", build.Main)
 	assert.Equal(t, []string{"linux", "darwin"}, build.Goos)
@@ -236,6 +237,25 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	assert.Equal(t, []string{"6"}, build.Goarm)
 	assert.Len(t, build.Ldflags, 1)
 	assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser", build.Ldflags[0])
+}
+
+func TestDefaultBuildID(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			ProjectName: "foo",
+			Builds: []config.Build{
+				{
+					Binary: "{{.Env.FOO}}",
+				},
+				{
+					Binary: "bar",
+				},
+			},
+		},
+	}
+	assert.EqualError(t, Pipe{}.Default(ctx), "found 2 items with the ID 'foo', please fix your config")
+	var build = ctx.Config.Builds[0]
+	assert.Equal(t, ctx.Config.ProjectName, build.ID)
 }
 
 func TestSeveralBuildsWithTheSameID(t *testing.T) {
