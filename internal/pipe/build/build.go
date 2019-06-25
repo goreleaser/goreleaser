@@ -63,7 +63,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
 		build.Binary = ctx.Config.ProjectName
 	}
 	if build.ID == "" {
-		build.ID = build.Binary
+		build.ID = ctx.Config.ProjectName
 	}
 	for k, v := range build.Env {
 		build.Env[k] = os.ExpandEnv(v)
