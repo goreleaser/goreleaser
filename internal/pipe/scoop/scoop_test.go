@@ -1,7 +1,6 @@
 package scoop
 
 import (
-	"bytes"
 	"flag"
 	"io/ioutil"
 	"os"
@@ -535,10 +534,9 @@ func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (rel
 	return
 }
 
-func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content bytes.Buffer, path, msg string) (err error) {
+func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, msg string) (err error) {
 	client.CreatedFile = true
-	bts, _ := ioutil.ReadAll(&content)
-	client.Content = string(bts)
+	client.Content = string(content)
 	return
 }
 
