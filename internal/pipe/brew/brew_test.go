@@ -1,7 +1,6 @@
 package brew
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -66,10 +65,11 @@ func TestFullFormulae(t *testing.T) {
 	data.Plist = "it works"
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
 	data.Install = []string{"custom install script", "another install script"}
-	data.Tests = []string{`system "#{bin}/foo -version"`}
-	out, err := doBuildFormula(data)
+	data.Tests = []string{`system "#{bin}/{{.ProjectName}} -version"`}
+	formulae, err := doBuildFormula(context.New(config.Project{
+		ProjectName: "foo",
+	}), data)
 	assert.NoError(t, err)
-	formulae := out.String()
 
 	var golden = "testdata/test.rb.golden"
 	if *update {
@@ -82,9 +82,8 @@ func TestFullFormulae(t *testing.T) {
 }
 
 func TestFormulaeSimple(t *testing.T) {
-	out, err := doBuildFormula(defaultTemplateData)
+	formulae, err := doBuildFormula(context.New(config.Project{}), defaultTemplateData)
 	assert.NoError(t, err)
-	formulae := out.String()
 	assertDefaultTemplateData(t, formulae)
 	assert.NotContains(t, formulae, "def caveats")
 	assert.NotContains(t, formulae, "depends_on")
@@ -126,6 +125,9 @@ func TestRunPipe(t *testing.T) {
 				},
 				Version:   "1.0.1",
 				Artifacts: artifact.New(),
+				Env: map[string]string{
+					"FOO": "foo_is_bar",
+				},
 				Config: config.Project{
 					Dist:        folder,
 					ProjectName: name,
@@ -148,14 +150,14 @@ func TestRunPipe(t *testing.T) {
 							IDs: []string{
 								"foo",
 							},
-							Description:  "A run pipe test formula",
+							Description:  "A run pipe test formula and FOO={{ .Env.FOO }}",
 							Homepage:     "https://github.com/goreleaser",
-							Caveats:      "don't do this",
+							Caveats:      "don't do this {{ .ProjectName }}",
 							Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
 							Plist:        `<xml>whatever</xml>`,
 							Dependencies: []string{"zsh", "bash"},
 							Conflicts:    []string{"gtk+", "qt"},
-							Install:      `bin.install "foo"`,
+							Install:      `bin.install "{{ .ProjectName }}"`,
 						},
 					},
 				},
@@ -423,10 +425,9 @@ func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (rel
 	return
 }
 
-func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content bytes.Buffer, path, msg string) (err error) {
+func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, msg string) (err error) {
 	client.CreatedFile = true
-	bts, _ := ioutil.ReadAll(&content)
-	client.Content = string(bts)
+	client.Content = string(content)
 	return
 }
 

@@ -141,7 +141,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 	var filename = brew.Name + ".rb"
 	var path = filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
-	if err := ioutil.WriteFile(path, content.Bytes(), 0644); err != nil {
+	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil {
 		return err
 	}
 
@@ -164,28 +164,31 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		Info("pushing")
 
 	var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
-	return client.CreateFile(ctx, brew.CommitAuthor, brew.GitHub, content, gpath, msg)
+	return client.CreateFile(ctx, brew.CommitAuthor, brew.GitHub, []byte(content), gpath, msg)
 }
 
 func ghFormulaPath(folder, filename string) string {
 	return path.Join(folder, filename)
 }
 
-func buildFormula(ctx *context.Context, brew config.Homebrew, artifacts []artifact.Artifact) (bytes.Buffer, error) {
+func buildFormula(ctx *context.Context, brew config.Homebrew, artifacts []artifact.Artifact) (string, error) {
 	data, err := dataFor(ctx, brew, artifacts)
 	if err != nil {
-		return bytes.Buffer{}, err
+		return "", err
 	}
-	return doBuildFormula(data)
+	return doBuildFormula(ctx, data)
 }
 
-func doBuildFormula(data templateData) (out bytes.Buffer, err error) {
+func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	t, err := template.New(data.Name).Parse(formulaTemplate)
 	if err != nil {
-		return out, err
+		return "", err
 	}
-	err = t.Execute(&out, data)
-	return
+	var out bytes.Buffer
+	if err := t.Execute(&out, data); err != nil {
+		return "", err
+	}
+	return tmpl.New(ctx).Apply(out.String())
 }
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, artifacts []artifact.Artifact) (templateData, error) {
