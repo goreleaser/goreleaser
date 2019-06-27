@@ -37,10 +37,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		// Validation before opening connection to bucket
 		// gocdk also does this validation but doing it in advance for better error handling
 		// as currently, go cdk does not throw error if AZURE_STORAGE_KEY is missing.
-		err := checkProvider(blob.Provider)
-		if err != nil {
-			return err
-		}
+		// err := checkProvider(blob.Provider)
+		// if err != nil {
+		// 	return err
+		// }
 	}
 	return nil
 }

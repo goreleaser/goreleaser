@@ -86,10 +86,14 @@ func (b Bucket) Upload(ctx *context.Context, conf config.Blob, folder string) er
 			}
 			_, err = w.Write(data)
 			if err != nil {
-				if errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound") {
+				switch {
+				case errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound"):
 					return fmt.Errorf("(%v) provided bucket does not exist", bucketURL)
+				case errorContains(err, "NoCredentialProviders"):
+					return fmt.Errorf("check credentials and access to bucket %s", bucketURL)
+				default:
+					return fmt.Errorf("failed to write to bucket : %s", err)
 				}
-				return fmt.Errorf("failed to write to bucket : %s", err)
 			}
 			if err = w.Close(); err != nil {
 				switch {
@@ -103,6 +107,10 @@ func (b Bucket) Upload(ctx *context.Context, conf config.Blob, folder string) er
 					return fmt.Errorf("azure storage account you provided is not valid")
 				case errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound"):
 					return fmt.Errorf("(%v) provided bucket does not exist", bucketURL)
+				case errorContains(err, "NoCredentialProviders"):
+					return fmt.Errorf("check credentials and access to bucket %s", bucketURL)
+				case errorContains(err, "ServiceCode=ResourceNotFound"):
+					return fmt.Errorf("missing azure storage key for provided bucket %s", bucketURL)
 				default:
 					return fmt.Errorf("failed to close Bucket writer: %s", err)
 				}

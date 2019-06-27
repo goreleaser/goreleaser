@@ -1,7 +1,6 @@
 package blob
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -12,9 +11,6 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
-	_ "gocloud.dev/blob/azureblob"
-	_ "gocloud.dev/blob/gcsblob"
-	_ "gocloud.dev/blob/s3blob"
 )
 
 func TestDescription(t *testing.T) {
@@ -69,15 +65,16 @@ func TestDefaults(t *testing.T) {
 			{
 				Bucket:   "foo",
 				Provider: "azblob",
+				IDs:      []string{"foo", "bar"},
 			},
 		},
 	})
-	setEnvVariables()
 	assert.NoError(Pipe{}.Default(ctx))
 	assert.Equal([]config.Blob{{
 		Bucket:   "foo",
 		Provider: "azblob",
 		Folder:   "{{ .ProjectName }}/{{ .Tag }}",
+		IDs:      []string{"foo", "bar"},
 	}}, ctx.Config.Blobs)
 }
 
@@ -99,47 +96,7 @@ func TestDefaultsWithProvider(t *testing.T) {
 			},
 		},
 	})
-
-	setEnvVariables()
 	assert.Nil(Pipe{}.Default(ctx))
-}
-
-func TestDefaultsWithInvalidProvider(t *testing.T) {
-	var assert = assert.New(t)
-
-	// This is invalid provider, meaning not registred with GO CDK
-	invalidProvider := "bar"
-	errorString := fmt.Sprintf("unknown provider [%v],currently supported providers: [azblob, gs, s3]", invalidProvider)
-	var ctx = context.New(config.Project{
-		Blobs: []config.Blob{
-			{
-				Bucket:   "foo",
-				Provider: invalidProvider,
-			},
-		},
-	})
-
-	setEnvVariables()
-	assert.EqualError(Pipe{}.Default(ctx), errorString)
-}
-
-func TestDefaultsWithMissingEnv(t *testing.T) {
-	var assert = assert.New(t)
-
-	errorString := "missing AZURE_STORAGE_ACCOUNT,AZURE_STORAGE_KEY"
-	var ctx = context.New(config.Project{
-		Blobs: []config.Blob{
-			{
-				Bucket:   "foo",
-				Provider: "azblob",
-			},
-		},
-	})
-
-	os.Unsetenv("AZURE_STORAGE_ACCOUNT")
-	os.Unsetenv("AZURE_STORAGE_KEY")
-
-	assert.EqualError(Pipe{}.Default(ctx), errorString)
 }
 
 func TestPipe_Publish(t *testing.T) {
@@ -152,7 +109,7 @@ func TestPipe_Publish(t *testing.T) {
 	assert.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
 	assert.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
 
-	// Azure Blob Context Without ENV
+	// Azure Blob Context
 	var azblobctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
@@ -235,7 +192,7 @@ func TestPipe_Publish(t *testing.T) {
 		wantErrString string
 	}{
 		{
-			name:          "Azure Blob Bucket test Publish(StorageAccount)",
+			name:          "Azure Blob Bucket Test Publish",
 			args:          args{azblobctx},
 			env:           map[string]string{"AZURE_STORAGE_ACCOUNT": "hjsdhjsdhs", "AZURE_STORAGE_KEY": "eHCSajxLvl94l36gIMlzZ/oW2O0rYYK+cVn5jNT2"},
 			wantErr:       false,
@@ -260,30 +217,24 @@ func TestPipe_Publish(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			p := Pipe{}
 			setEnv(tt.env)
-
+			defer unsetEnv(tt.env)
 			if err := p.Publish(tt.args.ctx); (err != nil) != tt.wantErr {
 				if err.Error() != tt.wantErrString {
 					t.Errorf("Pipe.Publish() error = %v, wantErr %v", err, tt.wantErrString)
 				}
 			}
-			os.Clearenv()
 		})
 	}
-}
-
-// Fake secret ENV VARIABLES use to authenticate against cloud provider
-func setEnvVariables() {
-	os.Setenv("AWS_ACCESS_KEY", "WPXKJC7CZQCFPKY5727N")
-	os.Setenv("AWS_SECRET_KEY", "eHCSajxLvl94l36gIMlzZ/oW2O0rYYK+cVn5jNT2")
-	os.Setenv("AWS_REGION", "us-east-1")
-	os.Setenv("AZURE_STORAGE_ACCOUNT", "goreleaser")
-	os.Setenv("AZURE_STORAGE_KEY", "eHCSajxLvl94l36gIMlzZ/oW2O0rYYK+cVn5jNT2")
-	gcloudCredentials, _ := filepath.Abs("./testdata/credentials.json")
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", gcloudCredentials)
 }
 
 func setEnv(env map[string]string) {
 	for k, v := range env {
 		os.Setenv(k, v)
+	}
+}
+
+func unsetEnv(env map[string]string) {
+	for k, _ := range env {
+		os.Unsetenv(k)
 	}
 }
