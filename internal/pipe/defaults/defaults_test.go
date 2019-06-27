@@ -68,9 +68,13 @@ func TestFillPartial(t *testing.T) {
 				},
 			},
 			Builds: []config.Build{
-				{Binary: "testreleaser"},
+				{
+					ID:     "build1",
+					Binary: "testreleaser",
+				},
 				{Goos: []string{"linux"}},
 				{
+					ID:     "build3",
 					Binary: "another",
 					Ignore: []config.IgnoredBuild{
 						{Goos: "darwin", Goarch: "amd64"},
