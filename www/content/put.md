@@ -142,7 +142,7 @@ puts:
     username: deployuser
 
     # An optional header you can use to tell GoReleaser to pass the artifact's
-    # SHA256 checksum withing the upload request.
+    # SHA256 checksum within the upload request.
     # Default is empty.
     checksum_header: -X-SHA256-Sum
 

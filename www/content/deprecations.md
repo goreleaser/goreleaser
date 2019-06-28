@@ -5,7 +5,7 @@ weight: 500
 hideFromIndex: true
 ---
 
-This page will be used to list deprecation notices accross GoReleaser.
+This page will be used to list deprecation notices across GoReleaser.
 
 Deprecate code will be removed after ~6 months from the time it was deprecated.
 
