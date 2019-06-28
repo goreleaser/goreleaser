@@ -41,7 +41,7 @@ blob:
 
 ## Authentication
 
-Goreleaser's blob pipe athentication varies depends on the blob provider as mentioned below:
+Goreleaser's blob pipe authentication varies depending upon the blob provider as mentioned below:
 
 ### S3 Provider
 
