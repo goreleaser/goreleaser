@@ -41,19 +41,29 @@ blob:
 
 ## Authentication
 
-Currently it supports authentication only with Environment Variable, Below is the list of ENV variable required:
+Goreleaser's blob pipe athentication varies depends on the blob provider as mentioned below:
 
-### [S3 Provider](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html)
+### S3 Provider
 
-- AWS_ACCESS_KEY
-- AWS_SECRET_KEY
-- AWS_DEFAULT_REGION
+S3 provider support AWS [default credential provider](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) chain in the following order:
 
-### [Azure Blob Provider](https://docs.microsoft.com/en-us/azure/storage/common/storage-azure-cli#set-default-azure-storage-account-environment-variables)
+- Environment variables.
+
+- Shared credentials file.
+
+- If your application is running on an Amazon EC2 instance, IAM role for Amazon EC2. 
+
+### Azure Blob Provider
+
+Currently it supports authentication only with [environment variables](https://docs.microsoft.com/en-us/azure/storage/common/storage-azure-cli#set-default-azure-storage-account-environment-variables):
 
 - AZURE_STORAGE_ACCOUNT
-- AZURE_STORAGE_KEY
+- AZURE_STORAGE_KEY or AZURE_STORAGE_SAS_TOKEN
 
 ### [GCS Provider](https://cloud.google.com/docs/authentication/production)
 
-- GOOGLE_APPLICATION_CREDENTIALS
+GCS provider uses [Application Default Credentials](https://cloud.google.com/docs/authentication/production) in the following order:
+
+- Environment Variable (GOOGLE_APPLICATION_CREDENTIALS)
+- Default Service Account from the compute instance(Compute Engine, Kubernetes Engine, Cloud function etc).
+
