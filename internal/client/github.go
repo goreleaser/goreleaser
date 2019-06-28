@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"crypto/tls"
 	"net/http"
 	"net/url"
@@ -57,7 +56,7 @@ func (c *githubClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
 	repo config.Repo,
-	content bytes.Buffer,
+	content []byte,
 	path,
 	message string,
 ) error {
@@ -66,7 +65,7 @@ func (c *githubClient) CreateFile(
 			Name:  github.String(commitAuthor.Name),
 			Email: github.String(commitAuthor.Email),
 		},
-		Content: content.Bytes(),
+		Content: content,
 		Message: github.String(message),
 	}
 

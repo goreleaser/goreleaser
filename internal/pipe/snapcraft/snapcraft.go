@@ -50,9 +50,10 @@ type Metadata struct {
 
 // AppMetadata for the binaries that will be in the snap package
 type AppMetadata struct {
-	Command string
-	Plugs   []string `yaml:",omitempty"`
-	Daemon  string   `yaml:",omitempty"`
+	Command   string
+	Plugs     []string `yaml:",omitempty"`
+	Daemon    string   `yaml:",omitempty"`
+	Completer string   `yaml:",omitempty"`
 }
 
 const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
@@ -199,6 +200,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		appMetadata := AppMetadata{
 			Command: name,
 		}
+		completerPath := ""
 		if configAppMetadata, ok := snap.Apps[name]; ok {
 			appMetadata.Plugs = configAppMetadata.Plugs
 			appMetadata.Daemon = configAppMetadata.Daemon
@@ -206,6 +208,10 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 				appMetadata.Command,
 				configAppMetadata.Args,
 			}, " "))
+			if configAppMetadata.Completer != "" {
+				completerPath = configAppMetadata.Completer
+				appMetadata.Completer = filepath.Base(completerPath)
+			}
 		}
 		metadata.Apps[name] = appMetadata
 		metadata.Plugs = snap.Plugs
@@ -219,6 +225,19 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		}
 		if err := os.Chmod(destBinaryPath, 0555); err != nil {
 			return errors.Wrap(err, "failed to change binary permissions")
+		}
+
+		if completerPath != "" {
+			destCompleterPath := filepath.Join(primeDir, filepath.Base(completerPath))
+			log.WithField("src", completerPath).
+				WithField("dst", destCompleterPath).
+				Debug("linking")
+			if err := os.Link(completerPath, destCompleterPath); err != nil {
+				return errors.Wrap(err, "failed to link completer")
+			}
+			if err := os.Chmod(destCompleterPath, 0444); err != nil {
+				return errors.Wrap(err, "failed to change completer permissions")
+			}
 		}
 	}
 

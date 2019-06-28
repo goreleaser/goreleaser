@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"crypto/tls"
 	"net/http"
 	"os"
@@ -43,7 +42,7 @@ func (c *gitlabClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
 	repo config.Repo,
-	content bytes.Buffer,
+	content []byte,
 	path,
 	message string,
 ) error {
