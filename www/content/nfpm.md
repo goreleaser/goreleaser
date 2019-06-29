@@ -87,6 +87,10 @@ nfpms:
     # Override default /usr/local/bin destination for binaries
     bindir: /usr/bin
 
+    # Package epoch.
+    # Defaults to empty.
+    epoch: 1
+
     # Empty folders that should be created and managed by the packager
     # implementation.
     # Default is empty.

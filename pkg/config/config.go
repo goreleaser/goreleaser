@@ -202,6 +202,7 @@ type NFPMScripts struct {
 // NFPMOverridables is used to specify per package format settings
 type NFPMOverridables struct {
 	NameTemplate string            `yaml:"name_template,omitempty"`
+	Epoch        string            `yaml:"epoch,omitempty"`
 	Replacements map[string]string `yaml:",omitempty"`
 	Dependencies []string          `yaml:",omitempty"`
 	Recommends   []string          `yaml:",omitempty"`
