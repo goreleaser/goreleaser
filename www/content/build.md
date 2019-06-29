@@ -18,7 +18,7 @@ builds:
   # You can have multiple builds defined as a yaml list
   -
     # ID of the build.
-    # Defaults to the binary name.
+    # Defaults to the project name.
     id: "my-build"
 
     # Path to main.go file or main package.

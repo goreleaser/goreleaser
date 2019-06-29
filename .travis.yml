@@ -13,7 +13,6 @@ env:
   - PATH=/snap/bin:$PATH
 install:
   - make setup
-  - npm install -g prettier
   - sudo snap install snapcraft --classic
 script:
   - make ci
