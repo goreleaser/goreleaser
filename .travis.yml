@@ -1,4 +1,4 @@
-dist: trusty
+dist: xenial
 sudo: required
 language: go
 go: '1.12.x'
