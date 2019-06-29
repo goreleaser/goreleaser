@@ -22,6 +22,7 @@ func TestPublishDisable(t *testing.T) {
 func TestPublish(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.Config.Release.Disable = true
+	ctx.TokenType = context.TokenTypeGitHub
 	for i := range ctx.Config.Dockers {
 		ctx.Config.Dockers[i].SkipPush = "true"
 	}

@@ -26,7 +26,7 @@ func (Pipe) String() string {
 
 // Publish scoop manifest
 func (Pipe) Publish(ctx *context.Context) error {
-	client, err := client.NewGitHub(ctx)
+	client, err := client.New(ctx)
 	if err != nil {
 		return err
 	}
@@ -58,6 +58,12 @@ func (Pipe) Default(ctx *context.Context) error {
 func doRun(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Scoop.Bucket.Name == "" {
 		return pipe.Skip("scoop section is not configured")
+	}
+	// If we'd use 'ctx.TokenType != context.TokenTypeGitHub' we'd have to adapt all the tests
+	// For simplicity we use this check because the functionality will be implemented later for
+	// all types of releases. See https://github.com/goreleaser/goreleaser/pull/1038#issuecomment-498891464
+	if ctx.TokenType == context.TokenTypeGitLab {
+		return pipe.Skip("scoop pipe is only configured for github releases")
 	}
 	if ctx.Config.Archive.Format == "binary" {
 		return pipe.Skip("archive format is binary")

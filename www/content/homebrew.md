@@ -5,7 +5,7 @@ hideFromIndex: true
 weight: 90
 ---
 
-After releasing to GitHub, GoReleaser can generate and publish a _homebrew-tap_
+After releasing to GitHub (GitLab is not supported yet), GoReleaser can generate and publish a _homebrew-tap_
 recipe into a repository that you have access to.
 
 The `brew` section specifies how the formula should be created.

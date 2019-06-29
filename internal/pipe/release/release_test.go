@@ -171,9 +171,23 @@ func TestDefault(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
 	var ctx = context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitHub
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
 	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
+}
+
+func TestDefaultWithGitlab(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@gitlab.com:gitlabowner/gitlabrepo.git")
+
+	var ctx = context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitLab
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "gitlabrepo", ctx.Config.Release.GitLab.Name)
+	assert.Equal(t, "gitlabowner", ctx.Config.Release.GitLab.Owner)
 }
 
 func TestDefaultPreReleaseAuto(t *testing.T) {
@@ -188,6 +202,7 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 				Prerelease: "auto",
 			},
 		})
+		ctx.TokenType = context.TokenTypeGitHub
 		ctx.Semver = context.Semver{
 			Major: 1,
 			Minor: 0,
@@ -203,6 +218,7 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 				Prerelease: "auto",
 			},
 		})
+		ctx.TokenType = context.TokenTypeGitHub
 		ctx.Semver = context.Semver{
 			Major:      1,
 			Minor:      0,
@@ -223,6 +239,7 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 				Prerelease: "auto",
 			},
 		})
+		ctx.TokenType = context.TokenTypeGitHub
 		ctx.Semver = context.Semver{
 			Major:      1,
 			Minor:      0,
@@ -245,6 +262,7 @@ func TestDefaultPipeDisabled(t *testing.T) {
 			Disable: true,
 		},
 	})
+	ctx.TokenType = context.TokenTypeGitHub
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
 	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
@@ -266,6 +284,7 @@ func TestDefaultFilled(t *testing.T) {
 			},
 		},
 	}
+	ctx.TokenType = context.TokenTypeGitHub
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, "foo", ctx.Config.Release.GitHub.Name)
 	assert.Equal(t, "bar", ctx.Config.Release.GitHub.Owner)
@@ -277,6 +296,7 @@ func TestDefaultNotAGitRepo(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
+	ctx.TokenType = context.TokenTypeGitHub
 	assert.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
 }
@@ -287,6 +307,7 @@ func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
+	ctx.TokenType = context.TokenTypeGitHub
 	testlib.GitInit(t)
 	assert.EqualError(t, Pipe{}.Default(ctx), "repository doesn't have an `origin` remote")
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
@@ -298,6 +319,7 @@ func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
+	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Snapshot = true
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
@@ -309,8 +331,25 @@ func TestDefaultGitRepoWithoutRemote(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
+	ctx.TokenType = context.TokenTypeGitHub
 	assert.Error(t, Pipe{}.Default(ctx))
 	assert.Empty(t, ctx.Config.Release.GitHub.String())
+}
+
+func TestDefaultMultipleReleasesDefined(t *testing.T) {
+	var ctx = context.New(config.Project{
+		Release: config.Release{
+			GitHub: config.Repo{
+				Owner: "githubName",
+				Name:  "githubName",
+			},
+			GitLab: config.Repo{
+				Owner: "gitlabOwner",
+				Name:  "gitlabName",
+			},
+		},
+	})
+	assert.EqualError(t, Pipe{}.Default(ctx), ErrMultipleReleases.Error())
 }
 
 type DummyClient struct {
@@ -323,9 +362,9 @@ type DummyClient struct {
 	Lock                sync.Mutex
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
+func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
 	if client.FailToCreateRelease {
-		return 0, errors.New("release failed")
+		return "", errors.New("release failed")
 	}
 	client.CreatedRelease = true
 	return
@@ -335,7 +374,7 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID int64, name string, file *os.File) error {
+func (client *DummyClient) Upload(ctx *context.Context, releaseID string, name string, file *os.File) error {
 	client.Lock.Lock()
 	defer client.Lock.Unlock()
 	// ensure file is read to better mimic real behavior

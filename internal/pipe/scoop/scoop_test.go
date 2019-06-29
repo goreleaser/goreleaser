@@ -366,6 +366,49 @@ func Test_doRun(t *testing.T) {
 			},
 			shouldErr("archive format is binary"),
 		},
+		{
+			"valid but non github release",
+			args{
+				&context.Context{
+					TokenType: context.TokenTypeGitLab,
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.1",
+					},
+					Version:   "1.0.1",
+					Artifacts: artifact.New(),
+					Config: config.Project{
+						Builds: []config.Build{
+							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
+						},
+						Dist:        ".",
+						ProjectName: "run-pipe",
+						Archive: config.Archive{
+							Format: "tar.gz",
+						},
+						Release: config.Release{
+							GitLab: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+						},
+						Scoop: config.Scoop{
+							Bucket: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						},
+					},
+				},
+				&DummyClient{},
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
+				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+			},
+			shouldErr("scoop pipe is only configured for github releases"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -530,7 +573,7 @@ type DummyClient struct {
 	Content     string
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
+func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
 	return
 }
 
@@ -540,6 +583,6 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID int64, name string, file *os.File) (err error) {
+func (client *DummyClient) Upload(ctx *context.Context, releaseID string, name string, file *os.File) (err error) {
 	return
 }

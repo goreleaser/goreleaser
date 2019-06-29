@@ -372,6 +372,13 @@ func TestRunPipeNoUpload(t *testing.T) {
 		}
 		assertNoPublish(tt)
 	})
+	t.Run("skip publish because not a github release", func(tt *testing.T) {
+		ctx.Config.Release.Draft = false
+		ctx.Config.Brew.SkipUpload = "false"
+		ctx.SkipPublish = false
+		ctx.TokenType = context.TokenTypeGitLab
+		assertNoPublish(tt)
+	})
 }
 
 func TestDefault(t *testing.T) {
@@ -421,7 +428,7 @@ type DummyClient struct {
 	Content     string
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID int64, err error) {
+func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
 	return
 }
 
@@ -431,6 +438,6 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID int64, name string, file *os.File) (err error) {
+func (client *DummyClient) Upload(ctx *context.Context, releaseID string, name string, file *os.File) (err error) {
 	return
 }

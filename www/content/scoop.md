@@ -5,7 +5,7 @@ hideFromIndex: true
 weight: 100
 ---
 
-After releasing to GitHub, GoReleaser can generate and publish a
+After releasing to GitHub (GitLab is not supported yet), GoReleaser can generate and publish a
 _Scoop App Manifest_ into a repository that you have access to.
 
 The `scoop` section specifies how the manifest should be created. See

@@ -115,6 +115,13 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 	if brew.GitHub.Name == "" {
 		return pipe.Skip("brew section is not configured")
 	}
+	// If we'd use 'ctx.TokenType != context.TokenTypeGitHub' we'd have to adapt all the tests
+	// For simplicity we use this check because the functionality will be implemented later for
+	// all types of releases. See https://github.com/goreleaser/goreleaser/pull/1038#issuecomment-498891464
+	if ctx.TokenType == context.TokenTypeGitLab {
+		return pipe.Skip("brew pipe is only configured for github releases")
+	}
+
 	var filters = []artifact.Filter{
 		artifact.Or(
 			artifact.ByGoos("darwin"),

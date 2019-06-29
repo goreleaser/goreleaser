@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 
 	"github.com/apex/log"
 	"github.com/google/go-github/v25/github"
@@ -100,11 +101,11 @@ func (c *githubClient) CreateFile(
 	return err
 }
 
-func (c *githubClient) CreateRelease(ctx *context.Context, body string) (int64, error) {
+func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string, error) {
 	var release *github.RepositoryRelease
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Release.NameTemplate)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
 	var data = &github.RepositoryRelease{
@@ -141,20 +142,25 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (int64, 
 		)
 	}
 	log.WithField("url", release.GetHTMLURL()).Info("release updated")
-	return release.GetID(), err
+	githubReleaseID := strconv.FormatInt(release.GetID(), 10)
+	return githubReleaseID, err
 }
 
 func (c *githubClient) Upload(
 	ctx *context.Context,
-	releaseID int64,
+	releaseID string,
 	name string,
 	file *os.File,
 ) error {
-	_, _, err := c.client.Repositories.UploadReleaseAsset(
+	githubReleaseID, err := strconv.ParseInt(releaseID, 10, 64)
+	if err != nil {
+		return err
+	}
+	_, _, err = c.client.Repositories.UploadReleaseAsset(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
-		releaseID,
+		githubReleaseID,
 		&github.UploadOptions{
 			Name: name,
 		},

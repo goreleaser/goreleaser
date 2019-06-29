@@ -16,18 +16,41 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ErrMultipleReleases indicates that multiple releases are defined. ATM only one of them is allowed
+// See https://github.com/goreleaser/goreleaser/pull/809
+var ErrMultipleReleases = errors.New("both gitlab and github releases are defined. Only one is allowed")
+
 // Pipe for github release
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "GitHub Releases"
+	return "GitHub/GitLab Releases"
 }
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	if ctx.Config.Release.GitHub.String() != "" && ctx.Config.Release.GitLab.String() != "" {
+		return ErrMultipleReleases
+	}
+
 	if ctx.Config.Release.NameTemplate == "" {
 		ctx.Config.Release.NameTemplate = "{{.Tag}}"
 	}
+
+	// Note: do a switch on ctx.TokenType later if more clients are added
+	if ctx.TokenType == context.TokenTypeGitLab {
+		if ctx.Config.Release.GitLab.Name == "" {
+			repo, err := remoteRepo()
+			if err != nil {
+				return err
+			}
+			ctx.Config.Release.GitLab = repo
+		}
+
+		return nil
+	}
+
+	// We keep github as default for now
 	if ctx.Config.Release.GitHub.Name == "" {
 		repo, err := remoteRepo()
 		if err != nil && !ctx.Snapshot {
@@ -53,14 +76,14 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Publish github release
 func (Pipe) Publish(ctx *context.Context) error {
-	c, err := client.NewGitHub(ctx)
+	c, err := client.New(ctx)
 	if err != nil {
 		return err
 	}
 	return doPublish(ctx, c)
 }
 
-func doPublish(ctx *context.Context, c client.Client) error {
+func doPublish(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Release.Disable {
 		return pipe.Skip("release pipe is disabled")
 	}
@@ -71,7 +94,7 @@ func doPublish(ctx *context.Context, c client.Client) error {
 	if err != nil {
 		return err
 	}
-	releaseID, err := c.CreateRelease(ctx, body.String())
+	releaseID, err := client.CreateRelease(ctx, body.String())
 	if err != nil {
 		return err
 	}
@@ -90,7 +113,7 @@ func doPublish(ctx *context.Context, c client.Client) error {
 			var repeats uint
 			what := func(try uint) error {
 				repeats = try + 1
-				if uploadErr := upload(ctx, c, releaseID, artifact); uploadErr != nil {
+				if uploadErr := upload(ctx, client, releaseID, artifact); uploadErr != nil {
 					log.WithFields(log.Fields{
 						"try":      try,
 						"artifact": artifact.Name,
@@ -112,12 +135,12 @@ func doPublish(ctx *context.Context, c client.Client) error {
 	return g.Wait()
 }
 
-func upload(ctx *context.Context, c client.Client, releaseID int64, artifact artifact.Artifact) error {
+func upload(ctx *context.Context, client client.Client, releaseID string, artifact artifact.Artifact) error {
 	file, err := os.Open(artifact.Path)
 	if err != nil {
 		return err
 	}
 	defer file.Close() // nolint: errcheck
 	log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
-	return c.Upload(ctx, releaseID, artifact.Name, file)
+	return client.Upload(ctx, releaseID, artifact.Name, file)
 }

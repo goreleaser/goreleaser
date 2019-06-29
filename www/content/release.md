@@ -5,17 +5,18 @@ hideFromIndex: true
 weight: 110
 ---
 
-GoReleaser will create a GitHub release with the current tag, upload all
+GoReleaser will create a GitHub/GitLab release with the current tag, upload all
 the artifacts and generate the changelog based on the new commits since the
 previous tag.
 
-Let's see what can be customized in the `release` section:
+Let's see what can be customized in the `release` section for GitHub:
 
 ```yml
 # .goreleaser.yml
 release:
   # Repo in which the release will be created.
   # Default is extracted from the origin remote URL.
+  # Note: it can only be one: either github or gitlab
   github:
     owner: user
     name: repo
@@ -39,6 +40,29 @@ release:
   # Defaults to false.
   disable: true
 ```
+
+Seconds let's see what can be customized in the `release` section for GitLab:
+
+```yml
+# .goreleaser.yml
+release:
+  # Same as for github
+  # Note: it can only be one: either github or gitlab
+  gitlab:
+    owner: user
+    name: repo
+
+  # You can change the name of the GitLab release.
+  # Default is `{{.Tag}}`
+  name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
+
+  # You can disable this pipe in order to not upload any artifacts to
+  # GitLab.
+  # Defaults to false.
+  disable: true
+```
+
+**Note**: `draft` and `prerelease` is only supported by GitHub.
 
 > Learn more about the [name template engine](/templates).
 

@@ -20,6 +20,13 @@ type GitHubURLs struct {
 	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
 }
 
+// GitLabURLs holds the URLs to be used when using gitlab ce/enterprise
+type GitLabURLs struct {
+	API           string `yaml:"api,omitempty"`
+	Download      string `yaml:"download,omitempty"`
+	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
+}
+
 // Repo represents any kind of repo (github, gitlab, etc)
 type Repo struct {
 	Owner string `yaml:",omitempty"`
@@ -158,9 +165,10 @@ type Archive struct {
 	Files           []string          `yaml:",omitempty"`
 }
 
-// Release config used for the GitHub release
+// Release config used for the GitHub/GitLab release
 type Release struct {
 	GitHub       Repo   `yaml:",omitempty"`
+	GitLab       Repo   `yaml:",omitempty"`
 	Draft        bool   `yaml:",omitempty"`
 	Disable      bool   `yaml:",omitempty"`
 	Prerelease   string `yaml:",omitempty"`
@@ -283,6 +291,7 @@ type Changelog struct {
 // values like the github token for example
 type EnvFiles struct {
 	GitHubToken string `yaml:"github_token,omitempty"`
+	GitLabToken string `yaml:"gitlab_token,omitempty"`
 }
 
 // Before config
@@ -355,6 +364,9 @@ type Project struct {
 
 	// should be set if using github enterprise
 	GitHubURLs GitHubURLs `yaml:"github_urls,omitempty"`
+
+	// should be set if using a private gitlab
+	GitLabURLs GitLabURLs `yaml:"gitlab_urls,omitempty"`
 }
 
 // Load config file

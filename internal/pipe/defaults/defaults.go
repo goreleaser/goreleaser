@@ -23,6 +23,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.GitHubURLs.Download == "" {
 		ctx.Config.GitHubURLs.Download = "https://github.com"
 	}
+	if ctx.Config.GitLabURLs.Download == "" {
+		ctx.Config.GitLabURLs.Download = "https://gitlab.com"
+	}
 	for _, defaulter := range defaults.Defaulters {
 		if err := middleware.Logging(
 			defaulter.String(),
