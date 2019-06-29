@@ -8,7 +8,7 @@ require (
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/fatih/color v1.7.0
 	github.com/google/go-github/v25 v25.0.1
-	github.com/goreleaser/nfpm v0.11.0
+	github.com/goreleaser/nfpm v0.12.0
 	github.com/imdario/mergo v0.3.6
 	github.com/kamilsk/retry/v4 v4.0.0
 	github.com/mattn/go-colorable v0.0.9 // indirect
