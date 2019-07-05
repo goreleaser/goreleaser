@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -219,7 +220,7 @@ func TestPipe_Publish(t *testing.T) {
 			setEnv(tt.env)
 			defer unsetEnv(tt.env)
 			if err := p.Publish(tt.args.ctx); (err != nil) != tt.wantErr {
-				if err.Error() != tt.wantErrString {
+				if !strings.HasPrefix(err.Error(), tt.wantErrString) {
 					t.Errorf("Pipe.Publish() error = %v, wantErr %v", err, tt.wantErrString)
 				}
 			}

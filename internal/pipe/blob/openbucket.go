@@ -94,9 +94,9 @@ func (b Bucket) Upload(ctx *context.Context, conf config.Blob, folder string) er
 			if err != nil {
 				switch {
 				case errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound"):
-					return errors.Wrapf(err, "(%v) provided bucket does not exist", bucketURL)
+					return errors.Wrapf(err, "provided bucket does not exist: %s", bucketURL)
 				case errorContains(err, "NoCredentialProviders"):
-					return errors.Wrapf(err, "check credentials and access to bucket %s", bucketURL)
+					return errors.Wrapf(err, "check credentials and access to bucket: %s", bucketURL)
 				default:
 					return errors.Wrapf(err, "failed to write to bucket")
 				}
@@ -112,7 +112,7 @@ func (b Bucket) Upload(ctx *context.Context, conf config.Blob, folder string) er
 				case errorContains(err, "no such host"):
 					return errors.Wrap(err, "azure storage account you provided is not valid")
 				case errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound"):
-					return errors.Wrapf(err, "(%v) provided bucket does not exist", bucketURL)
+					return errors.Wrapf(err, "provided bucket does not exist: %s", bucketURL)
 				case errorContains(err, "NoCredentialProviders"):
 					return errors.Wrapf(err, "check credentials and access to bucket %s", bucketURL)
 				case errorContains(err, "ServiceCode=ResourceNotFound"):
