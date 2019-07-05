@@ -99,6 +99,44 @@ In this example we're creating a new release every time a new tag is pushed.
 Note that you'll need to enable `tags` in repo settings and add `github_token`
 secret.
 
+#### 1.x
+```
+kind: pipeline
+name: default
+
+steps:
+  - name: fetch
+    image: docker:git
+    commands:
+      - git fetch --tags
+
+  - name: test
+    image: golang
+    volumes:
+      - name: deps
+        path: /go
+    commands:
+      - go test -race -v ./... -cover
+
+  - name: release
+    image: golang
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
+    volumes:
+      - name: deps
+        path: /go
+    commands:
+      - curl -sL https://git.io/goreleaser | bash
+    when:
+      event: tag
+
+volumes:
+  - name: deps
+    temp: {}
+```
+
+#### 0.8 
 ```yml
 pipeline:
   clone:
