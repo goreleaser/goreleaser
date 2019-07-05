@@ -302,20 +302,21 @@ type Before struct {
 
 // S3 contains s3 config
 type S3 struct {
-	Region   string
-	Bucket   string
-	Folder   string
-	Profile  string
-	Endpoint string // used for minio for example
-	ACL      string
+	Region   string   `yaml:",omitempty"`
+	Bucket   string   `yaml:",omitempty"`
+	Folder   string   `yaml:",omitempty"`
+	Profile  string   `yaml:",omitempty"`
+	Endpoint string   `yaml:",omitempty"` // used for minio for example
+	ACL      string   `yaml:",omitempty"`
 	IDs      []string `yaml:"ids,omitempty"`
 }
 
 // Blob contains config for GO CDK blob
 type Blob struct {
-	Bucket   string
-	Provider string
-	Folder   string
+	Bucket   string   `yaml:",omitempty"`
+	Provider string   `yaml:",omitempty"`
+	Folder   string   `yaml:",omitempty"`
+	KMSKey   string   `yaml:",omitempty"`
 	IDs      []string `yaml:"ids,omitempty"`
 }
 
