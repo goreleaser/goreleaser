@@ -277,13 +277,20 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	return nil
 }
 
+const reviewWaitMsg = `Waiting for previous upload(s) to complete their review process.`
+
 func push(ctx *context.Context, snap artifact.Artifact) error {
-	log.WithField("snap", snap.Name).Info("pushing snap")
+	var log = log.WithField("snap", snap.Name)
+	log.Info("pushing snap")
 	// TODO: customize --release based on snap.Grade?
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "snapcraft", "push", "--release=stable", snap.Path)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("failed to push %s package: %s", snap.Path, string(out))
+		if strings.Contains(string(out), reviewWaitMsg) {
+			log.Warn(reviewWaitMsg)
+		} else {
+			return fmt.Errorf("failed to push %s package: %s", snap.Path, string(out))
+		}
 	}
 	snap.Type = artifact.Snapcraft
 	ctx.Artifacts.Add(snap)
