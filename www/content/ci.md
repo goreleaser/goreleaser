@@ -100,7 +100,9 @@ Note that you'll need to enable `tags` in repo settings and add `github_token`
 secret.
 
 #### 1.x
-```
+```yml
+# .drone.yml
+
 kind: pipeline
 name: default
 
