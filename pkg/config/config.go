@@ -45,6 +45,7 @@ func (r Repo) String() string {
 type Homebrew struct {
 	Name             string       `yaml:",omitempty"`
 	GitHub           Repo         `yaml:",omitempty"`
+	GitLab           Repo         `yaml:",omitempty"`
 	CommitAuthor     CommitAuthor `yaml:"commit_author,omitempty"`
 	Folder           string       `yaml:",omitempty"`
 	Caveats          string       `yaml:",omitempty"`
