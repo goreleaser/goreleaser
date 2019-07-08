@@ -38,14 +38,14 @@ func (e Env) Strings() []string {
 	return result
 }
 
-// tokenType is either github or gitlab
-type tokenType string
+// TokenType is either github or gitlab
+type TokenType string
 
 const (
 	// TokenTypeGitHub defines github as type of the token
-	TokenTypeGitHub tokenType = "github"
+	TokenTypeGitHub TokenType = "github"
 	// TokenTypeGitLab defines gitlab as type of the token
-	TokenTypeGitLab tokenType = "gitlab"
+	TokenTypeGitLab TokenType = "gitlab"
 )
 
 // Context carries along some data through the pipes
@@ -54,7 +54,7 @@ type Context struct {
 	Config       config.Project
 	Env          Env
 	Token        string
-	TokenType    tokenType
+	TokenType    TokenType
 	Git          GitInfo
 	Artifacts    artifact.Artifacts
 	ReleaseNotes string
