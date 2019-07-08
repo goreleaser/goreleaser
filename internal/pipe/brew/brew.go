@@ -112,14 +112,8 @@ func contains(ss []string, s string) bool {
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) error {
-	if brew.GitHub.Name == "" {
+	if brew.GitHub.Name == "" && brew.GitLab.Name == "" {
 		return pipe.Skip("brew section is not configured")
-	}
-	// If we'd use 'ctx.TokenType != context.TokenTypeGitHub' we'd have to adapt all the tests
-	// For simplicity we use this check because the functionality will be implemented later for
-	// all types of releases. See https://github.com/goreleaser/goreleaser/pull/1038#issuecomment-498891464
-	if ctx.TokenType == context.TokenTypeGitLab {
-		return pipe.Skip("brew pipe is only configured for github releases")
 	}
 
 	var filters = []artifact.Filter{
@@ -140,7 +134,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return ErrNoArchivesFound
 	}
 
-	content, err := buildFormula(ctx, brew, archives)
+	content, err := buildFormula(ctx, brew, ctx.TokenType, archives)
 	if err != nil {
 		return err
 	}
@@ -178,8 +172,8 @@ func ghFormulaPath(folder, filename string) string {
 	return path.Join(folder, filename)
 }
 
-func buildFormula(ctx *context.Context, brew config.Homebrew, artifacts []artifact.Artifact) (string, error) {
-	data, err := dataFor(ctx, brew, artifacts)
+func buildFormula(ctx *context.Context, brew config.Homebrew, tokenType context.TokenType, artifacts []artifact.Artifact) (string, error) {
+	data, err := dataFor(ctx, brew, tokenType, artifacts)
 	if err != nil {
 		return "", err
 	}
@@ -198,7 +192,7 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	return tmpl.New(ctx).Apply(out.String())
 }
 
-func dataFor(ctx *context.Context, cfg config.Homebrew, artifacts []artifact.Artifact) (templateData, error) {
+func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenType, artifacts []artifact.Artifact) (templateData, error) {
 	var result = templateData{
 		Name:             formulaNameFor(cfg.Name),
 		Desc:             cfg.Description,
@@ -222,12 +216,27 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, artifacts []artifact.Art
 		}
 
 		if cfg.URLTemplate == "" {
-			cfg.URLTemplate = fmt.Sprintf(
-				"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
-				ctx.Config.GitHubURLs.Download,
-				ctx.Config.Release.GitHub.Owner,
-				ctx.Config.Release.GitHub.Name,
-			)
+			switch tokenType {
+			case context.TokenTypeGitHub:
+				// https://github.com/goreleaser/goreleaser/releases/download/v0.112.1/goreleaser_Linux_arm64.tar.gz
+				cfg.URLTemplate = fmt.Sprintf(
+					"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+					ctx.Config.GitHubURLs.Download,
+					ctx.Config.Release.GitHub.Owner,
+					ctx.Config.Release.GitHub.Name,
+				)
+			case context.TokenTypeGitLab:
+				//https://gitlab.com/mavogel/release-testing/uploads/22e8b1508b0f28433b94754a5ea2f4aa/release-testing_0.3.7_Darwin_x86_64.tar.gz
+				cfg.URLTemplate = fmt.Sprintf(
+					"%s/%s/%s/releases/uploads/%s/{{ .ArtifactName }}",
+					ctx.Config.GitLabURLs.Download,
+					ctx.Config.Release.GitLab.Owner,
+					ctx.Config.Release.GitLab.Name,
+					artifact.Extra["GitLabFileUploadHash"],
+				)
+			default:
+				return result, fmt.Errorf("tokenType is not yet implemented for brew: %s", ctx.TokenType)
+			}
 		}
 		url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(cfg.URLTemplate)
 		if err != nil {
