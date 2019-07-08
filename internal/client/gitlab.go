@@ -2,15 +2,21 @@ package client
 
 import (
 	"crypto/tls"
+	"errors"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/xanzy/go-gitlab"
 )
+
+// ErrExtractHashFromFileUploadURL indicates the file upload hash could not ne extracted from the url
+var ErrExtractHashFromFileUploadURL = errors.New("could not extract hash from gitlab file upload url")
 
 type gitlabClient struct {
 	client *gitlab.Client
@@ -36,8 +42,8 @@ func NewGitLab(ctx *context.Context) (Client, error) {
 	return &gitlabClient{client: client}, nil
 }
 
-// CreateFile creates a file in the repository at a given path
-// or updates the file if it exists
+// CreateFile gets a file in the repository at a given path
+// and updates if it exists or creates it for later pipes in the pipeline
 func (c *gitlabClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
@@ -46,8 +52,9 @@ func (c *gitlabClient) CreateFile(
 	path,
 	message string,
 ) error {
-	// Used by brew and scoop, hence those two pipes are
-	// only supported for github atm. So we disable it for now.
+	// c.client.RepositoryFiles.GetFile()
+	// c.client.RepositoryFiles.CreateFile()
+	// c.client.RepositoryFiles.UpdateFile()
 	return nil
 }
 
@@ -128,7 +135,7 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 func (c *gitlabClient) Upload(
 	ctx *context.Context,
 	releaseID string,
-	name string,
+	artifact artifact.Artifact,
 	file *os.File,
 ) error {
 	projectID := ctx.Config.Release.GitLab.Owner + "/" + ctx.Config.Release.GitLab.Name
@@ -150,9 +157,9 @@ func (c *gitlabClient) Upload(
 	}).Debug("uploaded file")
 
 	gitlabBaseURL := ctx.Config.GitLabURLs.Download
-	// projectFile from upload: /uploads/<sha>/filename.txt
-	relativeUploadURL := projectFile.URL
-	linkURL := gitlabBaseURL + "/" + projectID + relativeUploadURL
+	// projectFile.URL from upload: /uploads/<hash>/filename.txt
+	linkURL := gitlabBaseURL + "/" + projectID + projectFile.URL
+	name := artifact.Name
 	releaseLink, _, err := c.client.ReleaseLinks.CreateReleaseLink(
 		projectID,
 		releaseID,
@@ -170,5 +177,24 @@ func (c *gitlabClient) Upload(
 		"url": releaseLink.URL,
 	}).Debug("created release link")
 
+	// set it to context for following pipes
+	fileUploadHash, err := extractProjectFileHashFrom(projectFile.URL)
+	if err != nil {
+		return err
+	}
+	artifact.Extra["GitLabFileUploadHash"] = fileUploadHash
+
 	return err
+}
+
+// extractProjectFileHashFrom extracts the hash from the
+// relative project file url of the format '/uploads/<hash>/filename.ext'
+func extractProjectFileHashFrom(projectFileURL string) (string, error) {
+	log.WithField("projectFileURL", projectFileURL).Debug("extractProjectFileHashFrom")
+	splittedProjectFileURL := strings.Split(projectFileURL, "/")
+	if len(splittedProjectFileURL) != 4 {
+		return "", ErrExtractHashFromFileUploadURL
+	}
+
+	return splittedProjectFileURL[2], nil
 }
