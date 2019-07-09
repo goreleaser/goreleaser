@@ -2,7 +2,6 @@
 package client
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -31,5 +30,5 @@ func New(ctx *context.Context) (Client, error) {
 	if ctx.TokenType == context.TokenTypeGitLab {
 		return NewGitLab(ctx)
 	}
-	return nil, fmt.Errorf("client is not yet implemented: %s", ctx.TokenType)
+	return nil, nil
 }
