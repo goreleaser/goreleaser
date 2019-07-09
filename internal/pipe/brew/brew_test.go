@@ -120,6 +120,7 @@ func TestRunPipe(t *testing.T) {
 			folder, err := ioutil.TempDir("", "goreleasertest")
 			assert.NoError(t, err)
 			var ctx = &context.Context{
+				TokenType: context.TokenTypeGitHub,
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
 				},
@@ -211,6 +212,7 @@ func TestRunPipe(t *testing.T) {
 
 func TestRunPipeNoDarwin64Build(t *testing.T) {
 	var ctx = &context.Context{
+		TokenType: context.TokenTypeGitHub,
 		Config: config.Project{
 			Brews: []config.Homebrew{
 				{
@@ -240,6 +242,7 @@ func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 			},
 		},
 	)
+	ctx.TokenType = context.TokenTypeGitHub
 
 	f, err := ioutil.TempFile("", "")
 	assert.NoError(t, err)
@@ -321,6 +324,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 			},
 		},
 	})
+	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
 	_, err = os.Create(path)
@@ -386,6 +390,7 @@ func TestDefault(t *testing.T) {
 	defer back()
 
 	var ctx = &context.Context{
+		TokenType: context.TokenTypeGitHub,
 		Config: config.Project{
 			ProjectName: "myproject",
 			Brews:       []config.Homebrew{},
@@ -438,6 +443,6 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID string, name string, file *os.File) (err error) {
+func (client *DummyClient) Upload(ctx *context.Context, releaseID string, artifact artifact.Artifact, file *os.File) (err error) {
 	return
 }
