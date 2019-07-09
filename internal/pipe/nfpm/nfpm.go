@@ -149,6 +149,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		Version:     ctx.Git.CurrentTag,
 		Section:     "",
 		Priority:    "",
+		Epoch:       fpm.Epoch,
 		Maintainer:  fpm.Maintainer,
 		Description: fpm.Description,
 		Vendor:      fpm.Vendor,
