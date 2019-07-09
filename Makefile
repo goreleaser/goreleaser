@@ -36,8 +36,14 @@ lint:
 	./bin/misspell -error **/*
 .PHONY: lint
 
+# Clean go.mod
+go-mod-tidy:
+	go mod tidy -v
+	git diff-index --quiet HEAD || echo "Go mod tidy failed. Please run it locally"
+.PHONY: go-mod-tidy
+
 # Run all the tests and code checks
-ci: build test lint
+ci: build test lint go-mod-tidy
 .PHONY: ci
 
 # Build a beta version of goreleaser
