@@ -202,6 +202,9 @@ func TestRunPipe(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, string(bts), client.Content)
 
+			err = new(Pipe).Write(ctx)
+			assert.NoError(t, err)
+
 			distBts, err := ioutil.ReadFile(distFile)
 			assert.NoError(t, err)
 			assert.Equal(t, string(bts), string(distBts))

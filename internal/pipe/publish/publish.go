@@ -51,6 +51,11 @@ var publishers = []Publisher{
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	err := new(brew.Pipe).Write(ctx)
+	if err != nil {
+		return err
+	}
+
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}

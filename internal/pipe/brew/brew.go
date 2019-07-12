@@ -37,6 +37,53 @@ func (Pipe) String() string {
 	return "homebrew tap formula"
 }
 
+func getFilters(brew config.Homebrew) []artifact.Filter {
+	var filters = []artifact.Filter{
+		artifact.Or(
+			artifact.ByGoos("darwin"),
+			artifact.ByGoos("linux"),
+		),
+		artifact.ByFormats("zip", "tar.gz"),
+		artifact.ByGoarch("amd64"),
+		artifact.ByType(artifact.UploadableArchive),
+	}
+	if len(brew.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(brew.IDs...))
+	}
+
+	return filters
+}
+
+func getName(brew config.Homebrew) string {
+	return brew.Name + ".rb"
+}
+
+// Write serializes brew Formula to file
+func (Pipe) Write(ctx *context.Context) error {
+	for _, brew := range ctx.Config.Brews {
+		var filters = getFilters(ctx, brew)
+
+		var archives = ctx.Artifacts.Filter(artifact.And(filters...)).List()
+		if len(archives) == 0 {
+			return ErrNoArchivesFound
+		}
+
+		content, err := buildFormula(ctx, brew, archives)
+		if err != nil {
+			return err
+		}
+
+		var filename = getName(brew)
+		var path = filepath.Join(ctx.Config.Dist, filename)
+		log.WithField("formula", path).Info("writing")
+		if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Publish brew formula
 func (Pipe) Publish(ctx *context.Context) error {
 	client, err := client.NewGitHub(ctx)
@@ -122,19 +169,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return pipe.Skip("brew pipe is only configured for github releases")
 	}
 
-	var filters = []artifact.Filter{
-		artifact.Or(
-			artifact.ByGoos("darwin"),
-			artifact.ByGoos("linux"),
-		),
-		artifact.ByFormats("zip", "tar.gz"),
-		artifact.ByGoarch("amd64"),
-		artifact.ByType(artifact.UploadableArchive),
-	}
-	if len(brew.IDs) > 0 {
-		filters = append(filters, artifact.ByIDs(brew.IDs...))
-	}
-
+	var filters = getFilters(ctx, brew)
 	var archives = ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(archives) == 0 {
 		return ErrNoArchivesFound
@@ -142,13 +177,6 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 
 	content, err := buildFormula(ctx, brew, archives)
 	if err != nil {
-		return err
-	}
-
-	var filename = brew.Name + ".rb"
-	var path = filepath.Join(ctx.Config.Dist, filename)
-	log.WithField("formula", path).Info("writing")
-	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil {
 		return err
 	}
 
@@ -165,6 +193,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
 	}
 
+	var filename = getName(brew)
 	var gpath = ghFormulaPath(brew.Folder, filename)
 	log.WithField("formula", gpath).
 		WithField("repo", brew.GitHub.String()).
