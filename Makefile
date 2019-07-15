@@ -39,7 +39,7 @@ lint:
 # Clean go.mod
 go-mod-tidy:
 	go mod tidy -v
-	git diff-index --quiet HEAD || echo "Go mod tidy failed. Please run it locally"
+	git diff-index --quiet HEAD
 .PHONY: go-mod-tidy
 
 # Run all the tests and code checks
