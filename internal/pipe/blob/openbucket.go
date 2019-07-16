@@ -79,10 +79,11 @@ func (b Bucket) Upload(ctx *context.Context, conf config.Blob, folder string) er
 		g.Go(func() error {
 			log.WithFields(log.Fields{
 				"provider": bucketURL,
+				"folder":   folder,
 				"artifact": artifact.Name,
 			}).Info("uploading")
 
-			w, err := conn.NewWriter(ctx, filepath.Join(folder, artifact.Path), nil)
+			w, err := conn.NewWriter(ctx, filepath.Join(folder, artifact.Name), nil)
 			if err != nil {
 				return errors.Wrap(err, "failed to obtain writer")
 			}
