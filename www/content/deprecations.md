@@ -72,7 +72,7 @@ s3:
 to this:
 
 ```yaml
-blobs:
+blob:
 -
   provider: s3
   # etc
