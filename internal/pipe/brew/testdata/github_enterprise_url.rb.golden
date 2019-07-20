@@ -3,6 +3,7 @@ class GithubEnterpriseUrl < Formula
   desc "A run pipe test formula and FOO=foo_is_bar"
   homepage "https://github.com/goreleaser"
   version "1.0.1"
+  bottle :unneeded
 
   if OS.mac?
     url "http://github.example.org/test/test/releases/download/v1.0.1/bin.tar.gz"

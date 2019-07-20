@@ -31,6 +31,7 @@ class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
+  bottle :unneeded
 
   if OS.mac?
     {{- if .MacOS.DownloadURL }}
