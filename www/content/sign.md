@@ -18,37 +18,42 @@ just add
 
 ```yaml
 # goreleaser.yml
-sign:
-   artifacts: checksum
+signs:
+  - artifacts: checksum
 ```
 
 To customize the signing pipeline you can use the following options:
 
 ```yml
 # .goreleaser.yml
-sign:
-  # name of the signature file.
-  # '${artifact}' is the path to the artifact that should be signed.
-  #
-  # signature: "${artifact}.sig"
+signs:
+  -
+    # name of the signature file.
+    # '${artifact}' is the path to the artifact that should be signed.
+    #
+    # defaults to `${artifact}.sig`
+    signature: "${artifact}_sig"
 
-  # path to the signature command
-  #
-  # cmd: gpg
+    # path to the signature command
+    #
+    # defaults to `gpg`
+    cmd: gpg2
 
-  # command line arguments for the command
-  #
-  # to sign with a specific key use
-  # args: ["-u", "<key id, fingerprint, email, ...>", "--output", "${signature}", "--detach-sign", "${artifact}"]
-  #
-  # args: ["--output", "${signature}", "--detach-sign", "${artifact}"]
+    # command line arguments for the command
+    #
+    # to sign with a specific key use
+    # args: ["-u", "<key id, fingerprint, email, ...>", "--output", "${signature}", "--detach-sign", "${artifact}"]
+    #
+    # defaults to `["--output", "${signature}", "--detach-sign", "${artifact}"]`
+    args: ["--output", "${signature}", "${artifact}"]
 
 
-  # which artifacts to sign
-  #
-  #   checksum: only checksum file(s)
-  #   all:      all artifacts
-  #   none:     no signing
-  #
-  # artifacts: none
+    # which artifacts to sign
+    #
+    #   checksum: only checksum file(s)
+    #   all:      all artifacts
+    #   none:     no signing
+    #
+    # defaults to `none`
+    artifacts: all
 ```

@@ -33,6 +33,29 @@ to this:
 
 -->
 
+
+### sign
+
+> since 2019-07-20
+
+Sign was deprecated in favor of its plural form.
+
+Change this:
+
+```yaml
+sign:
+  # etc
+```
+
+to this:
+
+```yaml
+signs:
+  -
+    # etc
+```
+
+
 ### brew
 
 > since 2019-06-09

@@ -357,7 +357,8 @@ type Project struct {
 	Blobs         []Blob      `yaml:"blob,omitempty"`
 	Changelog     Changelog   `yaml:",omitempty"`
 	Dist          string      `yaml:",omitempty"`
-	Sign          Sign        `yaml:",omitempty"`
+	Sign          Sign        `yaml:",omitempty"` // TODO: remove this
+	Signs         []Sign      `yaml:",omitempty"`
 	EnvFiles      EnvFiles    `yaml:"env_files,omitempty"`
 	Before        Before      `yaml:",omitempty"`
 
