@@ -42,7 +42,7 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	var ids = ids.New()
+	var ids = ids.New("archives")
 	if len(ctx.Config.Archives) == 0 {
 		ctx.Config.Archives = append(ctx.Config.Archives, ctx.Config.Archive)
 		if !reflect.DeepEqual(ctx.Config.Archive, config.Archive{}) {

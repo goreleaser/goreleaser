@@ -73,7 +73,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			deprecate.Notice("snapcraft")
 		}
 	}
-	var ids = ids.New()
+	var ids = ids.New("snapcrafts")
 	for i := range ctx.Config.Snapcrafts {
 		var snap = &ctx.Config.Snapcrafts[i]
 		if snap.NameTemplate == "" {

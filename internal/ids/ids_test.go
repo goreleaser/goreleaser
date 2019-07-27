@@ -7,16 +7,16 @@ import (
 )
 
 func TestIDs(t *testing.T) {
-	var ids = New()
+	var ids = New("foos")
 	ids.Inc("foo")
 	ids.Inc("bar")
 	require.NoError(t, ids.Validate())
 }
 
 func TestIDsError(t *testing.T) {
-	var ids = New()
+	var ids = New("builds")
 	ids.Inc("foo")
 	ids.Inc("bar")
 	ids.Inc("foo")
-	require.EqualError(t, ids.Validate(), "found 2 items with the ID 'foo', please fix your config")
+	require.EqualError(t, ids.Validate(), "found 2 builds with the ID 'foo', please fix your config")
 }

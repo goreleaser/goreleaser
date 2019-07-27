@@ -253,7 +253,7 @@ func TestDefaultBuildID(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualError(t, Pipe{}.Default(ctx), "found 2 items with the ID 'foo', please fix your config")
+	assert.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'foo', please fix your config")
 	var build = ctx.Config.Builds[0]
 	assert.Equal(t, ctx.Config.ProjectName, build.ID)
 }
@@ -273,7 +273,7 @@ func TestSeveralBuildsWithTheSameID(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualError(t, Pipe{}.Default(ctx), "found 2 items with the ID 'a', please fix your config")
+	assert.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'a', please fix your config")
 }
 
 func TestDefaultPartialBuilds(t *testing.T) {

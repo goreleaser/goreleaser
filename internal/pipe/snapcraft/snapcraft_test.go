@@ -402,5 +402,5 @@ func TestSeveralSnapssWithTheSameID(t *testing.T) {
 			},
 		},
 	}
-	require.EqualError(t, Pipe{}.Default(ctx), "found 2 items with the ID 'a', please fix your config")
+	require.EqualError(t, Pipe{}.Default(ctx), "found 2 snapcrafts with the ID 'a', please fix your config")
 }

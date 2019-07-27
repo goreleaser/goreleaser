@@ -41,7 +41,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			deprecate.Notice("nfpm")
 		}
 	}
-	var ids = ids.New()
+	var ids = ids.New("nfpms")
 	for i := range ctx.Config.NFPMs {
 		var fpm = &ctx.Config.NFPMs[i]
 		if fpm.ID == "" {
