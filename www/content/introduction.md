@@ -14,3 +14,21 @@ Of course, you can also [install it locally](/install) if you wish.
 
 You can also [customize](/customization) your release process through a
 `.goreleaser.yml` file.
+
+<span id="count" title="value get with goreleaser/func">Several</span>
+GitHub projects trust their release process to GoReleaser.
+
+<script>
+var req = new XMLHttpRequest();
+req.open("GET", "https://func.goreleaser.now.sh");
+req.onload = function() {
+  document.querySelector("#count").textContent = req.response
+}
+req.send();
+</script>
+
+<style>
+  #count {
+    font-weight: bold;
+  }
+</style>
