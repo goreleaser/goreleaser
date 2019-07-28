@@ -65,7 +65,7 @@ func (c *gitlabClient) CreateFile(
 		"name":  ctx.Config.Release.GitLab.Name,
 	}).Debug("projectID at brew")
 
-	file, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
+	_, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
 	if err != nil && res.StatusCode != 404 {
 		log.WithFields(log.Fields{
 			"fileName":   fileName,
@@ -81,9 +81,6 @@ func (c *gitlabClient) CreateFile(
 		"fileName":  fileName,
 		"branch":    branch,
 		"projectID": projectID,
-		"filePath":  file.FilePath,
-		"size":      file.Size,
-		"ref":       file.Ref,
 	}).Debug("found already existing brew formula file")
 
 	if res.StatusCode == 404 {
