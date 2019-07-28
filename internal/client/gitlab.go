@@ -48,8 +48,8 @@ func (c *gitlabClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
 	repo config.Repo,
-	content []byte,
-	path,
+	content []byte, // ?
+	path, // the path to the formula.rb
 	message string,
 ) error {
 	// c.client.RepositoryFiles.GetFile()
@@ -182,7 +182,9 @@ func (c *gitlabClient) Upload(
 	if err != nil {
 		return err
 	}
-	artifact.Extra["GitLabFileUploadHash"] = fileUploadHash
+	// we set this hash to be able to downlaod the file
+	// in following publish pipes like brew, scoop
+	artifact.UploadHash = fileUploadHash
 
 	return err
 }
