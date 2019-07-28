@@ -48,13 +48,102 @@ func (c *gitlabClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
 	repo config.Repo,
-	content []byte, // ?
+	content []byte, // the content of the formula.rb
 	path, // the path to the formula.rb
-	message string,
+	message string, // the commit msg
 ) error {
-	// c.client.RepositoryFiles.GetFile()
-	// c.client.RepositoryFiles.CreateFile()
-	// c.client.RepositoryFiles.UpdateFile()
+	fileName := path
+	ref := ctx.Git.Commit
+	opts := &gitlab.GetFileOptions{Ref: &ref}
+	castedContent := string(content)
+	encoding := "???"
+	branch := "???"
+	projectID := ctx.Config.Brew.GitLab.Owner + "/" + ctx.Config.Brew.GitLab.Name
+
+	log.WithFields(log.Fields{
+		"owner": ctx.Config.Release.GitLab.Owner,
+		"name":  ctx.Config.Release.GitLab.Name,
+	}).Debug("projectID at brew")
+
+	file, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
+	if err != nil && res.StatusCode != 404 {
+		log.WithFields(log.Fields{
+			"fileName":   fileName,
+			"ref":        ref,
+			"projectID":  projectID,
+			"statusCode": res.StatusCode,
+			"err":        err.Error(),
+		}).Error("error getting file for brew formula")
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"fileName":  fileName,
+		"branch":    branch,
+		"projectID": projectID,
+		"filePath":  file.FilePath,
+		"size":      file.Size,
+		"ref":       file.Ref,
+	}).Debug("found already existing brew formula file")
+
+	if res.StatusCode == 404 {
+		log.WithFields(log.Fields{
+			"fileName":  fileName,
+			"ref":       ref,
+			"projectID": projectID,
+		}).Debug("creating brew formula")
+		createOpts := &gitlab.CreateFileOptions{
+			AuthorName:    &commitAuthor.Name,
+			AuthorEmail:   &commitAuthor.Email,
+			Content:       &castedContent,
+			Encoding:      &encoding,
+			Branch:        &branch,
+			CommitMessage: &message,
+		}
+		fileInfo, res, err := c.client.RepositoryFiles.CreateFile(projectID, fileName, createOpts)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"fileName":   fileName,
+				"branch":     branch,
+				"projectID":  projectID,
+				"statusCode": res.StatusCode,
+				"err":        err.Error(),
+			}).Error("error creating brew formula file")
+			return err
+		}
+
+		log.WithFields(log.Fields{
+			"fileName":  fileName,
+			"branch":    branch,
+			"projectID": projectID,
+			"filePath":  fileInfo.FilePath,
+		}).Debug("created brew formula file")
+		return nil
+	}
+
+	log.WithFields(log.Fields{
+		"fileName":  fileName,
+		"ref":       ref,
+		"projectID": projectID,
+	}).Debug("updating brew formula")
+	// lastCommitID := "" TODO
+	updateOpts := &gitlab.UpdateFileOptions{
+		AuthorName:    &commitAuthor.Name,
+		AuthorEmail:   &commitAuthor.Email,
+		Content:       &castedContent,
+		Encoding:      &encoding,
+		Branch:        &branch,
+		CommitMessage: &message,
+		// LastCommitID:  &lastCommitID,
+	}
+
+	updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
+	log.WithFields(log.Fields{
+		"fileName":  fileName,
+		"branch":    branch,
+		"projectID": projectID,
+		"filePath":  updateFileInfo.FilePath,
+	}).Debug("updated brew formula file")
 	return nil
 }
 
