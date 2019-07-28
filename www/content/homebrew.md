@@ -29,9 +29,9 @@ brews:
     - foo
     - bar
 
-    # Repository to push the tap to.
+    # Github repository to push the tap to.
     github:
-      owner: user
+      owner: github-user
       name: homebrew-tap
 
     # Template for the url.
@@ -41,6 +41,15 @@ brews:
     # Allows you to set a custom download strategy.
     # Default is empty.
     download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
+
+    # OR Gitlab
+    gitlab:
+      owner: gitlab-user
+      name: homebrew-tap
+
+    # Template for the url.
+    # Default is "https://gitlab.com/<repo_owner>/<repo_name>/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}"
+    url_template: "http://gitlab.mycompany.com/foo/bar/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}"
 
     # Allows you to add a custom require_relative at the top of the formula template
     # Default is empty

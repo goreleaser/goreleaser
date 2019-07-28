@@ -39,7 +39,7 @@ func (Pipe) String() string {
 
 // Publish brew formula
 func (Pipe) Publish(ctx *context.Context) error {
-	client, err := client.NewGitHub(ctx)
+	client, err := client.New(ctx)
 	if err != nil {
 		return err
 	}
@@ -116,6 +116,10 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return pipe.Skip("brew section is not configured")
 	}
 
+	// TODO mavogel: check if release pipe is not configured!
+	// if ctx.Config.Release.Disable {
+	// }
+
 	var filters = []artifact.Filter{
 		artifact.Or(
 			artifact.ByGoos("darwin"),
@@ -159,13 +163,24 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
 	}
 
+	var repo config.Repo
+	switch ctx.TokenType {
+	case context.TokenTypeGitHub:
+		repo = brew.GitHub
+	case context.TokenTypeGitLab:
+		repo = brew.GitLab
+	default:
+		return fmt.Errorf("tokenType is not yet implemented for brew: %s", ctx.TokenType)
+	}
+
+	// TODO mavogel: should this be renamed to formula folder?
 	var gpath = ghFormulaPath(brew.Folder, filename)
 	log.WithField("formula", gpath).
-		WithField("repo", brew.GitHub.String()).
+		WithField("repo", repo.String()).
 		Info("pushing")
 
 	var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
-	return client.CreateFile(ctx, brew.CommitAuthor, brew.GitHub, []byte(content), gpath, msg)
+	return client.CreateFile(ctx, brew.CommitAuthor, repo, []byte(content), gpath, msg)
 }
 
 func ghFormulaPath(folder, filename string) string {
@@ -228,11 +243,10 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 			case context.TokenTypeGitLab:
 				//https://gitlab.com/mavogel/release-testing/uploads/22e8b1508b0f28433b94754a5ea2f4aa/release-testing_0.3.7_Darwin_x86_64.tar.gz
 				cfg.URLTemplate = fmt.Sprintf(
-					"%s/%s/%s/releases/uploads/%s/{{ .ArtifactName }}",
+					"%s/%s/%s/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
 					ctx.Config.GitLabURLs.Download,
 					ctx.Config.Release.GitLab.Owner,
 					ctx.Config.Release.GitLab.Name,
-					artifact.Extra["GitLabFileUploadHash"],
 				)
 			default:
 				return result, fmt.Errorf("tokenType is not yet implemented for brew: %s", ctx.TokenType)
