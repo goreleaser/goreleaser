@@ -131,11 +131,23 @@ func (c *gitlabClient) CreateFile(
 	}
 
 	updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"fileName":   fileName,
+			"branch":     branch,
+			"projectID":  projectID,
+			"statusCode": res.StatusCode,
+			"err":        err.Error(),
+		}).Error("error updating brew formula file")
+		return err
+	}
+
 	log.WithFields(log.Fields{
-		"fileName":  fileName,
-		"branch":    branch,
-		"projectID": projectID,
-		"filePath":  updateFileInfo.FilePath,
+		"fileName":   fileName,
+		"branch":     branch,
+		"projectID":  projectID,
+		"filePath":   updateFileInfo.FilePath,
+		"statusCode": res.StatusCode,
 	}).Debug("updated brew formula file")
 	return nil
 }
@@ -264,7 +276,7 @@ func (c *gitlabClient) Upload(
 	if err != nil {
 		return err
 	}
-	// we set this hash to be able to downlaod the file
+	// we set this hash to be able to download the file
 	// in following publish pipes like brew, scoop
 	artifact.SetUploadHash(fileUploadHash) // TODO mvogel
 
