@@ -68,7 +68,7 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 	name := title
 	tagName := ctx.Git.CurrentTag
 	release, resp, err := c.client.Releases.GetRelease(projectID, tagName)
-	if err != nil && resp.StatusCode != 403 {
+	if err != nil && (resp == nil || resp.StatusCode != 403) {
 		return "", err
 	}
 
