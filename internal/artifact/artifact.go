@@ -77,6 +77,12 @@ type Artifact struct {
 	Extra      map[string]interface{}
 }
 
+// SetUploadHash sets the upload hash for gitlab files
+func (a *Artifact) SetUploadHash(uploadHash string) {
+	log.Debugf("setting upload hash '%s' for ", uploadHash, a.Name)
+	a.UploadHash = uploadHash
+}
+
 // ExtraOr returns the Extra field with the given key or the or value specified
 // if it is nil.
 func (a Artifact) ExtraOr(key string, or interface{}) interface{} {

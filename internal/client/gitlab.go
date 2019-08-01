@@ -53,12 +53,11 @@ func (c *gitlabClient) CreateFile(
 	message string, // the commit msg
 ) error {
 	fileName := path
-	ref := ctx.Git.Commit
+	// we assume having the formula in the master branch only
+	ref := "master"
+	branch := "master"
 	opts := &gitlab.GetFileOptions{Ref: &ref}
 	castedContent := string(content)
-	// https://docs.gitlab.com/ce/api/repository_files.html#create-new-file-in-repository
-	// encoding := "text"
-	branch := "master" // we assume having the formula in the master branch only
 	projectID := repo.Owner + "/" + repo.Name
 
 	log.WithFields(log.Fields{
@@ -91,10 +90,9 @@ func (c *gitlabClient) CreateFile(
 			"projectID": projectID,
 		}).Debug("creating brew formula")
 		createOpts := &gitlab.CreateFileOptions{
-			AuthorName:  &commitAuthor.Name,
-			AuthorEmail: &commitAuthor.Email,
-			Content:     &castedContent,
-			// Encoding:      &encoding,
+			AuthorName:    &commitAuthor.Name,
+			AuthorEmail:   &commitAuthor.Email,
+			Content:       &castedContent,
 			Branch:        &branch,
 			CommitMessage: &message,
 		}
@@ -124,15 +122,12 @@ func (c *gitlabClient) CreateFile(
 		"ref":       ref,
 		"projectID": projectID,
 	}).Debug("updating brew formula")
-	// lastCommitID := "" TODO
 	updateOpts := &gitlab.UpdateFileOptions{
-		AuthorName:  &commitAuthor.Name,
-		AuthorEmail: &commitAuthor.Email,
-		Content:     &castedContent,
-		// Encoding:      &encoding,
+		AuthorName:    &commitAuthor.Name,
+		AuthorEmail:   &commitAuthor.Email,
+		Content:       &castedContent,
 		Branch:        &branch,
 		CommitMessage: &message,
-		// LastCommitID:  &lastCommitID,
 	}
 
 	updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
@@ -271,7 +266,7 @@ func (c *gitlabClient) Upload(
 	}
 	// we set this hash to be able to downlaod the file
 	// in following publish pipes like brew, scoop
-	artifact.UploadHash = fileUploadHash
+	artifact.SetUploadHash(fileUploadHash) // TODO mvogel
 
 	return err
 }
@@ -279,11 +274,17 @@ func (c *gitlabClient) Upload(
 // extractProjectFileHashFrom extracts the hash from the
 // relative project file url of the format '/uploads/<hash>/filename.ext'
 func extractProjectFileHashFrom(projectFileURL string) (string, error) {
-	log.WithField("projectFileURL", projectFileURL).Debug("extractProjectFileHashFrom")
+	log.WithField("projectFileURL", projectFileURL).Debug("extract file hash from")
 	splittedProjectFileURL := strings.Split(projectFileURL, "/")
 	if len(splittedProjectFileURL) != 4 {
+		log.WithField("projectFileURL", projectFileURL).Debug("could not extract file hash")
 		return "", ErrExtractHashFromFileUploadURL
 	}
 
-	return splittedProjectFileURL[2], nil
+	fileHash := splittedProjectFileURL[2]
+	log.WithFields(log.Fields{
+		"projectFileURL": projectFileURL,
+		"fileHash":       fileHash,
+	}).Debug("extracted file hash")
+	return fileHash, nil
 }
