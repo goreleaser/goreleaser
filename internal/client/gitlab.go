@@ -57,7 +57,7 @@ func (c *gitlabClient) CreateFile(
 	opts := &gitlab.GetFileOptions{Ref: &ref}
 	castedContent := string(content)
 	// https://docs.gitlab.com/ce/api/repository_files.html#create-new-file-in-repository
-	encoding := "text"
+	// encoding := "text"
 	branch := "master" // we assume having the formula in the master branch only
 	projectID := repo.Owner + "/" + repo.Name
 
@@ -91,10 +91,10 @@ func (c *gitlabClient) CreateFile(
 			"projectID": projectID,
 		}).Debug("creating brew formula")
 		createOpts := &gitlab.CreateFileOptions{
-			AuthorName:    &commitAuthor.Name,
-			AuthorEmail:   &commitAuthor.Email,
-			Content:       &castedContent,
-			Encoding:      &encoding,
+			AuthorName:  &commitAuthor.Name,
+			AuthorEmail: &commitAuthor.Email,
+			Content:     &castedContent,
+			// Encoding:      &encoding,
 			Branch:        &branch,
 			CommitMessage: &message,
 		}
@@ -126,10 +126,10 @@ func (c *gitlabClient) CreateFile(
 	}).Debug("updating brew formula")
 	// lastCommitID := "" TODO
 	updateOpts := &gitlab.UpdateFileOptions{
-		AuthorName:    &commitAuthor.Name,
-		AuthorEmail:   &commitAuthor.Email,
-		Content:       &castedContent,
-		Encoding:      &encoding,
+		AuthorName:  &commitAuthor.Name,
+		AuthorEmail: &commitAuthor.Email,
+		Content:     &castedContent,
+		// Encoding:      &encoding,
 		Branch:        &branch,
 		CommitMessage: &message,
 		// LastCommitID:  &lastCommitID,
