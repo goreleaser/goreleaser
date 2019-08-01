@@ -56,13 +56,14 @@ func (c *gitlabClient) CreateFile(
 	ref := ctx.Git.Commit
 	opts := &gitlab.GetFileOptions{Ref: &ref}
 	castedContent := string(content)
-	encoding := "???"
-	branch := "???"
-	projectID := ctx.Config.Brew.GitLab.Owner + "/" + ctx.Config.Brew.GitLab.Name
+	// https://docs.gitlab.com/ce/api/repository_files.html#create-new-file-in-repository
+	encoding := "text"
+	branch := "master" // we assume having the formula in the master branch only
+	projectID := repo.Owner + "/" + repo.Name
 
 	log.WithFields(log.Fields{
-		"owner": ctx.Config.Release.GitLab.Owner,
-		"name":  ctx.Config.Release.GitLab.Name,
+		"owner": repo.Owner,
+		"name":  repo.Name,
 	}).Debug("projectID at brew")
 
 	_, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
