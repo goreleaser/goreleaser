@@ -725,30 +725,6 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 }
 
-func TestDefaultWithImage(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
-			Dockers: []config.Docker{
-				{
-					Goos:           "windows",
-					Goarch:         "i386",
-					Binaries:       []string{"bar"},
-					Dockerfile:     "Dockerfile.foo",
-					ImageTemplates: []string{"my/image:{{ .Version }}"},
-				},
-			},
-		},
-	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Dockers, 1)
-	var docker = ctx.Config.Dockers[0]
-	assert.Equal(t, "windows", docker.Goos)
-	assert.Equal(t, "i386", docker.Goarch)
-	assert.Equal(t, "bar", docker.Binaries[0])
-	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
-	assert.Equal(t, []string{"my/image:{{ .Version }}"}, docker.ImageTemplates)
-}
-
 func Test_processImageTemplates(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
