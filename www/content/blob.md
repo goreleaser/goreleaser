@@ -7,7 +7,7 @@ series: customization
 
 ```yaml
 # .goreleaser.yml
-blob:
+blobs:
   # You can have multiple blob configs
   -
     # Template for the cloud provider name
@@ -51,7 +51,7 @@ S3 provider support AWS [default credential provider](https://docs.aws.amazon.co
 
 - Shared credentials file.
 
-- If your application is running on an Amazon EC2 instance, IAM role for Amazon EC2. 
+- If your application is running on an Amazon EC2 instance, IAM role for Amazon EC2.
 
 ### Azure Blob Provider
 
