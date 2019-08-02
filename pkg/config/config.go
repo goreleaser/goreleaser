@@ -354,7 +354,8 @@ type Project struct {
 	Artifactories []Put       `yaml:",omitempty"`
 	Puts          []Put       `yaml:",omitempty"`
 	S3            []S3        `yaml:"s3,omitempty"`
-	Blobs         []Blob      `yaml:"blob,omitempty"`
+	Blob          []Blob      `yaml:"blob,omitempty"` // TODO: remove this
+	Blobs         []Blob      `yaml:"blobs,omitempty"`
 	Changelog     Changelog   `yaml:",omitempty"`
 	Dist          string      `yaml:",omitempty"`
 	Sign          Sign        `yaml:",omitempty"` // TODO: remove this

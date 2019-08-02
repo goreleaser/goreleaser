@@ -34,6 +34,28 @@ to this:
 -->
 
 
+### blob
+
+> since 2019-08-02
+
+Blob was deprecated in favor of its plural form.
+It was already accepting multiple inputs, but its pluralized now so its more
+clear.
+
+Change this:
+
+```yaml
+blob:
+  # etc
+```
+
+to this:
+
+```yaml
+blobs:
+  # etc
+```
+
 ### sign
 
 > since 2019-07-20
@@ -95,7 +117,7 @@ s3:
 to this:
 
 ```yaml
-blob:
+blobs:
 -
   provider: s3
   # etc
