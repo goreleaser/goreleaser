@@ -9,6 +9,12 @@ This page will be used to list deprecation notices across GoReleaser.
 
 Deprecate code will be removed after ~6 months from the time it was deprecated.
 
+You can check your use of deprecated configurations by running:
+
+```sh
+$ goreleaser check
+```
+
 ## Active deprecation notices
 
 <!--
