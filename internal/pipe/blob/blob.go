@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -21,6 +22,10 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	if len(ctx.Config.Blob) > 0 {
+		deprecate.Notice("blob")
+		ctx.Config.Blobs = append(ctx.Config.Blobs, ctx.Config.Blob...)
+	}
 	for i := range ctx.Config.Blobs {
 		blob := &ctx.Config.Blobs[i]
 
