@@ -118,7 +118,6 @@ func checkConfig(filename string) error {
 		return err
 	}
 	var ctx = context.New(cfg)
-	log.Debugf("parallelism: %v", ctx.Parallelism)
 	return ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range defaults.Defaulters {
 			if err := middleware.ErrHandler(pipe.Default)(ctx); err != nil {
