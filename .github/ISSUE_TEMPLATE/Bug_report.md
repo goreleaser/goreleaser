@@ -16,6 +16,9 @@ Steps to reproduce the behavior:
 your goreleaser config file
 ```
 
+> Make sure your config file is valid by running
+> `goreleaser check -f path-to-config-file`.
+
 **Expected behavior**
 
 A clear and concise description of what you expected to happen.
