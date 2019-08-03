@@ -196,9 +196,13 @@ archives:
     format: zip
 ```
 
+## Expired deprecation notices
+
+The following options were deprecated for ~6 months and are now fully removed.
+
 ### docker.binary
 
-> since 2018-10-01
+> since 2018-10-01, removed 2019-08-02
 
 You can now create a Docker image with multiple binaries.
 
@@ -221,7 +225,7 @@ dockers:
 
 ### docker.image
 
-> since 2018-10-20
+> since 2018-10-20, removed 2019-08-02
 
 This property was deprecated in favor of more flexible `image_templates`.
 The idea is to be able to define several images and tags using templates instead of just one image with tag templates.
@@ -246,7 +250,7 @@ dockers:
 
 ### docker.tag_templates
 
-> since 2018-10-20
+> since 2018-10-20, removed 2019-08-02
 
 This property was deprecated in favor of more flexible `image_templates`.
 The idea is to be able to define several images and tags using templates instead of just one image with tag templates.
@@ -267,10 +271,6 @@ dockers:
 - image_templates:
     - 'foo/bar:{{ .Tag }}'
 ```
-
-## Expired deprecation notices
-
-The following options were deprecated for ~6 months and are now fully removed.
 
 ### git.short_hash
 
