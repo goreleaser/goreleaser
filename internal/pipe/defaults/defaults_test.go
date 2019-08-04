@@ -21,7 +21,8 @@ func TestFillBasicData(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
 	var ctx = &context.Context{
-		Config: config.Project{},
+		TokenType: context.TokenTypeGitHub,
+		Config:    config.Project{},
 	}
 
 	assert.NoError(t, Pipe{}.Run(ctx))

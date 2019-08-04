@@ -28,6 +28,7 @@ func TestDefault(t *testing.T) {
 	defer back()
 
 	var ctx = &context.Context{
+		TokenType: context.TokenTypeGitHub,
 		Config: config.Project{
 			ProjectName: "barr",
 			Builds: []config.Build{
@@ -88,6 +89,7 @@ func Test_doRun(t *testing.T) {
 			"valid",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -130,6 +132,7 @@ func Test_doRun(t *testing.T) {
 			"valid",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -173,6 +176,7 @@ func Test_doRun(t *testing.T) {
 			"no windows build",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -215,6 +219,7 @@ func Test_doRun(t *testing.T) {
 			"no scoop",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -249,6 +254,7 @@ func Test_doRun(t *testing.T) {
 			"no publish",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -292,6 +298,7 @@ func Test_doRun(t *testing.T) {
 			"is draft",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -331,6 +338,7 @@ func Test_doRun(t *testing.T) {
 			"no archive",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -366,49 +374,6 @@ func Test_doRun(t *testing.T) {
 			},
 			shouldErr("archive format is binary"),
 		},
-		{
-			"valid but non github release",
-			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitLab,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
-					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
-						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
-						},
-						Release: config.Release{
-							GitLab: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
-						Scoop: config.Scoop{
-							Bucket: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
-						},
-					},
-				},
-				&DummyClient{},
-			},
-			[]*artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
-			},
-			shouldErr("scoop pipe is only configured for github releases"),
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -435,6 +400,7 @@ func Test_buildManifest(t *testing.T) {
 		{
 			"testdata/test_buildmanifest.json.golden",
 			&context.Context{
+				TokenType: context.TokenTypeGitHub,
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
 				},
@@ -470,6 +436,7 @@ func Test_buildManifest(t *testing.T) {
 		{
 			"testdata/test_buildmanifest_url_template.json.golden",
 			&context.Context{
+				TokenType: context.TokenTypeGitHub,
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
 				},

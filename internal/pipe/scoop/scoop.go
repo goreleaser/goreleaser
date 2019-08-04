@@ -44,14 +44,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Scoop.CommitAuthor.Email == "" {
 		ctx.Config.Scoop.CommitAuthor.Email = "goreleaser@carlosbecker.com"
 	}
-	if ctx.Config.Scoop.URLTemplate == "" {
-		ctx.Config.Scoop.URLTemplate = fmt.Sprintf(
-			"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
-			ctx.Config.GitHubURLs.Download,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
-		)
-	}
+
 	return nil
 }
 
@@ -59,12 +52,11 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Scoop.Bucket.Name == "" {
 		return pipe.Skip("scoop section is not configured")
 	}
-	// If we'd use 'ctx.TokenType != context.TokenTypeGitHub' we'd have to adapt all the tests
-	// For simplicity we use this check because the functionality will be implemented later for
-	// all types of releases. See https://github.com/goreleaser/goreleaser/pull/1038#issuecomment-498891464
-	if ctx.TokenType == context.TokenTypeGitLab {
-		return pipe.Skip("scoop pipe is only configured for github releases")
-	}
+
+	// TODO mavogel: check if release pipe is not configured!
+	// if ctx.Config.Release.Disable {
+	// }
+
 	if ctx.Config.Archive.Format == "binary" {
 		return pipe.Skip("archive format is binary")
 	}
@@ -129,6 +121,27 @@ func buildManifest(ctx *context.Context, artifacts []*artifact.Artifact) (bytes.
 		License:      ctx.Config.Scoop.License,
 		Description:  ctx.Config.Scoop.Description,
 		Persist:      ctx.Config.Scoop.Persist,
+	}
+
+	if ctx.Config.Scoop.URLTemplate == "" {
+		switch ctx.TokenType {
+		case context.TokenTypeGitHub:
+			ctx.Config.Scoop.URLTemplate = fmt.Sprintf(
+				"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+				ctx.Config.GitHubURLs.Download,
+				ctx.Config.Release.GitHub.Owner,
+				ctx.Config.Release.GitHub.Name,
+			)
+		case context.TokenTypeGitLab:
+			ctx.Config.Scoop.URLTemplate = fmt.Sprintf(
+				"%s/%s/%s/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
+				ctx.Config.GitLabURLs.Download,
+				ctx.Config.Release.GitLab.Owner,
+				ctx.Config.Release.GitLab.Name,
+			)
+		default:
+			return result, fmt.Errorf("tokenType is not yet implemented for scoop: %s", ctx.TokenType)
+		}
 	}
 
 	for _, artifact := range artifacts {

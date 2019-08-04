@@ -5,7 +5,7 @@ hideFromIndex: true
 weight: 100
 ---
 
-After releasing to GitHub (GitLab is not supported yet), GoReleaser can generate and publish a
+After releasing to GitHub or GitLab, GoReleaser can generate and publish a
 _Scoop App Manifest_ into a repository that you have access to.
 
 The `scoop` section specifies how the manifest should be created. See
@@ -14,8 +14,9 @@ the commented example bellow:
 ```yml
 # .goreleaser.yml
 scoop:
-  # Template for the url.
-  # Default is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+  # Template for the url which is determined by the given Token (github or gitlab)
+  # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+  # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}"
   url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
   # Repository to push the app manifest to.
