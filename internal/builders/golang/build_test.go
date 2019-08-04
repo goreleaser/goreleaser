@@ -115,7 +115,7 @@ func TestBuild(t *testing.T) {
 		})
 		assert.NoError(t, err)
 	}
-	assert.ElementsMatch(t, ctx.Artifacts.List(), []artifact.Artifact{
+	assert.ElementsMatch(t, ctx.Artifacts.List(), []*artifact.Artifact{
 		{
 			Name:   "foo",
 			Path:   filepath.Join(folder, "dist", "linux_amd64", "foo"),

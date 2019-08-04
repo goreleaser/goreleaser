@@ -135,7 +135,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	return g.Wait()
 }
 
-func upload(ctx *context.Context, client client.Client, releaseID string, artifact artifact.Artifact) error {
+func upload(ctx *context.Context, client client.Client, releaseID string, artifact *artifact.Artifact) error {
 	file, err := os.Open(artifact.Path)
 	if err != nil {
 		return err

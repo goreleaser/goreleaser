@@ -20,7 +20,7 @@ type Info struct {
 type Client interface {
 	CreateRelease(ctx *context.Context, body string) (releaseID string, err error)
 	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, message string) (err error)
-	Upload(ctx *context.Context, releaseID string, artifact artifact.Artifact, file *os.File) (err error)
+	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error)
 }
 
 // New creates a new client depending on the token type

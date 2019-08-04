@@ -150,7 +150,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 func (c *githubClient) Upload(
 	ctx *context.Context,
 	releaseID string,
-	artifact artifact.Artifact,
+	artifact *artifact.Artifact,
 	file *os.File,
 ) error {
 	githubReleaseID, err := strconv.ParseInt(releaseID, 10, 64)

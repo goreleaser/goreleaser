@@ -61,7 +61,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 }
 
-func sign(ctx *context.Context, artifacts []artifact.Artifact) error {
+func sign(ctx *context.Context, artifacts []*artifact.Artifact) error {
 
 	for _, a := range artifacts {
 		artifact, err := signone(ctx, a)
@@ -69,12 +69,12 @@ func sign(ctx *context.Context, artifacts []artifact.Artifact) error {
 			return err
 		}
 
-		ctx.Artifacts.Add(*artifact)
+		ctx.Artifacts.Add(artifact)
 	}
 	return nil
 }
 
-func signone(ctx *context.Context, a artifact.Artifact) (*artifact.Artifact, error) {
+func signone(ctx *context.Context, a *artifact.Artifact) (*artifact.Artifact, error) {
 	cfg := ctx.Config.Sign
 
 	env := ctx.Env

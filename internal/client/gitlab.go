@@ -229,7 +229,7 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 func (c *gitlabClient) Upload(
 	ctx *context.Context,
 	releaseID string,
-	artifact artifact.Artifact,
+	artifact *artifact.Artifact,
 	file *os.File,
 ) error {
 	projectID := ctx.Config.Release.GitLab.Owner + "/" + ctx.Config.Release.GitLab.Name

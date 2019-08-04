@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var fakeArtifact = artifact.Artifact{
+var fakeArtifact = &artifact.Artifact{
 	Name: "fake",
 }
 
@@ -101,7 +101,7 @@ func TestRunPipe(t *testing.T) {
 	var ctx = context.New(config)
 	ctx.Git.CurrentTag = "2.4.5"
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, ctx.Artifacts.List(), []artifact.Artifact{fakeArtifact})
+	assert.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{fakeArtifact})
 }
 
 func TestRunFullPipe(t *testing.T) {
@@ -129,7 +129,7 @@ func TestRunFullPipe(t *testing.T) {
 	var ctx = context.New(config)
 	ctx.Git.CurrentTag = "2.4.5"
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, ctx.Artifacts.List(), []artifact.Artifact{fakeArtifact})
+	assert.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{fakeArtifact})
 	assert.FileExists(t, post)
 	assert.FileExists(t, pre)
 	assert.FileExists(t, filepath.Join(folder, "build1_whatever", "testing"))

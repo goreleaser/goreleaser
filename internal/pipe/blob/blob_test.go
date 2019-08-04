@@ -122,12 +122,12 @@ func TestPipe_Publish(t *testing.T) {
 	})
 
 	azblobctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	azblobctx.Artifacts.Add(artifact.Artifact{
+	azblobctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tgzpath,
 	})
-	azblobctx.Artifacts.Add(artifact.Artifact{
+	azblobctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debpath,
@@ -147,12 +147,12 @@ func TestPipe_Publish(t *testing.T) {
 
 	gsctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 
-	gsctx.Artifacts.Add(artifact.Artifact{
+	gsctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tgzpath,
 	})
-	gsctx.Artifacts.Add(artifact.Artifact{
+	gsctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debpath,
@@ -170,12 +170,12 @@ func TestPipe_Publish(t *testing.T) {
 		},
 	})
 	s3ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	s3ctx.Artifacts.Add(artifact.Artifact{
+	s3ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tgzpath,
 	})
-	s3ctx.Artifacts.Add(artifact.Artifact{
+	s3ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debpath,

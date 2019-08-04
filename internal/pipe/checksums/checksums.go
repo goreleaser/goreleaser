@@ -62,7 +62,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 			return checksums(ctx.Config.Checksum.Algorithm, file, artifact)
 		})
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.Checksum,
 		Path: file.Name(),
 		Name: filename,
@@ -70,7 +70,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	return g.Wait()
 }
 
-func checksums(algorithm string, w io.Writer, artifact artifact.Artifact) error {
+func checksums(algorithm string, w io.Writer, artifact *artifact.Artifact) error {
 	log.WithField("file", artifact.Name).Info("checksumming")
 	sha, err := artifact.Checksum(algorithm)
 	if err != nil {

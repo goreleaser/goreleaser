@@ -179,7 +179,7 @@ func uploadWithFilter(ctx *context.Context, put *config.Put, filter artifact.Fil
 }
 
 // uploadAsset uploads file to target and logs all actions
-func uploadAsset(ctx *context.Context, put *config.Put, artifact artifact.Artifact, kind string, check ResponseChecker) error {
+func uploadAsset(ctx *context.Context, put *config.Put, artifact *artifact.Artifact, kind string, check ResponseChecker) error {
 	envBase := fmt.Sprintf("%s_%s_", strings.ToUpper(kind), strings.ToUpper(put.Name))
 	username := put.Username
 	if username == "" {
@@ -197,7 +197,7 @@ func uploadAsset(ctx *context.Context, put *config.Put, artifact artifact.Artifa
 	}
 
 	// Handle the artifact
-	asset, err := assetOpen(kind, &artifact)
+	asset, err := assetOpen(kind, artifact)
 	if err != nil {
 		return err
 	}
@@ -335,7 +335,7 @@ type targetData struct {
 // resolveTargetTemplate returns the resolved target template with replaced variables
 // Those variables can be replaced by the given context, goos, goarch, goarm and more
 // TODO: replace this with our internal template pkg
-func resolveTargetTemplate(ctx *context.Context, put *config.Put, artifact artifact.Artifact) (string, error) {
+func resolveTargetTemplate(ctx *context.Context, put *config.Put, artifact *artifact.Artifact) (string, error) {
 	data := targetData{
 		Version:     ctx.Version,
 		Tag:         ctx.Git.CurrentTag,

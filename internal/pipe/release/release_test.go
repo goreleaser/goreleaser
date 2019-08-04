@@ -37,12 +37,12 @@ func TestRunPipe(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debfile.Name(),
@@ -85,7 +85,7 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: "/nope/nope/nope",
@@ -111,7 +111,7 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
@@ -139,7 +139,7 @@ func TestRunPipeUploadRetry(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
@@ -374,7 +374,7 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID string, artifact artifact.Artifact, file *os.File) error {
+func (client *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) error {
 	client.Lock.Lock()
 	defer client.Lock.Unlock()
 	// ensure file is read to better mimic real behavior
