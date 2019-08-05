@@ -50,14 +50,12 @@ type serialGroup struct {
 	err error
 }
 
-// Go execs one function at a time.
+// Go execs runs `fn` and saves the result if no error has been encountered.
 func (s *serialGroup) Go(fn func() error) {
 	if s.err != nil {
 		return
 	}
-	if err := fn(); err != nil {
-		s.err = err
-	}
+	s.err = fn()
 }
 
 // Wait waits for Go to complete and returns the first error encountered.
