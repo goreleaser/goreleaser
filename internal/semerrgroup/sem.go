@@ -20,8 +20,8 @@ func New(size int) *Group {
 
 // Go execs one function respecting the group and semaphore.
 func (s *Group) Go(fn func() error) {
+	s.ch <- true
 	s.g.Go(func() error {
-		s.ch <- true
 		defer func() {
 			<-s.ch
 		}()
