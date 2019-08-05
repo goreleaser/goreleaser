@@ -2,11 +2,7 @@
 // size, so you can control the number of tasks being executed simultaneously.
 package semerrgroup
 
-import (
-	"sync"
-
-	"golang.org/x/sync/errgroup"
-)
+import "golang.org/x/sync/errgroup"
 
 // Group is the Semphore ErrorGroup itself
 type Group interface {
@@ -51,22 +47,17 @@ func (s *parallelGroup) Wait() error {
 var _ Group = &serialGroup{}
 
 type serialGroup struct {
-	lock sync.Mutex
-	err  error
+	err error
 }
 
 // Go execs one function at a time.
 func (s *serialGroup) Go(fn func() error) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-	if err := fn(); err != nil && s.err == nil {
+	if err := fn(); err != nil {
 		s.err = err
 	}
 }
 
 // Wait waits for Go to complete and returns the first error encountered.
 func (s *serialGroup) Wait() error {
-	s.lock.Lock()
-	defer s.lock.Unlock()
 	return s.err
 }
