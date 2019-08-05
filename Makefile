@@ -4,6 +4,7 @@ TEST_OPTIONS?=
 
 export PATH := ./bin:$(PATH)
 export GO111MODULE := on
+export GOPROXY := https://gocenter.io
 
 # Install all the build and lint dependencies
 setup:
