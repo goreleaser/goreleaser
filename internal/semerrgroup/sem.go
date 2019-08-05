@@ -52,6 +52,9 @@ type serialGroup struct {
 
 // Go execs one function at a time.
 func (s *serialGroup) Go(fn func() error) {
+	if s.err != nil {
+		return
+	}
 	if err := fn(); err != nil {
 		s.err = err
 	}
