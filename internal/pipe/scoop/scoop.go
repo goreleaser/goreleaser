@@ -180,7 +180,7 @@ func buildManifest(ctx *context.Context, artifacts []*artifact.Artifact) (bytes.
 func binaries(a *artifact.Artifact) []string {
 	// nolint: prealloc
 	var bins []string
-	for _, b := range a.ExtraOr("Builds", []artifact.Artifact{}).([]artifact.Artifact) {
+	for _, b := range a.ExtraOr("Builds", []artifact.Artifact{}).([]*artifact.Artifact) {
 		bins = append(bins, b.ExtraOr("Binary", "").(string)+".exe")
 	}
 	return bins
