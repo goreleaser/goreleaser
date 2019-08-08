@@ -376,11 +376,10 @@ func TestRunPipeNoUpload(t *testing.T) {
 		}
 		assertNoPublish(tt)
 	})
-	t.Run("skip publish because not a github release", func(tt *testing.T) {
+	t.Run("skip publish because neither github nor gitlab is configured", func(tt *testing.T) {
 		ctx.Config.Release.Draft = false
 		ctx.Config.Brew.SkipUpload = "false"
 		ctx.SkipPublish = false
-		ctx.TokenType = context.TokenTypeGitLab
 		assertNoPublish(tt)
 	})
 }
@@ -424,8 +423,8 @@ func TestDefault(t *testing.T) {
 }
 
 func TestGHFolder(t *testing.T) {
-	assert.Equal(t, "bar.rb", ghFormulaPath("", "bar.rb"))
-	assert.Equal(t, "fooo/bar.rb", ghFormulaPath("fooo", "bar.rb"))
+	assert.Equal(t, "bar.rb", buildFormulaPath("", "bar.rb"))
+	assert.Equal(t, "fooo/bar.rb", buildFormulaPath("fooo", "bar.rb"))
 }
 
 type DummyClient struct {
