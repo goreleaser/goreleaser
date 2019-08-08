@@ -76,6 +76,9 @@ func main() {
 	switch cmd {
 	case initCmd.FullCommand():
 		var filename = *config
+		if filename == "" {
+			filename = ".goreleaser.yml"
+		}
 		if err := initProject(filename); err != nil {
 			log.WithError(err).Error("failed to init project")
 			os.Exit(1)
