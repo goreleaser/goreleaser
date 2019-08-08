@@ -101,26 +101,85 @@ func TestSplit(t *testing.T) {
 
 func TestRunPipe(t *testing.T) {
 	for name, fn := range map[string]func(ctx *context.Context){
-		"default": func(ctx *context.Context) {},
+		"default": func(ctx *context.Context) {
+			ctx.TokenType = context.TokenTypeGitHub
+			ctx.Config.GitHubURLs.Download = "https://github.com"
+			ctx.Config.Release.GitHub.Owner = "test"
+			ctx.Config.Release.GitHub.Name = "test"
+			ctx.Config.Brews[0].GitHub.Owner = "test"
+			ctx.Config.Brews[0].GitHub.Name = "test"
+			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+		},
 		"github_enterprise_url": func(ctx *context.Context) {
+			ctx.TokenType = context.TokenTypeGitHub
+			ctx.Config.GitHubURLs.Download = "https://github.com"
+			ctx.Config.Release.GitHub.Owner = "test"
+			ctx.Config.Release.GitHub.Name = "test"
+			ctx.Config.Brews[0].GitHub.Owner = "test"
+			ctx.Config.Brews[0].GitHub.Name = "test"
+			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+
 			ctx.Config.GitHubURLs.Download = "http://github.example.org"
 		},
 		"custom_download_strategy": func(ctx *context.Context) {
+			ctx.TokenType = context.TokenTypeGitHub
+			ctx.Config.GitHubURLs.Download = "https://github.com"
+			ctx.Config.Release.GitHub.Owner = "test"
+			ctx.Config.Release.GitHub.Name = "test"
+			ctx.Config.Brews[0].GitHub.Owner = "test"
+			ctx.Config.Brews[0].GitHub.Name = "test"
+			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+
 			ctx.Config.Brews[0].DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
 		},
 		"custom_require": func(ctx *context.Context) {
+			ctx.TokenType = context.TokenTypeGitHub
+			ctx.Config.GitHubURLs.Download = "https://github.com"
+			ctx.Config.Release.GitHub.Owner = "test"
+			ctx.Config.Release.GitHub.Name = "test"
+			ctx.Config.Brews[0].GitHub.Owner = "test"
+			ctx.Config.Brews[0].GitHub.Name = "test"
+			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+
 			ctx.Config.Brews[0].DownloadStrategy = "CustomDownloadStrategy"
 			ctx.Config.Brews[0].CustomRequire = "custom_download_strategy"
 		},
 		"custom_block": func(ctx *context.Context) {
+			ctx.TokenType = context.TokenTypeGitHub
+			ctx.Config.GitHubURLs.Download = "https://github.com"
+			ctx.Config.Release.GitHub.Owner = "test"
+			ctx.Config.Release.GitHub.Name = "test"
+			ctx.Config.Brews[0].GitHub.Owner = "test"
+			ctx.Config.Brews[0].GitHub.Name = "test"
+			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+
 			ctx.Config.Brews[0].CustomBlock = `head "https://github.com/caarlos0/test.git"`
+		},
+		"default_gitlab": func(ctx *context.Context) {
+			ctx.TokenType = context.TokenTypeGitLab
+			ctx.Config.GitLabURLs.Download = "https://gitlab.com"
+			ctx.Config.Release.GitLab.Owner = "test"
+			ctx.Config.Release.GitLab.Name = "test"
+			ctx.Config.Brews[0].GitLab.Owner = "test"
+			ctx.Config.Brews[0].GitLab.Name = "test"
+			ctx.Config.Brews[0].Homepage = "https://gitlab.com/goreleaser"
+		},
+		"gitlab_enterprise_url": func(ctx *context.Context) {
+			ctx.TokenType = context.TokenTypeGitLab
+			ctx.Config.GitLabURLs.Download = "https://gitlab.com"
+			ctx.Config.Release.GitLab.Owner = "test"
+			ctx.Config.Release.GitLab.Name = "test"
+			ctx.Config.Brews[0].GitLab.Owner = "test"
+			ctx.Config.Brews[0].GitLab.Name = "test"
+			ctx.Config.Brews[0].Homepage = "https://gitlab.com/goreleaser"
+
+			ctx.Config.GitLabURLs.Download = "https://gitlab.my-company.org"
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder, err := ioutil.TempDir("", "goreleasertest")
 			assert.NoError(t, err)
 			var ctx = &context.Context{
-				TokenType: context.TokenTypeGitHub,
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
 				},
@@ -132,27 +191,13 @@ func TestRunPipe(t *testing.T) {
 				Config: config.Project{
 					Dist:        folder,
 					ProjectName: name,
-					GitHubURLs: config.GitHubURLs{
-						Download: "https://github.com",
-					},
-					Release: config.Release{
-						GitHub: config.Repo{
-							Owner: "test",
-							Name:  "test",
-						},
-					},
 					Brews: []config.Homebrew{
 						{
 							Name: name,
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
 							IDs: []string{
 								"foo",
 							},
 							Description:  "A run pipe test formula and FOO={{ .Env.FOO }}",
-							Homepage:     "https://github.com/goreleaser",
 							Caveats:      "don't do this {{ .ProjectName }}",
 							Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
 							Plist:        `<xml>whatever</xml>`,
@@ -165,11 +210,12 @@ func TestRunPipe(t *testing.T) {
 			}
 			fn(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bar_bin.tar.gz",
-				Path:   "doesnt matter",
-				Goos:   "darwin",
-				Goarch: "amd64",
-				Type:   artifact.UploadableArchive,
+				Name:       "bar_bin.tar.gz",
+				Path:       "doesnt matter",
+				Goos:       "darwin",
+				Goarch:     "amd64",
+				Type:       artifact.UploadableArchive,
+				UploadHash: "820ead5d9d2266c728dce6d4d55b6460", // set for gitlab only
 				Extra: map[string]interface{}{
 					"ID":     "bar",
 					"Format": "tar.gz",
@@ -177,11 +223,12 @@ func TestRunPipe(t *testing.T) {
 			})
 			var path = filepath.Join(folder, "bin.tar.gz")
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bin.tar.gz",
-				Path:   path,
-				Goos:   "darwin",
-				Goarch: "amd64",
-				Type:   artifact.UploadableArchive,
+				Name:       "bin.tar.gz",
+				Path:       path,
+				Goos:       "darwin",
+				Goarch:     "amd64",
+				Type:       artifact.UploadableArchive,
+				UploadHash: "820ead5d9d2266c728dce6d4d55b6460", // set for gitlab only
 				Extra: map[string]interface{}{
 					"ID":     "foo",
 					"Format": "tar.gz",
