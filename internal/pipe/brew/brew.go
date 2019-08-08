@@ -232,7 +232,6 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 		if cfg.URLTemplate == "" {
 			switch tokenType {
 			case context.TokenTypeGitHub:
-				// https://github.com/goreleaser/goreleaser/releases/download/v0.112.1/goreleaser_Linux_arm64.tar.gz
 				cfg.URLTemplate = fmt.Sprintf(
 					"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
 					ctx.Config.GitHubURLs.Download,
@@ -240,7 +239,6 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 					ctx.Config.Release.GitHub.Name,
 				)
 			case context.TokenTypeGitLab:
-				//https://gitlab.com/mavogel/release-testing/uploads/22e8b1508b0f28433b94754a5ea2f4aa/release-testing_0.3.7_Darwin_x86_64.tar.gz
 				cfg.URLTemplate = fmt.Sprintf(
 					"%s/%s/%s/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
 					ctx.Config.GitLabURLs.Download,
