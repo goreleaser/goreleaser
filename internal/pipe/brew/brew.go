@@ -173,8 +173,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return fmt.Errorf("tokenType is not yet implemented for brew: %s", ctx.TokenType)
 	}
 
-	// TODO mavogel: should this be renamed to formula folder?
-	var gpath = ghFormulaPath(brew.Folder, filename)
+	var gpath = buildFormulaPath(brew.Folder, filename)
 	log.WithField("formula", gpath).
 		WithField("repo", repo.String()).
 		Info("pushing")
@@ -183,7 +182,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 	return client.CreateFile(ctx, brew.CommitAuthor, repo, []byte(content), gpath, msg)
 }
 
-func ghFormulaPath(folder, filename string) string {
+func buildFormulaPath(folder, filename string) string {
 	return path.Join(folder, filename)
 }
 
