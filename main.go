@@ -51,7 +51,7 @@ func main() {
 
 	var app = kingpin.New("goreleaser", "Deliver Go binaries as fast and easily as possible")
 	var debug = app.Flag("debug", "Enable debug mode").Bool()
-	var config = app.Flag("config", "Load configuration from file").Short('c').Short('f').PlaceHolder(".goreleaser.yml").String()
+	var config = app.Flag("config", "Load configuration from file").Short('c').Short('f').PlaceHolder(".goreleaser.yml").Default(".goreleaser.yml").String()
 	var initCmd = app.Command("init", "Generates a .goreleaser.yml file").Alias("i")
 	var checkCmd = app.Command("check", "Checks if configuration is valid").Alias("c")
 	var releaseCmd = app.Command("release", "Releases the current project").Alias("r").Default()
