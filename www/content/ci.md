@@ -167,7 +167,7 @@ source.developers.google.com/p/YourProjectId/r/github-YourGithubUser-YourGithubR
 you're building off.
 
 This repo has the wrong name, so to prevent Goreleaser from publishing to
-the wrong github repo, add your .goreleaser.yml file's release section:
+the wrong github repo, add to your `.goreleaser.yml` file's release section:
 
 ```yml
 release:
