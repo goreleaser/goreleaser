@@ -167,7 +167,7 @@ source.developers.google.com/p/YourProjectId/r/github-YourGithubUser-YourGithubR
 you're building off.
 
 This repo has the wrong name, so to prevent Goreleaser from publishing to
-the wrong github repo, put in the your .goreleaser.yml file's release section:
+the wrong github repo, add to your `.goreleaser.yml` file's release section:
 
 ```yml
 release:
@@ -196,6 +196,8 @@ must explicitly run git tag $TAG_NAME (note that $TAG_NAME is only set when
 your build is triggered by a "push to tag".) This will allow goreleaser to
 create a release with that version, but it won't be able to build a proper
 changelog containing just the messages from the commits since the prior tag.
+Note that the build performs a shallow clone of git repositories and will
+only contain tags that reference the latest commit.
 
 ```yml
 steps:
