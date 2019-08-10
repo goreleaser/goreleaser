@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"strconv"
 
 	"github.com/apex/log"
@@ -27,7 +28,7 @@ func NewGitHub(ctx *context.Context) (Client, error) {
 	httpClient := oauth2.NewClient(ctx, ts)
 	base := httpClient.Transport.(*oauth2.Transport).Base
 	// nolint: govet
-	if &base != nil {
+	if base == nil || reflect.ValueOf(base).IsNil() {
 		base = http.DefaultTransport
 	}
 	// nolint: gosec
