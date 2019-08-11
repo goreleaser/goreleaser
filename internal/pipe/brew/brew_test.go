@@ -276,7 +276,7 @@ func TestRunPipeNoDarwin64Build(t *testing.T) {
 	assert.False(t, client.CreatedFile)
 }
 
-func TestRunPipeMultipleDarwin64Build(t *testing.T) {
+func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
 			Brews: []config.Homebrew{
@@ -289,36 +289,51 @@ func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 			},
 		},
 	)
-	ctx.TokenType = context.TokenTypeGitHub
 
+	ctx.TokenType = context.TokenTypeGitHub
 	f, err := ioutil.TempFile("", "")
 	assert.NoError(t, err)
 	defer f.Close()
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin1",
-		Path:   f.Name(),
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
-		},
-	})
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin2",
-		Path:   f.Name(),
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			"ID":     "bar",
-			"Format": "tar.gz",
-		},
-	})
-	client := &DummyClient{}
-	assert.Equal(t, ErrMultipleArchivesSameOS, doRun(ctx, ctx.Config.Brews[0], client))
-	assert.False(t, client.CreatedFile)
+
+	osarchs := []struct {
+		goos   string
+		goarch string
+	}{
+		{goos: "darwin", goarch: "amd64"},
+		{goos: "linux", goarch: "amd64"},
+	}
+
+	for idx, ttt := range osarchs {
+		t.Run(ttt.goos, func(tt *testing.T) {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   fmt.Sprintf("bin%d", idx),
+				Path:   f.Name(),
+				Goos:   ttt.goos,
+				Goarch: ttt.goarch,
+				Type:   artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					"ID":     "foo",
+					"Format": "tar.gz",
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   fmt.Sprintf("bin%d", idx),
+				Path:   f.Name(),
+				Goos:   ttt.goos,
+				Goarch: ttt.goarch,
+				Type:   artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					"ID":     "bar",
+					"Format": "tar.gz",
+				},
+			})
+			client := &DummyClient{}
+			assert.Equal(t, ErrMultipleArchivesSameOS, doRun(ctx, ctx.Config.Brews[0], client))
+			assert.False(t, client.CreatedFile)
+			// clean the artifacts for the next run
+			ctx.Artifacts = artifact.New()
+		})
+	}
 }
 
 func TestRunPipeBrewNotSetup(t *testing.T) {
