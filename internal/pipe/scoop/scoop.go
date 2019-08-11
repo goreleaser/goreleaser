@@ -17,6 +17,9 @@ import (
 // ErrNoWindows when there is no build for windows (goos doesn't contain windows)
 var ErrNoWindows = errors.New("scoop requires a windows build")
 
+// ErrTokenTypeNotImplementedForScoop indicates that a new token type was not implemented for this pipe
+var ErrTokenTypeNotImplementedForScoop = errors.New("token type not implemented for scoop pipe")
+
 // Pipe for build
 type Pipe struct{}
 
@@ -140,7 +143,7 @@ func buildManifest(ctx *context.Context, artifacts []*artifact.Artifact) (bytes.
 				ctx.Config.Release.GitLab.Name,
 			)
 		default:
-			return result, fmt.Errorf("tokenType is not yet implemented for scoop: %s", ctx.TokenType)
+			return result, ErrTokenTypeNotImplementedForScoop
 		}
 	}
 
