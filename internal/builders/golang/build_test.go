@@ -467,6 +467,22 @@ func TestProcessFlagsInvalid(t *testing.T) {
 	assert.Nil(t, flags)
 }
 
+func TestJoinLdFlags(t *testing.T) {
+	tests := []struct {
+		input  []string
+		output string
+	}{
+		{[]string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser"}, "-ldflags=-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser"},
+		{[]string{"-s -w", "-X main.version={{.Version}}"}, "-ldflags=-s -w -X main.version={{.Version}}"},
+	}
+
+	for _, test := range tests {
+		joinedLdFlags := joinLdFlags(test.input)
+
+		assert.Equal(t, joinedLdFlags, test.output)
+	}
+}
+
 //
 // Helpers
 //

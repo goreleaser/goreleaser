@@ -76,7 +76,7 @@ dockers:
     - "--label=org.label-schema.schema-version=1.0"
     - "--label=org.label-schema.version={{.Version}}"
     - "--label=org.label-schema.name={{.ProjectName}}"
-    - "--build-arg=FOO={{.ENV.Bar}}"
+    - "--build-arg=FOO={{.Env.Bar}}"
     # If your Dockerfile copies files other than the binary itself,
     # you should list them here as well.
     # Note that goreleaser will create the same structure inside the temporary

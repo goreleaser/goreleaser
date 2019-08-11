@@ -41,29 +41,33 @@ func TestSignDefault(t *testing.T) {
 	ctx := &context.Context{}
 	err := Pipe{}.Default(ctx)
 	assert.NoError(t, err)
-	assert.Equal(t, ctx.Config.Sign.Cmd, "gpg")
-	assert.Equal(t, ctx.Config.Sign.Signature, "${artifact}.sig")
-	assert.Equal(t, ctx.Config.Sign.Args, []string{"--output", "$signature", "--detach-sig", "$artifact"})
-	assert.Equal(t, ctx.Config.Sign.Artifacts, "none")
+	assert.Equal(t, ctx.Config.Signs[0].Cmd, "gpg")
+	assert.Equal(t, ctx.Config.Signs[0].Signature, "${artifact}.sig")
+	assert.Equal(t, ctx.Config.Signs[0].Args, []string{"--output", "$signature", "--detach-sig", "$artifact"})
+	assert.Equal(t, ctx.Config.Signs[0].Artifacts, "none")
 }
 
 func TestSignDisabled(t *testing.T) {
-	ctx := &context.Context{}
-	ctx.Config.Sign.Artifacts = "none"
+	ctx := context.New(config.Project{})
+	ctx.Config.Signs = []config.Sign{
+		{Artifacts: "none"},
+	}
 	err := Pipe{}.Run(ctx)
 	assert.EqualError(t, err, "artifact signing is disabled")
 }
 
 func TestSignSkipped(t *testing.T) {
-	ctx := &context.Context{}
+	ctx := context.New(config.Project{})
 	ctx.SkipSign = true
 	err := Pipe{}.Run(ctx)
 	assert.EqualError(t, err, "artifact signing is disabled")
 }
 
 func TestSignInvalidArtifacts(t *testing.T) {
-	ctx := &context.Context{}
-	ctx.Config.Sign.Artifacts = "foo"
+	ctx := context.New(config.Project{})
+	ctx.Config.Signs = []config.Sign{
+		{Artifacts: "foo"},
+	}
 	err := Pipe{}.Run(ctx)
 	assert.EqualError(t, err, "invalid list of artifacts to sign: foo")
 }
@@ -76,10 +80,26 @@ func TestSignArtifacts(t *testing.T) {
 		signatureNames []string
 	}{
 		{
+			desc: "sign single",
+			ctx: context.New(
+				config.Project{
+					Sign: config.Sign{
+						Artifacts: "all",
+					},
+				},
+			),
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "linux_amd64/artifact4.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "artifact4_1.0.0_linux_amd64.sig"},
+		},
+		{
 			desc: "sign all artifacts",
 			ctx: context.New(
 				config.Project{
-					Sign: config.Sign{Artifacts: "all"},
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+						},
+					},
 				},
 			),
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "linux_amd64/artifact4.sig"},
@@ -89,7 +109,11 @@ func TestSignArtifacts(t *testing.T) {
 			desc: "sign only checksums",
 			ctx: context.New(
 				config.Project{
-					Sign: config.Sign{Artifacts: "checksum"},
+					Signs: []config.Sign{
+						{
+							Artifacts: "checksum",
+						},
+					},
 				},
 			),
 			signaturePaths: []string{"checksum.sig"},
@@ -99,15 +123,17 @@ func TestSignArtifacts(t *testing.T) {
 			desc: "sign all artifacts with env",
 			ctx: context.New(
 				config.Project{
-					Sign: config.Sign{
-						Artifacts: "all",
-						Args: []string{
-							"-u",
-							"${TEST_USER}",
-							"--output",
-							"${signature}",
-							"--detach-sign",
-							"${artifact}",
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Args: []string{
+								"-u",
+								"${TEST_USER}",
+								"--output",
+								"${signature}",
+								"--detach-sign",
+								"${artifact}",
+							},
 						},
 					},
 					Env: []string{
@@ -175,7 +201,7 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 	// configure the pipeline
 	// make sure we are using the test keyring
 	assert.NoError(t, Pipe{}.Default(ctx))
-	ctx.Config.Sign.Args = append([]string{"--homedir", keyring}, ctx.Config.Sign.Args...)
+	ctx.Config.Signs[0].Args = append([]string{"--homedir", keyring}, ctx.Config.Signs[0].Args...)
 
 	// run the pipeline
 	assert.NoError(t, Pipe{}.Run(ctx))

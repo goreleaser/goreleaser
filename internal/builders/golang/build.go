@@ -86,11 +86,15 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 	cmd = append(cmd, gcflags...)
 
-	ldflags, err := processFlags(ctx, env, build.Ldflags, "-ldflags=")
+	// flag prefix is skipped because ldflags need to output a single string
+	ldflags, err := processFlags(ctx, env, build.Ldflags, "")
 	if err != nil {
 		return err
 	}
-	cmd = append(cmd, ldflags...)
+	// ldflags need to be single string in order to apply correctly
+	processedLdFlags := joinLdFlags(ldflags)
+
+	cmd = append(cmd, processedLdFlags)
 
 	cmd = append(cmd, "-o", options.Path, build.Main)
 	if err := run(ctx, cmd, env); err != nil {
@@ -122,6 +126,14 @@ func processFlags(ctx *context.Context, env, flags []string, flagPrefix string) 
 		processed = append(processed, flagPrefix+flag)
 	}
 	return processed, nil
+}
+
+func joinLdFlags(flags []string) string {
+	ldflagString := strings.Builder{}
+	ldflagString.WriteString("-ldflags=")
+	ldflagString.WriteString(strings.Join(flags, " "))
+
+	return ldflagString.String()
 }
 
 func run(ctx *context.Context, command, env []string) error {

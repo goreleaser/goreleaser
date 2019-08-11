@@ -32,8 +32,8 @@ Documentation is hosted live at https://goreleaser.com
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=for-the-badge)](http://godoc.org/github.com/goreleaser/goreleaser)
 [![SayThanks.io](https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg?style=for-the-badge)](https://saythanks.io/to/caarlos0)
 [![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=for-the-badge)](https://github.com/goreleaser)
-[![Backers on Open Collective](https://opencollective.com/auditnet/backers/badge.svg?style=for-the-badge)](https://opencollective.com/auditnet/backers/)
-[![Sponsors on Open Collective](https://opencollective.com/auditnet/sponsors/badge.svg?style=for-the-badge)](https://opencollective.com/auditnet/sponsors/)
+[![Backers on Open Collective](https://opencollective.com/goreleaser/backers/badge.svg?style=for-the-badge)](https://opencollective.com/goreleaser/backers/)
+[![Sponsors on Open Collective](https://opencollective.com/goreleaser/sponsors/badge.svg?style=for-the-badge)](https://opencollective.com/goreleaser/sponsors/)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=for-the-badge)](https://conventionalcommits.org)
 
 ## Sponsors

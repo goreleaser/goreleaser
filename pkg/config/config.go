@@ -263,16 +263,13 @@ type Checksum struct {
 
 // Docker image config
 type Docker struct {
-	Binary             string   `yaml:",omitempty"`
 	Binaries           []string `yaml:",omitempty"`
 	Goos               string   `yaml:",omitempty"`
 	Goarch             string   `yaml:",omitempty"`
 	Goarm              string   `yaml:",omitempty"`
-	Image              string   `yaml:",omitempty"`
 	Dockerfile         string   `yaml:",omitempty"`
 	ImageTemplates     []string `yaml:"image_templates,omitempty"`
 	SkipPush           string   `yaml:"skip_push,omitempty"`
-	TagTemplates       []string `yaml:"tag_templates,omitempty"`
 	Files              []string `yaml:"extra_files,omitempty"`
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
 }
@@ -303,20 +300,21 @@ type Before struct {
 
 // S3 contains s3 config
 type S3 struct {
-	Region   string
-	Bucket   string
-	Folder   string
-	Profile  string
-	Endpoint string // used for minio for example
-	ACL      string
+	Region   string   `yaml:",omitempty"`
+	Bucket   string   `yaml:",omitempty"`
+	Folder   string   `yaml:",omitempty"`
+	Profile  string   `yaml:",omitempty"`
+	Endpoint string   `yaml:",omitempty"` // used for minio for example
+	ACL      string   `yaml:",omitempty"`
 	IDs      []string `yaml:"ids,omitempty"`
 }
 
 // Blob contains config for GO CDK blob
 type Blob struct {
-	Bucket   string
-	Provider string
-	Folder   string
+	Bucket   string   `yaml:",omitempty"`
+	Provider string   `yaml:",omitempty"`
+	Folder   string   `yaml:",omitempty"`
+	KMSKey   string   `yaml:",omitempty"`
 	IDs      []string `yaml:"ids,omitempty"`
 }
 
@@ -354,10 +352,12 @@ type Project struct {
 	Artifactories []Put       `yaml:",omitempty"`
 	Puts          []Put       `yaml:",omitempty"`
 	S3            []S3        `yaml:"s3,omitempty"`
-	Blobs         []Blob      `yaml:"blob,omitempty"`
+	Blob          []Blob      `yaml:"blob,omitempty"` // TODO: remove this
+	Blobs         []Blob      `yaml:"blobs,omitempty"`
 	Changelog     Changelog   `yaml:",omitempty"`
 	Dist          string      `yaml:",omitempty"`
-	Sign          Sign        `yaml:",omitempty"`
+	Sign          Sign        `yaml:",omitempty"` // TODO: remove this
+	Signs         []Sign      `yaml:",omitempty"`
 	EnvFiles      EnvFiles    `yaml:"env_files,omitempty"`
 	Before        Before      `yaml:",omitempty"`
 
@@ -377,6 +377,7 @@ func Load(file string) (config Project, err error) {
 	if err != nil {
 		return
 	}
+	defer f.Close()
 	log.WithField("file", file).Info("loading config file")
 	return LoadReader(f)
 }

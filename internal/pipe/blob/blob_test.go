@@ -4,7 +4,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -14,7 +17,7 @@ import (
 )
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestNoBlob(t *testing.T) {
@@ -59,8 +62,13 @@ func TestDefaultsNoProvider(t *testing.T) {
 }
 
 func TestDefaults(t *testing.T) {
-	var assert = assert.New(t)
 	var ctx = context.New(config.Project{
+		Blob: []config.Blob{
+			{
+				Bucket:   "foobar",
+				Provider: "gcs",
+			},
+		},
 		Blobs: []config.Blob{
 			{
 				Bucket:   "foo",
@@ -69,13 +77,20 @@ func TestDefaults(t *testing.T) {
 			},
 		},
 	})
-	assert.NoError(Pipe{}.Default(ctx))
-	assert.Equal([]config.Blob{{
-		Bucket:   "foo",
-		Provider: "azblob",
-		Folder:   "{{ .ProjectName }}/{{ .Tag }}",
-		IDs:      []string{"foo", "bar"},
-	}}, ctx.Config.Blobs)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, []config.Blob{
+		{
+			Bucket:   "foo",
+			Provider: "azblob",
+			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
+			IDs:      []string{"foo", "bar"},
+		},
+		{
+			Bucket:   "foobar",
+			Provider: "gcs",
+			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
+		},
+	}, ctx.Config.Blobs)
 }
 
 func TestDefaultsWithProvider(t *testing.T) {
@@ -219,7 +234,7 @@ func TestPipe_Publish(t *testing.T) {
 			setEnv(tt.env)
 			defer unsetEnv(tt.env)
 			if err := p.Publish(tt.args.ctx); (err != nil) != tt.wantErr {
-				if err.Error() != tt.wantErrString {
+				if !strings.HasPrefix(err.Error(), tt.wantErrString) {
 					t.Errorf("Pipe.Publish() error = %v, wantErr %v", err, tt.wantErrString)
 				}
 			}

@@ -11,7 +11,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -34,27 +33,6 @@ func (Pipe) String() string {
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Dockers {
 		var docker = &ctx.Config.Dockers[i]
-
-		if docker.Image != "" {
-			deprecate.Notice("docker.image")
-			deprecate.Notice("docker.tag_templates")
-
-			if len(docker.TagTemplates) == 0 {
-				docker.TagTemplates = []string{"{{ .Version }}"}
-			}
-
-			for _, tag := range docker.TagTemplates {
-				docker.ImageTemplates = append(
-					docker.ImageTemplates,
-					fmt.Sprintf("%s:%s", docker.Image, tag),
-				)
-			}
-		}
-
-		if docker.Binary != "" {
-			deprecate.Notice("docker.binary")
-			docker.Binaries = append(docker.Binaries, docker.Binary)
-		}
 
 		if docker.Goos == "" {
 			docker.Goos = "linux"
@@ -80,7 +58,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if len(ctx.Config.Dockers) == 0 || missingImage(ctx) {
+	if len(ctx.Config.Dockers) == 0 || len(ctx.Config.Dockers[0].ImageTemplates) == 0 {
 		return pipe.Skip("docker section is not configured")
 	}
 	_, err := exec.LookPath("docker")
@@ -99,10 +77,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 		}
 	}
 	return nil
-}
-
-func missingImage(ctx *context.Context) bool {
-	return ctx.Config.Dockers[0].Image == "" && len(ctx.Config.Dockers[0].ImageTemplates) == 0
 }
 
 func doRun(ctx *context.Context) error {

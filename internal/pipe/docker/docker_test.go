@@ -169,12 +169,11 @@ func TestRunPipe(t *testing.T) {
 					ImageTemplates: []string{
 						registry + "goreleaser/multiplefiles2:latest",
 					},
-					Goos:         "linux",
-					Goarch:       "amd64",
-					Dockerfile:   "testdata/Dockerfile",
-					Binaries:     []string{"mybin"},
-					TagTemplates: []string{"latest"},
-					Files:        []string{"testdata/extra_file.txt"},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binaries:   []string{"mybin"},
+					Files:      []string{"testdata/extra_file.txt"},
 				},
 			},
 			expect: []string{
@@ -572,11 +571,7 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			for _, d := range docker.dockers {
-				if d.ImageTemplates == nil {
-					docker.assertImageLabels(tt, len(d.TagTemplates))
-				} else {
-					docker.assertImageLabels(tt, len(d.ImageTemplates))
-				}
+				docker.assertImageLabels(tt, len(d.ImageTemplates))
 			}
 
 			// this might should not fail as the image should have been created when
@@ -685,7 +680,7 @@ func TestDefaultBinaries(t *testing.T) {
 		Config: config.Project{
 			Dockers: []config.Docker{
 				{
-					Binary: "foo",
+					Binaries: []string{"foo"},
 				},
 			},
 		},
@@ -728,31 +723,6 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "i386", docker.Goarch)
 	assert.Equal(t, "bar", docker.Binaries[0])
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
-}
-
-func TestDefaultWithImage(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
-			Dockers: []config.Docker{
-				{
-					Goos:       "windows",
-					Goarch:     "i386",
-					Binaries:   []string{"bar"},
-					Dockerfile: "Dockerfile.foo",
-					Image:      "my/image",
-				},
-			},
-		},
-	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Dockers, 1)
-	var docker = ctx.Config.Dockers[0]
-	assert.Equal(t, "windows", docker.Goos)
-	assert.Equal(t, "i386", docker.Goarch)
-	assert.Equal(t, "bar", docker.Binaries[0])
-	assert.Equal(t, []string{"{{ .Version }}"}, docker.TagTemplates)
-	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
-	assert.Equal(t, []string{"my/image:{{ .Version }}"}, docker.ImageTemplates)
 }
 
 func Test_processImageTemplates(t *testing.T) {
