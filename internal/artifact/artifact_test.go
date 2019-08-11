@@ -14,6 +14,17 @@ import (
 // ensure Type implements the stringer interface...
 var _ fmt.Stringer = Type(0)
 
+func TestSetUploadHash(t *testing.T) {
+	a := &Artifact{
+		Name: "test",
+	}
+	want := "820ead5d9d2266c728dce6d4d55b6460"
+	a.SetUploadHash(want)
+	got := a.UploadHash
+
+	assert.Equal(t, want, got, "wanted hash %q, but got %q", want, got)
+}
+
 func TestAdd(t *testing.T) {
 	var g errgroup.Group
 	var artifacts = New()
