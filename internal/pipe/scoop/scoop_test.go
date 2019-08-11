@@ -487,7 +487,7 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "amd64",
 					Path:   file,
 					Extra: map[string]interface{}{
-						"Builds": []artifact.Artifact{
+						"Builds": []*artifact.Artifact{
 							{
 								Extra: map[string]interface{}{
 									"Binary": "foo",
@@ -507,7 +507,7 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "386",
 					Path:   file,
 					Extra: map[string]interface{}{
-						"Builds": []artifact.Artifact{
+						"Builds": []*artifact.Artifact{
 							{
 								Extra: map[string]interface{}{
 									"Binary": "foo",
