@@ -94,7 +94,11 @@ func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]st
 	t.fields[arm] = replace(replacements, a.Goarm)
 	t.fields[binary] = bin.(string)
 	t.fields[artifactName] = a.Name
-	t.fields[artifactUploadHash] = a.UploadHash
+	if val, ok := a.Extra["ArtifactUploadHash"]; ok {
+		t.fields[artifactUploadHash] = val
+	} else {
+		t.fields[artifactUploadHash] = ""
+	}
 	return t
 }
 

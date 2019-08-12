@@ -39,6 +39,7 @@ func TestWithArtifact(t *testing.T) {
 		"shortcommit": "{{.ShortCommit}}",
 		"binary":      "{{.Binary}}",
 		"proj":        "{{.ProjectName}}",
+		"":            "{{.ArtifactUploadHash}}",
 	} {
 		tmpl := tmpl
 		expect := expect
@@ -60,6 +61,24 @@ func TestWithArtifact(t *testing.T) {
 			assert.Equal(tt, expect, result)
 		})
 	}
+
+	t.Run("artifact with gitlab ArtifactUploadHash", func(tt *testing.T) {
+		tt.Parallel()
+		uploadHash := "820ead5d9d2266c728dce6d4d55b6460"
+		result, err := New(ctx).WithArtifact(
+			&artifact.Artifact{
+				Name:   "another-binary",
+				Goarch: "amd64",
+				Goos:   "linux",
+				Goarm:  "6",
+				Extra: map[string]interface{}{
+					"ArtifactUploadHash": uploadHash,
+				},
+			}, map[string]string{},
+		).Apply("{{ .ArtifactUploadHash }}")
+		assert.NoError(tt, err)
+		assert.Equal(tt, uploadHash, result)
+	})
 
 	t.Run("artifact without binary name", func(tt *testing.T) {
 		tt.Parallel()

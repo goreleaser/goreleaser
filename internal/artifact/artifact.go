@@ -67,20 +67,13 @@ func (t Type) String() string {
 
 // Artifact represents an artifact and its relevant info
 type Artifact struct {
-	Name       string
-	Path       string
-	Goos       string
-	Goarch     string
-	Goarm      string
-	Type       Type
-	UploadHash string
-	Extra      map[string]interface{}
-}
-
-// SetUploadHash sets the upload hash for gitlab files
-func (a *Artifact) SetUploadHash(uploadHash string) {
-	log.Debugf("setting upload hash '%s' for ", uploadHash, a.Name)
-	a.UploadHash = uploadHash
+	Name   string
+	Path   string
+	Goos   string
+	Goarch string
+	Goarm  string
+	Type   Type
+	Extra  map[string]interface{}
 }
 
 // ExtraOr returns the Extra field with the given key or the or value specified

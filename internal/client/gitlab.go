@@ -66,7 +66,7 @@ func (c *gitlabClient) CreateFile(
 	}).Debug("projectID at brew")
 
 	_, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
-	if err != nil && res.StatusCode != 404 {
+	if err != nil && (res == nil || res.StatusCode != 404) {
 		log.WithFields(log.Fields{
 			"fileName":   fileName,
 			"ref":        ref,
@@ -277,7 +277,10 @@ func (c *gitlabClient) Upload(
 	}
 	// we set this hash to be able to download the file
 	// in following publish pipes like brew, scoop
-	artifact.SetUploadHash(fileUploadHash)
+	if artifact.Extra == nil {
+		artifact.Extra = make(map[string]interface{})
+	}
+	artifact.Extra["ArtifactUploadHash"] = fileUploadHash
 
 	return err
 }

@@ -210,28 +210,28 @@ func TestRunPipe(t *testing.T) {
 			}
 			fn(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:       "bar_bin.tar.gz",
-				Path:       "doesnt matter",
-				Goos:       "darwin",
-				Goarch:     "amd64",
-				Type:       artifact.UploadableArchive,
-				UploadHash: "820ead5d9d2266c728dce6d4d55b6460", // set for gitlab only
+				Name:   "bar_bin.tar.gz",
+				Path:   "doesnt matter",
+				Goos:   "darwin",
+				Goarch: "amd64",
+				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":     "bar",
-					"Format": "tar.gz",
+					"ID":                 "bar",
+					"Format":             "tar.gz",
+					"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
 				},
 			})
 			var path = filepath.Join(folder, "bin.tar.gz")
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:       "bin.tar.gz",
-				Path:       path,
-				Goos:       "darwin",
-				Goarch:     "amd64",
-				Type:       artifact.UploadableArchive,
-				UploadHash: "820ead5d9d2266c728dce6d4d55b6460", // set for gitlab only
+				Name:   "bin.tar.gz",
+				Path:   path,
+				Goos:   "darwin",
+				Goarch: "amd64",
+				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":     "foo",
-					"Format": "tar.gz",
+					"ID":                 "foo",
+					"Format":             "tar.gz",
+					"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
 				},
 			})
 

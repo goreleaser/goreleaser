@@ -210,8 +210,24 @@ func Test_doRun(t *testing.T) {
 				&DummyClient{},
 			},
 			[]*artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+				{
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+					},
+				},
 			},
 			shouldNotErr,
 		},
@@ -254,8 +270,24 @@ func Test_doRun(t *testing.T) {
 				&DummyClient{},
 			},
 			[]*artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+				{
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+					},
+				},
 			},
 			shouldNotErr,
 		},
@@ -651,12 +683,12 @@ func Test_buildManifest(t *testing.T) {
 			require.NoError(t, err)
 			out, err := buildManifest(ctx, []*artifact.Artifact{
 				{
-					Name:       "foo_1.0.1_windows_amd64.tar.gz",
-					Goos:       "windows",
-					Goarch:     "amd64",
-					Path:       file,
-					UploadHash: "820ead5d9d2266c728dce6d4d55b6460", // gitlab only
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Path:   file,
 					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
 						"Builds": []*artifact.Artifact{
 							{
 								Extra: map[string]interface{}{
@@ -672,12 +704,12 @@ func Test_buildManifest(t *testing.T) {
 					},
 				},
 				{
-					Name:       "foo_1.0.1_windows_386.tar.gz",
-					Goos:       "windows",
-					Goarch:     "386",
-					Path:       file,
-					UploadHash: "820ead5d9d2266c728dce6d4d55b6460", // gitlab only
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
 					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
 						"Builds": []*artifact.Artifact{
 							{
 								Extra: map[string]interface{}{
