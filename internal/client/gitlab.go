@@ -275,11 +275,13 @@ func (c *gitlabClient) Upload(
 	if err != nil {
 		return err
 	}
-	// we set this hash to be able to download the file
-	// in following publish pipes like brew, scoop
+
+	// for checksums.txt the field is nil, so we initialize it
 	if artifact.Extra == nil {
 		artifact.Extra = make(map[string]interface{})
 	}
+	// we set this hash to be able to download the file
+	// in following publish pipes like brew, scoop
 	artifact.Extra["ArtifactUploadHash"] = fileUploadHash
 
 	return err
