@@ -530,8 +530,8 @@ func Test_doRun(t *testing.T) {
 				&DummyClient{},
 			},
 			[]*artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
+				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldErr("archive format is binary"),
 		},

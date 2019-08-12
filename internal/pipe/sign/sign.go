@@ -90,7 +90,6 @@ func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact)
 		if err != nil {
 			return err
 		}
-
 		ctx.Artifacts.Add(artifact)
 	}
 	return nil

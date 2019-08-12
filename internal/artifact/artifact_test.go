@@ -187,7 +187,7 @@ func TestInvalidAlgorithm(t *testing.T) {
 }
 
 func TestExtraOr(t *testing.T) {
-	var a = Artifact{
+	var a = &Artifact{
 		Extra: map[string]interface{}{
 			"Foo": "foo",
 		},
