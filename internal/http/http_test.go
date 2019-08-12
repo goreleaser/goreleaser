@@ -226,7 +226,7 @@ func TestUpload(t *testing.T) {
 	} {
 		var file = filepath.Join(folder, "a."+a.ext)
 		require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
-		ctx.Artifacts.Add(artifact.Artifact{
+		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: "a." + a.ext,
 			Path: file,
 			Type: a.typ,

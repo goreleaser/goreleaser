@@ -334,7 +334,7 @@ func TestDefault(t *testing.T) {
 
 func TestPublish(t *testing.T) {
 	var ctx = context.New(config.Project{})
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   "nope.snap",
 		Goarch: "amd64",
@@ -375,7 +375,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist, dest string) {
 			var binPath = filepath.Join(dist, folder, name)
 			_, err := os.Create(binPath)
 			assert.NoError(t, err)
-			ctx.Artifacts.Add(artifact.Artifact{
+			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:   dest,
 				Path:   binPath,
 				Goarch: goarch,

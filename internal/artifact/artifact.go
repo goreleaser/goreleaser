@@ -122,26 +122,26 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 
 // Artifacts is a list of artifacts
 type Artifacts struct {
-	items []Artifact
+	items []*Artifact
 	lock  *sync.Mutex
 }
 
 // New return a new list of artifacts
 func New() Artifacts {
 	return Artifacts{
-		items: []Artifact{},
+		items: []*Artifact{},
 		lock:  &sync.Mutex{},
 	}
 }
 
 // List return the actual list of artifacts
-func (artifacts Artifacts) List() []Artifact {
+func (artifacts Artifacts) List() []*Artifact {
 	return artifacts.items
 }
 
 // GroupByPlatform groups the artifacts by their platform
-func (artifacts Artifacts) GroupByPlatform() map[string][]Artifact {
-	var result = map[string][]Artifact{}
+func (artifacts Artifacts) GroupByPlatform() map[string][]*Artifact {
+	var result = map[string][]*Artifact{}
 	for _, a := range artifacts.items {
 		plat := a.Goos + a.Goarch + a.Goarm
 		result[plat] = append(result[plat], a)
@@ -150,7 +150,7 @@ func (artifacts Artifacts) GroupByPlatform() map[string][]Artifact {
 }
 
 // Add safely adds a new artifact to an artifact list
-func (artifacts *Artifacts) Add(a Artifact) {
+func (artifacts *Artifacts) Add(a *Artifact) {
 	artifacts.lock.Lock()
 	defer artifacts.lock.Unlock()
 	log.WithFields(log.Fields{
@@ -163,32 +163,32 @@ func (artifacts *Artifacts) Add(a Artifact) {
 
 // Filter defines an artifact filter which can be used within the Filter
 // function
-type Filter func(a Artifact) bool
+type Filter func(a *Artifact) bool
 
 // ByGoos is a predefined filter that filters by the given goos
 func ByGoos(s string) Filter {
-	return func(a Artifact) bool {
+	return func(a *Artifact) bool {
 		return a.Goos == s
 	}
 }
 
 // ByGoarch is a predefined filter that filters by the given goarch
 func ByGoarch(s string) Filter {
-	return func(a Artifact) bool {
+	return func(a *Artifact) bool {
 		return a.Goarch == s
 	}
 }
 
 // ByGoarm is a predefined filter that filters by the given goarm
 func ByGoarm(s string) Filter {
-	return func(a Artifact) bool {
+	return func(a *Artifact) bool {
 		return a.Goarm == s
 	}
 }
 
 // ByType is a predefined filter that filters by the given type
 func ByType(t Type) Filter {
-	return func(a Artifact) bool {
+	return func(a *Artifact) bool {
 		return a.Type == t
 	}
 }
@@ -198,7 +198,7 @@ func ByFormats(formats ...string) Filter {
 	var filters = make([]Filter, 0, len(formats))
 	for _, format := range formats {
 		format := format
-		filters = append(filters, func(a Artifact) bool {
+		filters = append(filters, func(a *Artifact) bool {
 			return a.ExtraOr("Format", "") == format
 		})
 	}
@@ -210,7 +210,7 @@ func ByIDs(ids ...string) Filter {
 	var filters = make([]Filter, 0, len(ids))
 	for _, id := range ids {
 		id := id
-		filters = append(filters, func(a Artifact) bool {
+		filters = append(filters, func(a *Artifact) bool {
 			return a.ExtraOr("ID", "") == id
 		})
 	}
@@ -219,7 +219,7 @@ func ByIDs(ids ...string) Filter {
 
 // Or performs an OR between all given filters
 func Or(filters ...Filter) Filter {
-	return func(a Artifact) bool {
+	return func(a *Artifact) bool {
 		for _, f := range filters {
 			if f(a) {
 				return true
@@ -231,7 +231,7 @@ func Or(filters ...Filter) Filter {
 
 // And performs an AND between all given filters
 func And(filters ...Filter) Filter {
-	return func(a Artifact) bool {
+	return func(a *Artifact) bool {
 		for _, f := range filters {
 			if !f(a) {
 				return false

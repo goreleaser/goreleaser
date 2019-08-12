@@ -126,7 +126,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		"PUT_PRODUCTION-EU_SECRET": "productionuser-apikey",
 	}
 	for _, goos := range []string{"linux", "darwin"} {
-		ctx.Artifacts.Add(artifact.Artifact{
+		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "mybin",
 			Path:   binPath,
 			Goarch: "amd64",
@@ -165,12 +165,12 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
 	ctx.Version = "1.0.0"
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debfile.Name(),
@@ -227,7 +227,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	ctx.Env = map[string]string{
 		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
@@ -259,7 +259,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	ctx.Env = map[string]string{
 		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,
 		Goarch: "amd64",
@@ -310,7 +310,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	ctx.Env = map[string]string{
 		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,
 		Goarch: "amd64",
@@ -339,7 +339,7 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 	ctx.Env = map[string]string{
 		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   "archivetest/dist/mybin/mybin",
 		Goarch: "amd64",
@@ -376,7 +376,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	ctx.Env = map[string]string{
 		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   binPath,
 		Goarch: "amd64",
@@ -431,7 +431,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	ctx.Env = map[string]string{
 		"PUT_PRODUCTION_SECRET": "deployuser-secret",
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Dir(binPath),
 		Goarch: "amd64",

@@ -120,7 +120,7 @@ type Resource struct {
 	Hash string   `json:"hash"` // the archive checksum
 }
 
-func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.Buffer, error) {
+func buildManifest(ctx *context.Context, artifacts []*artifact.Artifact) (bytes.Buffer, error) {
 	var result bytes.Buffer
 	var manifest = Manifest{
 		Version:      ctx.Version,
@@ -164,10 +164,10 @@ func buildManifest(ctx *context.Context, artifacts []artifact.Artifact) (bytes.B
 	return result, err
 }
 
-func binaries(a artifact.Artifact) []string {
+func binaries(a *artifact.Artifact) []string {
 	// nolint: prealloc
 	var bins []string
-	for _, b := range a.ExtraOr("Builds", []artifact.Artifact{}).([]artifact.Artifact) {
+	for _, b := range a.ExtraOr("Builds", []*artifact.Artifact{}).([]*artifact.Artifact) {
 		bins = append(bins, b.ExtraOr("Binary", "").(string)+".exe")
 	}
 	return bins

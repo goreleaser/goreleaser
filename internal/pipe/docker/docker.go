@@ -99,7 +99,7 @@ func doRun(ctx *context.Context) error {
 					artifact.ByGoarch(docker.Goarch),
 					artifact.ByGoarm(docker.Goarm),
 					artifact.ByType(artifact.Binary),
-					func(a artifact.Artifact) bool {
+					func(a *artifact.Artifact) bool {
 						for _, bin := range binaryNames {
 							if a.ExtraOr("Binary", "").(string) == bin {
 								return true
@@ -125,7 +125,7 @@ func doRun(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func process(ctx *context.Context, docker config.Docker, bins []artifact.Artifact) error {
+func process(ctx *context.Context, docker config.Docker, bins []*artifact.Artifact) error {
 	tmp, err := ioutil.TempDir(ctx.Config.Dist, "goreleaserdocker")
 	if err != nil {
 		return errors.Wrap(err, "failed to create temporary dir")
@@ -176,7 +176,7 @@ func process(ctx *context.Context, docker config.Docker, bins []artifact.Artifac
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish")
 	}
 	for _, img := range images {
-		ctx.Artifacts.Add(artifact.Artifact{
+		ctx.Artifacts.Add(&artifact.Artifact{
 			Type:   artifact.PublishableDockerImage,
 			Name:   img,
 			Path:   img,
@@ -262,7 +262,7 @@ func buildCommand(images, flags []string) []string {
 	return base
 }
 
-func dockerPush(ctx *context.Context, image artifact.Artifact) error {
+func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	log.WithField("image", image.Name).Info("pushing docker image")
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "docker", "push", image.Name)

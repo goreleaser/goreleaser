@@ -22,7 +22,7 @@ func TestDescribeBody(t *testing.T) {
 		"goreleaser/goreleaser:latest",
 		"goreleaser/godownloader:v0.1.0",
 	} {
-		ctx.Artifacts.Add(artifact.Artifact{
+		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: d,
 			Type: artifact.DockerImage,
 		})

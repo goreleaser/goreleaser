@@ -110,7 +110,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func create(ctx *context.Context, archive config.Archive, binaries []artifact.Artifact) error {
+func create(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
 	var format = packageFormat(archive, binaries[0].Goos)
 	folder, err := tmpl.New(ctx).
 		WithArtifact(binaries[0], archive.Replacements).
@@ -159,7 +159,7 @@ func create(ctx *context.Context, archive config.Archive, binaries []artifact.Ar
 			return fmt.Errorf("failed to add %s -> %s to the archive: %s", binary.Path, binary.Name, err.Error())
 		}
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.UploadableArchive,
 		Name:   folder + "." + format,
 		Path:   archivePath,
@@ -186,7 +186,7 @@ func wrapFolder(a config.Archive) string {
 	}
 }
 
-func skip(ctx *context.Context, archive config.Archive, binaries []artifact.Artifact) error {
+func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
 	for _, binary := range binaries {
 		log.WithField("binary", binary.Name).Info("skip archiving")
 		name, err := tmpl.New(ctx).
@@ -195,7 +195,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []artifact.Arti
 		if err != nil {
 			return err
 		}
-		ctx.Artifacts.Add(artifact.Artifact{
+		ctx.Artifacts.Add(&artifact.Artifact{
 			Type:   artifact.UploadableBinary,
 			Name:   name + binary.ExtraOr("Ext", "").(string),
 			Path:   binary.Path,
@@ -203,7 +203,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []artifact.Arti
 			Goarch: binary.Goarch,
 			Goarm:  binary.Goarm,
 			Extra: map[string]interface{}{
-				"Builds": []artifact.Artifact{binary},
+				"Builds": []*artifact.Artifact{binary},
 				"ID":     archive.ID,
 				"Format": archive.Format,
 			},

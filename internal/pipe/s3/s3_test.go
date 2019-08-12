@@ -77,7 +77,7 @@ func TestUpload(t *testing.T) {
 		},
 	})
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tgzpath,
@@ -85,7 +85,7 @@ func TestUpload(t *testing.T) {
 			"ID": "foo",
 		},
 	})
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debpath,
@@ -123,12 +123,12 @@ func TestUploadCustomBucketID(t *testing.T) {
 		},
 	})
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tgzpath,
 	})
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debpath,
@@ -162,12 +162,12 @@ func TestUploadInvalidCustomBucketID(t *testing.T) {
 		},
 	})
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tgzpath,
 	})
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debpath,

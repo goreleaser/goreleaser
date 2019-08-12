@@ -178,7 +178,7 @@ func ghFormulaPath(folder, filename string) string {
 	return path.Join(folder, filename)
 }
 
-func buildFormula(ctx *context.Context, brew config.Homebrew, artifacts []artifact.Artifact) (string, error) {
+func buildFormula(ctx *context.Context, brew config.Homebrew, artifacts []*artifact.Artifact) (string, error) {
 	data, err := dataFor(ctx, brew, artifacts)
 	if err != nil {
 		return "", err
@@ -198,7 +198,7 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	return tmpl.New(ctx).Apply(out.String())
 }
 
-func dataFor(ctx *context.Context, cfg config.Homebrew, artifacts []artifact.Artifact) (templateData, error) {
+func dataFor(ctx *context.Context, cfg config.Homebrew, artifacts []*artifact.Artifact) (templateData, error) {
 	var result = templateData{
 		Name:             formulaNameFor(cfg.Name),
 		Desc:             cfg.Description,

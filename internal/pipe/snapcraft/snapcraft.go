@@ -149,7 +149,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries []artifact.Artifact) error {
+func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries []*artifact.Artifact) error {
 	var log = log.WithField("arch", arch)
 	folder, err := tmpl.New(ctx).
 		WithArtifact(binaries[0], snap.Replacements).
@@ -266,7 +266,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	if !snap.Publish {
 		return nil
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.PublishableSnapcraft,
 		Name:   folder + ".snap",
 		Path:   snapFile,
@@ -279,7 +279,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 
 const reviewWaitMsg = `Waiting for previous upload(s) to complete their review process.`
 
-func push(ctx *context.Context, snap artifact.Artifact) error {
+func push(ctx *context.Context, snap *artifact.Artifact) error {
 	var log = log.WithField("snap", snap.Name)
 	log.Info("pushing snap")
 	// TODO: customize --release based on snap.Grade?
