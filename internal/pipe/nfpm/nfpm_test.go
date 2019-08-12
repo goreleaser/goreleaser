@@ -50,7 +50,7 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 	}
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(artifact.Artifact{
+			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:   "mybin",
 				Path:   "whatever",
 				Goarch: goarch,
@@ -118,7 +118,7 @@ func TestRunPipe(t *testing.T) {
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(artifact.Artifact{
+			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:   "mybin",
 				Path:   binPath,
 				Goarch: goarch,
@@ -153,7 +153,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 			},
 		},
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Goos:   "linux",
 		Goarch: "amd64",
@@ -178,7 +178,7 @@ func TestNoBuildsFound(t *testing.T) {
 			},
 		},
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Goos:   "linux",
 		Goarch: "amd64",
@@ -214,7 +214,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 	ctx.Git = context.GitInfo{
 		CurrentTag: "v1.2.3",
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "mybin", "mybin"),
 		Goos:   "linux",
@@ -244,7 +244,7 @@ func TestInvalidConfig(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "mybin", "mybin"),
 		Goos:   "linux",

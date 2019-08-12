@@ -545,7 +545,7 @@ func TestRunPipe(t *testing.T) {
 			for _, os := range []string{"linux", "darwin"} {
 				for _, arch := range []string{"amd64", "386"} {
 					for _, bin := range []string{"mybin", "anotherbin"} {
-						ctx.Artifacts.Add(artifact.Artifact{
+						ctx.Artifacts.Add(&artifact.Artifact{
 							Name:   bin,
 							Path:   filepath.Join(dist, "mybin", bin),
 							Goarch: arch,

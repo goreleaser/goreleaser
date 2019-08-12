@@ -100,7 +100,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	if err := run(ctx, cmd, env); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", options.Target)
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.Binary,
 		Path:   options.Path,
 		Name:   options.Name,

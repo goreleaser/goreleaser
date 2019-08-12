@@ -118,7 +118,7 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 	return &overrided, nil
 }
 
-func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries []artifact.Artifact) error {
+func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries []*artifact.Artifact) error {
 	overrided, err := mergeOverrides(fpm, format)
 	if err != nil {
 		return err
@@ -195,7 +195,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	if err := w.Close(); err != nil {
 		return errors.Wrap(err, "could not close package file")
 	}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.LinuxPackage,
 		Name:   name + "." + format,
 		Path:   path,

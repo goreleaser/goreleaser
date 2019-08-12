@@ -163,7 +163,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			}
 			fn(ctx)
-			ctx.Artifacts.Add(artifact.Artifact{
+			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:   "bar_bin.tar.gz",
 				Path:   "doesnt matter",
 				Goos:   "darwin",
@@ -175,7 +175,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			})
 			var path = filepath.Join(folder, "bin.tar.gz")
-			ctx.Artifacts.Add(artifact.Artifact{
+			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:   "bin.tar.gz",
 				Path:   path,
 				Goos:   "darwin",
@@ -244,7 +244,7 @@ func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 	f, err := ioutil.TempFile("", "")
 	assert.NoError(t, err)
 	defer f.Close()
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin1",
 		Path:   f.Name(),
 		Goos:   "darwin",
@@ -255,7 +255,7 @@ func TestRunPipeMultipleDarwin64Build(t *testing.T) {
 			"Format": "tar.gz",
 		},
 	})
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin2",
 		Path:   f.Name(),
 		Goos:   "darwin",
@@ -293,7 +293,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 			},
 		},
 	)
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
 		Path:   "doesnt mather",
 		Goos:   "darwin",
@@ -325,7 +325,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 	var path = filepath.Join(folder, "whatever.tar.gz")
 	_, err = os.Create(path)
 	assert.NoError(t, err)
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
 		Path:   path,
 		Goos:   "darwin",

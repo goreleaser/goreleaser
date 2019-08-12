@@ -63,7 +63,7 @@ func TestRunPipe(t *testing.T) {
 					},
 				},
 			)
-			var darwinBuild = artifact.Artifact{
+			var darwinBuild = &artifact.Artifact{
 				Goos:   "darwin",
 				Goarch: "amd64",
 				Name:   "mybin",
@@ -74,7 +74,7 @@ func TestRunPipe(t *testing.T) {
 					"ID":     "default",
 				},
 			}
-			var windowsBuild = artifact.Artifact{
+			var windowsBuild = &artifact.Artifact{
 				Goos:   "windows",
 				Goarch: "amd64",
 				Name:   "mybin.exe",
@@ -102,8 +102,8 @@ func TestRunPipe(t *testing.T) {
 			require.Equal(tt, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
 			require.Equal(tt, "foobar_0.0.1_windows_amd64.zip", windows.Name)
 
-			require.Equal(t, []artifact.Artifact{darwinBuild}, darwin.Extra["Builds"].([]artifact.Artifact))
-			require.Equal(t, []artifact.Artifact{windowsBuild}, windows.Extra["Builds"].([]artifact.Artifact))
+			require.Equal(t, []*artifact.Artifact{darwinBuild}, darwin.Extra["Builds"].([]*artifact.Artifact))
+			require.Equal(t, []*artifact.Artifact{windowsBuild}, windows.Extra["Builds"].([]*artifact.Artifact))
 
 			if format == "tar.gz" {
 				// Check archive contents
@@ -195,7 +195,7 @@ func TestRunPipeBinary(t *testing.T) {
 	)
 	ctx.Version = "0.0.1"
 	ctx.Git.CurrentTag = "v0.0.1"
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Name:   "mybin",
@@ -206,7 +206,7 @@ func TestRunPipeBinary(t *testing.T) {
 			"ID":     "default",
 		},
 	})
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "windows",
 		Goarch: "amd64",
 		Name:   "mybin.exe",
@@ -241,7 +241,7 @@ func TestRunPipeDistRemoved(t *testing.T) {
 		},
 	)
 	ctx.Git.CurrentTag = "v0.0.1"
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "windows",
 		Goarch: "amd64",
 		Name:   "mybin.exe",
@@ -280,7 +280,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 		},
 	)
 	ctx.Git.CurrentTag = "v0.0.1"
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Name:   "mybin",
@@ -315,7 +315,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 		},
 	)
 	ctx.Git.CurrentTag = "v0.0.1"
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Name:   "mybin",
@@ -351,7 +351,7 @@ func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
 		},
 	)
 	ctx.Git.CurrentTag = "v0.0.1"
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Name:   "mybin",
@@ -395,7 +395,7 @@ func TestRunPipeWrap(t *testing.T) {
 		},
 	)
 	ctx.Git.CurrentTag = "v0.0.1"
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Name:   "mybin",
@@ -531,7 +531,7 @@ func TestBinaryOverride(t *testing.T) {
 				},
 			)
 			ctx.Git.CurrentTag = "v0.0.1"
-			ctx.Artifacts.Add(artifact.Artifact{
+			ctx.Artifacts.Add(&artifact.Artifact{
 				Goos:   "darwin",
 				Goarch: "amd64",
 				Name:   "mybin",
@@ -542,7 +542,7 @@ func TestBinaryOverride(t *testing.T) {
 					"ID":     "default",
 				},
 			})
-			ctx.Artifacts.Add(artifact.Artifact{
+			ctx.Artifacts.Add(&artifact.Artifact{
 				Goos:   "windows",
 				Goarch: "amd64",
 				Name:   "mybin.exe",
@@ -599,7 +599,7 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 			},
 		},
 	)
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "amd64",
 		Name:   "mybin",
@@ -610,7 +610,7 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 			"ID":     "default",
 		},
 	})
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "windows",
 		Goarch: "amd64",
 		Name:   "mybin.exe",

@@ -35,12 +35,12 @@ func TestPipe(t *testing.T) {
 	)
 	ctx.Git.CurrentTag = "1.2.3"
 	ctx.Env = map[string]string{"FOO": "bar"}
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: binary,
 		Path: file,
 		Type: artifact.UploadableBinary,
 	})
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: binary + ".tar.gz",
 		Path: file,
 		Type: artifact.UploadableArchive,
@@ -69,7 +69,7 @@ func TestPipeFileNotExist(t *testing.T) {
 		},
 	)
 	ctx.Git.CurrentTag = "1.2.3"
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "nope",
 		Path: "/nope",
 		Type: artifact.UploadableBinary,
@@ -97,7 +97,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 				},
 			)
 			ctx.Git.CurrentTag = "1.2.3"
-			ctx.Artifacts.Add(artifact.Artifact{
+			ctx.Artifacts.Add(&artifact.Artifact{
 				Name: "whatever",
 				Type: artifact.UploadableBinary,
 			})
@@ -122,7 +122,7 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 		},
 	)
 	ctx.Git.CurrentTag = "1.2.3"
-	ctx.Artifacts.Add(artifact.Artifact{
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "whatever",
 		Type: artifact.UploadableBinary,
 	})

@@ -81,7 +81,7 @@ func Test_doRun(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        args
-		artifacts   []artifact.Artifact
+		artifacts   []*artifact.Artifact
 		assertError errChecker
 	}{
 		{
@@ -120,7 +120,7 @@ func Test_doRun(t *testing.T) {
 				},
 				&DummyClient{},
 			},
-			[]artifact.Artifact{
+			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
@@ -163,7 +163,7 @@ func Test_doRun(t *testing.T) {
 				},
 				&DummyClient{},
 			},
-			[]artifact.Artifact{
+			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
@@ -205,7 +205,7 @@ func Test_doRun(t *testing.T) {
 				},
 				&DummyClient{},
 			},
-			[]artifact.Artifact{
+			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_linux_amd64.tar.gz", Goos: "linux", Goarch: "amd64"},
 				{Name: "foo_1.0.1_linux_386.tar.gz", Goos: "linux", Goarch: "386"},
 			},
@@ -239,7 +239,7 @@ func Test_doRun(t *testing.T) {
 				},
 				&DummyClient{},
 			},
-			[]artifact.Artifact{
+			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
@@ -282,7 +282,7 @@ func Test_doRun(t *testing.T) {
 				},
 				&DummyClient{},
 			},
-			[]artifact.Artifact{
+			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
@@ -321,7 +321,7 @@ func Test_doRun(t *testing.T) {
 				},
 				&DummyClient{},
 			},
-			[]artifact.Artifact{
+			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
@@ -360,7 +360,7 @@ func Test_doRun(t *testing.T) {
 				},
 				&DummyClient{},
 			},
-			[]artifact.Artifact{
+			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
@@ -403,7 +403,7 @@ func Test_doRun(t *testing.T) {
 				},
 				&DummyClient{},
 			},
-			[]artifact.Artifact{
+			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
@@ -513,14 +513,14 @@ func Test_buildManifest(t *testing.T) {
 			var ctx = tt.ctx
 			err := Pipe{}.Default(ctx)
 			require.NoError(t, err)
-			out, err := buildManifest(ctx, []artifact.Artifact{
+			out, err := buildManifest(ctx, []*artifact.Artifact{
 				{
 					Name:   "foo_1.0.1_windows_amd64.tar.gz",
 					Goos:   "windows",
 					Goarch: "amd64",
 					Path:   file,
 					Extra: map[string]interface{}{
-						"Builds": []artifact.Artifact{
+						"Builds": []*artifact.Artifact{
 							{
 								Extra: map[string]interface{}{
 									"Binary": "foo",
@@ -540,7 +540,7 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "386",
 					Path:   file,
 					Extra: map[string]interface{}{
-						"Builds": []artifact.Artifact{
+						"Builds": []*artifact.Artifact{
 							{
 								Extra: map[string]interface{}{
 									"Binary": "foo",

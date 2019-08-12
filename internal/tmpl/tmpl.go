@@ -82,7 +82,7 @@ func (t *Template) WithEnv(e map[string]string) *Template {
 }
 
 // WithArtifact populates fields from the artifact and replacements
-func (t *Template) WithArtifact(a artifact.Artifact, replacements map[string]string) *Template {
+func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]string) *Template {
 	var bin = a.Extra[binary]
 	if bin == nil {
 		bin = t.fields[projectName]
