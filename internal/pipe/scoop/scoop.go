@@ -56,7 +56,8 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return pipe.Skip("scoop section is not configured")
 	}
 
-	// TODO mavogel: check if release pipe is not configured!
+	// TODO mavogel: in another PR
+	// check if release pipe is not configured!
 	// if ctx.Config.Release.Disable {
 	// }
 

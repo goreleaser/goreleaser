@@ -271,14 +271,13 @@ func (c *gitlabClient) Upload(
 		"url": releaseLink.URL,
 	}).Debug("created release link")
 
-	// set it to context for following pipes
 	fileUploadHash, err := extractProjectFileHashFrom(projectFile.URL)
 	if err != nil {
 		return err
 	}
 	// we set this hash to be able to download the file
 	// in following publish pipes like brew, scoop
-	artifact.SetUploadHash(fileUploadHash) // TODO mvogel
+	artifact.SetUploadHash(fileUploadHash)
 
 	return err
 }

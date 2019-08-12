@@ -119,7 +119,8 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return pipe.Skip("brew section is not configured")
 	}
 
-	// TODO mavogel: check if release pipe is not configured!
+	// TODO mavogel: in another PR
+	// check if release pipe is not configured!
 	// if ctx.Config.Release.Disable {
 	// }
 
