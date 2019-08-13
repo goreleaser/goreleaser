@@ -249,7 +249,7 @@ func setEnv(env map[string]string) {
 }
 
 func unsetEnv(env map[string]string) {
-	for k, _ := range env {
+	for k := range env {
 		os.Unsetenv(k)
 	}
 }
