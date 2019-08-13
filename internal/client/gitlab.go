@@ -2,15 +2,21 @@ package client
 
 import (
 	"crypto/tls"
+	"errors"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/xanzy/go-gitlab"
 )
+
+// ErrExtractHashFromFileUploadURL indicates the file upload hash could not ne extracted from the url
+var ErrExtractHashFromFileUploadURL = errors.New("could not extract hash from gitlab file upload url")
 
 type gitlabClient struct {
 	client *gitlab.Client
@@ -36,18 +42,113 @@ func NewGitLab(ctx *context.Context) (Client, error) {
 	return &gitlabClient{client: client}, nil
 }
 
-// CreateFile creates a file in the repository at a given path
-// or updates the file if it exists
+// CreateFile gets a file in the repository at a given path
+// and updates if it exists or creates it for later pipes in the pipeline
 func (c *gitlabClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
 	repo config.Repo,
-	content []byte,
-	path,
-	message string,
+	content []byte, // the content of the formula.rb
+	path, // the path to the formula.rb
+	message string, // the commit msg
 ) error {
-	// Used by brew and scoop, hence those two pipes are
-	// only supported for github atm. So we disable it for now.
+	fileName := path
+	// we assume having the formula in the master branch only
+	ref := "master"
+	branch := "master"
+	opts := &gitlab.GetFileOptions{Ref: &ref}
+	castedContent := string(content)
+	projectID := repo.Owner + "/" + repo.Name
+
+	log.WithFields(log.Fields{
+		"owner": repo.Owner,
+		"name":  repo.Name,
+	}).Debug("projectID at brew")
+
+	_, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
+	if err != nil && (res == nil || res.StatusCode != 404) {
+		log.WithFields(log.Fields{
+			"fileName":   fileName,
+			"ref":        ref,
+			"projectID":  projectID,
+			"statusCode": res.StatusCode,
+			"err":        err.Error(),
+		}).Error("error getting file for brew formula")
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"fileName":  fileName,
+		"branch":    branch,
+		"projectID": projectID,
+	}).Debug("found already existing brew formula file")
+
+	if res.StatusCode == 404 {
+		log.WithFields(log.Fields{
+			"fileName":  fileName,
+			"ref":       ref,
+			"projectID": projectID,
+		}).Debug("creating brew formula")
+		createOpts := &gitlab.CreateFileOptions{
+			AuthorName:    &commitAuthor.Name,
+			AuthorEmail:   &commitAuthor.Email,
+			Content:       &castedContent,
+			Branch:        &branch,
+			CommitMessage: &message,
+		}
+		fileInfo, res, err := c.client.RepositoryFiles.CreateFile(projectID, fileName, createOpts)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"fileName":   fileName,
+				"branch":     branch,
+				"projectID":  projectID,
+				"statusCode": res.StatusCode,
+				"err":        err.Error(),
+			}).Error("error creating brew formula file")
+			return err
+		}
+
+		log.WithFields(log.Fields{
+			"fileName":  fileName,
+			"branch":    branch,
+			"projectID": projectID,
+			"filePath":  fileInfo.FilePath,
+		}).Debug("created brew formula file")
+		return nil
+	}
+
+	log.WithFields(log.Fields{
+		"fileName":  fileName,
+		"ref":       ref,
+		"projectID": projectID,
+	}).Debug("updating brew formula")
+	updateOpts := &gitlab.UpdateFileOptions{
+		AuthorName:    &commitAuthor.Name,
+		AuthorEmail:   &commitAuthor.Email,
+		Content:       &castedContent,
+		Branch:        &branch,
+		CommitMessage: &message,
+	}
+
+	updateFileInfo, res, err := c.client.RepositoryFiles.UpdateFile(projectID, fileName, updateOpts)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"fileName":   fileName,
+			"branch":     branch,
+			"projectID":  projectID,
+			"statusCode": res.StatusCode,
+			"err":        err.Error(),
+		}).Error("error updating brew formula file")
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"fileName":   fileName,
+		"branch":     branch,
+		"projectID":  projectID,
+		"filePath":   updateFileInfo.FilePath,
+		"statusCode": res.StatusCode,
+	}).Debug("updated brew formula file")
 	return nil
 }
 
@@ -128,7 +229,7 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 func (c *gitlabClient) Upload(
 	ctx *context.Context,
 	releaseID string,
-	name string,
+	artifact *artifact.Artifact,
 	file *os.File,
 ) error {
 	projectID := ctx.Config.Release.GitLab.Owner + "/" + ctx.Config.Release.GitLab.Name
@@ -150,9 +251,9 @@ func (c *gitlabClient) Upload(
 	}).Debug("uploaded file")
 
 	gitlabBaseURL := ctx.Config.GitLabURLs.Download
-	// projectFile from upload: /uploads/<sha>/filename.txt
-	relativeUploadURL := projectFile.URL
-	linkURL := gitlabBaseURL + "/" + projectID + relativeUploadURL
+	// projectFile.URL from upload: /uploads/<hash>/filename.txt
+	linkURL := gitlabBaseURL + "/" + projectID + projectFile.URL
+	name := artifact.Name
 	releaseLink, _, err := c.client.ReleaseLinks.CreateReleaseLink(
 		projectID,
 		releaseID,
@@ -170,5 +271,36 @@ func (c *gitlabClient) Upload(
 		"url": releaseLink.URL,
 	}).Debug("created release link")
 
+	fileUploadHash, err := extractProjectFileHashFrom(projectFile.URL)
+	if err != nil {
+		return err
+	}
+
+	// for checksums.txt the field is nil, so we initialize it
+	if artifact.Extra == nil {
+		artifact.Extra = make(map[string]interface{})
+	}
+	// we set this hash to be able to download the file
+	// in following publish pipes like brew, scoop
+	artifact.Extra["ArtifactUploadHash"] = fileUploadHash
+
 	return err
+}
+
+// extractProjectFileHashFrom extracts the hash from the
+// relative project file url of the format '/uploads/<hash>/filename.ext'
+func extractProjectFileHashFrom(projectFileURL string) (string, error) {
+	log.WithField("projectFileURL", projectFileURL).Debug("extract file hash from")
+	splittedProjectFileURL := strings.Split(projectFileURL, "/")
+	if len(splittedProjectFileURL) != 4 {
+		log.WithField("projectFileURL", projectFileURL).Debug("could not extract file hash")
+		return "", ErrExtractHashFromFileUploadURL
+	}
+
+	fileHash := splittedProjectFileURL[2]
+	log.WithFields(log.Fields{
+		"projectFileURL": projectFileURL,
+		"fileHash":       fileHash,
+	}).Debug("extracted file hash")
+	return fileHash, nil
 }

@@ -142,5 +142,5 @@ func upload(ctx *context.Context, client client.Client, releaseID string, artifa
 	}
 	defer file.Close() // nolint: errcheck
 	log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
-	return client.Upload(ctx, releaseID, artifact.Name, file)
+	return client.Upload(ctx, releaseID, artifact, file)
 }

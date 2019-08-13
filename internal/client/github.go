@@ -10,6 +10,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/google/go-github/v25/github"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -150,7 +151,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 func (c *githubClient) Upload(
 	ctx *context.Context,
 	releaseID string,
-	name string,
+	artifact *artifact.Artifact,
 	file *os.File,
 ) error {
 	githubReleaseID, err := strconv.ParseInt(releaseID, 10, 64)
@@ -163,7 +164,7 @@ func (c *githubClient) Upload(
 		ctx.Config.Release.GitHub.Name,
 		githubReleaseID,
 		&github.UploadOptions{
-			Name: name,
+			Name: artifact.Name,
 		},
 		file,
 	)

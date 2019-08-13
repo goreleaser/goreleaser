@@ -374,7 +374,7 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID string, name string, file *os.File) error {
+func (client *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) error {
 	client.Lock.Lock()
 	defer client.Lock.Unlock()
 	// ensure file is read to better mimic real behavior
@@ -390,6 +390,6 @@ func (client *DummyClient) Upload(ctx *context.Context, releaseID string, name s
 		return errors.New("upload failed, should retry")
 	}
 	client.UploadedFile = true
-	client.UploadedFileNames = append(client.UploadedFileNames, name)
+	client.UploadedFileNames = append(client.UploadedFileNames, artifact.Name)
 	return nil
 }

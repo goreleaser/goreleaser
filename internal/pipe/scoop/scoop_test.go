@@ -28,6 +28,7 @@ func TestDefault(t *testing.T) {
 	defer back()
 
 	var ctx = &context.Context{
+		TokenType: context.TokenTypeGitHub,
 		Config: config.Project{
 			ProjectName: "barr",
 			Builds: []config.Build{
@@ -85,9 +86,10 @@ func Test_doRun(t *testing.T) {
 		assertError errChecker
 	}{
 		{
-			"valid",
+			"valid public github",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -127,9 +129,10 @@ func Test_doRun(t *testing.T) {
 			shouldNotErr,
 		},
 		{
-			"valid",
+			"valid enterprise github",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -170,9 +173,171 @@ func Test_doRun(t *testing.T) {
 			shouldNotErr,
 		},
 		{
+			"valid public gitlab",
+			args{
+				&context.Context{
+					TokenType: context.TokenTypeGitLab,
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.1",
+					},
+					Version:   "1.0.1",
+					Artifacts: artifact.New(),
+					Config: config.Project{
+						Builds: []config.Build{
+							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
+						},
+						Dist:        ".",
+						ProjectName: "run-pipe",
+						Archive: config.Archive{
+							Format: "tar.gz",
+						},
+						Release: config.Release{
+							GitLab: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+						},
+						Scoop: config.Scoop{
+							Bucket: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://gitlab.com/goreleaser",
+						},
+					},
+				},
+				&DummyClient{},
+			},
+			[]*artifact.Artifact{
+				{
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+					},
+				},
+			},
+			shouldNotErr,
+		},
+		{
+			"valid enterprise gitlab",
+			args{
+				&context.Context{
+					TokenType: context.TokenTypeGitLab,
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.1",
+					},
+					Version:   "1.0.1",
+					Artifacts: artifact.New(),
+					Config: config.Project{
+						GitHubURLs: config.GitHubURLs{Download: "https://api.custom.gitlab.enterprise.com"},
+						Builds: []config.Build{
+							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
+						},
+						Dist:        ".",
+						ProjectName: "run-pipe",
+						Archive: config.Archive{
+							Format: "tar.gz",
+						},
+						Release: config.Release{
+							GitHub: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+						},
+						Scoop: config.Scoop{
+							Bucket: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://gitlab.com/goreleaser",
+						},
+					},
+				},
+				&DummyClient{},
+			},
+			[]*artifact.Artifact{
+				{
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+					},
+				},
+			},
+			shouldNotErr,
+		},
+		{
+			"token type not implemented for pipe",
+			args{
+				&context.Context{
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.1",
+					},
+					Version:   "1.0.1",
+					Artifacts: artifact.New(),
+					Config: config.Project{
+						Builds: []config.Build{
+							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
+						},
+						Dist:        ".",
+						ProjectName: "run-pipe",
+						Archive: config.Archive{
+							Format: "tar.gz",
+						},
+						Release: config.Release{
+							GitHub: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+						},
+						Scoop: config.Scoop{
+							Bucket: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						},
+					},
+				},
+				&DummyClient{},
+			},
+			[]*artifact.Artifact{
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
+				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
+			},
+			shouldErr(ErrTokenTypeNotImplementedForScoop.Error()),
+		},
+		{
 			"no windows build",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -215,6 +380,7 @@ func Test_doRun(t *testing.T) {
 			"no scoop",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -249,6 +415,7 @@ func Test_doRun(t *testing.T) {
 			"no publish",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -292,6 +459,7 @@ func Test_doRun(t *testing.T) {
 			"is draft",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -331,6 +499,7 @@ func Test_doRun(t *testing.T) {
 			"no archive",
 			args{
 				&context.Context{
+					TokenType: context.TokenTypeGitHub,
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
@@ -361,53 +530,10 @@ func Test_doRun(t *testing.T) {
 				&DummyClient{},
 			},
 			[]*artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
-			},
-			shouldErr("archive format is binary"),
-		},
-		{
-			"valid but non github release",
-			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitLab,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
-					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
-						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
-						},
-						Release: config.Release{
-							GitLab: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
-						Scoop: config.Scoop{
-							Bucket: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
-						},
-					},
-				},
-				&DummyClient{},
-			},
-			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
-			shouldErr("scoop pipe is only configured for github releases"),
+			shouldErr("archive format is binary"),
 		},
 	}
 	for _, tt := range tests {
@@ -435,6 +561,7 @@ func Test_buildManifest(t *testing.T) {
 		{
 			"testdata/test_buildmanifest.json.golden",
 			&context.Context{
+				TokenType: context.TokenTypeGitHub,
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
 				},
@@ -470,6 +597,7 @@ func Test_buildManifest(t *testing.T) {
 		{
 			"testdata/test_buildmanifest_url_template.json.golden",
 			&context.Context{
+				TokenType: context.TokenTypeGitHub,
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
 				},
@@ -506,6 +634,46 @@ func Test_buildManifest(t *testing.T) {
 				},
 			},
 		},
+		{
+			"testdata/test_buildmanifest_gitlab_url_template.json.golden",
+			&context.Context{
+				TokenType: context.TokenTypeGitLab,
+				Git: context.GitInfo{
+					CurrentTag: "v1.0.1",
+				},
+				Version:   "1.0.1",
+				Artifacts: artifact.New(),
+				Config: config.Project{
+					GitLabURLs: config.GitLabURLs{
+						Download: "https://gitlab.com",
+					},
+					Builds: []config.Build{
+						{Binary: "test"},
+					},
+					Dist:        ".",
+					ProjectName: "run-pipe",
+					Archive: config.Archive{
+						Format: "tar.gz",
+					},
+					Release: config.Release{
+						GitHub: config.Repo{
+							Owner: "test",
+							Name:  "test",
+						},
+					},
+					Scoop: config.Scoop{
+						Bucket: config.Repo{
+							Owner: "test",
+							Name:  "test",
+						},
+						Description: "A run pipe test formula",
+						Homepage:    "https://gitlab.com/goreleaser",
+						URLTemplate: "http://gitlab.mycompany.com/foo/bar/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
+						Persist:     []string{"data.cfg", "etc"},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -520,6 +688,7 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "amd64",
 					Path:   file,
 					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
 						"Builds": []*artifact.Artifact{
 							{
 								Extra: map[string]interface{}{
@@ -540,6 +709,7 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "386",
 					Path:   file,
 					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
 						"Builds": []*artifact.Artifact{
 							{
 								Extra: map[string]interface{}{
@@ -583,6 +753,6 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID string, name string, file *os.File) (err error) {
+func (client *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error) {
 	return
 }

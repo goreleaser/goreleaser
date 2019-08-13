@@ -5,7 +5,7 @@ hideFromIndex: true
 weight: 90
 ---
 
-After releasing to GitHub (GitLab is not supported yet), GoReleaser can generate and publish a _homebrew-tap_
+After releasing to GitHub or GitLab, GoReleaser can generate and publish a _homebrew-tap_
 recipe into a repository that you have access to.
 
 The `brew` section specifies how the formula should be created.
@@ -29,13 +29,23 @@ brews:
     - foo
     - bar
 
-    # Repository to push the tap to.
+
+    # NOTE: make sure the url_template, the token and given repo (github or gitlab) owner and name are from the
+    # same kind. We will probably unify this in the next major version like it is done with scoop.
+
+    # Github repository to push the tap to.
     github:
-      owner: user
+      owner: github-user
       name: homebrew-tap
 
-    # Template for the url.
-    # Default is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    # OR Gitlab
+    # gitlab:
+    #   owner: gitlab-user
+    #   name: homebrew-tap
+
+    # Template for the url which is determined by the given Token (github or gitlab)
+    # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}"
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Allows you to set a custom download strategy.
