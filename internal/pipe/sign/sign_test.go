@@ -165,7 +165,8 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 
 	// create some fake artifacts
 	var artifacts = []string{"artifact1", "artifact2", "artifact3", "checksum"}
-	os.Mkdir(filepath.Join(tmpdir, "linux_amd64"), os.ModePerm)
+	err = os.Mkdir(filepath.Join(tmpdir, "linux_amd64"), os.ModePerm)
+	assert.NoError(t, err)
 	for _, f := range artifacts {
 		file := filepath.Join(tmpdir, f)
 		assert.NoError(t, ioutil.WriteFile(file, []byte("foo"), 0644))
