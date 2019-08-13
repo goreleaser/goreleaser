@@ -41,7 +41,8 @@ release:
   disable: true
 ```
 
-Seconds let's see what can be customized in the `release` section for GitLab:
+Second, let's see what can be customized in the `release` section for GitLab.
+**Note** that only GitLab `v11.7+` are supported for releases:
 
 ```yml
 # .goreleaser.yml
