@@ -35,10 +35,8 @@ func Test_awsSession(t *testing.T) {
 	tests := []struct {
 		name             string
 		args             args
-		wantValidSession bool
 		want             *session.Session
 		before           func()
-		after            func()
 		expectToken      string
 		endpoint         string
 		S3ForcePathStyle bool
