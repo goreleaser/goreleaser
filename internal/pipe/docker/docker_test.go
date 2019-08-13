@@ -589,7 +589,6 @@ func TestBuildCommand(t *testing.T) {
 	images := []string{"goreleaser/test_build_flag", "goreleaser/test_multiple_tags"}
 	tests := []struct {
 		name   string
-		images []string
 		flags  []string
 		expect []string
 	}{

@@ -44,6 +44,14 @@ var defaultTemplateData = templateData{
 		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
 		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 	},
+	Arm: downloadable{
+		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm.tar.gz",
+		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+	},
+	Arm64: downloadable{
+		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
+		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+	},
 	Name:    "Test",
 	Version: "0.1.3",
 	Caveats: []string{},
