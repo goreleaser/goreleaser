@@ -190,6 +190,19 @@ func TestDefaultWithGitlab(t *testing.T) {
 	assert.Equal(t, "gitlabowner", ctx.Config.Release.GitLab.Owner)
 }
 
+func TestDefaultWithGitea(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@gitea.example.com:giteaowner/gitearepo.git")
+
+	var ctx = context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitea
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.Equal(t, "gitearepo", ctx.Config.Release.Gitea.Name)
+	assert.Equal(t, "giteaowner", ctx.Config.Release.Gitea.Owner)
+}
+
 func TestDefaultPreReleaseAuto(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
@@ -346,6 +359,10 @@ func TestDefaultMultipleReleasesDefined(t *testing.T) {
 			GitLab: config.Repo{
 				Owner: "gitlabOwner",
 				Name:  "gitlabName",
+			},
+			Gitea: config.Repo{
+				Owner: "giteaOwner",
+				Name:  "giteaName",
 			},
 		},
 	})

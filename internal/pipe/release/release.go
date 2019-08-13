@@ -18,18 +18,28 @@ import (
 
 // ErrMultipleReleases indicates that multiple releases are defined. ATM only one of them is allowed
 // See https://github.com/goreleaser/goreleaser/pull/809
-var ErrMultipleReleases = errors.New("both gitlab and github releases are defined. Only one is allowed")
+var ErrMultipleReleases = errors.New("multiple releases are defined. Only one is allowed")
 
 // Pipe for github release
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "GitHub/GitLab Releases"
+	return "GitHub/GitLab/Gitea Releases"
 }
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Release.GitHub.String() != "" && ctx.Config.Release.GitLab.String() != "" {
+	numOfReleases := 0
+	if ctx.Config.Release.GitHub.String() != "" {
+		numOfReleases++
+	}
+	if ctx.Config.Release.GitLab.String() != "" {
+		numOfReleases++
+	}
+	if ctx.Config.Release.Gitea.String() != "" {
+		numOfReleases++
+	}
+	if numOfReleases > 1 {
 		return ErrMultipleReleases
 	}
 
@@ -37,17 +47,31 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Release.NameTemplate = "{{.Tag}}"
 	}
 
-	// Note: do a switch on ctx.TokenType later if more clients are added
-	if ctx.TokenType == context.TokenTypeGitLab {
-		if ctx.Config.Release.GitLab.Name == "" {
-			repo, err := remoteRepo()
-			if err != nil {
-				return err
+	switch ctx.TokenType {
+	case context.TokenTypeGitLab:
+		{
+			if ctx.Config.Release.GitLab.Name == "" {
+				repo, err := remoteRepo()
+				if err != nil {
+					return err
+				}
+				ctx.Config.Release.GitLab = repo
 			}
-			ctx.Config.Release.GitLab = repo
-		}
 
-		return nil
+			return nil
+		}
+	case context.TokenTypeGitea:
+		{
+			if ctx.Config.Release.Gitea.Name == "" {
+				repo, err := remoteRepo()
+				if err != nil {
+					return err
+				}
+				ctx.Config.Release.Gitea = repo
+			}
+
+			return nil
+		}
 	}
 
 	// We keep github as default for now

@@ -1,6 +1,8 @@
 module github.com/goreleaser/goreleaser
 
 require (
+	code.gitea.io/gitea v1.10.0-dev.0.20190711052757-a0820e09fbf7
+	code.gitea.io/sdk/gitea v0.0.0-20190802154435-bbad0d915e44
 	github.com/Masterminds/semver v1.4.2
 	github.com/apex/log v1.1.0
 	github.com/aws/aws-sdk-go v1.19.16
@@ -10,9 +12,9 @@ require (
 	github.com/google/go-github/v25 v25.0.1
 	github.com/goreleaser/nfpm v0.12.0
 	github.com/imdario/mergo v0.3.6
+	github.com/jarcoal/httpmock v0.0.0-20180424175123-9c70cfe4a1da
 	github.com/kamilsk/retry/v4 v4.0.0
 	github.com/mattn/go-colorable v0.0.9 // indirect
-	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mattn/go-zglob v0.0.0-20180803001819-2ea3427bfa53
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.8.1
@@ -23,7 +25,6 @@ require (
 	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
-	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
-	gopkg.in/yaml.v2 v2.2.1
+	gopkg.in/yaml.v2 v2.2.2
 )

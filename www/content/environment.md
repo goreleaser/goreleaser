@@ -47,7 +47,7 @@ If none are set, they default to GitHub's public URLs.
 
 ## GitLab Enterprise or private hosted
 
-You can use GoReleaser with GitHub Enterprise by providing its URLs in
+You can use GoReleaser with GitLab Enterprise by providing its URLs in
 the `.goreleaser.yml` configuration file:
 
 ```yaml
@@ -60,6 +60,19 @@ gitlab_urls:
 ```
 
 If none are set, they default to GitLab's public URLs.
+
+## Gitea
+
+You can use GoReleaser with Gitea by providing its URLs in
+the `.goreleaser.yml` configuration file:
+
+```yaml
+# .goreleaser.yml
+gitea_urls:
+  api: https://gitea.myinstance.com/api/v1/
+  # set to true if you use a self-signed certificate
+  skip_tls_verify: false
+```
 
 ## The dist folder
 
