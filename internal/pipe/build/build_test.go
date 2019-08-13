@@ -399,8 +399,9 @@ func TestHookEnvs(t *testing.T) {
 		t.Skip("this fails on travis for some reason")
 		var shell = `#!/bin/sh -e
 touch "$BAR"`
-		ioutil.WriteFile(filepath.Join(tmp, "test.sh"), []byte(shell), 0750)
-		var err = runHook(context.New(config.Project{
+		err := ioutil.WriteFile(filepath.Join(tmp, "test.sh"), []byte(shell), 0750)
+		assert.NoError(t, err)
+		err = runHook(context.New(config.Project{
 			Builds: []config.Build{
 				build,
 			},
