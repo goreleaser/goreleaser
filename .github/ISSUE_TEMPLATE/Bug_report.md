@@ -28,6 +28,7 @@ A clear and concise description of what you expected to happen.
 - OS: [e.g. mac, linux]
 - OS version: [uname -a]
 - GoReleaser Version [goreleaser --version]
+- GitLab version (if using a private hosted one)
 
 **Additional context**
 Add any other context about the problem here. Full output log with debug on

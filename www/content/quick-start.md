@@ -96,6 +96,9 @@ The release should also look like this:
     src="https://user-images.githubusercontent.com/8409778/59390011-55fcdf80-8d70-11e9-840f-c568ddc0e965.png">
 </a>
 
+**Note:** Releasing to a private-hosted GitLab CE will only work for version `v11.7+`, because the release feature
+was introduced in this [version](https://docs.gitlab.com/ee/user/project/releases/index.html).
+
 ## Dry run
 
 If you want to test everything before doing a release "for real", you can
