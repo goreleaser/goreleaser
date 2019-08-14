@@ -404,8 +404,9 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 		Version: "1.2.3",
 		Env:     map[string]string{"FOO": "123"},
 	}
-	flags, err := tmpl.New(ctx).
-		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }}`)
+	var artifact = &artifact.Artifact{Goarch: "amd64"}
+	flags, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).
+		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }} -X main.arch={{.Arch}}`)
 	assert.NoError(t, err)
 	assert.Contains(t, flags, "-s -w")
 	assert.Contains(t, flags, "-X main.version=1.2.3")
@@ -414,6 +415,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	assert.Contains(t, flags, fmt.Sprintf("-X main.date=%d", time.Now().Year()))
 	assert.Contains(t, flags, fmt.Sprintf("-X main.time=%d", time.Now().Year()))
 	assert.Contains(t, flags, `-X "main.foo=123"`)
+	assert.Contains(t, flags, `-X main.arch=amd64`)
 }
 
 func TestInvalidTemplate(t *testing.T) {
@@ -437,19 +439,39 @@ func TestProcessFlags(t *testing.T) {
 	}
 	ctx.Git.CurrentTag = "5.6.7"
 
+	var artifact = &artifact.Artifact{
+		Name:   "name",
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Goarm:  "7",
+		Extra: map[string]interface{}{
+			"Binary": "binary",
+		},
+	}
+
 	var source = []string{
-		"{{.Version}}",
 		"flag",
+		"{{.Version}}",
+		"{{.Os}}",
+		"{{.Arch}}",
+		"{{.Arm}}",
+		"{{.Binary}}",
+		"{{.ArtifactName}}",
 	}
 
 	var expected = []string{
-		"-testflag=1.2.3",
 		"-testflag=flag",
+		"-testflag=1.2.3",
+		"-testflag=darwin",
+		"-testflag=amd64",
+		"-testflag=7",
+		"-testflag=binary",
+		"-testflag=name",
 	}
 
-	flags, err := processFlags(ctx, []string{}, source, "-testflag=")
+	flags, err := processFlags(ctx, artifact, []string{}, source, "-testflag=")
 	assert.NoError(t, err)
-	assert.Len(t, flags, 2)
+	assert.Len(t, flags, 7)
 	assert.Equal(t, expected, flags)
 }
 
@@ -462,7 +484,7 @@ func TestProcessFlagsInvalid(t *testing.T) {
 
 	var expected = `template: tmpl:1: unexpected "}" in operand`
 
-	flags, err := processFlags(ctx, []string{}, source, "-testflag=")
+	flags, err := processFlags(ctx, &artifact.Artifact{}, []string{}, source, "-testflag=")
 	assert.EqualError(t, err, expected)
 	assert.Nil(t, flags)
 }
@@ -478,7 +500,6 @@ func TestJoinLdFlags(t *testing.T) {
 
 	for _, test := range tests {
 		joinedLdFlags := joinLdFlags(test.input)
-
 		assert.Equal(t, joinedLdFlags, test.output)
 	}
 }
