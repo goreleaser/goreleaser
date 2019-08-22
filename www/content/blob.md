@@ -1,6 +1,8 @@
 ---
 title: Blob
 series: customization
+hideFromIndex: true
+weight: 114
 ---
 
 ## Customization
