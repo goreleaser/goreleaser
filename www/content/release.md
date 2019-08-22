@@ -83,6 +83,15 @@ release:
   disable: true
 ```
 
+To enable uploading `tar.gz` and `checksums.txt` files you need to add the following to your Gitea config in `app.ini`:
+```ini
+[attachment]
+ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|application/x-tgz|application/x-compressed-tar|text/plain
+```
+
+> Gitea versions earlier than 1.9.2 do not support uploading `checksums.txt` files because of a [bug](https://github.com/go-gitea/gitea/issues/7882)
+so you will have to enable all file types with `*/*`.
+
 **Note**: `draft` and `prerelease` are only supported by GitHub and Gitea.
 
 > Learn more about the [name template engine](/templates).
