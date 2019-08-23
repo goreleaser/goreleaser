@@ -4,17 +4,21 @@ weight: 20
 menu: true
 ---
 
-## GitHub Token
+## API Tokens
 
 GoReleaser requires either a GitHub API token with the `repo` scope selected to
-deploy the artifacts to GitHub **or** a GitLab API token with `api` scope.
-You can create one [here](https://github.com/settings/tokens/new) for GitHub or [here](https://gitlab.com/profile/personal_access_tokens) for GitLab.
+deploy the artifacts to GitHub **or** a GitLab API token with `api` scope **or** a Gitea API token.
+You can create one [here](https://github.com/settings/tokens/new) for GitHub
+or [here](https://gitlab.com/profile/personal_access_tokens) for GitLab
+or in `Settings | Applications | Generate New Token` page of your Gitea instance.
 
-This token should be added to the environment variables as `GITHUB_TOKEN` or a `GITLAB_TOKEN` respecively.
+This token should be added to the environment variables as `GITHUB_TOKEN` or `GITLAB_TOKEN` or `GITEA_TOKEN` respecively.
 Here is how to do it with Travis CI:
 [Defining Variables in Repository Settings](https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-Repository-Settings).
 
-Alternatively, you can provide the GitHub/GitLab token in a file. GoReleaser will check `~/.config/goreleaser/github_token` or `~/.config/goreleaser/gitlab_token` by default, you can change that in
+Alternatively, you can provide the GitHub/GitLab token in a file.
+GoReleaser will check `~/.config/goreleaser/github_token`, `~/.config/goreleaser/gitlab_token`
+and `~/.config/goreleaser/gitea_token` by default, you can change that in
 the `.goreleaser.yml` file:
 
 ```yaml
@@ -23,6 +27,7 @@ env_files:
   # use only one or release will fail!
   github_token: ~/.path/to/my/gh_token
   gitlab_token: ~/.path/to/my/gl_token
+  gitea_token: ~/.path/to/my/gitea_token
 ```
 
 **IMPORTANT**: you can define both env files, but the release process will fail
