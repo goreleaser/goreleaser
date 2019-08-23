@@ -30,8 +30,8 @@ env_files:
   gitea_token: ~/.path/to/my/gitea_token
 ```
 
-**IMPORTANT**: you can define both env files, but the release process will fail
-because both tokens are defined. Use only one.
+**IMPORTANT**: you can define multiple env files, but the release process will fail
+because multiple tokens are defined. Use only one.
 
 ## GitHub Enterprise
 
