@@ -55,10 +55,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	changelogStringJoiner := "\n"
-	if ctx.TokenType == context.TokenTypeGitLab {
-		// We need two or more whitespace to let gitlab flavoured markdown interpret
+	if ctx.TokenType == context.TokenTypeGitLab || ctx.TokenType == context.TokenTypeGitea {
+		// We need two or more whitespace to let markdown interpret
 		// it as newline. See https://docs.gitlab.com/ee/user/markdown.html#newlines for details
-		log.Debug("is gitlab changelog")
+		log.Debug("is gitlab or gitea changelog")
 		changelogStringJoiner = "   \n"
 	}
 	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v\n", strings.Join(entries, changelogStringJoiner))

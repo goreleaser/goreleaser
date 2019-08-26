@@ -43,6 +43,8 @@ brews:
     #   owner: gitlab-user
     #   name: homebrew-tap
 
+    # Gitea is not supported yet, but the support coming
+
     # Template for the url which is determined by the given Token (github or gitlab)
     # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}"

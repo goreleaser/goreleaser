@@ -31,5 +31,8 @@ func New(ctx *context.Context) (Client, error) {
 	if ctx.TokenType == context.TokenTypeGitLab {
 		return NewGitLab(ctx)
 	}
+	if ctx.TokenType == context.TokenTypeGitea {
+		return NewGitea(ctx)
+	}
 	return nil, nil
 }

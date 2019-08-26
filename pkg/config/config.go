@@ -27,6 +27,12 @@ type GitLabURLs struct {
 	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
 }
 
+// GiteaURLs holds the URLs to be used when using gitea
+type GiteaURLs struct {
+	API           string `yaml:"api,omitempty"`
+	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
+}
+
 // Repo represents any kind of repo (github, gitlab, etc)
 type Repo struct {
 	Owner string `yaml:",omitempty"`
@@ -170,6 +176,7 @@ type Archive struct {
 type Release struct {
 	GitHub       Repo   `yaml:",omitempty"`
 	GitLab       Repo   `yaml:",omitempty"`
+	Gitea        Repo   `yaml:",omitempty"`
 	Draft        bool   `yaml:",omitempty"`
 	Disable      bool   `yaml:",omitempty"`
 	Prerelease   string `yaml:",omitempty"`
@@ -291,6 +298,7 @@ type Changelog struct {
 type EnvFiles struct {
 	GitHubToken string `yaml:"github_token,omitempty"`
 	GitLabToken string `yaml:"gitlab_token,omitempty"`
+	GiteaToken  string `yaml:"gitea_token,omitempty"`
 }
 
 // Before config
@@ -369,6 +377,9 @@ type Project struct {
 
 	// should be set if using a private gitlab
 	GitLabURLs GitLabURLs `yaml:"gitlab_urls,omitempty"`
+
+	// should be set if using Gitea
+	GiteaURLs GiteaURLs `yaml:"gitea_urls,omitempty"`
 }
 
 // Load config file

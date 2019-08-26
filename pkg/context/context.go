@@ -46,6 +46,8 @@ const (
 	TokenTypeGitHub TokenType = "github"
 	// TokenTypeGitLab defines gitlab as type of the token
 	TokenTypeGitLab TokenType = "gitlab"
+	// TokenTypeGitea defines gitea as type of the token
+	TokenTypeGitea TokenType = "gitea"
 )
 
 // Context carries along some data through the pipes
