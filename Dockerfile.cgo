@@ -2,6 +2,7 @@ FROM golang:1.12-alpine
 
 RUN apk add --no-cache bash \
                        build-base \
+                       bzr \
                        curl \
                        docker \
                        git \
