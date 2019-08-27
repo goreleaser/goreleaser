@@ -11,7 +11,7 @@ setup:
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
 	curl -sfL https://install.goreleaser.com/github.com/gohugoio/hugo.sh | sh
 	curl -L https://git.io/misspell | sh
-	go mod download
+	go mod tidy
 .PHONY: setup
 
 # Run all the tests
