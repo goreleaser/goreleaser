@@ -124,13 +124,13 @@ GOVERSION=$(go version) goreleaser
  try to download the dependencies. Since several builds run in parallel, it is
  very likely to fail.
 
- You can solve this by running `go mod download` before calling `goreleaser` or
+ You can solve this by running `go mod tidy` before calling `goreleaser` or
  by adding a [hook][] doing that on your `.goreleaser.yaml` file:
 
  ```yaml
  before:
    hooks:
-   - go mod download
+   - go mod tidy
  # rest of the file...
  ```
 
