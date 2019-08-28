@@ -119,11 +119,6 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return pipe.Skip("brew section is not configured")
 	}
 
-	// TODO mavogel: in another PR
-	// check if release pipe is not configured!
-	// if ctx.Config.Release.Disable {
-	// }
-
 	var filters = []artifact.Filter{
 		artifact.Or(
 			artifact.ByGoos("darwin"),
@@ -162,6 +157,9 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 	}
 	if ctx.Config.Release.Draft {
 		return pipe.Skip("release is marked as draft")
+	}
+	if ctx.Config.Release.Disable {
+		return pipe.Skip("release is disabled")
 	}
 	if strings.TrimSpace(brew.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
