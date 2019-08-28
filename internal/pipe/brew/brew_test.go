@@ -434,6 +434,12 @@ func TestRunPipeNoUpload(t *testing.T) {
 		ctx.SkipPublish = false
 		assertNoPublish(tt)
 	})
+	t.Run("release disabled", func(tt *testing.T) {
+		ctx.Config.Release.Disable = true
+		ctx.Config.Brews[0].SkipUpload = "false"
+		ctx.SkipPublish = false
+		assertNoPublish(tt)
+	})
 	t.Run("skip prerelease publish", func(tt *testing.T) {
 		ctx.Config.Release.Draft = false
 		ctx.Config.Brews[0].SkipUpload = "auto"

@@ -88,6 +88,9 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Release.Draft {
 		return pipe.Skip("release is marked as draft")
 	}
+	if ctx.Config.Release.Disable {
+		return pipe.Skip("release is disabled")
+	}
 	return client.CreateFile(
 		ctx,
 		ctx.Config.Scoop.CommitAuthor,
