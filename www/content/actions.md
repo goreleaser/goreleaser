@@ -6,35 +6,37 @@ weight: 141
 
 GoReleaser can also be used within [GitHub Actions][actions].
 
-You can create a workflow like this to push your releases.
+For detailed intructions please follow GitHub Actions [workflow syntax][syntax].
 
-```t
-workflow "Release" {
-  on = "push"
-  resolves = ["goreleaser"]
-}
+You can create a workflow for pushing your releases by putting YAML
+configuration to `.github/workflows/release.yml`.
 
-action "is-tag" {
-  uses = "actions/bin/filter@master"
-  args = "tag"
-}
-
-action "goreleaser" {
-  uses = "docker://goreleaser/goreleaser"
-  secrets = [
-    "GITHUB_TOKEN",
-    "GORELEASER_GITHUB_TOKEN",
-    # either GITHUB_TOKEN or GORELEASER_GITHUB_TOKEN is required
-    "DOCKER_USERNAME",
-    "DOCKER_PASSWORD",
-  ]
-  args = "release"
-  needs = ["is-tag"]
-}
+Example workflow:
+```yaml
+on:
+  push:
+    tags:
+      - 'v*'
+name: GoReleaser
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    #needs: [ test ]
+    steps:
+    - name: Check out code
+      uses: actions/checkout@master
+    - name: goreleaser
+      uses: docker://goreleaser/goreleaser
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        args: release
+      if: success()
 ```
 
-This should support *almost* everything already supported by GoReleaser's
-[Docker image][docker]. Check the [install](/install) section for more details.
+This supports everything already supported by GoReleaser's [Docker image][docker].
+Check the [install](/install) section for more details.
 
 If you need to push the homebrew tap to another repository, you'll need a
 custom github token, for that, add a `GORELEASER_GITHUB_TOKEN` secret and
@@ -51,3 +53,4 @@ but, for now, only projects using Go modules are supported.
 
 [actions]: https://github.com/features/actions
 [docker]: https://hub.docker.com/r/goreleaser/goreleaser
+[syntax]: https://help.github.com/en/articles/workflow-syntax-for-github-actions#About-yaml-syntax-for-workflows
