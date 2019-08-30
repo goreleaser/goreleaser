@@ -12,7 +12,7 @@ You can create a workflow for pushing your releases by putting YAML
 configuration to `.github/workflows/release.yml`.
 
 Example workflow:
-```t
+```yaml
 on:
   push:
     tags:
