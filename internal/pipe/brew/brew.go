@@ -16,7 +16,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
-	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -46,14 +45,12 @@ func (Pipe) Publish(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	var g = semerrgroup.New(ctx.Parallelism)
 	for _, brew := range ctx.Config.Brews {
-		brew := brew
-		g.Go(func() error {
-			return doRun(ctx, brew, client)
-		})
+		if err := doRun(ctx, brew, client); err != nil {
+			return err
+		}
 	}
-	return g.Wait()
+	return nil
 }
 
 // Default sets the pipe defaults
