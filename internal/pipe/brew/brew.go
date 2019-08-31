@@ -22,12 +22,12 @@ import (
 )
 
 // ErrNoArchivesFound happens when 0 archives are found
-var ErrNoArchivesFound = errors.New("brew tap: no archives found matching criteria")
+var ErrNoArchivesFound = errors.New("no linux/macos archives found")
 
 // ErrMultipleArchivesSameOS happens when the config yields multiple archives
 // for linux or windows.
 // TODO: improve this confusing error message
-var ErrMultipleArchivesSameOS = errors.New("brew tap: one tap can handle only 1 linux and 1 macos archive")
+var ErrMultipleArchivesSameOS = errors.New("one tap can handle only 1 linux and 1 macos archive")
 
 // ErrTokenTypeNotImplementedForBrew indicates that a new token type was not implemented for this pipe
 var ErrTokenTypeNotImplementedForBrew = errors.New("token type not implemented for brew pipe")
