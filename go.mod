@@ -9,9 +9,8 @@ require (
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/fatih/color v1.7.0
-	github.com/gogo/protobuf v1.2.0 // indirect
 	github.com/google/go-github/v25 v25.0.1
-	github.com/goreleaser/nfpm v0.12.0
+	github.com/goreleaser/nfpm v0.13.0
 	github.com/imdario/mergo v0.3.6
 	github.com/jarcoal/httpmock v0.0.0-20180424175123-9c70cfe4a1da
 	github.com/kamilsk/retry/v4 v4.0.0
