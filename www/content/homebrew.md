@@ -50,7 +50,9 @@ brews:
     # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}"
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
-    # Allows you to set a custom download strategy.
+    # Allows you to set a custom download strategy. Note that you'll need
+    # to implement the strategy and add it to your tap repository.
+    # Example: http://lessthanhero.io/post/homebrew-with-private-repo-releases/
     # Default is empty.
     download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
 
