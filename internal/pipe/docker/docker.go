@@ -272,7 +272,13 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return errors.Wrapf(err, "failed to push docker image: \n%s", string(out))
 	}
 	log.Debugf("docker push output: \n%s", string(out))
-	image.Type = artifact.DockerImage
-	ctx.Artifacts.Add(image)
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type:   artifact.DockerImage,
+		Name:   image.Name,
+		Path:   image.Path,
+		Goarch: image.Goarch,
+		Goos:   image.Goos,
+		Goarm:  image.Goarm,
+	})
 	return nil
 }
