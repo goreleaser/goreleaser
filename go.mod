@@ -1,5 +1,7 @@
 module github.com/goreleaser/goreleaser
 
+go 1.13.
+
 require (
 	code.gitea.io/gitea v1.10.0-dev.0.20190711052757-a0820e09fbf7
 	code.gitea.io/sdk/gitea v0.0.0-20190802154435-bbad0d915e44
@@ -9,6 +11,7 @@ require (
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/fatih/color v1.7.0
+	github.com/gogo/protobuf v1.2.0 // indirect
 	github.com/google/go-github/v25 v25.0.1
 	github.com/goreleaser/nfpm v0.13.0
 	github.com/imdario/mergo v0.3.6
