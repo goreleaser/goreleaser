@@ -73,7 +73,7 @@ $ git push origin v0.1.0
 > **Attention**: Check if your tag adheres to [semantic versioning](/semver).
 
 If you don't want to create a tag yet, you can also create a release
-based on the latest commit by using the `--snapshot` flag. (*Note*: ony GitHub supports snapshots)
+based on the latest commit by using the `--snapshot` flag. (*Note*: only GitHub supports snapshots)
 
 Now you can run GoReleaser at the root of your repository:
 
