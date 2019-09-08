@@ -138,7 +138,7 @@ volumes:
     temp: {}
 ```
 
-#### 0.8 
+#### 0.8
 ```yml
 pipeline:
   clone:
@@ -382,15 +382,15 @@ steps:
   BuildMyApp:
     title: Compiling go code
     stage: build
-    image: 'golang:1.12'
+    image: 'golang:1.13'
     commands:
-      - go build 
+      - go build
   ReleaseMyApp:
     title: Creating packages
     stage: release
     image: 'goreleaser/goreleaser'
     commands:
-      - goreleaser --rm-dist 
+      - goreleaser --rm-dist
 ```
 
 You need to pass the variable `GITHUB_TOKEN` in the Codefresh UI that contains credentials to your Github account or load it from [shared configuration](https://codefresh.io/docs/docs/configure-ci-cd-pipeline/shared-configuration/).
