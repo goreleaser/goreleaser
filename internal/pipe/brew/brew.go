@@ -122,7 +122,11 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 			artifact.ByGoos("linux"),
 		),
 		artifact.ByFormats("zip", "tar.gz"),
-		artifact.ByGoarch("amd64"),
+		artifact.Or(
+			artifact.ByGoarch("amd64"),
+			artifact.ByGoarch("arm64"),
+			artifact.ByGoarch("arm"),
+		),
 		artifact.ByType(artifact.UploadableArchive),
 	}
 	if len(brew.IDs) > 0 {
