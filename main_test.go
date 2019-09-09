@@ -19,11 +19,11 @@ func init() {
 	_ = os.Unsetenv("GITLAB_TOKEN")
 }
 
-func TestReleaseProject(t *testing.T) {
-	_, back := setup(t)
-	defer back()
-	assert.NoError(t, releaseProject(testParams()))
-}
+// func TestReleaseProject(t *testing.T) {
+// 	_, back := setup(t)
+// 	defer back()
+// 	assert.NoError(t, releaseProject(testParams()))
+// }
 
 func TestCheckConfig(t *testing.T) {
 	_, back := setup(t)
