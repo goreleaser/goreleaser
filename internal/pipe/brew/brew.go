@@ -116,6 +116,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return pipe.Skip("brew section is not configured")
 	}
 
+	// TODO: properly cover this with tests
 	var filters = []artifact.Filter{
 		artifact.Or(
 			artifact.ByGoos("darwin"),
