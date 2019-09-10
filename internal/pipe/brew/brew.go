@@ -116,13 +116,18 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return pipe.Skip("brew section is not configured")
 	}
 
+	// TODO: properly cover this with tests
 	var filters = []artifact.Filter{
 		artifact.Or(
 			artifact.ByGoos("darwin"),
 			artifact.ByGoos("linux"),
 		),
 		artifact.ByFormats("zip", "tar.gz"),
-		artifact.ByGoarch("amd64"),
+		artifact.Or(
+			artifact.ByGoarch("amd64"),
+			artifact.ByGoarch("arm64"),
+			artifact.ByGoarch("arm"),
+		),
 		artifact.ByType(artifact.UploadableArchive),
 	}
 	if len(brew.IDs) > 0 {
