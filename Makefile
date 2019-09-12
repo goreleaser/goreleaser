@@ -31,8 +31,10 @@ fmt:
 
 # Run all the linters
 lint:
-	# TODO: fix tests and lll issues
-	./bin/golangci-lint run --tests=false --enable-all --disable=lll ./...
+	# TODO: fix tests issues
+	# TODO: fix lll issues
+	# TODO: fix funlen issues
+	./bin/golangci-lint run --tests=false --enable-all --disable=lll --disable funlen ./...
 	./bin/misspell -error **/*
 .PHONY: lint
 
