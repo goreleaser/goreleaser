@@ -180,6 +180,7 @@ func createFile(t *testing.T, filename, contents string) {
 }
 
 func createMainGo(t *testing.T) {
+	createFile(t, "go.mod", "module foo.bar")
 	createFile(t, "main.go", "package main\nfunc main() {println(0)}")
 }
 
