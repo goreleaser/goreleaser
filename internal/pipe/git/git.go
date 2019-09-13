@@ -135,7 +135,7 @@ func getFullCommit() (string, error) {
 }
 
 func getTag() (string, error) {
-	return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
+	return git.Clean(git.Run("tag", "-l", "--sort=-v:refname"))
 }
 
 func getURL() (string, error) {
