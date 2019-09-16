@@ -12,11 +12,12 @@ You can create a workflow for pushing your releases by putting YAML
 configuration to `.github/workflows/release.yml`.
 
 Example workflow:
+
 ```yaml
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 name: GoReleaser
 jobs:
   release:
@@ -24,15 +25,15 @@ jobs:
     runs-on: ubuntu-latest
     #needs: [ test ]
     steps:
-    - name: Check out code
-      uses: actions/checkout@master
-    - name: goreleaser
-      uses: docker://goreleaser/goreleaser
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        args: release
-      if: success()
+      - name: Check out code
+        uses: actions/checkout@master
+      - name: goreleaser
+        uses: goreleaser/gorelease@v0.118.0 (change for latest release)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: release
+        if: success()
 ```
 
 This supports everything already supported by GoReleaser's [Docker image][docker].

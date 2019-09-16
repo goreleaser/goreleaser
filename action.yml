@@ -1,0 +1,13 @@
+name: "Goreleaser"
+description: "Deliver Go binaries as fast and easily as possible"
+author: "Carlos Alexandro Becker"
+branding:
+  icon: "code"
+  color: "blue"
+inputs:
+  config:
+    description: "Path of the Goreleaser config file (currently not used)"
+    required: false
+runs:
+  using: "docker"
+  image: "Dockerfile"
