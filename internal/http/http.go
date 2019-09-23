@@ -106,7 +106,6 @@ func CheckConfig(ctx *context.Context, put *config.Put, kind string) error {
 	}
 
 	return nil
-
 }
 
 func misconfigured(kind string, upload *config.Put, reason string) error {
