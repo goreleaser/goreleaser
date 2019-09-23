@@ -302,71 +302,51 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 	ctx.Config.Brews[0].GitHub.Name = "test"
 	ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 
-	// darwin
-	var path = filepath.Join(folder, "bin.tar.gz")
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
+	for _, a := range []struct {
+		name   string
+		goos   string
+		goarch string
+		goarm  string
+	}{
+		{
+			name:   "bin",
+			goos:   "darwin",
+			goarch: "amd64",
 		},
-	})
-	_, err = os.Create(path)
-	assert.NoError(t, err)
-
-	// arm64
-	path = filepath.Join(folder, "arm64.tar.gz")
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "arm64.tar.gz",
-		Path:   path,
-		Goos:   "linux",
-		Goarch: "arm64",
-		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			"ID":     "arm64",
-			"Format": "tar.gz",
+		{
+			name:   "arm64",
+			goos:   "linux",
+			goarch: "arm64",
 		},
-	})
-	_, err = os.Create(path)
-	assert.NoError(t, err)
-
-	// arm v6
-	path = filepath.Join(folder, "armv6.tar.gz")
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "armv6.tar.gz",
-		Path:   path,
-		Goos:   "linux",
-		Goarch: "arm",
-		Goarm:  "6",
-		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			"ID":     "armv6",
-			"Format": "tar.gz",
+		{
+			name:   "armv6",
+			goos:   "linux",
+			goarch: "arm",
+			goarm:  "6",
 		},
-	})
-	_, err = os.Create(path)
-	assert.NoError(t, err)
-
-	// arm v7
-	path = filepath.Join(folder, "armv7.tar.gz")
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "armv7.tar.gz",
-		Path:   path,
-		Goos:   "linux",
-		Goarch: "arm",
-		Goarm:  "7",
-		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			"ID":     "armv7",
-			"Format": "tar.gz",
+		{
+			name:   "armv7",
+			goos:   "linux",
+			goarch: "arm",
+			goarm:  "7",
 		},
-	})
-	_, err = os.Create(path)
-	assert.NoError(t, err)
+	} {
+		var path = filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   fmt.Sprintf("%s.tar.gz", a.name),
+			Path:   path,
+			Goos:   a.goos,
+			Goarch: a.goarch,
+			Goarm:  a.goarm,
+			Type:   artifact.UploadableArchive,
+			Extra: map[string]interface{}{
+				"ID":     a.name,
+				"Format": "tar.gz",
+			},
+		})
+		_, err = os.Create(path)
+		assert.NoError(t, err)
+	}
 
 	client := &DummyClient{}
 	var distFile = filepath.Join(folder, name+".rb")
