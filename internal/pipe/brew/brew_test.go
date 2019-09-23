@@ -303,44 +303,131 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 	assert.NoError(t, err)
 	defer f.Close()
 
-	osarchs := []struct {
-		goos   string
-		goarch string
+	tests := []struct {
+		expectedError error
+		osarchs       []struct {
+			goos   string
+			goarch string
+			goarm  string
+		}
 	}{
-		{goos: "darwin", goarch: "amd64"},
-		{goos: "linux", goarch: "amd64"},
+		{
+			expectedError: ErrMultipleArchivesSameOS,
+			osarchs: []struct {
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					goos:   "darwin",
+					goarch: "amd64",
+				},
+				{
+					goos:   "darwin",
+					goarch: "amd64",
+				},
+			},
+		},
+		{
+			expectedError: ErrMultipleArchivesSameOS,
+			osarchs: []struct {
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					goos:   "linux",
+					goarch: "amd64",
+				},
+				{
+					goos:   "linux",
+					goarch: "amd64",
+				},
+			},
+		},
+		{
+			expectedError: ErrMultipleArchivesSameOS,
+			osarchs: []struct {
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					goos:   "linux",
+					goarch: "arm64",
+				},
+				{
+					goos:   "linux",
+					goarch: "arm64",
+				},
+			},
+		},
+		{
+			expectedError: ErrMultipleArchivesSameOS,
+			osarchs: []struct {
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "6",
+				},
+				{
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "6",
+				},
+			},
+		},
+		// {
+		// 	expectedError: nil,
+		// 	osarchs: []struct {
+		// 		goos   string
+		// 		goarch string
+		// 		goarm  string
+		// 	}{
+		// 		{
+		// 			goos:   "linux",
+		// 			goarch: "arm",
+		// 			goarm:  "5",
+		// 		},
+		// 		{
+		// 			goos:   "linux",
+		// 			goarch: "arm",
+		// 			goarm:  "6",
+		// 		},
+		// 		{
+		// 			goos:   "linux",
+		// 			goarch: "arm",
+		// 			goarm:  "7",
+		// 		},
+		// 	},
+		// },
 	}
 
-	for idx, ttt := range osarchs {
-		t.Run(ttt.goos, func(tt *testing.T) {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   fmt.Sprintf("bin%d", idx),
-				Path:   f.Name(),
-				Goos:   ttt.goos,
-				Goarch: ttt.goarch,
-				Type:   artifact.UploadableArchive,
-				Extra: map[string]interface{}{
-					"ID":     "foo",
-					"Format": "tar.gz",
-				},
+	for _, test := range tests {
+		for idx, ttt := range test.osarchs {
+			t.Run(ttt.goarch, func(tt *testing.T) {
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   fmt.Sprintf("bin%d", idx),
+					Path:   f.Name(),
+					Goos:   ttt.goos,
+					Goarch: ttt.goarch,
+					Type:   artifact.UploadableArchive,
+					Extra: map[string]interface{}{
+						"ID":     fmt.Sprintf("foo%d", idx),
+						"Format": "tar.gz",
+					},
+				})
 			})
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   fmt.Sprintf("bin%d", idx),
-				Path:   f.Name(),
-				Goos:   ttt.goos,
-				Goarch: ttt.goarch,
-				Type:   artifact.UploadableArchive,
-				Extra: map[string]interface{}{
-					"ID":     "bar",
-					"Format": "tar.gz",
-				},
-			})
-			client := &DummyClient{}
-			assert.Equal(t, ErrMultipleArchivesSameOS, doRun(ctx, ctx.Config.Brews[0], client))
-			assert.False(t, client.CreatedFile)
-			// clean the artifacts for the next run
-			ctx.Artifacts = artifact.New()
-		})
+		}
+		client := &DummyClient{}
+		assert.Equal(t, test.expectedError, doRun(ctx, ctx.Config.Brews[0], client))
+		assert.False(t, client.CreatedFile)
+		// clean the artifacts for the next run
+		ctx.Artifacts = artifact.New()
 	}
 }
 
