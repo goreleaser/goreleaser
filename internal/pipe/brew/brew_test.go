@@ -381,30 +381,30 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 				},
 			},
 		},
-		// {
-		// 	expectedError: nil,
-		// 	osarchs: []struct {
-		// 		goos   string
-		// 		goarch string
-		// 		goarm  string
-		// 	}{
-		// 		{
-		// 			goos:   "linux",
-		// 			goarch: "arm",
-		// 			goarm:  "5",
-		// 		},
-		// 		{
-		// 			goos:   "linux",
-		// 			goarch: "arm",
-		// 			goarm:  "6",
-		// 		},
-		// 		{
-		// 			goos:   "linux",
-		// 			goarch: "arm",
-		// 			goarm:  "7",
-		// 		},
-		// 	},
-		// },
+		{
+			expectedError: ErrMultipleArchivesSameOS,
+			osarchs: []struct {
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "5",
+				},
+				{
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "6",
+				},
+				{
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "7",
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {

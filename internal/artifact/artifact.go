@@ -13,6 +13,7 @@ import (
 	"hash/crc32"
 	"io"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/apex/log"
@@ -251,6 +252,37 @@ func (artifacts *Artifacts) Filter(filter Filter) Artifacts {
 		if filter(a) {
 			result.items = append(result.items, a)
 		}
+	}
+	return result
+}
+
+// KeepLatestArmVersion keeps only the latest/highest arm version
+// Due to backwards compatibility of https://github.com/goreleaser/goreleaser/issues/1146
+func (artifacts *Artifacts) KeepLatestArmVersion() Artifacts {
+	var result = New()
+	latestGoArmVersion := 0
+	var artifactWithLatestGoArmVersion *Artifact
+	for _, a := range artifacts.items {
+		// if goarm is not given we keep the artifact anyway
+		if a.Goarm == "" {
+			result.items = append(result.items, a)
+			continue
+		}
+
+		// if there is a goarm we only keep the latest given version
+		goarm, parseErr := strconv.Atoi(a.Goarm)
+		if parseErr != nil {
+			// we ignore invalid goarch versions
+			continue
+		}
+		if goarm > latestGoArmVersion {
+			latestGoArmVersion = goarm
+			artifactWithLatestGoArmVersion = a
+		}
+	}
+
+	if artifactWithLatestGoArmVersion != nil {
+		result.items = append(result.items, artifactWithLatestGoArmVersion)
 	}
 	return result
 }

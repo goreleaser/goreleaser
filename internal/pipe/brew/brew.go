@@ -134,7 +134,9 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		filters = append(filters, artifact.ByIDs(brew.IDs...))
 	}
 
-	var archives = ctx.Artifacts.Filter(artifact.And(filters...)).List()
+	filteredArtifacts := ctx.Artifacts.Filter(artifact.And(filters...))
+	cleanedArtifactsForBrew := filteredArtifacts.KeepLatestArmVersion()
+	var archives = cleanedArtifactsForBrew.List()
 	if len(archives) == 0 {
 		return ErrNoArchivesFound
 	}
