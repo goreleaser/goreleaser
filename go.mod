@@ -27,3 +27,6 @@ require (
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.2.2
 )
+
+// Fix invalid pseudo-version: revision is longer than canonical (6fd6a9bfe14e)
+replace github.com/go-macaron/cors => github.com/go-macaron/cors v0.0.0-20190418220122-6fd6a9bfe14e
