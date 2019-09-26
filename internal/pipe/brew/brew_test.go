@@ -265,159 +265,15 @@ func TestRunPipe(t *testing.T) {
 	}
 }
 func TestRunPipeForMultipleArmVersions(t *testing.T) {
-	for name, fn := range map[string]func(ctx *context.Context, folder string){
-		"multiple_armv5": func(ctx *context.Context, folder string) {
+	for name, fn := range map[string]func(ctx *context.Context){
+		"multiple_armv5": func(ctx *context.Context) {
 			ctx.Config.Brews[0].Goarm = "5"
-
-			for _, a := range []struct {
-				name   string
-				goos   string
-				goarch string
-				goarm  string
-			}{
-				{
-					name:   "bin",
-					goos:   "darwin",
-					goarch: "amd64",
-				},
-				{
-					name:   "arm64",
-					goos:   "linux",
-					goarch: "arm64",
-				},
-				{
-					name:   "armv5",
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "5",
-				},
-				{
-					name:   "armv6",
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "6",
-				},
-				{
-					name:   "armv7",
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "7",
-				},
-			} {
-				var path = filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   fmt.Sprintf("%s.tar.gz", a.name),
-					Path:   path,
-					Goos:   a.goos,
-					Goarch: a.goarch,
-					Goarm:  a.goarm,
-					Type:   artifact.UploadableArchive,
-					Extra: map[string]interface{}{
-						"ID":     a.name,
-						"Format": "tar.gz",
-					},
-				})
-				_, err := os.Create(path)
-				assert.NoError(t, err)
-			}
 		},
-		"multiple_armv6": func(ctx *context.Context, folder string) {
+		"multiple_armv6": func(ctx *context.Context) {
 			ctx.Config.Brews[0].Goarm = "6"
-
-			for _, a := range []struct {
-				name   string
-				goos   string
-				goarch string
-				goarm  string
-			}{
-				{
-					name:   "bin",
-					goos:   "darwin",
-					goarch: "amd64",
-				},
-				{
-					name:   "arm64",
-					goos:   "linux",
-					goarch: "arm64",
-				},
-				{
-					name:   "armv6",
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "6",
-				},
-				{
-					name:   "armv7",
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "7",
-				},
-			} {
-				var path = filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   fmt.Sprintf("%s.tar.gz", a.name),
-					Path:   path,
-					Goos:   a.goos,
-					Goarch: a.goarch,
-					Goarm:  a.goarm,
-					Type:   artifact.UploadableArchive,
-					Extra: map[string]interface{}{
-						"ID":     a.name,
-						"Format": "tar.gz",
-					},
-				})
-				_, err := os.Create(path)
-				assert.NoError(t, err)
-			}
 		},
-		"multiple_armv7": func(ctx *context.Context, folder string) {
+		"multiple_armv7": func(ctx *context.Context) {
 			ctx.Config.Brews[0].Goarm = "7"
-
-			for _, a := range []struct {
-				name   string
-				goos   string
-				goarch string
-				goarm  string
-			}{
-				{
-					name:   "bin",
-					goos:   "darwin",
-					goarch: "amd64",
-				},
-				{
-					name:   "arm64",
-					goos:   "linux",
-					goarch: "arm64",
-				},
-				{
-					name:   "armv6",
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "6",
-				},
-				{
-					name:   "armv7",
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "7",
-				},
-			} {
-				var path = filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   fmt.Sprintf("%s.tar.gz", a.name),
-					Path:   path,
-					Goos:   a.goos,
-					Goarch: a.goarch,
-					Goarm:  a.goarm,
-					Type:   artifact.UploadableArchive,
-					Extra: map[string]interface{}{
-						"ID":     a.name,
-						"Format": "tar.gz",
-					},
-				})
-				_, err := os.Create(path)
-				assert.NoError(t, err)
-			}
 		},
 	} {
 		folder, err := ioutil.TempDir("", "goreleasertest")
@@ -463,7 +319,58 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 				},
 			},
 		}
-		fn(ctx, folder)
+		fn(ctx)
+		for _, a := range []struct {
+			name   string
+			goos   string
+			goarch string
+			goarm  string
+		}{
+			{
+				name:   "bin",
+				goos:   "darwin",
+				goarch: "amd64",
+			},
+			{
+				name:   "arm64",
+				goos:   "linux",
+				goarch: "arm64",
+			},
+			{
+				name:   "armv5",
+				goos:   "linux",
+				goarch: "arm",
+				goarm:  "5",
+			},
+			{
+				name:   "armv6",
+				goos:   "linux",
+				goarch: "arm",
+				goarm:  "6",
+			},
+			{
+				name:   "armv7",
+				goos:   "linux",
+				goarch: "arm",
+				goarm:  "7",
+			},
+		} {
+			var path = filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   fmt.Sprintf("%s.tar.gz", a.name),
+				Path:   path,
+				Goos:   a.goos,
+				Goarch: a.goarch,
+				Goarm:  a.goarm,
+				Type:   artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					"ID":     a.name,
+					"Format": "tar.gz",
+				},
+			})
+			_, err := os.Create(path)
+			assert.NoError(t, err)
+		}
 
 		client := &DummyClient{}
 		var distFile = filepath.Join(folder, name+".rb")
