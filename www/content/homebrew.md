@@ -15,9 +15,8 @@ and the
 [formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md)
 for more details.
 
-**Note**: If you have multiple arm versions (v5,v6 and/or v7) defined in the `build` section, and
-you do not specify any `id` in the brew section, then goreleaser will take the latest/highest
-arm version for the formula.
+**Note**: If you have multiple arm 32-bit versions in each `build` section, and
+you do not specify any `ids` in the brew section (default to all artifacts), then goreleaser will fail.
 
 ```yml
 # .goreleaser.yml
@@ -33,9 +32,9 @@ brews:
     - foo
     - bar
 
-    # GOARM to specify which 32bit arm version to use if there are multiple versions
-    # from the build section. Brew formulas support atm only one 32bit version.
-    # Default is 6 if there a multiple versions.
+    # GOARM to specify which 32-bit arm version to use if there are multiple versions
+    # from the build section. Brew formulas support atm only one 32-bit version.
+    # Default is 6 for all artifacts or each id if there a multiple versions.
     goarm: 6
 
 
