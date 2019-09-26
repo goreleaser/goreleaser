@@ -265,105 +265,223 @@ func TestRunPipe(t *testing.T) {
 	}
 }
 func TestRunPipeForMultipleArmVersions(t *testing.T) {
-	name := "multiple_arm"
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
-	var ctx = &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
-		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Env: map[string]string{
-			"FOO": "foo_is_bar",
-		},
-		Config: config.Project{
-			Dist:        folder,
-			ProjectName: name,
-			Brews: []config.Homebrew{
-				{
-					Name:         name,
-					Description:  "A run pipe test formula and FOO={{ .Env.FOO }}",
-					Caveats:      "don't do this {{ .ProjectName }}",
-					Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
-					Plist:        `<xml>whatever</xml>`,
-					Dependencies: []string{"zsh", "bash"},
-					Conflicts:    []string{"gtk+", "qt"},
-					Install:      `bin.install "{{ .ProjectName }}"`,
-				},
-			},
-		},
-	}
-	ctx.TokenType = context.TokenTypeGitHub
-	ctx.Config.GitHubURLs.Download = "https://github.com"
-	ctx.Config.Release.GitHub.Owner = "test"
-	ctx.Config.Release.GitHub.Name = "test"
-	ctx.Config.Brews[0].GitHub.Owner = "test"
-	ctx.Config.Brews[0].GitHub.Name = "test"
-	ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+	for name, fn := range map[string]func(ctx *context.Context, folder string){
+		"multiple_armv5": func(ctx *context.Context, folder string) {
+			ctx.Config.Brews[0].Goarm = "5"
 
-	for _, a := range []struct {
-		name   string
-		goos   string
-		goarch string
-		goarm  string
-	}{
-		{
-			name:   "bin",
-			goos:   "darwin",
-			goarch: "amd64",
+			for _, a := range []struct {
+				name   string
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					name:   "bin",
+					goos:   "darwin",
+					goarch: "amd64",
+				},
+				{
+					name:   "arm64",
+					goos:   "linux",
+					goarch: "arm64",
+				},
+				{
+					name:   "armv5",
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "5",
+				},
+				{
+					name:   "armv6",
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "6",
+				},
+				{
+					name:   "armv7",
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "7",
+				},
+			} {
+				var path = filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   fmt.Sprintf("%s.tar.gz", a.name),
+					Path:   path,
+					Goos:   a.goos,
+					Goarch: a.goarch,
+					Goarm:  a.goarm,
+					Type:   artifact.UploadableArchive,
+					Extra: map[string]interface{}{
+						"ID":     a.name,
+						"Format": "tar.gz",
+					},
+				})
+				_, err := os.Create(path)
+				assert.NoError(t, err)
+			}
 		},
-		{
-			name:   "arm64",
-			goos:   "linux",
-			goarch: "arm64",
+		"multiple_armv6": func(ctx *context.Context, folder string) {
+			ctx.Config.Brews[0].Goarm = "6"
+
+			for _, a := range []struct {
+				name   string
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					name:   "bin",
+					goos:   "darwin",
+					goarch: "amd64",
+				},
+				{
+					name:   "arm64",
+					goos:   "linux",
+					goarch: "arm64",
+				},
+				{
+					name:   "armv6",
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "6",
+				},
+				{
+					name:   "armv7",
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "7",
+				},
+			} {
+				var path = filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   fmt.Sprintf("%s.tar.gz", a.name),
+					Path:   path,
+					Goos:   a.goos,
+					Goarch: a.goarch,
+					Goarm:  a.goarm,
+					Type:   artifact.UploadableArchive,
+					Extra: map[string]interface{}{
+						"ID":     a.name,
+						"Format": "tar.gz",
+					},
+				})
+				_, err := os.Create(path)
+				assert.NoError(t, err)
+			}
 		},
-		{
-			name:   "armv6",
-			goos:   "linux",
-			goarch: "arm",
-			goarm:  "6",
-		},
-		{
-			name:   "armv7",
-			goos:   "linux",
-			goarch: "arm",
-			goarm:  "7",
+		"multiple_armv7": func(ctx *context.Context, folder string) {
+			ctx.Config.Brews[0].Goarm = "7"
+
+			for _, a := range []struct {
+				name   string
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					name:   "bin",
+					goos:   "darwin",
+					goarch: "amd64",
+				},
+				{
+					name:   "arm64",
+					goos:   "linux",
+					goarch: "arm64",
+				},
+				{
+					name:   "armv6",
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "6",
+				},
+				{
+					name:   "armv7",
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "7",
+				},
+			} {
+				var path = filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   fmt.Sprintf("%s.tar.gz", a.name),
+					Path:   path,
+					Goos:   a.goos,
+					Goarch: a.goarch,
+					Goarm:  a.goarm,
+					Type:   artifact.UploadableArchive,
+					Extra: map[string]interface{}{
+						"ID":     a.name,
+						"Format": "tar.gz",
+					},
+				})
+				_, err := os.Create(path)
+				assert.NoError(t, err)
+			}
 		},
 	} {
-		var path = filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
-		ctx.Artifacts.Add(&artifact.Artifact{
-			Name:   fmt.Sprintf("%s.tar.gz", a.name),
-			Path:   path,
-			Goos:   a.goos,
-			Goarch: a.goarch,
-			Goarm:  a.goarm,
-			Type:   artifact.UploadableArchive,
-			Extra: map[string]interface{}{
-				"ID":     a.name,
-				"Format": "tar.gz",
-			},
-		})
-		_, err = os.Create(path)
+		folder, err := ioutil.TempDir("", "goreleasertest")
 		assert.NoError(t, err)
+		var ctx = &context.Context{
+			TokenType: context.TokenTypeGitHub,
+			Git: context.GitInfo{
+				CurrentTag: "v1.0.1",
+			},
+			Version:   "1.0.1",
+			Artifacts: artifact.New(),
+			Env: map[string]string{
+				"FOO": "foo_is_bar",
+			},
+			Config: config.Project{
+				Dist:        folder,
+				ProjectName: name,
+				Brews: []config.Homebrew{
+					{
+						Name:         name,
+						Description:  "A run pipe test formula and FOO={{ .Env.FOO }}",
+						Caveats:      "don't do this {{ .ProjectName }}",
+						Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
+						Plist:        `<xml>whatever</xml>`,
+						Dependencies: []string{"zsh", "bash"},
+						Conflicts:    []string{"gtk+", "qt"},
+						Install:      `bin.install "{{ .ProjectName }}"`,
+						GitHub: config.Repo{
+							Owner: "test",
+							Name:  "test",
+						},
+						Homepage: "https://github.com/goreleaser",
+					},
+				},
+				GitHubURLs: config.GitHubURLs{
+					Download: "https://github.com",
+				},
+				Release: config.Release{
+					GitHub: config.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
+				},
+			},
+		}
+		fn(ctx, folder)
+
+		client := &DummyClient{}
+		var distFile = filepath.Join(folder, name+".rb")
+
+		assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
+		assert.True(t, client.CreatedFile)
+		var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
+		if *update {
+			assert.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
+		}
+		bts, err := ioutil.ReadFile(golden)
+		assert.NoError(t, err)
+		assert.Equal(t, string(bts), client.Content)
+
+		distBts, err := ioutil.ReadFile(distFile)
+		assert.NoError(t, err)
+		assert.Equal(t, string(bts), string(distBts))
 	}
-
-	client := &DummyClient{}
-	var distFile = filepath.Join(folder, name+".rb")
-
-	assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
-	assert.True(t, client.CreatedFile)
-	var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
-	if *update {
-		assert.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
-	}
-	bts, err := ioutil.ReadFile(golden)
-	assert.NoError(t, err)
-	assert.Equal(t, string(bts), client.Content)
-
-	distBts, err := ioutil.ReadFile(distFile)
-	assert.NoError(t, err)
-	assert.Equal(t, string(bts), string(distBts))
 }
 
 func TestRunPipeNoDarwin64Build(t *testing.T) {

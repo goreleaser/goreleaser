@@ -129,7 +129,10 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		artifact.Or(
 			artifact.ByGoarch("amd64"),
 			artifact.ByGoarch("arm64"),
-			artifact.ByGoarch("arm"),
+			artifact.And(
+				artifact.ByGoarch("arm"),
+				artifact.ByGoarm(brew.Goarm),
+			),
 		),
 		artifact.ByType(artifact.UploadableArchive),
 	}
@@ -137,9 +140,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		filters = append(filters, artifact.ByIDs(brew.IDs...))
 	}
 
-	filteredArtifacts := ctx.Artifacts.Filter(artifact.And(filters...))
-	cleanedArtifactsForBrew := filteredArtifacts.KeepLatestArmVersion()
-	var archives = cleanedArtifactsForBrew.List()
+	var archives = ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(archives) == 0 {
 		return ErrNoArchivesFound
 	}
