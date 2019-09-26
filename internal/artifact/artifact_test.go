@@ -139,51 +139,6 @@ func TestGroupByPlatform(t *testing.T) {
 	assert.Len(t, groups["linuxarm6"], 1)
 }
 
-func TestKeepLatestGoArm(t *testing.T) {
-	var data = []*Artifact{
-		{
-			Name:   "foo",
-			Goos:   "darwin",
-			Goarch: "amd64",
-		},
-		{
-			Name:   "bar",
-			Goos:   "linux",
-			Goarch: "amd64",
-		},
-		{
-			Name:   "foobara",
-			Goos:   "linux",
-			Goarch: "arm",
-			Goarm:  "5",
-		},
-		{
-			Name:   "foobarb",
-			Goos:   "linux",
-			Goarch: "arm",
-			Goarm:  "6",
-		},
-		{
-			Name:   "foobarc",
-			Goos:   "linux",
-			Goarch: "arm",
-			Goarm:  "7",
-		},
-		{
-			Name:   "foobard",
-			Goos:   "linux",
-			Goarch: "arm",
-			Goarm:  "invalid-number",
-		},
-	}
-	var artifacts = New()
-	for _, a := range data {
-		artifacts.Add(a)
-	}
-
-	assert.Len(t, artifacts.KeepLatestArmVersion().List(), 3)
-}
-
 func TestChecksum(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	require.NoError(t, err)
