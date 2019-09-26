@@ -26,8 +26,7 @@ var ErrNoArchivesFound = errors.New("no linux/macos archives found")
 
 // ErrMultipleArchivesSameOS happens when the config yields multiple archives
 // for linux or windows.
-// TODO: improve this confusing error message
-var ErrMultipleArchivesSameOS = errors.New("one tap can handle only 1 linux and 1 macos archive")
+var ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
 
 // ErrTokenTypeNotImplementedForBrew indicates that a new token type was not implemented for this pipe
 var ErrTokenTypeNotImplementedForBrew = errors.New("token type not implemented for brew pipe")
