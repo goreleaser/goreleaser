@@ -76,7 +76,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 		err := json.NewDecoder(res.Body).Decode(&r)
 		return err
 	})
-
 }
 
 // An ErrorResponse reports one or more errors caused by an API request.
