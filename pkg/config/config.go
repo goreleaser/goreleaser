@@ -68,6 +68,7 @@ type Homebrew struct {
 	CustomRequire    string       `yaml:"custom_require,omitempty"`
 	CustomBlock      string       `yaml:"custom_block,omitempty"`
 	IDs              []string     `yaml:"ids,omitempty"`
+	Goarm            string       `yaml:"goarm,omitempty"`
 }
 
 // Scoop contains the scoop.sh section

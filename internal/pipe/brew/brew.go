@@ -88,6 +88,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if brew.Name == "" {
 			brew.Name = ctx.Config.ProjectName
 		}
+		if brew.Goarm == "" {
+			brew.Goarm = "6"
+		}
 	}
 
 	return nil
