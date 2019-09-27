@@ -45,7 +45,7 @@ var defaultTemplateData = templateData{
 		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 	},
 	Arm: downloadable{
-		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm.tar.gz",
+		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
 		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 	},
 	Arm64: downloadable{
@@ -264,6 +264,132 @@ func TestRunPipe(t *testing.T) {
 		})
 	}
 }
+func TestRunPipeForMultipleArmVersions(t *testing.T) {
+	for name, fn := range map[string]func(ctx *context.Context){
+		"multiple_armv5": func(ctx *context.Context) {
+			ctx.Config.Brews[0].Goarm = "5"
+		},
+		"multiple_armv6": func(ctx *context.Context) {
+			ctx.Config.Brews[0].Goarm = "6"
+		},
+		"multiple_armv7": func(ctx *context.Context) {
+			ctx.Config.Brews[0].Goarm = "7"
+		},
+	} {
+		folder, err := ioutil.TempDir("", "goreleasertest")
+		assert.NoError(t, err)
+		var ctx = &context.Context{
+			TokenType: context.TokenTypeGitHub,
+			Git: context.GitInfo{
+				CurrentTag: "v1.0.1",
+			},
+			Version:   "1.0.1",
+			Artifacts: artifact.New(),
+			Env: map[string]string{
+				"FOO": "foo_is_bar",
+			},
+			Config: config.Project{
+				Dist:        folder,
+				ProjectName: name,
+				Brews: []config.Homebrew{
+					{
+						Name:         name,
+						Description:  "A run pipe test formula and FOO={{ .Env.FOO }}",
+						Caveats:      "don't do this {{ .ProjectName }}",
+						Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
+						Plist:        `<xml>whatever</xml>`,
+						Dependencies: []string{"zsh", "bash"},
+						Conflicts:    []string{"gtk+", "qt"},
+						Install:      `bin.install "{{ .ProjectName }}"`,
+						GitHub: config.Repo{
+							Owner: "test",
+							Name:  "test",
+						},
+						Homepage: "https://github.com/goreleaser",
+					},
+				},
+				GitHubURLs: config.GitHubURLs{
+					Download: "https://github.com",
+				},
+				Release: config.Release{
+					GitHub: config.Repo{
+						Owner: "test",
+						Name:  "test",
+					},
+				},
+			},
+		}
+		fn(ctx)
+		for _, a := range []struct {
+			name   string
+			goos   string
+			goarch string
+			goarm  string
+		}{
+			{
+				name:   "bin",
+				goos:   "darwin",
+				goarch: "amd64",
+			},
+			{
+				name:   "arm64",
+				goos:   "linux",
+				goarch: "arm64",
+			},
+			{
+				name:   "armv5",
+				goos:   "linux",
+				goarch: "arm",
+				goarm:  "5",
+			},
+			{
+				name:   "armv6",
+				goos:   "linux",
+				goarch: "arm",
+				goarm:  "6",
+			},
+			{
+				name:   "armv7",
+				goos:   "linux",
+				goarch: "arm",
+				goarm:  "7",
+			},
+		} {
+			var path = filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   fmt.Sprintf("%s.tar.gz", a.name),
+				Path:   path,
+				Goos:   a.goos,
+				Goarch: a.goarch,
+				Goarm:  a.goarm,
+				Type:   artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					"ID":     a.name,
+					"Format": "tar.gz",
+				},
+			})
+			_, err := os.Create(path)
+			assert.NoError(t, err)
+		}
+
+		client := &DummyClient{}
+		var distFile = filepath.Join(folder, name+".rb")
+
+		assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
+		assert.True(t, client.CreatedFile)
+		var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
+		if *update {
+			assert.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
+		}
+		bts, err := ioutil.ReadFile(golden)
+		assert.NoError(t, err)
+		assert.Equal(t, string(bts), client.Content)
+
+		distBts, err := ioutil.ReadFile(distFile)
+		assert.NoError(t, err)
+		assert.Equal(t, string(bts), string(distBts))
+	}
+}
 
 func TestRunPipeNoDarwin64Build(t *testing.T) {
 	var ctx = &context.Context{
@@ -303,44 +429,131 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 	assert.NoError(t, err)
 	defer f.Close()
 
-	osarchs := []struct {
-		goos   string
-		goarch string
+	tests := []struct {
+		expectedError error
+		osarchs       []struct {
+			goos   string
+			goarch string
+			goarm  string
+		}
 	}{
-		{goos: "darwin", goarch: "amd64"},
-		{goos: "linux", goarch: "amd64"},
+		{
+			expectedError: ErrMultipleArchivesSameOS,
+			osarchs: []struct {
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					goos:   "darwin",
+					goarch: "amd64",
+				},
+				{
+					goos:   "darwin",
+					goarch: "amd64",
+				},
+			},
+		},
+		{
+			expectedError: ErrMultipleArchivesSameOS,
+			osarchs: []struct {
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					goos:   "linux",
+					goarch: "amd64",
+				},
+				{
+					goos:   "linux",
+					goarch: "amd64",
+				},
+			},
+		},
+		{
+			expectedError: ErrMultipleArchivesSameOS,
+			osarchs: []struct {
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					goos:   "linux",
+					goarch: "arm64",
+				},
+				{
+					goos:   "linux",
+					goarch: "arm64",
+				},
+			},
+		},
+		{
+			expectedError: ErrMultipleArchivesSameOS,
+			osarchs: []struct {
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "6",
+				},
+				{
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "6",
+				},
+			},
+		},
+		{
+			expectedError: ErrMultipleArchivesSameOS,
+			osarchs: []struct {
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "5",
+				},
+				{
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "6",
+				},
+				{
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "7",
+				},
+			},
+		},
 	}
 
-	for idx, ttt := range osarchs {
-		t.Run(ttt.goos, func(tt *testing.T) {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   fmt.Sprintf("bin%d", idx),
-				Path:   f.Name(),
-				Goos:   ttt.goos,
-				Goarch: ttt.goarch,
-				Type:   artifact.UploadableArchive,
-				Extra: map[string]interface{}{
-					"ID":     "foo",
-					"Format": "tar.gz",
-				},
+	for _, test := range tests {
+		for idx, ttt := range test.osarchs {
+			t.Run(ttt.goarch, func(tt *testing.T) {
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   fmt.Sprintf("bin%d", idx),
+					Path:   f.Name(),
+					Goos:   ttt.goos,
+					Goarch: ttt.goarch,
+					Type:   artifact.UploadableArchive,
+					Extra: map[string]interface{}{
+						"ID":     fmt.Sprintf("foo%d", idx),
+						"Format": "tar.gz",
+					},
+				})
 			})
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   fmt.Sprintf("bin%d", idx),
-				Path:   f.Name(),
-				Goos:   ttt.goos,
-				Goarch: ttt.goarch,
-				Type:   artifact.UploadableArchive,
-				Extra: map[string]interface{}{
-					"ID":     "bar",
-					"Format": "tar.gz",
-				},
-			})
-			client := &DummyClient{}
-			assert.Equal(t, ErrMultipleArchivesSameOS, doRun(ctx, ctx.Config.Brews[0], client))
-			assert.False(t, client.CreatedFile)
-			// clean the artifacts for the next run
-			ctx.Artifacts = artifact.New()
-		})
+		}
+		client := &DummyClient{}
+		assert.Equal(t, test.expectedError, doRun(ctx, ctx.Config.Brews[0], client))
+		assert.False(t, client.CreatedFile)
+		// clean the artifacts for the next run
+		ctx.Artifacts = artifact.New()
 	}
 }
 

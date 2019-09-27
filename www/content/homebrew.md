@@ -15,6 +15,9 @@ and the
 [formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md)
 for more details.
 
+**Note**: If you have multiple arm 32-bit versions in each `build` section, and
+you do not specify any `ids` in the brew section (default to all artifacts), then goreleaser will fail.
+
 ```yml
 # .goreleaser.yml
 brews:
@@ -28,6 +31,11 @@ brews:
     ids:
     - foo
     - bar
+
+    # GOARM to specify which 32-bit arm version to use if there are multiple versions
+    # from the build section. Brew formulas support atm only one 32-bit version.
+    # Default is 6 for all artifacts or each id if there a multiple versions.
+    goarm: 6
 
 
     # NOTE: make sure the url_template, the token and given repo (github or gitlab) owner and name are from the
@@ -145,6 +153,15 @@ class Program < Formula
   elsif os.Linux?
     url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_Linux_64bit.zip"
     sha256 "b41bebd25fd7bb1a67dc2cd5ee12c9f67073094567fdf7b3871f05fd74a45fdd"
+    if Hardware::CPU.arm?
+      if Hardware::CPU.is_64_bit?
+        url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_Linux_arm64.zip"
+            sha256 "97cadca3c3c3f36388a4a601acf878dd356d6275a976bee516798b72bfdbeecf"
+      else
+        url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_Linux_armv7.zip"
+        sha256 "78f31239430eaaec01df783e2a3443753a8126c325292ed8ddb1658ddd2b401d"
+      end
+    end
   end
 
   depends_on "git"
