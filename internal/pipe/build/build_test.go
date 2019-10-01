@@ -340,6 +340,10 @@ func TestExtWindows(t *testing.T) {
 	assert.Equal(t, ".exe", extFor("windows_386"))
 }
 
+func TestExtWasm(t *testing.T) {
+	assert.Equal(t, ".wasm", extFor("js_wasm"))
+}
+
 func TestExtOthers(t *testing.T) {
 	assert.Empty(t, "", extFor("linux_amd64"))
 	assert.Empty(t, "", extFor("linuxwin_386"))

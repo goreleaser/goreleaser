@@ -91,6 +91,7 @@ func TestBuild(t *testing.T) {
 					"darwin_amd64",
 					"windows_amd64",
 					"linux_arm_6",
+					"js_wasm",
 				},
 				Asmflags: []string{".=", "all="},
 				Gcflags:  []string{"all="},
@@ -106,6 +107,9 @@ func TestBuild(t *testing.T) {
 		var ext string
 		if strings.HasPrefix(target, "windows") {
 			ext = ".exe"
+		}
+		if target == "js_wasm" {
+			ext = ".wasm"
 		}
 		var err = Default.Build(ctx, build, api.Options{
 			Target: target,
@@ -161,6 +165,18 @@ func TestBuild(t *testing.T) {
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				"Ext":    ".exe",
+				"Binary": "foo",
+				"ID":     "foo",
+			},
+		},
+		{
+			Name:   "foo",
+			Path:   filepath.Join(folder, "dist", "js_wasm", "foo"),
+			Goos:   "js",
+			Goarch: "wasm",
+			Type:   artifact.Binary,
+			Extra: map[string]interface{}{
+				"Ext":    ".wasm",
 				"Binary": "foo",
 				"ID":     "foo",
 			},

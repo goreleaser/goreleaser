@@ -131,6 +131,9 @@ func extFor(target string) string {
 	if strings.Contains(target, "windows") {
 		return ".exe"
 	}
+	if target == "js_wasm" {
+		return ".wasm"
+	}
 	return ""
 }
 
