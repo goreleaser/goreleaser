@@ -93,7 +93,11 @@ func valid(target target) bool {
 // list from https://golang.org/doc/install/source#environment
 // nolint: gochecknoglobals
 var validTargets = []string{
+	"aixppc64",
+	"android386",
+	"androidamd64",
 	"androidarm",
+	"androidarm64",
 	"darwin386",
 	"darwinamd64",
 	// "darwinarm", - requires admin rights and other ios stuff
@@ -122,6 +126,7 @@ var validTargets = []string{
 	"openbsdarm",
 	"plan9386",
 	"plan9amd64",
+	"plan9arm",
 	"solarisamd64",
 	"windows386",
 	"windowsamd64",

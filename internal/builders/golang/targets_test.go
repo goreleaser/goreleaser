@@ -62,7 +62,11 @@ func TestGoosGoarchCombos(t *testing.T) {
 		valid bool
 	}{
 		// valid targets:
+		{"aix", "ppc64", true},
+		{"android", "386", true},
+		{"android", "amd64", true},
 		{"android", "arm", true},
+		{"android", "arm64", true},
 		{"darwin", "386", true},
 		{"darwin", "amd64", true},
 		{"dragonfly", "amd64", true},
@@ -89,6 +93,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"openbsd", "arm", true},
 		{"plan9", "386", true},
 		{"plan9", "amd64", true},
+		{"plan9", "arm", true},
 		{"solaris", "amd64", true},
 		{"windows", "386", true},
 		{"windows", "amd64", true},
