@@ -102,6 +102,7 @@ var validTargets = []string{
 	"freebsd386",
 	"freebsdamd64",
 	"freebsdarm",
+	"jswasm",
 	"linux386",
 	"linuxamd64",
 	"linuxarm",
