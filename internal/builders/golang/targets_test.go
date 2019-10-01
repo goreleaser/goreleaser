@@ -69,6 +69,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"freebsd", "386", true},
 		{"freebsd", "amd64", true},
 		{"freebsd", "arm", true},
+		{"illumos", "amd64", true},
 		{"linux", "386", true},
 		{"linux", "amd64", true},
 		{"linux", "arm", true},
