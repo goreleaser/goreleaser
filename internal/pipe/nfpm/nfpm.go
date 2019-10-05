@@ -146,7 +146,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		Arch:        arch,
 		Platform:    "linux",
 		Name:        ctx.Config.ProjectName,
-		Version:     ctx.Git.CurrentTag,
+		Version:     ctx.Version,
 		Section:     "",
 		Priority:    "",
 		Epoch:       fpm.Epoch,

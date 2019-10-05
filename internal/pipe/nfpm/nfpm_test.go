@@ -20,6 +20,7 @@ func TestDescription(t *testing.T) {
 
 func TestRunPipeNoFormats(t *testing.T) {
 	var ctx = &context.Context{
+		Version: "1.0.0",
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.0",
 		},
@@ -45,6 +46,7 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 			},
 		},
 	})
+	ctx.Version = "1.2.3"
 	ctx.Git = context.GitInfo{
 		CurrentTag: "v1.2.3",
 	}
@@ -211,6 +213,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 			},
 		},
 	})
+	ctx.Version = "1.2.3"
 	ctx.Git = context.GitInfo{
 		CurrentTag: "v1.2.3",
 	}
