@@ -14,7 +14,7 @@ require (
 	github.com/google/go-github/v25 v25.1.3
 	github.com/goreleaser/nfpm v0.13.0
 	github.com/imdario/mergo v0.3.7
-	github.com/jarcoal/httpmock v0.0.0-20180424175123-9c70cfe4a1da
+	github.com/jarcoal/httpmock v1.0.4
 	github.com/kamilsk/retry/v4 v4.3.1
 	github.com/mattn/go-zglob v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
