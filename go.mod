@@ -5,7 +5,7 @@ go 1.13
 require (
 	code.gitea.io/gitea v1.10.0-dev.0.20190711052757-a0820e09fbf7
 	code.gitea.io/sdk/gitea v0.0.0-20190915142708-a6d0aab59332
-	github.com/Masterminds/semver v1.5.0
+	github.com/Masterminds/semver/v3 v3.0.1
 	github.com/apex/log v1.1.1
 	github.com/aws/aws-sdk-go v1.25.6
 	github.com/caarlos0/ctrlc v1.0.0
