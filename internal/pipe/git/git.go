@@ -99,11 +99,10 @@ func validate(ctx *context.Context) error {
 	if ctx.SkipValidate {
 		return pipe.ErrSkipValidateEnabled
 	}
-	out, err := git.Run("status", "--porcelain")
-	if strings.TrimSpace(out) != "" || err != nil {
-		return ErrDirty{status: out}
+	if hasDiff() {
+		return diffErr()
 	}
-	_, err = git.Clean(git.Run("describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag))
+	_, err := git.Clean(git.Run("describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag))
 	if err != nil {
 		return ErrWrongRef{
 			commit: ctx.Git.Commit,
@@ -111,6 +110,20 @@ func validate(ctx *context.Context) error {
 		}
 	}
 	return nil
+}
+
+func diffErr() error {
+	out, err := git.Run("diff")
+	if err != nil {
+		// in theory this will never happen...
+		return ErrDirty{status: err.Error()}
+	}
+	return ErrDirty{status: out}
+}
+
+func hasDiff() bool {
+	out, err := git.Run("status", "--porcelain")
+	return strings.TrimSpace(out) != "" || err != nil
 }
 
 func getShortCommit() (string, error) {
