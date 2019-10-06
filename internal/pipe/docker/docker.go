@@ -40,6 +40,11 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Goarch == "" {
 			docker.Goarch = "amd64"
 		}
+		for _, f := range docker.Files {
+			if f == "." || strings.HasPrefix(f, ctx.Config.Dist) {
+				return fmt.Errorf("invalid docker.files: can't be . or inside dist folder: %s", f)
+			}
+		}
 	}
 	// only set defaults if there is exactly 1 docker setup in the config file.
 	if len(ctx.Config.Dockers) != 1 {

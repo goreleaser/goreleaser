@@ -732,6 +732,34 @@ func TestDefaultNoDockers(t *testing.T) {
 	assert.Empty(t, ctx.Config.Dockers)
 }
 
+func TestDefaultFilesDot(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dist: "/tmp/distt",
+			Dockers: []config.Docker{
+				{
+					Files: []string{"./lala", "./lolsob", "."},
+				},
+			},
+		},
+	}
+	assert.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: .`)
+}
+
+func TestDefaultFilesDis(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Dist: "/tmp/dist",
+			Dockers: []config.Docker{
+				{
+					Files: []string{"./fooo", "/tmp/dist/asdasd/asd", "./bar"},
+				},
+			},
+		},
+	}
+	assert.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: /tmp/dist/asdasd/asd`)
+}
+
 func TestDefaultSet(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
