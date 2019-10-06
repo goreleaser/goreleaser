@@ -85,7 +85,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context) error {
-	var g = semerrgroup.New(ctx.Parallelism)
+	var g = semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, docker := range ctx.Config.Dockers {
 		docker := docker
 		g.Go(func() error {

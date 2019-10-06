@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/stretchr/testify/require"
 )
 
@@ -53,4 +54,36 @@ func TestSemaphoreOrderError(t *testing.T) {
 	}
 	require.EqualError(t, g.Wait(), "fake err")
 	require.Equal(t, []int{0}, output)
+}
+
+func TestSemaphoreSkipAware(t *testing.T) {
+	var g = NewSkipAware(New(1))
+	var lock sync.Mutex
+	var counter int
+	for i := 0; i < 10; i++ {
+		g.Go(func() error {
+			time.Sleep(10 * time.Millisecond)
+			lock.Lock()
+			counter++
+			lock.Unlock()
+			return pipe.Skip("fake skip")
+		})
+	}
+	require.EqualError(t, g.Wait(), "fake skip")
+	require.Equal(t, counter, 10)
+}
+
+func TestSemaphoreSkipAndRealError(t *testing.T) {
+	var g = NewSkipAware(New(10))
+	for i := 0; i < 100; i++ {
+		g.Go(func() error {
+			time.Sleep(10 * time.Millisecond)
+			return pipe.Skip("fake skip")
+		})
+	}
+	g.Go(func() error {
+		time.Sleep(10 * time.Millisecond)
+		return fmt.Errorf("errrrrr")
+	})
+	require.EqualError(t, g.Wait(), "errrrrr")
 }
