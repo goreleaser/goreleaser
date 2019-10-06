@@ -30,5 +30,5 @@ require (
 	gopkg.in/yaml.v2 v2.2.4
 )
 
-// Fix invalid pseudo-version: revision is longer than canonical (6fd6a9bfe14e)
-replace github.com/go-macaron/cors => github.com/go-macaron/cors v0.0.0-20190418220122-6fd6a9bfe14e
+// Fix invalid pseudo-version: revision is longer than canonical (b0274f40d4c7)
+replace github.com/go-macaron/cors => github.com/go-macaron/cors v0.0.0-20190925001837-b0274f40d4c7
