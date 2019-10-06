@@ -73,9 +73,9 @@ type Context struct {
 
 // Semver represents a semantic version
 type Semver struct {
-	Major      int64
-	Minor      int64
-	Patch      int64
+	Major      uint64
+	Minor      uint64
+	Patch      uint64
 	Prerelease string
 }
 
