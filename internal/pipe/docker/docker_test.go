@@ -232,6 +232,35 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels: noLabels,
 			assertError:       testlib.AssertSkipped,
 		},
+		"one_img_error_with_skip_push": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/one_img_error_with_skip_push:true",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile.true",
+					Binaries:   []string{"mybin"},
+					SkipPush:   "true",
+				},
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/one_img_error_with_skip_push:false",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile.false",
+					Binaries:   []string{"mybin"},
+					SkipPush:   "true",
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/one_img_error_with_skip_push:true",
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldErr("failed to build docker image"),
+		},
 		"valid_no_latest": {
 			dockers: []config.Docker{
 				{
@@ -531,6 +560,7 @@ func TestRunPipe(t *testing.T) {
 				Dist:        dist,
 				Dockers:     docker.dockers,
 			})
+			ctx.Parallelism = 1
 			ctx.Env = docker.env
 			ctx.Version = "1.0.0"
 			ctx.Git = context.GitInfo{
