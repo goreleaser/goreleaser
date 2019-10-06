@@ -41,7 +41,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			docker.Goarch = "amd64"
 		}
 		for _, f := range docker.Files {
-			if f == "." || filepath.HasPrefix(f, ctx.Config.Dist) {
+			if f == "." || strings.HasPrefix(f, ctx.Config.Dist) {
 				return fmt.Errorf("invalid docker.files: can't be . or inside dist folder: %s", f)
 			}
 		}
