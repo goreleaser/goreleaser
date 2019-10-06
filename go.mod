@@ -12,6 +12,7 @@ require (
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/fatih/color v1.7.0
 	github.com/google/go-github/v25 v25.1.3
+	github.com/google/go-github/v28 v28.1.1
 	github.com/goreleaser/nfpm v0.13.0
 	github.com/imdario/mergo v0.3.7
 	github.com/jarcoal/httpmock v0.0.0-20180424175123-9c70cfe4a1da
