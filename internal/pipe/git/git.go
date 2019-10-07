@@ -74,7 +74,7 @@ func getGitInfo() (context.GitInfo, error) {
 		return context.GitInfo{}, errors.Wrap(err, "couldn't get remote URL")
 	}
 	tag, err := getTag()
-	if err != nil {
+	if err != nil || tag == "" {
 		return context.GitInfo{
 			Commit:      full,
 			FullCommit:  full,
@@ -135,7 +135,12 @@ func getFullCommit() (string, error) {
 }
 
 func getTag() (string, error) {
-	return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
+	// Even when version sort is used in git-tag[1], tagnames with the same base version
+	// but different suffixes are still sorted lexicographically, resulting e.g. in prerelease tags
+	// appearing after the main release (e.g. "1.0-rc1" after "1.0").
+	// This variable can be specified to determine the sorting order of tags with different suffixes.
+	// https://git-scm.com/docs/git-config/2.19.2#git-config-versionsortsuffix
+	return git.Clean(git.Run("-c", "versionsort.suffix=-", "tag", "-l", "--sort=-v:refname"))
 }
 
 func getURL() (string, error) {
