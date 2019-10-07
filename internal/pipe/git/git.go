@@ -74,7 +74,7 @@ func getGitInfo() (context.GitInfo, error) {
 		return context.GitInfo{}, errors.Wrap(err, "couldn't get remote URL")
 	}
 	tag, err := getTag()
-	if err != nil {
+	if err != nil || tag == "" {
 		return context.GitInfo{
 			Commit:      full,
 			FullCommit:  full,

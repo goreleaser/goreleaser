@@ -73,9 +73,7 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 	testlib.GitCommit(t, "first")
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = false
-	err := Pipe{}.Run(ctx)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "git tag  was not made against commit")
+	assert.EqualError(t, Pipe{}.Run(ctx), `git doesn't contain any tags. Either add a tag or use --snapshot`)
 }
 
 func TestDirty(t *testing.T) {
