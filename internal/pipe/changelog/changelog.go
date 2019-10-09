@@ -122,8 +122,8 @@ func sortEntries(ctx *context.Context, entries []string) []string {
 	var result = make([]string, len(entries))
 	copy(result, entries)
 	sort.Slice(result, func(i, j int) bool {
-		_, imsg := extractCommitInfo(result[i])
-		_, jmsg := extractCommitInfo(result[j])
+		var imsg = extractCommitInfo(result[i])
+		var jmsg = extractCommitInfo(result[j])
 		if direction == "asc" {
 			return strings.Compare(imsg, jmsg) < 0
 		}
@@ -134,17 +134,15 @@ func sortEntries(ctx *context.Context, entries []string) []string {
 
 func remove(filter *regexp.Regexp, entries []string) (result []string) {
 	for _, entry := range entries {
-		_, msg := extractCommitInfo(entry)
-		if !filter.MatchString(msg) {
+		if !filter.MatchString(extractCommitInfo(entry)) {
 			result = append(result, entry)
 		}
 	}
 	return result
 }
 
-func extractCommitInfo(line string) (hash, msg string) {
-	ss := strings.Split(line, " ")
-	return ss[0], strings.Join(ss[1:], " ")
+func extractCommitInfo(line string) string {
+	return strings.Join(strings.Split(line, " ")[1:], " ")
 }
 
 func getChangelog(tag string) (string, error) {

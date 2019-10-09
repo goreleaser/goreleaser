@@ -192,8 +192,7 @@ func TestChangelogSort(t *testing.T) {
 			require.Len(t, entries, len(cfg.Entries))
 			var changes []string
 			for _, line := range entries {
-				_, msg := extractCommitInfo(line)
-				changes = append(changes, msg)
+				changes = append(changes, extractCommitInfo(line))
 			}
 			require.EqualValues(t, cfg.Entries, changes)
 		})
