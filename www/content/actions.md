@@ -22,13 +22,13 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v1
       -
         name: Set up Go
-        uses: actions/setup-go@master
+        uses: actions/setup-go@v1
       -
         name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@master
+        uses: goreleaser/goreleaser-action@v1
         with:
           version: latest
           args: release
