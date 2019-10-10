@@ -11,7 +11,6 @@ Prerequisites:
 
 - `make`
 - [Go 1.11+](https://golang.org/doc/install)
-- `rpmbuild` (`apt get install rpm`/`brew install rpm`)
 - [snapcraft](https://snapcraft.io/)
 - [Docker](https://www.docker.com/)
 - `gpg` (probably already installed on your system)
