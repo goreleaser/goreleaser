@@ -1,0 +1,14 @@
+# This file contains all available configuration options
+# with their default values.
+
+# options for analysis running
+run:
+  tests: false
+
+linters:
+  enable-all: true
+  disable:
+    - wsl
+    - lll
+    - funlen
+    - godox
