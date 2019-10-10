@@ -37,7 +37,7 @@ lint:
 	# TODO: fix funlen issues
 	# TODO: fix godox issues
 	# TODO: fix wsl issues
-	./bin/golangci-lint run --tests=false --enable-all --disable wsl --disable lll --disable funlen --disable godox ./...
+	./bin/golangci-lint run ./...
 	./bin/misspell -error **/*
 .PHONY: lint
 
