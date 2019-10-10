@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+# Only test on master so depandabot can actually work.
+test "$TRAVIS_BRANCH" = "master" || exit 0
+
+go mod tidy -v
+git diff HEAD
+git diff-index --quiet HEAD

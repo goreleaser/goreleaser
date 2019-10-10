@@ -43,9 +43,7 @@ lint:
 
 # Clean go.mod
 go-mod-tidy:
-	@go mod tidy -v
-	@git diff HEAD
-	@git diff-index --quiet HEAD
+	./scripts/tidy
 .PHONY: go-mod-tidy
 
 # Run all the tests and code checks
