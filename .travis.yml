@@ -7,7 +7,6 @@ services:
 addons:
   apt:
     packages:
-    - rpm
     - snapd
 env:
   - PATH=/snap/bin:$PATH

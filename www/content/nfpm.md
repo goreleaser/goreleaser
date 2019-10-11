@@ -68,13 +68,11 @@ nfpms:
       - zsh
 
     # Packages your package recommends installing.
-    # For RPM packages rpmbuild >= 4.13 is required
     recommends:
       - bzr
       - gtk
 
     # Packages your package suggests installing.
-    # For RPM packages rpmbuild >= 4.13 is required
     suggests:
       - cvs
       - ksh
@@ -148,7 +146,3 @@ nfpms:
 ```
 
 > Learn more about the [name template engine](/templates).
-
-Note that GoReleaser will not install `rpmbuild` or any dependencies for you.
-As for now, `rpmbuild` is recommended if you want to generate rpm packages.
-You can install it with `apt-get install rpm` or `brew install rpm`.
