@@ -190,8 +190,8 @@ github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
-github.com/goreleaser/nfpm v1.0.0-beta2 h1:2biY3T4TubOBvnadjgpqnaaRbs8Th9HGTkJPBCToH48=
-github.com/goreleaser/nfpm v1.0.0-beta2/go.mod h1:MFbtRv5hRxynPKwC29Gg18yqcyRjPuB6bL/ewxxVGKU=
+github.com/goreleaser/nfpm v1.0.0-beta3 h1:7L4lgEPEHcohZxq4nZyPkXhiQhmf9XfLLi+Kf1lG7NM=
+github.com/goreleaser/nfpm v1.0.0-beta3/go.mod h1:MFbtRv5hRxynPKwC29Gg18yqcyRjPuB6bL/ewxxVGKU=
 github.com/gorilla/context v1.1.1/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
 github.com/gorilla/mux v1.6.2/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
 github.com/gorilla/pat v0.0.0-20180118222023-199c85a7f6d1/go.mod h1:YeAe0gNeiNT5hoiZRI4yiOky6jVdNvfO2N6Kav/HmxY=
