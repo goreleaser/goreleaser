@@ -110,8 +110,8 @@ will probably look like this:
 
 ```yaml
 # goreleaser.yml
-archive:
-  format: gz
+archives:
+- format: gz
   files:
   - none*
 ```
