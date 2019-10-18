@@ -19,13 +19,18 @@ func TestPipeDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.String())
 }
 
-func TestRunPipe(t *testing.T) {
+func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(t, err)
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	assert.NoError(t, err)
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
 	assert.NoError(t, err)
+	filteredtarfile, err := os.Create(filepath.Join(folder, "filtered.tar.gz"))
+	assert.NoError(t, err)
+	filtereddebfile, err := os.Create(filepath.Join(folder, "filtered.deb"))
+	assert.NoError(t, err)
+
 	var config = config.Project{
 		Dist: folder,
 		Release: config.Release{
@@ -41,11 +46,33 @@ func TestRunPipe(t *testing.T) {
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
+		Extra: map[string]interface{}{
+			"ID": "foo",
+		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
 		Path: debfile.Name(),
+		Extra: map[string]interface{}{
+			"ID": "foo",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "filtered.tar.gz",
+		Path: filteredtarfile.Name(),
+		Extra: map[string]interface{}{
+			"ID": "bar",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.LinuxPackage,
+		Name: "filtered.deb",
+		Path: filtereddebfile.Name(),
+		Extra: map[string]interface{}{
+			"ID": "bar",
+		},
 	})
 	client := &DummyClient{}
 	assert.NoError(t, doPublish(ctx, client))
@@ -53,6 +80,74 @@ func TestRunPipe(t *testing.T) {
 	assert.True(t, client.UploadedFile)
 	assert.Contains(t, client.UploadedFileNames, "bin.deb")
 	assert.Contains(t, client.UploadedFileNames, "bin.tar.gz")
+	assert.Contains(t, client.UploadedFileNames, "filtered.deb")
+	assert.Contains(t, client.UploadedFileNames, "filtered.tar.gz")
+}
+
+func TestRunPipeWithIDsThenFilters(t *testing.T) {
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(t, err)
+	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
+	assert.NoError(t, err)
+	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
+	assert.NoError(t, err)
+	filteredtarfile, err := os.Create(filepath.Join(folder, "filtered.tar.gz"))
+	assert.NoError(t, err)
+	filtereddebfile, err := os.Create(filepath.Join(folder, "filtered.deb"))
+	assert.NoError(t, err)
+
+	var config = config.Project{
+		Dist: folder,
+		Release: config.Release{
+			GitHub: config.Repo{
+				Owner: "test",
+				Name:  "test",
+			},
+			IDs: []string{"foo"},
+		},
+	}
+	var ctx = context.New(config)
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "bin.tar.gz",
+		Path: tarfile.Name(),
+		Extra: map[string]interface{}{
+			"ID": "foo",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.LinuxPackage,
+		Name: "bin.deb",
+		Path: debfile.Name(),
+		Extra: map[string]interface{}{
+			"ID": "foo",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "filtered.tar.gz",
+		Path: filteredtarfile.Name(),
+		Extra: map[string]interface{}{
+			"ID": "bar",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.LinuxPackage,
+		Name: "filtered.deb",
+		Path: filtereddebfile.Name(),
+		Extra: map[string]interface{}{
+			"ID": "bar",
+		},
+	})
+	client := &DummyClient{}
+	assert.NoError(t, doPublish(ctx, client))
+	assert.True(t, client.CreatedRelease)
+	assert.True(t, client.UploadedFile)
+	assert.Contains(t, client.UploadedFileNames, "bin.deb")
+	assert.Contains(t, client.UploadedFileNames, "bin.tar.gz")
+	assert.NotContains(t, client.UploadedFileNames, "filtered.deb")
+	assert.NotContains(t, client.UploadedFileNames, "filtered.tar.gz")
 }
 
 func TestRunPipeReleaseCreationFailed(t *testing.T) {
