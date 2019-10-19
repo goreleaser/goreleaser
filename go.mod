@@ -7,12 +7,12 @@ require (
 	code.gitea.io/sdk/gitea v0.0.0-20190915142708-a6d0aab59332
 	github.com/Masterminds/semver/v3 v3.0.1
 	github.com/apex/log v1.1.1
-	github.com/aws/aws-sdk-go v1.25.9
+	github.com/aws/aws-sdk-go v1.25.11
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/fatih/color v1.7.0
 	github.com/google/go-github/v28 v28.1.1
-	github.com/goreleaser/nfpm v0.13.0
+	github.com/goreleaser/nfpm v1.0.0-beta3
 	github.com/imdario/mergo v0.3.8
 	github.com/jarcoal/httpmock v1.0.4
 	github.com/kamilsk/retry/v4 v4.3.1
