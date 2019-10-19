@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
+	"github.com/goreleaser/goreleaser/internal/pipe/nexus_raw"
 	"github.com/goreleaser/goreleaser/internal/pipe/put"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/pipe/s3"
@@ -47,6 +48,7 @@ var publishers = []Publisher{
 	// brew and scoop use the release URL, so, they should be last
 	brew.Pipe{},
 	scoop.Pipe{},
+	nexus_raw.Pipe{},
 }
 
 // Run the pipe

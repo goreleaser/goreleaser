@@ -340,6 +340,14 @@ type Put struct {
 	Signature      bool     `yaml:",omitempty"`
 }
 
+type NexusRaw struct {
+	Url        string `yaml:",omitempty"`
+	Repository string `yaml:",omitempty"`
+	Directory  string `yaml:",omitempty"`
+	Username   string `yaml:",omitempty"`
+	Password   string `yaml:",omitempty"`
+}
+
 // Project includes all project configuration
 type Project struct {
 	ProjectName   string      `yaml:"project_name,omitempty"`
@@ -359,6 +367,7 @@ type Project struct {
 	Checksum      Checksum    `yaml:",omitempty"`
 	Dockers       []Docker    `yaml:",omitempty"`
 	Artifactories []Put       `yaml:",omitempty"`
+	NexusRaws     []NexusRaw  `yaml:"nexus_raws,omitempty"`
 	Puts          []Put       `yaml:",omitempty"`
 	S3            []S3        `yaml:"s3,omitempty"`
 	Blob          []Blob      `yaml:"blob,omitempty"` // TODO: remove this
