@@ -21,6 +21,12 @@ release:
     owner: user
     name: repo
 
+  # IDs of the archives to use.
+  # Defaults to all.
+  ids:
+    - foo
+    - bar
+
   # If set to true, will not auto-publish the release.
   # Default is false.
   draft: true
@@ -53,6 +59,12 @@ release:
     owner: user
     name: repo
 
+  # IDs of the archives to use.
+  # Defaults to all.
+  ids:
+    - foo
+    - bar
+
   # You can change the name of the GitLab release.
   # Default is `{{.Tag}}`
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
@@ -72,6 +84,12 @@ release:
   gitea:
     owner: user
     name: repo
+
+  # IDs of the archives to use.
+  # Defaults to all.
+  ids:
+    - foo
+    - bar
 
   # You can change the name of the Gitea release.
   # Default is `{{.Tag}}`

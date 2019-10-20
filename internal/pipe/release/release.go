@@ -122,8 +122,8 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	if err != nil {
 		return err
 	}
-	var g = semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(
+
+	var filters = []artifact.Filter{
 		artifact.Or(
 			artifact.ByType(artifact.UploadableArchive),
 			artifact.ByType(artifact.UploadableBinary),
@@ -131,7 +131,14 @@ func doPublish(ctx *context.Context, client client.Client) error {
 			artifact.ByType(artifact.Signature),
 			artifact.ByType(artifact.LinuxPackage),
 		),
-	).List() {
+	}
+
+	if len(ctx.Config.Release.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
+	}
+
+	var g = semerrgroup.New(ctx.Parallelism)
+	for _, artifact := range ctx.Artifacts.Filter(artifact.And(filters...)).List() {
 		artifact := artifact
 		g.Go(func() error {
 			var repeats uint
