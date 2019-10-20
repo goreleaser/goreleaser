@@ -1,3 +1,4 @@
+// Package nexus_raw provides a Pipe that push artifacts to a Sonatype Nexus repository of type 'raw'
 package nexus_raw
 
 import (
@@ -29,8 +30,9 @@ func (Pipe) Publish(ctx *context.Context) error {
 		return pipe.Skip("sonatype nexus section is not configured")
 	}
 	for _, instance := range ctx.Config.NexusRaws {
-		if skipErr := checkConfig(&instance); skipErr != nil {
-			return pipe.Skip(skipErr.Error())
+		instance := instance
+		if err := checkConfig(&instance); err != nil {
+			return err
 		}
 	}
 
@@ -73,7 +75,7 @@ func uploadAsset(nexus *config.NexusRaw, artif *artifact.Artifact) error {
 		return err
 	}
 
-	url := fmt.Sprintf("%s/service/rest/v1/components?repository=%s", nexus.Url, nexus.Repository)
+	url := fmt.Sprintf("%s/service/rest/v1/components?repository=%s", nexus.URL, nexus.Repository)
 	req, err := http.NewRequest("POST", url, &b)
 	if err != nil {
 		return err
@@ -101,35 +103,35 @@ func uploadAsset(nexus *config.NexusRaw, artif *artifact.Artifact) error {
 func createForm(w *multipart.Writer, artifPath, artifName, nexusDir string) error {
 	asset, err := os.Open(artifPath)
 	if err != nil {
-		return pipe.Skip(fmt.Sprintf("cannot open artifact file: '%s'", err.Error()))
+		return fmt.Errorf("cannot open artifact file: '%s'", err.Error())
 	}
 	defer asset.Close()
 	artifactField, err := w.CreateFormFile("raw.asset1", asset.Name())
 	if err != nil {
-		return pipe.Skip(fmt.Sprintf("cannot create post field for artifact: '%s'", err.Error()))
+		return fmt.Errorf("cannot create post field for artifact: '%s'", err.Error())
 	}
 	if _, err = io.Copy(artifactField, asset); err != nil {
-		return pipe.Skip(fmt.Sprintf("cannot copy artifact contents to post field: '%s'", err.Error()))
+		return fmt.Errorf("cannot copy artifact contents to post field: '%s'", err.Error())
 	}
 	directoryField, err := w.CreateFormField("raw.directory")
 	if err != nil {
-		return pipe.Skip(fmt.Sprintf("cannot create directory field: '%s'", err.Error()))
+		return fmt.Errorf("cannot create directory field: '%s'", err.Error())
 	}
 	if _, err = io.Copy(directoryField, strings.NewReader(nexusDir)); err != nil {
-		return pipe.Skip(fmt.Sprintf("cannot fill directory field contents: '%s'", err.Error()))
+		return fmt.Errorf("cannot fill directory field contents: '%s'", err.Error())
 	}
 	filenameField, err := w.CreateFormField("raw.asset1.filename")
 	if err != nil {
-		return pipe.Skip(fmt.Sprintf("cannot create filename field: '%s'", err.Error()))
+		return fmt.Errorf("cannot create filename field: '%s'", err.Error())
 	}
 	if _, err = io.Copy(filenameField, strings.NewReader(artifName)); err != nil {
-		return pipe.Skip(fmt.Sprintf("cannot fill filename field contents: '%s'", err.Error()))
+		return fmt.Errorf("cannot fill filename field contents: '%s'", err.Error())
 	}
 	return w.Close()
 }
 
 func checkConfig(nexus *config.NexusRaw) error {
-	if nexus.Url == "" {
+	if nexus.URL == "" {
 		return pipe.Skip("nexus_raws section 'url' is not configured properly (missing url)")
 	}
 	if nexus.Repository == "" {

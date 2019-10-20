@@ -340,8 +340,9 @@ type Put struct {
 	Signature      bool     `yaml:",omitempty"`
 }
 
+// Nexus Raw repository configuration
 type NexusRaw struct {
-	Url        string `yaml:",omitempty"`
+	URL        string `yaml:",omitempty"`
 	Repository string `yaml:",omitempty"`
 	Directory  string `yaml:",omitempty"`
 	Username   string `yaml:",omitempty"`

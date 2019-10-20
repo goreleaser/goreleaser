@@ -58,7 +58,7 @@ func TestUpload(t *testing.T) {
 		ProjectName: "testupload",
 		NexusRaws: []config.NexusRaw{
 			{
-				Url:        "http://" + listen,
+				URL:        "http://" + listen,
 				Repository: repositoryName,
 				Directory:  "testDirectory",
 				Username:   "admin",
