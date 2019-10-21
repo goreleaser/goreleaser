@@ -53,22 +53,24 @@ const (
 // Context carries along some data through the pipes
 type Context struct {
 	ctx.Context
-	Config       config.Project
-	Env          Env
-	Token        string
-	TokenType    TokenType
-	Git          GitInfo
-	Artifacts    artifact.Artifacts
-	ReleaseNotes string
-	Version      string
-	Snapshot     bool
-	SkipPublish  bool
-	SkipSign     bool
-	SkipValidate bool
-	RmDist       bool
-	PreRelease   bool
-	Parallelism  int
-	Semver       Semver
+	Config        config.Project
+	Env           Env
+	Token         string
+	TokenType     TokenType
+	Git           GitInfo
+	Artifacts     artifact.Artifacts
+	ReleaseNotes  string
+	ReleaseHeader string
+	ReleaseFooter string
+	Version       string
+	Snapshot      bool
+	SkipPublish   bool
+	SkipSign      bool
+	SkipValidate  bool
+	RmDist        bool
+	PreRelease    bool
+	Parallelism   int
+	Semver        Semver
 }
 
 // Semver represents a semantic version
