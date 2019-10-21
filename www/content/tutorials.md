@@ -15,6 +15,7 @@ Tutorials made by the community.
 - [Shipping Rust Binaries with GoReleaser](https://medium.com/@jondot/shipping-rust-binaries-with-goreleaser-d5aa42a46be0)
 - [Cross compile with CGO and GoReleaser](https://medium.com/@robdefeo/cross-compile-with-cgo-and-goreleaser-6af884731222?source=friends_link&sk=baf6553fa48cb0e28ea3519615f02576)
 - [GoReleaser + Drone + Github: Tutorial](https://medium.com/@fallion/goreleaser-drone-github-tutorial-9a150103cac0)
+- [Go Release Automation with goreleaser + GitHub Actions](https://blog.toshima.ru/2019/10/20/go-release-automation-with-goreleaser.html)
 
 Want to add your tutorial here? Please do! Click on the `improve this page`
 link bellow!
