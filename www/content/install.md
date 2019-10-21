@@ -41,6 +41,12 @@ $ scoop install goreleaser
 Download the `.deb` or `.rpm` from the [releases page][releases] and
 install with `dpkg -i` and `rpm -i` respectively.
 
+**Shell script**:
+
+```
+$ curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
+```
+
 **manually**:
 
 Download the pre-compiled binaries from the [releases page][releases] and

@@ -32,6 +32,8 @@ jobs:
         with:
           version: latest
           args: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 > For detailed intructions please follow GitHub Actions [workflow syntax][syntax].
