@@ -55,7 +55,7 @@ func TestReleaseHeaderProvidedViaFlagDoesntExist(t *testing.T) {
 
 func TestReleaseFooterProvidedViaFlagDoesntExist(t *testing.T) {
 	var ctx = context.New(config.Project{})
-	ctx.ReleaseHeader = "testdata/footer.nope"
+	ctx.ReleaseFooter = "testdata/footer.nope"
 	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/footer.nope: no such file or directory")
 }
 
