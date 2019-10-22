@@ -36,7 +36,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			return err
 		}
 		log.WithField("file", ctx.ReleaseNotes).Info("loaded custom release notes")
-		log.WithField("file", ctx.ReleaseNotes).Debugf("custom release notes: \n%s", string(notes))
+		log.WithField("file", ctx.ReleaseNotes).Debugf("custom release notes: \n%s", notes)
 		ctx.ReleaseNotes = notes
 	}
 	if ctx.Config.Changelog.Skip {
