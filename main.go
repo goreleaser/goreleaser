@@ -147,6 +147,8 @@ func releaseProject(options releaseOptions) error {
 	ctx.Parallelism = options.Parallelism
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.ReleaseNotes = options.ReleaseNotes
+	ctx.ReleaseHeader = options.ReleaseHeader
+	ctx.ReleaseFooter = options.ReleaseFooter
 	ctx.Snapshot = options.Snapshot
 	ctx.SkipPublish = ctx.Snapshot || options.SkipPublish
 	ctx.SkipValidate = ctx.Snapshot || options.SkipValidate
