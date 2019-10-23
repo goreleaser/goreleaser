@@ -1,4 +1,4 @@
-package nexus_raw
+package nexusraw
 
 import (
 	"bytes"

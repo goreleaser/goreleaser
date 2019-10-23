@@ -1,5 +1,5 @@
 // Package nexus_raw provides a Pipe that push artifacts to a Sonatype Nexus repository of type 'raw'
-package nexus_raw
+package nexusraw
 
 import (
 	"bytes"
@@ -41,6 +41,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	}
 
 	for _, nexus := range ctx.Config.NexusRaws {
+		nexus := nexus
 		if err := upload(ctx, &nexus); err != nil {
 			return err
 		}
