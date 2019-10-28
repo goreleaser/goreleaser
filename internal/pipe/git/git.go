@@ -74,7 +74,7 @@ func getGitInfo() (context.GitInfo, error) {
 		return context.GitInfo{}, errors.Wrap(err, "couldn't get remote URL")
 	}
 	tag, err := getTag()
-	if err != nil || tag == "" {
+	if err != nil {
 		return context.GitInfo{
 			Commit:      full,
 			FullCommit:  full,
@@ -99,10 +99,11 @@ func validate(ctx *context.Context) error {
 	if ctx.SkipValidate {
 		return pipe.ErrSkipValidateEnabled
 	}
-	if hasDiff() {
-		return diffErr()
+	out, err := git.Run("status", "--porcelain")
+	if strings.TrimSpace(out) != "" || err != nil {
+		return ErrDirty{status: out}
 	}
-	_, err := git.Clean(git.Run("describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag))
+	_, err = git.Clean(git.Run("describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag))
 	if err != nil {
 		return ErrWrongRef{
 			commit: ctx.Git.Commit,
@@ -110,20 +111,6 @@ func validate(ctx *context.Context) error {
 		}
 	}
 	return nil
-}
-
-func diffErr() error {
-	out, err := git.Run("diff")
-	if err != nil {
-		// in theory this will never happen...
-		return ErrDirty{status: err.Error()}
-	}
-	return ErrDirty{status: out}
-}
-
-func hasDiff() bool {
-	out, err := git.Run("status", "--porcelain")
-	return strings.TrimSpace(out) != "" || err != nil
 }
 
 func getShortCommit() (string, error) {
@@ -135,12 +122,7 @@ func getFullCommit() (string, error) {
 }
 
 func getTag() (string, error) {
-	// Even when version sort is used in git-tag[1], tagnames with the same base version
-	// but different suffixes are still sorted lexicographically, resulting e.g. in prerelease tags
-	// appearing after the main release (e.g. "1.0-rc1" after "1.0").
-	// This variable can be specified to determine the sorting order of tags with different suffixes.
-	// https://git-scm.com/docs/git-config/2.19.2#git-config-versionsortsuffix
-	return git.Clean(git.Run("-c", "versionsort.suffix=-", "tag", "-l", "--sort=-v:refname"))
+	return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
 }
 
 func getURL() (string, error) {

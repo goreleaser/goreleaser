@@ -12,7 +12,7 @@ require (
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/fatih/color v1.7.0
 	github.com/google/go-github/v28 v28.1.1
-	github.com/goreleaser/nfpm v1.0.0
+	github.com/goreleaser/nfpm v1.1.0
 	github.com/imdario/mergo v0.3.8
 	github.com/jarcoal/httpmock v1.0.4
 	github.com/kamilsk/retry/v4 v4.3.1
@@ -29,6 +29,3 @@ require (
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.2.4
 )
-
-// Fix invalid pseudo-version: revision is longer than canonical (b0274f40d4c7)
-replace github.com/go-macaron/cors => github.com/go-macaron/cors v0.0.0-20190925001837-b0274f40d4c7
