@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 
-	"code.gitea.io/gitea/modules/structs"
 	"code.gitea.io/sdk/gitea"
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -72,7 +71,7 @@ func (c *giteaClient) createRelease(ctx *context.Context, title, body string) (*
 	repoName := releaseConfig.Gitea.Name
 	tag := ctx.Git.CurrentTag
 
-	opts := structs.CreateReleaseOption{
+	opts := gitea.CreateReleaseOption{
 		TagName:      tag,
 		Target:       ctx.Git.Commit,
 		Title:        title,
@@ -112,7 +111,7 @@ func (c *giteaClient) updateRelease(ctx *context.Context, title, body string, id
 	repoName := releaseConfig.Gitea.Name
 	tag := ctx.Git.CurrentTag
 
-	opts := structs.EditReleaseOption{
+	opts := gitea.EditReleaseOption{
 		TagName:      tag,
 		Target:       ctx.Git.Commit,
 		Title:        title,
