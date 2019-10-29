@@ -4,8 +4,7 @@ TEST_OPTIONS?=
 
 export PATH := ./bin:$(PATH)
 export GO111MODULE := on
-# enable consistent Go 1.12/1.13 GOPROXY behavior.
-export GOPROXY = https://proxy.golang.org,https://gocenter.io,direct
+export GOPROXY = https://proxy.golang.org,direct
 
 # Install all the build and lint dependencies
 setup:
