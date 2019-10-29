@@ -3,8 +3,7 @@ module github.com/goreleaser/goreleaser
 go 1.13
 
 require (
-	code.gitea.io/gitea v1.10.0-dev.0.20190711052757-a0820e09fbf7
-	code.gitea.io/sdk/gitea v0.0.0-20190915142708-a6d0aab59332
+	code.gitea.io/sdk/gitea v0.0.0-20191013013401-e41e9ea72caa
 	github.com/Masterminds/semver/v3 v3.0.1
 	github.com/apex/log v1.1.1
 	github.com/aws/aws-sdk-go v1.25.11
@@ -25,7 +24,6 @@ require (
 	golang.org/x/net v0.0.0-20191003171128-d98b1b443823 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	google.golang.org/appengine v1.6.4 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.2.4
 )
