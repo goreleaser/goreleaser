@@ -19,7 +19,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.8.1
 	github.com/stretchr/testify v1.4.0
-	github.com/xanzy/go-gitlab v0.20.1
+	github.com/xanzy/go-gitlab v0.21.0
 	gocloud.dev v0.17.0
 	golang.org/x/net v0.0.0-20191003171128-d98b1b443823 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
