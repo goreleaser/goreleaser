@@ -65,28 +65,28 @@ that's the case you will want to make sure GoReleaser is run just once.
 
 ## CircleCI
 
-Here is how to do it with [CircleCI 2.0](https://circleci.com):
+Here is how to do it with [CircleCI](https://circleci.com):
 
 ```yml
 # .circleci/config.yml
-version: 2
-jobs:
-  release:
-    docker:
-      - image: circleci/golang:1.10
-    steps:
-      - checkout
-      - run: curl -sL https://git.io/goreleaser | bash
+version: 2.1
 workflows:
-  version: 2
-  release:
+  main:
     jobs:
       - release:
+          # Only run this job on git tag pushes
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /v[0-9]+(\.[0-9]+)*(-.*)*/
+jobs:
+  release:
+    docker:
+      - image: circleci/golang:1.13
+    steps:
+      - checkout
+      - run: curl -sL https://git.io/goreleaser | bash
 ```
 
 ## Drone
