@@ -99,8 +99,8 @@ github.com/google/martian v2.1.0+incompatible/go.mod h1:9I4somxYTbIHy5NJKHRl3wXi
 github.com/google/martian v2.1.1-0.20190517191504-25dcb96d9e51+incompatible h1:xmapqc1AyLoB+ddYT6r04bD9lIjlOqGaREovi0SzFaE=
 github.com/google/martian v2.1.1-0.20190517191504-25dcb96d9e51+incompatible/go.mod h1:9I4somxYTbIHy5NJKHRl3wXiIaQGbYVAs8BPL6v8lEs=
 github.com/google/pprof v0.0.0-20181206194817-3ea8567a2e57/go.mod h1:zfwlbNMJ+OItoe0UupaVj+oy1omPYYDuagoSzA8v9mc=
-github.com/google/rpmpack v0.0.0-20191023002709-fdc007d8a28c h1:42COf0AiV7jtUUP4lCbmVrM056hG22LMj9+tsNppBuo=
-github.com/google/rpmpack v0.0.0-20191023002709-fdc007d8a28c/go.mod h1:RaTPr0KUf2K7fnZYLNDrr8rxAamWs3iNywJLtQ2AzBg=
+github.com/google/rpmpack v0.0.0-20191101142923-13d81472ccfe h1:P1WflKHEgTAYe39btxYzeds84DhxQSLj4hfoNn0tCyQ=
+github.com/google/rpmpack v0.0.0-20191101142923-13d81472ccfe/go.mod h1:RaTPr0KUf2K7fnZYLNDrr8rxAamWs3iNywJLtQ2AzBg=
 github.com/google/subcommands v1.0.1/go.mod h1:ZjhPrFU+Olkh9WazFPsl27BQ4UPiG37m3yTrtFlrHVk=
 github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=
 github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
@@ -110,8 +110,8 @@ github.com/googleapis/gax-go v2.0.2+incompatible h1:silFMLAnr330+NRuag/VjIGF7TLp
 github.com/googleapis/gax-go v2.0.2+incompatible/go.mod h1:SFVmujtThgffbyetf+mdk2eWhX2bMyUtNHzFKcPA9HY=
 github.com/googleapis/gax-go/v2 v2.0.4 h1:hU4mGcQI4DaAYW+IbTun+2qEZVFxK0ySjQLTbS0VQKc=
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
-github.com/goreleaser/nfpm v1.1.1 h1:tADn59ohg35njs91YiIT9ZZRxT4cUDOY42/Fz5bS8O8=
-github.com/goreleaser/nfpm v1.1.1/go.mod h1:8wf5nlZnhn+afNrzOVpaReZu7hZFAqDxoOVXss3CBrE=
+github.com/goreleaser/nfpm v1.1.2 h1:9+hnNm/h/ANQWLxZixNO562w4tIO/8VlgCwOKwwZTX4=
+github.com/goreleaser/nfpm v1.1.2/go.mod h1:21Xnu+tfYbxNq1ovJwE+uaJ2BiIt/U0JfRD5QbNU8xw=
 github.com/grpc-ecosystem/grpc-gateway v1.8.5/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
 github.com/grpc-ecosystem/grpc-gateway v1.9.2 h1:S+ef0492XaIknb8LMjcwgW2i3cNTzDYMmDrOThOJNWc=
 github.com/grpc-ecosystem/grpc-gateway v1.9.2/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
