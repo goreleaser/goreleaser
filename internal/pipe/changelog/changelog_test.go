@@ -62,38 +62,67 @@ func TestChangelog(t *testing.T) {
 	testlib.GitCommit(t, "fixed bug 2")
 	testlib.GitCommit(t, "ignored: whatever")
 	testlib.GitCommit(t, "docs: whatever")
-	testlib.GitCommit(t, "something about cArs we dont need")
+	testlib.GitCommit(t, "something about cArs")
 	testlib.GitCommit(t, "feat: added that thing")
 	testlib.GitCommit(t, "Merge pull request #999 from goreleaser/some-branch")
 	testlib.GitCommit(t, "this is not a Merge pull request")
 	testlib.GitTag(t, "v0.0.2")
-	var ctx = context.New(config.Project{
-		Dist: folder,
-		Changelog: config.Changelog{
-			Filters: config.Filters{
-				Exclude: []string{
-					"docs:",
-					"ignored:",
-					"(?i)cars",
-					"^Merge pull request",
+	t.Run("ExcludeFilter", func(t *testing.T) {
+		var ctx = context.New(config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Filters: config.Filters{
+					Exclude: []string{
+						"docs:",
+						"ignored:",
+						"(?i)cars",
+						"^Merge pull request",
+					},
 				},
 			},
-		},
-	})
-	ctx.Git.CurrentTag = "v0.0.2"
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	require.NotContains(t, ctx.ReleaseNotes, "first")
-	require.Contains(t, ctx.ReleaseNotes, "added feature 1")
-	require.Contains(t, ctx.ReleaseNotes, "fixed bug 2")
-	require.NotContains(t, ctx.ReleaseNotes, "docs")
-	require.NotContains(t, ctx.ReleaseNotes, "ignored")
-	require.NotContains(t, ctx.ReleaseNotes, "cArs")
-	require.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
+		})
+		ctx.Git.CurrentTag = "v0.0.2"
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+		require.NotContains(t, ctx.ReleaseNotes, "first")
+		require.Contains(t, ctx.ReleaseNotes, "added feature 1")
+		require.Contains(t, ctx.ReleaseNotes, "fixed bug 2")
+		require.NotContains(t, ctx.ReleaseNotes, "docs")
+		require.NotContains(t, ctx.ReleaseNotes, "ignored")
+		require.NotContains(t, ctx.ReleaseNotes, "cArs")
+		require.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
 
-	bts, err := ioutil.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
-	require.NoError(t, err)
-	require.NotEmpty(t, string(bts))
+		bts, err := ioutil.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
+		require.NoError(t, err)
+		require.NotEmpty(t, string(bts))
+	})
+	t.Run("IncludeFilter", func(t *testing.T) {
+		var ctx = context.New(config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Filters: config.Filters{
+					Include: []string{
+						"^feat:.+", // matches anything starting by `fear:
+						".*\\d.*",  // matches anything with a digit
+					},
+				},
+			},
+		})
+		ctx.Git.CurrentTag = "v0.0.2"
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+		require.NotContains(t, ctx.ReleaseNotes, "first")
+		require.Contains(t, ctx.ReleaseNotes, "added feature 1")
+		require.Contains(t, ctx.ReleaseNotes, "fixed bug 2")
+		require.Contains(t, ctx.ReleaseNotes, "Merge pull request #999")
+		require.NotContains(t, ctx.ReleaseNotes, "docs")
+		require.NotContains(t, ctx.ReleaseNotes, "ignored")
+		require.NotContains(t, ctx.ReleaseNotes, "cArs")
+
+		bts, err := ioutil.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
+		require.NoError(t, err)
+		require.NotEmpty(t, string(bts))
+	})
 }
 
 func TestChangelogForGitlab(t *testing.T) {

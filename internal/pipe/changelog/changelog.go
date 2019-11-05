@@ -104,6 +104,16 @@ func buildChangelog(ctx *context.Context) ([]string, error) {
 }
 
 func filterEntries(ctx *context.Context, entries []string) ([]string, error) {
+	include := make([]*regexp.Regexp, 0)
+	for _, filter := range ctx.Config.Changelog.Filters.Include {
+		r, err := regexp.Compile(filter)
+		if err != nil {
+			return entries, err
+		}
+		include = append(include, r)
+	}
+	entries = keep(include, entries)
+
 	for _, filter := range ctx.Config.Changelog.Filters.Exclude {
 		r, err := regexp.Compile(filter)
 		if err != nil {
@@ -130,6 +140,23 @@ func sortEntries(ctx *context.Context, entries []string) []string {
 		return strings.Compare(imsg, jmsg) > 0
 	})
 	return result
+}
+
+func keep(filters []*regexp.Regexp, entries []string) []string {
+	var result []string
+	for _, entry := range entries {
+		for _, filter := range filters {
+			if filter.MatchString(extractCommitInfo(entry)) {
+				result = append(result, entry)
+				break
+			}
+		}
+	}
+
+	if len(filters) > 0 {
+		return result
+	}
+	return entries
 }
 
 func remove(filter *regexp.Regexp, entries []string) (result []string) {
