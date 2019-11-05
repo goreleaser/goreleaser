@@ -110,8 +110,8 @@ github.com/googleapis/gax-go v2.0.2+incompatible h1:silFMLAnr330+NRuag/VjIGF7TLp
 github.com/googleapis/gax-go v2.0.2+incompatible/go.mod h1:SFVmujtThgffbyetf+mdk2eWhX2bMyUtNHzFKcPA9HY=
 github.com/googleapis/gax-go/v2 v2.0.4 h1:hU4mGcQI4DaAYW+IbTun+2qEZVFxK0ySjQLTbS0VQKc=
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
-github.com/goreleaser/nfpm v1.1.3 h1:L4BmcjM6eXFW+zqqn651pOzFTU5dzzb8Y0QC+WG2XIs=
-github.com/goreleaser/nfpm v1.1.3/go.mod h1:GF0n0qOaRORIWzeHrFrDmu7Liw4O9wfPqlafJpz4yOg=
+github.com/goreleaser/nfpm v1.1.4 h1:hj9zONrYaLHW19jwuen8lixghhLXHBXPxDqw4vep54A=
+github.com/goreleaser/nfpm v1.1.4/go.mod h1:GF0n0qOaRORIWzeHrFrDmu7Liw4O9wfPqlafJpz4yOg=
 github.com/grpc-ecosystem/grpc-gateway v1.8.5/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
 github.com/grpc-ecosystem/grpc-gateway v1.9.2 h1:S+ef0492XaIknb8LMjcwgW2i3cNTzDYMmDrOThOJNWc=
 github.com/grpc-ecosystem/grpc-gateway v1.9.2/go.mod h1:vNeuVxBJEsws4ogUvrchl83t/GYV9WGTSLVdBhOQFDY=
