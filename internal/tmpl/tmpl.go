@@ -108,9 +108,13 @@ func (t *Template) Apply(s string) (string, error) {
 	tmpl, err := template.New("tmpl").
 		Option("missingkey=error").
 		Funcs(template.FuncMap{
+			"replace": strings.ReplaceAll,
 			"time": func(s string) string {
 				return time.Now().UTC().Format(s)
 			},
+			"tolower": strings.ToLower,
+			"toupper": strings.ToUpper,
+			"trim":    strings.TrimSpace,
 		}).
 		Parse(s)
 	if err != nil {

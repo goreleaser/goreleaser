@@ -154,23 +154,48 @@ func TestFuncMap(t *testing.T) {
 	for _, tc := range []struct {
 		Template string
 		Name     string
+		Expected string
 	}{
 		{
+			Template: `{{ replace "v1.24" "v" "" }}`,
+			Name:     "replace",
+			Expected: "1.24",
+		},
+		{
 			Template: `{{ time "2006-01-02" }}`,
-			Name:     "YYYY-MM-DD",
+			Name:     "time YYYY-MM-DD",
 		},
 		{
 			Template: `{{ time "01/02/2006" }}`,
-			Name:     "MM/DD/YYYY",
+			Name:     "time MM/DD/YYYY",
 		},
 		{
 			Template: `{{ time "01/02/2006" }}`,
-			Name:     "MM/DD/YYYY",
+			Name:     "time MM/DD/YYYY",
+		},
+		{
+			Template: `{{ tolower "TEST" }}`,
+			Name:     "tolower",
+			Expected: "test",
+		},
+		{
+			Template: `{{ toupper "test" }}`,
+			Name:     "toupper",
+			Expected: "TEST",
+		},
+		{
+			Template: `{{ trim " test " }}`,
+			Name:     "trim",
+			Expected: "test",
 		},
 	} {
 		out, err := New(ctx).Apply(tc.Template)
 		assert.NoError(t, err)
-		assert.NotEmpty(t, out)
+		if tc.Expected != "" {
+			assert.Equal(t, tc.Expected, out)
+		} else {
+			assert.NotEmpty(t, out)
+		}
 	}
 }
 
