@@ -211,7 +211,8 @@ func ByIDs(ids ...string) Filter {
 	for _, id := range ids {
 		id := id
 		filters = append(filters, func(a *Artifact) bool {
-			return a.ExtraOr("ID", "") == id
+			// checksum are allways for all artifacts, so return always true.
+			return a.Type == Checksum || a.ExtraOr("ID", "") == id
 		})
 	}
 	return Or(filters...)
