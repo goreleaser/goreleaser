@@ -59,26 +59,29 @@ func (Pipe) Run(ctx *context.Context) error {
 	for i := range ctx.Config.Signs {
 		cfg := ctx.Config.Signs[i]
 		g.Go(func() error {
+			var filters []artifact.Filter
 			switch cfg.Artifacts {
 			case "checksum":
-				var artifacts = ctx.Artifacts.
-					Filter(artifact.ByType(artifact.Checksum)).
-					List()
-				return sign(ctx, cfg, artifacts)
+				filters = append(filters, artifact.ByType(artifact.Checksum))
+				if len(cfg.IDs) > 0 {
+					log.Warn("when artifacts is `checksum`, `ids` has no effect. ignoring")
+				}
 			case "all":
-				var artifacts = ctx.Artifacts.
-					Filter(artifact.Or(
-						artifact.ByType(artifact.UploadableArchive),
-						artifact.ByType(artifact.UploadableBinary),
-						artifact.ByType(artifact.Checksum),
-						artifact.ByType(artifact.LinuxPackage),
-					)).List()
-				return sign(ctx, cfg, artifacts)
+				filters = append(filters, artifact.Or(
+					artifact.ByType(artifact.UploadableArchive),
+					artifact.ByType(artifact.UploadableBinary),
+					artifact.ByType(artifact.Checksum),
+					artifact.ByType(artifact.LinuxPackage),
+				))
+				if len(cfg.IDs) > 0 {
+					filters = append(filters, artifact.ByIDs(cfg.IDs...))
+				}
 			case "none":
 				return pipe.ErrSkipSignEnabled
 			default:
 				return fmt.Errorf("invalid list of artifacts to sign: %s", cfg.Artifacts)
 			}
+			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
 		})
 	}
 	return g.Wait()

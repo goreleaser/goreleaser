@@ -222,15 +222,19 @@ func TestByIDs(t *testing.T) {
 				"ID": "check",
 			},
 		},
+		{
+			Name: "checksum",
+			Type: Checksum,
+		},
 	}
 	var artifacts = New()
 	for _, a := range data {
 		artifacts.Add(a)
 	}
 
-	require.Len(t, artifacts.Filter(ByIDs("check")).items, 1)
-	require.Len(t, artifacts.Filter(ByIDs("foo")).items, 2)
-	require.Len(t, artifacts.Filter(ByIDs("foo", "bar")).items, 3)
+	require.Len(t, artifacts.Filter(ByIDs("check")).items, 2)
+	require.Len(t, artifacts.Filter(ByIDs("foo")).items, 3)
+	require.Len(t, artifacts.Filter(ByIDs("foo", "bar")).items, 4)
 }
 
 func TestByFormats(t *testing.T) {
