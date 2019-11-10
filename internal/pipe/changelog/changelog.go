@@ -80,18 +80,16 @@ func (Pipe) Run(ctx *context.Context) error {
 		changelogStringJoiner = "   \n"
 	}
 
-	notesBuilder := strings.Builder{}
-	notesBuilder.WriteString("## Changelog\n\n")
-	if ctx.ReleaseHeader != "" {
-		notesBuilder.WriteString(ctx.ReleaseHeader + "\n\n")
-	}
-	changeLog := strings.Join(entries, changelogStringJoiner)
-	notesBuilder.WriteString(changeLog)
-	if ctx.ReleaseFooter != "" {
-		notesBuilder.WriteString(ctx.ReleaseFooter + "\n\n")
-	}
-	notesBuilder.WriteString("\n")
-	ctx.ReleaseNotes = notesBuilder.String()
+	ctx.ReleaseNotes = strings.Join(
+		[]string{
+			ctx.ReleaseHeader,
+			"## Changelog",
+			strings.Join(entries, changelogStringJoiner),
+			ctx.ReleaseFooter,
+		},
+		"\n\n",
+	)
+
 	var path = filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
 	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0644)
