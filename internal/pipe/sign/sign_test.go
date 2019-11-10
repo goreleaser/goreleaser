@@ -88,8 +88,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "linux_amd64/artifact4.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "artifact4_1.0.0_linux_amd64.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig"},
 		},
 		{
 			desc: "sign all artifacts",
@@ -102,8 +102,23 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "linux_amd64/artifact4.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "artifact4_1.0.0_linux_amd64.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig"},
+		},
+		{
+			desc: "sign filtered artifacts",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							IDs:       []string{"foo"},
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"artifact1.sig", "artifact3.sig", "checksum.sig", "checksum2.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig"},
 		},
 		{
 			desc: "sign only checksums",
@@ -116,8 +131,23 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"checksum.sig"},
-			signatureNames: []string{"checksum.sig"},
+			signaturePaths: []string{"checksum.sig", "checksum2.sig"},
+			signatureNames: []string{"checksum.sig", "checksum2.sig"},
+		},
+		{
+			desc: "sign only filtered checksums",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "checksum",
+							IDs:       []string{"foo"},
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"checksum.sig", "checksum2.sig"},
+			signatureNames: []string{"checksum.sig", "checksum2.sig"},
 		},
 		{
 			desc: "sign all artifacts with env",
@@ -141,8 +171,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "linux_amd64/artifact4.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "artifact4_1.0.0_linux_amd64.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig"},
 		},
 	}
 
@@ -164,7 +194,7 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 	ctx.Config.Dist = tmpdir
 
 	// create some fake artifacts
-	var artifacts = []string{"artifact1", "artifact2", "artifact3", "checksum"}
+	var artifacts = []string{"artifact1", "artifact2", "artifact3", "checksum", "checksum2"}
 	err = os.Mkdir(filepath.Join(tmpdir, "linux_amd64"), os.ModePerm)
 	assert.NoError(t, err)
 	for _, f := range artifacts {
@@ -177,16 +207,25 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 		Name: "artifact1",
 		Path: filepath.Join(tmpdir, "artifact1"),
 		Type: artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID": "foo",
+		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "artifact2",
 		Path: filepath.Join(tmpdir, "artifact2"),
 		Type: artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID": "foo3",
+		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "artifact3_1.0.0_linux_amd64",
 		Path: filepath.Join(tmpdir, "artifact3"),
 		Type: artifact.UploadableBinary,
+		Extra: map[string]interface{}{
+			"ID": "foo",
+		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "checksum",
@@ -194,9 +233,17 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 		Type: artifact.Checksum,
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "checksum2",
+		Path: filepath.Join(tmpdir, "checksum2"),
+		Type: artifact.Checksum,
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "artifact4_1.0.0_linux_amd64",
 		Path: filepath.Join(tmpdir, "linux_amd64", "artifact4"),
 		Type: artifact.UploadableBinary,
+		Extra: map[string]interface{}{
+			"ID": "foo3",
+		},
 	})
 
 	// configure the pipeline
