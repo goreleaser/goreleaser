@@ -104,33 +104,33 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 }
 
 func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, error) {
-	var overrided config.NFPMOverridables
-	if err := mergo.Merge(&overrided, fpm.NFPMOverridables); err != nil {
+	var overridden config.NFPMOverridables
+	if err := mergo.Merge(&overridden, fpm.NFPMOverridables); err != nil {
 		return nil, err
 	}
 	perFormat, ok := fpm.Overrides[format]
 	if ok {
-		err := mergo.Merge(&overrided, perFormat, mergo.WithOverride)
+		err := mergo.Merge(&overridden, perFormat, mergo.WithOverride)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return &overrided, nil
+	return &overridden, nil
 }
 
 func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries []*artifact.Artifact) error {
-	overrided, err := mergeOverrides(fpm, format)
+	overridden, err := mergeOverrides(fpm, format)
 	if err != nil {
 		return err
 	}
 	name, err := tmpl.New(ctx).
-		WithArtifact(binaries[0], overrided.Replacements).
-		Apply(overrided.NameTemplate)
+		WithArtifact(binaries[0], overridden.Replacements).
+		Apply(overridden.NameTemplate)
 	if err != nil {
 		return err
 	}
 	var files = map[string]string{}
-	for k, v := range overrided.Files {
+	for k, v := range overridden.Files {
 		files[k] = v
 	}
 	var log = log.WithField("package", name+"."+format).WithField("arch", arch)
@@ -157,18 +157,18 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		License:     fpm.License,
 		Bindir:      fpm.Bindir,
 		Overridables: nfpm.Overridables{
-			Conflicts:    overrided.Conflicts,
-			Depends:      overrided.Dependencies,
-			Recommends:   overrided.Recommends,
-			Suggests:     overrided.Suggests,
-			EmptyFolders: overrided.EmptyFolders,
+			Conflicts:    overridden.Conflicts,
+			Depends:      overridden.Dependencies,
+			Recommends:   overridden.Recommends,
+			Suggests:     overridden.Suggests,
+			EmptyFolders: overridden.EmptyFolders,
 			Files:        files,
-			ConfigFiles:  overrided.ConfigFiles,
+			ConfigFiles:  overridden.ConfigFiles,
 			Scripts: nfpm.Scripts{
-				PreInstall:  overrided.Scripts.PreInstall,
-				PostInstall: overrided.Scripts.PostInstall,
-				PreRemove:   overrided.Scripts.PreRemove,
-				PostRemove:  overrided.Scripts.PostRemove,
+				PreInstall:  overridden.Scripts.PreInstall,
+				PostInstall: overridden.Scripts.PostInstall,
+				PreRemove:   overridden.Scripts.PreRemove,
+				PostRemove:  overridden.Scripts.PostRemove,
 			},
 		},
 	}
