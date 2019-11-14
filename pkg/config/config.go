@@ -230,6 +230,7 @@ type Sign struct {
 	Args      []string `yaml:"args,omitempty"`
 	Signature string   `yaml:"signature,omitempty"`
 	Artifacts string   `yaml:"artifacts,omitempty"`
+	IDs       []string `yaml:"ids,omitempty"`
 }
 
 // SnapcraftAppMetadata for the binaries that will be in the snap package

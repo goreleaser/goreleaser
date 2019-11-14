@@ -56,4 +56,11 @@ signs:
     #
     # defaults to `none`
     artifacts: all
+
+    # IDs of the artifacts to sign.
+    # Defaults to all.
+    # If `artifacts` is checksum, this fields has no effect.
+    ids:
+      - foo
+      - bar
 ```
