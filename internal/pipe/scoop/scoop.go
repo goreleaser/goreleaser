@@ -56,12 +56,14 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return pipe.Skip("scoop section is not configured")
 	}
 
-	// TODO mavogel: in another PR
+	// TODO: mavogel: in another PR
 	// check if release pipe is not configured!
 	// if ctx.Config.Release.Disable {
 	// }
 
-	if ctx.Config.Archive.Format == "binary" {
+	// TODO: caarlos0: need to add the filter for archives on this pipe and
+	// improve this.
+	if ctx.Config.Archives[0].Format == "binary" {
 		return pipe.Skip("archive format is binary")
 	}
 

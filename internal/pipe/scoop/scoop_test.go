@@ -101,8 +101,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitHub: config.Repo{
@@ -145,8 +147,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitHub: config.Repo{
@@ -188,8 +192,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitLab: config.Repo{
@@ -248,8 +254,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitHub: config.Repo{
@@ -306,8 +314,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitHub: config.Repo{
@@ -349,8 +359,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitHub: config.Repo{
@@ -392,8 +404,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitHub: config.Repo{
@@ -427,8 +441,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							GitHub: config.Repo{
@@ -471,8 +487,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							Draft: true,
@@ -511,8 +529,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "tar.gz",
+						Archives: []config.Archive{
+							{
+								Format: "tar.gz",
+							},
 						},
 						Release: config.Release{
 							Disable: true,
@@ -551,8 +571,10 @@ func Test_doRun(t *testing.T) {
 						},
 						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archive: config.Archive{
-							Format: "binary",
+						Archives: []config.Archive{
+							{
+								Format: "binary",
+							},
 						},
 						Release: config.Release{
 							Draft: true,
@@ -613,8 +635,10 @@ func Test_buildManifest(t *testing.T) {
 					},
 					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archive: config.Archive{
-						Format: "tar.gz",
+					Archives: []config.Archive{
+						{
+							Format: "tar.gz",
+						},
 					},
 					Release: config.Release{
 						GitHub: config.Repo{
@@ -652,8 +676,10 @@ func Test_buildManifest(t *testing.T) {
 					},
 					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archive: config.Archive{
-						Format: "tar.gz",
+					Archives: []config.Archive{
+						{
+							Format: "tar.gz",
+						},
 					},
 					Release: config.Release{
 						GitHub: config.Repo{
@@ -692,8 +718,10 @@ func Test_buildManifest(t *testing.T) {
 					},
 					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archive: config.Archive{
-						Format: "tar.gz",
+					Archives: []config.Archive{
+						{
+							Format: "tar.gz",
+						},
 					},
 					Release: config.Release{
 						GitHub: config.Repo{
