@@ -19,7 +19,7 @@ func TestDefault(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "SNAPSHOT-{{ .ShortCommit }}", ctx.Config.Snapshot.NameTemplate)
+	assert.Equal(t, "{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}", ctx.Config.Snapshot.NameTemplate)
 }
 
 func TestDefaultSet(t *testing.T) {
