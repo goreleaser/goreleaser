@@ -211,17 +211,19 @@ type NFPMScripts struct {
 
 // NFPMOverridables is used to specify per package format settings
 type NFPMOverridables struct {
-	NameTemplate string            `yaml:"name_template,omitempty"`
-	Epoch        string            `yaml:"epoch,omitempty"`
-	Replacements map[string]string `yaml:",omitempty"`
-	Dependencies []string          `yaml:",omitempty"`
-	Recommends   []string          `yaml:",omitempty"`
-	Suggests     []string          `yaml:",omitempty"`
-	Conflicts    []string          `yaml:",omitempty"`
-	EmptyFolders []string          `yaml:"empty_folders,omitempty"`
-	Files        map[string]string `yaml:",omitempty"`
-	ConfigFiles  map[string]string `yaml:"config_files,omitempty"`
-	Scripts      NFPMScripts       `yaml:"scripts,omitempty"`
+	FileNameTemplate string            `yaml:"file_name_template,omitempty"`
+	PackageName      string            `yaml:"package_name,omitempty"`
+	NameTemplate     string            `yaml:"name_template,omitempty"` // deprecated
+	Epoch            string            `yaml:"epoch,omitempty"`
+	Replacements     map[string]string `yaml:",omitempty"`
+	Dependencies     []string          `yaml:",omitempty"`
+	Recommends       []string          `yaml:",omitempty"`
+	Suggests         []string          `yaml:",omitempty"`
+	Conflicts        []string          `yaml:",omitempty"`
+	EmptyFolders     []string          `yaml:"empty_folders,omitempty"`
+	Files            map[string]string `yaml:",omitempty"`
+	ConfigFiles      map[string]string `yaml:"config_files,omitempty"`
+	Scripts          NFPMScripts       `yaml:"scripts,omitempty"`
 }
 
 // Sign config

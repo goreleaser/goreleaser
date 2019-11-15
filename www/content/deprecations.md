@@ -39,6 +39,27 @@ to this:
 
 -->
 
+### nfpms.name_template
+
+> since 2019-11-15
+
+The `name_template` field was deprecated in favor of a more clear one,
+`file_name_template`.
+
+Change this:
+
+```yaml
+nfpms:
+  - name_template: foo
+```
+
+to this:
+
+```yaml
+nfpms:
+  - file_name_template: foo
+```
+
 
 ### blob
 
