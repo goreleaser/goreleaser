@@ -39,7 +39,7 @@ to this:
 
 -->
 
-### nfpm.name_template
+### nfpms.name_template
 
 > since 2019-11-15
 
