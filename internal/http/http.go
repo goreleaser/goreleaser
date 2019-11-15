@@ -99,9 +99,12 @@ func CheckConfig(ctx *context.Context, upload *config.Upload, kind string) error
 		return misconfigured(kind, upload, "mode must be 'binary' or 'archive'")
 	}
 
-	envName := fmt.Sprintf("%s_%s_SECRET", strings.ToUpper(kind), strings.ToUpper(upload.Name))
-	if _, ok := ctx.Env[envName]; !ok {
-		return misconfigured(kind, upload, fmt.Sprintf("missing %s environment variable", envName))
+	if _, err := getUsername(ctx, upload, kind); err != nil {
+		return err
+	}
+
+	if _, err := getPassword(ctx, upload, kind); err != nil {
+		return err
 	}
 
 	if upload.TrustedCerts != "" && !x509.NewCertPool().AppendCertsFromPEM([]byte(upload.TrustedCerts)) {
@@ -109,6 +112,27 @@ func CheckConfig(ctx *context.Context, upload *config.Upload, kind string) error
 	}
 
 	return nil
+}
+
+func getUsername(ctx *context.Context, upload *config.Upload, kind string) (string, error) {
+	if upload.Username != "" {
+		return upload.Username, nil
+	}
+	var key = fmt.Sprintf("%s_%s_USERNAME", strings.ToUpper(kind), strings.ToUpper(upload.Name))
+	user, ok := ctx.Env[key]
+	if !ok {
+		return "", misconfigured(kind, upload, fmt.Sprintf("missing username or %s environment variable", key))
+	}
+	return user, nil
+}
+
+func getPassword(ctx *context.Context, upload *config.Upload, kind string) (string, error) {
+	var key = fmt.Sprintf("%s_%s_SECRET", strings.ToUpper(kind), strings.ToUpper(upload.Name))
+	pwd, ok := ctx.Env[key]
+	if !ok {
+		return "", misconfigured(kind, upload, fmt.Sprintf("missing %s environment variable", key))
+	}
+	return pwd, nil
 }
 
 func misconfigured(kind string, upload *config.Upload, reason string) error {
@@ -182,13 +206,15 @@ func uploadWithFilter(ctx *context.Context, upload *config.Upload, filter artifa
 
 // uploadAsset uploads file to target and logs all actions
 func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact, kind string, check ResponseChecker) error {
-	envBase := fmt.Sprintf("%s_%s_", strings.ToUpper(kind), strings.ToUpper(upload.Name))
-	username := upload.Username
-	if username == "" {
-		// username not configured: using env
-		username = ctx.Env[envBase+"USERNAME"]
+	username, err := getUsername(ctx, upload, kind)
+	if err != nil {
+		return err
 	}
-	secret := ctx.Env[envBase+"SECRET"]
+
+	secret, err := getPassword(ctx, upload, kind)
+	if err != nil {
+		return err
+	}
 
 	// Generate the target url
 	targetURL, err := resolveTargetTemplate(ctx, upload, artifact)
