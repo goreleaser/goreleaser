@@ -1,4 +1,4 @@
-package put
+package upload
 
 import (
 	"fmt"
@@ -106,7 +106,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Puts: []config.Put{
+		Uploads: []config.Upload{
 			{
 				Name:     "production-us",
 				Mode:     "binary",
@@ -152,7 +152,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
-		Puts: []config.Put{
+		Uploads: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "archive",
@@ -214,7 +214,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
-		Puts: []config.Put{
+		Uploads: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "archive",
@@ -246,7 +246,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Puts: []config.Put{
+		Uploads: []config.Upload{
 			{
 				Name: "production",
 				Mode: "binary",
@@ -298,7 +298,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Puts: []config.Put{
+		Uploads: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -327,7 +327,7 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        "archivetest/dist",
-		Puts: []config.Put{
+		Uploads: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -364,7 +364,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Puts: []config.Put{
+		Uploads: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -389,7 +389,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 	var ctx = context.New(config.Project{
-		Puts: []config.Put{
+		Uploads: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -419,7 +419,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Puts: []config.Put{
+		Uploads: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -456,7 +456,7 @@ func TestPutsWithoutTarget(t *testing.T) {
 			"PUT_PRODUCTION_SECRET": "deployuser-secret",
 		},
 		Config: config.Project{
-			Puts: []config.Put{
+			Uploads: []config.Upload{
 				{
 					Name:     "production",
 					Username: "deployuser",
@@ -474,7 +474,7 @@ func TestPutsWithoutUsername(t *testing.T) {
 			"PUT_PRODUCTION_SECRET": "deployuser-secret",
 		},
 		Config: config.Project{
-			Puts: []config.Put{
+			Uploads: []config.Upload{
 				{
 					Name:   "production",
 					Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -488,7 +488,7 @@ func TestPutsWithoutUsername(t *testing.T) {
 
 func TestPutsWithoutName(t *testing.T) {
 	assert.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{
-		Puts: []config.Put{
+		Uploads: []config.Upload{
 			{
 				Username: "deployuser",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -499,7 +499,7 @@ func TestPutsWithoutName(t *testing.T) {
 
 func TestPutsWithoutSecret(t *testing.T) {
 	assert.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{
-		Puts: []config.Put{
+		Uploads: []config.Upload{
 			{
 				Name:     "production",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -515,7 +515,7 @@ func TestPutsWithInvalidMode(t *testing.T) {
 			"PUT_PRODUCTION_SECRET": "deployuser-secret",
 		},
 		Config: config.Project{
-			Puts: []config.Put{
+			Uploads: []config.Upload{
 				{
 					Name:     "production",
 					Mode:     "does-not-exists",
@@ -531,7 +531,7 @@ func TestPutsWithInvalidMode(t *testing.T) {
 func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Puts: []config.Put{
+			Uploads: []config.Upload{
 				{
 					Name:     "production",
 					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -549,7 +549,7 @@ func TestDefault(t *testing.T) {
 func TestDefaultNoPuts(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Puts: []config.Put{},
+			Uploads: []config.Upload{},
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
@@ -559,7 +559,7 @@ func TestDefaultNoPuts(t *testing.T) {
 func TestDefaultSet(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Puts: []config.Put{
+			Uploads: []config.Upload{
 				{
 					Mode: "custom",
 				},
