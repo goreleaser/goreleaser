@@ -2,6 +2,7 @@ package changelog
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -44,6 +45,18 @@ func TestChangelogSkip(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.Config.Changelog.Skip = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+}
+
+func TestReleaseHeaderProvidedViaFlagDoesntExist(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	ctx.ReleaseHeader = "testdata/header.nope"
+	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/header.nope: no such file or directory")
+}
+
+func TestReleaseFooterProvidedViaFlagDoesntExist(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	ctx.ReleaseFooter = "testdata/footer.nope"
+	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/footer.nope: no such file or directory")
 }
 
 func TestSnapshot(t *testing.T) {
@@ -284,4 +297,56 @@ func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
 	for _, msg := range msgs {
 		require.Contains(t, ctx.ReleaseNotes, msg)
 	}
+}
+
+func TestChangeLogWithReleaseHeader(t *testing.T) {
+	current, err := os.Getwd()
+	require.NoError(t, err)
+	tmpdir, back := testlib.Mktmp(t)
+	defer back()
+	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
+	testlib.GitInit(t)
+	var msgs = []string{
+		"initial commit",
+		"another one",
+		"one more",
+		"and finally this one",
+	}
+	for _, msg := range msgs {
+		testlib.GitCommit(t, msg)
+	}
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCheckoutBranch(t, "v0.0.1")
+	var ctx = context.New(config.Project{})
+	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.ReleaseHeader = "testdata/release-header.md"
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.Contains(t, ctx.ReleaseNotes, "test header")
+}
+
+func TestChangeLogWithReleaseFooter(t *testing.T) {
+	current, err := os.Getwd()
+	require.NoError(t, err)
+	tmpdir, back := testlib.Mktmp(t)
+	defer back()
+	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
+	testlib.GitInit(t)
+	var msgs = []string{
+		"initial commit",
+		"another one",
+		"one more",
+		"and finally this one",
+	}
+	for _, msg := range msgs {
+		testlib.GitCommit(t, msg)
+	}
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCheckoutBranch(t, "v0.0.1")
+	var ctx = context.New(config.Project{})
+	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.ReleaseFooter = "testdata/release-footer.md"
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.Contains(t, ctx.ReleaseNotes, "test footer")
 }

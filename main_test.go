@@ -11,7 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 func init() {
@@ -104,6 +104,50 @@ func TestCustomReleaseNotesFile(t *testing.T) {
 	createFile(t, releaseNotes.Name(), "nothing important at all")
 	var params = testParams()
 	params.ReleaseNotes = releaseNotes.Name()
+	assert.NoError(t, releaseProject(params))
+}
+
+func TestCustomReleaseHeaderFileDontExist(t *testing.T) {
+	_, back := setup(t)
+	defer back()
+	params := testParams()
+	params.ReleaseHeader = "/header/that/dont/exist"
+	params.Snapshot = false
+	assert.Error(t, releaseProject(params))
+}
+
+func TestCustomReleaseHeaderFile(t *testing.T) {
+	_, back := setup(t)
+	defer back()
+	releaseHeader, err := ioutil.TempFile("", "")
+	assert.NoError(t, err)
+	createFile(t, releaseHeader.Name(), "some release header")
+	params := testParams()
+	params.ReleaseHeader = releaseHeader.Name()
+	params.Snapshot = false
+	params.SkipPublish = true
+	assert.NoError(t, releaseProject(params))
+}
+
+func TestCustomReleaseFooterFileDontExist(t *testing.T) {
+	_, back := setup(t)
+	defer back()
+	params := testParams()
+	params.ReleaseFooter = "/footer/that/dont/exist"
+	params.Snapshot = false
+	assert.Error(t, releaseProject(params))
+}
+
+func TestCustomReleaseFooterFile(t *testing.T) {
+	_, back := setup(t)
+	defer back()
+	releaseFooter, err := ioutil.TempFile("", "")
+	assert.NoError(t, err)
+	createFile(t, releaseFooter.Name(), "some release footer")
+	params := testParams()
+	params.ReleaseFooter = releaseFooter.Name()
+	params.Snapshot = false
+	params.SkipPublish = true
 	assert.NoError(t, releaseProject(params))
 }
 

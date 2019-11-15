@@ -16,7 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/goreleaser/goreleaser/pkg/defaults"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // nolint: gochecknoglobals
@@ -28,15 +28,17 @@ var (
 )
 
 type releaseOptions struct {
-	Config       string
-	ReleaseNotes string
-	Snapshot     bool
-	SkipPublish  bool
-	SkipSign     bool
-	SkipValidate bool
-	RmDist       bool
-	Parallelism  int
-	Timeout      time.Duration
+	Config        string
+	ReleaseNotes  string
+	ReleaseHeader string
+	ReleaseFooter string
+	Snapshot      bool
+	SkipPublish   bool
+	SkipSign      bool
+	SkipValidate  bool
+	RmDist        bool
+	Parallelism   int
+	Timeout       time.Duration
 }
 
 func main() {
@@ -56,6 +58,8 @@ func main() {
 	var checkCmd = app.Command("check", "Checks if configuration is valid").Alias("c")
 	var releaseCmd = app.Command("release", "Releases the current project").Alias("r").Default()
 	var releaseNotes = releaseCmd.Flag("release-notes", "Load custom release notes from a markdown file").PlaceHolder("notes.md").String()
+	var releaseHeader = releaseCmd.Flag("release-header", "Load custom release notes header from a markdown file").PlaceHolder("notes-header.md").String()
+	var releaseFooter = releaseCmd.Flag("release-footer", "Load custom release notes footer from a markdown file").PlaceHolder("notes-footer.md").String()
 	var snapshot = releaseCmd.Flag("snapshot", "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts").Bool()
 	var skipPublish = releaseCmd.Flag("skip-publish", "Skips publishing artifacts").Bool()
 	var skipSign = releaseCmd.Flag("skip-sign", "Skips signing the artifacts").Bool()
@@ -96,15 +100,17 @@ func main() {
 		start := time.Now()
 		log.Infof(color.New(color.Bold).Sprintf("releasing using goreleaser %s...", version))
 		var options = releaseOptions{
-			Config:       *config,
-			ReleaseNotes: *releaseNotes,
-			Snapshot:     *snapshot,
-			SkipPublish:  *skipPublish,
-			SkipValidate: *skipValidate,
-			SkipSign:     *skipSign,
-			RmDist:       *rmDist,
-			Parallelism:  *parallelism,
-			Timeout:      *timeout,
+			Config:        *config,
+			ReleaseNotes:  *releaseNotes,
+			ReleaseHeader: *releaseHeader,
+			ReleaseFooter: *releaseFooter,
+			Snapshot:      *snapshot,
+			SkipPublish:   *skipPublish,
+			SkipValidate:  *skipValidate,
+			SkipSign:      *skipSign,
+			RmDist:        *rmDist,
+			Parallelism:   *parallelism,
+			Timeout:       *timeout,
 		}
 		if err := releaseProject(options); err != nil {
 			log.WithError(err).Errorf(color.New(color.Bold).Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
@@ -141,6 +147,8 @@ func releaseProject(options releaseOptions) error {
 	ctx.Parallelism = options.Parallelism
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.ReleaseNotes = options.ReleaseNotes
+	ctx.ReleaseHeader = options.ReleaseHeader
+	ctx.ReleaseFooter = options.ReleaseFooter
 	ctx.Snapshot = options.Snapshot
 	ctx.SkipPublish = ctx.Snapshot || options.SkipPublish
 	ctx.SkipValidate = ctx.Snapshot || options.SkipValidate
