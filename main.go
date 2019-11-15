@@ -11,11 +11,11 @@ import (
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/middleware"
+	"github.com/goreleaser/goreleaser/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/internal/static"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/goreleaser/goreleaser/pkg/defaults"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -128,12 +128,8 @@ func checkConfig(filename string) error {
 	}
 	var ctx = context.New(cfg)
 	return ctrlc.Default.Run(ctx, func() error {
-		for _, pipe := range defaults.Defaulters {
-			if err := middleware.ErrHandler(pipe.Default)(ctx); err != nil {
-				return err
-			}
-		}
-		return nil
+		log.Info(color.New(color.Bold).Sprint("checking config:"))
+		return defaults.Pipe{}.Run(ctx)
 	})
 }
 
