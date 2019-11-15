@@ -132,7 +132,8 @@ func extFor(target string, flags config.FlagArray) string {
 		for _, s := range flags {
 			if s == "-buildmode=c-shared" {
 				return ".dll"
-			} else if s == "-buildmode=c-archive" {
+			}
+			if s == "-buildmode=c-archive" {
 				return ".lib"
 			}
 		}
