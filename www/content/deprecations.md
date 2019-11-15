@@ -150,9 +150,15 @@ blobs:
   # etc
 ```
 
+---
+
+# Expired deprecation notices
+
+The following options were deprecated for ~6 months and are now fully removed.
+
 ### snapcraft
 
-> since 2019-05-39
+> since 2019-05-27
 
 We now allow multiple Snapcraft configs, so the `snapcraft` statement will be removed.
 
@@ -216,10 +222,6 @@ archives:
   - id: foo
     format: zip
 ```
-
-## Expired deprecation notices
-
-The following options were deprecated for ~6 months and are now fully removed.
 
 ### docker.binary
 

@@ -326,6 +326,9 @@ func TestDefault(t *testing.T) {
 				ID: "foo",
 			},
 		},
+		Snapcrafts: []config.Snapcraft{
+			{},
+		},
 	})
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, defaultNameTemplate, ctx.Config.Snapcrafts[0].NameTemplate)
@@ -351,16 +354,6 @@ func TestDefaultSet(t *testing.T) {
 			{
 				NameTemplate: "foo",
 			},
-		},
-	})
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "foo", ctx.Config.Snapcrafts[0].NameTemplate)
-}
-
-func TestDefaultDeprecate(t *testing.T) {
-	var ctx = context.New(config.Project{
-		Snapcraft: config.Snapcraft{
-			NameTemplate: "foo",
 		},
 	})
 	assert.NoError(t, Pipe{}.Default(ctx))

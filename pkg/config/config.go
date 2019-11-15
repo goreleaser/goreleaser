@@ -353,11 +353,8 @@ type Project struct {
 	Brews         []Homebrew  `yaml:",omitempty"`
 	Scoop         Scoop       `yaml:",omitempty"`
 	Builds        []Build     `yaml:",omitempty"`
-	Archive       Archive     `yaml:",omitempty"` // TODO: remove this
 	Archives      []Archive   `yaml:",omitempty"`
-	NFPM          NFPM        `yaml:",omitempty"` // TODO: remove this
 	NFPMs         []NFPM      `yaml:"nfpms,omitempty"`
-	Snapcraft     Snapcraft   `yaml:",omitempty"` // TODO: remove this
 	Snapcrafts    []Snapcraft `yaml:",omitempty"`
 	Snapshot      Snapshot    `yaml:",omitempty"`
 	Checksum      Checksum    `yaml:",omitempty"`

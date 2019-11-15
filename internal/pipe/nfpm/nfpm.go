@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -35,12 +34,6 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if len(ctx.Config.NFPMs) == 0 {
-		ctx.Config.NFPMs = append(ctx.Config.NFPMs, ctx.Config.NFPM)
-		if !reflect.DeepEqual(ctx.Config.NFPM, config.NFPM{}) {
-			deprecate.Notice("nfpm")
-		}
-	}
 	var ids = ids.New("nfpms")
 	for i := range ctx.Config.NFPMs {
 		var fpm = &ctx.Config.NFPMs[i]
