@@ -104,7 +104,7 @@ func runHook(ctx *context.Context, env []string, hook string) error {
 }
 
 func doBuild(ctx *context.Context, build config.Build, target string) error {
-	var ext = extFor(target)
+	var ext = extFor(target, build.Flags)
 
 	binary, err := tmpl.New(ctx).Apply(build.Binary)
 	if err != nil {
@@ -127,8 +127,16 @@ func doBuild(ctx *context.Context, build config.Build, target string) error {
 	})
 }
 
-func extFor(target string) string {
+func extFor(target string, flags config.FlagArray) string {
 	if strings.Contains(target, "windows") {
+		for _, s := range flags {
+			if s == "-buildmode=c-shared" {
+				return ".dll"
+			}
+			if s == "-buildmode=c-archive" {
+				return ".lib"
+			}
+		}
 		return ".exe"
 	}
 	if target == "js_wasm" {

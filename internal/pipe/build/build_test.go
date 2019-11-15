@@ -336,18 +336,23 @@ func TestDefaultFillSingleBuild(t *testing.T) {
 }
 
 func TestExtWindows(t *testing.T) {
-	assert.Equal(t, ".exe", extFor("windows_amd64"))
-	assert.Equal(t, ".exe", extFor("windows_386"))
+	assert.Equal(t, ".exe", extFor("windows_amd64", config.FlagArray{}))
+	assert.Equal(t, ".exe", extFor("windows_386", config.FlagArray{}))
+	assert.Equal(t, ".exe", extFor("windows_amd64", config.FlagArray{"-tags=dev", "-v"}))
+	assert.Equal(t, ".dll", extFor("windows_amd64", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-shared"}))
+	assert.Equal(t, ".dll", extFor("windows_386", config.FlagArray{"-buildmode=c-shared"}))
+	assert.Equal(t, ".lib", extFor("windows_amd64", config.FlagArray{"-buildmode=c-archive"}))
+	assert.Equal(t, ".lib", extFor("windows_386", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-archive"}))
 }
 
 func TestExtWasm(t *testing.T) {
-	assert.Equal(t, ".wasm", extFor("js_wasm"))
+	assert.Equal(t, ".wasm", extFor("js_wasm", config.FlagArray{}))
 }
 
 func TestExtOthers(t *testing.T) {
-	assert.Empty(t, "", extFor("linux_amd64"))
-	assert.Empty(t, "", extFor("linuxwin_386"))
-	assert.Empty(t, "", extFor("winasdasd_sad"))
+	assert.Empty(t, "", extFor("linux_amd64", config.FlagArray{}))
+	assert.Empty(t, "", extFor("linuxwin_386", config.FlagArray{}))
+	assert.Empty(t, "", extFor("winasdasd_sad", config.FlagArray{}))
 }
 
 func TestTemplate(t *testing.T) {
