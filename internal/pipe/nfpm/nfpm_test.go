@@ -40,8 +40,9 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 				Formats: []string{"nope"},
 				Builds:  []string{"foo"},
 				NFPMOverridables: config.NFPMOverridables{
-					NameTemplate: defaultNameTemplate,
-					Files:        map[string]string{},
+					PackageName:      "foo",
+					FileNameTemplate: defaultNameTemplate,
+					Files:            map[string]string{},
 				},
 			},
 		},
@@ -90,12 +91,13 @@ func TestRunPipe(t *testing.T) {
 				Vendor:      "asdf",
 				Homepage:    "https://goreleaser.github.io",
 				NFPMOverridables: config.NFPMOverridables{
-					NameTemplate: defaultNameTemplate,
-					Dependencies: []string{"make"},
-					Recommends:   []string{"svn"},
-					Suggests:     []string{"bzr"},
-					Conflicts:    []string{"git"},
-					EmptyFolders: []string{"/var/log/foobar"},
+					FileNameTemplate: defaultNameTemplate,
+					PackageName:      "foo",
+					Dependencies:     []string{"make"},
+					Recommends:       []string{"svn"},
+					Suggests:         []string{"bzr"},
+					Conflicts:        []string{"git"},
+					EmptyFolders:     []string{"/var/log/foobar"},
 					Files: map[string]string{
 						"./testdata/testfile.txt": "/usr/share/testfile.txt",
 					},
@@ -148,9 +150,12 @@ func TestInvalidNameTemplate(t *testing.T) {
 		Config: config.Project{
 			NFPMs: []config.NFPM{
 				{
-					NFPMOverridables: config.NFPMOverridables{NameTemplate: "{{.Foo}"},
-					Formats:          []string{"deb"},
-					Builds:           []string{"default"},
+					NFPMOverridables: config.NFPMOverridables{
+						PackageName:      "foo",
+						FileNameTemplate: "{{.Foo}",
+					},
+					Formats: []string{"deb"},
+					Builds:  []string{"default"},
 				},
 			},
 		},
@@ -206,6 +211,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 				Formats: []string{"deb", "rpm"},
 				Builds:  []string{"default"},
 				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
 					Files: map[string]string{
 						"testdata/testfile.txt": "/var/lib/test/testfile.txt",
 					},
@@ -263,7 +269,8 @@ func TestInvalidConfig(t *testing.T) {
 func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			NFPMs: []config.NFPM{},
+			ProjectName: "foobar",
+			NFPMs:       []config.NFPM{},
 			Builds: []config.Build{
 				{ID: "foo"},
 				{ID: "bar"},
@@ -273,7 +280,8 @@ func TestDefault(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "/usr/local/bin", ctx.Config.NFPMs[0].Bindir)
 	require.Equal(t, []string{"foo", "bar"}, ctx.Config.NFPMs[0].Builds)
-	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].NameTemplate)
+	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].FileNameTemplate)
+	require.Equal(t, ctx.Config.ProjectName, ctx.Config.NFPMs[0].PackageName)
 }
 
 func TestDefaultDeprecate(t *testing.T) {
@@ -292,10 +300,10 @@ func TestDefaultDeprecate(t *testing.T) {
 	require.Equal(t, "/usr/local/bin", ctx.Config.NFPMs[0].Bindir)
 	require.Equal(t, []string{"deb"}, ctx.Config.NFPMs[0].Formats)
 	require.Equal(t, []string{"foo", "bar"}, ctx.Config.NFPMs[0].Builds)
-	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].NameTemplate)
+	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].FileNameTemplate)
 }
 
-func TestDefaultSet(t *testing.T) {
+func TestDefaultDeprecated(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
 			Builds: []config.Build{
@@ -315,7 +323,31 @@ func TestDefaultSet(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "/bin", ctx.Config.NFPMs[0].Bindir)
-	require.Equal(t, "foo", ctx.Config.NFPMs[0].NameTemplate)
+	require.Equal(t, "foo", ctx.Config.NFPMs[0].FileNameTemplate)
+	require.Equal(t, []string{"foo"}, ctx.Config.NFPMs[0].Builds)
+}
+
+func TestDefaultSet(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Builds: []config.Build{
+				{ID: "foo"},
+				{ID: "bar"},
+			},
+			NFPMs: []config.NFPM{
+				{
+					Builds: []string{"foo"},
+					Bindir: "/bin",
+					NFPMOverridables: config.NFPMOverridables{
+						FileNameTemplate: "foo",
+					},
+				},
+			},
+		},
+	}
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "/bin", ctx.Config.NFPMs[0].Bindir)
+	require.Equal(t, "foo", ctx.Config.NFPMs[0].FileNameTemplate)
 	require.Equal(t, []string{"foo"}, ctx.Config.NFPMs[0].Builds)
 }
 

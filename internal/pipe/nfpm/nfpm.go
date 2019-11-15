@@ -50,8 +50,15 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.Bindir == "" {
 			fpm.Bindir = "/usr/local/bin"
 		}
-		if fpm.NameTemplate == "" {
-			fpm.NameTemplate = defaultNameTemplate
+		if fpm.PackageName == "" {
+			fpm.PackageName = ctx.Config.ProjectName
+		}
+		if fpm.NameTemplate != "" && fpm.FileNameTemplate == "" {
+			deprecate.Notice("nfpms.name_template")
+			fpm.FileNameTemplate = fpm.NameTemplate
+		}
+		if fpm.FileNameTemplate == "" {
+			fpm.FileNameTemplate = defaultNameTemplate
 		}
 		if fpm.Files == nil {
 			fpm.Files = map[string]string{}
@@ -125,7 +132,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	}
 	name, err := tmpl.New(ctx).
 		WithArtifact(binaries[0], overridden.Replacements).
-		Apply(overridden.NameTemplate)
+		Apply(overridden.FileNameTemplate)
 	if err != nil {
 		return err
 	}
@@ -145,7 +152,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	var info = &nfpm.Info{
 		Arch:        arch,
 		Platform:    "linux",
-		Name:        ctx.Config.ProjectName,
+		Name:        fpm.PackageName,
 		Version:     ctx.Version,
 		Section:     "",
 		Priority:    "",

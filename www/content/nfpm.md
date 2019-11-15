@@ -18,9 +18,14 @@ nfpms:
     # ID of the nfpm config, must be unique.
     # Defaults to "default".
     id: foo
-    # You can change the name of the package.
+
+    # Name of the package.
+    # Defaults to `ProjectName`.
+    package_name: foo
+
+    # You can change the file name of the package.
     # Default: `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}`
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
     # Build IDs for the builds you want to create NFPM packages for.
     # Defaults to all builds.
