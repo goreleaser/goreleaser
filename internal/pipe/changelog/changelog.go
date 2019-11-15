@@ -35,6 +35,8 @@ func (Pipe) Run(ctx *context.Context) error {
 		if err != nil {
 			return err
 		}
+		log.WithField("file", ctx.ReleaseNotes).Info("loaded custom release notes")
+		log.WithField("file", ctx.ReleaseNotes).Debugf("custom release notes: \n%s", notes)
 		ctx.ReleaseNotes = notes
 	}
 	if ctx.Config.Changelog.Skip {
@@ -46,9 +48,25 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.ReleaseNotes != "" {
 		return nil
 	}
+	if ctx.ReleaseHeader != "" {
+		header, err := loadFromFile(ctx.ReleaseHeader)
+		if err != nil {
+			return err
+		}
+		ctx.ReleaseHeader = header
+	}
+	if ctx.ReleaseFooter != "" {
+		footer, err := loadFromFile(ctx.ReleaseFooter)
+		if err != nil {
+			return err
+		}
+		ctx.ReleaseFooter = footer
+	}
+
 	if err := checkSortDirection(ctx.Config.Changelog.Sort); err != nil {
 		return err
 	}
+
 	entries, err := buildChangelog(ctx)
 	if err != nil {
 		return err
@@ -61,7 +79,17 @@ func (Pipe) Run(ctx *context.Context) error {
 		log.Debug("is gitlab or gitea changelog")
 		changelogStringJoiner = "   \n"
 	}
-	ctx.ReleaseNotes = fmt.Sprintf("## Changelog\n\n%v\n", strings.Join(entries, changelogStringJoiner))
+
+	ctx.ReleaseNotes = strings.Join(
+		[]string{
+			ctx.ReleaseHeader,
+			"## Changelog",
+			strings.Join(entries, changelogStringJoiner),
+			ctx.ReleaseFooter,
+		},
+		"\n\n",
+	)
+
 	var path = filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
 	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0644)
@@ -72,8 +100,6 @@ func loadFromFile(file string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	log.WithField("file", file).Info("loaded custom release notes")
-	log.WithField("file", file).Debugf("custom release notes: \n%s", string(bts))
 	return string(bts), nil
 }
 
