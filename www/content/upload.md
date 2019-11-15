@@ -64,9 +64,9 @@ This way we support auth for multiple instances.
 This also means that the `name` per configured instance needs to be unique
 per goreleaser configuration.
 
-The name of the environment variable will be `UPLOADS_NAME_USERNAME`.
+The name of the environment variable will be `UPLOAD_NAME_USERNAME`.
 If your instance is named `production`, you can store the username in the
-environment variable `UPLOADS_PRODUCTION_USERNAME`.
+environment variable `UPLOAD_PRODUCTION_USERNAME`.
 The name will be transformed to uppercase.
 
 If a configured username is found in the configuration file, then the
@@ -80,9 +80,9 @@ This way we support auth for multiple instances.
 This also means that the `name` per configured instance needs to be unique
 per goreleaser configuration.
 
-The name of the environment variable will be `UPLOADS_NAME_SECRET`.
+The name of the environment variable will be `UPLOAD_NAME_SECRET`.
 If your instance is named `production`, you need to store the secret in the
-environment variable `UPLOADS_PRODUCTION_SECRET`.
+environment variable `UPLOAD_PRODUCTION_SECRET`.
 The name will be transformed to uppercase.
 
 ### Server authentication

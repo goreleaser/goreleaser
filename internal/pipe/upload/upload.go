@@ -4,6 +4,8 @@ package upload
 import (
 	h "net/http"
 
+	"github.com/goreleaser/goreleaser/internal/deprecate"
+
 	"github.com/goreleaser/goreleaser/internal/http"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -20,7 +22,10 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	// TODO: deprecate
+	if len(ctx.Config.Puts) > 0 {
+		deprecate.Notice("puts")
+		ctx.Config.Uploads = append(ctx.Config.Uploads, ctx.Config.Puts...)
+	}
 	return http.Defaults(ctx.Config.Uploads)
 }
 
@@ -34,12 +39,12 @@ func (Pipe) Publish(ctx *context.Context) error {
 	// If not fulfilled, we can skip this pipeline
 	for _, instance := range ctx.Config.Uploads {
 		instance := instance
-		if skip := http.CheckConfig(ctx, &instance, "uploads"); skip != nil {
+		if skip := http.CheckConfig(ctx, &instance, "upload"); skip != nil {
 			return pipe.Skip(skip.Error())
 		}
 	}
 
-	return http.Upload(ctx, ctx.Config.Uploads, "uploads", func(res *h.Response) error {
+	return http.Upload(ctx, ctx.Config.Uploads, "upload", func(res *h.Response) error {
 		if c := res.StatusCode; c < 200 || 299 < c {
 			return errors.Errorf("unexpected http response status: %s", res.Status)
 		}

@@ -62,7 +62,7 @@ uploads:
 ```
 
 Also note that secrets environment variable name prefixes have changed from
-`PUT_` to `UPLOADS_`.
+`PUT_` to `UPLOAD_`.
 
 ### nfpms.name_template
 
