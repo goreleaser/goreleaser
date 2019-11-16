@@ -343,9 +343,9 @@ func resolveTargetTemplate(ctx *context.Context, put *config.Put, artifact *arti
 
 	if put.Mode == ModeBinary {
 		// TODO: multiple archives here
-		data.Os = replace(ctx.Config.Archive.Replacements, artifact.Goos)
-		data.Arch = replace(ctx.Config.Archive.Replacements, artifact.Goarch)
-		data.Arm = replace(ctx.Config.Archive.Replacements, artifact.Goarm)
+		data.Os = replace(ctx.Config.Archives[0].Replacements, artifact.Goos)
+		data.Arch = replace(ctx.Config.Archives[0].Replacements, artifact.Goarch)
+		data.Arm = replace(ctx.Config.Archives[0].Replacements, artifact.Goarm)
 	}
 
 	var out bytes.Buffer
