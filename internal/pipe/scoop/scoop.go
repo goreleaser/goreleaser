@@ -63,7 +63,7 @@ func doRun(ctx *context.Context, client client.Client) error {
 
 	// TODO: caarlos0: need to add the filter for archives on this pipe and
 	// improve this.
-	if ctx.Config.Archives[0].Format == "binary" {
+	if len(ctx.Config.Archives) > 0 && ctx.Config.Archives[0].Format == "binary" {
 		return pipe.Skip("archive format is binary")
 	}
 
