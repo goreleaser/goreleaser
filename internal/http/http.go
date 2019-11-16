@@ -341,7 +341,7 @@ func resolveTargetTemplate(ctx *context.Context, put *config.Put, artifact *arti
 		ProjectName: ctx.Config.ProjectName,
 	}
 
-	if put.Mode == ModeBinary {
+	if put.Mode == ModeBinary && len(ctx.Config.Archives) > 0 {
 		// TODO: multiple archives here
 		data.Os = replace(ctx.Config.Archives[0].Replacements, artifact.Goos)
 		data.Arch = replace(ctx.Config.Archives[0].Replacements, artifact.Goarch)
