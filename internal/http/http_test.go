@@ -441,12 +441,12 @@ func TestUpload(t *testing.T) {
 
 	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Upload), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {
 		requests = nil
-		ctx, put := setup(srv)
+		ctx, upload := setup(srv)
 		wantErr := wantErrPlain
 		if srv.Certificate() != nil {
 			wantErr = wantErrTLS
 		}
-		if err := Upload(ctx, []config.Upload{put}, "test", is2xx); (err != nil) != wantErr {
+		if err := Upload(ctx, []config.Upload{upload}, "test", is2xx); (err != nil) != wantErr {
 			t.Errorf("Upload() error = %v, wantErr %v", err, wantErr)
 		}
 		if err := check(requests); err != nil {

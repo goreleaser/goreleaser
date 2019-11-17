@@ -85,7 +85,7 @@ func defaults(upload *config.Upload) {
 	}
 }
 
-// CheckConfig validates a Put configuration returning a descriptive error when appropriate
+// CheckConfig validates an upload configuration returning a descriptive error when appropriate
 func CheckConfig(ctx *context.Context, upload *config.Upload, kind string) error {
 	if upload.Target == "" {
 		return misconfigured(kind, upload, "missing target")
@@ -149,7 +149,7 @@ func Upload(ctx *context.Context, uploads []config.Upload, kind string, check Re
 		return pipe.ErrSkipPublishEnabled
 	}
 
-	// Handle every configured put
+	// Handle every configured upload
 	for _, upload := range uploads {
 		upload := upload
 		filters := []artifact.Filter{}
@@ -293,8 +293,8 @@ func newUploadRequest(method, target, username, secret string, headers map[strin
 	return req, err
 }
 
-func getHTTPClient(put *config.Upload) (*h.Client, error) {
-	if put.TrustedCerts == "" {
+func getHTTPClient(upload *config.Upload) (*h.Client, error) {
+	if upload.TrustedCerts == "" {
 		return h.DefaultClient, nil
 	}
 	pool, err := x509.SystemCertPool()
@@ -306,7 +306,7 @@ func getHTTPClient(put *config.Upload) (*h.Client, error) {
 			return nil, err
 		}
 	}
-	pool.AppendCertsFromPEM([]byte(put.TrustedCerts)) // already validated certs checked by CheckConfig
+	pool.AppendCertsFromPEM([]byte(upload.TrustedCerts)) // already validated certs checked by CheckConfig
 	return &h.Client{
 		Transport: &h.Transport{
 			TLSClientConfig: &tls.Config{
@@ -317,8 +317,8 @@ func getHTTPClient(put *config.Upload) (*h.Client, error) {
 }
 
 // executeHTTPRequest processes the http call with respect of context ctx
-func executeHTTPRequest(ctx *context.Context, put *config.Upload, req *h.Request, check ResponseChecker) (*h.Response, error) {
-	client, err := getHTTPClient(put)
+func executeHTTPRequest(ctx *context.Context, upload *config.Upload, req *h.Request, check ResponseChecker) (*h.Response, error) {
+	client, err := getHTTPClient(upload)
 	if err != nil {
 		return nil, err
 	}
@@ -363,14 +363,14 @@ type targetData struct {
 // resolveTargetTemplate returns the resolved target template with replaced variables
 // Those variables can be replaced by the given context, goos, goarch, goarm and more
 // TODO: replace this with our internal template pkg
-func resolveTargetTemplate(ctx *context.Context, put *config.Upload, artifact *artifact.Artifact) (string, error) {
+func resolveTargetTemplate(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact) (string, error) {
 	data := targetData{
 		Version:     ctx.Version,
 		Tag:         ctx.Git.CurrentTag,
 		ProjectName: ctx.Config.ProjectName,
 	}
 
-	if put.Mode == ModeBinary {
+	if upload.Mode == ModeBinary {
 		// TODO: multiple archives here
 		data.Os = replace(ctx.Config.Archive.Replacements, artifact.Goos)
 		data.Arch = replace(ctx.Config.Archive.Replacements, artifact.Goarch)
@@ -378,7 +378,7 @@ func resolveTargetTemplate(ctx *context.Context, put *config.Upload, artifact *a
 	}
 
 	var out bytes.Buffer
-	t, err := template.New(ctx.Config.ProjectName).Parse(put.Target)
+	t, err := template.New(ctx.Config.ProjectName).Parse(upload.Target)
 	if err != nil {
 		return "", err
 	}
