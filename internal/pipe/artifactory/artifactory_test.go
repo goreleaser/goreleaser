@@ -174,7 +174,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Put{
+		Artifactories: []config.Upload{
 			{
 				Name:     "production-us",
 				Mode:     "binary",
@@ -203,6 +203,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		})
 	}
 
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.NoError(t, Pipe{}.Publish(ctx))
 }
 
@@ -220,7 +221,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
-		Artifactories: []config.Put{
+		Artifactories: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "archive",
@@ -300,6 +301,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		uploads.Store("deb", true)
 	})
 
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.NoError(t, Pipe{}.Publish(ctx))
 	_, ok := uploads.Load("targz")
 	assert.True(t, ok, "tar.gz file was not uploaded")
@@ -316,7 +318,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
-		Artifactories: []config.Put{
+		Artifactories: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "archive",
@@ -334,6 +336,8 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
+
+	assert.NoError(t, Pipe{}.Default(ctx))
 	err = Pipe{}.Publish(ctx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "connection refused")
@@ -348,7 +352,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Put{
+		Artifactories: []config.Upload{
 			{
 				Name: "production",
 				Mode: "binary",
@@ -369,6 +373,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: error while building the target url: template: mybin:1: unexpected "/" in operand`)
 }
 
@@ -405,7 +410,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Put{
+		Artifactories: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -425,6 +430,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
+	assert.NoError(t, Pipe{}.Default(ctx))
 	err = Pipe{}.Publish(ctx)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Bad credentials")
@@ -462,7 +468,7 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Put{
+		Artifactories: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -482,6 +488,7 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: invalid character '.' looking for beginning of value`)
 }
 
@@ -516,7 +523,7 @@ func TestRunPipe_UnparsableResponse(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Put{
+		Artifactories: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -536,6 +543,7 @@ func TestRunPipe_UnparsableResponse(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: invalid character 'i' looking for beginning of value`)
 }
 
@@ -543,7 +551,7 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        "archivetest/dist",
-		Artifactories: []config.Put{
+		Artifactories: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -563,6 +571,7 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.EqualError(t, Pipe{}.Publish(ctx), `open archivetest/dist/mybin/mybin: no such file or directory`)
 }
 
@@ -580,7 +589,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Put{
+		Artifactories: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -600,12 +609,13 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: parse ://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin: missing protocol scheme`)
 }
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 	var ctx = context.New(config.Project{
-		Artifactories: []config.Put{
+		Artifactories: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -619,6 +629,7 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 	}
 	ctx.SkipPublish = true
 
+	assert.NoError(t, Pipe{}.Default(ctx))
 	err := Pipe{}.Publish(ctx)
 	assert.True(t, pipe.IsSkip(err))
 	assert.EqualError(t, err, pipe.ErrSkipPublishEnabled.Error())
@@ -635,7 +646,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
-		Artifactories: []config.Put{
+		Artifactories: []config.Upload{
 			{
 				Name:     "production",
 				Mode:     "binary",
@@ -655,6 +666,7 @@ func TestRunPipe_DirUpload(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: the asset to upload can't be a directory`)
 }
 
@@ -663,7 +675,9 @@ func TestDescription(t *testing.T) {
 }
 
 func TestNoArtifactories(t *testing.T) {
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{}))))
+	var ctx = context.New(config.Project{})
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestArtifactoriesWithoutTarget(t *testing.T) {
@@ -672,7 +686,7 @@ func TestArtifactoriesWithoutTarget(t *testing.T) {
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
 		Config: config.Project{
-			Artifactories: []config.Put{
+			Artifactories: []config.Upload{
 				{
 					Name:     "production",
 					Username: "deployuser",
@@ -681,6 +695,7 @@ func TestArtifactoriesWithoutTarget(t *testing.T) {
 		},
 	}
 
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
@@ -690,7 +705,7 @@ func TestArtifactoriesWithoutUsername(t *testing.T) {
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
 		Config: config.Project{
-			Artifactories: []config.Put{
+			Artifactories: []config.Upload{
 				{
 					Name:   "production",
 					Target: "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -699,30 +714,35 @@ func TestArtifactoriesWithoutUsername(t *testing.T) {
 		},
 	}
 
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestArtifactoriesWithoutName(t *testing.T) {
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{
-		Artifactories: []config.Put{
+	var ctx = context.New(config.Project{
+		Artifactories: []config.Upload{
 			{
 				Username: "deployuser",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 			},
 		},
-	}))))
+	})
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestArtifactoriesWithoutSecret(t *testing.T) {
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{
-		Artifactories: []config.Put{
+	var ctx = context.New(config.Project{
+		Artifactories: []config.Upload{
 			{
 				Name:     "production",
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 				Username: "deployuser",
 			},
 		},
-	}))))
+	})
+	assert.NoError(t, Pipe{}.Default(ctx))
+	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestArtifactoriesWithInvalidMode(t *testing.T) {
@@ -731,7 +751,7 @@ func TestArtifactoriesWithInvalidMode(t *testing.T) {
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
 		Config: config.Project{
-			Artifactories: []config.Put{
+			Artifactories: []config.Upload{
 				{
 					Name:     "production",
 					Mode:     "does-not-exists",
@@ -741,13 +761,15 @@ func TestArtifactoriesWithInvalidMode(t *testing.T) {
 			},
 		},
 	}
+
+	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Error(t, Pipe{}.Publish(ctx))
 }
 
 func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Artifactories: []config.Put{
+			Artifactories: []config.Upload{
 				{
 					Name:     "production",
 					Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
@@ -756,6 +778,7 @@ func TestDefault(t *testing.T) {
 			},
 		},
 	}
+
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Len(t, ctx.Config.Artifactories, 1)
 	var artifactory = ctx.Config.Artifactories[0]
@@ -765,7 +788,7 @@ func TestDefault(t *testing.T) {
 func TestDefaultNoArtifactories(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Artifactories: []config.Put{},
+			Artifactories: []config.Upload{},
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
@@ -775,7 +798,7 @@ func TestDefaultNoArtifactories(t *testing.T) {
 func TestDefaultSet(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Artifactories: []config.Put{
+			Artifactories: []config.Upload{
 				{
 					Mode: "custom",
 				},

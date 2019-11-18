@@ -58,7 +58,7 @@ func TestAssetOpenDefault(t *testing.T) {
 
 func TestDefaults(t *testing.T) {
 	type args struct {
-		puts []config.Put
+		uploads []config.Upload
 	}
 	tests := []struct {
 		name     string
@@ -66,16 +66,16 @@ func TestDefaults(t *testing.T) {
 		wantErr  bool
 		wantMode string
 	}{
-		{"set default", args{[]config.Put{{Name: "a", Target: "http://"}}}, false, ModeArchive},
-		{"keep value", args{[]config.Put{{Name: "a", Target: "http://...", Mode: ModeBinary}}}, false, ModeBinary},
+		{"set default", args{[]config.Upload{{Name: "a", Target: "http://"}}}, false, ModeArchive},
+		{"keep value", args{[]config.Upload{{Name: "a", Target: "http://...", Mode: ModeBinary}}}, false, ModeBinary},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := Defaults(tt.args.puts); (err != nil) != tt.wantErr {
+			if err := Defaults(tt.args.uploads); (err != nil) != tt.wantErr {
 				t.Errorf("Defaults() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if tt.wantMode != tt.args.puts[0].Mode {
-				t.Errorf("Incorrect Defaults() mode %q , wanted %q", tt.args.puts[0].Mode, tt.wantMode)
+			if tt.wantMode != tt.args.uploads[0].Mode {
+				t.Errorf("Incorrect Defaults() mode %q , wanted %q", tt.args.uploads[0].Mode, tt.wantMode)
 			}
 		})
 	}
@@ -86,7 +86,7 @@ func TestCheckConfig(t *testing.T) {
 	ctx.Env["TEST_A_SECRET"] = "x"
 	type args struct {
 		ctx    *context.Context
-		upload *config.Put
+		upload *config.Upload
 		kind   string
 	}
 	tests := []struct {
@@ -94,13 +94,13 @@ func TestCheckConfig(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		{"ok", args{ctx, &config.Put{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, false},
-		{"secret missing", args{ctx, &config.Put{Name: "b", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
-		{"target missing", args{ctx, &config.Put{Name: "a", Username: "pepe", Mode: ModeArchive}, "test"}, true},
-		{"name missing", args{ctx, &config.Put{Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
-		{"mode missing", args{ctx, &config.Put{Name: "a", Target: "http://blabla", Username: "pepe"}, "test"}, true},
-		{"mode invalid", args{ctx, &config.Put{Name: "a", Target: "http://blabla", Username: "pepe", Mode: "blabla"}, "test"}, true},
-		{"cert invalid", args{ctx, &config.Put{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeBinary, TrustedCerts: "bad cert!"}, "test"}, true},
+		{"ok", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, false},
+		{"secret missing", args{ctx, &config.Upload{Name: "b", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
+		{"target missing", args{ctx, &config.Upload{Name: "a", Username: "pepe", Mode: ModeArchive}, "test"}, true},
+		{"name missing", args{ctx, &config.Upload{Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
+		{"mode missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe"}, "test"}, true},
+		{"mode invalid", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: "blabla"}, "test"}, true},
+		{"cert invalid", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeBinary, TrustedCerts: "bad cert!"}, "test"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -242,12 +242,12 @@ func TestUpload(t *testing.T) {
 		tryTLS       bool
 		wantErrPlain bool
 		wantErrTLS   bool
-		setup        func(*httptest.Server) (*context.Context, config.Put)
+		setup        func(*httptest.Server) (*context.Context, config.Upload)
 		check        func(r []*h.Request) error
 	}{
 		{"wrong-mode", true, true, true, true,
-			func(s *httptest.Server) (*context.Context, config.Put) {
-				return ctx, config.Put{
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
 					Mode:         "wrong-mode",
 					Name:         "a",
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
@@ -258,8 +258,8 @@ func TestUpload(t *testing.T) {
 			checks(),
 		},
 		{"username-from-env", true, true, false, false,
-			func(s *httptest.Server) (*context.Context, config.Put) {
-				return ctx, config.Put{
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
 					Mode:         ModeArchive,
 					Name:         "a",
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
@@ -271,9 +271,25 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u2", "x", content, map[string]string{}},
 			),
 		},
+		{"post", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Method:       h.MethodPost,
+					Mode:         ModeArchive,
+					Name:         "a",
+					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username:     "u1",
+					TrustedCerts: cert(s),
+				}
+			},
+			checks(
+				check{"/blah/2.1.0/a.deb", "u1", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
+			),
+		},
 		{"archive", true, true, false, false,
-			func(s *httptest.Server) (*context.Context, config.Put) {
-				return ctx, config.Put{
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
 					Mode:         ModeArchive,
 					Name:         "a",
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
@@ -287,8 +303,8 @@ func TestUpload(t *testing.T) {
 			),
 		},
 		{"archive_with_ids", true, true, false, false,
-			func(s *httptest.Server) (*context.Context, config.Put) {
-				return ctx, config.Put{
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
 					Mode:         ModeArchive,
 					Name:         "a",
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
@@ -303,8 +319,8 @@ func TestUpload(t *testing.T) {
 			),
 		},
 		{"binary", true, true, false, false,
-			func(s *httptest.Server) (*context.Context, config.Put) {
-				return ctx, config.Put{
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
 					Mode:         ModeBinary,
 					Name:         "a",
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
@@ -315,8 +331,8 @@ func TestUpload(t *testing.T) {
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
 		{"binary_with_ids", true, true, false, false,
-			func(s *httptest.Server) (*context.Context, config.Put) {
-				return ctx, config.Put{
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
 					Mode:         ModeBinary,
 					Name:         "a",
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
@@ -328,8 +344,8 @@ func TestUpload(t *testing.T) {
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
 		{"binary-add-ending-bar", true, true, false, false,
-			func(s *httptest.Server) (*context.Context, config.Put) {
-				return ctx, config.Put{
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
 					Mode:         ModeBinary,
 					Name:         "a",
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}",
@@ -340,8 +356,8 @@ func TestUpload(t *testing.T) {
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
 		{"archive-with-checksum-and-signature", true, true, false, false,
-			func(s *httptest.Server) (*context.Context, config.Put) {
-				return ctx, config.Put{
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
 					Mode:         ModeArchive,
 					Name:         "a",
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
@@ -359,8 +375,8 @@ func TestUpload(t *testing.T) {
 			),
 		},
 		{"bad-template", true, true, true, true,
-			func(s *httptest.Server) (*context.Context, config.Put) {
-				return ctx, config.Put{
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
 					Mode:         ModeBinary,
 					Name:         "a",
 					Target:       s.URL + "/{{.ProjectNameXXX}}/{{.VersionXXX}}/",
@@ -373,8 +389,8 @@ func TestUpload(t *testing.T) {
 			checks(),
 		},
 		{"failed-request", true, true, true, true,
-			func(s *httptest.Server) (*context.Context, config.Put) {
-				return ctx, config.Put{
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
 					Mode:         ModeBinary,
 					Name:         "a",
 					Target:       s.URL[0:strings.LastIndex(s.URL, ":")] + "/{{.ProjectName}}/{{.Version}}/",
@@ -387,8 +403,8 @@ func TestUpload(t *testing.T) {
 			checks(),
 		},
 		{"broken-cert", false, true, false, true,
-			func(s *httptest.Server) (*context.Context, config.Put) {
-				return ctx, config.Put{
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
 					Mode:         ModeBinary,
 					Name:         "a",
 					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
@@ -401,16 +417,16 @@ func TestUpload(t *testing.T) {
 			checks(),
 		},
 		{"skip-publishing", true, true, true, true,
-			func(s *httptest.Server) (*context.Context, config.Put) {
+			func(s *httptest.Server) (*context.Context, config.Upload) {
 				c := *ctx
 				c.SkipPublish = true
-				return &c, config.Put{}
+				return &c, config.Upload{}
 			},
 			checks(),
 		},
 		{"checksumheader", true, true, false, false,
-			func(s *httptest.Server) (*context.Context, config.Put) {
-				return ctx, config.Put{
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
 					Mode:           ModeBinary,
 					Name:           "a",
 					Target:         s.URL + "/{{.ProjectName}}/{{.Version}}/",
@@ -423,14 +439,14 @@ func TestUpload(t *testing.T) {
 		},
 	}
 
-	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Put), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {
+	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Upload), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {
 		requests = nil
-		ctx, put := setup(srv)
+		ctx, upload := setup(srv)
 		wantErr := wantErrPlain
 		if srv.Certificate() != nil {
 			wantErr = wantErrTLS
 		}
-		if err := Upload(ctx, []config.Put{put}, "test", is2xx); (err != nil) != wantErr {
+		if err := Upload(ctx, []config.Upload{upload}, "test", is2xx); (err != nil) != wantErr {
 			t.Errorf("Upload() error = %v, wantErr %v", err, wantErr)
 		}
 		if err := check(requests); err != nil {

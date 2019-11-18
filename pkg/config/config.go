@@ -331,13 +331,14 @@ type Blob struct {
 	IDs      []string `yaml:"ids,omitempty"`
 }
 
-// Put HTTP upload configuration
-type Put struct {
+// Upload configuration
+type Upload struct {
 	Name           string   `yaml:",omitempty"`
 	IDs            []string `yaml:"ids,omitempty"`
 	Target         string   `yaml:",omitempty"`
 	Username       string   `yaml:",omitempty"`
 	Mode           string   `yaml:",omitempty"`
+	Method         string   `yaml:",omitempty"`
 	ChecksumHeader string   `yaml:"checksum_header,omitempty"`
 	TrustedCerts   string   `yaml:"trusted_certificates,omitempty"`
 	Checksum       bool     `yaml:",omitempty"`
@@ -362,8 +363,9 @@ type Project struct {
 	Snapshot      Snapshot    `yaml:",omitempty"`
 	Checksum      Checksum    `yaml:",omitempty"`
 	Dockers       []Docker    `yaml:",omitempty"`
-	Artifactories []Put       `yaml:",omitempty"`
-	Puts          []Put       `yaml:",omitempty"`
+	Artifactories []Upload    `yaml:",omitempty"`
+	Uploads       []Upload    `yaml:",omitempty"`
+	Puts          []Upload    `yaml:",omitempty"` // TODO: remove this
 	S3            []S3        `yaml:"s3,omitempty"`
 	Blob          []Blob      `yaml:"blob,omitempty"` // TODO: remove this
 	Blobs         []Blob      `yaml:"blobs,omitempty"`

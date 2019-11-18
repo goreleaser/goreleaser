@@ -39,6 +39,31 @@ to this:
 
 -->
 
+
+### puts
+
+> since 2019-11-15
+
+The HTTP upload support was extended to also accept `POST` as a method,
+so the name `puts` kind of lost its meaning.
+
+Change this:
+
+```yaml
+puts:
+- ...
+```
+
+to this:
+
+```yaml
+uploads:
+- ...
+```
+
+Also note that secrets environment variable name prefixes have changed from
+`PUT_` to `UPLOAD_`.
+
 ### nfpms.name_template
 
 > since 2019-11-15
