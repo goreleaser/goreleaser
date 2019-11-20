@@ -65,7 +65,7 @@ func (b Bucket) Upload(ctx *context.Context, conf config.Blob) error {
 	}
 
 	var bucketURL = fmt.Sprintf("%s://%s", conf.Provider, bucket)
-	if conf.Endpoint != "" {
+	if conf.Endpoint != "" && conf.Provider == "s3" {
 		bucketURL = fmt.Sprintf("%s?endpoint=%s&s3ForcePathStyle=true", bucketURL, conf.Endpoint)
 	}
 
