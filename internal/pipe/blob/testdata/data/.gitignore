@@ -1,0 +1,3 @@
+.minio.sys
+test/*
+!test/.gitkeep
