@@ -641,30 +641,6 @@ func TestRunPipeNoUpload(t *testing.T) {
 		ctx.SkipPublish = true
 		assertNoPublish(tt)
 	})
-	t.Run("draft release", func(tt *testing.T) {
-		ctx.Config.Release.Draft = true
-		ctx.Config.Brews[0].SkipUpload = "false"
-		ctx.SkipPublish = false
-		assertNoPublish(tt)
-	})
-	t.Run("release disabled", func(tt *testing.T) {
-		ctx.Config.Release.Disable = true
-		ctx.Config.Brews[0].SkipUpload = "false"
-		ctx.SkipPublish = false
-		assertNoPublish(tt)
-	})
-	t.Run("skip prerelease publish", func(tt *testing.T) {
-		ctx.Config.Release.Draft = false
-		ctx.Config.Brews[0].SkipUpload = "auto"
-		ctx.SkipPublish = false
-		ctx.Semver = context.Semver{
-			Major:      1,
-			Minor:      0,
-			Patch:      0,
-			Prerelease: "rc1",
-		}
-		assertNoPublish(tt)
-	})
 }
 
 func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {

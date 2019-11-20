@@ -162,12 +162,6 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
-	if ctx.Config.Release.Draft {
-		return pipe.Skip("release is marked as draft")
-	}
-	if ctx.Config.Release.Disable {
-		return pipe.Skip("release is disabled")
-	}
 	if strings.TrimSpace(brew.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
 	}
