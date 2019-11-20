@@ -17,6 +17,10 @@ var ErrSkipSignEnabled = Skip("artifact signing is disabled")
 // It means that the part of a Piper that validates some things was not run.
 var ErrSkipValidateEnabled = Skip("validation is disabled")
 
+// ErrSkipArchiveEnabled happens if --skip-archive is set.
+// It means that the part of a Piper that validates some things was not run.
+var ErrSkipArchiveEnabled = Skip("archiving is disabled")
+
 // IsSkip returns true if the error is an ErrSkip
 func IsSkip(err error) bool {
 	_, ok := err.(ErrSkip)

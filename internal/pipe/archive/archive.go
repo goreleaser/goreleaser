@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/archive"
@@ -38,6 +39,15 @@ type Pipe struct{}
 
 func (Pipe) String() string {
 	return "archives"
+}
+
+func contains(ss []string, s string) bool {
+	for _, zs := range ss {
+		if zs == s {
+			return true
+		}
+	}
+	return false
 }
 
 // Default sets the pipe defaults
@@ -87,8 +97,14 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	if ctx.SkipPublish {
+		return pipe.ErrSkipArchiveEnabled
+	}
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, archive := range ctx.Config.Archives {
+		if len(ctx.OnlyArchiveIDs) > 0 && !contains(ctx.OnlyArchiveIDs, archive.ID) {
+			continue
+		}
 		archive := archive
 		var filtered = ctx.Artifacts.Filter(
 			artifact.And(

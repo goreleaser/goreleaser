@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/alecthomas/kingpin"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/caarlos0/ctrlc"
@@ -16,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/static"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // nolint: gochecknoglobals
@@ -28,17 +28,21 @@ var (
 )
 
 type releaseOptions struct {
-	Config        string
-	ReleaseNotes  string
-	ReleaseHeader string
-	ReleaseFooter string
-	Snapshot      bool
-	SkipPublish   bool
-	SkipSign      bool
-	SkipValidate  bool
-	RmDist        bool
-	Parallelism   int
-	Timeout       time.Duration
+	Config         string
+	ReleaseNotes   string
+	ReleaseHeader  string
+	ReleaseFooter  string
+	Snapshot       bool
+	SkipPublish    bool
+	SkipSign       bool
+	SkipValidate   bool
+	SkipArchive    bool
+	RmDist         bool
+	Parallelism    int
+	Timeout        time.Duration
+	OnlyBuildIDs   []string
+	OnlyTargets    []string
+	OnlyArchiveIDs []string
 }
 
 func main() {
@@ -64,9 +68,13 @@ func main() {
 	var skipPublish = releaseCmd.Flag("skip-publish", "Skips publishing artifacts").Bool()
 	var skipSign = releaseCmd.Flag("skip-sign", "Skips signing the artifacts").Bool()
 	var skipValidate = releaseCmd.Flag("skip-validate", "Skips several sanity checks").Bool()
+	var skipArchive = releaseCmd.Flag("skip-archive", "Skips the creation of archives").Bool()
 	var rmDist = releaseCmd.Flag("rm-dist", "Remove the dist folder before building").Bool()
 	var parallelism = releaseCmd.Flag("parallelism", "Amount tasks to run concurrently").Short('p').Default("4").Int()
 	var timeout = releaseCmd.Flag("timeout", "Timeout to the entire release process").Default("30m").Duration()
+	var onlyBuildIDs = releaseCmd.Flag("only-build-id", "Only run given build ID(s) (repeatable)").Strings()
+	var onlyTargets = releaseCmd.Flag("only-target", "Only run given target(s) (repeatable)").Strings()
+	var onlyArchiveIDs = releaseCmd.Flag("only-archive-id", "Only run given archive ID(s) (repeatable)").Strings()
 
 	app.Version(buildVersion(version, commit, date, builtBy))
 	app.VersionFlag.Short('v')
@@ -100,17 +108,21 @@ func main() {
 		start := time.Now()
 		log.Infof(color.New(color.Bold).Sprintf("releasing using goreleaser %s...", version))
 		var options = releaseOptions{
-			Config:        *config,
-			ReleaseNotes:  *releaseNotes,
-			ReleaseHeader: *releaseHeader,
-			ReleaseFooter: *releaseFooter,
-			Snapshot:      *snapshot,
-			SkipPublish:   *skipPublish,
-			SkipValidate:  *skipValidate,
-			SkipSign:      *skipSign,
-			RmDist:        *rmDist,
-			Parallelism:   *parallelism,
-			Timeout:       *timeout,
+			Config:         *config,
+			ReleaseNotes:   *releaseNotes,
+			ReleaseHeader:  *releaseHeader,
+			ReleaseFooter:  *releaseFooter,
+			Snapshot:       *snapshot,
+			SkipPublish:    *skipPublish,
+			SkipValidate:   *skipValidate,
+			SkipSign:       *skipSign,
+			SkipArchive:    *skipArchive,
+			RmDist:         *rmDist,
+			Parallelism:    *parallelism,
+			Timeout:        *timeout,
+			OnlyBuildIDs:   *onlyBuildIDs,
+			OnlyTargets:    *onlyTargets,
+			OnlyArchiveIDs: *onlyArchiveIDs,
 		}
 		if err := releaseProject(options); err != nil {
 			log.WithError(err).Errorf(color.New(color.Bold).Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
@@ -149,7 +161,11 @@ func releaseProject(options releaseOptions) error {
 	ctx.SkipPublish = ctx.Snapshot || options.SkipPublish
 	ctx.SkipValidate = ctx.Snapshot || options.SkipValidate
 	ctx.SkipSign = options.SkipSign
+	ctx.SkipArchive = options.SkipArchive
 	ctx.RmDist = options.RmDist
+	ctx.OnlyBuildIDs = options.OnlyBuildIDs
+	ctx.OnlyTargets = options.OnlyTargets
+	ctx.OnlyArchiveIDs = options.OnlyArchiveIDs
 	return ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipeline.Pipeline {
 			if err := middleware.Logging(

@@ -29,9 +29,21 @@ func (Pipe) String() string {
 	return "building binaries"
 }
 
+func contains(ss []string, s string) bool {
+	for _, zs := range ss {
+		if zs == s {
+			return true
+		}
+	}
+	return false
+}
+
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	for _, build := range ctx.Config.Builds {
+		if len(ctx.OnlyBuildIDs) > 0 && !contains(ctx.OnlyBuildIDs, build.ID) {
+			continue
+		}
 		log.WithField("build", build).Debug("building")
 		if err := runPipeOnBuild(ctx, build); err != nil {
 			return err
@@ -76,7 +88,11 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 		return errors.Wrap(err, "pre hook failed")
 	}
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, target := range build.Targets {
+	targets := build.Targets
+	if len(ctx.OnlyTargets) > 0 {
+		targets = ctx.OnlyTargets
+	}
+	for _, target := range targets {
 		target := target
 		build := build
 		g.Go(func() error {
