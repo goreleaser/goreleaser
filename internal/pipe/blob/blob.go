@@ -1,4 +1,3 @@
-// Package blob provides a Pipe that push artifacts to blob supported by Go CDK
 package blob
 
 import (
@@ -8,7 +7,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -49,13 +47,8 @@ func (Pipe) Publish(ctx *context.Context) error {
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, conf := range ctx.Config.Blobs {
 		conf := conf
-		template := tmpl.New(ctx)
-		folder, err := template.Apply(conf.Folder)
-		if err != nil {
-			return err
-		}
 		g.Go(func() error {
-			return o.Upload(ctx, conf, folder)
+			return o.Upload(ctx, conf)
 		})
 	}
 	return g.Wait()

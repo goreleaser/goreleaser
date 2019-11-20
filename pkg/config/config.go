@@ -329,6 +329,7 @@ type Blob struct {
 	Folder   string   `yaml:",omitempty"`
 	KMSKey   string   `yaml:",omitempty"`
 	IDs      []string `yaml:"ids,omitempty"`
+	Endpoint string   `yaml:",omitempty"` // used for minio for example
 }
 
 // Upload configuration

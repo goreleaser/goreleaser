@@ -8,6 +8,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/pkg/errors"
@@ -28,7 +29,7 @@ import (
 // OpenBucket is the interface that wraps the BucketConnect and UploadBucket method
 type OpenBucket interface {
 	Connect(ctx *context.Context, bucketURL string) (*blob.Bucket, error)
-	Upload(ctx *context.Context, conf config.Blob, folder string) error
+	Upload(ctx *context.Context, conf config.Blob) error
 }
 
 // Bucket is object which holds connection for Go Bucker Provider
@@ -52,8 +53,21 @@ func (b Bucket) Connect(ctx *context.Context, bucketURL string) (*blob.Bucket, e
 
 // Upload takes connection initilized from newOpenBucket to upload goreleaser artifacts
 // Takes goreleaser context(which includes artificats) and bucketURL for upload destination (gs://gorelease-bucket)
-func (b Bucket) Upload(ctx *context.Context, conf config.Blob, folder string) error {
-	var bucketURL = fmt.Sprintf("%s://%s", conf.Provider, conf.Bucket)
+func (b Bucket) Upload(ctx *context.Context, conf config.Blob) error {
+	bucket, err := tmpl.New(ctx).Apply(conf.Bucket)
+	if err != nil {
+		return err
+	}
+
+	folder, err := tmpl.New(ctx).Apply(conf.Folder)
+	if err != nil {
+		return err
+	}
+
+	var bucketURL = fmt.Sprintf("%s://%s", conf.Provider, bucket)
+	if conf.Endpoint != "" && conf.Provider == "s3" {
+		bucketURL = fmt.Sprintf("%s?endpoint=%s&s3ForcePathStyle=true", bucketURL, conf.Endpoint)
+	}
 
 	// Get the openbucket connection for specific provider
 	conn, err := b.Connect(ctx, bucketURL)

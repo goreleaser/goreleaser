@@ -18,6 +18,11 @@ blobs:
     # gs for Google Cloud Storage
     provider: azblob
 
+    # Set a custom endpoint, useful if you're using a minio backend or
+    # other s3-compatible backends.
+    # Implies s3ForcePathStyle and requires provider to be `s3`
+    endpoint: https://minio.foo.bar
+
     # Template for the bucket name
     bucket: goreleaser-bucket
 
