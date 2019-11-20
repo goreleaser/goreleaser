@@ -14,12 +14,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMinioUpload(t *testing.T) {
@@ -202,5 +201,5 @@ func stop(t *testing.T, name string) {
 }
 
 func removeTestData(t *testing.T) {
-	require.NoError(t, os.RemoveAll("./testdata/data/test/testupload"))
+	_ = os.RemoveAll("./testdata/data/test/testupload") // dont care if it fails
 }
