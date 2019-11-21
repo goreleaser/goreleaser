@@ -12,7 +12,7 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-github/v28 v28.1.1
-	github.com/goreleaser/nfpm v1.1.5
+	github.com/goreleaser/nfpm v1.1.6
 	github.com/imdario/mergo v0.3.8
 	github.com/jarcoal/httpmock v1.0.4
 	github.com/kamilsk/retry/v4 v4.3.1
