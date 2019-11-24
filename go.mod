@@ -12,7 +12,7 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-github/v28 v28.1.1
-	github.com/goreleaser/nfpm v1.1.7-0.20191121174834-686a4e3cee7e
+	github.com/goreleaser/nfpm v1.1.8
 	github.com/imdario/mergo v0.3.8
 	github.com/jarcoal/httpmock v1.0.4
 	github.com/kamilsk/retry/v4 v4.3.1
@@ -29,6 +29,3 @@ require (
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.2.7
 )
-
-// TODO: remove this when https://github.com/google/rpmpack/pull/33 gets merged in.
-replace github.com/google/rpmpack => github.com/caarlos0/rpmpack v0.0.0-20191106130752-24a815bfaee0
