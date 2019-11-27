@@ -49,7 +49,7 @@ builds:
       - ./dontoptimizeme=-N
 
     # Custom ldflags templates.
-    # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
+    # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
     ldflags:
      - -s -w -X main.build={{.Version}}
      - ./usemsan=-msan
