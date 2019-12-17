@@ -231,6 +231,7 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	var build = ctx.Config.Builds[0]
 	assert.Equal(t, ctx.Config.ProjectName, build.ID)
 	assert.Equal(t, ctx.Config.ProjectName, build.Binary)
+	assert.Equal(t, ".", build.Dir)
 	assert.Equal(t, ".", build.Main)
 	assert.Equal(t, []string{"linux", "darwin"}, build.Goos)
 	assert.Equal(t, []string{"amd64", "386"}, build.Goarch)
@@ -289,6 +290,7 @@ func TestDefaultPartialBuilds(t *testing.T) {
 				{
 					ID:      "build2",
 					Binary:  "foo",
+					Dir:     "baz",
 					Ldflags: []string{"-s -w"},
 					Goarch:  []string{"386"},
 				},
@@ -299,6 +301,7 @@ func TestDefaultPartialBuilds(t *testing.T) {
 	t.Run("build0", func(t *testing.T) {
 		var build = ctx.Config.Builds[0]
 		assert.Equal(t, "bar", build.Binary)
+		assert.Equal(t, ".", build.Dir)
 		assert.Equal(t, "./cmd/main.go", build.Main)
 		assert.Equal(t, []string{"linux"}, build.Goos)
 		assert.Equal(t, []string{"amd64", "386"}, build.Goarch)
@@ -310,6 +313,7 @@ func TestDefaultPartialBuilds(t *testing.T) {
 		var build = ctx.Config.Builds[1]
 		assert.Equal(t, "foo", build.Binary)
 		assert.Equal(t, ".", build.Main)
+		assert.Equal(t, "baz", build.Dir)
 		assert.Equal(t, []string{"linux", "darwin"}, build.Goos)
 		assert.Equal(t, []string{"386"}, build.Goarch)
 		assert.Equal(t, []string{"6"}, build.Goarm)

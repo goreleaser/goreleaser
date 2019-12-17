@@ -3,6 +3,7 @@ package golang
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -182,6 +183,38 @@ func TestBuild(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestBuildCodeInSubdir(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	subdir := filepath.Join(folder, "bar")
+	err := os.Mkdir(subdir, 0755)
+	assert.NoError(t, err)
+	writeGoodMain(t, subdir)
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				ID:     "foo",
+				Env:    []string{"GO111MODULE=off"},
+				Dir:    "bar",
+				Binary: "foo",
+				Targets: []string{
+					runtimeTarget,
+				},
+			},
+		},
+	}
+	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
+	var build = ctx.Config.Builds[0]
+	err = Default.Build(ctx, build, api.Options{
+		Target: runtimeTarget,
+		Name:   build.Binary,
+		Path:   filepath.Join(folder, "dist", runtimeTarget, build.Binary),
+		Ext:    "",
+	})
+	assert.NoError(t, err)
 }
 
 func TestBuildFailed(t *testing.T) {
