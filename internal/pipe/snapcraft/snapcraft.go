@@ -196,7 +196,6 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	// if the user didn't specify any apps then
 	// default to the main binary being the command:
 	if len(snap.Apps) == 0 {
-		fmt.Println("SNAPS EQUAL ZERO 0")
 		metadata.Apps[binaries[0].Name] = AppMetadata{
 			Command: filepath.Base(binaries[0].Name),
 		}
