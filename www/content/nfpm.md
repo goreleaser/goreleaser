@@ -100,11 +100,12 @@ nfpms:
     empty_folders:
     - /var/log/foobar
 
-    # Files or directories to add to your package (beyond the binary).
+    # Files to add to your package (beyond the binary).
     # Keys are source paths/globs to get the files from.
     # Values are the destination locations of the files in the package.
+    # Use globs to add all contents of a folder.
     files:
-      "scripts/etc/init.d/": "/etc/init.d"
+      "scripts/etc/init.d/**": "/etc/init.d"
       "path/**/glob": "/var/foo/glob"
 
     # Config files to add to your package. They are about the same as
