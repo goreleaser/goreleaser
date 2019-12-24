@@ -9,6 +9,7 @@ GoReleaser can also be used within our official [GoReleaser Action][goreleaser-a
 You can create a workflow for pushing your releases by putting YAML configuration to `.github/workflows/release.yml`.
 
 Below is a simple snippet to use this action in your workflow:
+
 ```yaml
 name: goreleaser
 
@@ -26,12 +27,15 @@ jobs:
       -
         name: Set up Go
         uses: actions/setup-go@v1
+        with:
+          go-version: 1.13.x
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v1
         with:
           version: latest
-          args: release
+          args: release --rm-dist
+          key: ${{ secrets.YOUR_PRIVATE_KEY }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -44,11 +48,12 @@ jobs:
 
 Following inputs can be used as `step.with` keys
 
-| Name          | Type    | Default   | Description                              |
-|---------------|---------|-----------|------------------------------------------|
-| `version`     | String  | `latest`  | GoReleaser version. Example: `v0.117.0`  |
-| `args`        | String  |           | Arguments to pass to GoReleaser          |
-| `key`         | String  |           | Private key to import                    |
+| Name          | Type    | Default   | Description                               |
+|---------------|---------|-----------|-------------------------------------------|
+| `version`     | String  | `latest`  | GoReleaser version. Example: `v0.117.0`   |
+| `args`        | String  |           | Arguments to pass to GoReleaser           |
+| `key`         | String  |           | Private key to import                     |
+| `workdir`     | String  | `.`       | Working directory (below repository root) |
 
 ### Signing
 
