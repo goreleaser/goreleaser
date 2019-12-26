@@ -5,17 +5,18 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/apex/log"
 	"github.com/stretchr/testify/require"
 )
 
 func TestStream(t *testing.T) {
 	var cmd = exec.Command("./testdata/script1.sh")
-	require.NoError(t, Stream(cmd, LogWriter{}))
+	require.NoError(t, Stream(cmd, NewLogWriter(log.WithField("test", "TestStream"))))
 }
 
 func TestStreamError(t *testing.T) {
 	var cmd = exec.Command("./testdata/script2.sh")
-	require.EqualError(t, Stream(cmd, LogWriter{}), "exit status 1")
+	require.EqualError(t, Stream(cmd, NewLogWriter(log.WithField("test", "TestStreamError"))), "exit status 1")
 }
 
 func TestStreamWriterError(t *testing.T) {

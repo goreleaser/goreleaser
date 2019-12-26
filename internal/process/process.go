@@ -60,9 +60,16 @@ func printReader(rd io.Reader, out io.Writer) error {
 }
 
 // LogWriter writes with log.Info
-type LogWriter struct{}
+type LogWriter struct {
+	ctx *log.Entry
+}
+
+// NewLogWriter creates a new log writer
+func NewLogWriter(ctx *log.Entry) LogWriter {
+	return LogWriter{ctx: ctx}
+}
 
 func (t LogWriter) Write(p []byte) (n int, err error) {
-	log.Info(string(p))
+	t.ctx.Info(string(p))
 	return len(p), nil
 }
