@@ -55,6 +55,11 @@ func (Pipe) Default(ctx *context.Context) error {
 			ctx.Config.Builds[0].Binary,
 		}
 	}
+	if len(ctx.Config.Dockers[0].Builds) == 0 {
+		ctx.Config.Dockers[0].Builds = []string{
+			ctx.Config.Builds[0].ID,
+		}
+	}
 	if ctx.Config.Dockers[0].Dockerfile == "" {
 		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
 	}
@@ -98,22 +103,24 @@ func doRun(ctx *context.Context) error {
 				}
 				binaryNames[i] = bin
 			}
-			var binaries = ctx.Artifacts.Filter(
-				artifact.And(
-					artifact.ByGoos(docker.Goos),
-					artifact.ByGoarch(docker.Goarch),
-					artifact.ByGoarm(docker.Goarm),
-					artifact.ByType(artifact.Binary),
-					func(a *artifact.Artifact) bool {
-						for _, bin := range binaryNames {
-							if a.ExtraOr("Binary", "").(string) == bin {
-								return true
-							}
+			var filters = []artifact.Filter{
+				artifact.ByGoos(docker.Goos),
+				artifact.ByGoarch(docker.Goarch),
+				artifact.ByGoarm(docker.Goarm),
+				artifact.ByType(artifact.Binary),
+				func(a *artifact.Artifact) bool {
+					for _, bin := range binaryNames {
+						if a.ExtraOr("Binary", "").(string) == bin {
+							return true
 						}
-						return false
-					},
-				),
-			).List()
+					}
+					return false
+				},
+			}
+			if len(docker.Builds) > 0 {
+				filters = append(filters, artifact.ByIDs(docker.Builds...))
+			}
+			var binaries = ctx.Artifacts.Filter(artifact.And(filters...)).List()
 			// TODO: not so good of a check, if one binary match multiple
 			// binaries and the other match none, this will still pass...
 			if len(binaries) != len(docker.Binaries) {

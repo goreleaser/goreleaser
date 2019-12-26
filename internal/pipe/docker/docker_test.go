@@ -153,6 +153,26 @@ func TestRunPipe(t *testing.T) {
 			assertError:    shouldNotErr,
 			pubAssertError: shouldNotErr,
 		},
+		"valid-with-builds": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/test_run_pipe_build:latest",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binaries:   []string{"mybin"},
+					Builds:     []string{"mybin"},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_run_pipe_build:latest",
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldNotErr,
+			pubAssertError:    shouldNotErr,
+		},
 		"multiple images with same extra file": {
 			dockers: []config.Docker{
 				{
@@ -583,6 +603,7 @@ func TestRunPipe(t *testing.T) {
 							Type:   artifact.Binary,
 							Extra: map[string]interface{}{
 								"Binary": bin,
+								"ID":     bin,
 							},
 						})
 					}
