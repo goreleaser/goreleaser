@@ -14,7 +14,6 @@ import (
 
 // Stream streams the output of the command and waits for it to finish
 func Stream(cmd *exec.Cmd, out io.Writer) error {
-	var wg errgroup.Group
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		return err
@@ -28,12 +27,15 @@ func Stream(cmd *exec.Cmd, out io.Writer) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
+
+	var wg errgroup.Group
 	wg.Go(func() error {
 		return printReader(stdout, out)
 	})
 	wg.Go(func() error {
 		return printReader(stderr, out)
 	})
+
 	if err := cmd.Wait(); err != nil {
 		return err
 	}
