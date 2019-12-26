@@ -728,6 +728,11 @@ func TestDefault(t *testing.T) {
 func TestDefaultBinaries(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
+			Builds: []config.Build{
+				{
+					ID: "foo",
+				},
+			},
 			Dockers: []config.Docker{
 				{
 					Binaries: []string{"foo"},
@@ -736,7 +741,7 @@ func TestDefaultBinaries(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Dockers, 1)
+	require.Len(t, ctx.Config.Dockers, 1)
 	var docker = ctx.Config.Dockers[0]
 	assert.Equal(t, "linux", docker.Goos)
 	assert.Equal(t, "amd64", docker.Goarch)
@@ -786,6 +791,7 @@ func TestDefaultSet(t *testing.T) {
 		Config: config.Project{
 			Dockers: []config.Docker{
 				{
+					Builds:     []string{"foo"},
 					Goos:       "windows",
 					Goarch:     "i386",
 					Binaries:   []string{"bar"},
@@ -800,6 +806,7 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "windows", docker.Goos)
 	assert.Equal(t, "i386", docker.Goarch)
 	assert.Equal(t, "bar", docker.Binaries[0])
+	assert.Equal(t, "foo", docker.Builds[0])
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 }
 
