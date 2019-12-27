@@ -153,6 +153,26 @@ func TestRunPipe(t *testing.T) {
 			assertError:    shouldNotErr,
 			pubAssertError: shouldNotErr,
 		},
+		"valid-with-builds": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/test_run_pipe_build:latest",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binaries:   []string{"mybin"},
+					Builds:     []string{"mybin"},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_run_pipe_build:latest",
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldNotErr,
+			pubAssertError:    shouldNotErr,
+		},
 		"multiple images with same extra file": {
 			dockers: []config.Docker{
 				{
@@ -583,6 +603,7 @@ func TestRunPipe(t *testing.T) {
 							Type:   artifact.Binary,
 							Extra: map[string]interface{}{
 								"Binary": bin,
+								"ID":     bin,
 							},
 						})
 					}
@@ -707,6 +728,11 @@ func TestDefault(t *testing.T) {
 func TestDefaultBinaries(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
+			Builds: []config.Build{
+				{
+					ID: "foo",
+				},
+			},
 			Dockers: []config.Docker{
 				{
 					Binaries: []string{"foo"},
@@ -715,7 +741,7 @@ func TestDefaultBinaries(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Dockers, 1)
+	require.Len(t, ctx.Config.Dockers, 1)
 	var docker = ctx.Config.Dockers[0]
 	assert.Equal(t, "linux", docker.Goos)
 	assert.Equal(t, "amd64", docker.Goarch)
@@ -765,6 +791,7 @@ func TestDefaultSet(t *testing.T) {
 		Config: config.Project{
 			Dockers: []config.Docker{
 				{
+					Builds:     []string{"foo"},
 					Goos:       "windows",
 					Goarch:     "i386",
 					Binaries:   []string{"bar"},
@@ -779,12 +806,18 @@ func TestDefaultSet(t *testing.T) {
 	assert.Equal(t, "windows", docker.Goos)
 	assert.Equal(t, "i386", docker.Goarch)
 	assert.Equal(t, "bar", docker.Binaries[0])
+	assert.Equal(t, "foo", docker.Builds[0])
 	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 }
 
 func Test_processImageTemplates(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
+			Builds: []config.Build{
+				{
+					ID: "default",
+				},
+			},
 			Dockers: []config.Docker{
 				{
 					Binaries:   []string{"foo"},
