@@ -18,12 +18,10 @@ func Stream(cmd *exec.Cmd, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	defer stderr.Close()
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
 	}
-	defer stdout.Close()
 	if err := cmd.Start(); err != nil {
 		return err
 	}
