@@ -360,7 +360,6 @@ type Project struct {
 	Builds        []Build     `yaml:",omitempty"`
 	Archive       Archive     `yaml:",omitempty"` // TODO: remove this
 	Archives      []Archive   `yaml:",omitempty"`
-	NFPM          NFPM        `yaml:",omitempty"` // TODO: remove this
 	NFPMs         []NFPM      `yaml:"nfpms,omitempty"`
 	Snapcraft     Snapcraft   `yaml:",omitempty"` // TODO: remove this
 	Snapcrafts    []Snapcraft `yaml:",omitempty"`
