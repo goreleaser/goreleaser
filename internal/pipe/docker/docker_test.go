@@ -813,6 +813,11 @@ func TestDefaultSet(t *testing.T) {
 func Test_processImageTemplates(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
+			Builds: []config.Build{
+				{
+					ID: "default",
+				},
+			},
 			Dockers: []config.Docker{
 				{
 					Binaries:   []string{"foo"},
