@@ -116,9 +116,11 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 	// tells the scanner to ignore this.
 	// #nosec
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
-	var log = log.WithField("cmd", cmd.Args)
-	log.Info("signing")
-	if err := process.Stream(cmd, process.NewLogWriter(log)); err != nil {
+	log.WithField("cmd", cmd.Args).Info("signing")
+	if err := process.Stream(
+		cmd,
+		process.NewLogWriter(log.WithField("cmd", cfg.Cmd)),
+	); err != nil {
 		return nil, fmt.Errorf("sign: %s failed", cfg.Cmd)
 	}
 
