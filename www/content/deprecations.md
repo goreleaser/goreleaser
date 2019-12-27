@@ -175,9 +175,13 @@ blobs:
   # etc
 ```
 
+## Expired deprecation notices
+
+The following options were deprecated for ~6 months and are now fully removed.
+
 ### archive
 
-> since 2019-04-16
+> since 2019-04-16, removed 2019-12-27
 
 We now allow multiple archives, so the `archive` statement will be removed.
 
@@ -195,11 +199,6 @@ archives:
   - id: foo
     format: zip
 ```
-
-## Expired deprecation notices
-
-The following options were deprecated for ~6 months and are now fully removed.
-
 
 ### snapcraft
 
