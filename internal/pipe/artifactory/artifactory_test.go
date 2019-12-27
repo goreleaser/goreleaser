@@ -188,6 +188,9 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 				Username: "productionuser",
 			},
 		},
+		Archives: []config.Archive{
+			{},
+		},
 	})
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION-US_SECRET": "deployuser-secret",
@@ -228,6 +231,9 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Version }}/", server.URL),
 				Username: "deployuser",
 			},
+		},
+		Archives: []config.Archive{
+			{},
 		},
 	})
 	ctx.Env = map[string]string{
@@ -361,6 +367,9 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
+		Archives: []config.Archive{
+			{},
+		},
 	})
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
@@ -417,6 +426,9 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
 				Username: "deployuser",
 			},
+		},
+		Archives: []config.Archive{
+			{},
 		},
 	})
 	ctx.Env = map[string]string{
@@ -476,6 +488,9 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
+		Archives: []config.Archive{
+			{},
+		},
 	})
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
@@ -531,6 +546,9 @@ func TestRunPipe_UnparsableResponse(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
+		Archives: []config.Archive{
+			{},
+		},
 	})
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
@@ -558,6 +576,9 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 				Username: "deployuser",
 			},
+		},
+		Archives: []config.Archive{
+			{},
 		},
 	})
 	ctx.Env = map[string]string{
@@ -597,6 +618,9 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 				Username: "deployuser",
 			},
 		},
+		Archives: []config.Archive{
+			{},
+		},
 	})
 	ctx.Env = map[string]string{
 		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
@@ -622,6 +646,9 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 				Username: "deployuser",
 			},
+		},
+		Archives: []config.Archive{
+			{},
 		},
 	})
 	ctx.Env = map[string]string{
@@ -653,6 +680,9 @@ func TestRunPipe_DirUpload(t *testing.T) {
 				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
 				Username: "deployuser",
 			},
+		},
+		Archives: []config.Archive{
+			{},
 		},
 	})
 	ctx.Env = map[string]string{
