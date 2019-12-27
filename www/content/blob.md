@@ -23,6 +23,16 @@ blobs:
     # Implies s3ForcePathStyle and requires provider to be `s3`
     endpoint: https://minio.foo.bar
 
+    # Sets the bucket region.
+    # Requires provider to be `s3`
+    # Defaults to empty.
+    region: us-west-1
+
+    # Disables SSL
+    # Requires provider to be `s3`
+    # Defaults to false
+    disableSSL: true
+
     # Template for the bucket name
     bucket: goreleaser-bucket
 

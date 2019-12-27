@@ -325,12 +325,14 @@ type S3 struct {
 
 // Blob contains config for GO CDK blob
 type Blob struct {
-	Bucket   string   `yaml:",omitempty"`
-	Provider string   `yaml:",omitempty"`
-	Folder   string   `yaml:",omitempty"`
-	KMSKey   string   `yaml:",omitempty"`
-	IDs      []string `yaml:"ids,omitempty"`
-	Endpoint string   `yaml:",omitempty"` // used for minio for example
+	Bucket     string   `yaml:",omitempty"`
+	Provider   string   `yaml:",omitempty"`
+	Region     string   `yaml:",omitempty"`
+	DisableSSL bool     `yaml:"disableSSL,omitempty"`
+	Folder     string   `yaml:",omitempty"`
+	KMSKey     string   `yaml:",omitempty"`
+	IDs        []string `yaml:"ids,omitempty"`
+	Endpoint   string   `yaml:",omitempty"` // used for minio for example
 }
 
 // Upload configuration
