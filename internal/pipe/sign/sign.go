@@ -8,11 +8,12 @@ import (
 	"reflect"
 
 	"github.com/apex/log"
+	"github.com/caarlos0/cmdstream"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
+	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/pipe"
-	"github.com/goreleaser/goreleaser/internal/process"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -117,9 +118,8 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 	// #nosec
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
 	log.WithField("cmd", cmd.Args).Info("signing")
-	if err := process.Stream(
-		cmd,
-		process.NewLogWriter(log.WithField("cmd", cfg.Cmd)),
+	if err := cmdstream.Stream(
+		cmd, logext.NewWriter(log.WithField("cmd", cfg.Cmd)),
 	); err != nil {
 		return nil, fmt.Errorf("sign: %s failed", cfg.Cmd)
 	}
