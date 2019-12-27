@@ -177,7 +177,7 @@ blobs:
 
 ### snapcraft
 
-> since 2019-05-39
+> since 2019-05-27
 
 We now allow multiple Snapcraft configs, so the `snapcraft` statement will be removed.
 
@@ -196,29 +196,6 @@ snapcrafts:
   -
     publish: true
     # ...
-```
-
-### nfpm
-
-> since 2019-05-07
-
-We now allow multiple NFPM config, so the `nfpm` statement will be removed.
-
-Change this:
-
-```yaml
-nfpm:
-  formats:
-    - deb
-```
-
-to this:
-
-```yaml
-nfpms:
-  -
-    formats:
-      - deb
 ```
 
 ### archive
@@ -245,6 +222,29 @@ archives:
 ## Expired deprecation notices
 
 The following options were deprecated for ~6 months and are now fully removed.
+
+### nfpm
+
+> since 2019-05-07, removed 2019-12-27
+
+We now allow multiple NFPM config, so the `nfpm` statement will be removed.
+
+Change this:
+
+```yaml
+nfpm:
+  formats:
+    - deb
+```
+
+to this:
+
+```yaml
+nfpms:
+  -
+    formats:
+      - deb
+```
 
 ### docker.binary
 
