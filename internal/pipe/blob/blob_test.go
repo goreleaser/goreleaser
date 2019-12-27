@@ -241,6 +241,65 @@ func TestPipe_Publish(t *testing.T) {
 	}
 }
 
+func TestURL(t *testing.T) {
+	var buck = Bucket{}
+
+	t.Run("s3 with opts", func(t *testing.T) {
+		url, err := buck.url(context.New(config.Project{}), config.Blob{
+			Bucket:     "foo",
+			Provider:   "s3",
+			Region:     "us-west-1",
+			Folder:     "foo",
+			Endpoint:   "s3.foobar.com",
+			DisableSSL: true,
+		})
+		require.NoError(t, err)
+		require.Equal(t, "s3://foo?disableSSL=true&endpoint=s3.foobar.com&region=us-west-1&s3ForcePathStyle=true", url)
+	})
+
+	t.Run("s3 with some opts", func(t *testing.T) {
+		url, err := buck.url(context.New(config.Project{}), config.Blob{
+			Bucket:     "foo",
+			Provider:   "s3",
+			Region:     "us-west-1",
+			DisableSSL: true,
+		})
+		require.NoError(t, err)
+		require.Equal(t, "s3://foo?disableSSL=true&region=us-west-1", url)
+	})
+
+	t.Run("gs with opts", func(t *testing.T) {
+		url, err := buck.url(context.New(config.Project{}), config.Blob{
+			Bucket:     "foo",
+			Provider:   "gs",
+			Region:     "us-west-1",
+			Folder:     "foo",
+			Endpoint:   "s3.foobar.com",
+			DisableSSL: true,
+		})
+		require.NoError(t, err)
+		require.Equal(t, "gs://foo", url)
+	})
+
+	t.Run("s3 no opts", func(t *testing.T) {
+		url, err := buck.url(context.New(config.Project{}), config.Blob{
+			Bucket:   "foo",
+			Provider: "s3",
+		})
+		require.NoError(t, err)
+		require.Equal(t, "s3://foo", url)
+	})
+
+	t.Run("gs no opts", func(t *testing.T) {
+		url, err := buck.url(context.New(config.Project{}), config.Blob{
+			Bucket:   "foo",
+			Provider: "gs",
+		})
+		require.NoError(t, err)
+		require.Equal(t, "gs://foo", url)
+	})
+}
+
 func setEnv(env map[string]string) {
 	for k, v := range env {
 		os.Setenv(k, v)

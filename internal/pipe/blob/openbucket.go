@@ -3,6 +3,7 @@ package blob
 import (
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"path/filepath"
 
 	"github.com/apex/log"
@@ -51,22 +52,48 @@ func (b Bucket) Connect(ctx *context.Context, bucketURL string) (*blob.Bucket, e
 	return conn, nil
 }
 
+func (b Bucket) url(ctx *context.Context, conf config.Blob) (string, error) {
+	bucket, err := tmpl.New(ctx).Apply(conf.Bucket)
+	if err != nil {
+		return "", err
+	}
+
+	bucketURL := fmt.Sprintf("%s://%s", conf.Provider, bucket)
+
+	if conf.Provider != "s3" {
+		return bucketURL, nil
+	}
+
+	var query = url.Values{}
+	if conf.Endpoint != "" {
+		query.Add("endpoint", conf.Endpoint)
+		query.Add("s3ForcePathStyle", "true")
+	}
+	if conf.Region != "" {
+		query.Add("region", conf.Region)
+	}
+	if conf.DisableSSL {
+		query.Add("disableSSL", "true")
+	}
+
+	if len(query) > 0 {
+		bucketURL = bucketURL + "?" + query.Encode()
+	}
+
+	return bucketURL, nil
+}
+
 // Upload takes connection initilized from newOpenBucket to upload goreleaser artifacts
 // Takes goreleaser context(which includes artificats) and bucketURL for upload destination (gs://gorelease-bucket)
 func (b Bucket) Upload(ctx *context.Context, conf config.Blob) error {
-	bucket, err := tmpl.New(ctx).Apply(conf.Bucket)
-	if err != nil {
-		return err
-	}
-
 	folder, err := tmpl.New(ctx).Apply(conf.Folder)
 	if err != nil {
 		return err
 	}
 
-	var bucketURL = fmt.Sprintf("%s://%s", conf.Provider, bucket)
-	if conf.Endpoint != "" && conf.Provider == "s3" {
-		bucketURL = fmt.Sprintf("%s?endpoint=%s&s3ForcePathStyle=true", bucketURL, conf.Endpoint)
+	bucketURL, err := b.url(ctx, conf)
+	if err != nil {
+		return err
 	}
 
 	// Get the openbucket connection for specific provider
@@ -97,6 +124,7 @@ func (b Bucket) Upload(ctx *context.Context, conf config.Blob) error {
 				"artifact": artifact.Name,
 			}).Info("uploading")
 
+			// TODO: replace this with ?prefix=folder on the bucket url
 			w, err := conn.NewWriter(ctx, filepath.Join(folder, artifact.Name), nil)
 			if err != nil {
 				return errors.Wrap(err, "failed to obtain writer")
