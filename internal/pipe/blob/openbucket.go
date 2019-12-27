@@ -58,16 +58,13 @@ func (b Bucket) url(ctx *context.Context, conf config.Blob) (string, error) {
 		return "", err
 	}
 
-	bucketURL, err := url.Parse(fmt.Sprintf("%s://%s", conf.Provider, bucket))
-	if err != nil {
-		return "", err
-	}
+	bucketURL := fmt.Sprintf("%s://%s", conf.Provider, bucket)
 
 	if conf.Provider != "s3" {
-		return bucketURL.String(), nil
+		return bucketURL, nil
 	}
 
-	var query = bucketURL.Query()
+	var query = url.Values{}
 	if conf.Endpoint != "" {
 		query.Add("endpoint", conf.Endpoint)
 		query.Add("s3ForcePathStyle", "true")
@@ -79,8 +76,11 @@ func (b Bucket) url(ctx *context.Context, conf config.Blob) (string, error) {
 		query.Add("disableSSL", "true")
 	}
 
-	bucketURL.RawQuery = query.Encode()
-	return bucketURL.String(), nil
+	if len(query) > 0 {
+		bucketURL = bucketURL + "?" + query.Encode()
+	}
+
+	return bucketURL, nil
 }
 
 // Upload takes connection initilized from newOpenBucket to upload goreleaser artifacts
