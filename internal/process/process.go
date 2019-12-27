@@ -3,7 +3,6 @@ package process
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"os/exec"
 
@@ -34,10 +33,10 @@ func Stream(cmd *exec.Cmd, out io.Writer) error {
 		return printReader(stderr, out)
 	})
 
-	if err := cmd.Wait(); err != nil {
+	if err := wg.Wait(); err != nil {
 		return err
 	}
-	return wg.Wait()
+	return cmd.Wait()
 }
 
 func printReader(rd io.Reader, out io.Writer) error {
@@ -50,7 +49,7 @@ func printReader(rd io.Reader, out io.Writer) error {
 			}
 			return errors.Wrap(err, "failed to read line")
 		}
-		if _, err := fmt.Fprintln(out, string(line)); err != nil {
+		if _, err := out.Write(line); err != nil {
 			return err
 		}
 	}
