@@ -25,14 +25,14 @@ func TestEmptyRepoNameAndOwner(t *testing.T) {
 
 func TestLoadReader(t *testing.T) {
 	var conf = `
-nfpm:
-  homepage: http://goreleaser.github.io
+nfpms:
+  - homepage: http://goreleaser.github.io
 `
 	buf := strings.NewReader(conf)
 	prop, err := LoadReader(buf)
 
 	assert.NoError(t, err)
-	assert.Equal(t, "http://goreleaser.github.io", prop.NFPM.Homepage, "yaml did not load correctly")
+	assert.Equal(t, "http://goreleaser.github.io", prop.NFPMs[0].Homepage, "yaml did not load correctly")
 }
 
 type errorReader struct{}
