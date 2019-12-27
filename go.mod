@@ -7,6 +7,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.0.3
 	github.com/apex/log v1.1.1
 	github.com/aws/aws-sdk-go v1.25.11
+	github.com/caarlos0/cmdstream v0.1.0
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/fatih/color v1.7.0
