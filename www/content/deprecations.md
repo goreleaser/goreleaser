@@ -175,29 +175,6 @@ blobs:
   # etc
 ```
 
-### snapcraft
-
-> since 2019-05-27
-
-We now allow multiple Snapcraft configs, so the `snapcraft` statement will be removed.
-
-Change this:
-
-```yaml
-snapcraft:
-  publish: true
-  # ...
-```
-
-to this:
-
-```yaml
-snapcrafts:
-  -
-    publish: true
-    # ...
-```
-
 ### archive
 
 > since 2019-04-16
@@ -222,6 +199,30 @@ archives:
 ## Expired deprecation notices
 
 The following options were deprecated for ~6 months and are now fully removed.
+
+
+### snapcraft
+
+> since 2019-05-27, removed 2019-12-27
+
+We now allow multiple Snapcraft configs, so the `snapcraft` statement will be removed.
+
+Change this:
+
+```yaml
+snapcraft:
+  publish: true
+  # ...
+```
+
+to this:
+
+```yaml
+snapcrafts:
+  -
+    publish: true
+    # ...
+```
 
 ### nfpm
 

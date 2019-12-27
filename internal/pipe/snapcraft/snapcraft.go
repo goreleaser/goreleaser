@@ -7,12 +7,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"reflect"
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
+
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -20,8 +21,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
-	yaml "gopkg.in/yaml.v2"
 )
 
 // ErrNoSnapcraft is shown when snapcraft cannot be found in $PATH
@@ -67,12 +66,6 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if len(ctx.Config.Snapcrafts) == 0 {
-		ctx.Config.Snapcrafts = append(ctx.Config.Snapcrafts, ctx.Config.Snapcraft)
-		if !reflect.DeepEqual(ctx.Config.Snapcraft, config.Snapcraft{}) {
-			deprecate.Notice("snapcraft")
-		}
-	}
 	var ids = ids.New("snapcrafts")
 	for i := range ctx.Config.Snapcrafts {
 		var snap = &ctx.Config.Snapcrafts[i]

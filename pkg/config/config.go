@@ -361,7 +361,6 @@ type Project struct {
 	Archive       Archive     `yaml:",omitempty"` // TODO: remove this
 	Archives      []Archive   `yaml:",omitempty"`
 	NFPMs         []NFPM      `yaml:"nfpms,omitempty"`
-	Snapcraft     Snapcraft   `yaml:",omitempty"` // TODO: remove this
 	Snapcrafts    []Snapcraft `yaml:",omitempty"`
 	Snapshot      Snapshot    `yaml:",omitempty"`
 	Checksum      Checksum    `yaml:",omitempty"`
