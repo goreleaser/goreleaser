@@ -61,7 +61,8 @@ func doRun(ctx *context.Context, client client.Client) error {
 	// if ctx.Config.Release.Disable {
 	// }
 
-	if ctx.Config.Archive.Format == "binary" {
+	// TODO: multiple archives
+	if ctx.Config.Archives[0].Format == "binary" {
 		return pipe.Skip("archive format is binary")
 	}
 

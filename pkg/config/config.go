@@ -358,7 +358,6 @@ type Project struct {
 	Brews         []Homebrew  `yaml:",omitempty"`
 	Scoop         Scoop       `yaml:",omitempty"`
 	Builds        []Build     `yaml:",omitempty"`
-	Archive       Archive     `yaml:",omitempty"` // TODO: remove this
 	Archives      []Archive   `yaml:",omitempty"`
 	NFPMs         []NFPM      `yaml:"nfpms,omitempty"`
 	Snapcrafts    []Snapcraft `yaml:",omitempty"`

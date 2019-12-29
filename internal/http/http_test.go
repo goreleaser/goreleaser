@@ -205,7 +205,12 @@ func TestUpload(t *testing.T) {
 		}
 		return errors.Errorf("unexpected http status code: %v", r.StatusCode)
 	}
-	ctx := context.New(config.Project{ProjectName: "blah"})
+	ctx := context.New(config.Project{
+		ProjectName: "blah",
+		Archives: []config.Archive{
+			{},
+		},
+	})
 	ctx.Env["TEST_A_SECRET"] = "x"
 	ctx.Env["TEST_A_USERNAME"] = "u2"
 	ctx.Version = "2.1.0"
