@@ -81,6 +81,13 @@ builds:
       - 6
       - 7
 
+    # GOMIPS and GOMIPS64 to build when GOARCH is mips, mips64, mipsle or mips64le.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    # Default is empty.
+    gomips:
+      - hardfloat
+      - softfloat
+
     # List of combinations of GOOS + GOARCH + GOARM to ignore.
     # Default is empty.
     ignore:
@@ -89,6 +96,8 @@ builds:
       - goos: linux
         goarch: arm
         goarm: 7
+      - goarm: mips64
+        gomips: hardfloat
 
     # Hooks can be used to customize the final binary,
     # for example, to run generators.

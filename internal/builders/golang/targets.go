@@ -2,18 +2,22 @@ package golang
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
 type target struct {
-	os, arch, arm string
+	os, arch, arm, mips string
 }
 
 func (t target) String() string {
 	if t.arm != "" {
 		return fmt.Sprintf("%s_%s_%s", t.os, t.arch, t.arm)
+	}
+	if t.mips != "" {
+		return fmt.Sprintf("%s_%s_%s", t.os, t.arch, t.mips)
 	}
 	return fmt.Sprintf("%s_%s", t.os, t.arch)
 }
@@ -53,6 +57,16 @@ func allBuildTargets(build config.Build) (targets []target) {
 				}
 				continue
 			}
+			if strings.HasPrefix(goarch, "mips") {
+				for _, gomips := range build.Gomips {
+					targets = append(targets, target{
+						os:   goos,
+						arch: goarch,
+						mips: gomips,
+					})
+				}
+				continue
+			}
 			targets = append(targets, target{
 				os:   goos,
 				arch: goarch,
@@ -73,6 +87,9 @@ func ignored(build config.Build, target target) bool {
 			continue
 		}
 		if ig.Goarm != "" && ig.Goarm != target.arm {
+			continue
+		}
+		if ig.Gomips != "" && ig.Gomips != target.mips {
 			continue
 		}
 		return true
