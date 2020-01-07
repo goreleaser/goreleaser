@@ -13,3 +13,4 @@ linters:
     - funlen
     - godox
     - gomnd
+    - gocognit
