@@ -723,6 +723,7 @@ func TestDefault(t *testing.T) {
 	assert.Equal(t, "linux", docker.Goos)
 	assert.Equal(t, "amd64", docker.Goarch)
 	assert.Equal(t, []string{ctx.Config.Builds[0].Binary}, docker.Binaries)
+	assert.Empty(t, docker.Builds)
 }
 
 func TestDefaultBinaries(t *testing.T) {
