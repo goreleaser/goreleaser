@@ -161,13 +161,13 @@ pipeline:
 
 ## Google CloudBuild
 
-CloudBuild works off a different clone than your github repo: it seems that
+CloudBuild works off a different clone than your GitHub repo: it seems that
 your changes are pulled to a repo like
-source.developers.google.com/p/YourProjectId/r/github-YourGithubUser-YourGithubRepo, and that's what
-you're building off.
+`source.developers.google.com/p/YourProjectId/r/github-YourGithubUser-YourGithubRepo`,
+and that's what you're building off.
 
-This repo has the wrong name, so to prevent Goreleaser from publishing to
-the wrong github repo, add to your `.goreleaser.yml` file's release section:
+This repo has the wrong name, so to prevent GoReleaser from publishing to
+the wrong GitHub repo, add to your `.goreleaser.yml` file's release section:
 
 ```yml
 release:
@@ -178,23 +178,25 @@ release:
 
 Create two build triggers:
 
-- a "push to any branch" trigger for your regular CI (doesn't invoke goreleaser)
-- a "push to tag" trigger which invokes goreleaser
+- a "push to any branch" trigger for your regular CI (doesn't invoke GoReleaser)
+- a "push to tag" trigger which invokes GoReleaser
 
-The push to any branch trigger could use a Dockerfile or a cloudbuild.yaml,
+The push to any branch trigger could use a `Dockerfile` or a `cloudbuild.yaml`,
 whichever you prefer.
 
-You should have a dedicated cloudbuild.release.yaml that is only used by the "push to
-tag" trigger.
+You should have a dedicated `cloudbuild.release.yaml` that is only used by the
+"push to tag" trigger.
 
 In this example we're creating a new release every time a new tag is pushed.
-See [Using Encrypted Resources](https://cloud.google.com/cloud-build/docs/securing-builds/use-encrypted-secrets-credentials) for how to encrypt and base64-encode your github token.
+See [Using Encrypted Resources](https://cloud.google.com/cloud-build/docs/securing-builds/use-encrypted-secrets-credentials)
+for how to encrypt and base64-encode your github token.
 
-The clone that the build uses [has no
-tags](https://issuetracker.google.com/u/1/issues/113668706), which is why we
-must explicitly run git tag $TAG_NAME (note that $TAG_NAME is only set when
-your build is triggered by a "push to tag".) This will allow goreleaser to
-create a release with that version, but it won't be able to build a proper
+The clone that the build uses
+[has no tags](https://issuetracker.google.com/u/1/issues/113668706),
+which is why we must explicitly run `git tag $TAG_NAME` (note that `$TAG_NAME`
+is only set when your build is triggered by a "push to tag".)
+This will allow GoReleaser to create a release with that version,
+but it won't be able to build a proper
 changelog containing just the messages from the commits since the prior tag.
 Note that the build performs a shallow clone of git repositories and will
 only contain tags that reference the latest commit.
@@ -227,7 +229,7 @@ steps:
 ## Semaphore
 
 In [Sempahore 2.0](https://semaphoreci.com) each project starts with the
-default pipeline specified in .semaphore/semaphore.yml.
+default pipeline specified in `.semaphore/semaphore.yml`.
 
 ```yml
 # .semaphore/semaphore.yml.
@@ -266,7 +268,7 @@ promotions:
              - "^refs/tags/v*"
 ```
 
-Pipeline file in .semaphore/goreleaser.yml:
+Pipeline file in `.semaphore/goreleaser.yml`:
 
 ```yml
 version: "v1.0"
@@ -292,8 +294,8 @@ blocks:
           - curl -sL https://git.io/goreleaser | bash
 ```
 
-The following YAML file, `createSecret.yml` creates a new secret item that is called goreleaser
-with one environment variable, named GITHUB_TOKEN:
+The following YAML file, `createSecret.yml` creates a new secret item that is
+called GoReleaser with one environment variable, named `GITHUB_TOKEN`:
 
 ```yml
 apiVersion: v1alpha
@@ -306,12 +308,13 @@ data:
       value: "4afk4388304hfhei34950dg43245"
 ```
 
-Check [Managing Secrets](https://docs.semaphoreci.com/article/51-secrets-yaml-reference) for
-more detailed documentation.
+Check [Managing Secrets](https://docs.semaphoreci.com/article/51-secrets-yaml-reference)
+for more detailed documentation.
 
 ## GitLab CI
 
-To push releases to both GitHub and the **official** Docker registry, add a file `.gitlab-ci.yml` in the Go project directory:
+To push releases to both GitHub and the **official** Docker registry, add a
+file `.gitlab-ci.yml` in the Go project directory:
 
 ```yaml
 image: docker:stable
@@ -332,10 +335,13 @@ build:
     - docker run --rm --privileged -v $PWD:/go/src/github.com/YourGithubUser/YourGithubRepo -v /var/run/docker.sock:/var/run/docker.sock -w /go/src/github.com/YourGithubUser/YourGithubRepo -e GITHUB_TOKEN -e DOCKER_USERNAME -e DOCKER_PASSWORD -e DOCKER_REGISTRY $GORELEASER_IMAGE release --rm-dist
 ```
 
-Next, in the GitLab sidebar add the variables `DOCKER_USERNAME`, `DOCKER_PASSWORD` and `GITHUB_TOKEN` through Project --> Settings --> CI / CD --> Variables.\
+Next, in the GitLab sidebar add the variables `DOCKER_USERNAME`,
+`DOCKER_PASSWORD` and `GITHUB_TOKEN` through
+Project --> Settings --> CI / CD --> Variables.
 Make sure they are set to *Masked* (*Protection* is not needed).
 
-To push to some other Docker registry (e.g. to a GitLab registry), set different variables in the file above:
+To push to some other Docker registry (e.g. to a GitLab registry), set
+different variables in the file above:
 
 ```txt
 CI_REGISTRY: gitlab.example.com:4567
@@ -344,7 +350,8 @@ DOCKER_USERNAME: gitlab-ci-token
 DOCKER_PASSWORD: $CI_JOB_TOKEN
 ```
 
-Make sure the `image_templates` in the file `.goreleaser.yml` reflect that custom registry!
+Make sure the `image_templates` in the file `.goreleaser.yml` reflect that
+custom registry!
 
 Example:
 
@@ -362,9 +369,12 @@ dockers:
 
 ## Codefresh
 
-Codefresh uses Docker based pipelines where all steps must be Docker containers. Using Goreleaser is very easy via the [existing Docker image](https://hub.docker.com/r/goreleaser/goreleaser/).
+Codefresh uses Docker based pipelines where all steps must be Docker containers.
+Using GoReleaser is very easy via the
+[existing Docker image](https://hub.docker.com/r/goreleaser/goreleaser/).
 
-Here is an example pipeline that builds a Go application and then uses Goreleaser.
+Here is an example pipeline that builds a Go application and then uses
+GoReleaser.
 
 ```yaml
 version: '1.0'
@@ -393,7 +403,12 @@ steps:
       - goreleaser --rm-dist
 ```
 
-You need to pass the variable `GITHUB_TOKEN` in the Codefresh UI that contains credentials to your Github account or load it from [shared configuration](https://codefresh.io/docs/docs/configure-ci-cd-pipeline/shared-configuration/).
-You should also restrict this pipeline to run only on tags when you add [git triggers](https://codefresh.io/docs/docs/configure-ci-cd-pipeline/triggers/git-triggers/) on it.
+You need to pass the variable `GITHUB_TOKEN` in the Codefresh UI that
+contains credentials to your Github account or load it from
+[shared configuration](https://codefresh.io/docs/docs/configure-ci-cd-pipeline/shared-configuration/).
+You should also restrict this pipeline to run only on tags when you add
+[git triggers](https://codefresh.io/docs/docs/configure-ci-cd-pipeline/triggers/git-triggers/)
+on it.
 
-More details can be found in the [goreleaser example page](https://codefresh.io/docs/docs/learn-by-example/golang/goreleaser/).
+More details can be found in the
+[GoReleaser example page](https://codefresh.io/docs/docs/learn-by-example/golang/goreleaser/).
