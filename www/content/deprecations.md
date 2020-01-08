@@ -151,9 +151,13 @@ brews:
     # etc
 ```
 
+## Expired deprecation notices
+
+The following options were deprecated for ~6 months and are now fully removed.
+
 ### s3
 
-> since 2019-06-09
+> since 2019-06-09, removed 2020-01-07
 
 S3 was deprecated in favor of the new `blob`, which supports S3, Azure Blob and
 GCS.
@@ -175,9 +179,7 @@ blobs:
   # etc
 ```
 
-## Expired deprecation notices
-
-The following options were deprecated for ~6 months and are now fully removed.
+ACLs should be set on the bucket, the `acl` option does not exist anymore.
 
 ### archive
 

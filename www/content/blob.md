@@ -84,3 +84,13 @@ GCS provider uses [Application Default Credentials](https://cloud.google.com/doc
 - Environment Variable (GOOGLE_APPLICATION_CREDENTIALS)
 - Default Service Account from the compute instance(Compute Engine, Kubernetes Engine, Cloud function etc).
 
+### ACLs
+
+There is no common way to set ACLs across all bucket providers, so, [go-cloud][]
+[does not support it yet][issue1108].
+
+You are expected to set the ACLs on the bucket/folder/etc, depending on your
+provider.
+
+[go-cloud]: https://gocloud.dev/howto/blob/
+[issue1108]: https://github.com/google/go-cloud/issues/1108
