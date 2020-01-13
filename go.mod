@@ -18,7 +18,7 @@ require (
 	github.com/kamilsk/retry/v4 v4.3.1
 	github.com/mattn/go-zglob v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.0
 	github.com/stretchr/testify v1.4.0
 	github.com/xanzy/go-gitlab v0.22.2
 	gocloud.dev v0.18.0
