@@ -144,6 +144,7 @@ type Build struct {
 	Goarm    []string       `yaml:",omitempty"`
 	Targets  []string       `yaml:",omitempty"`
 	Ignore   []IgnoredBuild `yaml:",omitempty"`
+	Dir      string         `yaml:",omitempty"`
 	Main     string         `yaml:",omitempty"`
 	Ldflags  StringArray    `yaml:",omitempty"`
 	Flags    FlagArray      `yaml:",omitempty"`

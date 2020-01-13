@@ -113,11 +113,16 @@ func doBuild(ctx *context.Context, build config.Build, target string) error {
 
 	build.Binary = binary
 	var name = build.Binary + ext
-	var path = filepath.Join(
-		ctx.Config.Dist,
-		fmt.Sprintf("%s_%s", build.ID, target),
-		name,
+	path, err := filepath.Abs(
+		filepath.Join(
+			ctx.Config.Dist,
+			fmt.Sprintf("%s_%s", build.ID, target),
+			name,
+		),
 	)
+	if err != nil {
+		return err
+	}
 	log.WithField("binary", path).Info("building")
 	return builders.For(build.Lang).Build(ctx, build, builders.Options{
 		Target: target,
