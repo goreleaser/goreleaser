@@ -15,7 +15,7 @@ require (
 	github.com/goreleaser/nfpm v1.1.9
 	github.com/imdario/mergo v0.3.8
 	github.com/jarcoal/httpmock v1.0.4
-	github.com/kamilsk/retry/v4 v4.3.1
+	github.com/kamilsk/retry/v4 v4.4.1
 	github.com/mattn/go-zglob v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.0
