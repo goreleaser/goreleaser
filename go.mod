@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go v1.25.11
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
-	github.com/fatih/color v1.7.0
+	github.com/fatih/color v1.9.0
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-github/v28 v28.1.1
 	github.com/goreleaser/nfpm v1.1.9
