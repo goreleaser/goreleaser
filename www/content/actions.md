@@ -23,7 +23,10 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
+      -
+        name: Unshallow
+        run: git fetch --prune --unshallow
       -
         name: Set up Go
         uses: actions/setup-go@v1
@@ -40,7 +43,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-> For detailed intructions please follow GitHub Actions [workflow syntax][syntax].
+> **IMPORTANT**: note the `Unshallow` workflow step. It is required for the
+> changelog to work correctly.
+
+> For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
 
 ## Customizing
 
