@@ -12,13 +12,13 @@ require (
 	github.com/fatih/color v1.9.0
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-github/v28 v28.1.1
-	github.com/goreleaser/nfpm v1.1.9
+	github.com/goreleaser/nfpm v1.1.10
 	github.com/imdario/mergo v0.3.8
 	github.com/jarcoal/httpmock v1.0.4
 	github.com/kamilsk/retry/v4 v4.4.1
 	github.com/mattn/go-zglob v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/pkg/errors v0.9.0
+	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.4.0
 	github.com/xanzy/go-gitlab v0.22.2
 	gocloud.dev v0.18.0
