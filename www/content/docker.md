@@ -84,6 +84,7 @@ dockers:
 
     # Template of the docker build flags.
     build_flag_templates:
+    - "--pull"
     - "--label=org.label-schema.schema-version=1.0"
     - "--label=org.label-schema.version={{.Version}}"
     - "--label=org.label-schema.name={{.ProjectName}}"
