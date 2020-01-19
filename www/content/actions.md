@@ -46,6 +46,8 @@ jobs:
 > **IMPORTANT**: note the `Unshallow` workflow step. It is required for the
 > changelog to work correctly.
 
+> If you want to run GoReleaser only on new tag, check [this comment][only-new-tag].
+
 > For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
 
 ## Customizing
@@ -79,3 +81,4 @@ command and a private key without a passphrase.
 [goreleaser-action]: https://github.com/goreleaser/goreleaser-action
 [actions]: https://github.com/features/actions
 [syntax]: https://help.github.com/en/articles/workflow-syntax-for-github-actions#About-yaml-syntax-for-workflows
+[only-new-tag]: https://github.com/goreleaser/goreleaser-action/issues/61#issuecomment-569286582
