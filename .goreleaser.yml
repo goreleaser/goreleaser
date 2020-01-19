@@ -36,9 +36,10 @@ dockers:
   - goreleaser
   build_flag_templates:
   - "--pull"
-  - "--label=org.label-schema.schema-version=1.0"
-  - "--label=org.label-schema.version={{.Version}}"
-  - "--label=org.label-schema.name={{.ProjectName}}"
+  - "--label=org.opencontainers.image.created={{.Date}}"
+  - "--label=org.opencontainers.image.name={{.ProjectName}}"
+  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+  - "--label=org.opencontainers.image.version={{.Version}}"
   extra_files:
   - scripts/entrypoint.sh
 - image_templates:
@@ -50,9 +51,11 @@ dockers:
   - goreleaser
   build_flag_templates:
   - "--pull"
-  - "--label=org.label-schema.schema-version=1.0"
-  - "--label=org.label-schema.version={{.Version}}"
-  - "--label=org.label-schema.name={{.ProjectName}}"
+  - "--label=org.opencontainers.image.created={{.Date}}"
+  - "--label=org.opencontainers.image.name={{.ProjectName}}"
+  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+  - "--label=org.opencontainers.image.version={{.Version}}"
+  - "--label=org.opencontainers.image.source=http://github.com/goreleaser/goreleaser"
   - "--label=com.github.actions.name={{.ProjectName}}"
   - "--label=com.github.actions.description=Deliver Go binaries as fast and easily as possible"
   - "--label=com.github.actions.icon=terminal"
