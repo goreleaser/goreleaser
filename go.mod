@@ -9,16 +9,16 @@ require (
 	github.com/aws/aws-sdk-go v1.25.11 // indirect
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
-	github.com/fatih/color v1.7.0
+	github.com/fatih/color v1.9.0
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-github/v28 v28.1.1
 	github.com/goreleaser/nfpm v1.1.9
 	github.com/imdario/mergo v0.3.8
 	github.com/jarcoal/httpmock v1.0.4
-	github.com/kamilsk/retry/v4 v4.3.1
+	github.com/kamilsk/retry/v4 v4.4.1
 	github.com/mattn/go-zglob v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.0
 	github.com/stretchr/testify v1.4.0
 	github.com/xanzy/go-gitlab v0.22.2
 	gocloud.dev v0.18.0

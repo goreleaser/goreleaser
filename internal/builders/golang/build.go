@@ -7,6 +7,7 @@ import (
 	"go/token"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/apex/log"
@@ -32,6 +33,9 @@ type Builder struct{}
 
 // WithDefaults sets the defaults for a golang build and returns it
 func (*Builder) WithDefaults(build config.Build) config.Build {
+	if build.Dir == "" {
+		build.Dir = "."
+	}
 	if build.Main == "" {
 		build.Main = "."
 	}
@@ -111,7 +115,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	cmd = append(cmd, processedLdFlags)
 
 	cmd = append(cmd, "-o", options.Path, build.Main)
-	if err := run(ctx, cmd, env); err != nil {
+	if err := run(ctx, cmd, env, build.Dir); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", options.Target)
 	}
 	ctx.Artifacts.Add(artifact)
@@ -138,11 +142,12 @@ func joinLdFlags(flags []string) string {
 	return ldflagString.String()
 }
 
-func run(ctx *context.Context, command, env []string) error {
+func run(ctx *context.Context, command, env []string, dir string) error {
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
 	var log = log.WithField("env", env).WithField("cmd", command)
 	cmd.Env = env
+	cmd.Dir = dir
 	log.Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
@@ -181,6 +186,9 @@ func checkMain(build config.Build) error {
 	var main = build.Main
 	if main == "" {
 		main = "."
+	}
+	if build.Dir != "" {
+		main = filepath.Join(build.Dir, main)
 	}
 	stat, ferr := os.Stat(main)
 	if ferr != nil {
