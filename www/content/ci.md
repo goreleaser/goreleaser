@@ -21,18 +21,8 @@ language: go
 addons:
   apt:
     packages:
-    # needed for the nfpm pipe:
-    - rpm
-    # needed for the snap pipe:
-    - snapd
-
-env:
-# needed for the snap pipe:
-- PATH=/snap/bin:$PATH
-
-install:
-# needed for the snap pipe:
-- sudo snap install snapcraft --classic
+    # needed only if you use the snap pipe:
+    - snapcraft
 
 # needed for the docker pipe
 services:

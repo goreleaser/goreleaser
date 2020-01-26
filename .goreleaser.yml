@@ -16,6 +16,9 @@ builds:
     - amd64
     - arm
     - arm64
+  ignore:
+    - goos: darwin
+      goarch: 386
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
 changelog:
