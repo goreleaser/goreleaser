@@ -38,13 +38,18 @@ func TestWithDefaults(t *testing.T) {
 				Goarch: []string{
 					"amd64",
 					"arm",
+					"mips",
 				},
 				Goarm: []string{
 					"6",
 				},
+				Gomips: []string{
+					"softfloat",
+				},
 			},
 			targets: []string{
 				"linux_amd64",
+				"linux_mips_softfloat",
 				"darwin_amd64",
 				"windows_amd64",
 				"linux_arm_6",
@@ -93,6 +98,8 @@ func TestBuild(t *testing.T) {
 					"windows_amd64",
 					"linux_arm_6",
 					"js_wasm",
+					"linux_mips_softfloat",
+					"linux_mips64le_softfloat",
 				},
 				Asmflags: []string{".=", "all="},
 				Gcflags:  []string{"all="},
@@ -126,6 +133,32 @@ func TestBuild(t *testing.T) {
 			Path:   filepath.Join(folder, "dist", "linux_amd64", "foo"),
 			Goos:   "linux",
 			Goarch: "amd64",
+			Type:   artifact.Binary,
+			Extra: map[string]interface{}{
+				"Ext":    "",
+				"Binary": "foo",
+				"ID":     "foo",
+			},
+		},
+		{
+			Name:   "foo",
+			Path:   filepath.Join(folder, "dist", "linux_mips_softfloat", "foo"),
+			Goos:   "linux",
+			Goarch: "mips",
+			Gomips: "softfloat",
+			Type:   artifact.Binary,
+			Extra: map[string]interface{}{
+				"Ext":    "",
+				"Binary": "foo",
+				"ID":     "foo",
+			},
+		},
+		{
+			Name:   "foo",
+			Path:   filepath.Join(folder, "dist", "linux_mips64le_softfloat", "foo"),
+			Goos:   "linux",
+			Goarch: "mips64le",
+			Gomips: "softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				"Ext":    "",

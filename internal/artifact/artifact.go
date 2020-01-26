@@ -72,6 +72,7 @@ type Artifact struct {
 	Goos   string
 	Goarch string
 	Goarm  string
+	Gomips string
 	Type   Type
 	Extra  map[string]interface{}
 }

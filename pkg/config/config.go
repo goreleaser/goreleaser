@@ -97,7 +97,7 @@ type Hooks struct {
 
 // IgnoredBuild represents a build ignored by the user
 type IgnoredBuild struct {
-	Goos, Goarch, Goarm string
+	Goos, Goarch, Goarm, Gomips string
 }
 
 // StringArray is a wrapper for an array of strings
@@ -142,6 +142,7 @@ type Build struct {
 	Goos     []string       `yaml:",omitempty"`
 	Goarch   []string       `yaml:",omitempty"`
 	Goarm    []string       `yaml:",omitempty"`
+	Gomips   []string       `yaml:",omitempty"`
 	Targets  []string       `yaml:",omitempty"`
 	Ignore   []IgnoredBuild `yaml:",omitempty"`
 	Dir      string         `yaml:",omitempty"`

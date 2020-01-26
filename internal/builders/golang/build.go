@@ -79,6 +79,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		Goos:   target.os,
 		Goarch: target.arch,
 		Goarm:  target.arm,
+		Gomips: target.mips,
 		Extra: map[string]interface{}{
 			"Binary": build.Binary,
 			"Ext":    options.Ext,
@@ -157,7 +158,7 @@ func run(ctx *context.Context, command, env []string, dir string) error {
 }
 
 type buildTarget struct {
-	os, arch, arm string
+	os, arch, arm, mips string
 }
 
 func newBuildTarget(s string) (buildTarget, error) {
@@ -168,8 +169,11 @@ func newBuildTarget(s string) (buildTarget, error) {
 	}
 	t.os = parts[0]
 	t.arch = parts[1]
-	if len(parts) == 3 {
+	if strings.HasPrefix(t.arch, "arm") && len(parts) == 3 {
 		t.arm = parts[2]
+	}
+	if strings.HasPrefix(t.arch, "mips") && len(parts) == 3 {
+		t.mips = parts[2]
 	}
 	return t, nil
 }
@@ -179,6 +183,8 @@ func (b buildTarget) Env() []string {
 		"GOOS=" + b.os,
 		"GOARCH=" + b.arch,
 		"GOARM=" + b.arm,
+		"GOMIPS=" + b.mips,
+		"GOMIPS64=" + b.mips,
 	}
 }
 

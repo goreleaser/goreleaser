@@ -23,10 +23,18 @@ func TestAllBuildTargets(t *testing.T) {
 			"arm",
 			"arm64",
 			"wasm",
+			"mips",
+			"mips64",
+			"mipsle",
+			"mips64le",
 		},
 		Goarm: []string{
 			"6",
 			"7",
+		},
+		Gomips: []string{
+			"hardfloat",
+			"softfloat",
 		},
 		Ignore: []config.IgnoredBuild{
 			{
@@ -39,6 +47,12 @@ func TestAllBuildTargets(t *testing.T) {
 			}, {
 				Goos:   "openbsd",
 				Goarch: "arm",
+			}, {
+				Goarch: "mips64",
+				Gomips: "hardfloat",
+			}, {
+				Goarch: "mips64le",
+				Gomips: "softfloat",
 			},
 		},
 	}
@@ -47,6 +61,12 @@ func TestAllBuildTargets(t *testing.T) {
 		"linux_amd64",
 		"linux_arm_6",
 		"linux_arm64",
+		"linux_mips_hardfloat",
+		"linux_mips_softfloat",
+		"linux_mips64_softfloat",
+		"linux_mipsle_hardfloat",
+		"linux_mipsle_softfloat",
+		"linux_mips64le_hardfloat",
 		"darwin_amd64",
 		"freebsd_386",
 		"freebsd_amd64",
@@ -109,7 +129,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 	}
 	for _, p := range platforms {
 		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {
-			assert.Equal(t, p.valid, valid(target{p.os, p.arch, ""}))
+			assert.Equal(t, p.valid, valid(target{p.os, p.arch, "", ""}))
 		})
 	}
 }
