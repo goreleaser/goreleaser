@@ -687,9 +687,7 @@ func TestDefault(t *testing.T) {
 		Config: config.Project{
 			ProjectName: "myproject",
 			Brews: []config.Homebrew{
-				{
-					Description: "lalal",
-				},
+				{},
 			},
 			Builds: []config.Build{
 				{
