@@ -198,7 +198,6 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	}
 
 	for _, binary := range binaries {
-
 		// build the binaries and link resources
 		completerPath := ""
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
@@ -253,7 +252,6 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 
 			metadata.Apps[name] = appMetadata
 			metadata.Plugs = snap.Plugs
-
 		}
 	}
 
