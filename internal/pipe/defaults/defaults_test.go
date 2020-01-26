@@ -89,6 +89,11 @@ func TestFillPartial(t *testing.T) {
 					ImageTemplates: []string{"a/b"},
 				},
 			},
+			Brews: []config.Homebrew{
+				{
+					Description: "foo",
+				},
+			},
 		},
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
