@@ -8,8 +8,10 @@ import (
 	"reflect"
 
 	"github.com/apex/log"
+
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
+	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -114,10 +116,11 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 	// tells the scanner to ignore this.
 	// #nosec
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
-	log.WithField("cmd", cmd.Args).Debug("running")
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("sign: %s failed with %q", cfg.Cmd, string(output))
+	cmd.Stderr = logext.NewWriter(log.WithField("cmd", cfg.Cmd))
+	cmd.Stdout = cmd.Stderr
+	log.WithField("cmd", cmd.Args).Info("signing")
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("sign: %s failed", cfg.Cmd)
 	}
 
 	artifactPathBase, _ := filepath.Split(a.Path)

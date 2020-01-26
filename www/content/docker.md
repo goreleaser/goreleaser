@@ -50,13 +50,21 @@ dockers:
   -
     # GOOS of the built binary that should be used.
     goos: linux
+
     # GOARCH of the built binary that should be used.
     goarch: amd64
+
     # GOARM of the built binary that should be used.
     goarm: ''
+
     # Name templates of the built binaries that should be used.
     binaries:
     - mybinary
+
+    # Build IDs to gather the binaries from.
+    builds:
+    - mybuild
+
     # Templates of the Docker image names.
     image_templates:
     - "myuser/myimage:latest"
@@ -64,19 +72,23 @@ dockers:
     - "myuser/myimage:{{ .Tag }}-{{ .Env.GO_VERSION }}"
     - "myuser/myimage:v{{ .Major }}"
     - "gcr.io/myuser/myimage:latest"
+
     # Skips the docker push. Could be useful if you also do draft releases.
     # If set to auto, the release will not be pushed to the docker repository
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
     # Defaults to false.
     skip_push: false
+
     # Path to the Dockerfile (from the project root).
     dockerfile: Dockerfile
+
     # Template of the docker build flags.
     build_flag_templates:
     - "--label=org.label-schema.schema-version=1.0"
     - "--label=org.label-schema.version={{.Version}}"
     - "--label=org.label-schema.name={{.ProjectName}}"
     - "--build-arg=FOO={{.Env.Bar}}"
+
     # If your Dockerfile copies files other than the binary itself,
     # you should list them here as well.
     # Note that goreleaser will create the same structure inside the temporary

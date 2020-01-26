@@ -144,6 +144,7 @@ type Build struct {
 	Goarm    []string       `yaml:",omitempty"`
 	Targets  []string       `yaml:",omitempty"`
 	Ignore   []IgnoredBuild `yaml:",omitempty"`
+	Dir      string         `yaml:",omitempty"`
 	Main     string         `yaml:",omitempty"`
 	Ldflags  StringArray    `yaml:",omitempty"`
 	Flags    FlagArray      `yaml:",omitempty"`
@@ -276,6 +277,7 @@ type Checksum struct {
 // Docker image config
 type Docker struct {
 	Binaries           []string `yaml:",omitempty"`
+	Builds             []string `yaml:",omitempty"`
 	Goos               string   `yaml:",omitempty"`
 	Goarch             string   `yaml:",omitempty"`
 	Goarm              string   `yaml:",omitempty"`
@@ -324,12 +326,14 @@ type S3 struct {
 
 // Blob contains config for GO CDK blob
 type Blob struct {
-	Bucket   string   `yaml:",omitempty"`
-	Provider string   `yaml:",omitempty"`
-	Folder   string   `yaml:",omitempty"`
-	KMSKey   string   `yaml:",omitempty"`
-	IDs      []string `yaml:"ids,omitempty"`
-	Endpoint string   `yaml:",omitempty"` // used for minio for example
+	Bucket     string   `yaml:",omitempty"`
+	Provider   string   `yaml:",omitempty"`
+	Region     string   `yaml:",omitempty"`
+	DisableSSL bool     `yaml:"disableSSL,omitempty"`
+	Folder     string   `yaml:",omitempty"`
+	KMSKey     string   `yaml:",omitempty"`
+	IDs        []string `yaml:"ids,omitempty"`
+	Endpoint   string   `yaml:",omitempty"` // used for minio for example
 }
 
 // Upload configuration
@@ -355,11 +359,8 @@ type Project struct {
 	Brews         []Homebrew  `yaml:",omitempty"`
 	Scoop         Scoop       `yaml:",omitempty"`
 	Builds        []Build     `yaml:",omitempty"`
-	Archive       Archive     `yaml:",omitempty"` // TODO: remove this
 	Archives      []Archive   `yaml:",omitempty"`
-	NFPM          NFPM        `yaml:",omitempty"` // TODO: remove this
 	NFPMs         []NFPM      `yaml:"nfpms,omitempty"`
-	Snapcraft     Snapcraft   `yaml:",omitempty"` // TODO: remove this
 	Snapcrafts    []Snapcraft `yaml:",omitempty"`
 	Snapshot      Snapshot    `yaml:",omitempty"`
 	Checksum      Checksum    `yaml:",omitempty"`

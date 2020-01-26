@@ -63,9 +63,11 @@ func TestFillPartial(t *testing.T) {
 					Name:  "test",
 				},
 			},
-			Archive: config.Archive{
-				Files: []string{
-					"glob/*",
+			Archives: []config.Archive{
+				{
+					Files: []string{
+						"glob/*",
+					},
 				},
 			},
 			Builds: []config.Build{
@@ -90,7 +92,7 @@ func TestFillPartial(t *testing.T) {
 		},
 	}
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Len(t, ctx.Config.Archive.Files, 1)
+	assert.Len(t, ctx.Config.Archives[0].Files, 1)
 	assert.Equal(t, `bin.install "testreleaser"`, ctx.Config.Brews[0].Install)
 	assert.NotEmpty(t, ctx.Config.Dockers[0].Binaries)
 	assert.NotEmpty(t, ctx.Config.Dockers[0].Goos)

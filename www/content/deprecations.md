@@ -175,9 +175,34 @@ blobs:
   # etc
 ```
 
+## Expired deprecation notices
+
+The following options were deprecated for ~6 months and are now fully removed.
+
+### archive
+
+> since 2019-04-16, removed 2019-12-27
+
+We now allow multiple archives, so the `archive` statement will be removed.
+
+Change this:
+
+```yaml
+archive:
+  format: zip
+```
+
+to this:
+
+```yaml
+archives:
+  - id: foo
+    format: zip
+```
+
 ### snapcraft
 
-> since 2019-05-39
+> since 2019-05-27, removed 2019-12-27
 
 We now allow multiple Snapcraft configs, so the `snapcraft` statement will be removed.
 
@@ -200,7 +225,7 @@ snapcrafts:
 
 ### nfpm
 
-> since 2019-05-07
+> since 2019-05-07, removed 2019-12-27
 
 We now allow multiple NFPM config, so the `nfpm` statement will be removed.
 
@@ -220,31 +245,6 @@ nfpms:
     formats:
       - deb
 ```
-
-### archive
-
-> since 2019-04-16
-
-We now allow multiple archives, so the `archive` statement will be removed.
-
-Change this:
-
-```yaml
-archive:
-  format: zip
-```
-
-to this:
-
-```yaml
-archives:
-  - id: foo
-    format: zip
-```
-
-## Expired deprecation notices
-
-The following options were deprecated for ~6 months and are now fully removed.
 
 ### docker.binary
 

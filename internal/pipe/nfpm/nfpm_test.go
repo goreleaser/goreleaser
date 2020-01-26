@@ -24,7 +24,11 @@ func TestRunPipeNoFormats(t *testing.T) {
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.0",
 		},
-		Config:      config.Project{},
+		Config: config.Project{
+			NFPMs: []config.NFPM{
+				{},
+			},
+		},
 		Parallelism: runtime.NumCPU(),
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -270,7 +274,9 @@ func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
 			ProjectName: "foobar",
-			NFPMs:       []config.NFPM{},
+			NFPMs: []config.NFPM{
+				{},
+			},
 			Builds: []config.Build{
 				{ID: "foo"},
 				{ID: "bar"},
@@ -282,49 +288,6 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, []string{"foo", "bar"}, ctx.Config.NFPMs[0].Builds)
 	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].FileNameTemplate)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.NFPMs[0].PackageName)
-}
-
-func TestDefaultDeprecate(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
-			NFPM: config.NFPM{
-				Formats: []string{"deb"},
-			},
-			Builds: []config.Build{
-				{ID: "foo"},
-				{ID: "bar"},
-			},
-		},
-	}
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "/usr/local/bin", ctx.Config.NFPMs[0].Bindir)
-	require.Equal(t, []string{"deb"}, ctx.Config.NFPMs[0].Formats)
-	require.Equal(t, []string{"foo", "bar"}, ctx.Config.NFPMs[0].Builds)
-	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].FileNameTemplate)
-}
-
-func TestDefaultDeprecated(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
-			Builds: []config.Build{
-				{ID: "foo"},
-				{ID: "bar"},
-			},
-			NFPMs: []config.NFPM{
-				{
-					Builds: []string{"foo"},
-					Bindir: "/bin",
-					NFPMOverridables: config.NFPMOverridables{
-						NameTemplate: "foo",
-					},
-				},
-			},
-		},
-	}
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "/bin", ctx.Config.NFPMs[0].Bindir)
-	require.Equal(t, "foo", ctx.Config.NFPMs[0].FileNameTemplate)
-	require.Equal(t, []string{"foo"}, ctx.Config.NFPMs[0].Builds)
 }
 
 func TestDefaultSet(t *testing.T) {

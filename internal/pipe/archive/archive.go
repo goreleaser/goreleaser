@@ -7,14 +7,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"sync"
 
 	"github.com/apex/log"
 	"github.com/campoy/unique"
+	"github.com/mattn/go-zglob"
+
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -22,7 +22,6 @@ import (
 	archivelib "github.com/goreleaser/goreleaser/pkg/archive"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	zglob "github.com/mattn/go-zglob"
 )
 
 const (
@@ -44,10 +43,7 @@ func (Pipe) String() string {
 func (Pipe) Default(ctx *context.Context) error {
 	var ids = ids.New("archives")
 	if len(ctx.Config.Archives) == 0 {
-		ctx.Config.Archives = append(ctx.Config.Archives, ctx.Config.Archive)
-		if !reflect.DeepEqual(ctx.Config.Archive, config.Archive{}) {
-			deprecate.Notice("archive")
-		}
+		ctx.Config.Archives = append(ctx.Config.Archives, config.Archive{})
 	}
 	for i := range ctx.Config.Archives {
 		var archive = &ctx.Config.Archives[i]

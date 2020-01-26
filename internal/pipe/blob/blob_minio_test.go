@@ -36,6 +36,7 @@ func TestMinioUpload(t *testing.T) {
 			{
 				Provider: "s3",
 				Bucket:   "test",
+				Region:   "us-east",
 				Endpoint: "http://" + listen,
 				IDs:      []string{"foo", "bar"},
 			},

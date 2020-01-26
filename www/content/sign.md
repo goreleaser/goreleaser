@@ -64,3 +64,42 @@ signs:
       - foo
       - bar
 ```
+
+## Signing with gon
+
+You can use [gon][] to create notarized macOS apps. Here's an example config:
+
+```yaml
+builds:
+- binary: foo
+  id: foo
+  goos:
+  - linux
+  - windows
+  goarch:
+  - amd64
+# notice that we need a separated build for the macos binary only:
+- binary: foo
+  id: foo-macos
+  goos:
+  - darwin
+  goarch:
+  - amd64
+signs:
+  - signature: "${artifact}.dmg"
+    ids:
+    - foo-macos # here we filter the macos only build id
+    # you'll need to have gon on PATH
+    cmd: gon
+    # you can follow the gon docs to properly create the gon.hcl config file:
+    # https://github.com/mitchellh/gon
+    args:
+    - gon.hcl
+    artifacts: all
+```
+
+Note that notarizing take some time, and will need to be run from a macOS machine.
+
+You can also check [this issue](https://github.com/goreleaser/goreleaser/issues/1227) for more details.
+
+[gon]: https://github.com/mitchellh/gon

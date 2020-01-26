@@ -5,9 +5,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/nfpm"
+	_ "github.com/goreleaser/nfpm/deb" // blank import to register the format
+	_ "github.com/goreleaser/nfpm/rpm" // blank import to register the format
+	"github.com/imdario/mergo"
+	"github.com/pkg/errors"
+
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
@@ -17,11 +22,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/goreleaser/nfpm"
-	_ "github.com/goreleaser/nfpm/deb" // blank import to register the format
-	_ "github.com/goreleaser/nfpm/rpm" // blank import to register the format
-	"github.com/imdario/mergo"
-	"github.com/pkg/errors"
 )
 
 const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
@@ -35,12 +35,6 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if len(ctx.Config.NFPMs) == 0 {
-		ctx.Config.NFPMs = append(ctx.Config.NFPMs, ctx.Config.NFPM)
-		if !reflect.DeepEqual(ctx.Config.NFPM, config.NFPM{}) {
-			deprecate.Notice("nfpm")
-		}
-	}
 	var ids = ids.New("nfpms")
 	for i := range ctx.Config.NFPMs {
 		var fpm = &ctx.Config.NFPMs[i]
