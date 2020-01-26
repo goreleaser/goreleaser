@@ -37,13 +37,18 @@ func TestWithDefaults(t *testing.T) {
 				Goarch: []string{
 					"amd64",
 					"arm",
+					"mips",
 				},
 				Goarm: []string{
 					"6",
 				},
+				Gomips: []string{
+					"softfloat",
+				},
 			},
 			targets: []string{
 				"linux_amd64",
+				"linux_mips_softfloat",
 				"darwin_amd64",
 				"windows_amd64",
 				"linux_arm_6",

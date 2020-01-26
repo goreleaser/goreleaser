@@ -164,7 +164,7 @@ func newBuildTarget(s string) (buildTarget, error) {
 	}
 	t.os = parts[0]
 	t.arch = parts[1]
-	if t.arch == "arm" && len(parts) == 3 {
+	if strings.HasPrefix(t.arch, "arm") && len(parts) == 3 {
 		t.arm = parts[2]
 	}
 	if strings.HasPrefix(t.arch, "mips") && len(parts) == 3 {
