@@ -686,7 +686,11 @@ func TestDefault(t *testing.T) {
 		TokenType: context.TokenTypeGitHub,
 		Config: config.Project{
 			ProjectName: "myproject",
-			Brews:       []config.Homebrew{},
+			Brews: []config.Homebrew{
+				{
+					Description: "lalal",
+				},
+			},
 			Builds: []config.Build{
 				{
 					Binary: "foo",

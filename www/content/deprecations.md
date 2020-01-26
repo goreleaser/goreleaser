@@ -130,9 +130,13 @@ signs:
 ```
 
 
+## Expired deprecation notices
+
+The following options were deprecated for ~6 months and are now fully removed.
+
 ### brew
 
-> since 2019-06-09
+> since 2019-06-09, removed 2020-01-26
 
 Brew was deprecated in favor of its plural form.
 
@@ -150,10 +154,6 @@ brews:
   -
     # etc
 ```
-
-## Expired deprecation notices
-
-The following options were deprecated for ~6 months and are now fully removed.
 
 ### s3
 
