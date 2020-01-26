@@ -150,6 +150,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	if err != nil {
 		return err
 	}
+
 	// prime is the directory that then will be compressed to make the .snap package.
 	var folderDir = filepath.Join(ctx.Config.Dist, folder)
 	var primeDir = filepath.Join(folderDir, "prime")
@@ -185,34 +186,26 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		metadata.Name = snap.Name
 	}
 
-	for _, binary := range binaries {
-		_, name := filepath.Split(binary.Name)
-		log.WithField("path", binary.Path).
-			WithField("name", binary.Name).
-			Debug("passed binary to snapcraft")
-		appMetadata := AppMetadata{
-			Command: name,
+	// if the user didn't specify any apps then
+	// default to the main binary being the command:
+	if len(snap.Apps) == 0 {
+		metadata.Apps[binaries[0].Name] = AppMetadata{
+			Command: filepath.Base(binaries[0].Name),
 		}
-		completerPath := ""
-		if configAppMetadata, ok := snap.Apps[name]; ok {
-			appMetadata.Plugs = configAppMetadata.Plugs
-			appMetadata.Daemon = configAppMetadata.Daemon
-			appMetadata.Command = strings.TrimSpace(strings.Join([]string{
-				appMetadata.Command,
-				configAppMetadata.Args,
-			}, " "))
-			if configAppMetadata.Completer != "" {
-				completerPath = configAppMetadata.Completer
-				appMetadata.Completer = filepath.Base(completerPath)
-			}
+		metadata.Apps[snap.Name] = AppMetadata{
+			Command: filepath.Base(binaries[0].Name),
 		}
-		metadata.Apps[name] = appMetadata
-		metadata.Plugs = snap.Plugs
+	}
 
+	for _, binary := range binaries {
+
+		// build the binaries and link resources
+		completerPath := ""
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
 		log.WithField("src", binary.Path).
 			WithField("dst", destBinaryPath).
 			Debug("linking")
+
 		if err = os.Link(binary.Path, destBinaryPath); err != nil {
 			return errors.Wrap(err, "failed to link binary")
 		}
@@ -232,11 +225,36 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 				return errors.Wrap(err, "failed to change completer permissions")
 			}
 		}
-	}
 
-	if _, ok := metadata.Apps[metadata.Name]; !ok {
-		_, name := filepath.Split(binaries[0].Name)
-		metadata.Apps[metadata.Name] = metadata.Apps[name]
+		// setup the apps: directive for each binary
+		for name := range snap.Apps {
+			log.WithField("path", binary.Path).
+				WithField("name", binary.Name).
+				Debug("passed binary to snapcraft")
+
+			appMetadata := AppMetadata{
+				Command: binary.Name,
+			}
+
+			if configAppMetadata, ok := snap.Apps[name]; ok {
+				appMetadata.Plugs = configAppMetadata.Plugs
+				appMetadata.Daemon = configAppMetadata.Daemon
+
+				appMetadata.Command = strings.TrimSpace(strings.Join([]string{
+					binary.Name,
+					configAppMetadata.Args,
+				}, " "))
+
+				if configAppMetadata.Completer != "" {
+					completerPath = configAppMetadata.Completer
+					appMetadata.Completer = filepath.Base(completerPath)
+				}
+			}
+
+			metadata.Apps[name] = appMetadata
+			metadata.Plugs = snap.Plugs
+
+		}
 	}
 
 	out, err := yaml.Marshal(metadata)

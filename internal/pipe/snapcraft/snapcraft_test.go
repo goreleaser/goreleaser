@@ -81,7 +81,8 @@ func TestRunPipe(t *testing.T) {
 	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"), "foo")
 	addBinaries(t, ctx, "bar", filepath.Join(dist, "bar"), "bar")
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Len(t, ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List(), 9)
+	list := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List()
+	assert.Len(t, list, 9)
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
@@ -176,7 +177,6 @@ func TestRunPipeWithBinaryInDir(t *testing.T) {
 	assert.Equal(t, "testsnapname", metadata.Name)
 	assert.Equal(t, "", metadata.Base)
 	assert.Equal(t, "", metadata.License)
-	assert.Equal(t, "mybin", metadata.Apps["mybin"].Command)
 	assert.Equal(t, "mybin", metadata.Apps["testsnapname"].Command)
 }
 
@@ -191,6 +191,7 @@ func TestRunPipeMetadata(t *testing.T) {
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
 			{
+				Name:         "testprojectname",
 				NameTemplate: "foo_{{.Arch}}",
 				Summary:      "test summary",
 				Description:  "test description",
@@ -222,9 +223,9 @@ func TestRunPipeMetadata(t *testing.T) {
 	assert.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["mybin"].Plugs)
 	assert.Equal(t, "simple", metadata.Apps["mybin"].Daemon)
 	assert.Equal(t, "mybin --foo --bar", metadata.Apps["mybin"].Command)
-	assert.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["testprojectname"].Plugs)
-	assert.Equal(t, "simple", metadata.Apps["testprojectname"].Daemon)
-	assert.Equal(t, "mybin --foo --bar", metadata.Apps["testprojectname"].Command)
+	assert.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["mybin"].Plugs)
+	assert.Equal(t, "simple", metadata.Apps["mybin"].Daemon)
+	assert.Equal(t, "mybin --foo --bar", metadata.Apps["mybin"].Command)
 	assert.Equal(t, map[interface{}]interface{}(map[interface{}]interface{}{"read": []interface{}{"$HOME/test"}}), metadata.Plugs["personal-files"])
 }
 
