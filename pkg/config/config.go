@@ -313,17 +313,6 @@ type Before struct {
 	Hooks []string `yaml:",omitempty"`
 }
 
-// S3 contains s3 config
-type S3 struct {
-	Region   string   `yaml:",omitempty"`
-	Bucket   string   `yaml:",omitempty"`
-	Folder   string   `yaml:",omitempty"`
-	Profile  string   `yaml:",omitempty"`
-	Endpoint string   `yaml:",omitempty"` // used for minio for example
-	ACL      string   `yaml:",omitempty"`
-	IDs      []string `yaml:"ids,omitempty"`
-}
-
 // Blob contains config for GO CDK blob
 type Blob struct {
 	Bucket     string   `yaml:",omitempty"`
@@ -367,8 +356,7 @@ type Project struct {
 	Dockers       []Docker    `yaml:",omitempty"`
 	Artifactories []Upload    `yaml:",omitempty"`
 	Uploads       []Upload    `yaml:",omitempty"`
-	Puts          []Upload    `yaml:",omitempty"` // TODO: remove this
-	S3            []S3        `yaml:"s3,omitempty"`
+	Puts          []Upload    `yaml:",omitempty"`     // TODO: remove this
 	Blob          []Blob      `yaml:"blob,omitempty"` // TODO: remove this
 	Blobs         []Blob      `yaml:"blobs,omitempty"`
 	Changelog     Changelog   `yaml:",omitempty"`
