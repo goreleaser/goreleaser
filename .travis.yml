@@ -7,12 +7,9 @@ services:
 addons:
   apt:
     packages:
-    - snapd
-env:
-  - PATH=/snap/bin:$PATH
+    - snapcraft
 install:
   - make setup
-  - sudo snap install snapcraft --classic
 script:
   - make ci
   - test -n "$TRAVIS_TAG" || ./goreleaser --snapshot
