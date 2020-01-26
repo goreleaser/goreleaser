@@ -1,5 +1,4 @@
-dist: trusty
-sudo: required
+dist: bionic
 language: go
 go: '1.13.x'
 services:
@@ -7,12 +6,9 @@ services:
 addons:
   apt:
     packages:
-    - snapd
-env:
-  - PATH=/snap/bin:$PATH
+    - snapcraft
 install:
   - make setup
-  - sudo snap install snapcraft --classic
 script:
   - make ci
   - test -n "$TRAVIS_TAG" || ./goreleaser --snapshot
