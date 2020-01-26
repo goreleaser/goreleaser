@@ -18,14 +18,14 @@ require (
 	github.com/kamilsk/retry/v4 v4.4.1
 	github.com/mattn/go-zglob v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/pkg/errors v0.9.0
+	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.4.0
-	github.com/xanzy/go-gitlab v0.22.2
+	github.com/xanzy/go-gitlab v0.22.3
 	gocloud.dev v0.18.0
-	golang.org/x/net v0.0.0-20191119073136-fc4aabc6c914 // indirect
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa // indirect
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	google.golang.org/appengine v1.6.5 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
-	gopkg.in/yaml.v2 v2.2.7
+	gopkg.in/yaml.v2 v2.2.8
 )
