@@ -60,9 +60,9 @@ brews:
 
     # Allows you to set a custom download strategy. Note that you'll need
     # to implement the strategy and add it to your tap repository.
-    # Example: http://lessthanhero.io/post/homebrew-with-private-repo-releases/
+    # Example: https://docs.brew.sh/Formula-Cookbook#specifying-the-download-strategy-explicitly
     # Default is empty.
-    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
+    download_strategy: CurlDownloadStrategy.
 
     # Allows you to add a custom require_relative at the top of the formula template
     # Default is empty
