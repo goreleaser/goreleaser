@@ -8,7 +8,6 @@ import (
 	"reflect"
 
 	"github.com/apex/log"
-	"github.com/caarlos0/cmdstream"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
@@ -117,10 +116,10 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 	// tells the scanner to ignore this.
 	// #nosec
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
+	cmd.Stderr = logext.NewWriter(log.WithField("cmd", cfg.Cmd))
+	cmd.Stdout = cmd.Stderr
 	log.WithField("cmd", cmd.Args).Info("signing")
-	if err := cmdstream.Stream(
-		cmd, logext.NewWriter(log.WithField("cmd", cfg.Cmd)),
-	); err != nil {
+	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("sign: %s failed", cfg.Cmd)
 	}
 

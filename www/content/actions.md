@@ -23,7 +23,10 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
+      -
+        name: Unshallow
+        run: git fetch --prune --unshallow
       -
         name: Set up Go
         uses: actions/setup-go@v1
@@ -40,7 +43,34 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-> For detailed intructions please follow GitHub Actions [workflow syntax][syntax].
+> **IMPORTANT**: note the `Unshallow` workflow step. It is required for the
+> changelog to work correctly.
+
+If you want to run GoReleaser only on new tag, you can use this event:
+
+```yaml
+on:
+  push:
+    tags:
+      - '*'
+```
+
+Or with a condition on GoReleaser step:
+
+```yaml
+      -
+        name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          version: latest
+          args: release --rm-dist
+          key: ${{ secrets.YOUR_PRIVATE_KEY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+> For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
 
 ## Customizing
 

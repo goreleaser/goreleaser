@@ -55,11 +55,6 @@ func (Pipe) Default(ctx *context.Context) error {
 			ctx.Config.Builds[0].Binary,
 		}
 	}
-	if len(ctx.Config.Dockers[0].Builds) == 0 {
-		ctx.Config.Dockers[0].Builds = []string{
-			ctx.Config.Builds[0].ID,
-		}
-	}
 	if ctx.Config.Dockers[0].Dockerfile == "" {
 		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
 	}

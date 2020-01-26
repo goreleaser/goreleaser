@@ -84,9 +84,11 @@ dockers:
 
     # Template of the docker build flags.
     build_flag_templates:
-    - "--label=org.label-schema.schema-version=1.0"
-    - "--label=org.label-schema.version={{.Version}}"
-    - "--label=org.label-schema.name={{.ProjectName}}"
+    - "--pull"
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.name={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
     - "--build-arg=FOO={{.Env.Bar}}"
 
     # If your Dockerfile copies files other than the binary itself,
@@ -198,18 +200,22 @@ dockers:
     image_templates:
     - "myuser/myimage"
     build_flag_templates:
-    - "--label=org.label-schema.schema-version=1.0"
-    - "--label=org.label-schema.version={{.Version}}"
-    - "--label=org.label-schema.name={{.ProjectName}}"
+    - "--pull"
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.name={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
 ```
 
 This will execute the following command:
 
 ```bash
 docker build -t myuser/myimage . \
-  --label=org.label-schema.schema-version=1.0 \
-  --label=org.label-schema.version=1.6.4 \
-  --label=org.label-schema.name=mybinary"
+  --pull \
+  --label=org.opencontainers.image.created=2020-01-19T15:58:07Z" \
+  --label=org.opencontainers.image.name=mybinary" \
+  --label=org.opencontainers.image.revision=da39a3ee5e6b4b0d3255bfef95601890afd80709" \
+  --label=org.opencontainers.image.version=1.6.4
 ```
 
 > Learn more about the [name template engine](/templates).
