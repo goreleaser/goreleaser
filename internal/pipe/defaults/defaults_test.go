@@ -36,7 +36,6 @@ func TestFillBasicData(t *testing.T) {
 	assert.Contains(t, ctx.Config.Builds[0].Goarch, "386")
 	assert.Contains(t, ctx.Config.Builds[0].Goarch, "amd64")
 	assert.Equal(t, "tar.gz", ctx.Config.Archives[0].Format)
-	assert.Contains(t, ctx.Config.Brews[0].Install, "bin.install \"goreleaser\"")
 	assert.Empty(t, ctx.Config.Dockers)
 	assert.Equal(t, "https://github.com", ctx.Config.GitHubURLs.Download)
 	assert.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
@@ -87,6 +86,11 @@ func TestFillPartial(t *testing.T) {
 			Dockers: []config.Docker{
 				{
 					ImageTemplates: []string{"a/b"},
+				},
+			},
+			Brews: []config.Homebrew{
+				{
+					Description: "foo",
 				},
 			},
 		},

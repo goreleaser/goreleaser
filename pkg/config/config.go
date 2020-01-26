@@ -345,7 +345,6 @@ type Project struct {
 	ProjectName   string      `yaml:"project_name,omitempty"`
 	Env           []string    `yaml:",omitempty"`
 	Release       Release     `yaml:",omitempty"`
-	Brew          Homebrew    `yaml:",omitempty"` // TODO: remove this
 	Brews         []Homebrew  `yaml:",omitempty"`
 	Scoop         Scoop       `yaml:",omitempty"`
 	Builds        []Build     `yaml:",omitempty"`

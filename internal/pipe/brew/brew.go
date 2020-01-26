@@ -7,14 +7,12 @@ import (
 	"io/ioutil"
 	"path"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"text/template"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -54,12 +52,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if len(ctx.Config.Brews) == 0 {
-		ctx.Config.Brews = append(ctx.Config.Brews, ctx.Config.Brew)
-		if !reflect.DeepEqual(ctx.Config.Brew, config.Homebrew{}) {
-			deprecate.Notice("brew")
-		}
-	}
 	for i := range ctx.Config.Brews {
 		var brew = &ctx.Config.Brews[i]
 		if brew.Install == "" {
