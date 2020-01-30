@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var originKeyring = "testdata/gnupg"
@@ -106,6 +108,36 @@ func TestSignArtifacts(t *testing.T) {
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig"},
 		},
 		{
+			desc: "multiple sign configs",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							ID:        "s1",
+							Artifacts: "checksum",
+						},
+						{
+							ID:        "s2",
+							Artifacts: "checksum",
+							Signature: "${artifact}.sog",
+						},
+					},
+				},
+			),
+			signaturePaths: []string{
+				"checksum.sig",
+				"checksum2.sig",
+				"checksum.sog",
+				"checksum2.sog",
+			},
+			signatureNames: []string{
+				"checksum.sig",
+				"checksum2.sig",
+				"checksum.sog",
+				"checksum2.sog",
+			},
+		},
+		{
 			desc: "sign filtered artifacts",
 			ctx: context.New(
 				config.Project{
@@ -189,7 +221,7 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 	// create temp dir for file and signature
 	tmpdir, err := ioutil.TempDir("", "goreleaser")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpdir)
+	// defer os.RemoveAll(tmpdir)
 
 	ctx.Config.Dist = tmpdir
 
@@ -249,7 +281,12 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 	// configure the pipeline
 	// make sure we are using the test keyring
 	assert.NoError(t, Pipe{}.Default(ctx))
-	ctx.Config.Signs[0].Args = append([]string{"--homedir", keyring}, ctx.Config.Signs[0].Args...)
+	for i := range ctx.Config.Signs {
+		ctx.Config.Signs[i].Args = append(
+			[]string{"--homedir", keyring},
+			ctx.Config.Signs[i].Args...,
+		)
+	}
 
 	// run the pipeline
 	assert.NoError(t, Pipe{}.Run(ctx))
@@ -276,7 +313,7 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 
 	wantFiles := append(artifacts, signaturePaths...)
 	sort.Strings(wantFiles)
-	assert.Equal(t, wantFiles, gotFiles)
+	assert.ElementsMatch(t, wantFiles, gotFiles)
 
 	// verify the signatures
 	for _, sig := range signaturePaths {
@@ -288,11 +325,11 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 		signArtifacts = append(signArtifacts, sig.Name)
 	}
 	// check signature is an artifact
-	assert.Equal(t, signArtifacts, signatureNames)
+	assert.ElementsMatch(t, signArtifacts, signatureNames)
 }
 
 func verifySignature(t *testing.T, ctx *context.Context, sig string) {
-	artifact := sig[:len(sig)-len(".sig")]
+	artifact := strings.Replace(sig, filepath.Ext(sig), "", 1)
 
 	// verify signature was made with key for usesr 'nopass'
 	cmd := exec.Command("gpg", "--homedir", keyring, "--verify", filepath.Join(ctx.Config.Dist, sig), filepath.Join(ctx.Config.Dist, artifact))
@@ -304,6 +341,22 @@ func verifySignature(t *testing.T, ctx *context.Context, sig string) {
 	// keyring before we do the verification. For now we punt and look in the
 	// output.
 	if !bytes.Contains(out, []byte(user)) {
-		t.Fatalf("signature is not from %s", user)
+		t.Fatalf("%s: signature is not from %s: %s", sig, user, string(out))
 	}
+}
+
+func TestSeveralSignsWithTheSameID(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Signs: []config.Sign{
+				{
+					ID: "a",
+				},
+				{
+					ID: "a",
+				},
+			},
+		},
+	}
+	require.EqualError(t, Pipe{}.Default(ctx), "found 2 signs with the ID 'a', please fix your config")
 }

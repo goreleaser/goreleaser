@@ -8,9 +8,9 @@ import (
 	"reflect"
 
 	"github.com/apex/log"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
+	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -33,6 +33,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			deprecate.Notice("sign")
 		}
 	}
+	var ids = ids.New("signs")
 	for i := range ctx.Config.Signs {
 		cfg := &ctx.Config.Signs[i]
 		if cfg.Cmd == "" {
@@ -47,8 +48,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		if cfg.Artifacts == "" {
 			cfg.Artifacts = "none"
 		}
+		if cfg.ID == "" {
+			cfg.ID = "default"
+		}
+		ids.Inc(cfg.ID)
 	}
-	return nil
+	return ids.Validate()
 }
 
 // Run executes the Pipe.
@@ -101,7 +106,7 @@ func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact)
 }
 
 func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*artifact.Artifact, error) {
-	env := ctx.Env
+	env := ctx.Env.Copy()
 	env["artifact"] = a.Path
 	env["signature"] = expand(cfg.Signature, env)
 
@@ -133,6 +138,9 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 		Type: artifact.Signature,
 		Name: name,
 		Path: filepath.Join(artifactPathBase, sigFilename),
+		Extra: map[string]interface{}{
+			"ID": cfg.ID,
+		},
 	}, nil
 }
 
