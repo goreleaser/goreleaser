@@ -80,7 +80,21 @@ func TestSignArtifacts(t *testing.T) {
 		ctx            *context.Context
 		signaturePaths []string
 		signatureNames []string
+		expectedErrMsg string
 	}{
+		{
+			desc:           "sign errors",
+			expectedErrMsg: "sign: exit failed",
+			ctx: context.New(
+				config.Project{
+					Sign: config.Sign{
+						Artifacts: "all",
+						Cmd:       "exit",
+						Args:      []string{"1"},
+					},
+				},
+			),
+		},
 		{
 			desc: "sign single",
 			ctx: context.New(
@@ -210,14 +224,14 @@ func TestSignArtifacts(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.desc, func(tt *testing.T) {
-			testSign(tt, test.ctx, test.signaturePaths, test.signatureNames)
+			testSign(tt, test.ctx, test.signaturePaths, test.signatureNames, test.expectedErrMsg)
 		})
 	}
 }
 
 const user = "nopass"
 
-func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signatureNames []string) {
+func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signatureNames []string, expectedErrMsg string) {
 	// create temp dir for file and signature
 	tmpdir, err := ioutil.TempDir("", "goreleaser")
 	assert.NoError(t, err)
@@ -289,7 +303,18 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 	}
 
 	// run the pipeline
+	if expectedErrMsg != "" {
+		// assert.
+		assert.EqualError(t, Pipe{}.Run(ctx), expectedErrMsg)
+		return
+	}
+
 	assert.NoError(t, Pipe{}.Run(ctx))
+
+	// ensure all artifacts have an ID
+	for _, arti := range ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List() {
+		assert.NotEmptyf(t, arti.ExtraOr("ID", ""), ".Extra.ID on %s", arti.Path)
+	}
 
 	// verify that only the artifacts and the signatures are in the dist dir
 	gotFiles := []string{}
