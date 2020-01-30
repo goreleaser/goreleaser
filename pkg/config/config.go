@@ -230,6 +230,7 @@ type NFPMOverridables struct {
 
 // Sign config
 type Sign struct {
+	ID        string   `yaml:"id,omitempty"`
 	Cmd       string   `yaml:"cmd,omitempty"`
 	Args      []string `yaml:"args,omitempty"`
 	Signature string   `yaml:"signature,omitempty"`

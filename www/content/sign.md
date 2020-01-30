@@ -28,6 +28,10 @@ To customize the signing pipeline you can use the following options:
 # .goreleaser.yml
 signs:
   -
+    # ID of the sign config, must be unique.
+    # Defaults to "default".
+    id: foo
+
     # name of the signature file.
     # '${artifact}' is the path to the artifact that should be signed.
     #

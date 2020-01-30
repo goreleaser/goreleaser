@@ -28,6 +28,15 @@ type GitInfo struct {
 // Env is the environment variables
 type Env map[string]string
 
+// Copy returns a copy of the environment.
+func (e Env) Copy() Env {
+	var out = Env{}
+	for k, v := range e {
+		out[k] = v
+	}
+	return out
+}
+
 // Strings returns the current environment as a list of strings, suitable for
 // os executions.
 func (e Env) Strings() []string {
