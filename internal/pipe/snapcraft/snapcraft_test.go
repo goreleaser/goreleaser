@@ -142,7 +142,6 @@ func TestRunPipeWithName(t *testing.T) {
 	assert.Equal(t, "testsnapname", metadata.Name)
 	assert.Equal(t, "core18", metadata.Base)
 	assert.Equal(t, "MIT", metadata.License)
-	assert.Equal(t, "mybin", metadata.Apps["mybin"].Command)
 	assert.Equal(t, "mybin", metadata.Apps["testsnapname"].Command)
 }
 

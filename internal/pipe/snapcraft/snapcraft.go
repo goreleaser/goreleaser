@@ -189,10 +189,11 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	// if the user didn't specify any apps then
 	// default to the main binary being the command:
 	if len(snap.Apps) == 0 {
-		metadata.Apps[binaries[0].Name] = AppMetadata{
-			Command: filepath.Base(binaries[0].Name),
+		var name = snap.Name
+		if name == "" {
+			name = binaries[0].Name
 		}
-		metadata.Apps[snap.Name] = AppMetadata{
+		metadata.Apps[name] = AppMetadata{
 			Command: filepath.Base(binaries[0].Name),
 		}
 	}
@@ -226,28 +227,22 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		}
 
 		// setup the apps: directive for each binary
-		for name := range snap.Apps {
+		for name, config := range snap.Apps {
 			log.WithField("path", binary.Path).
 				WithField("name", binary.Name).
 				Debug("passed binary to snapcraft")
 
 			appMetadata := AppMetadata{
-				Command: binary.Name,
+				Command: strings.TrimSpace(strings.Join([]string{
+					binary.Name,
+					config.Args,
+				}, " ")),
+				Plugs:  config.Plugs,
+				Daemon: config.Daemon,
 			}
 
-			if configAppMetadata, ok := snap.Apps[name]; ok {
-				appMetadata.Plugs = configAppMetadata.Plugs
-				appMetadata.Daemon = configAppMetadata.Daemon
-
-				appMetadata.Command = strings.TrimSpace(strings.Join([]string{
-					binary.Name,
-					configAppMetadata.Args,
-				}, " "))
-
-				if configAppMetadata.Completer != "" {
-					completerPath = configAppMetadata.Completer
-					appMetadata.Completer = filepath.Base(completerPath)
-				}
+			if config.Completer != "" {
+				appMetadata.Completer = filepath.Base(config.Completer)
 			}
 
 			metadata.Apps[name] = appMetadata
