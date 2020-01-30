@@ -8,9 +8,9 @@ export GOPROXY = https://proxy.golang.org,direct
 
 # Install all the build and lint dependencies
 setup:
-	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh
-	curl -sfL https://install.goreleaser.com/github.com/gohugoio/hugo.sh | sh
-	curl -L https://git.io/misspell | sh
+	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- v1.23.1
+	curl -sfL https://install.goreleaser.com/github.com/gohugoio/hugo.sh | sh -s -- v0.63.2
+	curl -sfL https://git.io/misspell | sh -s -- v0.3.4
 	go mod tidy
 .PHONY: setup
 
@@ -58,7 +58,7 @@ build:
 
 # Generate the static documentation
 static:
-	@hugo --enableGitInfo --source www
+	@./bin/hugo --enableGitInfo --source www
 .PHONY: static
 
 imgs:
@@ -69,7 +69,7 @@ imgs:
 .PHONY: imgs
 
 serve: imgs
-	@hugo server --enableGitInfo --watch --source www
+	@./bin/hugo server --enableGitInfo --watch --source www
 .PHONY: serve
 
 # Show to-do items per file.
