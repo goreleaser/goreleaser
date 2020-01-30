@@ -69,6 +69,26 @@ signs:
       - bar
 ```
 
+## Limitations
+
+You can sign with any command that outputs a file.
+If what you want to use does not do it, you can always hack by setting the
+command to `sh -c`. For example:
+
+```yaml
+# goreleaser.yml
+signs:
+- cmd: sh
+  args:
+  - '-c'
+  - 'echo "${artifact} is signed and I can prove it" | tee ${signature}'
+  artifacts: all
+```
+
+And it will work just fine. Just make sure to always use the `${signature}`
+template variable as the result file name and `${artifact}` as the origin file.
+
+
 ## Signing with gon
 
 You can use [gon][] to create notarized macOS apps. Here's an example config:
