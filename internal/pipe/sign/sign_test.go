@@ -235,7 +235,7 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 	// create temp dir for file and signature
 	tmpdir, err := ioutil.TempDir("", "goreleaser")
 	assert.NoError(t, err)
-	// defer os.RemoveAll(tmpdir)
+	defer os.RemoveAll(tmpdir)
 
 	ctx.Config.Dist = tmpdir
 
@@ -304,7 +304,6 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 
 	// run the pipeline
 	if expectedErrMsg != "" {
-		// assert.
 		assert.EqualError(t, Pipe{}.Run(ctx), expectedErrMsg)
 		return
 	}
