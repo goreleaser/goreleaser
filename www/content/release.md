@@ -85,7 +85,7 @@ release:
     owner: user
     name: repo
 
-  # IDs of the archives to use.
+  # IDs of the artifacts to use.
   # Defaults to all.
   ids:
     - foo
