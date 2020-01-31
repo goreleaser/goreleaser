@@ -117,3 +117,7 @@ func main() {
 ```
 
 You can override this by changing the `ldflags` option in the `build` section.
+
+## Overriding Git Tags
+
+You can force the [build tag](/build#define-build-tag) and [previous changelog tag](/release#define-previous-tag) using environment variables. This is useful in cases where one git commit is referenced by multiple git tags.

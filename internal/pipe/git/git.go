@@ -1,14 +1,16 @@
 package git
 
 import (
+	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/pkg/errors"
+
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // Pipe that sets up git state
@@ -122,6 +124,10 @@ func getFullCommit() (string, error) {
 }
 
 func getTag() (string, error) {
+	if tag := os.Getenv("GORELEASER_CURRENT_TAG"); tag != "" {
+		return tag, nil
+	}
+
 	return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
 }
 

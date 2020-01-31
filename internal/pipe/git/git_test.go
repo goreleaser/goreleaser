@@ -6,10 +6,12 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestDescription(t *testing.T) {
@@ -188,4 +190,42 @@ func TestGitNotInPath(t *testing.T) {
 	}()
 	assert.NoError(t, os.Setenv("PATH", ""))
 	assert.EqualError(t, Pipe{}.Run(context.New(config.Project{})), ErrNoGit.Error())
+}
+
+func TestTagFromCI(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitTag(t, "v0.0.2")
+
+	for _, tc := range []struct {
+		envs     map[string]string
+		expected string
+	}{
+		// It is not possible to concisely figure out the tag if a commit has more than one tags. Git always
+		// returns the tags in lexicographical order (ASC), which implies that we expect v0.0.1 here.
+		// More details: https://github.com/goreleaser/goreleaser/issues/1163
+		{expected: "v0.0.1"},
+		{
+			envs:     map[string]string{"GORELEASER_CURRENT_TAG": "v0.0.2"},
+			expected: "v0.0.2",
+		},
+	} {
+		for name, value := range tc.envs {
+			require.NoError(t, os.Setenv(name, value))
+		}
+
+		var ctx = &context.Context{
+			Config: config.Project{},
+		}
+		assert.NoError(t, Pipe{}.Run(ctx))
+		assert.Equal(t, tc.expected, ctx.Git.CurrentTag)
+
+		for name := range tc.envs {
+			require.NoError(t, os.Setenv(name, ""))
+		}
+	}
 }

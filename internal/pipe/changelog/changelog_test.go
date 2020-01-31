@@ -109,6 +109,30 @@ func TestChangelog(t *testing.T) {
 	require.NotEmpty(t, string(bts))
 }
 
+func TestChangelogPreviousTagEnv(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "first")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCommit(t, "second")
+	testlib.GitTag(t, "v0.0.2")
+	testlib.GitCommit(t, "third")
+	testlib.GitTag(t, "v0.0.3")
+	var ctx = context.New(config.Project{
+		Dist:      folder,
+		Changelog: config.Changelog{Filters: config.Filters{}},
+	})
+	ctx.Git.CurrentTag = "v0.0.3"
+	require.NoError(t, os.Setenv("GORELEASER_PREVIOUS_TAG", "v0.0.1"))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.NoError(t, os.Setenv("GORELEASER_PREVIOUS_TAG", ""))
+	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.NotContains(t, ctx.ReleaseNotes, "first")
+	require.Contains(t, ctx.ReleaseNotes, "second")
+	require.Contains(t, ctx.ReleaseNotes, "third")
+}
+
 func TestChangelogForGitlab(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
