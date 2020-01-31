@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -189,6 +190,10 @@ func gitLog(refs ...string) (string, error) {
 }
 
 func previous(tag string) (result string, err error) {
+	if tag := os.Getenv("GORELEASER_PREVIOUS_TAG"); tag != "" {
+		return tag, nil
+	}
+
 	result, err = git.Clean(git.Run("describe", "--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", tag)))
 	if err != nil {
 		result, err = git.Clean(git.Run("rev-list", "--max-parents=0", "HEAD"))
