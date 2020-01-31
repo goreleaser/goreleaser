@@ -152,6 +152,6 @@ GOVERSION=$(go version) goreleaser
 
 ## Define Build Tag
 
-Goreleaser uses `git describe` to get the build tag. You can set
+GoReleaser uses `git describe` to get the build tag. You can set
 a different build tag using the environment variable `GORELEASER_CURRENT_TAG`.
 This is useful in scenarios where two tags point to the same commit.
