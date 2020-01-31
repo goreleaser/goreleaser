@@ -140,7 +140,7 @@ changelog:
 ### Define Previous Tag
 
 GoReleaser uses `git describe` to get the previous tag used for generating the Changelog.
-. You can set a different build tag using the environment variable `GORELEASER_PREVIOUS_TAG`.
+You can set a different build tag using the environment variable `GORELEASER_PREVIOUS_TAG`.
 This is useful in scenarios where two tags point to the same commit.
 
 ## Custom release notes
