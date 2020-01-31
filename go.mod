@@ -3,7 +3,7 @@ module github.com/goreleaser/goreleaser
 go 1.13
 
 require (
-	code.gitea.io/sdk/gitea v0.0.0-20191013013401-e41e9ea72caa
+	code.gitea.io/sdk/gitea v0.0.0-20200128061546-ea2b5af37297
 	github.com/Masterminds/semver/v3 v3.0.3
 	github.com/apex/log v1.1.1
 	github.com/aws/aws-sdk-go v1.25.11 // indirect
