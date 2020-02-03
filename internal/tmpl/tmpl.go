@@ -38,6 +38,7 @@ const (
 	os           = "Os"
 	arch         = "Arch"
 	arm          = "Arm"
+	mips         = "Mips"
 	binary       = "Binary"
 	artifactName = "ArtifactName"
 	// gitlab only
@@ -92,6 +93,7 @@ func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]st
 	t.fields[os] = replace(replacements, a.Goos)
 	t.fields[arch] = replace(replacements, a.Goarch)
 	t.fields[arm] = replace(replacements, a.Goarm)
+	t.fields[mips] = replace(replacements, a.Gomips)
 	t.fields[binary] = bin.(string)
 	t.fields[artifactName] = a.Name
 	if val, ok := a.Extra["ArtifactUploadHash"]; ok {

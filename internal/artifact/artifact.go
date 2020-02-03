@@ -144,7 +144,7 @@ func (artifacts Artifacts) List() []*Artifact {
 func (artifacts Artifacts) GroupByPlatform() map[string][]*Artifact {
 	var result = map[string][]*Artifact{}
 	for _, a := range artifacts.items {
-		plat := a.Goos + a.Goarch + a.Goarm
+		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips
 		result[plat] = append(result[plat], a)
 	}
 	return result
