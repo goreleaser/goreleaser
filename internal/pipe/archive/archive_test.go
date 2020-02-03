@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/archive"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/klauspost/compress/zstd"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +26,7 @@ func TestDescription(t *testing.T) {
 func TestRunPipe(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
-	for _, format := range []string{"tar.gz", "zip"} {
+	for _, format := range []string{"tar.gz", "tar.zst", "zip"} {
 		t.Run("Archive format "+format, func(tt *testing.T) {
 			var dist = filepath.Join(folder, format+"_dist")
 			require.NoError(t, os.Mkdir(dist, 0755))
@@ -116,7 +117,21 @@ func TestRunPipe(t *testing.T) {
 						"foo/bar/foobar/blah.txt",
 						"mybin",
 					},
-					tarFiles(t, filepath.Join(dist, "foobar_0.0.1_darwin_amd64.tar.gz")),
+					tarGzFiles(t, filepath.Join(dist, "foobar_0.0.1_darwin_amd64.tar.gz")),
+				)
+			}
+			if format == "tar.zst" {
+				// Check archive contents
+				require.Equal(
+					t,
+					[]string{
+						"README.md",
+						"foo/bar",
+						"foo/bar/foobar",
+						"foo/bar/foobar/blah.txt",
+						"mybin",
+					},
+					tarZstFiles(t, filepath.Join(dist, "foobar_0.0.1_darwin_amd64.tar.zst")),
 				)
 			}
 			if format == "zip" {
@@ -148,7 +163,7 @@ func zipFiles(t *testing.T, path string) []string {
 	return paths
 }
 
-func tarFiles(t *testing.T, path string) []string {
+func tarGzFiles(t *testing.T, path string) []string {
 	f, err := os.Open(path)
 	require.NoError(t, err)
 	defer f.Close()
@@ -156,6 +171,26 @@ func tarFiles(t *testing.T, path string) []string {
 	require.NoError(t, err)
 	defer gr.Close()
 	var r = tar.NewReader(gr)
+	var paths []string
+	for {
+		next, err := r.Next()
+		if err == io.EOF {
+			break
+		}
+		require.NoError(t, err)
+		paths = append(paths, next.Name)
+	}
+	return paths
+}
+
+func tarZstFiles(t *testing.T, path string) []string {
+	f, err := os.Open(path)
+	require.NoError(t, err)
+	defer f.Close()
+	zr, err := zstd.NewReader(f)
+	require.NoError(t, err)
+	defer zr.Close()
+	var r = tar.NewReader(zr)
 	var paths []string
 	for {
 		next, err := r.Next()

@@ -46,7 +46,7 @@ var Pipeline = []Piper{
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
 	changelog.Pipe{},       // builds the release changelog
 	build.Pipe{},           // build
-	archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
+	archive.Pipe{},         // archive in tar.gz, tar.zst, zip or binary (which does no archiving at all)
 	nfpm.Pipe{},            // archive via fpm (deb, rpm) using "native" go impl
 	snapcraft.Pipe{},       // archive via snapcraft (snap)
 	checksums.Pipe{},       // checksums of the files

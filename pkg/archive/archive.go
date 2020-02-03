@@ -7,6 +7,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/pkg/archive/gzip"
 	"github.com/goreleaser/goreleaser/pkg/archive/targz"
+	"github.com/goreleaser/goreleaser/pkg/archive/tarzst"
 	"github.com/goreleaser/goreleaser/pkg/archive/zip"
 )
 
@@ -20,6 +21,9 @@ type Archive interface {
 func New(file *os.File) Archive {
 	if strings.HasSuffix(file.Name(), ".tar.gz") {
 		return targz.New(file)
+	}
+	if strings.HasSuffix(file.Name(), ".tar.zst") {
+		return tarzst.New(file)
 	}
 	if strings.HasSuffix(file.Name(), ".gz") {
 		return gzip.New(file)

@@ -252,6 +252,12 @@ func TestByFormats(t *testing.T) {
 			},
 		},
 		{
+			Name: "barfoo",
+			Extra: map[string]interface{}{
+				"Format": "tar.zst",
+			},
+		},
+		{
 			Name: "foobar",
 			Extra: map[string]interface{}{
 				"Format": "zip",
@@ -272,4 +278,6 @@ func TestByFormats(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByFormats("binary")).items, 1)
 	require.Len(t, artifacts.Filter(ByFormats("zip")).items, 2)
 	require.Len(t, artifacts.Filter(ByFormats("zip", "tar.gz")).items, 3)
+	require.Len(t, artifacts.Filter(ByFormats("zip", "tar.zst")).items, 3)
+	require.Len(t, artifacts.Filter(ByFormats("tar.gz", "tar.zst")).items, 2)
 }
