@@ -125,6 +125,18 @@ func TestGroupByPlatform(t *testing.T) {
 			Goarm:  "6",
 		},
 		{
+			Name:   "foobar",
+			Goos:   "linux",
+			Goarch: "mips",
+			Goarm:  "softfloat",
+		},
+		{
+			Name:   "foobar",
+			Goos:   "linux",
+			Goarch: "mips",
+			Goarm:  "hardfloat",
+		},
+		{
 			Name: "check",
 			Type: Checksum,
 		},
@@ -137,6 +149,8 @@ func TestGroupByPlatform(t *testing.T) {
 	var groups = artifacts.GroupByPlatform()
 	assert.Len(t, groups["linuxamd64"], 2)
 	assert.Len(t, groups["linuxarm6"], 1)
+	assert.Len(t, groups["linuxmipssoftfloat"], 1)
+	assert.Len(t, groups["linuxmipshardfloat"], 1)
 }
 
 func TestChecksum(t *testing.T) {

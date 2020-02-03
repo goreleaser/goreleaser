@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	defaultNameTemplate       = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}v{{ .Mips }}{{ end }}"
-	defaultBinaryNameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}v{{ .Mips }}{{ end }}"
+	defaultNameTemplate       = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+	defaultBinaryNameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 )
 
 // nolint: gochecknoglobals
@@ -199,6 +199,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Goos:   binary.Goos,
 			Goarch: binary.Goarch,
 			Goarm:  binary.Goarm,
+			Gomips: binary.Gomips,
 			Extra: map[string]interface{}{
 				"Builds": []*artifact.Artifact{binary},
 				"ID":     archive.ID,

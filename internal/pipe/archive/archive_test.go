@@ -680,3 +680,5 @@ func TestSeveralArchivesWithTheSameID(t *testing.T) {
 	}
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 archives with the ID 'a', please fix your config")
 }
+
+// TODO: add test to ensure UploadableBinary and UploadableArchive have the correct gomips/goarm/etc fields set.

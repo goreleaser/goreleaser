@@ -37,6 +37,7 @@ may have some extra fields:
 |      `.Os`      |  `GOOS` (usually allow replacements)  |
 |     `.Arch`     | `GOARCH` (usually allow replacements) |
 |     `.Arm`      | `GOARM` (usually allow replacements)  |
+|     `.Mips`     | `GOMIPS` (usually allow replacements) |
 |    `.Binary`    |              Binary name              |
 | `.ArtifactName` |             Archive name              |
 
