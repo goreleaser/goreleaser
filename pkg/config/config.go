@@ -81,6 +81,7 @@ type Scoop struct {
 	License      string       `yaml:",omitempty"`
 	URLTemplate  string       `yaml:"url_template,omitempty"`
 	Persist      []string     `yaml:"persist,omitempty"`
+	SkipUpload   string       `yaml:"skip_upload,omitempty"`
 }
 
 // CommitAuthor is the author of a Git commit
