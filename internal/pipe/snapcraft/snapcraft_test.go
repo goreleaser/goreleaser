@@ -13,7 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 func TestDescription(t *testing.T) {
@@ -396,4 +396,25 @@ func TestSeveralSnapssWithTheSameID(t *testing.T) {
 		},
 	}
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 snapcrafts with the ID 'a', please fix your config")
+}
+
+func Test_isValidArch(t *testing.T) {
+	tests := []struct {
+		arch string
+		want bool
+	}{
+		{"s390x", true},
+		{"ppc64el", true},
+		{"arm64", true},
+		{"armhf", true},
+		{"amd64", true},
+		{"i386", true},
+		{"mips", false},
+		{"armel", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.arch, func(t *testing.T) {
+			require.Equal(t, tt.want, isValidArch(tt.arch))
+		})
+	}
 }
