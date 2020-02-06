@@ -31,6 +31,7 @@ func TestWithArtifact(t *testing.T) {
 		"Linux":       "{{.Os}}",
 		"amd64":       "{{.Arch}}",
 		"6":           "{{.Arm}}",
+		"softfloat":   "{{.Mips}}",
 		"1.2.3":       "{{.Version}}",
 		"v1.2.3":      "{{.Tag}}",
 		"1-2-3":       "{{.Major}}-{{.Minor}}-{{.Patch}}",
@@ -51,6 +52,7 @@ func TestWithArtifact(t *testing.T) {
 					Goarch: "amd64",
 					Goos:   "linux",
 					Goarm:  "6",
+					Gomips: "softfloat",
 					Extra: map[string]interface{}{
 						"Binary": "binary",
 					},
