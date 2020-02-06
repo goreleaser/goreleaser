@@ -86,14 +86,12 @@ func doRun(ctx *context.Context, client client.Client) error {
 
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
-
 	}
 	if strings.TrimSpace(ctx.Config.Scoop.SkipUpload) == "true" {
 		return pipe.Skip("scoop.skip_upload is true")
-	} else if strings.TrimSpace(ctx.Config.Scoop.SkipUpload) == "auto" {
-		if ctx.Semver.Prerelease != "" {
-			return pipe.Skip("release is prerelease")
-		}
+	}
+	if strings.TrimSpace(ctx.Config.Scoop.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
+		return pipe.Skip("release is prerelease")
 	}
 	if ctx.Config.Release.Draft {
 		return pipe.Skip("release is marked as draft")
