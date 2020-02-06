@@ -159,16 +159,15 @@ func doPublish(ctx *context.Context, client client.Client) error {
 }
 
 func upload(ctx *context.Context, client client.Client, releaseID string, artifact *artifact.Artifact) error {
-	file, err := os.Open(artifact.Path)
-	if err != nil {
-		return err
-	}
-	defer file.Close() // nolint: errcheck
-	log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
-
 	var repeats uint
 	what := func(try uint) error {
 		repeats = try + 1
+		file, err := os.Open(artifact.Path)
+		if err != nil {
+			return err
+		}
+		defer file.Close() // nolint: errcheck
+		log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
 		if err := client.Upload(ctx, releaseID, artifact, file); err != nil {
 			log.WithFields(log.Fields{
 				"try":      try,
