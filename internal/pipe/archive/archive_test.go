@@ -22,6 +22,12 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
+func createFakeBinary(t *testing.T, dist, arch, bin string) {
+	require.NoError(t, os.Mkdir(filepath.Join(dist, arch), 0755))
+	_, err := os.Create(filepath.Join(dist, arch, bin))
+	require.NoError(t, err)
+}
+
 func TestRunPipe(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
@@ -29,13 +35,11 @@ func TestRunPipe(t *testing.T) {
 		t.Run("Archive format "+format, func(tt *testing.T) {
 			var dist = filepath.Join(folder, format+"_dist")
 			require.NoError(t, os.Mkdir(dist, 0755))
-			require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
-			require.NoError(t, os.Mkdir(filepath.Join(dist, "windowsamd64"), 0755))
-			_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
-			require.NoError(t, err)
-			_, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
-			require.NoError(t, err)
-			_, err = os.Create(filepath.Join(folder, "README.md"))
+			for _, arch := range []string{"darwinamd64", "linux386", "linuxarm7", "linuxmipssoftfloat"} {
+				createFakeBinary(t, dist, arch, "mybin")
+			}
+			createFakeBinary(t, dist, "windowsamd64", "mybin.exe")
+			_, err := os.Create(filepath.Join(folder, "README.md"))
 			require.NoError(t, err)
 			require.NoError(t, os.MkdirAll(filepath.Join(folder, "foo", "bar", "foobar"), 0755))
 			_, err = os.Create(filepath.Join(filepath.Join(folder, "foo", "bar", "foobar", "blah.txt")))
@@ -46,7 +50,7 @@ func TestRunPipe(t *testing.T) {
 					ProjectName: "foobar",
 					Archives: []config.Archive{
 						{
-							ID:           "defaultarch",
+							ID:           "myid",
 							Builds:       []string{"default"},
 							NameTemplate: defaultNameTemplate,
 							Files: []string{
@@ -74,6 +78,41 @@ func TestRunPipe(t *testing.T) {
 					"ID":     "default",
 				},
 			}
+			var linux386Build = &artifact.Artifact{
+				Goos:   "linux",
+				Goarch: "386",
+				Name:   "mybin",
+				Path:   filepath.Join(dist, "linux386", "mybin"),
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"Binary": "mybin",
+					"ID":     "default",
+				},
+			}
+			var linuxArmBuild = &artifact.Artifact{
+				Goos:   "linux",
+				Goarch: "arm",
+				Goarm:  "7",
+				Name:   "mybin",
+				Path:   filepath.Join(dist, "linuxarm7", "mybin"),
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"Binary": "mybin",
+					"ID":     "default",
+				},
+			}
+			var linuxMipsBuild = &artifact.Artifact{
+				Goos:   "linux",
+				Goarch: "mips",
+				Gomips: "softfloat",
+				Name:   "mybin",
+				Path:   filepath.Join(dist, "linuxmipssoftfloat", "mybin"),
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"Binary": "mybin",
+					"ID":     "default",
+				},
+			}
 			var windowsBuild = &artifact.Artifact{
 				Goos:   "windows",
 				Goarch: "amd64",
@@ -87,37 +126,41 @@ func TestRunPipe(t *testing.T) {
 				},
 			}
 			ctx.Artifacts.Add(darwinBuild)
+			ctx.Artifacts.Add(linux386Build)
+			ctx.Artifacts.Add(linuxArmBuild)
+			ctx.Artifacts.Add(linuxMipsBuild)
 			ctx.Artifacts.Add(windowsBuild)
 			ctx.Version = "0.0.1"
 			ctx.Git.CurrentTag = "v0.0.1"
 			ctx.Config.Archives[0].Format = format
 			require.NoError(tt, Pipe{}.Run(ctx))
-			var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive))
-			for _, arch := range archives.List() {
-				require.Equal(t, "defaultarch", arch.Extra["ID"].(string), "all archives should have the archive ID set")
+			var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+			for _, arch := range archives {
+				require.Equal(t, "myid", arch.Extra["ID"].(string), "all archives should have the archive ID set")
 			}
-			require.Len(tt, archives.List(), 2)
-			darwin := archives.Filter(artifact.ByGoos("darwin")).List()[0]
-			windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
-			require.Equal(tt, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
-			require.Equal(tt, "foobar_0.0.1_windows_amd64.zip", windows.Name)
-
-			require.Equal(t, []*artifact.Artifact{darwinBuild}, darwin.Extra["Builds"].([]*artifact.Artifact))
-			require.Equal(t, []*artifact.Artifact{windowsBuild}, windows.Extra["Builds"].([]*artifact.Artifact))
+			require.Len(t, archives, 5)
+			// TODO: should verify the artifact fields here too
 
 			if format == "tar.gz" {
 				// Check archive contents
-				require.Equal(
-					t,
-					[]string{
-						"README.md",
-						"foo/bar",
-						"foo/bar/foobar",
-						"foo/bar/foobar/blah.txt",
-						"mybin",
-					},
-					tarFiles(t, filepath.Join(dist, "foobar_0.0.1_darwin_amd64.tar.gz")),
-				)
+				for _, name := range []string{
+					"foobar_0.0.1_darwin_amd64.tar.gz",
+					"foobar_0.0.1_linux_386.tar.gz",
+					"foobar_0.0.1_linux_armv7.tar.gz",
+					"foobar_0.0.1_linux_mips_softfloat.tar.gz",
+				} {
+					require.Equal(
+						t,
+						[]string{
+							"README.md",
+							"foo/bar",
+							"foo/bar/foobar",
+							"foo/bar/foobar/blah.txt",
+							"mybin",
+						},
+						tarFiles(t, filepath.Join(dist, name)),
+					)
+				}
 			}
 			if format == "zip" {
 				require.Equal(

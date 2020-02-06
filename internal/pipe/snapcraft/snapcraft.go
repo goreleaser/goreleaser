@@ -55,7 +55,7 @@ type AppMetadata struct {
 	Completer string   `yaml:",omitempty"`
 }
 
-const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 
 // Pipe for snapcraft packaging
 type Pipe struct{}
@@ -117,7 +117,7 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 		),
 	).GroupByPlatform() {
 		arch := linux.Arch(platform)
-		if arch == "armel" {
+		if !isValidArch(arch) {
 			log.WithField("arch", arch).Warn("ignored unsupported arch")
 			continue
 		}
@@ -127,6 +127,16 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 		})
 	}
 	return g.Wait()
+}
+
+func isValidArch(arch string) bool {
+	// https://snapcraft.io/docs/architectures
+	for _, a := range []string{"s390x", "ppc64el", "arm64", "armhf", "amd64", "i386"} {
+		if arch == a {
+			return true
+		}
+	}
+	return false
 }
 
 // Publish packages

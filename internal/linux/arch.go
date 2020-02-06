@@ -19,6 +19,7 @@ func Arch(key string) string {
 		return "armhf"
 	case "arm7": // GOARCH + GOARM
 		return "armhf"
+	default:
+		return arch
 	}
-	return arch
 }
