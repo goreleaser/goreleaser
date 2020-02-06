@@ -104,6 +104,9 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 				Name:  "test",
 			},
 			IDs: []string{"foo"},
+			ExtraFiles: map[string]string{
+				"test1": "./testdata/release1.golden",
+			},
 		},
 	}
 	var ctx = context.New(config)
@@ -146,6 +149,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 	assert.True(t, client.UploadedFile)
 	assert.Contains(t, client.UploadedFileNames, "bin.deb")
 	assert.Contains(t, client.UploadedFileNames, "bin.tar.gz")
+	assert.Contains(t, client.UploadedFileNames, "test1")
 	assert.NotContains(t, client.UploadedFileNames, "filtered.deb")
 	assert.NotContains(t, client.UploadedFileNames, "filtered.tar.gz")
 }
@@ -215,6 +219,27 @@ func TestRunPipeUploadFailure(t *testing.T) {
 		FailToUpload: true,
 	}
 	assert.EqualError(t, doPublish(ctx, client), "failed to upload bin.tar.gz after 10 retries: upload failed")
+	assert.True(t, client.CreatedRelease)
+	assert.False(t, client.UploadedFile)
+}
+
+func TestRunPipeExtraFileNotFound(t *testing.T) {
+	var config = config.Project{
+		Release: config.Release{
+			GitHub: config.Repo{
+				Owner: "test",
+				Name:  "test",
+			},
+			ExtraFiles: map[string]string{
+				"test1": "./testdata/release2.golden",
+				"lala":  "./nope",
+			},
+		},
+	}
+	var ctx = context.New(config)
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	client := &DummyClient{}
+	assert.EqualError(t, doPublish(ctx, client), "failed to upload lala: stat ./nope: no such file or directory")
 	assert.True(t, client.CreatedRelease)
 	assert.False(t, client.UploadedFile)
 }

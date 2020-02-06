@@ -123,44 +123,36 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	var filters = []artifact.Filter{
-		artifact.Or(
-			artifact.ByType(artifact.UploadableArchive),
-			artifact.ByType(artifact.UploadableBinary),
-			artifact.ByType(artifact.Checksum),
-			artifact.ByType(artifact.Signature),
-			artifact.ByType(artifact.LinuxPackage),
-		),
+	for name, path := range ctx.Config.Release.ExtraFiles {
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			return errors.Wrapf(err, "failed to upload %s", name)
+		}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: name,
+			Path: path,
+			Type: artifact.UploadableFile,
+		})
 	}
+
+	var filters = artifact.Or(
+		artifact.ByType(artifact.UploadableArchive),
+		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.Checksum),
+		artifact.ByType(artifact.Signature),
+		artifact.ByType(artifact.LinuxPackage),
+	)
 
 	if len(ctx.Config.Release.IDs) > 0 {
-		filters = append(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
+		filters = artifact.And(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
 	}
 
+	filters = artifact.Or(filters, artifact.ByType(artifact.UploadableFile))
+
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(artifact.And(filters...)).List() {
+	for _, artifact := range ctx.Artifacts.Filter(filters).List() {
 		artifact := artifact
 		g.Go(func() error {
-			var repeats uint
-			what := func(try uint) error {
-				repeats = try + 1
-				if uploadErr := upload(ctx, client, releaseID, artifact); uploadErr != nil {
-					log.WithFields(log.Fields{
-						"try":      try,
-						"artifact": artifact.Name,
-					}).Warnf("failed to upload artifact, will retry")
-					return uploadErr
-				}
-				return nil
-			}
-			how := []func(uint, error) bool{
-				strategy.Limit(10),
-				strategy.Backoff(backoff.Linear(50 * time.Millisecond)),
-			}
-			if err := retry.Try(ctx, what, how...); err != nil {
-				return errors.Wrapf(err, "failed to upload %s after %d retries", artifact.Name, repeats)
-			}
-			return nil
+			return upload(ctx, client, releaseID, artifact)
 		})
 	}
 	return g.Wait()
@@ -173,5 +165,25 @@ func upload(ctx *context.Context, client client.Client, releaseID string, artifa
 	}
 	defer file.Close() // nolint: errcheck
 	log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
-	return client.Upload(ctx, releaseID, artifact, file)
+
+	var repeats uint
+	what := func(try uint) error {
+		repeats = try + 1
+		if err := client.Upload(ctx, releaseID, artifact, file); err != nil {
+			log.WithFields(log.Fields{
+				"try":      try,
+				"artifact": artifact.Name,
+			}).Warnf("failed to upload artifact, will retry")
+			return err
+		}
+		return nil
+	}
+	how := []func(uint, error) bool{
+		strategy.Limit(10),
+		strategy.Backoff(backoff.Linear(50 * time.Millisecond)),
+	}
+	if err := retry.Try(ctx, what, how...); err != nil {
+		return errors.Wrapf(err, "failed to upload %s after %d retries", artifact.Name, repeats)
+	}
+	return nil
 }
