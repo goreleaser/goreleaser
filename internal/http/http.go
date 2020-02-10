@@ -231,11 +231,15 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	}
 	defer asset.ReadCloser.Close() // nolint: errcheck
 
-	// The target url needs to contain the artifact name
-	if !strings.HasSuffix(targetURL, "/") {
-		targetURL += "/"
+	// target url need to contain the artifact name unless the custom
+	// artifact name is used
+	if !upload.CustomArtifactName {
+		if !strings.HasSuffix(targetURL, "/") {
+			targetURL += "/"
+		}
+		targetURL += artifact.Name
 	}
-	targetURL += artifact.Name
+	log.Debugf("generated target url: %s", targetURL)
 
 	var headers = map[string]string{}
 	if upload.ChecksumHeader != "" {
@@ -350,9 +354,10 @@ func executeHTTPRequest(ctx *context.Context, upload *config.Upload, req *h.Requ
 // targetData is used as a template struct for
 // Artifactory.Target
 type targetData struct {
-	Version     string
-	Tag         string
-	ProjectName string
+	Version      string
+	Tag          string
+	ProjectName  string
+	ArtifactName string
 
 	// Only supported in mode binary
 	Os   string
@@ -365,9 +370,10 @@ type targetData struct {
 // TODO: replace this with our internal template pkg
 func resolveTargetTemplate(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact) (string, error) {
 	data := targetData{
-		Version:     ctx.Version,
-		Tag:         ctx.Git.CurrentTag,
-		ProjectName: ctx.Config.ProjectName,
+		Version:      ctx.Version,
+		Tag:          ctx.Git.CurrentTag,
+		ProjectName:  ctx.Config.ProjectName,
+		ArtifactName: artifact.Name,
 	}
 
 	if upload.Mode == ModeBinary {

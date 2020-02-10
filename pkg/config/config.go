@@ -330,16 +330,17 @@ type Blob struct {
 
 // Upload configuration
 type Upload struct {
-	Name           string   `yaml:",omitempty"`
-	IDs            []string `yaml:"ids,omitempty"`
-	Target         string   `yaml:",omitempty"`
-	Username       string   `yaml:",omitempty"`
-	Mode           string   `yaml:",omitempty"`
-	Method         string   `yaml:",omitempty"`
-	ChecksumHeader string   `yaml:"checksum_header,omitempty"`
-	TrustedCerts   string   `yaml:"trusted_certificates,omitempty"`
-	Checksum       bool     `yaml:",omitempty"`
-	Signature      bool     `yaml:",omitempty"`
+	Name               string   `yaml:",omitempty"`
+	IDs                []string `yaml:"ids,omitempty"`
+	Target             string   `yaml:",omitempty"`
+	Username           string   `yaml:",omitempty"`
+	Mode               string   `yaml:",omitempty"`
+	Method             string   `yaml:",omitempty"`
+	ChecksumHeader     string   `yaml:"checksum_header,omitempty"`
+	TrustedCerts       string   `yaml:"trusted_certificates,omitempty"`
+	Checksum           bool     `yaml:",omitempty"`
+	Signature          bool     `yaml:",omitempty"`
+	CustomArtifactName bool     `yaml:"custom_artifact_name,omitempty"`
 }
 
 // Project includes all project configuration
