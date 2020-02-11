@@ -6,7 +6,7 @@ weight: 110
 ---
 
 GoReleaser will create a GitHub/GitLab release with the current tag, upload all
-the artifacts and generate the changelog based on the new commits since the
+the artifacts and generate the change log based on the new commits since the
 previous tag.
 
 Let's see what can be customized in the `release` section for GitHub:
@@ -50,10 +50,10 @@ release:
   # The filename on the release will be the last part of the path (base). If
   # another file with the same name exists, the latest one found will be used.
   # Defaults to empty.
-  extra_files_globs:
-    - ./path/to/file.txt
-    - ./glob/**/to/**/file/**/*
-    - ./glob/foo/to/bar/file/foobar/override_from_previous
+  extra_files:
+    - glob: ./path/to/file.txt
+    - glob: ./glob/**/to/**/file/**/*
+    - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
 ```
 
 Second, let's see what can be customized in the `release` section for GitLab.
@@ -87,10 +87,10 @@ release:
   # The filename on the release will be the last part of the path (base). If
   # another file with the same name exists, the latest one found will be used.
   # Defaults to empty.
-  extra_files_globs:
-    - ./path/to/file.txt
-    - ./glob/**/to/**/file/**/*
-    - ./glob/foo/to/bar/file/foobar/override_from_previous
+  extra_files:
+    - glob: ./path/to/file.txt
+    - glob: ./glob/**/to/**/file/**/*
+    - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
 ```
 
 You can also configure the `release` section to upload to a [Gitea](https://gitea.io) instance:
@@ -122,10 +122,10 @@ release:
   # The filename on the release will be the last part of the path (base). If
   # another file with the same name exists, the latest one found will be used.
   # Defaults to empty.
-  extra_files_globs:
-    - ./path/to/file.txt
-    - ./glob/**/to/**/file/**/*
-    - ./glob/foo/to/bar/file/foobar/override_from_previous
+  extra_files:
+    - glob: ./path/to/file.txt
+    - glob: ./glob/**/to/**/file/**/*
+    - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
 ```
 
 To enable uploading `tar.gz` and `checksums.txt` files you need to add the following to your Gitea config in `app.ini`:
@@ -141,22 +141,22 @@ so you will have to enable all file types with `*/*`.
 
 > Learn more about the [name template engine](/templates).
 
-## Customize the changelog
+## Customize the change log
 
-You can customize how the changelog is generated using the
-`changelog` section in the config file:
+You can customize how the change log is generated using the
+`change log` section in the config file:
 
 ```yaml
 # .goreleaser.yml
-changelog:
-  # set it to true if you wish to skip the changelog generation
+change log:
+  # set it to true if you wish to skip the change log generation
   skip: true
   # could either be asc, desc or empty
   # Default is empty
   sort: asc
   filters:
     # commit messages matching the regexp listed here will be removed from
-    # the changelog
+    # the change log
     # Default is empty
     exclude:
       - '^docs:'
@@ -166,7 +166,7 @@ changelog:
 
 ### Define Previous Tag
 
-GoReleaser uses `git describe` to get the previous tag used for generating the Changelog.
+GoReleaser uses `git describe` to get the previous tag used for generating the Change log.
 You can set a different build tag using the environment variable `GORELEASER_PREVIOUS_TAG`.
 This is useful in scenarios where two tags point to the same commit.
 
@@ -184,10 +184,10 @@ To list all commits since the last tag, but skip ones starting with `Merge` or
 `docs`, you could run this command:
 
 ```sh
-$ goreleaser --release-notes <(some_changelog_generator)
+$ goreleaser --release-notes <(some_change log_generator)
 ```
 
-Some changelog generators you can use:
+Some change log generators you can use:
 
 - [buchanae/github-release-notes](https://github.com/buchanae/github-release-notes)
 

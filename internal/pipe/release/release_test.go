@@ -105,8 +105,8 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 				Name:  "test",
 			},
 			IDs: []string{"foo"},
-			ExtraFilesGlobs: []string{
-				"./testdata/**/*",
+			ExtraFiles: []config.ExtraFile{
+				{Glob: "./testdata/**/*"},
 			},
 		},
 	}
@@ -233,9 +233,9 @@ func TestRunPipeExtraFileNotFound(t *testing.T) {
 				Owner: "test",
 				Name:  "test",
 			},
-			ExtraFilesGlobs: []string{
-				"./testdata/release2.golden",
-				"./nope",
+			ExtraFiles: []config.ExtraFile{
+				{Glob: "./testdata/release2.golden"},
+				{Glob: "./nope"},
 			},
 		},
 	}
@@ -254,9 +254,9 @@ func TestRunPipeExtraOverride(t *testing.T) {
 				Owner: "test",
 				Name:  "test",
 			},
-			ExtraFilesGlobs: []string{
-				"./testdata/**/*",
-				"./testdata/upload_same_name/f1",
+			ExtraFiles: []config.ExtraFile{
+				{Glob: "./testdata/**/*"},
+				{Glob: "./testdata/upload_same_name/f1"},
 			},
 		},
 	}

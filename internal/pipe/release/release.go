@@ -1,7 +1,6 @@
 package release
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -197,20 +196,24 @@ func upload(ctx *context.Context, client client.Client, releaseID string, artifa
 
 func findFiles(ctx *context.Context) (map[string]string, error) {
 	var result = map[string]string{}
-	for _, glob := range ctx.Config.Release.ExtraFilesGlobs {
-		files, err := zglob.Glob(glob)
-		if err != nil {
-			return result, fmt.Errorf("globbing failed for pattern %s: %s", glob, err.Error())
-		}
-		for _, file := range files {
-			if info, _ := os.Stat(file); info.IsDir() {
-				continue
+	for _, extra := range ctx.Config.Release.ExtraFiles {
+		if extra.Glob != "" {
+			files, err := zglob.Glob(extra.Glob)
+			if err != nil {
+				return result, errors.Wrapf(err, "globbing failed for pattern %s", extra.Glob)
 			}
-			var name = filepath.Base(file)
-			if old, ok := result[name]; ok {
-				log.Warnf("overriding %s with %s for name %s", old, file, name)
+			for _, file := range files {
+				info, err := os.Stat(file)
+				if err == nil && info.IsDir() {
+					log.Debugf("ignoring directory %s", file)
+					continue
+				}
+				var name = filepath.Base(file)
+				if old, ok := result[name]; ok {
+					log.Warnf("overriding %s with %s for name %s", old, file, name)
+				}
+				result[name] = file
 			}
-			result[name] = file
 		}
 	}
 	return result, nil
