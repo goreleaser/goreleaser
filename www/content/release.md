@@ -6,7 +6,7 @@ weight: 110
 ---
 
 GoReleaser will create a GitHub/GitLab release with the current tag, upload all
-the artifacts and generate the change log based on the new commits since the
+the artifacts and generate the changelog based on the new commits since the
 previous tag.
 
 Let's see what can be customized in the `release` section for GitHub:
@@ -141,22 +141,22 @@ so you will have to enable all file types with `*/*`.
 
 > Learn more about the [name template engine](/templates).
 
-## Customize the change log
+## Customize the changelog
 
-You can customize how the change log is generated using the
-`change log` section in the config file:
+You can customize how the changelog is generated using the
+`changelog` section in the config file:
 
 ```yaml
 # .goreleaser.yml
-change log:
-  # set it to true if you wish to skip the change log generation
+changelog:
+  # set it to true if you wish to skip the changelog generation
   skip: true
   # could either be asc, desc or empty
   # Default is empty
   sort: asc
   filters:
     # commit messages matching the regexp listed here will be removed from
-    # the change log
+    # the changelog
     # Default is empty
     exclude:
       - '^docs:'
@@ -166,7 +166,7 @@ change log:
 
 ### Define Previous Tag
 
-GoReleaser uses `git describe` to get the previous tag used for generating the Change log.
+GoReleaser uses `git describe` to get the previous tag used for generating the Changelog.
 You can set a different build tag using the environment variable `GORELEASER_PREVIOUS_TAG`.
 This is useful in scenarios where two tags point to the same commit.
 
@@ -184,10 +184,10 @@ To list all commits since the last tag, but skip ones starting with `Merge` or
 `docs`, you could run this command:
 
 ```sh
-$ goreleaser --release-notes <(some_change log_generator)
+$ goreleaser --release-notes <(some_changelog_generator)
 ```
 
-Some change log generators you can use:
+Some changelog generators you can use:
 
 - [buchanae/github-release-notes](https://github.com/buchanae/github-release-notes)
 
