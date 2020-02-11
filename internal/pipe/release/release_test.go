@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 
@@ -104,6 +105,9 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 				Name:  "test",
 			},
 			IDs: []string{"foo"},
+			ExtraFiles: []config.ExtraFile{
+				{Glob: "./testdata/**/*"},
+			},
 		},
 	}
 	var ctx = context.New(config)
@@ -146,6 +150,9 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 	assert.True(t, client.UploadedFile)
 	assert.Contains(t, client.UploadedFileNames, "bin.deb")
 	assert.Contains(t, client.UploadedFileNames, "bin.tar.gz")
+	assert.Contains(t, client.UploadedFileNames, "release1.golden")
+	assert.Contains(t, client.UploadedFileNames, "release2.golden")
+	assert.Contains(t, client.UploadedFileNames, "f1")
 	assert.NotContains(t, client.UploadedFileNames, "filtered.deb")
 	assert.NotContains(t, client.UploadedFileNames, "filtered.tar.gz")
 }
@@ -217,6 +224,50 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	assert.EqualError(t, doPublish(ctx, client), "failed to upload bin.tar.gz after 10 retries: upload failed")
 	assert.True(t, client.CreatedRelease)
 	assert.False(t, client.UploadedFile)
+}
+
+func TestRunPipeExtraFileNotFound(t *testing.T) {
+	var config = config.Project{
+		Release: config.Release{
+			GitHub: config.Repo{
+				Owner: "test",
+				Name:  "test",
+			},
+			ExtraFiles: []config.ExtraFile{
+				{Glob: "./testdata/release2.golden"},
+				{Glob: "./nope"},
+			},
+		},
+	}
+	var ctx = context.New(config)
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	client := &DummyClient{}
+	assert.EqualError(t, doPublish(ctx, client), "globbing failed for pattern ./nope: file does not exist")
+	assert.True(t, client.CreatedRelease)
+	assert.False(t, client.UploadedFile)
+}
+
+func TestRunPipeExtraOverride(t *testing.T) {
+	var config = config.Project{
+		Release: config.Release{
+			GitHub: config.Repo{
+				Owner: "test",
+				Name:  "test",
+			},
+			ExtraFiles: []config.ExtraFile{
+				{Glob: "./testdata/**/*"},
+				{Glob: "./testdata/upload_same_name/f1"},
+			},
+		},
+	}
+	var ctx = context.New(config)
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	client := &DummyClient{}
+	assert.NoError(t, doPublish(ctx, client))
+	assert.True(t, client.CreatedRelease)
+	assert.True(t, client.UploadedFile)
+	assert.Contains(t, client.UploadedFileNames, "f1")
+	assert.True(t, strings.HasSuffix(client.UploadedFilePaths["f1"], "testdata/upload_same_name/f1"))
 }
 
 func TestRunPipeUploadRetry(t *testing.T) {
@@ -470,6 +521,7 @@ type DummyClient struct {
 	CreatedRelease      bool
 	UploadedFile        bool
 	UploadedFileNames   []string
+	UploadedFilePaths   map[string]string
 	FailFirstUpload     bool
 	Lock                sync.Mutex
 }
@@ -489,6 +541,9 @@ func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.
 func (client *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) error {
 	client.Lock.Lock()
 	defer client.Lock.Unlock()
+	if client.UploadedFilePaths == nil {
+		client.UploadedFilePaths = map[string]string{}
+	}
 	// ensure file is read to better mimic real behavior
 	_, err := ioutil.ReadAll(file)
 	if err != nil {
@@ -503,5 +558,6 @@ func (client *DummyClient) Upload(ctx *context.Context, releaseID string, artifa
 	}
 	client.UploadedFile = true
 	client.UploadedFileNames = append(client.UploadedFileNames, artifact.Name)
+	client.UploadedFilePaths[artifact.Name] = artifact.Path
 	return nil
 }

@@ -2,6 +2,7 @@ package release
 
 import (
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/apex/log"
@@ -13,6 +14,7 @@ import (
 	"github.com/kamilsk/retry/v4"
 	"github.com/kamilsk/retry/v4/backoff"
 	"github.com/kamilsk/retry/v4/strategy"
+	"github.com/mattn/go-zglob"
 	"github.com/pkg/errors"
 )
 
@@ -123,55 +125,96 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	var filters = []artifact.Filter{
-		artifact.Or(
-			artifact.ByType(artifact.UploadableArchive),
-			artifact.ByType(artifact.UploadableBinary),
-			artifact.ByType(artifact.Checksum),
-			artifact.ByType(artifact.Signature),
-			artifact.ByType(artifact.LinuxPackage),
-		),
+	extraFiles, err := findFiles(ctx)
+	if err != nil {
+		return err
 	}
+
+	for name, path := range extraFiles {
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			return errors.Wrapf(err, "failed to upload %s", name)
+		}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: name,
+			Path: path,
+			Type: artifact.UploadableFile,
+		})
+	}
+
+	var filters = artifact.Or(
+		artifact.ByType(artifact.UploadableArchive),
+		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.Checksum),
+		artifact.ByType(artifact.Signature),
+		artifact.ByType(artifact.LinuxPackage),
+	)
 
 	if len(ctx.Config.Release.IDs) > 0 {
-		filters = append(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
+		filters = artifact.And(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
 	}
 
+	filters = artifact.Or(filters, artifact.ByType(artifact.UploadableFile))
+
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(artifact.And(filters...)).List() {
+	for _, artifact := range ctx.Artifacts.Filter(filters).List() {
 		artifact := artifact
 		g.Go(func() error {
-			var repeats uint
-			what := func(try uint) error {
-				repeats = try + 1
-				if uploadErr := upload(ctx, client, releaseID, artifact); uploadErr != nil {
-					log.WithFields(log.Fields{
-						"try":      try,
-						"artifact": artifact.Name,
-					}).Warnf("failed to upload artifact, will retry")
-					return uploadErr
-				}
-				return nil
-			}
-			how := []func(uint, error) bool{
-				strategy.Limit(10),
-				strategy.Backoff(backoff.Linear(50 * time.Millisecond)),
-			}
-			if err := retry.Try(ctx, what, how...); err != nil {
-				return errors.Wrapf(err, "failed to upload %s after %d retries", artifact.Name, repeats)
-			}
-			return nil
+			return upload(ctx, client, releaseID, artifact)
 		})
 	}
 	return g.Wait()
 }
 
 func upload(ctx *context.Context, client client.Client, releaseID string, artifact *artifact.Artifact) error {
-	file, err := os.Open(artifact.Path)
-	if err != nil {
-		return err
+	var repeats uint
+	what := func(try uint) error {
+		repeats = try + 1
+		file, err := os.Open(artifact.Path)
+		if err != nil {
+			return err
+		}
+		defer file.Close() // nolint: errcheck
+		log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
+		if err := client.Upload(ctx, releaseID, artifact, file); err != nil {
+			log.WithFields(log.Fields{
+				"try":      try,
+				"artifact": artifact.Name,
+			}).Warnf("failed to upload artifact, will retry")
+			return err
+		}
+		return nil
 	}
-	defer file.Close() // nolint: errcheck
-	log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
-	return client.Upload(ctx, releaseID, artifact, file)
+	how := []func(uint, error) bool{
+		strategy.Limit(10),
+		strategy.Backoff(backoff.Linear(50 * time.Millisecond)),
+	}
+	if err := retry.Try(ctx, what, how...); err != nil {
+		return errors.Wrapf(err, "failed to upload %s after %d retries", artifact.Name, repeats)
+	}
+	return nil
+}
+
+func findFiles(ctx *context.Context) (map[string]string, error) {
+	var result = map[string]string{}
+	for _, extra := range ctx.Config.Release.ExtraFiles {
+		if extra.Glob != "" {
+			files, err := zglob.Glob(extra.Glob)
+			if err != nil {
+				return result, errors.Wrapf(err, "globbing failed for pattern %s", extra.Glob)
+			}
+			for _, file := range files {
+				info, err := os.Stat(file)
+				if err == nil && info.IsDir() {
+					log.Debugf("ignoring directory %s", file)
+					continue
+				}
+				var name = filepath.Base(file)
+				if old, ok := result[name]; ok {
+					log.Warnf("overriding %s with %s for name %s", old, file, name)
+				}
+				result[name] = file
+			}
+		}
+	}
+	return result, nil
 }
