@@ -1,7 +1,9 @@
 package release
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/apex/log"
@@ -13,6 +15,7 @@ import (
 	"github.com/kamilsk/retry/v4"
 	"github.com/kamilsk/retry/v4/backoff"
 	"github.com/kamilsk/retry/v4/strategy"
+	"github.com/mattn/go-zglob"
 	"github.com/pkg/errors"
 )
 
@@ -123,7 +126,12 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	for name, path := range ctx.Config.Release.ExtraFiles {
+	extraFiles, err := findFiles(ctx)
+	if err != nil {
+		return err
+	}
+
+	for name, path := range extraFiles {
 		if _, err := os.Stat(path); os.IsNotExist(err) {
 			return errors.Wrapf(err, "failed to upload %s", name)
 		}
@@ -185,4 +193,25 @@ func upload(ctx *context.Context, client client.Client, releaseID string, artifa
 		return errors.Wrapf(err, "failed to upload %s after %d retries", artifact.Name, repeats)
 	}
 	return nil
+}
+
+func findFiles(ctx *context.Context) (map[string]string, error) {
+	var result = map[string]string{}
+	for _, glob := range ctx.Config.Release.ExtraFilesGlobs {
+		files, err := zglob.Glob(glob)
+		if err != nil {
+			return result, fmt.Errorf("globbing failed for pattern %s: %s", glob, err.Error())
+		}
+		for _, file := range files {
+			if info, _ := os.Stat(file); info.IsDir() {
+				continue
+			}
+			var name = filepath.Base(file)
+			if old, ok := result[name]; ok {
+				log.Warnf("overriding %s with %s for name %s", old, file, name)
+			}
+			result[name] = file
+		}
+	}
+	return result, nil
 }

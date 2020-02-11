@@ -47,11 +47,13 @@ release:
   disable: true
 
   # You can add extra pre-existing files to the release.
-  # The left side is the name you want on the github release and the right
-  # side is the path to the file.
+  # The filename on the release will be the last part of the path (base). If
+  # another file with the same name exists, the latest one found will be used.
   # Defaults to empty.
-  extra_files:
-    name_on_github: ./path/to/file.txt
+  extra_files_globs:
+    - ./path/to/file.txt
+    - ./glob/**/to/**/file/**/*
+    - ./glob/foo/to/bar/file/foobar/override_from_previous
 ```
 
 Second, let's see what can be customized in the `release` section for GitLab.
@@ -82,11 +84,13 @@ release:
   disable: true
 
   # You can add extra pre-existing files to the release.
-  # The left side is the name you want on the gitlab release and the right
-  # side is the path to the file.
+  # The filename on the release will be the last part of the path (base). If
+  # another file with the same name exists, the latest one found will be used.
   # Defaults to empty.
-  extra_files:
-    name_on_gitlab: ./path/to/file.txt
+  extra_files_globs:
+    - ./path/to/file.txt
+    - ./glob/**/to/**/file/**/*
+    - ./glob/foo/to/bar/file/foobar/override_from_previous
 ```
 
 You can also configure the `release` section to upload to a [Gitea](https://gitea.io) instance:
@@ -115,11 +119,13 @@ release:
   disable: true
 
   # You can add extra pre-existing files to the release.
-  # The left side is the name you want on the gitea release and the right
-  # side is the path to the file.
+  # The filename on the release will be the last part of the path (base). If
+  # another file with the same name exists, the latest one found will be used.
   # Defaults to empty.
-  extra_files:
-    name_on_gitea: ./path/to/file.txt
+  extra_files_globs:
+    - ./path/to/file.txt
+    - ./glob/**/to/**/file/**/*
+    - ./glob/foo/to/bar/file/foobar/override_from_previous
 ```
 
 To enable uploading `tar.gz` and `checksums.txt` files you need to add the following to your Gitea config in `app.ini`:
