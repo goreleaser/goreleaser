@@ -62,6 +62,9 @@ func (Pipe) Default(ctx *context.Context) error {
 				fpm.Builds = append(fpm.Builds, b.ID)
 			}
 		}
+		if fpm.Release == "" {
+			fpm.Release = ctx.Env["RELEASE"]
+		}
 		ids.Inc(fpm.ID)
 	}
 	return ids.Validate()
@@ -151,6 +154,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		Section:     "",
 		Priority:    "",
 		Epoch:       fpm.Epoch,
+		Release:     fpm.Release,
 		Maintainer:  fpm.Maintainer,
 		Description: fpm.Description,
 		Vendor:      fpm.Vendor,
