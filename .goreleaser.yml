@@ -3,7 +3,7 @@ env:
   - GOPROXY=https://gocenter.io
 before:
   hooks:
-    - go mod tidy
+    - go mod download
 builds:
 - env:
     - CGO_ENABLED=0
