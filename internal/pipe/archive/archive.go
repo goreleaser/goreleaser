@@ -146,7 +146,7 @@ func create(ctx *context.Context, archive config.Archive, binaries []*artifact.A
 		return fmt.Errorf("failed to find files to archive: %s", err.Error())
 	}
 	for _, f := range files {
-		if err = a.Add(f, f); err != nil {
+		if err = a.Add(rewritePath(archive, f), f); err != nil {
 			return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
 		}
 	}
@@ -181,6 +181,22 @@ func wrapFolder(a config.Archive) string {
 	default:
 		return a.WrapInDirectory
 	}
+}
+
+func rewritePath(a config.Archive, oldpath string) string {
+	for _, rewrite := range a.RewritePaths {
+		relative, err := filepath.Rel(rewrite.Source, oldpath)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		if strings.HasPrefix(relative, "..") {
+			continue
+		} else {
+			return filepath.Join(rewrite.Dest, relative)
+		}
+	}
+	return oldpath
 }
 
 func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {

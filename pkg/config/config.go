@@ -164,6 +164,12 @@ type FormatOverride struct {
 	Format string `yaml:",omitempty"`
 }
 
+// RewritePath determines the ultimate path of a file in the archive.
+type RewritePath struct {
+	Source string `yaml:",omitempty"`
+	Dest   string `yaml:",omitempty"`
+}
+
 // Archive config used for the archive
 type Archive struct {
 	ID              string            `yaml:",omitempty"`
@@ -174,6 +180,7 @@ type Archive struct {
 	FormatOverrides []FormatOverride  `yaml:"format_overrides,omitempty"`
 	WrapInDirectory string            `yaml:"wrap_in_directory,omitempty"`
 	Files           []string          `yaml:",omitempty"`
+	RewritePaths    []RewritePath     `yaml:"rewrite_paths,omitempty"`
 }
 
 // Release config used for the GitHub/GitLab release
