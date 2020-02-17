@@ -131,8 +131,9 @@ func create(ctx *context.Context, archive config.Archive, binaries []*artifact.A
 	var log = log.WithField("archive", archivePath)
 	log.Info("creating")
 
-	wrap, err := tmpl.New(ctx).
-		WithArtifact(binaries[0], archive.Replacements).
+	template := tmpl.New(ctx).
+		WithArtifact(binaries[0], archive.Replacements)
+	wrap, err := template.
 		Apply(wrapFolder(archive))
 	if err != nil {
 		return err
@@ -141,7 +142,7 @@ func create(ctx *context.Context, archive config.Archive, binaries []*artifact.A
 	var a = NewEnhancedArchive(archivelib.New(archiveFile), wrap)
 	defer a.Close() // nolint: errcheck
 
-	files, err := findFiles(archive)
+	files, err := findFiles(template, archive)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %s", err.Error())
 	}
@@ -210,9 +211,13 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 	return nil
 }
 
-func findFiles(archive config.Archive) (result []string, err error) {
+func findFiles(template *tmpl.Template, archive config.Archive) (result []string, err error) {
 	for _, glob := range archive.Files {
-		files, err := zglob.Glob(glob)
+		replaced, err := template.Apply(glob)
+		if err != nil {
+			return result, fmt.Errorf("Variable substitution failed for pattern %s: %s", glob, err.Error())
+		}
+		files, err := zglob.Glob(replaced)
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %s", glob, err.Error())
 		}
