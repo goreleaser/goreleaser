@@ -347,6 +347,7 @@ type Upload struct {
 	Checksum           bool     `yaml:",omitempty"`
 	Signature          bool     `yaml:",omitempty"`
 	CustomArtifactName bool     `yaml:"custom_artifact_name,omitempty"`
+	Pattern            string   `yaml:",omitempty"` // filter artifact by name pattern - should regular expression
 }
 
 // Project includes all project configuration

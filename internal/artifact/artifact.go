@@ -13,6 +13,7 @@ import (
 	"hash/crc32"
 	"io"
 	"os"
+	"regexp"
 	"sync"
 
 	"github.com/apex/log"
@@ -219,6 +220,13 @@ func ByIDs(ids ...string) Filter {
 		})
 	}
 	return Or(filters...)
+}
+
+func ByNamePattern(pattern string) Filter {
+	return func(a *Artifact) bool {
+		ok, _ := regexp.MatchString(pattern, a.Name)
+		return ok
+	}
 }
 
 // Or performs an OR between all given filters

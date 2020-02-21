@@ -138,6 +138,9 @@ uploads:
     - foo
     - bar
 
+    # Filter artifacts by name using regular expression (disabled by default)
+    pattern: '.*?\\.tar\\.gz'
+
     # Upload mode. Valid options are `binary` and `archive`.
     # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name are not supported.
     # In that case these variables are empty.
