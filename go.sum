@@ -149,6 +149,8 @@ github.com/kamilsk/retry/v4 v4.5.0 h1:TcfpmIdzFEfSWLwHJhA+WPAmo5qT2pl/HqqzFat2M+
 github.com/kamilsk/retry/v4 v4.5.0/go.mod h1:pIQtBtycHTXScrJmpu3N2SSBT07s07Uruq2Au1aRLks=
 github.com/kamilsk/retry/v4 v4.7.1 h1:mNg/RQ1X9QlInxBqz63ubBXgh/7D63aePBWZbQQr7pE=
 github.com/kamilsk/retry/v4 v4.7.1/go.mod h1:pIQtBtycHTXScrJmpu3N2SSBT07s07Uruq2Au1aRLks=
+github.com/kamilsk/retry/v4 v4.7.2 h1:8C33aqTQtTSvPf7MpLZ4xSY4JZK2YCvY+hTlsbiHNq8=
+github.com/kamilsk/retry/v4 v4.7.2/go.mod h1:pIQtBtycHTXScrJmpu3N2SSBT07s07Uruq2Au1aRLks=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
