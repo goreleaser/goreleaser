@@ -6,8 +6,8 @@ const ExampleConfig = `# This is an example goreleaser.yaml file with some sane 
 # Make sure to check the documentation at http://goreleaser.com
 before:
   hooks:
-    # you may remove this if you don't use vgo
-    - go mod tidy
+    # You may remove this if you don't use go modules.
+    - go mod download
     # you may remove this if you don't need go generate
     - go generate ./...
 builds:

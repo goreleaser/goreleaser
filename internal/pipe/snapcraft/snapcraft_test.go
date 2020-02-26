@@ -46,6 +46,7 @@ func TestRunPipeMissingInfo(t *testing.T) {
 func TestRunPipe(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
+	defer os.RemoveAll(folder)
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(t, os.Mkdir(dist, 0755))
 	assert.NoError(t, err)
@@ -88,6 +89,7 @@ func TestRunPipe(t *testing.T) {
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
+	defer os.RemoveAll(folder)
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(t, os.Mkdir(dist, 0755))
 	assert.NoError(t, err)
@@ -112,6 +114,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 func TestRunPipeWithName(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
+	defer os.RemoveAll(folder)
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(t, os.Mkdir(dist, 0755))
 	assert.NoError(t, err)
@@ -148,6 +151,7 @@ func TestRunPipeWithName(t *testing.T) {
 func TestRunPipeWithBinaryInDir(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
+	defer os.RemoveAll(folder)
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(t, os.Mkdir(dist, 0755))
 	assert.NoError(t, err)
@@ -182,6 +186,7 @@ func TestRunPipeWithBinaryInDir(t *testing.T) {
 func TestRunPipeMetadata(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
+	defer os.RemoveAll(folder)
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(t, os.Mkdir(dist, 0755))
 	assert.NoError(t, err)
@@ -248,6 +253,7 @@ func TestNoSnapcraftInPath(t *testing.T) {
 func TestRunNoArguments(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	assert.NoError(t, err)
+	defer os.RemoveAll(folder)
 	var dist = filepath.Join(folder, "dist")
 	assert.NoError(t, os.Mkdir(dist, 0755))
 	assert.NoError(t, err)
@@ -284,6 +290,7 @@ func TestRunNoArguments(t *testing.T) {
 func TestCompleter(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	require.NoError(t, err)
+	defer os.RemoveAll(folder)
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, err)
@@ -299,7 +306,7 @@ func TestCompleter(t *testing.T) {
 					"mybin": {
 						Daemon:    "simple",
 						Args:      "",
-						Completer: "mybin-completer.bash",
+						Completer: "testdata/mybin-completer.bash",
 					},
 				},
 				Builds: []string{"foo"},
@@ -316,7 +323,7 @@ func TestCompleter(t *testing.T) {
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	require.NoError(t, err)
 	assert.Equal(t, "mybin", metadata.Apps["mybin"].Command)
-	assert.Equal(t, "mybin-completer.bash", metadata.Apps["mybin"].Completer)
+	assert.Equal(t, "testdata/mybin-completer.bash", metadata.Apps["mybin"].Completer)
 }
 
 func TestDefault(t *testing.T) {
