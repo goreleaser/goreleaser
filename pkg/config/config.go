@@ -224,6 +224,7 @@ type NFPMOverridables struct {
 	PackageName      string            `yaml:"package_name,omitempty"`
 	NameTemplate     string            `yaml:"name_template,omitempty"` // deprecated
 	Epoch            string            `yaml:"epoch,omitempty"`
+	Release          string            `yaml:"release,omitempty"`
 	Replacements     map[string]string `yaml:",omitempty"`
 	Dependencies     []string          `yaml:",omitempty"`
 	Recommends       []string          `yaml:",omitempty"`

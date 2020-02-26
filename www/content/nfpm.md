@@ -15,7 +15,7 @@ Available options:
 nfpms:
   # note that this is an array of nfpm configs
   -
-    # ID of the nfpm config, must be unique.
+		# ID of the nfpm config, must be unique.
     # Defaults to "default".
     id: foo
 
@@ -30,8 +30,8 @@ nfpms:
     # Build IDs for the builds you want to create NFPM packages for.
     # Defaults to all builds.
     builds:
-    - foo
-    - bar
+      - foo
+      - bar
 
     # Replacements for GOOS and GOARCH in the package name.
     # Keys should be valid GOOSs or GOARCHs.
@@ -94,11 +94,15 @@ nfpms:
     # Defaults to empty.
     epoch: 1
 
+    # Package release.
+    # Defaults to empty.
+    release: 1
+
     # Empty folders that should be created and managed by the packager
     # implementation.
     # Default is empty.
     empty_folders:
-    - /var/log/foobar
+      - /var/log/foobar
 
     # Files to add to your package (beyond the binary).
     # Keys are source paths/globs to get the files from.
@@ -138,7 +142,7 @@ nfpms:
         recommends:
           - tig
         empty_folders:
-        - /var/log/bar
+          - /var/log/bar
       rpm:
         replacements:
           amd64: x86_64
