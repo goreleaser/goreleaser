@@ -1,0 +1,919 @@
+{
+    "$id": "https://github.com/goreleaser/goreleaser/schema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "goreleaser",
+    "description": "goreleaser config json schema",
+    "definitions": {
+      "goosTypes": {
+        "enum": [
+          "aix",
+          "android",
+          "darwin",
+          "dragonfly",
+          "freebsd",
+          "illumos",
+          "js",
+          "linux",
+          "netbsd",
+          "openbsd",
+          "plan9",
+          "solaris",
+          "windows"
+        ]
+      },
+      "goarchTypes": {
+        "enum": [
+          "ppc64",
+          386,
+          "amd64",
+          "arm",
+          "arm64",
+          "wasm",
+          "ppc64le",
+          "mips",
+          "mipsle",
+          "mips64",
+          "mips64le",
+          "s390x"
+        ]
+      },
+      "goarmTypes": {
+        "enum": [
+          5,
+          6,
+          7
+        ]
+      },
+      "gomipsTypes": {
+        "enum": [
+          "hardfloat",
+          "softfloat"
+        ],
+        "description": "GOMIPS and GOMIPS64 to build when GOARCH is mips, mips64, mipsle or mips64le. For more info refer to: https://golang.org/doc/install/source#environment Default is empty."
+      },
+      "archiveTypes": {
+        "enum": [
+          "tar.gz",
+          "gz",
+          "zip",
+          "binary"
+        ]
+      },
+      "algorithmTypes": {
+        "enum": [
+          "sha256",
+          "sha512",
+          "sha1",
+          "crc32",
+          "md5",
+          "sha224",
+          "sha384"
+        ]
+      },
+      "replacements": {
+        "type": "object",
+        "propertyNames": {
+          "$ref": "#/definitions/goosTypes"
+        }
+      },
+      "nfpmScriptTypes": {
+        "enum": [
+          "preinstall",
+          "postinstall",
+          "preremove",
+          "postremove"
+        ]
+      },
+      "upload": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "target": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "checksum_header": {
+            "type": "string"
+          },
+          "trusted_certificates": {
+            "type": "string"
+          },
+          "checksum": {
+            "type": "boolean"
+          },
+          "signature": {
+            "type": "boolean"
+          },
+          "custom_artifact_name": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "properties": {
+      "project_name": {
+        "type": "string"
+      },
+      "env": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "before": {
+        "type": "object",
+        "properties": {
+          "hooks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "builds": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Defaults to the project name."
+            },
+            "dir": {
+              "type": "string",
+              "description": "Path to project's (sub)directory containing Go code.This is the working directory for the Go build command(s).Default is `.`."
+            },
+            "main": {
+              "type": "string",
+              "description": "Path to main.go file or main package. Default is `.`."
+            },
+            "binary": {
+              "type": "string",
+              "description": "Binary name. Can be a path (e.g. `bin/app`) to wrap the binary in a directory. Default is the name of the project directory."
+            },
+            "flags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "asmflags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "gcflags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "ldflags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "env": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "goos": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/definitions/goosTypes"
+              }
+            },
+            "goarch": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/definitions/goarchTypes"
+              }
+            },
+            "goarm": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/definitions/goarmTypes"
+              }
+            },
+            "gomips": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/definitions/gomipsTypes"
+              }
+            },
+            "ignore": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "goos": {
+                    "$ref": "#/definitions/goosTypes"
+                  },
+                  "goarch": {
+                    "$ref": "#/definitions/goarchTypes"
+                  },
+                  "goarm": {
+                    "$ref": "#/definitions/goarmTypes"
+                  },
+                  "gomips": {
+                    "$ref": "#/definitions/gomipsTypes"
+                  }
+                }
+              }
+            },
+            "hooks": {
+              "type": "object",
+              "properties": {
+                "pre": {
+                  "type": "string"
+                },
+                "post": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "archive": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "builds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Builds reference which build instances should be archived in this archive."
+            },
+            "name_template": {
+              "type": "string"
+            },
+            "replacements": {
+              "$ref": "#/definitions/replacements"
+            },
+            "wrap_in_directory": {
+              "type": "boolean"
+            },
+            "format": {
+              "$ref": "#/definitions/archiveTypes"
+            },
+            "format_overrides": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "goos": {
+                    "$ref": "#/definitions/goosTypes"
+                  },
+                  "format": {
+                    "$ref": "#/definitions/archiveTypes"
+                  }
+                }
+              }
+            },
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "checksum": {
+        "type": "object",
+        "properties": {
+          "name_template": {
+            "type": "string"
+          },
+          "algorithm": {
+            "$ref": "#/definitions/algorithmTypes"
+          }
+        }
+      },
+      "signs": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "signature": {
+              "type": "string"
+            },
+            "cmd": {
+              "type": "string",
+              "default": "gpg2",
+              "description": "path to the signature command"
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "artifacts": {
+              "type": "string",
+              "default": "all"
+            },
+            "ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "IDs of the artifacts to sign. Defaults to all. If `artifacts` is checksum, this fields has no effect."
+            }
+          }
+        }
+      },
+      "snapshot": {
+        "type": "object",
+        "description": "Allows you to change the name of the generated snapshot. Note that some pipes require this to be semantic version compliant (nfpm, for example).",
+        "properties": {
+          "name_template": {
+            "type": "string",
+            "default": "{{ .Tag }}-SNAPSHOT-{{.ShortCommit}}",
+            "description": ""
+          }
+        }
+      },
+      "nfpms": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "package_name": {
+              "type": "string"
+            },
+            "file_name_template": {
+              "type": "string",
+              "default": "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+            },
+            "builds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "replacements": {
+              "$ref": "#/definitions/replacements"
+            },
+            "vendor": {
+              "type": "string"
+            },
+            "homepage": {
+              "type": "string"
+            },
+            "maintainer": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "license": {
+              "type": "string"
+            },
+            "formats": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "deb",
+                  "rpm"
+                ]
+              }
+            },
+            "dependencies": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "recommends": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "suggests": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "conflicts": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "bindir": {
+              "type": "string"
+            },
+            "epoch": {
+              "type": "string"
+            },
+            "release": {
+              "type": "integer"
+            },
+            "empty_folders": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "files": {
+              "type": "object"
+            },
+            "config_files": {
+              "type": "object"
+            },
+            "scripts": {
+              "type": "object",
+              "propertyNames": {
+                "$ref": "#/definitions/nfpmScriptTypes"
+              }
+            },
+            "overrides": {
+              "type": "object",
+              "properties": {
+                "deb": {
+                  "type": "object",
+                  "properties": {
+                    "conflicts": {
+                      "type": "array"
+                    },
+                    "dependencies": {
+                      "type": "array"
+                    },
+                    "suggests": {
+                      "type": "array"
+                    },
+                    "recommends": {
+                      "type": "array"
+                    },
+                    "empty_folders": {
+                      "type": "array"
+                    }
+                  }
+                },
+                "rpm": {
+                  "type": "object",
+                  "properties": {
+                    "replacements": {
+                      "$ref": "#/definitions/replacements"
+                    },
+                    "name_template": {
+                      "type": "string"
+                    },
+                    "files": {
+                      "type": "object"
+                    },
+                    "config_files": {
+                      "type": "object"
+                    },
+                    "scripts": {
+                      "type": "object",
+                      "propertyNames": {
+                        "$ref": "#/definitions/nfpmScriptTypes"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "snapcrafts": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "builds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "name_template": {
+              "type": "string"
+            },
+            "replacements": {
+              "$ref": "#/definitions/replacements"
+            },
+            "name": {
+              "type": "string"
+            },
+            "publish": {
+              "type": "boolean"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "grade": {
+              "type": "string"
+            },
+            "confinement": {
+              "type": "string"
+            },
+            "license": {
+              "type": "string"
+            },
+            "base": {
+              "type": "string",
+              "enum": [
+                "bare",
+                "core",
+                "core18"
+              ]
+            },
+            "app": {
+              "type": "object",
+              "properties": {
+                "drumroll": {
+                  "type": "object",
+                  "properties": {
+                    "plugs": {
+                      "type": "array"
+                    },
+                    "daemon": {
+                      "type": "string"
+                    },
+                    "args": {
+                      "type": "string"
+                    },
+                    "completer": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "plugs": {
+                  "type": "object",
+                  "properties": {
+                    "personal-files": {
+                      "type": "object",
+                      "properties": {
+                        "read": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "write": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "brews": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "goarm": {
+              "$ref": "#/definitions/goarmTypes"
+            },
+            "github": {
+              "type": "object",
+              "properties": {
+                "owner": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "url_template": {
+                  "type": "string"
+                },
+                "download_strategy": {
+                  "type": "string"
+                },
+                "custom_require": {
+                  "type": "string"
+                },
+                "commit_author": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "folder": {
+                  "type": "string"
+                },
+                "caveats": {
+                  "type": "string"
+                },
+                "homepage": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "skip_upload": {
+                  "type": "string"
+                },
+                "custom_block": {
+                  "type": "string"
+                },
+                "dependencies": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "conflicts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "plist": {
+                  "type": "string"
+                },
+                "test": {
+                  "type": "string"
+                },
+                "install": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "scoop": {
+        "type": "object",
+        "properties": {
+          "url_template": {
+            "type": "string"
+          },
+          "bucket": {
+            "type": "object",
+            "properties": {
+              "owner": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "commit_author": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              }
+            }
+          },
+          "homepage": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "license": {
+            "type": "string"
+          },
+          "persist": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "release": {
+        "type": "object",
+        "properties": {
+          "github": {
+            "type": "object",
+            "properties": {
+              "owner": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "gitlab": {
+            "type": "object",
+            "properties": {
+              "owner": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "gitea": {
+            "type": "object",
+            "properties": {
+              "owner": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "draft": {
+            "type": "boolean"
+          },
+          "prerelease": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "true",
+              "false"
+            ]
+          },
+          "name_template": {
+            "type": "string"
+          },
+          "disable": {
+            "type": "boolean"
+          },
+          "extra_files": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "blobs": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": [
+                "s3",
+                "azblob",
+                "gs"
+              ]
+            },
+            "endpoint": {
+              "type": "string"
+            },
+            "region": {
+              "type": "string"
+            },
+            "disableSSL": {
+              "type": "boolean"
+            },
+            "bucket": {
+              "type": "string"
+            },
+            "ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "folder": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "artifactories": {
+        "$ref": "#/definitions/upload"
+      },
+      "puts": {
+        "$ref": "#/definitions/upload"
+      },
+      "uploads": {
+        "$ref": "#/definitions/upload"
+      },
+      "dockers": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "goos": {
+              "$ref": "#/definitions/goosTypes"
+            },
+            "goarch": {
+              "$ref": "#/definitions/archiveTypes"
+            },
+            "goarm": {
+              "$ref": "#/definitions/goarmTypes"
+            },
+            "binaries": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "builds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "image_templates": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "skip_push": {
+              "type": "boolean"
+            },
+            "dockerfile": {
+              "type": "string"
+            },
+            "build_flag_templates": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "extra_files": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
