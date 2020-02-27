@@ -206,6 +206,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		Goarm:  binaries[0].Goarm,
 		Extra: map[string]interface{}{
 			"Builds": binaries,
+			"ID":     fpm.ID,
 		},
 	})
 	return nil

@@ -86,6 +86,7 @@ func TestRunPipe(t *testing.T) {
 		Dist:        dist,
 		NFPMs: []config.NFPM{
 			{
+				ID:          "someid",
 				Bindir:      "/usr/bin",
 				Builds:      []string{"default"},
 				Formats:     []string{"deb", "rpm"},
@@ -143,6 +144,7 @@ func TestRunPipe(t *testing.T) {
 	require.Len(t, packages, 4)
 	for _, pkg := range packages {
 		require.Contains(t, pkg.Name, "mybin_1.0.0_Tux_", "linux should have been replaced by Tux")
+		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Files, 1, "should not modify the config file list")
 }
