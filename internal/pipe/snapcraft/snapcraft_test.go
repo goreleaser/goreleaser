@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testlib"
+
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -353,6 +355,19 @@ func TestPublish(t *testing.T) {
 	})
 	err := Pipe{}.Publish(ctx)
 	assert.Contains(t, err.Error(), "failed to push nope.snap package")
+}
+
+func TestPublishSkip(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	ctx.SkipPublish = true
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   "nope.snap",
+		Goarch: "amd64",
+		Goos:   "linux",
+		Type:   artifact.PublishableSnapcraft,
+	})
+	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 }
 
 func TestDefaultSet(t *testing.T) {
