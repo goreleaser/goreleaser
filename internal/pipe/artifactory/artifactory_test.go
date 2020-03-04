@@ -383,7 +383,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	})
 
 	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: error while building the target url: template: mybin:1: unexpected "/" in operand`)
+	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: error while building the target url: template: tmpl:1: unexpected "/" in operand`)
 }
 
 func TestRunPipe_BadCredentials(t *testing.T) {

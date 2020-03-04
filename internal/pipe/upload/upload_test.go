@@ -422,7 +422,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 	})
 	err = Pipe{}.Publish(ctx)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), `upload: error while building the target url: template: mybin:1: unexpected "/" in operand`)
+	assert.Contains(t, err.Error(), `upload: error while building the target url: template: tmpl:1: unexpected "/" in operand`)
 }
 
 func TestRunPipe_BadCredentials(t *testing.T) {

@@ -30,7 +30,7 @@ Prerequisites:
 
 ### Target
 
-The `target` is the URL to upload the artifacts to (_without_ the name of the artifact).
+The `target` is the template of the URL to upload the artifacts to (_without_ the name of the artifact).
 
 An example configuration for `goreleaser` in upload mode `binary` with the target can look like
 
@@ -66,7 +66,7 @@ The configured name of your HTTP server will be used to build the environment
 variable name.
 This way we support auth for multiple instances.
 This also means that the `name` per configured instance needs to be unique
-per goreleaser configuration.
+per GoReleaser configuration.
 
 The name of the environment variable will be `UPLOAD_NAME_USERNAME`.
 If your instance is named `production`, you can store the username in the
@@ -82,7 +82,7 @@ The password will be stored in a environment variable.
 The configured name of your HTTP server will be used.
 This way we support auth for multiple instances.
 This also means that the `name` per configured instance needs to be unique
-per goreleaser configuration.
+per GoReleaser configuration.
 
 The name of the environment variable will be `UPLOAD_NAME_SECRET`.
 If your instance is named `production`, you need to store the secret in the
@@ -144,7 +144,7 @@ uploads:
     # Default is `archive`.
     mode: archive
 
-    # URL to be used as target of the HTTP request
+    # Template of the URL to be used as target of the HTTP request
     target: https://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
 
     # Custom artifact name (defaults to false)
@@ -178,3 +178,5 @@ uploads:
 ```
 
 These settings should allow you to push your artifacts into multiple HTTP servers.
+
+> Learn more about the [name template engine](/templates).

@@ -2,11 +2,9 @@
 package http
 
 import (
-	"bytes"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"html/template"
 	"io"
 	h "net/http"
 	"os"
@@ -19,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -351,51 +350,15 @@ func executeHTTPRequest(ctx *context.Context, upload *config.Upload, req *h.Requ
 	return resp, err
 }
 
-// targetData is used as a template struct for
-// Artifactory.Target
-type targetData struct {
-	Version      string
-	Tag          string
-	ProjectName  string
-	ArtifactName string
-
-	// Only supported in mode binary
-	Os   string
-	Arch string
-	Arm  string
-}
-
 // resolveTargetTemplate returns the resolved target template with replaced variables
 // Those variables can be replaced by the given context, goos, goarch, goarm and more
-// TODO: replace this with our internal template pkg
 func resolveTargetTemplate(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact) (string, error) {
-	data := targetData{
-		Version:      ctx.Version,
-		Tag:          ctx.Git.CurrentTag,
-		ProjectName:  ctx.Config.ProjectName,
-		ArtifactName: artifact.Name,
-	}
-
+	var replacements = map[string]string{}
 	if upload.Mode == ModeBinary {
 		// TODO: multiple archives here
-		data.Os = replace(ctx.Config.Archives[0].Replacements, artifact.Goos)
-		data.Arch = replace(ctx.Config.Archives[0].Replacements, artifact.Goarch)
-		data.Arm = replace(ctx.Config.Archives[0].Replacements, artifact.Goarm)
+		replacements = ctx.Config.Archives[0].Replacements
 	}
-
-	var out bytes.Buffer
-	t, err := template.New(ctx.Config.ProjectName).Parse(upload.Target)
-	if err != nil {
-		return "", err
-	}
-	err = t.Execute(&out, data)
-	return out.String(), err
-}
-
-func replace(replacements map[string]string, original string) string {
-	result := replacements[original]
-	if result == "" {
-		return original
-	}
-	return result
+	return tmpl.New(ctx).
+		WithArtifact(artifact, replacements).
+		Apply(upload.Target)
 }
