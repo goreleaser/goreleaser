@@ -550,7 +550,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Publish(ctx), `upload: upload failed: parse ://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin: missing protocol scheme`)
+	assert.EqualError(t, Pipe{}.Publish(ctx), `upload: upload failed: parse "://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin": missing protocol scheme`)
 }
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
