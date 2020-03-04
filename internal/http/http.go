@@ -350,20 +350,6 @@ func executeHTTPRequest(ctx *context.Context, upload *config.Upload, req *h.Requ
 	return resp, err
 }
 
-// targetData is used as a template struct for
-// Artifactory.Target
-type targetData struct {
-	Version      string
-	Tag          string
-	ProjectName  string
-	ArtifactName string
-
-	// Only supported in mode binary
-	Os   string
-	Arch string
-	Arm  string
-}
-
 // resolveTargetTemplate returns the resolved target template with replaced variables
 // Those variables can be replaced by the given context, goos, goarch, goarm and more
 func resolveTargetTemplate(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact) (string, error) {
