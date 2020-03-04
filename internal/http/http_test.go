@@ -208,7 +208,11 @@ func TestUpload(t *testing.T) {
 	ctx := context.New(config.Project{
 		ProjectName: "blah",
 		Archives: []config.Archive{
-			{},
+			{
+				Replacements: map[string]string{
+					"linux": "Linux",
+				},
+			},
 		},
 	})
 	ctx.Env["TEST_A_SECRET"] = "x"
@@ -232,9 +236,11 @@ func TestUpload(t *testing.T) {
 		var file = filepath.Join(folder, "a."+a.ext)
 		require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
 		ctx.Artifacts.Add(&artifact.Artifact{
-			Name: "a." + a.ext,
-			Path: file,
-			Type: a.typ,
+			Name:   "a." + a.ext,
+			Goos:   "linux",
+			Goarch: "amd64",
+			Path:   file,
+			Type:   a.typ,
 			Extra: map[string]interface{}{
 				"ID": "foo",
 			},
@@ -307,6 +313,21 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
 			),
 		},
+		{"archive_with_os_tmpl", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:         ModeArchive,
+					Name:         "a",
+					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/{{.Os}}/{{.Arch}}",
+					Username:     "u1",
+					TrustedCerts: cert(s),
+				}
+			},
+			checks(
+				check{"/blah/2.1.0/linux/amd64/a.deb", "u1", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/linux/amd64/a.tar", "u1", "x", content, map[string]string{}},
+			),
+		},
 		{"archive_with_ids", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
@@ -334,6 +355,18 @@ func TestUpload(t *testing.T) {
 				}
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
+		},
+		{"binary_with_os_tmpl", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:         ModeBinary,
+					Name:         "a",
+					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/{{.Os}}/{{.Arch}}",
+					Username:     "u2",
+					TrustedCerts: cert(s),
+				}
+			},
+			checks(check{"/blah/2.1.0/Linux/amd64/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
 		{"binary_with_ids", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
