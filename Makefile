@@ -8,7 +8,7 @@ export GOPROXY = https://proxy.golang.org,direct
 
 # Install all the build and lint dependencies
 setup:
-	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- v1.23.1
+	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- v1.23.7
 	curl -sfL https://install.goreleaser.com/github.com/gohugoio/hugo.sh | sh -s -- v0.63.2
 	curl -sfL https://git.io/misspell | sh -s -- v0.3.4
 	go mod tidy

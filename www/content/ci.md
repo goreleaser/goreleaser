@@ -73,7 +73,7 @@ workflows:
 jobs:
   release:
     docker:
-      - image: circleci/golang:1.13
+      - image: circleci/golang:1.14
     steps:
       - checkout
       - run: curl -sL https://git.io/goreleaser | bash
@@ -404,7 +404,7 @@ steps:
   BuildMyApp:
     title: Compiling go code
     stage: build
-    image: 'golang:1.13'
+    image: 'golang:1.14'
     commands:
       - go build
   ReleaseMyApp:
