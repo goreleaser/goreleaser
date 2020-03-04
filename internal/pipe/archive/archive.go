@@ -13,6 +13,7 @@ import (
 	"github.com/apex/log"
 	"github.com/campoy/unique"
 	"github.com/mattn/go-zglob"
+	"github.com/pkg/errors"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
@@ -219,7 +220,7 @@ func findFiles(template *tmpl.Template, archive config.Archive) (result []string
 		}
 		files, err := zglob.Glob(replaced)
 		if err != nil {
-			return result, fmt.Errorf("globbing failed for pattern %s: %s", glob, err.Error())
+			return result, errors.Wrapf(err, "globbing failed for pattern %s", glob)
 		}
 		result = append(result, files...)
 	}
