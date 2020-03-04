@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -39,10 +40,12 @@ func TestRunPipe(t *testing.T) {
 				createFakeBinary(t, dist, arch, "mybin")
 			}
 			createFakeBinary(t, dist, "windowsamd64", "mybin.exe")
-			_, err := os.Create(filepath.Join(folder, "README.md"))
-			require.NoError(t, err)
+			for _, tt := range []string{"darwin", "linux", "windows"} {
+				_, err := os.Create(filepath.Join(folder, fmt.Sprintf("README.%s.md", tt)))
+				require.NoError(t, err)
+			}
 			require.NoError(t, os.MkdirAll(filepath.Join(folder, "foo", "bar", "foobar"), 0755))
-			_, err = os.Create(filepath.Join(filepath.Join(folder, "foo", "bar", "foobar", "blah.txt")))
+			_, err := os.Create(filepath.Join(filepath.Join(folder, "foo", "bar", "foobar", "blah.txt")))
 			require.NoError(t, err)
 			var ctx = context.New(
 				config.Project{
@@ -54,7 +57,7 @@ func TestRunPipe(t *testing.T) {
 							Builds:       []string{"default"},
 							NameTemplate: defaultNameTemplate,
 							Files: []string{
-								"README.*",
+								"README.{{.Os}}.*",
 								"./foo/**/*",
 							},
 							FormatOverrides: []config.FormatOverride{
@@ -143,16 +146,16 @@ func TestRunPipe(t *testing.T) {
 
 			if format == "tar.gz" {
 				// Check archive contents
-				for _, name := range []string{
-					"foobar_0.0.1_darwin_amd64.tar.gz",
-					"foobar_0.0.1_linux_386.tar.gz",
-					"foobar_0.0.1_linux_armv7.tar.gz",
-					"foobar_0.0.1_linux_mips_softfloat.tar.gz",
+				for name, os := range map[string]string{
+					"foobar_0.0.1_darwin_amd64.tar.gz":         "darwin",
+					"foobar_0.0.1_linux_386.tar.gz":            "linux",
+					"foobar_0.0.1_linux_armv7.tar.gz":          "linux",
+					"foobar_0.0.1_linux_mips_softfloat.tar.gz": "linux",
 				} {
 					require.Equal(
 						t,
 						[]string{
-							"README.md",
+							fmt.Sprintf("README.%s.md", os),
 							"foo/bar",
 							"foo/bar/foobar",
 							"foo/bar/foobar/blah.txt",
@@ -166,7 +169,7 @@ func TestRunPipe(t *testing.T) {
 				require.Equal(
 					t,
 					[]string{
-						"README.md",
+						"README.windows.md",
 						"foo/bar/foobar/blah.txt",
 						"mybin.exe",
 					},
@@ -370,6 +373,44 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 		},
 	})
 	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
+}
+
+func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
+	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	require.NoError(t, err)
+	var ctx = context.New(
+		config.Project{
+			Dist: dist,
+			Archives: []config.Archive{
+				{
+					Builds:       []string{"default"},
+					NameTemplate: "foo",
+					Format:       "zip",
+					Files: []string{
+						"{{.asdsd}",
+					},
+				},
+			},
+		},
+	)
+	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "mybin",
+		Path:   filepath.Join("dist", "darwinamd64", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			"Binary": "mybin",
+			"ID":     "default",
+		},
+	})
+	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: failed to apply template {{.asdsd}: template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {

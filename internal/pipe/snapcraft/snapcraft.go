@@ -141,6 +141,9 @@ func isValidArch(arch string) bool {
 
 // Publish packages
 func (Pipe) Publish(ctx *context.Context) error {
+	if ctx.SkipPublish {
+		return pipe.ErrSkipPublishEnabled
+	}
 	snaps := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List()
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, snap := range snaps {
