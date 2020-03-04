@@ -303,42 +303,64 @@ for more detailed documentation.
 
 ## GitLab CI
 
-To push releases to both GitHub and the **official** Docker registry, add a
-file `.gitlab-ci.yml` in the Go project directory:
+To create GitLab releases and push images to a Docker registry, add a file
+`.gitlab-ci.yml` to the root of the project:
 
 ```yaml
-image: docker:stable
-services:
-- docker:dind
-
 stages:
-- build
+  - release
 
-variables:
-  GORELEASER_IMAGE: goreleaser/goreleaser:latest
-  DOCKER_REGISTRY: https://index.docker.io/v1/
+release:
+  stage: release
+  image: docker:stable
+  services:
+    - docker:dind
 
-build:
-  stage: build
-  script:
-    - docker pull $GORELEASER_IMAGE
-    - docker run --rm --privileged -v $PWD:/go/src/github.com/YourGithubUser/YourGithubRepo -v /var/run/docker.sock:/var/run/docker.sock -w /go/src/github.com/YourGithubUser/YourGithubRepo -e GITHUB_TOKEN -e DOCKER_USERNAME -e DOCKER_PASSWORD -e DOCKER_REGISTRY $GORELEASER_IMAGE release --rm-dist
+  variables:
+    GORELEASER_IMAGE: goreleaser/goreleaser:latest
+
+    # Optionally use GitLab's built-in image registry.
+    # DOCKER_REGISTRY: $CI_REGISTRY
+    # DOCKER_USERNAME: $CI_REGISTRY_USER
+    # DOCKER_PASSWORD: $CI_REGISTRY_PASSWORD
+
+    # Or, use any registry, including the official one.
+    DOCKER_REGISTRY: https://index.docker.io/v1/
+
+    # Disable shallow cloning so that goreleaser can diff between tags to
+    # generate a changelog.
+    GIT_DEPTH: 0
+
+  # Only run this release job for tags, not every commit (for example).
+  only:
+    refs:
+      - tags
+
+  script: |
+    docker pull $GORELEASER_IMAGE
+
+    # GITLAB_TOKEN is needed to create GitLab releases.
+    # DOCKER_* are needed to push Docker images.
+    docker run --pull --rm --privileged \
+      -v $PWD:/go/src/gitlab.com/YourGitLabUser/YourGitLabRepo \
+      -w /go/src/gitlab.com/YourGitLabUser/YourGitLabRepo \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -e DOCKER_USERNAME -e DOCKER_PASSWORD -e DOCKER_REGISTRY  \
+      -e GITLAB_TOKEN \
+      $GORELEASER_IMAGE release --rm-dist
 ```
 
-Next, in the GitLab sidebar add the variables `DOCKER_USERNAME`,
-`DOCKER_PASSWORD` and `GITHUB_TOKEN` through
-Project --> Settings --> CI / CD --> Variables.
-Make sure they are set to *Masked* (*Protection* is not needed).
+In GitLab CI settings, add variables for `DOCKER_REGISTRY`, `DOCKER_USERNAME`,
+and `DOCKER_PASSWORD` if you aren't using the GitLab image registry. If you are
+using the GitLab image registry, you don't need to set these.
 
-To push to some other Docker registry (e.g. to a GitLab registry), set
-different variables in the file above:
+Add a variable `GITLAB_TOKEN` if you are using [GitLab
+releases](https://docs.gitlab.com/ce/user/project/releases/). The value should
+be an API token with `api` scope for a user that has access to the project.
 
-```txt
-CI_REGISTRY: gitlab.example.com:4567
-DOCKER_REGISTRY: $CI_REGISTRY
-DOCKER_USERNAME: gitlab-ci-token
-DOCKER_PASSWORD: $CI_JOB_TOKEN
-```
+The secret variables, `DOCKER_PASSWORD` and `GITLAB_TOKEN`, should be masked.
+Optionally, you might want to protect them if the job that uses them will only
+be run on protected branches or tags.
 
 Make sure the `image_templates` in the file `.goreleaser.yml` reflect that
 custom registry!
@@ -353,8 +375,8 @@ dockers:
   binaries:
   - program
   image_templates:
-  - 'gitlab.example.com:4567/Group/Project:{{ .Tag }}'
-  - 'gitlab.example.com:4567/Group/Project:latest'
+  - 'registry.gitlab.com/Group/Project:{{ .Tag }}'
+  - 'registry.gitlab.com/Group/Project:latest'
 ```
 
 ## Codefresh
