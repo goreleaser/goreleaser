@@ -29,7 +29,7 @@ func TestNewGitHubClient(t *testing.T) {
 			},
 		}))
 
-		require.EqualError(t, err, "parse ://github.mycompany.com/api: missing protocol scheme")
+		require.EqualError(t, err, `parse "://github.mycompany.com/api": missing protocol scheme`)
 	})
 
 	t.Run("bad upload url", func(t *testing.T) {
