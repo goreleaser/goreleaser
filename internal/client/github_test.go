@@ -40,7 +40,7 @@ func TestNewGitHubClient(t *testing.T) {
 			},
 		}))
 
-		require.EqualError(t, err, "parse not a url:4994: first path segment in URL cannot contain colon")
+		require.EqualError(t, err, `parse "not a url:4994": first path segment in URL cannot contain colon`)
 	})
 }
 
