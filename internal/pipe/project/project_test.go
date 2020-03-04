@@ -23,10 +23,36 @@ func TestCustomProjectName(t *testing.T) {
 	require.Equal(t, "foo", ctx.Config.ProjectName)
 }
 
-func TestEmptyProjectName(t *testing.T) {
+func TestEmptyProjectName_DefaultsToGitHubRelease(t *testing.T) {
 	var ctx = context.New(config.Project{
 		Release: config.Release{
 			GitHub: config.Repo{
+				Owner: "bar",
+				Name:  "bar",
+			},
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "bar", ctx.Config.ProjectName)
+}
+
+func TestEmptyProjectName_DefaultsToGitLabRelease(t *testing.T) {
+	var ctx = context.New(config.Project{
+		Release: config.Release{
+			GitLab: config.Repo{
+				Owner: "bar",
+				Name:  "bar",
+			},
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "bar", ctx.Config.ProjectName)
+}
+
+func TestEmptyProjectName_DefaultsToGiteaRelease(t *testing.T) {
+	var ctx = context.New(config.Project{
+		Release: config.Release{
+			Gitea: config.Repo{
 				Owner: "bar",
 				Name:  "bar",
 			},

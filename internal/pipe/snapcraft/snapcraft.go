@@ -210,7 +210,6 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 
 	for _, binary := range binaries {
 		// build the binaries and link resources
-		completerPath := ""
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
 		log.WithField("src", binary.Path).
 			WithField("dst", destBinaryPath).
@@ -221,19 +220,6 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		}
 		if err := os.Chmod(destBinaryPath, 0555); err != nil {
 			return errors.Wrap(err, "failed to change binary permissions")
-		}
-
-		if completerPath != "" {
-			destCompleterPath := filepath.Join(primeDir, filepath.Base(completerPath))
-			log.WithField("src", completerPath).
-				WithField("dst", destCompleterPath).
-				Debug("linking")
-			if err := os.Link(completerPath, destCompleterPath); err != nil {
-				return errors.Wrap(err, "failed to link completer")
-			}
-			if err := os.Chmod(destCompleterPath, 0444); err != nil {
-				return errors.Wrap(err, "failed to change completer permissions")
-			}
 		}
 
 		// setup the apps: directive for each binary
@@ -252,7 +238,20 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 			}
 
 			if config.Completer != "" {
-				appMetadata.Completer = filepath.Base(config.Completer)
+				destCompleterPath := filepath.Join(primeDir, config.Completer)
+				if err := os.MkdirAll(filepath.Dir(destCompleterPath), 0755); err != nil {
+					return errors.Wrapf(err, "failed to create folder")
+				}
+				log.WithField("src", config.Completer).
+					WithField("dst", destCompleterPath).
+					Debug("linking")
+				if err := os.Link(config.Completer, destCompleterPath); err != nil {
+					return errors.Wrap(err, "failed to link completer")
+				}
+				if err := os.Chmod(destCompleterPath, 0444); err != nil {
+					return errors.Wrap(err, "failed to change completer permissions")
+				}
+				appMetadata.Completer = config.Completer
 			}
 
 			metadata.Apps[name] = appMetadata

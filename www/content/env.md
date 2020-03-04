@@ -16,11 +16,11 @@ env:
   - GO111MODULE=on
 before:
   hooks:
-    - go mod tidy
+    - go mod download
 builds:
 - binary: program
 ```
 
-This way, both `go mod tidy` and the underlying `go build` will have
+This way, both `go mod download` and the underlying `go build` will have
 `GO111MODULE` set to `on`.
 

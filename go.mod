@@ -10,18 +10,17 @@ require (
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/fatih/color v1.9.0
-	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-github/v28 v28.1.1
 	github.com/goreleaser/nfpm v1.1.10
 	github.com/imdario/mergo v0.3.8
 	github.com/jarcoal/httpmock v1.0.4
-	github.com/kamilsk/retry/v4 v4.4.1
+	github.com/kamilsk/retry/v4 v4.7.2
 	github.com/mattn/go-zglob v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.4.0
-	github.com/xanzy/go-gitlab v0.22.3
-	gocloud.dev v0.18.0
+	github.com/stretchr/testify v1.5.1
+	github.com/xanzy/go-gitlab v0.27.0
+	gocloud.dev v0.19.0
 	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
