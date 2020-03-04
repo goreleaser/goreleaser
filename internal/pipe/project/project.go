@@ -1,7 +1,11 @@
 // Package project sets "high level" defaults related to the project.
 package project
 
-import "github.com/goreleaser/goreleaser/pkg/context"
+import (
+	"fmt"
+
+	"github.com/goreleaser/goreleaser/pkg/context"
+)
 
 // Pipe implemens defaulter to set the project name
 type Pipe struct{}
@@ -20,6 +24,8 @@ func (Pipe) Default(ctx *context.Context) error {
 			ctx.Config.ProjectName = ctx.Config.Release.GitLab.Name
 		case ctx.Config.Release.Gitea.Name != "":
 			ctx.Config.ProjectName = ctx.Config.Release.Gitea.Name
+		default:
+			return fmt.Errorf("couldn't guess project_name, please add it to your config")
 		}
 	}
 	return nil
