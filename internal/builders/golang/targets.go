@@ -123,6 +123,7 @@ var validTargets = []string{
 	"freebsd386",
 	"freebsdamd64",
 	"freebsdarm",
+	"freebsdarm64", // not on the official list for some reason, yet its supported on go 1.14+
 	"illumosamd64",
 	"jswasm",
 	"linux386",
@@ -142,6 +143,7 @@ var validTargets = []string{
 	"openbsd386",
 	"openbsdamd64",
 	"openbsdarm",
+	"openbsdarm64",
 	"plan9386",
 	"plan9amd64",
 	"plan9arm",

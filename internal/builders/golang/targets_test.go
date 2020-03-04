@@ -72,8 +72,10 @@ func TestAllBuildTargets(t *testing.T) {
 		"freebsd_amd64",
 		"freebsd_arm_6",
 		"freebsd_arm_7",
+		"freebsd_arm64",
 		"openbsd_386",
 		"openbsd_amd64",
+		"openbsd_arm64",
 		"js_wasm",
 	}, matrix(build))
 }
