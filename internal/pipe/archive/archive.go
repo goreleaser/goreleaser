@@ -215,7 +215,7 @@ func findFiles(template *tmpl.Template, archive config.Archive) (result []string
 	for _, glob := range archive.Files {
 		replaced, err := template.Apply(glob)
 		if err != nil {
-			return result, fmt.Errorf("Variable substitution failed for pattern %s: %s", glob, err.Error())
+			return result, errors.Wrapf(err, "failed to apply template %s", glob)
 		}
 		files, err := zglob.Glob(replaced)
 		if err != nil {
