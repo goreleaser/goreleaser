@@ -62,12 +62,12 @@ archives:
       - goos: windows
         format: zip
 
-    # Additional files/globs you want to add to the archive.
+    # Additional files/template/globs you want to add to the archive.
     # Defaults are any files matching `LICENCE*`, `LICENSE*`,
     # `README*` and `CHANGELOG*` (case-insensitive).
     files:
       - LICENSE.txt
-      - README.md
+      - README_{{.Os}}.md
       - CHANGELOG.md
       - docs/*
       - design/*.png
