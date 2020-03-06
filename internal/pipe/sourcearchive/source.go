@@ -1,5 +1,5 @@
-// Package source_archive archives the source of the project using git-archive.
-package source_archive
+// Package sourcearchive archives the source of the project using git-archive.
+package sourcearchive
 
 import (
 	"path/filepath"

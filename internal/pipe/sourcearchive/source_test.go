@@ -1,4 +1,4 @@
-package source_archive
+package sourcearchive
 
 import (
 	"io/ioutil"
