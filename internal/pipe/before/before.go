@@ -16,7 +16,7 @@ type Pipe struct{}
 
 // String is the name of this pipe
 func (Pipe) String() string {
-	return "Running before hooks"
+	return "running before hooks"
 }
 
 // Run executes the hooks

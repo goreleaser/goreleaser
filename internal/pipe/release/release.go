@@ -26,7 +26,7 @@ var ErrMultipleReleases = errors.New("multiple releases are defined. Only one is
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "GitHub/GitLab/Gitea Releases"
+	return "github/gitlab/gitea releases"
 }
 
 // Default sets the pipe defaults

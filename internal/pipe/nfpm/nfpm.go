@@ -30,7 +30,7 @@ const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arc
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "Linux packages with nfpm"
+	return "linux packages"
 }
 
 // Default sets the pipe defaults
