@@ -61,7 +61,7 @@ const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arc
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "Snapcraft Packages"
+	return "snapcraft packages"
 }
 
 // Default sets the pipe defaults

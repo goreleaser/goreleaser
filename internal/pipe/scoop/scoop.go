@@ -25,7 +25,7 @@ var ErrTokenTypeNotImplementedForScoop = errors.New("token type not implemented 
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "scoop manifest"
+	return "scoop manifests"
 }
 
 // Publish scoop manifest

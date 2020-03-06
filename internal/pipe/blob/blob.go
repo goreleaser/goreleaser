@@ -15,7 +15,7 @@ type Pipe struct{}
 
 // String returns the description of the pipe
 func (Pipe) String() string {
-	return "Blob"
+	return "blobs"
 }
 
 // Default sets the pipe defaults
