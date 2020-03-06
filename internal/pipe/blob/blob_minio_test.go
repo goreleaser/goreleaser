@@ -25,8 +25,12 @@ func TestMinioUpload(t *testing.T) {
 	var listen = randomListen(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(t, err)
+	srcpath := filepath.Join(folder, "source.tar.gz")
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
+	checkpath := filepath.Join(folder, "check.txt")
+	assert.NoError(t, ioutil.WriteFile(checkpath, []byte("fake checksums"), 0744))
+	assert.NoError(t, ioutil.WriteFile(srcpath, []byte("fake\nsrc"), 0744))
 	assert.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
 	assert.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
 	var ctx = context.New(config.Project{
@@ -43,6 +47,19 @@ func TestMinioUpload(t *testing.T) {
 		},
 	})
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.Checksum,
+		Name: "checksum.txt",
+		Path: checkpath,
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableSourceArchive,
+		Name: "source.tar.gz",
+		Path: srcpath,
+		Extra: map[string]interface{}{
+			"Format": "tar.gz",
+		},
+	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -65,6 +82,13 @@ func TestMinioUpload(t *testing.T) {
 	prepareEnv(t, listen)
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.NoError(t, Pipe{}.Publish(ctx))
+
+	require.Subset(t, getFiles(t, ctx, ctx.Config.Blobs[0]), []string{
+		"testupload/v1.0.0/bin.deb",
+		"testupload/v1.0.0/bin.tar.gz",
+		"testupload/v1.0.0/checksum.txt",
+		"testupload/v1.0.0/source.tar.gz",
+	})
 }
 
 func TestMinioUploadCustomBucketID(t *testing.T) {
@@ -203,4 +227,22 @@ func stop(t *testing.T, name string) {
 
 func removeTestData(t *testing.T) {
 	_ = os.RemoveAll("./testdata/data/test/testupload") // dont care if it fails
+}
+
+func getFiles(t *testing.T, ctx *context.Context, blob config.Blob) []string {
+	var bucket = Bucket{}
+	url, err := bucket.url(ctx, blob)
+	require.NoError(t, err)
+	conn, err := bucket.Connect(ctx, url)
+	require.NoError(t, err)
+	var iter = conn.List(nil)
+	var files []string
+	for {
+		file, err := iter.Next(ctx)
+		if err != nil {
+			break
+		}
+		files = append(files, file.Key)
+	}
+	return files
 }

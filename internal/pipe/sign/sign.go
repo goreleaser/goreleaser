@@ -77,6 +77,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				filters = append(filters, artifact.Or(
 					artifact.ByType(artifact.UploadableArchive),
 					artifact.ByType(artifact.UploadableBinary),
+					artifact.ByType(artifact.UploadableSourceArchive),
 					artifact.ByType(artifact.Checksum),
 					artifact.ByType(artifact.LinuxPackage),
 				))
