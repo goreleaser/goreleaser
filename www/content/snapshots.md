@@ -23,6 +23,14 @@ snapshot:
   name_template: 1.2.3-SNAPSHOT-{{.Commit}}
 ```
 
+## How it works
+
+When you run GoReleaser with `--snapshot`, it will set the `Version` template
+variable to the evaluation of `snapshot.name_template`.
+
+This means that if you use `{{ .Version }}` on your name templates, you'll
+get the snapshot version.
+
 > Learn more about the [name template engine](/templates).
 
 Note that the idea behind GoReleaser's snapshots if mostly for local builds
