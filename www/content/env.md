@@ -24,3 +24,5 @@ builds:
 This way, both `go mod download` and the underlying `go build` will have
 `GO111MODULE` set to `on`.
 
+⚠️ Please do not use this to store secrets, as the `.goreleaser.yml` file
+is usually commit into the VCS.

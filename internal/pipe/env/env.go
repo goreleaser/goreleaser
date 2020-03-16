@@ -5,6 +5,7 @@ package env
 import (
 	"bufio"
 	"os"
+	"strings"
 
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -99,6 +100,13 @@ func (Pipe) Run(ctx *context.Context) error {
 	if giteaToken != "" {
 		ctx.TokenType = context.TokenTypeGitea
 		ctx.Token = giteaToken
+	}
+
+	for _, e := range ctx.Config.Env {
+		p := strings.SplitN(e, "=", 2)
+		if err := os.Setenv(p[0], p[1]); err != nil {
+			return errors.Wrap(err, "failed to set environment variable")
+		}
 	}
 
 	return nil

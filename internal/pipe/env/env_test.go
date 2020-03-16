@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDescription(t *testing.T) {
@@ -227,4 +228,14 @@ func TestLoadEnv(t *testing.T) {
 		assert.EqualError(tt, err, fmt.Sprintf("open %s: permission denied", f.Name()))
 		assert.Equal(tt, "", v)
 	})
+}
+
+func TestLoadEnvFromConfig(t *testing.T) {
+	defer os.Unsetenv("FOO")
+	require.NoError(t, Pipe{}.Run(context.New(config.Project{
+		Env: []string{
+			"FOO=bar",
+		},
+	})))
+	require.Equal(t, "bar", os.Getenv("FOO"))
 }
