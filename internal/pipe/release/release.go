@@ -187,6 +187,7 @@ func upload(ctx *context.Context, client client.Client, releaseID string, artifa
 	how := []func(uint, error) bool{
 		strategy.Limit(10),
 		strategy.Backoff(backoff.Linear(50 * time.Millisecond)),
+		strategy.CheckError(false),
 	}
 	if err := retry.Try(ctx, what, how...); err != nil {
 		return errors.Wrapf(err, "failed to upload %s after %d retries", artifact.Name, repeats)

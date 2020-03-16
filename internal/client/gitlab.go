@@ -263,7 +263,7 @@ func (c *gitlabClient) Upload(
 		})
 
 	if err != nil {
-		return err
+		return RetriableError{err}
 	}
 
 	log.WithFields(log.Fields{
@@ -284,7 +284,7 @@ func (c *gitlabClient) Upload(
 	// in following publish pipes like brew, scoop
 	artifact.Extra["ArtifactUploadHash"] = fileUploadHash
 
-	return err
+	return nil
 }
 
 // extractProjectFileHashFrom extracts the hash from the
