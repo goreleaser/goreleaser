@@ -16,10 +16,10 @@ func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.String())
 }
 
-func TestDefault(t *testing.T) {
+func TestSetDefaultTokenFiles(t *testing.T) {
 	t.Run("empty config", func(tt *testing.T) {
 		ctx := context.New(config.Project{})
-		assert.NoError(t, Pipe{}.Default(ctx))
+		setDefaultTokenFiles(ctx)
 		assert.Equal(t, "~/.config/goreleaser/github_token", ctx.Config.EnvFiles.GitHubToken)
 		assert.Equal(t, "~/.config/goreleaser/gitlab_token", ctx.Config.EnvFiles.GitLabToken)
 		assert.Equal(t, "~/.config/goreleaser/gitea_token", ctx.Config.EnvFiles.GiteaToken)
@@ -31,7 +31,7 @@ func TestDefault(t *testing.T) {
 				GitHubToken: cfg,
 			},
 		})
-		assert.NoError(t, Pipe{}.Default(ctx))
+		setDefaultTokenFiles(ctx)
 		assert.Equal(t, cfg, ctx.Config.EnvFiles.GitHubToken)
 	})
 }

@@ -26,8 +26,7 @@ func (Pipe) String() string {
 	return "loading environment variables"
 }
 
-// Default sets the pipe defaults
-func (Pipe) Default(ctx *context.Context) error {
+func setDefaultTokenFiles(ctx *context.Context) {
 	var env = &ctx.Config.EnvFiles
 	if env.GitHubToken == "" {
 		env.GitHubToken = "~/.config/goreleaser/github_token"
@@ -38,11 +37,11 @@ func (Pipe) Default(ctx *context.Context) error {
 	if env.GiteaToken == "" {
 		env.GiteaToken = "~/.config/goreleaser/gitea_token"
 	}
-	return nil
 }
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
+	setDefaultTokenFiles(ctx)
 	githubToken, githubTokenErr := loadEnv("GITHUB_TOKEN", ctx.Config.EnvFiles.GitHubToken)
 	gitlabToken, gitlabTokenErr := loadEnv("GITLAB_TOKEN", ctx.Config.EnvFiles.GitLabToken)
 	giteaToken, giteaTokenErr := loadEnv("GITEA_TOKEN", ctx.Config.EnvFiles.GiteaToken)

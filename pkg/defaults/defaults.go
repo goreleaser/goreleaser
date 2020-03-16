@@ -12,7 +12,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
-	"github.com/goreleaser/goreleaser/internal/pipe/env"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/project"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
@@ -35,7 +34,6 @@ type Defaulter interface {
 // Defaulters is the list of defaulters
 // nolint: gochecknoglobals
 var Defaulters = []Defaulter{
-	env.Pipe{},
 	snapshot.Pipe{},
 	release.Pipe{},
 	project.Pipe{},
