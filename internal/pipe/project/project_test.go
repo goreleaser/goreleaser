@@ -61,3 +61,12 @@ func TestEmptyProjectName_DefaultsToGiteaRelease(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "bar", ctx.Config.ProjectName)
 }
+
+func TestEmptyProjectNameAndRelease(t *testing.T) {
+	var ctx = context.New(config.Project{
+		Release: config.Release{
+			GitHub: config.Repo{},
+		},
+	})
+	require.EqualError(t, Pipe{}.Default(ctx), "couldn't guess project_name, please add it to your config")
+}

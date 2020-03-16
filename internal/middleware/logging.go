@@ -1,8 +1,6 @@
 package middleware
 
 import (
-	"strings"
-
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/fatih/color"
@@ -30,7 +28,7 @@ func Logging(title string, next Action, padding Padding) Action {
 			cli.Default.Padding = int(DefaultInitialPadding)
 		}()
 		cli.Default.Padding = int(padding)
-		log.Infof(color.New(color.Bold).Sprint(strings.ToUpper(title)))
+		log.Infof(color.New(color.Bold).Sprint(title))
 		cli.Default.Padding = int(padding + DefaultInitialPadding)
 		return next(ctx)
 	}
