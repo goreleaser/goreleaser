@@ -12,7 +12,7 @@ pushes a Homebrew formula to a tap repository. All that wrapped in your favorite
 This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
 We appreciate your contribution. Please refer to our [contributing guidelines](CONTRIBUTING.md) for further information.
 
-For questions join the [#goreleaser](https://gophers.slack.com/messages/goreleaser/) channel in the [Gophers Slack](https://invite.slack.golangbridge.org/).
+For questions, support and general discussion, please use [GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions);
 
 ## Get GoReleaser
 

@@ -7,8 +7,8 @@ weight: 999
 - Follow the progress on the [GitHub repository](https://github.com/goreleaser/goreleaser)
 - Follow [@goreleaser](https://twitter.com/goreleaser) on Twitter for updates
 - Ask questions on [StackOverflow](https://stackoverflow.com/questions/tagged/goreleaser)
-- Chat on [Slack](https://gophers.slack.com/messages/goreleaser/) to chat about GoReleaser,
-  questions, etc. Join using [this link](https://invite.slack.golangbridge.org/)
+- For questions, support and general discussion, please use
+[GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions);
 - [Contributing Guidelines](https://github.com/goreleaser/goreleaser/blob/master/CONTRIBUTING.md)
 
 This project adheres to the Contributor Covenant
