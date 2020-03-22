@@ -96,13 +96,15 @@ func TestRunPipe(t *testing.T) {
 				Vendor:      "asdf",
 				Homepage:    "https://goreleaser.github.io",
 				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: defaultNameTemplate,
+					FileNameTemplate: defaultNameTemplate + "-{{ .Release }}-{{ .Epoch }}",
 					PackageName:      "foo",
 					Dependencies:     []string{"make"},
 					Recommends:       []string{"svn"},
 					Suggests:         []string{"bzr"},
 					Conflicts:        []string{"git"},
 					EmptyFolders:     []string{"/var/log/foobar"},
+					Release:          "10",
+					Epoch:            "20",
 					Files: map[string]string{
 						"./testdata/testfile.txt": "/usr/share/testfile.txt",
 					},
@@ -143,7 +145,9 @@ func TestRunPipe(t *testing.T) {
 	var packages = ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
 	require.Len(t, packages, 4)
 	for _, pkg := range packages {
-		require.Contains(t, pkg.Name, "mybin_1.0.0_Tux_", "linux should have been replaced by Tux")
+		var format = pkg.ExtraOr("Format", "").(string)
+		require.NotEmpty(t, format)
+		require.Equal(t, pkg.Name, "mybin_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Files, 1, "should not modify the config file list")
