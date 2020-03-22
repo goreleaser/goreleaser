@@ -176,10 +176,10 @@ func upload(ctx *context.Context, client client.Client, releaseID string, artifa
 		defer file.Close() // nolint: errcheck
 		log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
 		if err := client.Upload(ctx, releaseID, artifact, file); err != nil {
-			log.WithFields(log.Fields{
-				"try":      try,
-				"artifact": artifact.Name,
-			}).Warnf("failed to upload artifact, will retry")
+			log.WithField("try", try).
+				WithField("artifact", artifact.Name).
+				WithError(err).
+				Warnf("failed to upload artifact, will retry")
 			return err
 		}
 		return nil
@@ -187,9 +187,10 @@ func upload(ctx *context.Context, client client.Client, releaseID string, artifa
 	how := []func(uint, error) bool{
 		strategy.Limit(10),
 		strategy.Backoff(backoff.Linear(50 * time.Millisecond)),
+		strategy.CheckError(false),
 	}
 	if err := retry.Try(ctx, what, how...); err != nil {
-		return errors.Wrapf(err, "failed to upload %s after %d retries", artifact.Name, repeats)
+		return errors.Wrapf(err, "failed to upload %s after %d tries", artifact.Name, repeats)
 	}
 	return nil
 }
