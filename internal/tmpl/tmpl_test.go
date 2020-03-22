@@ -96,7 +96,7 @@ func TestWithArtifact(t *testing.T) {
 		assert.Equal(tt, ctx.Config.ProjectName, result)
 	})
 
-	t.Run("template using artifact fields with no artifact", func(tt *testing.T) {
+	t.Run("template using artifact Fields with no artifact", func(tt *testing.T) {
 		tt.Parallel()
 		result, err := New(ctx).Apply("{{ .Os }}")
 		assert.EqualError(tt, err, `template: tmpl:1:3: executing "tmpl" at <.Os>: map has no entry for key "Os"`)
@@ -214,4 +214,13 @@ func TestEnvNotFound(t *testing.T) {
 	result, err := New(ctx).Apply("{{.Env.FOO}}")
 	assert.Empty(t, result)
 	assert.EqualError(t, err, `template: tmpl:1:6: executing "tmpl" at <.Env.FOO>: map has no entry for key "FOO"`)
+}
+
+func TestWithExtraFields(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	out, _ := New(ctx).WithExtraFields(Fields{
+		"MyCustomField": "foo",
+	}).Apply("{{ .MyCustomField }}")
+	assert.Equal(t, "foo", out)
+
 }

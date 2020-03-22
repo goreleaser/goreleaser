@@ -126,6 +126,10 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	}
 	name, err := tmpl.New(ctx).
 		WithArtifact(binaries[0], overridden.Replacements).
+		WithExtraFields(tmpl.Fields{
+			"Release": fpm.Release,
+			"Epoch":   fpm.Epoch,
+		}).
 		Apply(overridden.FileNameTemplate)
 	if err != nil {
 		return err
@@ -207,6 +211,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		Extra: map[string]interface{}{
 			"Builds": binaries,
 			"ID":     fpm.ID,
+			"Format": format,
 		},
 	})
 	return nil
