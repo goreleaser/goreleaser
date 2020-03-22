@@ -40,7 +40,11 @@ func TestDescription(t *testing.T) {
 }
 
 func TestSignDefault(t *testing.T) {
-	ctx := &context.Context{}
+	ctx := &context.Context{
+		Config: config.Project{
+			Signs: []config.Sign{{}},
+		},
+	}
 	err := Pipe{}.Default(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, ctx.Config.Signs[0].Cmd, "gpg")
@@ -87,10 +91,12 @@ func TestSignArtifacts(t *testing.T) {
 			expectedErrMsg: "sign: exit failed",
 			ctx: context.New(
 				config.Project{
-					Sign: config.Sign{
-						Artifacts: "all",
-						Cmd:       "exit",
-						Args:      []string{"1"},
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Cmd:       "exit",
+							Args:      []string{"1"},
+						},
 					},
 				},
 			),
@@ -99,8 +105,8 @@ func TestSignArtifacts(t *testing.T) {
 			desc: "sign single",
 			ctx: context.New(
 				config.Project{
-					Sign: config.Sign{
-						Artifacts: "all",
+					Signs: []config.Sign{
+						{Artifacts: "all"},
 					},
 				},
 			),

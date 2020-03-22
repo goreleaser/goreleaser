@@ -85,10 +85,13 @@ nfpms:
   - file_name_template: foo
 ```
 
+## Expired deprecation notices
+
+The following options were deprecated for ~6 months and are now fully removed.
 
 ### blob
 
-> since 2019-08-02
+> since 2019-08-02, removed 2020-03-22
 
 Blob was deprecated in favor of its plural form.
 It was already accepting multiple inputs, but its pluralized now so its more
@@ -110,7 +113,7 @@ blobs:
 
 ### sign
 
-> since 2019-07-20
+> since 2019-07-20, removed 2020-03-22
 
 Sign was deprecated in favor of its plural form.
 
@@ -128,10 +131,6 @@ signs:
   -
     # etc
 ```
-
-## Expired deprecation notices
-
-The following options were deprecated for ~6 months and are now fully removed.
 
 ### brew
 

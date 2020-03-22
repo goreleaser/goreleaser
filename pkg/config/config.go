@@ -366,12 +366,10 @@ type Project struct {
 	Dockers       []Docker    `yaml:",omitempty"`
 	Artifactories []Upload    `yaml:",omitempty"`
 	Uploads       []Upload    `yaml:",omitempty"`
-	Puts          []Upload    `yaml:",omitempty"`     // TODO: remove this
-	Blob          []Blob      `yaml:"blob,omitempty"` // TODO: remove this
+	Puts          []Upload    `yaml:",omitempty"` // TODO: remove this
 	Blobs         []Blob      `yaml:"blobs,omitempty"`
 	Changelog     Changelog   `yaml:",omitempty"`
 	Dist          string      `yaml:",omitempty"`
-	Sign          Sign        `yaml:",omitempty"` // TODO: remove this
 	Signs         []Sign      `yaml:",omitempty"`
 	EnvFiles      EnvFiles    `yaml:"env_files,omitempty"`
 	Before        Before      `yaml:",omitempty"`
