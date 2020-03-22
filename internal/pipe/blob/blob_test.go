@@ -78,11 +78,6 @@ func TestDefaults(t *testing.T) {
 			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
 			IDs:      []string{"foo", "bar"},
 		},
-		{
-			Bucket:   "foobar",
-			Provider: "gcs",
-			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
-		},
 	}, ctx.Config.Blobs)
 }
 
