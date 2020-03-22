@@ -62,12 +62,6 @@ func TestDefaultsNoProvider(t *testing.T) {
 
 func TestDefaults(t *testing.T) {
 	var ctx = context.New(config.Project{
-		Blob: []config.Blob{
-			{
-				Bucket:   "foobar",
-				Provider: "gcs",
-			},
-		},
 		Blobs: []config.Blob{
 			{
 				Bucket:   "foo",
@@ -83,11 +77,6 @@ func TestDefaults(t *testing.T) {
 			Provider: "azblob",
 			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
 			IDs:      []string{"foo", "bar"},
-		},
-		{
-			Bucket:   "foobar",
-			Provider: "gcs",
-			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
 		},
 	}, ctx.Config.Blobs)
 }
