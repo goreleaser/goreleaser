@@ -68,6 +68,10 @@ func TestDefaults(t *testing.T) {
 				Provider: "azblob",
 				IDs:      []string{"foo", "bar"},
 			},
+			{
+				Bucket:   "foobar",
+				Provider: "gcs",
+			},
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -77,6 +81,11 @@ func TestDefaults(t *testing.T) {
 			Provider: "azblob",
 			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
 			IDs:      []string{"foo", "bar"},
+		},
+		{
+			Bucket:   "foobar",
+			Provider: "gcs",
+			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
 		},
 	}, ctx.Config.Blobs)
 }
