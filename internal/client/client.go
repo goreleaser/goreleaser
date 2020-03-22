@@ -39,6 +39,7 @@ func New(ctx *context.Context) (Client, error) {
 	return nil, nil
 }
 
+// RetriableError is an error that will cause the action to be retried.
 type RetriableError struct {
 	err error
 }
