@@ -190,7 +190,7 @@ func upload(ctx *context.Context, client client.Client, releaseID string, artifa
 		strategy.CheckError(false),
 	}
 	if err := retry.Try(ctx, what, how...); err != nil {
-		return errors.Wrapf(err, "failed to upload %s after %d retries", artifact.Name, repeats)
+		return errors.Wrapf(err, "failed to upload %s after %d tries", artifact.Name, repeats)
 	}
 	return nil
 }

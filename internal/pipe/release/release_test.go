@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -221,7 +222,7 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	client := &DummyClient{
 		FailToUpload: true,
 	}
-	assert.EqualError(t, doPublish(ctx, client), "failed to upload bin.tar.gz after 10 retries: upload failed")
+	assert.EqualError(t, doPublish(ctx, client), "failed to upload bin.tar.gz after 1 tries: upload failed")
 	assert.True(t, client.CreatedRelease)
 	assert.False(t, client.UploadedFile)
 }
@@ -526,38 +527,38 @@ type DummyClient struct {
 	Lock                sync.Mutex
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
-	if client.FailToCreateRelease {
+func (c *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
+	if c.FailToCreateRelease {
 		return "", errors.New("release failed")
 	}
-	client.CreatedRelease = true
+	c.CreatedRelease = true
 	return
 }
 
-func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, msg string) (err error) {
+func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, msg string) (err error) {
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) error {
-	client.Lock.Lock()
-	defer client.Lock.Unlock()
-	if client.UploadedFilePaths == nil {
-		client.UploadedFilePaths = map[string]string{}
+func (c *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) error {
+	c.Lock.Lock()
+	defer c.Lock.Unlock()
+	if c.UploadedFilePaths == nil {
+		c.UploadedFilePaths = map[string]string{}
 	}
 	// ensure file is read to better mimic real behavior
 	_, err := ioutil.ReadAll(file)
 	if err != nil {
 		return errors.Wrapf(err, "unexpected error")
 	}
-	if client.FailToUpload {
+	if c.FailToUpload {
 		return errors.New("upload failed")
 	}
-	if client.FailFirstUpload {
-		client.FailFirstUpload = false
-		return errors.New("upload failed, should retry")
+	if c.FailFirstUpload {
+		c.FailFirstUpload = false
+		return client.RetriableError{errors.New("upload failed, should retry")}
 	}
-	client.UploadedFile = true
-	client.UploadedFileNames = append(client.UploadedFileNames, artifact.Name)
-	client.UploadedFilePaths[artifact.Name] = artifact.Path
+	c.UploadedFile = true
+	c.UploadedFileNames = append(c.UploadedFileNames, artifact.Name)
+	c.UploadedFilePaths[artifact.Name] = artifact.Path
 	return nil
 }

@@ -41,11 +41,11 @@ func New(ctx *context.Context) (Client, error) {
 
 // RetriableError is an error that will cause the action to be retried.
 type RetriableError struct {
-	err error
+	Err error
 }
 
 func (e RetriableError) Error() string {
-	return e.err.Error()
+	return e.Err.Error()
 }
 
 func (e RetriableError) Retriable() bool {
