@@ -91,7 +91,7 @@ func TestBuild(t *testing.T) {
 			{
 				ID:     "foo",
 				Env:    []string{"GO111MODULE=off"},
-				Binary: "foo",
+				Binary: "bin/foo",
 				Targets: []string{
 					"linux_amd64",
 					"darwin_amd64",
@@ -129,8 +129,8 @@ func TestBuild(t *testing.T) {
 	}
 	assert.ElementsMatch(t, ctx.Artifacts.List(), []*artifact.Artifact{
 		{
-			Name:   "foo",
-			Path:   filepath.Join(folder, "dist", "linux_amd64", "foo"),
+			Name:   "bin/foo",
+			Path:   filepath.Join(folder, "dist", "linux_amd64", "bin", "foo"),
 			Goos:   "linux",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
@@ -141,8 +141,8 @@ func TestBuild(t *testing.T) {
 			},
 		},
 		{
-			Name:   "foo",
-			Path:   filepath.Join(folder, "dist", "linux_mips_softfloat", "foo"),
+			Name:   "bin/foo",
+			Path:   filepath.Join(folder, "dist", "linux_mips_softfloat", "bin", "foo"),
 			Goos:   "linux",
 			Goarch: "mips",
 			Gomips: "softfloat",
@@ -154,8 +154,8 @@ func TestBuild(t *testing.T) {
 			},
 		},
 		{
-			Name:   "foo",
-			Path:   filepath.Join(folder, "dist", "linux_mips64le_softfloat", "foo"),
+			Name:   "bin/foo",
+			Path:   filepath.Join(folder, "dist", "linux_mips64le_softfloat", "bin", "foo"),
 			Goos:   "linux",
 			Goarch: "mips64le",
 			Gomips: "softfloat",
@@ -167,8 +167,8 @@ func TestBuild(t *testing.T) {
 			},
 		},
 		{
-			Name:   "foo",
-			Path:   filepath.Join(folder, "dist", "darwin_amd64", "foo"),
+			Name:   "bin/foo",
+			Path:   filepath.Join(folder, "dist", "darwin_amd64", "bin", "foo"),
 			Goos:   "darwin",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
@@ -179,8 +179,8 @@ func TestBuild(t *testing.T) {
 			},
 		},
 		{
-			Name:   "foo",
-			Path:   filepath.Join(folder, "dist", "linux_arm_6", "foo"),
+			Name:   "bin/foo",
+			Path:   filepath.Join(folder, "dist", "linux_arm_6", "bin", "foo"),
 			Goos:   "linux",
 			Goarch: "arm",
 			Goarm:  "6",
@@ -192,8 +192,8 @@ func TestBuild(t *testing.T) {
 			},
 		},
 		{
-			Name:   "foo",
-			Path:   filepath.Join(folder, "dist", "windows_amd64", "foo"),
+			Name:   "bin/foo",
+			Path:   filepath.Join(folder, "dist", "windows_amd64", "bin", "foo"),
 			Goos:   "windows",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
@@ -204,8 +204,8 @@ func TestBuild(t *testing.T) {
 			},
 		},
 		{
-			Name:   "foo",
-			Path:   filepath.Join(folder, "dist", "js_wasm", "foo"),
+			Name:   "bin/foo",
+			Path:   filepath.Join(folder, "dist", "js_wasm", "bin", "foo"),
 			Goos:   "js",
 			Goarch: "wasm",
 			Type:   artifact.Binary,
