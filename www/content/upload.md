@@ -32,10 +32,11 @@ Prerequisites:
 
 The `target` is the template of the URL to upload the artifacts to (_without_ the name of the artifact).
 
-An example configuration for `goreleaser` in upload mode `binary` with the target can look like
+An example configuration for `goreleaser` in upload mode `binary` with the target can look like:
 
 ```yaml
-- mode: binary
+- name: production
+  mode: binary
   target: 'http://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}'
 ```
 
