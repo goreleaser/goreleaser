@@ -47,7 +47,3 @@ type RetriableError struct {
 func (e RetriableError) Error() string {
 	return e.Err.Error()
 }
-
-func (e RetriableError) Retriable() bool {
-	return true
-}
