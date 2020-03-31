@@ -11,9 +11,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/kamilsk/retry/v4"
-	"github.com/kamilsk/retry/v4/backoff"
-	"github.com/kamilsk/retry/v4/strategy"
 	"github.com/mattn/go-zglob"
 	"github.com/pkg/errors"
 )
@@ -165,17 +162,17 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	return g.Wait()
 }
 
-func upload(ctx *context.Context, client client.Client, releaseID string, artifact *artifact.Artifact) error {
-	var repeats uint
-	what := func(try uint) error {
-		repeats = try + 1
+func upload(ctx *context.Context, cli client.Client, releaseID string, artifact *artifact.Artifact) error {
+	var try int
+	tryUpload := func() error {
+		try++
 		file, err := os.Open(artifact.Path)
 		if err != nil {
 			return err
 		}
 		defer file.Close() // nolint: errcheck
 		log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
-		if err := client.Upload(ctx, releaseID, artifact, file); err != nil {
+		if err := cli.Upload(ctx, releaseID, artifact, file); err != nil {
 			log.WithField("try", try).
 				WithField("artifact", artifact.Name).
 				WithError(err).
@@ -184,15 +181,24 @@ func upload(ctx *context.Context, client client.Client, releaseID string, artifa
 		}
 		return nil
 	}
-	how := []func(uint, error) bool{
-		strategy.Limit(10),
-		strategy.Backoff(backoff.Linear(50 * time.Millisecond)),
-		strategy.CheckError(false),
+
+	var err error
+loop:
+	for try < 10 {
+		err = tryUpload()
+		if err == nil {
+			return nil
+		}
+		switch err.(type) {
+		case client.RetriableError:
+			time.Sleep(time.Duration(try*50) * time.Millisecond)
+			continue
+		default:
+			break loop
+		}
 	}
-	if err := retry.Try(ctx, what, how...); err != nil {
-		return errors.Wrapf(err, "failed to upload %s after %d tries", artifact.Name, repeats)
-	}
-	return nil
+
+	return errors.Wrapf(err, "failed to upload %s after %d tries", artifact.Name, try)
 }
 
 func findFiles(ctx *context.Context) (map[string]string, error) {
