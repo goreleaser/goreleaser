@@ -171,5 +171,8 @@ func (c *githubClient) Upload(
 	if resp.StatusCode == 422 {
 		return err
 	}
-	return RetriableError{err}
+	if err != nil {
+		return RetriableError{err}
+	}
+	return nil
 }
