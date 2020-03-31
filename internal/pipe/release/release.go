@@ -165,7 +165,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 func upload(ctx *context.Context, cli client.Client, releaseID string, artifact *artifact.Artifact) error {
 	var try int
 	tryUpload := func() error {
-		try += 1
+		try++
 		file, err := os.Open(artifact.Path)
 		if err != nil {
 			return err
