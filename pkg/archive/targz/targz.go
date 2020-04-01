@@ -25,7 +25,7 @@ func (a Archive) Close() error {
 
 // New tar.gz archive
 func New(target io.Writer) Archive {
-	gw := gzip.NewWriter(target)
+	gw, _ := gzip.NewWriterLevel(target, gzip.BestCompression)
 	tw := tar.NewWriter(gw)
 	return Archive{
 		gw: gw,

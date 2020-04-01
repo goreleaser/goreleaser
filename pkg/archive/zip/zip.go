@@ -4,6 +4,7 @@ package zip
 
 import (
 	"archive/zip"
+	"compress/flate"
 	"io"
 	"os"
 )
@@ -20,8 +21,12 @@ func (a Archive) Close() error {
 
 // New zip archive
 func New(target io.Writer) Archive {
+	compressor := zip.NewWriter(target)
+	compressor.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
+		return flate.NewWriter(out, flate.BestCompression)
+	})
 	return Archive{
-		z: zip.NewWriter(target),
+		z: compressor,
 	}
 }
 
