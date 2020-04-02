@@ -339,6 +339,23 @@ func TestDefaultFillSingleBuild(t *testing.T) {
 	assert.Equal(t, ctx.Config.Builds[0].Binary, "foo")
 }
 
+func TestSkipBuild(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var config = config.Project{
+		Dist: folder,
+		Builds: []config.Build{
+			{
+				Skip: true,
+			},
+		},
+	}
+	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "2.4.5"
+	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Len(t, ctx.Artifacts.List(), 0)
+}
+
 func TestExtWindows(t *testing.T) {
 	assert.Equal(t, ".exe", extFor("windows_amd64", config.FlagArray{}))
 	assert.Equal(t, ".exe", extFor("windows_386", config.FlagArray{}))
