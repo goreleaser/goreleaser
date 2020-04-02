@@ -825,10 +825,10 @@ func Test_buildManifest(t *testing.T) {
 						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
 						"Builds": []*artifact.Artifact{
 							{
-								Name: "foo",
+								Name: "foo.exe",
 							},
 							{
-								Name: "bar",
+								Name: "bar.exe",
 							},
 						},
 					},
@@ -842,10 +842,10 @@ func Test_buildManifest(t *testing.T) {
 						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
 						"Builds": []*artifact.Artifact{
 							{
-								Name: "foo",
+								Name: "foo.exe",
 							},
 							{
-								Name: "bar",
+								Name: "bar.exe",
 							},
 						},
 					},
