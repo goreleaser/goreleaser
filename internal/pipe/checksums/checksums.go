@@ -35,6 +35,17 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) (err error) {
+	artifactList := ctx.Artifacts.Filter(
+		artifact.Or(
+			artifact.ByType(artifact.UploadableArchive),
+			artifact.ByType(artifact.UploadableBinary),
+			artifact.ByType(artifact.LinuxPackage),
+		),
+	).List()
+	if len(artifactList) == 0 {
+		return nil
+	}
+
 	filename, err := tmpl.New(ctx).Apply(ctx.Config.Checksum.NameTemplate)
 	if err != nil {
 		return err
@@ -50,13 +61,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	defer file.Close() // nolint: errcheck
 
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(
-		artifact.Or(
-			artifact.ByType(artifact.UploadableArchive),
-			artifact.ByType(artifact.UploadableBinary),
-			artifact.ByType(artifact.LinuxPackage),
-		),
-	).List() {
+	for _, artifact := range artifactList {
 		artifact := artifact
 		g.Go(func() error {
 			return checksums(ctx.Config.Checksum.Algorithm, file, artifact)
