@@ -156,6 +156,7 @@ type Build struct {
 	Lang     string         `yaml:",omitempty"`
 	Asmflags StringArray    `yaml:",omitempty"`
 	Gcflags  StringArray    `yaml:",omitempty"`
+	Skip     bool           `yaml:",omitempty"`
 }
 
 // FormatOverride is used to specify a custom format for a specific GOOS.

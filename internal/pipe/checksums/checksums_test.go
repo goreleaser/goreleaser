@@ -131,6 +131,12 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 	assert.Contains(t, err.Error(), "/checksums.txt: permission denied")
 }
 
+func TestPipeWhenNoArtifacts(t *testing.T) {
+	var ctx = &context.Context{}
+	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Len(t, ctx.Artifacts.List(), 0)
+}
+
 func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
