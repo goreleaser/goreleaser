@@ -196,7 +196,7 @@ func binaries(a *artifact.Artifact) []string {
 	// nolint: prealloc
 	var bins []string
 	for _, b := range a.ExtraOr("Builds", []*artifact.Artifact{}).([]*artifact.Artifact) {
-		bins = append(bins, b.Name+".exe")
+		bins = append(bins, b.Name)
 	}
 	return bins
 }
