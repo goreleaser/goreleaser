@@ -79,7 +79,9 @@ func TestBuild(t *testing.T) {
 		Version: "1.2.3",
 		Config:  config,
 	}
-	error := doBuild(ctx, ctx.Config.Builds[0], "darwin_amd64")
+	opts, err := buildOptionsForTarget(ctx, ctx.Config.Builds[0], "darwin_amd64")
+	assert.NoError(t, err)
+	error := doBuild(ctx, ctx.Config.Builds[0], *opts)
 	assert.NoError(t, error)
 }
 
@@ -117,9 +119,13 @@ func TestRunFullPipe(t *testing.T) {
 				Binary:  "testing",
 				Flags:   []string{"-v"},
 				Ldflags: []string{"-X main.test=testing"},
-				Hooks: config.Hooks{
-					Pre:  "touch " + pre,
-					Post: "touch " + post,
+				Hooks: config.HookConfig{
+					Pre: []config.BuildHook{
+						{Cmd: "touch " + pre},
+					},
+					Post: []config.BuildHook{
+						{Cmd: "touch " + post},
+					},
 				},
 				Targets: []string{"whatever"},
 			},
@@ -148,9 +154,13 @@ func TestRunFullPipeFail(t *testing.T) {
 				Binary:  "testing",
 				Flags:   []string{"-v"},
 				Ldflags: []string{"-X main.test=testing"},
-				Hooks: config.Hooks{
-					Pre:  "touch " + pre,
-					Post: "touch " + post,
+				Hooks: config.HookConfig{
+					Pre: []config.BuildHook{
+						{Cmd: "touch " + pre},
+					},
+					Post: []config.BuildHook{
+						{Cmd: "touch " + post},
+					},
 				},
 				Targets: []string{"whatever"},
 			},
@@ -166,29 +176,29 @@ func TestRunFullPipeFail(t *testing.T) {
 func TestRunPipeFailingHooks(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
-	var config = config.Project{
+	var cfg = config.Project{
 		Dist: folder,
 		Builds: []config.Build{
 			{
 				Lang:    "fake",
 				Binary:  "hooks",
-				Hooks:   config.Hooks{},
+				Hooks:   config.HookConfig{},
 				Targets: []string{"whatever"},
 			},
 		},
 	}
 	t.Run("pre-hook", func(t *testing.T) {
-		var ctx = context.New(config)
+		var ctx = context.New(cfg)
 		ctx.Git.CurrentTag = "2.3.4"
-		ctx.Config.Builds[0].Hooks.Pre = "exit 1"
-		ctx.Config.Builds[0].Hooks.Post = "echo post"
+		ctx.Config.Builds[0].Hooks.Pre = []config.BuildHook{{Cmd: "exit 1"}}
+		ctx.Config.Builds[0].Hooks.Post = []config.BuildHook{{Cmd: "echo post"}}
 		assert.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: "": exec: "exit": executable file not found in $PATH`)
 	})
 	t.Run("post-hook", func(t *testing.T) {
-		var ctx = context.New(config)
+		var ctx = context.New(cfg)
 		ctx.Git.CurrentTag = "2.3.4"
-		ctx.Config.Builds[0].Hooks.Pre = "echo pre"
-		ctx.Config.Builds[0].Hooks.Post = "exit 1"
+		ctx.Config.Builds[0].Hooks.Pre = []config.BuildHook{{Cmd: "echo pre"}}
+		ctx.Config.Builds[0].Hooks.Post = []config.BuildHook{{Cmd: "exit 1"}}
 		assert.EqualError(t, Pipe{}.Run(ctx), `post hook failed: "": exec: "exit": executable file not found in $PATH`)
 	})
 }
@@ -395,7 +405,7 @@ func TestTemplate(t *testing.T) {
 	assert.Contains(t, binary, `-X "main.foo=123"`)
 }
 
-func TestHookEnvs(t *testing.T) {
+func TestRunHookEnvs(t *testing.T) {
 	tmp, back := testlib.Mktmp(t)
 	defer back()
 
@@ -406,26 +416,166 @@ func TestHookEnvs(t *testing.T) {
 		},
 	}
 
-	t.Run("valid template", func(t *testing.T) {
+	var opts = api.Options{
+		Name:   "binary-name",
+		Path:   "./binary-name",
+		Target: "darwin_amd64",
+	}
+
+	simpleHook := func(cmd string) config.BuildHooks {
+		return []config.BuildHook{{Cmd: cmd}}
+	}
+
+	t.Run("valid cmd template with ctx env", func(t *testing.T) {
 		var err = runHook(context.New(config.Project{
 			Builds: []config.Build{
 				build,
 			},
-		}), build.Env, "touch {{ .Env.FOO }}")
+			Env: []string{
+				fmt.Sprintf("CTXFOO=%s/foo", tmp),
+			},
+		}), opts, []string{}, simpleHook("touch {{ .Env.CTXFOO }}"))
 		assert.NoError(t, err)
 		assert.FileExists(t, filepath.Join(tmp, "foo"))
 	})
 
-	t.Run("invalid template", func(t *testing.T) {
+	t.Run("valid cmd template with build env", func(t *testing.T) {
 		var err = runHook(context.New(config.Project{
 			Builds: []config.Build{
 				build,
 			},
-		}), build.Env, "touch {{ .Env.FOOss }}")
+		}), opts, build.Env, simpleHook("touch {{ .Env.FOO }}"))
+		assert.NoError(t, err)
+		assert.FileExists(t, filepath.Join(tmp, "foo"))
+	})
+
+	t.Run("valid cmd template with hook env", func(t *testing.T) {
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+		}), opts, []string{}, []config.BuildHook{{
+			Cmd: "touch {{ .Env.HOOK_ONLY_FOO }}",
+			Env: []string{
+				fmt.Sprintf("HOOK_ONLY_FOO=%s/hook_only", tmp),
+			},
+		}})
+		assert.NoError(t, err)
+		assert.FileExists(t, filepath.Join(tmp, "hook_only"))
+	})
+
+	t.Run("valid cmd template with ctx and build env", func(t *testing.T) {
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+			Env: []string{
+				fmt.Sprintf("OVER_FOO=%s/ctx_over_build", tmp),
+			},
+		}), opts, []string{
+			fmt.Sprintf("OVER_FOO=%s/build_over_ctx", tmp),
+		}, simpleHook("touch {{ .Env.OVER_FOO }}"))
+		assert.NoError(t, err)
+
+		assert.FileExists(t, filepath.Join(tmp, "build_over_ctx"))
+		assert.NoFileExists(t, filepath.Join(tmp, "ctx_over_build"))
+	})
+
+	t.Run("valid cmd template with ctx and hook env", func(t *testing.T) {
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+			Env: []string{
+				fmt.Sprintf("CTX_OR_HOOK_FOO=%s/ctx_over_hook", tmp),
+			},
+		}), opts, []string{}, []config.BuildHook{{
+			Cmd: "touch {{ .Env.CTX_OR_HOOK_FOO }}",
+			Env: []string{
+				fmt.Sprintf("CTX_OR_HOOK_FOO=%s/hook_over_ctx", tmp),
+			},
+		}})
+		assert.NoError(t, err)
+		assert.FileExists(t, filepath.Join(tmp, "hook_over_ctx"))
+		assert.NoFileExists(t, filepath.Join(tmp, "ctx_over_hook"))
+	})
+
+	t.Run("valid cmd template with build and hook env", func(t *testing.T) {
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+		}), opts, []string{
+			fmt.Sprintf("BUILD_OR_HOOK_FOO=%s/build_over_hook", tmp),
+		}, []config.BuildHook{{
+			Cmd: "touch {{ .Env.BUILD_OR_HOOK_FOO }}",
+			Env: []string{
+				fmt.Sprintf("BUILD_OR_HOOK_FOO=%s/hook_over_build", tmp),
+			},
+		}})
+		assert.NoError(t, err)
+		assert.FileExists(t, filepath.Join(tmp, "hook_over_build"))
+		assert.NoFileExists(t, filepath.Join(tmp, "build_over_hook"))
+	})
+
+	t.Run("valid cmd template with ctx, build and hook env", func(t *testing.T) {
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+			Env: []string{
+				fmt.Sprintf("CTX_OR_BUILD_OR_HOOK_FOO=%s/ctx_wins", tmp),
+			},
+		}), opts, []string{
+			fmt.Sprintf("CTX_OR_BUILD_OR_HOOK_FOO=%s/build_wins", tmp),
+		}, []config.BuildHook{{
+			Cmd: "touch {{ .Env.CTX_OR_BUILD_OR_HOOK_FOO }}",
+			Env: []string{
+				fmt.Sprintf("CTX_OR_BUILD_OR_HOOK_FOO=%s/hook_wins", tmp),
+			},
+		}})
+		assert.NoError(t, err)
+		assert.FileExists(t, filepath.Join(tmp, "hook_wins"))
+		assert.NoFileExists(t, filepath.Join(tmp, "ctx_wins"))
+		assert.NoFileExists(t, filepath.Join(tmp, "build_wins"))
+	})
+
+	t.Run("invalid cmd template", func(t *testing.T) {
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+		}), opts, build.Env, simpleHook("touch {{ .Env.FOOss }}"))
 		assert.EqualError(t, err, `template: tmpl:1:13: executing "tmpl" at <.Env.FOOss>: map has no entry for key "FOOss"`)
 	})
 
-	t.Run("env inside shell", func(t *testing.T) {
+	t.Run("invalid dir template", func(t *testing.T) {
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+		}), opts, build.Env, []config.BuildHook{{
+			Cmd: "echo something",
+			Dir: "{{ .Env.INVALID_ENV }}",
+		}})
+		assert.EqualError(t, err, `template: tmpl:1:7: executing "tmpl" at <.Env.INVALID_ENV>: map has no entry for key "INVALID_ENV"`)
+	})
+
+	t.Run("invalid hook env template", func(t *testing.T) {
+		var err = runHook(context.New(config.Project{
+			Builds: []config.Build{
+				build,
+			},
+		}), opts, build.Env, []config.BuildHook{{
+			Cmd: "echo something",
+			Env: []string{
+				"TEST={{ .Env.MISSING_ENV }}",
+			},
+		}})
+		assert.EqualError(t, err, `template: tmpl:1:12: executing "tmpl" at <.Env.MISSING_ENV>: map has no entry for key "MISSING_ENV"`)
+	})
+
+	t.Run("build env inside shell", func(t *testing.T) {
 		var shell = `#!/bin/sh -e
 touch "$BAR"`
 		err := ioutil.WriteFile(filepath.Join(tmp, "test.sh"), []byte(shell), 0750)
@@ -434,8 +584,87 @@ touch "$BAR"`
 			Builds: []config.Build{
 				build,
 			},
-		}), build.Env, "sh test.sh")
+		}), opts, build.Env, simpleHook("sh test.sh"))
 		assert.NoError(t, err)
 		assert.FileExists(t, filepath.Join(tmp, "bar"))
 	})
+}
+
+func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
+	tmpDir, back := testlib.Mktmp(t)
+	defer back()
+
+	build := config.Build{
+		Lang:   "fake",
+		Binary: "testing.v{{.Version}}",
+		Targets: []string{
+			"linux_amd64",
+			"darwin_amd64",
+			"windows_amd64",
+		},
+		Hooks: config.HookConfig{
+			Pre: []config.BuildHook{
+				{Cmd: "touch pre-hook-{{.Target}}", Dir: tmpDir},
+			},
+			Post: config.BuildHooks{
+				{Cmd: "touch post-hook-{{.Target}}", Dir: tmpDir},
+			},
+		},
+	}
+	ctx := context.New(config.Project{
+		Builds: []config.Build{
+			build,
+		},
+	})
+	err := runPipeOnBuild(ctx, build)
+	assert.NoError(t, err)
+	assert.FileExists(t, filepath.Join(tmpDir, "pre-hook-linux_amd64"))
+	assert.FileExists(t, filepath.Join(tmpDir, "pre-hook-darwin_amd64"))
+	assert.FileExists(t, filepath.Join(tmpDir, "pre-hook-windows_amd64"))
+	assert.FileExists(t, filepath.Join(tmpDir, "post-hook-linux_amd64"))
+	assert.FileExists(t, filepath.Join(tmpDir, "post-hook-darwin_amd64"))
+	assert.FileExists(t, filepath.Join(tmpDir, "post-hook-windows_amd64"))
+}
+
+func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
+	build := config.Build{
+		Lang:   "fake",
+		Binary: "testing.v{{.XYZ}}",
+		Targets: []string{
+			"linux_amd64",
+		},
+	}
+	ctx := context.New(config.Project{
+		Builds: []config.Build{
+			build,
+		},
+	})
+	err := runPipeOnBuild(ctx, build)
+	assert.EqualError(t, err, `template: tmpl:1:11: executing "tmpl" at <.XYZ>: map has no entry for key "XYZ"`)
+}
+
+func TestBuildOptionsForTarget(t *testing.T) {
+	tmpDir, back := testlib.Mktmp(t)
+	defer back()
+
+	build := config.Build{
+		ID:     "testid",
+		Binary: "testbinary",
+		Targets: []string{
+			"linux_amd64",
+			"darwin_amd64",
+			"windows_amd64",
+		},
+	}
+	ctx := context.New(config.Project{
+		Dist:   tmpDir,
+		Builds: []config.Build{build},
+	})
+	opts, err := buildOptionsForTarget(ctx, build, "linux_amd64")
+	assert.NoError(t, err)
+	assert.Equal(t, &api.Options{
+		Name:   "testbinary",
+		Path:   filepath.Join(tmpDir, "testid_linux_amd64", "testbinary"),
+		Target: "linux_amd64",
+	}, opts)
 }

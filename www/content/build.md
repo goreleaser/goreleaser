@@ -110,7 +110,7 @@ builds:
     # Default is both hooks empty.
     hooks:
       pre: rice embed-go
-      post: ./script.sh
+      post: ./script.sh {{ .Path }}
 
     # If true, skip the build.
     # Useful for library projects.
@@ -136,6 +136,66 @@ Then you can run:
 ```sh
 GOVERSION=$(go version) goreleaser
 ```
+
+## Build Hooks
+
+Both pre and post hooks run **for each build target**, regardless of whether
+these targets are generated via a matrix of OSes and architectures
+or defined explicitly.
+
+In addition to simple declarations as shown above _multiple_ hooks can be declared
+to help retaining reusability of config between different build environments.
+
+```yml
+builds:
+  -
+    id: "with-hooks"
+    targets:
+     - "darwin_amd64"
+     - "windows_amd64"
+    hooks:
+      pre:
+       - first-script.sh
+       - second-script.sh
+      post:
+       - upx "{{ .Path }}"
+       - codesign -project="{{ .ProjectName }}" "{{ .Path }}"
+```
+
+Each hook can also have its own work directory and environment variables:
+
+```yml
+builds:
+  -
+    id: "with-hooks"
+    targets:
+     - "darwin_amd64"
+     - "windows_amd64"
+    hooks:
+      pre:
+       - cmd: first-script.sh
+         dir: "{{ dir .Dist}}"
+         env:
+          - HOOK_SPECIFIC_VAR={{ .Env.GLOBAL_VAR }}
+       - second-script.sh
+```
+
+All properties of a hook (`cmd`, `dir` and `env`) support [templating](/customization/#Name%20Templates)
+with `post` hooks having binary artifact available (as these run _after_ the build).
+Additionally the following build details are exposed to both `pre` and `post` hooks:
+
+|       Key       |              Description               |
+| :-------------: | :------------------------------------: |
+|      .Name      | Filename of the binary, e.g. `bin.exe` |
+|      .Ext       | Extension, e.g. `.exe`                 |
+|      .Path      | Absolute path to the binary            |
+|     .Target     | Build target, e.g. `darwin_amd64`      |
+
+Environment variables are inherited and overridden in the following order:
+
+ - global (`env`)
+ - build (`builds[].env`)
+ - hook (`builds[].hooks.pre[].env` and `builds[].hooks.post[].env`)
 
 ## Go Modules
 

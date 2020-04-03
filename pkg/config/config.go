@@ -151,12 +151,60 @@ type Build struct {
 	Ldflags  StringArray    `yaml:",omitempty"`
 	Flags    FlagArray      `yaml:",omitempty"`
 	Binary   string         `yaml:",omitempty"`
-	Hooks    Hooks          `yaml:",omitempty"`
+	Hooks    HookConfig     `yaml:",omitempty"`
 	Env      []string       `yaml:",omitempty"`
 	Lang     string         `yaml:",omitempty"`
 	Asmflags StringArray    `yaml:",omitempty"`
 	Gcflags  StringArray    `yaml:",omitempty"`
 	Skip     bool           `yaml:",omitempty"`
+}
+
+type HookConfig struct {
+	Pre  BuildHooks `yaml:",omitempty"`
+	Post BuildHooks `yaml:",omitempty"`
+}
+
+type BuildHooks []BuildHook
+
+// UnmarshalYAML is a custom unmarshaler that allows simplified declaration of single command
+func (bhc *BuildHooks) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var singleCmd string
+	err := unmarshal(&singleCmd)
+	if err == nil {
+		*bhc = []BuildHook{{Cmd: singleCmd}}
+		return nil
+	}
+
+	type t BuildHooks
+	var hooks t
+	if err := unmarshal(&hooks); err != nil {
+		return err
+	}
+	*bhc = (BuildHooks)(hooks)
+	return nil
+}
+
+type BuildHook struct {
+	Dir string   `yaml:",omitempty"`
+	Cmd string   `yaml:",omitempty"`
+	Env []string `yaml:",omitempty"`
+}
+
+// UnmarshalYAML is a custom unmarshaler that allows simplified declarations of commands as strings
+func (bh *BuildHook) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var cmd string
+	if err := unmarshal(&cmd); err != nil {
+		type t BuildHook
+		var hook t
+		if err := unmarshal(&hook); err != nil {
+			return err
+		}
+		*bh = (BuildHook)(hook)
+		return nil
+	}
+
+	bh.Cmd = cmd
+	return nil
 }
 
 // FormatOverride is used to specify a custom format for a specific GOOS.
