@@ -182,14 +182,14 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		ctx.Git.CurrentTag = "2.3.4"
 		ctx.Config.Builds[0].Hooks.Pre = "exit 1"
 		ctx.Config.Builds[0].Hooks.Post = "echo post"
-		assert.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: `)
+		assert.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: "": exec: "exit": executable file not found in $PATH`)
 	})
 	t.Run("post-hook", func(t *testing.T) {
 		var ctx = context.New(config)
 		ctx.Git.CurrentTag = "2.3.4"
 		ctx.Config.Builds[0].Hooks.Pre = "echo pre"
 		ctx.Config.Builds[0].Hooks.Post = "exit 1"
-		assert.EqualError(t, Pipe{}.Run(ctx), `post hook failed: `)
+		assert.EqualError(t, Pipe{}.Run(ctx), `post hook failed: "": exec: "exit": executable file not found in $PATH`)
 	})
 }
 
