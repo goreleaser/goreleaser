@@ -63,22 +63,8 @@ func (Pipe) Run(ctx *context.Context) error {
 	noTokens := githubToken == "" && gitlabToken == "" && giteaToken == ""
 	noTokenErrs := githubTokenErr == nil && gitlabTokenErr == nil && giteaTokenErr == nil
 
-	if !ctx.SkipPublish && !ctx.Config.Release.Disable {
-		if noTokens && noTokenErrs {
-			return ErrMissingToken
-		}
-
-		if gitlabTokenErr != nil {
-			return errors.Wrap(gitlabTokenErr, "failed to load gitlab token")
-		}
-
-		if githubTokenErr != nil {
-			return errors.Wrap(githubTokenErr, "failed to load github token")
-		}
-
-		if giteaTokenErr != nil {
-			return errors.Wrap(giteaTokenErr, "failed to load gitea token")
-		}
+	if err := checkErrors(ctx, noTokens, noTokenErrs, gitlabTokenErr, githubTokenErr, giteaTokenErr); err != nil {
+		return err
 	}
 
 	if githubToken != "" {
@@ -99,6 +85,29 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Token = giteaToken
 	}
 
+	return nil
+}
+
+func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenErr, githubTokenErr, giteaTokenErr error) error {
+	if ctx.SkipPublish || ctx.Config.Release.Disable {
+		return nil
+	}
+
+	if noTokens && noTokenErrs {
+		return ErrMissingToken
+	}
+
+	if gitlabTokenErr != nil {
+		return errors.Wrap(gitlabTokenErr, "failed to load gitlab token")
+	}
+
+	if githubTokenErr != nil {
+		return errors.Wrap(githubTokenErr, "failed to load github token")
+	}
+
+	if giteaTokenErr != nil {
+		return errors.Wrap(giteaTokenErr, "failed to load gitea token")
+	}
 	return nil
 }
 
