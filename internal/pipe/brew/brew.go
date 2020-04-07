@@ -93,7 +93,9 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		}
 
 		var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
-		return client.CreateFile(ctx, brew.CommitAuthor, repo, content, gpath, msg)
+		if err := client.CreateFile(ctx, brew.CommitAuthor, repo, content, gpath, msg); err != nil {
+			return err
+		}
 	}
 	return nil
 }
