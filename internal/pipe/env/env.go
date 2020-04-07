@@ -6,7 +6,7 @@ import (
 	"bufio"
 	"os"
 
-	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
@@ -46,13 +46,6 @@ func (Pipe) Run(ctx *context.Context) error {
 	gitlabToken, gitlabTokenErr := loadEnv("GITLAB_TOKEN", ctx.Config.EnvFiles.GitLabToken)
 	giteaToken, giteaTokenErr := loadEnv("GITEA_TOKEN", ctx.Config.EnvFiles.GiteaToken)
 
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
-	if ctx.Config.Release.Disable {
-		return pipe.Skip("release pipe is disabled")
-	}
-
 	numOfTokens := 0
 	if githubToken != "" {
 		numOfTokens++
@@ -70,33 +63,38 @@ func (Pipe) Run(ctx *context.Context) error {
 	noTokens := githubToken == "" && gitlabToken == "" && giteaToken == ""
 	noTokenErrs := githubTokenErr == nil && gitlabTokenErr == nil && giteaTokenErr == nil
 
-	if noTokens && noTokenErrs {
-		return ErrMissingToken
-	}
+	if !ctx.SkipPublish && !ctx.Config.Release.Disable {
+		if noTokens && noTokenErrs {
+			return ErrMissingToken
+		}
 
-	if gitlabTokenErr != nil {
-		return errors.Wrap(gitlabTokenErr, "failed to load gitlab token")
-	}
+		if gitlabTokenErr != nil {
+			return errors.Wrap(gitlabTokenErr, "failed to load gitlab token")
+		}
 
-	if githubTokenErr != nil {
-		return errors.Wrap(githubTokenErr, "failed to load github token")
-	}
+		if githubTokenErr != nil {
+			return errors.Wrap(githubTokenErr, "failed to load github token")
+		}
 
-	if giteaTokenErr != nil {
-		return errors.Wrap(giteaTokenErr, "failed to load gitea token")
+		if giteaTokenErr != nil {
+			return errors.Wrap(giteaTokenErr, "failed to load gitea token")
+		}
 	}
 
 	if githubToken != "" {
+		log.Debug("token type: github")
 		ctx.TokenType = context.TokenTypeGitHub
 		ctx.Token = githubToken
 	}
 
 	if gitlabToken != "" {
+		log.Debug("token type: gitlab")
 		ctx.TokenType = context.TokenTypeGitLab
 		ctx.Token = gitlabToken
 	}
 
 	if giteaToken != "" {
+		log.Debug("token type: gitea")
 		ctx.TokenType = context.TokenTypeGitea
 		ctx.Token = giteaToken
 	}

@@ -30,6 +30,7 @@ func (Pipe) String() string {
 
 // Publish scoop manifest
 func (Pipe) Publish(ctx *context.Context) error {
+	// TODO(caarlos0): split the creation of the json file and the publishing in two steps, like the brew pipe.
 	client, err := client.New(ctx)
 	if err != nil {
 		return err
