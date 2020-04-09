@@ -2,7 +2,6 @@ package brew
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -17,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/pkg/errors"
 )
 
 // ErrNoArchivesFound happens when 0 archives are found
@@ -36,14 +36,64 @@ func (Pipe) String() string {
 	return "homebrew tap formula"
 }
 
+func (Pipe) Run(ctx *context.Context) error {
+	for _, brew := range ctx.Config.Brews {
+		if err := doRun(ctx, brew); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Publish brew formula
 func (Pipe) Publish(ctx *context.Context) error {
 	client, err := client.New(ctx)
 	if err != nil {
 		return err
 	}
-	for _, brew := range ctx.Config.Brews {
-		if err := doRun(ctx, brew, client); err != nil {
+
+	return doPublish(ctx, client)
+}
+
+func doPublish(ctx *context.Context, client client.Client) error {
+	if ctx.SkipPublish {
+		return pipe.ErrSkipPublishEnabled
+	}
+	var taps = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBrewTap)).List()
+	if len(taps) == 0 {
+		return pipe.Skip("no brew taps found")
+	}
+	for _, tap := range taps {
+		brew := tap.Extra["config"].(config.Homebrew)
+		if strings.TrimSpace(brew.SkipUpload) == "true" {
+			return pipe.Skip("brew.skip_upload is set")
+		}
+		if strings.TrimSpace(brew.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
+			return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
+		}
+
+		var repo config.Repo
+		switch ctx.TokenType {
+		case context.TokenTypeGitHub:
+			repo = brew.GitHub
+		case context.TokenTypeGitLab:
+			repo = brew.GitLab
+		default:
+			return ErrTokenTypeNotImplementedForBrew
+		}
+
+		var gpath = buildFormulaPath(brew.Folder, tap.Name)
+		log.WithField("formula", gpath).
+			WithField("repo", repo.String()).
+			Info("pushing")
+
+		content, err := ioutil.ReadFile(tap.Path)
+		if err != nil {
+			return errors.Wrap(err, "failed to read tap")
+		}
+
+		var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
+		if err := client.CreateFile(ctx, brew.CommitAuthor, repo, content, gpath, msg); err != nil {
 			return err
 		}
 	}
@@ -105,7 +155,7 @@ func contains(ss []string, s string) bool {
 	return false
 }
 
-func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) error {
+func doRun(ctx *context.Context, brew config.Homebrew) error {
 	if brew.GitHub.Name == "" && brew.GitLab.Name == "" {
 		return pipe.Skip("brew section is not configured")
 	}
@@ -145,36 +195,19 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 	var path = filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
 	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil {
-		return err
+		return errors.Wrap(err, "failed to write brew tap")
 	}
 
-	if strings.TrimSpace(brew.SkipUpload) == "true" {
-		return pipe.Skip("brew.skip_upload is set")
-	}
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
-	if strings.TrimSpace(brew.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
-		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
-	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: filename,
+		Path: path,
+		Type: artifact.UploadableBrewTap,
+		Extra: map[string]interface{}{
+			"config": brew,
+		},
+	})
 
-	var repo config.Repo
-	switch ctx.TokenType {
-	case context.TokenTypeGitHub:
-		repo = brew.GitHub
-	case context.TokenTypeGitLab:
-		repo = brew.GitLab
-	default:
-		return ErrTokenTypeNotImplementedForBrew
-	}
-
-	var gpath = buildFormulaPath(brew.Folder, filename)
-	log.WithField("formula", gpath).
-		WithField("repo", repo.String()).
-		Info("pushing")
-
-	var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
-	return client.CreateFile(ctx, brew.CommitAuthor, repo, []byte(content), gpath, msg)
+	return nil
 }
 
 func buildFormulaPath(folder, filename string) string {
@@ -241,6 +274,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 					ctx.Config.Release.GitLab.Name,
 				)
 			default:
+				log.WithField("type", tokenType).Info("here")
 				return result, ErrTokenTypeNotImplementedForBrew
 			}
 		}

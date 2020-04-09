@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
@@ -172,7 +171,7 @@ func TestInvalidEnvChecksSkipped(t *testing.T) {
 		Config:      config.Project{},
 		SkipPublish: true,
 	}
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
 func TestInvalidEnvReleaseDisabled(t *testing.T) {
@@ -184,7 +183,7 @@ func TestInvalidEnvReleaseDisabled(t *testing.T) {
 			},
 		},
 	}
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
 func TestLoadEnv(t *testing.T) {
