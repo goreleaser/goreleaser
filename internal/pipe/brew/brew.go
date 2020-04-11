@@ -274,7 +274,6 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 					ctx.Config.Release.GitLab.Name,
 				)
 			default:
-				log.WithField("type", tokenType).Info("here")
 				return result, ErrTokenTypeNotImplementedForBrew
 			}
 		}
