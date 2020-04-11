@@ -267,6 +267,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 					ctx.Config.Release.GitLab.Name,
 				)
 			default:
+				log.Warn("no url_template set and not github/gitlab/gitea token found, defaulting to github url template")
 				cfg.URLTemplate = fmt.Sprintf(
 					"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
 					ctx.Config.GitHubURLs.Download,
