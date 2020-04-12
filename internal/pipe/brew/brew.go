@@ -259,13 +259,6 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 
 		if cfg.URLTemplate == "" {
 			switch tokenType {
-			case context.TokenTypeGitHub:
-				cfg.URLTemplate = fmt.Sprintf(
-					"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
-					ctx.Config.GitHubURLs.Download,
-					ctx.Config.Release.GitHub.Owner,
-					ctx.Config.Release.GitHub.Name,
-				)
 			case context.TokenTypeGitLab:
 				cfg.URLTemplate = fmt.Sprintf(
 					"%s/%s/%s/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
@@ -274,8 +267,13 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 					ctx.Config.Release.GitLab.Name,
 				)
 			default:
-				log.WithField("type", tokenType).Info("here")
-				return result, ErrTokenTypeNotImplementedForBrew
+				log.Warn("no url_template set and not github/gitlab/gitea token found, defaulting to github url template")
+				cfg.URLTemplate = fmt.Sprintf(
+					"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+					ctx.Config.GitHubURLs.Download,
+					ctx.Config.Release.GitHub.Owner,
+					ctx.Config.Release.GitHub.Name,
+				)
 			}
 		}
 		url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(cfg.URLTemplate)

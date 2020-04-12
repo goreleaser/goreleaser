@@ -660,42 +660,6 @@ func TestRunPipeNoUpload(t *testing.T) {
 	})
 }
 
-func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
-	var ctx = context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "foo",
-		Release:     config.Release{},
-		Brews: []config.Homebrew{
-			{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
-				},
-			},
-		},
-	})
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
-	var path = filepath.Join(folder, "whatever.tar.gz")
-	_, err = os.Create(path)
-	assert.NoError(t, err)
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
-		},
-	})
-	client := &DummyClient{}
-	require.Equal(t, ErrTokenTypeNotImplementedForBrew, Pipe{}.Run(ctx))
-	testlib.AssertSkipped(t, doPublish(ctx, client))
-}
-
 func TestDefault(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
