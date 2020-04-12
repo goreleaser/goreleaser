@@ -141,6 +141,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	var filters = artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.UploadableSourceArchive),
 		artifact.ByType(artifact.Checksum),
 		artifact.ByType(artifact.Signature),
 		artifact.ByType(artifact.LinuxPackage),

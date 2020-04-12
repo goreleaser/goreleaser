@@ -163,3 +163,5 @@ func TestDefaultSet(t *testing.T) {
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.Equal(t, "checksums.txt", ctx.Config.Checksum.NameTemplate)
 }
+
+// TODO: add tests for LinuxPackage and UploadableSourceArchive

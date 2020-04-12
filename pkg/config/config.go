@@ -351,6 +351,13 @@ type Upload struct {
 	CustomArtifactName bool     `yaml:"custom_artifact_name,omitempty"`
 }
 
+// Source configuration
+type Source struct {
+	NameTemplate string `yaml:"name_template,omitempty"`
+	Format       string `yaml:",omitempty"`
+	Enabled      bool   `yaml:",omitempty"`
+}
+
 // Project includes all project configuration
 type Project struct {
 	ProjectName   string      `yaml:"project_name,omitempty"`
@@ -374,6 +381,7 @@ type Project struct {
 	Signs         []Sign      `yaml:",omitempty"`
 	EnvFiles      EnvFiles    `yaml:"env_files,omitempty"`
 	Before        Before      `yaml:",omitempty"`
+	Source        Source      `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

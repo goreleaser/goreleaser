@@ -47,12 +47,16 @@ const (
 	Checksum
 	// Signature is a signature file
 	Signature
+	// UploadableSourceArchive is the archive with the current commit source code
+	UploadableSourceArchive
 )
 
 func (t Type) String() string {
 	switch t {
 	case UploadableArchive:
 		return "Archive"
+	case UploadableFile:
+		return "File"
 	case UploadableBinary:
 	case Binary:
 		return "Binary"
@@ -63,10 +67,15 @@ func (t Type) String() string {
 	case DockerImage:
 	case PublishableDockerImage:
 		return "Docker Image"
+	case PublishableSnapcraft:
+	case Snapcraft:
+		return "Snap"
 	case Checksum:
 		return "Checksum"
 	case Signature:
 		return "Signature"
+	case UploadableSourceArchive:
+		return "Source"
 	}
 	return "unknown"
 }
@@ -218,8 +227,10 @@ func ByIDs(ids ...string) Filter {
 	for _, id := range ids {
 		id := id
 		filters = append(filters, func(a *Artifact) bool {
-			// checksum are allways for all artifacts, so return always true.
-			return a.Type == Checksum || a.ExtraOr("ID", "") == id
+			// checksum and source archive are always for all artifacts, so return always true.
+			return a.Type == Checksum ||
+				a.Type == UploadableSourceArchive ||
+				a.ExtraOr("ID", "") == id
 		})
 	}
 	return Or(filters...)
