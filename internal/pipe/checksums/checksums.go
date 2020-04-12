@@ -39,6 +39,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		artifact.Or(
 			artifact.ByType(artifact.UploadableArchive),
 			artifact.ByType(artifact.UploadableBinary),
+			artifact.ByType(artifact.UploadableSourceArchive),
 			artifact.ByType(artifact.LinuxPackage),
 		),
 	).List()

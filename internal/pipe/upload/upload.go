@@ -23,7 +23,7 @@ func (Pipe) String() string {
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
 	if len(ctx.Config.Puts) > 0 {
-		deprecate.Notice("puts")
+		deprecate.Notice(ctx, "puts")
 		ctx.Config.Uploads = append(ctx.Config.Uploads, ctx.Config.Puts...)
 	}
 	return http.Defaults(ctx.Config.Uploads)

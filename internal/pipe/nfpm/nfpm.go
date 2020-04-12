@@ -48,7 +48,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			fpm.PackageName = ctx.Config.ProjectName
 		}
 		if fpm.NameTemplate != "" && fpm.FileNameTemplate == "" {
-			deprecate.Notice("nfpms.name_template")
+			deprecate.Notice(ctx, "nfpms.name_template")
 			fpm.FileNameTemplate = fpm.NameTemplate
 		}
 		if fpm.FileNameTemplate == "" {

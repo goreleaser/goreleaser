@@ -106,6 +106,7 @@ func (b Bucket) Upload(ctx *context.Context, conf config.Blob) error {
 	var filter = artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.UploadableSourceArchive),
 		artifact.ByType(artifact.Checksum),
 		artifact.ByType(artifact.Signature),
 		artifact.ByType(artifact.LinuxPackage),

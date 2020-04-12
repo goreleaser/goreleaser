@@ -8,7 +8,7 @@ weight: 90
 After releasing to GitHub or GitLab, GoReleaser can generate and publish a _homebrew-tap_
 recipe into a repository that you have access to.
 
-The `brew` section specifies how the formula should be created.
+The `brews` section specifies how the formula should be created.
 You can check the
 [Homebrew documentation](https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap.md)
 and the
