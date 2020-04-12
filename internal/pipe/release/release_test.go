@@ -26,6 +26,8 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	assert.NoError(t, err)
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	assert.NoError(t, err)
+	srcfile, err := os.Create(filepath.Join(folder, "source.tar.gz"))
+	assert.NoError(t, err)
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
 	assert.NoError(t, err)
 	filteredtarfile, err := os.Create(filepath.Join(folder, "filtered.tar.gz"))
@@ -76,10 +78,19 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 			"ID": "bar",
 		},
 	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableSourceArchive,
+		Name: "source.tar.gz",
+		Path: srcfile.Name(),
+		Extra: map[string]interface{}{
+			"Format": "tar.gz",
+		},
+	})
 	client := &DummyClient{}
 	assert.NoError(t, doPublish(ctx, client))
 	assert.True(t, client.CreatedRelease)
 	assert.True(t, client.UploadedFile)
+	assert.Contains(t, client.UploadedFileNames, "source.tar.gz")
 	assert.Contains(t, client.UploadedFileNames, "bin.deb")
 	assert.Contains(t, client.UploadedFileNames, "bin.tar.gz")
 	assert.Contains(t, client.UploadedFileNames, "filtered.deb")

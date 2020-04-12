@@ -20,6 +20,7 @@ func TestRunPipe(t *testing.T) {
 		{},
 		{"go version"},
 		{"go version", "go list"},
+		{`bash -c "go version; echo \"lala spaces and such\""`},
 	} {
 		ctx := context.New(
 			config.Project{
@@ -29,6 +30,21 @@ func TestRunPipe(t *testing.T) {
 			},
 		)
 		require.NoError(t, Pipe{}.Run(ctx))
+	}
+}
+
+func TestRunPipeInvalidCommand(t *testing.T) {
+	for _, tc := range [][]string{
+		{`bash -c "echo \"unterminated command\"`},
+	} {
+		ctx := context.New(
+			config.Project{
+				Before: config.Before{
+					Hooks: tc,
+				},
+			},
+		)
+		require.Error(t, Pipe{}.Run(ctx))
 	}
 }
 

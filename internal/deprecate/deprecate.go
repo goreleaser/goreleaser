@@ -8,12 +8,14 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/fatih/color"
+	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
 const baseURL = "https://goreleaser.com/deprecations#"
 
 // Notice warns the user about the deprecation of the given property
-func Notice(property string) {
+func Notice(ctx *context.Context, property string) {
+	ctx.Deprecated = true
 	cli.Default.Padding += 3
 	defer func() {
 		cli.Default.Padding -= 3

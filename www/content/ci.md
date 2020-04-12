@@ -18,15 +18,19 @@ You may want to setup your project to auto-deploy your new tags on
 # .travis.yml
 language: go
 
+# needed only if you use the snap pipe:
 addons:
   apt:
     packages:
-    # needed only if you use the snap pipe:
     - snapcraft
 
-# needed for the docker pipe
+# needed only if you use the docker pipe
 services:
 - docker
+
+script:
+  - go test ./... # replace this with your test script
+  - curl -sfL https://git.io/goreleaser | sh -s -- check # check goreleaser config for deprecations
 
 after_success:
 # docker login is required if you want to push docker images.

@@ -22,13 +22,15 @@ func init() {
 func TestReleaseProject(t *testing.T) {
 	_, back := setup(t)
 	defer back()
-	assert.NoError(t, releaseProject(testParams()))
+	_, err := releaseProject(testParams())
+	assert.NoError(t, err)
 }
 
 func TestCheckConfig(t *testing.T) {
 	_, back := setup(t)
 	defer back()
-	assert.NoError(t, checkConfig(testParams().Config))
+	_, err := checkConfig(testParams().Config)
+	assert.NoError(t, err)
 }
 
 func TestCheckConfigFails(t *testing.T) {
@@ -36,7 +38,8 @@ func TestCheckConfigFails(t *testing.T) {
 	defer back()
 	var filename = "fail.yaml"
 	assert.NoError(t, ioutil.WriteFile(filename, []byte("nope: 1"), 0644))
-	assert.Error(t, checkConfig(filename))
+	_, err := checkConfig(filename)
+	assert.Error(t, err)
 }
 
 func TestReleaseProjectSkipPublish(t *testing.T) {
@@ -45,7 +48,8 @@ func TestReleaseProjectSkipPublish(t *testing.T) {
 	params := testParams()
 	params.Snapshot = true
 	params.SkipPublish = true
-	assert.NoError(t, releaseProject(params))
+	_, err := releaseProject(params)
+	assert.NoError(t, err)
 }
 
 func TestConfigFileIsSetAndDontExist(t *testing.T) {
@@ -53,7 +57,8 @@ func TestConfigFileIsSetAndDontExist(t *testing.T) {
 	defer back()
 	params := testParams()
 	params.Config = "/this/wont/exist"
-	assert.Error(t, releaseProject(params))
+	_, err := releaseProject(params)
+	assert.Error(t, err)
 }
 
 func TestConfigFlagNotSetButExists(t *testing.T) {
@@ -93,7 +98,8 @@ func TestReleaseNotesFileDontExist(t *testing.T) {
 	defer back()
 	params := testParams()
 	params.ReleaseNotes = "/this/also/wont/exist"
-	assert.Error(t, releaseProject(params))
+	_, err := releaseProject(params)
+	assert.Error(t, err)
 }
 
 func TestCustomReleaseNotesFile(t *testing.T) {
@@ -104,7 +110,8 @@ func TestCustomReleaseNotesFile(t *testing.T) {
 	createFile(t, releaseNotes.Name(), "nothing important at all")
 	var params = testParams()
 	params.ReleaseNotes = releaseNotes.Name()
-	assert.NoError(t, releaseProject(params))
+	_, err = releaseProject(params)
+	assert.NoError(t, err)
 }
 
 func TestCustomReleaseHeaderFileDontExist(t *testing.T) {
@@ -113,7 +120,8 @@ func TestCustomReleaseHeaderFileDontExist(t *testing.T) {
 	params := testParams()
 	params.ReleaseHeader = "/header/that/dont/exist"
 	params.Snapshot = false
-	assert.Error(t, releaseProject(params))
+	_, err := releaseProject(params)
+	assert.Error(t, err)
 }
 
 func TestCustomReleaseHeaderFile(t *testing.T) {
@@ -126,7 +134,8 @@ func TestCustomReleaseHeaderFile(t *testing.T) {
 	params.ReleaseHeader = releaseHeader.Name()
 	params.Snapshot = false
 	params.SkipPublish = true
-	assert.NoError(t, releaseProject(params))
+	_, err = releaseProject(params)
+	assert.NoError(t, err)
 }
 
 func TestCustomReleaseFooterFileDontExist(t *testing.T) {
@@ -135,7 +144,8 @@ func TestCustomReleaseFooterFileDontExist(t *testing.T) {
 	params := testParams()
 	params.ReleaseFooter = "/footer/that/dont/exist"
 	params.Snapshot = false
-	assert.Error(t, releaseProject(params))
+	_, err := releaseProject(params)
+	assert.Error(t, err)
 }
 
 func TestCustomReleaseFooterFile(t *testing.T) {
@@ -148,14 +158,16 @@ func TestCustomReleaseFooterFile(t *testing.T) {
 	params.ReleaseFooter = releaseFooter.Name()
 	params.Snapshot = false
 	params.SkipPublish = true
-	assert.NoError(t, releaseProject(params))
+	_, err = releaseProject(params)
+	assert.NoError(t, err)
 }
 
 func TestBrokenPipe(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	createFile(t, "main.go", "not a valid go file")
-	assert.Error(t, releaseProject(testParams()))
+	_, err := releaseProject(testParams())
+	assert.Error(t, err)
 }
 
 func TestInitProject(t *testing.T) {
@@ -169,8 +181,7 @@ func TestInitProject(t *testing.T) {
 	out, err := ioutil.ReadAll(file)
 	assert.NoError(t, err)
 
-	var config = config.Project{}
-	assert.NoError(t, yaml.Unmarshal(out, &config))
+	assert.NoError(t, yaml.Unmarshal(out, &config.Project{}))
 }
 
 func TestInitProjectFileExist(t *testing.T) {

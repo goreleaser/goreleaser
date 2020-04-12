@@ -163,6 +163,7 @@ func Upload(ctx *context.Context, uploads []config.Upload, kind string, check Re
 		//	- "binary": Upload only the raw binaries
 		switch v := strings.ToLower(upload.Mode); v {
 		case ModeArchive:
+			// TODO: should we add source archives here too?
 			filters = append(filters,
 				artifact.ByType(artifact.UploadableArchive),
 				artifact.ByType(artifact.LinuxPackage),

@@ -4,7 +4,9 @@ package pipeline
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/semver"
+	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
 
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/before"
@@ -47,10 +49,12 @@ var Pipeline = []Piper{
 	changelog.Pipe{},       // builds the release changelog
 	build.Pipe{},           // build
 	archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
+	sourcearchive.Pipe{},   // archive the source code using git-archive
 	nfpm.Pipe{},            // archive via fpm (deb, rpm) using "native" go impl
 	snapcraft.Pipe{},       // archive via snapcraft (snap)
 	checksums.Pipe{},       // checksums of the files
 	sign.Pipe{},            // sign artifacts
 	docker.Pipe{},          // create and push docker images
+	brew.Pipe{},            // create the formula file on dist
 	publish.Pipe{},         // publishes artifacts
 }

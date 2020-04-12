@@ -3,12 +3,12 @@ package before
 import (
 	"fmt"
 	"os/exec"
-	"strings"
 
 	"github.com/apex/log"
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/mattn/go-shellwords"
 )
 
 // Pipe is a global hook pipe
@@ -28,7 +28,10 @@ func (Pipe) Run(ctx *context.Context) error {
 		if err != nil {
 			return err
 		}
-		args := strings.Fields(s)
+		args, err := shellwords.Parse(s)
+		if err != nil {
+			return err
+		}
 		log.Infof("running %s", color.CyanString(step))
 		cmd := exec.Command(args[0], args[1:]...)
 		cmd.Env = ctx.Env.Strings()

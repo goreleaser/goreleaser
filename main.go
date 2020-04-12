@@ -86,14 +86,17 @@ func main() {
 		if err := initProject(filename); err != nil {
 			log.WithError(err).Error("failed to init project")
 			os.Exit(1)
-			return
 		}
 		log.WithField("file", filename).Info("config created; please edit accordingly to your needs")
 	case checkCmd.FullCommand():
-		if err := checkConfig(*config); err != nil {
+		ctx, err := checkConfig(*config)
+		if err != nil {
 			log.WithError(err).Errorf(color.New(color.Bold).Sprintf("config is invalid"))
 			os.Exit(1)
-			return
+		}
+		if ctx.Deprecated {
+			log.Warn(color.New(color.Bold).Sprintf("config is valid, but uses deprecated properties, check logs above for details"))
+			os.Exit(2)
 		}
 		log.Infof(color.New(color.Bold).Sprintf("config is valid"))
 	case releaseCmd.FullCommand():
@@ -112,31 +115,35 @@ func main() {
 			Parallelism:   *parallelism,
 			Timeout:       *timeout,
 		}
-		if err := releaseProject(options); err != nil {
+		ctx, err := releaseProject(options)
+		if err != nil {
 			log.WithError(err).Errorf(color.New(color.Bold).Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
 			os.Exit(1)
 			return
+		}
+		if ctx.Deprecated {
+			log.Warn(color.New(color.Bold).Sprintf("your config is using deprecated properties, check logs above for details"))
 		}
 		log.Infof(color.New(color.Bold).Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds()))
 	}
 }
 
-func checkConfig(filename string) error {
+func checkConfig(filename string) (*context.Context, error) {
 	cfg, err := loadConfig(filename)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var ctx = context.New(cfg)
-	return ctrlc.Default.Run(ctx, func() error {
+	return ctx, ctrlc.Default.Run(ctx, func() error {
 		log.Info(color.New(color.Bold).Sprint("checking config:"))
 		return defaults.Pipe{}.Run(ctx)
 	})
 }
 
-func releaseProject(options releaseOptions) error {
+func releaseProject(options releaseOptions) (*context.Context, error) {
 	cfg, err := loadConfig(options.Config)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	ctx, cancel := context.NewWithTimeout(cfg, options.Timeout)
 	defer cancel()
@@ -150,7 +157,7 @@ func releaseProject(options releaseOptions) error {
 	ctx.SkipValidate = ctx.Snapshot || options.SkipValidate
 	ctx.SkipSign = options.SkipSign
 	ctx.RmDist = options.RmDist
-	return ctrlc.Default.Run(ctx, func() error {
+	return ctx, ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipeline.Pipeline {
 			if err := middleware.Logging(
 				pipe.String(),
