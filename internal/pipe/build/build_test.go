@@ -182,14 +182,14 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		ctx.Git.CurrentTag = "2.3.4"
 		ctx.Config.Builds[0].Hooks.Pre = "exit 1"
 		ctx.Config.Builds[0].Hooks.Post = "echo post"
-		assert.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: `)
+		assert.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: "": exec: "exit": executable file not found in $PATH`)
 	})
 	t.Run("post-hook", func(t *testing.T) {
 		var ctx = context.New(config)
 		ctx.Git.CurrentTag = "2.3.4"
 		ctx.Config.Builds[0].Hooks.Pre = "echo pre"
 		ctx.Config.Builds[0].Hooks.Post = "exit 1"
-		assert.EqualError(t, Pipe{}.Run(ctx), `post hook failed: `)
+		assert.EqualError(t, Pipe{}.Run(ctx), `post hook failed: "": exec: "exit": executable file not found in $PATH`)
 	})
 }
 
@@ -201,13 +201,13 @@ func TestDefaultNoBuilds(t *testing.T) {
 }
 
 func TestDefaultExpandEnv(t *testing.T) {
-	assert.NoError(t, os.Setenv("BAR", "FOOBAR"))
+	assert.NoError(t, os.Setenv("XBAR", "FOOBAR"))
 	var ctx = &context.Context{
 		Config: config.Project{
 			Builds: []config.Build{
 				{
 					Env: []string{
-						"FOO=bar_$BAR",
+						"XFOO=bar_$XBAR",
 					},
 				},
 			},
@@ -215,7 +215,7 @@ func TestDefaultExpandEnv(t *testing.T) {
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
 	var env = ctx.Config.Builds[0].Env[0]
-	assert.Equal(t, "FOO=bar_FOOBAR", env)
+	assert.Equal(t, "XFOO=bar_FOOBAR", env)
 }
 
 func TestDefaultEmptyBuild(t *testing.T) {
@@ -339,6 +339,23 @@ func TestDefaultFillSingleBuild(t *testing.T) {
 	assert.Equal(t, ctx.Config.Builds[0].Binary, "foo")
 }
 
+func TestSkipBuild(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var config = config.Project{
+		Dist: folder,
+		Builds: []config.Build{
+			{
+				Skip: true,
+			},
+		},
+	}
+	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "2.4.5"
+	assert.NoError(t, Pipe{}.Run(ctx))
+	assert.Len(t, ctx.Artifacts.List(), 0)
+}
+
 func TestExtWindows(t *testing.T) {
 	assert.Equal(t, ".exe", extFor("windows_amd64", config.FlagArray{}))
 	assert.Equal(t, ".exe", extFor("windows_386", config.FlagArray{}))
@@ -409,7 +426,6 @@ func TestHookEnvs(t *testing.T) {
 	})
 
 	t.Run("env inside shell", func(t *testing.T) {
-		t.Skip("this fails on travis for some reason")
 		var shell = `#!/bin/sh -e
 touch "$BAR"`
 		err := ioutil.WriteFile(filepath.Join(tmp, "test.sh"), []byte(shell), 0750)

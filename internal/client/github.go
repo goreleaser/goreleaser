@@ -158,7 +158,7 @@ func (c *githubClient) Upload(
 	if err != nil {
 		return err
 	}
-	_, _, err = c.client.Repositories.UploadReleaseAsset(
+	_, resp, err := c.client.Repositories.UploadReleaseAsset(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
@@ -168,5 +168,11 @@ func (c *githubClient) Upload(
 		},
 		file,
 	)
-	return err
+	if err == nil {
+		return nil
+	}
+	if resp != nil && resp.StatusCode == 422 {
+		return err
+	}
+	return RetriableError{err}
 }

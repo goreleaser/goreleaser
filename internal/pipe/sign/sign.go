@@ -5,11 +5,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"reflect"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -27,12 +25,6 @@ func (Pipe) String() string {
 
 // Default sets the Pipes defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	if len(ctx.Config.Signs) == 0 {
-		ctx.Config.Signs = append(ctx.Config.Signs, ctx.Config.Sign)
-		if !reflect.DeepEqual(ctx.Config.Sign, config.Sign{}) {
-			deprecate.Notice("sign")
-		}
-	}
 	var ids = ids.New("signs")
 	for i := range ctx.Config.Signs {
 		cfg := &ctx.Config.Signs[i]

@@ -111,6 +111,11 @@ builds:
     hooks:
       pre: rice embed-go
       post: ./script.sh
+
+    # If true, skip the build.
+    # Useful for library projects.
+    # Default is false
+    skip: false
 ```
 
 > Learn more about the [name template engine](/templates).

@@ -117,6 +117,10 @@ func create(ctx *context.Context, archive config.Archive, binaries []*artifact.A
 	}
 	archivePath := filepath.Join(ctx.Config.Dist, folder+"."+format)
 	lock.Lock()
+	if err := os.MkdirAll(filepath.Dir(archivePath), 0755|os.ModeDir); err != nil {
+		lock.Unlock()
+		return err
+	}
 	if _, err = os.Stat(archivePath); !os.IsNotExist(err) {
 		lock.Unlock()
 		return fmt.Errorf("archive named %s already exists. Check your archive name template", archivePath)

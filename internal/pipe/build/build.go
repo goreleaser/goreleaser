@@ -32,6 +32,10 @@ func (Pipe) String() string {
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
 	for _, build := range ctx.Config.Builds {
+		if build.Skip {
+			log.WithField("id", build.ID).Info("skip is set")
+			continue
+		}
 		log.WithField("build", build).Debug("building")
 		if err := runPipeOnBuild(ctx, build); err != nil {
 			return err
@@ -158,7 +162,7 @@ func run(ctx *context.Context, command, env []string) error {
 	log.Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
-		return errors.New(string(out))
+		return errors.Wrapf(err, "%q", string(out))
 	}
 	return nil
 }

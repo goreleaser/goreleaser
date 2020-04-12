@@ -81,7 +81,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		Goarm:  target.arm,
 		Gomips: target.mips,
 		Extra: map[string]interface{}{
-			"Binary": build.Binary,
+			"Binary": filepath.Base(build.Binary),
 			"Ext":    options.Ext,
 			"ID":     build.ID,
 		},

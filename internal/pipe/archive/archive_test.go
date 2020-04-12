@@ -24,8 +24,9 @@ func TestDescription(t *testing.T) {
 }
 
 func createFakeBinary(t *testing.T, dist, arch, bin string) {
-	require.NoError(t, os.Mkdir(filepath.Join(dist, arch), 0755))
-	_, err := os.Create(filepath.Join(dist, arch, bin))
+	var path = filepath.Join(dist, arch, bin)
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0755))
+	_, err := os.Create(path)
 	require.NoError(t, err)
 }
 
@@ -37,9 +38,9 @@ func TestRunPipe(t *testing.T) {
 			var dist = filepath.Join(folder, format+"_dist")
 			require.NoError(t, os.Mkdir(dist, 0755))
 			for _, arch := range []string{"darwinamd64", "linux386", "linuxarm7", "linuxmipssoftfloat"} {
-				createFakeBinary(t, dist, arch, "mybin")
+				createFakeBinary(t, dist, arch, "bin/mybin")
 			}
-			createFakeBinary(t, dist, "windowsamd64", "mybin.exe")
+			createFakeBinary(t, dist, "windowsamd64", "bin/mybin.exe")
 			for _, tt := range []string{"darwin", "linux", "windows"} {
 				_, err := os.Create(filepath.Join(folder, fmt.Sprintf("README.%s.md", tt)))
 				require.NoError(t, err)
@@ -73,22 +74,22 @@ func TestRunPipe(t *testing.T) {
 			var darwinBuild = &artifact.Artifact{
 				Goos:   "darwin",
 				Goarch: "amd64",
-				Name:   "mybin",
-				Path:   filepath.Join(dist, "darwinamd64", "mybin"),
+				Name:   "bin/mybin",
+				Path:   filepath.Join(dist, "darwinamd64", "bin", "mybin"),
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"Binary": "mybin",
+					"Binary": "bin/mybin",
 					"ID":     "default",
 				},
 			}
 			var linux386Build = &artifact.Artifact{
 				Goos:   "linux",
 				Goarch: "386",
-				Name:   "mybin",
-				Path:   filepath.Join(dist, "linux386", "mybin"),
+				Name:   "bin/mybin",
+				Path:   filepath.Join(dist, "linux386", "bin", "mybin"),
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"Binary": "mybin",
+					"Binary": "bin/mybin",
 					"ID":     "default",
 				},
 			}
@@ -96,11 +97,11 @@ func TestRunPipe(t *testing.T) {
 				Goos:   "linux",
 				Goarch: "arm",
 				Goarm:  "7",
-				Name:   "mybin",
-				Path:   filepath.Join(dist, "linuxarm7", "mybin"),
+				Name:   "bin/mybin",
+				Path:   filepath.Join(dist, "linuxarm7", "bin", "mybin"),
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"Binary": "mybin",
+					"Binary": "bin/mybin",
 					"ID":     "default",
 				},
 			}
@@ -108,8 +109,8 @@ func TestRunPipe(t *testing.T) {
 				Goos:   "linux",
 				Goarch: "mips",
 				Gomips: "softfloat",
-				Name:   "mybin",
-				Path:   filepath.Join(dist, "linuxmipssoftfloat", "mybin"),
+				Name:   "bin/mybin",
+				Path:   filepath.Join(dist, "linuxmipssoftfloat", "bin", "mybin"),
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
 					"Binary": "mybin",
@@ -119,8 +120,8 @@ func TestRunPipe(t *testing.T) {
 			var windowsBuild = &artifact.Artifact{
 				Goos:   "windows",
 				Goarch: "amd64",
-				Name:   "mybin.exe",
-				Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
+				Name:   "bin/mybin.exe",
+				Path:   filepath.Join(dist, "windowsamd64", "bin", "mybin.exe"),
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
 					"Binary":    "mybin",
@@ -159,7 +160,7 @@ func TestRunPipe(t *testing.T) {
 							"foo/bar",
 							"foo/bar/foobar",
 							"foo/bar/foobar/blah.txt",
-							"mybin",
+							"bin/mybin",
 						},
 						tarFiles(t, filepath.Join(dist, name)),
 					)
@@ -171,7 +172,7 @@ func TestRunPipe(t *testing.T) {
 					[]string{
 						"README.windows.md",
 						"foo/bar/foobar/blah.txt",
-						"mybin.exe",
+						"bin/mybin.exe",
 					},
 					zipFiles(t, filepath.Join(dist, "foobar_0.0.1_windows_amd64.zip")),
 				)
@@ -276,7 +277,7 @@ func TestRunPipeBinary(t *testing.T) {
 func TestRunPipeDistRemoved(t *testing.T) {
 	var ctx = context.New(
 		config.Project{
-			Dist: "/path/nope",
+			Dist: "/tmp/path/to/nope",
 			Archives: []config.Archive{
 				{
 					NameTemplate: "nope",
@@ -291,7 +292,7 @@ func TestRunPipeDistRemoved(t *testing.T) {
 		Goos:   "windows",
 		Goarch: "amd64",
 		Name:   "mybin.exe",
-		Path:   filepath.Join("/path/to/nope", "windowsamd64", "mybin.exe"),
+		Path:   filepath.Join("/tmp/path/to/nope", "windowsamd64", "mybin.exe"),
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
 			"Binary":    "mybin",
@@ -299,7 +300,8 @@ func TestRunPipeDistRemoved(t *testing.T) {
 			"ID":        "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `failed to create directory /path/nope/nope.zip: open /path/nope/nope.zip: no such file or directory`)
+	// not checking on error msg because it may change depending on OS/version
+	require.Error(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeInvalidGlob(t *testing.T) {

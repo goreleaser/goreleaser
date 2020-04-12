@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
@@ -16,10 +15,10 @@ func TestDescription(t *testing.T) {
 	assert.NotEmpty(t, Pipe{}.String())
 }
 
-func TestDefault(t *testing.T) {
+func TestSetDefaultTokenFiles(t *testing.T) {
 	t.Run("empty config", func(tt *testing.T) {
 		ctx := context.New(config.Project{})
-		assert.NoError(t, Pipe{}.Default(ctx))
+		setDefaultTokenFiles(ctx)
 		assert.Equal(t, "~/.config/goreleaser/github_token", ctx.Config.EnvFiles.GitHubToken)
 		assert.Equal(t, "~/.config/goreleaser/gitlab_token", ctx.Config.EnvFiles.GitLabToken)
 		assert.Equal(t, "~/.config/goreleaser/gitea_token", ctx.Config.EnvFiles.GiteaToken)
@@ -31,7 +30,7 @@ func TestDefault(t *testing.T) {
 				GitHubToken: cfg,
 			},
 		})
-		assert.NoError(t, Pipe{}.Default(ctx))
+		setDefaultTokenFiles(ctx)
 		assert.Equal(t, cfg, ctx.Config.EnvFiles.GitHubToken)
 	})
 }
@@ -172,7 +171,7 @@ func TestInvalidEnvChecksSkipped(t *testing.T) {
 		Config:      config.Project{},
 		SkipPublish: true,
 	}
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
 func TestInvalidEnvReleaseDisabled(t *testing.T) {
@@ -184,7 +183,7 @@ func TestInvalidEnvReleaseDisabled(t *testing.T) {
 			},
 		},
 	}
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	assert.NoError(t, Pipe{}.Run(ctx))
 }
 
 func TestLoadEnv(t *testing.T) {

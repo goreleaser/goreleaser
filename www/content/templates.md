@@ -41,6 +41,13 @@ may have some extra fields:
 |    `.Binary`    |              Binary name              |
 | `.ArtifactName` |             Archive name              |
 
+On the NFPM name template field, you can use those extra fields as well:
+
+|       Key       |              Description              |
+| :-------------: | :-----------------------------------: |
+|   `.Release`    |     Release from the nfpm config      |
+|    `.Epoch`     |      Epoch from the nfpm config       |
+
 On all fields, you have these available functions:
 
 |        Usage            |               Description                                                                                |

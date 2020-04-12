@@ -184,5 +184,8 @@ func (c *giteaClient) Upload(
 	repoName := releaseConfig.Gitea.Name
 
 	_, err = c.client.CreateReleaseAttachment(owner, repoName, giteaReleaseID, file, artifact.Name)
-	return err
+	if err != nil {
+		return RetriableError{err}
+	}
+	return nil
 }

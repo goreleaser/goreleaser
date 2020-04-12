@@ -17,7 +17,7 @@ type Pipe struct{}
 
 // String returns the description of the pipe
 func (Pipe) String() string {
-	return "HTTP Upload"
+	return "http upload"
 }
 
 // Default sets the pipe defaults

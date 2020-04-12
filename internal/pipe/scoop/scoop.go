@@ -25,11 +25,12 @@ var ErrTokenTypeNotImplementedForScoop = errors.New("token type not implemented 
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "scoop manifest"
+	return "scoop manifests"
 }
 
 // Publish scoop manifest
 func (Pipe) Publish(ctx *context.Context) error {
+	// TODO(caarlos0): split the creation of the json file and the publishing in two steps, like the brew pipe.
 	client, err := client.New(ctx)
 	if err != nil {
 		return err
@@ -196,7 +197,7 @@ func binaries(a *artifact.Artifact) []string {
 	// nolint: prealloc
 	var bins []string
 	for _, b := range a.ExtraOr("Builds", []*artifact.Artifact{}).([]*artifact.Artifact) {
-		bins = append(bins, b.ExtraOr("Binary", "").(string)+".exe")
+		bins = append(bins, b.Name)
 	}
 	return bins
 }
