@@ -13,7 +13,7 @@ import (
 // Archive as tar.xz
 type Archive struct {
 	xzw *xz.Writer
-	tw *tar.Writer
+	tw  *tar.Writer
 }
 
 // Close all closeables
@@ -30,7 +30,7 @@ func New(target io.Writer) Archive {
 	tw := tar.NewWriter(xzw)
 	return Archive{
 		xzw: xzw,
-		tw: tw,
+		tw:  tw,
 	}
 }
 
