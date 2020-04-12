@@ -162,7 +162,7 @@ func run(ctx *context.Context, command, env []string) error {
 	log.Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
-		return errors.New(string(out))
+		return errors.Wrapf(err, "%q", string(out))
 	}
 	return nil
 }
