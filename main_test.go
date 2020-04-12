@@ -39,7 +39,7 @@ func TestCheckConfigFails(t *testing.T) {
 	var filename = "fail.yaml"
 	assert.NoError(t, ioutil.WriteFile(filename, []byte("nope: 1"), 0644))
 	_, err := checkConfig(filename)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
 
 func TestReleaseProjectSkipPublish(t *testing.T) {
@@ -58,7 +58,7 @@ func TestConfigFileIsSetAndDontExist(t *testing.T) {
 	params := testParams()
 	params.Config = "/this/wont/exist"
 	_, err := releaseProject(params)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
 
 func TestConfigFlagNotSetButExists(t *testing.T) {
@@ -99,7 +99,7 @@ func TestReleaseNotesFileDontExist(t *testing.T) {
 	params := testParams()
 	params.ReleaseNotes = "/this/also/wont/exist"
 	_, err := releaseProject(params)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
 
 func TestCustomReleaseNotesFile(t *testing.T) {
@@ -121,7 +121,7 @@ func TestCustomReleaseHeaderFileDontExist(t *testing.T) {
 	params.ReleaseHeader = "/header/that/dont/exist"
 	params.Snapshot = false
 	_, err := releaseProject(params)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
 
 func TestCustomReleaseHeaderFile(t *testing.T) {
@@ -145,7 +145,7 @@ func TestCustomReleaseFooterFileDontExist(t *testing.T) {
 	params.ReleaseFooter = "/footer/that/dont/exist"
 	params.Snapshot = false
 	_, err := releaseProject(params)
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
 
 func TestCustomReleaseFooterFile(t *testing.T) {
@@ -167,7 +167,7 @@ func TestBrokenPipe(t *testing.T) {
 	defer back()
 	createFile(t, "main.go", "not a valid go file")
 	_, err := releaseProject(testParams())
-	assert.NoError(t, err)
+	assert.Error(t, err)
 }
 
 func TestInitProject(t *testing.T) {
