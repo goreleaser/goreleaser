@@ -3,11 +3,13 @@ package tmpl
 
 import (
 	"bytes"
+	"path/filepath"
 	"strings"
 	"text/template"
 	"time"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -42,8 +44,15 @@ const (
 	mips         = "Mips"
 	binary       = "Binary"
 	artifactName = "ArtifactName"
+
 	// gitlab only
 	artifactUploadHash = "ArtifactUploadHash"
+
+	// build keys
+	name   = "Name"
+	ext    = "Ext"
+	path   = "Path"
+	target = "Target"
 )
 
 // New Template
@@ -114,6 +123,19 @@ func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]st
 	return t
 }
 
+func (t *Template) WithBuildOptions(opts build.Options) *Template {
+	return t.WithExtraFields(buildOptsToFields(opts))
+}
+
+func buildOptsToFields(opts build.Options) Fields {
+	return Fields{
+		target: opts.Target,
+		ext:    opts.Ext,
+		name:   opts.Name,
+		path:   opts.Path,
+	}
+}
+
 // Apply applies the given string against the Fields stored in the template.
 func (t *Template) Apply(s string) (string, error) {
 	var out bytes.Buffer
@@ -127,6 +149,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"tolower": strings.ToLower,
 			"toupper": strings.ToUpper,
 			"trim":    strings.TrimSpace,
+			"dir":     filepath.Dir,
 		}).
 		Parse(s)
 	if err != nil {
