@@ -201,13 +201,13 @@ func TestDefaultNoBuilds(t *testing.T) {
 }
 
 func TestDefaultExpandEnv(t *testing.T) {
-	assert.NoError(t, os.Setenv("BAR", "FOOBAR"))
+	assert.NoError(t, os.Setenv("XBAR", "FOOBAR"))
 	var ctx = &context.Context{
 		Config: config.Project{
 			Builds: []config.Build{
 				{
 					Env: []string{
-						"FOO=bar_$BAR",
+						"XFOO=bar_$XBAR",
 					},
 				},
 			},
@@ -215,7 +215,7 @@ func TestDefaultExpandEnv(t *testing.T) {
 	}
 	assert.NoError(t, Pipe{}.Default(ctx))
 	var env = ctx.Config.Builds[0].Env[0]
-	assert.Equal(t, "FOO=bar_FOOBAR", env)
+	assert.Equal(t, "XFOO=bar_FOOBAR", env)
 }
 
 func TestDefaultEmptyBuild(t *testing.T) {
@@ -426,7 +426,6 @@ func TestHookEnvs(t *testing.T) {
 	})
 
 	t.Run("env inside shell", func(t *testing.T) {
-		t.Skip("this fails on travis for some reason")
 		var shell = `#!/bin/sh -e
 touch "$BAR"`
 		err := ioutil.WriteFile(filepath.Join(tmp, "test.sh"), []byte(shell), 0750)
