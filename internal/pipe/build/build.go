@@ -16,6 +16,7 @@ import (
 	builders "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/mattn/go-shellwords"
 	"github.com/pkg/errors"
 
 	// langs to init
@@ -134,7 +135,10 @@ func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hoo
 		}
 
 		log.WithField("hook", sh).Info("running hook")
-		cmd := strings.Fields(sh)
+		cmd, err := shellwords.Parse(sh)
+		if err != nil {
+			return err
+		}
 
 		if err := run(ctx, dir, cmd, env); err != nil {
 			return err

@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var fakeArtifact = &artifact.Artifact{
@@ -667,4 +668,29 @@ func TestBuildOptionsForTarget(t *testing.T) {
 		Path:   filepath.Join(tmpDir, "testid_linux_amd64", "testbinary"),
 		Target: "linux_amd64",
 	}, opts)
+}
+
+func TestHookComplex(t *testing.T) {
+	tmp, back := testlib.Mktmp(t)
+	defer back()
+
+	require.NoError(t, runHook(context.New(config.Project{}), api.Options{}, []string{}, config.BuildHooks{
+		{
+			Cmd: `bash -c "touch foo"`,
+		},
+		{
+			Cmd: `bash -c "touch \"bar\""`,
+		},
+	}))
+
+	require.FileExists(t, filepath.Join(tmp, "foo"))
+	require.FileExists(t, filepath.Join(tmp, "bar"))
+}
+
+func TestHookInvalidShelCommand(t *testing.T) {
+	require.Error(t, runHook(context.New(config.Project{}), api.Options{}, []string{}, config.BuildHooks{
+		{
+			Cmd: `bash -c "echo \"unterminated command\"`,
+		},
+	}))
 }
