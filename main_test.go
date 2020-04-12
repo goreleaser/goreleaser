@@ -110,7 +110,7 @@ func TestCustomReleaseNotesFile(t *testing.T) {
 	createFile(t, releaseNotes.Name(), "nothing important at all")
 	var params = testParams()
 	params.ReleaseNotes = releaseNotes.Name()
-	_, err := releaseProject(params)
+	_, err = releaseProject(params)
 	assert.NoError(t, err)
 }
 
@@ -134,7 +134,7 @@ func TestCustomReleaseHeaderFile(t *testing.T) {
 	params.ReleaseHeader = releaseHeader.Name()
 	params.Snapshot = false
 	params.SkipPublish = true
-	_, err := releaseProject(params)
+	_, err = releaseProject(params)
 	assert.NoError(t, err)
 }
 
@@ -158,7 +158,7 @@ func TestCustomReleaseFooterFile(t *testing.T) {
 	params.ReleaseFooter = releaseFooter.Name()
 	params.Snapshot = false
 	params.SkipPublish = true
-	_, err := releaseProject(params)
+	_, err = releaseProject(params)
 	assert.NoError(t, err)
 }
 
@@ -181,8 +181,7 @@ func TestInitProject(t *testing.T) {
 	out, err := ioutil.ReadAll(file)
 	assert.NoError(t, err)
 
-	var config = config.Project{}
-	assert.NoError(t, yaml.Unmarshal(out, &config))
+	assert.NoError(t, yaml.Unmarshal(out, &config.Project{}))
 }
 
 func TestInitProjectFileExist(t *testing.T) {
