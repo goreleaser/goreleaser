@@ -11,6 +11,7 @@ install:
   - make setup
 script:
   - make ci
+  - ./goreleaser check
   - test -n "$TRAVIS_TAG" || ./goreleaser --snapshot --parallelism 2
 after_success:
   - bash <(curl -s https://codecov.io/bash)

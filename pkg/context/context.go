@@ -80,6 +80,7 @@ type Context struct {
 	PreRelease    bool
 	Parallelism   int
 	Semver        Semver
+	Deprecated    bool
 }
 
 // Semver represents a semantic version
