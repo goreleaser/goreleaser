@@ -8,6 +8,8 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/fatih/color"
+	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,8 +23,10 @@ func TestNotice(t *testing.T) {
 	log.SetHandler(cli.New(f))
 
 	log.Info("first")
-	Notice("foo.bar.whatever")
+	var ctx = context.New(config.Project{})
+	Notice(ctx, "foo.bar.whatever")
 	log.Info("last")
+	require.True(t, ctx.Deprecated)
 
 	require.NoError(t, f.Close())
 

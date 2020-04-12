@@ -78,6 +78,7 @@ type Context struct {
 	SkipValidate  bool
 	RmDist        bool
 	PreRelease    bool
+	Deprecated    bool
 	Parallelism   int
 	Semver        Semver
 }
