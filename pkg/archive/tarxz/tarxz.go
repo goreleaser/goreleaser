@@ -26,7 +26,7 @@ func (a Archive) Close() error {
 
 // New tar.xz archive
 func New(target io.Writer) Archive {
-	xzw, _ := xz.NewWriter(target)
+    xzw, _ := xz.WriterConfig{DictCap: 16 * 1024 * 1024}.NewWriter(target)
 	tw := tar.NewWriter(xzw)
 	return Archive{
 		xzw: xzw,
