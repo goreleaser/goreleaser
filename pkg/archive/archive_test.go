@@ -16,7 +16,7 @@ func TestArchive(t *testing.T) {
 	assert.NoError(err)
 	assert.NoError(os.Mkdir(folder+"/folder-inside", 0755))
 
-	for _, format := range []string{"tar.gz", "zip", "gz", "willbeatargzanyway"} {
+	for _, format := range []string{"tar.gz", "zip", "gz", "tar.xz", "willbeatargzanyway"} {
 		format := format
 		t.Run(format, func(t *testing.T) {
 			var archive = newArchive(folder, format, t)
