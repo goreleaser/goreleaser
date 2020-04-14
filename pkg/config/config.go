@@ -271,7 +271,6 @@ type NFPMScripts struct {
 type NFPMOverridables struct {
 	FileNameTemplate string            `yaml:"file_name_template,omitempty"`
 	PackageName      string            `yaml:"package_name,omitempty"`
-	NameTemplate     string            `yaml:"name_template,omitempty"` // deprecated
 	Epoch            string            `yaml:"epoch,omitempty"`
 	Release          string            `yaml:"release,omitempty"`
 	Replacements     map[string]string `yaml:",omitempty"`
@@ -422,7 +421,6 @@ type Project struct {
 	Dockers       []Docker    `yaml:",omitempty"`
 	Artifactories []Upload    `yaml:",omitempty"`
 	Uploads       []Upload    `yaml:",omitempty"`
-	Puts          []Upload    `yaml:",omitempty"` // TODO: remove this
 	Blobs         []Blob      `yaml:"blobs,omitempty"`
 	Changelog     Changelog   `yaml:",omitempty"`
 	Dist          string      `yaml:",omitempty"`

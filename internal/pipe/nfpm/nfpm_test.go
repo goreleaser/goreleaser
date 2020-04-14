@@ -327,11 +327,11 @@ func TestOverrides(t *testing.T) {
 				{
 					Bindir: "/bin",
 					NFPMOverridables: config.NFPMOverridables{
-						NameTemplate: "foo",
+						FileNameTemplate: "foo",
 					},
 					Overrides: map[string]config.NFPMOverridables{
 						"deb": {
-							NameTemplate: "bar",
+							FileNameTemplate: "bar",
 						},
 					},
 				},
@@ -342,9 +342,9 @@ func TestOverrides(t *testing.T) {
 	merged, err := mergeOverrides(ctx.Config.NFPMs[0], "deb")
 	require.NoError(t, err)
 	require.Equal(t, "/bin", ctx.Config.NFPMs[0].Bindir)
-	require.Equal(t, "foo", ctx.Config.NFPMs[0].NameTemplate)
-	require.Equal(t, "bar", ctx.Config.NFPMs[0].Overrides["deb"].NameTemplate)
-	require.Equal(t, "bar", merged.NameTemplate)
+	require.Equal(t, "foo", ctx.Config.NFPMs[0].FileNameTemplate)
+	require.Equal(t, "bar", ctx.Config.NFPMs[0].Overrides["deb"].FileNameTemplate)
+	require.Equal(t, "bar", merged.FileNameTemplate)
 }
 
 func TestSeveralNFPMsWithTheSameID(t *testing.T) {
