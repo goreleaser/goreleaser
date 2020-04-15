@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"encoding/base64"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -16,7 +17,10 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
+	homedir "github.com/mitchellh/go-homedir"
+
 )
 
 // ErrNoDocker is shown when docker cannot be found in $PATH
@@ -77,6 +81,10 @@ func (Pipe) Run(ctx *context.Context) error {
 func (Pipe) Publish(ctx *context.Context) error {
 	var images = ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableDockerImage)).List()
 	for _, image := range images {
+		dockerRegistry := strings.Split(image.Name, "/")[0]
+		if err := dockerLogin(ctx, dockerRegistry); err != nil {
+			return err
+		}
 		if err := dockerPush(ctx, image); err != nil {
 			return err
 		}
@@ -183,6 +191,7 @@ func process(ctx *context.Context, docker config.Docker, bins []*artifact.Artifa
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish")
 	}
 	for _, img := range images {
+
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Type:   artifact.PublishableDockerImage,
 			Name:   img,
@@ -192,6 +201,7 @@ func process(ctx *context.Context, docker config.Docker, bins []*artifact.Artifa
 			Goarm:  docker.Goarm,
 		})
 	}
+
 	return nil
 }
 
@@ -258,6 +268,70 @@ func dockerBuild(ctx *context.Context, root string, images, flags []string) erro
 	}
 	log.Debugf("docker build output: \n%s", string(out))
 	return nil
+}
+
+// in-memory store of docker registry to aviod relogin 
+// in case of multiple image tags
+var loggedInRegistry = make(map[string]bool)
+
+
+
+func dockerLogin(ctx *context.Context, dockerRegistry string) error {
+
+	log.WithField("docker registry", fmt.Sprintf("%s", dockerRegistry)).Info("log in to a registry")
+	if _, ok := loggedInRegistry[dockerRegistry]; ok {
+		log.Debug("already logged in!")
+		return nil
+	}
+	
+
+	var authToken string
+	userHome, err := homedir.Dir()
+	if err != nil {
+		return errors.Wrap(err, "failed to get home directroy")
+	}
+	dockerConfigPath := fmt.Sprintf("%s/config.json", userHome)
+
+	dockerConfigFile, err := os.Create(dockerConfigPath)
+	if err != nil {
+		return errors.Wrap(err, "failed to create docker registry config")
+	}
+	defer dockerConfigFile.Close()
+
+	switch dockerRegistry {
+	case "docker.pkg.github.com":
+		authToken = encodeToken("docker",  os.Getenv("GITHUB_TOKEN"))
+	case "registry.gitlab.com":
+		authToken = encodeToken("docker",  os.Getenv("GITLAB_TOKEN"))
+	default:
+		authToken = encodeToken(os.Getenv("DOCKER_USERNAME"),  os.Getenv("DOCKER_PASSWORD"))
+
+	}
+
+	config := fmt.Sprintf(`{
+		"auths": {
+			"%s": {
+			"auth": "%s"
+			}
+		}
+	}`, dockerRegistry, authToken)
+
+	log.Debugf("writting docker registry config into: %s/config.json", userHome)
+	if _, err := dockerConfigFile.WriteString(config); err != nil {
+		return errors.Wrap(err, "failed to write docker registry config")
+	}
+
+	log.Debugf("setting DOCKER_CONFIG environment variable")
+	if err := os.Setenv("DOCKER_CONFIG", userHome); err != nil {
+		return errors.Wrap(err, "failed to set DOCKER_CONFIG environment variable")
+	}
+
+	loggedInRegistry[dockerRegistry] = true
+	return nil
+}
+
+func encodeToken(username, password string) string {
+	 return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s",username, password)))
 }
 
 func buildCommand(images, flags []string) []string {
