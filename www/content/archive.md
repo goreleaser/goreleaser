@@ -25,7 +25,7 @@ archives:
 
     # Archive name template.
     # Defaults:
-    # - if format is `tar.gz`, `gz` or `zip`:
+    # - if format is `tar.gz`, `tar.xz`, `gz` or `zip`:
     #   - `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}`
     # - if format is `binary`:
     #   - `{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}`
@@ -49,7 +49,7 @@ archives:
     # Default is false.
     wrap_in_directory: true
 
-    # Archive format. Valid options are `tar.gz`, `gz`, `zip` and `binary`.
+    # Archive format. Valid options are `tar.gz`, `tar.xz`, `gz`, `zip` and `binary`.
     # If format is `binary`, no archives are created and the binaries are instead
     # uploaded directly.
     # Default is `tar.gz`.
