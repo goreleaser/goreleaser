@@ -64,6 +64,7 @@ func main() {
 	var skipPublish = releaseCmd.Flag("skip-publish", "Skips publishing artifacts").Bool()
 	var skipSign = releaseCmd.Flag("skip-sign", "Skips signing the artifacts").Bool()
 	var skipValidate = releaseCmd.Flag("skip-validate", "Skips several sanity checks").Bool()
+	var skipAll = releaseCmd.Flag("skip-all", "Skips Publish, Sign, and Validate").Bool()
 	var rmDist = releaseCmd.Flag("rm-dist", "Remove the dist folder before building").Bool()
 	var parallelism = releaseCmd.Flag("parallelism", "Amount tasks to run concurrently").Short('p').Default("4").Int()
 	var timeout = releaseCmd.Flag("timeout", "Timeout to the entire release process").Default("30m").Duration()
@@ -114,6 +115,11 @@ func main() {
 			RmDist:        *rmDist,
 			Parallelism:   *parallelism,
 			Timeout:       *timeout,
+		}
+		if *skipAll {
+			options.SkipPublish = true
+			options.SkipValidate = true
+			options.SkipSign = true
 		}
 		ctx, err := releaseProject(options)
 		if err != nil {
