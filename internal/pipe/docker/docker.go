@@ -17,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	homedir "github.com/mitchellh/go-homedir"
 
