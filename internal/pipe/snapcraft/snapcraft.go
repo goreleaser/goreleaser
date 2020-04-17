@@ -228,12 +228,14 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		// setup the apps: directive for each binary
 		for name, config := range snap.Apps {
 			log.WithField("path", binary.Path).
-				WithField("name", binary.Name).
+				WithField("name", name).
 				Debug("passed binary to snapcraft")
 
+			// TODO: test that the correct binary is used in Command
+			// See https://github.com/goreleaser/goreleaser/pull/1449
 			appMetadata := AppMetadata{
 				Command: strings.TrimSpace(strings.Join([]string{
-					binary.Name,
+					name,
 					config.Args,
 				}, " ")),
 				Plugs:  config.Plugs,
