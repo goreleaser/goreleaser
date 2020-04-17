@@ -1,4 +1,4 @@
-// Package snapshot provides the snapshoting functionality to goreleaser.
+// Package snapshot provides the snapshotting functionality to goreleaser.
 package snapshot
 
 import (
@@ -14,7 +14,7 @@ import (
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "snapshoting"
+	return "snapshotting"
 }
 
 // Default sets the pipe defaults
