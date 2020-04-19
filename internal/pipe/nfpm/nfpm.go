@@ -14,7 +14,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -46,10 +45,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if fpm.PackageName == "" {
 			fpm.PackageName = ctx.Config.ProjectName
-		}
-		if fpm.NameTemplate != "" && fpm.FileNameTemplate == "" {
-			deprecate.Notice(ctx, "nfpms.name_template")
-			fpm.FileNameTemplate = fpm.NameTemplate
 		}
 		if fpm.FileNameTemplate == "" {
 			fpm.FileNameTemplate = defaultNameTemplate
