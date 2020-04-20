@@ -296,8 +296,12 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 }
 
 func dockerLogin(ctx *context.Context, image *artifact.Artifact) {
-	registry := strings.Split(image.Name, "/")[0]
-	repository := strings.Join(strings.Split(image.Name, "/")[1:3], "/")
+	var registry, repository string
+
+	if i := strings.IndexRune(image.Name, '/'); i != -1 {
+		registry = image.Name[:i]
+		repository = strings.Split(image.Name[i+1:], ":")[0]
+	}
 
 	switch registry {
 	case "docker.pkg.github.com":
