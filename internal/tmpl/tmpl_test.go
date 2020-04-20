@@ -41,6 +41,12 @@ func TestWithArtifact(t *testing.T) {
 		"binary":      "{{.Binary}}",
 		"proj":        "{{.ProjectName}}",
 		"":            "{{.ArtifactUploadHash}}",
+		"v2.0.0":      "{{.Tag | incmajor }}",
+		"2.0.0":       "{{.Version | incmajor }}",
+		"v1.3.0":      "{{.Tag | incminor }}",
+		"1.3.0":       "{{.Version | incminor }}",
+		"v1.2.4":      "{{.Tag | incpatch }}",
+		"1.2.4":       "{{.Version | incpatch }}",
 	} {
 		tmpl := tmpl
 		expect := expect

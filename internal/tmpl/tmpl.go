@@ -8,6 +8,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -127,6 +128,7 @@ func (t *Template) WithBuildOptions(opts build.Options) *Template {
 	return t.WithExtraFields(buildOptsToFields(opts))
 }
 
+// TODO: cover with tests
 func buildOptsToFields(opts build.Options) Fields {
 	return Fields{
 		target: opts.Target,
@@ -146,10 +148,13 @@ func (t *Template) Apply(s string) (string, error) {
 			"time": func(s string) string {
 				return time.Now().UTC().Format(s)
 			},
-			"tolower": strings.ToLower,
-			"toupper": strings.ToUpper,
-			"trim":    strings.TrimSpace,
-			"dir":     filepath.Dir,
+			"tolower":  strings.ToLower,
+			"toupper":  strings.ToUpper,
+			"trim":     strings.TrimSpace,
+			"dir":      filepath.Dir,
+			"incmajor": incMajor,
+			"incminor": incMinor,
+			"incpatch": incPatch,
 		}).
 		Parse(s)
 	if err != nil {
@@ -166,4 +171,23 @@ func replace(replacements map[string]string, original string) string {
 		return original
 	}
 	return result
+}
+
+func incMajor(v string) string {
+	return prefix(v) + semver.MustParse(v).IncMajor().String()
+}
+
+func incMinor(v string) string {
+	return prefix(v) + semver.MustParse(v).IncMinor().String()
+}
+
+func incPatch(v string) string {
+	return prefix(v) + semver.MustParse(v).IncPatch().String()
+}
+
+func prefix(v string) string {
+	if v != "" && v[0] == 'v' {
+		return "v"
+	}
+	return ""
 }
