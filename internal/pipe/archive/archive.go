@@ -170,9 +170,10 @@ func create(ctx *context.Context, archive config.Archive, binaries []*artifact.A
 		Goarm:  binaries[0].Goarm,
 		Gomips: binaries[0].Gomips,
 		Extra: map[string]interface{}{
-			"Builds": binaries,
-			"ID":     archive.ID,
-			"Format": archive.Format,
+			"Builds":    binaries,
+			"ID":        archive.ID,
+			"Format":    archive.Format,
+			"WrappedIn": wrap,
 		},
 	})
 	return nil

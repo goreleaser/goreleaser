@@ -494,6 +494,10 @@ func TestRunPipeWrap(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Run(ctx))
 
+	var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+	require.Len(t, archives, 1)
+	require.Equal(t, "foo_macOS", archives[0].ExtraOr("WrappedIn", ""))
+
 	// Check archive contents
 	f, err := os.Open(filepath.Join(dist, "foo.tar.gz"))
 	require.NoError(t, err)
@@ -648,11 +652,12 @@ func TestBinaryOverride(t *testing.T) {
 			darwin := archives.Filter(artifact.ByGoos("darwin")).List()[0]
 			require.Equal(tt, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
 			require.Equal(tt, format, darwin.ExtraOr("Format", ""))
+			require.Empty(tt, darwin.ExtraOr("WrappedIn", ""))
 
 			archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
 			windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
 			require.Equal(tt, "foobar_0.0.1_windows_amd64.exe", windows.Name)
-			require.Equal(tt, format, windows.ExtraOr("Format", ""))
+			require.Empty(tt, windows.ExtraOr("WrappedIn", ""))
 		})
 	}
 }

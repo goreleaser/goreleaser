@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -196,8 +197,9 @@ func buildManifest(ctx *context.Context, artifacts []*artifact.Artifact) (bytes.
 func binaries(a *artifact.Artifact) []string {
 	// nolint: prealloc
 	var bins []string
+	var wrap = a.ExtraOr("WrappedIn", "").(string)
 	for _, b := range a.ExtraOr("Builds", []*artifact.Artifact{}).([]*artifact.Artifact) {
-		bins = append(bins, b.Name)
+		bins = append(bins, filepath.Join(wrap, b.Name))
 	}
 	return bins
 }

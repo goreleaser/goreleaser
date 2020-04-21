@@ -129,6 +129,65 @@ func Test_doRun(t *testing.T) {
 			shouldNotErr,
 		},
 		{
+			"wrap in directory",
+			args{
+				&context.Context{
+					TokenType: context.TokenTypeGitHub,
+					Git: context.GitInfo{
+						CurrentTag: "v1.0.1",
+					},
+					Version:   "1.0.1",
+					Artifacts: artifact.New(),
+					Config: config.Project{
+						Builds: []config.Build{
+							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
+						},
+						Dist:        ".",
+						ProjectName: "run-pipe",
+						Archives: []config.Archive{
+							{Format: "tar.gz", WrapInDirectory: "true"},
+						},
+						Release: config.Release{
+							GitHub: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+						},
+						Scoop: config.Scoop{
+							Bucket: config.Repo{
+								Owner: "test",
+								Name:  "test",
+							},
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						},
+					},
+				},
+				&DummyClient{},
+			},
+			[]*artifact.Artifact{
+				{
+					Name:   "foo_1.0.1_windows_amd64.tar.gz",
+					Goos:   "windows",
+					Goarch: "amd64",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"Wrap": "foo_1.0.1_windows_amd64",
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_386.tar.gz",
+					Goos:   "windows",
+					Goarch: "386",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"Wrap": "foo_1.0.1_windows_386",
+					},
+				},
+			},
+			shouldNotErr,
+		},
+		{
 			"valid enterprise github",
 			args{
 				&context.Context{
@@ -862,6 +921,81 @@ func Test_buildManifest(t *testing.T) {
 			require.Equal(t, string(bts), out.String())
 		})
 	}
+}
+
+func TestWrapInDirectory(t *testing.T) {
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	require.NoError(t, err)
+	var file = filepath.Join(folder, "archive")
+	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+	var ctx = &context.Context{
+		TokenType: context.TokenTypeGitLab,
+		Git: context.GitInfo{
+			CurrentTag: "v1.0.1",
+		},
+		Version:   "1.0.1",
+		Artifacts: artifact.New(),
+		Config: config.Project{
+			GitLabURLs: config.GitLabURLs{
+				Download: "https://gitlab.com",
+			},
+			Builds: []config.Build{
+				{Binary: "test"},
+			},
+			Dist:        ".",
+			ProjectName: "run-pipe",
+			Archives: []config.Archive{
+				{Format: "tar.gz", WrapInDirectory: "true"},
+			},
+			Release: config.Release{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+			Scoop: config.Scoop{
+				Bucket: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+				Description: "A run pipe test formula",
+				Homepage:    "https://gitlab.com/goreleaser",
+				URLTemplate: "http://gitlab.mycompany.com/foo/bar/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
+				Persist:     []string{"data.cfg", "etc"},
+			},
+		},
+	}
+	require.NoError(t, Pipe{}.Default(ctx))
+	out, err := buildManifest(ctx, []*artifact.Artifact{
+		{
+			Name:   "foo_1.0.1_windows_amd64.tar.gz",
+			Goos:   "windows",
+			Goarch: "amd64",
+			Path:   file,
+			Extra: map[string]interface{}{
+				"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+				"WrappedIn":          "foo_1.0.1_windows_amd64",
+				"Builds": []*artifact.Artifact{
+					{
+						Name: "foo.exe",
+					},
+					{
+						Name: "bar.exe",
+					},
+				},
+			},
+		},
+	})
+
+	require.NoError(t, err)
+
+	var golden = "testdata/test_buildmanifest_wrap.json.golden"
+	if *update {
+		require.NoError(t, ioutil.WriteFile(golden, out.Bytes(), 0655))
+	}
+	bts, err := ioutil.ReadFile(golden)
+	require.NoError(t, err)
+	require.Equal(t, string(bts), out.String())
 }
 
 type DummyClient struct {
