@@ -15,7 +15,7 @@ Let's see what can be customized in the `release` section for GitHub:
 # .goreleaser.yml
 release:
   # Repo in which the release will be created.
-  # Default is extracted from the origin remote URL.
+  # Default is extracted from the origin remote URL or empty if its private hosted.
   # Note: it can only be one: either github or gitlab or gitea
   github:
     owner: user
