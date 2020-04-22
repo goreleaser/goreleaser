@@ -36,9 +36,11 @@ func (Pipe) String() string {
 	return "homebrew tap formula"
 }
 
+// Run runs the current pipe
 func (Pipe) Run(ctx *context.Context) error {
 	for _, brew := range ctx.Config.Brews {
-		if err := doRun(ctx, brew); err != nil {
+		writeToFile := true
+		if _, err := doRun(ctx, brew, writeToFile); err != nil {
 			return err
 		}
 	}
@@ -90,6 +92,17 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		content, err := ioutil.ReadFile(tap.Path)
 		if err != nil {
 			return errors.Wrap(err, "failed to read tap")
+		}
+
+		if ctx.TokenType == context.TokenTypeGitLab {
+			log.WithField("formula", gpath).
+				WithField("repo", repo.String()).
+				Info("retemplating for gitlab")
+			writeToFile := false
+			content, err = doRun(ctx, brew, writeToFile)
+			if err != nil {
+				return err
+			}
 		}
 
 		var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
@@ -155,11 +168,42 @@ func contains(ss []string, s string) bool {
 	return false
 }
 
-func doRun(ctx *context.Context, brew config.Homebrew) error {
+func doRun(ctx *context.Context, brew config.Homebrew, writeToFile bool) ([]byte, error) {
 	if brew.GitHub.Name == "" && brew.GitLab.Name == "" {
-		return pipe.Skip("brew section is not configured")
+		return nil, pipe.Skip("brew section is not configured")
 	}
 
+	archives, err := filterArtifacts(ctx, brew)
+	if err != nil {
+		return nil, err
+	}
+
+	content, err := buildFormula(ctx, brew, ctx.TokenType, archives)
+	if err != nil {
+		return nil, err
+	}
+
+	if writeToFile {
+		var filename = brew.Name + ".rb"
+		var path = filepath.Join(ctx.Config.Dist, filename)
+		log.WithField("formula", path).Info("writing")
+		if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil {
+			return nil, errors.Wrap(err, "failed to write brew tap")
+		}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: filename,
+			Path: path,
+			Type: artifact.UploadableBrewTap,
+			Extra: map[string]interface{}{
+				"config": brew,
+			},
+		})
+	}
+
+	return []byte(content), nil
+}
+
+func filterArtifacts(ctx *context.Context, brew config.Homebrew) ([]*artifact.Artifact, error) {
 	// TODO: properly cover this with tests
 	var filters = []artifact.Filter{
 		artifact.Or(
@@ -183,31 +227,10 @@ func doRun(ctx *context.Context, brew config.Homebrew) error {
 
 	var archives = ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(archives) == 0 {
-		return ErrNoArchivesFound
+		return nil, ErrNoArchivesFound
 	}
 
-	content, err := buildFormula(ctx, brew, ctx.TokenType, archives)
-	if err != nil {
-		return err
-	}
-
-	var filename = brew.Name + ".rb"
-	var path = filepath.Join(ctx.Config.Dist, filename)
-	log.WithField("formula", path).Info("writing")
-	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil {
-		return errors.Wrap(err, "failed to write brew tap")
-	}
-
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: filename,
-		Path: path,
-		Type: artifact.UploadableBrewTap,
-		Extra: map[string]interface{}{
-			"config": brew,
-		},
-	})
-
-	return nil
+	return archives, nil
 }
 
 func buildFormulaPath(folder, filename string) string {
