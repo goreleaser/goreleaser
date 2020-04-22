@@ -281,11 +281,11 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 			return result, err
 		}
 		log.WithFields(log.Fields{
-			"artifact":         artifact,
+			"artifactExtras":   artifact.Extra,
 			"fromURLTemplate":  cfg.URLTemplate,
 			"templatedBrewURL": url,
 			"sum":              sum,
-		}).Debug("extracted file hash")
+		}).Debug("brew url templating")
 		var down = downloadable{
 			DownloadURL: url,
 			SHA256:      sum,
