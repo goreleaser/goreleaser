@@ -280,6 +280,12 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 		if err != nil {
 			return result, err
 		}
+		log.WithFields(log.Fields{
+			"artifact":         artifact,
+			"fromURLTemplate":  cfg.URLTemplate,
+			"templatedBrewURL": url,
+			"sum":              sum,
+		}).Debug("extracted file hash")
 		var down = downloadable{
 			DownloadURL: url,
 			SHA256:      sum,
