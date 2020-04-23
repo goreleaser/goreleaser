@@ -56,9 +56,9 @@ It will be used to deploy releases to your GitHub/GitLab repository.
 You can create a token [here](https://github.com/settings/tokens/new) for GitHub or [here](https://gitlab.com/profile/personal_access_tokens) for GitLab.
 
 ```sh
-$ export GITHUB_TOKEN=`YOUR_GH_TOKEN`
+$ export GITHUB_TOKEN="YOUR_GH_TOKEN"
 # or
-$ export GITLAB_TOKEN=`YOUR_GL_TOKEN`
+$ export GITLAB_TOKEN="YOUR_GL_TOKEN"
 ```
 
 GoReleaser will use the latest

@@ -122,7 +122,7 @@ func doRun(ctx *context.Context) error {
 				return fmt.Errorf(
 					"%d binaries match docker definition: %v: %s_%s_%s, should be %d",
 					len(binaries),
-					docker.Binaries, docker.Goos, docker.Goarch, docker.Goarm,
+					binaryNames, docker.Goos, docker.Goarch, docker.Goarm,
 					len(docker.Binaries),
 				)
 			}

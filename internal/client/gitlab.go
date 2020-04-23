@@ -31,13 +31,17 @@ func NewGitLab(ctx *context.Context) (Client, error) {
 			InsecureSkipVerify: ctx.Config.GitLabURLs.SkipTLSVerify,
 		},
 	}
-	httpClient := &http.Client{Transport: transport}
-	client := gitlab.NewClient(httpClient, token)
+	var options = []gitlab.ClientOptionFunc{
+		gitlab.WithHTTPClient(&http.Client{
+			Transport: transport,
+		}),
+	}
 	if ctx.Config.GitLabURLs.API != "" {
-		err := client.SetBaseURL(ctx.Config.GitLabURLs.API)
-		if err != nil {
-			return &gitlabClient{}, err
-		}
+		options = append(options, gitlab.WithBaseURL(ctx.Config.GitLabURLs.API))
+	}
+	client, err := gitlab.NewClient(token, options...)
+	if err != nil {
+		return &gitlabClient{}, err
 	}
 	return &gitlabClient{client: client}, nil
 }

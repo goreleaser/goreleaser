@@ -4,8 +4,8 @@ go 1.14
 
 require (
 	code.gitea.io/sdk/gitea v0.11.2
-	github.com/Masterminds/semver/v3 v3.0.3
-	github.com/apex/log v1.1.1
+	github.com/Masterminds/semver/v3 v3.1.0
+	github.com/apex/log v1.1.4
 	github.com/aws/aws-sdk-go v1.25.11 // indirect
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
@@ -20,7 +20,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.5.1
 	github.com/ulikunitz/xz v0.5.7
-	github.com/xanzy/go-gitlab v0.29.0
+	github.com/xanzy/go-gitlab v0.31.0
 	gocloud.dev v0.19.0
 	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d

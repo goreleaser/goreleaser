@@ -4,8 +4,6 @@ package upload
 import (
 	h "net/http"
 
-	"github.com/goreleaser/goreleaser/internal/deprecate"
-
 	"github.com/goreleaser/goreleaser/internal/http"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -22,10 +20,6 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if len(ctx.Config.Puts) > 0 {
-		deprecate.Notice(ctx, "puts")
-		ctx.Config.Uploads = append(ctx.Config.Uploads, ctx.Config.Puts...)
-	}
 	return http.Defaults(ctx.Config.Uploads)
 }
 
