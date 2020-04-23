@@ -5,7 +5,7 @@ go 1.14
 require (
 	code.gitea.io/sdk/gitea v0.11.2
 	github.com/Masterminds/semver/v3 v3.1.0
-	github.com/apex/log v1.1.1
+	github.com/apex/log v1.1.4
 	github.com/aws/aws-sdk-go v1.25.11 // indirect
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
