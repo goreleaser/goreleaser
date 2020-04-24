@@ -54,6 +54,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Scoop.CommitAuthor.Email = "goreleaser@carlosbecker.com"
 	}
 
+	if ctx.Config.Scoop.CommitMessageTemplate == "" {
+		ctx.Config.Scoop.CommitMessageTemplate = "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
+	}
+
 	return nil
 }
 
@@ -104,13 +108,20 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Release.Disable {
 		return pipe.Skip("release is disabled")
 	}
+
+	commitMessage, err := tmpl.New(ctx).
+		Apply(ctx.Config.Scoop.CommitMessageTemplate)
+	if err != nil {
+		return err
+	}
+
 	return client.CreateFile(
 		ctx,
 		ctx.Config.Scoop.CommitAuthor,
 		ctx.Config.Scoop.Bucket,
 		content.Bytes(),
 		path,
-		fmt.Sprintf("Scoop update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag),
+		commitMessage,
 	)
 }
 
