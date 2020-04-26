@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/apex/log"
@@ -25,15 +23,15 @@ func NewInitCmd() *initCmd {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if _, err := os.Stat(root.config); !os.IsNotExist(err) {
-				if err != nil {
-					return err
-				}
-				return fmt.Errorf("%s already exists", root.config)
+			f, err := os.OpenFile(root.config, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0644)
+			if err != nil {
+				return Wrap(err)
 			}
+			defer f.Close()
+
 			log.Infof(color.New(color.Bold).Sprintf("Generating %s file", root.config))
-			if err := ioutil.WriteFile(root.config, []byte(static.ExampleConfig), 0644); err != nil {
-				return err
+			if _, err := f.WriteString(static.ExampleConfig); err != nil {
+				return Wrap(err)
 			}
 
 			log.WithField("file", root.config).Info("config created; please edit accordingly to your needs")

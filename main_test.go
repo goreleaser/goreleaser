@@ -11,7 +11,6 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v2"
 )
 
 func init() {
@@ -152,36 +151,6 @@ func TestBrokenPipe(t *testing.T) {
 	createFile(t, "main.go", "not a valid go file")
 	_, err := releaseProject(testParams())
 	assert.Error(t, err)
-}
-
-func TestInitProject(t *testing.T) {
-	_, back := setup(t)
-	defer back()
-	var filename = "test_goreleaser.yml"
-	assert.NoError(t, initProject(filename))
-
-	file, err := os.Open(filename)
-	assert.NoError(t, err)
-	out, err := ioutil.ReadAll(file)
-	assert.NoError(t, err)
-
-	assert.NoError(t, yaml.Unmarshal(out, &config.Project{}))
-}
-
-func TestInitProjectFileExist(t *testing.T) {
-	_, back := setup(t)
-	defer back()
-	var filename = "test_goreleaser.yml"
-	createFile(t, filename, "")
-	assert.Error(t, initProject(filename))
-}
-
-func TestInitProjectDefaultPipeFails(t *testing.T) {
-	folder, back := setup(t)
-	defer back()
-	var filename = "test_goreleaser.yml"
-	assert.NoError(t, os.Chmod(folder, 0000))
-	assert.EqualError(t, initProject(filename), `stat test_goreleaser.yml: permission denied`)
 }
 
 func testParams() releaseOptions {
