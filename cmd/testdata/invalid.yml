@@ -1,0 +1,5 @@
+builds:
+- id: a
+- id: b
+- id: c
+- id: a

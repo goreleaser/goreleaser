@@ -63,7 +63,7 @@ func TestInvalidFields(t *testing.T) {
 }
 
 func TestInvalidYaml(t *testing.T) {
-	_, err := Load("testdata/invalid.yml")
+	_, err := Load("testdata/unmarshal_error.yml")
 	assert.EqualError(t, err, "yaml: line 1: did not find expected node content")
 }
 

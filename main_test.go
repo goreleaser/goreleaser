@@ -26,22 +26,6 @@ func TestReleaseProject(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestCheckConfig(t *testing.T) {
-	_, back := setup(t)
-	defer back()
-	_, err := checkConfig(testParams().Config)
-	assert.NoError(t, err)
-}
-
-func TestCheckConfigFails(t *testing.T) {
-	_, back := setup(t)
-	defer back()
-	var filename = "fail.yaml"
-	assert.NoError(t, ioutil.WriteFile(filename, []byte("nope: 1"), 0644))
-	_, err := checkConfig(filename)
-	assert.Error(t, err)
-}
-
 func TestReleaseProjectSkipPublish(t *testing.T) {
 	_, back := setup(t)
 	defer back()
