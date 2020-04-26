@@ -251,29 +251,29 @@ func TestVersion(t *testing.T) {
 		out                            string
 	}{
 		"all empty": {
-			out: "version: ",
+			out: "",
 		},
 		"complete": {
 			version: "1.2.3",
 			date:    "12/12/12",
 			commit:  "aaaa",
 			builtBy: "me",
-			out:     "version: 1.2.3\ncommit: aaaa\nbuilt at: 12/12/12\nbuilt by: me",
+			out:     "1.2.3\ncommit: aaaa\nbuilt at: 12/12/12\nbuilt by: me",
 		},
 		"only version": {
 			version: "1.2.3",
-			out:     "version: 1.2.3",
+			out:     "1.2.3",
 		},
 		"version and date": {
 			version: "1.2.3",
 			date:    "12/12/12",
-			out:     "version: 1.2.3\nbuilt at: 12/12/12",
+			out:     "1.2.3\nbuilt at: 12/12/12",
 		},
 		"version, date, built by": {
 			version: "1.2.3",
 			date:    "12/12/12",
 			builtBy: "me",
-			out:     "version: 1.2.3\nbuilt at: 12/12/12\nbuilt by: me",
+			out:     "1.2.3\nbuilt at: 12/12/12\nbuilt by: me",
 		},
 	} {
 		tt := tt

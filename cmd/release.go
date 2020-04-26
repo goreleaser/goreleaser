@@ -42,7 +42,7 @@ func NewReleaseCmd() *releaseCmd {
 		Run: func(cmd *cobra.Command, args []string) {
 			start := time.Now()
 
-			log.Infof(color.New(color.Bold).Sprintf("releasing using goreleaser %s...", version))
+			log.Infof(color.New(color.Bold).Sprint("releasing..."))
 
 			ctx, err := releaseProject(root.opts)
 			if err != nil {

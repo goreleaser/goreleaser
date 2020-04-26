@@ -8,19 +8,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// nolint: gochecknoglobals
-var (
-	version = "dev"
-	commit  = ""
-	date    = ""
-	builtBy = ""
-)
-
-func Execute() {
+func Execute(version string) {
 	fmt.Println()
 	defer fmt.Println()
 
-	if err := NewRootCmd().Execute(); err != nil {
+	if err := NewRootCmd(version).Execute(); err != nil {
 		log.WithError(err).Error("command failed")
 		if gerr, ok := err.(*GoreleaserError); ok {
 			os.Exit(gerr.Exit())
@@ -29,11 +21,11 @@ func Execute() {
 	}
 }
 
-func NewRootCmd() *cobra.Command {
+func NewRootCmd(version string) *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:     "goreleaser",
 		Short:   "Deliver Go binaries as fast and easily as possible",
-		Version: buildVersion(version, commit, date, builtBy),
+		Version: version,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if debug, _ := cmd.Flags().GetBool("debug"); debug {
 				log.SetLevel(log.DebugLevel)
@@ -50,18 +42,4 @@ func NewRootCmd() *cobra.Command {
 	)
 
 	return cmd
-}
-
-func buildVersion(version, commit, date, builtBy string) string {
-	var result = fmt.Sprintf("version: %s", version)
-	if commit != "" {
-		result = fmt.Sprintf("%s\ncommit: %s", result, commit)
-	}
-	if date != "" {
-		result = fmt.Sprintf("%s\nbuilt at: %s", result, date)
-	}
-	if builtBy != "" {
-		result = fmt.Sprintf("%s\nbuilt by: %s", result, builtBy)
-	}
-	return result
 }
