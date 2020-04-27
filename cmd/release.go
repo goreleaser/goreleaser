@@ -81,16 +81,7 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 	}
 	ctx, cancel := context.NewWithTimeout(cfg, options.timeout)
 	defer cancel()
-	ctx.Parallelism = options.parallelism
-	log.Debugf("parallelism: %v", ctx.Parallelism)
-	ctx.ReleaseNotes = options.releaseNotes
-	ctx.ReleaseHeader = options.releaseHeader
-	ctx.ReleaseFooter = options.releaseFooter
-	ctx.Snapshot = options.snapshot
-	ctx.SkipPublish = ctx.Snapshot || options.skipPublish
-	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
-	ctx.SkipSign = options.skipSign
-	ctx.RmDist = options.rmDist
+	setupContext(ctx, options)
 	return ctx, ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipeline.Pipeline {
 			if err := middleware.Logging(
@@ -103,4 +94,18 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 		}
 		return nil
 	})
+}
+
+func setupContext(ctx *context.Context, options releaseOpts) *context.Context {
+	ctx.Parallelism = options.parallelism
+	log.Debugf("parallelism: %v", ctx.Parallelism)
+	ctx.ReleaseNotes = options.releaseNotes
+	ctx.ReleaseHeader = options.releaseHeader
+	ctx.ReleaseFooter = options.releaseFooter
+	ctx.Snapshot = options.snapshot
+	ctx.SkipPublish = ctx.Snapshot || options.skipPublish
+	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
+	ctx.SkipSign = options.skipSign
+	ctx.RmDist = options.rmDist
+	return ctx
 }

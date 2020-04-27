@@ -1,14 +1,29 @@
 package cmd
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 	"github.com/tj/assert"
 )
+
+func init() {
+	_ = os.Unsetenv("GITHUB_TOKEN")
+	_ = os.Unsetenv("GITLAB_TOKEN")
+}
+
+type exitMemento struct {
+	code int
+}
+
+func (e *exitMemento) Exit(i int) {
+	e.code = i
+}
 
 func setup(t *testing.T) (current string, back func()) {
 	folder, err := ioutil.TempDir("", "")
@@ -61,4 +76,9 @@ release:
     name: fake
 `
 	createFile(t, "goreleaser.yml", yaml)
+}
+
+func wireOutput(cmd *cobra.Command, w io.Writer) {
+	cmd.SetOut(w)
+	cmd.SetErr(w)
 }
