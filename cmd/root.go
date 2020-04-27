@@ -2,12 +2,22 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
 func Execute(version string, exit func(int), args []string) {
+	// enable colored output on travis
+	if os.Getenv("CI") != "" {
+		color.NoColor = false
+	}
+
+	log.SetHandler(cli.Default)
+
 	fmt.Println()
 	defer fmt.Println()
 	newRootCmd(version, exit).Execute(args)

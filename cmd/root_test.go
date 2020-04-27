@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRootCm(t *testing.T) {
+func TestRootCmd(t *testing.T) {
 	var mem = &exitMemento{}
 	Execute("1.2.3", mem.Exit, []string{"-h"})
 	require.Equal(t, 0, mem.code)
