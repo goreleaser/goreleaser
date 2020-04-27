@@ -27,6 +27,7 @@ type releaseOpts struct {
 	skipSign      bool
 	skipValidate  bool
 	rmDist        bool
+	deprecated    bool
 	parallelism   int
 	timeout       time.Duration
 }
@@ -69,6 +70,8 @@ func NewReleaseCmd() *releaseCmd {
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 4, "Amount tasks to run concurrently")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire release process")
+	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
+	cmd.Flags().MarkHidden("deprecated")
 
 	root.cmd = cmd
 	return root
@@ -107,5 +110,8 @@ func setupContext(ctx *context.Context, options releaseOpts) *context.Context {
 	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
 	ctx.SkipSign = options.skipSign
 	ctx.RmDist = options.rmDist
+
+	// test only
+	ctx.Deprecated = options.deprecated
 	return ctx
 }

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -12,26 +11,27 @@ import (
 func TestRelease(t *testing.T) {
 	_, back := setup(t)
 	defer back()
-	var b bytes.Buffer
 	var cmd = NewReleaseCmd()
-	wireOutput(cmd.cmd, &b)
-	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2"})
+	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.NoError(t, cmd.cmd.Execute())
-	require.Contains(t, "releasing...", b.String())
-	require.Contains(t, "release succeeded after", b.String())
-	require.Contains(t, "error=publishing is disabled", b.String())
+}
+
+func TestReleaseInvalidConfig(t *testing.T) {
+	_, back := setup(t)
+	defer back()
+	createFile(t, "goreleaser.yml", "foo: bar")
+	var cmd = NewReleaseCmd()
+	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
+	require.EqualError(t, cmd.cmd.Execute(), "yaml: unmarshal errors:\n  line 1: field foo not found in type config.Project")
 }
 
 func TestReleaseBrokenProject(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	createFile(t, "main.go", "not a valid go file")
-	var b bytes.Buffer
 	var cmd = NewReleaseCmd()
-	wireOutput(cmd.cmd, &b)
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2"})
 	require.EqualError(t, cmd.cmd.Execute(), "failed to parse dir: .: main.go:1:1: expected 'package', found not")
-	require.Contains(t, "releasing...", b.String())
 }
 
 func TestReleaseFlags(t *testing.T) {

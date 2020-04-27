@@ -56,7 +56,6 @@ func NewCheckCmd() *checkCmd {
 
 	cmd.Flags().StringVarP(&root.config, "config", "f", "", "Configuration file to check")
 	cmd.Flags().BoolVar(&root.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
-
 	cmd.Flags().MarkHidden("deprecated")
 
 	root.cmd = cmd

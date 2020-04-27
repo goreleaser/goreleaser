@@ -7,9 +7,6 @@ type exitError struct {
 }
 
 func wrapErrorWithCode(err error, code int, details string) *exitError {
-	if err == nil {
-		return nil
-	}
 	return &exitError{
 		err:     err,
 		code:    code,

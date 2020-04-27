@@ -15,14 +15,14 @@ func Execute(version string, exit func(int), args []string) {
 
 func (cmd *rootCmd) Execute(args []string) {
 	cmd.cmd.SetArgs(args)
-	if len(args) != 1 {
-		// defaults to the release command
+
+	if shouldPrependRelease(cmd.cmd, args) {
 		cmd.cmd.SetArgs(append([]string{"release"}, args...))
 	}
 
 	if err := cmd.cmd.Execute(); err != nil {
 		var code = 1
-		var msg = "command fail"
+		var msg = "command failed"
 		if eerr, ok := err.(*exitError); ok {
 			code = eerr.code
 			if eerr.details != "" {
@@ -67,4 +67,30 @@ func NewRootCmd(version string, exit func(int)) *rootCmd {
 
 	root.cmd = cmd
 	return root
+}
+
+func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
+	// find current cmd, if its not root, it means the user actively
+	// set a command, so let it go
+	xmd, _, _ := cmd.Find(args)
+	if xmd != cmd {
+		return false
+	}
+
+	// if we have != 1 args, assume its a release
+	if len(args) != 1 {
+		return true
+	}
+
+	// given that its 1, check if its one of the valid standalone flags
+	// for the root cmd
+	for _, s := range []string{"-h", "--help", "-v", "--version"} {
+		if s == args[0] {
+			// if it is, we should run the root cmd
+			return false
+		}
+	}
+
+	// otherwise, we should probably prepend release
+	return true
 }
