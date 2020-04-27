@@ -32,7 +32,7 @@ type releaseOpts struct {
 	timeout       time.Duration
 }
 
-func NewReleaseCmd() *releaseCmd {
+func newReleaseCmd() *releaseCmd {
 	var root = &releaseCmd{}
 	var cmd = &cobra.Command{
 		Use:           "release",
@@ -71,7 +71,7 @@ func NewReleaseCmd() *releaseCmd {
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 4, "Amount tasks to run concurrently")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire release process")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
-	cmd.Flags().MarkHidden("deprecated")
+	_ = cmd.Flags().MarkHidden("deprecated")
 
 	root.cmd = cmd
 	return root

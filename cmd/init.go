@@ -14,7 +14,7 @@ type initCmd struct {
 	config string
 }
 
-func NewInitCmd() *initCmd {
+func newInitCmd() *initCmd {
 	var root = &initCmd{}
 	var cmd = &cobra.Command{
 		Use:           "init",

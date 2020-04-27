@@ -18,7 +18,7 @@ type checkCmd struct {
 	deprecated bool
 }
 
-func NewCheckCmd() *checkCmd {
+func newCheckCmd() *checkCmd {
 	var root = &checkCmd{}
 	var cmd = &cobra.Command{
 		Use:           "check",
@@ -56,7 +56,7 @@ func NewCheckCmd() *checkCmd {
 
 	cmd.Flags().StringVarP(&root.config, "config", "f", "", "Configuration file to check")
 	cmd.Flags().BoolVar(&root.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
-	cmd.Flags().MarkHidden("deprecated")
+	_ = cmd.Flags().MarkHidden("deprecated")
 
 	root.cmd = cmd
 	return root

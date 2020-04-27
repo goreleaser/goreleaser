@@ -11,7 +11,7 @@ import (
 
 func TestInit(t *testing.T) {
 	var folder = mktemp(t)
-	var cmd = NewInitCmd().cmd
+	var cmd = newInitCmd().cmd
 	var path = filepath.Join(folder, "foo.yaml")
 	cmd.SetArgs([]string{"-f", path})
 	require.NoError(t, cmd.Execute())
@@ -20,7 +20,7 @@ func TestInit(t *testing.T) {
 
 func TestInitFileExists(t *testing.T) {
 	var folder = mktemp(t)
-	var cmd = NewInitCmd().cmd
+	var cmd = newInitCmd().cmd
 	var path = filepath.Join(folder, "twice.yaml")
 	cmd.SetArgs([]string{"-f", path})
 	require.NoError(t, cmd.Execute())
@@ -30,7 +30,7 @@ func TestInitFileExists(t *testing.T) {
 
 func TestInitFileError(t *testing.T) {
 	var folder = mktemp(t)
-	var cmd = NewInitCmd().cmd
+	var cmd = newInitCmd().cmd
 	var path = filepath.Join(folder, "nope.yaml")
 	require.NoError(t, os.Chmod(folder, 0000))
 	cmd.SetArgs([]string{"-f", path})

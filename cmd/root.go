@@ -10,7 +10,7 @@ import (
 func Execute(version string, exit func(int), args []string) {
 	fmt.Println()
 	defer fmt.Println()
-	NewRootCmd(version, exit).Execute(args)
+	newRootCmd(version, exit).Execute(args)
 }
 
 func (cmd *rootCmd) Execute(args []string) {
@@ -40,7 +40,7 @@ type rootCmd struct {
 	exit  func(int)
 }
 
-func NewRootCmd(version string, exit func(int)) *rootCmd {
+func newRootCmd(version string, exit func(int)) *rootCmd {
 	var root = &rootCmd{
 		exit: exit,
 	}
@@ -60,9 +60,9 @@ func NewRootCmd(version string, exit func(int)) *rootCmd {
 
 	cmd.PersistentFlags().BoolVar(&root.debug, "debug", false, "Enable debug mode")
 	cmd.AddCommand(
-		NewReleaseCmd().cmd,
-		NewCheckCmd().cmd,
-		NewInitCmd().cmd,
+		newReleaseCmd().cmd,
+		newCheckCmd().cmd,
+		newInitCmd().cmd,
 	)
 
 	root.cmd = cmd
