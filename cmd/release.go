@@ -39,14 +39,14 @@ func NewReleaseCmd() *releaseCmd {
 		Short:         "Releases the current project",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			start := time.Now()
 
 			log.Infof(color.New(color.Bold).Sprint("releasing..."))
 
 			ctx, err := releaseProject(root.opts)
 			if err != nil {
-				log.WithError(err).Fatalf(color.New(color.Bold).Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
+				return wrapError(err, color.New(color.Bold).Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
 			}
 
 			if ctx.Deprecated {
@@ -54,6 +54,7 @@ func NewReleaseCmd() *releaseCmd {
 			}
 
 			log.Infof(color.New(color.Bold).Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds()))
+			return nil
 		},
 	}
 

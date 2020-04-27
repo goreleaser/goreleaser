@@ -29,7 +29,7 @@ func NewCheckCmd() *checkCmd {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := loadConfig(root.config)
 			if err != nil {
-				return Wrap(err)
+				return err
 			}
 			var ctx = context.New(cfg)
 			ctx.Deprecated = root.deprecated
@@ -39,13 +39,14 @@ func NewCheckCmd() *checkCmd {
 				return defaults.Pipe{}.Run(ctx)
 			}); err != nil {
 				log.WithError(err).Error(color.New(color.Bold).Sprintf("config is invalid"))
-				return Wrap(errors.Wrap(err, "invalid config"))
+				return errors.Wrap(err, "invalid config")
 			}
 
 			if ctx.Deprecated {
-				return WrapWithCode(
+				return wrapErrorWithCode(
 					fmt.Errorf("config is valid, but uses deprecated properties, check logs above for details"),
 					2,
+					"",
 				)
 			}
 			log.Infof(color.New(color.Bold).Sprintf("config is valid"))

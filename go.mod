@@ -21,6 +21,7 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.5.1
+	github.com/tj/assert v0.0.0-20171129193455-018094318fb0
 	github.com/ulikunitz/xz v0.5.7
 	github.com/xanzy/go-gitlab v0.31.0
 	gocloud.dev v0.19.0

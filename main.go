@@ -26,7 +26,11 @@ func main() {
 
 	log.SetHandler(cli.Default)
 
-	cmd.Execute(buildVersion(version, commit, date, builtBy))
+	cmd.Execute(
+		buildVersion(version, commit, date, builtBy),
+		os.Exit,
+		os.Args[1:],
+	)
 }
 
 func buildVersion(version, commit, date, builtBy string) string {

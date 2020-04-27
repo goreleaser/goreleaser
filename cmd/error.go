@@ -1,28 +1,26 @@
 package cmd
 
-func Wrap(err error) *GoreleaserError {
-	return WrapWithCode(err, 1)
+type exitError struct {
+	err     error
+	code    int
+	details string
 }
 
-func WrapWithCode(err error, code int) *GoreleaserError {
+func wrapErrorWithCode(err error, code int, details string) *exitError {
 	if err == nil {
 		return nil
 	}
-	return &GoreleaserError{
-		err:  err,
-		exit: code,
+	return &exitError{
+		err:     err,
+		code:    code,
+		details: details,
 	}
 }
 
-type GoreleaserError struct {
-	err  error
-	exit int
+func wrapError(err error, log string) *exitError {
+	return wrapErrorWithCode(err, 1, log)
 }
 
-func (e *GoreleaserError) Error() string {
+func (e *exitError) Error() string {
 	return e.err.Error()
-}
-
-func (e *GoreleaserError) Exit() int {
-	return e.exit
 }
