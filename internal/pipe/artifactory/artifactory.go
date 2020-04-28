@@ -45,6 +45,9 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
+	if ctx.SkipPublish {
+		return pipe.ErrSkipPublishEnabled
+	}
 	for i := range ctx.Config.Artifactories {
 		ctx.Config.Artifactories[i].ChecksumHeader = "X-Checksum-SHA256"
 		ctx.Config.Artifactories[i].Method = h.MethodPut

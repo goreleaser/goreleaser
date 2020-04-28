@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/goreleaser/goreleaser/internal/middleware"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
@@ -49,9 +48,6 @@ var publishers = []Publisher{
 
 // Run the pipe
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
 	for _, publisher := range publishers {
 		if err := middleware.Logging(
 			publisher.String(),
