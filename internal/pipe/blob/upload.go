@@ -109,10 +109,6 @@ func doUpload(ctx *context.Context, conf config.Blob, up uploader) error {
 					return errors.Wrap(err, "google app credentials you provided is not valid")
 				case errorContains(err, "no such host"):
 					return errors.Wrap(err, "azure storage account you provided is not valid")
-				case errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound"):
-					return errors.Wrapf(err, "provided bucket does not exist: %s", bucketURL)
-				case errorContains(err, "NoCredentialProviders"):
-					return errors.Wrapf(err, "check credentials and access to bucket %s", bucketURL)
 				case errorContains(err, "ServiceCode=ResourceNotFound"):
 					return errors.Wrapf(err, "missing azure storage key for provided bucket %s", bucketURL)
 				default:
