@@ -155,7 +155,7 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 			},
 		},
 	})
-	ctx.Git = context.GitInfo{CurrentTag: "v1.2.0"}
+	ctx.Git = context.GitInfo{CurrentTag: "v1.1.0"}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
@@ -200,7 +200,7 @@ func TestMinioUploadSkipPublish(t *testing.T) {
 		},
 	})
 	ctx.SkipPublish = true
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	ctx.Git = context.GitInfo{CurrentTag: "v1.2.0"}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.Checksum,
 		Name: "checksum.txt",
@@ -237,7 +237,12 @@ func TestMinioUploadSkipPublish(t *testing.T) {
 	assert.NoError(t, Pipe{}.Default(ctx))
 	assert.NoError(t, Pipe{}.Publish(ctx))
 
-	require.Equal(t, []string{".gitkeep"}, getFiles(t, ctx, ctx.Config.Blobs[0]))
+	require.NotContains(t, getFiles(t, ctx, ctx.Config.Blobs[0]), []string{
+		"testupload/v1.2.0/bin.deb",
+		"testupload/v1.2.0/bin.tar.gz",
+		"testupload/v1.2.0/checksum.txt",
+		"testupload/v1.2.0/source.tar.gz",
+	})
 }
 
 func randomListen(t *testing.T) string {
