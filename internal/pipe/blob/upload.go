@@ -185,6 +185,6 @@ func (u productionUploader) Upload(ctx *context.Context, url, path string, data 
 func closeAndCaptureError(err *error, closer io.Closer) {
 	var cerr = closer.Close()
 	if *err == nil && cerr != nil {
-		err = &cerr
+		*err = cerr
 	}
 }
