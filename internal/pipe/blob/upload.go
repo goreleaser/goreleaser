@@ -89,12 +89,6 @@ func doUpload(ctx *context.Context, conf config.Blob, up uploader) error {
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
 		artifact := artifact
 		g.Go(func() error {
-			log.WithFields(log.Fields{
-				"provider": bucketURL,
-				"folder":   folder,
-				"artifact": artifact.Name,
-			}).Info("uploading")
-
 			// TODO: replace this with ?prefix=folder on the bucket url
 			data, err := getData(ctx, conf, artifact.Path)
 			if err != nil {
@@ -172,6 +166,11 @@ func (u skipUploader) Upload(_ *context.Context, url, path string, _ []byte) err
 type productionUploader struct{}
 
 func (u productionUploader) Upload(ctx *context.Context, url, path string, data []byte) error {
+	log.WithFields(log.Fields{
+		"bucket": url,
+		"path":   path,
+	}).Info("uploading")
+
 	// TODO: its not so great that we open one connection for each file
 	conn, err := blob.OpenBucket(ctx, url)
 	if err != nil {

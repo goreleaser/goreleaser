@@ -145,7 +145,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 	var path = filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
 	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil {
-		return err
+		return errors.Wrap(err, "failed to write brew tap")
 	}
 
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
