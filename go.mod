@@ -18,7 +18,9 @@ require (
 	github.com/mattn/go-zglob v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
+	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.5.1
+	github.com/tj/assert v0.0.0-20171129193455-018094318fb0
 	github.com/ulikunitz/xz v0.5.7
 	github.com/xanzy/go-gitlab v0.31.0
 	gocloud.dev v0.19.0
@@ -26,6 +28,5 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	google.golang.org/appengine v1.6.5 // indirect
-	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/yaml.v2 v2.2.8
 )
