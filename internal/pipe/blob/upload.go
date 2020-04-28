@@ -172,6 +172,7 @@ func (u skipUploader) Upload(_ *context.Context, url, path string, _ []byte) err
 type productionUploader struct{}
 
 func (u productionUploader) Upload(ctx *context.Context, url, path string, data []byte) error {
+	// TODO: its not so great that we open one connection for each file
 	conn, err := blob.OpenBucket(ctx, url)
 	if err != nil {
 		return err

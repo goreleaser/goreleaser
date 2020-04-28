@@ -25,10 +25,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Publish artifacts
 func (Pipe) Publish(ctx *context.Context) error {
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
-
 	if len(ctx.Config.Uploads) == 0 {
 		return pipe.Skip("uploads section is not configured")
 	}
