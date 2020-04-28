@@ -19,9 +19,6 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
 	for i := range ctx.Config.Blobs {
 		blob := &ctx.Config.Blobs[i]
 
@@ -40,13 +37,16 @@ func (Pipe) Publish(ctx *context.Context) error {
 	if len(ctx.Config.Blobs) == 0 {
 		return pipe.Skip("Blob section is not configured")
 	}
-	// Openning connection to the list of buckets
-	o := newOpenBucket()
+	var up uploader = productionUploader{}
+	if ctx.SkipPublish {
+		up = skipUploader{}
+	}
+
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, conf := range ctx.Config.Blobs {
 		conf := conf
 		g.Go(func() error {
-			return o.Upload(ctx, conf)
+			return doUpload(ctx, conf, up)
 		})
 	}
 	return g.Wait()

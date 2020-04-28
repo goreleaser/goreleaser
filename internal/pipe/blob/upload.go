@@ -2,6 +2,7 @@ package blob
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/url"
 	"path/filepath"
@@ -27,32 +28,7 @@ import (
 	_ "gocloud.dev/secrets/gcpkms"
 )
 
-// OpenBucket is the interface that wraps the BucketConnect and UploadBucket method
-type OpenBucket interface {
-	Connect(ctx *context.Context, bucketURL string) (*blob.Bucket, error)
-	Upload(ctx *context.Context, conf config.Blob) error
-}
-
-// Bucket is object which holds connection for Go Bucker Provider
-type Bucket struct {
-	BucketConn *blob.Bucket
-}
-
-// returns openbucket connection for list of providers
-func newOpenBucket() OpenBucket {
-	return Bucket{}
-}
-
-// Connect makes connection with provider
-func (b Bucket) Connect(ctx *context.Context, bucketURL string) (*blob.Bucket, error) {
-	conn, err := blob.OpenBucket(ctx, bucketURL)
-	if err != nil {
-		return nil, err
-	}
-	return conn, nil
-}
-
-func (b Bucket) url(ctx *context.Context, conf config.Blob) (string, error) {
+func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 	bucket, err := tmpl.New(ctx).Apply(conf.Bucket)
 	if err != nil {
 		return "", err
@@ -83,25 +59,19 @@ func (b Bucket) url(ctx *context.Context, conf config.Blob) (string, error) {
 	return bucketURL, nil
 }
 
-// Upload takes connection initilized from newOpenBucket to upload goreleaser artifacts
-// Takes goreleaser context(which includes artificats) and bucketURL for upload destination (gs://gorelease-bucket)
-func (b Bucket) Upload(ctx *context.Context, conf config.Blob) error {
+// Takes goreleaser context(which includes artificats) and bucketURL for
+// upload to destination (eg: gs://gorelease-bucket) using the given uploader
+// implementation
+func doUpload(ctx *context.Context, conf config.Blob, up uploader) error {
 	folder, err := tmpl.New(ctx).Apply(conf.Folder)
 	if err != nil {
 		return err
 	}
 
-	bucketURL, err := b.url(ctx, conf)
+	bucketURL, err := urlFor(ctx, conf)
 	if err != nil {
 		return err
 	}
-
-	// Get the openbucket connection for specific provider
-	conn, err := b.Connect(ctx, bucketURL)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
 
 	var filter = artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
@@ -126,27 +96,17 @@ func (b Bucket) Upload(ctx *context.Context, conf config.Blob) error {
 			}).Info("uploading")
 
 			// TODO: replace this with ?prefix=folder on the bucket url
-			w, err := conn.NewWriter(ctx, filepath.Join(folder, artifact.Name), nil)
-			if err != nil {
-				return errors.Wrap(err, "failed to obtain writer")
-			}
 			data, err := getData(ctx, conf, artifact.Path)
 			if err != nil {
 				return err
 			}
-			_, err = w.Write(data)
-			if err != nil {
+
+			if err := up.Upload(ctx, bucketURL, filepath.Join(folder, artifact.Name), data); err != nil {
 				switch {
 				case errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound"):
 					return errors.Wrapf(err, "provided bucket does not exist: %s", bucketURL)
 				case errorContains(err, "NoCredentialProviders"):
 					return errors.Wrapf(err, "check credentials and access to bucket: %s", bucketURL)
-				default:
-					return errors.Wrapf(err, "failed to write to bucket")
-				}
-			}
-			if err = w.Close(); err != nil {
-				switch {
 				case errorContains(err, "InvalidAccessKeyId"):
 					return errors.Wrap(err, "aws access key id you provided does not exist in our records")
 				case errorContains(err, "AuthenticationFailed"):
@@ -162,7 +122,7 @@ func (b Bucket) Upload(ctx *context.Context, conf config.Blob) error {
 				case errorContains(err, "ServiceCode=ResourceNotFound"):
 					return errors.Wrapf(err, "missing azure storage key for provided bucket %s", bucketURL)
 				default:
-					return errors.Wrap(err, "failed to close Bucket writer")
+					return errors.Wrap(err, "failed to write to bucket")
 				}
 			}
 			return err
@@ -189,4 +149,46 @@ func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error
 		return data, errors.Wrap(err, "failed to encrypt with kms")
 	}
 	return data, err
+}
+
+// uploader implements upload
+type uploader interface {
+	Upload(ctx *context.Context, url, path string, data []byte) error
+}
+
+// skipUploader is used when --skip-upload is set and will just log
+// things without really doing anything
+type skipUploader struct{}
+
+func (u skipUploader) Upload(_ *context.Context, url, path string, _ []byte) error {
+	log.WithFields(log.Fields{
+		"bucket": url,
+		"path":   path,
+	}).Warn("doUpload skipped because skip-publish is set")
+	return nil
+}
+
+// productionUploader actually do upload to
+type productionUploader struct{}
+
+func (u productionUploader) Upload(ctx *context.Context, url, path string, data []byte) error {
+	conn, err := blob.OpenBucket(ctx, url)
+	if err != nil {
+		return err
+	}
+	defer closeAndCaptureError(&err, conn)
+	w, err := conn.NewWriter(ctx, path, nil)
+	if err != nil {
+		return err
+	}
+	defer closeAndCaptureError(&err, w)
+	_, err = w.Write(data)
+	return err
+}
+
+func closeAndCaptureError(err *error, closer io.Closer) {
+	var cerr = closer.Close()
+	if *err == nil && cerr != nil {
+		err = &cerr
+	}
 }
