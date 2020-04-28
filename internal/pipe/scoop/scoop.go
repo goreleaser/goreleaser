@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -178,6 +179,13 @@ func buildManifest(ctx *context.Context, artifacts []*artifact.Artifact) (bytes.
 		if err != nil {
 			return result, err
 		}
+
+		log.WithFields(log.Fields{
+			"artifactExtras":   artifact.Extra,
+			"fromURLTemplate":  ctx.Config.Scoop.URLTemplate,
+			"templatedBrewURL": url,
+			"sum":              sum,
+		}).Debug("scoop url templating")
 
 		manifest.Architecture[arch] = Resource{
 			URL:  url,
