@@ -4,7 +4,6 @@ package pipeline
 import (
 	"fmt"
 
-	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/semver"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
 
@@ -55,6 +54,5 @@ var Pipeline = []Piper{
 	checksums.Pipe{},       // checksums of the files
 	sign.Pipe{},            // sign artifacts
 	docker.Pipe{},          // create and push docker images
-	brew.Pipe{},            // create the formula file on dist
 	publish.Pipe{},         // publishes artifacts
 }
