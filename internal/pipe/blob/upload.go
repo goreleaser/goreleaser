@@ -2,7 +2,6 @@ package blob
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/url"
 	"path/filepath"
@@ -161,7 +160,7 @@ func (u skipUploader) Upload(_ *context.Context, url, path string, _ []byte) err
 // productionUploader actually do upload to
 type productionUploader struct{}
 
-func (u productionUploader) Upload(ctx *context.Context, url, path string, data []byte) error {
+func (u productionUploader) Upload(ctx *context.Context, url, path string, data []byte) (err error) {
 	log.WithFields(log.Fields{
 		"bucket": url,
 		"path":   path,
@@ -172,19 +171,20 @@ func (u productionUploader) Upload(ctx *context.Context, url, path string, data 
 	if err != nil {
 		return err
 	}
-	defer closeAndCaptureError(&err, conn)
+	defer func() {
+		if cerr := conn.Close(); err == nil {
+			err = cerr
+		}
+	}()
 	w, err := conn.NewWriter(ctx, path, nil)
 	if err != nil {
 		return err
 	}
-	defer closeAndCaptureError(&err, w)
+	defer func() {
+		if cerr := w.Close(); err == nil {
+			err = cerr
+		}
+	}()
 	_, err = w.Write(data)
-	return err
-}
-
-func closeAndCaptureError(err *error, closer io.Closer) {
-	var cerr = closer.Close()
-	if *err == nil && cerr != nil {
-		*err = cerr
-	}
+	return
 }
