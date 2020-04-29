@@ -99,6 +99,9 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Publish github release
 func (Pipe) Publish(ctx *context.Context) error {
+	if ctx.SkipPublish {
+		return pipe.ErrSkipPublishEnabled
+	}
 	c, err := client.New(ctx)
 	if err != nil {
 		return err

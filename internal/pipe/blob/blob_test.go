@@ -240,10 +240,8 @@ func TestPipe_Publish(t *testing.T) {
 }
 
 func TestURL(t *testing.T) {
-	var buck = Bucket{}
-
 	t.Run("s3 with opts", func(t *testing.T) {
-		url, err := buck.url(context.New(config.Project{}), config.Blob{
+		url, err := urlFor(context.New(config.Project{}), config.Blob{
 			Bucket:     "foo",
 			Provider:   "s3",
 			Region:     "us-west-1",
@@ -256,7 +254,7 @@ func TestURL(t *testing.T) {
 	})
 
 	t.Run("s3 with some opts", func(t *testing.T) {
-		url, err := buck.url(context.New(config.Project{}), config.Blob{
+		url, err := urlFor(context.New(config.Project{}), config.Blob{
 			Bucket:     "foo",
 			Provider:   "s3",
 			Region:     "us-west-1",
@@ -267,7 +265,7 @@ func TestURL(t *testing.T) {
 	})
 
 	t.Run("gs with opts", func(t *testing.T) {
-		url, err := buck.url(context.New(config.Project{}), config.Blob{
+		url, err := urlFor(context.New(config.Project{}), config.Blob{
 			Bucket:     "foo",
 			Provider:   "gs",
 			Region:     "us-west-1",
@@ -280,7 +278,7 @@ func TestURL(t *testing.T) {
 	})
 
 	t.Run("s3 no opts", func(t *testing.T) {
-		url, err := buck.url(context.New(config.Project{}), config.Blob{
+		url, err := urlFor(context.New(config.Project{}), config.Blob{
 			Bucket:   "foo",
 			Provider: "s3",
 		})
@@ -289,7 +287,7 @@ func TestURL(t *testing.T) {
 	})
 
 	t.Run("gs no opts", func(t *testing.T) {
-		url, err := buck.url(context.New(config.Project{}), config.Blob{
+		url, err := urlFor(context.New(config.Project{}), config.Blob{
 			Bucket:   "foo",
 			Provider: "gs",
 		})

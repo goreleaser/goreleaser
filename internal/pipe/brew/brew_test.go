@@ -13,7 +13,6 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var update = flag.Bool("update", false, "update .golden files")
@@ -249,8 +248,7 @@ func TestRunPipe(t *testing.T) {
 			client := &DummyClient{}
 			var distFile = filepath.Join(folder, name+".rb")
 
-			require.NoError(t, Pipe{}.Run(ctx))
-			assert.NoError(t, doPublish(ctx, client))
+			assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
 			assert.True(t, client.CreatedFile)
 			var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
 			if *update {
@@ -377,8 +375,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 		client := &DummyClient{}
 		var distFile = filepath.Join(folder, name+".rb")
 
-		require.NoError(t, Pipe{}.Run(ctx))
-		assert.NoError(t, doPublish(ctx, client))
+		assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
 		assert.True(t, client.CreatedFile)
 		var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
 		if *update {
@@ -409,9 +406,8 @@ func TestRunPipeNoDarwin64Build(t *testing.T) {
 		},
 	}
 	client := &DummyClient{}
-	require.Equal(t, ErrNoArchivesFound, Pipe{}.Run(ctx))
-	testlib.AssertSkipped(t, doPublish(ctx, client))
-	require.False(t, client.CreatedFile)
+	assert.Equal(t, ErrNoArchivesFound, doRun(ctx, ctx.Config.Brews[0], client))
+	assert.False(t, client.CreatedFile)
 }
 
 func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
@@ -554,9 +550,8 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 			})
 		}
 		client := &DummyClient{}
-		require.Equal(t, test.expectedError, Pipe{}.Run(ctx))
-		testlib.AssertSkipped(t, doPublish(ctx, client))
-		require.False(t, client.CreatedFile)
+		assert.Equal(t, test.expectedError, doRun(ctx, ctx.Config.Brews[0], client))
+		assert.False(t, client.CreatedFile)
 		// clean the artifacts for the next run
 		ctx.Artifacts = artifact.New()
 	}
@@ -567,8 +562,7 @@ func TestRunPipeBrewNotSetup(t *testing.T) {
 		Config: config.Project{},
 	}
 	client := &DummyClient{}
-	require.NoError(t, Pipe{}.Run(ctx))
-	testlib.AssertSkipped(t, doPublish(ctx, client))
+	testlib.AssertSkipped(t, doRun(ctx, config.Homebrew{}, client))
 	assert.False(t, client.CreatedFile)
 }
 
@@ -593,71 +587,95 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Type:   artifact.Binary,
 	})
 	client := &DummyClient{}
-	require.Equal(t, ErrNoArchivesFound, Pipe{}.Run(ctx))
-	testlib.AssertSkipped(t, doPublish(ctx, client))
-	require.False(t, client.CreatedFile)
+	assert.Equal(t, ErrNoArchivesFound, doRun(ctx, ctx.Config.Brews[0], client))
+	assert.False(t, client.CreatedFile)
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(t, err)
-
-	var newCtx = func() *context.Context {
-		var ctx = context.New(config.Project{
-			Dist:        folder,
-			ProjectName: "foo",
-			Release:     config.Release{},
-			Brews: []config.Homebrew{
-				{
-					GitHub: config.Repo{
-						Owner: "test",
-						Name:  "test",
-					},
+	var ctx = context.New(config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		Release:     config.Release{},
+		Brews: []config.Homebrew{
+			{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
 				},
 			},
-		})
-		ctx.TokenType = context.TokenTypeGitHub
-		ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
-		var path = filepath.Join(folder, "whatever.tar.gz")
-		_, err = os.Create(path)
-		assert.NoError(t, err)
-		ctx.Artifacts.Add(&artifact.Artifact{
-			Name:   "bin",
-			Path:   path,
-			Goos:   "darwin",
-			Goarch: "amd64",
-			Type:   artifact.UploadableArchive,
-			Extra: map[string]interface{}{
-				"ID":     "foo",
-				"Format": "tar.gz",
-			},
-		})
-		return ctx
-	}
-	var client = &DummyClient{}
+		},
+	})
+	ctx.TokenType = context.TokenTypeGitHub
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
+	var path = filepath.Join(folder, "whatever.tar.gz")
+	_, err = os.Create(path)
+	assert.NoError(t, err)
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "bin",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID":     "foo",
+			"Format": "tar.gz",
+		},
+	})
+	client := &DummyClient{}
 
-	var assertNoPublish = func(t *testing.T, ctx *context.Context) {
-		require.NoError(t, Pipe{}.Run(ctx))
-		testlib.AssertSkipped(t, doPublish(ctx, client))
+	var assertNoPublish = func(t *testing.T) {
+		testlib.AssertSkipped(t, doRun(ctx, ctx.Config.Brews[0], client))
 		assert.False(t, client.CreatedFile)
 	}
-
 	t.Run("skip upload", func(tt *testing.T) {
-		var ctx = newCtx()
 		ctx.Config.Release.Draft = false
 		ctx.Config.Brews[0].SkipUpload = "true"
 		ctx.SkipPublish = false
-		require.NoError(t, Pipe{}.Run(ctx))
-		assertNoPublish(tt, ctx)
+		assertNoPublish(tt)
 	})
 	t.Run("skip publish", func(tt *testing.T) {
-		var ctx = newCtx()
 		ctx.Config.Release.Draft = false
 		ctx.Config.Brews[0].SkipUpload = "false"
 		ctx.SkipPublish = true
-		require.NoError(t, Pipe{}.Run(ctx))
-		assertNoPublish(tt, ctx)
+		assertNoPublish(tt)
 	})
+}
+
+func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(t, err)
+	var ctx = context.New(config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		Release:     config.Release{},
+		Brews: []config.Homebrew{
+			{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+	})
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
+	var path = filepath.Join(folder, "whatever.tar.gz")
+	_, err = os.Create(path)
+	assert.NoError(t, err)
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "bin",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID":     "foo",
+			"Format": "tar.gz",
+		},
+	})
+	client := &DummyClient{}
+	assert.Equal(t, ErrTokenTypeNotImplementedForBrew, doRun(ctx, ctx.Config.Brews[0], client))
 }
 
 func TestDefault(t *testing.T) {

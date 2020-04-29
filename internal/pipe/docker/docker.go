@@ -75,6 +75,9 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Publish the docker images
 func (Pipe) Publish(ctx *context.Context) error {
+	if ctx.SkipPublish {
+		return pipe.ErrSkipPublishEnabled
+	}
 	var images = ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableDockerImage)).List()
 	for _, image := range images {
 		if err := dockerPush(ctx, image); err != nil {
