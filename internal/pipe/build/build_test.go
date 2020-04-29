@@ -18,10 +18,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var fakeArtifact = &artifact.Artifact{
-	Name: "fake",
-}
-
 type fakeBuilder struct {
 	fail bool
 }
@@ -42,7 +38,9 @@ func (f *fakeBuilder) Build(ctx *context.Context, build config.Build, options ap
 	if err := ioutil.WriteFile(options.Path, []byte("foo"), 0755); err != nil {
 		return err
 	}
-	ctx.Artifacts.Add(fakeArtifact)
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: options.Name,
+	})
 	return nil
 }
 
@@ -104,7 +102,9 @@ func TestRunPipe(t *testing.T) {
 	var ctx = context.New(config)
 	ctx.Git.CurrentTag = "2.4.5"
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{fakeArtifact})
+	assert.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
+		Name: "testing",
+	}})
 }
 
 func TestRunFullPipe(t *testing.T) {
@@ -136,7 +136,9 @@ func TestRunFullPipe(t *testing.T) {
 	var ctx = context.New(config)
 	ctx.Git.CurrentTag = "2.4.5"
 	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{fakeArtifact})
+	assert.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
+		Name: "testing",
+	}})
 	assert.FileExists(t, post)
 	assert.FileExists(t, pre)
 	assert.FileExists(t, filepath.Join(folder, "build1_whatever", "testing"))

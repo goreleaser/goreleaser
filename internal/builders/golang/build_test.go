@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var runtimeTarget = runtime.GOOS + "_" + runtime.GOARCH
@@ -91,7 +92,7 @@ func TestBuild(t *testing.T) {
 			{
 				ID:     "foo",
 				Env:    []string{"GO111MODULE=off"},
-				Binary: "bin/foo",
+				Binary: "bin/foo-{{ .Version }}",
 				Targets: []string{
 					"linux_amd64",
 					"darwin_amd64",
@@ -110,6 +111,7 @@ func TestBuild(t *testing.T) {
 	var ctx = context.New(config)
 	ctx.Env["GO_FLAGS"] = "-v"
 	ctx.Git.CurrentTag = "5.6.7"
+	ctx.Version = "v" + ctx.Git.CurrentTag
 	var build = ctx.Config.Builds[0]
 	for _, target := range build.Targets {
 		var ext string
@@ -119,99 +121,101 @@ func TestBuild(t *testing.T) {
 		if target == "js_wasm" {
 			ext = ".wasm"
 		}
+		bin, terr := tmpl.New(ctx).Apply(build.Binary)
+		require.NoError(t, terr)
 		var err = Default.Build(ctx, build, api.Options{
 			Target: target,
-			Name:   build.Binary,
-			Path:   filepath.Join(folder, "dist", target, build.Binary),
+			Name:   bin,
+			Path:   filepath.Join(folder, "dist", target, bin),
 			Ext:    ext,
 		})
 		assert.NoError(t, err)
 	}
 	assert.ElementsMatch(t, ctx.Artifacts.List(), []*artifact.Artifact{
 		{
-			Name:   "bin/foo",
-			Path:   filepath.Join(folder, "dist", "linux_amd64", "bin", "foo"),
+			Name:   "bin/foo-v5.6.7",
+			Path:   filepath.Join(folder, "dist", "linux_amd64", "bin", "foo-v5.6.7"),
 			Goos:   "linux",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				"Ext":    "",
-				"Binary": "foo",
+				"Binary": "foo-v5.6.7",
 				"ID":     "foo",
 			},
 		},
 		{
-			Name:   "bin/foo",
-			Path:   filepath.Join(folder, "dist", "linux_mips_softfloat", "bin", "foo"),
+			Name:   "bin/foo-v5.6.7",
+			Path:   filepath.Join(folder, "dist", "linux_mips_softfloat", "bin", "foo-v5.6.7"),
 			Goos:   "linux",
 			Goarch: "mips",
 			Gomips: "softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				"Ext":    "",
-				"Binary": "foo",
+				"Binary": "foo-v5.6.7",
 				"ID":     "foo",
 			},
 		},
 		{
-			Name:   "bin/foo",
-			Path:   filepath.Join(folder, "dist", "linux_mips64le_softfloat", "bin", "foo"),
+			Name:   "bin/foo-v5.6.7",
+			Path:   filepath.Join(folder, "dist", "linux_mips64le_softfloat", "bin", "foo-v5.6.7"),
 			Goos:   "linux",
 			Goarch: "mips64le",
 			Gomips: "softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				"Ext":    "",
-				"Binary": "foo",
+				"Binary": "foo-v5.6.7",
 				"ID":     "foo",
 			},
 		},
 		{
-			Name:   "bin/foo",
-			Path:   filepath.Join(folder, "dist", "darwin_amd64", "bin", "foo"),
+			Name:   "bin/foo-v5.6.7",
+			Path:   filepath.Join(folder, "dist", "darwin_amd64", "bin", "foo-v5.6.7"),
 			Goos:   "darwin",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				"Ext":    "",
-				"Binary": "foo",
+				"Binary": "foo-v5.6.7",
 				"ID":     "foo",
 			},
 		},
 		{
-			Name:   "bin/foo",
-			Path:   filepath.Join(folder, "dist", "linux_arm_6", "bin", "foo"),
+			Name:   "bin/foo-v5.6.7",
+			Path:   filepath.Join(folder, "dist", "linux_arm_6", "bin", "foo-v5.6.7"),
 			Goos:   "linux",
 			Goarch: "arm",
 			Goarm:  "6",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				"Ext":    "",
-				"Binary": "foo",
+				"Binary": "foo-v5.6.7",
 				"ID":     "foo",
 			},
 		},
 		{
-			Name:   "bin/foo",
-			Path:   filepath.Join(folder, "dist", "windows_amd64", "bin", "foo"),
+			Name:   "bin/foo-v5.6.7",
+			Path:   filepath.Join(folder, "dist", "windows_amd64", "bin", "foo-v5.6.7"),
 			Goos:   "windows",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				"Ext":    ".exe",
-				"Binary": "foo",
+				"Binary": "foo-v5.6.7",
 				"ID":     "foo",
 			},
 		},
 		{
-			Name:   "bin/foo",
-			Path:   filepath.Join(folder, "dist", "js_wasm", "bin", "foo"),
+			Name:   "bin/foo-v5.6.7",
+			Path:   filepath.Join(folder, "dist", "js_wasm", "bin", "foo-v5.6.7"),
 			Goos:   "js",
 			Goarch: "wasm",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
 				"Ext":    ".wasm",
-				"Binary": "foo",
+				"Binary": "foo-v5.6.7",
 				"ID":     "foo",
 			},
 		},
