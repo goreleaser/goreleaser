@@ -8,6 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
+	"github.com/goreleaser/goreleaser/internal/pipe/custompublishers"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
@@ -36,6 +37,7 @@ type Publisher interface {
 var publishers = []Publisher{
 	blob.Pipe{},
 	upload.Pipe{},
+	custompublishers.Pipe{},
 	artifactory.Pipe{},
 	docker.Pipe{},
 	snapcraft.Pipe{},

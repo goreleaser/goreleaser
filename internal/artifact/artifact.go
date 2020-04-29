@@ -261,6 +261,10 @@ func And(filters ...Filter) Filter {
 // is accepted.
 // You can compose filters by using the And and Or filters.
 func (artifacts *Artifacts) Filter(filter Filter) Artifacts {
+	if filter == nil {
+		return *artifacts
+	}
+
 	var result = New()
 	for _, a := range artifacts.items {
 		if filter(a) {

@@ -86,6 +86,8 @@ func TestFilter(t *testing.T) {
 	assert.Len(t, artifacts.Filter(ByType(Checksum)).items, 2)
 	assert.Len(t, artifacts.Filter(ByType(Binary)).items, 0)
 
+	assert.Len(t, artifacts.Filter(nil).items, 5)
+
 	assert.Len(t, artifacts.Filter(
 		And(
 			ByType(Checksum),
