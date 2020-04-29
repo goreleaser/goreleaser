@@ -73,15 +73,16 @@ type Homebrew struct {
 
 // Scoop contains the scoop.sh section
 type Scoop struct {
-	Name         string       `yaml:",omitempty"`
-	Bucket       Repo         `yaml:",omitempty"`
-	CommitAuthor CommitAuthor `yaml:"commit_author,omitempty"`
-	Homepage     string       `yaml:",omitempty"`
-	Description  string       `yaml:",omitempty"`
-	License      string       `yaml:",omitempty"`
-	URLTemplate  string       `yaml:"url_template,omitempty"`
-	Persist      []string     `yaml:"persist,omitempty"`
-	SkipUpload   string       `yaml:"skip_upload,omitempty"`
+	Name                  string       `yaml:",omitempty"`
+	Bucket                Repo         `yaml:",omitempty"`
+	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty"`
+	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty"`
+	Homepage              string       `yaml:",omitempty"`
+	Description           string       `yaml:",omitempty"`
+	License               string       `yaml:",omitempty"`
+	URLTemplate           string       `yaml:"url_template,omitempty"`
+	Persist               []string     `yaml:"persist,omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty"`
 }
 
 // CommitAuthor is the author of a Git commit

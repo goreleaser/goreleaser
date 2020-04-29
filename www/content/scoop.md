@@ -31,6 +31,9 @@ scoop:
     name: goreleaserbot
     email: goreleaser@carlosbecker.com
 
+  # The project name and current git tag are used in the format string.
+  commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
+
   # Your app's homepage.
   # Default is empty.
   homepage: "https://example.com/"

@@ -57,6 +57,7 @@ func TestDefault(t *testing.T) {
 	assert.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoop.Name)
 	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Name)
 	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Email)
+	assert.NotEmpty(t, ctx.Config.Scoop.CommitMessageTemplate)
 }
 
 func Test_doRun(t *testing.T) {
@@ -736,6 +737,7 @@ func Test_doRun(t *testing.T) {
 				ctx.Artifacts.Add(a)
 			}
 			require.NoError(t, Pipe{}.Default(ctx))
+
 			tt.assertError(t, doRun(ctx, tt.args.client))
 		})
 	}
@@ -819,10 +821,11 @@ func Test_buildManifest(t *testing.T) {
 							Owner: "test",
 							Name:  "test",
 						},
-						Description: "A run pipe test formula",
-						Homepage:    "https://github.com/goreleaser",
-						URLTemplate: "http://github.mycompany.com/foo/bar/{{ .Tag }}/{{ .ArtifactName }}",
-						Persist:     []string{"data.cfg", "etc"},
+						Description:           "A run pipe test formula",
+						Homepage:              "https://github.com/goreleaser",
+						URLTemplate:           "http://github.mycompany.com/foo/bar/{{ .Tag }}/{{ .ArtifactName }}",
+						CommitMessageTemplate: "chore(scoop): update {{ .ProjectName }} version {{ .Tag }}",
+						Persist:               []string{"data.cfg", "etc"},
 					},
 				},
 			},
@@ -859,10 +862,11 @@ func Test_buildManifest(t *testing.T) {
 							Owner: "test",
 							Name:  "test",
 						},
-						Description: "A run pipe test formula",
-						Homepage:    "https://gitlab.com/goreleaser",
-						URLTemplate: "http://gitlab.mycompany.com/foo/bar/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
-						Persist:     []string{"data.cfg", "etc"},
+						Description:           "A run pipe test formula",
+						Homepage:              "https://gitlab.com/goreleaser",
+						URLTemplate:           "http://gitlab.mycompany.com/foo/bar/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
+						CommitMessageTemplate: "chore(scoop): update {{ .ProjectName }} version {{ .Tag }}",
+						Persist:               []string{"data.cfg", "etc"},
 					},
 				},
 			},
@@ -958,10 +962,11 @@ func TestWrapInDirectory(t *testing.T) {
 					Owner: "test",
 					Name:  "test",
 				},
-				Description: "A run pipe test formula",
-				Homepage:    "https://gitlab.com/goreleaser",
-				URLTemplate: "http://gitlab.mycompany.com/foo/bar/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
-				Persist:     []string{"data.cfg", "etc"},
+				Description:           "A run pipe test formula",
+				Homepage:              "https://gitlab.com/goreleaser",
+				URLTemplate:           "http://gitlab.mycompany.com/foo/bar/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
+				CommitMessageTemplate: "chore(scoop): update {{ .ProjectName }} version {{ .Tag }}",
+				Persist:               []string{"data.cfg", "etc"},
 			},
 		},
 	}
