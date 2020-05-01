@@ -26,8 +26,20 @@ var ErrNoArchivesFound = errors.New("no linux/macos archives found")
 // for linux or windows.
 var ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
 
+// ErrEmptyTokenType indicates unknown token type
+var ErrEmptyTokenType = errors.New("no token type found")
+
 // ErrTokenTypeNotImplementedForBrew indicates that a new token type was not implemented for this pipe
-var ErrTokenTypeNotImplementedForBrew = errors.New("token type not implemented for brew pipe")
+type ErrTokenTypeNotImplementedForBrew struct {
+	TokenType context.TokenType
+}
+
+func (e ErrTokenTypeNotImplementedForBrew) Error() string {
+	if e.TokenType != "" {
+		return fmt.Sprintf("token type %q not implemented for brew pipe", e.TokenType)
+	}
+	return "token type not implemented for brew pipe"
+}
 
 // Pipe for brew deployment
 type Pipe struct{}
@@ -165,7 +177,10 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 	case context.TokenTypeGitLab:
 		repo = brew.GitLab
 	default:
-		return ErrTokenTypeNotImplementedForBrew
+		if string(ctx.TokenType) == "" {
+			return ErrEmptyTokenType
+		}
+		return ErrTokenTypeNotImplementedForBrew{ctx.TokenType}
 	}
 
 	var gpath = buildFormulaPath(brew.Folder, filename)
@@ -226,7 +241,8 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 
 		if cfg.URLTemplate == "" {
 			switch tokenType {
-			case context.TokenTypeGitHub:
+			// we keep GitHub as default for now, in line with releases
+			case context.TokenTypeGitHub, "":
 				cfg.URLTemplate = fmt.Sprintf(
 					"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
 					ctx.Config.GitHubURLs.Download,
@@ -241,7 +257,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 					ctx.Config.Release.GitLab.Name,
 				)
 			default:
-				return result, ErrTokenTypeNotImplementedForBrew
+				return result, ErrTokenTypeNotImplementedForBrew{tokenType}
 			}
 		}
 		url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(cfg.URLTemplate)
