@@ -675,7 +675,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 		},
 	})
 	client := &DummyClient{}
-	assert.Equal(t, ErrTokenTypeNotImplementedForBrew, doRun(ctx, ctx.Config.Brews[0], client))
+	assert.Equal(t, ErrTokenTypeNotImplementedForBrew(""), doRun(ctx, ctx.Config.Brews[0], client))
 }
 
 func TestDefault(t *testing.T) {

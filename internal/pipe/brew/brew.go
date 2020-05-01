@@ -27,7 +27,9 @@ var ErrNoArchivesFound = errors.New("no linux/macos archives found")
 var ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
 
 // ErrTokenTypeNotImplementedForBrew indicates that a new token type was not implemented for this pipe
-var ErrTokenTypeNotImplementedForBrew = errors.New("token type not implemented for brew pipe")
+func ErrTokenTypeNotImplementedForBrew(tokenType context.TokenType) error {
+	return fmt.Errorf("token type %q not implemented for brew pipe", tokenType)
+}
 
 // Pipe for brew deployment
 type Pipe struct{}
@@ -165,7 +167,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 	case context.TokenTypeGitLab:
 		repo = brew.GitLab
 	default:
-		return ErrTokenTypeNotImplementedForBrew
+		return ErrTokenTypeNotImplementedForBrew(ctx.TokenType)
 	}
 
 	var gpath = buildFormulaPath(brew.Folder, filename)
@@ -241,7 +243,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 					ctx.Config.Release.GitLab.Name,
 				)
 			default:
-				return result, ErrTokenTypeNotImplementedForBrew
+				return result, ErrTokenTypeNotImplementedForBrew(tokenType)
 			}
 		}
 		url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(cfg.URLTemplate)
