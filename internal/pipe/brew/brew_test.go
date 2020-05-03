@@ -643,7 +643,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 	})
 }
 
-func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
+func TestRunEmptyTokenType(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(t, err)
 	var ctx = context.New(config.Project{
@@ -675,7 +675,43 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 		},
 	})
 	client := &DummyClient{}
-	assert.Equal(t, ErrTokenTypeNotImplementedForBrew, doRun(ctx, ctx.Config.Brews[0], client))
+	assert.Equal(t, ErrEmptyTokenType, doRun(ctx, ctx.Config.Brews[0], client))
+}
+
+func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(t, err)
+	var ctx = context.New(config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		Release:     config.Release{},
+		Brews: []config.Homebrew{
+			{
+				GitHub: config.Repo{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+	})
+	ctx.TokenType = context.TokenTypeGitea
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
+	var path = filepath.Join(folder, "whatever.tar.gz")
+	_, err = os.Create(path)
+	assert.NoError(t, err)
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "bin",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID":     "foo",
+			"Format": "tar.gz",
+		},
+	})
+	client := &DummyClient{}
+	assert.Equal(t, ErrTokenTypeNotImplementedForBrew{TokenType: "gitea"}, doRun(ctx, ctx.Config.Brews[0], client))
 }
 
 func TestDefault(t *testing.T) {
