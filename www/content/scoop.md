@@ -81,8 +81,8 @@ the root of the repository specified in the `bucket` section.
 Your users can then install your app by doing:
 
 ```sh
-scoop bucket add app https://github.com/org/repo.git
-scoop install app
+scoop bucket add org https://github.com/org/repo.git
+scoop install org/drumroll
 ```
 
 You can check the
