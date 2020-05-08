@@ -150,4 +150,5 @@ var validTargets = []string{
 	"solarisamd64",
 	"windows386",
 	"windowsamd64",
+	"windowsarm64",
 }
