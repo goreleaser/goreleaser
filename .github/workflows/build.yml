@@ -40,12 +40,12 @@ jobs:
         name: Make CI
         run: |
           make ci
-#      -
-#        name: Upload coverage
-#        uses: codecov/codecov-action@v1
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          file: ./coverage.txt
+      -
+        name: Upload coverage
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.txt
       -
         name: Check
         run: |
@@ -61,14 +61,21 @@ jobs:
       -
         name: Snapcraft Login
         if: success() && startsWith(github.ref, 'refs/tags/v')
+        env:
+          SNAPCRAFT_LOGIN: ${{ secrets.SNAPCRAFT_LOGIN }}
         run: |
-          # Find a way to login
+          snapcraft login --with <(echo "$SNAPCRAFT_LOGIN")
       -
         name: GoReleaser
         if: success()
         run: |
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
             ./goreleaser --parallelism 2
           else
             ./goreleaser --snapshot --parallelism 2
           fi
+      -
+        name: Clear
+        if: always() && startsWith(github.ref, 'refs/tags/v')
+        run: |
+          rm -f ${HOME}/.docker/config.json
