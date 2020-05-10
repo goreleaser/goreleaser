@@ -1,4 +1,6 @@
 site_name: GoReleaser
+site_description: Deliver Go binaries as fast and easily as possible
+copyright: Made with ❤️ by GoReleaser contributors.
 repo_name: goreleaser/goreleaser
 repo_url: https://github.com/goreleaser/goreleaser
 
@@ -11,6 +13,7 @@ extra:
 
 theme:
   name: material
+  custom_dir: docs/overrides
   features:
     - instant
     # - tabs
@@ -23,8 +26,8 @@ theme:
 
 plugins:
   - search
-  - git-revision-date-localized:
-      type: date
+  # - git-revision-date-localized:
+  #     type: date
 
 extra:
   version: v0.140.0
@@ -33,7 +36,7 @@ google_analytics:
   - auto
 
 nav:
-- index.md
+- Home: index.md
 - install.md
 - quick-start.md
 - environment.md

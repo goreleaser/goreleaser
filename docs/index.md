@@ -1,3 +1,9 @@
+---
+template: home.html
+title: GoReleaser
+---
+
+<!--
 [GoReleaser](https://github.com/goreleaser/goreleaser) is a release automation
 tool for Go projects. The goal is to simplify the build, release and
 publish steps while providing variant customization options for all steps.
@@ -25,4 +31,4 @@ req.send();
   #count {
     font-weight: bold;
   }
-</style>
+</style> -->
