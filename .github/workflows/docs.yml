@@ -1,0 +1,28 @@
+name: docs
+
+on:
+  push:
+    branches:
+      - 'master'
+    paths:
+      - '.github/workflows/htmltest.yml'
+      - 'www/*'
+  pull_request: {}
+
+jobs:
+  htmltest:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: build
+        run: |
+          docker run --rm -v ${PWD}/www:/docs squidfunk/mkdocs-material build
+      -
+        name: htmltest
+        run: |
+          cd www
+          curl https://htmltest.wjdp.uk | bash
+          ./bin/htmltest -c htmltest.yml site
