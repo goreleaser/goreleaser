@@ -1,0 +1,29 @@
+name: htmltest
+
+on:
+  push:
+    branches:
+      - 'master'
+    paths:
+      - '.github/workflows/htmltest.yml'
+      - 'www/*'
+  pull_request: {}
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      - build:
+        run: |
+          pip install mkdocs-material mkdocs-minify-plugin
+          cd www
+          mkdocs build
+      -
+        name: htmltest
+        run: |
+          cd www
+          curl https://htmltest.wjdp.uk | bash
+          ./bin/htmltest -c htmltest.yml site
