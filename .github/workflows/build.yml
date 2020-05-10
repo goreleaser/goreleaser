@@ -13,13 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Set up Snapcraft
+        run: |
+          sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
+      -
         name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.14
       -
-        name: Checkout
-        uses: actions/checkout@v2
+        name: Cache Go modules
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
       -
         name: Make Setup
         run: |
@@ -29,11 +41,41 @@ jobs:
         run: |
           make ci
       -
+        name: Upload coverage
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.txt
+      -
         name: Check
         run: |
           ./goreleaser check
       -
-        name: GoRelease Snapshot
-        if: !startsWith(github.ref, 'refs/tags/')
+        name: Docker Login
+        if: success() && startsWith(github.ref, 'refs/tags/v')
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          ./goreleaser --snapshot --parallelism 2
+          echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
+      -
+        name: Snapcraft Login
+        if: success() && startsWith(github.ref, 'refs/tags/v')
+        env:
+          SNAPCRAFT_LOGIN: ${{ secrets.SNAPCRAFT_LOGIN }}
+        run: |
+          snapcraft login --with <(echo "$SNAPCRAFT_LOGIN")
+      -
+        name: GoReleaser
+        if: success()
+        run: |
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            ./goreleaser --parallelism 2
+          else
+            ./goreleaser --snapshot --parallelism 2
+          fi
+      -
+        name: Clear
+        if: always() && startsWith(github.ref, 'refs/tags/v')
+        run: |
+          rm -f ${HOME}/.docker/config.json
