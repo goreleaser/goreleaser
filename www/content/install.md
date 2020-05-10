@@ -1,15 +1,11 @@
----
-title: Install
-weight: 2
-menu: true
----
+# Install
 
 You can install the pre-compiled binary (in several different ways),
 use Docker or compile from source.
 
 Here are the steps for each of them:
 
-## Install the pre-compiled binary
+### Install the pre-compiled binary
 
 **homebrew tap** (only on macOS for now):
 
@@ -52,7 +48,7 @@ $ curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh |
 Download the pre-compiled binaries from the [releases page][releases] and
 copy to the desired location.
 
-## Running with Docker
+### Running with Docker
 
 You can also use it within a Docker container. To do that, you'll need to
 execute something more-or-less like the following:
@@ -69,8 +65,9 @@ $ docker run --rm --privileged \
   goreleaser/goreleaser release
 ```
 
-> **ATTENTION**: Currently, the provided docker image does not support
-> the generation of snapcraft packages.
+!!! info
+    Currently, the provided docker image does not support
+    the generation of snapcraft packages.
 
 Note that the image will almost always have the last stable Go version.
 
@@ -84,7 +81,7 @@ and iterate from that.
 [dockerfile]: https://github.com/goreleaser/goreleaser/blob/master/Dockerfile
 [releases]: https://github.com/goreleaser/goreleaser/releases
 
-## Compiling from source
+### Compiling from source
 
 Here you have two options:
 

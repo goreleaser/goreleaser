@@ -1,4 +1,8 @@
-# Quick Start
+---
+title: Quick Start
+weight: 10
+menu: true
+---
 
 In this example we will build, archive and release a sample Go project.
 
