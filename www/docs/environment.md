@@ -1,7 +1,5 @@
 ---
 title: Environment
-weight: 20
-menu: true
 ---
 
 ## API Tokens

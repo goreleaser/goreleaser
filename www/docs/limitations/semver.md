@@ -1,7 +1,5 @@
 ---
 title: Semantic Versioning
-weight: 11
-menu: true
 ---
 
 GoReleaser enforces semantic versioning and will error on non compliant tags.
