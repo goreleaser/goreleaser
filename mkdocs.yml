@@ -19,7 +19,7 @@ theme:
     # - tabs
   language: en
   logo: static/avatar.png
-  favicon: static/favicon.icon
+  favicon: static/favicon.ico
 
 plugins:
   - search:
