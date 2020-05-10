@@ -7,8 +7,8 @@ repo_url: https://github.com/goreleaser/goreleaser
 theme:
   name: material
   custom_dir: docs/overrides
-  features: []
-    # - instant
+  features:
+    - instant
     # - tabs
   language: en
   logo: static/avatar.png
