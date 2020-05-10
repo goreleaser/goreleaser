@@ -12,8 +12,10 @@ import (
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/pkg/errors"
 )
 
 // Pipe for artifact signing.
@@ -106,7 +108,12 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 	// nolint:prealloc
 	var args []string
 	for _, a := range cfg.Args {
-		args = append(args, expand(a, env))
+		var arg = expand(a, env)
+		arg, err := tmpl.New(ctx).WithEnv(env).Apply(arg)
+		if err != nil {
+			return nil, errors.Wrapf(err, "sign failed: %s: invalid template", a)
+		}
+		args = append(args, arg)
 	}
 
 	// The GoASTScanner flags this as a security risk.

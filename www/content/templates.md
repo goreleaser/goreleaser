@@ -40,6 +40,7 @@ may have some extra fields:
 |     `.Mips`     | `GOMIPS` (usually allow replacements) |
 |    `.Binary`    |              Binary name              |
 | `.ArtifactName` |             Archive name              |
+| `.ArtifactPath` |       Relative path to artifact       |
 
 On the NFPM name template field, you can use those extra fields as well:
 
@@ -57,7 +58,8 @@ On all fields, you have these available functions:
 | `tolower "V1.2"`        | makes input string lowercase. See [ToLower](https://golang.org/pkg/strings/#ToLower)                     |
 | `toupper "v1.2"`        | makes input string uppercase. See [ToUpper](https://golang.org/pkg/strings/#ToUpper)                     |
 | `trim " v1.2  "`        | removes all leading and trailing white space. See [TrimSpace](https://golang.org/pkg/strings/#TrimSpace) |
-| `dir .Path`             | returns all but the last element of path, typically the path's directory. See [Dir](https://golang.org/pkg/path/filepath/#Dir)
+| `dir .Path`             | returns all but the last element of path, typically the path's directory. See [Dir](https://golang.org/pkg/path/filepath/#Dir) |
+| `abs .ArtifactPath`     | returns an absolute representation of path. See [Abs](https://golang.org/pkg/path/filepath/#Abs) |
 
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:

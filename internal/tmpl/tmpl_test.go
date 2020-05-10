@@ -1,12 +1,15 @@
 package tmpl
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWithArtifact(t *testing.T) {
@@ -152,6 +155,9 @@ func TestFuncMap(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "proj",
 	})
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+
 	ctx.Git.CurrentTag = "v1.2.4"
 	for _, tc := range []struct {
 		Template string
@@ -189,6 +195,11 @@ func TestFuncMap(t *testing.T) {
 			Template: `{{ trim " test " }}`,
 			Name:     "trim",
 			Expected: "test",
+		},
+		{
+			Template: `{{ abs "file" }}`,
+			Name:     "abs",
+			Expected: filepath.Join(wd, "file"),
 		},
 	} {
 		out, err := New(ctx).Apply(tc.Template)

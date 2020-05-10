@@ -121,3 +121,13 @@ extracted with something like `gzip -d file.gz`.
 
 Multiple builds will also not work in this case and will be handled on
 [#705](https://github.com/goreleaser/goreleaser/issues/705).
+
+## Disable archiving
+
+You can do that by setting `format` to `binary`:
+
+```yaml
+# goreleaser.yml
+archives:
+- format: binary
+```
