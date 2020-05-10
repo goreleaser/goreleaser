@@ -1,11 +1,11 @@
 site_name: GoReleaser
-docs_dir: content
+docs_dir: www
 
 theme:
   name: material
   features:
     - instant
-    - tabs
+    # - tabs
   language: en
   pallete:
     primary: indigo
@@ -29,6 +29,7 @@ extra:
 google_analytics:
   - UA-106198408-1
   - auto
+
 nav:
 - index.md
 - install.md
@@ -60,14 +61,15 @@ nav:
   - customization/sign.md
   - customization/snapshots.md
   - customization/nfpm.md
-  - customization/homebrew.md
   - customization/release.md
+  - customization/homebrew.md
+  - customization/scoop.md
+  - customization/docker.md
   - customization/blob.md
   - customization/artifactory.md
   - customization/bintray.md
   - customization/upload.md
-  - customization/oublishers.md
-  - customization/docker.md
+  - customization/publishers.md
 - deprecations.md
 - sponsors.md
 - contributing.md
