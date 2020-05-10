@@ -77,5 +77,6 @@ And then you can run:
 GOVERSION_NR=$(go version | awk '{print $3;}') goreleaser
 ```
 
-> Note that those are hypothetical examples and the fields `foo_template` and
-> `example_template` are not valid GoReleaser configurations.
+!!! info
+    Note that those are hypothetical examples and the fields `foo_template` and
+    `example_template` are not valid GoReleaser configurations.
