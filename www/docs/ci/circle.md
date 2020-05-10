@@ -2,7 +2,7 @@
 
 Here is how to do it with [CircleCI](https://circleci.com):
 
-```yml
+```yaml
 # .circleci/config.yml
 version: 2.1
 workflows:

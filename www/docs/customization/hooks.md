@@ -8,7 +8,7 @@ the build is started.
 
 The configuration is very simple, here is a complete example:
 
-```yml
+```yaml
 # .goreleaser.yml
 before:
   # Templates for the commands to be ran.
@@ -26,4 +26,5 @@ It is important to note that you can't have "complex" commands, like
 to do things that are more complex than just calling a command with some
 attributes, wrap it in a shell script or into your `Makefile`.
 
-> Learn more about the [name template engine](/templates).
+!!! tip
+    Learn more about the [name template engine](/customization/templates).

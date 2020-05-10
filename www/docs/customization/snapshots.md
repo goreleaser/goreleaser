@@ -8,7 +8,7 @@ but neither want to validate anything nor upload it to anywhere.
 GoReleaser supports this with the `--snapshot` flag
 and also with the `snapshot` customization section:
 
-```yml
+```yaml
 # .goreleaser.yml
 snapshot:
   # Allows you to change the name of the generated snapshot
@@ -28,7 +28,8 @@ variable to the evaluation of `snapshot.name_template`.
 This means that if you use `{{ .Version }}` on your name templates, you'll
 get the snapshot version.
 
-> Learn more about the [name template engine](/templates).
+!!! tip
+    Learn more about the [name template engine](/customization/templates).
 
 Note that the idea behind GoReleaser's snapshots if mostly for local builds
 or to validate your build on the CI pipeline. Artifacts shouldn't be uploaded

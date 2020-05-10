@@ -3,13 +3,11 @@ site_description: Deliver Go binaries as fast and easily as possible
 copyright: Made with ❤️ by GoReleaser contributors.
 repo_name: goreleaser/goreleaser
 repo_url: https://github.com/goreleaser/goreleaser
+edit_uri: edit/master/www/docs/
 
 theme:
   name: material
   custom_dir: docs/overrides
-  features: []
-    # - instant
-    # - tabs
   language: en
   logo: static/avatar.png
   favicon: static/favicon.ico
@@ -22,8 +20,8 @@ plugins:
       prebuild_index: python
       lang:
       - en
-  # - minify:
-  #     minify_html: true
+  - minify:
+      minify_html: true
 
 
 extra:
@@ -39,6 +37,7 @@ google_analytics:
 
 nav:
 - Home: index.md
+- intro.md
 - install.md
 - quick-start.md
 - environment.md

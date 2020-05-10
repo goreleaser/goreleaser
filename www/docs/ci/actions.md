@@ -1,7 +1,5 @@
 ---
 title: GitHub Actions
-menu: true
-weight: 141
 ---
 
 GoReleaser can also be used within our official [GoReleaser Action][goreleaser-action]

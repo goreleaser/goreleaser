@@ -2,8 +2,8 @@
 title: Homebrew
 ---
 
-After releasing to GitHub or GitLab, GoReleaser can generate and publish a _homebrew-tap_
-recipe into a repository that you have access to.
+After releasing to GitHub or GitLab, GoReleaser can generate and publish
+a _homebrew-tap_ recipe into a repository that you have access to.
 
 The `brews` section specifies how the formula should be created.
 You can check the
@@ -12,10 +12,12 @@ and the
 [formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md)
 for more details.
 
-**Note**: If you have multiple arm 32-bit versions in each `build` section, and
-you do not specify any `ids` in the brew section (default to all artifacts), then goreleaser will fail.
+!!! note
+    If you have multiple arm 32-bit versions in each `build` section, and
+    you do not specify any `ids` in the brew section (default to all artifacts),
+    then GoReleaser will fail.
 
-```yml
+```yaml
 # .goreleaser.yml
 brews:
   -
@@ -131,7 +133,8 @@ brews:
       ...
 ```
 
-> Learn more about the [name template engine](/templates).
+!!! tip
+    Learn more about the [name template engine](/customization/templates).
 
 By defining the `brew` section, GoReleaser will take care of publishing the
 Homebrew tap.
@@ -170,7 +173,8 @@ class Program < Formula
 end
 ```
 
-**Important**: Note that GoReleaser does not generate a valid
-homebrew-core formula. The generated formulas are meant to be published as
-[homebrew taps](https://docs.brew.sh/Taps.html), and in their current
-form will not be accepted in any of the official homebrew repositories.
+!!! info
+    Note that GoReleaser does not generate a valid homebrew-core formula.
+    The generated formulas are meant to be published as
+    [homebrew taps](https://docs.brew.sh/Taps.html), and in their current
+    form will not be accepted in any of the official homebrew repositories.

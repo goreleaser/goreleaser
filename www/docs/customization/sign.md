@@ -25,7 +25,7 @@ signs:
 
 To customize the signing pipeline you can use the following options:
 
-```yml
+```yaml
 # .goreleaser.yml
 signs:
   -

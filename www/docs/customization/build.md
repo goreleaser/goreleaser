@@ -9,7 +9,7 @@ the name of the binary, flags, environment variables, hooks and etc.
 
 Here is a commented `builds` section with all fields specified:
 
-```yml
+```yaml
 # .goreleaser.yml
 builds:
   # You can have multiple builds defined as a yaml list
@@ -115,7 +115,8 @@ builds:
     skip: false
 ```
 
-> Learn more about the [name template engine](/templates).
+!!! tip
+    Learn more about the [name template engine](/customization/templates).
 
 ## Passing environment variables to ldflags
 
@@ -143,7 +144,7 @@ or defined explicitly.
 In addition to simple declarations as shown above _multiple_ hooks can be declared
 to help retaining reusability of config between different build environments.
 
-```yml
+```yaml
 builds:
   -
     id: "with-hooks"
@@ -161,7 +162,7 @@ builds:
 
 Each hook can also have its own work directory and environment variables:
 
-```yml
+```yaml
 builds:
   -
     id: "with-hooks"
@@ -177,7 +178,7 @@ builds:
        - second-script.sh
 ```
 
-All properties of a hook (`cmd`, `dir` and `env`) support [templating](/customization/#Name%20Templates)
+All properties of a hook (`cmd`, `dir` and `env`) support [templating](/customization/templates)
 with `post` hooks having binary artifact available (as these run _after_ the build).
 Additionally the following build details are exposed to both `pre` and `post` hooks:
 
@@ -210,7 +211,7 @@ Environment variables are inherited and overridden in the following order:
  # rest of the file...
  ```
 
- [hook]: /hooks
+ [hook]: /customization/hooks
 
 ## Define Build Tag
 

@@ -3,7 +3,7 @@
 In [Sempahore 2.0](https://semaphoreci.com) each project starts with the
 default pipeline specified in `.semaphore/semaphore.yml`.
 
-```yml
+```yaml
 # .semaphore/semaphore.yml.
 version: v1.0
 name: Build
@@ -42,7 +42,7 @@ promotions:
 
 Pipeline file in `.semaphore/goreleaser.yml`:
 
-```yml
+```yaml
 version: "v1.0"
 name: GoReleaser
 agent:
@@ -69,7 +69,7 @@ blocks:
 The following YAML file, `createSecret.yml` creates a new secret item that is
 called GoReleaser with one environment variable, named `GITHUB_TOKEN`:
 
-```yml
+```yaml
 apiVersion: v1alpha
 kind: Secret
 metadata:

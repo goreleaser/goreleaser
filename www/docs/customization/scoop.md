@@ -8,7 +8,7 @@ _Scoop App Manifest_ into a repository that you have access to.
 The `scoop` section specifies how the manifest should be created. See
 the commented example bellow:
 
-```yml
+```yaml
 # .goreleaser.yml
 scoop:
   # Template for the url which is determined by the given Token (github or gitlab)

@@ -13,7 +13,7 @@ You can read more about it in the [snapcraft docs](https://snapcraft.io/docs/).
 
 Available options:
 
-```yml
+```yaml
 # .goreleaser.yml
 snapcrafts:
   -
@@ -126,7 +126,8 @@ snapcrafts:
         - $HOME/.foobar
 ```
 
-> Learn more about the [name template engine](/templates).
+!!! tip
+    Learn more about the [name template engine](/customization/templates).
 
 Note that GoReleaser will not install `snapcraft` nor any of its dependencies
 for you.

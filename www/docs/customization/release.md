@@ -8,7 +8,7 @@ previous tag.
 
 Let's see what can be customized in the `release` section for GitHub:
 
-```yml
+```yaml
 # .goreleaser.yml
 release:
   # Repo in which the release will be created.
@@ -54,9 +54,8 @@ release:
 ```
 
 Second, let's see what can be customized in the `release` section for GitLab.
-**Note** that only GitLab `v11.7+` are supported for releases:
 
-```yml
+```yaml
 # .goreleaser.yml
 release:
   # Same as for github
@@ -90,8 +89,12 @@ release:
     - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
 ```
 
+!!! warning
+    Only GitLab `v11.7+` are supported for releases.
+
 You can also configure the `release` section to upload to a [Gitea](https://gitea.io) instance:
-```yml
+
+```yaml
 # .goreleaser.yml
 release:
   # Same as for github and gitlab
@@ -134,9 +137,11 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 > Gitea versions earlier than 1.9.2 do not support uploading `checksums.txt` files because of a [bug](https://github.com/go-gitea/gitea/issues/7882)
 so you will have to enable all file types with `*/*`.
 
-**Note**: `draft` and `prerelease` are only supported by GitHub and Gitea.
+!!! warning
+    `draft` and `prerelease` are only supported by GitHub and Gitea.
 
-> Learn more about the [name template engine](/templates).
+!!! tip
+    Learn more about the [name template engine](/customization/templates).
 
 ## Customize the changelog
 
@@ -188,6 +193,7 @@ Some changelog generators you can use:
 
 - [buchanae/github-release-notes](https://github.com/buchanae/github-release-notes)
 
-> **Important**: If you create the release before running GoReleaser, and the
-> said release has some text in its body, GoReleaser will not override it with
-> it's release notes.
+!!! info
+    If you create the release before running GoReleaser, and the
+    said release has some text in its body, GoReleaser will not override it with
+    it's release notes.
