@@ -74,7 +74,8 @@ Or with a condition on GoReleaser step:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-> For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
+!!! tip
+    For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
 
 ### Signing
 
