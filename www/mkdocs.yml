@@ -37,6 +37,7 @@ google_analytics:
 
 nav:
 - Home: index.md
+- intro.md
 - install.md
 - quick-start.md
 - environment.md

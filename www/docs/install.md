@@ -81,7 +81,7 @@ and iterate from that.
 [dockerfile]: https://github.com/goreleaser/goreleaser/blob/master/Dockerfile
 [releases]: https://github.com/goreleaser/goreleaser/releases
 
-### Compiling from source
+## Compiling from source
 
 Here you have two options:
 

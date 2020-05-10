@@ -9,7 +9,7 @@ the name of the binary, flags, environment variables, hooks and etc.
 
 Here is a commented `builds` section with all fields specified:
 
-```yml
+```yaml
 # .goreleaser.yml
 builds:
   # You can have multiple builds defined as a yaml list
@@ -115,7 +115,8 @@ builds:
     skip: false
 ```
 
-> Learn more about the [name template engine](/templates).
+!!! tip
+    Learn more about the [name template engine](/templates).
 
 ## Passing environment variables to ldflags
 
@@ -143,7 +144,7 @@ or defined explicitly.
 In addition to simple declarations as shown above _multiple_ hooks can be declared
 to help retaining reusability of config between different build environments.
 
-```yml
+```yaml
 builds:
   -
     id: "with-hooks"
@@ -161,7 +162,7 @@ builds:
 
 Each hook can also have its own work directory and environment variables:
 
-```yml
+```yaml
 builds:
   -
     id: "with-hooks"
