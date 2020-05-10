@@ -5,7 +5,7 @@ use Docker or compile from source.
 
 Here are the steps for each of them:
 
-### Install the pre-compiled binary
+## Install the pre-compiled binary
 
 **homebrew tap** (only on macOS for now):
 
@@ -48,7 +48,7 @@ $ curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh |
 Download the pre-compiled binaries from the [releases page][releases] and
 copy to the desired location.
 
-### Running with Docker
+## Running with Docker
 
 You can also use it within a Docker container. To do that, you'll need to
 execute something more-or-less like the following:
