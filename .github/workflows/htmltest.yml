@@ -10,7 +10,7 @@ on:
   pull_request: {}
 
 jobs:
-  fix:
+  test:
     runs-on: ubuntu-latest
     steps:
       -
