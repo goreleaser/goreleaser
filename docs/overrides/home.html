@@ -1,0 +1,140 @@
+{% extends "main.html" %}
+{% block tabs %}
+{{ super() }}
+<style>
+	:root {
+		--goreleaser-primary-color: #3b5672;
+	}
+
+	.md-header {
+		position: initial
+	}
+
+	.md-main__inner {
+		margin: 0
+	}
+
+	.md-content {
+		display: none
+	}
+
+	.tx-container {
+		padding-top: 1rem;
+		background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: white' /></svg>") no-repeat bottom, linear-gradient(to bottom, var(--md-primary-fg-color), var(--goreleaser-primary-color) 99%, #fff 99%)
+	}
+
+	.tx-hero {
+		margin: 0 .8rem;
+		color: var(--md-primary-bg-color)
+	}
+
+	.tx-hero h1 {
+		margin-bottom: 1rem;
+		color: currentColor;
+		font-weight: 700
+	}
+
+	.tx-hero__content {
+		padding-bottom: 6rem
+	}
+
+	.tx-hero .md-button {
+		margin-top: .5rem;
+		margin-right: .5rem;
+		color: var(--md-primary-bg-color)
+	}
+
+	.tx-hero .md-button--primary {
+		background-color: var(--md-primary-bg-color);
+		color: var(--goreleaser-primary-color);
+		border-color: var(--md-primary-bg-color)
+	}
+
+	.tx-hero .md-button:focus,
+	.tx-hero .md-button:hover {
+		background-color: var(--md-accent-fg-color);
+		color: var(--md-default-bg-color);
+		border-color: var(--md-accent-fg-color)
+	}
+
+	@media screen and (max-width:70em) {
+		.tx-hero h1 {
+			font-size: 1.4rem
+		}
+
+		.tx-hero__image {
+			text-align: center;
+		}
+
+		.tx-hero__image img {
+			max-width: 10rem;
+		}
+	}
+
+	@media screen and (min-width:70em) {
+		.md-sidebar--secondary {
+			display: none
+		}
+
+		.tx-hero {
+			display: flex;
+			align-items: stretch
+		}
+
+		.tx-hero__content {
+			max-width: 30rem;
+			margin-top: 3.5rem;
+			padding-bottom: 14vw
+		}
+
+		.tx-hero__image {
+			order: 1;
+			margin-left: auto;
+			margin-top: 3.5rem;
+		}
+
+		.tx-hero__image img {
+			max-width: 15rem;
+		}
+	}
+
+	@media screen and (min-width:76.25em) {
+		.md-sidebar--primary {
+			display: none
+		}
+
+		.tx-hero__image {
+			margin-left: auto;
+		}
+
+		.tx-hero__image img {
+			max-width: 20rem;
+		}
+	}
+
+</style>
+<section class="tx-container">
+	<div class="md-grid md-typeset">
+		<div class="tx-hero">
+			<div class="tx-hero__image">
+				<img src="https://github.com/goreleaser/artwork/raw/master/goreleaserfundo.png" alt=""
+					draggable="false">
+			</div>
+			<div class="tx-hero__content">
+				<h1>GoReleaser is a release automation tool for Go projects.</h1>
+				<p>The goal is to simplify the build, release and publish steps while providing variant customization
+					options for all steps.</p>
+				<a href="{{ page.next_page.url | url }}" title="{{ page.next_page.title | striptags }}"
+					class="md-button md-button--primary">
+					Get started
+				</a>
+				<a href="{{ config.repo_url }}" title="{{ lang.t('source.link.title') }}" class="md-button">
+					Go to GitHub
+				</a>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %}
+{% block content %}{% endblock %}
+{% block footer %}{% endblock %}

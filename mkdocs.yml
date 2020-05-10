@@ -1,0 +1,87 @@
+site_name: GoReleaser
+site_description: Deliver Go binaries as fast and easily as possible
+copyright: Made with ❤️ by GoReleaser contributors.
+repo_name: goreleaser/goreleaser
+repo_url: https://github.com/goreleaser/goreleaser
+
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/goreleaser
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/goreleaser
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  features:
+    - instant
+    # - tabs
+  language: en
+  logo: static/avatar.png
+  favicon: static/favicon.icon
+
+plugins:
+  - search
+  - git-revision-date-localized:
+      type: date
+
+extra:
+  version: v0.140.0
+google_analytics:
+  - UA-106198408-1
+  - auto
+
+nav:
+- Home: index.md
+- install.md
+- quick-start.md
+- environment.md
+- Limitations:
+  - limitations/semver.md
+  - limitations/cgo.md
+- Continuous Integration:
+  - About: ci/index.md
+  - ci/actions.md
+  - ci/travis.md
+  - ci/gitlab.md
+  - ci/circle.md
+  - ci/cloudbuild.md
+  - ci/codefresh.md
+  - ci/drone.md
+  - ci/semaphore.md
+- Customization:
+  - About: customization/index.md
+  - customization/project.md
+  - customization/env.md
+  - customization/hooks.md
+  - customization/templates.md
+  - customization/build.md
+  - customization/archive.md
+  - customization/source.md
+  - customization/checksum.md
+  - customization/sign.md
+  - customization/snapshots.md
+  - customization/nfpm.md
+  - customization/snapcraft.md
+  - customization/release.md
+  - customization/homebrew.md
+  - customization/scoop.md
+  - customization/docker.md
+  - customization/blob.md
+  - customization/artifactory.md
+  - customization/bintray.md
+  - customization/upload.md
+  - customization/publishers.md
+- deprecations.md
+- sponsors.md
+- contributing.md
+- tutorials.md
+- links.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - meta
+  - toc:
+      permalink: true
