@@ -107,7 +107,7 @@ And reference the fingerprint in your signing configuration using the `GPG_FINGE
 ```yaml
 signs:
   - artifacts: checksum
-    args: ["--batch", "-u", "<key id, fingerprint, email, ...>", "--output", "${signature}", "--detach-sign", "${artifact}"]
+    args: ["--batch", "-u", "{{ .Env.GPG_FINGERPRINT }}", "--output", "${signature}", "--detach-sign", "${artifact}"]
 ```
 
 ## Customizing
