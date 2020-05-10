@@ -1,0 +1,11 @@
+{
+	"name": "goreleaser-docs",
+	"version": "1.0.0",
+	"description": "goreleaser documentation",
+	"author": "goreleaser",
+	"license": "MIT",
+	"scripts": {
+		"start": "docker run --rm -it -p 8000:8000 -v `pwd`:/docs squidfunk/mkdocs-material",
+		"build": "rm -rf site && docker run --rm -it -v `pwd`:/docs squidfunk/mkdocs-material build"
+	}
+}
