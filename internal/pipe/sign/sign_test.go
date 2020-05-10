@@ -102,6 +102,24 @@ func TestSignArtifacts(t *testing.T) {
 			),
 		},
 		{
+			desc:           "invalid args template",
+			expectedErrMsg: `sign failed: ${FOO}-{{ .foo }{{}}{: invalid template: template: tmpl:1: unexpected "}" in operand`,
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Cmd:       "exit",
+							Args:      []string{"${FOO}-{{ .foo }{{}}{"},
+						},
+					},
+					Env: []string{
+						"FOO=BAR",
+					},
+				},
+			),
+		},
+		{
 			desc: "sign single",
 			ctx: context.New(
 				config.Project{
@@ -220,6 +238,31 @@ func TestSignArtifacts(t *testing.T) {
 					},
 					Env: []string{
 						fmt.Sprintf("TEST_USER=%s", user),
+					},
+				},
+			),
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig"},
+		},
+		{
+			desc: "sign all artifacts with template",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Args: []string{
+								"-u",
+								"{{ .Env.SOME_TEST_USER }}",
+								"--output",
+								"${signature}",
+								"--detach-sign",
+								"${artifact}",
+							},
+						},
+					},
+					Env: []string{
+						fmt.Sprintf("SOME_TEST_USER=%s", user),
 					},
 				},
 			),

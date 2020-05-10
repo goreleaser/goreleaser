@@ -47,13 +47,13 @@ signs:
     # defaults to `gpg`
     cmd: gpg2
 
-    # command line arguments for the command
+    # command line templateable arguments for the command
     #
     # to sign with a specific key use
     # args: ["-u", "<key id, fingerprint, email, ...>", "--output", "${signature}", "--detach-sign", "${artifact}"]
     #
     # defaults to `["--output", "${signature}", "--detach-sign", "${artifact}"]`
-    args: ["--output", "${signature}", "${artifact}"]
+    args: ["--output", "${signature}", "${artifact}", "{{ .ProjectName }}"]
 
 
     # which artifacts to sign
