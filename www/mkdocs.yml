@@ -4,6 +4,28 @@ copyright: Made with ❤️ by GoReleaser contributors.
 repo_name: goreleaser/goreleaser
 repo_url: https://github.com/goreleaser/goreleaser
 
+theme:
+  name: material
+  custom_dir: docs/overrides
+  features: []
+    # - instant
+    # - tabs
+  language: en
+  logo: static/avatar.png
+  favicon: static/favicon.ico
+  include_search_page: false
+  search_index_only: true
+
+plugins:
+  # disable temporarely because its freezing the page
+  - search:
+      prebuild_index: python
+      lang:
+      - en
+  # - minify:
+  #     minify_html: true
+
+
 extra:
   social:
     - icon: fontawesome/brands/github-alt
@@ -11,22 +33,6 @@ extra:
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/goreleaser
 
-theme:
-  name: material
-  custom_dir: docs/overrides
-  features:
-    - instant
-    # - tabs
-  language: en
-  logo: static/avatar.png
-  favicon: static/favicon.ico
-
-plugins:
-  - search:
-      prebuild_index: python
-
-extra:
-  version: v0.140.0
 google_analytics:
   - UA-106198408-1
   - auto
