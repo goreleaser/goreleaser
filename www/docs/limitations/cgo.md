@@ -1,7 +1,5 @@
 ---
 title: CGO
-weight: 12
-menu: true
 ---
 
 Unfortunately, GoReleaser does not support CGO.

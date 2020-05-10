@@ -178,4 +178,5 @@ uploads:
 
 These settings should allow you to push your artifacts into multiple HTTP servers.
 
-> Learn more about the [name template engine](/templates).
+!!! tip
+    Learn more about the [name template engine](/customization/templates).

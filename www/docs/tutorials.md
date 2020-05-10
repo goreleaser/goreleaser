@@ -1,7 +1,5 @@
 ---
 title: Tutorials and posts
-menu: true
-weight: 998
 ---
 
 Tutorials made by the community.

@@ -9,7 +9,7 @@ Note that you'll need to enable `tags` in repo settings and add `github_token`
 secret.
 
 #### 1.x
-```yml
+```yaml
 # .drone.yml
 
 kind: pipeline
@@ -48,7 +48,7 @@ volumes:
 ```
 
 #### 0.8
-```yml
+```yaml
 pipeline:
   clone:
     image: plugins/git

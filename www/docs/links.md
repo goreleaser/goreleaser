@@ -1,7 +1,5 @@
 ---
 title: Links
-menu: true
-weight: 999
 ---
 
 - Follow the progress on the [GitHub repository](https://github.com/goreleaser/goreleaser)

@@ -8,7 +8,7 @@ and that's what you're building off.
 This repo has the wrong name, so to prevent GoReleaser from publishing to
 the wrong GitHub repo, add to your `.goreleaser.yml` file's release section:
 
-```yml
+```yaml
 release:
   github:
     owner: YourGithubUser
@@ -40,7 +40,7 @@ changelog containing just the messages from the commits since the prior tag.
 Note that the build performs a shallow clone of git repositories and will
 only contain tags that reference the latest commit.
 
-```yml
+```yaml
 steps:
 # Setup the workspace so we have a viable place to point GOPATH at.
 - name: gcr.io/cloud-builders/go

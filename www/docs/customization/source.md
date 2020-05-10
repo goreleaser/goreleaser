@@ -5,7 +5,7 @@ title: Source Archive
 You may add the current tag source archive to the release as well. This is particularly
 useful if you want to sign it, for example.
 
-```yml
+```yaml
 # .goreleaser.yml
 source:
   # Whether this pipe is enabled or not.
@@ -22,4 +22,5 @@ source:
   format: 'tar'
 ```
 
-> Learn more about the [name template engine](/templates).
+!!! tip
+    Learn more about the [name template engine](/customization/templates).

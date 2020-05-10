@@ -7,12 +7,12 @@ generate and publish `.deb` and `.rpm` packages.
 
 Available options:
 
-```yml
+```yaml
 # .goreleaser.yml
 nfpms:
   # note that this is an array of nfpm configs
   -
-		# ID of the nfpm config, must be unique.
+    # ID of the nfpm config, must be unique.
     # Defaults to "default".
     id: foo
 
@@ -152,4 +152,5 @@ nfpms:
           preinstall: "scripts/preinstall-rpm.sh"
 ```
 
-> Learn more about the [name template engine](/templates).
+!!! tip
+    Learn more about the [name template engine](/customization/templates).

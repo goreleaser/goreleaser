@@ -1,5 +1,5 @@
 ---
-title: Blob
+title: Blobs
 ---
 
 ## Customization
@@ -51,7 +51,8 @@ blobs:
     folder: "foo/bar/{{.Version}}"
 ```
 
-> Learn more about the [name template engine](/templates).
+!!! tip
+    Learn more about the [name template engine](/customization/templates).
 
 ## Authentication
 

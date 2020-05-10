@@ -1,8 +1,5 @@
 ---
 title: Deprecation notices
-menu: true
-weight: 500
-hideFromIndex: true
 ---
 
 This page will be used to list deprecation notices across GoReleaser.

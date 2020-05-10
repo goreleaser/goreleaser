@@ -7,7 +7,7 @@ release, so your users can validate if the downloaded files are correct.
 
 The `checksum` section allows customizations of the filename:
 
-```yml
+```yaml
 # .goreleaser.yml
 checksum:
   # You can change the name of the checksums file.
@@ -20,4 +20,5 @@ checksum:
   algorithm: sha256
 ```
 
-> Learn more about the [name template engine](/templates).
+!!! tip
+    Learn more about the [name template engine](/customization/templates).

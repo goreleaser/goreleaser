@@ -1,7 +1,5 @@
 ---
 title: Environment
-weight: 20
-menu: true
 ---
 
 ## API Tokens
@@ -30,8 +28,9 @@ env_files:
   gitea_token: ~/.path/to/my/gitea_token
 ```
 
-**IMPORTANT**: you can define multiple env files, but the release process will fail
-because multiple tokens are defined. Use only one.
+!!! info
+    you can define multiple env files, but the release process will fail
+    because multiple tokens are defined. Use only one.
 
 ## GitHub Enterprise
 
@@ -121,4 +120,7 @@ You can override this by changing the `ldflags` option in the `build` section.
 
 ## Overriding Git Tags
 
-You can force the [build tag](/build#define-build-tag) and [previous changelog tag](/release#define-previous-tag) using environment variables. This is useful in cases where one git commit is referenced by multiple git tags.
+You can force the [build tag](/customization/build#define-build-tag)
+and [previous changelog tag](/customization/release#define-previous-tag)
+using environment variables. This is useful in cases where one git commit
+is referenced by multiple git tags.

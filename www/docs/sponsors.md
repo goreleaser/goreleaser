@@ -1,7 +1,5 @@
 ---
 title: Sponsors
-menu: true
-weight: 600
 ---
 
 Does your company use goreleaser? Help keep the project bug-free and feature rich by [sponsoring the project](https://opencollective.com/goreleaser#sponsor).
