@@ -55,7 +55,7 @@ imgs:
 	convert docs/static/avatar.png -resize x120 docs/static/apple-touch-icon.png
 .PHONY: imgs
 
-site: imgs
+site:
 	pip install mkdocs-material
 	mkdocs build
 .PHONY: site
