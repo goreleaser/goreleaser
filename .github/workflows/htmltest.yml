@@ -16,7 +16,8 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-      - build:
+      -
+        name: build
         run: |
           pip install mkdocs-material mkdocs-minify-plugin
           cd www
