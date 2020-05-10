@@ -5,6 +5,9 @@ title: NFPM
 GoReleaser can be wired to [nfpm](https://github.com/goreleaser/nfpm) to
 generate and publish `.deb` and `.rpm` packages.
 
+Packages built in this way can also be used during
+[Docker](/customization/docker) builds.
+
 Available options:
 
 ```yaml

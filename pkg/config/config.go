@@ -337,6 +337,7 @@ type Checksum struct {
 type Docker struct {
 	Binaries           []string `yaml:",omitempty"`
 	Builds             []string `yaml:",omitempty"`
+	NFPMs              []string `yaml:",omitempty"`
 	Goos               string   `yaml:",omitempty"`
 	Goarch             string   `yaml:",omitempty"`
 	Goarm              string   `yaml:",omitempty"`

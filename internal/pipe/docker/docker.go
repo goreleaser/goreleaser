@@ -50,13 +50,19 @@ func (Pipe) Default(ctx *context.Context) error {
 	if len(ctx.Config.Dockers) != 1 {
 		return nil
 	}
-	if len(ctx.Config.Dockers[0].Binaries) == 0 {
-		ctx.Config.Dockers[0].Binaries = []string{
+	docker := &ctx.Config.Dockers[0]
+	if len(docker.Binaries) == 0 {
+		docker.Binaries = []string{
 			ctx.Config.Builds[0].Binary,
 		}
 	}
-	if ctx.Config.Dockers[0].Dockerfile == "" {
-		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
+	if len(docker.NFPMs) == 0 && len(ctx.Config.NFPMs) > 0 {
+		docker.NFPMs = []string{
+			ctx.Config.NFPMs[0].ID,
+		}
+	}
+	if docker.Dockerfile == "" {
+		docker.Dockerfile = "Dockerfile"
 	}
 	return nil
 }
@@ -92,7 +98,15 @@ func doRun(ctx *context.Context) error {
 	for _, docker := range ctx.Config.Dockers {
 		docker := docker
 		g.Go(func() error {
-			log.WithField("docker", docker).Debug("looking for binaries matching")
+			log.WithField("docker", docker).Debug("looking for artifacts matching")
+
+			var baseFilters = []artifact.Filter{
+				artifact.ByGoos(docker.Goos),
+				artifact.ByGoarch(docker.Goarch),
+				artifact.ByGoarm(docker.Goarm),
+			}
+
+			// look for matching binaries
 			var binaryNames = make([]string, len(docker.Binaries))
 			for i := range docker.Binaries {
 				bin, err := tmpl.New(ctx).Apply(docker.Binaries[i])
@@ -101,10 +115,8 @@ func doRun(ctx *context.Context) error {
 				}
 				binaryNames[i] = bin
 			}
-			var filters = []artifact.Filter{
-				artifact.ByGoos(docker.Goos),
-				artifact.ByGoarch(docker.Goarch),
-				artifact.ByGoarm(docker.Goarm),
+			var binaryFilters = append(
+				baseFilters,
 				artifact.ByType(artifact.Binary),
 				func(a *artifact.Artifact) bool {
 					for _, bin := range binaryNames {
@@ -114,11 +126,11 @@ func doRun(ctx *context.Context) error {
 					}
 					return false
 				},
-			}
+			)
 			if len(docker.Builds) > 0 {
-				filters = append(filters, artifact.ByIDs(docker.Builds...))
+				binaryFilters = append(binaryFilters, artifact.ByIDs(docker.Builds...))
 			}
-			var binaries = ctx.Artifacts.Filter(artifact.And(filters...)).List()
+			var binaries = ctx.Artifacts.Filter(artifact.And(binaryFilters...)).List()
 			// TODO: not so good of a check, if one binary match multiple
 			// binaries and the other match none, this will still pass...
 			if len(binaries) != len(docker.Binaries) {
@@ -129,7 +141,37 @@ func doRun(ctx *context.Context) error {
 					len(docker.Binaries),
 				)
 			}
-			return process(ctx, docker, binaries)
+
+			// look for matching packages
+			var nfpmFilters = append(
+				baseFilters,
+				artifact.ByType(artifact.LinuxPackage),
+				artifact.ByIDs(docker.NFPMs...),
+			)
+			nfpms := ctx.Artifacts.Filter(artifact.And(nfpmFilters...)).List()
+
+			// check that each ID corresponds to at least one package
+			extraIDs := make(map[string]struct{})
+			for _, id := range docker.NFPMs {
+				extraIDs[id] = struct{}{}
+			}
+			for _, nfpm := range nfpms {
+				delete(extraIDs, nfpm.ExtraOr("ID", "").(string))
+			}
+			if len(extraIDs) > 0 {
+				ids := make([]string, 0)
+				for id := range extraIDs {
+					ids = append(ids, id)
+				}
+
+				return fmt.Errorf(
+					"%d NFPM IDs were not found: %s",
+					len(extraIDs),
+					strings.Join(ids, ", "),
+				)
+			}
+
+			return process(ctx, docker, append(binaries, nfpms...))
 		})
 	}
 	return g.Wait()

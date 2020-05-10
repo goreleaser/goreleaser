@@ -173,6 +173,25 @@ func TestRunPipe(t *testing.T) {
 			assertError:       shouldNotErr,
 			pubAssertError:    shouldNotErr,
 		},
+		"valid-with-nfpms": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/test_run_pipe_build:latest",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile.nfpm",
+					NFPMs:      []string{"mynfpm"},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_run_pipe_build:latest",
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldNotErr,
+			pubAssertError:    shouldNotErr,
+		},
 		"multiple images with same extra file": {
 			dockers: []config.Docker{
 				{
@@ -557,6 +576,21 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels: noLabels,
 			assertError:       shouldErr(`template: tmpl:1: unexpected "}" in operand`),
 		},
+		"no_matching_nfpms": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/test_run_pipe_build:latest",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile.nfpm",
+					NFPMs:      []string{"fake-nfpm"},
+				},
+			},
+			assertImageLabels: noLabels,
+			assertError:       shouldErr(`NFPM IDs were not found: fake-nfpm`),
+		},
 	}
 
 	killAndRm(t)
@@ -573,6 +607,8 @@ func TestRunPipe(t *testing.T) {
 			_, err = os.Create(filepath.Join(dist, "mybin", "mybin"))
 			require.NoError(tt, err)
 			_, err = os.Create(filepath.Join(dist, "mybin", "anotherbin"))
+			require.NoError(tt, err)
+			_, err = os.Create(filepath.Join(dist, "mynfpm.deb"))
 			require.NoError(tt, err)
 
 			var ctx = context.New(config.Project{
@@ -607,6 +643,16 @@ func TestRunPipe(t *testing.T) {
 							},
 						})
 					}
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "mynfpm.deb",
+						Path:   filepath.Join(dist, "mynfpm.deb"),
+						Goarch: arch,
+						Goos:   os,
+						Type:   artifact.LinuxPackage,
+						Extra: map[string]interface{}{
+							"ID": "mynfpm",
+						},
+					})
 				}
 			}
 
