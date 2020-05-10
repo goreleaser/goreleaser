@@ -23,7 +23,7 @@ theme:
 
 plugins:
   - search:
-      prebuild_index: true
+      prebuild_index: python
 
 extra:
   version: v0.140.0
