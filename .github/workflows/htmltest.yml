@@ -19,9 +19,7 @@ jobs:
       -
         name: build
         run: |
-          pip install mkdocs-material mkdocs-minify-plugin
-          cd www
-          mkdocs build
+          docker run --rm -v ${PWD}/www:/docs squidfunk/mkdocs-material build
       -
         name: htmltest
         run: |
