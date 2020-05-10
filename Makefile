@@ -56,7 +56,7 @@ imgs:
 .PHONY: imgs
 
 site:
-	pip install mkdocs-material lunr
+	pip install mkdocs-material
 	mkdocs build
 .PHONY: site
 
