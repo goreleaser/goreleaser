@@ -1,0 +1,9 @@
+DirectoryPath: "site"
+IgnoreURLs:
+- www.google-analytics.com
+- fonts.gstatic.com
+- opencollective.com
+IgnoreDirs:
+- overrides
+IgnoreDirectoryMissingTrailingSlash: true
+IgnoreAltMissing: true
