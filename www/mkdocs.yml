@@ -8,7 +8,7 @@ theme:
   name: material
   custom_dir: docs/overrides
   features:
-    - instant
+    # - instant
     # - tabs
   language: en
   logo: static/avatar.png
