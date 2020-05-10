@@ -48,8 +48,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-> **IMPORTANT**: note the `Unshallow` workflow step. It is required for the
-> changelog to work correctly.
+!!! info
+    Note the `Unshallow` workflow step. It is required for the changelog to work correctly.
 
 ### Run on new tag
 
@@ -86,6 +86,7 @@ GitHub Action along with this one:
 ```yaml
       -
         name: Import GPG key
+        id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v1
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -98,9 +99,10 @@ GitHub Action along with this one:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
 ```
 
-And reference the userID in your signing configuration:
+And reference the fingerprint in your signing configuration using the `GPG_FINGERPRINT` environment variable:
 
 ```yaml
 signs:
