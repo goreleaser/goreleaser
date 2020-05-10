@@ -18,6 +18,10 @@ jobs:
         with:
           go-version: 1.14
       -
+        name: Set up Snapcraft
+        run: |
+          sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
+      -
         name: Checkout
         uses: actions/checkout@v2
       -
