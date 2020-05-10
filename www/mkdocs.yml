@@ -24,6 +24,8 @@ theme:
 plugins:
   - search:
       prebuild_index: python
+      lang:
+      - en
 
 extra:
   version: v0.140.0
