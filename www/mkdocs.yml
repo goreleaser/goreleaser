@@ -4,13 +4,6 @@ copyright: Made with ❤️ by GoReleaser contributors.
 repo_name: goreleaser/goreleaser
 repo_url: https://github.com/goreleaser/goreleaser
 
-extra:
-  social:
-    - icon: fontawesome/brands/github-alt
-      link: https://github.com/goreleaser
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/goreleaser
-
 theme:
   name: material
   custom_dir: docs/overrides
@@ -28,7 +21,11 @@ plugins:
       - en
 
 extra:
-  version: v0.140.0
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/goreleaser
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/goreleaser
 google_analytics:
   - UA-106198408-1
   - auto
