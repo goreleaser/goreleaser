@@ -1,4 +1,4 @@
-name: htmltest
+name: docs
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   pull_request: {}
 
 jobs:
-  test:
+  htmltest:
     runs-on: ubuntu-latest
     steps:
       -
