@@ -399,6 +399,17 @@ type Upload struct {
 	CustomArtifactName bool     `yaml:"custom_artifact_name,omitempty"`
 }
 
+// Publisher configuration
+type Publisher struct {
+	Name      string   `yaml:",omitempty"`
+	IDs       []string `yaml:"ids,omitempty"`
+	Checksum  bool     `yaml:",omitempty"`
+	Signature bool     `yaml:",omitempty"`
+	Dir       string   `yaml:",omitempty"`
+	Cmd       string   `yaml:",omitempty"`
+	Env       []string `yaml:",omitempty"`
+}
+
 // Source configuration
 type Source struct {
 	NameTemplate string `yaml:"name_template,omitempty"`
@@ -423,6 +434,7 @@ type Project struct {
 	Artifactories []Upload    `yaml:",omitempty"`
 	Uploads       []Upload    `yaml:",omitempty"`
 	Blobs         []Blob      `yaml:"blobs,omitempty"`
+	Publishers    []Publisher `yaml:"publishers,omitempty"`
 	Changelog     Changelog   `yaml:",omitempty"`
 	Dist          string      `yaml:",omitempty"`
 	Signs         []Sign      `yaml:",omitempty"`

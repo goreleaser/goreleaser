@@ -38,12 +38,13 @@ const (
 	timestamp   = "Timestamp"
 
 	// artifact-only keys
-	os           = "Os"
+	osKey        = "Os"
 	arch         = "Arch"
 	arm          = "Arm"
 	mips         = "Mips"
 	binary       = "Binary"
 	artifactName = "ArtifactName"
+	artifactPath = "ArtifactPath"
 
 	// gitlab only
 	artifactUploadHash = "ArtifactUploadHash"
@@ -109,12 +110,13 @@ func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]st
 	if bin == nil {
 		bin = t.fields[projectName]
 	}
-	t.fields[os] = replace(replacements, a.Goos)
+	t.fields[osKey] = replace(replacements, a.Goos)
 	t.fields[arch] = replace(replacements, a.Goarch)
 	t.fields[arm] = replace(replacements, a.Goarm)
 	t.fields[mips] = replace(replacements, a.Gomips)
 	t.fields[binary] = bin.(string)
 	t.fields[artifactName] = a.Name
+	t.fields[artifactPath] = a.Path
 	if val, ok := a.Extra["ArtifactUploadHash"]; ok {
 		t.fields[artifactUploadHash] = val
 	} else {
@@ -150,6 +152,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"toupper": strings.ToUpper,
 			"trim":    strings.TrimSpace,
 			"dir":     filepath.Dir,
+			"abs":     filepath.Abs,
 		}).
 		Parse(s)
 	if err != nil {
