@@ -23,8 +23,6 @@ theme:
 
 plugins:
   - search
-  - git-revision-date-localized:
-      type: date
 
 extra:
   version: v0.140.0
