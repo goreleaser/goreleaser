@@ -18,16 +18,13 @@ theme:
     - instant
     # - tabs
   language: en
-  pallete:
-    primary: indigo
-    accent: indigo
   logo: static/avatar.png
   favicon: static/favicon.icon
 
 plugins:
   - search
-  # - git-revision-date-localized:
-  #     type: date
+  - git-revision-date-localized:
+      type: date
 
 extra:
   version: v0.140.0
