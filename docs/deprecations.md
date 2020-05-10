@@ -17,6 +17,8 @@ $ goreleaser check
 
 ## Active deprecation notices
 
+None.
+
 <!--
 
 Template for new deprecations:

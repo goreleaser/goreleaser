@@ -1,9 +1,3 @@
----
-title: Home
----
-
-<img src="https://avatars1.githubusercontent.com/u/24697112?v=4" style="height: 180px; text-align: center">
-
 [GoReleaser](https://github.com/goreleaser/goreleaser) is a release automation
 tool for Go projects. The goal is to simplify the build, release and
 publish steps while providing variant customization options for all steps.

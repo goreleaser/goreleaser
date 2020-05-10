@@ -1,5 +1,13 @@
 site_name: GoReleaser
-docs_dir: www
+repo_name: goreleaser/goreleaser
+repo_url: https://github.com/goreleaser/goreleaser
+
+extra:
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/goreleaser
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/goreleaser
 
 theme:
   name: material
@@ -12,12 +20,6 @@ theme:
     accent: indigo
   logo: static/avatar.png
   favicon: static/favicon.icon
-  repo_name: goreleaser/goreleaser
-  repo_url: https://github.com/goreleaser/goreleaser
-  extra:
-    social:
-      - icon: fontawesome/brands/twitter
-        link: https://twitter.com/goreleaser
 
 plugins:
   - search
@@ -36,10 +38,10 @@ nav:
 - quick-start.md
 - environment.md
 - Limitations:
-  - semver.md
-  - cgo.md
+  - limitations/semver.md
+  - limitations/cgo.md
 - Continuous Integration:
-  - ci/index.md
+  - About: ci/index.md
   - ci/actions.md
   - ci/travis.md
   - ci/gitlab.md
@@ -49,7 +51,7 @@ nav:
   - ci/drone.md
   - ci/semaphore.md
 - Customization:
-  - customization/index.md
+  - About: customization/index.md
   - customization/project.md
   - customization/env.md
   - customization/hooks.md
@@ -61,6 +63,7 @@ nav:
   - customization/sign.md
   - customization/snapshots.md
   - customization/nfpm.md
+  - customization/snapcraft.md
   - customization/release.md
   - customization/homebrew.md
   - customization/scoop.md

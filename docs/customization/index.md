@@ -1,4 +1,4 @@
-# Home
+# Customization
 
 GoReleaser provides multiple customizations via the `.goreleaser.yml` file.
 
