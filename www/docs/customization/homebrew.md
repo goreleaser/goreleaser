@@ -134,7 +134,7 @@ brews:
 ```
 
 !!! tip
-    Learn more about the [name template engine](/templates).
+    Learn more about the [name template engine](/customization/templates).
 
 By defining the `brew` section, GoReleaser will take care of publishing the
 Homebrew tap.

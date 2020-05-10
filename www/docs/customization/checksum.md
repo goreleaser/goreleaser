@@ -21,4 +21,4 @@ checksum:
 ```
 
 !!! tip
-    Learn more about the [name template engine](/templates).
+    Learn more about the [name template engine](/customization/templates).

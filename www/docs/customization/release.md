@@ -141,7 +141,7 @@ so you will have to enable all file types with `*/*`.
     `draft` and `prerelease` are only supported by GitHub and Gitea.
 
 !!! tip
-    Learn more about the [name template engine](/templates).
+    Learn more about the [name template engine](/customization/templates).
 
 ## Customize the changelog
 
