@@ -7,9 +7,6 @@ repo_url: https://github.com/goreleaser/goreleaser
 theme:
   name: material
   custom_dir: docs/overrides
-  features:
-    - instant
-    # - tabs
   language: en
   logo: static/avatar.png
   favicon: static/favicon.ico
@@ -22,8 +19,8 @@ plugins:
       prebuild_index: python
       lang:
       - en
-  # - minify:
-  #     minify_html: true
+  - minify:
+      minify_html: true
 
 
 extra:
