@@ -13,6 +13,8 @@ theme:
   language: en
   logo: static/avatar.png
   favicon: static/favicon.ico
+  include_search_page: false
+  search_index_only: true
 
 plugins:
   # disable temporarely because its freezing the page
@@ -30,6 +32,7 @@ extra:
       link: https://github.com/goreleaser
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/goreleaser
+
 google_analytics:
   - UA-106198408-1
   - auto
