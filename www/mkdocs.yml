@@ -18,12 +18,12 @@ theme:
 
 plugins:
   # disable temporarely because its freezing the page
-  # - search:
-  #     prebuild_index: python
-  #     lang:
-  #     - en
-  - minify:
-      minify_html: true
+  - search:
+      prebuild_index: python
+      lang:
+      - en
+  # - minify:
+  #     minify_html: true
 
 
 extra:
