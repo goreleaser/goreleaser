@@ -48,11 +48,17 @@ build:
 .PHONY: build
 
 imgs:
+	wget -O docs/static/logo.png https://github.com/goreleaser/artwork/raw/master/goreleaserfundo.png
 	wget -O docs/static/card.png "https://og.caarlos0.dev/**GoReleaser**%20%7C%20Deliver%20Go%20binaries%20as%20fast%20and%20easily%20as%20possible.png?theme=light&md=1&fontSize=80px&images=https://github.com/goreleaser.png"
 	wget -O docs/static/avatar.png https://github.com/goreleaser.png
 	convert docs/static/avatar.png -define icon:auto-resize=64,48,32,16 docs/static/favicon.ico
 	convert docs/static/avatar.png -resize x120 docs/static/apple-touch-icon.png
 .PHONY: imgs
+
+site: imgs
+	pip install mkdocs-material
+	mkdocs build
+.PHONY: site
 
 serve: imgs
 	@docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
