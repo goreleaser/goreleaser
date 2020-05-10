@@ -15,10 +15,14 @@ theme:
   favicon: static/favicon.ico
 
 plugins:
-  - search:
-      prebuild_index: python
-      lang:
-      - en
+  # disable temporarely because its freezing the page
+  # - search:
+  #     prebuild_index: python
+  #     lang:
+  #     - en
+  - minify:
+      minify_html: true
+
 
 extra:
   social:
