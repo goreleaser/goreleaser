@@ -22,7 +22,8 @@ theme:
   favicon: static/favicon.icon
 
 plugins:
-  - search
+  - search:
+      prebuild_index: true
 
 extra:
   version: v0.140.0
