@@ -2,6 +2,9 @@
 title: Blobs
 ---
 
+The `blobs` allows you to upload artifacts to Amazon S3, Azure Blob and
+Google GCS.
+
 ## Customization
 
 ```yaml
@@ -56,33 +59,37 @@ blobs:
 
 ## Authentication
 
-Goreleaser's blob pipe authentication varies depending upon the blob provider as mentioned below:
+GoReleaser's blob pipe authentication varies depending upon the blob provider as mentioned below:
 
 ### S3 Provider
 
-S3 provider support AWS [default credential provider](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials) chain in the following order:
+S3 provider support AWS
+[default credential provider](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials)
+chain in the following order:
 
 - Environment variables.
-
 - Shared credentials file.
-
 - If your application is running on an Amazon EC2 instance, IAM role for Amazon EC2.
 
 ### Azure Blob Provider
 
-Currently it supports authentication only with [environment variables](https://docs.microsoft.com/en-us/azure/storage/common/storage-azure-cli#set-default-azure-storage-account-environment-variables):
+Currently it supports authentication only with
+[environment variables](https://docs.microsoft.com/en-us/azure/storage/common/storage-azure-cli#set-default-azure-storage-account-environment-variables):
 
-- AZURE_STORAGE_ACCOUNT
-- AZURE_STORAGE_KEY or AZURE_STORAGE_SAS_TOKEN
+- `AZURE_STORAGE_ACCOUNT`
+- `AZURE_STORAGE_KEY` or `AZURE_STORAGE_SAS_TOKEN`
 
 ### [GCS Provider](https://cloud.google.com/docs/authentication/production)
 
-GCS provider uses [Application Default Credentials](https://cloud.google.com/docs/authentication/production) in the following order:
+GCS provider uses
+[Application Default Credentials](https://cloud.google.com/docs/authentication/production)
+in the following order:
 
-- Environment Variable (GOOGLE_APPLICATION_CREDENTIALS)
-- Default Service Account from the compute instance(Compute Engine, Kubernetes Engine, Cloud function etc).
+- Environment Variable (`GOOGLE_APPLICATION_CREDENTIALS`)
+- Default Service Account from the compute instance (Compute Engine,
+Kubernetes Engine, Cloud function etc).
 
-### ACLs
+## ACLs
 
 There is no common way to set ACLs across all bucket providers, so, [go-cloud][]
 [does not support it yet][issue1108].

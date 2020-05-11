@@ -15,7 +15,7 @@ func main() {
 
 Run `goreleaser init` to create an example `.goreleaser.yaml` file:
 
-```sh
+```console
 $ goreleaser init
 
    • Generating .goreleaser.yml file
@@ -29,7 +29,7 @@ You can test the configuration at any time by running GoReleaser with a few
 extra parameters to not require a version tag, skip publishing to GitHub,
 and remove any already-built files:
 
-```sh
+```console
 $ goreleaser --snapshot --skip-publish --rm-dist
 ```
 
@@ -51,7 +51,7 @@ contain a valid GitHub token with the `repo` scope or GitLab token with `api` sc
 It will be used to deploy releases to your GitHub/GitLab repository.
 You can create a token [here](https://github.com/settings/tokens/new) for GitHub or [here](https://gitlab.com/profile/personal_access_tokens) for GitLab.
 
-```sh
+```console
 $ export GITHUB_TOKEN="YOUR_GH_TOKEN"
 # or
 $ export GITLAB_TOKEN="YOUR_GL_TOKEN"
@@ -61,7 +61,7 @@ GoReleaser will use the latest
 [Git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of your repository.
 Create a tag and push it to GitHub:
 
-```sh
+```console
 $ git tag -a v0.1.0 -m "First release"
 $ git push origin v0.1.0
 ```
@@ -72,13 +72,13 @@ $ git push origin v0.1.0
 If you don't want to create a tag yet, you can also run GoReleaser without publishing
 based on the latest commit by using the `--snapshot` flag:
 
-```sh
+```console
 $ goreleaser --snapshot
 ```
 
 Now you can run GoReleaser at the root of your repository:
 
-```sh
+```console
 $ goreleaser
 ```
 
@@ -97,26 +97,28 @@ The release should also look like this:
     src="https://user-images.githubusercontent.com/8409778/59390011-55fcdf80-8d70-11e9-840f-c568ddc0e965.png">
 </a>
 
-**Note:** Releasing to a private-hosted GitLab CE will only work for version `v11.7+`, because the release feature
-was introduced in this [version](https://docs.gitlab.com/ee/user/project/releases/index.html).
+!!! note
+    Releasing to a private-hosted GitLab CE will only work for version `v11.7+`,
+    because the release feature was introduced in this
+    [version](https://docs.gitlab.com/ee/user/project/releases/index.html).
 
 ## Dry run
 
 If you want to test everything before doing a release "for real", you can
 use the `--skip-publish` flag, which will only build and package things:
 
-```sh
+```console
 $ goreleaser release --skip-publish
 ```
 
 You can check the other options by running:
 
-```sh
+```console
 $ goreleaser --help
 ```
 
 and
 
-```sh
+```console
 $ goreleaser release --help
 ```

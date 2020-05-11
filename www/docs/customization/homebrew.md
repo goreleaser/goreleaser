@@ -12,10 +12,10 @@ and the
 [formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md)
 for more details.
 
-!!! note
-    If you have multiple arm 32-bit versions in each `build` section, and
-    you do not specify any `ids` in the brew section (default to all artifacts),
-    then GoReleaser will fail.
+!!! warning
+    If you have multiple 32-bit arm versions in each `build` section, and
+    you do not specify any `ids` in the brew section, it will default to all
+    artifacts and GoReleaser will fail.
 
 ```yaml
 # .goreleaser.yml

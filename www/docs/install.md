@@ -9,25 +9,25 @@ Here are the steps for each of them:
 
 **homebrew tap** (only on macOS for now):
 
-```sh
+```console
 $ brew install goreleaser/tap/goreleaser
 ```
 
 **homebrew** (may not be the latest version):
 
-```sh
+```console
 $ brew install goreleaser
 ```
 
 **snapcraft**:
 
-```sh
+```console
 $ sudo snap install --classic goreleaser
 ```
 
 **scoop**:
 
-```sh
+```console
 $ scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
 $ scoop install goreleaser
 ```
@@ -39,7 +39,7 @@ install with `dpkg -i` and `rpm -i` respectively.
 
 **Shell script**:
 
-```sh
+```console
 $ curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
 ```
 
@@ -53,7 +53,7 @@ copy to the desired location.
 You can also use it within a Docker container. To do that, you'll need to
 execute something more-or-less like the following:
 
-```sh
+```console
 $ docker run --rm --privileged \
   -v $PWD:/go/src/github.com/user/repo \
   -v /var/run/docker.sock:/var/run/docker.sock \
@@ -85,22 +85,32 @@ and iterate from that.
 
 Here you have two options:
 
-1. If you want to contribute to the project, please follow the
+If you want to contribute to the project, please follow the
 steps on our [contributing guide](/contributing).
-2. If just want to build from source for whatever reason, follow the steps
-bellow:
 
-```sh
-# clone it outside GOPATH
-git clone https://github.com/goreleaser/goreleaser
-cd goreleaser
+If you just want to build from source for whatever reason, follow these steps:
 
-# get dependencies using go modules (needs go 1.11+)
-go get ./...
+**Clone:**
 
-# build
-go build -o goreleaser .
+```console
+$ git clone https://github.com/goreleaser/goreleaser
+$ cd goreleaser
+```
 
-# check it works
-./goreleaser --version
+**Get the dependencies:**
+
+```console
+$ go get ./...
+```
+
+**Build:**
+
+```console
+$ go build -o goreleaser .
+```
+
+**Verify it works:**
+
+```console
+$ ./goreleaser --version
 ```
