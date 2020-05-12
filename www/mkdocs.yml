@@ -89,3 +89,5 @@ markdown_extensions:
   - meta
   - toc:
       permalink: true
+  - pymdownx.tabbed
+  - pymdownx.superfences

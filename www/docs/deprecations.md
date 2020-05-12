@@ -2,19 +2,20 @@
 title: Deprecation notices
 ---
 
-This page will be used to list deprecation notices across GoReleaser.
+This page is used to list deprecation notices across GoReleaser.
 
-Deprecate code will be removed after ~6 months from the time it was deprecated.
+Deprecated options will be removed after ~6 months from the time they were
+deprecated.
 
 You can check your use of deprecated configurations by running:
 
-```sh
+```console
 $ goreleaser check
 ```
 
 ## Active deprecation notices
 
-None.
+None at this time.
 
 <!--
 
@@ -26,21 +27,22 @@ Template for new deprecations:
 
 Description.
 
-Change this:
+=== "Before"
 
-```yaml
-```
+    ``` yaml
+    foo: bar
+    ```
 
-to this:
-
-```yaml
-```
+=== "After"
+    ``` yaml
+    foo: bar
+    ```
 
 -->
 
 ## Expired deprecation notices
 
-The following options were deprecated for ~6 months and are now fully removed.
+The following options were deprecated in the past and were already removed.
 
 ### puts
 
@@ -49,19 +51,18 @@ The following options were deprecated for ~6 months and are now fully removed.
 The HTTP upload support was extended to also accept `POST` as a method,
 so the name `puts` kind of lost its meaning.
 
-Change this:
+=== "Before"
 
-```yaml
-puts:
-- ...
-```
+    ``` yaml
+    puts:
+    - ...
+    ```
 
-to this:
-
-```yaml
-uploads:
-- ...
-```
+=== "After"
+    ``` yaml
+    uploads:
+    - ...
+    ```
 
 Also note that secrets environment variable name prefixes have changed from
 `PUT_` to `UPLOAD_`.
@@ -73,19 +74,18 @@ Also note that secrets environment variable name prefixes have changed from
 The `name_template` field was deprecated in favor of a more clear one,
 `file_name_template`.
 
-Change this:
+=== "Before"
+    ``` yaml
+    nfpms:
+    - name_template: foo
+    ```
 
-```yaml
-nfpms:
-  - name_template: foo
-```
 
-to this:
-
-```yaml
-nfpms:
-  - file_name_template: foo
-```
+=== "After"
+    ``` yaml
+    nfpms:
+    - file_name_template: foo
+    ```
 
 ### blob
 
@@ -95,19 +95,17 @@ Blob was deprecated in favor of its plural form.
 It was already accepting multiple inputs, but its pluralized now so its more
 clear.
 
-Change this:
+=== "Before"
+    ```yaml
+    blob:
+      # etc
+    ```
 
-```yaml
-blob:
-  # etc
-```
-
-to this:
-
-```yaml
-blobs:
-  # etc
-```
+=== "After"
+    ```yaml
+    blobs:
+      # etc
+    ```
 
 ### sign
 
@@ -115,20 +113,18 @@ blobs:
 
 Sign was deprecated in favor of its plural form.
 
-Change this:
+=== "Before"
+    ```yaml
+    sign:
+      # etc
+    ```
 
-```yaml
-sign:
-  # etc
-```
-
-to this:
-
-```yaml
-signs:
-  -
-    # etc
-```
+=== "After"
+    ```yaml
+    signs:
+      -
+        # etc
+    ```
 
 ### brew
 
@@ -138,18 +134,18 @@ Brew was deprecated in favor of its plural form.
 
 Change this:
 
-```yaml
-brew:
-  # etc
-```
+=== "Before"
+    ```yaml
+    brew:
+      # etc
+    ```
 
-to this:
-
-```yaml
-brews:
-  -
-    # etc
-```
+=== "After"
+    ```yaml
+    brews:
+      -
+        # etc
+    ```
 
 ### s3
 
@@ -158,22 +154,20 @@ brews:
 S3 was deprecated in favor of the new `blob`, which supports S3, Azure Blob and
 GCS.
 
-Change this:
+=== "Before"
+    ```yaml
+    s3:
+    -
+      # etc
+    ```
 
-```yaml
-s3:
--
-  # etc
-```
-
-to this:
-
-```yaml
-blobs:
--
-  provider: s3
-  # etc
-```
+=== "After"
+    ```yaml
+    blobs:
+    -
+      provider: s3
+      # etc
+    ```
 
 ACLs should be set on the bucket, the `acl` option does not exist anymore.
 
@@ -183,20 +177,18 @@ ACLs should be set on the bucket, the `acl` option does not exist anymore.
 
 We now allow multiple archives, so the `archive` statement will be removed.
 
-Change this:
+=== "Before"
+    ```yaml
+    archive:
+      format: zip
+    ```
 
-```yaml
-archive:
-  format: zip
-```
-
-to this:
-
-```yaml
-archives:
-  - id: foo
-    format: zip
-```
+=== "After"
+    ```yaml
+    archives:
+      - id: foo
+        format: zip
+    ```
 
 ### snapcraft
 
@@ -204,22 +196,20 @@ archives:
 
 We now allow multiple Snapcraft configs, so the `snapcraft` statement will be removed.
 
-Change this:
+=== "Before"
+    ```yaml
+    snapcraft:
+      publish: true
+      # ...
+    ```
 
-```yaml
-snapcraft:
-  publish: true
-  # ...
-```
-
-to this:
-
-```yaml
-snapcrafts:
-  -
-    publish: true
-    # ...
-```
+=== "After"
+    ```yaml
+    snapcrafts:
+      -
+        publish: true
+        # ...
+    ```
 
 ### nfpm
 
@@ -227,22 +217,20 @@ snapcrafts:
 
 We now allow multiple NFPM config, so the `nfpm` statement will be removed.
 
-Change this:
+=== "Before"
+    ```yaml
+    nfpm:
+      formats:
+        - deb
+    ```
 
-```yaml
-nfpm:
-  formats:
-    - deb
-```
-
-to this:
-
-```yaml
-nfpms:
-  -
-    formats:
-      - deb
-```
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        formats:
+          - deb
+    ```
 
 ### docker.binary
 
@@ -250,22 +238,20 @@ nfpms:
 
 You can now create a Docker image with multiple binaries.
 
-Change this:
+=== "Before"
+    ```yaml
+    dockers:
+    - image: foo/bar
+      binary: foo
+    ```
 
-```yaml
-dockers:
-- image: foo/bar
-  binary: foo
-```
-
-to this:
-
-```yaml
-dockers:
-- image: foo/bar
-  binaries:
-  - foo
-```
+=== "After"
+    ```yaml
+    dockers:
+    - image: foo/bar
+      binaries:
+      - foo
+    ```
 
 ### docker.image
 
@@ -275,22 +261,20 @@ This property was deprecated in favor of more flexible `image_templates`.
 The idea is to be able to define several images and tags using templates instead of just one image with tag templates.
 This flexibility allows images to be pushed to multiple registries.
 
-Change this:
+=== "Before"
+    ```yaml
+    dockers:
+    - image: foo/bar
+      tag_templates:
+        - '{{ .Tag }}'
+    ```
 
-```yaml
-dockers:
-- image: foo/bar
-  tag_templates:
-    - '{{ .Tag }}'
-```
-
-to this:
-
-```yaml
-dockers:
-- image_templates:
-    - 'foo/bar:{{ .Tag }}'
-```
+=== "After"
+    ```yaml
+    dockers:
+    - image_templates:
+        - 'foo/bar:{{ .Tag }}'
+    ```
 
 ### docker.tag_templates
 
@@ -299,22 +283,20 @@ dockers:
 This property was deprecated in favor of more flexible `image_templates`.
 The idea is to be able to define several images and tags using templates instead of just one image with tag templates.
 
-Change this:
+=== "Before"
+    ```yaml
+    dockers:
+    - image: foo/bar
+      tag_templates:
+        - '{{ .Tag }}'
+    ```
 
-```yaml
-dockers:
-- image: foo/bar
-  tag_templates:
-    - '{{ .Tag }}'
-```
-
-to this:
-
-```yaml
-dockers:
-- image_templates:
-    - 'foo/bar:{{ .Tag }}'
-```
+=== "After"
+    ```yaml
+    dockers:
+    - image_templates:
+        - 'foo/bar:{{ .Tag }}'
+    ```
 
 ### git.short_hash
 
@@ -324,22 +306,20 @@ This property was being used to tell GoReleaser to use short git hashes
 instead of the full ones. This has been removed in favor of specific
 template variables (`.FullCommit` and `.ShortCommit`).
 
-Change this:
+=== "Before"
+    ```yaml
+    git:
+      short_hash: true
 
-```yaml
-git:
-  short_hash: true
+    fake:
+      foo_template: 'blah {{ .Commit }}'
+    ```
 
-fake:
-  foo_template: 'blah {{ .Commit }}'
-```
-
-to this:
-
-```yaml
-fake:
-  foo_template: 'blah {{ .ShortCommit }}'
-```
+=== "After"
+    ```yaml
+    fake:
+      foo_template: 'blah {{ .ShortCommit }}'
+    ```
 
 ### fpm
 
@@ -351,19 +331,17 @@ CI/CD pipelines.
 
 Just replace the `fpm` keyword by `nfpm` in your `goreleaser.yaml` file.
 
-Change this:
+=== "Before"
+    ```yaml
+    fpm:
+      # ...
+    ```
 
-```yaml
-fpm:
-  # ...
-```
-
-to this:
-
-```yaml
-nfpm:
-  # ...
-```
+=== "After"
+    ```yaml
+    nfpm:
+      # ...
+    ```
 
 ### docker.tag_template
 
@@ -372,22 +350,20 @@ nfpm:
 This property was deprecated in favor of the pluralized `tag_templates`.
 The idea is to be able to define several tags instead of just one.
 
-Change this:
+=== "Before"
+    ```yaml
+    dockers:
+    - image: foo/bar
+      tag_template: '{{ .Tag }}'
+    ```
 
-```yaml
-dockers:
-- image: foo/bar
-  tag_template: '{{ .Tag }}'
-```
-
-to this:
-
-```yaml
-dockers:
-- image: foo/bar
-  tag_templates:
-    - '{{ .Tag }}'
-```
+=== "After"
+    ```yaml
+    dockers:
+    - image: foo/bar
+      tag_templates:
+        - '{{ .Tag }}'
+    ```
 
 ### docker.latest
 
@@ -396,20 +372,18 @@ dockers:
 The `latest` field in Docker config is deprecated in favor of the newer
 `tag_templates` field.
 
-Change this:
+=== "Before"
+    ```yaml
+    dockers:
+    - image: foo/bar
+      latest: true
+    ```
 
-```yaml
-dockers:
-- image: foo/bar
-  latest: true
-```
-
-to this:
-
-```yaml
-dockers:
-- image: foo/bar
-  tag_templates:
-    - '{{ .Tag }}'
-    - latest
-```
+=== "After"
+    ```yaml
+    dockers:
+    - image: foo/bar
+      tag_templates:
+        - '{{ .Tag }}'
+        - latest
+    ```
