@@ -68,6 +68,8 @@ jobs:
       -
         name: GoReleaser
         if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
             ./goreleaser --parallelism 2
