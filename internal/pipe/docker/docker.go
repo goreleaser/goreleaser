@@ -121,6 +121,7 @@ func doRun(ctx *context.Context) error {
 			var binaries = ctx.Artifacts.Filter(artifact.And(filters...)).List()
 			// TODO: not so good of a check, if one binary match multiple
 			// binaries and the other match none, this will still pass...
+			log.WithField("binaries", binaries).Debug("found binaries")
 			if len(binaries) != len(docker.Binaries) {
 				return fmt.Errorf(
 					"%d binaries match docker definition: %v: %s_%s_%s, should be %d",
@@ -257,7 +258,7 @@ func dockerBuild(ctx *context.Context, root string, images, flags []string) erro
 	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return errors.Wrapf(err, "failed to build docker image: \n%s", string(out))
+		return errors.Wrapf(err, "failed to build docker image: %s: \n%s", images[0], string(out))
 	}
 	log.Debugf("docker build output: \n%s", string(out))
 	return nil
