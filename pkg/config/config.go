@@ -228,15 +228,17 @@ type Archive struct {
 
 // Release config used for the GitHub/GitLab release
 type Release struct {
-	GitHub       Repo        `yaml:",omitempty"`
-	GitLab       Repo        `yaml:",omitempty"`
-	Gitea        Repo        `yaml:",omitempty"`
-	Draft        bool        `yaml:",omitempty"`
-	Disable      bool        `yaml:",omitempty"`
-	Prerelease   string      `yaml:",omitempty"`
-	NameTemplate string      `yaml:"name_template,omitempty"`
-	IDs          []string    `yaml:"ids,omitempty"`
-	ExtraFiles   []ExtraFile `yaml:"extra_files,omitempty"`
+	GitHub         Repo        `yaml:",omitempty"`
+	GitLab         Repo        `yaml:",omitempty"`
+	Gitea          Repo        `yaml:",omitempty"`
+	Draft          bool        `yaml:",omitempty"`
+	Disable        bool        `yaml:",omitempty"`
+	Prerelease     string      `yaml:",omitempty"`
+	NameTemplate   string      `yaml:"name_template,omitempty"`
+	IDs            []string    `yaml:"ids,omitempty"`
+	ExtraFiles     []ExtraFile `yaml:"extra_files,omitempty"`
+	HeaderTemplate string      `yaml:"header_template,omitempty"`
+	FooterTemplate string      `yaml:"footer_template,omitempty"`
 }
 
 // ExtraFile on a release
