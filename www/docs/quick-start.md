@@ -118,6 +118,12 @@ $ goreleaser build
 This can be useful as part of CI pipelines to verify the project builds
 without errors for all build targets.
 
+You can check the other options by running:
+
+```console
+$ goreleaser build --help
+```
+
 ### Release Flags
 
 Use the `--skip-publish` flag to skip publishing:

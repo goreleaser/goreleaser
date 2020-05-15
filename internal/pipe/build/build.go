@@ -93,8 +93,10 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 			if err := doBuild(ctx, build, *opts); err != nil {
 				return err
 			}
-			if err := runHook(ctx, *opts, build.Env, build.Hooks.Post); err != nil {
-				return errors.Wrap(err, "post hook failed")
+			if !ctx.SkipPostBuildHooks {
+				if err := runHook(ctx, *opts, build.Env, build.Hooks.Post); err != nil {
+					return errors.Wrap(err, "post hook failed")
+				}
 			}
 			return nil
 		})

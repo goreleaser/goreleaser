@@ -50,9 +50,11 @@ func TestBuildFlags(t *testing.T) {
 
 	t.Run("skips", func(t *testing.T) {
 		var ctx = setup(buildOpts{
-			skipValidate: true,
+			skipValidate:  true,
+			skipPostHooks: true,
 		})
 		require.True(t, ctx.SkipValidate)
+		require.True(t, ctx.SkipPostBuildHooks)
 		require.True(t, ctx.SkipTokenCheck)
 	})
 
