@@ -34,6 +34,7 @@ type releaseOpts struct {
 
 func newReleaseCmd() *releaseCmd {
 	var root = &releaseCmd{}
+	// nolint: dupl
 	var cmd = &cobra.Command{
 		Use:           "release",
 		Aliases:       []string{"r"},
@@ -84,7 +85,7 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 	}
 	ctx, cancel := context.NewWithTimeout(cfg, options.timeout)
 	defer cancel()
-	setupContext(ctx, options)
+	setupReleaseContext(ctx, options)
 	return ctx, ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipeline.Pipeline {
 			if err := middleware.Logging(
@@ -99,7 +100,7 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 	})
 }
 
-func setupContext(ctx *context.Context, options releaseOpts) *context.Context {
+func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Context {
 	ctx.Parallelism = options.parallelism
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.ReleaseNotes = options.releaseNotes

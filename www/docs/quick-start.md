@@ -105,7 +105,22 @@ The release should also look like this:
 ## Dry run
 
 If you want to test everything before doing a release "for real", you can
-use the `--skip-publish` flag, which will only build and package things:
+use the following techniques.
+
+### Build-only Mode
+
+Build command will build the project
+
+```console
+$ goreleaser build
+```
+
+This can be useful as part of CI pipelines to verify the project builds
+without errors for all build targets.
+
+### Release Flags
+
+Use the `--skip-publish` flag to skip publishing:
 
 ```console
 $ goreleaser release --skip-publish
