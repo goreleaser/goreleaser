@@ -51,7 +51,8 @@ var BuildPipeline = []Piper{
 
 // Pipeline contains all pipe implementations in order
 // nolint: gochecknoglobals
-var Pipeline = append(BuildPipeline, []Piper{
+var Pipeline = append(
+	BuildPipeline,
 	archive.Pipe{},       // archive in tar.gz, zip or binary (which does no archiving at all)
 	sourcearchive.Pipe{}, // archive the source code using git-archive
 	nfpm.Pipe{},          // archive via fpm (deb, rpm) using "native" go impl
@@ -60,4 +61,4 @@ var Pipeline = append(BuildPipeline, []Piper{
 	sign.Pipe{},          // sign artifacts
 	docker.Pipe{},        // create and push docker images
 	publish.Pipe{},       // publishes artifacts
-}...)
+)
