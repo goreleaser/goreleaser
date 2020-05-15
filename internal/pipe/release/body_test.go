@@ -66,3 +66,69 @@ func TestDontEscapeHTML(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Contains(t, out.String(), changelog)
 }
+
+func TestAddHeaderToDescription(t *testing.T) {
+	assert := assert.New(t)
+
+	var changelog = "feature1: description\nfeature2: other description"
+	var ctx = context.New(config.Project{
+		Release: config.Release{
+			HeaderTemplate: "Header template",
+		},
+	})
+
+	ctx.ReleaseNotes = changelog
+	for _, d := range []string{
+		"goreleaser/goreleaser:0.40.0",
+		"goreleaser/goreleaser:latest",
+		"goreleaser/godownloader:v0.1.0",
+	} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: d,
+			Type: artifact.DockerImage,
+		})
+	}
+	out, err := describeBody(ctx)
+	assert.NoError(err)
+
+	var golden = "testdata/release3.golden"
+	if *update {
+		_ = ioutil.WriteFile(golden, out.Bytes(), 0755)
+	}
+	bts, err := ioutil.ReadFile(golden)
+	assert.NoError(err)
+	assert.Equal(string(bts), out.String())
+}
+
+func TestAddFooterToDescription(t *testing.T) {
+	assert := assert.New(t)
+
+	var changelog = "feature1: description\nfeature2: other description"
+	var ctx = context.New(config.Project{
+		Release: config.Release{
+			FooterTemplate: "Footer template",
+		},
+	})
+
+	ctx.ReleaseNotes = changelog
+	for _, d := range []string{
+		"goreleaser/goreleaser:0.40.0",
+		"goreleaser/goreleaser:latest",
+		"goreleaser/godownloader:v0.1.0",
+	} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: d,
+			Type: artifact.DockerImage,
+		})
+	}
+	out, err := describeBody(ctx)
+	assert.NoError(err)
+
+	var golden = "testdata/release4.golden"
+	if *update {
+		_ = ioutil.WriteFile(golden, out.Bytes(), 0755)
+	}
+	bts, err := ioutil.ReadFile(golden)
+	assert.NoError(err)
+	assert.Equal(string(bts), out.String())
+}
