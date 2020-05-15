@@ -21,9 +21,9 @@ const bodyTemplateText = `{{if .Header }}{{ .Header }}
 - ` + "`docker pull {{ . -}}`" + `
 {{- end -}}
 {{- end }}
-
-{{if .Footer }}{{ .Footer }}{{end}}
-`
+{{if .Footer }}
+{{ .Footer }}
+{{end}}`
 
 func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 	var out bytes.Buffer
