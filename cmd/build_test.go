@@ -8,79 +8,64 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRelease(t *testing.T) {
+func TestBuild(t *testing.T) {
 	_, back := setup(t)
 	defer back()
-	var cmd = newReleaseCmd()
+	var cmd = newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.NoError(t, cmd.cmd.Execute())
 }
 
-func TestReleaseInvalidConfig(t *testing.T) {
+func TestBuildInvalidConfig(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	createFile(t, "goreleaser.yml", "foo: bar")
-	var cmd = newReleaseCmd()
+	var cmd = newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.EqualError(t, cmd.cmd.Execute(), "yaml: unmarshal errors:\n  line 1: field foo not found in type config.Project")
 }
 
-func TestReleaseBrokenProject(t *testing.T) {
+func TestBuildBrokenProject(t *testing.T) {
 	_, back := setup(t)
 	defer back()
 	createFile(t, "main.go", "not a valid go file")
-	var cmd = newReleaseCmd()
+	var cmd = newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2"})
 	require.EqualError(t, cmd.cmd.Execute(), "failed to parse dir: .: main.go:1:1: expected 'package', found not")
 }
 
-func TestReleaseFlags(t *testing.T) {
-	var setup = func(opts releaseOpts) *context.Context {
-		return setupReleaseContext(context.New(config.Project{}), opts)
+func TestBuildFlags(t *testing.T) {
+	var setup = func(opts buildOpts) *context.Context {
+		return setupBuildContext(context.New(config.Project{}), opts)
 	}
 
 	t.Run("snapshot", func(t *testing.T) {
-		var ctx = setup(releaseOpts{
+		var ctx = setup(buildOpts{
 			snapshot: true,
 		})
 		require.True(t, ctx.Snapshot)
-		require.True(t, ctx.SkipPublish)
-		require.True(t, ctx.SkipPublish)
+		require.True(t, ctx.SkipValidate)
+		require.True(t, ctx.SkipTokenCheck)
 	})
 
 	t.Run("skips", func(t *testing.T) {
-		var ctx = setup(releaseOpts{
-			skipPublish:  true,
-			skipSign:     true,
-			skipValidate: true,
+		var ctx = setup(buildOpts{
+			skipValidate:  true,
+			skipPostHooks: true,
 		})
-		require.True(t, ctx.SkipSign)
-		require.True(t, ctx.SkipPublish)
-		require.True(t, ctx.SkipPublish)
+		require.True(t, ctx.SkipValidate)
+		require.True(t, ctx.SkipPostBuildHooks)
+		require.True(t, ctx.SkipTokenCheck)
 	})
 
 	t.Run("parallelism", func(t *testing.T) {
-		require.Equal(t, 1, setup(releaseOpts{
+		require.Equal(t, 1, setup(buildOpts{
 			parallelism: 1,
 		}).Parallelism)
 	})
 
-	t.Run("notes", func(t *testing.T) {
-		var notes = "foo.md"
-		var header = "header.md"
-		var footer = "footer.md"
-		var ctx = setup(releaseOpts{
-			releaseNotes:  notes,
-			releaseHeader: header,
-			releaseFooter: footer,
-		})
-		require.Equal(t, notes, ctx.ReleaseNotes)
-		require.Equal(t, header, ctx.ReleaseHeader)
-		require.Equal(t, footer, ctx.ReleaseFooter)
-	})
-
 	t.Run("rm dist", func(t *testing.T) {
-		require.True(t, setup(releaseOpts{
+		require.True(t, setup(buildOpts{
 			rmDist: true,
 		}).RmDist)
 	})
