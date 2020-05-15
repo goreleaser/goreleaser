@@ -4,6 +4,7 @@ package pipeline
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/internal/pipe/after"
 	"github.com/goreleaser/goreleaser/internal/pipe/semver"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
 
@@ -61,4 +62,5 @@ var Pipeline = append(
 	sign.Pipe{},          // sign artifacts
 	docker.Pipe{},        // create and push docker images
 	publish.Pipe{},       // publishes artifacts
+	after.Pipe{},         // run global hooks as last step before ending a release
 )

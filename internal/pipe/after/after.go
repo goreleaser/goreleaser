@@ -1,0 +1,44 @@
+package after
+
+import (
+	"fmt"
+	"os/exec"
+
+	"github.com/goreleaser/goreleaser/pkg/context"
+
+	"github.com/apex/log"
+	"github.com/fatih/color"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
+	"github.com/mattn/go-shellwords"
+)
+
+type Pipe struct{}
+
+func (p Pipe) String() string {
+	return "running after hooks"
+}
+
+// Run executes the hooks
+func (Pipe) Run(ctx *context.Context) error {
+	var tmpl = tmpl.New(ctx)
+	/* #nosec */
+	for _, step := range ctx.Config.After.Hooks {
+		s, err := tmpl.Apply(step)
+		if err != nil {
+			return err
+		}
+		args, err := shellwords.Parse(s)
+		if err != nil {
+			return err
+		}
+		log.Infof("running %s", color.CyanString(step))
+		cmd := exec.Command(args[0], args[1:]...)
+		cmd.Env = ctx.Env.Strings()
+		out, err := cmd.CombinedOutput()
+		log.Debug(string(out))
+		if err != nil {
+			return fmt.Errorf("hook failed: %s\n%v", step, string(out))
+		}
+	}
+	return nil
+}

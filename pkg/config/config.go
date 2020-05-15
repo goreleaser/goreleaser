@@ -372,6 +372,11 @@ type Before struct {
 	Hooks []string `yaml:",omitempty"`
 }
 
+// After config
+type After struct {
+	Hooks []string `yaml:",omitempty"`
+}
+
 // Blob contains config for GO CDK blob
 type Blob struct {
 	Bucket     string   `yaml:",omitempty"`
@@ -440,6 +445,7 @@ type Project struct {
 	Signs         []Sign      `yaml:",omitempty"`
 	EnvFiles      EnvFiles    `yaml:"env_files,omitempty"`
 	Before        Before      `yaml:",omitempty"`
+	After         After       `yaml:",omitempty"`
 	Source        Source      `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
