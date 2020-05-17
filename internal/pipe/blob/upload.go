@@ -5,7 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/url"
-	"path/filepath"
+	"path"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -101,7 +101,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 				return err
 			}
 
-			if err := up.Upload(ctx, filepath.Join(folder, artifact.Name), data); err != nil {
+			if err := up.Upload(ctx, path.Join(folder, artifact.Name), data); err != nil {
 				return handleError(err, bucketURL)
 			}
 			return err
