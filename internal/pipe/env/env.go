@@ -89,7 +89,7 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenErr, githubTokenErr, giteaTokenErr error) error {
-	if ctx.SkipPublish || ctx.Config.Release.Disable {
+	if ctx.SkipTokenCheck || ctx.SkipPublish || ctx.Config.Release.Disable {
 		return nil
 	}
 
