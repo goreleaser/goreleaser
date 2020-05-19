@@ -34,9 +34,9 @@ type Piper interface {
 	Run(ctx *context.Context) error
 }
 
-// Pipeline contains all pipe implementations in order
-// nolint: gochecknoglobals
-var Pipeline = []Piper{
+// BuildPipeline contains all build-related pipe implementations in order
+// nolint:gochecknoglobals
+var BuildPipeline = []Piper{
 	before.Pipe{},          // run global hooks before build
 	env.Pipe{},             // load and validate environment variables
 	git.Pipe{},             // get and validate git repo state
@@ -47,12 +47,18 @@ var Pipeline = []Piper{
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
 	changelog.Pipe{},       // builds the release changelog
 	build.Pipe{},           // build
-	archive.Pipe{},         // archive in tar.gz, zip or binary (which does no archiving at all)
-	sourcearchive.Pipe{},   // archive the source code using git-archive
-	nfpm.Pipe{},            // archive via fpm (deb, rpm) using "native" go impl
-	snapcraft.Pipe{},       // archive via snapcraft (snap)
-	checksums.Pipe{},       // checksums of the files
-	sign.Pipe{},            // sign artifacts
-	docker.Pipe{},          // create and push docker images
-	publish.Pipe{},         // publishes artifacts
 }
+
+// Pipeline contains all pipe implementations in order
+// nolint: gochecknoglobals
+var Pipeline = append(
+	BuildPipeline,
+	archive.Pipe{},       // archive in tar.gz, zip or binary (which does no archiving at all)
+	sourcearchive.Pipe{}, // archive the source code using git-archive
+	nfpm.Pipe{},          // archive via fpm (deb, rpm) using "native" go impl
+	snapcraft.Pipe{},     // archive via snapcraft (snap)
+	checksums.Pipe{},     // checksums of the files
+	sign.Pipe{},          // sign artifacts
+	docker.Pipe{},        // create and push docker images
+	publish.Pipe{},       // publishes artifacts
+)
