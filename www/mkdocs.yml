@@ -63,21 +63,21 @@ nav:
   - customization/blob.md
   - customization/build.md
   - customization/checksum.md
+  - customization/publishers.md
   - customization/docker.md
   - customization/env.md
-  - customization/homebrew.md
   - customization/hooks.md
+  - customization/homebrew.md
+  - customization/upload.md
+  - customization/templates.md
   - customization/nfpm.md
   - customization/project.md
-  - customization/publishers.md
   - customization/release.md
   - customization/scoop.md
   - customization/sign.md
   - customization/snapcraft.md
   - customization/snapshots.md
   - customization/source.md
-  - customization/templates.md
-  - customization/upload.md
 - deprecations.md
 - sponsors.md
 - contributing.md
