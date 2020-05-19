@@ -28,6 +28,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		if blob.Folder == "" {
 			blob.Folder = "{{ .ProjectName }}/{{ .Tag }}"
 		}
+		if blob.Extra.Folder == "" {
+			blob.Extra.Folder = blob.Folder
+		}
+		if blob.Extra.Path == "" {
+			blob.Extra.Path = "/"
+		}
 	}
 	return nil
 }

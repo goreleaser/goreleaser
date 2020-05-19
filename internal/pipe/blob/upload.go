@@ -68,6 +68,11 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		return err
 	}
 
+	extraFolder, err := tmpl.New(ctx).Apply(conf.Extra.Folder)
+	if err != nil {
+		return err
+	}
+
 	bucketURL, err := urlFor(ctx, conf)
 	if err != nil {
 		return err
@@ -107,6 +112,23 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 			return err
 		})
 	}
+
+	for _, file := range conf.Extra.Files {
+		file := file
+		g.Go(func() error {
+			data, err := getData(ctx, conf, path.Join(conf.Extra.Path, file))
+			if err != nil {
+				return err
+			}
+
+			err = up.Upload(ctx, path.Join(extraFolder, file), data)
+			if err != nil {
+				return handleError(err, bucketURL)
+			}
+			return err
+		})
+	}
+
 	return g.Wait()
 }
 
