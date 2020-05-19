@@ -54,6 +54,7 @@ nav:
   - ci/codefresh.md
   - ci/drone.md
   - ci/semaphore.md
+  - ci/jenkins.md
 - Customization:
   - About: customization/index.md
   - customization/project.md
