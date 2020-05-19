@@ -42,42 +42,42 @@ nav:
 - quick-start.md
 - environment.md
 - Limitations:
-  - limitations/semver.md
   - limitations/cgo.md
+  - limitations/semver.md
 - Continuous Integration:
   - About: ci/index.md
   - ci/actions.md
-  - ci/travis.md
-  - ci/gitlab.md
   - ci/circle.md
   - ci/cloudbuild.md
   - ci/codefresh.md
   - ci/drone.md
-  - ci/semaphore.md
+  - ci/gitlab.md
   - ci/jenkins.md
+  - ci/semaphore.md
+  - ci/travis.md
 - Customization:
   - About: customization/index.md
-  - customization/project.md
-  - customization/env.md
-  - customization/hooks.md
-  - customization/templates.md
-  - customization/build.md
   - customization/archive.md
-  - customization/source.md
-  - customization/checksum.md
-  - customization/sign.md
-  - customization/snapshots.md
-  - customization/nfpm.md
-  - customization/snapcraft.md
-  - customization/release.md
-  - customization/homebrew.md
-  - customization/scoop.md
-  - customization/docker.md
-  - customization/blob.md
   - customization/artifactory.md
   - customization/bintray.md
-  - customization/upload.md
+  - customization/blob.md
+  - customization/build.md
+  - customization/checksum.md
   - customization/publishers.md
+  - customization/docker.md
+  - customization/env.md
+  - customization/hooks.md
+  - customization/homebrew.md
+  - customization/upload.md
+  - customization/templates.md
+  - customization/nfpm.md
+  - customization/project.md
+  - customization/release.md
+  - customization/scoop.md
+  - customization/sign.md
+  - customization/snapcraft.md
+  - customization/snapshots.md
+  - customization/source.md
 - deprecations.md
 - sponsors.md
 - contributing.md
