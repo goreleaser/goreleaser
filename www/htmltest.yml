@@ -3,6 +3,7 @@ IgnoreURLs:
 - www.google-analytics.com
 - fonts.gstatic.com
 - opencollective.com
+- https://gitlab.com/profile/personal_access_tokens
 IgnoreDirs:
 - overrides
 IgnoreDirectoryMissingTrailingSlash: true
