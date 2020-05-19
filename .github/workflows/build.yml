@@ -16,6 +16,9 @@ jobs:
         name: Checkout
         uses: actions/checkout@v2
       -
+        name: Unshallow
+        run: git fetch --prune --unshallow
+      -
         name: Set up Snapcraft
         run: |
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
