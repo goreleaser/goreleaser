@@ -44,6 +44,21 @@ blobs:
     # Template for the path/name inside the bucket.
     # Default is `{{ .ProjectName }}/{{ .Tag }}`
     folder: "foo/bar/{{.Version}}"
+
+    # Upload extra files
+    extra:
+      # The path where the extra files are.
+      # Default is "/"
+      path: extra_files
+
+      # Template for the path/name inside the bucket.
+      # Default is the parent folder value
+      folder: "foo/bar/{{.Version}}/extra"
+
+      # Files to upload.
+      files:
+        - file1
+
   -
     provider: gs
     bucket: goreleaser-bucket
