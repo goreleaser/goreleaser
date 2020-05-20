@@ -81,11 +81,19 @@ func TestDefaults(t *testing.T) {
 			Provider: "azblob",
 			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
 			IDs:      []string{"foo", "bar"},
+			Extra: config.BlobExtraFiles{
+				Folder: "{{ .ProjectName }}/{{ .Tag }}",
+				Path:   "/",
+			},
 		},
 		{
 			Bucket:   "foobar",
 			Provider: "gcs",
 			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
+			Extra: config.BlobExtraFiles{
+				Folder: "{{ .ProjectName }}/{{ .Tag }}",
+				Path:   "/",
+			},
 		},
 	}, ctx.Config.Blobs)
 }
