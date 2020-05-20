@@ -100,15 +100,11 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
 		artifact := artifact
 		g.Go(func() error {
-			// TODO: replace this with ?prefix=folder on the bucket url
-			data, err := getData(ctx, conf, artifact.Path)
-			if err != nil {
-				return err
-			}
+			var dataFile = artifact.Path
+			var uploadFile = path.Join(folder, artifact.Name)
 
-			if err := up.Upload(ctx, path.Join(folder, artifact.Name), data); err != nil {
-				return handleError(err, bucketURL)
-			}
+			err := uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
+
 			return err
 		})
 	}
@@ -116,20 +112,29 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	for _, file := range conf.Extra.Files {
 		file := file
 		g.Go(func() error {
-			data, err := getData(ctx, conf, path.Join(conf.Extra.Path, file))
-			if err != nil {
-				return err
-			}
+			var dataFile = path.Join(conf.Extra.Path, file)
+			var uploadFile = path.Join(extraFolder, file)
 
-			err = up.Upload(ctx, path.Join(extraFolder, file), data)
-			if err != nil {
-				return handleError(err, bucketURL)
-			}
+			err := uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
+
 			return err
 		})
 	}
 
 	return g.Wait()
+}
+
+func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, uploadFile, bucketURL string) error {
+	data, err := getData(ctx, conf, dataFile)
+	if err != nil {
+		return err
+	}
+
+	err = up.Upload(ctx, uploadFile, data)
+	if err != nil {
+		return handleError(err, bucketURL)
+	}
+	return err
 }
 
 func handleError(err error, url string) error {

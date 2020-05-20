@@ -112,6 +112,18 @@ func TestDefaultsWithProvider(t *testing.T) {
 }
 
 func TestPipe_Publish(t *testing.T) {
+	pipePublish(t, config.BlobExtraFiles{})
+}
+
+func TestPipe_PublishExtraFiles(t *testing.T) {
+	var extra = config.BlobExtraFiles{
+		Path:  "testdata",
+		Files: []string{"file.golden"},
+	}
+	pipePublish(t, extra)
+}
+
+func pipePublish(t *testing.T, extra config.BlobExtraFiles) {
 	gcloudCredentials, _ := filepath.Abs("./testdata/credentials.json")
 
 	folder, err := ioutil.TempDir("", "goreleasertest")
@@ -129,6 +141,7 @@ func TestPipe_Publish(t *testing.T) {
 			{
 				Bucket:   "foo",
 				Provider: "azblob",
+				Extra:    extra,
 			},
 		},
 	})
@@ -153,6 +166,7 @@ func TestPipe_Publish(t *testing.T) {
 			{
 				Bucket:   "foo",
 				Provider: "gs",
+				Extra:    extra,
 			},
 		},
 	})
@@ -178,6 +192,7 @@ func TestPipe_Publish(t *testing.T) {
 			{
 				Bucket:   "foo",
 				Provider: "s3",
+				Extra:    extra,
 			},
 		},
 	})
