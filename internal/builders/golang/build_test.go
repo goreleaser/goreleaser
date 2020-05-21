@@ -117,16 +117,15 @@ func TestBuild(t *testing.T) {
 		var ext string
 		if strings.HasPrefix(target, "windows") {
 			ext = ".exe"
-		}
-		if target == "js_wasm" {
+		} else if target == "js_wasm" {
 			ext = ".wasm"
 		}
 		bin, terr := tmpl.New(ctx).Apply(build.Binary)
 		require.NoError(t, terr)
 		var err = Default.Build(ctx, build, api.Options{
 			Target: target,
-			Name:   bin,
-			Path:   filepath.Join(folder, "dist", target, bin),
+			Name:   bin + ext,
+			Path:   filepath.Join(folder, "dist", target, bin+ext),
 			Ext:    ext,
 		})
 		assert.NoError(t, err)
@@ -196,8 +195,8 @@ func TestBuild(t *testing.T) {
 			},
 		},
 		{
-			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.Join(folder, "dist", "windows_amd64", "bin", "foo-v5.6.7"),
+			Name:   "bin/foo-v5.6.7.exe",
+			Path:   filepath.Join(folder, "dist", "windows_amd64", "bin", "foo-v5.6.7.exe"),
 			Goos:   "windows",
 			Goarch: "amd64",
 			Type:   artifact.Binary,
@@ -208,8 +207,8 @@ func TestBuild(t *testing.T) {
 			},
 		},
 		{
-			Name:   "bin/foo-v5.6.7",
-			Path:   filepath.Join(folder, "dist", "js_wasm", "bin", "foo-v5.6.7"),
+			Name:   "bin/foo-v5.6.7.wasm",
+			Path:   filepath.Join(folder, "dist", "js_wasm", "bin", "foo-v5.6.7.wasm"),
 			Goos:   "js",
 			Goarch: "wasm",
 			Type:   artifact.Binary,
