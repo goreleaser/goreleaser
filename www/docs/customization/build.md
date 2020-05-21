@@ -4,7 +4,7 @@ title: Builds
 
 Builds can be customized in multiple ways.
 You can specify for which `GOOS`, `GOARCH` and `GOARM` binaries are built
-(goreleaser will generate a matrix of all combinations), and you can changed
+(goreleaser will generate a matrix of all combinations), and you can change
 the name of the binary, flags, environment variables, hooks and etc.
 
 Here is a commented `builds` section with all fields specified:
