@@ -9,7 +9,7 @@ on:
   pull_request:
 
 env:
-  TMPDIR: /home/runner/work/.tmp
+  TMPDIR: /home/runner/work/_temp/tmp
 
 jobs:
   goreleaser:
