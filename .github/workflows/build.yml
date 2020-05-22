@@ -9,7 +9,7 @@ on:
   pull_request:
 
 env:
-  TMPDIR: /home/runner/.tmp
+  TMPDIR: /mnt/.tmp
 
 jobs:
   goreleaser:
@@ -21,8 +21,6 @@ jobs:
       -
         name: Prepare
         run: |
-          sudo df -h
-          sudo mount
           mkdir -p $TMPDIR
       -
         name: Unshallow
