@@ -91,7 +91,7 @@ func (c *giteaClient) createRelease(ctx *context.Context, title, body string) (*
 }
 
 func (c *giteaClient) getExistingRelease(owner, repoName, tagName string) (*gitea.Release, error) {
-	releases, err := c.client.ListReleases(owner, repoName)
+	releases, err := c.client.ListReleases(owner, repoName, gitea.ListReleasesOptions{})
 	if err != nil {
 		return nil, err
 	}
