@@ -21,7 +21,10 @@ jobs:
       -
         name: Prepare
         run: |
-          mkdir -p $TMPDIR
+          # TODO: Workaround for invalid cross-device link
+          # https://github.com/goreleaser/goreleaser/pull/1545
+          sudo mkdir -p $TMPDIR
+          sudo chown $(id -u):$(id -g) $TMPDIR
       -
         name: Unshallow
         run: git fetch --prune --unshallow
