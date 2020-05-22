@@ -1,0 +1,16 @@
+name: project-assigner
+on:
+  pull_request:
+    types: [opened]
+  issues:
+    types: [opened]
+jobs:
+  assigner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign to Default
+        uses: srggrs/assign-one-project-github-action@1.2.0
+        with:
+          project: 'https://github.com/goreleaser/goreleaser/projects/2'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
