@@ -21,6 +21,8 @@ jobs:
       -
         name: Prepare
         run: |
+          sudo df -h
+          sudo mount
           mkdir -p $TMPDIR
       -
         name: Unshallow
