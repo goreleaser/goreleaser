@@ -21,7 +21,7 @@ jobs:
       -
         name: Prepare
         run: |
-          # TODO: Workaround for invalid cross-device link
+          # FIXME: Workaround for invalid cross-device link
           # https://github.com/goreleaser/goreleaser/pull/1545
           mkdir -p $TMPDIR
       -
