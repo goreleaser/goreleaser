@@ -108,6 +108,7 @@ nfpms:
     - rpm
     dependencies:
     - git
+    - golang
 snapcrafts:
   - name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     summary: Deliver Go binaries as fast and easily as possible
