@@ -7,4 +7,4 @@ jobs:
       - name: size-label
         uses: "pascalgn/size-label-action@ee2c1d869559066f4c5242f20c658e402e937e73"
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
