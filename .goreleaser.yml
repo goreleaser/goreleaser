@@ -89,6 +89,8 @@ brews:
     description: Deliver Go binaries as fast and easily as possible
     test: |
       system "#{bin}/goreleaser -v"
+    dependencies:
+    - go
 scoop:
   bucket:
     owner: goreleaser
