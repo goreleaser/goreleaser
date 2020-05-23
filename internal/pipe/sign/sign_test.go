@@ -128,8 +128,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
 		},
 		{
 			desc: "sign all artifacts",
@@ -142,8 +142,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
 		},
 		{
 			desc: "multiple sign configs",
@@ -187,8 +187,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact3.sig", "checksum.sig", "checksum2.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "artifact5.tar.gz.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact5.tar.gz.sig"},
 		},
 		{
 			desc: "sign only checksums",
@@ -220,6 +220,20 @@ func TestSignArtifacts(t *testing.T) {
 			signatureNames: []string{"checksum.sig", "checksum2.sig"},
 		},
 		{
+			desc: "sign only source",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "source",
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"artifact5.tar.gz.sig"},
+			signatureNames: []string{"artifact5.tar.gz.sig"},
+		},
+		{
 			desc: "sign all artifacts with env",
 			ctx: context.New(
 				config.Project{
@@ -241,8 +255,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
 		},
 		{
 			desc: "sign all artifacts with template",
@@ -266,8 +280,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
 		},
 	}
 
@@ -298,6 +312,8 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 	}
 	assert.NoError(t, ioutil.WriteFile(filepath.Join(tmpdir, "linux_amd64", "artifact4"), []byte("foo"), 0644))
 	artifacts = append(artifacts, "linux_amd64/artifact4")
+	assert.NoError(t, ioutil.WriteFile(filepath.Join(tmpdir, "artifact5.tar.gz"), []byte("foo"), 0644))
+	artifacts = append(artifacts, "artifact5.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "artifact1",
 		Path: filepath.Join(tmpdir, "artifact1"),
@@ -339,6 +355,11 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 		Extra: map[string]interface{}{
 			"ID": "foo3",
 		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "artifact5.tar.gz",
+		Path: filepath.Join(tmpdir, "artifact5.tar.gz"),
+		Type: artifact.UploadableSourceArchive,
 	})
 
 	// configure the pipeline

@@ -67,6 +67,11 @@ func (Pipe) Run(ctx *context.Context) error {
 				if len(cfg.IDs) > 0 {
 					log.Warn("when artifacts is `checksum`, `ids` has no effect. ignoring")
 				}
+			case "source":
+				filters = append(filters, artifact.ByType(artifact.UploadableSourceArchive))
+				if len(cfg.IDs) > 0 {
+					log.Warn("when artifacts is `source`, `ids` has no effect. ignoring")
+				}
 			case "all":
 				filters = append(filters, artifact.Or(
 					artifact.ByType(artifact.UploadableArchive),
