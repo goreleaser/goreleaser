@@ -36,7 +36,6 @@ brews:
     # Default is 6 for all artifacts or each id if there a multiple versions.
     goarm: 6
 
-
     # NOTE: make sure the url_template, the token and given repo (github or gitlab) owner and name are from the
     # same kind. We will probably unify this in the next major version like it is done with scoop.
 
@@ -106,8 +105,9 @@ brews:
 
     # Packages your package depends on.
     dependencies:
-      - git
-      - zsh
+      - name: git
+      - name: zsh
+        type: optional
 
     # Packages that conflict with your package.
     conflicts:
@@ -165,7 +165,7 @@ class Program < Formula
   end
 
   depends_on "git"
-  depends_on "zsh"
+  depends_on "zsh" => :optional
 
   def install
     bin.install "program"
