@@ -11,7 +11,7 @@ class CustomDownloadStrategy < Formula
   elsif OS.linux?
   end
   
-  depends_on "zsh"
+  depends_on "zsh" => :optional
   depends_on "bash"
   
   conflicts_with "gtk+"

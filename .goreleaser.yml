@@ -90,7 +90,7 @@ brews:
     test: |
       system "#{bin}/goreleaser -v"
     dependencies:
-    - go
+    - name: go
 scoop:
   bucket:
     owner: goreleaser
