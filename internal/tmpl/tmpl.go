@@ -3,6 +3,7 @@ package tmpl
 
 import (
 	"bytes"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -25,6 +26,7 @@ const (
 	// general keys
 	projectName = "ProjectName"
 	version     = "Version"
+	rawVersion  = "RawVersion"
 	tag         = "Tag"
 	commit      = "Commit"
 	shortCommit = "ShortCommit"
@@ -33,6 +35,8 @@ const (
 	major       = "Major"
 	minor       = "Minor"
 	patch       = "Patch"
+	prerelease  = "Prerelease"
+	isSnapshot  = "IsSnapshot"
 	env         = "Env"
 	date        = "Date"
 	timestamp   = "Timestamp"
@@ -58,10 +62,14 @@ const (
 
 // New Template
 func New(ctx *context.Context) *Template {
+	sv := ctx.Semver
+	rawVersionV := fmt.Sprintf("%d.%d.%d", sv.Major, sv.Minor, sv.Patch)
+
 	return &Template{
 		fields: Fields{
 			projectName: ctx.Config.ProjectName,
 			version:     ctx.Version,
+			rawVersion:  rawVersionV,
 			tag:         ctx.Git.CurrentTag,
 			commit:      ctx.Git.Commit,
 			shortCommit: ctx.Git.ShortCommit,
@@ -73,7 +81,8 @@ func New(ctx *context.Context) *Template {
 			major:       ctx.Semver.Major,
 			minor:       ctx.Semver.Minor,
 			patch:       ctx.Semver.Patch,
-			// TODO: no reason not to add prerelease here too I guess
+			prerelease:  ctx.Semver.Prerelease,
+			isSnapshot:  ctx.Snapshot,
 		},
 	}
 }
