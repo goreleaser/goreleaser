@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Find resolves extra files globs et al into a map of names/paths or an error.
 func Find(files []config.ExtraFile) (map[string]string, error) {
 	var result = map[string]string{}
 	for _, extra := range files {
