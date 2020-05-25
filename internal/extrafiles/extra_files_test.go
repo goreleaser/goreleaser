@@ -1,4 +1,4 @@
-package commom
+package extrafiles
 
 import (
 	"testing"
@@ -14,7 +14,7 @@ func TestShouldGetAllFiles(t *testing.T) {
 		{Glob: "./testdata/file1.golden"},
 	}
 
-	files, err := FindExtraFiles(globs)
+	files, err := Find(globs)
 	assert.NoError(err)
 	assert.Equal(1, len(files))
 
@@ -30,7 +30,7 @@ func TestShouldGetAllFilesWithGoldenExtension(t *testing.T) {
 		{Glob: "./testdata/*.golden"},
 	}
 
-	files, err := FindExtraFiles(globs)
+	files, err := Find(globs)
 	assert.NoError(err)
 	assert.Equal(2, len(files))
 
@@ -50,7 +50,7 @@ func TestShouldGetAllFilesInsideTestdata(t *testing.T) {
 		{Glob: "./testdata/*"},
 	}
 
-	files, err := FindExtraFiles(globs)
+	files, err := Find(globs)
 	assert.NoError(err)
 	assert.Equal(3, len(files))
 

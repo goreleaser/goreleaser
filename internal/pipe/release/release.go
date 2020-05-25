@@ -7,7 +7,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
-	"github.com/goreleaser/goreleaser/internal/commom"
+	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -124,7 +124,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	extraFiles, err := commom.FindExtraFiles(ctx.Config.Release.ExtraFiles)
+	extraFiles, err := extrafiles.Find(ctx.Config.Release.ExtraFiles)
 	if err != nil {
 		return err
 	}

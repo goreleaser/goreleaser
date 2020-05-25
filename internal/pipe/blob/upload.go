@@ -9,7 +9,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/commom"
+	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -96,6 +96,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
 		artifact := artifact
 		g.Go(func() error {
+			// TODO: replace this with ?prefix=folder on the bucket url
 			var dataFile = artifact.Path
 			var uploadFile = path.Join(folder, artifact.Name)
 
@@ -105,15 +106,17 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		})
 	}
 
-	files, err := commom.FindExtraFiles(conf.ExtraFiles)
+	files, err := extrafiles.Find(conf.ExtraFiles)
 	if err != nil {
 		return err
 	}
-	for name, fullPath := range files {
+	for name, fullpath := range files {
+		name := name
+		fullpath := fullpath
 		g.Go(func() error {
 			var uploadFile = path.Join(folder, name)
 
-			err := uploadData(ctx, conf, up, fullPath, uploadFile, bucketURL)
+			err := uploadData(ctx, conf, up, fullpath, uploadFile, bucketURL)
 
 			return err
 		})

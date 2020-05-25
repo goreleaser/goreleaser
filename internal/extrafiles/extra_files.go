@@ -1,4 +1,4 @@
-package commom
+package extrafiles
 
 import (
 	"os"
@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func FindExtraFiles(files []config.ExtraFile) (map[string]string, error) {
+func Find(files []config.ExtraFile) (map[string]string, error) {
 	var result = map[string]string{}
 	for _, extra := range files {
 		if extra.Glob != "" {
