@@ -9,6 +9,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/commom"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -68,11 +69,6 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		return err
 	}
 
-	extraFolder, err := tmpl.New(ctx).Apply(conf.Extra.Folder)
-	if err != nil {
-		return err
-	}
-
 	bucketURL, err := urlFor(ctx, conf)
 	if err != nil {
 		return err
@@ -109,13 +105,16 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		})
 	}
 
-	for _, file := range conf.Extra.Files {
-		file := file
-		g.Go(func() error {
-			var dataFile = path.Join(conf.Extra.Path, file)
-			var uploadFile = path.Join(extraFolder, file)
+	ff, err := commom.FindExtraFiles(conf.ExtraFiles)
+	if err != nil {
+		return err
+	}
 
-			err := uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
+	for f, p := range ff {
+		g.Go(func() error {
+			var uploadFile = path.Join(folder, f)
+
+			err := uploadData(ctx, conf, up, p, uploadFile, bucketURL)
 
 			return err
 		})

@@ -81,19 +81,11 @@ func TestDefaults(t *testing.T) {
 			Provider: "azblob",
 			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
 			IDs:      []string{"foo", "bar"},
-			Extra: config.BlobExtraFiles{
-				Folder: "{{ .ProjectName }}/{{ .Tag }}",
-				Path:   "/",
-			},
 		},
 		{
 			Bucket:   "foobar",
 			Provider: "gcs",
 			Folder:   "{{ .ProjectName }}/{{ .Tag }}",
-			Extra: config.BlobExtraFiles{
-				Folder: "{{ .ProjectName }}/{{ .Tag }}",
-				Path:   "/",
-			},
 		},
 	}, ctx.Config.Blobs)
 }
@@ -120,18 +112,19 @@ func TestDefaultsWithProvider(t *testing.T) {
 }
 
 func TestPipe_Publish(t *testing.T) {
-	pipePublish(t, config.BlobExtraFiles{})
+	pipePublish(t, []config.ExtraFile{})
 }
 
 func TestPipe_PublishExtraFiles(t *testing.T) {
-	var extra = config.BlobExtraFiles{
-		Path:  "testdata",
-		Files: []string{"file.golden"},
+	var extra = []config.ExtraFile{
+		{
+			Glob: "./testdata/file.golden",
+		},
 	}
 	pipePublish(t, extra)
 }
 
-func pipePublish(t *testing.T, extra config.BlobExtraFiles) {
+func pipePublish(t *testing.T, extra []config.ExtraFile) {
 	gcloudCredentials, _ := filepath.Abs("./testdata/credentials.json")
 
 	folder, err := ioutil.TempDir("", "goreleasertest")
@@ -147,9 +140,9 @@ func pipePublish(t *testing.T, extra config.BlobExtraFiles) {
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
 			{
-				Bucket:   "foo",
-				Provider: "azblob",
-				Extra:    extra,
+				Bucket:     "foo",
+				Provider:   "azblob",
+				ExtraFiles: extra,
 			},
 		},
 	})
@@ -172,9 +165,9 @@ func pipePublish(t *testing.T, extra config.BlobExtraFiles) {
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
 			{
-				Bucket:   "foo",
-				Provider: "gs",
-				Extra:    extra,
+				Bucket:     "foo",
+				Provider:   "gs",
+				ExtraFiles: extra,
 			},
 		},
 	})
@@ -198,9 +191,9 @@ func pipePublish(t *testing.T, extra config.BlobExtraFiles) {
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
 			{
-				Bucket:   "foo",
-				Provider: "s3",
-				Extra:    extra,
+				Bucket:     "foo",
+				Provider:   "s3",
+				ExtraFiles: extra,
 			},
 		},
 	})

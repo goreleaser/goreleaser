@@ -374,22 +374,15 @@ type Before struct {
 
 // Blob contains config for GO CDK blob
 type Blob struct {
-	Bucket     string         `yaml:",omitempty"`
-	Provider   string         `yaml:",omitempty"`
-	Region     string         `yaml:",omitempty"`
-	DisableSSL bool           `yaml:"disableSSL,omitempty"`
-	Folder     string         `yaml:",omitempty"`
-	KMSKey     string         `yaml:",omitempty"`
-	IDs        []string       `yaml:"ids,omitempty"`
-	Endpoint   string         `yaml:",omitempty"` // used for minio for example
-	Extra      BlobExtraFiles `yaml:",omitempty"`
-}
-
-// BlobExtraFiles contains config for extrafiles
-type BlobExtraFiles struct {
-	Folder string   `yaml:",omitempty"`
-	Path   string   `yaml:",omitempty"`
-	Files  []string `yaml:",omitempty"`
+	Bucket     string      `yaml:",omitempty"`
+	Provider   string      `yaml:",omitempty"`
+	Region     string      `yaml:",omitempty"`
+	DisableSSL bool        `yaml:"disableSSL,omitempty"`
+	Folder     string      `yaml:",omitempty"`
+	KMSKey     string      `yaml:",omitempty"`
+	IDs        []string    `yaml:"ids,omitempty"`
+	Endpoint   string      `yaml:",omitempty"` // used for minio for example
+	ExtraFiles []ExtraFile `yaml:"extra_files,omitempty"`
 }
 
 // Upload configuration
