@@ -1,5 +1,7 @@
 package brew
 
+import "github.com/goreleaser/goreleaser/pkg/config"
+
 type templateData struct {
 	Name             string
 	Desc             string
@@ -9,7 +11,7 @@ type templateData struct {
 	Plist            string
 	DownloadStrategy string
 	Install          []string
-	Dependencies     []string
+	Dependencies     []config.HomebrewDependency
 	Conflicts        []string
 	Tests            []string
 	CustomRequire    string
@@ -76,7 +78,8 @@ class {{ .Name }} < Formula
 
   {{- with .Dependencies }}
   {{ range $index, $element := . }}
-  depends_on "{{ . }}"
+  depends_on "{{ .Name }}"
+  {{- if .Type }} => :{{ .Type }}{{- end }}
   {{- end }}
   {{- end -}}
 

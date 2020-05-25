@@ -21,7 +21,7 @@ class MultipleArmv7 < Formula
   end
   
   depends_on "zsh"
-  depends_on "bash"
+  depends_on "bash" => :recommended
   
   conflicts_with "gtk+"
   conflicts_with "qt"

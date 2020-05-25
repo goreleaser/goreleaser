@@ -39,6 +39,34 @@ type Repo struct {
 	Name  string `yaml:",omitempty"`
 }
 
+// HomebrewDependency represents Homebrew dependency
+type HomebrewDependency struct {
+	Name string `yaml:",omitempty"`
+	Type string `yaml:",omitempty"`
+}
+
+// type alias to prevent stack overflowing in the custom unmarshaler
+type homebrewDependency HomebrewDependency
+
+// UnmarshalYAML is a custom unmarshaler that accept brew deps in both the old and new format.
+func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var str string
+	if err := unmarshal(&str); err == nil {
+		a.Name = str
+		return nil
+	}
+
+	var dep homebrewDependency
+	if err := unmarshal(&dep); err != nil {
+		return err
+	}
+
+	a.Name = dep.Name
+	a.Type = dep.Type
+
+	return nil
+}
+
 // String of the repo, e.g. owner/name
 func (r Repo) String() string {
 	if r.Owner == "" && r.Name == "" {
@@ -49,26 +77,26 @@ func (r Repo) String() string {
 
 // Homebrew contains the brew section
 type Homebrew struct {
-	Name             string       `yaml:",omitempty"`
-	GitHub           Repo         `yaml:",omitempty"`
-	GitLab           Repo         `yaml:",omitempty"`
-	CommitAuthor     CommitAuthor `yaml:"commit_author,omitempty"`
-	Folder           string       `yaml:",omitempty"`
-	Caveats          string       `yaml:",omitempty"`
-	Plist            string       `yaml:",omitempty"`
-	Install          string       `yaml:",omitempty"`
-	Dependencies     []string     `yaml:",omitempty"`
-	Test             string       `yaml:",omitempty"`
-	Conflicts        []string     `yaml:",omitempty"`
-	Description      string       `yaml:",omitempty"`
-	Homepage         string       `yaml:",omitempty"`
-	SkipUpload       string       `yaml:"skip_upload,omitempty"`
-	DownloadStrategy string       `yaml:"download_strategy,omitempty"`
-	URLTemplate      string       `yaml:"url_template,omitempty"`
-	CustomRequire    string       `yaml:"custom_require,omitempty"`
-	CustomBlock      string       `yaml:"custom_block,omitempty"`
-	IDs              []string     `yaml:"ids,omitempty"`
-	Goarm            string       `yaml:"goarm,omitempty"`
+	Name             string               `yaml:",omitempty"`
+	GitHub           Repo                 `yaml:",omitempty"`
+	GitLab           Repo                 `yaml:",omitempty"`
+	CommitAuthor     CommitAuthor         `yaml:"commit_author,omitempty"`
+	Folder           string               `yaml:",omitempty"`
+	Caveats          string               `yaml:",omitempty"`
+	Plist            string               `yaml:",omitempty"`
+	Install          string               `yaml:",omitempty"`
+	Dependencies     []HomebrewDependency `yaml:",omitempty"`
+	Test             string               `yaml:",omitempty"`
+	Conflicts        []string             `yaml:",omitempty"`
+	Description      string               `yaml:",omitempty"`
+	Homepage         string               `yaml:",omitempty"`
+	SkipUpload       string               `yaml:"skip_upload,omitempty"`
+	DownloadStrategy string               `yaml:"download_strategy,omitempty"`
+	URLTemplate      string               `yaml:"url_template,omitempty"`
+	CustomRequire    string               `yaml:"custom_require,omitempty"`
+	CustomBlock      string               `yaml:"custom_block,omitempty"`
+	IDs              []string             `yaml:"ids,omitempty"`
+	Goarm            string               `yaml:"goarm,omitempty"`
 }
 
 // Scoop contains the scoop.sh section
