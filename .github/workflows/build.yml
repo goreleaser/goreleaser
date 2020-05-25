@@ -8,9 +8,6 @@ on:
       - 'v*'
   pull_request:
 
-env:
-  TMPDIR: /home/runner/work/_temp/tmp
-
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -18,12 +15,6 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-      -
-        name: Prepare
-        run: |
-          # FIXME: Workaround for invalid cross-device link
-          # https://github.com/goreleaser/goreleaser/pull/1545
-          mkdir -p $TMPDIR
       -
         name: Unshallow
         run: git fetch --prune --unshallow
