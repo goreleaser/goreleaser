@@ -105,16 +105,16 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		})
 	}
 
-	ff, err := commom.FindExtraFiles(conf.ExtraFiles)
+	files, err := commom.FindExtraFiles(conf.ExtraFiles)
 	if err != nil {
 		return err
 	}
 
-	for file, filepath := range ff {
+	for file, fpath := range files {
 		g.Go(func() error {
 			var uploadFile = path.Join(folder, file)
 
-			err := uploadData(ctx, conf, up, filepath, uploadFile, bucketURL)
+			err := uploadData(ctx, conf, up, fpath, uploadFile, bucketURL)
 
 			return err
 		})
