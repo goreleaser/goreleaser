@@ -45,6 +45,28 @@ type HomebrewDependency struct {
 	Type string `yaml:",omitempty"`
 }
 
+// type alias to prevent stack overflowing in the custom unmarshaler
+type homebrewDependency HomebrewDependency
+
+// UnmarshalYAML is a custom unmarshaler that accept brew deps in both the old and new format.
+func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var str string
+	if err := unmarshal(&str); err == nil {
+		a.Name = str
+		return nil
+	}
+
+	var dep homebrewDependency
+	if err := unmarshal(&dep); err != nil {
+		return err
+	}
+
+	a.Name = dep.Name
+	a.Type = dep.Type
+
+	return nil
+}
+
 // String of the repo, e.g. owner/name
 func (r Repo) String() string {
 	if r.Owner == "" && r.Name == "" {
