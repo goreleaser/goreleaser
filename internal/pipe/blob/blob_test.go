@@ -112,6 +112,19 @@ func TestDefaultsWithProvider(t *testing.T) {
 }
 
 func TestPipe_Publish(t *testing.T) {
+	pipePublish(t, []config.ExtraFile{})
+}
+
+func TestPipe_PublishExtraFiles(t *testing.T) {
+	var extra = []config.ExtraFile{
+		{
+			Glob: "./testdata/file.golden",
+		},
+	}
+	pipePublish(t, extra)
+}
+
+func pipePublish(t *testing.T, extra []config.ExtraFile) {
 	gcloudCredentials, _ := filepath.Abs("./testdata/credentials.json")
 
 	folder, err := ioutil.TempDir("", "goreleasertest")
@@ -127,8 +140,9 @@ func TestPipe_Publish(t *testing.T) {
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
 			{
-				Bucket:   "foo",
-				Provider: "azblob",
+				Bucket:     "foo",
+				Provider:   "azblob",
+				ExtraFiles: extra,
 			},
 		},
 	})
@@ -151,8 +165,9 @@ func TestPipe_Publish(t *testing.T) {
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
 			{
-				Bucket:   "foo",
-				Provider: "gs",
+				Bucket:     "foo",
+				Provider:   "gs",
+				ExtraFiles: extra,
 			},
 		},
 	})
@@ -176,8 +191,9 @@ func TestPipe_Publish(t *testing.T) {
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
 			{
-				Bucket:   "foo",
-				Provider: "s3",
+				Bucket:     "foo",
+				Provider:   "s3",
+				ExtraFiles: extra,
 			},
 		},
 	})

@@ -9,6 +9,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -96,18 +97,45 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		artifact := artifact
 		g.Go(func() error {
 			// TODO: replace this with ?prefix=folder on the bucket url
-			data, err := getData(ctx, conf, artifact.Path)
-			if err != nil {
-				return err
-			}
+			var dataFile = artifact.Path
+			var uploadFile = path.Join(folder, artifact.Name)
 
-			if err := up.Upload(ctx, path.Join(folder, artifact.Name), data); err != nil {
-				return handleError(err, bucketURL)
-			}
+			err := uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
+
 			return err
 		})
 	}
+
+	files, err := extrafiles.Find(conf.ExtraFiles)
+	if err != nil {
+		return err
+	}
+	for name, fullpath := range files {
+		name := name
+		fullpath := fullpath
+		g.Go(func() error {
+			var uploadFile = path.Join(folder, name)
+
+			err := uploadData(ctx, conf, up, fullpath, uploadFile, bucketURL)
+
+			return err
+		})
+	}
+
 	return g.Wait()
+}
+
+func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, uploadFile, bucketURL string) error {
+	data, err := getData(ctx, conf, dataFile)
+	if err != nil {
+		return err
+	}
+
+	err = up.Upload(ctx, uploadFile, data)
+	if err != nil {
+		return handleError(err, bucketURL)
+	}
+	return err
 }
 
 func handleError(err error, url string) error {

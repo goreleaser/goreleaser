@@ -2,16 +2,15 @@ package release
 
 import (
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/mattn/go-zglob"
 	"github.com/pkg/errors"
 )
 
@@ -125,7 +124,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	extraFiles, err := findFiles(ctx)
+	extraFiles, err := extrafiles.Find(ctx.Config.Release.ExtraFiles)
 	if err != nil {
 		return err
 	}
@@ -203,29 +202,4 @@ loop:
 	}
 
 	return errors.Wrapf(err, "failed to upload %s after %d tries", artifact.Name, try)
-}
-
-func findFiles(ctx *context.Context) (map[string]string, error) {
-	var result = map[string]string{}
-	for _, extra := range ctx.Config.Release.ExtraFiles {
-		if extra.Glob != "" {
-			files, err := zglob.Glob(extra.Glob)
-			if err != nil {
-				return result, errors.Wrapf(err, "globbing failed for pattern %s", extra.Glob)
-			}
-			for _, file := range files {
-				info, err := os.Stat(file)
-				if err == nil && info.IsDir() {
-					log.Debugf("ignoring directory %s", file)
-					continue
-				}
-				var name = filepath.Base(file)
-				if old, ok := result[name]; ok {
-					log.Warnf("overriding %s with %s for name %s", old, file, name)
-				}
-				result[name] = file
-			}
-		}
-	}
-	return result, nil
 }

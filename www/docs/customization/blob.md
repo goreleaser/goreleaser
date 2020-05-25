@@ -44,6 +44,15 @@ blobs:
     # Template for the path/name inside the bucket.
     # Default is `{{ .ProjectName }}/{{ .Tag }}`
     folder: "foo/bar/{{.Version}}"
+
+    # You can add extra pre-existing files to the release.
+    # The filename on the release will be the last part of the path (base). If
+    # another file with the same name exists, the latest one found will be used.
+    # Defaults to empty.
+    extra_files:
+      - glob: ./path/to/file.txt
+      - glob: ./glob/**/to/**/file/**/*
+      - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
   -
     provider: gs
     bucket: goreleaser-bucket
