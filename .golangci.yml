@@ -14,3 +14,7 @@ linters:
     - godox
     - gomnd
     - gocognit
+
+issues:
+  exclude:
+    - Using the variable on range scope .* in function literal

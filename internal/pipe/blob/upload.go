@@ -109,7 +109,6 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	if err != nil {
 		return err
 	}
-
 	for name, fullPath := range files {
 		g.Go(func() error {
 			var uploadFile = path.Join(folder, name)
