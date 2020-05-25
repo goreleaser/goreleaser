@@ -89,6 +89,8 @@ brews:
     description: Deliver Go binaries as fast and easily as possible
     test: |
       system "#{bin}/goreleaser -v"
+    dependencies:
+    - name: go
 scoop:
   bucket:
     owner: goreleaser
@@ -108,6 +110,8 @@ nfpms:
     - rpm
     dependencies:
     - git
+    recommends:
+    - golang
 snapcrafts:
   - name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     summary: Deliver Go binaries as fast and easily as possible

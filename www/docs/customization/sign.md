@@ -58,13 +58,14 @@ signs:
     #   checksum: only checksum file(s)
     #   all:      all artifacts
     #   none:     no signing
+    #   source:   source archive
     #
     # defaults to `none`
     artifacts: all
 
     # IDs of the artifacts to sign.
     # Defaults to all.
-    # If `artifacts` is checksum, this fields has no effect.
+    # If `artifacts` is checksum or source, this fields has no effect.
     ids:
       - foo
       - bar

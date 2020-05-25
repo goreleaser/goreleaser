@@ -13,7 +13,7 @@ class CustomBlock < Formula
   
   head "https://github.com/caarlos0/test.git"
   
-  depends_on "zsh"
+  depends_on "zsh" => :optional
   depends_on "bash"
   
   conflicts_with "gtk+"

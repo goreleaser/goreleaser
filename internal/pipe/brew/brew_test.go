@@ -68,7 +68,7 @@ func assertDefaultTemplateData(t *testing.T, formulae string) {
 func TestFullFormulae(t *testing.T) {
 	data := defaultTemplateData
 	data.Caveats = []string{"Here are some caveats"}
-	data.Dependencies = []string{"gtk+"}
+	data.Dependencies = []config.HomebrewDependency{{Name: "gtk+"}}
 	data.Conflicts = []string{"svn"}
 	data.Plist = "it works"
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
@@ -209,7 +209,7 @@ func TestRunPipe(t *testing.T) {
 							Caveats:      "don't do this {{ .ProjectName }}",
 							Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
 							Plist:        `<xml>whatever</xml>`,
-							Dependencies: []string{"zsh", "bash"},
+							Dependencies: []config.HomebrewDependency{{Name: "zsh", Type: "optional"}, {Name: "bash"}},
 							Conflicts:    []string{"gtk+", "qt"},
 							Install:      `bin.install "{{ .ProjectName }}"`,
 						},
@@ -298,7 +298,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 						Caveats:      "don't do this {{ .ProjectName }}",
 						Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
 						Plist:        `<xml>whatever</xml>`,
-						Dependencies: []string{"zsh", "bash"},
+						Dependencies: []config.HomebrewDependency{{Name: "zsh"}, {Name: "bash", Type: "recommended"}},
 						Conflicts:    []string{"gtk+", "qt"},
 						Install:      `bin.install "{{ .ProjectName }}"`,
 						GitHub: config.Repo{
