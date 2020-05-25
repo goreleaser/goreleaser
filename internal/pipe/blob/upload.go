@@ -110,11 +110,11 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		return err
 	}
 
-	for f, p := range ff {
+	for file, filepath := range ff {
 		g.Go(func() error {
-			var uploadFile = path.Join(folder, f)
+			var uploadFile = path.Join(folder, file)
 
-			err := uploadData(ctx, conf, up, p, uploadFile, bucketURL)
+			err := uploadData(ctx, conf, up, filepath, uploadFile, bucketURL)
 
 			return err
 		})
