@@ -29,6 +29,10 @@ func TestNameWithUnderline(t *testing.T) {
 	assert.Equal(t, formulaNameFor("some_binary"), "SomeBinary")
 }
 
+func TestNameWithAT(t *testing.T) {
+	assert.Equal(t, formulaNameFor("some_binary@1"), "SomeBinaryAT1")
+}
+
 func TestSimpleName(t *testing.T) {
 	assert.Equal(t, formulaNameFor("binary"), "Binary")
 }
