@@ -156,7 +156,6 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		Vendor:      fpm.Vendor,
 		Homepage:    fpm.Homepage,
 		License:     fpm.License,
-		Bindir:      fpm.Bindir,
 		Overridables: nfpm.Overridables{
 			Conflicts:    overridden.Conflicts,
 			Depends:      overridden.Dependencies,
