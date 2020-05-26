@@ -1,4 +1,4 @@
-// Package upload provides a Pipe that push using HTTP
+// Package upload provides a Pipe that push using HTTP.
 package upload
 
 import (
@@ -10,20 +10,20 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Pipe for http publishing
+// Pipe for http publishing.
 type Pipe struct{}
 
-// String returns the description of the pipe
+// String returns the description of the pipe.
 func (Pipe) String() string {
 	return "http upload"
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	return http.Defaults(ctx.Config.Uploads)
 }
 
-// Publish artifacts
+// Publish artifacts.
 func (Pipe) Publish(ctx *context.Context) error {
 	if len(ctx.Config.Uploads) == 0 {
 		return pipe.Skip("uploads section is not configured")

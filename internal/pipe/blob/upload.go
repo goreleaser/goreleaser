@@ -62,7 +62,7 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 
 // Takes goreleaser context(which includes artificats) and bucketURL for
 // upload to destination (eg: gs://gorelease-bucket) using the given uploader
-// implementation
+// implementation.
 func doUpload(ctx *context.Context, conf config.Blob) error {
 	folder, err := tmpl.New(ctx).Apply(conf.Folder)
 	if err != nil {
@@ -186,7 +186,7 @@ func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error
 	return data, err
 }
 
-// uploader implements upload
+// uploader implements upload.
 type uploader interface {
 	io.Closer
 	Open(ctx *context.Context, url string) error
@@ -194,7 +194,7 @@ type uploader interface {
 }
 
 // skipUploader is used when --skip-upload is set and will just log
-// things without really doing anything
+// things without really doing anything.
 type skipUploader struct{}
 
 func (u *skipUploader) Close() error                            { return nil }
@@ -205,7 +205,7 @@ func (u *skipUploader) Upload(_ *context.Context, path string, _ []byte) error {
 	return nil
 }
 
-// productionUploader actually do upload to
+// productionUploader actually do upload to.
 type productionUploader struct {
 	bucket *blob.Bucket
 }

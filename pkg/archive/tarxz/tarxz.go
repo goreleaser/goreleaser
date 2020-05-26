@@ -10,13 +10,13 @@ import (
 	"github.com/ulikunitz/xz"
 )
 
-// Archive as tar.xz
+// Archive as tar.xz.
 type Archive struct {
 	xzw *xz.Writer
 	tw  *tar.Writer
 }
 
-// Close all closeables
+// Close all closeables.
 func (a Archive) Close() error {
 	if err := a.tw.Close(); err != nil {
 		return err
@@ -24,7 +24,7 @@ func (a Archive) Close() error {
 	return a.xzw.Close()
 }
 
-// New tar.xz archive
+// New tar.xz archive.
 func New(target io.Writer) Archive {
 	xzw, _ := xz.WriterConfig{DictCap: 16 * 1024 * 1024}.NewWriter(target)
 	tw := tar.NewWriter(xzw)
@@ -34,13 +34,13 @@ func New(target io.Writer) Archive {
 	}
 }
 
-// Add file to the archive
+// Add file to the archive.
 func (a Archive) Add(name, path string) error {
 	file, err := os.Open(path) // #nosec
 	if err != nil {
 		return err
 	}
-	defer file.Close() // nolint: errcheck
+	defer file.Close()
 	info, err := file.Stat()
 	if err != nil {
 		return err

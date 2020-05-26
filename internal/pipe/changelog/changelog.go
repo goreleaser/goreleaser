@@ -17,17 +17,17 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// ErrInvalidSortDirection happens when the sort order is invalid
+// ErrInvalidSortDirection happens when the sort order is invalid.
 var ErrInvalidSortDirection = errors.New("invalid sort direction")
 
-// Pipe for checksums
+// Pipe for checksums.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "generating changelog"
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	// TODO: should probably have a different field for the filename and its
 	// contents.
@@ -93,7 +93,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	var path = filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
-	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0644)
+	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0644) //nolint: gosec
 }
 
 func loadFromFile(file string) (string, error) {
@@ -204,7 +204,7 @@ func previous(tag string) (result string, err error) {
 // nolint: gochecknoglobals
 var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
 
-// isSHA1 te lets us know if the ref is a SHA1 or not
+// isSHA1 te lets us know if the ref is a SHA1 or not.
 func isSHA1(ref string) bool {
 	return validSHA1.MatchString(ref)
 }

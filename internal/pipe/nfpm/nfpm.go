@@ -1,4 +1,4 @@
-// Package nfpm implements the Pipe interface providing NFPM bindings.
+// Package nfpm implements the Pipe interface providing nFPM bindings.
 package nfpm
 
 import (
@@ -25,14 +25,14 @@ import (
 
 const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 
-// Pipe for fpm packaging
+// Pipe for nfpm packaging.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "linux packages"
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	var ids = ids.New("nfpms")
 	for i := range ctx.Config.NFPMs {
@@ -62,7 +62,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return ids.Validate()
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	for _, nfpm := range ctx.Config.NFPMs {
 		if len(nfpm.Formats) == 0 {
@@ -189,7 +189,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	if err != nil {
 		return err
 	}
-	defer w.Close() // nolint: errcheck
+	defer w.Close()
 	if err := packager.Package(nfpm.WithDefaults(info), w); err != nil {
 		return errors.Wrap(err, "nfpm failed")
 	}

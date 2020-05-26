@@ -9,13 +9,13 @@ import (
 	"os"
 )
 
-// Archive as tar.gz
+// Archive as tar.gz.
 type Archive struct {
 	gw *gzip.Writer
 	tw *tar.Writer
 }
 
-// Close all closeables
+// Close all closeables.
 func (a Archive) Close() error {
 	if err := a.tw.Close(); err != nil {
 		return err
@@ -23,7 +23,7 @@ func (a Archive) Close() error {
 	return a.gw.Close()
 }
 
-// New tar.gz archive
+// New tar.gz archive.
 func New(target io.Writer) Archive {
 	// the error will be nil since the compression level is valid
 	gw, _ := gzip.NewWriterLevel(target, gzip.BestCompression)
@@ -34,13 +34,13 @@ func New(target io.Writer) Archive {
 	}
 }
 
-// Add file to the archive
+// Add file to the archive.
 func (a Archive) Add(name, path string) error {
 	file, err := os.Open(path) // #nosec
 	if err != nil {
 		return err
 	}
-	defer file.Close() // nolint: errcheck
+	defer file.Close()
 	info, err := file.Stat()
 	if err != nil {
 		return err

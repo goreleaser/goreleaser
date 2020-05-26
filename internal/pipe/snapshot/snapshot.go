@@ -10,14 +10,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Pipe for checksums
+// Pipe for checksums.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "snapshotting"
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Snapshot.NameTemplate == "" {
 		ctx.Config.Snapshot.NameTemplate = "{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}"

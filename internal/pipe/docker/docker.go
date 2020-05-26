@@ -19,17 +19,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ErrNoDocker is shown when docker cannot be found in $PATH
+// ErrNoDocker is shown when docker cannot be found in $PATH.
 var ErrNoDocker = errors.New("docker not present in $PATH")
 
-// Pipe for docker
+// Pipe for docker.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "docker images"
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Dockers {
 		var docker = &ctx.Config.Dockers[i]
@@ -61,7 +61,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	if len(ctx.Config.Dockers) == 0 || len(ctx.Config.Dockers[0].ImageTemplates) == 0 {
 		return pipe.Skip("docker section is not configured")
@@ -73,7 +73,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	return doRun(ctx)
 }
 
-// Publish the docker images
+// Publish the docker images.
 func (Pipe) Publish(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
@@ -227,7 +227,7 @@ func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]st
 	return buildFlags, nil
 }
 
-// walks the src, recreating dirs and hard-linking files
+// walks the src, recreating dirs and hard-linking files.
 func link(src, dest string) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {

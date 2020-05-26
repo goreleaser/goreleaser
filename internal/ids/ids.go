@@ -3,13 +3,13 @@ package ids
 
 import "fmt"
 
-// IDs is the IDs type
+// IDs is the IDs type.
 type IDs struct {
 	ids  map[string]int
 	kind string
 }
 
-// New IDs
+// New IDs.
 func New(kind string) IDs {
 	return IDs{
 		ids:  map[string]int{},
@@ -17,12 +17,12 @@ func New(kind string) IDs {
 	}
 }
 
-// Inc increment the counter of the given id
+// Inc increment the counter of the given id.
 func (i IDs) Inc(id string) {
 	i.ids[id]++
 }
 
-// Validate errors if there are any ids with counter > 1
+// Validate errors if there are any ids with counter > 1.
 func (i IDs) Validate() error {
 	for id, count := range i.ids {
 		if count > 1 {

@@ -23,16 +23,16 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// ErrNoSnapcraft is shown when snapcraft cannot be found in $PATH
+// ErrNoSnapcraft is shown when snapcraft cannot be found in $PATH.
 var ErrNoSnapcraft = errors.New("snapcraft not present in $PATH")
 
-// ErrNoDescription is shown when no description provided
+// ErrNoDescription is shown when no description provided.
 var ErrNoDescription = errors.New("no description provided for snapcraft")
 
-// ErrNoSummary is shown when no summary provided
+// ErrNoSummary is shown when no summary provided.
 var ErrNoSummary = errors.New("no summary provided for snapcraft")
 
-// Metadata to generate the snap package
+// Metadata to generate the snap package.
 type Metadata struct {
 	Name          string
 	Version       string
@@ -47,7 +47,7 @@ type Metadata struct {
 	Plugs         map[string]interface{} `yaml:",omitempty"`
 }
 
-// AppMetadata for the binaries that will be in the snap package
+// AppMetadata for the binaries that will be in the snap package.
 type AppMetadata struct {
 	Command   string
 	Plugs     []string `yaml:",omitempty"`
@@ -57,14 +57,14 @@ type AppMetadata struct {
 
 const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 
-// Pipe for snapcraft packaging
+// Pipe for snapcraft packaging.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "snapcraft packages"
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	var ids = ids.New("snapcrafts")
 	for i := range ctx.Config.Snapcrafts {
@@ -82,7 +82,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return ids.Validate()
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	for _, snap := range ctx.Config.Snapcrafts {
 		// TODO: deal with pipe.skip?
@@ -139,7 +139,7 @@ func isValidArch(arch string) bool {
 	return false
 }
 
-// Publish packages
+// Publish packages.
 func (Pipe) Publish(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
@@ -253,7 +253,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 				if err := os.Link(config.Completer, destCompleterPath); err != nil {
 					return errors.Wrap(err, "failed to link completer")
 				}
-				if err := os.Chmod(destCompleterPath, 0444); err != nil {
+				if err := os.Chmod(destCompleterPath, 0644); err != nil {
 					return errors.Wrap(err, "failed to change completer permissions")
 				}
 				appMetadata.Completer = config.Completer
@@ -270,7 +270,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	}
 
 	log.WithField("file", file).Debugf("writing metadata file")
-	if err = ioutil.WriteFile(file, out, 0644); err != nil {
+	if err = ioutil.WriteFile(file, out, 0644); err != nil { //nolint: gosec
 		return err
 	}
 

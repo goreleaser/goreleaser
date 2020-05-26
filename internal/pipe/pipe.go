@@ -17,23 +17,23 @@ var ErrSkipSignEnabled = Skip("artifact signing is disabled")
 // It means that the part of a Piper that validates some things was not run.
 var ErrSkipValidateEnabled = Skip("validation is disabled")
 
-// IsSkip returns true if the error is an ErrSkip
+// IsSkip returns true if the error is an ErrSkip.
 func IsSkip(err error) bool {
 	_, ok := err.(ErrSkip)
 	return ok
 }
 
-// ErrSkip occurs when a pipe is skipped for some reason
+// ErrSkip occurs when a pipe is skipped for some reason.
 type ErrSkip struct {
 	reason string
 }
 
-// Error implements the error interface. returns the reason the pipe was skipped
+// Error implements the error interface. returns the reason the pipe was skipped.
 func (e ErrSkip) Error() string {
 	return e.reason
 }
 
-// Skip skips this pipe with the given reason
+// Skip skips this pipe with the given reason.
 func Skip(reason string) ErrSkip {
 	return ErrSkip{reason: reason}
 }

@@ -1,3 +1,4 @@
+// Package blob provides the pipe implementation that uploads files to "blob" providers, such as s3, gcs and azure.
 package blob
 
 import (
@@ -9,15 +10,15 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Pipe for Artifactory
+// Pipe for blobs.
 type Pipe struct{}
 
-// String returns the description of the pipe
+// String returns the description of the pipe.
 func (Pipe) String() string {
 	return "blobs"
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Blobs {
 		blob := &ctx.Config.Blobs[i]
@@ -32,7 +33,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Publish to specified blob bucket url
+// Publish to specified blob bucket url.
 func (Pipe) Publish(ctx *context.Context) error {
 	if len(ctx.Config.Blobs) == 0 {
 		return pipe.Skip("blobs section is not configured")
@@ -48,7 +49,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	return g.Wait()
 }
 
-// errorContains check if error contains specific string
+// errorContains check if error contains specific string.
 func errorContains(err error, subs ...string) bool {
 	for _, sub := range subs {
 		if strings.Contains(err.Error(), sub) {

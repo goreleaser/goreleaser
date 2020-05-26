@@ -9,13 +9,13 @@ import (
 	"github.com/apex/log"
 )
 
-// IsRepo returns true if current folder is a git repository
+// IsRepo returns true if current folder is a git repository.
 func IsRepo() bool {
 	out, err := Run("rev-parse", "--is-inside-work-tree")
 	return err == nil && strings.TrimSpace(out) == "true"
 }
 
-// Run runs a git command and returns its output or errors
+// Run runs a git command and returns its output or errors.
 func Run(args ...string) (string, error) {
 	// TODO: use exex.CommandContext here and refactor.
 	var extraArgs = []string{
@@ -34,7 +34,7 @@ func Run(args ...string) (string, error) {
 	return string(bts), nil
 }
 
-// Clean the output
+// Clean the output.
 func Clean(output string, err error) (string, error) {
 	output = strings.Replace(strings.Split(output, "\n")[0], "'", "", -1)
 	if err != nil {

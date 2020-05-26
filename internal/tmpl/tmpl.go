@@ -1,4 +1,4 @@
-// Package tmpl provides templating utilities for goreleser
+// Package tmpl provides templating utilities for goreleaser.
 package tmpl
 
 import (
@@ -14,7 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Template holds data that can be applied to a template string
+// Template holds data that can be applied to a template string.
 type Template struct {
 	fields Fields
 }
@@ -60,7 +60,7 @@ const (
 	target = "Target"
 )
 
-// New Template
+// New Template.
 func New(ctx *context.Context) *Template {
 	sv := ctx.Semver
 	rawVersionV := fmt.Sprintf("%d.%d.%d", sv.Major, sv.Minor, sv.Patch)
@@ -88,7 +88,7 @@ func New(ctx *context.Context) *Template {
 }
 
 // WithEnvS overrides template's env field with the given KEY=VALUE list of
-// environment variables
+// environment variables.
 func (t *Template) WithEnvS(envs []string) *Template {
 	var result = map[string]string{}
 	for _, env := range envs {
@@ -98,7 +98,7 @@ func (t *Template) WithEnvS(envs []string) *Template {
 	return t.WithEnv(result)
 }
 
-// WithEnv overrides template's env field with the given environment map
+// WithEnv overrides template's env field with the given environment map.
 func (t *Template) WithEnv(e map[string]string) *Template {
 	t.fields[env] = e
 	return t
@@ -113,7 +113,7 @@ func (t *Template) WithExtraFields(f Fields) *Template {
 	return t
 }
 
-// WithArtifact populates Fields from the artifact and replacements
+// WithArtifact populates Fields from the artifact and replacements.
 func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]string) *Template {
 	var bin = a.Extra[binary]
 	if bin == nil {

@@ -9,7 +9,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// Group is the Semphore ErrorGroup itself
+// Group is the Semphore ErrorGroup itself.
 type Group interface {
 	Go(func() error)
 	Wait() error

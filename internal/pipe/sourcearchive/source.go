@@ -12,14 +12,14 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Pipe for cleandis
+// Pipe for source archive.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "creating source archive"
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) (err error) {
 	if !ctx.Config.Source.Enabled {
 		return pipe.Skip("source pipe is disabled")
@@ -45,7 +45,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	return err
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	var archive = &ctx.Config.Source
 	if archive.Format == "" {

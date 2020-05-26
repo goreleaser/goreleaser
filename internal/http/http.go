@@ -67,7 +67,7 @@ func assetOpenDefault(kind string, a *artifact.Artifact) (*asset, error) {
 	}, nil
 }
 
-// Defaults sets default configuration options on upload structs
+// Defaults sets default configuration options on upload structs.
 func Defaults(uploads []config.Upload) error {
 	for i := range uploads {
 		defaults(&uploads[i])
@@ -84,7 +84,7 @@ func defaults(upload *config.Upload) {
 	}
 }
 
-// CheckConfig validates an upload configuration returning a descriptive error when appropriate
+// CheckConfig validates an upload configuration returning a descriptive error when appropriate.
 func CheckConfig(ctx *context.Context, upload *config.Upload, kind string) error {
 	if upload.Target == "" {
 		return misconfigured(kind, upload, "missing target")
@@ -142,7 +142,7 @@ func misconfigured(kind string, upload *config.Upload, reason string) error {
 // It must return and error when the response must be considered a failure.
 type ResponseChecker func(*h.Response) error
 
-// Upload does the actual uploading work
+// Upload does the actual uploading work.
 func Upload(ctx *context.Context, uploads []config.Upload, kind string, check ResponseChecker) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
@@ -204,7 +204,7 @@ func uploadWithFilter(ctx *context.Context, upload *config.Upload, filter artifa
 	return g.Wait()
 }
 
-// uploadAsset uploads file to target and logs all actions
+// uploadAsset uploads file to target and logs all actions.
 func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact, kind string, check ResponseChecker) error {
 	username, err := getUsername(ctx, upload, kind)
 	if err != nil {
@@ -229,7 +229,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	if err != nil {
 		return err
 	}
-	defer asset.ReadCloser.Close() // nolint: errcheck
+	defer asset.ReadCloser.Close()
 
 	// target url need to contain the artifact name unless the custom
 	// artifact name is used
@@ -271,7 +271,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	return nil
 }
 
-// uploadAssetToServer uploads the asset file to target
+// uploadAssetToServer uploads the asset file to target.
 func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, username, secret string, headers map[string]string, a *asset, check ResponseChecker) (*h.Response, error) {
 	req, err := newUploadRequest(upload.Method, target, username, secret, headers, a)
 	if err != nil {
@@ -281,7 +281,7 @@ func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, us
 	return executeHTTPRequest(ctx, upload, req, check)
 }
 
-// newUploadRequest creates a new h.Request for uploading
+// newUploadRequest creates a new h.Request for uploading.
 func newUploadRequest(method, target, username, secret string, headers map[string]string, a *asset) (*h.Request, error) {
 	req, err := h.NewRequest(method, target, a.ReadCloser)
 	if err != nil {
@@ -320,7 +320,7 @@ func getHTTPClient(upload *config.Upload) (*h.Client, error) {
 	}, nil
 }
 
-// executeHTTPRequest processes the http call with respect of context ctx
+// executeHTTPRequest processes the http call with respect of context ctx.
 func executeHTTPRequest(ctx *context.Context, upload *config.Upload, req *h.Request, check ResponseChecker) (*h.Response, error) {
 	client, err := getHTTPClient(upload)
 	if err != nil {
@@ -339,7 +339,7 @@ func executeHTTPRequest(ctx *context.Context, upload *config.Upload, req *h.Requ
 		return nil, err
 	}
 
-	defer resp.Body.Close() // nolint: errcheck
+	defer resp.Body.Close()
 
 	err = check(resp)
 	if err != nil {
@@ -352,7 +352,7 @@ func executeHTTPRequest(ctx *context.Context, upload *config.Upload, req *h.Requ
 }
 
 // resolveTargetTemplate returns the resolved target template with replaced variables
-// Those variables can be replaced by the given context, goos, goarch, goarm and more
+// Those variables can be replaced by the given context, goos, goarch, goarm and more.
 func resolveTargetTemplate(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact) (string, error) {
 	var replacements = map[string]string{}
 	if upload.Mode == ModeBinary {

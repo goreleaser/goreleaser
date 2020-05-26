@@ -11,14 +11,14 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Pipe for cleandis
+// Pipe for dist.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "checking ./dist"
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) (err error) {
 	_, err = os.Stat(ctx.Config.Dist)
 	if os.IsNotExist(err) {

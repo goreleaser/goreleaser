@@ -14,18 +14,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ErrMultipleReleases indicates that multiple releases are defined. ATM only one of them is allowed
+// ErrMultipleReleases indicates that multiple releases are defined. ATM only one of them is allowed.
 // See https://github.com/goreleaser/goreleaser/pull/809
 var ErrMultipleReleases = errors.New("multiple releases are defined. Only one is allowed")
 
-// Pipe for github release
+// Pipe for github release.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "github/gitlab/gitea releases"
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	numOfReleases := 0
 	if ctx.Config.Release.GitHub.String() != "" {
@@ -96,7 +96,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Publish github release
+// Publish the release.
 func (Pipe) Publish(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
@@ -173,7 +173,7 @@ func upload(ctx *context.Context, cli client.Client, releaseID string, artifact 
 		if err != nil {
 			return err
 		}
-		defer file.Close() // nolint: errcheck
+		defer file.Close()
 		log.WithField("file", file.Name()).WithField("name", artifact.Name).Info("uploading to release")
 		if err := cli.Upload(ctx, releaseID, artifact, file); err != nil {
 			log.WithField("try", try).

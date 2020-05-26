@@ -19,17 +19,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ErrNoArchivesFound happens when 0 archives are found
+// ErrNoArchivesFound happens when 0 archives are found.
 var ErrNoArchivesFound = errors.New("no linux/macos archives found")
 
 // ErrMultipleArchivesSameOS happens when the config yields multiple archives
 // for linux or windows.
 var ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
 
-// ErrEmptyTokenType indicates unknown token type
+// ErrEmptyTokenType indicates unknown token type.
 var ErrEmptyTokenType = errors.New("no token type found")
 
-// ErrTokenTypeNotImplementedForBrew indicates that a new token type was not implemented for this pipe
+// ErrTokenTypeNotImplementedForBrew indicates that a new token type was not implemented for this pipe.
 type ErrTokenTypeNotImplementedForBrew struct {
 	TokenType context.TokenType
 }
@@ -41,14 +41,14 @@ func (e ErrTokenTypeNotImplementedForBrew) Error() string {
 	return "token type not implemented for brew pipe"
 }
 
-// Pipe for brew deployment
+// Pipe for brew deployment.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "homebrew tap formula"
 }
 
-// Publish brew formula
+// Publish brew formula.
 func (Pipe) Publish(ctx *context.Context) error {
 	client, err := client.New(ctx)
 	if err != nil {
@@ -62,7 +62,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	return nil
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Brews {
 		var brew = &ctx.Config.Brews[i]
@@ -156,7 +156,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 	var filename = brew.Name + ".rb"
 	var path = filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
-	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil {
+	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil { //nolint: gosec
 		return errors.Wrap(err, "failed to write brew tap")
 	}
 
@@ -268,7 +268,8 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 			DownloadURL: url,
 			SHA256:      sum,
 		}
-		if artifact.Goos == "darwin" {
+		// TODO: refactor
+		if artifact.Goos == "darwin" { // nolint: nestif
 			if result.MacOS.DownloadURL != "" {
 				return result, ErrMultipleArchivesSameOS
 			}

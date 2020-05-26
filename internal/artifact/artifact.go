@@ -1,4 +1,4 @@
-// Package artifact provides the core artifact storage for goreleaser
+// Package artifact provides the core artifact storage for goreleaser.
 package artifact
 
 // nolint: gosec
@@ -19,7 +19,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Type defines the type of an artifact
+// Type defines the type of an artifact.
 type Type int
 
 const (
@@ -76,7 +76,7 @@ func (t Type) String() string {
 	return "unknown"
 }
 
-// Artifact represents an artifact and its relevant info
+// Artifact represents an artifact and its relevant info.
 type Artifact struct {
 	Name   string
 	Path   string
@@ -105,7 +105,7 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "failed to checksum")
 	}
-	defer file.Close() // nolint: errcheck
+	defer file.Close()
 	var h hash.Hash
 	switch algorithm {
 	case "crc32":
@@ -132,13 +132,13 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
-// Artifacts is a list of artifacts
+// Artifacts is a list of artifacts.
 type Artifacts struct {
 	items []*Artifact
 	lock  *sync.Mutex
 }
 
-// New return a new list of artifacts
+// New return a new list of artifacts.
 func New() Artifacts {
 	return Artifacts{
 		items: []*Artifact{},
@@ -146,12 +146,12 @@ func New() Artifacts {
 	}
 }
 
-// List return the actual list of artifacts
+// List return the actual list of artifacts.
 func (artifacts Artifacts) List() []*Artifact {
 	return artifacts.items
 }
 
-// GroupByPlatform groups the artifacts by their platform
+// GroupByPlatform groups the artifacts by their platform.
 func (artifacts Artifacts) GroupByPlatform() map[string][]*Artifact {
 	var result = map[string][]*Artifact{}
 	for _, a := range artifacts.items {
@@ -161,7 +161,7 @@ func (artifacts Artifacts) GroupByPlatform() map[string][]*Artifact {
 	return result
 }
 
-// Add safely adds a new artifact to an artifact list
+// Add safely adds a new artifact to an artifact list.
 func (artifacts *Artifacts) Add(a *Artifact) {
 	artifacts.lock.Lock()
 	defer artifacts.lock.Unlock()
@@ -174,31 +174,31 @@ func (artifacts *Artifacts) Add(a *Artifact) {
 }
 
 // Filter defines an artifact filter which can be used within the Filter
-// function
+// function.
 type Filter func(a *Artifact) bool
 
-// ByGoos is a predefined filter that filters by the given goos
+// ByGoos is a predefined filter that filters by the given goos.
 func ByGoos(s string) Filter {
 	return func(a *Artifact) bool {
 		return a.Goos == s
 	}
 }
 
-// ByGoarch is a predefined filter that filters by the given goarch
+// ByGoarch is a predefined filter that filters by the given goarch.
 func ByGoarch(s string) Filter {
 	return func(a *Artifact) bool {
 		return a.Goarch == s
 	}
 }
 
-// ByGoarm is a predefined filter that filters by the given goarm
+// ByGoarm is a predefined filter that filters by the given goarm.
 func ByGoarm(s string) Filter {
 	return func(a *Artifact) bool {
 		return a.Goarm == s
 	}
 }
 
-// ByType is a predefined filter that filters by the given type
+// ByType is a predefined filter that filters by the given type.
 func ByType(t Type) Filter {
 	return func(a *Artifact) bool {
 		return a.Type == t
@@ -232,7 +232,7 @@ func ByIDs(ids ...string) Filter {
 	return Or(filters...)
 }
 
-// Or performs an OR between all given filters
+// Or performs an OR between all given filters.
 func Or(filters ...Filter) Filter {
 	return func(a *Artifact) bool {
 		for _, f := range filters {
@@ -244,7 +244,7 @@ func Or(filters ...Filter) Filter {
 	}
 }
 
-// And performs an AND between all given filters
+// And performs an AND between all given filters.
 func And(filters ...Filter) Filter {
 	return func(a *Artifact) bool {
 		for _, f := range filters {

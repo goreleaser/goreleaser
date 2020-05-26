@@ -9,7 +9,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-// Pipe that writes the effective config file to dist
+// Pipe that writes the effective config file to dist.
 type Pipe struct {
 }
 
@@ -17,7 +17,7 @@ func (Pipe) String() string {
 	return "writing effective config file"
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) (err error) {
 	var path = filepath.Join(ctx.Config.Dist, "config.yaml")
 	bts, err := yaml.Marshal(ctx.Config)
@@ -25,5 +25,5 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return err
 	}
 	log.WithField("config", path).Info("writing")
-	return ioutil.WriteFile(path, bts, 0644)
+	return ioutil.WriteFile(path, bts, 0644) //nolint: gosec
 }

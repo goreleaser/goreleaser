@@ -17,20 +17,20 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// ErrNoWindows when there is no build for windows (goos doesn't contain windows)
+// ErrNoWindows when there is no build for windows (goos doesn't contain windows).
 var ErrNoWindows = errors.New("scoop requires a windows build")
 
-// ErrTokenTypeNotImplementedForScoop indicates that a new token type was not implemented for this pipe
+// ErrTokenTypeNotImplementedForScoop indicates that a new token type was not implemented for this pipe.
 var ErrTokenTypeNotImplementedForScoop = errors.New("token type not implemented for scoop pipe")
 
-// Pipe for build
+// Pipe for build.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "scoop manifests"
 }
 
-// Publish scoop manifest
+// Publish scoop manifest.
 func (Pipe) Publish(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
@@ -42,7 +42,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	return doRun(ctx, client)
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Scoop.Name == "" {
 		ctx.Config.Scoop.Name = ctx.Config.ProjectName
@@ -125,8 +125,8 @@ func doRun(ctx *context.Context, client client.Client) error {
 	)
 }
 
-// Manifest represents a scoop.sh App Manifest, more info:
-// https://github.com/lukesampson/scoop/wiki/App-Manifests
+// Manifest represents a scoop.sh App Manifest.
+// more info: https://github.com/lukesampson/scoop/wiki/App-Manifests
 type Manifest struct {
 	Version      string              `json:"version"`               // The version of the app that this manifest installs.
 	Architecture map[string]Resource `json:"architecture"`          // `architecture`: If the app has 32- and 64-bit versions, architecture can be used to wrap the differences.
@@ -136,7 +136,7 @@ type Manifest struct {
 	Persist      []string            `json:"persist,omitempty"`     // Persist data between updates
 }
 
-// Resource represents a combination of a url and a binary name for an architecture
+// Resource represents a combination of a url and a binary name for an architecture.
 type Resource struct {
 	URL  string   `json:"url"`  // URL to the archive
 	Bin  []string `json:"bin"`  // name of binary inside the archive

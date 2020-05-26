@@ -8,15 +8,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Pipe is a global hook pipe
+// Pipe is a global hook pipe.
 type Pipe struct{}
 
-// String is the name of this pipe
+// String is the name of this pipe.
 func (Pipe) String() string {
 	return "parsing tag"
 }
 
-// Run executes the hooks
+// Run executes the hooks.
 func (Pipe) Run(ctx *context.Context) error {
 	sv, err := semver.NewVersion(ctx.Git.CurrentTag)
 	if err != nil {
