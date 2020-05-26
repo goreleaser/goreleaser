@@ -12,14 +12,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ErrMissingToken indicates an error when GITHUB_TOKEN, GITLAB_TOKEN and GITEA_TOKEN are all missing in the environment
+// ErrMissingToken indicates an error when GITHUB_TOKEN, GITLAB_TOKEN and GITEA_TOKEN are all missing in the environment.
 var ErrMissingToken = errors.New("missing GITHUB_TOKEN, GITLAB_TOKEN and GITEA_TOKEN")
 
-// ErrMultipleTokens indicates that multiple tokens are defined. ATM only one of them if allowed
+// ErrMultipleTokens indicates that multiple tokens are defined. ATM only one of them if allowed.
 // See https://github.com/goreleaser/goreleaser/pull/809
 var ErrMultipleTokens = errors.New("multiple tokens defined. Only one is allowed")
 
-// Pipe for env
+// Pipe for env.
 type Pipe struct{}
 
 func (Pipe) String() string {
@@ -39,7 +39,7 @@ func setDefaultTokenFiles(ctx *context.Context) {
 	}
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	setDefaultTokenFiles(ctx)
 	githubToken, githubTokenErr := loadEnv("GITHUB_TOKEN", ctx.Config.EnvFiles.GitHubToken)

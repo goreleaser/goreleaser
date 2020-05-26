@@ -3,10 +3,9 @@ package linux
 
 import "strings"
 
-// Arch converts a goarch to a linux-compatible arch
-//
-// list of all linux arches: `go tool dist list | grep linux`
+// Arch converts a goarch to a linux-compatible arch.
 func Arch(key string) string {
+	// XXX: list of all linux arches: `go tool dist list | grep linux`
 	var arch = strings.TrimPrefix(key, "linux")
 	switch arch {
 	case "386":

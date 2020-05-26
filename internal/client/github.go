@@ -21,14 +21,13 @@ type githubClient struct {
 	client *github.Client
 }
 
-// NewGitHub returns a github client implementation
+// NewGitHub returns a github client implementation.
 func NewGitHub(ctx *context.Context) (Client, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: ctx.Token},
 	)
 	httpClient := oauth2.NewClient(ctx, ts)
 	base := httpClient.Transport.(*oauth2.Transport).Base
-	// nolint: govet
 	if base == nil || reflect.ValueOf(base).IsNil() {
 		base = http.DefaultTransport
 	}

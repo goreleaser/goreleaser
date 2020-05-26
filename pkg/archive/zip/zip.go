@@ -9,17 +9,17 @@ import (
 	"os"
 )
 
-// Archive zip struct
+// Archive zip struct.
 type Archive struct {
 	z *zip.Writer
 }
 
-// Close all closeables
+// Close all closeables.
 func (a Archive) Close() error {
 	return a.z.Close()
 }
 
-// New zip archive
+// New zip archive.
 func New(target io.Writer) Archive {
 	compressor := zip.NewWriter(target)
 	compressor.RegisterCompressor(zip.Deflate, func(out io.Writer) (io.WriteCloser, error) {
@@ -30,13 +30,13 @@ func New(target io.Writer) Archive {
 	}
 }
 
-// Add a file to the zip archive
+// Add a file to the zip archive.
 func (a Archive) Add(name, path string) (err error) {
 	file, err := os.Open(path) // #nosec
 	if err != nil {
 		return
 	}
-	defer file.Close() // nolint: errcheck
+	defer file.Close()
 	info, err := file.Stat()
 	if err != nil {
 		return

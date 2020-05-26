@@ -23,14 +23,14 @@ import (
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
 )
 
-// Pipe for build
+// Pipe for build.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "building binaries"
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	for _, build := range ctx.Config.Builds {
 		if build.Skip {
@@ -45,7 +45,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	return nil
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	var ids = ids.New("builds")
 	for i, build := range ctx.Config.Builds {

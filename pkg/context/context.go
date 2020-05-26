@@ -16,7 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
-// GitInfo includes tags and diffs used in some point
+// GitInfo includes tags and diffs used in some point.
 type GitInfo struct {
 	CurrentTag  string
 	Commit      string
@@ -25,7 +25,7 @@ type GitInfo struct {
 	URL         string
 }
 
-// Env is the environment variables
+// Env is the environment variables.
 type Env map[string]string
 
 // Copy returns a copy of the environment.
@@ -47,19 +47,19 @@ func (e Env) Strings() []string {
 	return result
 }
 
-// TokenType is either github or gitlab
+// TokenType is either github or gitlab.
 type TokenType string
 
 const (
-	// TokenTypeGitHub defines github as type of the token
+	// TokenTypeGitHub defines github as type of the token.
 	TokenTypeGitHub TokenType = "github"
-	// TokenTypeGitLab defines gitlab as type of the token
+	// TokenTypeGitLab defines gitlab as type of the token.
 	TokenTypeGitLab TokenType = "gitlab"
-	// TokenTypeGitea defines gitea as type of the token
+	// TokenTypeGitea defines gitea as type of the token.
 	TokenTypeGitea TokenType = "gitea"
 )
 
-// Context carries along some data through the pipes
+// Context carries along some data through the pipes.
 type Context struct {
 	ctx.Context
 	Config             config.Project
@@ -85,7 +85,7 @@ type Context struct {
 	Semver             Semver
 }
 
-// Semver represents a semantic version
+// Semver represents a semantic version.
 type Semver struct {
 	Major      uint64
 	Minor      uint64
@@ -94,18 +94,18 @@ type Semver struct {
 	Prerelease string
 }
 
-// New context
+// New context.
 func New(config config.Project) *Context {
 	return Wrap(ctx.Background(), config)
 }
 
-// NewWithTimeout new context with the given timeout
+// NewWithTimeout new context with the given timeout.
 func NewWithTimeout(config config.Project, timeout time.Duration) (*Context, ctx.CancelFunc) {
 	ctx, cancel := ctx.WithTimeout(ctx.Background(), timeout)
 	return Wrap(ctx, config), cancel
 }
 
-// Wrap wraps an existing context
+// Wrap wraps an existing context.
 func Wrap(ctx ctx.Context, config config.Project) *Context {
 	return &Context{
 		Context:     ctx,

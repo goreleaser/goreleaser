@@ -13,7 +13,7 @@ import (
 
 const baseURL = "https://goreleaser.com/deprecations#"
 
-// Notice warns the user about the deprecation of the given property
+// Notice warns the user about the deprecation of the given property.
 func Notice(ctx *context.Context, property string) {
 	ctx.Deprecated = true
 	cli.Default.Padding += 3

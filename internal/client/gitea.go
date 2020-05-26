@@ -33,7 +33,7 @@ func getInstanceURL(apiURL string) (string, error) {
 	return rawurl, nil
 }
 
-// NewGitea returns a gitea client implementation
+// NewGitea returns a gitea client implementation.
 func NewGitea(ctx *context.Context) (Client, error) {
 	instanceURL, err := getInstanceURL(ctx.Config.GiteaURLs.API)
 	if err != nil {
@@ -52,7 +52,7 @@ func NewGitea(ctx *context.Context) (Client, error) {
 }
 
 // CreateFile creates a file in the repository at a given path
-// or updates the file if it exists
+// or updates the file if it exists.
 func (c *giteaClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
@@ -132,7 +132,7 @@ func (c *giteaClient) updateRelease(ctx *context.Context, title, body string, id
 }
 
 // CreateRelease creates a new release or updates it by keeping
-// the release notes if it exists
+// the release notes if it exists.
 func (c *giteaClient) CreateRelease(ctx *context.Context, body string) (string, error) {
 	var release *gitea.Release
 	var err error
@@ -168,7 +168,7 @@ func (c *giteaClient) CreateRelease(ctx *context.Context, body string) (string, 
 	return strconv.FormatInt(release.ID, 10), nil
 }
 
-// Upload uploads a file into a release repository
+// Upload uploads a file into a release repository.
 func (c *giteaClient) Upload(
 	ctx *context.Context,
 	releaseID string,

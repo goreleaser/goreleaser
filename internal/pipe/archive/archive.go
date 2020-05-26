@@ -20,7 +20,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/archive"
-	archivelib "github.com/goreleaser/goreleaser/pkg/archive"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -33,14 +32,14 @@ const (
 // nolint: gochecknoglobals
 var lock sync.Mutex
 
-// Pipe for archive
+// Pipe for archive.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "archives"
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	var ids = ids.New("archives")
 	if len(ctx.Config.Archives) == 0 {
@@ -82,7 +81,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return ids.Validate()
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, archive := range ctx.Config.Archives {
@@ -107,11 +106,11 @@ func (Pipe) Run(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func create(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
-	var format = packageFormat(archive, binaries[0].Goos)
+func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {
+	var format = packageFormat(arch, binaries[0].Goos)
 	folder, err := tmpl.New(ctx).
-		WithArtifact(binaries[0], archive.Replacements).
-		Apply(archive.NameTemplate)
+		WithArtifact(binaries[0], arch.Replacements).
+		Apply(arch.NameTemplate)
 	if err != nil {
 		return err
 	}
@@ -131,23 +130,22 @@ func create(ctx *context.Context, archive config.Archive, binaries []*artifact.A
 		return fmt.Errorf("failed to create directory %s: %s", archivePath, err.Error())
 	}
 	lock.Unlock()
-	defer archiveFile.Close() // nolint: errcheck
+	defer archiveFile.Close()
 
 	var log = log.WithField("archive", archivePath)
 	log.Info("creating")
 
 	template := tmpl.New(ctx).
-		WithArtifact(binaries[0], archive.Replacements)
-	wrap, err := template.
-		Apply(wrapFolder(archive))
+		WithArtifact(binaries[0], arch.Replacements)
+	wrap, err := template.Apply(wrapFolder(arch))
 	if err != nil {
 		return err
 	}
 
-	var a = NewEnhancedArchive(archivelib.New(archiveFile), wrap)
-	defer a.Close() // nolint: errcheck
+	var a = NewEnhancedArchive(archive.New(archiveFile), wrap)
+	defer a.Close()
 
-	files, err := findFiles(template, archive)
+	files, err := findFiles(template, arch)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %s", err.Error())
 	}
@@ -171,8 +169,8 @@ func create(ctx *context.Context, archive config.Archive, binaries []*artifact.A
 		Gomips: binaries[0].Gomips,
 		Extra: map[string]interface{}{
 			"Builds":    binaries,
-			"ID":        archive.ID,
-			"Format":    archive.Format,
+			"ID":        arch.ID,
+			"Format":    arch.Format,
 			"WrappedIn": wrap,
 		},
 	})
@@ -264,7 +262,7 @@ type EnhancedArchive struct {
 	files map[string]string
 }
 
-// Add adds a file
+// Add adds a file.
 func (d EnhancedArchive) Add(name, path string) error {
 	name = strings.Replace(filepath.Join(d.wrap, name), "\\", "/", -1)
 	log.Debugf("adding file: %s as %s", path, name)
@@ -275,7 +273,7 @@ func (d EnhancedArchive) Add(name, path string) error {
 	return d.a.Add(name, path)
 }
 
-// Close closes the underlying archive
+// Close closes the underlying archive.
 func (d EnhancedArchive) Close() error {
 	return d.a.Close()
 }

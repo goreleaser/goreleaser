@@ -15,14 +15,14 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Pipe for checksums
+// Pipe for checksums.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "calculating checksums"
 }
 
-// Default sets the pipe defaults
+// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Checksum.NameTemplate == "" {
 		ctx.Config.Checksum.NameTemplate = "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
@@ -33,7 +33,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) (err error) {
 	artifactList := ctx.Artifacts.Filter(
 		artifact.Or(
@@ -59,7 +59,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	defer file.Close() // nolint: errcheck
+	defer file.Close()
 
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range artifactList {

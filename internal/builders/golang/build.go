@@ -19,7 +19,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Default builder instance
+// Default builder instance.
 // nolint: gochecknoglobals
 var Default = &Builder{}
 
@@ -28,10 +28,10 @@ func init() {
 	api.Register("go", Default)
 }
 
-// Builder is golang builder
+// Builder is golang builder.
 type Builder struct{}
 
-// WithDefaults sets the defaults for a golang build and returns it
+// WithDefaults sets the defaults for a golang build and returns it.
 func (*Builder) WithDefaults(build config.Build) config.Build {
 	if build.Dir == "" {
 		build.Dir = "."
@@ -57,7 +57,7 @@ func (*Builder) WithDefaults(build config.Build) config.Build {
 	return build
 }
 
-// Build builds a golang build
+// Build builds a golang build.
 func (*Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
 	if err := checkMain(build); err != nil {
 		return err

@@ -13,14 +13,14 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Pipe that sets up git state
+// Pipe that sets up git state.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "getting and validating git state"
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	if _, err := exec.LookPath("git"); err != nil {
 		return ErrNoGit

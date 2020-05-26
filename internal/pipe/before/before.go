@@ -1,3 +1,4 @@
+// Package before provides the pipe implementation that runs before all other pipes.
 package before
 
 import (
@@ -11,15 +12,15 @@ import (
 	"github.com/mattn/go-shellwords"
 )
 
-// Pipe is a global hook pipe
+// Pipe is a global hook pipe.
 type Pipe struct{}
 
-// String is the name of this pipe
+// String is the name of this pipe.
 func (Pipe) String() string {
 	return "running before hooks"
 }
 
-// Run executes the hooks
+// Run executes the hooks.
 func (Pipe) Run(ctx *context.Context) error {
 	var tmpl = tmpl.New(ctx)
 	/* #nosec */

@@ -8,14 +8,14 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/defaults"
 )
 
-// Pipe that sets the defaults
+// Pipe that sets the defaults.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "setting defaults"
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.Dist == "" {
 		ctx.Config.Dist = "dist"

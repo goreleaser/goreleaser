@@ -18,14 +18,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Pipe that publishes artifacts
+// Pipe that publishes artifacts.
 type Pipe struct{}
 
 func (Pipe) String() string {
 	return "publishing"
 }
 
-// Publisher should be implemented by pipes that want to publish artifacts
+// Publisher should be implemented by pipes that want to publish artifacts.
 type Publisher interface {
 	fmt.Stringer
 
@@ -48,7 +48,7 @@ var publishers = []Publisher{
 	scoop.Pipe{},
 }
 
-// Run the pipe
+// Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	for _, publisher := range publishers {
 		if err := middleware.Logging(

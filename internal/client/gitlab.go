@@ -15,14 +15,14 @@ import (
 	"github.com/xanzy/go-gitlab"
 )
 
-// ErrExtractHashFromFileUploadURL indicates the file upload hash could not ne extracted from the url
+// ErrExtractHashFromFileUploadURL indicates the file upload hash could not ne extracted from the url.
 var ErrExtractHashFromFileUploadURL = errors.New("could not extract hash from gitlab file upload url")
 
 type gitlabClient struct {
 	client *gitlab.Client
 }
 
-// NewGitLab returns a gitlab client implementation
+// NewGitLab returns a gitlab client implementation.
 func NewGitLab(ctx *context.Context) (Client, error) {
 	token := ctx.Token
 	transport := &http.Transport{
@@ -47,7 +47,7 @@ func NewGitLab(ctx *context.Context) (Client, error) {
 }
 
 // CreateFile gets a file in the repository at a given path
-// and updates if it exists or creates it for later pipes in the pipeline
+// and updates if it exists or creates it for later pipes in the pipeline.
 func (c *gitlabClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
@@ -157,7 +157,7 @@ func (c *gitlabClient) CreateFile(
 }
 
 // CreateRelease creates a new release or updates it by keeping
-// the release notes if it exists
+// the release notes if it exists.
 func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Release.NameTemplate)
 	if err != nil {
@@ -229,7 +229,7 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 	return tagName, err // gitlab references a tag in a repo by its name
 }
 
-// Upload uploads a file into a release repository
+// Upload uploads a file into a release repository.
 func (c *gitlabClient) Upload(
 	ctx *context.Context,
 	releaseID string,
@@ -292,7 +292,7 @@ func (c *gitlabClient) Upload(
 }
 
 // extractProjectFileHashFrom extracts the hash from the
-// relative project file url of the format '/uploads/<hash>/filename.ext'
+// relative project file url of the format '/uploads/<hash>/filename.ext'.
 func extractProjectFileHashFrom(projectFileURL string) (string, error) {
 	log.WithField("projectFileURL", projectFileURL).Debug("extract file hash from")
 	splittedProjectFileURL := strings.Split(projectFileURL, "/")

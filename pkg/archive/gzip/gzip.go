@@ -9,17 +9,17 @@ import (
 	"os"
 )
 
-// Archive as gz
+// Archive as gz.
 type Archive struct {
 	gw *gzip.Writer
 }
 
-// Close all closeables
+// Close all closeables.
 func (a Archive) Close() error {
 	return a.gw.Close()
 }
 
-// New gz archive
+// New gz archive.
 func New(target io.Writer) Archive {
 	// the error will be nil since the compression level is valid
 	gw, _ := gzip.NewWriterLevel(target, gzip.BestCompression)
@@ -28,7 +28,7 @@ func New(target io.Writer) Archive {
 	}
 }
 
-// Add file to the archive
+// Add file to the archive.
 func (a Archive) Add(name, path string) error {
 	if a.gw.Header.Name != "" {
 		return fmt.Errorf("gzip: failed to add %s, only one file can be archived in gz format", name)
@@ -37,7 +37,7 @@ func (a Archive) Add(name, path string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close() // nolint: errcheck
+	defer file.Close()
 	info, err := file.Stat()
 	if err != nil {
 		return err

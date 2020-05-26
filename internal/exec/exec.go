@@ -111,7 +111,7 @@ type command struct {
 }
 
 // resolveCommand returns the a command based on publisher template with replaced variables
-// Those variables can be replaced by the given context, goos, goarch, goarm and more
+// Those variables can be replaced by the given context, goos, goarch, goarm and more.
 func resolveCommand(ctx *context.Context, publisher config.Publisher, artifact *artifact.Artifact) (*command, error) {
 	var err error
 

@@ -12,7 +12,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-// GitHubURLs holds the URLs to be used when using github enterprise
+// GitHubURLs holds the URLs to be used when using github enterprise.
 type GitHubURLs struct {
 	API           string `yaml:"api,omitempty"`
 	Upload        string `yaml:"upload,omitempty"`
@@ -20,32 +20,32 @@ type GitHubURLs struct {
 	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
 }
 
-// GitLabURLs holds the URLs to be used when using gitlab ce/enterprise
+// GitLabURLs holds the URLs to be used when using gitlab ce/enterprise.
 type GitLabURLs struct {
 	API           string `yaml:"api,omitempty"`
 	Download      string `yaml:"download,omitempty"`
 	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
 }
 
-// GiteaURLs holds the URLs to be used when using gitea
+// GiteaURLs holds the URLs to be used when using gitea.
 type GiteaURLs struct {
 	API           string `yaml:"api,omitempty"`
 	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
 }
 
-// Repo represents any kind of repo (github, gitlab, etc)
+// Repo represents any kind of repo (github, gitlab, etc).
 type Repo struct {
 	Owner string `yaml:",omitempty"`
 	Name  string `yaml:",omitempty"`
 }
 
-// HomebrewDependency represents Homebrew dependency
+// HomebrewDependency represents Homebrew dependency.
 type HomebrewDependency struct {
 	Name string `yaml:",omitempty"`
 	Type string `yaml:",omitempty"`
 }
 
-// type alias to prevent stack overflowing in the custom unmarshaler
+// type alias to prevent stack overflowing in the custom unmarshaler.
 type homebrewDependency HomebrewDependency
 
 // UnmarshalYAML is a custom unmarshaler that accept brew deps in both the old and new format.
@@ -67,7 +67,7 @@ func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(interface{}) error) er
 	return nil
 }
 
-// String of the repo, e.g. owner/name
+// String of the repo, e.g. owner/name.
 func (r Repo) String() string {
 	if r.Owner == "" && r.Name == "" {
 		return ""
@@ -75,7 +75,7 @@ func (r Repo) String() string {
 	return r.Owner + "/" + r.Name
 }
 
-// Homebrew contains the brew section
+// Homebrew contains the brew section.
 type Homebrew struct {
 	Name             string               `yaml:",omitempty"`
 	GitHub           Repo                 `yaml:",omitempty"`
@@ -99,7 +99,7 @@ type Homebrew struct {
 	Goarm            string               `yaml:"goarm,omitempty"`
 }
 
-// Scoop contains the scoop.sh section
+// Scoop contains the scoop.sh section.
 type Scoop struct {
 	Name                  string       `yaml:",omitempty"`
 	Bucket                Repo         `yaml:",omitempty"`
@@ -113,27 +113,27 @@ type Scoop struct {
 	SkipUpload            string       `yaml:"skip_upload,omitempty"`
 }
 
-// CommitAuthor is the author of a Git commit
+// CommitAuthor is the author of a Git commit.
 type CommitAuthor struct {
 	Name  string `yaml:",omitempty"`
 	Email string `yaml:",omitempty"`
 }
 
-// Hooks define actions to run before and/or after something
+// Hooks define actions to run before and/or after something.
 type Hooks struct {
 	Pre  string `yaml:",omitempty"`
 	Post string `yaml:",omitempty"`
 }
 
-// IgnoredBuild represents a build ignored by the user
+// IgnoredBuild represents a build ignored by the user.
 type IgnoredBuild struct {
 	Goos, Goarch, Goarm, Gomips string
 }
 
-// StringArray is a wrapper for an array of strings
+// StringArray is a wrapper for an array of strings.
 type StringArray []string
 
-// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays
+// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
 func (a *StringArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var strings []string
 	if err := unmarshal(&strings); err != nil {
@@ -148,10 +148,10 @@ func (a *StringArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-// FlagArray is a wrapper for an array of strings
+// FlagArray is a wrapper for an array of strings.
 type FlagArray []string
 
-// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays
+// UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
 func (a *FlagArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var flags []string
 	if err := unmarshal(&flags); err != nil {
@@ -166,7 +166,7 @@ func (a *FlagArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-// Build contains the build configuration section
+// Build contains the build configuration section.
 type Build struct {
 	ID       string         `yaml:",omitempty"`
 	Goos     []string       `yaml:",omitempty"`
@@ -195,7 +195,7 @@ type HookConfig struct {
 
 type BuildHooks []BuildHook
 
-// UnmarshalYAML is a custom unmarshaler that allows simplified declaration of single command
+// UnmarshalYAML is a custom unmarshaler that allows simplified declaration of single command.
 func (bhc *BuildHooks) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var singleCmd string
 	err := unmarshal(&singleCmd)
@@ -219,7 +219,7 @@ type BuildHook struct {
 	Env []string `yaml:",omitempty"`
 }
 
-// UnmarshalYAML is a custom unmarshaler that allows simplified declarations of commands as strings
+// UnmarshalYAML is a custom unmarshaler that allows simplified declarations of commands as strings.
 func (bh *BuildHook) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var cmd string
 	if err := unmarshal(&cmd); err != nil {
@@ -242,7 +242,7 @@ type FormatOverride struct {
 	Format string `yaml:",omitempty"`
 }
 
-// Archive config used for the archive
+// Archive config used for the archive.
 type Archive struct {
 	ID              string            `yaml:",omitempty"`
 	Builds          []string          `yaml:",omitempty"`
@@ -254,7 +254,7 @@ type Archive struct {
 	Files           []string          `yaml:",omitempty"`
 }
 
-// Release config used for the GitHub/GitLab release
+// Release config used for the GitHub/GitLab release.
 type Release struct {
 	GitHub       Repo        `yaml:",omitempty"`
 	GitLab       Repo        `yaml:",omitempty"`
@@ -267,12 +267,12 @@ type Release struct {
 	ExtraFiles   []ExtraFile `yaml:"extra_files,omitempty"`
 }
 
-// ExtraFile on a release
+// ExtraFile on a release.
 type ExtraFile struct {
 	Glob string `yaml:"glob,omitempty"`
 }
 
-// NFPM config
+// NFPM config.
 type NFPM struct {
 	NFPMOverridables `yaml:",inline"`
 	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty"`
@@ -288,7 +288,7 @@ type NFPM struct {
 	Bindir      string   `yaml:",omitempty"`
 }
 
-// NFPMScripts is used to specify maintainer scripts
+// NFPMScripts is used to specify maintainer scripts.
 type NFPMScripts struct {
 	PreInstall  string `yaml:"preinstall,omitempty"`
 	PostInstall string `yaml:"postinstall,omitempty"`
@@ -296,7 +296,7 @@ type NFPMScripts struct {
 	PostRemove  string `yaml:"postremove,omitempty"`
 }
 
-// NFPMOverridables is used to specify per package format settings
+// NFPMOverridables is used to specify per package format settings.
 type NFPMOverridables struct {
 	FileNameTemplate string            `yaml:"file_name_template,omitempty"`
 	PackageName      string            `yaml:"package_name,omitempty"`
@@ -313,7 +313,7 @@ type NFPMOverridables struct {
 	Scripts          NFPMScripts       `yaml:"scripts,omitempty"`
 }
 
-// Sign config
+// Sign config.
 type Sign struct {
 	ID        string   `yaml:"id,omitempty"`
 	Cmd       string   `yaml:"cmd,omitempty"`
@@ -323,7 +323,7 @@ type Sign struct {
 	IDs       []string `yaml:"ids,omitempty"`
 }
 
-// SnapcraftAppMetadata for the binaries that will be in the snap package
+// SnapcraftAppMetadata for the binaries that will be in the snap package.
 type SnapcraftAppMetadata struct {
 	Plugs     []string
 	Daemon    string
@@ -331,7 +331,7 @@ type SnapcraftAppMetadata struct {
 	Completer string `yaml:",omitempty"`
 }
 
-// Snapcraft config
+// Snapcraft config.
 type Snapcraft struct {
 	NameTemplate string            `yaml:"name_template,omitempty"`
 	Replacements map[string]string `yaml:",omitempty"`
@@ -350,18 +350,18 @@ type Snapcraft struct {
 	Plugs       map[string]interface{}          `yaml:",omitempty"`
 }
 
-// Snapshot config
+// Snapshot config.
 type Snapshot struct {
 	NameTemplate string `yaml:"name_template,omitempty"`
 }
 
-// Checksum config
+// Checksum config.
 type Checksum struct {
 	NameTemplate string `yaml:"name_template,omitempty"`
 	Algorithm    string `yaml:"algorithm,omitempty"`
 }
 
-// Docker image config
+// Docker image config.
 type Docker struct {
 	Binaries           []string `yaml:",omitempty"`
 	Builds             []string `yaml:",omitempty"`
@@ -375,12 +375,12 @@ type Docker struct {
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
 }
 
-// Filters config
+// Filters config.
 type Filters struct {
 	Exclude []string `yaml:",omitempty"`
 }
 
-// Changelog Config
+// Changelog Config.
 type Changelog struct {
 	Filters Filters `yaml:",omitempty"`
 	Sort    string  `yaml:",omitempty"`
@@ -388,19 +388,19 @@ type Changelog struct {
 }
 
 // EnvFiles holds paths to files that contains environment variables
-// values like the github token for example
+// values like the github token for example.
 type EnvFiles struct {
 	GitHubToken string `yaml:"github_token,omitempty"`
 	GitLabToken string `yaml:"gitlab_token,omitempty"`
 	GiteaToken  string `yaml:"gitea_token,omitempty"`
 }
 
-// Before config
+// Before config.
 type Before struct {
 	Hooks []string `yaml:",omitempty"`
 }
 
-// Blob contains config for GO CDK blob
+// Blob contains config for GO CDK blob.
 type Blob struct {
 	Bucket     string      `yaml:",omitempty"`
 	Provider   string      `yaml:",omitempty"`
@@ -413,7 +413,7 @@ type Blob struct {
 	ExtraFiles []ExtraFile `yaml:"extra_files,omitempty"`
 }
 
-// Upload configuration
+// Upload configuration.
 type Upload struct {
 	Name               string   `yaml:",omitempty"`
 	IDs                []string `yaml:"ids,omitempty"`
@@ -428,7 +428,7 @@ type Upload struct {
 	CustomArtifactName bool     `yaml:"custom_artifact_name,omitempty"`
 }
 
-// Publisher configuration
+// Publisher configuration.
 type Publisher struct {
 	Name      string   `yaml:",omitempty"`
 	IDs       []string `yaml:"ids,omitempty"`
@@ -439,14 +439,14 @@ type Publisher struct {
 	Env       []string `yaml:",omitempty"`
 }
 
-// Source configuration
+// Source configuration.
 type Source struct {
 	NameTemplate string `yaml:"name_template,omitempty"`
 	Format       string `yaml:",omitempty"`
 	Enabled      bool   `yaml:",omitempty"`
 }
 
-// Project includes all project configuration
+// Project includes all project configuration.
 type Project struct {
 	ProjectName   string      `yaml:"project_name,omitempty"`
 	Env           []string    `yaml:",omitempty"`
@@ -484,7 +484,7 @@ type Project struct {
 	GiteaURLs GiteaURLs `yaml:"gitea_urls,omitempty"`
 }
 
-// Load config file
+// Load config file.
 func Load(file string) (config Project, err error) {
 	f, err := os.Open(file) // #nosec
 	if err != nil {
@@ -495,7 +495,7 @@ func Load(file string) (config Project, err error) {
 	return LoadReader(f)
 }
 
-// LoadReader config via io.Reader
+// LoadReader config via io.Reader.
 func LoadReader(fd io.Reader) (config Project, err error) {
 	data, err := ioutil.ReadAll(fd)
 	if err != nil {
