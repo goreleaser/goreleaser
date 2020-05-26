@@ -309,5 +309,6 @@ func split(s string) []string {
 func formulaNameFor(name string) string {
 	name = strings.Replace(name, "-", " ", -1)
 	name = strings.Replace(name, "_", " ", -1)
+	name = strings.Replace(name, "@", "AT", -1)
 	return strings.Replace(strings.Title(name), " ", "", -1)
 }
