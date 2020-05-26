@@ -182,12 +182,12 @@ All properties of a hook (`cmd`, `dir` and `env`) support [templating](/customiz
 with `post` hooks having binary artifact available (as these run _after_ the build).
 Additionally the following build details are exposed to both `pre` and `post` hooks:
 
-|       Key       |              Description               |
-| :-------------: | :------------------------------------: |
-|      .Name      | Filename of the binary, e.g. `bin.exe` |
-|      .Ext       | Extension, e.g. `.exe`                 |
-|      .Path      | Absolute path to the binary            |
-|     .Target     | Build target, e.g. `darwin_amd64`      |
+| Key     | Description                            |
+|---------|----------------------------------------|
+| .Name   | Filename of the binary, e.g. `bin.exe` |
+| .Ext    | Extension, e.g. `.exe`                 |
+| .Path   | Absolute path to the binary            |
+| .Target | Build target, e.g. `darwin_amd64`      |
 
 Environment variables are inherited and overridden in the following order:
 

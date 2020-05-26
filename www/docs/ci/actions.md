@@ -115,11 +115,11 @@ signs:
 
 Following inputs can be used as `step.with` keys
 
-| Name          | Type    | Default   | Description                               |
-|---------------|---------|-----------|-------------------------------------------|
-| `version`     | String  | `latest`  | GoReleaser version. Example: `v0.117.0`   |
-| `args`        | String  |           | Arguments to pass to GoReleaser           |
-| `workdir`     | String  | `.`       | Working directory (below repository root) |
+| Name      | Type   | Default  | Description                               |
+|-----------|--------|----------|-------------------------------------------|
+| `version` | String | `latest` | GoReleaser version. Example: `v0.117.0`   |
+| `args`    | String |          | Arguments to pass to GoReleaser           |
+| `workdir` | String | `.`      | Working directory (below repository root) |
 
 ### environment variables
 
