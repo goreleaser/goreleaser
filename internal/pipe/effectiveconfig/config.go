@@ -25,5 +25,5 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return err
 	}
 	log.WithField("config", path).Info("writing")
-	return ioutil.WriteFile(path, bts, 0444)
+	return ioutil.WriteFile(path, bts, 0644) //nolint: gosec
 }

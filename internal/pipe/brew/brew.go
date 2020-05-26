@@ -156,7 +156,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 	var filename = brew.Name + ".rb"
 	var path = filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
-	if err := ioutil.WriteFile(path, []byte(content), 0444); err != nil {
+	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil { //nolint: gosec
 		return errors.Wrap(err, "failed to write brew tap")
 	}
 

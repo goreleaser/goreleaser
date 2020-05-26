@@ -54,7 +54,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	file, err := os.OpenFile(
 		filepath.Join(ctx.Config.Dist, filename),
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
-		0444,
+		0644,
 	)
 	if err != nil {
 		return err

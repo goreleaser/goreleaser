@@ -253,7 +253,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 				if err := os.Link(config.Completer, destCompleterPath); err != nil {
 					return errors.Wrap(err, "failed to link completer")
 				}
-				if err := os.Chmod(destCompleterPath, 0444); err != nil {
+				if err := os.Chmod(destCompleterPath, 0644); err != nil {
 					return errors.Wrap(err, "failed to change completer permissions")
 				}
 				appMetadata.Completer = config.Completer
@@ -270,7 +270,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	}
 
 	log.WithField("file", file).Debugf("writing metadata file")
-	if err = ioutil.WriteFile(file, out, 0444); err != nil {
+	if err = ioutil.WriteFile(file, out, 0644); err != nil { //nolint: gosec
 		return err
 	}
 

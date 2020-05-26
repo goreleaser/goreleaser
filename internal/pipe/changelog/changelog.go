@@ -93,7 +93,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	var path = filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
-	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0444)
+	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0644) //nolint: gosec
 }
 
 func loadFromFile(file string) (string, error) {
