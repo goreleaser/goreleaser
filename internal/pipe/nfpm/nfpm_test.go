@@ -273,7 +273,7 @@ func TestInvalidConfig(t *testing.T) {
 			"ID": "default",
 		},
 	})
-	require.Contains(t, Pipe{}.Run(ctx).Error(), `invalid nfpm config: package name cannot be empty`)
+	require.Contains(t, Pipe{}.Run(ctx).Error(), `invalid nfpm config: package name must be provided`)
 }
 
 func TestDefault(t *testing.T) {
