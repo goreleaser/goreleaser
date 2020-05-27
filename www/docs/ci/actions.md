@@ -151,7 +151,7 @@ create a secret named `GH_PAT`, the step will look like this:
 [goreleaser-action]: https://github.com/goreleaser/goreleaser-action
 [actions]: https://github.com/features/actions
 [syntax]: https://help.github.com/en/articles/workflow-syntax-for-github-actions#About-yaml-syntax-for-workflows
-[signing]: https://goreleaser.com/customization/#Signing
+[signing]: https://goreleaser.com/customization/sign/
 [import-gpg]: https://github.com/crazy-max/ghaction-import-gpg
 [github-token]: https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token
 [about-github-token]: https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#about-the-github_token-secret
