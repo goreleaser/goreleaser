@@ -349,6 +349,31 @@ func TestChangeLogWithReleaseHeader(t *testing.T) {
 	require.Contains(t, ctx.ReleaseNotes, "test header")
 }
 
+func TestChangeLogWithTemplatedReleaseHeader(t *testing.T) {
+	current, err := os.Getwd()
+	require.NoError(t, err)
+	tmpdir, back := testlib.Mktmp(t)
+	defer back()
+	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
+	testlib.GitInit(t)
+	var msgs = []string{
+		"initial commit",
+		"another one",
+		"one more",
+		"and finally this one",
+	}
+	for _, msg := range msgs {
+		testlib.GitCommit(t, msg)
+	}
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCheckoutBranch(t, "v0.0.1")
+	var ctx = context.New(config.Project{})
+	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.ReleaseHeader = "testdata/release-header-templated.md"
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.Contains(t, ctx.ReleaseNotes, "test header with tag v0.0.1")
+}
 func TestChangeLogWithReleaseFooter(t *testing.T) {
 	current, err := os.Getwd()
 	require.NoError(t, err)
@@ -373,4 +398,30 @@ func TestChangeLogWithReleaseFooter(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.Contains(t, ctx.ReleaseNotes, "test footer")
+}
+
+func TestChangeLogWithTemplatedReleaseFooter(t *testing.T) {
+	current, err := os.Getwd()
+	require.NoError(t, err)
+	tmpdir, back := testlib.Mktmp(t)
+	defer back()
+	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
+	testlib.GitInit(t)
+	var msgs = []string{
+		"initial commit",
+		"another one",
+		"one more",
+		"and finally this one",
+	}
+	for _, msg := range msgs {
+		testlib.GitCommit(t, msg)
+	}
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCheckoutBranch(t, "v0.0.1")
+	var ctx = context.New(config.Project{})
+	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.ReleaseFooter = "testdata/release-footer-templated.md"
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.Contains(t, ctx.ReleaseNotes, "test footer with tag v0.0.1")
 }
