@@ -31,8 +31,8 @@ jobs:
         uses: peter-evans/create-pull-request@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "fix: go mod tidy"
-          title: "fix: go mod tidy"
+          commit-message: "chore(deps): go mod tidy"
+          title: "chore(deps): go mod tidy"
           body: |
             Current `go.mod` and `go.sum` don't match the source code.
           branch: go-mod-tidy
