@@ -24,6 +24,14 @@ func TestChangelogProvidedViaFlag(t *testing.T) {
 	require.Equal(t, "c0ff33 coffeee\n", ctx.ReleaseNotes)
 }
 
+func TestTemplatedChangelogProvidedViaFlag(t *testing.T) {
+	var ctx = context.New(config.Project{})
+	ctx.ReleaseNotes = "testdata/changes-templated.md"
+	ctx.Git.CurrentTag = "v0.0.1"
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "c0ff33 coffeee v0.0.1\n", ctx.ReleaseNotes)
+}
+
 func TestChangelogProvidedViaFlagAndSkipEnabled(t *testing.T) {
 	var ctx = context.New(config.Project{
 		Changelog: config.Changelog{

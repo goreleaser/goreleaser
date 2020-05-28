@@ -37,6 +37,10 @@ func (Pipe) Run(ctx *context.Context) error {
 		if err != nil {
 			return err
 		}
+		notes, err = tmpl.New(ctx).Apply(notes)
+		if err != nil {
+			return err
+		}
 		log.WithField("file", ctx.ReleaseNotes).Info("loaded custom release notes")
 		log.WithField("file", ctx.ReleaseNotes).Debugf("custom release notes: \n%s", notes)
 		ctx.ReleaseNotes = notes
