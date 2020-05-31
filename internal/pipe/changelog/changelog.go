@@ -14,6 +14,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -36,6 +37,10 @@ func (Pipe) Run(ctx *context.Context) error {
 		if err != nil {
 			return err
 		}
+		notes, err = tmpl.New(ctx).Apply(notes)
+		if err != nil {
+			return err
+		}
 		log.WithField("file", ctx.ReleaseNotes).Info("loaded custom release notes")
 		log.WithField("file", ctx.ReleaseNotes).Debugf("custom release notes: \n%s", notes)
 		ctx.ReleaseNotes = notes
@@ -54,10 +59,18 @@ func (Pipe) Run(ctx *context.Context) error {
 		if err != nil {
 			return err
 		}
+		header, err = tmpl.New(ctx).Apply(header)
+		if err != nil {
+			return err
+		}
 		ctx.ReleaseHeader = header
 	}
 	if ctx.ReleaseFooter != "" {
 		footer, err := loadFromFile(ctx.ReleaseFooter)
+		if err != nil {
+			return err
+		}
+		footer, err = tmpl.New(ctx).Apply(footer)
 		if err != nil {
 			return err
 		}
