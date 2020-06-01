@@ -7,7 +7,6 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/require"
-	"github.com/tj/assert"
 )
 
 type exitMemento struct {
@@ -25,8 +24,8 @@ func setup(t *testing.T) (current string, back func()) {
 	folder, err := ioutil.TempDir("", "")
 	require.NoError(t, err)
 	previous, err := os.Getwd()
-	assert.NoError(t, err)
-	assert.NoError(t, os.Chdir(folder))
+	require.NoError(t, err)
+	require.NoError(t, os.Chdir(folder))
 	createGoreleaserYaml(t)
 	createMainGo(t)
 	goModInit(t)
@@ -40,12 +39,12 @@ func setup(t *testing.T) (current string, back func()) {
 	testlib.GitTag(t, "v0.0.2")
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/fake.git")
 	return folder, func() {
-		assert.NoError(t, os.Chdir(previous))
+		require.NoError(t, os.Chdir(previous))
 	}
 }
 
 func createFile(t *testing.T, filename, contents string) {
-	assert.NoError(t, ioutil.WriteFile(filename, []byte(contents), 0644))
+	require.NoError(t, ioutil.WriteFile(filename, []byte(contents), 0644))
 }
 
 func createMainGo(t *testing.T) {

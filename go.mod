@@ -22,7 +22,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.5.1
-	github.com/tj/assert v0.0.0-20171129193455-018094318fb0
 	github.com/ulikunitz/xz v0.5.7
 	github.com/xanzy/go-gitlab v0.32.0
 	gocloud.dev v0.19.0
