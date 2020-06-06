@@ -173,6 +173,21 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		return err
 	}
 
+	for _, file := range snap.Files {
+		if file.Destination == "" {
+			file.Destination = file.Source
+		}
+		if file.Mode == 0 {
+			file.Mode = 0644
+		}
+		if err := os.MkdirAll(filepath.Join(primeDir, filepath.Dir(file.Destination)), 0755); err != nil {
+			return errors.Wrapf(err, "failed to link extra file '%s'", file.Source)
+		}
+		if err := link(file.Source, filepath.Join(primeDir, file.Destination), os.FileMode(file.Mode)); err != nil {
+			return errors.Wrapf(err, "failed to link extra file '%s'", file.Source)
+		}
+	}
+
 	var file = filepath.Join(primeDir, "meta", "snap.yaml")
 	log.WithField("file", file).Debug("creating snap metadata")
 
@@ -231,11 +246,16 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 				WithField("name", name).
 				Debug("passed binary to snapcraft")
 
+			command := name
+			if config.Command != "" {
+				command = config.Command
+			}
+
 			// TODO: test that the correct binary is used in Command
 			// See https://github.com/goreleaser/goreleaser/pull/1449
 			appMetadata := AppMetadata{
 				Command: strings.TrimSpace(strings.Join([]string{
-					name,
+					command,
 					config.Args,
 				}, " ")),
 				Plugs:  config.Plugs,
@@ -313,4 +333,30 @@ func push(ctx *context.Context, snap *artifact.Artifact) error {
 	snap.Type = artifact.Snapcraft
 	ctx.Artifacts.Add(snap)
 	return nil
+}
+
+// walks the src, recreating dirs and hard-linking files.
+func link(src, dest string, mode os.FileMode) error {
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		// We have the following:
+		// - src = "a/b"
+		// - dest = "dist/linuxamd64/b"
+		// - path = "a/b/c.txt"
+		// So we join "a/b" with "c.txt" and use it as the destination.
+		var dst = filepath.Join(dest, strings.Replace(path, src, "", 1))
+		log.WithFields(log.Fields{
+			"src": path,
+			"dst": dst,
+		}).Debug("extra file")
+		if info.IsDir() {
+			return os.MkdirAll(dst, info.Mode())
+		}
+		if err := os.Link(path, dst); err != nil {
+			return err
+		}
+		return os.Chmod(dst, mode)
+	})
 }

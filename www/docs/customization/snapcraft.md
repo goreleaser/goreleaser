@@ -88,6 +88,16 @@ snapcrafts:
     # Default is empty.
     base: core18
 
+    # Add extra files on the resulting snap. Useful for including wrapper
+    # scripts or other useful static files. Source filenames are relative to the
+    # project directory. Destination filenames are relative to the snap prime
+    # directory.
+    # Default is empty.
+    extra_files:
+      - source: drumroll.wrapper
+        destination: bin/drumroll.wrapper
+        mode: 0755
+
     # Each binary built by GoReleaser is an app inside the snap. In this section
     # you can declare extra details for those binaries. It is optional.
     apps:
@@ -113,6 +123,10 @@ snapcrafts:
         # Bash completion snippet. More information about completion here:
         # https://docs.snapcraft.io/tab-completion-for-snaps.
         completer: drumroll-completion.bash
+
+        # You can override the command name.
+        # Defaults is the app name.
+        command: bin/drumroll.wrapper
 
     # Allows plugs to be configured. Plugs like system-files and personal-files
     # require this.

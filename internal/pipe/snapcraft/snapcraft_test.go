@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"syscall"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -327,6 +328,100 @@ func TestCompleter(t *testing.T) {
 	assert.Equal(t, "testdata/mybin-completer.bash", metadata.Apps["mybin"].Completer)
 }
 
+func TestCommand(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	require.NoError(t, err)
+	defer os.RemoveAll(folder)
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, err)
+	var ctx = context.New(config.Project{
+		ProjectName: "testprojectname",
+		Dist:        dist,
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate: "foo_{{.Arch}}",
+				Summary:      "test summary",
+				Description:  "test description",
+				Apps: map[string]config.SnapcraftAppMetadata{
+					"mybin": {
+						Daemon:  "simple",
+						Args:    "",
+						Command: "custom command",
+					},
+				},
+				Builds: []string{"foo"},
+			},
+		},
+	})
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Version = "v1.2.3"
+	addBinaries(t, ctx, "foo", dist, "mybin")
+	require.NoError(t, Pipe{}.Run(ctx))
+	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
+	require.NoError(t, err)
+	var metadata Metadata
+	err = yaml.Unmarshal(yamlFile, &metadata)
+	require.NoError(t, err)
+	assert.Equal(t, "custom command", metadata.Apps["mybin"].Command)
+}
+
+func TestExtraFile(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	require.NoError(t, err)
+	defer os.RemoveAll(folder)
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, err)
+	var ctx = context.New(config.Project{
+		ProjectName: "testprojectname",
+		Dist:        dist,
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate: "foo_{{.Arch}}",
+				Summary:      "test summary",
+				Description:  "test description",
+				Apps: map[string]config.SnapcraftAppMetadata{
+					"mybin": {
+						Daemon:  "simple",
+						Args:    "",
+						Command: "custom command",
+					},
+				},
+				Files: []config.SnapcraftExtraFiles{
+					{
+						Source:      "testdata/extra-file.txt",
+						Destination: "a/b/c/extra-file.txt",
+						Mode:        0755,
+					},
+					{
+						Source: "testdata/extra-file-2.txt",
+					},
+				},
+				Builds: []string{"foo"},
+			},
+		},
+	})
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Version = "v1.2.3"
+	addBinaries(t, ctx, "foo", dist, "mybin")
+	require.NoError(t, Pipe{}.Run(ctx))
+
+	srcFile, err := os.Stat("testdata/extra-file.txt")
+	require.NoError(t, err)
+	destFile, err := os.Stat(filepath.Join(dist, "foo_amd64", "prime", "a", "b", "c", "extra-file.txt"))
+	require.NoError(t, err)
+	assert.Equal(t, inode(srcFile), inode(destFile))
+	assert.Equal(t, destFile.Mode(), os.FileMode(0755))
+
+	srcFile, err = os.Stat("testdata/extra-file-2.txt")
+	require.NoError(t, err)
+	destFileWithDefaults, err := os.Stat(filepath.Join(dist, "foo_amd64", "prime", "testdata", "extra-file-2.txt"))
+	require.NoError(t, err)
+	assert.Equal(t, destFileWithDefaults.Mode(), os.FileMode(0644))
+	assert.Equal(t, inode(srcFile), inode(destFileWithDefaults))
+}
+
 func TestDefault(t *testing.T) {
 	var ctx = context.New(config.Project{
 		Builds: []config.Build{
@@ -438,4 +533,9 @@ func Test_isValidArch(t *testing.T) {
 			require.Equal(t, tt.want, isValidArch(tt.arch))
 		})
 	}
+}
+
+func inode(info os.FileInfo) uint64 {
+	stat := info.Sys().(*syscall.Stat_t)
+	return stat.Ino
 }

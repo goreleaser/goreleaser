@@ -329,6 +329,7 @@ type SnapcraftAppMetadata struct {
 	Daemon    string
 	Args      string
 	Completer string `yaml:",omitempty"`
+	Command   string `yaml:"command"`
 }
 
 // Snapcraft config.
@@ -348,6 +349,15 @@ type Snapcraft struct {
 	Confinement string                          `yaml:",omitempty"`
 	Apps        map[string]SnapcraftAppMetadata `yaml:",omitempty"`
 	Plugs       map[string]interface{}          `yaml:",omitempty"`
+
+	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty"`
+}
+
+// SnapcraftExtraFiles config.
+type SnapcraftExtraFiles struct {
+	Source      string `yaml:"source"`
+	Destination string `yaml:"destination,omitempty"`
+	Mode        uint32 `yaml:"mode,omitempty"`
 }
 
 // Snapshot config.
