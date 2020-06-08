@@ -31,6 +31,21 @@ changelog:
     - Merge branch
 dockers:
 - image_templates:
+  - 'goreleaser/goreleaser:{{ .Tag }}-crossgo'
+  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-crossgo'
+  - 'goreleaser/goreleaser:latest-crossgo'
+  dockerfile: Dockerfile.crossgo
+  binaries:
+  - goreleaser
+  build_flag_templates:
+  - "--pull"
+  - "--label=org.opencontainers.image.created={{.Date}}"
+  - "--label=org.opencontainers.image.name={{.ProjectName}}"
+  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+  - "--label=org.opencontainers.image.version={{.Version}}"
+  extra_files:
+  - scripts/entrypoint.sh
+- image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}-cgo'
   - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo'
   - 'goreleaser/goreleaser:latest-cgo'
