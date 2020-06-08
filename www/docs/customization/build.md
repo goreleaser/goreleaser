@@ -118,6 +118,36 @@ builds:
 !!! tip
     Learn more about the [name template engine](/customization/templates).
 
+Here is an example with multiple binaries:
+
+```yaml
+# goreleaser.yml
+builds:
+  - main: ./cmd/cli/cli.go
+    id: "cli"
+    binary: cli
+    goos:
+      - linux
+      - darwin
+      - windows
+
+  - main: ./cmd/worker/worker.go
+    id: "worker"
+    binary: worker
+    goos:
+      - linux
+      - darwin
+      - windows
+
+  - main: ./cmd/tracker/tracker.go
+    id: "tracker"
+    binary: tracker
+    goos:
+      - linux
+      - darwin
+      - windows
+```
+
 ## Passing environment variables to ldflags
 
 You can do that by using `{{ .Env.VARIABLE_NAME }}` in the template, for
