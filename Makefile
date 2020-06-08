@@ -60,10 +60,10 @@ serve:
 .PHONY: serve
 
 vercel:
-	./scripts/get-releases.sh
+	yum install -y jq
 	pip install mkdocs-material mkdocs-minify-plugin
-	cd www
-	mkdocs build
+	./scripts/get-releases.sh
+	(cd www && mkdocs build)
 
 # Show to-do items per file.
 todo:

@@ -7,3 +7,4 @@ debug.test
 snap.login
 site/
 www/docs/static/releases.json
+.vercel
