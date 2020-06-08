@@ -59,6 +59,12 @@ serve:
 	@docker run --rm -it -p 8000:8000 -v ${PWD}/www:/docs squidfunk/mkdocs-material
 .PHONY: serve
 
+vercel:
+	./scripts/get-releases.sh
+	pip install mkdocs-material mkdocs-minify-plugin
+	cd www
+	mkdocs build
+
 # Show to-do items per file.
 todo:
 	@grep \
