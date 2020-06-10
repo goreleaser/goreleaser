@@ -33,7 +33,7 @@ ENTRYPOINT ["/mybin"]
 This configuration will build and push a Docker image named `user/repo:tagname`.
 
 !!! info
-    Note that were are not building any go files in the docker
+    Note that we are not building any go files in the docker
     build phase, we are merely copying the binary to a `scratch` image and
     setting up the entrypoint.
 
