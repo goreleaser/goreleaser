@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v2
       -
         name: Unshallow
-        run: git fetch --prune --unshallow
+        run: git fetch --prune --unshallow --tags --force
       -
         name: Set up Go
         uses: actions/setup-go@v2
