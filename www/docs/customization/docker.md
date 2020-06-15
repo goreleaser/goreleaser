@@ -213,9 +213,9 @@ This will execute the following command:
 ```bash
 docker build -t myuser/myimage . \
   --pull \
-  --label=org.opencontainers.image.created=2020-01-19T15:58:07Z" \
-  --label=org.opencontainers.image.name=mybinary" \
-  --label=org.opencontainers.image.revision=da39a3ee5e6b4b0d3255bfef95601890afd80709" \
+  --label=org.opencontainers.image.created=2020-01-19T15:58:07Z \
+  --label=org.opencontainers.image.name=mybinary \
+  --label=org.opencontainers.image.revision=da39a3ee5e6b4b0d3255bfef95601890afd80709 \
   --label=org.opencontainers.image.version=1.6.4
 ```
 
