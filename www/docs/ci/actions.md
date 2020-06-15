@@ -28,9 +28,8 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-      -
-        name: Unshallow
-        run: git fetch --prune --unshallow
+        with:
+          fetch-depth: 0
       -
         name: Set up Go
         uses: actions/setup-go@v2
@@ -47,7 +46,7 @@ jobs:
 ```
 
 !!! info
-    Note the `Unshallow` workflow step. It is required for the changelog to work correctly.
+    Note the `fetch-depth: 0` option on the `Checkout` workflow step. It is required for the change log to work correctly.
 
 ### Run on new tag
 
@@ -111,7 +110,7 @@ signs:
 
 ## Customizing
 
-### inputs
+### Inputs
 
 Following inputs can be used as `step.with` keys
 
@@ -121,7 +120,7 @@ Following inputs can be used as `step.with` keys
 | `args`    | String |          | Arguments to pass to GoReleaser           |
 | `workdir` | String | `.`      | Working directory (below repository root) |
 
-### environment variables
+### Environment Variables
 
 Following environment variables can be used as `step.env` keys
 
