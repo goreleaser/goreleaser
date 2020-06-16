@@ -116,9 +116,13 @@ Following inputs can be used as `step.with` keys
 
 | Name      | Type   | Default  | Description                               |
 |-----------|--------|----------|-------------------------------------------|
-| `version` | String | `latest` | GoReleaser version. Example: `v0.117.0`   |
+| `version`¹| String | `latest` | GoReleaser version. Example: `v0.117.0`   |
 | `args`    | String |          | Arguments to pass to GoReleaser           |
 | `workdir` | String | `.`      | Working directory (below repository root) |
+
+!!! info
+    ¹: Can be a fixed version like `v0.117.0` or a max satisfying SemVer one
+    like `~> 0.132`. In this case this will return `v0.132.1`.
 
 ### Environment Variables
 
