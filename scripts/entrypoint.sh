@@ -2,7 +2,7 @@
 
 if [ -n "$DOCKER_USERNAME" ] && [ -n "$DOCKER_PASSWORD" ]; then
     echo "Login to the docker..."
-    docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD $DOCKER_REGISTRY
+    echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin $DOCKER_REGISTRY
 fi
 
 # Workaround for github actions when access to different repositories is needed.
