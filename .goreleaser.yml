@@ -34,6 +34,9 @@ dockers:
   - 'goreleaser/goreleaser:{{ .Tag }}-cgo'
   - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo'
   - 'goreleaser/goreleaser:latest-cgo'
+  - 'docker.pkg.github.com/goreleaser/goreleaser/goreleaser:{{ .Tag }}-cgo'
+  - 'docker.pkg.github.com/goreleaser/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo'
+  - 'docker.pkg.github.com/goreleaser/goreleaser/goreleaser:latest-cgo'
   dockerfile: Dockerfile.cgo
   binaries:
   - goreleaser
@@ -49,6 +52,9 @@ dockers:
   - 'goreleaser/goreleaser:{{ .Tag }}'
   - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
   - 'goreleaser/goreleaser:latest'
+  - 'docker.pkg.github.com/goreleaser/goreleaser/goreleaser:{{ .Tag }}'
+  - 'docker.pkg.github.com/goreleaser/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
+  - 'docker.pkg.github.com/goreleaser/goreleaser/goreleaser:latest'
   dockerfile: Dockerfile
   binaries:
   - goreleaser
@@ -66,7 +72,6 @@ dockers:
   - "--label=repository=http://github.com/goreleaser/goreleaser"
   - "--label=homepage=http://goreleaser.com"
   - "--label=maintainer=Carlos Becker <goreleaser@carlosbecker.com>"
-
   extra_files:
   - scripts/entrypoint.sh
 archives:

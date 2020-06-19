@@ -58,8 +58,10 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
+          echo "${GITHUB_TOKEN}" | docker login docker.pkg.github.com --username "${DOCKER_USERNAME}" --password-stdin
       -
         name: Snapcraft Login
         if: success() && startsWith(github.ref, 'refs/tags/v')
