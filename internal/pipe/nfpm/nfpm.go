@@ -133,12 +133,15 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	for k, v := range overridden.Files {
 		files[k] = v
 	}
-	var log = log.WithField("package", name+"."+format).WithField("arch", arch)
-	for _, binary := range binaries {
-		src := binary.Path
-		dst := filepath.Join(fpm.Bindir, binary.Name)
-		log.WithField("src", src).WithField("dst", dst).Debug("adding binary to package")
-		files[src] = dst
+	// FPM meta package should not contain binaries at all
+	if !fpm.Meta {
+		var log = log.WithField("package", name+"."+format).WithField("arch", arch)
+		for _, binary := range binaries {
+			src := binary.Path
+			dst := filepath.Join(fpm.Bindir, binary.Name)
+			log.WithField("src", src).WithField("dst", dst).Debug("adding binary to package")
+			files[src] = dst
+		}
 	}
 	log.WithField("files", files).Debug("all archive files")
 
@@ -206,6 +209,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 			"Builds": binaries,
 			"ID":     fpm.ID,
 			"Format": format,
+			"Files":  files,
 		},
 	})
 	return nil

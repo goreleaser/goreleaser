@@ -362,3 +362,93 @@ func TestSeveralNFPMsWithTheSameID(t *testing.T) {
 	}
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 nfpms with the ID 'a', please fix your config")
 }
+
+func TestMeta(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	require.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	var binPath = filepath.Join(dist, "mybin", "mybin")
+	_, err = os.Create(binPath)
+	require.NoError(t, err)
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:          "someid",
+				Bindir:      "/usr/bin",
+				Builds:      []string{"default"},
+				Formats:     []string{"deb", "rpm"},
+				Description: "Some description",
+				License:     "MIT",
+				Maintainer:  "me@me",
+				Vendor:      "asdf",
+				Homepage:    "https://goreleaser.github.io",
+				Meta:        true,
+				NFPMOverridables: config.NFPMOverridables{
+					FileNameTemplate: defaultNameTemplate + "-{{ .Release }}-{{ .Epoch }}",
+					PackageName:      "foo",
+					Dependencies:     []string{"make"},
+					Recommends:       []string{"svn"},
+					Suggests:         []string{"bzr"},
+					Conflicts:        []string{"git"},
+					EmptyFolders:     []string{"/var/log/foobar"},
+					Release:          "10",
+					Epoch:            "20",
+					Files: map[string]string{
+						"./testdata/testfile.txt": "/usr/share/testfile.txt",
+					},
+					ConfigFiles: map[string]string{
+						"./testdata/testfile.txt": "/etc/nope.conf",
+					},
+					Replacements: map[string]string{
+						"linux": "Tux",
+					},
+				},
+				Overrides: map[string]config.NFPMOverridables{
+					"rpm": {
+						ConfigFiles: map[string]string{
+							"./testdata/testfile.txt": "/etc/nope-rpm.conf",
+						},
+					},
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"ID": "default",
+				},
+			})
+		}
+	}
+	require.NoError(t, Pipe{}.Run(ctx))
+	var packages = ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	require.Len(t, packages, 4)
+	for _, pkg := range packages {
+		var format = pkg.ExtraOr("Format", "").(string)
+		require.NotEmpty(t, format)
+		require.Equal(t, pkg.Name, "mybin_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
+		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
+	}
+	require.Len(t, ctx.Config.NFPMs[0].Files, 1, "should not modify the config file list")
+
+	// ensure that no binaries added
+	for _, pkg := range packages {
+		files := pkg.ExtraOr("Files", map[string]string{}).(map[string]string)
+		for _, dest := range files {
+			require.NotEqual(t, "/usr/bin/mybin", dest, "binary file should not be added")
+		}
+	}
+}
