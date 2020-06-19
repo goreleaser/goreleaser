@@ -95,8 +95,8 @@ nfpms:
     # Defaults to empty.
     release: 1
 
-    # Makes meta package - empty (without binaries)
-    # package that contains only supporting files and dependencies.
+    # Makes a meta package - an empty package that contains only supporting files and dependencies.
+    # When set to `true`, the `builds` option is ignored.
     # Defaults to false.
     meta: true
 
