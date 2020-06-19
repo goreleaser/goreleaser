@@ -286,6 +286,7 @@ type NFPM struct {
 	Description string   `yaml:",omitempty"`
 	License     string   `yaml:",omitempty"`
 	Bindir      string   `yaml:",omitempty"`
+	Meta        bool     `yaml:",omitempty"` // make package without binaries - only deps
 }
 
 // NFPMScripts is used to specify maintainer scripts.
