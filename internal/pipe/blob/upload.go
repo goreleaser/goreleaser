@@ -229,10 +229,13 @@ func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
 	return nil
 }
 
-func (u *productionUploader) Upload(ctx *context.Context, path string, data []byte) (err error) {
-	log.WithField("path", path).Info("uploading")
+func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte) (err error) {
+	log.WithField("path", filepath).Info("uploading")
 
-	w, err := u.bucket.NewWriter(ctx, path, nil)
+	opts := &blob.WriterOptions{
+		ContentDisposition: "attachment; filename=" + path.Base(filepath),
+	}
+	w, err := u.bucket.NewWriter(ctx, filepath, opts)
 	if err != nil {
 		return err
 	}
