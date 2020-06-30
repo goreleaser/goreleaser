@@ -20,7 +20,11 @@ func (Pipe) String() string {
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Snapshot.NameTemplate == "" {
-		ctx.Config.Snapshot.NameTemplate = "{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}"
+		if ctx.Config.Release.Disable {
+			ctx.Config.Snapshot.NameTemplate = "SNAPSHOT-{{ .ShortCommit }}"
+		} else {
+			ctx.Config.Snapshot.NameTemplate = "{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}"
+		}
 	}
 	return nil
 }

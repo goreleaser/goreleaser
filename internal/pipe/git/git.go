@@ -30,9 +30,14 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 	ctx.Git = info
-	log.Infof("releasing %s, commit %s", info.CurrentTag, info.Commit)
-	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
-	return validate(ctx)
+	if !ctx.Config.Release.Disable {
+		log.Infof("releasing %s, commit %s", info.CurrentTag, info.Commit)
+		ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
+		return validate(ctx)
+	}
+	ctx.Version = info.ShortCommit
+	log.Infof("commit %s", info.Commit)
+	return nil
 }
 
 // nolint: gochecknoglobals

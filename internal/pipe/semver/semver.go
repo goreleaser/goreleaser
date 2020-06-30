@@ -18,6 +18,9 @@ func (Pipe) String() string {
 
 // Run executes the hooks.
 func (Pipe) Run(ctx *context.Context) error {
+	if ctx.Config.Release.Disable {
+		return pipe.Skip("release disabled")
+	}
 	sv, err := semver.NewVersion(ctx.Git.CurrentTag)
 	if err != nil {
 		if ctx.Snapshot {
