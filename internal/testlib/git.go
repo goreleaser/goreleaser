@@ -2,6 +2,7 @@ package testlib
 
 import (
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/stretchr/testify/assert"
@@ -24,7 +25,18 @@ func GitRemoteAdd(t *testing.T, url string) {
 
 // GitCommit creates a git commits.
 func GitCommit(t *testing.T, msg string) {
-	out, err := fakeGit("commit", "--allow-empty", "-m", msg)
+	GitCommitWithDate(t, msg, time.Time{})
+}
+
+// GitCommitWithDate creates a git commit with a commit date.
+func GitCommitWithDate(t *testing.T, msg string, commitDate time.Time) {
+	env := (map[string]string)(nil)
+	if !commitDate.IsZero() {
+		env = map[string]string{
+			"GIT_COMMITTER_DATE": commitDate.Format(time.RFC1123Z),
+		}
+	}
+	out, err := fakeGitEnv(env, "commit", "--allow-empty", "-m", msg)
 	assert.NoError(t, err)
 	assert.Contains(t, out, "master", msg)
 }
@@ -43,7 +55,7 @@ func GitAdd(t *testing.T) {
 	assert.Empty(t, out)
 }
 
-func fakeGit(args ...string) (string, error) {
+func fakeGitEnv(env map[string]string, args ...string) (string, error) {
 	var allArgs = []string{
 		"-c", "user.name='GoReleaser'",
 		"-c", "user.email='test@goreleaser.github.com'",
@@ -51,7 +63,11 @@ func fakeGit(args ...string) (string, error) {
 		"-c", "log.showSignature=false",
 	}
 	allArgs = append(allArgs, args...)
-	return git.Run(allArgs...)
+	return git.RunEnv(env, allArgs...)
+}
+
+func fakeGit(args ...string) (string, error) {
+	return fakeGitEnv(nil, args...)
 }
 
 // GitCheckoutBranch allows us to change the active branch that we're using.

@@ -482,11 +482,13 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 
 func TestLdFlagsFullTemplate(t *testing.T) {
 	run := time.Now().UTC()
+	commit := time.Now().AddDate(-1, 0, 0)
 
 	var ctx = &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.2.3",
 			Commit:     "123",
+			CommitDate: commit,
 		},
 		Date:    run,
 		Version: "1.2.3",
@@ -494,7 +496,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	}
 	var artifact = &artifact.Artifact{Goarch: "amd64"}
 	flags, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).
-		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }} -X main.arch={{.Arch}}`)
+		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }} -X main.arch={{.Arch}} -X main.commitDate={{.CommitDate}}`)
 	assert.NoError(t, err)
 	assert.Contains(t, flags, "-s -w")
 	assert.Contains(t, flags, "-X main.version=1.2.3")
@@ -504,6 +506,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	assert.Contains(t, flags, fmt.Sprintf("-X main.time=%d", run.Year()))
 	assert.Contains(t, flags, `-X "main.foo=123"`)
 	assert.Contains(t, flags, `-X main.arch=amd64`)
+	assert.Contains(t, flags, fmt.Sprintf("-X main.commitDate=%d", commit.Year()))
 }
 
 func TestInvalidTemplate(t *testing.T) {

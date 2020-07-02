@@ -22,6 +22,7 @@ type GitInfo struct {
 	Commit      string
 	ShortCommit string
 	FullCommit  string
+	CommitDate  time.Time
 	URL         string
 }
 
