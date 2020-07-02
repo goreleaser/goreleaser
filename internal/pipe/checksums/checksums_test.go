@@ -80,6 +80,11 @@ func TestPipeFileNotExist(t *testing.T) {
 }
 
 func TestPipeInvalidNameTemplate(t *testing.T) {
+	binFile, err := ioutil.TempFile("", "goreleasertest-bin")
+	assert.NoError(t, err)
+	_, err = binFile.WriteString("fake artifact")
+	assert.NoError(t, err)
+
 	for template, eerr := range map[string]string{
 		"{{ .Pro }_checksums.txt": `template: tmpl:1: unexpected "}" in operand`,
 		"{{.Env.NOPE}}":           `template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`,
@@ -93,6 +98,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 					ProjectName: "name",
 					Checksum: config.Checksum{
 						NameTemplate: template,
+						Algorithm:    "sha256",
 					},
 				},
 			)
@@ -100,6 +106,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name: "whatever",
 				Type: artifact.UploadableBinary,
+				Path: binFile.Name(),
 			})
 			err = Pipe{}.Run(ctx)
 			assert.Error(tt, err)
@@ -109,6 +116,11 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 }
 
 func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
+	binFile, err := ioutil.TempFile("", "goreleasertest-bin")
+	assert.NoError(t, err)
+	_, err = binFile.WriteString("fake artifact")
+	assert.NoError(t, err)
+
 	folder, err := ioutil.TempDir("", "goreleasertest")
 	assert.NoError(t, err)
 	var file = filepath.Join(folder, "checksums.txt")
@@ -118,6 +130,7 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 			Dist: folder,
 			Checksum: config.Checksum{
 				NameTemplate: "checksums.txt",
+				Algorithm:    "sha256",
 			},
 		},
 	)
@@ -125,6 +138,7 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "whatever",
 		Type: artifact.UploadableBinary,
+		Path: binFile.Name(),
 	})
 	err = Pipe{}.Run(ctx)
 	assert.Error(t, err)
