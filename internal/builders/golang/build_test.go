@@ -481,11 +481,14 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 }
 
 func TestLdFlagsFullTemplate(t *testing.T) {
+	run := time.Now().UTC()
+
 	var ctx = &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.2.3",
 			Commit:     "123",
 		},
+		Date:    run,
 		Version: "1.2.3",
 		Env:     map[string]string{"FOO": "123"},
 	}
@@ -497,8 +500,8 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	assert.Contains(t, flags, "-X main.version=1.2.3")
 	assert.Contains(t, flags, "-X main.tag=v1.2.3")
 	assert.Contains(t, flags, "-X main.commit=123")
-	assert.Contains(t, flags, fmt.Sprintf("-X main.date=%d", time.Now().Year()))
-	assert.Contains(t, flags, fmt.Sprintf("-X main.time=%d", time.Now().Year()))
+	assert.Contains(t, flags, fmt.Sprintf("-X main.date=%d", run.Year()))
+	assert.Contains(t, flags, fmt.Sprintf("-X main.time=%d", run.Year()))
 	assert.Contains(t, flags, `-X "main.foo=123"`)
 	assert.Contains(t, flags, `-X main.arch=amd64`)
 }
