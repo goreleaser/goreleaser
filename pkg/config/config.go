@@ -171,24 +171,25 @@ func (a *FlagArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // Build contains the build configuration section.
 type Build struct {
-	ID       string         `yaml:",omitempty"`
-	Goos     []string       `yaml:",omitempty"`
-	Goarch   []string       `yaml:",omitempty"`
-	Goarm    []string       `yaml:",omitempty"`
-	Gomips   []string       `yaml:",omitempty"`
-	Targets  []string       `yaml:",omitempty"`
-	Ignore   []IgnoredBuild `yaml:",omitempty"`
-	Dir      string         `yaml:",omitempty"`
-	Main     string         `yaml:",omitempty"`
-	Ldflags  StringArray    `yaml:",omitempty"`
-	Flags    FlagArray      `yaml:",omitempty"`
-	Binary   string         `yaml:",omitempty"`
-	Hooks    HookConfig     `yaml:",omitempty"`
-	Env      []string       `yaml:",omitempty"`
-	Lang     string         `yaml:",omitempty"`
-	Asmflags StringArray    `yaml:",omitempty"`
-	Gcflags  StringArray    `yaml:",omitempty"`
-	Skip     bool           `yaml:",omitempty"`
+	ID           string         `yaml:",omitempty"`
+	Goos         []string       `yaml:",omitempty"`
+	Goarch       []string       `yaml:",omitempty"`
+	Goarm        []string       `yaml:",omitempty"`
+	Gomips       []string       `yaml:",omitempty"`
+	Targets      []string       `yaml:",omitempty"`
+	Ignore       []IgnoredBuild `yaml:",omitempty"`
+	Dir          string         `yaml:",omitempty"`
+	Main         string         `yaml:",omitempty"`
+	Ldflags      StringArray    `yaml:",omitempty"`
+	Flags        FlagArray      `yaml:",omitempty"`
+	Binary       string         `yaml:",omitempty"`
+	Hooks        HookConfig     `yaml:",omitempty"`
+	Env          []string       `yaml:",omitempty"`
+	Lang         string         `yaml:",omitempty"`
+	Asmflags     StringArray    `yaml:",omitempty"`
+	Gcflags      StringArray    `yaml:",omitempty"`
+	ModTimestamp string         `yaml:"mod_timestamp,omitempty"`
+	Skip         bool           `yaml:",omitempty"`
 }
 
 type HookConfig struct {

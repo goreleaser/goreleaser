@@ -56,7 +56,7 @@ On all fields, you have these available functions:
 | Usage                   | Description                                                                                                                    |
 |-------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | `replace "v1.2" "v" ""` | replaces all matches. See [ReplaceAll](https://golang.org/pkg/strings/#ReplaceAll)                                             |
-| `time "01/02/2006"`     | current UTC time in the specified format                                                                                       |
+| `time "01/02/2006"`     | current UTC time in the specified format (this is not deterministic, a new time for every call)                                |
 | `tolower "V1.2"`        | makes input string lowercase. See [ToLower](https://golang.org/pkg/strings/#ToLower)                                           |
 | `toupper "v1.2"`        | makes input string uppercase. See [ToUpper](https://golang.org/pkg/strings/#ToUpper)                                           |
 | `trim " v1.2  "`        | removes all leading and trailing white space. See [TrimSpace](https://golang.org/pkg/strings/#TrimSpace)                       |
