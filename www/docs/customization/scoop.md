@@ -6,7 +6,7 @@ After releasing to GitHub or GitLab, GoReleaser can generate and publish a
 _Scoop App Manifest_ into a repository that you have access to.
 
 The `scoop` section specifies how the manifest should be created. See
-the commented example bellow:
+the commented example below:
 
 ```yaml
 # .goreleaser.yml
