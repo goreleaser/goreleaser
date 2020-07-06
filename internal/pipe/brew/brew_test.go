@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -115,42 +116,22 @@ func TestRunPipe(t *testing.T) {
 	for name, fn := range map[string]func(ctx *context.Context){
 		"default": func(ctx *context.Context) {
 			ctx.TokenType = context.TokenTypeGitHub
-			ctx.Config.GitHubURLs.Download = "https://github.com"
-			ctx.Config.Release.GitHub.Owner = "test"
-			ctx.Config.Release.GitHub.Name = "test"
-			ctx.Config.Brews[0].GitHub.Owner = "test"
-			ctx.Config.Brews[0].GitHub.Name = "test"
+			ctx.Config.Brews[0].Tap.Owner = "test"
+			ctx.Config.Brews[0].Tap.Name = "test"
 			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
-		},
-		"github_enterprise_url": func(ctx *context.Context) {
-			ctx.TokenType = context.TokenTypeGitHub
-			ctx.Config.GitHubURLs.Download = "https://github.com"
-			ctx.Config.Release.GitHub.Owner = "test"
-			ctx.Config.Release.GitHub.Name = "test"
-			ctx.Config.Brews[0].GitHub.Owner = "test"
-			ctx.Config.Brews[0].GitHub.Name = "test"
-			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
-
-			ctx.Config.GitHubURLs.Download = "http://github.example.org"
 		},
 		"custom_download_strategy": func(ctx *context.Context) {
 			ctx.TokenType = context.TokenTypeGitHub
-			ctx.Config.GitHubURLs.Download = "https://github.com"
-			ctx.Config.Release.GitHub.Owner = "test"
-			ctx.Config.Release.GitHub.Name = "test"
-			ctx.Config.Brews[0].GitHub.Owner = "test"
-			ctx.Config.Brews[0].GitHub.Name = "test"
+			ctx.Config.Brews[0].Tap.Owner = "test"
+			ctx.Config.Brews[0].Tap.Name = "test"
 			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 
 			ctx.Config.Brews[0].DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
 		},
 		"custom_require": func(ctx *context.Context) {
 			ctx.TokenType = context.TokenTypeGitHub
-			ctx.Config.GitHubURLs.Download = "https://github.com"
-			ctx.Config.Release.GitHub.Owner = "test"
-			ctx.Config.Release.GitHub.Name = "test"
-			ctx.Config.Brews[0].GitHub.Owner = "test"
-			ctx.Config.Brews[0].GitHub.Name = "test"
+			ctx.Config.Brews[0].Tap.Owner = "test"
+			ctx.Config.Brews[0].Tap.Name = "test"
 			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 
 			ctx.Config.Brews[0].DownloadStrategy = "CustomDownloadStrategy"
@@ -158,34 +139,17 @@ func TestRunPipe(t *testing.T) {
 		},
 		"custom_block": func(ctx *context.Context) {
 			ctx.TokenType = context.TokenTypeGitHub
-			ctx.Config.GitHubURLs.Download = "https://github.com"
-			ctx.Config.Release.GitHub.Owner = "test"
-			ctx.Config.Release.GitHub.Name = "test"
-			ctx.Config.Brews[0].GitHub.Owner = "test"
-			ctx.Config.Brews[0].GitHub.Name = "test"
+			ctx.Config.Brews[0].Tap.Owner = "test"
+			ctx.Config.Brews[0].Tap.Name = "test"
 			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 
 			ctx.Config.Brews[0].CustomBlock = `head "https://github.com/caarlos0/test.git"`
 		},
 		"default_gitlab": func(ctx *context.Context) {
 			ctx.TokenType = context.TokenTypeGitLab
-			ctx.Config.GitLabURLs.Download = "https://gitlab.com"
-			ctx.Config.Release.GitLab.Owner = "test"
-			ctx.Config.Release.GitLab.Name = "test"
-			ctx.Config.Brews[0].GitLab.Owner = "test"
-			ctx.Config.Brews[0].GitLab.Name = "test"
+			ctx.Config.Brews[0].Tap.Owner = "test"
+			ctx.Config.Brews[0].Tap.Name = "test"
 			ctx.Config.Brews[0].Homepage = "https://gitlab.com/goreleaser"
-		},
-		"gitlab_enterprise_url": func(ctx *context.Context) {
-			ctx.TokenType = context.TokenTypeGitLab
-			ctx.Config.GitLabURLs.Download = "https://gitlab.com"
-			ctx.Config.Release.GitLab.Owner = "test"
-			ctx.Config.Release.GitLab.Name = "test"
-			ctx.Config.Brews[0].GitLab.Owner = "test"
-			ctx.Config.Brews[0].GitLab.Name = "test"
-			ctx.Config.Brews[0].Homepage = "https://gitlab.com/goreleaser"
-
-			ctx.Config.GitLabURLs.Download = "https://gitlab.my-company.org"
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -305,7 +269,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 						Dependencies: []config.HomebrewDependency{{Name: "zsh"}, {Name: "bash", Type: "recommended"}},
 						Conflicts:    []string{"gtk+", "qt"},
 						Install:      `bin.install "{{ .ProjectName }}"`,
-						GitHub: config.Repo{
+						Tap: config.Repo{
 							Owner: "test",
 							Name:  "test",
 						},
@@ -401,7 +365,7 @@ func TestRunPipeNoDarwin64Build(t *testing.T) {
 		Config: config.Project{
 			Brews: []config.Homebrew{
 				{
-					GitHub: config.Repo{
+					Tap: config.Repo{
 						Owner: "test",
 						Name:  "test",
 					},
@@ -419,7 +383,7 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 		config.Project{
 			Brews: []config.Homebrew{
 				{
-					GitHub: config.Repo{
+					Tap: config.Repo{
 						Owner: "test",
 						Name:  "test",
 					},
@@ -539,18 +503,16 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 
 	for _, test := range tests {
 		for idx, ttt := range test.osarchs {
-			t.Run(ttt.goarch, func(tt *testing.T) {
-				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   fmt.Sprintf("bin%d", idx),
-					Path:   f.Name(),
-					Goos:   ttt.goos,
-					Goarch: ttt.goarch,
-					Type:   artifact.UploadableArchive,
-					Extra: map[string]interface{}{
-						"ID":     fmt.Sprintf("foo%d", idx),
-						"Format": "tar.gz",
-					},
-				})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   fmt.Sprintf("bin%d", idx),
+				Path:   f.Name(),
+				Goos:   ttt.goos,
+				Goarch: ttt.goarch,
+				Type:   artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					"ID":     fmt.Sprintf("foo%d", idx),
+					"Format": "tar.gz",
+				},
 			})
 		}
 		client := &DummyClient{}
@@ -575,7 +537,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		config.Project{
 			Brews: []config.Homebrew{
 				{
-					GitHub: config.Repo{
+					Tap: config.Repo{
 						Owner: "test",
 						Name:  "test",
 					},
@@ -604,7 +566,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Release:     config.Release{},
 		Brews: []config.Homebrew{
 			{
-				GitHub: config.Repo{
+				Tap: config.Repo{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -656,7 +618,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Release:     config.Release{},
 		Brews: []config.Homebrew{
 			{
-				GitHub: config.Repo{
+				Tap: config.Repo{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -679,7 +641,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		},
 	})
 	client := &DummyClient{}
-	assert.Equal(t, ErrEmptyTokenType, doRun(ctx, ctx.Config.Brews[0], client))
+	assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
 }
 
 func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
@@ -691,7 +653,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 		Release:     config.Release{},
 		Brews: []config.Homebrew{
 			{
-				GitHub: config.Repo{
+				Tap: config.Repo{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -714,7 +676,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 			"Format": "tar.gz",
 		},
 	})
-	client := &DummyClient{}
+	client := &DummyClient{NotImplemented: true}
 	assert.Equal(t, ErrTokenTypeNotImplementedForBrew{TokenType: "gitea"}, doRun(ctx, ctx.Config.Brews[0], client))
 }
 
@@ -764,20 +726,29 @@ func TestGHFolder(t *testing.T) {
 }
 
 type DummyClient struct {
-	CreatedFile bool
-	Content     string
+	CreatedFile    bool
+	Content        string
+	NotImplemented bool
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
+func (dc *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
 	return
 }
 
-func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, msg string) (err error) {
-	client.CreatedFile = true
-	client.Content = string(content)
+func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
+	if dc.NotImplemented {
+		return "", client.NotImplementedError{}
+	}
+
+	return "https://dummyhost/download/{{ .Tag }}/{{ .ArtifactName }}", nil
+}
+
+func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, msg string) (err error) {
+	dc.CreatedFile = true
+	dc.Content = string(content)
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error) {
+func (dc *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error) {
 	return
 }

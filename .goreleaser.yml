@@ -81,7 +81,7 @@ archives:
     - goos: windows
       format: zip
 brews:
-  - github:
+  - tap:
       owner: goreleaser
       name: homebrew-tap
     folder: Formula

@@ -12,6 +12,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -25,9 +26,6 @@ var ErrNoArchivesFound = errors.New("no linux/macos archives found")
 // ErrMultipleArchivesSameOS happens when the config yields multiple archives
 // for linux or windows.
 var ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
-
-// ErrEmptyTokenType indicates unknown token type.
-var ErrEmptyTokenType = errors.New("no token type found")
 
 // ErrTokenTypeNotImplementedForBrew indicates that a new token type was not implemented for this pipe.
 type ErrTokenTypeNotImplementedForBrew struct {
@@ -50,6 +48,11 @@ func (Pipe) String() string {
 
 // Publish brew formula.
 func (Pipe) Publish(ctx *context.Context) error {
+	// we keep GitHub as default for now, in line with releases
+	if string(ctx.TokenType) == "" {
+		ctx.TokenType = context.TokenTypeGitHub
+	}
+
 	client, err := client.New(ctx)
 	if err != nil {
 		return err
@@ -66,6 +69,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Brews {
 		var brew = &ctx.Config.Brews[i]
+
 		if brew.Install == "" {
 			// TODO: maybe replace this with a simplear also optimistic
 			// approach of just doing `bin.install "project_name"`?
@@ -81,6 +85,14 @@ func (Pipe) Default(ctx *context.Context) error {
 			}
 			brew.Install = strings.Join(installs, "\n")
 			log.Warnf("optimistically guessing `brew[%d].installs`, double check", i)
+		}
+		if brew.GitHub.String() != "" {
+			deprecate.Notice(ctx, "brews.github")
+			brew.Tap = brew.GitHub
+		}
+		if brew.GitLab.String() != "" {
+			deprecate.Notice(ctx, "brews.gitlab")
+			brew.Tap = brew.GitLab
 		}
 		if brew.CommitAuthor.Name == "" {
 			brew.CommitAuthor.Name = "goreleaserbot"
@@ -118,7 +130,7 @@ func contains(ss []string, s string) bool {
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) error {
-	if brew.GitHub.Name == "" && brew.GitLab.Name == "" {
+	if brew.Tap.Name == "" {
 		return pipe.Skip("brew section is not configured")
 	}
 
@@ -148,7 +160,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return ErrNoArchivesFound
 	}
 
-	content, err := buildFormula(ctx, brew, ctx.TokenType, archives)
+	content, err := buildFormula(ctx, brew, client, archives)
 	if err != nil {
 		return err
 	}
@@ -170,18 +182,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
 	}
 
-	var repo config.Repo
-	switch ctx.TokenType {
-	case context.TokenTypeGitHub:
-		repo = brew.GitHub
-	case context.TokenTypeGitLab:
-		repo = brew.GitLab
-	default:
-		if string(ctx.TokenType) == "" {
-			return ErrEmptyTokenType
-		}
-		return ErrTokenTypeNotImplementedForBrew{ctx.TokenType}
-	}
+	repo := brew.Tap
 
 	var gpath = buildFormulaPath(brew.Folder, filename)
 	log.WithField("formula", gpath).
@@ -196,8 +197,8 @@ func buildFormulaPath(folder, filename string) string {
 	return path.Join(folder, filename)
 }
 
-func buildFormula(ctx *context.Context, brew config.Homebrew, tokenType context.TokenType, artifacts []*artifact.Artifact) (string, error) {
-	data, err := dataFor(ctx, brew, tokenType, artifacts)
+func buildFormula(ctx *context.Context, brew config.Homebrew, client client.Client, artifacts []*artifact.Artifact) (string, error) {
+	data, err := dataFor(ctx, brew, client, artifacts)
 	if err != nil {
 		return "", err
 	}
@@ -216,7 +217,7 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	return tmpl.New(ctx).Apply(out.String())
 }
 
-func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenType, artifacts []*artifact.Artifact) (templateData, error) {
+func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
 	var result = templateData{
 		Name:             formulaNameFor(cfg.Name),
 		Desc:             cfg.Description,
@@ -240,25 +241,14 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, tokenType context.TokenT
 		}
 
 		if cfg.URLTemplate == "" {
-			switch tokenType {
-			// we keep GitHub as default for now, in line with releases
-			case context.TokenTypeGitHub, "":
-				cfg.URLTemplate = fmt.Sprintf(
-					"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
-					ctx.Config.GitHubURLs.Download,
-					ctx.Config.Release.GitHub.Owner,
-					ctx.Config.Release.GitHub.Name,
-				)
-			case context.TokenTypeGitLab:
-				cfg.URLTemplate = fmt.Sprintf(
-					"%s/%s/%s/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
-					ctx.Config.GitLabURLs.Download,
-					ctx.Config.Release.GitLab.Owner,
-					ctx.Config.Release.GitLab.Name,
-				)
-			default:
-				return result, ErrTokenTypeNotImplementedForBrew{tokenType}
+			url, err := cl.ReleaseURLTemplate(ctx)
+			if err != nil {
+				if client.IsNotImplementedErr(err) {
+					return result, ErrTokenTypeNotImplementedForBrew{ctx.TokenType}
+				}
+				return result, err
 			}
+			cfg.URLTemplate = url
 		}
 		url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(cfg.URLTemplate)
 		if err != nil {

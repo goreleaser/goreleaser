@@ -546,6 +546,10 @@ func (c *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseI
 	return
 }
 
+func (c *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
+	return "", nil
+}
+
 func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, msg string) (err error) {
 	return
 }

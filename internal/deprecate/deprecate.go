@@ -22,8 +22,8 @@ func Notice(ctx *context.Context, property string) {
 	}()
 	// replaces . and _ with -
 	url := baseURL + strings.NewReplacer(
-		".", "-",
-		"_", "-",
+		".", "",
+		"_", "",
 	).Replace(property)
 	log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
 		"DEPRECATED: `%s` should not be used anymore, check %s for more info.",
