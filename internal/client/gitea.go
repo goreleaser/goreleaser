@@ -34,12 +34,12 @@ func getInstanceURL(apiURL string) (string, error) {
 }
 
 // NewGitea returns a gitea client implementation.
-func NewGitea(ctx *context.Context) (Client, error) {
+func NewGitea(ctx *context.Context, token string) (Client, error) {
 	instanceURL, err := getInstanceURL(ctx.Config.GiteaURLs.API)
 	if err != nil {
 		return nil, err
 	}
-	client := gitea.NewClient(instanceURL, ctx.Token)
+	client := gitea.NewClient(instanceURL, token)
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			// nolint: gosec
@@ -56,7 +56,7 @@ func NewGitea(ctx *context.Context) (Client, error) {
 func (c *giteaClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
-	repo config.Repo,
+	repo Repo,
 	content []byte,
 	path,
 	message string,

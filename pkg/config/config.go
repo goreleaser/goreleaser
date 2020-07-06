@@ -34,9 +34,20 @@ type GiteaURLs struct {
 }
 
 // Repo represents any kind of repo (github, gitlab, etc).
+// to upload releases into.
 type Repo struct {
 	Owner string `yaml:",omitempty"`
 	Name  string `yaml:",omitempty"`
+}
+
+// RepoRef represents any kind of repo which may differ
+// from the one we are building from and may therefore
+// also require separate authentication
+// e.g. Homebrew Tap, Scoop bucket.
+type RepoRef struct {
+	Owner string `yaml:",omitempty"`
+	Name  string `yaml:",omitempty"`
+	Token string `yaml:",omitempty"`
 }
 
 // HomebrewDependency represents Homebrew dependency.
@@ -78,7 +89,7 @@ func (r Repo) String() string {
 // Homebrew contains the brew section.
 type Homebrew struct {
 	Name             string               `yaml:",omitempty"`
-	Tap              Repo                 `yaml:",omitempty"`
+	Tap              RepoRef              `yaml:",omitempty"`
 	CommitAuthor     CommitAuthor         `yaml:"commit_author,omitempty"`
 	Folder           string               `yaml:",omitempty"`
 	Caveats          string               `yaml:",omitempty"`
@@ -105,7 +116,7 @@ type Homebrew struct {
 // Scoop contains the scoop.sh section.
 type Scoop struct {
 	Name                  string       `yaml:",omitempty"`
-	Bucket                Repo         `yaml:",omitempty"`
+	Bucket                RepoRef      `yaml:",omitempty"`
 	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty"`
 	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty"`
 	Homepage              string       `yaml:",omitempty"`
