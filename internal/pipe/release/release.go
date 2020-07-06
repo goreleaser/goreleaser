@@ -45,6 +45,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Release.NameTemplate = "{{.Tag}}"
 	}
 
+	// nolint: exhaustive
 	switch ctx.TokenType {
 	case context.TokenTypeGitLab:
 		{
