@@ -168,6 +168,10 @@ func (c *giteaClient) CreateRelease(ctx *context.Context, body string) (string, 
 	return strconv.FormatInt(release.ID, 10), nil
 }
 
+func (c *giteaClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
+	return "", NotImplementedError{TokenType: context.TokenTypeGitea}
+}
+
 // Upload uploads a file into a release repository.
 func (c *giteaClient) Upload(
 	ctx *context.Context,

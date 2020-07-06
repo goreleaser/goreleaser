@@ -1,6 +1,7 @@
 package scoop
 
 import (
+	ctx "context"
 	"flag"
 	"io/ioutil"
 	"os"
@@ -385,7 +386,7 @@ func Test_doRun(t *testing.T) {
 						},
 					},
 				},
-				&DummyClient{},
+				&DummyClient{NotImplemented: true},
 			},
 			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
@@ -756,6 +757,7 @@ func Test_buildManifest(t *testing.T) {
 		{
 			"testdata/test_buildmanifest.json.golden",
 			&context.Context{
+				Context:   ctx.Background(),
 				TokenType: context.TokenTypeGitHub,
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
@@ -792,6 +794,7 @@ func Test_buildManifest(t *testing.T) {
 		{
 			"testdata/test_buildmanifest_url_template.json.golden",
 			&context.Context{
+				Context:   ctx.Background(),
 				TokenType: context.TokenTypeGitHub,
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
@@ -833,6 +836,7 @@ func Test_buildManifest(t *testing.T) {
 		{
 			"testdata/test_buildmanifest_gitlab_url_template.json.golden",
 			&context.Context{
+				Context:   ctx.Background(),
 				TokenType: context.TokenTypeGitLab,
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
@@ -878,7 +882,11 @@ func Test_buildManifest(t *testing.T) {
 			var ctx = tt.ctx
 			err := Pipe{}.Default(ctx)
 			require.NoError(t, err)
-			out, err := buildManifest(ctx, []*artifact.Artifact{
+
+			cl, err := client.New(ctx)
+			require.NoError(t, err)
+
+			mf, err := dataFor(ctx, cl, []*artifact.Artifact{
 				{
 					Name:   "foo_1.0.1_windows_amd64.tar.gz",
 					Goos:   "windows",
@@ -914,7 +922,9 @@ func Test_buildManifest(t *testing.T) {
 					},
 				},
 			})
+			require.NoError(t, err)
 
+			out, err := doBuildManifest(mf)
 			require.NoError(t, err)
 
 			if *update {
@@ -971,7 +981,9 @@ func TestWrapInDirectory(t *testing.T) {
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
-	out, err := buildManifest(ctx, []*artifact.Artifact{
+	cl, err := client.New(ctx)
+	require.NoError(t, err)
+	mf, err := dataFor(ctx, cl, []*artifact.Artifact{
 		{
 			Name:   "foo_1.0.1_windows_amd64.tar.gz",
 			Goos:   "windows",
@@ -991,7 +1003,9 @@ func TestWrapInDirectory(t *testing.T) {
 			},
 		},
 	})
+	require.NoError(t, err)
 
+	out, err := doBuildManifest(mf)
 	require.NoError(t, err)
 
 	var golden = "testdata/test_buildmanifest_wrap.json.golden"
@@ -1004,20 +1018,28 @@ func TestWrapInDirectory(t *testing.T) {
 }
 
 type DummyClient struct {
-	CreatedFile bool
-	Content     string
+	CreatedFile    bool
+	Content        string
+	NotImplemented bool
 }
 
-func (client *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
+func (dc *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
 	return
 }
 
-func (client *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, msg string) (err error) {
-	client.CreatedFile = true
-	client.Content = string(content)
+func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
+	if dc.NotImplemented {
+		return "", client.NotImplementedError{}
+	}
+	return "", nil
+}
+
+func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, msg string) (err error) {
+	dc.CreatedFile = true
+	dc.Content = string(content)
 	return
 }
 
-func (client *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error) {
+func (dc *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error) {
 	return
 }

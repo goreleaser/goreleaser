@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -16,6 +17,8 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"golang.org/x/oauth2"
 )
+
+const DefaultGitHubDownloadURL = "https://github.com"
 
 type githubClient struct {
 	client *github.Client
@@ -145,6 +148,15 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 	log.WithField("url", release.GetHTMLURL()).Info("release updated")
 	githubReleaseID := strconv.FormatInt(release.GetID(), 10)
 	return githubReleaseID, err
+}
+
+func (c *githubClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
+	return fmt.Sprintf(
+		"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+		ctx.Config.GitHubURLs.Download,
+		ctx.Config.Release.GitHub.Owner,
+		ctx.Config.Release.GitHub.Name,
+	), nil
 }
 
 func (c *githubClient) Upload(

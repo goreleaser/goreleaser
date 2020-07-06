@@ -39,17 +39,11 @@ brews:
     # NOTE: make sure the url_template, the token and given repo (github or gitlab) owner and name are from the
     # same kind. We will probably unify this in the next major version like it is done with scoop.
 
-    # Github repository to push the tap to.
-    github:
-      owner: github-user
-      name: homebrew-tap
-
-    # OR Gitlab
-    # gitlab:
-    #   owner: gitlab-user
-    #   name: homebrew-tap
-
+    # GitHub/GitLab repository to push the formula to
     # Gitea is not supported yet, but the support coming
+    tap:
+      owner: repo-owner
+      name: homebrew-tap
 
     # Template for the url which is determined by the given Token (github or gitlab)
     # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"

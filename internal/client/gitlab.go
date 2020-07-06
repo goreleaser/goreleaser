@@ -3,6 +3,7 @@ package client
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -14,6 +15,8 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/xanzy/go-gitlab"
 )
+
+const DefaultGitLabDownloadURL = "https://gitlab.com"
 
 // ErrExtractHashFromFileUploadURL indicates the file upload hash could not ne extracted from the url.
 var ErrExtractHashFromFileUploadURL = errors.New("could not extract hash from gitlab file upload url")
@@ -227,6 +230,15 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 	}
 
 	return tagName, err // gitlab references a tag in a repo by its name
+}
+
+func (c *gitlabClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
+	return fmt.Sprintf(
+		"%s/%s/%s/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
+		ctx.Config.GitLabURLs.Download,
+		ctx.Config.Release.GitLab.Owner,
+		ctx.Config.Release.GitLab.Name,
+	), nil
 }
 
 // Upload uploads a file into a release repository.
