@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -88,7 +87,11 @@ func doRun(ctx *context.Context, client client.Client) error {
 
 	var path = ctx.Config.Scoop.Name + ".json"
 
-	content, err := buildManifest(ctx, archives)
+	data, err := dataFor(ctx, client, archives)
+	if err != nil {
+		return err
+	}
+	content, err := doBuildManifest(data)
 	if err != nil {
 		return err
 	}
@@ -143,8 +146,17 @@ type Resource struct {
 	Hash string   `json:"hash"` // the archive checksum
 }
 
-func buildManifest(ctx *context.Context, artifacts []*artifact.Artifact) (bytes.Buffer, error) {
+func doBuildManifest(manifest Manifest) (bytes.Buffer, error) {
 	var result bytes.Buffer
+	data, err := json.MarshalIndent(manifest, "", "    ")
+	if err != nil {
+		return result, err
+	}
+	_, err = result.Write(data)
+	return result, err
+}
+
+func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artifact) (Manifest, error) {
 	var manifest = Manifest{
 		Version:      ctx.Version,
 		Architecture: map[string]Resource{},
@@ -155,24 +167,14 @@ func buildManifest(ctx *context.Context, artifacts []*artifact.Artifact) (bytes.
 	}
 
 	if ctx.Config.Scoop.URLTemplate == "" {
-		switch ctx.TokenType {
-		case context.TokenTypeGitHub:
-			ctx.Config.Scoop.URLTemplate = fmt.Sprintf(
-				"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
-				ctx.Config.GitHubURLs.Download,
-				ctx.Config.Release.GitHub.Owner,
-				ctx.Config.Release.GitHub.Name,
-			)
-		case context.TokenTypeGitLab:
-			ctx.Config.Scoop.URLTemplate = fmt.Sprintf(
-				"%s/%s/%s/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
-				ctx.Config.GitLabURLs.Download,
-				ctx.Config.Release.GitLab.Owner,
-				ctx.Config.Release.GitLab.Name,
-			)
-		default:
-			return result, ErrTokenTypeNotImplementedForScoop
+		url, err := cl.ReleaseURLTemplate(ctx)
+		if err != nil {
+			if client.IsNotImplementedErr(err) {
+				return manifest, ErrTokenTypeNotImplementedForScoop
+			}
+			return manifest, err
 		}
+		ctx.Config.Scoop.URLTemplate = url
 	}
 
 	for _, artifact := range artifacts {
@@ -185,12 +187,12 @@ func buildManifest(ctx *context.Context, artifacts []*artifact.Artifact) (bytes.
 			WithArtifact(artifact, map[string]string{}).
 			Apply(ctx.Config.Scoop.URLTemplate)
 		if err != nil {
-			return result, err
+			return manifest, err
 		}
 
 		sum, err := artifact.Checksum("sha256")
 		if err != nil {
-			return result, err
+			return manifest, err
 		}
 
 		log.WithFields(log.Fields{
@@ -207,12 +209,7 @@ func buildManifest(ctx *context.Context, artifacts []*artifact.Artifact) (bytes.
 		}
 	}
 
-	data, err := json.MarshalIndent(manifest, "", "    ")
-	if err != nil {
-		return result, err
-	}
-	_, err = result.Write(data)
-	return result, err
+	return manifest, nil
 }
 
 func binaries(a *artifact.Artifact) []string {

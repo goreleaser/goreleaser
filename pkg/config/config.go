@@ -78,8 +78,7 @@ func (r Repo) String() string {
 // Homebrew contains the brew section.
 type Homebrew struct {
 	Name             string               `yaml:",omitempty"`
-	GitHub           Repo                 `yaml:",omitempty"`
-	GitLab           Repo                 `yaml:",omitempty"`
+	Tap              Repo                 `yaml:",omitempty"`
 	CommitAuthor     CommitAuthor         `yaml:"commit_author,omitempty"`
 	Folder           string               `yaml:",omitempty"`
 	Caveats          string               `yaml:",omitempty"`
@@ -97,6 +96,10 @@ type Homebrew struct {
 	CustomBlock      string               `yaml:"custom_block,omitempty"`
 	IDs              []string             `yaml:"ids,omitempty"`
 	Goarm            string               `yaml:"goarm,omitempty"`
+
+	// Deprecated in favour of Tap
+	GitHub Repo `yaml:",omitempty"`
+	GitLab Repo `yaml:",omitempty"`
 }
 
 // Scoop contains the scoop.sh section.

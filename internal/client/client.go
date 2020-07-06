@@ -2,6 +2,7 @@
 package client
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/apex/log"
@@ -20,6 +21,7 @@ type Info struct {
 // Client interface.
 type Client interface {
 	CreateRelease(ctx *context.Context, body string) (releaseID string, err error)
+	ReleaseURLTemplate(ctx *context.Context) (string, error)
 	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, message string) (err error)
 	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error)
 }
@@ -46,4 +48,17 @@ type RetriableError struct {
 
 func (e RetriableError) Error() string {
 	return e.Err.Error()
+}
+
+type NotImplementedError struct {
+	TokenType context.TokenType
+}
+
+func (e NotImplementedError) Error() string {
+	return fmt.Sprintf("not implemented for %s", e.TokenType)
+}
+
+func IsNotImplementedErr(err error) bool {
+	_, ok := err.(NotImplementedError)
+	return ok
 }

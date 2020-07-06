@@ -3,6 +3,7 @@
 package defaults
 
 import (
+	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/goreleaser/goreleaser/pkg/defaults"
@@ -21,10 +22,10 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.Config.Dist = "dist"
 	}
 	if ctx.Config.GitHubURLs.Download == "" {
-		ctx.Config.GitHubURLs.Download = "https://github.com"
+		ctx.Config.GitHubURLs.Download = client.DefaultGitHubDownloadURL
 	}
 	if ctx.Config.GitLabURLs.Download == "" {
-		ctx.Config.GitLabURLs.Download = "https://gitlab.com"
+		ctx.Config.GitLabURLs.Download = client.DefaultGitLabDownloadURL
 	}
 	for _, defaulter := range defaults.Defaulters {
 		if err := middleware.Logging(

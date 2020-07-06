@@ -56,6 +56,29 @@ func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
 	)
 }
 
+func TestGitHubReleaseURLTemplate(t *testing.T) {
+	var ctx = context.New(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			// default URL would otherwise be set via pipe/defaults
+			Download: DefaultGitHubDownloadURL,
+		},
+		Release: config.Release{
+			GitHub: config.Repo{
+				Owner: "owner",
+				Name:  "name",
+			},
+		},
+	})
+	client, err := NewGitHub(ctx)
+	require.NoError(t, err)
+
+	urlTpl, err := client.ReleaseURLTemplate(ctx)
+	require.NoError(t, err)
+
+	expectedUrl := "https://github.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+	require.Equal(t, expectedUrl, urlTpl)
+}
+
 func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
 	var ctx = context.New(config.Project{
 		Release: config.Release{
