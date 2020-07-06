@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"text/template"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -209,6 +210,72 @@ func TestFuncMap(t *testing.T) {
 		} else {
 			assert.NotEmpty(t, out)
 		}
+	}
+}
+
+func TestApplySingleEnvOnly(t *testing.T) {
+	ctx := context.New(config.Project{
+		Env: []string{
+			"FOO=value",
+			"BAR=another",
+		},
+	})
+
+	testCases := []struct {
+		name        string
+		tpl         string
+		expectedErr error
+	}{
+		{
+			"empty tpl",
+			"",
+			nil,
+		},
+		{
+			"whitespaces",
+			" 	",
+			nil,
+		},
+		{
+			"plain-text only",
+			"raw-token",
+			ExpectedSingleEnvErr{},
+		},
+		{
+			"variable with spaces",
+			"{{ .Env.FOO }}",
+			nil,
+		},
+		{
+			"variable without spaces",
+			"{{.Env.FOO}}",
+			nil,
+		},
+		{
+			"variable with outer spaces",
+			"  {{ .Env.FOO }} ",
+			nil,
+		},
+		{
+			"unknown variable",
+			"{{ .Env.UNKNOWN }}",
+			template.ExecError{},
+		},
+		{
+			"other interpolation",
+			"{{ .ProjectName }}",
+			ExpectedSingleEnvErr{},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := New(ctx).ApplySingleEnvOnly(tc.tpl)
+			if tc.expectedErr != nil {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
 	}
 }
 

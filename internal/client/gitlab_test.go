@@ -47,7 +47,7 @@ func TestGitLabReleaseURLTemplate(t *testing.T) {
 			},
 		},
 	})
-	client, err := NewGitLab(ctx)
+	client, err := NewGitLab(ctx, ctx.Token)
 	assert.NoError(t, err)
 
 	urlTpl, err := client.ReleaseURLTemplate(ctx)

@@ -25,9 +25,9 @@ type githubClient struct {
 }
 
 // NewGitHub returns a github client implementation.
-func NewGitHub(ctx *context.Context) (Client, error) {
+func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: ctx.Token},
+		&oauth2.Token{AccessToken: token},
 	)
 	httpClient := oauth2.NewClient(ctx, ts)
 	base := httpClient.Transport.(*oauth2.Transport).Base
@@ -59,7 +59,7 @@ func NewGitHub(ctx *context.Context) (Client, error) {
 func (c *githubClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
-	repo config.Repo,
+	repo Repo,
 	content []byte,
 	path,
 	message string,

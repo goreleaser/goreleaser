@@ -26,8 +26,7 @@ type gitlabClient struct {
 }
 
 // NewGitLab returns a gitlab client implementation.
-func NewGitLab(ctx *context.Context) (Client, error) {
-	token := ctx.Token
+func NewGitLab(ctx *context.Context, token string) (Client, error) {
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			// nolint: gosec
@@ -54,7 +53,7 @@ func NewGitLab(ctx *context.Context) (Client, error) {
 func (c *gitlabClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
-	repo config.Repo,
+	repo Repo,
 	content []byte, // the content of the formula.rb
 	path, // the path to the formula.rb
 	message string, // the commit msg

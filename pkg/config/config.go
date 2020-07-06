@@ -34,9 +34,20 @@ type GiteaURLs struct {
 }
 
 // Repo represents any kind of repo (github, gitlab, etc).
+// to upload releases into.
 type Repo struct {
 	Owner string `yaml:",omitempty"`
 	Name  string `yaml:",omitempty"`
+}
+
+// RepoRef represents any kind of repo which may differ
+// from the one we are building from and may therefore
+// also require separate authentication
+// e.g. Homebrew Tap, Scoop bucket.
+type RepoRef struct {
+	Owner string `yaml:",omitempty"`
+	Name  string `yaml:",omitempty"`
+	Token string `yaml:",omitempty"`
 }
 
 // HomebrewDependency represents Homebrew dependency.
@@ -78,7 +89,7 @@ func (r Repo) String() string {
 // Homebrew contains the brew section.
 type Homebrew struct {
 	Name             string               `yaml:",omitempty"`
-	Tap              Repo                 `yaml:",omitempty"`
+	Tap              RepoRef              `yaml:",omitempty"`
 	CommitAuthor     CommitAuthor         `yaml:"commit_author,omitempty"`
 	Folder           string               `yaml:",omitempty"`
 	Caveats          string               `yaml:",omitempty"`
@@ -105,7 +116,7 @@ type Homebrew struct {
 // Scoop contains the scoop.sh section.
 type Scoop struct {
 	Name                  string       `yaml:",omitempty"`
-	Bucket                Repo         `yaml:",omitempty"`
+	Bucket                RepoRef      `yaml:",omitempty"`
 	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty"`
 	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty"`
 	Homepage              string       `yaml:",omitempty"`
@@ -171,24 +182,25 @@ func (a *FlagArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // Build contains the build configuration section.
 type Build struct {
-	ID       string         `yaml:",omitempty"`
-	Goos     []string       `yaml:",omitempty"`
-	Goarch   []string       `yaml:",omitempty"`
-	Goarm    []string       `yaml:",omitempty"`
-	Gomips   []string       `yaml:",omitempty"`
-	Targets  []string       `yaml:",omitempty"`
-	Ignore   []IgnoredBuild `yaml:",omitempty"`
-	Dir      string         `yaml:",omitempty"`
-	Main     string         `yaml:",omitempty"`
-	Ldflags  StringArray    `yaml:",omitempty"`
-	Flags    FlagArray      `yaml:",omitempty"`
-	Binary   string         `yaml:",omitempty"`
-	Hooks    HookConfig     `yaml:",omitempty"`
-	Env      []string       `yaml:",omitempty"`
-	Lang     string         `yaml:",omitempty"`
-	Asmflags StringArray    `yaml:",omitempty"`
-	Gcflags  StringArray    `yaml:",omitempty"`
-	Skip     bool           `yaml:",omitempty"`
+	ID           string         `yaml:",omitempty"`
+	Goos         []string       `yaml:",omitempty"`
+	Goarch       []string       `yaml:",omitempty"`
+	Goarm        []string       `yaml:",omitempty"`
+	Gomips       []string       `yaml:",omitempty"`
+	Targets      []string       `yaml:",omitempty"`
+	Ignore       []IgnoredBuild `yaml:",omitempty"`
+	Dir          string         `yaml:",omitempty"`
+	Main         string         `yaml:",omitempty"`
+	Ldflags      StringArray    `yaml:",omitempty"`
+	Flags        FlagArray      `yaml:",omitempty"`
+	Binary       string         `yaml:",omitempty"`
+	Hooks        HookConfig     `yaml:",omitempty"`
+	Env          []string       `yaml:",omitempty"`
+	Lang         string         `yaml:",omitempty"`
+	Asmflags     StringArray    `yaml:",omitempty"`
+	Gcflags      StringArray    `yaml:",omitempty"`
+	ModTimestamp string         `yaml:"mod_timestamp,omitempty"`
+	Skip         bool           `yaml:",omitempty"`
 }
 
 type HookConfig struct {

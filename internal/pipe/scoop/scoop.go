@@ -34,6 +34,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
+
 	client, err := client.New(ctx)
 	if err != nil {
 		return err
@@ -60,15 +61,24 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func doRun(ctx *context.Context, client client.Client) error {
-	if ctx.Config.Scoop.Bucket.Name == "" {
+func doRun(ctx *context.Context, cl client.Client) error {
+	scoop := ctx.Config.Scoop
+	if scoop.Bucket.Name == "" {
 		return pipe.Skip("scoop section is not configured")
 	}
 
-	// TODO mavogel: in another PR
-	// check if release pipe is not configured!
-	// if ctx.Config.Release.Disable {
-	// }
+	if scoop.Bucket.Token != "" {
+		token, err := tmpl.New(ctx).ApplySingleEnvOnly(scoop.Bucket.Token)
+		if err != nil {
+			return err
+		}
+		log.Debug("using custom token to publish scoop manifest")
+		c, err := client.NewWithToken(ctx, token)
+		if err != nil {
+			return err
+		}
+		cl = c
+	}
 
 	// TODO: multiple archives
 	if ctx.Config.Archives[0].Format == "binary" {
@@ -85,9 +95,9 @@ func doRun(ctx *context.Context, client client.Client) error {
 		return ErrNoWindows
 	}
 
-	var path = ctx.Config.Scoop.Name + ".json"
+	var path = scoop.Name + ".json"
 
-	data, err := dataFor(ctx, client, archives)
+	data, err := dataFor(ctx, cl, archives)
 	if err != nil {
 		return err
 	}
@@ -99,10 +109,10 @@ func doRun(ctx *context.Context, client client.Client) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
-	if strings.TrimSpace(ctx.Config.Scoop.SkipUpload) == "true" {
+	if strings.TrimSpace(scoop.SkipUpload) == "true" {
 		return pipe.Skip("scoop.skip_upload is true")
 	}
-	if strings.TrimSpace(ctx.Config.Scoop.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
+	if strings.TrimSpace(scoop.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
 		return pipe.Skip("release is prerelease")
 	}
 	if ctx.Config.Release.Draft {
@@ -113,15 +123,16 @@ func doRun(ctx *context.Context, client client.Client) error {
 	}
 
 	commitMessage, err := tmpl.New(ctx).
-		Apply(ctx.Config.Scoop.CommitMessageTemplate)
+		Apply(scoop.CommitMessageTemplate)
 	if err != nil {
 		return err
 	}
 
-	return client.CreateFile(
+	repo := client.RepoFromRef(scoop.Bucket)
+	return cl.CreateFile(
 		ctx,
-		ctx.Config.Scoop.CommitAuthor,
-		ctx.Config.Scoop.Bucket,
+		scoop.CommitAuthor,
+		repo,
 		content.Bytes(),
 		path,
 		commitMessage,

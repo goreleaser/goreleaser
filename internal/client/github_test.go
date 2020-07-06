@@ -11,34 +11,37 @@ import (
 
 func TestNewGitHubClient(t *testing.T) {
 	t.Run("good urls", func(t *testing.T) {
-		_, err := NewGitHub(context.New(config.Project{
+		ctx := context.New(config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "https://github.mycompany.com/api",
 				Upload: "https://github.mycompany.com/upload",
 			},
-		}))
+		})
+		_, err := NewGitHub(ctx, ctx.Token)
 
 		require.NoError(t, err)
 	})
 
 	t.Run("bad api url", func(t *testing.T) {
-		_, err := NewGitHub(context.New(config.Project{
+		ctx := context.New(config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "://github.mycompany.com/api",
 				Upload: "https://github.mycompany.com/upload",
 			},
-		}))
+		})
+		_, err := NewGitHub(ctx, ctx.Token)
 
 		require.EqualError(t, err, `parse "://github.mycompany.com/api": missing protocol scheme`)
 	})
 
 	t.Run("bad upload url", func(t *testing.T) {
-		_, err := NewGitHub(context.New(config.Project{
+		ctx := context.New(config.Project{
 			GitHubURLs: config.GitHubURLs{
 				API:    "https://github.mycompany.com/api",
 				Upload: "not a url:4994",
 			},
-		}))
+		})
+		_, err := NewGitHub(ctx, ctx.Token)
 
 		require.EqualError(t, err, `parse "not a url:4994": first path segment in URL cannot contain colon`)
 	})
@@ -46,7 +49,7 @@ func TestNewGitHubClient(t *testing.T) {
 
 func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
 	var ctx = context.New(config.Project{})
-	client, err := NewGitHub(ctx)
+	client, err := NewGitHub(ctx, ctx.Token)
 	require.NoError(t, err)
 
 	require.EqualError(
@@ -69,7 +72,7 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 			},
 		},
 	})
-	client, err := NewGitHub(ctx)
+	client, err := NewGitHub(ctx, ctx.Token)
 	require.NoError(t, err)
 
 	urlTpl, err := client.ReleaseURLTemplate(ctx)
@@ -85,7 +88,7 @@ func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
 			NameTemplate: "{{.dddddddddd",
 		},
 	})
-	client, err := NewGitHub(ctx)
+	client, err := NewGitHub(ctx, ctx.Token)
 	require.NoError(t, err)
 
 	str, err := client.CreateRelease(ctx, "")

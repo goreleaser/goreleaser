@@ -269,7 +269,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 						Dependencies: []config.HomebrewDependency{{Name: "zsh"}, {Name: "bash", Type: "recommended"}},
 						Conflicts:    []string{"gtk+", "qt"},
 						Install:      `bin.install "{{ .ProjectName }}"`,
-						Tap: config.Repo{
+						Tap: config.RepoRef{
 							Owner: "test",
 							Name:  "test",
 						},
@@ -365,7 +365,7 @@ func TestRunPipeNoDarwin64Build(t *testing.T) {
 		Config: config.Project{
 			Brews: []config.Homebrew{
 				{
-					Tap: config.Repo{
+					Tap: config.RepoRef{
 						Owner: "test",
 						Name:  "test",
 					},
@@ -383,7 +383,7 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 		config.Project{
 			Brews: []config.Homebrew{
 				{
-					Tap: config.Repo{
+					Tap: config.RepoRef{
 						Owner: "test",
 						Name:  "test",
 					},
@@ -537,7 +537,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		config.Project{
 			Brews: []config.Homebrew{
 				{
-					Tap: config.Repo{
+					Tap: config.RepoRef{
 						Owner: "test",
 						Name:  "test",
 					},
@@ -566,7 +566,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Release:     config.Release{},
 		Brews: []config.Homebrew{
 			{
-				Tap: config.Repo{
+				Tap: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -618,7 +618,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Release:     config.Release{},
 		Brews: []config.Homebrew{
 			{
-				Tap: config.Repo{
+				Tap: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -653,7 +653,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 		Release:     config.Release{},
 		Brews: []config.Homebrew{
 			{
-				Tap: config.Repo{
+				Tap: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -743,7 +743,7 @@ func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) 
 	return "https://dummyhost/download/{{ .Tag }}/{{ .ArtifactName }}", nil
 }
 
-func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, msg string) (err error) {
+func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
 	dc.CreatedFile = true
 	dc.Content = string(content)
 	return

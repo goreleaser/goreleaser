@@ -8,7 +8,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -119,6 +121,23 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	if err := run(ctx, cmd, env, build.Dir); err != nil {
 		return errors.Wrapf(err, "failed to build for %s", options.Target)
 	}
+
+	if build.ModTimestamp != "" {
+		modTimestamp, err := tmpl.New(ctx).WithEnvS(env).WithArtifact(artifact, map[string]string{}).Apply(build.ModTimestamp)
+		if err != nil {
+			return err
+		}
+		modUnix, err := strconv.ParseInt(modTimestamp, 10, 64)
+		if err != nil {
+			return err
+		}
+		modTime := time.Unix(modUnix, 0)
+		err = os.Chtimes(options.Path, modTime, modTime)
+		if err != nil {
+			return errors.Wrapf(err, "failed to change times for %s", options.Target)
+		}
+	}
+
 	ctx.Artifacts.Add(artifact)
 	return nil
 }

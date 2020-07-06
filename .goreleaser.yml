@@ -19,6 +19,11 @@ builds:
   ignore:
     - goos: darwin
       goarch: 386
+  mod_timestamp: '{{ .CommitTimestamp }}'
+  flags:
+    - -trimpath
+  ldflags:
+    - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
 changelog:

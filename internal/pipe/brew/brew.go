@@ -88,11 +88,13 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if brew.GitHub.String() != "" {
 			deprecate.Notice(ctx, "brews.github")
-			brew.Tap = brew.GitHub
+			brew.Tap.Owner = brew.GitHub.Owner
+			brew.Tap.Name = brew.GitHub.Name
 		}
 		if brew.GitLab.String() != "" {
 			deprecate.Notice(ctx, "brews.gitlab")
-			brew.Tap = brew.GitLab
+			brew.Tap.Owner = brew.GitLab.Owner
+			brew.Tap.Name = brew.GitLab.Name
 		}
 		if brew.CommitAuthor.Name == "" {
 			brew.CommitAuthor.Name = "goreleaserbot"
@@ -129,9 +131,22 @@ func contains(ss []string, s string) bool {
 	return false
 }
 
-func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) error {
+func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	if brew.Tap.Name == "" {
 		return pipe.Skip("brew section is not configured")
+	}
+
+	if brew.Tap.Token != "" {
+		token, err := tmpl.New(ctx).ApplySingleEnvOnly(brew.Tap.Token)
+		if err != nil {
+			return err
+		}
+		log.Debug("using custom token to publish homebrew formula")
+		c, err := client.NewWithToken(ctx, token)
+		if err != nil {
+			return err
+		}
+		cl = c
 	}
 
 	// TODO: properly cover this with tests
@@ -160,7 +175,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return ErrNoArchivesFound
 	}
 
-	content, err := buildFormula(ctx, brew, client, archives)
+	content, err := buildFormula(ctx, brew, cl, archives)
 	if err != nil {
 		return err
 	}
@@ -169,7 +184,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 	var path = filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
 	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil { //nolint: gosec
-		return errors.Wrap(err, "failed to write brew tap")
+		return errors.Wrap(err, "failed to write brew formula")
 	}
 
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
@@ -182,7 +197,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
 	}
 
-	repo := brew.Tap
+	repo := client.RepoFromRef(brew.Tap)
 
 	var gpath = buildFormulaPath(brew.Folder, filename)
 	log.WithField("formula", gpath).
@@ -190,7 +205,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, client client.Client) err
 		Info("pushing")
 
 	var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
-	return client.CreateFile(ctx, brew.CommitAuthor, repo, []byte(content), gpath, msg)
+	return cl.CreateFile(ctx, brew.CommitAuthor, repo, []byte(content), gpath, msg)
 }
 
 func buildFormulaPath(folder, filename string) string {

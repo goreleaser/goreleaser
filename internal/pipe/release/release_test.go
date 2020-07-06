@@ -550,7 +550,7 @@ func (c *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
 	return "", nil
 }
 
-func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, msg string) (err error) {
+func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
 	return
 }
 
@@ -570,7 +570,7 @@ func (c *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *a
 	}
 	if c.FailFirstUpload {
 		c.FailFirstUpload = false
-		return client.RetriableError{errors.New("upload failed, should retry")}
+		return client.RetriableError{Err: errors.New("upload failed, should retry")}
 	}
 	c.UploadedFile = true
 	c.UploadedFileNames = append(c.UploadedFileNames, artifact.Name)

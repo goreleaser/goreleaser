@@ -4,9 +4,10 @@ package checksums
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -47,6 +48,26 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return nil
 	}
 
+	var g = semerrgroup.New(ctx.Parallelism)
+	sumLines := make([]string, len(artifactList))
+	for i, artifact := range artifactList {
+		i := i
+		artifact := artifact
+		g.Go(func() error {
+			sumLine, err := checksums(ctx.Config.Checksum.Algorithm, artifact)
+			if err != nil {
+				return err
+			}
+			sumLines[i] = sumLine
+			return nil
+		})
+	}
+
+	err = g.Wait()
+	if err != nil {
+		return err
+	}
+
 	filename, err := tmpl.New(ctx).Apply(ctx.Config.Checksum.NameTemplate)
 	if err != nil {
 		return err
@@ -61,29 +82,23 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	}
 	defer file.Close()
 
-	var g = semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range artifactList {
-		artifact := artifact
-		g.Go(func() error {
-			return checksums(ctx.Config.Checksum.Algorithm, file, artifact)
-		})
-	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.Checksum,
 		Path: file.Name(),
 		Name: filename,
 	})
-	return g.Wait()
+
+	// sort to ensure the signature is deterministic downstream
+	sort.Strings(sumLines)
+	_, err = file.WriteString(strings.Join(sumLines, ""))
+	return err
 }
 
-func checksums(algorithm string, w io.Writer, artifact *artifact.Artifact) error {
+func checksums(algorithm string, artifact *artifact.Artifact) (string, error) {
 	log.WithField("file", artifact.Name).Info("checksumming")
 	sha, err := artifact.Checksum(algorithm)
 	if err != nil {
-		return err
+		return "", err
 	}
-	// TODO: could change the signature to io.StringWriter, but will break
-	// compatibility with go versions bellow 1.12
-	_, err = io.WriteString(w, fmt.Sprintf("%v  %v\n", sha, artifact.Name))
-	return err
+	return fmt.Sprintf("%v  %v\n", sha, artifact.Name), nil
 }

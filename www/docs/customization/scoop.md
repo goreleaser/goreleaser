@@ -21,6 +21,8 @@ scoop:
   bucket:
     owner: user
     name: scoop-bucket
+    # Optionally a token can be provided, if it differs from the token provided to GoReleaser
+    token: {{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}
 
   # Git author used to commit to the repository.
   # Defaults are shown.
