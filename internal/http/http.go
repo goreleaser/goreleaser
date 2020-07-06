@@ -273,7 +273,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 
 // uploadAssetToServer uploads the asset file to target.
 func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, username, secret string, headers map[string]string, a *asset, check ResponseChecker) (*h.Response, error) {
-	req, err := newUploadRequest(upload.Method, target, username, secret, headers, a)
+	req, err := newUploadRequest(ctx, upload.Method, target, username, secret, headers, a)
 	if err != nil {
 		return nil, err
 	}
@@ -282,8 +282,8 @@ func uploadAssetToServer(ctx *context.Context, upload *config.Upload, target, us
 }
 
 // newUploadRequest creates a new h.Request for uploading.
-func newUploadRequest(method, target, username, secret string, headers map[string]string, a *asset) (*h.Request, error) {
-	req, err := h.NewRequest(method, target, a.ReadCloser)
+func newUploadRequest(ctx *context.Context, method, target, username, secret string, headers map[string]string, a *asset) (*h.Request, error) {
+	req, err := h.NewRequestWithContext(ctx, method, target, a.ReadCloser)
 	if err != nil {
 		return nil, err
 	}
