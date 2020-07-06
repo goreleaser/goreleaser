@@ -24,22 +24,24 @@ type Fields map[string]interface{}
 
 const (
 	// general keys
-	projectName = "ProjectName"
-	version     = "Version"
-	rawVersion  = "RawVersion"
-	tag         = "Tag"
-	commit      = "Commit"
-	shortCommit = "ShortCommit"
-	fullCommit  = "FullCommit"
-	gitURL      = "GitURL"
-	major       = "Major"
-	minor       = "Minor"
-	patch       = "Patch"
-	prerelease  = "Prerelease"
-	isSnapshot  = "IsSnapshot"
-	env         = "Env"
-	date        = "Date"
-	timestamp   = "Timestamp"
+	projectName     = "ProjectName"
+	version         = "Version"
+	rawVersion      = "RawVersion"
+	tag             = "Tag"
+	commit          = "Commit"
+	shortCommit     = "ShortCommit"
+	fullCommit      = "FullCommit"
+	commitDate      = "CommitDate"
+	commitTimestamp = "CommitTimestamp"
+	gitURL          = "GitURL"
+	major           = "Major"
+	minor           = "Minor"
+	patch           = "Patch"
+	prerelease      = "Prerelease"
+	isSnapshot      = "IsSnapshot"
+	env             = "Env"
+	date            = "Date"
+	timestamp       = "Timestamp"
 
 	// artifact-only keys
 	osKey        = "Os"
@@ -67,22 +69,24 @@ func New(ctx *context.Context) *Template {
 
 	return &Template{
 		fields: Fields{
-			projectName: ctx.Config.ProjectName,
-			version:     ctx.Version,
-			rawVersion:  rawVersionV,
-			tag:         ctx.Git.CurrentTag,
-			commit:      ctx.Git.Commit,
-			shortCommit: ctx.Git.ShortCommit,
-			fullCommit:  ctx.Git.FullCommit,
-			gitURL:      ctx.Git.URL,
-			env:         ctx.Env,
-			date:        time.Now().UTC().Format(time.RFC3339),
-			timestamp:   time.Now().UTC().Unix(),
-			major:       ctx.Semver.Major,
-			minor:       ctx.Semver.Minor,
-			patch:       ctx.Semver.Patch,
-			prerelease:  ctx.Semver.Prerelease,
-			isSnapshot:  ctx.Snapshot,
+			projectName:     ctx.Config.ProjectName,
+			version:         ctx.Version,
+			rawVersion:      rawVersionV,
+			tag:             ctx.Git.CurrentTag,
+			commit:          ctx.Git.Commit,
+			shortCommit:     ctx.Git.ShortCommit,
+			fullCommit:      ctx.Git.FullCommit,
+			commitDate:      ctx.Git.CommitDate.UTC().Format(time.RFC3339),
+			commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
+			gitURL:          ctx.Git.URL,
+			env:             ctx.Env,
+			date:            ctx.Date.UTC().Format(time.RFC3339),
+			timestamp:       ctx.Date.UTC().Unix(),
+			major:           ctx.Semver.Major,
+			minor:           ctx.Semver.Minor,
+			patch:           ctx.Semver.Patch,
+			prerelease:      ctx.Semver.Prerelease,
+			isSnapshot:      ctx.Snapshot,
 		},
 	}
 }

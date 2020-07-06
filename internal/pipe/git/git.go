@@ -3,7 +3,9 @@ package git
 import (
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/apex/log"
 	"github.com/pkg/errors"
@@ -71,6 +73,10 @@ func getGitInfo() (context.GitInfo, error) {
 	if err != nil {
 		return context.GitInfo{}, errors.Wrap(err, "couldn't get current commit")
 	}
+	date, err := getCommitDate()
+	if err != nil {
+		return context.GitInfo{}, errors.Wrap(err, "couldn't get commit date")
+	}
 	url, err := getURL()
 	if err != nil {
 		return context.GitInfo{}, errors.Wrap(err, "couldn't get remote URL")
@@ -81,6 +87,7 @@ func getGitInfo() (context.GitInfo, error) {
 			Commit:      full,
 			FullCommit:  full,
 			ShortCommit: short,
+			CommitDate:  date,
 			URL:         url,
 			CurrentTag:  "v0.0.0",
 		}, ErrNoTag
@@ -90,6 +97,7 @@ func getGitInfo() (context.GitInfo, error) {
 		Commit:      full,
 		FullCommit:  full,
 		ShortCommit: short,
+		CommitDate:  date,
 		URL:         url,
 	}, nil
 }
@@ -113,6 +121,22 @@ func validate(ctx *context.Context) error {
 		}
 	}
 	return nil
+}
+
+func getCommitDate() (time.Time, error) {
+	ct, err := git.Clean(git.Run("show", "--format='%ct'", "HEAD", "--quiet"))
+	if err != nil {
+		return time.Time{}, err
+	}
+	if ct == "" {
+		return time.Time{}, nil
+	}
+	i, err := strconv.ParseInt(ct, 10, 64)
+	if err != nil {
+		return time.Time{}, err
+	}
+	t := time.Unix(i, 0).UTC()
+	return t, nil
 }
 
 func getShortCommit() (string, error) {

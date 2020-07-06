@@ -10,24 +10,26 @@ templating is available.
 
 On fields that support templating, this fields are always available:
 
-| Key            | Description                                                                                                                  |
-|----------------|------------------------------------------------------------------------------------------------------------------------------|
-| `.ProjectName` | the project name                                                                                                             |
-| `.Version`     | the version being released (`v` prefix stripped),<br>or `{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}` in case of snapshot release |
-| `.Tag`         | the current git tag                                                                                                          |
-| `.ShortCommit` | the git commit short hash                                                                                                    |
-| `.FullCommit`  | the git commit full hash                                                                                                     |
-| `.Commit`      | the git commit hash (deprecated)                                                                                             |
-| `.GitURL`      | the git remote url                                                                                                           |
-| `.Major`       | the major part of the version (assuming `Tag` is a valid semver, else `0`)                                                   |
-| `.Minor`       | the minor part of the version (assuming `Tag` is a valid semver, else `0`)                                                   |
-| `.Patch`       | the patch part of the version (assuming `Tag` is a valid semver, else `0`)                                                   |
-| `.Prerelease`  | the prerelease part of the version, e.g. `beta` (assuming `Tag` is a valid semver)                                           |
-| `.RawVersion`  | Major.Minor.Patch (assuming `Tag` is a valid semver, else `0.0.0`)                                                           |
-| `.IsSnapshot`  | `true` if a snapshot is being released, `false` otherwise                                                                    |
-| `.Env`         | a map with system's environment variables                                                                                    |
-| `.Date`        | current UTC date in RFC3339 format                                                                                           |
-| `.Timestamp`   | current UTC time in Unix format                                                                                              |
+| Key                | Description                                                                                                                  |
+|--------------------|------------------------------------------------------------------------------------------------------------------------------|
+| `.ProjectName`     | the project name                                                                                                             |
+| `.Version`         | the version being released (`v` prefix stripped),<br>or `{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}` in case of snapshot release |
+| `.Tag`             | the current git tag                                                                                                          |
+| `.ShortCommit`     | the git commit short hash                                                                                                    |
+| `.FullCommit`      | the git commit full hash                                                                                                     |
+| `.Commit`          | the git commit hash (deprecated)                                                                                             |
+| `.CommitDate`      | the UTC commit date in RFC 3339 format                                                                                       |
+| `.CommitTimestamp` | the UTC commit date in Unix format                                                                                           |
+| `.GitURL`          | the git remote url                                                                                                           |
+| `.Major`           | the major part of the version (assuming `Tag` is a valid semver, else `0`)                                                   |
+| `.Minor`           | the minor part of the version (assuming `Tag` is a valid semver, else `0`)                                                   |
+| `.Patch`           | the patch part of the version (assuming `Tag` is a valid semver, else `0`)                                                   |
+| `.Prerelease`      | the prerelease part of the version, e.g. `beta` (assuming `Tag` is a valid semver)                                           |
+| `.RawVersion`      | Major.Minor.Patch (assuming `Tag` is a valid semver, else `0.0.0`)                                                           |
+| `.IsSnapshot`      | `true` if a snapshot is being released, `false` otherwise                                                                    |
+| `.Env`             | a map with system's environment variables                                                                                    |
+| `.Date`            | current UTC date in RFC 3339 format                                                                                          |
+| `.Timestamp`       | current UTC time in Unix format                                                                                              |
 
 On fields that are related to a single artifact (e.g., the binary name), you
 may have some extra fields:
@@ -54,7 +56,7 @@ On all fields, you have these available functions:
 | Usage                   | Description                                                                                                                    |
 |-------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | `replace "v1.2" "v" ""` | replaces all matches. See [ReplaceAll](https://golang.org/pkg/strings/#ReplaceAll)                                             |
-| `time "01/02/2006"`     | current UTC time in the specified format                                                                                       |
+| `time "01/02/2006"`     | current UTC time in the specified format (this is not deterministic, a new time for every call)                                |
 | `tolower "V1.2"`        | makes input string lowercase. See [ToLower](https://golang.org/pkg/strings/#ToLower)                                           |
 | `toupper "v1.2"`        | makes input string uppercase. See [ToUpper](https://golang.org/pkg/strings/#ToUpper)                                           |
 | `trim " v1.2  "`        | removes all leading and trailing white space. See [TrimSpace](https://golang.org/pkg/strings/#TrimSpace)                       |

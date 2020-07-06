@@ -22,6 +22,7 @@ type GitInfo struct {
 	Commit      string
 	ShortCommit string
 	FullCommit  string
+	CommitDate  time.Time
 	URL         string
 }
 
@@ -68,6 +69,7 @@ type Context struct {
 	Token              string
 	TokenType          TokenType
 	Git                GitInfo
+	Date               time.Time
 	Artifacts          artifact.Artifacts
 	ReleaseNotes       string
 	ReleaseHeader      string
@@ -113,6 +115,7 @@ func Wrap(ctx ctx.Context, config config.Project) *Context {
 		Env:         splitEnv(append(os.Environ(), config.Env...)),
 		Parallelism: 4,
 		Artifacts:   artifact.New(),
+		Date:        time.Now(),
 	}
 }
 

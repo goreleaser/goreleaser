@@ -122,6 +122,10 @@ func TestBuild(t *testing.T) {
 		}
 		bin, terr := tmpl.New(ctx).Apply(build.Binary)
 		require.NoError(t, terr)
+
+		// injecting some delay here to force inconsistent mod times on bins
+		time.Sleep(2 * time.Second)
+
 		var err = Default.Build(ctx, build, api.Options{
 			Target: target,
 			Name:   bin + ext,
@@ -219,6 +223,24 @@ func TestBuild(t *testing.T) {
 			},
 		},
 	})
+
+	modTimes := map[time.Time]bool{}
+	for _, bin := range ctx.Artifacts.List() {
+		if bin.Type != artifact.Binary {
+			continue
+		}
+
+		fi, err := os.Stat(bin.Path)
+		assert.NoError(t, err)
+
+		// make this a suitable map key, per docs: https://golang.org/pkg/time/#Time
+		modTime := fi.ModTime().UTC().Round(0)
+
+		if modTimes[modTime] {
+			t.Fatal("duplicate modified time found, times should be different by default")
+		}
+		modTimes[modTime] = true
+	}
 }
 
 func TestBuildCodeInSubdir(t *testing.T) {
@@ -481,26 +503,32 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 }
 
 func TestLdFlagsFullTemplate(t *testing.T) {
+	run := time.Now().UTC()
+	commit := time.Now().AddDate(-1, 0, 0)
+
 	var ctx = &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.2.3",
 			Commit:     "123",
+			CommitDate: commit,
 		},
+		Date:    run,
 		Version: "1.2.3",
 		Env:     map[string]string{"FOO": "123"},
 	}
 	var artifact = &artifact.Artifact{Goarch: "amd64"}
 	flags, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).
-		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }} -X main.arch={{.Arch}}`)
+		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }} -X main.arch={{.Arch}} -X main.commitDate={{.CommitDate}}`)
 	assert.NoError(t, err)
 	assert.Contains(t, flags, "-s -w")
 	assert.Contains(t, flags, "-X main.version=1.2.3")
 	assert.Contains(t, flags, "-X main.tag=v1.2.3")
 	assert.Contains(t, flags, "-X main.commit=123")
-	assert.Contains(t, flags, fmt.Sprintf("-X main.date=%d", time.Now().Year()))
-	assert.Contains(t, flags, fmt.Sprintf("-X main.time=%d", time.Now().Year()))
+	assert.Contains(t, flags, fmt.Sprintf("-X main.date=%d", run.Year()))
+	assert.Contains(t, flags, fmt.Sprintf("-X main.time=%d", run.Year()))
 	assert.Contains(t, flags, `-X "main.foo=123"`)
 	assert.Contains(t, flags, `-X main.arch=amd64`)
+	assert.Contains(t, flags, fmt.Sprintf("-X main.commitDate=%d", commit.Year()))
 }
 
 func TestInvalidTemplate(t *testing.T) {
@@ -586,6 +614,74 @@ func TestJoinLdFlags(t *testing.T) {
 	for _, test := range tests {
 		joinedLdFlags := joinLdFlags(test.input)
 		assert.Equal(t, joinedLdFlags, test.output)
+	}
+}
+
+func TestBuildModTimestamp(t *testing.T) {
+	// round to seconds since this will be a unix timestamp
+	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
+
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	writeGoodMain(t, folder)
+
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				ID:     "foo",
+				Env:    []string{"GO111MODULE=off"},
+				Binary: "bin/foo-{{ .Version }}",
+				Targets: []string{
+					"linux_amd64",
+					"darwin_amd64",
+					"windows_amd64",
+					"linux_arm_6",
+					"js_wasm",
+					"linux_mips_softfloat",
+					"linux_mips64le_softfloat",
+				},
+				Asmflags:     []string{".=", "all="},
+				Gcflags:      []string{"all="},
+				Flags:        []string{"{{.Env.GO_FLAGS}}"},
+				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+			},
+		},
+	}
+	var ctx = context.New(config)
+	ctx.Env["GO_FLAGS"] = "-v"
+	ctx.Git.CurrentTag = "5.6.7"
+	ctx.Version = "v" + ctx.Git.CurrentTag
+	var build = ctx.Config.Builds[0]
+	for _, target := range build.Targets {
+		var ext string
+		if strings.HasPrefix(target, "windows") {
+			ext = ".exe"
+		} else if target == "js_wasm" {
+			ext = ".wasm"
+		}
+		bin, terr := tmpl.New(ctx).Apply(build.Binary)
+		require.NoError(t, terr)
+
+		// injecting some delay here to force inconsistent mod times on bins
+		time.Sleep(2 * time.Second)
+
+		var err = Default.Build(ctx, build, api.Options{
+			Target: target,
+			Name:   bin + ext,
+			Path:   filepath.Join(folder, "dist", target, bin+ext),
+			Ext:    ext,
+		})
+		assert.NoError(t, err)
+	}
+
+	for _, bin := range ctx.Artifacts.List() {
+		if bin.Type != artifact.Binary {
+			continue
+		}
+
+		fi, err := os.Stat(bin.Path)
+		assert.NoError(t, err)
+		assert.True(t, modTime.Equal(fi.ModTime()), "inconsistent mod times found when specifying ModTimestamp")
 	}
 }
 
