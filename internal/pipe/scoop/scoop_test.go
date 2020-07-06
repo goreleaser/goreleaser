@@ -113,7 +113,7 @@ func Test_doRun(t *testing.T) {
 							},
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -156,7 +156,7 @@ func Test_doRun(t *testing.T) {
 							},
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -216,7 +216,7 @@ func Test_doRun(t *testing.T) {
 							},
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -259,7 +259,7 @@ func Test_doRun(t *testing.T) {
 							},
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -319,7 +319,7 @@ func Test_doRun(t *testing.T) {
 							},
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -377,7 +377,7 @@ func Test_doRun(t *testing.T) {
 							},
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -420,7 +420,7 @@ func Test_doRun(t *testing.T) {
 							},
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -498,7 +498,7 @@ func Test_doRun(t *testing.T) {
 							},
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -539,7 +539,7 @@ func Test_doRun(t *testing.T) {
 							Draft: true,
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -589,7 +589,7 @@ func Test_doRun(t *testing.T) {
 						},
 						Scoop: config.Scoop{
 							SkipUpload: "auto",
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -633,7 +633,7 @@ func Test_doRun(t *testing.T) {
 						},
 						Scoop: config.Scoop{
 							SkipUpload: "true",
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -673,7 +673,7 @@ func Test_doRun(t *testing.T) {
 							Disable: true,
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -713,7 +713,7 @@ func Test_doRun(t *testing.T) {
 							Draft: true,
 						},
 						Scoop: config.Scoop{
-							Bucket: config.Repo{
+							Bucket: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -780,7 +780,7 @@ func Test_buildManifest(t *testing.T) {
 						},
 					},
 					Scoop: config.Scoop{
-						Bucket: config.Repo{
+						Bucket: config.RepoRef{
 							Owner: "test",
 							Name:  "test",
 						},
@@ -820,7 +820,7 @@ func Test_buildManifest(t *testing.T) {
 						},
 					},
 					Scoop: config.Scoop{
-						Bucket: config.Repo{
+						Bucket: config.RepoRef{
 							Owner: "test",
 							Name:  "test",
 						},
@@ -862,7 +862,7 @@ func Test_buildManifest(t *testing.T) {
 						},
 					},
 					Scoop: config.Scoop{
-						Bucket: config.Repo{
+						Bucket: config.RepoRef{
 							Owner: "test",
 							Name:  "test",
 						},
@@ -968,7 +968,7 @@ func TestWrapInDirectory(t *testing.T) {
 				},
 			},
 			Scoop: config.Scoop{
-				Bucket: config.Repo{
+				Bucket: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -1034,7 +1034,7 @@ func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) 
 	return "", nil
 }
 
-func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo config.Repo, content []byte, path, msg string) (err error) {
+func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
 	dc.CreatedFile = true
 	dc.Content = string(content)
 	return

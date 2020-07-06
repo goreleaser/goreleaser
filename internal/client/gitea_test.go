@@ -245,7 +245,7 @@ func TestGiteaCreateFile(t *testing.T) {
 	client := giteaClient{}
 	ctx := context.Context{}
 	author := config.CommitAuthor{}
-	repo := config.Repo{}
+	repo := Repo{}
 	content := []byte{}
 	path := ""
 	message := ""
