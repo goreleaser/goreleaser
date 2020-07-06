@@ -262,4 +262,4 @@ To make your releases, checksums, and signatures reproducible, you will need to 
 * Modify `ldflags`: by default `main.Date` is set to the time GoReleaser is run (`{{.Date}}`), you can set this to `{{.CommitDate}}` or just not pass the variable.
 * Modify `mod_timestamp`: by default this is empty string, set to `{{.CommitTimestamp}}` or a constant value instead.
 * If you do not run your builds from a consistent directory structure, pass `-trimpath` to `flags`.
-* Remove uses of the `time` template function that could. This function returns a new value on every call and is not deterministic.
+* Remove uses of the `time` template function. This function returns a new value on every call and is not deterministic.
