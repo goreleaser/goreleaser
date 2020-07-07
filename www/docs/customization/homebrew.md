@@ -45,7 +45,7 @@ brews:
       owner: repo-owner
       name: homebrew-tap
       # Optionally a token can be provided, if it differs from the token provided to GoReleaser
-      token: {{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
 
     # Template for the url which is determined by the given Token (github or gitlab)
     # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
