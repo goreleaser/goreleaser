@@ -65,7 +65,7 @@ func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 	}
 
 	if milestone == nil {
-		return fmt.Errorf("no open milestone matching: %s", title)
+		return ErrNoMilestoneFound{Title: title}
 	}
 
 	closedState := "closed"
@@ -79,11 +79,7 @@ func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 		milestone,
 	)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (c *githubClient) CreateFile(

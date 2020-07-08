@@ -57,7 +57,7 @@ func (c *gitlabClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 	}
 
 	if milestone == nil {
-		return fmt.Errorf("no open milestone matching: %s", title)
+		return ErrNoMilestoneFound{Title: title}
 	}
 
 	closeStateEvent := "close"
@@ -76,11 +76,7 @@ func (c *gitlabClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 		opts,
 	)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // CreateFile gets a file in the repository at a given path

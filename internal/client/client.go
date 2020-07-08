@@ -67,6 +67,15 @@ func NewWithToken(ctx *context.Context, token string) (Client, error) {
 	return nil, nil
 }
 
+// ErrNoMilestoneFound is an error when no milestone is found.
+type ErrNoMilestoneFound struct {
+	Title string
+}
+
+func (e ErrNoMilestoneFound) Error() string {
+	return fmt.Sprintf("no milestone found: %s", e.Title)
+}
+
 // RetriableError is an error that will cause the action to be retried.
 type RetriableError struct {
 	Err error

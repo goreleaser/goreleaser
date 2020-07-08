@@ -31,7 +31,7 @@ milestones:
       name: repo
 
     # Whether to close the milestone
-    # Default is true
+    # Default is false
     close: true
 
     # Name of the milestone

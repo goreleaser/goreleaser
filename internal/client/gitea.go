@@ -60,7 +60,7 @@ func (c *giteaClient) CloseMilestone(ctx *context.Context, repo Repo, title stri
 	}
 
 	if milestone == nil {
-		return fmt.Errorf("no open milestone matching: %s", title)
+		return ErrNoMilestoneFound{Title: title}
 	}
 
 	closedState := string(gitea.StateClosed)
@@ -74,11 +74,7 @@ func (c *giteaClient) CloseMilestone(ctx *context.Context, repo Repo, title stri
 
 	_, err = c.client.EditMilestone(repo.Owner, repo.Name, milestone.ID, opts)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // CreateFile creates a file in the repository at a given path
