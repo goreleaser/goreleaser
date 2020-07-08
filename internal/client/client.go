@@ -32,6 +32,7 @@ func (r Repo) String() string {
 
 // Client interface.
 type Client interface {
+	CloseMilestone(ctx *context.Context, repo Repo, title string) (err error)
 	CreateRelease(ctx *context.Context, body string) (releaseID string, err error)
 	ReleaseURLTemplate(ctx *context.Context) (string, error)
 	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, message string) (err error)

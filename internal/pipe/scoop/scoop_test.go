@@ -1023,6 +1023,10 @@ type DummyClient struct {
 	NotImplemented bool
 }
 
+func (dc *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
+	return nil
+}
+
 func (dc *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
 	return
 }

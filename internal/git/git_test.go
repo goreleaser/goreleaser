@@ -1,18 +1,19 @@
-package git
+package git_test
 
 import (
 	"os"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGit(t *testing.T) {
-	out, err := Run("status")
+	out, err := git.Run("status")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, out)
 
-	out, err = Run("command-that-dont-exist")
+	out, err = git.Run("command-that-dont-exist")
 	assert.Error(t, err)
 	assert.Empty(t, out)
 	assert.Equal(
@@ -23,18 +24,18 @@ func TestGit(t *testing.T) {
 }
 
 func TestRepo(t *testing.T) {
-	assert.True(t, IsRepo(), "goreleaser folder should be a git repo")
+	assert.True(t, git.IsRepo(), "goreleaser folder should be a git repo")
 
 	assert.NoError(t, os.Chdir(os.TempDir()))
-	assert.False(t, IsRepo(), os.TempDir()+" folder should be a git repo")
+	assert.False(t, git.IsRepo(), os.TempDir()+" folder should be a git repo")
 }
 
 func TestClean(t *testing.T) {
-	out, err := Clean("asdasd 'ssadas'\nadasd", nil)
+	out, err := git.Clean("asdasd 'ssadas'\nadasd", nil)
 	assert.NoError(t, err)
 	assert.Equal(t, "asdasd ssadas", out)
 
-	out, err = Clean(Run("command-that-dont-exist"))
+	out, err = git.Clean(git.Run("command-that-dont-exist"))
 	assert.Error(t, err)
 	assert.Empty(t, out)
 	assert.Equal(

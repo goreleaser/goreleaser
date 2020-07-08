@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/custompublishers"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
+	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
@@ -46,6 +47,7 @@ var publishers = []Publisher{
 	// brew and scoop use the release URL, so, they should be last
 	brew.Pipe{},
 	scoop.Pipe{},
+	milestone.Pipe{},
 }
 
 // Run the pipe.
