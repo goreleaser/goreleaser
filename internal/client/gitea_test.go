@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"code.gitea.io/sdk/gitea"
@@ -381,7 +382,7 @@ func (s *GiteaUploadSuite) TestErrorCreatingReleaseAttachment() {
 	httpmock.RegisterResponder("POST", s.releaseAttachmentsURL, httpmock.NewStringResponder(400, ""))
 
 	err := s.client.Upload(s.ctx, fmt.Sprint(s.releaseID), s.artifact, s.file)
-	assert.EqualError(t, err, "Unknown API Error: 400 ")
+	assert.True(t, strings.HasPrefix(err.Error(), "Unknown API Error: 400"))
 }
 
 func (s *GiteaUploadSuite) TestSuccess() {
