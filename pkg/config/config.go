@@ -284,9 +284,7 @@ type Release struct {
 
 // Milestone config used for VCS milestone.
 type Milestone struct {
-	GitHub       Repo   `yaml:",omitempty"`
-	GitLab       Repo   `yaml:",omitempty"`
-	Gitea        Repo   `yaml:",omitempty"`
+	Repo         Repo   `yaml:",omitempty"`
 	Close        bool   `yaml:",omitempty"`
 	NameTemplate string `yaml:"name_template,omitempty"`
 }

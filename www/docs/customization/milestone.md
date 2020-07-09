@@ -2,7 +2,7 @@
 title: Milestone
 ---
 
-GoReleaser can close GitHub/GitLab/Gitea milestones after successfully
+GoReleaser can close repository milestones after successfully
 publishing all artifacts.
 
 Let's see what can be customized in the `milestones` section:
@@ -12,21 +12,9 @@ Let's see what can be customized in the `milestones` section:
 milestones:
   # You can have multiple milestone configs
   -
-    # GitHub repository for the milestone
+    # Repository for the milestone
     # Default is extracted from the origin remote URL
-    github:
-      owner: user
-      name: repo
-
-    # GitLab project for the milestone
-    # Default is extracted from the origin remote URL
-    gitlab:
-      owner: user
-      name: repo
-
-    # Gitea repository for the milestone
-    # Default is extracted from the origin remote URL
-    gitea:
+    repo:
       owner: user
       name: repo
 
