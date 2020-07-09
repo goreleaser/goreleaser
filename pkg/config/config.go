@@ -286,6 +286,7 @@ type Release struct {
 type Milestone struct {
 	Repo         Repo   `yaml:",omitempty"`
 	Close        bool   `yaml:",omitempty"`
+	FailOnError  bool   `yaml:"fail_on_error,omitempty"`
 	NameTemplate string `yaml:"name_template,omitempty"`
 }
 

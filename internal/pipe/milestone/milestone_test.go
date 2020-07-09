@@ -163,6 +163,29 @@ func TestPublishCloseError(t *testing.T) {
 	client := &DummyClient{
 		FailToCloseMilestone: true,
 	}
+	assert.NoError(t, doPublish(ctx, client))
+	assert.Equal(t, "", client.ClosedMilestone)
+}
+
+func TestPublishCloseFailOnError(t *testing.T) {
+	var config = config.Project{
+		Milestones: []config.Milestone{
+			{
+				Close:        true,
+				FailOnError:  true,
+				NameTemplate: defaultNameTemplate,
+				Repo: config.Repo{
+					Name:  "configrepo",
+					Owner: "configowner",
+				},
+			},
+		},
+	}
+	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "v1.0.0"
+	client := &DummyClient{
+		FailToCloseMilestone: true,
+	}
 	assert.Error(t, doPublish(ctx, client))
 	assert.Equal(t, "", client.ClosedMilestone)
 }
