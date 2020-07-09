@@ -51,6 +51,32 @@ func NewGitea(ctx *context.Context, token string) (Client, error) {
 	return &giteaClient{client: client}, nil
 }
 
+// CloseMilestone closes a given milestone.
+func (c *giteaClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
+	milestone, err := c.getMilestoneByTitle(repo, title)
+
+	if err != nil {
+		return err
+	}
+
+	if milestone == nil {
+		return ErrNoMilestoneFound{Title: title}
+	}
+
+	closedState := string(gitea.StateClosed)
+
+	opts := gitea.EditMilestoneOption{
+		Deadline:    milestone.Deadline,
+		Description: &milestone.Description,
+		State:       &closedState,
+		Title:       milestone.Title,
+	}
+
+	_, err = c.client.EditMilestone(repo.Owner, repo.Name, milestone.ID, opts)
+
+	return err
+}
+
 // CreateFile creates a file in the repository at a given path
 // or updates the file if it exists.
 func (c *giteaClient) CreateFile(
@@ -192,4 +218,22 @@ func (c *giteaClient) Upload(
 		return RetriableError{err}
 	}
 	return nil
+}
+
+// getMilestoneByTitle returns a milestone by title.
+func (c *giteaClient) getMilestoneByTitle(repo Repo, title string) (*gitea.Milestone, error) {
+	// The Gitea API/SDK does not provide lookup by title functionality currently.
+	milestones, err := c.client.ListRepoMilestones(repo.Owner, repo.Name, gitea.ListMilestoneOption{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, milestone := range milestones {
+		if milestone.Title == title {
+			return milestone, nil
+		}
+	}
+
+	return nil, nil
 }

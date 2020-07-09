@@ -8,6 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/extrafiles"
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -50,7 +51,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	case context.TokenTypeGitLab:
 		{
 			if ctx.Config.Release.GitLab.Name == "" {
-				repo, err := remoteRepo()
+				repo, err := git.ExtractRepoFromConfig()
 				if err != nil {
 					return err
 				}
@@ -62,7 +63,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	case context.TokenTypeGitea:
 		{
 			if ctx.Config.Release.Gitea.Name == "" {
-				repo, err := remoteRepo()
+				repo, err := git.ExtractRepoFromConfig()
 				if err != nil {
 					return err
 				}
@@ -75,7 +76,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 	// We keep github as default for now
 	if ctx.Config.Release.GitHub.Name == "" {
-		repo, err := remoteRepo()
+		repo, err := git.ExtractRepoFromConfig()
 		if err != nil && !ctx.Snapshot {
 			return err
 		}

@@ -32,6 +32,7 @@ func (r Repo) String() string {
 
 // Client interface.
 type Client interface {
+	CloseMilestone(ctx *context.Context, repo Repo, title string) (err error)
 	CreateRelease(ctx *context.Context, body string) (releaseID string, err error)
 	ReleaseURLTemplate(ctx *context.Context) (string, error)
 	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, message string) (err error)
@@ -64,6 +65,15 @@ func NewWithToken(ctx *context.Context, token string) (Client, error) {
 		return NewGitea(ctx, token)
 	}
 	return nil, nil
+}
+
+// ErrNoMilestoneFound is an error when no milestone is found.
+type ErrNoMilestoneFound struct {
+	Title string
+}
+
+func (e ErrNoMilestoneFound) Error() string {
+	return fmt.Sprintf("no milestone found: %s", e.Title)
 }
 
 // RetriableError is an error that will cause the action to be retried.

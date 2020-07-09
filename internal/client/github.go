@@ -56,6 +56,32 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	return &githubClient{client: client}, nil
 }
 
+// CloseMilestone closes a given milestone.
+func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
+	milestone, err := c.getMilestoneByTitle(ctx, repo, title)
+
+	if err != nil {
+		return err
+	}
+
+	if milestone == nil {
+		return ErrNoMilestoneFound{Title: title}
+	}
+
+	closedState := "closed"
+	milestone.State = &closedState
+
+	_, _, err = c.client.Issues.EditMilestone(
+		ctx,
+		repo.Owner,
+		repo.Name,
+		*milestone.Number,
+		milestone,
+	)
+
+	return err
+}
+
 func (c *githubClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
@@ -186,4 +212,39 @@ func (c *githubClient) Upload(
 		return err
 	}
 	return RetriableError{err}
+}
+
+// getMilestoneByTitle returns a milestone by title.
+func (c *githubClient) getMilestoneByTitle(ctx *context.Context, repo Repo, title string) (*github.Milestone, error) {
+	// The GitHub API/SDK does not provide lookup by title functionality currently.
+	opts := &github.MilestoneListOptions{
+		ListOptions: github.ListOptions{PerPage: 100},
+	}
+
+	for {
+		milestones, resp, err := c.client.Issues.ListMilestones(
+			ctx,
+			repo.Owner,
+			repo.Name,
+			opts,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, m := range milestones {
+			if m != nil && m.Title != nil && *m.Title == title {
+				return m, nil
+			}
+		}
+
+		if resp.NextPage == 0 {
+			break
+		}
+
+		opts.Page = resp.NextPage
+	}
+
+	return nil, nil
 }

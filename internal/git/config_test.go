@@ -1,8 +1,9 @@
-package release
+package git_test
 
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
@@ -12,7 +13,7 @@ func TestRepoName(t *testing.T) {
 	defer back()
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
-	repo, err := remoteRepo()
+	repo, err := git.ExtractRepoFromConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, "goreleaser/goreleaser", repo.String())
 }
@@ -27,7 +28,7 @@ func TestExtractRepoFromURL(t *testing.T) {
 		"https://github.enterprise.com/crazy/url/goreleaser/goreleaser.git",
 	} {
 		t.Run(url, func(t *testing.T) {
-			repo := extractRepoFromURL(url)
+			repo := git.ExtractRepoFromURL(url)
 			assert.Equal(t, "goreleaser/goreleaser", repo.String())
 		})
 	}

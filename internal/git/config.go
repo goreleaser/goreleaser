@@ -1,27 +1,26 @@
-package release
+package git
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/pkg/errors"
 )
 
-// remoteRepo gets the repo name from the Git config.
-func remoteRepo() (result config.Repo, err error) {
-	if !git.IsRepo() {
+// ExtractRepoFromConfig gets the repo name from the Git config.
+func ExtractRepoFromConfig() (result config.Repo, err error) {
+	if !IsRepo() {
 		return result, errors.New("current folder is not a git repository")
 	}
-	out, err := git.Run("config", "--get", "remote.origin.url")
+	out, err := Run("config", "--get", "remote.origin.url")
 	if err != nil {
 		return result, fmt.Errorf("repository doesn't have an `origin` remote")
 	}
-	return extractRepoFromURL(out), nil
+	return ExtractRepoFromURL(out), nil
 }
 
-func extractRepoFromURL(s string) config.Repo {
+func ExtractRepoFromURL(s string) config.Repo {
 	// removes the .git suffix and any new lines
 	s = strings.NewReplacer(
 		".git", "",

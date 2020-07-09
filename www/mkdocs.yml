@@ -70,6 +70,7 @@ nav:
   - customization/homebrew.md
   - customization/upload.md
   - customization/templates.md
+  - customization/milestone.md
   - customization/nfpm.md
   - customization/project.md
   - customization/release.md

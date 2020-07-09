@@ -48,6 +48,37 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 	return &gitlabClient{client: client}, nil
 }
 
+// CloseMilestone closes a given milestone.
+func (c *gitlabClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
+	milestone, err := c.getMilestoneByTitle(repo, title)
+
+	if err != nil {
+		return err
+	}
+
+	if milestone == nil {
+		return ErrNoMilestoneFound{Title: title}
+	}
+
+	closeStateEvent := "close"
+
+	opts := &gitlab.UpdateMilestoneOptions{
+		Description: &milestone.Description,
+		DueDate:     milestone.DueDate,
+		StartDate:   milestone.StartDate,
+		StateEvent:  &closeStateEvent,
+		Title:       &milestone.Title,
+	}
+
+	_, _, err = c.client.Milestones.UpdateMilestone(
+		repo.String(),
+		milestone.ID,
+		opts,
+	)
+
+	return err
+}
+
 // CreateFile gets a file in the repository at a given path
 // and updates if it exists or creates it for later pipes in the pipeline.
 func (c *gitlabClient) CreateFile(
@@ -318,4 +349,33 @@ func extractProjectFileHashFrom(projectFileURL string) (string, error) {
 		"fileHash":       fileHash,
 	}).Debug("extracted file hash")
 	return fileHash, nil
+}
+
+// getMilestoneByTitle returns a milestone by title.
+func (c *gitlabClient) getMilestoneByTitle(repo Repo, title string) (*gitlab.Milestone, error) {
+	opts := &gitlab.ListMilestonesOptions{
+		Title: &title,
+	}
+
+	for {
+		milestones, resp, err := c.client.Milestones.ListMilestones(repo.String(), opts)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, milestone := range milestones {
+			if milestone != nil && milestone.Title == title {
+				return milestone, nil
+			}
+		}
+
+		if resp.NextPage == 0 {
+			break
+		}
+
+		opts.Page = resp.NextPage
+	}
+
+	return nil, nil
 }

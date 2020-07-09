@@ -282,6 +282,14 @@ type Release struct {
 	ExtraFiles   []ExtraFile `yaml:"extra_files,omitempty"`
 }
 
+// Milestone config used for VCS milestone.
+type Milestone struct {
+	Repo         Repo   `yaml:",omitempty"`
+	Close        bool   `yaml:",omitempty"`
+	FailOnError  bool   `yaml:"fail_on_error,omitempty"`
+	NameTemplate string `yaml:"name_template,omitempty"`
+}
+
 // ExtraFile on a release.
 type ExtraFile struct {
 	Glob string `yaml:"glob,omitempty"`
@@ -477,6 +485,7 @@ type Project struct {
 	ProjectName   string      `yaml:"project_name,omitempty"`
 	Env           []string    `yaml:",omitempty"`
 	Release       Release     `yaml:",omitempty"`
+	Milestones    []Milestone `yaml:",omitempty"`
 	Brews         []Homebrew  `yaml:",omitempty"`
 	Scoop         Scoop       `yaml:",omitempty"`
 	Builds        []Build     `yaml:",omitempty"`

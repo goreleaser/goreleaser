@@ -538,6 +538,10 @@ type DummyClient struct {
 	Lock                sync.Mutex
 }
 
+func (c *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
+	return nil
+}
+
 func (c *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
 	if c.FailToCreateRelease {
 		return "", errors.New("release failed")
