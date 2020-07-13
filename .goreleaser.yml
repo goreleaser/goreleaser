@@ -34,6 +34,7 @@ changelog:
     - '^test:'
     - Merge pull request
     - Merge branch
+    - go mod tidy
 dockers:
 - image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}-cgo'
