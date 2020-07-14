@@ -48,6 +48,7 @@ nav:
   - About: ci/index.md
   - ci/actions.md
   - ci/circle.md
+  - ci/cirrus.md
   - ci/cloudbuild.md
   - ci/codefresh.md
   - ci/drone.md
