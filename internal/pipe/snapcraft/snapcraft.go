@@ -270,7 +270,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 				log.WithField("src", config.Completer).
 					WithField("dst", destCompleterPath).
 					Debug("linking")
-				if err := os.Link(config.Completer, destCompleterPath); err != nil {
+				if err := os.Link(config.Completer, destCompleterPath); err != nil && !os.IsExist(err) {
 					return errors.Wrap(err, "failed to link completer")
 				}
 				if err := os.Chmod(destCompleterPath, 0644); err != nil {
