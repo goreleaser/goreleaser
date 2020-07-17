@@ -84,7 +84,7 @@ dockers:
     build_flag_templates:
     - "--pull"
     - "--label=org.opencontainers.image.created={{.Date}}"
-    - "--label=org.opencontainers.image.name={{.ProjectName}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
     - "--build-arg=FOO={{.Env.Bar}}"
@@ -203,7 +203,7 @@ dockers:
     build_flag_templates:
     - "--pull"
     - "--label=org.opencontainers.image.created={{.Date}}"
-    - "--label=org.opencontainers.image.name={{.ProjectName}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
 ```
@@ -214,7 +214,7 @@ This will execute the following command:
 docker build -t myuser/myimage . \
   --pull \
   --label=org.opencontainers.image.created=2020-01-19T15:58:07Z \
-  --label=org.opencontainers.image.name=mybinary \
+  --label=org.opencontainers.image.title=mybinary \
   --label=org.opencontainers.image.revision=da39a3ee5e6b4b0d3255bfef95601890afd80709 \
   --label=org.opencontainers.image.version=1.6.4
 ```
