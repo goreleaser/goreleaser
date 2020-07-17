@@ -239,49 +239,45 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		if err := os.Chmod(destBinaryPath, 0555); err != nil {
 			return errors.Wrap(err, "failed to change binary permissions")
 		}
+	}
 
-		// setup the apps: directive for each binary
-		for name, config := range snap.Apps {
-			log.WithField("path", binary.Path).
-				WithField("name", name).
-				Debug("passed binary to snapcraft")
-
-			command := name
-			if config.Command != "" {
-				command = config.Command
-			}
-
-			// TODO: test that the correct binary is used in Command
-			// See https://github.com/goreleaser/goreleaser/pull/1449
-			appMetadata := AppMetadata{
-				Command: strings.TrimSpace(strings.Join([]string{
-					command,
-					config.Args,
-				}, " ")),
-				Plugs:  config.Plugs,
-				Daemon: config.Daemon,
-			}
-
-			if config.Completer != "" {
-				destCompleterPath := filepath.Join(primeDir, config.Completer)
-				if err := os.MkdirAll(filepath.Dir(destCompleterPath), 0755); err != nil {
-					return errors.Wrapf(err, "failed to create folder")
-				}
-				log.WithField("src", config.Completer).
-					WithField("dst", destCompleterPath).
-					Debug("linking")
-				if err := os.Link(config.Completer, destCompleterPath); err != nil && !os.IsExist(err) {
-					return errors.Wrap(err, "failed to link completer")
-				}
-				if err := os.Chmod(destCompleterPath, 0644); err != nil {
-					return errors.Wrap(err, "failed to change completer permissions")
-				}
-				appMetadata.Completer = config.Completer
-			}
-
-			metadata.Apps[name] = appMetadata
-			metadata.Plugs = snap.Plugs
+	// setup the apps: directive for each binary
+	for name, config := range snap.Apps {
+		command := name
+		if config.Command != "" {
+			command = config.Command
 		}
+
+		// TODO: test that the correct binary is used in Command
+		// See https://github.com/goreleaser/goreleaser/pull/1449
+		appMetadata := AppMetadata{
+			Command: strings.TrimSpace(strings.Join([]string{
+				command,
+				config.Args,
+			}, " ")),
+			Plugs:  config.Plugs,
+			Daemon: config.Daemon,
+		}
+
+		if config.Completer != "" {
+			destCompleterPath := filepath.Join(primeDir, config.Completer)
+			if err := os.MkdirAll(filepath.Dir(destCompleterPath), 0755); err != nil {
+				return errors.Wrapf(err, "failed to create folder")
+			}
+			log.WithField("src", config.Completer).
+				WithField("dst", destCompleterPath).
+				Debug("linking")
+			if err := os.Link(config.Completer, destCompleterPath); err != nil {
+				return errors.Wrap(err, "failed to link completer")
+			}
+			if err := os.Chmod(destCompleterPath, 0644); err != nil {
+				return errors.Wrap(err, "failed to change completer permissions")
+			}
+			appMetadata.Completer = config.Completer
+		}
+
+		metadata.Apps[name] = appMetadata
+		metadata.Plugs = snap.Plugs
 	}
 
 	out, err := yaml.Marshal(metadata)
