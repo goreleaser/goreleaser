@@ -311,13 +311,14 @@ func TestCompleter(t *testing.T) {
 						Completer: "testdata/mybin-completer.bash",
 					},
 				},
-				Builds: []string{"foo"},
+				Builds: []string{"foo", "bar"},
 			},
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
 	addBinaries(t, ctx, "foo", dist, "mybin")
+	addBinaries(t, ctx, "bar", dist, "mybin")
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	require.NoError(t, err)
