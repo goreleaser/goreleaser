@@ -16,6 +16,10 @@ before:
 builds:
 - env:
   - CGO_ENABLED=0
+    goos:
+    - linux
+    - windows
+    - darwin
 archives:
 - replacements:
     darwin: Darwin
