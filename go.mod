@@ -10,7 +10,7 @@ require (
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/client9/misspell v0.3.4
 	github.com/fatih/color v1.9.0
-	github.com/golangci/golangci-lint v1.28.3
+	github.com/golangci/golangci-lint v1.29.0
 	github.com/google/go-github/v28 v28.1.1
 	github.com/goreleaser/nfpm v1.4.1
 	github.com/hashicorp/go-version v1.2.1 // indirect
@@ -26,6 +26,6 @@ require (
 	github.com/xanzy/go-gitlab v0.33.0
 	gocloud.dev v0.20.0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
+	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 	gopkg.in/yaml.v2 v2.3.0
 )
