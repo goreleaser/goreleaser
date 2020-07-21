@@ -17,7 +17,7 @@ require (
 	github.com/imdario/mergo v0.3.10
 	github.com/jarcoal/httpmock v1.0.5
 	github.com/mattn/go-shellwords v1.0.10
-	github.com/mattn/go-zglob v0.0.2
+	github.com/mattn/go-zglob v0.0.3
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
