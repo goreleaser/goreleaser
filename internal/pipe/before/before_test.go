@@ -34,23 +34,20 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeInvalidCommand(t *testing.T) {
-	for _, tc := range [][]string{
-		{`bash -c "echo \"unterminated command\"`},
-	} {
-		ctx := context.New(
-			config.Project{
-				Before: config.Before{
-					Hooks: tc,
-				},
+	ctx := context.New(
+		config.Project{
+			Before: config.Before{
+				Hooks: []string{`bash -c "echo \"unterminated command\"`},
 			},
-		)
-		require.Error(t, Pipe{}.Run(ctx))
-	}
+		},
+	)
+	require.EqualError(t, Pipe{}.Run(ctx), "invalid command line string")
 }
 
 func TestRunPipeFail(t *testing.T) {
-	for _, tc := range [][]string{
-		{"go tool foobar"},
+	for err, tc := range map[string][]string{
+		"hook failed: go tool foobar: exit status 2; output: go tool: no such tool \"foobar\"\n": {"go tool foobar"},
+		"hook failed: sh ./testdata/foo.sh: exit status 1; output: lalala\n":                     {"sh ./testdata/foo.sh"},
 	} {
 		ctx := context.New(
 			config.Project{
@@ -59,7 +56,7 @@ func TestRunPipeFail(t *testing.T) {
 				},
 			},
 		)
-		require.Error(t, Pipe{}.Run(ctx))
+		require.EqualError(t, Pipe{}.Run(ctx), err)
 	}
 }
 

@@ -37,9 +37,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		cmd := exec.Command(args[0], args[1:]...)
 		cmd.Env = ctx.Env.Strings()
 		out, err := cmd.CombinedOutput()
-		log.Debug(string(out))
+		log.WithField("cmd", step).Debug(string(out))
 		if err != nil {
-			return fmt.Errorf("hook failed: %s\n%v", step, string(out))
+			return fmt.Errorf("hook failed: %s: %s; output: %s", step, err.Error(), string(out))
 		}
 	}
 	return nil
