@@ -28,7 +28,7 @@ func For(lang string) Builder {
 
 // Options to be passed down to a builder.
 type Options struct {
-	Name, Path, Ext, Target string
+	Name, Path, Ext, Target, Os, Arch string
 }
 
 // Builder defines a builder.
