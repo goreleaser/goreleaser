@@ -22,7 +22,7 @@ $ goreleaser init
    • config created; please edit accordingly to your needs file=.goreleaser.yml
 ```
 
-You can [customize](/customization) the generated `.goreleaser.yml` or leave
+You can [customize](/customization/) the generated `.goreleaser.yml` or leave
 it as-is, it's up to you. It is best practice to check `.goreleaser.yml` into the source control.
 
 You can test the configuration at any time by running GoReleaser with a few
