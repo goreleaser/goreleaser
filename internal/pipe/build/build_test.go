@@ -593,6 +593,39 @@ touch "$BAR"`
 	})
 }
 
+func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
+	tmpDir, back := testlib.Mktmp(t)
+	defer back()
+
+	build := config.Build{
+		Lang:   "fake",
+		Goarch: []string{"amd64"},
+		Goos:   []string{"linux"},
+		Binary: "testing-goos-goarch.v{{.Version}}",
+		Targets: []string{
+			"linux_amd64",
+		},
+		Hooks: config.HookConfig{
+			Pre: []config.BuildHook{
+				{Cmd: "touch pre-hook-{{.Arch}}-{{.Os}}", Dir: tmpDir},
+			},
+			Post: config.BuildHooks{
+				{Cmd: "touch post-hook-{{.Arch}}-{{.Os}}", Dir: tmpDir},
+			},
+		},
+	}
+
+	ctx := context.New(config.Project{
+		Builds: []config.Build{
+			build,
+		},
+	})
+	err := runPipeOnBuild(ctx, build)
+	assert.NoError(t, err)
+	assert.FileExists(t, filepath.Join(tmpDir, "pre-hook-amd64-linux"))
+	assert.FileExists(t, filepath.Join(tmpDir, "post-hook-amd64-linux"))
+}
+
 func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 	tmpDir, back := testlib.Mktmp(t)
 	defer back()
@@ -669,6 +702,8 @@ func TestBuildOptionsForTarget(t *testing.T) {
 		Name:   "testbinary",
 		Path:   filepath.Join(tmpDir, "testid_linux_amd64", "testbinary"),
 		Target: "linux_amd64",
+		Os:     "linux",
+		Arch:   "amd64",
 	}, opts)
 }
 

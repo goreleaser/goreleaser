@@ -174,12 +174,23 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	if err != nil {
 		return nil, err
 	}
+
+	var goos string
+	var goarch string
+
+	if strings.Contains(target, "_") {
+		goos = strings.Split(target, "_")[0]
+		goarch = strings.Split(target, "_")[1]
+	}
+
 	log.WithField("binary", path).Info("building")
 	return &builders.Options{
 		Target: target,
 		Name:   name,
 		Path:   path,
 		Ext:    ext,
+		Os:     goos,
+		Arch:   goarch,
 	}, nil
 }
 
