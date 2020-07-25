@@ -14,19 +14,19 @@ before:
     # you may remove this if you don't need go generate
     - go generate ./...
 builds:
-- env:
-  - CGO_ENABLED=0
+  - env:
+      - CGO_ENABLED=0
     goos:
-    - linux
-    - windows
-    - darwin
+      - linux
+      - windows
+      - darwin
 archives:
-- replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
-    386: i386
-    amd64: x86_64
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -35,6 +35,6 @@ changelog:
   sort: asc
   filters:
     exclude:
-    - '^docs:'
-    - '^test:'
+      - '^docs:'
+      - '^test:'
 `
