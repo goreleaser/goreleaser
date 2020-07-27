@@ -38,7 +38,7 @@ release:
 
     # GITLAB_TOKEN is needed to create GitLab releases.
     # DOCKER_* are needed to push Docker images.
-    docker run --pull --rm --privileged \
+    docker run --rm --privileged \
       -v $PWD:/go/src/gitlab.com/YourGitLabUser/YourGitLabRepo \
       -w /go/src/gitlab.com/YourGitLabUser/YourGitLabRepo \
       -v /var/run/docker.sock:/var/run/docker.sock \
