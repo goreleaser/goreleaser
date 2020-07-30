@@ -37,10 +37,10 @@ type Piper interface {
 // BuildPipeline contains all build-related pipe implementations in order
 // nolint:gochecknoglobals
 var BuildPipeline = []Piper{
-	before.Pipe{},          // run global hooks before build
 	env.Pipe{},             // load and validate environment variables
 	git.Pipe{},             // get and validate git repo state
 	semver.Pipe{},          // parse current tag to a semver
+	before.Pipe{},          // run global hooks before build
 	defaults.Pipe{},        // load default configs
 	snapshot.Pipe{},        // snapshot version handling
 	dist.Pipe{},            // ensure ./dist is clean
