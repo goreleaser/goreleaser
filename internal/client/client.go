@@ -41,7 +41,7 @@ type Client interface {
 
 // New creates a new client depending on the token type.
 func New(ctx *context.Context) (Client, error) {
-	log.WithField("type", ctx.TokenType).Info("token type")
+	log.WithField("type", ctx.TokenType).Debug("token type")
 	if ctx.TokenType == context.TokenTypeGitHub {
 		return NewGitHub(ctx, ctx.Token)
 	}
