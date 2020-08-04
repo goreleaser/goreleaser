@@ -1,4 +1,4 @@
-DirectoryPath: "site"
+DirectoryPath: ./site
 IgnoreURLs:
 - www.google-analytics.com
 - fonts.gstatic.com
@@ -8,3 +8,4 @@ IgnoreDirs:
 - overrides
 IgnoreDirectoryMissingTrailingSlash: true
 IgnoreAltMissing: true
+HTTPHeaders: '{"Range": "bytes=0-10", "Accept": "*/*"}'
