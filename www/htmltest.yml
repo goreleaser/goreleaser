@@ -1,4 +1,4 @@
-DirectoryPath: "site"
+DirectoryPath: ./site
 IgnoreURLs:
 - www.google-analytics.com
 - fonts.gstatic.com
