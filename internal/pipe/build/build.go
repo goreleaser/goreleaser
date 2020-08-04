@@ -19,7 +19,7 @@ import (
 	"github.com/mattn/go-shellwords"
 	"github.com/pkg/errors"
 
-	// langs to init
+	// langs to init.
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
 )
 

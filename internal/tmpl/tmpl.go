@@ -24,7 +24,7 @@ type Template struct {
 type Fields map[string]interface{}
 
 const (
-	// general keys
+	// general keys.
 	projectName     = "ProjectName"
 	version         = "Version"
 	rawVersion      = "RawVersion"
@@ -44,7 +44,7 @@ const (
 	date            = "Date"
 	timestamp       = "Timestamp"
 
-	// artifact-only keys
+	// artifact-only keys.
 	osKey        = "Os"
 	arch         = "Arch"
 	arm          = "Arm"
@@ -53,10 +53,10 @@ const (
 	artifactName = "ArtifactName"
 	artifactPath = "ArtifactPath"
 
-	// gitlab only
+	// gitlab only.
 	artifactUploadHash = "ArtifactUploadHash"
 
-	// build keys
+	// build keys.
 	name   = "Name"
 	ext    = "Ext"
 	path   = "Path"

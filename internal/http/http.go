@@ -23,9 +23,9 @@ import (
 )
 
 const (
-	// ModeBinary uploads only compiled binaries
+	// ModeBinary uploads only compiled binaries.
 	ModeBinary = "binary"
-	// ModeArchive uploads release archives
+	// ModeArchive uploads release archives.
 	ModeArchive = "archive"
 )
 
@@ -313,7 +313,7 @@ func getHTTPClient(upload *config.Upload) (*h.Client, error) {
 	pool.AppendCertsFromPEM([]byte(upload.TrustedCerts)) // already validated certs checked by CheckConfig
 	return &h.Client{
 		Transport: &h.Transport{
-			TLSClientConfig: &tls.Config{
+			TLSClientConfig: &tls.Config{ // nolint: gosec
 				RootCAs: pool,
 			},
 		},

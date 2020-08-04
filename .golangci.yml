@@ -16,3 +16,5 @@ linters:
     - gocognit
     - goerr113
     - gofumpt
+    - gci
+    - nlreturn
