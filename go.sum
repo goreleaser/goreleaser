@@ -332,6 +332,7 @@ github.com/google/pprof v0.0.0-20200507031123-427632fa3b1c/go.mod h1:ZgVRPoUq/hf
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
 github.com/google/rpmpack v0.0.0-20200721073823-11a45a65cb40 h1:igTDauCa3sFf6EsKD+CzLLc+y1gW3w/Ol4Ms5GdzAgk=
 github.com/google/rpmpack v0.0.0-20200721073823-11a45a65cb40/go.mod h1:+y9lKiqDhR4zkLl+V9h4q0rdyrYVsWWm6LLCQP33DIk=
+github.com/google/rpmpack v0.0.0-20200731134257-3685799e8fdf/go.mod h1:+y9lKiqDhR4zkLl+V9h4q0rdyrYVsWWm6LLCQP33DIk=
 github.com/google/subcommands v1.0.1/go.mod h1:ZjhPrFU+Olkh9WazFPsl27BQ4UPiG37m3yTrtFlrHVk=
 github.com/google/uuid v1.0.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=
@@ -351,6 +352,8 @@ github.com/goreleaser/chglog v0.1.1 h1:UaY3enMEVeavOaZyCraLn+2iM7/2T0yji8Mh7ZFsD
 github.com/goreleaser/chglog v0.1.1/go.mod h1:xSDa/73C0TxBcLvoT2JHh47QyXpCx5rrNVzJKyeFGPw=
 github.com/goreleaser/nfpm v1.5.0 h1:tJnAMaNQkqNuJ0O+6KGeDAXYdqwM7bivlwJpdBc03uA=
 github.com/goreleaser/nfpm v1.5.0/go.mod h1:VAxZSzY5Jf6W6jDjL5PLO8u7Nzan/jpY0YfJF9Hmno0=
+github.com/goreleaser/nfpm v1.6.0 h1:gRCtHHcMsRa1MVI7kfEcqQoRMxh2iWWSeTeWwK0XEzg=
+github.com/goreleaser/nfpm v1.6.0/go.mod h1:NtdoiFec3RL0qWpsr3pThH8CwyhIyFwWPFXxPpE0EoA=
 github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gostaticanalysis/analysisutil v0.0.0-20190318220348-4088753ea4d3/go.mod h1:eEOZF4jCKGi+aprrirO9e7WKB3beBRtWgqGunKl6pKE=
