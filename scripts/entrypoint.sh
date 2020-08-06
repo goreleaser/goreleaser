@@ -14,4 +14,9 @@ if [ -n "$GORELEASER_GITHUB_TOKEN" ] ; then
   export GITHUB_TOKEN=$GORELEASER_GITHUB_TOKEN
 fi
 
+if [ -n "$GITHUB_TOKEN" ]; then
+  # Log into GitHub package registry
+  echo $GITHUB_TOKEN | docker login docker.pkg.github.com -u docker --password-stdin
+fi
+
 goreleaser $@
