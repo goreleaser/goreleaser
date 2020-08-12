@@ -652,8 +652,6 @@ github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyC
 github.com/valyala/fasthttp v1.12.0/go.mod h1:229t1eWu9UXTPmoUkbpN/fctKPBY4IJoFXQnxHGXy6E=
 github.com/valyala/quicktemplate v1.5.1/go.mod h1:v7yYWpBEiutDyNfVaph6oC/yKwejzVyTX/2cwwHxyok=
 github.com/valyala/tcplisten v0.0.0-20161114210144-ceec8f93295a/go.mod h1:v3UYOV9WzVtRmSR+PDvWpU/qWl4Wa5LApYYX4ZtKbio=
-github.com/xanzy/go-gitlab v0.34.2 h1:CU6QAuv+rW7jHri4ebEYgRrpkvuMWkN1syDkZxCoqz0=
-github.com/xanzy/go-gitlab v0.34.2/go.mod h1:sPLojNBn68fMUWSxIJtdVVIP8uSBYqesTfDUseX11Ug=
 github.com/xanzy/go-gitlab v0.35.0 h1:4CdE2FcOj5WxFkILL0s82+6I8/t0ZleEECm/42E1/30=
 github.com/xanzy/go-gitlab v0.35.0/go.mod h1:sPLojNBn68fMUWSxIJtdVVIP8uSBYqesTfDUseX11Ug=
 github.com/xanzy/ssh-agent v0.2.1 h1:TCbipTQL2JiiCprBWx9frJ2eJlCYT00NmctrHxVAr70=
