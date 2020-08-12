@@ -50,7 +50,7 @@ func RunEnv(env map[string]string, args ...string) (string, error) {
 		return "", errors.New(stderr.String())
 	}
 
-	return string(stdout.String()), nil
+	return stdout.String(), nil
 }
 
 // Run runs a git command and returns its output or errors.
