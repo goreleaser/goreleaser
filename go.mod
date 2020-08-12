@@ -14,8 +14,8 @@ require (
 	github.com/google/go-github/v28 v28.1.1
 	github.com/goreleaser/nfpm v1.6.0
 	github.com/hashicorp/go-version v1.2.1 // indirect
-	github.com/imdario/mergo v0.3.10
-	github.com/jarcoal/httpmock v1.0.5
+	github.com/imdario/mergo v0.3.11
+	github.com/jarcoal/httpmock v1.0.6
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/mattn/go-zglob v0.0.3
 	github.com/mitchellh/go-homedir v1.1.0
@@ -23,7 +23,7 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
 	github.com/ulikunitz/xz v0.5.7
-	github.com/xanzy/go-gitlab v0.34.0
+	github.com/xanzy/go-gitlab v0.35.0
 	gocloud.dev v0.20.0
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
