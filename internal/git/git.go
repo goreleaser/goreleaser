@@ -4,7 +4,6 @@ package git
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"os/exec"
 	"strings"
 
@@ -40,14 +39,17 @@ func RunEnv(env map[string]string, args ...string) (string, error) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf(stderr.String())
-	}
-
 	log.WithField("args", args).Debug("running git")
+	err := cmd.Run()
+
 	log.WithField("stdout", stdout.String()).
 		WithField("stderr", stderr.String()).
 		Debug("git result")
+
+	if err != nil {
+		return "", errors.New(stderr.String())
+	}
+
 	return string(stdout.String()), nil
 }
 
