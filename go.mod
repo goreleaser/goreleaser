@@ -14,7 +14,7 @@ require (
 	github.com/google/go-github/v28 v28.1.1
 	github.com/goreleaser/nfpm v1.6.0
 	github.com/hashicorp/go-version v1.2.1 // indirect
-	github.com/imdario/mergo v0.3.10
+	github.com/imdario/mergo v0.3.11
 	github.com/jarcoal/httpmock v1.0.6
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/mattn/go-zglob v0.0.3
