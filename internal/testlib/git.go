@@ -48,6 +48,13 @@ func GitTag(t *testing.T, tag string) {
 	assert.Empty(t, out)
 }
 
+// GitBranch creates a git branch.
+func GitBranch(t *testing.T, branch string) {
+	out, err := fakeGit("branch", branch)
+	assert.NoError(t, err)
+	assert.Empty(t, out)
+}
+
 // GitAdd adds all files to stage.
 func GitAdd(t *testing.T) {
 	out, err := fakeGit("add", "-A")
