@@ -18,19 +18,19 @@ Prerequisites:
 Clone `goreleaser` anywhere:
 
 ```sh
-$ git clone git@github.com:goreleaser/goreleaser.git
+git clone git@github.com:goreleaser/goreleaser.git
 ```
 
 Install the build and lint dependencies:
 
 ```sh
-$ make setup
+make setup
 ```
 
 A good way of making sure everything is all right is running the test suite:
 
 ```sh
-$ make test
+make test
 ```
 
 ## Test your change
@@ -38,13 +38,13 @@ $ make test
 You can create a branch for your changes and try to build from the source as you go:
 
 ```sh
-$ make build
+make build
 ```
 
 When you are satisfied with the changes, we suggest you run:
 
 ```sh
-$ make ci
+make ci
 ```
 
 Which runs all the linters and tests.

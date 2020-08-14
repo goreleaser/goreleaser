@@ -15,11 +15,8 @@ func main() {
 
 Run `goreleaser init` to create an example `.goreleaser.yaml` file:
 
-```console
-$ goreleaser init
-
-   • Generating .goreleaser.yml file
-   • config created; please edit accordingly to your needs file=.goreleaser.yml
+```sh
+goreleaser init
 ```
 
 You can [customize](/customization/) the generated `.goreleaser.yml` or leave
@@ -29,8 +26,8 @@ You can test the configuration at any time by running GoReleaser with a few
 extra parameters to not require a version tag, skip publishing to GitHub,
 and remove any already-built files:
 
-```console
-$ goreleaser --snapshot --skip-publish --rm-dist
+```sh
+goreleaser --snapshot --skip-publish --rm-dist
 ```
 
 If you are not using vgo or Go modules, then you will need to comment out the
@@ -51,19 +48,23 @@ contain a valid GitHub token with the `repo` scope or GitLab token with `api` sc
 It will be used to deploy releases to your GitHub/GitLab repository.
 You can create a token [here](https://github.com/settings/tokens/new) for GitHub or [here](https://gitlab.com/profile/personal_access_tokens) for GitLab.
 
-```console
-$ export GITHUB_TOKEN="YOUR_GH_TOKEN"
-# or
-$ export GITLAB_TOKEN="YOUR_GL_TOKEN"
+```sh
+export GITHUB_TOKEN="YOUR_GH_TOKEN"
+```
+
+or
+
+```sh
+export GITLAB_TOKEN="YOUR_GL_TOKEN"
 ```
 
 GoReleaser will use the latest
 [Git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging) of your repository.
 Create a tag and push it to GitHub:
 
-```console
-$ git tag -a v0.1.0 -m "First release"
-$ git push origin v0.1.0
+```sh
+git tag -a v0.1.0 -m "First release"
+git push origin v0.1.0
 ```
 
 !!! info
@@ -72,14 +73,14 @@ $ git push origin v0.1.0
 If you don't want to create a tag yet, you can also run GoReleaser without publishing
 based on the latest commit by using the `--snapshot` flag:
 
-```console
-$ goreleaser --snapshot
+```sh
+goreleaser --snapshot
 ```
 
 Now you can run GoReleaser at the root of your repository:
 
-```console
-$ goreleaser
+```sh
+goreleaser
 ```
 
 That's all! Check your GitHub project's release page.
@@ -111,8 +112,8 @@ use the following techniques.
 
 Build command will build the project
 
-```console
-$ goreleaser build
+```sh
+goreleaser build
 ```
 
 This can be useful as part of CI pipelines to verify the project builds
@@ -120,26 +121,26 @@ without errors for all build targets.
 
 You can check the other options by running:
 
-```console
-$ goreleaser build --help
+```sh
+goreleaser build --help
 ```
 
 ### Release Flags
 
 Use the `--skip-publish` flag to skip publishing:
 
-```console
-$ goreleaser release --skip-publish
+```sh
+goreleaser release --skip-publish
 ```
 
 You can check the other options by running:
 
-```console
-$ goreleaser --help
+```sh
+goreleaser --help
 ```
 
 and
 
-```console
-$ goreleaser release --help
+```sh
+goreleaser release --help
 ```

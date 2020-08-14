@@ -9,27 +9,27 @@ Here are the steps for each of them:
 
 **homebrew tap** (only on macOS for now):
 
-```console
-$ brew install goreleaser/tap/goreleaser
+```sh
+brew install goreleaser/tap/goreleaser
 ```
 
 **homebrew** (may not be the latest version):
 
-```console
-$ brew install goreleaser
+```sh
+brew install goreleaser
 ```
 
 **snapcraft**:
 
-```console
-$ sudo snap install --classic goreleaser
+```sh
+sudo snap install --classic goreleaser
 ```
 
 **scoop**:
 
-```console
-$ scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
-$ scoop install goreleaser
+```sh
+scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
+scoop install goreleaser
 ```
 
 **deb/rpm**:
@@ -39,8 +39,8 @@ install with `dpkg -i` and `rpm -i` respectively.
 
 **Shell script**:
 
-```console
-$ curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
+```sh
+curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
 ```
 
 **manually**:
@@ -53,8 +53,8 @@ copy to the desired location.
 You can also use it within a Docker container. To do that, you'll need to
 execute something more-or-less like the following:
 
-```console
-$ docker run --rm --privileged \
+```sh
+docker run --rm --privileged \
   -v $PWD:/go/src/github.com/user/repo \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -w /go/src/github.com/user/repo \
@@ -92,25 +92,25 @@ If you just want to build from source for whatever reason, follow these steps:
 
 **Clone:**
 
-```console
-$ git clone https://github.com/goreleaser/goreleaser
-$ cd goreleaser
+```sh
+git clone https://github.com/goreleaser/goreleaser
+cd goreleaser
 ```
 
 **Get the dependencies:**
 
-```console
-$ go get ./...
+```sh
+go get ./...
 ```
 
 **Build:**
 
-```console
-$ go build -o goreleaser .
+```sh
+go build -o goreleaser .
 ```
 
 **Verify it works:**
 
-```console
-$ ./goreleaser --version
+```sh
+./goreleaser --version
 ```

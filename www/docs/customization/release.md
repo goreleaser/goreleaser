@@ -129,6 +129,7 @@ release:
 ```
 
 To enable uploading `tar.gz` and `checksums.txt` files you need to add the following to your Gitea config in `app.ini`:
+
 ```ini
 [attachment]
 ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|application/x-tgz|application/x-compressed-tar|text/plain
@@ -188,7 +189,7 @@ To list all commits since the last tag, but skip ones starting with `Merge` or
 `docs`, you could run this command:
 
 ```sh
-$ goreleaser --release-notes <(some_changelog_generator)
+goreleaser --release-notes <(some_changelog_generator)
 ```
 
 Some changelog generators you can use:

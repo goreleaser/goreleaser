@@ -9,8 +9,8 @@ deprecated.
 
 You can check your use of deprecated configurations by running:
 
-```console
-$ goreleaser check
+```sh
+goreleaser check
 ```
 
 ## Active deprecation notices
