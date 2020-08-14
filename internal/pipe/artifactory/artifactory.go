@@ -4,6 +4,7 @@ package artifactory
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	h "net/http"
 
@@ -73,8 +74,10 @@ func (Pipe) Publish(ctx *context.Context) error {
 			return err
 		}
 		var r artifactoryResponse
-		err := json.NewDecoder(res.Body).Decode(&r)
-		return err
+		if err := json.NewDecoder(res.Body).Decode(&r); err != nil && err != io.EOF {
+			return err
+		}
+		return nil
 	})
 }
 
