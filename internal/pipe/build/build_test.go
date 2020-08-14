@@ -731,3 +731,28 @@ func TestHookInvalidShelCommand(t *testing.T) {
 		},
 	}))
 }
+
+func TestRunHookFailWithLogs(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var config = config.Project{
+		Dist: folder,
+		Builds: []config.Build{
+			{
+				Lang:   "fakeFail",
+				Binary: "testing",
+				Flags:  []string{"-v"},
+				Hooks: config.HookConfig{
+					Pre: []config.BuildHook{
+						{Cmd: "sh -c 'echo foo; exit 1'"},
+					},
+				},
+				Targets: []string{"whatever"},
+			},
+		},
+	}
+	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "2.4.5"
+	assert.EqualError(t, Pipe{}.Run(ctx), "pre hook failed: \"foo\\n\": exit status 1")
+	assert.Empty(t, ctx.Artifacts.List())
+}

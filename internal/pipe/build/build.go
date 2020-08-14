@@ -3,7 +3,9 @@
 package build
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/ids"
+	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	builders "github.com/goreleaser/goreleaser/pkg/build"
@@ -215,15 +218,18 @@ func extFor(target string, flags config.FlagArray) string {
 func run(ctx *context.Context, dir string, command, env []string) error {
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
-	var log = log.WithField("env", env).WithField("cmd", command)
+	var entry = log.WithField("cmd", command)
 	cmd.Env = env
+	var b bytes.Buffer
+	cmd.Stderr = io.MultiWriter(logext.NewErrWriter(entry), &b)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(entry), &b)
 	if dir != "" {
 		cmd.Dir = dir
 	}
-	log.Debug("running")
-	if out, err := cmd.CombinedOutput(); err != nil {
-		log.WithError(err).Debug("failed")
-		return errors.Wrapf(err, "%q", string(out))
+	entry.WithField("env", env).Debug("running")
+	if err := cmd.Run(); err != nil {
+		entry.WithError(err).Debug("failed")
+		return errors.Wrapf(err, "%q", b.String())
 	}
 	return nil
 }
