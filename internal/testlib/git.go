@@ -48,6 +48,13 @@ func GitTag(t *testing.T, tag string) {
 	assert.Empty(t, out)
 }
 
+// GitBranch creates a git branch.
+func GitBranch(t *testing.T, branch string) {
+	out, err := fakeGit("branch", branch)
+	assert.NoError(t, err)
+	assert.Empty(t, out)
+}
+
 // GitAdd adds all files to stage.
 func GitAdd(t *testing.T) {
 	out, err := fakeGit("add", "-A")
@@ -71,8 +78,8 @@ func fakeGit(args ...string) (string, error) {
 }
 
 // GitCheckoutBranch allows us to change the active branch that we're using.
-func GitCheckoutBranch(t *testing.T, tag string) {
-	out, err := fakeGit("checkout", "-b", tag)
+func GitCheckoutBranch(t *testing.T, name string) {
+	out, err := fakeGit("checkout", "-b", name)
 	assert.NoError(t, err)
-	assert.Contains(t, out, tag)
+	assert.Empty(t, out)
 }

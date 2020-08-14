@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/git"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,6 +22,22 @@ func TestGit(t *testing.T) {
 		"git: 'command-that-dont-exist' is not a git command. See 'git --help'.\n",
 		err.Error(),
 	)
+}
+
+func TestGitWarning(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "foo")
+	testlib.GitBranch(t, "tags/1.2.2")
+	testlib.GitTag(t, "1.2.2")
+	testlib.GitCommit(t, "foobar")
+	testlib.GitBranch(t, "tags/1.2.3")
+	testlib.GitTag(t, "1.2.3")
+
+	out, err := git.Run("describe", "--tags", "--abbrev=0", "tags/1.2.3^")
+	assert.NoError(t, err)
+	assert.Equal(t, "1.2.2\n", out)
 }
 
 func TestRepo(t *testing.T) {
