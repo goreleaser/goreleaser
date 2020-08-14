@@ -29,3 +29,6 @@ require (
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 	gopkg.in/yaml.v2 v2.3.0
 )
+
+// https://github.com/mattn/go-shellwords/pull/39
+replace github.com/mattn/go-shellwords => github.com/caarlos0/go-shellwords v1.0.11
