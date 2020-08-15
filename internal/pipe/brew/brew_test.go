@@ -355,7 +355,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	assert.NoError(t, err)
 
 	var cli = &DummyClient{}
-	assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], cli))
+	assert.EqualError(t, publishAll(ctx, cli), `skips happened: brew.skip_upload is set`)
 	assert.True(t, cli.CreatedFile)
 
 	for _, brew := range ctx.Config.Brews {
