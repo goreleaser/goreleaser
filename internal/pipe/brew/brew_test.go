@@ -232,6 +232,70 @@ func TestRunPipe(t *testing.T) {
 		})
 	}
 }
+
+func TestRunPipeNameTemplate(t *testing.T) {
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(t, err)
+	var ctx = &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.0.1",
+		},
+		Version:   "1.0.1",
+		Artifacts: artifact.New(),
+		Env: map[string]string{
+			"FOO_BAR": "is_bar",
+		},
+		Config: config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Brews: []config.Homebrew{
+				{
+					Name: "foo_{{ .Env.FOO_BAR }}",
+					Tap: config.RepoRef{
+						Owner: "foo",
+						Name:  "bar",
+					},
+					IDs: []string{
+						"foo",
+					},
+				},
+			},
+		},
+	}
+	var path = filepath.Join(folder, "bin.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "bin.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID":                 "foo",
+			"Format":             "tar.gz",
+			"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+		},
+	})
+
+	_, err = os.Create(path)
+	assert.NoError(t, err)
+	client := &DummyClient{}
+	var distFile = filepath.Join(folder, "foo_is_bar.rb")
+
+	assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
+	assert.True(t, client.CreatedFile)
+	var golden = "testdata/foo_is_bar.rb.golden"
+	if *update {
+		assert.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
+	}
+	bts, err := ioutil.ReadFile(golden)
+	assert.NoError(t, err)
+	assert.Equal(t, string(bts), client.Content)
+
+	distBts, err := ioutil.ReadFile(distFile)
+	assert.NoError(t, err)
+	assert.Equal(t, string(bts), string(distBts))
+}
+
 func TestRunPipeForMultipleArmVersions(t *testing.T) {
 	for name, fn := range map[string]func(ctx *context.Context){
 		"multiple_armv5": func(ctx *context.Context) {
