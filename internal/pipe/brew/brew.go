@@ -175,6 +175,12 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 		return ErrNoArchivesFound
 	}
 
+	name, err := tmpl.New(ctx).Apply(brew.Name)
+	if err != nil {
+		return err
+	}
+	brew.Name = name
+
 	content, err := buildFormula(ctx, brew, cl, archives)
 	if err != nil {
 		return err
