@@ -393,6 +393,7 @@ type Snapshot struct {
 type Checksum struct {
 	NameTemplate string `yaml:"name_template,omitempty"`
 	Algorithm    string `yaml:"algorithm,omitempty"`
+	Disable      bool   `yaml:"disable,omitempty"`
 }
 
 // Docker image config.

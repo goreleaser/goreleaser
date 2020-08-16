@@ -18,6 +18,10 @@ checksum:
   # Accepted options are sha256, sha512, sha1, crc32, md5, sha224 and sha384.
   # Default is sha256.
   algorithm: sha256
+
+  # Disable the generation/upload of the checksum file.
+  # Default is false.
+  disable: true
 ```
 
 !!! tip
