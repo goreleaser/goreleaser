@@ -53,16 +53,28 @@ func (Pipe) Publish(ctx *context.Context) error {
 		ctx.TokenType = context.TokenTypeGitHub
 	}
 
-	client, err := client.New(ctx)
+	cli, err := client.New(ctx)
 	if err != nil {
 		return err
 	}
+	return publishAll(ctx, cli)
+}
+
+func publishAll(ctx *context.Context, cli client.Client) error {
+	// even if one of them skips, we run them all, and then show return the skips all at once.
+	// this is needed so we actually create the `dist/foo.rb` file, which is useful for debugging.
+	var skips = pipe.SkipMemento{}
 	for _, brew := range ctx.Config.Brews {
-		if err := doRun(ctx, brew, client); err != nil {
+		var err = doRun(ctx, brew, cli)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
+		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 // Default sets the pipe defaults.

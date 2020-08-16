@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var update = flag.Bool("update", false, "update .golden files")
@@ -294,6 +295,86 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	distBts, err := ioutil.ReadFile(distFile)
 	assert.NoError(t, err)
 	assert.Equal(t, string(bts), string(distBts))
+}
+
+func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(t, err)
+	var ctx = &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.0.1",
+		},
+		Version:   "1.0.1",
+		Artifacts: artifact.New(),
+		Env: map[string]string{
+			"FOO_BAR": "is_bar",
+		},
+		Config: config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
+			Brews: []config.Homebrew{
+				{
+					Name: "foo",
+					Tap: config.RepoRef{
+						Owner: "foo",
+						Name:  "bar",
+					},
+					IDs: []string{
+						"foo",
+					},
+					SkipUpload: "true",
+				},
+				{
+					Name: "bar",
+					Tap: config.RepoRef{
+						Owner: "foo",
+						Name:  "bar",
+					},
+					IDs: []string{
+						"foo",
+					},
+				},
+				{
+					Name: "foobar",
+					Tap: config.RepoRef{
+						Owner: "foo",
+						Name:  "bar",
+					},
+					IDs: []string{
+						"foo",
+					},
+					SkipUpload: "true",
+				},
+			},
+		},
+	}
+	var path = filepath.Join(folder, "bin.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "bin.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID":                 "foo",
+			"Format":             "tar.gz",
+			"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+		},
+	})
+
+	_, err = os.Create(path)
+	assert.NoError(t, err)
+
+	var cli = &DummyClient{}
+	assert.EqualError(t, publishAll(ctx, cli), `brew.skip_upload is set`)
+	assert.True(t, cli.CreatedFile)
+
+	for _, brew := range ctx.Config.Brews {
+		var distFile = filepath.Join(folder, brew.Name+".rb")
+		_, err := os.Stat(distFile)
+		require.NoError(t, err, "file should exist: "+distFile)
+	}
+
 }
 
 func TestRunPipeForMultipleArmVersions(t *testing.T) {
