@@ -2,7 +2,6 @@
 package pipe
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -21,8 +20,6 @@ var ErrSkipSignEnabled = Skip("artifact signing is disabled")
 // ErrSkipValidateEnabled happens if --skip-validate is set.
 // It means that the part of a Piper that validates some things was not run.
 var ErrSkipValidateEnabled = Skip("validation is disabled")
-
-var ErrMaybeMultipleSkips = Skip("skips happened")
 
 // IsSkip returns true if the error is an ErrSkip.
 func IsSkip(err error) bool {
@@ -45,17 +42,20 @@ func Skip(reason string) ErrSkip {
 	return ErrSkip{reason: reason}
 }
 
+// SkipMemento remembers previous skip errors so you can return them all at once later.
 type SkipMemento struct {
 	skips []string
 }
 
-func (e *SkipMemento) Skip(err error) {
+// Remember a skip.
+func (e *SkipMemento) Remember(err error) {
 	e.skips = append(e.skips, err.Error())
 }
 
+// Evaluate return a skip error with all previous skips, or nil if none happened.
 func (e *SkipMemento) Evaluate() error {
 	if len(e.skips) == 0 {
 		return nil
 	}
-	return fmt.Errorf("%w: %s", ErrMaybeMultipleSkips, strings.Join(e.skips, ","))
+	return Skip(strings.Join(e.skips, ", "))
 }

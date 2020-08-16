@@ -18,3 +18,15 @@ func TestIsSkip(t *testing.T) {
 	assert.True(t, IsSkip(Skip("whatever")))
 	assert.False(t, IsSkip(errors.New("nope")))
 }
+
+func TestSkipMemento(t *testing.T) {
+	var m = SkipMemento{}
+	m.Remember(Skip("foo"))
+	m.Remember(Skip("bar"))
+	assert.EqualError(t, m.Evaluate(), `foo, bar`)
+	assert.True(t, IsSkip(m.Evaluate()))
+}
+
+func TestSkipMementoNoErrors(t *testing.T) {
+	assert.NoError(t, (&SkipMemento{}).Evaluate())
+}

@@ -61,11 +61,13 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func publishAll(ctx *context.Context, cli client.Client) error {
+	// even if one of them skips, we run them all, and then show return the skips all at once.
+	// this is needed so we actually create the `dist/foo.rb` file, which is useful for debugging.
 	var skips = pipe.SkipMemento{}
 	for _, brew := range ctx.Config.Brews {
 		var err = doRun(ctx, brew, cli)
 		if err != nil && pipe.IsSkip(err) {
-			skips.Skip(err)
+			skips.Remember(err)
 			continue
 		}
 		if err != nil {
