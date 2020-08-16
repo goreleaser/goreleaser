@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 
@@ -55,6 +56,22 @@ func TestPipe(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary")
 	assert.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary.tar.gz")
+}
+
+func TestPipeSkipTrue(t *testing.T) {
+	folder, err := ioutil.TempDir("", "goreleasertest")
+	assert.NoError(t, err)
+	var ctx = context.New(
+		config.Project{
+			Dist: folder,
+			Checksum: config.Checksum{
+				Disable: true,
+			},
+		},
+	)
+	err = Pipe{}.Run(ctx)
+	testlib.AssertSkipped(t, err)
+	assert.EqualError(t, err, `checksum.disable is set`)
 }
 
 func TestPipeFileNotExist(t *testing.T) {
