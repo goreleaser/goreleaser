@@ -38,9 +38,6 @@ func TestAllBuildTargets(t *testing.T) {
 		},
 		Ignore: []config.IgnoredBuild{
 			{
-				Goos:   "darwin",
-				Goarch: "386",
-			}, {
 				Goos:   "linux",
 				Goarch: "arm",
 				Goarm:  "7",
@@ -92,7 +89,6 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"android", "amd64", true},
 		{"android", "arm", true},
 		{"android", "arm64", true},
-		{"darwin", "386", true},
 		{"darwin", "amd64", true},
 		{"dragonfly", "amd64", true},
 		{"freebsd", "386", true},
@@ -124,6 +120,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"windows", "amd64", true},
 		{"js", "wasm", true},
 		// invalid targets
+		{"darwin", "386", false},
 		{"darwin", "arm", false},
 		{"darwin", "arm64", false},
 		{"windows", "arm", false},
