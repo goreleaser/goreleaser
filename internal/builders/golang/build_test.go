@@ -65,7 +65,6 @@ func TestWithDefaults(t *testing.T) {
 				"linux_amd64",
 				"linux_386",
 				"darwin_amd64",
-				"darwin_386",
 			},
 		},
 	} {
