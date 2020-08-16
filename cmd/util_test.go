@@ -54,7 +54,7 @@ func createMainGo(t *testing.T) {
 func goModInit(t *testing.T) {
 	createFile(t, "go.mod", `module foo
 
-go 1.14
+go 1.15
 `)
 }
 
