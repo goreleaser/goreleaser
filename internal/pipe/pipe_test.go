@@ -23,7 +23,10 @@ func TestSkipMemento(t *testing.T) {
 	var m = SkipMemento{}
 	m.Remember(Skip("foo"))
 	m.Remember(Skip("bar"))
-	assert.EqualError(t, m.Evaluate(), `foo, bar`)
+	// test duplicated errors
+	m.Remember(Skip("dupe"))
+	m.Remember(Skip("dupe"))
+	assert.EqualError(t, m.Evaluate(), `foo, bar, dupe`)
 	assert.True(t, IsSkip(m.Evaluate()))
 }
 

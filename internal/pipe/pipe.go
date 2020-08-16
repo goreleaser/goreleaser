@@ -1,9 +1,7 @@
 // Package pipe provides generic erros for pipes to use.
 package pipe
 
-import (
-	"strings"
-)
+import "strings"
 
 // ErrSnapshotEnabled happens when goreleaser is running in snapshot mode.
 // It usually means that publishing and maybe some validations were skipped.
@@ -49,6 +47,11 @@ type SkipMemento struct {
 
 // Remember a skip.
 func (e *SkipMemento) Remember(err error) {
+	for _, skip := range e.skips {
+		if skip == err.Error() {
+			return
+		}
+	}
 	e.skips = append(e.skips, err.Error())
 }
 

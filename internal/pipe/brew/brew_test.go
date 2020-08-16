@@ -334,6 +334,17 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 						"foo",
 					},
 				},
+				{
+					Name: "foobar",
+					Tap: config.RepoRef{
+						Owner: "foo",
+						Name:  "bar",
+					},
+					IDs: []string{
+						"foo",
+					},
+					SkipUpload: "true",
+				},
 			},
 		},
 	}
@@ -355,7 +366,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	assert.NoError(t, err)
 
 	var cli = &DummyClient{}
-	assert.EqualError(t, publishAll(ctx, cli), `skips happened: brew.skip_upload is set`)
+	assert.EqualError(t, publishAll(ctx, cli), `brew.skip_upload is set`)
 	assert.True(t, cli.CreatedFile)
 
 	for _, brew := range ctx.Config.Brews {
