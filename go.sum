@@ -349,8 +349,8 @@ github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 h1:EGx4pi6eqNxGa
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/goreleaser/chglog v0.1.1 h1:UaY3enMEVeavOaZyCraLn+2iM7/2T0yji8Mh7ZFsDp4=
 github.com/goreleaser/chglog v0.1.1/go.mod h1:xSDa/73C0TxBcLvoT2JHh47QyXpCx5rrNVzJKyeFGPw=
-github.com/goreleaser/nfpm v1.6.0 h1:gRCtHHcMsRa1MVI7kfEcqQoRMxh2iWWSeTeWwK0XEzg=
-github.com/goreleaser/nfpm v1.6.0/go.mod h1:NtdoiFec3RL0qWpsr3pThH8CwyhIyFwWPFXxPpE0EoA=
+github.com/goreleaser/nfpm v1.7.0 h1:ZUBnaYNOO5zMKkwGmzRG9jIOBBGKM86iylBorQjZfuU=
+github.com/goreleaser/nfpm v1.7.0/go.mod h1:V6xp021JRvYdBYpGFoP6m6YsuedzgB6IO2ub2NNBohs=
 github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gostaticanalysis/analysisutil v0.0.0-20190318220348-4088753ea4d3/go.mod h1:eEOZF4jCKGi+aprrirO9e7WKB3beBRtWgqGunKl6pKE=
@@ -393,7 +393,6 @@ github.com/huandu/xstrings v1.3.2 h1:L18LIDzqlW6xN2rEkpdV8+oL/IXWJ1APd+vsdYy4Wdw
 github.com/huandu/xstrings v1.3.2/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/imdario/mergo v0.3.9/go.mod h1:2EnlNZ0deacrJVfApfmtdGgDfMuh/nq6Ok1EcJh5FfA=
-github.com/imdario/mergo v0.3.10/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
 github.com/imdario/mergo v0.3.11 h1:3tnifQM4i+fbajXKBHXWEH+KvNHqojZ778UH75j3bGA=
 github.com/imdario/mergo v0.3.11/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
 github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=
