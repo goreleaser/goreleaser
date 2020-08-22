@@ -89,7 +89,7 @@ func TestRunPipe(t *testing.T) {
 				ID:          "someid",
 				Bindir:      "/usr/bin",
 				Builds:      []string{"default"},
-				Formats:     []string{"deb", "rpm"},
+				Formats:     []string{"deb", "rpm", "apk"},
 				Description: "Some description",
 				License:     "MIT",
 				Maintainer:  "me@me",
@@ -143,7 +143,7 @@ func TestRunPipe(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	var packages = ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 4)
+	require.Len(t, packages, 6)
 	for _, pkg := range packages {
 		var format = pkg.ExtraOr("Format", "").(string)
 		require.NotEmpty(t, format)

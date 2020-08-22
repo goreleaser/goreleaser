@@ -8,6 +8,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/nfpm"
+	_ "github.com/goreleaser/nfpm/apk" // blank import to register the format
 	_ "github.com/goreleaser/nfpm/deb" // blank import to register the format
 	_ "github.com/goreleaser/nfpm/rpm" // blank import to register the format
 	"github.com/imdario/mergo"

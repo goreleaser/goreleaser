@@ -61,6 +61,7 @@ nfpms:
 
     # Formats to be generated.
     formats:
+      - apk
       - deb
       - rpm
 
