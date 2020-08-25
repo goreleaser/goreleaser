@@ -8,7 +8,7 @@ Those fields are often suffixed with `_template`, but sometimes they may not
 be. The documentation of each section should explicit in which fields
 templating is available.
 
-On fields that support templating, this fields are always available:
+On fields that support templating, these fields are always available:
 
 | Key                | Description                                                                                                                  |
 |--------------------|------------------------------------------------------------------------------------------------------------------------------|
