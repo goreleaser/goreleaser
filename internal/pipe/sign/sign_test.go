@@ -83,6 +83,7 @@ func TestSignInvalidArtifacts(t *testing.T) {
 }
 
 func TestSignArtifacts(t *testing.T) {
+	stdin := passwordUser
 	tests := []struct {
 		desc           string
 		ctx            *context.Context
@@ -308,7 +309,7 @@ func TestSignArtifacts(t *testing.T) {
 								"--detach-sign",
 								"${artifact}",
 							},
-							Stdin: passwordUser,
+							Stdin: &stdin,
 						},
 					},
 				},
