@@ -347,6 +347,27 @@ func TestSignArtifacts(t *testing.T) {
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
 			user:           passwordUser,
 		},
+		{
+			desc: "missing stdin_file",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Args: []string{
+								"--batch",
+								"--pinentry-mode",
+								"loopback",
+								"--passphrase-fd",
+								"0",
+							},
+							StdinFile: "/tmp/non-existing-file",
+						},
+					},
+				},
+			),
+			expectedErrMsg: `sign failed: cannot open file /tmp/non-existing-file: open /tmp/non-existing-file: no such file or directory`,
+		},
 	}
 
 	for _, test := range tests {
