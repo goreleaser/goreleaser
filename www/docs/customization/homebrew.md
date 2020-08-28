@@ -92,6 +92,15 @@ brews:
     # Default is false.
     skip_upload: true
 
+    # This allows to install the version from upstream project’s head (master/trunk).
+    # For example: brew install --HEAD $formula
+    # Docs: https://docs.brew.sh/Formula-Cookbook#unstable-versions-head
+    head:
+      url: https://github.com/user/repo.git
+      branch: develop # default branch is "master"
+      tag: 1_0_release
+      revision: 090930930295adslfknsdfsdaffnasd13
+
     # Custom block for brew.
     # Can be used to specify alternate downloads for devel or head releases.
     # Default is empty.

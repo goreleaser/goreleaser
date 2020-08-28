@@ -20,6 +20,7 @@ type templateData struct {
 	Linux            downloadable
 	Arm              downloadable
 	Arm64            downloadable
+	Head             config.HomebrewHead
 }
 
 type downloadable struct {
@@ -36,6 +37,13 @@ class {{ .Name }} < Formula
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
   bottle :unneeded
+
+  {{- if .Head.URL }}
+  head "{{ .Head.URL }}"
+  {{- if .Head.Branch }}, :branch => "{{ .Head.Branch }}"{{- end }}
+  {{- if .Head.Tag }}, :tag => "{{ .Head.Tag }}"{{- end }}
+  {{- if .Head.Revision }}, :revision => "{{ .Head.Revision }}"{{- end }}
+  {{- end }}
 
   if OS.mac?
     {{- if .MacOS.DownloadURL }}

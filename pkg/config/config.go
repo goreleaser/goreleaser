@@ -107,10 +107,19 @@ type Homebrew struct {
 	CustomBlock      string               `yaml:"custom_block,omitempty"`
 	IDs              []string             `yaml:"ids,omitempty"`
 	Goarm            string               `yaml:"goarm,omitempty"`
+	Head             HomebrewHead         `yaml:",omitempty"`
 
 	// Deprecated in favour of Tap
 	GitHub Repo `yaml:",omitempty"`
 	GitLab Repo `yaml:",omitempty"`
+}
+
+// HomebrewHead represents Homebrew Head data.
+type HomebrewHead struct {
+	URL      string `yaml:"url,omitempty"`
+	Branch   string `yaml:",omitempty"`
+	Tag      string `yaml:",omitempty"`
+	Revision string `yaml:",omitempty"`
 }
 
 // Scoop contains the scoop.sh section.

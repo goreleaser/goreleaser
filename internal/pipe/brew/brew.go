@@ -265,6 +265,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		DownloadStrategy: cfg.DownloadStrategy,
 		CustomRequire:    cfg.CustomRequire,
 		CustomBlock:      split(cfg.CustomBlock),
+		Head:             cfg.Head,
 	}
 
 	for _, artifact := range artifacts {

@@ -80,6 +80,8 @@ func TestFullFormulae(t *testing.T) {
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
 	data.Install = []string{"custom install script", "another install script"}
 	data.Tests = []string{`system "#{bin}/{{.ProjectName}} -version"`}
+	data.Head = config.HomebrewHead{URL: "https://github.com/caarlos0/test.git", Branch: "develop", Revision: "090930930295adslfknsdfsdaffnasd13"}
+
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
