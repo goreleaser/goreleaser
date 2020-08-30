@@ -272,7 +272,8 @@ func start(t *testing.T, name, listen string) {
 		"-e", "MINIO_ACCESS_KEY=minio",
 		"-e", "MINIO_SECRET_KEY=miniostorage",
 		"--health-interval", "1s",
-		"minio/minio:RELEASE.2019-05-14T23-57-45Z",
+		"--health-cmd=curl --silent --fail http://localhost:9000/minio/health/ready || exit 1",
+		"minio/minio",
 		"server", "/data",
 	).CombinedOutput(); err != nil {
 		t.Fatalf("failed to start minio: %s", string(out))
