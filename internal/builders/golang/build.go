@@ -56,6 +56,9 @@ func (*Builder) WithDefaults(build config.Build) config.Build {
 	if len(build.Targets) == 0 {
 		build.Targets = matrix(build)
 	}
+	if build.GoBinary == "" {
+		build.GoBinary = "go"
+	}
 	return build
 }
 
@@ -69,7 +72,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	var cmd = []string{"go", "build"}
+	var cmd = []string{build.GoBinary, "build"}
 
 	var env = append(ctx.Env.Strings(), build.Env...)
 	env = append(env, target.Env()...)
