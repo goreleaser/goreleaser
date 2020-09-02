@@ -121,7 +121,7 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	case "sha512":
 		h = sha512.New()
 	default:
-		return "", fmt.Errorf("invalid algorith: %s", algorithm)
+		return "", fmt.Errorf("invalid algorithm: %s", algorithm)
 	}
 	_, err = io.Copy(h, file)
 	if err != nil {
