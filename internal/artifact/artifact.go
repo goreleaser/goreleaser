@@ -55,16 +55,13 @@ func (t Type) String() string {
 		return "Archive"
 	case UploadableFile:
 		return "File"
-	case UploadableBinary:
-	case Binary:
+	case UploadableBinary, Binary:
 		return "Binary"
 	case LinuxPackage:
 		return "Linux Package"
-	case DockerImage:
-	case PublishableDockerImage:
+	case PublishableDockerImage, DockerImage:
 		return "Docker Image"
-	case PublishableSnapcraft:
-	case Snapcraft:
+	case PublishableSnapcraft, Snapcraft:
 		return "Snap"
 	case Checksum:
 		return "Checksum"
@@ -72,8 +69,9 @@ func (t Type) String() string {
 		return "Signature"
 	case UploadableSourceArchive:
 		return "Source"
+	default:
+		return "unknown"
 	}
-	return "unknown"
 }
 
 // Artifact represents an artifact and its relevant info.
