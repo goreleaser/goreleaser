@@ -35,8 +35,11 @@ changelog:
 dockers:
 - image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}-cgo'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-cgo'
   - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo'
+  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo'
   - 'goreleaser/goreleaser:latest-cgo'
+  - 'ghcr.io/goreleaser/goreleaser:latest-cgo'
   dockerfile: Dockerfile.cgo
   binaries:
   - goreleaser
@@ -50,8 +53,11 @@ dockers:
   - scripts/entrypoint.sh
 - image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}'
   - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
+  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
   - 'goreleaser/goreleaser:latest'
+  - 'ghcr.io/goreleaser/goreleaser:latest'
   dockerfile: Dockerfile
   binaries:
   - goreleaser
