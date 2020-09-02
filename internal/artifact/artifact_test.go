@@ -198,7 +198,7 @@ func TestInvalidAlgorithm(t *testing.T) {
 		Path: f.Name(),
 	}
 	sum, err := artifact.Checksum("sha1ssss")
-	require.EqualError(t, err, `invalid algorith: sha1ssss`)
+	require.EqualError(t, err, `invalid algorithm: sha1ssss`)
 	require.Empty(t, sum)
 }
 
