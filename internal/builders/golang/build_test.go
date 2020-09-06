@@ -71,6 +71,21 @@ func TestWithDefaults(t *testing.T) {
 			},
 			goBinary: "go",
 		},
+		"custom targets": {
+			build: config.Build{
+				ID:     "foo3",
+				Binary: "foo",
+				Targets: []string{
+					"linux_386",
+					"darwin_amd64",
+				},
+			},
+			targets: []string{
+				"linux_386",
+				"darwin_amd64",
+			},
+			goBinary: "go",
+		},
 	} {
 		t.Run(name, func(tt *testing.T) {
 			var config = config.Project{
