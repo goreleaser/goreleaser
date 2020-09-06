@@ -261,6 +261,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		Conflicts:        cfg.Conflicts,
 		Plist:            cfg.Plist,
 		Install:          split(cfg.Install),
+		PostInstall:      cfg.PostInstall,
 		Tests:            split(cfg.Test),
 		DownloadStrategy: cfg.DownloadStrategy,
 		CustomRequire:    cfg.CustomRequire,
