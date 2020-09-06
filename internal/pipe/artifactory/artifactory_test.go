@@ -507,64 +507,6 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: invalid character '.' looking for beginning of value`)
 }
 
-func TestRunPipe_UnparsableResponse(t *testing.T) {
-	setup()
-	defer teardown()
-
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
-	var dist = filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
-	d1 := []byte("hello\ngo\n")
-	err = ioutil.WriteFile(binPath, d1, 0666)
-	assert.NoError(t, err)
-
-	// Dummy artifactory with invalid JSON
-	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodPut)
-		testHeader(t, r, "Content-Length", "9")
-		// Basic auth of user "deployuser" with secret "deployuser-secret"
-		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
-
-		w.WriteHeader(http.StatusCreated)
-		fmt.Fprint(w, `invalid-json{
-			"repo" : "example-repo-local",
-			...
-		  }`)
-	})
-
-	var ctx = context.New(config.Project{
-		ProjectName: "mybin",
-		Dist:        dist,
-		Artifactories: []config.Upload{
-			{
-				Name:     "production",
-				Mode:     "binary",
-				Target:   fmt.Sprintf("%s/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}", server.URL),
-				Username: "deployuser",
-			},
-		},
-		Archives: []config.Archive{
-			{},
-		},
-	})
-	ctx.Env = map[string]string{
-		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-	}
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "mybin",
-		Path:   binPath,
-		Goarch: "amd64",
-		Goos:   "darwin",
-		Type:   artifact.UploadableBinary,
-	})
-
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: invalid character 'i' looking for beginning of value`)
-}
-
 func TestRunPipe_FileNotFound(t *testing.T) {
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
