@@ -41,19 +41,19 @@ func (*Builder) WithDefaults(build config.Build) config.Build {
 	if build.Main == "" {
 		build.Main = "."
 	}
-	if len(build.Goos) == 0 {
-		build.Goos = []string{"linux", "darwin"}
-	}
-	if len(build.Goarch) == 0 {
-		build.Goarch = []string{"amd64", "386"}
-	}
-	if len(build.Goarm) == 0 {
-		build.Goarm = []string{"6"}
-	}
 	if len(build.Ldflags) == 0 {
 		build.Ldflags = []string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser"}
 	}
 	if len(build.Targets) == 0 {
+		if len(build.Goos) == 0 {
+			build.Goos = []string{"linux", "darwin"}
+		}
+		if len(build.Goarch) == 0 {
+			build.Goarch = []string{"amd64", "386"}
+		}
+		if len(build.Goarm) == 0 {
+			build.Goarm = []string{"6"}
+		}
 		build.Targets = matrix(build)
 	}
 	if build.GoBinary == "" {
