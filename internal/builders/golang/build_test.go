@@ -84,6 +84,7 @@ func TestWithDefaults(t *testing.T) {
 				"linux_386",
 				"darwin_amd64",
 			},
+			goBinary: "go",
 		},
 	} {
 		t.Run(name, func(tt *testing.T) {
