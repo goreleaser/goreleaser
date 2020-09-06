@@ -2,7 +2,7 @@
 title: Release
 ---
 
-GoReleaser will create a GitHub/GitLab release with the current tag, upload all
+GoReleaser can create a GitHub/GitLab/Gitea release with the current tag, upload all
 the artifacts and generate the changelog based on the new commits since the
 previous tag.
 
@@ -13,7 +13,7 @@ Let's see what can be customized in the `release` section for GitHub:
 release:
   # Repo in which the release will be created.
   # Default is extracted from the origin remote URL or empty if its private hosted.
-  # Note: it can only be one: either github or gitlab or gitea
+  # Note: it can only be one: either github, gitlab or gitea
   github:
     owner: user
     name: repo
@@ -34,12 +34,11 @@ release:
   # Default is false.
   prerelease: auto
 
-  # You can change the name of the GitHub release.
+  # You can change the name of the release.
   # Default is `{{.Tag}}`
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
-  # You can disable this pipe in order to not upload any artifacts to
-  # GitHub.
+  # You can disable this pipe in order to not upload any artifacts.
   # Defaults to false.
   disable: true
 
@@ -59,7 +58,7 @@ Second, let's see what can be customized in the `release` section for GitLab.
 # .goreleaser.yml
 release:
   # Same as for github
-  # Note: it can only be one: either github or gitlab or gitea
+  # Note: it can only be one: either github, gitlab or gitea
   gitlab:
     owner: user
     name: repo
@@ -70,12 +69,11 @@ release:
     - foo
     - bar
 
-  # You can change the name of the GitLab release.
+  # You can change the name of the release.
   # Default is `{{.Tag}}`
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
-  # You can disable this pipe in order to not upload any artifacts to
-  # GitLab.
+  # You can disable this pipe in order to not upload any artifacts.
   # Defaults to false.
   disable: true
 
@@ -98,7 +96,7 @@ You can also configure the `release` section to upload to a [Gitea](https://gite
 # .goreleaser.yml
 release:
   # Same as for github and gitlab
-  # Note: it can only be one: either github or gitlab or gitea
+  # Note: it can only be one: either github, gitlab or gitea
   gitea:
     owner: user
     name: repo
@@ -109,12 +107,11 @@ release:
     - foo
     - bar
 
-  # You can change the name of the Gitea release.
+  # You can change the name of the release.
   # Default is `{{.Tag}}`
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
-  # You can disable this pipe in order to not upload any artifacts to
-  # Gitea.
+  # You can disable this pipe in order to not upload any artifacts.
   # Defaults to false.
   disable: true
 
@@ -154,7 +151,8 @@ You can customize how the changelog is generated using the
 ```yaml
 # .goreleaser.yml
 changelog:
-  # set it to true if you wish to skip the changelog generation
+  # Set it to true if you wish to skip the changelog generation.
+  # This may result in an empty release notes on GitHub/GitLab/Gitea.
   skip: true
   # could either be asc, desc or empty
   # Default is empty
@@ -199,4 +197,4 @@ Some changelog generators you can use:
 !!! info
     If you create the release before running GoReleaser, and the
     said release has some text in its body, GoReleaser will not override it with
-    it's release notes.
+    its release notes.
