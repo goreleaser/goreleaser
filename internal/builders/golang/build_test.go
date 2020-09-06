@@ -24,8 +24,9 @@ var runtimeTarget = runtime.GOOS + "_" + runtime.GOARCH
 
 func TestWithDefaults(t *testing.T) {
 	for name, testcase := range map[string]struct {
-		build   config.Build
-		targets []string
+		build    config.Build
+		targets  []string
+		goBinary string
 	}{
 		"full": {
 			build: config.Build{
@@ -47,6 +48,7 @@ func TestWithDefaults(t *testing.T) {
 				Gomips: []string{
 					"softfloat",
 				},
+				GoBinary: "go1.2.3",
 			},
 			targets: []string{
 				"linux_amd64",
@@ -55,6 +57,7 @@ func TestWithDefaults(t *testing.T) {
 				"windows_amd64",
 				"linux_arm_6",
 			},
+			goBinary: "go1.2.3",
 		},
 		"empty": {
 			build: config.Build{
@@ -66,6 +69,7 @@ func TestWithDefaults(t *testing.T) {
 				"linux_386",
 				"darwin_amd64",
 			},
+			goBinary: "go",
 		},
 	} {
 		t.Run(name, func(tt *testing.T) {
@@ -78,6 +82,7 @@ func TestWithDefaults(t *testing.T) {
 			ctx.Git.CurrentTag = "5.6.7"
 			var build = Default.WithDefaults(ctx.Config.Builds[0])
 			assert.ElementsMatch(t, build.Targets, testcase.targets)
+			assert.EqualValues(t, testcase.goBinary, build.GoBinary)
 		})
 	}
 }
@@ -104,6 +109,7 @@ func TestBuild(t *testing.T) {
 				Asmflags: []string{".=", "all="},
 				Gcflags:  []string{"all="},
 				Flags:    []string{"{{.Env.GO_FLAGS}}"},
+				GoBinary: "go",
 			},
 		},
 	}
@@ -259,6 +265,7 @@ func TestBuildCodeInSubdir(t *testing.T) {
 				Targets: []string{
 					runtimeTarget,
 				},
+				GoBinary: "go",
 			},
 		},
 	}
@@ -286,6 +293,7 @@ func TestBuildFailed(t *testing.T) {
 				Targets: []string{
 					runtimeTarget,
 				},
+				GoBinary: "go",
 			},
 		},
 	}
@@ -476,6 +484,7 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 				Targets: []string{
 					runtimeTarget,
 				},
+				GoBinary: "go",
 			},
 		},
 	}
@@ -643,6 +652,7 @@ func TestBuildModTimestamp(t *testing.T) {
 				Gcflags:      []string{"all="},
 				Flags:        []string{"{{.Env.GO_FLAGS}}"},
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
+				GoBinary:     "go",
 			},
 		},
 	}

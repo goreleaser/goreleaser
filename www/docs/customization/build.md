@@ -101,6 +101,11 @@ builds:
       - goarm: mips64
         gomips: hardfloat
 
+    # Set a specific go binary to use when building. It is safe to ignore
+    # this option in most cases.
+    # Default is "go"
+    gobinary: "go1.13.4"
+
     # Set the modified timestamp on the output binary, typically
     # you would do this to ensure a build was reproducible. Pass
     # empty string to skip modifying the output.
