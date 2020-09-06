@@ -174,3 +174,11 @@ end
     The generated formulas are meant to be published as
     [homebrew taps](https://docs.brew.sh/Taps.html), and in their current
     form will not be accepted in any of the official homebrew repositories.
+
+## Head Formulas
+
+GoReleaser does not generate `head` formulas for you, as it may be very different
+from one software to another.
+
+Our suggestion is to create a `my-app-head.rb` file on your tap following
+[homebrew's documentation](https://docs.brew.sh/Formula-Cookbook#unstable-versions-head).
