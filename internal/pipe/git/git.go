@@ -148,11 +148,26 @@ func getFullCommit() (string, error) {
 }
 
 func getTag() (string, error) {
-	if tag := os.Getenv("GORELEASER_CURRENT_TAG"); tag != "" {
-		return tag, nil
+	var tag string
+	var err error
+	for _, fn := range []func() (string, error){
+		func() (string, error) {
+			return os.Getenv("GORELEASER_CURRENT_TAG"), nil
+		},
+		func() (string, error) {
+			return git.Clean(git.Run("tag", "--points-at", "HEAD", "--sort", "-version:creatordate"))
+		},
+		func() (string, error) {
+			return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
+		},
+	} {
+		tag, err = fn()
+		if tag != "" || err != nil {
+			return tag, err
+		}
 	}
 
-	return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
+	return tag, err
 }
 
 func getURL() (string, error) {
