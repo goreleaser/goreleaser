@@ -84,4 +84,8 @@ func TestShouldPrependRelease(t *testing.T) {
 	t.Run("check", func(t *testing.T) {
 		require.False(t, result([]string{"check", "-f", "testdata/good.yml"}))
 	})
+
+	t.Run("help", func(t *testing.T) {
+		require.False(t, result([]string{"help"}))
+	})
 }
