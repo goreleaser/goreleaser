@@ -196,13 +196,17 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 	if err != nil {
 		return "", err
 	}
-	projectID := ctx.Config.Release.GitLab.Name
+	gitlabName, err := tmpl.New(ctx).Apply(ctx.Config.Release.GitLab.Name)
+	if err != nil {
+		return "", err
+	}
+	projectID := gitlabName
   if (ctx.Config.Release.GitLab.Owner != ""){
 		projectID = ctx.Config.Release.GitLab.Owner + "/" + projectID
 	}
 	log.WithFields(log.Fields{
 		"owner": ctx.Config.Release.GitLab.Owner,
-		"name":  ctx.Config.Release.GitLab.Name,
+		"name":  gitlabName,
 		"projectID":  projectID,
 	}).Debug("projectID")
 
@@ -210,16 +214,8 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 	tagName := ctx.Git.CurrentTag
 	release, resp, err := c.client.Releases.GetRelease(projectID, tagName)
 	if err != nil && (resp == nil || resp.StatusCode != 403) {
-		log.WithFields(log.Fields{
-			"err": err.Error(),
-		}).Debug("BBBBBB")
 		return "", err
 	}
-
-	log.WithFields(log.Fields{
-		"here": "BEFORE",
-	}).Debug("AHHHH")
-
 
 	if resp.StatusCode == 403 {
 		log.WithFields(log.Fields{
@@ -275,18 +271,22 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 
 func (c *gitlabClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
 	var urlTemplate string
+	gitlabName, err := tmpl.New(ctx).Apply(ctx.Config.Release.GitLab.Name)
+	if err != nil {
+		return "", err
+	}
 	if ctx.Config.Release.GitLab.Owner != "" {
 		urlTemplate = fmt.Sprintf(
 			"%s/%s/%s/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
 			ctx.Config.GitLabURLs.Download,
 			ctx.Config.Release.GitLab.Owner,
-			ctx.Config.Release.GitLab.Name,
+			gitlabName,
 		)
 	} else {
 		urlTemplate = fmt.Sprintf(
 			"%s/%s/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
-			ctx.Config.Release.GitLab.Owner,
-			ctx.Config.Release.GitLab.Name,
+			ctx.Config.GitLabURLs.Download,
+			gitlabName,
 		)
 
 	}
@@ -300,7 +300,11 @@ func (c *gitlabClient) Upload(
 	artifact *artifact.Artifact,
 	file *os.File,
 ) error {
-	projectID := ctx.Config.Release.GitLab.Name
+	gitlabName, err := tmpl.New(ctx).Apply(ctx.Config.Release.GitLab.Name)
+	if err != nil {
+		return err
+	}
+	projectID := gitlabName
   if (ctx.Config.Release.GitLab.Owner != ""){
 		projectID = ctx.Config.Release.GitLab.Owner + "/" + projectID
 	}
