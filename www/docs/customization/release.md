@@ -59,6 +59,10 @@ Second, let's see what can be customized in the `release` section for GitLab.
 release:
   # Same as for github
   # Note: it can only be one: either github, gitlab or gitea
+  # You can use Gitlab's internal project id by setting it directly or using an environment variable
+  # owner: ""
+  # name: "{{.Env.CI_PROJECT_ID}}"
+  
   gitlab:
     owner: user
     name: repo
