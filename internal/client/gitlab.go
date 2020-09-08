@@ -288,7 +288,6 @@ func (c *gitlabClient) ReleaseURLTemplate(ctx *context.Context) (string, error) 
 			ctx.Config.GitLabURLs.Download,
 			gitlabName,
 		)
-
 	}
 	return urlTemplate, nil
 }
