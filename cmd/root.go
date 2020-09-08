@@ -88,6 +88,11 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 		return false
 	}
 
+	// allow help command.
+	if len(args) > 0 && args[0] == "help" {
+		return false
+	}
+
 	// if we have != 1 args, assume its a release
 	if len(args) != 1 {
 		return true
