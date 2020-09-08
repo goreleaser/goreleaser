@@ -311,7 +311,6 @@ func (c *gitlabClient) Upload(
 		file.Name(),
 		nil,
 	)
-
 	if err != nil {
 		return err
 	}
@@ -321,9 +320,14 @@ func (c *gitlabClient) Upload(
 		"url":  projectFile.URL,
 	}).Debug("uploaded file")
 
+	projectDetails, _, err  := c.client.Projects.GetProject(projectID, nil)
+	if err != nil {
+		return err
+	}
+
 	gitlabBaseURL := ctx.Config.GitLabURLs.Download
 	// projectFile.URL from upload: /uploads/<hash>/filename.txt
-	linkURL := gitlabBaseURL + "/" + projectID + projectFile.URL
+	linkURL := gitlabBaseURL + projectDetails.PathWithNamespace + projectFile.URL
 	name := artifact.Name
 	releaseLink, _, err := c.client.ReleaseLinks.CreateReleaseLink(
 		projectID,
