@@ -39,7 +39,6 @@ func NewGitea(ctx *context.Context, token string) (Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	client, _ := gitea.NewClient(instanceURL, gitea.SetToken(token))
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			// nolint: gosec
@@ -47,33 +46,29 @@ func NewGitea(ctx *context.Context, token string) (Client, error) {
 		},
 	}
 	httpClient := &http.Client{Transport: transport}
-	client.SetHTTPClient(httpClient)
+	client, err := gitea.NewClient(instanceURL,
+		gitea.SetToken(token),
+		gitea.SetHTTPClient(httpClient),
+		gitea.SetContext(ctx),
+	)
+	if err != nil {
+		return nil, err
+	}
 	return &giteaClient{client: client}, nil
 }
 
 // CloseMilestone closes a given milestone.
 func (c *giteaClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
-	milestone, err := c.getMilestoneByTitle(repo, title)
-
-	if err != nil {
-		return err
+	closedState := gitea.StateClosed
+	opts := gitea.EditMilestoneOption{
+		State: &closedState,
+		Title: title,
 	}
 
-	if milestone == nil {
+	_, resp, err := c.client.EditMilestoneByName(repo.Owner, repo.Name, title, opts)
+	if resp != nil && resp.StatusCode == http.StatusNotFound {
 		return ErrNoMilestoneFound{Title: title}
 	}
-
-	closedState := gitea.StateClosed
-
-	opts := gitea.EditMilestoneOption{
-		Deadline:    milestone.Deadline,
-		Description: &milestone.Description,
-		State:       &closedState,
-		Title:       milestone.Title,
-	}
-
-	_, _, err = c.client.EditMilestone(repo.Owner, repo.Name, milestone.ID, opts)
-
 	return err
 }
 
@@ -218,22 +213,4 @@ func (c *giteaClient) Upload(
 		return RetriableError{err}
 	}
 	return nil
-}
-
-// getMilestoneByTitle returns a milestone by title.
-func (c *giteaClient) getMilestoneByTitle(repo Repo, title string) (*gitea.Milestone, error) {
-	// The Gitea API/SDK does not provide lookup by title functionality currently.
-	milestones, _, err := c.client.ListRepoMilestones(repo.Owner, repo.Name, gitea.ListMilestoneOption{})
-
-	if err != nil {
-		return nil, err
-	}
-
-	for _, milestone := range milestones {
-		if milestone.Title == title {
-			return milestone, nil
-		}
-	}
-
-	return nil, nil
 }
