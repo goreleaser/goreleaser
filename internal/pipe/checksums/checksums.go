@@ -40,14 +40,19 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if ctx.Config.Checksum.Disable {
 		return pipe.Skip("checksum.disable is set")
 	}
-	artifactList := ctx.Artifacts.Filter(
-		artifact.Or(
+	var filter artifact.Filter
+	if len(ctx.Config.Checksum.IDs) == 0 {
+		filter = artifact.Or(
 			artifact.ByType(artifact.UploadableArchive),
 			artifact.ByType(artifact.UploadableBinary),
 			artifact.ByType(artifact.UploadableSourceArchive),
 			artifact.ByType(artifact.LinuxPackage),
-		),
-	).List()
+		)
+	} else {
+		filter = artifact.ByIDs(ctx.Config.Checksum.IDs...)
+	}
+
+	artifactList := ctx.Artifacts.Filter(filter).List()
 	if len(artifactList) == 0 {
 		return nil
 	}
