@@ -120,7 +120,8 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 	}
 	s.releaseID = 666
 	s.releaseURL = fmt.Sprintf("%v/%v", s.releasesURL, s.releaseID)
-	s.client = &giteaClient{client: gitea.NewClient(s.url, "")}
+	newClient, _ := gitea.NewClient(s.url)
+	s.client = &giteaClient{client: newClient}
 }
 
 func (s *GiteaReleasesTestSuite) TearDownTest() {
