@@ -11,6 +11,7 @@ type templateData struct {
 	Plist            string
 	DownloadStrategy string
 	Install          []string
+	PostInstall      string
 	Dependencies     []config.HomebrewDependency
 	Conflicts        []string
 	Tests            []string
@@ -94,6 +95,13 @@ class {{ .Name }} < Formula
     {{ . -}}
     {{- end }}
   end
+
+  {{- with .PostInstall }}
+
+  def post_install
+    {{ . }}
+  end
+  {{- end -}}
 
   {{- with .Caveats }}
 
