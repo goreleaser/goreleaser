@@ -1,11 +1,11 @@
 package git
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/pkg/errors"
 )
 
 // ExtractRepoFromConfig gets the repo name from the Git config.

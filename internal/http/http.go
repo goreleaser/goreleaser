@@ -12,8 +12,6 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -59,7 +57,7 @@ func assetOpenDefault(kind string, a *artifact.Artifact) (*asset, error) {
 		return nil, err
 	}
 	if s.IsDir() {
-		return nil, errors.Errorf("%s: upload failed: the asset to upload can't be a directory", kind)
+		return nil, fmt.Errorf("%s: upload failed: the asset to upload can't be a directory", kind)
 	}
 	return &asset{
 		ReadCloser: f,

@@ -4,13 +4,13 @@ package env
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/pkg/errors"
 )
 
 // ErrMissingToken indicates an error when GITHUB_TOKEN, GITLAB_TOKEN and GITEA_TOKEN are all missing in the environment.

@@ -1,6 +1,7 @@
 package release
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -14,7 +15,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -568,7 +568,7 @@ func (c *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *a
 	// ensure file is read to better mimic real behavior
 	_, err := ioutil.ReadAll(file)
 	if err != nil {
-		return fmt.Errorf(err, "unexpected error")
+		return fmt.Errorf("unexpected error: %w", err)
 	}
 	if c.FailToUpload {
 		return errors.New("upload failed")

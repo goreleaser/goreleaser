@@ -2,6 +2,7 @@
 package snapcraft
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
