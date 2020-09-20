@@ -60,7 +60,7 @@ func Run(args ...string) (string, error) {
 
 // Clean the output.
 func Clean(output string, err error) (string, error) {
-	output = strings.Replace(strings.Split(output, "\n")[0], "'", "", -1)
+	output = strings.ReplaceAll(strings.Split(output, "\n")[0], "'", "")
 	if err != nil {
 		err = errors.New(strings.TrimSuffix(err.Error(), "\n"))
 	}
