@@ -1,6 +1,7 @@
 package release
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -567,7 +568,7 @@ func (c *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *a
 	// ensure file is read to better mimic real behavior
 	_, err := ioutil.ReadAll(file)
 	if err != nil {
-		return errors.Wrapf(err, "unexpected error")
+		return fmt.Errorf(err, "unexpected error")
 	}
 	if c.FailToUpload {
 		return errors.New("upload failed")

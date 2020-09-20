@@ -1,6 +1,7 @@
 package release
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -133,7 +134,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 
 	for name, path := range extraFiles {
 		if _, err := os.Stat(path); os.IsNotExist(err) {
-			return errors.Wrapf(err, "failed to upload %s", name)
+			return fmt.Errorf("failed to upload %s: %w", name, err)
 		}
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: name,
@@ -203,5 +204,5 @@ loop:
 		}
 	}
 
-	return errors.Wrapf(err, "failed to upload %s after %d tries", artifact.Name, try)
+	return fmt.Errorf("failed to upload %s after %d tries: %w", artifact.Name, try, err)
 }

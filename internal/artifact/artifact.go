@@ -16,7 +16,6 @@ import (
 	"sync"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
 )
 
 // Type defines the type of an artifact.
@@ -101,7 +100,7 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	log.Debugf("calculating checksum for %s", a.Path)
 	file, err := os.Open(a.Path)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to checksum")
+		return "", fmt.Errorf("failed to checksum: %w", err)
 	}
 	defer file.Close()
 	var h hash.Hash
@@ -125,7 +124,7 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	}
 	_, err = io.Copy(h, file)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to checksum")
+		return "", fmt.Errorf("failed to checksum: %w", err)
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
 }

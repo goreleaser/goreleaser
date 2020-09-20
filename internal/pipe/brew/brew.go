@@ -202,7 +202,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	var path = filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
 	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil { //nolint: gosec
-		return errors.Wrap(err, "failed to write brew formula")
+		return fmt.Errorf("failed to write brew formula: %w", err)
 	}
 
 	if strings.TrimSpace(brew.SkipUpload) == "true" {

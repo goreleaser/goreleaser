@@ -221,7 +221,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	if err != nil {
 		msg := fmt.Sprintf("%s: error while building the target url", kind)
 		log.WithField("instance", upload.Name).WithError(err).Error(msg)
-		return errors.Wrap(err, msg)
+		return fmt.Errorf("%s: %w", msg, err)
 	}
 
 	// Handle the artifact
@@ -257,7 +257,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 			"instance": upload.Name,
 			"username": username,
 		}).Error(msg)
-		return errors.Wrap(err, msg)
+		return fmt.Errorf("%s: %w", msg, err)
 	}
 	if err := res.Body.Close(); err != nil {
 		log.WithError(err).Warn("failed to close response body")

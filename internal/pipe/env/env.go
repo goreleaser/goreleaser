@@ -4,6 +4,7 @@ package env
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 
 	"github.com/apex/log"
@@ -98,15 +99,15 @@ func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenEr
 	}
 
 	if gitlabTokenErr != nil {
-		return errors.Wrap(gitlabTokenErr, "failed to load gitlab token")
+		return fmt.Errorf("failed to load gitlab token: %w", gitlabTokenErr)
 	}
 
 	if githubTokenErr != nil {
-		return errors.Wrap(githubTokenErr, "failed to load github token")
+		return fmt.Errorf("failed to load github token: %w", githubTokenErr)
 	}
 
 	if giteaTokenErr != nil {
-		return errors.Wrap(giteaTokenErr, "failed to load gitea token")
+		return fmt.Errorf("failed to load gitea token: %w", giteaTokenErr)
 	}
 	return nil
 }

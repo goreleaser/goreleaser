@@ -20,7 +20,6 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/mattn/go-shellwords"
-	"github.com/pkg/errors"
 
 	// langs to init.
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
@@ -91,14 +90,14 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 			}
 
 			if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
-				return errors.Wrap(err, "pre hook failed")
+				return fmt.Errorf("pre hook failed: %w", err)
 			}
 			if err := doBuild(ctx, build, *opts); err != nil {
 				return err
 			}
 			if !ctx.SkipPostBuildHooks {
 				if err := runHook(ctx, *opts, build.Env, build.Hooks.Post); err != nil {
-					return errors.Wrap(err, "post hook failed")
+					return fmt.Errorf("post hook failed: %w", err)
 				}
 			}
 			return nil
@@ -229,7 +228,7 @@ func run(ctx *context.Context, dir string, command, env []string) error {
 	entry.WithField("env", env).Debug("running")
 	if err := cmd.Run(); err != nil {
 		entry.WithError(err).Debug("failed")
-		return errors.Wrapf(err, "%q", b.String())
+		return fmt.Errorf("%q: %w", b.String(), err)
 	}
 	return nil
 }
