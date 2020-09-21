@@ -95,6 +95,7 @@ type Homebrew struct {
 	Caveats          string               `yaml:",omitempty"`
 	Plist            string               `yaml:",omitempty"`
 	Install          string               `yaml:",omitempty"`
+	PostInstall      string               `yaml:"post_install,omitempty"`
 	Dependencies     []HomebrewDependency `yaml:",omitempty"`
 	Test             string               `yaml:",omitempty"`
 	Conflicts        []string             `yaml:",omitempty"`
@@ -108,7 +109,7 @@ type Homebrew struct {
 	IDs              []string             `yaml:"ids,omitempty"`
 	Goarm            string               `yaml:"goarm,omitempty"`
 
-	// Deprecated in favour of Tap
+	// Deprecated: in favour of Tap
 	GitHub Repo `yaml:",omitempty"`
 	GitLab Repo `yaml:",omitempty"`
 }

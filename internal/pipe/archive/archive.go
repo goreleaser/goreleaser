@@ -264,7 +264,7 @@ type EnhancedArchive struct {
 
 // Add adds a file.
 func (d EnhancedArchive) Add(name, path string) error {
-	name = strings.Replace(filepath.Join(d.wrap, name), "\\", "/", -1)
+	name = strings.ReplaceAll(filepath.Join(d.wrap, name), "\\", "/")
 	log.Debugf("adding file: %s as %s", path, name)
 	if _, ok := d.files[name]; ok {
 		return fmt.Errorf("file %s already exists in the archive", name)
