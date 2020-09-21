@@ -109,7 +109,7 @@ type Homebrew struct {
 	IDs              []string             `yaml:"ids,omitempty"`
 	Goarm            string               `yaml:"goarm,omitempty"`
 
-	// Deprecated in favour of Tap
+	// Deprecated: in favour of Tap
 	GitHub Repo `yaml:",omitempty"`
 	GitLab Repo `yaml:",omitempty"`
 }

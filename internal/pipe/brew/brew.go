@@ -98,6 +98,8 @@ func (Pipe) Default(ctx *context.Context) error {
 			brew.Install = strings.Join(installs, "\n")
 			log.Warnf("optimistically guessing `brew[%d].install`, double check", i)
 		}
+
+		//nolint: staticcheck
 		if brew.GitHub.String() != "" {
 			deprecate.Notice(ctx, "brews.github")
 			brew.Tap.Owner = brew.GitHub.Owner
@@ -331,8 +333,8 @@ func split(s string) []string {
 }
 
 func formulaNameFor(name string) string {
-	name = strings.Replace(name, "-", " ", -1)
-	name = strings.Replace(name, "_", " ", -1)
-	name = strings.Replace(name, "@", "AT", -1)
-	return strings.Replace(strings.Title(name), " ", "", -1)
+	name = strings.ReplaceAll(name, "-", " ")
+	name = strings.ReplaceAll(name, "_", " ")
+	name = strings.ReplaceAll(name, "@", "AT")
+	return strings.ReplaceAll(strings.Title(name), " ", "")
 }
