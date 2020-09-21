@@ -12,7 +12,6 @@ import (
 	_ "github.com/goreleaser/nfpm/deb" // blank import to register the format
 	_ "github.com/goreleaser/nfpm/rpm" // blank import to register the format
 	"github.com/imdario/mergo"
-	"github.com/pkg/errors"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
@@ -178,7 +177,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	}
 
 	if err = nfpm.Validate(info); err != nil {
-		return errors.Wrap(err, "invalid nfpm config")
+		return fmt.Errorf("invalid nfpm config: %w", err)
 	}
 
 	packager, err := nfpm.Get(format)
@@ -194,10 +193,10 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	}
 	defer w.Close()
 	if err := packager.Package(nfpm.WithDefaults(info), w); err != nil {
-		return errors.Wrap(err, "nfpm failed")
+		return fmt.Errorf("nfpm failed: %w", err)
 	}
 	if err := w.Close(); err != nil {
-		return errors.Wrap(err, "could not close package file")
+		return fmt.Errorf("could not close package file: %w", err)
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.LinuxPackage,

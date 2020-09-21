@@ -14,7 +14,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 	"gocloud.dev/blob"
 	"gocloud.dev/secrets"
 
@@ -141,21 +140,21 @@ func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, u
 func handleError(err error, url string) error {
 	switch {
 	case errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound"):
-		return errors.Wrapf(err, "provided bucket does not exist: %s", url)
+		return fmt.Errorf("provided bucket does not exist: %s: %w", url, err)
 	case errorContains(err, "NoCredentialProviders"):
-		return errors.Wrapf(err, "check credentials and access to bucket: %s", url)
+		return fmt.Errorf("check credentials and access to bucket: %s: %w", url, err)
 	case errorContains(err, "InvalidAccessKeyId"):
-		return errors.Wrap(err, "aws access key id you provided does not exist in our records")
+		return fmt.Errorf("aws access key id you provided does not exist in our records: %w", err)
 	case errorContains(err, "AuthenticationFailed"):
-		return errors.Wrap(err, "azure storage key you provided is not valid")
+		return fmt.Errorf("azure storage key you provided is not valid: %w", err)
 	case errorContains(err, "invalid_grant"):
-		return errors.Wrap(err, "google app credentials you provided is not valid")
+		return fmt.Errorf("google app credentials you provided is not valid: %w", err)
 	case errorContains(err, "no such host"):
-		return errors.Wrap(err, "azure storage account you provided is not valid")
+		return fmt.Errorf("azure storage account you provided is not valid: %w", err)
 	case errorContains(err, "ServiceCode=ResourceNotFound"):
-		return errors.Wrapf(err, "missing azure storage key for provided bucket %s", url)
+		return fmt.Errorf("missing azure storage key for provided bucket %s: %w", url, err)
 	default:
-		return errors.Wrap(err, "failed to write to bucket")
+		return fmt.Errorf("failed to write to bucket: %w", err)
 	}
 }
 
@@ -169,19 +168,19 @@ func newUploader(ctx *context.Context) uploader {
 func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return data, errors.Wrapf(err, "failed to open file %s", path)
+		return data, fmt.Errorf("failed to open file %s: %w", path, err)
 	}
 	if conf.KMSKey == "" {
 		return data, nil
 	}
 	keeper, err := secrets.OpenKeeper(ctx, conf.KMSKey)
 	if err != nil {
-		return data, errors.Wrapf(err, "failed to open kms %s", conf.KMSKey)
+		return data, fmt.Errorf("failed to open kms %s: %w", conf.KMSKey, err)
 	}
 	defer keeper.Close()
 	data, err = keeper.Encrypt(ctx, data)
 	if err != nil {
-		return data, errors.Wrap(err, "failed to encrypt with kms")
+		return data, fmt.Errorf("failed to encrypt with kms: %w", err)
 	}
 	return data, err
 }

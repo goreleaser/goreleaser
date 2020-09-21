@@ -15,7 +15,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // Pipe for artifact signing.
@@ -116,7 +115,7 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 		var arg = expand(a, env)
 		arg, err := tmpl.New(ctx).WithEnv(env).Apply(arg)
 		if err != nil {
-			return nil, errors.Wrapf(err, "sign failed: %s: invalid template", a)
+			return nil, fmt.Errorf("sign failed: %s: invalid template: %w", a, err)
 		}
 		args = append(args, arg)
 	}
