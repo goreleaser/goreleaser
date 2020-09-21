@@ -39,6 +39,7 @@ func NewGitea(ctx *context.Context, token string) (Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	client := gitea.NewClient(instanceURL, token)
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			// nolint: gosec
@@ -46,29 +47,33 @@ func NewGitea(ctx *context.Context, token string) (Client, error) {
 		},
 	}
 	httpClient := &http.Client{Transport: transport}
-	client, err := gitea.NewClient(instanceURL,
-		gitea.SetToken(token),
-		gitea.SetHTTPClient(httpClient),
-		gitea.SetContext(ctx),
-	)
-	if err != nil {
-		return nil, err
-	}
+	client.SetHTTPClient(httpClient)
 	return &giteaClient{client: client}, nil
 }
 
 // CloseMilestone closes a given milestone.
 func (c *giteaClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
-	closedState := gitea.StateClosed
-	opts := gitea.EditMilestoneOption{
-		State: &closedState,
-		Title: title,
+	milestone, err := c.getMilestoneByTitle(repo, title)
+
+	if err != nil {
+		return err
 	}
 
-	_, resp, err := c.client.EditMilestoneByName(repo.Owner, repo.Name, title, opts)
-	if resp != nil && resp.StatusCode == http.StatusNotFound {
+	if milestone == nil {
 		return ErrNoMilestoneFound{Title: title}
 	}
+
+	closedState := string(gitea.StateClosed)
+
+	opts := gitea.EditMilestoneOption{
+		Deadline:    milestone.Deadline,
+		Description: &milestone.Description,
+		State:       &closedState,
+		Title:       milestone.Title,
+	}
+
+	_, err = c.client.EditMilestone(repo.Owner, repo.Name, milestone.ID, opts)
+
 	return err
 }
 
@@ -100,7 +105,7 @@ func (c *giteaClient) createRelease(ctx *context.Context, title, body string) (*
 		IsDraft:      releaseConfig.Draft,
 		IsPrerelease: ctx.PreRelease,
 	}
-	release, _, err := c.client.CreateRelease(owner, repoName, opts)
+	release, err := c.client.CreateRelease(owner, repoName, opts)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"err": err.Error(),
@@ -112,7 +117,7 @@ func (c *giteaClient) createRelease(ctx *context.Context, title, body string) (*
 }
 
 func (c *giteaClient) getExistingRelease(owner, repoName, tagName string) (*gitea.Release, error) {
-	releases, _, err := c.client.ListReleases(owner, repoName, gitea.ListReleasesOptions{})
+	releases, err := c.client.ListReleases(owner, repoName, gitea.ListReleasesOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +146,7 @@ func (c *giteaClient) updateRelease(ctx *context.Context, title, body string, id
 		IsPrerelease: &ctx.PreRelease,
 	}
 
-	release, _, err := c.client.EditRelease(owner, repoName, id, opts)
+	release, err := c.client.EditRelease(owner, repoName, id, opts)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"err": err.Error(),
@@ -208,9 +213,27 @@ func (c *giteaClient) Upload(
 	owner := releaseConfig.Gitea.Owner
 	repoName := releaseConfig.Gitea.Name
 
-	_, _, err = c.client.CreateReleaseAttachment(owner, repoName, giteaReleaseID, file, artifact.Name)
+	_, err = c.client.CreateReleaseAttachment(owner, repoName, giteaReleaseID, file, artifact.Name)
 	if err != nil {
 		return RetriableError{err}
 	}
 	return nil
+}
+
+// getMilestoneByTitle returns a milestone by title.
+func (c *giteaClient) getMilestoneByTitle(repo Repo, title string) (*gitea.Milestone, error) {
+	// The Gitea API/SDK does not provide lookup by title functionality currently.
+	milestones, err := c.client.ListRepoMilestones(repo.Owner, repo.Name, gitea.ListMilestoneOption{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, milestone := range milestones {
+		if milestone.Title == title {
+			return milestone, nil
+		}
+	}
+
+	return nil, nil
 }

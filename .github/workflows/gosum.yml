@@ -26,15 +26,9 @@ jobs:
         run: |
           rm -f go.sum
           go mod tidy
-      -
-        name: Create Pull Request
-        uses: peter-evans/create-pull-request@v2
+      - uses: stefanzweifel/git-auto-commit-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore(deps): go mod tidy"
-          title: "chore(deps): go mod tidy"
-          body: |
-            Current `go.mod` and `go.sum` don't match the source code.
-          branch: go-mod-tidy
-          branch-suffix: timestamp
-          labels: automerge
+          commit_message: "chore(deps): go mod tidy"
+          branch: master
