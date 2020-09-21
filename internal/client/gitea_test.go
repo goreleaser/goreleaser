@@ -120,7 +120,10 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 	}
 	s.releaseID = 666
 	s.releaseURL = fmt.Sprintf("%v/%v", s.releasesURL, s.releaseID)
-	s.client = &giteaClient{client: gitea.NewClient(s.url, "")}
+	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/api/v1/version", s.url), httpmock.NewStringResponder(200, "{\"version\":\"1.12.0\"}"))
+	newClient, err := gitea.NewClient(s.url)
+	assert.NoError(s.T(), err)
+	s.client = &giteaClient{client: newClient}
 }
 
 func (s *GiteaReleasesTestSuite) TearDownTest() {

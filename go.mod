@@ -3,7 +3,7 @@ module github.com/goreleaser/goreleaser
 go 1.15
 
 require (
-	code.gitea.io/sdk/gitea v0.12.1
+	code.gitea.io/sdk/gitea v0.13.0
 	github.com/Masterminds/semver/v3 v3.1.0
 	github.com/apex/log v1.9.0
 	github.com/caarlos0/ctrlc v1.0.0
