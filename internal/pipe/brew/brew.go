@@ -96,7 +96,7 @@ func (Pipe) Default(ctx *context.Context) error {
 				)
 			}
 			brew.Install = strings.Join(installs, "\n")
-			log.Warnf("optimistically guessing `brew[%d].installs`, double check", i)
+			log.Warnf("optimistically guessing `brew[%d].install`, double check", i)
 		}
 		if brew.GitHub.String() != "" {
 			deprecate.Notice(ctx, "brews.github")
@@ -261,6 +261,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		Conflicts:        cfg.Conflicts,
 		Plist:            cfg.Plist,
 		Install:          split(cfg.Install),
+		PostInstall:      cfg.PostInstall,
 		Tests:            split(cfg.Test),
 		DownloadStrategy: cfg.DownloadStrategy,
 		CustomRequire:    cfg.CustomRequire,
