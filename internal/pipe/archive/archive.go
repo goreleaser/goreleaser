@@ -196,10 +196,17 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		if err != nil {
 			return err
 		}
+		name += binary.ExtraOr("Ext", "").(string)
+		renamePath := filepath.Join(ctx.Config.Dist, name)
+		if err := os.Rename(binary.Path, renamePath); err != nil {
+			return err
+		}
+		_ = os.Remove(filepath.Dir(binary.Path))
 		ctx.Artifacts.Add(&artifact.Artifact{
-			Type:   artifact.UploadableBinary,
-			Name:   name + binary.ExtraOr("Ext", "").(string),
-			Path:   binary.Path,
+			Type: artifact.UploadableBinary,
+			// this is the name it shows
+			Name:   name,
+			Path:   renamePath,
 			Goos:   binary.Goos,
 			Goarch: binary.Goarch,
 			Goarm:  binary.Goarm,
