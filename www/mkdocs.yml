@@ -86,6 +86,7 @@ nav:
 - Cookbooks:
   - About: cookbooks/index.md
   - cookbooks/semantic-release.md
+  - cookbooks/release-a-library.md
 - tutorials.md
 - links.md
 
