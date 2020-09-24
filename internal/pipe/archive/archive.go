@@ -5,6 +5,7 @@ package archive
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -196,12 +197,28 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		if err != nil {
 			return err
 		}
+
 		name += binary.ExtraOr("Ext", "").(string)
-		renamePath := filepath.Join(ctx.Config.Dist, name)
-		if err := os.Rename(binary.Path, renamePath); err != nil {
+		renamePath := filepath.Join(ctx.Config.Dist, "bins", name)
+
+		src, err := os.Open(binary.Path)
+		if err != nil {
 			return err
 		}
-		_ = os.Remove(filepath.Dir(binary.Path))
+		defer src.Close()
+
+		if err := os.MkdirAll(filepath.Dir(renamePath), 0755); err != nil {
+			return err
+		}
+		dst, err := os.Create(renamePath)
+		if err != nil {
+			return err
+		}
+		defer dst.Close()
+
+		if _, err := io.Copy(dst, src); err != nil {
+			return err
+		}
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Type:   artifact.UploadableBinary,
 			Name:   name,
