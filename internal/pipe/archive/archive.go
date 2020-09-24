@@ -203,8 +203,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		}
 		_ = os.Remove(filepath.Dir(binary.Path))
 		ctx.Artifacts.Add(&artifact.Artifact{
-			Type: artifact.UploadableBinary,
-			// this is the name it shows
+			Type:   artifact.UploadableBinary,
 			Name:   name,
 			Path:   renamePath,
 			Goos:   binary.Goos,
