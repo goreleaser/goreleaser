@@ -83,6 +83,9 @@ nav:
 - deprecations.md
 - sponsors.md
 - contributing.md
+- Cookbooks:
+  - About: cookbooks/index.md
+  - cookbooks/semantic-release.md
 - tutorials.md
 - links.md
 
