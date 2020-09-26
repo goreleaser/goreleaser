@@ -48,6 +48,30 @@ func TestReleaseFlags(t *testing.T) {
 		require.True(t, ctx.SkipPublish)
 	})
 
+	t.Run("snapshot with publish-snapshot", func(t *testing.T) {
+		var ctx = setup(releaseOpts{
+			snapshot:        true,
+			publishSnapshot: true,
+		})
+		require.True(t, ctx.Snapshot)
+		require.False(t, ctx.SkipPublish)
+	})
+
+	t.Run("publish-snapshot", func(t *testing.T) {
+		var ctx = setup(releaseOpts{
+			publishSnapshot: true,
+		})
+		require.False(t, ctx.SkipPublish)
+	})
+
+	t.Run("skip-publish with publish-snapshot", func(t *testing.T) {
+		var ctx = setup(releaseOpts{
+			skipPublish:     true,
+			publishSnapshot: true,
+		})
+		require.True(t, ctx.SkipPublish)
+	})
+
 	t.Run("skips", func(t *testing.T) {
 		var ctx = setup(releaseOpts{
 			skipPublish:  true,
