@@ -11,7 +11,7 @@ executed for each (filtered) artifact. For example, there will be a total of
 6 executions for 2 publishers with 3 artifacts.
 
 Publishers run sequentially in the order they're defined
-and executions are parallelised between all artifacts.
+and executions are parallelized between all artifacts.
 In other words the publisher is expected to be safe to run
 in multiple instances in parallel.
 
@@ -108,24 +108,3 @@ which may require non-trivial authentication or has otherwise complex requiremen
 
 !!! tip
     Learn more about the [name template engine](/customization/templates).
-
-## Examples
-
-### Publish to Nexus
-
-Example of a `publishers` section pushing files to a Nexus instance:
-
-```yaml
-publishers:
-- name: nexus
-  cmd: >-
-    curl -k -u "{{ .Env.NEXUS_USERNAME }}:{{ .Env.NEXUS_PASSWORD }}"
-    -X POST
-    -H "Accept: application/json"
-    -H "Content-Type: multipart/form-data"
-    "https://nexuspro.somehost.com/service/rest/v1/components?repository=go-raw-autopub"
-    -F "raw.directory={{ tolower .Env.PROJECT_KEY }}/{{ tolower .ProjectName }}/{{ .Version }}"
-    -F "raw.asset1=@{{ .ArtifactName }};type=application/gzip"
-    -F "raw.asset1.filename={{ .ArtifactName }}"
-  dir: "{{ dir .ArtifactPath }}"
-```

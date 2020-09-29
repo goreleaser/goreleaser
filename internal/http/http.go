@@ -12,8 +12,6 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -59,7 +57,7 @@ func assetOpenDefault(kind string, a *artifact.Artifact) (*asset, error) {
 		return nil, err
 	}
 	if s.IsDir() {
-		return nil, errors.Errorf("%s: upload failed: the asset to upload can't be a directory", kind)
+		return nil, fmt.Errorf("%s: upload failed: the asset to upload can't be a directory", kind)
 	}
 	return &asset{
 		ReadCloser: f,
@@ -221,7 +219,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	if err != nil {
 		msg := fmt.Sprintf("%s: error while building the target url", kind)
 		log.WithField("instance", upload.Name).WithError(err).Error(msg)
-		return errors.Wrap(err, msg)
+		return fmt.Errorf("%s: %w", msg, err)
 	}
 
 	// Handle the artifact
@@ -257,7 +255,7 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 			"instance": upload.Name,
 			"username": username,
 		}).Error(msg)
-		return errors.Wrap(err, msg)
+		return fmt.Errorf("%s: %w", msg, err)
 	}
 	if err := res.Body.Close(); err != nil {
 		log.WithError(err).Warn("failed to close response body")

@@ -13,7 +13,6 @@ import (
 	"github.com/apex/log"
 	"github.com/campoy/unique"
 	"github.com/mattn/go-zglob"
-	"github.com/pkg/errors"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
@@ -219,11 +218,11 @@ func findFiles(template *tmpl.Template, archive config.Archive) (result []string
 	for _, glob := range archive.Files {
 		replaced, err := template.Apply(glob)
 		if err != nil {
-			return result, errors.Wrapf(err, "failed to apply template %s", glob)
+			return result, fmt.Errorf("failed to apply template %s: %w", glob, err)
 		}
 		files, err := zglob.Glob(replaced)
 		if err != nil {
-			return result, errors.Wrapf(err, "globbing failed for pattern %s", glob)
+			return result, fmt.Errorf("globbing failed for pattern %s: %w", glob, err)
 		}
 		result = append(result, files...)
 	}
@@ -264,7 +263,7 @@ type EnhancedArchive struct {
 
 // Add adds a file.
 func (d EnhancedArchive) Add(name, path string) error {
-	name = strings.Replace(filepath.Join(d.wrap, name), "\\", "/", -1)
+	name = strings.ReplaceAll(filepath.Join(d.wrap, name), "\\", "/")
 	log.Debugf("adding file: %s as %s", path, name)
 	if _, ok := d.files[name]; ok {
 		return fmt.Errorf("file %s already exists in the archive", name)

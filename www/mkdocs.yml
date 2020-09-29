@@ -83,6 +83,11 @@ nav:
 - deprecations.md
 - sponsors.md
 - contributing.md
+- Cookbooks:
+  - About: cookbooks/index.md
+  - cookbooks/semantic-release.md
+  - cookbooks/release-a-library.md
+  - cookbooks/publish-to-nexus.md
 - tutorials.md
 - links.md
 

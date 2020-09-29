@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -18,7 +19,6 @@ import (
 	api "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // Default builder instance.
@@ -122,7 +122,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 
 	cmd = append(cmd, "-o", options.Path, build.Main)
 	if err := run(ctx, cmd, env, build.Dir); err != nil {
-		return errors.Wrapf(err, "failed to build for %s", options.Target)
+		return fmt.Errorf("failed to build for %s: %w", options.Target, err)
 	}
 
 	if build.ModTimestamp != "" {
@@ -137,7 +137,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		modTime := time.Unix(modUnix, 0)
 		err = os.Chtimes(options.Path, modTime, modTime)
 		if err != nil {
-			return errors.Wrapf(err, "failed to change times for %s", options.Target)
+			return fmt.Errorf("failed to change times for %s: %w", options.Target, err)
 		}
 	}
 
@@ -225,7 +225,7 @@ func checkMain(build config.Build) error {
 	if stat.IsDir() {
 		packs, err := parser.ParseDir(token.NewFileSet(), main, nil, 0)
 		if err != nil {
-			return errors.Wrapf(err, "failed to parse dir: %s", main)
+			return fmt.Errorf("failed to parse dir: %s: %w", main, err)
 		}
 		for _, pack := range packs {
 			for _, file := range pack.Files {
@@ -238,7 +238,7 @@ func checkMain(build config.Build) error {
 	}
 	file, err := parser.ParseFile(token.NewFileSet(), main, nil, 0)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse file: %s", main)
+		return fmt.Errorf("failed to parse file: %s: %w", main, err)
 	}
 	if hasMain(file) {
 		return nil

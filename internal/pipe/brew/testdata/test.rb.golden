@@ -38,6 +38,10 @@ class Test < Formula
     another install script
   end
 
+  def post_install
+    system "touch", "/tmp/foo"
+  end
+
   def caveats; <<~EOS
     Here are some caveats
   EOS

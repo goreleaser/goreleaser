@@ -1,13 +1,13 @@
 package extrafiles
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/mattn/go-zglob"
-	"github.com/pkg/errors"
 )
 
 // Find resolves extra files globs et al into a map of names/paths or an error.
@@ -17,7 +17,7 @@ func Find(files []config.ExtraFile) (map[string]string, error) {
 		if extra.Glob != "" {
 			files, err := zglob.Glob(extra.Glob)
 			if err != nil {
-				return result, errors.Wrapf(err, "globbing failed for pattern %s", extra.Glob)
+				return result, fmt.Errorf("globbing failed for pattern %s: %w", extra.Glob, err)
 			}
 			for _, file := range files {
 				info, err := os.Stat(file)

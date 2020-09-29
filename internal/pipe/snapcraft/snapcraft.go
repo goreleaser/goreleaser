@@ -2,6 +2,7 @@
 package snapcraft
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -181,10 +181,10 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 			file.Mode = 0644
 		}
 		if err := os.MkdirAll(filepath.Join(primeDir, filepath.Dir(file.Destination)), 0755); err != nil {
-			return errors.Wrapf(err, "failed to link extra file '%s'", file.Source)
+			return fmt.Errorf("failed to link extra file '%s': %w", file.Source, err)
 		}
 		if err := link(file.Source, filepath.Join(primeDir, file.Destination), os.FileMode(file.Mode)); err != nil {
-			return errors.Wrapf(err, "failed to link extra file '%s'", file.Source)
+			return fmt.Errorf("failed to link extra file '%s': %w", file.Source, err)
 		}
 	}
 
@@ -234,10 +234,10 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 			Debug("linking")
 
 		if err = os.Link(binary.Path, destBinaryPath); err != nil {
-			return errors.Wrap(err, "failed to link binary")
+			return fmt.Errorf("failed to link binary: %w", err)
 		}
 		if err := os.Chmod(destBinaryPath, 0555); err != nil {
-			return errors.Wrap(err, "failed to change binary permissions")
+			return fmt.Errorf("failed to change binary permissions: %w", err)
 		}
 	}
 
@@ -262,16 +262,16 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		if config.Completer != "" {
 			destCompleterPath := filepath.Join(primeDir, config.Completer)
 			if err := os.MkdirAll(filepath.Dir(destCompleterPath), 0755); err != nil {
-				return errors.Wrapf(err, "failed to create folder")
+				return fmt.Errorf("failed to create folder: %w", err)
 			}
 			log.WithField("src", config.Completer).
 				WithField("dst", destCompleterPath).
 				Debug("linking")
 			if err := os.Link(config.Completer, destCompleterPath); err != nil {
-				return errors.Wrap(err, "failed to link completer")
+				return fmt.Errorf("failed to link completer: %w", err)
 			}
 			if err := os.Chmod(destCompleterPath, 0644); err != nil {
-				return errors.Wrap(err, "failed to change completer permissions")
+				return fmt.Errorf("failed to change completer permissions: %w", err)
 			}
 			appMetadata.Completer = config.Completer
 		}

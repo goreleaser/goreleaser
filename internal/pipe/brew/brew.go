@@ -2,6 +2,7 @@ package brew
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -17,7 +18,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // ErrNoArchivesFound happens when 0 archives are found.
@@ -96,8 +96,10 @@ func (Pipe) Default(ctx *context.Context) error {
 				)
 			}
 			brew.Install = strings.Join(installs, "\n")
-			log.Warnf("optimistically guessing `brew[%d].installs`, double check", i)
+			log.Warnf("optimistically guessing `brew[%d].install`, double check", i)
 		}
+
+		//nolint: staticcheck
 		if brew.GitHub.String() != "" {
 			deprecate.Notice(ctx, "brews.github")
 			brew.Tap.Owner = brew.GitHub.Owner
@@ -202,7 +204,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	var path = filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
 	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil { //nolint: gosec
-		return errors.Wrap(err, "failed to write brew formula")
+		return fmt.Errorf("failed to write brew formula: %w", err)
 	}
 
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
@@ -261,6 +263,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		Conflicts:        cfg.Conflicts,
 		Plist:            cfg.Plist,
 		Install:          split(cfg.Install),
+		PostInstall:      cfg.PostInstall,
 		Tests:            split(cfg.Test),
 		DownloadStrategy: cfg.DownloadStrategy,
 		CustomRequire:    cfg.CustomRequire,
@@ -330,8 +333,8 @@ func split(s string) []string {
 }
 
 func formulaNameFor(name string) string {
-	name = strings.Replace(name, "-", " ", -1)
-	name = strings.Replace(name, "_", " ", -1)
-	name = strings.Replace(name, "@", "AT", -1)
-	return strings.Replace(strings.Title(name), " ", "", -1)
+	name = strings.ReplaceAll(name, "-", " ")
+	name = strings.ReplaceAll(name, "_", " ")
+	name = strings.ReplaceAll(name, "@", "AT")
+	return strings.ReplaceAll(strings.Title(name), " ", "")
 }
