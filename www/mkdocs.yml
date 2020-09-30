@@ -88,6 +88,7 @@ nav:
   - cookbooks/semantic-release.md
   - cookbooks/release-a-library.md
   - cookbooks/publish-to-nexus.md
+  - cookbooks/cgo-and-crosscompiling.md
 - tutorials.md
 - links.md
 
