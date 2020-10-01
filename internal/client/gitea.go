@@ -49,10 +49,12 @@ func NewGitea(ctx *context.Context, token string) (Client, error) {
 	client, err := gitea.NewClient(instanceURL,
 		gitea.SetToken(token),
 		gitea.SetHTTPClient(httpClient),
-		gitea.SetContext(ctx),
 	)
 	if err != nil {
 		return nil, err
+	}
+	if ctx != nil {
+		gitea.SetContext(ctx)(client)
 	}
 	return &giteaClient{client: client}, nil
 }
