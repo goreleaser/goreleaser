@@ -144,11 +144,20 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	var a = NewEnhancedArchive(archive.New(archiveFile), wrap)
 	defer a.Close()
 
-	files, err := findFiles(template, arch)
+	files, err := findFiles(template, arch.Files)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %s", err.Error())
 	}
 	for _, f := range files {
+		if err = a.Add(f, f); err != nil {
+			return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
+		}
+	}
+	filesCustom, err := findFilesGoos(template, arch, binaries[0].Goos)
+	if err != nil {
+		return fmt.Errorf("failed to find files to archive: %s", err.Error())
+	}
+	for _, f := range filesCustom {
 		if err = a.Add(f, f); err != nil {
 			return fmt.Errorf("failed to add %s to the archive: %s", f, err.Error())
 		}
@@ -214,8 +223,8 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 	return nil
 }
 
-func findFiles(template *tmpl.Template, archive config.Archive) (result []string, err error) {
-	for _, glob := range archive.Files {
+func findFiles(template *tmpl.Template, files []string) (result []string, err error) {
+	for _, glob := range files {
 		replaced, err := template.Apply(glob)
 		if err != nil {
 			return result, fmt.Errorf("failed to apply template %s: %w", glob, err)
@@ -231,6 +240,22 @@ func findFiles(template *tmpl.Template, archive config.Archive) (result []string
 		return strings.Compare(result[i], result[j]) < 0
 	})
 	return
+}
+
+func findFilesGoos(template *tmpl.Template, archive config.Archive, platform string) (result []string, err error) {
+	var id int
+	find := false
+	for overrideID, override := range archive.FileCustom {
+		if strings.HasPrefix(platform, override.Goos) {
+			id = overrideID
+			find = true
+			break
+		}
+	}
+	if !find {
+		return
+	}
+	return findFiles(template, archive.FileCustom[id].Files)
 }
 
 func packageFormat(archive config.Archive, platform string) string {

@@ -259,6 +259,12 @@ type FormatOverride struct {
 	Format string `yaml:",omitempty"`
 }
 
+// FileCustom is used to specify custom files for a specific GOOS.
+type FileCustom struct {
+	Goos  string   `yaml:",omitempty"`
+	Files []string `yaml:",omitempty"`
+}
+
 // Archive config used for the archive.
 type Archive struct {
 	ID              string            `yaml:",omitempty"`
@@ -269,6 +275,7 @@ type Archive struct {
 	FormatOverrides []FormatOverride  `yaml:"format_overrides,omitempty"`
 	WrapInDirectory string            `yaml:"wrap_in_directory,omitempty"`
 	Files           []string          `yaml:",omitempty"`
+	FileCustom      []FileCustom      `yaml:"file_custom,omitempty"`
 }
 
 // Release config used for the GitHub/GitLab release.
