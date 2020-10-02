@@ -128,7 +128,7 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 	} else if cfg.StdinFile != "" {
 		f, err := os.Open(cfg.StdinFile)
 		if err != nil {
-			return nil, errors.Wrapf(err, "sign failed: cannot open file %s", cfg.StdinFile)
+			return nil, fmt.Errorf("sign failed: cannot open file %s: %w", cfg.StdinFile, err)
 		}
 		defer f.Close()
 
