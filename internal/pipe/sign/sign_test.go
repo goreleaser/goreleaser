@@ -23,6 +23,9 @@ import (
 var originKeyring = "testdata/gnupg"
 var keyring string
 
+const user = "nopass"
+const passwordUser = "password"
+
 func TestMain(m *testing.M) {
 	rand.Seed(time.Now().UnixNano())
 	keyring = fmt.Sprintf("/tmp/gorel_gpg_test.%d", rand.Int())
@@ -31,6 +34,7 @@ func TestMain(m *testing.M) {
 		fmt.Printf("failed to copy %s to %s: %s", originKeyring, keyring, err)
 		os.Exit(1)
 	}
+
 	defer os.RemoveAll(keyring)
 	os.Exit(m.Run())
 }
@@ -79,12 +83,14 @@ func TestSignInvalidArtifacts(t *testing.T) {
 }
 
 func TestSignArtifacts(t *testing.T) {
+	stdin := passwordUser
 	tests := []struct {
 		desc           string
 		ctx            *context.Context
 		signaturePaths []string
 		signatureNames []string
 		expectedErrMsg string
+		user           string
 	}{
 		{
 			desc:           "sign errors",
@@ -283,18 +289,99 @@ func TestSignArtifacts(t *testing.T) {
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
 		},
+		{
+			desc: "sign single with password from stdin",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Args: []string{
+								"-u",
+								passwordUser,
+								"--batch",
+								"--pinentry-mode",
+								"loopback",
+								"--passphrase-fd",
+								"0",
+								"--output",
+								"${signature}",
+								"--detach-sign",
+								"${artifact}",
+							},
+							Stdin: &stdin,
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
+			user:           passwordUser,
+		},
+		{
+			desc: "sign single with password from stdin_file",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Args: []string{
+								"-u",
+								passwordUser,
+								"--batch",
+								"--pinentry-mode",
+								"loopback",
+								"--passphrase-fd",
+								"0",
+								"--output",
+								"${signature}",
+								"--detach-sign",
+								"${artifact}",
+							},
+							StdinFile: filepath.Join(keyring, passwordUser),
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
+			user:           passwordUser,
+		},
+		{
+			desc: "missing stdin_file",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Args: []string{
+								"--batch",
+								"--pinentry-mode",
+								"loopback",
+								"--passphrase-fd",
+								"0",
+							},
+							StdinFile: "/tmp/non-existing-file",
+						},
+					},
+				},
+			),
+			expectedErrMsg: `sign failed: cannot open file /tmp/non-existing-file: open /tmp/non-existing-file: no such file or directory`,
+		},
 	}
 
 	for _, test := range tests {
+		if test.user == "" {
+			test.user = user
+		}
+
 		t.Run(test.desc, func(tt *testing.T) {
-			testSign(tt, test.ctx, test.signaturePaths, test.signatureNames, test.expectedErrMsg)
+			testSign(tt, test.ctx, test.signaturePaths, test.signatureNames, test.user, test.expectedErrMsg)
 		})
 	}
 }
 
-const user = "nopass"
-
-func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signatureNames []string, expectedErrMsg string) {
+func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signatureNames []string, user, expectedErrMsg string) {
 	// create temp dir for file and signature
 	tmpdir, err := ioutil.TempDir("", "goreleaser")
 	assert.NoError(t, err)
@@ -411,7 +498,7 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 
 	// verify the signatures
 	for _, sig := range signaturePaths {
-		verifySignature(t, ctx, sig)
+		verifySignature(t, ctx, sig, user)
 	}
 
 	var signArtifacts []string
@@ -422,7 +509,7 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 	assert.ElementsMatch(t, signArtifacts, signatureNames)
 }
 
-func verifySignature(t *testing.T, ctx *context.Context, sig string) {
+func verifySignature(t *testing.T, ctx *context.Context, sig string, user string) {
 	artifact := strings.Replace(sig, filepath.Ext(sig), "", 1)
 
 	// verify signature was made with key for usesr 'nopass'

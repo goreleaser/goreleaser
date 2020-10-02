@@ -2,9 +2,11 @@ package sign
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -120,6 +122,19 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 		args = append(args, arg)
 	}
 
+	var stdin io.Reader
+	if cfg.Stdin != nil {
+		stdin = strings.NewReader(*cfg.Stdin)
+	} else if cfg.StdinFile != "" {
+		f, err := os.Open(cfg.StdinFile)
+		if err != nil {
+			return nil, errors.Wrapf(err, "sign failed: cannot open file %s", cfg.StdinFile)
+		}
+		defer f.Close()
+
+		stdin = f
+	}
+
 	// The GoASTScanner flags this as a security risk.
 	// However, this works as intended. The nosec annotation
 	// tells the scanner to ignore this.
@@ -127,6 +142,9 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
 	cmd.Stderr = logext.NewWriter(log.WithField("cmd", cfg.Cmd))
 	cmd.Stdout = cmd.Stderr
+	if stdin != nil {
+		cmd.Stdin = stdin
+	}
 	log.WithField("cmd", cmd.Args).Info("signing")
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("sign: %s failed", cfg.Cmd)

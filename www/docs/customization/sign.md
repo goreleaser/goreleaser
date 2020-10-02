@@ -69,6 +69,14 @@ signs:
     ids:
       - foo
       - bar
+
+    # Stdin data to be given to the signature command as stdin.
+    # defaults to empty
+    stdin: password
+
+    # StdinFile file to be given to the signature command as stdin.
+    # defaults to empty
+    stdin_file: ./.password
 ```
 
 ### Limitations
