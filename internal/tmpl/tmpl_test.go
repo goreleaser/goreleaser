@@ -9,7 +9,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -63,8 +62,8 @@ func TestWithArtifact(t *testing.T) {
 				},
 				map[string]string{"linux": "Linux"},
 			).Apply(tmpl)
-			assert.NoError(tt, err)
-			assert.Equal(tt, expect, result)
+			require.NoError(tt, err)
+			require.Equal(tt, expect, result)
 		})
 	}
 
@@ -82,8 +81,8 @@ func TestWithArtifact(t *testing.T) {
 				},
 			}, map[string]string{},
 		).Apply("{{ .ArtifactUploadHash }}")
-		assert.NoError(tt, err)
-		assert.Equal(tt, uploadHash, result)
+		require.NoError(tt, err)
+		require.Equal(tt, uploadHash, result)
 	})
 
 	t.Run("artifact without binary name", func(tt *testing.T) {
@@ -96,15 +95,15 @@ func TestWithArtifact(t *testing.T) {
 				Goarm:  "6",
 			}, map[string]string{},
 		).Apply("{{ .Binary }}")
-		assert.NoError(tt, err)
-		assert.Equal(tt, ctx.Config.ProjectName, result)
+		require.NoError(tt, err)
+		require.Equal(tt, ctx.Config.ProjectName, result)
 	})
 
 	t.Run("template using artifact Fields with no artifact", func(tt *testing.T) {
 		tt.Parallel()
 		result, err := New(ctx).Apply("{{ .Os }}")
-		assert.EqualError(tt, err, `template: tmpl:1:3: executing "tmpl" at <.Os>: map has no entry for key "Os"`)
-		assert.Empty(tt, result)
+		require.EqualError(tt, err, `template: tmpl:1:3: executing "tmpl" at <.Os>: map has no entry for key "Os"`)
+		require.Empty(tt, result)
 	})
 }
 
@@ -133,7 +132,7 @@ func TestEnv(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			out, _ := New(ctx).Apply(tC.in)
-			assert.Equal(t, tC.out, out)
+			require.Equal(t, tC.out, out)
 		})
 	}
 }
@@ -148,8 +147,8 @@ func TestWithEnv(t *testing.T) {
 		"FOO=foo",
 		"BAR=bar",
 	}).Apply("{{ .Env.FOO }}-{{ .Env.BAR }}")
-	assert.NoError(t, err)
-	assert.Equal(t, "foo-bar", out)
+	require.NoError(t, err)
+	require.Equal(t, "foo-bar", out)
 }
 
 func TestFuncMap(t *testing.T) {
@@ -204,11 +203,11 @@ func TestFuncMap(t *testing.T) {
 		},
 	} {
 		out, err := New(ctx).Apply(tc.Template)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		if tc.Expected != "" {
-			assert.Equal(t, tc.Expected, out)
+			require.Equal(t, tc.Expected, out)
 		} else {
-			assert.NotEmpty(t, out)
+			require.NotEmpty(t, out)
 		}
 	}
 }
@@ -271,9 +270,9 @@ func TestApplySingleEnvOnly(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := New(ctx).ApplySingleEnvOnly(tc.tpl)
 			if tc.expectedErr != nil {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 		})
 	}
@@ -283,15 +282,15 @@ func TestInvalidTemplate(t *testing.T) {
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v1.1.1"
 	_, err := New(ctx).Apply("{{{.Foo}")
-	assert.EqualError(t, err, "template: tmpl:1: unexpected \"{\" in command")
+	require.EqualError(t, err, "template: tmpl:1: unexpected \"{\" in command")
 }
 
 func TestEnvNotFound(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.Git.CurrentTag = "v1.2.4"
 	result, err := New(ctx).Apply("{{.Env.FOO}}")
-	assert.Empty(t, result)
-	assert.EqualError(t, err, `template: tmpl:1:6: executing "tmpl" at <.Env.FOO>: map has no entry for key "FOO"`)
+	require.Empty(t, result)
+	require.EqualError(t, err, `template: tmpl:1:6: executing "tmpl" at <.Env.FOO>: map has no entry for key "FOO"`)
 }
 
 func TestWithExtraFields(t *testing.T) {
@@ -299,6 +298,6 @@ func TestWithExtraFields(t *testing.T) {
 	out, _ := New(ctx).WithExtraFields(Fields{
 		"MyCustomField": "foo",
 	}).Apply("{{ .MyCustomField }}")
-	assert.Equal(t, "foo", out)
+	require.Equal(t, "foo", out)
 
 }

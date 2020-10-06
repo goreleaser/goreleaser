@@ -5,14 +5,14 @@ import (
 
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestClientEmpty(t *testing.T) {
 	ctx := &context.Context{}
 	client, err := New(ctx)
-	assert.Nil(t, client)
-	assert.NoError(t, err)
+	require.Nil(t, client)
+	require.NoError(t, err)
 }
 
 func TestClientNewGitea(t *testing.T) {
@@ -26,9 +26,9 @@ func TestClientNewGitea(t *testing.T) {
 		Token:     "giteatoken",
 	}
 	client, err := New(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	_, ok := client.(*giteaClient)
-	assert.True(t, ok)
+	require.True(t, ok)
 }
 
 func TestClientNewGiteaInvalidURL(t *testing.T) {
@@ -42,8 +42,8 @@ func TestClientNewGiteaInvalidURL(t *testing.T) {
 		Token:     "giteatoken",
 	}
 	client, err := New(ctx)
-	assert.Error(t, err)
-	assert.Nil(t, client)
+	require.Error(t, err)
+	require.Nil(t, client)
 }
 
 func TestClientNewGitLab(t *testing.T) {
@@ -52,7 +52,7 @@ func TestClientNewGitLab(t *testing.T) {
 		Token:     "gitlabtoken",
 	}
 	client, err := New(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	_, ok := client.(*gitlabClient)
-	assert.True(t, ok)
+	require.True(t, ok)
 }

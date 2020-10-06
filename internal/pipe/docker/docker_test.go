@@ -16,7 +16,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -662,21 +661,21 @@ func TestBuildCommand(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			command := buildCommand(images, tt.flags)
-			assert.Equal(t, tt.expect, command)
+			require.Equal(t, tt.expect, command)
 		})
 	}
 }
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestNoDockers(t *testing.T) {
-	assert.True(t, pipe.IsSkip(Pipe{}.Run(context.New(config.Project{}))))
+	require.True(t, pipe.IsSkip(Pipe{}.Run(context.New(config.Project{}))))
 }
 
 func TestNoDockerWithoutImageName(t *testing.T) {
-	assert.True(t, pipe.IsSkip(Pipe{}.Run(context.New(config.Project{
+	require.True(t, pipe.IsSkip(Pipe{}.Run(context.New(config.Project{
 		Dockers: []config.Docker{
 			{
 				Goos: "linux",
@@ -688,9 +687,9 @@ func TestNoDockerWithoutImageName(t *testing.T) {
 func TestDockerNotInPath(t *testing.T) {
 	var path = os.Getenv("PATH")
 	defer func() {
-		assert.NoError(t, os.Setenv("PATH", path))
+		require.NoError(t, os.Setenv("PATH", path))
 	}()
-	assert.NoError(t, os.Setenv("PATH", ""))
+	require.NoError(t, os.Setenv("PATH", ""))
 	var ctx = &context.Context{
 		Version: "1.0.0",
 		Config: config.Project{
@@ -701,7 +700,7 @@ func TestDockerNotInPath(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualError(t, Pipe{}.Run(ctx), ErrNoDocker.Error())
+	require.EqualError(t, Pipe{}.Run(ctx), ErrNoDocker.Error())
 }
 
 func TestDefault(t *testing.T) {
@@ -717,13 +716,13 @@ func TestDefault(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Dockers, 1)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Len(t, ctx.Config.Dockers, 1)
 	var docker = ctx.Config.Dockers[0]
-	assert.Equal(t, "linux", docker.Goos)
-	assert.Equal(t, "amd64", docker.Goarch)
-	assert.Equal(t, []string{ctx.Config.Builds[0].Binary}, docker.Binaries)
-	assert.Empty(t, docker.Builds)
+	require.Equal(t, "linux", docker.Goos)
+	require.Equal(t, "amd64", docker.Goarch)
+	require.Equal(t, []string{ctx.Config.Builds[0].Binary}, docker.Binaries)
+	require.Empty(t, docker.Builds)
 }
 
 func TestDefaultBinaries(t *testing.T) {
@@ -741,12 +740,12 @@ func TestDefaultBinaries(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Dockers, 1)
 	var docker = ctx.Config.Dockers[0]
-	assert.Equal(t, "linux", docker.Goos)
-	assert.Equal(t, "amd64", docker.Goarch)
-	assert.Equal(t, []string{"foo"}, docker.Binaries)
+	require.Equal(t, "linux", docker.Goos)
+	require.Equal(t, "amd64", docker.Goarch)
+	require.Equal(t, []string{"foo"}, docker.Binaries)
 }
 
 func TestDefaultNoDockers(t *testing.T) {
@@ -755,8 +754,8 @@ func TestDefaultNoDockers(t *testing.T) {
 			Dockers: []config.Docker{},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Empty(t, ctx.Config.Dockers)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Empty(t, ctx.Config.Dockers)
 }
 
 func TestDefaultFilesDot(t *testing.T) {
@@ -770,7 +769,7 @@ func TestDefaultFilesDot(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: .`)
+	require.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: .`)
 }
 
 func TestDefaultFilesDis(t *testing.T) {
@@ -784,7 +783,7 @@ func TestDefaultFilesDis(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: /tmp/dist/asdasd/asd`)
+	require.EqualError(t, Pipe{}.Default(ctx), `invalid docker.files: can't be . or inside dist folder: /tmp/dist/asdasd/asd`)
 }
 
 func TestDefaultSet(t *testing.T) {
@@ -801,14 +800,14 @@ func TestDefaultSet(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Dockers, 1)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Len(t, ctx.Config.Dockers, 1)
 	var docker = ctx.Config.Dockers[0]
-	assert.Equal(t, "windows", docker.Goos)
-	assert.Equal(t, "i386", docker.Goarch)
-	assert.Equal(t, "bar", docker.Binaries[0])
-	assert.Equal(t, "foo", docker.Builds[0])
-	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
+	require.Equal(t, "windows", docker.Goos)
+	require.Equal(t, "i386", docker.Goarch)
+	require.Equal(t, "bar", docker.Binaries[0])
+	require.Equal(t, "foo", docker.Builds[0])
+	require.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 }
 
 func Test_processImageTemplates(t *testing.T) {
@@ -848,15 +847,15 @@ func Test_processImageTemplates(t *testing.T) {
 		Patch: 0,
 	}
 
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Dockers, 1)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Len(t, ctx.Config.Dockers, 1)
 
 	docker := ctx.Config.Dockers[0]
-	assert.Equal(t, "Dockerfile.foo", docker.Dockerfile)
+	require.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 
 	images, err := processImageTemplates(ctx, docker)
-	assert.NoError(t, err)
-	assert.Equal(t, []string{
+	require.NoError(t, err)
+	require.Equal(t, []string{
 		"user/image:v1.0.0",
 		"gcr.io/image:v1.0.0-123",
 		"gcr.io/image:v1.0",

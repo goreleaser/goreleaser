@@ -11,7 +11,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,18 +24,16 @@ func TestNoBlob(t *testing.T) {
 
 func TestDefaultsNoConfig(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	var assert = assert.New(t)
 	var ctx = context.New(config.Project{
 		Blobs: []config.Blob{
 			{},
 		},
 	})
-	assert.EqualError(Pipe{}.Default(ctx), errorString)
+	require.EqualError(t, Pipe{}.Default(ctx), errorString)
 }
 
 func TestDefaultsNoBucket(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	var assert = assert.New(t)
 	var ctx = context.New(config.Project{
 		Blobs: []config.Blob{
 			{
@@ -44,12 +41,11 @@ func TestDefaultsNoBucket(t *testing.T) {
 			},
 		},
 	})
-	assert.EqualError(Pipe{}.Default(ctx), errorString)
+	require.EqualError(t, Pipe{}.Default(ctx), errorString)
 }
 
 func TestDefaultsNoProvider(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	var assert = assert.New(t)
 	var ctx = context.New(config.Project{
 		Blobs: []config.Blob{
 			{
@@ -57,7 +53,7 @@ func TestDefaultsNoProvider(t *testing.T) {
 			},
 		},
 	})
-	assert.EqualError(Pipe{}.Default(ctx), errorString)
+	require.EqualError(t, Pipe{}.Default(ctx), errorString)
 }
 
 func TestDefaults(t *testing.T) {
@@ -91,7 +87,6 @@ func TestDefaults(t *testing.T) {
 }
 
 func TestDefaultsWithProvider(t *testing.T) {
-	var assert = assert.New(t)
 	var ctx = context.New(config.Project{
 		Blobs: []config.Blob{
 			{
@@ -108,7 +103,7 @@ func TestDefaultsWithProvider(t *testing.T) {
 			},
 		},
 	})
-	assert.Nil(Pipe{}.Default(ctx))
+	require.Nil(t, Pipe{}.Default(ctx))
 }
 
 func TestPipe_Publish(t *testing.T) {
@@ -128,11 +123,11 @@ func pipePublish(t *testing.T, extra []config.ExtraFile) {
 	gcloudCredentials, _ := filepath.Abs("./testdata/credentials.json")
 
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
-	assert.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
-	assert.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
+	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
+	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
 
 	// Azure Blob Context
 	var azblobctx = context.New(config.Project{
