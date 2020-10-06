@@ -87,6 +87,9 @@ release:
     - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
 ```
 
+!!! tip
+    If you use GitLab subgroups, you need to specify it in the `owner` field, e.g. `mygroup/mysubgroup`.
+
 !!! warning
     Only GitLab `v11.7+` are supported for releases.
 
