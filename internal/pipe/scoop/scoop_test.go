@@ -14,14 +14,13 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 var update = flag.Bool("update", false, "update .golden files")
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestDefault(t *testing.T) {
@@ -54,11 +53,11 @@ func TestDefault(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoop.Name)
-	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Name)
-	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Email)
-	assert.NotEmpty(t, ctx.Config.Scoop.CommitMessageTemplate)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoop.Name)
+	require.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Name)
+	require.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Email)
+	require.NotEmpty(t, ctx.Config.Scoop.CommitMessageTemplate)
 }
 
 func Test_doRun(t *testing.T) {
@@ -70,12 +69,12 @@ func Test_doRun(t *testing.T) {
 	type errChecker func(*testing.T, error)
 	var shouldErr = func(msg string) errChecker {
 		return func(t *testing.T, err error) {
-			assert.Error(t, err)
-			assert.EqualError(t, err, msg)
+			require.Error(t, err)
+			require.EqualError(t, err, msg)
 		}
 	}
 	var shouldNotErr = func(t *testing.T, err error) {
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
 	type args struct {
 		ctx    *context.Context

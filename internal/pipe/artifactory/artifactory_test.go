@@ -14,7 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -56,14 +56,14 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 	defer teardown()
 
 	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
 	err = ioutil.WriteFile(binPath, d1, 0666)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -206,8 +206,8 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		})
 	}
 
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.NoError(t, Pipe{}.Publish(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
 }
 
 func TestRunPipe_ModeArchive(t *testing.T) {
@@ -215,11 +215,11 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	defer teardown()
 
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
@@ -307,19 +307,19 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		uploads.Store("deb", true)
 	})
 
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.NoError(t, Pipe{}.Publish(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
 	_, ok := uploads.Load("targz")
-	assert.True(t, ok, "tar.gz file was not uploaded")
+	require.True(t, ok, "tar.gz file was not uploaded")
 	_, ok = uploads.Load("deb")
-	assert.True(t, ok, "deb file was not uploaded")
+	require.True(t, ok, "deb file was not uploaded")
 }
 
 func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
@@ -343,15 +343,15 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 		Path: tarfile.Name(),
 	})
 
-	assert.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
 	err = Pipe{}.Publish(ctx)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "connection refused")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "connection refused")
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 
@@ -382,8 +382,8 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: error while building the target url: template: tmpl:1: unexpected "/" in operand`)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.EqualError(t, Pipe{}.Publish(ctx), `artifactory: error while building the target url: template: tmpl:1: unexpected "/" in operand`)
 }
 
 func TestRunPipe_BadCredentials(t *testing.T) {
@@ -391,14 +391,14 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	defer teardown()
 
 	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
 	err = ioutil.WriteFile(binPath, d1, 0666)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -442,10 +442,10 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
 	err = Pipe{}.Publish(ctx)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Bad credentials")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "Bad credentials")
 }
 
 func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
@@ -453,14 +453,14 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 	defer teardown()
 
 	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
 	err = ioutil.WriteFile(binPath, d1, 0666)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -503,8 +503,8 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: invalid character '.' looking for beginning of value`)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: invalid character '.' looking for beginning of value`)
 }
 
 func TestRunPipe_FileNotFound(t *testing.T) {
@@ -534,20 +534,20 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.EqualError(t, Pipe{}.Publish(ctx), `open archivetest/dist/mybin/mybin: no such file or directory`)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.EqualError(t, Pipe{}.Publish(ctx), `open archivetest/dist/mybin/mybin: no such file or directory`)
 }
 
 func TestRunPipe_UnparsableTarget(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
 	err = ioutil.WriteFile(binPath, d1, 0666)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
@@ -575,8 +575,8 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: parse "://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin": missing protocol scheme`)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: parse "://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin": missing protocol scheme`)
 }
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
@@ -598,18 +598,18 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 	}
 	ctx.SkipPublish = true
 
-	assert.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
 	err := Pipe{}.Publish(ctx)
-	assert.True(t, pipe.IsSkip(err))
-	assert.EqualError(t, err, pipe.ErrSkipPublishEnabled.Error())
+	require.True(t, pipe.IsSkip(err))
+	require.EqualError(t, err, pipe.ErrSkipPublishEnabled.Error())
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin")
 
 	var ctx = context.New(config.Project{
@@ -638,18 +638,18 @@ func TestRunPipe_DirUpload(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: the asset to upload can't be a directory`)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: the asset to upload can't be a directory`)
 }
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestNoArtifactories(t *testing.T) {
 	var ctx = context.New(config.Project{})
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestArtifactoriesWithoutTarget(t *testing.T) {
@@ -667,8 +667,8 @@ func TestArtifactoriesWithoutTarget(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestArtifactoriesWithoutUsername(t *testing.T) {
@@ -686,8 +686,8 @@ func TestArtifactoriesWithoutUsername(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestArtifactoriesWithoutName(t *testing.T) {
@@ -699,8 +699,8 @@ func TestArtifactoriesWithoutName(t *testing.T) {
 			},
 		},
 	})
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestArtifactoriesWithoutSecret(t *testing.T) {
@@ -713,8 +713,8 @@ func TestArtifactoriesWithoutSecret(t *testing.T) {
 			},
 		},
 	})
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestArtifactoriesWithInvalidMode(t *testing.T) {
@@ -734,8 +734,8 @@ func TestArtifactoriesWithInvalidMode(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Error(t, Pipe{}.Publish(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Error(t, Pipe{}.Publish(ctx))
 }
 
 func TestDefault(t *testing.T) {
@@ -751,10 +751,10 @@ func TestDefault(t *testing.T) {
 		},
 	}
 
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Artifactories, 1)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Len(t, ctx.Config.Artifactories, 1)
 	var artifactory = ctx.Config.Artifactories[0]
-	assert.Equal(t, "archive", artifactory.Mode)
+	require.Equal(t, "archive", artifactory.Mode)
 }
 
 func TestDefaultNoArtifactories(t *testing.T) {
@@ -763,8 +763,8 @@ func TestDefaultNoArtifactories(t *testing.T) {
 			Artifactories: []config.Upload{},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Empty(t, ctx.Config.Artifactories)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Empty(t, ctx.Config.Artifactories)
 }
 
 func TestDefaultSet(t *testing.T) {
@@ -777,9 +777,9 @@ func TestDefaultSet(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Artifactories, 1)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Len(t, ctx.Config.Artifactories, 1)
 	var artifactory = ctx.Config.Artifactories[0]
-	assert.Equal(t, "custom", artifactory.Mode)
-	assert.Equal(t, "X-Checksum-SHA256", artifactory.ChecksumHeader)
+	require.Equal(t, "custom", artifactory.Mode)
+	require.Equal(t, "X-Checksum-SHA256", artifactory.ChecksumHeader)
 }

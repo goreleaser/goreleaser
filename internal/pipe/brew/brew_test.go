@@ -13,30 +13,29 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 var update = flag.Bool("update", false, "update .golden files")
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestNameWithDash(t *testing.T) {
-	assert.Equal(t, formulaNameFor("some-binary"), "SomeBinary")
+	require.Equal(t, formulaNameFor("some-binary"), "SomeBinary")
 }
 
 func TestNameWithUnderline(t *testing.T) {
-	assert.Equal(t, formulaNameFor("some_binary"), "SomeBinary")
+	require.Equal(t, formulaNameFor("some_binary"), "SomeBinary")
 }
 
 func TestNameWithAT(t *testing.T) {
-	assert.Equal(t, formulaNameFor("some_binary@1"), "SomeBinaryAT1")
+	require.Equal(t, formulaNameFor("some_binary@1"), "SomeBinaryAT1")
 }
 
 func TestSimpleName(t *testing.T) {
-	assert.Equal(t, formulaNameFor("binary"), "Binary")
+	require.Equal(t, formulaNameFor("binary"), "Binary")
 }
 
 var defaultTemplateData = templateData{
@@ -64,11 +63,11 @@ var defaultTemplateData = templateData{
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
-	assert.Contains(t, formulae, "class Test < Formula")
-	assert.Contains(t, formulae, `homepage "https://google.com"`)
-	assert.Contains(t, formulae, `url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`)
-	assert.Contains(t, formulae, `sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`)
-	assert.Contains(t, formulae, `version "0.1.3"`)
+	require.Contains(t, formulae, "class Test < Formula")
+	require.Contains(t, formulae, `homepage "https://google.com"`)
+	require.Contains(t, formulae, `url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`)
+	require.Contains(t, formulae, `sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`)
+	require.Contains(t, formulae, `version "0.1.3"`)
 }
 
 func TestFullFormulae(t *testing.T) {
@@ -84,34 +83,34 @@ func TestFullFormulae(t *testing.T) {
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var golden = "testdata/test.rb.golden"
 	if *update {
 		err := ioutil.WriteFile(golden, []byte(formulae), 0655)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
 	bts, err := ioutil.ReadFile(golden)
-	assert.NoError(t, err)
-	assert.Equal(t, string(bts), formulae)
+	require.NoError(t, err)
+	require.Equal(t, string(bts), formulae)
 }
 
 func TestFormulaeSimple(t *testing.T) {
 	formulae, err := doBuildFormula(context.New(config.Project{}), defaultTemplateData)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assertDefaultTemplateData(t, formulae)
-	assert.NotContains(t, formulae, "def caveats")
-	assert.NotContains(t, formulae, "depends_on")
-	assert.NotContains(t, formulae, "def plist;")
+	require.NotContains(t, formulae, "def caveats")
+	require.NotContains(t, formulae, "depends_on")
+	require.NotContains(t, formulae, "def plist;")
 }
 
 func TestSplit(t *testing.T) {
 	var parts = split("system \"true\"\nsystem \"#{bin}/foo -h\"")
-	assert.Equal(t, []string{"system \"true\"", "system \"#{bin}/foo -h\""}, parts)
+	require.Equal(t, []string{"system \"true\"", "system \"#{bin}/foo -h\""}, parts)
 	parts = split("")
-	assert.Equal(t, []string{}, parts)
+	require.Equal(t, []string{}, parts)
 	parts = split("\n  ")
-	assert.Equal(t, []string{}, parts)
+	require.Equal(t, []string{}, parts)
 }
 
 func TestRunPipe(t *testing.T) {
@@ -156,7 +155,7 @@ func TestRunPipe(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder, err := ioutil.TempDir("", "goreleasertest")
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			var ctx = &context.Context{
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
@@ -214,30 +213,30 @@ func TestRunPipe(t *testing.T) {
 			})
 
 			_, err = os.Create(path)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			client := &DummyClient{}
 			var distFile = filepath.Join(folder, name+".rb")
 
-			assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
-			assert.True(t, client.CreatedFile)
+			require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
+			require.True(t, client.CreatedFile)
 			var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
 			if *update {
-				assert.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
+				require.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
 			}
 			bts, err := ioutil.ReadFile(golden)
-			assert.NoError(t, err)
-			assert.Equal(t, string(bts), client.Content)
+			require.NoError(t, err)
+			require.Equal(t, string(bts), client.Content)
 
 			distBts, err := ioutil.ReadFile(distFile)
-			assert.NoError(t, err)
-			assert.Equal(t, string(bts), string(distBts))
+			require.NoError(t, err)
+			require.Equal(t, string(bts), string(distBts))
 		})
 	}
 }
 
 func TestRunPipeNameTemplate(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var ctx = &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.1",
@@ -279,28 +278,28 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	})
 
 	_, err = os.Create(path)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	client := &DummyClient{}
 	var distFile = filepath.Join(folder, "foo_is_bar.rb")
 
-	assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
-	assert.True(t, client.CreatedFile)
+	require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
+	require.True(t, client.CreatedFile)
 	var golden = "testdata/foo_is_bar.rb.golden"
 	if *update {
-		assert.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
+		require.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
 	}
 	bts, err := ioutil.ReadFile(golden)
-	assert.NoError(t, err)
-	assert.Equal(t, string(bts), client.Content)
+	require.NoError(t, err)
+	require.Equal(t, string(bts), client.Content)
 
 	distBts, err := ioutil.ReadFile(distFile)
-	assert.NoError(t, err)
-	assert.Equal(t, string(bts), string(distBts))
+	require.NoError(t, err)
+	require.Equal(t, string(bts), string(distBts))
 }
 
 func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var ctx = &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.1",
@@ -364,11 +363,11 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	})
 
 	_, err = os.Create(path)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var cli = &DummyClient{}
-	assert.EqualError(t, publishAll(ctx, cli), `brew.skip_upload is set`)
-	assert.True(t, cli.CreatedFile)
+	require.EqualError(t, publishAll(ctx, cli), `brew.skip_upload is set`)
+	require.True(t, cli.CreatedFile)
 
 	for _, brew := range ctx.Config.Brews {
 		var distFile = filepath.Join(folder, brew.Name+".rb")
@@ -391,7 +390,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 		},
 	} {
 		folder, err := ioutil.TempDir("", "goreleasertest")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		var ctx = &context.Context{
 			TokenType: context.TokenTypeGitHub,
 			Git: context.GitInfo{
@@ -483,25 +482,25 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 				},
 			})
 			_, err := os.Create(path)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		}
 
 		client := &DummyClient{}
 		var distFile = filepath.Join(folder, name+".rb")
 
-		assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
-		assert.True(t, client.CreatedFile)
+		require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
+		require.True(t, client.CreatedFile)
 		var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
 		if *update {
-			assert.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
+			require.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
 		}
 		bts, err := ioutil.ReadFile(golden)
-		assert.NoError(t, err)
-		assert.Equal(t, string(bts), client.Content)
+		require.NoError(t, err)
+		require.Equal(t, string(bts), client.Content)
 
 		distBts, err := ioutil.ReadFile(distFile)
-		assert.NoError(t, err)
-		assert.Equal(t, string(bts), string(distBts))
+		require.NoError(t, err)
+		require.Equal(t, string(bts), string(distBts))
 	}
 }
 
@@ -520,8 +519,8 @@ func TestRunPipeNoDarwin64Build(t *testing.T) {
 		},
 	}
 	client := &DummyClient{}
-	assert.Equal(t, ErrNoArchivesFound, doRun(ctx, ctx.Config.Brews[0], client))
-	assert.False(t, client.CreatedFile)
+	require.Equal(t, ErrNoArchivesFound, doRun(ctx, ctx.Config.Brews[0], client))
+	require.False(t, client.CreatedFile)
 }
 
 func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
@@ -540,7 +539,7 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 
 	ctx.TokenType = context.TokenTypeGitHub
 	f, err := ioutil.TempFile("", "")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer f.Close()
 
 	tests := []struct {
@@ -662,8 +661,8 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 			})
 		}
 		client := &DummyClient{}
-		assert.Equal(t, test.expectedError, doRun(ctx, ctx.Config.Brews[0], client))
-		assert.False(t, client.CreatedFile)
+		require.Equal(t, test.expectedError, doRun(ctx, ctx.Config.Brews[0], client))
+		require.False(t, client.CreatedFile)
 		// clean the artifacts for the next run
 		ctx.Artifacts = artifact.New()
 	}
@@ -675,7 +674,7 @@ func TestRunPipeBrewNotSetup(t *testing.T) {
 	}
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doRun(ctx, config.Homebrew{}, client))
-	assert.False(t, client.CreatedFile)
+	require.False(t, client.CreatedFile)
 }
 
 func TestRunPipeBinaryRelease(t *testing.T) {
@@ -699,13 +698,13 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Type:   artifact.Binary,
 	})
 	client := &DummyClient{}
-	assert.Equal(t, ErrNoArchivesFound, doRun(ctx, ctx.Config.Brews[0], client))
-	assert.False(t, client.CreatedFile)
+	require.Equal(t, ErrNoArchivesFound, doRun(ctx, ctx.Config.Brews[0], client))
+	require.False(t, client.CreatedFile)
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
@@ -723,7 +722,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
 	_, err = os.Create(path)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
 		Path:   path,
@@ -739,7 +738,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 
 	var assertNoPublish = func(t *testing.T) {
 		testlib.AssertSkipped(t, doRun(ctx, ctx.Config.Brews[0], client))
-		assert.False(t, client.CreatedFile)
+		require.False(t, client.CreatedFile)
 	}
 	t.Run("skip upload", func(tt *testing.T) {
 		ctx.Config.Release.Draft = false
@@ -757,7 +756,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 
 func TestRunEmptyTokenType(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
@@ -774,7 +773,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
 	_, err = os.Create(path)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
 		Path:   path,
@@ -787,12 +786,12 @@ func TestRunEmptyTokenType(t *testing.T) {
 		},
 	})
 	client := &DummyClient{}
-	assert.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
+	require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
 }
 
 func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
@@ -810,7 +809,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
 	_, err = os.Create(path)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
 		Path:   path,
@@ -823,7 +822,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 		},
 	})
 	client := &DummyClient{NotImplemented: true}
-	assert.Equal(t, ErrTokenTypeNotImplementedForBrew{TokenType: "gitea"}, doRun(ctx, ctx.Config.Brews[0], client))
+	require.Equal(t, ErrTokenTypeNotImplementedForBrew{TokenType: "gitea"}, doRun(ctx, ctx.Config.Brews[0], client))
 }
 
 func TestDefault(t *testing.T) {
@@ -859,16 +858,16 @@ func TestDefault(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, ctx.Config.ProjectName, ctx.Config.Brews[0].Name)
-	assert.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
-	assert.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
-	assert.Equal(t, `bin.install "foo"`, ctx.Config.Brews[0].Install)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Brews[0].Name)
+	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
+	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
+	require.Equal(t, `bin.install "foo"`, ctx.Config.Brews[0].Install)
 }
 
 func TestGHFolder(t *testing.T) {
-	assert.Equal(t, "bar.rb", buildFormulaPath("", "bar.rb"))
-	assert.Equal(t, "fooo/bar.rb", buildFormulaPath("fooo", "bar.rb"))
+	require.Equal(t, "bar.rb", buildFormulaPath("", "bar.rb"))
+	require.Equal(t, "fooo/bar.rb", buildFormulaPath("fooo", "bar.rb"))
 }
 
 type DummyClient struct {

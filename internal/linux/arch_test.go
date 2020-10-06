@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestArch(t *testing.T) {
@@ -20,7 +20,7 @@ func TestArch(t *testing.T) {
 		"linuxwhat":    "what",
 	} {
 		t.Run(fmt.Sprintf("%s to %s", from, to), func(t *testing.T) {
-			assert.Equal(t, to, Arch(from))
+			require.Equal(t, to, Arch(from))
 		})
 	}
 }
