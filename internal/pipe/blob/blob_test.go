@@ -24,18 +24,16 @@ func TestNoBlob(t *testing.T) {
 
 func TestDefaultsNoConfig(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	var assert = require.New(t)
 	var ctx = context.New(config.Project{
 		Blobs: []config.Blob{
 			{},
 		},
 	})
-	require.EqualError(Pipe{}.Default(ctx), errorString)
+	require.EqualError(t, Pipe{}.Default(ctx), errorString)
 }
 
 func TestDefaultsNoBucket(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	var assert = require.New(t)
 	var ctx = context.New(config.Project{
 		Blobs: []config.Blob{
 			{
@@ -43,12 +41,11 @@ func TestDefaultsNoBucket(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(Pipe{}.Default(ctx), errorString)
+	require.EqualError(t, Pipe{}.Default(ctx), errorString)
 }
 
 func TestDefaultsNoProvider(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	var assert = require.New(t)
 	var ctx = context.New(config.Project{
 		Blobs: []config.Blob{
 			{
@@ -56,7 +53,7 @@ func TestDefaultsNoProvider(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(Pipe{}.Default(ctx), errorString)
+	require.EqualError(t, Pipe{}.Default(ctx), errorString)
 }
 
 func TestDefaults(t *testing.T) {
@@ -90,7 +87,6 @@ func TestDefaults(t *testing.T) {
 }
 
 func TestDefaultsWithProvider(t *testing.T) {
-	var assert = require.New(t)
 	var ctx = context.New(config.Project{
 		Blobs: []config.Blob{
 			{
@@ -107,7 +103,7 @@ func TestDefaultsWithProvider(t *testing.T) {
 			},
 		},
 	})
-	require.Nil(Pipe{}.Default(ctx))
+	require.Nil(t, Pipe{}.Default(ctx))
 }
 
 func TestPipe_Publish(t *testing.T) {

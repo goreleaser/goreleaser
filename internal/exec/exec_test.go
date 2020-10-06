@@ -224,9 +224,8 @@ func TestExecute(t *testing.T) {
 				require.NoError(t, err)
 				return
 			}
-			if require.Error(t, err) {
-				require.Equal(t, tc.expectErr.Error(), err.Error())
-			}
+			require.Error(t, err)
+			require.Equal(t, tc.expectErr.Error(), err.Error())
 		})
 	}
 }
