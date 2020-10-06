@@ -128,6 +128,11 @@ snapcrafts:
         # Defaults is the app name.
         command: bin/drumroll.wrapper
 
+        # Restart condition of the snap.
+        # Defaults to empty.
+        # https://snapcraft.io/docs/snapcraft-yaml-reference
+        restart_condition: "always"
+
     # Allows plugs to be configured. Plugs like system-files and personal-files
     # require this.
     # Default is empty.
