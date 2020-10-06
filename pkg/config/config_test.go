@@ -71,3 +71,23 @@ func TestConfigWithAnchors(t *testing.T) {
 	_, err := Load("testdata/anchor.yaml")
 	assert.NoError(t, err)
 }
+
+func TestConfigWithEnvTemplates(t *testing.T) {
+	os.Setenv("GORELEASER_TEST_BASE_PATH", "/path/to/darkside")
+	defer os.Unsetenv("GORELEASER_TEST_BASE_PATH")
+
+	project, err := Load("testdata/config_with_env.yml")
+	assert.Equal(t, "BASE_PATH=/path/to/darkside", project.Env[0])
+
+	assert.Equal(t, "CGO_ENABLED=0", project.Builds[0].Env[0])
+	assert.Equal(t, "PKG_CONFIG_PATH=/path/to/darkside/config", project.Builds[0].Env[1])
+
+	assert.NoError(t, err)
+}
+
+func TestConfigWithEnvTemplatesMissingEnv(t *testing.T) {
+
+	_, err := Load("testdata/config_with_env.yml")
+
+	assert.Error(t, err, "Should return error when Env Variable is not set")
+}

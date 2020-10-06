@@ -3,10 +3,12 @@
 package config
 
 import (
+	"bytes"
 	"io"
 	"io/ioutil"
 	"os"
 	"strings"
+	"text/template"
 
 	"github.com/apex/log"
 	yaml "gopkg.in/yaml.v2"
@@ -522,6 +524,45 @@ type Project struct {
 	GiteaURLs GiteaURLs `yaml:"gitea_urls,omitempty"`
 }
 
+func (p *Project) executeEnvTemplates() error {
+	var env []string
+	var err error
+
+	if env, err = resolveTemplate(p.Env); err != nil {
+		return err
+	}
+	p.Env = env
+
+	for _, build := range p.Builds {
+		if env, err = resolveTemplate(build.Env); err != nil {
+			return err
+		}
+		build.Env = env
+
+	}
+	return nil
+}
+
+func resolveTemplate(env []string) ([]string, error) {
+	envMap := make(map[string]string)
+	for _, ev := range os.Environ() {
+		kv := strings.Split(ev, "=")
+		envMap[kv[0]] = kv[1]
+	}
+
+	var tpl bytes.Buffer
+	for i, ev := range env {
+		tpl.Reset()
+		t := template.Must(template.New("env").Option("missingkey=error").Parse(ev))
+		err := t.Execute(&tpl, struct{ ENV map[string]string }{ENV: envMap})
+		if err != nil {
+			return nil, err
+		}
+		env[i] = tpl.String()
+	}
+	return env, nil
+}
+
 // Load config file.
 func Load(file string) (config Project, err error) {
 	f, err := os.Open(file) // #nosec
@@ -540,6 +581,11 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 		return config, err
 	}
 	err = yaml.UnmarshalStrict(data, &config)
+
+	if err := config.executeEnvTemplates(); err != nil {
+		return config, err
+	}
+
 	log.WithField("config", config).Debug("loaded config file")
 	return config, err
 }
