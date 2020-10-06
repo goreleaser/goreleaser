@@ -14,7 +14,6 @@ import (
 	api "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,7 +51,7 @@ func init() {
 }
 
 func TestPipeDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestBuild(t *testing.T) {
@@ -79,9 +78,9 @@ func TestBuild(t *testing.T) {
 		Config:  config,
 	}
 	opts, err := buildOptionsForTarget(ctx, ctx.Config.Builds[0], "darwin_amd64")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	error := doBuild(ctx, ctx.Config.Builds[0], *opts)
-	assert.NoError(t, error)
+	require.NoError(t, error)
 }
 
 func TestRunPipe(t *testing.T) {
@@ -101,8 +100,8 @@ func TestRunPipe(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git.CurrentTag = "2.4.5"
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
 		Name: "testing",
 	}})
 }
@@ -135,13 +134,13 @@ func TestRunFullPipe(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git.CurrentTag = "2.4.5"
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
 		Name: "testing",
 	}})
-	assert.FileExists(t, post)
-	assert.FileExists(t, pre)
-	assert.FileExists(t, filepath.Join(folder, "build1_whatever", "testing"))
+	require.FileExists(t, post)
+	require.FileExists(t, pre)
+	require.FileExists(t, filepath.Join(folder, "build1_whatever", "testing"))
 }
 
 func TestRunFullPipeFail(t *testing.T) {
@@ -171,9 +170,9 @@ func TestRunFullPipeFail(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git.CurrentTag = "2.4.5"
-	assert.EqualError(t, Pipe{}.Run(ctx), errFailedBuild.Error())
-	assert.Empty(t, ctx.Artifacts.List())
-	assert.FileExists(t, pre)
+	require.EqualError(t, Pipe{}.Run(ctx), errFailedBuild.Error())
+	require.Empty(t, ctx.Artifacts.List())
+	require.FileExists(t, pre)
 }
 
 func TestRunPipeFailingHooks(t *testing.T) {
@@ -195,14 +194,14 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		ctx.Git.CurrentTag = "2.3.4"
 		ctx.Config.Builds[0].Hooks.Pre = []config.BuildHook{{Cmd: "exit 1"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.BuildHook{{Cmd: "echo post"}}
-		assert.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: "": exec: "exit": executable file not found in $PATH`)
+		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: "": exec: "exit": executable file not found in $PATH`)
 	})
 	t.Run("post-hook", func(t *testing.T) {
 		var ctx = context.New(cfg)
 		ctx.Git.CurrentTag = "2.3.4"
 		ctx.Config.Builds[0].Hooks.Pre = []config.BuildHook{{Cmd: "echo pre"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.BuildHook{{Cmd: "exit 1"}}
-		assert.EqualError(t, Pipe{}.Run(ctx), `post hook failed: "": exec: "exit": executable file not found in $PATH`)
+		require.EqualError(t, Pipe{}.Run(ctx), `post hook failed: "": exec: "exit": executable file not found in $PATH`)
 	})
 }
 
@@ -210,11 +209,11 @@ func TestDefaultNoBuilds(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultExpandEnv(t *testing.T) {
-	assert.NoError(t, os.Setenv("XBAR", "FOOBAR"))
+	require.NoError(t, os.Setenv("XBAR", "FOOBAR"))
 	var ctx = &context.Context{
 		Config: config.Project{
 			Builds: []config.Build{
@@ -226,9 +225,9 @@ func TestDefaultExpandEnv(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
 	var env = ctx.Config.Builds[0].Env[0]
-	assert.Equal(t, "XFOO=bar_FOOBAR", env)
+	require.Equal(t, "XFOO=bar_FOOBAR", env)
 }
 
 func TestDefaultEmptyBuild(t *testing.T) {
@@ -240,17 +239,17 @@ func TestDefaultEmptyBuild(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
 	var build = ctx.Config.Builds[0]
-	assert.Equal(t, ctx.Config.ProjectName, build.ID)
-	assert.Equal(t, ctx.Config.ProjectName, build.Binary)
-	assert.Equal(t, ".", build.Dir)
-	assert.Equal(t, ".", build.Main)
-	assert.Equal(t, []string{"linux", "darwin"}, build.Goos)
-	assert.Equal(t, []string{"amd64", "386"}, build.Goarch)
-	assert.Equal(t, []string{"6"}, build.Goarm)
-	assert.Len(t, build.Ldflags, 1)
-	assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser", build.Ldflags[0])
+	require.Equal(t, ctx.Config.ProjectName, build.ID)
+	require.Equal(t, ctx.Config.ProjectName, build.Binary)
+	require.Equal(t, ".", build.Dir)
+	require.Equal(t, ".", build.Main)
+	require.Equal(t, []string{"linux", "darwin"}, build.Goos)
+	require.Equal(t, []string{"amd64", "386"}, build.Goarch)
+	require.Equal(t, []string{"6"}, build.Goarm)
+	require.Len(t, build.Ldflags, 1)
+	require.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser", build.Ldflags[0])
 }
 
 func TestDefaultBuildID(t *testing.T) {
@@ -267,9 +266,9 @@ func TestDefaultBuildID(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'foo', please fix your config")
+	require.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'foo', please fix your config")
 	var build = ctx.Config.Builds[0]
-	assert.Equal(t, ctx.Config.ProjectName, build.ID)
+	require.Equal(t, ctx.Config.ProjectName, build.ID)
 }
 
 func TestSeveralBuildsWithTheSameID(t *testing.T) {
@@ -287,7 +286,7 @@ func TestSeveralBuildsWithTheSameID(t *testing.T) {
 			},
 		},
 	}
-	assert.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'a', please fix your config")
+	require.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'a', please fix your config")
 }
 
 func TestDefaultPartialBuilds(t *testing.T) {
@@ -310,28 +309,28 @@ func TestDefaultPartialBuilds(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
 	t.Run("build0", func(t *testing.T) {
 		var build = ctx.Config.Builds[0]
-		assert.Equal(t, "bar", build.Binary)
-		assert.Equal(t, ".", build.Dir)
-		assert.Equal(t, "./cmd/main.go", build.Main)
-		assert.Equal(t, []string{"linux"}, build.Goos)
-		assert.Equal(t, []string{"amd64", "386"}, build.Goarch)
-		assert.Equal(t, []string{"6"}, build.Goarm)
-		assert.Len(t, build.Ldflags, 1)
-		assert.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser", build.Ldflags[0])
+		require.Equal(t, "bar", build.Binary)
+		require.Equal(t, ".", build.Dir)
+		require.Equal(t, "./cmd/main.go", build.Main)
+		require.Equal(t, []string{"linux"}, build.Goos)
+		require.Equal(t, []string{"amd64", "386"}, build.Goarch)
+		require.Equal(t, []string{"6"}, build.Goarm)
+		require.Len(t, build.Ldflags, 1)
+		require.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser", build.Ldflags[0])
 	})
 	t.Run("build1", func(t *testing.T) {
 		var build = ctx.Config.Builds[1]
-		assert.Equal(t, "foo", build.Binary)
-		assert.Equal(t, ".", build.Main)
-		assert.Equal(t, "baz", build.Dir)
-		assert.Equal(t, []string{"linux", "darwin"}, build.Goos)
-		assert.Equal(t, []string{"386"}, build.Goarch)
-		assert.Equal(t, []string{"6"}, build.Goarm)
-		assert.Len(t, build.Ldflags, 1)
-		assert.Equal(t, "-s -w", build.Ldflags[0])
+		require.Equal(t, "foo", build.Binary)
+		require.Equal(t, ".", build.Main)
+		require.Equal(t, "baz", build.Dir)
+		require.Equal(t, []string{"linux", "darwin"}, build.Goos)
+		require.Equal(t, []string{"386"}, build.Goarch)
+		require.Equal(t, []string{"6"}, build.Goarm)
+		require.Len(t, build.Ldflags, 1)
+		require.Equal(t, "-s -w", build.Ldflags[0])
 	})
 }
 
@@ -347,9 +346,9 @@ func TestDefaultFillSingleBuild(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Builds, 1)
-	assert.Equal(t, ctx.Config.Builds[0].Binary, "foo")
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Len(t, ctx.Config.Builds, 1)
+	require.Equal(t, ctx.Config.Builds[0].Binary, "foo")
 }
 
 func TestSkipBuild(t *testing.T) {
@@ -365,28 +364,28 @@ func TestSkipBuild(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git.CurrentTag = "2.4.5"
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Len(t, ctx.Artifacts.List(), 0)
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Len(t, ctx.Artifacts.List(), 0)
 }
 
 func TestExtWindows(t *testing.T) {
-	assert.Equal(t, ".exe", extFor("windows_amd64", config.FlagArray{}))
-	assert.Equal(t, ".exe", extFor("windows_386", config.FlagArray{}))
-	assert.Equal(t, ".exe", extFor("windows_amd64", config.FlagArray{"-tags=dev", "-v"}))
-	assert.Equal(t, ".dll", extFor("windows_amd64", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-shared"}))
-	assert.Equal(t, ".dll", extFor("windows_386", config.FlagArray{"-buildmode=c-shared"}))
-	assert.Equal(t, ".lib", extFor("windows_amd64", config.FlagArray{"-buildmode=c-archive"}))
-	assert.Equal(t, ".lib", extFor("windows_386", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-archive"}))
+	require.Equal(t, ".exe", extFor("windows_amd64", config.FlagArray{}))
+	require.Equal(t, ".exe", extFor("windows_386", config.FlagArray{}))
+	require.Equal(t, ".exe", extFor("windows_amd64", config.FlagArray{"-tags=dev", "-v"}))
+	require.Equal(t, ".dll", extFor("windows_amd64", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-shared"}))
+	require.Equal(t, ".dll", extFor("windows_386", config.FlagArray{"-buildmode=c-shared"}))
+	require.Equal(t, ".lib", extFor("windows_amd64", config.FlagArray{"-buildmode=c-archive"}))
+	require.Equal(t, ".lib", extFor("windows_386", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-archive"}))
 }
 
 func TestExtWasm(t *testing.T) {
-	assert.Equal(t, ".wasm", extFor("js_wasm", config.FlagArray{}))
+	require.Equal(t, ".wasm", extFor("js_wasm", config.FlagArray{}))
 }
 
 func TestExtOthers(t *testing.T) {
-	assert.Empty(t, "", extFor("linux_amd64", config.FlagArray{}))
-	assert.Empty(t, "", extFor("linuxwin_386", config.FlagArray{}))
-	assert.Empty(t, "", extFor("winasdasd_sad", config.FlagArray{}))
+	require.Empty(t, "", extFor("linux_amd64", config.FlagArray{}))
+	require.Empty(t, "", extFor("linuxwin_386", config.FlagArray{}))
+	require.Empty(t, "", extFor("winasdasd_sad", config.FlagArray{}))
 }
 
 func TestTemplate(t *testing.T) {
@@ -399,13 +398,13 @@ func TestTemplate(t *testing.T) {
 	ctx.Env = map[string]string{"FOO": "123"}
 	binary, err := tmpl.New(ctx).
 		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}"`)
-	assert.NoError(t, err)
-	assert.Contains(t, binary, "-s -w")
-	assert.Contains(t, binary, "-X main.version=1.2.3")
-	assert.Contains(t, binary, "-X main.tag=v1.2.3")
-	assert.Contains(t, binary, "-X main.commit=123")
-	assert.Contains(t, binary, "-X main.date=")
-	assert.Contains(t, binary, `-X "main.foo=123"`)
+	require.NoError(t, err)
+	require.Contains(t, binary, "-s -w")
+	require.Contains(t, binary, "-X main.version=1.2.3")
+	require.Contains(t, binary, "-X main.tag=v1.2.3")
+	require.Contains(t, binary, "-X main.commit=123")
+	require.Contains(t, binary, "-X main.date=")
+	require.Contains(t, binary, `-X "main.foo=123"`)
 }
 
 func TestRunHookEnvs(t *testing.T) {
@@ -438,8 +437,8 @@ func TestRunHookEnvs(t *testing.T) {
 				fmt.Sprintf("CTXFOO=%s/foo", tmp),
 			},
 		}), opts, []string{}, simpleHook("touch {{ .Env.CTXFOO }}"))
-		assert.NoError(t, err)
-		assert.FileExists(t, filepath.Join(tmp, "foo"))
+		require.NoError(t, err)
+		require.FileExists(t, filepath.Join(tmp, "foo"))
 	})
 
 	t.Run("valid cmd template with build env", func(t *testing.T) {
@@ -448,8 +447,8 @@ func TestRunHookEnvs(t *testing.T) {
 				build,
 			},
 		}), opts, build.Env, simpleHook("touch {{ .Env.FOO }}"))
-		assert.NoError(t, err)
-		assert.FileExists(t, filepath.Join(tmp, "foo"))
+		require.NoError(t, err)
+		require.FileExists(t, filepath.Join(tmp, "foo"))
 	})
 
 	t.Run("valid cmd template with hook env", func(t *testing.T) {
@@ -463,8 +462,8 @@ func TestRunHookEnvs(t *testing.T) {
 				fmt.Sprintf("HOOK_ONLY_FOO=%s/hook_only", tmp),
 			},
 		}})
-		assert.NoError(t, err)
-		assert.FileExists(t, filepath.Join(tmp, "hook_only"))
+		require.NoError(t, err)
+		require.FileExists(t, filepath.Join(tmp, "hook_only"))
 	})
 
 	t.Run("valid cmd template with ctx and build env", func(t *testing.T) {
@@ -478,10 +477,10 @@ func TestRunHookEnvs(t *testing.T) {
 		}), opts, []string{
 			fmt.Sprintf("OVER_FOO=%s/build_over_ctx", tmp),
 		}, simpleHook("touch {{ .Env.OVER_FOO }}"))
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
-		assert.FileExists(t, filepath.Join(tmp, "build_over_ctx"))
-		assert.NoFileExists(t, filepath.Join(tmp, "ctx_over_build"))
+		require.FileExists(t, filepath.Join(tmp, "build_over_ctx"))
+		require.NoFileExists(t, filepath.Join(tmp, "ctx_over_build"))
 	})
 
 	t.Run("valid cmd template with ctx and hook env", func(t *testing.T) {
@@ -498,9 +497,9 @@ func TestRunHookEnvs(t *testing.T) {
 				fmt.Sprintf("CTX_OR_HOOK_FOO=%s/hook_over_ctx", tmp),
 			},
 		}})
-		assert.NoError(t, err)
-		assert.FileExists(t, filepath.Join(tmp, "hook_over_ctx"))
-		assert.NoFileExists(t, filepath.Join(tmp, "ctx_over_hook"))
+		require.NoError(t, err)
+		require.FileExists(t, filepath.Join(tmp, "hook_over_ctx"))
+		require.NoFileExists(t, filepath.Join(tmp, "ctx_over_hook"))
 	})
 
 	t.Run("valid cmd template with build and hook env", func(t *testing.T) {
@@ -516,9 +515,9 @@ func TestRunHookEnvs(t *testing.T) {
 				fmt.Sprintf("BUILD_OR_HOOK_FOO=%s/hook_over_build", tmp),
 			},
 		}})
-		assert.NoError(t, err)
-		assert.FileExists(t, filepath.Join(tmp, "hook_over_build"))
-		assert.NoFileExists(t, filepath.Join(tmp, "build_over_hook"))
+		require.NoError(t, err)
+		require.FileExists(t, filepath.Join(tmp, "hook_over_build"))
+		require.NoFileExists(t, filepath.Join(tmp, "build_over_hook"))
 	})
 
 	t.Run("valid cmd template with ctx, build and hook env", func(t *testing.T) {
@@ -537,10 +536,10 @@ func TestRunHookEnvs(t *testing.T) {
 				fmt.Sprintf("CTX_OR_BUILD_OR_HOOK_FOO=%s/hook_wins", tmp),
 			},
 		}})
-		assert.NoError(t, err)
-		assert.FileExists(t, filepath.Join(tmp, "hook_wins"))
-		assert.NoFileExists(t, filepath.Join(tmp, "ctx_wins"))
-		assert.NoFileExists(t, filepath.Join(tmp, "build_wins"))
+		require.NoError(t, err)
+		require.FileExists(t, filepath.Join(tmp, "hook_wins"))
+		require.NoFileExists(t, filepath.Join(tmp, "ctx_wins"))
+		require.NoFileExists(t, filepath.Join(tmp, "build_wins"))
 	})
 
 	t.Run("invalid cmd template", func(t *testing.T) {
@@ -549,7 +548,7 @@ func TestRunHookEnvs(t *testing.T) {
 				build,
 			},
 		}), opts, build.Env, simpleHook("touch {{ .Env.FOOss }}"))
-		assert.EqualError(t, err, `template: tmpl:1:13: executing "tmpl" at <.Env.FOOss>: map has no entry for key "FOOss"`)
+		require.EqualError(t, err, `template: tmpl:1:13: executing "tmpl" at <.Env.FOOss>: map has no entry for key "FOOss"`)
 	})
 
 	t.Run("invalid dir template", func(t *testing.T) {
@@ -561,7 +560,7 @@ func TestRunHookEnvs(t *testing.T) {
 			Cmd: "echo something",
 			Dir: "{{ .Env.INVALID_ENV }}",
 		}})
-		assert.EqualError(t, err, `template: tmpl:1:7: executing "tmpl" at <.Env.INVALID_ENV>: map has no entry for key "INVALID_ENV"`)
+		require.EqualError(t, err, `template: tmpl:1:7: executing "tmpl" at <.Env.INVALID_ENV>: map has no entry for key "INVALID_ENV"`)
 	})
 
 	t.Run("invalid hook env template", func(t *testing.T) {
@@ -575,21 +574,21 @@ func TestRunHookEnvs(t *testing.T) {
 				"TEST={{ .Env.MISSING_ENV }}",
 			},
 		}})
-		assert.EqualError(t, err, `template: tmpl:1:12: executing "tmpl" at <.Env.MISSING_ENV>: map has no entry for key "MISSING_ENV"`)
+		require.EqualError(t, err, `template: tmpl:1:12: executing "tmpl" at <.Env.MISSING_ENV>: map has no entry for key "MISSING_ENV"`)
 	})
 
 	t.Run("build env inside shell", func(t *testing.T) {
 		var shell = `#!/bin/sh -e
 touch "$BAR"`
 		err := ioutil.WriteFile(filepath.Join(tmp, "test.sh"), []byte(shell), 0750)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		err = runHook(context.New(config.Project{
 			Builds: []config.Build{
 				build,
 			},
 		}), opts, build.Env, simpleHook("sh test.sh"))
-		assert.NoError(t, err)
-		assert.FileExists(t, filepath.Join(tmp, "bar"))
+		require.NoError(t, err)
+		require.FileExists(t, filepath.Join(tmp, "bar"))
 	})
 }
 
@@ -621,9 +620,9 @@ func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
 		},
 	})
 	err := runPipeOnBuild(ctx, build)
-	assert.NoError(t, err)
-	assert.FileExists(t, filepath.Join(tmpDir, "pre-hook-amd64-linux"))
-	assert.FileExists(t, filepath.Join(tmpDir, "post-hook-amd64-linux"))
+	require.NoError(t, err)
+	require.FileExists(t, filepath.Join(tmpDir, "pre-hook-amd64-linux"))
+	require.FileExists(t, filepath.Join(tmpDir, "post-hook-amd64-linux"))
 }
 
 func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
@@ -653,13 +652,13 @@ func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 		},
 	})
 	err := runPipeOnBuild(ctx, build)
-	assert.NoError(t, err)
-	assert.FileExists(t, filepath.Join(tmpDir, "pre-hook-linux_amd64"))
-	assert.FileExists(t, filepath.Join(tmpDir, "pre-hook-darwin_amd64"))
-	assert.FileExists(t, filepath.Join(tmpDir, "pre-hook-windows_amd64"))
-	assert.FileExists(t, filepath.Join(tmpDir, "post-hook-linux_amd64"))
-	assert.FileExists(t, filepath.Join(tmpDir, "post-hook-darwin_amd64"))
-	assert.FileExists(t, filepath.Join(tmpDir, "post-hook-windows_amd64"))
+	require.NoError(t, err)
+	require.FileExists(t, filepath.Join(tmpDir, "pre-hook-linux_amd64"))
+	require.FileExists(t, filepath.Join(tmpDir, "pre-hook-darwin_amd64"))
+	require.FileExists(t, filepath.Join(tmpDir, "pre-hook-windows_amd64"))
+	require.FileExists(t, filepath.Join(tmpDir, "post-hook-linux_amd64"))
+	require.FileExists(t, filepath.Join(tmpDir, "post-hook-darwin_amd64"))
+	require.FileExists(t, filepath.Join(tmpDir, "post-hook-windows_amd64"))
 }
 
 func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
@@ -676,7 +675,7 @@ func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
 		},
 	})
 	err := runPipeOnBuild(ctx, build)
-	assert.EqualError(t, err, `template: tmpl:1:11: executing "tmpl" at <.XYZ>: map has no entry for key "XYZ"`)
+	require.EqualError(t, err, `template: tmpl:1:11: executing "tmpl" at <.XYZ>: map has no entry for key "XYZ"`)
 }
 
 func TestBuildOptionsForTarget(t *testing.T) {
@@ -697,8 +696,8 @@ func TestBuildOptionsForTarget(t *testing.T) {
 		Builds: []config.Build{build},
 	})
 	opts, err := buildOptionsForTarget(ctx, build, "linux_amd64")
-	assert.NoError(t, err)
-	assert.Equal(t, &api.Options{
+	require.NoError(t, err)
+	require.Equal(t, &api.Options{
 		Name:   "testbinary",
 		Path:   filepath.Join(tmpDir, "testid_linux_amd64", "testbinary"),
 		Target: "linux_amd64",
@@ -753,6 +752,6 @@ func TestRunHookFailWithLogs(t *testing.T) {
 	}
 	var ctx = context.New(config)
 	ctx.Git.CurrentTag = "2.4.5"
-	assert.EqualError(t, Pipe{}.Run(ctx), "pre hook failed: \"foo\\n\": exit status 1")
-	assert.Empty(t, ctx.Artifacts.List())
+	require.EqualError(t, Pipe{}.Run(ctx), "pre hook failed: \"foo\\n\": exit status 1")
+	require.Empty(t, ctx.Artifacts.List())
 }

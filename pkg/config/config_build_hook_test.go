@@ -3,7 +3,7 @@ package config
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -11,8 +11,8 @@ func TestBuildHook_justString(t *testing.T) {
 	var actual HookConfig
 
 	err := yaml.UnmarshalStrict([]byte(`pre: ./script.sh`), &actual)
-	assert.NoError(t, err)
-	assert.Equal(t, BuildHook{
+	require.NoError(t, err)
+	require.Equal(t, BuildHook{
 		Cmd: "./script.sh",
 		Env: nil,
 	}, actual.Pre[0])
@@ -25,9 +25,9 @@ func TestBuildHook_stringCmds(t *testing.T) {
  - ./script.sh
  - second-script.sh
 `), &actual)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	assert.Equal(t, BuildHooks{
+	require.Equal(t, BuildHooks{
 		{
 			Cmd: "./script.sh",
 			Env: nil,
@@ -47,8 +47,8 @@ func TestBuildHook_complex(t *testing.T) {
    env:
     - TEST=value
 `), &actual)
-	assert.NoError(t, err)
-	assert.Equal(t, BuildHook{
+	require.NoError(t, err)
+	require.Equal(t, BuildHook{
 		Cmd: "./script.sh",
 		Env: []string{"TEST=value"},
 	}, actual.Pre[0])

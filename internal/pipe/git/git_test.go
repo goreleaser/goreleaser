@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -16,7 +15,7 @@ import (
 )
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestNotAGitFolder(t *testing.T) {
@@ -25,7 +24,7 @@ func TestNotAGitFolder(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.EqualError(t, Pipe{}.Run(ctx), ErrNotRepository.Error())
+	require.EqualError(t, Pipe{}.Run(ctx), ErrNotRepository.Error())
 }
 
 func TestSingleCommit(t *testing.T) {
@@ -38,8 +37,8 @@ func TestSingleCommit(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 }
 
 func TestNoRemote(t *testing.T) {
@@ -51,7 +50,7 @@ func TestNoRemote(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.EqualError(t, Pipe{}.Run(ctx), "couldn't get remote URL: fatal: No remote configured to list refs from.")
+	require.EqualError(t, Pipe{}.Run(ctx), "couldn't get remote URL: fatal: No remote configured to list refs from.")
 }
 
 func TestNewRepository(t *testing.T) {
@@ -62,7 +61,7 @@ func TestNewRepository(t *testing.T) {
 		Config: config.Project{},
 	}
 	// TODO: improve this error handling
-	assert.Contains(t, Pipe{}.Run(ctx).Error(), `fatal: ambiguous argument 'HEAD'`)
+	require.Contains(t, Pipe{}.Run(ctx).Error(), `fatal: ambiguous argument 'HEAD'`)
 }
 
 // TestNoTagsNoSnapshot covers the situation where a repository
@@ -76,7 +75,7 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 	testlib.GitCommit(t, "first")
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = false
-	assert.EqualError(t, Pipe{}.Run(ctx), `git doesn't contain any tags. Either add a tag or use --snapshot`)
+	require.EqualError(t, Pipe{}.Run(ctx), `git doesn't contain any tags. Either add a tag or use --snapshot`)
 }
 
 func TestDirty(t *testing.T) {
@@ -85,15 +84,15 @@ func TestDirty(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	dummy, err := os.Create(filepath.Join(folder, "dummy"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "commit2")
 	testlib.GitTag(t, "v0.0.1")
-	assert.NoError(t, ioutil.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0644))
+	require.NoError(t, ioutil.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0644))
 	t.Run("all checks up", func(t *testing.T) {
 		err = Pipe{}.Run(context.New(config.Project{}))
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "git is currently in a dirty state")
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "git is currently in a dirty state")
 	})
 	t.Run("skip validate is set", func(t *testing.T) {
 		ctx := context.New(config.Project{})
@@ -118,8 +117,8 @@ func TestTagIsNotLastCommit(t *testing.T) {
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "commit4")
 	err := Pipe{}.Run(context.New(config.Project{}))
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "git tag v0.0.1 was not made against commit")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "git tag v0.0.1 was not made against commit")
 }
 
 func TestValidState(t *testing.T) {
@@ -132,9 +131,9 @@ func TestValidState(t *testing.T) {
 	testlib.GitCommit(t, "commit4")
 	testlib.GitTag(t, "v0.0.2")
 	var ctx = context.New(config.Project{})
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
-	assert.Equal(t, "git@github.com:foo/bar.git", ctx.Git.URL)
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
+	require.Equal(t, "git@github.com:foo/bar.git", ctx.Git.URL)
 }
 
 func TestSnapshotNoTags(t *testing.T) {
@@ -147,7 +146,7 @@ func TestSnapshotNoTags(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-	assert.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
+	require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
 }
 
 func TestSnapshotNoCommits(t *testing.T) {
@@ -158,7 +157,7 @@ func TestSnapshotNoCommits(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-	assert.Equal(t, fakeInfo, ctx.Git)
+	require.Equal(t, fakeInfo, ctx.Git)
 }
 
 func TestSnapshotWithoutRepo(t *testing.T) {
@@ -167,7 +166,7 @@ func TestSnapshotWithoutRepo(t *testing.T) {
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-	assert.Equal(t, fakeInfo, ctx.Git)
+	require.Equal(t, fakeInfo, ctx.Git)
 }
 
 func TestSnapshotDirty(t *testing.T) {
@@ -178,7 +177,7 @@ func TestSnapshotDirty(t *testing.T) {
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "whatever")
 	testlib.GitTag(t, "v0.0.1")
-	assert.NoError(t, ioutil.WriteFile(filepath.Join(folder, "foo"), []byte("foobar"), 0644))
+	require.NoError(t, ioutil.WriteFile(filepath.Join(folder, "foo"), []byte("foobar"), 0644))
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
@@ -187,10 +186,10 @@ func TestSnapshotDirty(t *testing.T) {
 func TestGitNotInPath(t *testing.T) {
 	var path = os.Getenv("PATH")
 	defer func() {
-		assert.NoError(t, os.Setenv("PATH", path))
+		require.NoError(t, os.Setenv("PATH", path))
 	}()
-	assert.NoError(t, os.Setenv("PATH", ""))
-	assert.EqualError(t, Pipe{}.Run(context.New(config.Project{})), ErrNoGit.Error())
+	require.NoError(t, os.Setenv("PATH", ""))
+	require.EqualError(t, Pipe{}.Run(context.New(config.Project{})), ErrNoGit.Error())
 }
 
 func TestTagFromCI(t *testing.T) {
@@ -222,8 +221,8 @@ func TestTagFromCI(t *testing.T) {
 		var ctx = &context.Context{
 			Config: config.Project{},
 		}
-		assert.NoError(t, Pipe{}.Run(ctx))
-		assert.Equal(t, tc.expected, ctx.Git.CurrentTag)
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, tc.expected, ctx.Git.CurrentTag)
 
 		for name := range tc.envs {
 			require.NoError(t, os.Setenv(name, ""))
@@ -244,7 +243,7 @@ func TestCommitDate(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
-	assert.True(t, commitDate.Equal(ctx.Git.CommitDate), "commit date does not match expected")
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
+	require.True(t, commitDate.Equal(ctx.Git.CommitDate), "commit date does not match expected")
 }

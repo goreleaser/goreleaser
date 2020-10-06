@@ -6,12 +6,11 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestFillBasicData(t *testing.T) {
@@ -25,23 +24,23 @@ func TestFillBasicData(t *testing.T) {
 		Config:    config.Project{},
 	}
 
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
-	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
-	assert.NotEmpty(t, ctx.Config.Builds)
-	assert.Equal(t, "goreleaser", ctx.Config.Builds[0].Binary)
-	assert.Equal(t, ".", ctx.Config.Builds[0].Main)
-	assert.Contains(t, ctx.Config.Builds[0].Goos, "darwin")
-	assert.Contains(t, ctx.Config.Builds[0].Goos, "linux")
-	assert.Contains(t, ctx.Config.Builds[0].Goarch, "386")
-	assert.Contains(t, ctx.Config.Builds[0].Goarch, "amd64")
-	assert.Equal(t, "tar.gz", ctx.Config.Archives[0].Format)
-	assert.Empty(t, ctx.Config.Dockers)
-	assert.Equal(t, "https://github.com", ctx.Config.GitHubURLs.Download)
-	assert.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
-	assert.NotEmpty(t, ctx.Config.Builds[0].Ldflags)
-	assert.NotEmpty(t, ctx.Config.Archives[0].Files)
-	assert.NotEmpty(t, ctx.Config.Dist)
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
+	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
+	require.NotEmpty(t, ctx.Config.Builds)
+	require.Equal(t, "goreleaser", ctx.Config.Builds[0].Binary)
+	require.Equal(t, ".", ctx.Config.Builds[0].Main)
+	require.Contains(t, ctx.Config.Builds[0].Goos, "darwin")
+	require.Contains(t, ctx.Config.Builds[0].Goos, "linux")
+	require.Contains(t, ctx.Config.Builds[0].Goarch, "386")
+	require.Contains(t, ctx.Config.Builds[0].Goarch, "amd64")
+	require.Equal(t, "tar.gz", ctx.Config.Archives[0].Format)
+	require.Empty(t, ctx.Config.Dockers)
+	require.Equal(t, "https://github.com", ctx.Config.GitHubURLs.Download)
+	require.NotEmpty(t, ctx.Config.Archives[0].NameTemplate)
+	require.NotEmpty(t, ctx.Config.Builds[0].Ldflags)
+	require.NotEmpty(t, ctx.Config.Archives[0].Files)
+	require.NotEmpty(t, ctx.Config.Dist)
 }
 
 func TestFillPartial(t *testing.T) {
@@ -95,14 +94,14 @@ func TestFillPartial(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Run(ctx))
-	assert.Len(t, ctx.Config.Archives[0].Files, 1)
-	assert.Equal(t, `bin.install "testreleaser"`, ctx.Config.Brews[0].Install)
-	assert.NotEmpty(t, ctx.Config.Dockers[0].Binaries)
-	assert.NotEmpty(t, ctx.Config.Dockers[0].Goos)
-	assert.NotEmpty(t, ctx.Config.Dockers[0].Goarch)
-	assert.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)
-	assert.Empty(t, ctx.Config.Dockers[0].Goarm)
-	assert.Equal(t, "disttt", ctx.Config.Dist)
-	assert.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Len(t, ctx.Config.Archives[0].Files, 1)
+	require.Equal(t, `bin.install "testreleaser"`, ctx.Config.Brews[0].Install)
+	require.NotEmpty(t, ctx.Config.Dockers[0].Binaries)
+	require.NotEmpty(t, ctx.Config.Dockers[0].Goos)
+	require.NotEmpty(t, ctx.Config.Dockers[0].Goarch)
+	require.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)
+	require.Empty(t, ctx.Config.Dockers[0].Goarm)
+	require.Equal(t, "disttt", ctx.Config.Dist)
+	require.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
 }

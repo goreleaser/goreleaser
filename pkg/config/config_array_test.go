@@ -3,7 +3,7 @@ package config
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -92,10 +92,10 @@ func TestStringArray(t *testing.T) {
 
 		err := yaml.UnmarshalStrict([]byte(testCase.yaml), &actual)
 		if testCase.err == "" {
-			assert.NoError(t, err)
-			assert.Equal(t, testCase.expected, actual)
+			require.NoError(t, err)
+			require.Equal(t, testCase.expected, actual)
 		} else {
-			assert.EqualError(t, err, testCase.err)
+			require.EqualError(t, err, testCase.err)
 		}
 	}
 }
@@ -106,10 +106,10 @@ func TestFlagArray(t *testing.T) {
 
 		err := yaml.UnmarshalStrict([]byte(testCase.yaml), &actual)
 		if testCase.err == "" {
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		} else {
-			assert.EqualError(t, err, testCase.err)
+			require.EqualError(t, err, testCase.err)
 		}
-		assert.Equal(t, testCase.expected, actual)
+		require.Equal(t, testCase.expected, actual)
 	}
 }
