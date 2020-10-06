@@ -4,6 +4,7 @@
 package archive
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -27,6 +28,11 @@ const (
 	defaultNameTemplate       = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 	defaultBinaryNameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 )
+
+// ErrArchiveDifferentBinaryCount happens when an archive uses several builds which have different goos/goarch/etc sets,
+// causing the archives for some platforms to have more binaries than others.
+// GoReleaser breaks in these cases as it will only cause confusion to other users.
+var ErrArchiveDifferentBinaryCount = errors.New("archive has different count of built binaries for each platform, which may cause your users confusion. Please make sure all builds used have the same set of goos/goarch/etc or split it into multiple archives")
 
 // nolint: gochecknoglobals
 var lock sync.Mutex
@@ -83,15 +89,18 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	var g = semerrgroup.New(ctx.Parallelism)
-	for _, archive := range ctx.Config.Archives {
+	for i, archive := range ctx.Config.Archives {
 		archive := archive
-		var filtered = ctx.Artifacts.Filter(
+		var artifacts = ctx.Artifacts.Filter(
 			artifact.And(
 				artifact.ByType(artifact.Binary),
 				artifact.ByIDs(archive.Builds...),
 			),
-		)
-		for group, artifacts := range filtered.GroupByPlatform() {
+		).GroupByPlatform()
+		if err := checkArtifacts(artifacts); err != nil {
+			return fmt.Errorf("invalid archive: %d: %w", i, ErrArchiveDifferentBinaryCount)
+		}
+		for group, artifacts := range artifacts {
 			log.Debugf("group %s has %d binaries", group, len(artifacts))
 			artifacts := artifacts
 			g.Go(func() error {
@@ -103,6 +112,17 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 	}
 	return g.Wait()
+}
+
+func checkArtifacts(artifacts map[string][]*artifact.Artifact) error {
+	var lens = map[int]bool{}
+	for _, v := range artifacts {
+		lens[len(v)] = true
+	}
+	if len(lens) == 1 {
+		return nil
+	}
+	return ErrArchiveDifferentBinaryCount
 }
 
 func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {

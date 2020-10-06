@@ -181,6 +181,69 @@ func TestRunPipe(t *testing.T) {
 	}
 }
 
+func TestRunPipeDifferentBinaryCount(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	for _, arch := range []string{"darwinamd64", "linuxamd64"} {
+		createFakeBinary(t, dist, arch, "bin/mybin")
+	}
+	createFakeBinary(t, dist, "darwinamd64", "bin/foobar")
+	var ctx = context.New(config.Project{
+		Dist:        dist,
+		ProjectName: "foobar",
+		Archives: []config.Archive{
+			{
+				ID:           "myid",
+				Format:       "tar.gz",
+				Builds:       []string{"default", "foobar"},
+				NameTemplate: defaultNameTemplate,
+			},
+		},
+	})
+	var darwinBuild = &artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "bin/mybin",
+		Path:   filepath.Join(dist, "darwinamd64", "bin", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			"Binary": "bin/mybin",
+			"ID":     "default",
+		},
+	}
+	var darwinBuild2 = &artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "bin/foobar",
+		Path:   filepath.Join(dist, "darwinamd64", "bin", "foobar"),
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			"Binary": "bin/foobar",
+			"ID":     "foobar",
+		},
+	}
+	var linuxArmBuild = &artifact.Artifact{
+		Goos:   "linux",
+		Goarch: "amd64",
+		Name:   "bin/mybin",
+		Path:   filepath.Join(dist, "linuxamd64", "bin", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			"Binary": "bin/mybin",
+			"ID":     "default",
+		},
+	}
+
+	ctx.Artifacts.Add(darwinBuild)
+	ctx.Artifacts.Add(darwinBuild2)
+	ctx.Artifacts.Add(linuxArmBuild)
+	ctx.Version = "0.0.1"
+	ctx.Git.CurrentTag = "v0.0.1"
+	require.EqualError(t, Pipe{}.Run(ctx), "invalid archive: 0: "+ErrArchiveDifferentBinaryCount.Error())
+}
+
 func zipFiles(t *testing.T, path string) []string {
 	f, err := os.Open(path)
 	require.NoError(t, err)
