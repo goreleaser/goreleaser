@@ -353,11 +353,12 @@ type Sign struct {
 
 // SnapcraftAppMetadata for the binaries that will be in the snap package.
 type SnapcraftAppMetadata struct {
-	Plugs     []string
-	Daemon    string
-	Args      string
-	Completer string `yaml:",omitempty"`
-	Command   string `yaml:"command"`
+	Plugs            []string
+	Daemon           string
+	Args             string
+	Completer        string `yaml:",omitempty"`
+	Command          string `yaml:"command"`
+	RestartCondition string `yaml:"restart_condition,omitempty"`
 }
 
 // Snapcraft config.

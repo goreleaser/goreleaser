@@ -202,9 +202,10 @@ func TestRunPipeMetadata(t *testing.T) {
 				Description:  "test description",
 				Apps: map[string]config.SnapcraftAppMetadata{
 					"mybin": {
-						Plugs:  []string{"home", "network", "personal-files"},
-						Daemon: "simple",
-						Args:   "--foo --bar",
+						Plugs:            []string{"home", "network", "personal-files"},
+						Daemon:           "simple",
+						Args:             "--foo --bar",
+						RestartCondition: "always",
 					},
 				},
 				Plugs: map[string]interface{}{
@@ -231,7 +232,8 @@ func TestRunPipeMetadata(t *testing.T) {
 	require.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["mybin"].Plugs)
 	require.Equal(t, "simple", metadata.Apps["mybin"].Daemon)
 	require.Equal(t, "mybin --foo --bar", metadata.Apps["mybin"].Command)
-	require.Equal(t, map[interface{}]interface{}(map[interface{}]interface{}{"read": []interface{}{"$HOME/test"}}), metadata.Plugs["personal-files"])
+	require.Equal(t, map[interface{}]interface{}{"read": []interface{}{"$HOME/test"}}, metadata.Plugs["personal-files"])
+	require.Equal(t, "always", metadata.Apps["mybin"].RestartCondition)
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {

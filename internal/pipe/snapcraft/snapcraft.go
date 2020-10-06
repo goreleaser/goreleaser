@@ -49,10 +49,11 @@ type Metadata struct {
 
 // AppMetadata for the binaries that will be in the snap package.
 type AppMetadata struct {
-	Command   string
-	Plugs     []string `yaml:",omitempty"`
-	Daemon    string   `yaml:",omitempty"`
-	Completer string   `yaml:",omitempty"`
+	Command          string
+	Plugs            []string `yaml:",omitempty"`
+	Daemon           string   `yaml:",omitempty"`
+	Completer        string   `yaml:",omitempty"`
+	RestartCondition string   `yaml:"restart-condition,omitempty"`
 }
 
 const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
@@ -255,8 +256,9 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 				command,
 				config.Args,
 			}, " ")),
-			Plugs:  config.Plugs,
-			Daemon: config.Daemon,
+			Plugs:            config.Plugs,
+			Daemon:           config.Daemon,
+			RestartCondition: config.RestartCondition,
 		}
 
 		if config.Completer != "" {
