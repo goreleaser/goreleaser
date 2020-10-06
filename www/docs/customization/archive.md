@@ -20,6 +20,12 @@ archives:
     builds:
     - default
 
+    # Archive format. Valid options are `tar.gz`, `tar.xz`, `gz`, `zip` and `binary`.
+    # If format is `binary`, no archives are created and the binaries are instead
+    # uploaded directly.
+    # Default is `tar.gz`.
+    format: zip
+
     # Archive name template.
     # Defaults:
     # - if format is `tar.gz`, `tar.xz`, `gz` or `zip`:
@@ -46,12 +52,6 @@ archives:
     # Default is false.
     wrap_in_directory: true
 
-    # Archive format. Valid options are `tar.gz`, `tar.xz`, `gz`, `zip` and `binary`.
-    # If format is `binary`, no archives are created and the binaries are instead
-    # uploaded directly.
-    # Default is `tar.gz`.
-    format: zip
-
     # Can be used to change the archive formats for specific GOOSs.
     # Most common use case is to archive as zip on Windows.
     # Default is empty.
@@ -74,8 +74,16 @@ archives:
 !!! tip
     Learn more about the [name template engine](/customization/templates).
 
-You can add entire folders, its subfolders and files by using the glob notation,
-for example: `myfolder/**/*`.
+!!! tip
+    You can add entire folders, its subfolders and files by using the glob notation,
+    for example: `myfolder/**/*`.
+
+!!! warning
+    The `files` and `wrap_in_directory` options are ignored if `format` is `binary`.
+
+!!! warning
+    The `name_template` option will not reflect the filenames under the `dist` folder if `format` is `binary`.
+    The template will be applied only where the binaries are uploaded (e.g. GitHub releases).
 
 ## Packaging only the binaries
 
@@ -117,8 +125,9 @@ archives:
 This should create `.gz` files with the binaries only, which should be
 extracted with something like `gzip -d file.gz`.
 
-Multiple builds will also not work in this case and will be handled on
-[#705](https://github.com/goreleaser/goreleaser/issues/705).
+!!! warning
+    You won't be able to package multiple builds in a single archive either.
+    The alternative is to declare multiple archives filtering by build ID.
 
 ## Disable archiving
 
@@ -129,3 +138,6 @@ You can do that by setting `format` to `binary`:
 archives:
 - format: binary
 ```
+
+Make sure to check the rest of the documentation above, as doing this has some
+implications.
