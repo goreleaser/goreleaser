@@ -322,6 +322,63 @@ type NFPMScripts struct {
 	PostRemove  string `yaml:"postremove,omitempty"`
 }
 
+// NFPMDebScripts is scripts only available on deb packages.
+type NFPMDebScripts struct {
+	Rules string `yaml:"rules,omitempty"`
+}
+
+// NFPMDebTriggers contains triggers only available for deb packages.
+// https://wiki.debian.org/DpkgTriggers
+// https://man7.org/linux/man-pages/man5/deb-triggers.5.html
+type NFPMDebTriggers struct {
+	Interest        []string `yaml:"interest,omitempty"`
+	InterestAwait   []string `yaml:"interest_await,omitempty"`
+	InterestNoAwait []string `yaml:"interest_noawait,omitempty"`
+	Activate        []string `yaml:"activate,omitempty"`
+	ActivateAwait   []string `yaml:"activate_await,omitempty"`
+	ActivateNoAwait []string `yaml:"activate_noawait,omitempty"`
+}
+
+// NFPMDebSignature contains config for signing deb packages created by nfpm.
+type NFPMDebSignature struct {
+	// PGP secret key, can be ASCII-armored
+	KeyFile       string `yaml:"key_file,omitempty"`
+	KeyPassphrase string `yaml:"-"` // populated from environment variable
+	// origin, maint or archive (defaults to origin)
+	Type string `yaml:"type,omitempty"`
+}
+
+// type alias to prevent stack overflowing in the custom unmarshaler.
+type nfpmDebSignature NFPMDebSignature
+
+func (nds *NFPMDebSignature) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var sig nfpmDebSignature
+	if err := unmarshal(&sig); err != nil {
+		return err
+	}
+
+	debPassphrase := os.Getenv("NFPM_DEB_PASSPHRASE")
+	if debPassphrase != "" {
+		sig.KeyPassphrase = debPassphrase
+	} else {
+		generalPassphrase := os.Getenv("NFPM_PASSPHRASE")
+		sig.KeyPassphrase = generalPassphrase
+	}
+
+	*nds = NFPMDebSignature(sig)
+
+	return nil
+}
+
+// NFPMDeb is custom configs that are only available on deb packages.
+type NFPMDeb struct {
+	Scripts         NFPMDebScripts   `yaml:"scripts,omitempty"`
+	Triggers        NFPMDebTriggers  `yaml:"triggers,omitempty"`
+	Breaks          []string         `yaml:"breaks,omitempty"`
+	VersionMetadata string           `yaml:"metadata,omitempty"` // Deprecated: Moved to Info
+	Signature       NFPMDebSignature `yaml:"signature,omitempty"`
+}
+
 // NFPMOverridables is used to specify per package format settings.
 type NFPMOverridables struct {
 	FileNameTemplate string            `yaml:"file_name_template,omitempty"`
@@ -337,6 +394,7 @@ type NFPMOverridables struct {
 	Files            map[string]string `yaml:",omitempty"`
 	ConfigFiles      map[string]string `yaml:"config_files,omitempty"`
 	Scripts          NFPMScripts       `yaml:"scripts,omitempty"`
+	Deb              NFPMDeb           `yaml:"deb,omitempty"`
 }
 
 // Sign config.

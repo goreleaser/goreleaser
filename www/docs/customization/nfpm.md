@@ -156,6 +156,39 @@ nfpms:
           "tmp/app_generated.conf": "/etc/app-rpm.conf"
         scripts:
           preinstall: "scripts/preinstall-rpm.sh"
+
+    # Custon configuration applied only to the Deb packager.
+    deb:
+      # Custom deb rules script.
+      scripts:
+        rules: foo.sh
+
+      # Custom deb triggers
+      triggers:
+        # register interrest on a trigger activated by another package
+        # (also available: interest_await, interest_noawait)
+        interest:
+          - some-trigger-name
+        # activate a trigger for another package
+        # (also available: activate_await, activate_noawait)
+        activate:
+          - another-trigger-name
+
+      # Packages which would break if this package would be installed.
+      # The installation of this package is blocked if `some-package`
+      # is already installed.
+      breaks:
+        - some-package
+
+      # The package is signed if a key_file is set
+      signature:
+        # PGP secret key (can also be ASCII-armored). The passphrase is taken
+        # from the environment variable $NFPM_DEB_PASSPHRASE with a fallback
+        # to #NFPM_PASSPHRASE.
+        key_file: key.gpg
+        # The type describes the signers role, possible values are "origin",
+        # "maint" and "archive". If unset, the type defaults to "origin".
+        type: origin
 ```
 
 !!! tip

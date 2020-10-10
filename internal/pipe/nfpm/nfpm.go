@@ -173,6 +173,26 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 				PreRemove:   overridden.Scripts.PreRemove,
 				PostRemove:  overridden.Scripts.PostRemove,
 			},
+			Deb: nfpm.Deb{
+				Scripts: nfpm.DebScripts{
+					Rules: overridden.Deb.Scripts.Rules,
+				},
+				Triggers: nfpm.DebTriggers{
+					Interest:        overridden.Deb.Triggers.Interest,
+					InterestAwait:   overridden.Deb.Triggers.InterestAwait,
+					InterestNoAwait: overridden.Deb.Triggers.InterestNoAwait,
+					Activate:        overridden.Deb.Triggers.Activate,
+					ActivateAwait:   overridden.Deb.Triggers.ActivateAwait,
+					ActivateNoAwait: overridden.Deb.Triggers.ActivateNoAwait,
+				},
+				Breaks:          overridden.Deb.Breaks,
+				VersionMetadata: overridden.Deb.VersionMetadata,
+				Signature: nfpm.DebSignature{
+					KeyFile:       overridden.Deb.Signature.KeyFile,
+					KeyPassphrase: overridden.Deb.Signature.KeyPassphrase,
+					Type:          overridden.Deb.Signature.Type,
+				},
+			},
 		},
 	}
 
