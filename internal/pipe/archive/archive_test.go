@@ -244,6 +244,21 @@ func TestRunPipeDifferentBinaryCount(t *testing.T) {
 	require.EqualError(t, Pipe{}.Run(ctx), "invalid archive: 0: "+ErrArchiveDifferentBinaryCount.Error())
 }
 
+func TestRunPipeNoBinaries(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	var ctx = context.New(config.Project{
+		Dist:        dist,
+		ProjectName: "foobar",
+		Archives:    []config.Archive{{}},
+	})
+	ctx.Version = "0.0.1"
+	ctx.Git.CurrentTag = "v0.0.1"
+	require.NoError(t, Pipe{}.Run(ctx))
+}
+
 func zipFiles(t *testing.T, path string) []string {
 	f, err := os.Open(path)
 	require.NoError(t, err)

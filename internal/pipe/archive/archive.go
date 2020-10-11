@@ -119,7 +119,7 @@ func checkArtifacts(artifacts map[string][]*artifact.Artifact) error {
 	for _, v := range artifacts {
 		lens[len(v)] = true
 	}
-	if len(lens) == 1 {
+	if len(lens) <= 1 {
 		return nil
 	}
 	return ErrArchiveDifferentBinaryCount
