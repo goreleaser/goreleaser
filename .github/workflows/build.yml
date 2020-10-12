@@ -76,9 +76,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            ./goreleaser --parallelism 2
+            ./goreleaser
           else
-            ./goreleaser --snapshot --parallelism 2
+            ./goreleaser --snapshot
           fi
       -
         name: Clear
