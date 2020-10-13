@@ -241,7 +241,16 @@ func TestRunPipeDifferentBinaryCount(t *testing.T) {
 	ctx.Artifacts.Add(linuxArmBuild)
 	ctx.Version = "0.0.1"
 	ctx.Git.CurrentTag = "v0.0.1"
-	require.EqualError(t, Pipe{}.Run(ctx), "invalid archive: 0: "+ErrArchiveDifferentBinaryCount.Error())
+
+	t.Run("check enabled", func(t *testing.T) {
+		ctx.Config.Archives[0].AllowDifferentBinaryCount = false
+		require.EqualError(t, Pipe{}.Run(ctx), "invalid archive: 0: "+ErrArchiveDifferentBinaryCount.Error())
+	})
+
+	t.Run("check disabled", func(t *testing.T) {
+		ctx.Config.Archives[0].AllowDifferentBinaryCount = true
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
 }
 
 func TestRunPipeNoBinaries(t *testing.T) {
