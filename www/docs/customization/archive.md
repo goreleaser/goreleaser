@@ -69,6 +69,10 @@ archives:
       - docs/*
       - design/*.png
       - templates/**/*
+
+    # Disables the binary count check.
+    # Default: false
+    allow_different_binary_count: true
 ```
 
 !!! tip
