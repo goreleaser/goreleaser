@@ -74,6 +74,7 @@ func newRootCmd(version string, exit func(int)) *rootCmd {
 		newReleaseCmd().cmd,
 		newCheckCmd().cmd,
 		newInitCmd().cmd,
+		newCompletionCmd().cmd,
 	)
 
 	root.cmd = cmd
