@@ -74,6 +74,7 @@ func newRootCmd(version string, exit func(int)) *rootCmd {
 		newReleaseCmd().cmd,
 		newCheckCmd().cmd,
 		newInitCmd().cmd,
+		newCompletionCmd().cmd,
 	)
 
 	root.cmd = cmd
@@ -88,8 +89,8 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 		return false
 	}
 
-	// allow help command.
-	if len(args) > 0 && args[0] == "help" {
+	// allow help and __complete commands.
+	if len(args) > 0 && (args[0] == "help" || args[0] == "__complete") {
 		return false
 	}
 

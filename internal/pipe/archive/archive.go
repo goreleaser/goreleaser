@@ -97,7 +97,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				artifact.ByIDs(archive.Builds...),
 			),
 		).GroupByPlatform()
-		if err := checkArtifacts(artifacts); err != nil {
+		if err := checkArtifacts(artifacts); err != nil && !archive.AllowDifferentBinaryCount {
 			return fmt.Errorf("invalid archive: %d: %w", i, ErrArchiveDifferentBinaryCount)
 		}
 		for group, artifacts := range artifacts {
@@ -119,7 +119,7 @@ func checkArtifacts(artifacts map[string][]*artifact.Artifact) error {
 	for _, v := range artifacts {
 		lens[len(v)] = true
 	}
-	if len(lens) == 1 {
+	if len(lens) <= 1 {
 		return nil
 	}
 	return ErrArchiveDifferentBinaryCount

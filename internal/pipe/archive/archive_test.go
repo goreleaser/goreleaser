@@ -241,7 +241,31 @@ func TestRunPipeDifferentBinaryCount(t *testing.T) {
 	ctx.Artifacts.Add(linuxArmBuild)
 	ctx.Version = "0.0.1"
 	ctx.Git.CurrentTag = "v0.0.1"
-	require.EqualError(t, Pipe{}.Run(ctx), "invalid archive: 0: "+ErrArchiveDifferentBinaryCount.Error())
+
+	t.Run("check enabled", func(t *testing.T) {
+		ctx.Config.Archives[0].AllowDifferentBinaryCount = false
+		require.EqualError(t, Pipe{}.Run(ctx), "invalid archive: 0: "+ErrArchiveDifferentBinaryCount.Error())
+	})
+
+	t.Run("check disabled", func(t *testing.T) {
+		ctx.Config.Archives[0].AllowDifferentBinaryCount = true
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+}
+
+func TestRunPipeNoBinaries(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	var ctx = context.New(config.Project{
+		Dist:        dist,
+		ProjectName: "foobar",
+		Archives:    []config.Archive{{}},
+	})
+	ctx.Version = "0.0.1"
+	ctx.Git.CurrentTag = "v0.0.1"
+	require.NoError(t, Pipe{}.Run(ctx))
 }
 
 func zipFiles(t *testing.T, path string) []string {

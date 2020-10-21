@@ -19,7 +19,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/mattn/go-zglob v0.0.3
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/spf13/cobra v1.0.0
+	github.com/spf13/cobra v1.1.1
 	github.com/stretchr/testify v1.6.1
 	github.com/ulikunitz/xz v0.5.8
 	github.com/xanzy/go-gitlab v0.38.1
