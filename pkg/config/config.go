@@ -349,28 +349,6 @@ type NFPMDebSignature struct {
 	Type string `yaml:"type,omitempty"`
 }
 
-// type alias to prevent stack overflowing in the custom unmarshaler.
-type nfpmDebSignature NFPMDebSignature
-
-func (nds *NFPMDebSignature) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var sig nfpmDebSignature
-	if err := unmarshal(&sig); err != nil {
-		return err
-	}
-
-	debPassphrase := os.Getenv("NFPM_DEB_PASSPHRASE")
-	if debPassphrase != "" {
-		sig.KeyPassphrase = debPassphrase
-	} else {
-		generalPassphrase := os.Getenv("NFPM_PASSPHRASE")
-		sig.KeyPassphrase = generalPassphrase
-	}
-
-	*nds = NFPMDebSignature(sig)
-
-	return nil
-}
-
 // NFPMDeb is custom configs that are only available on deb packages.
 type NFPMDeb struct {
 	Scripts         NFPMDebScripts   `yaml:"scripts,omitempty"`

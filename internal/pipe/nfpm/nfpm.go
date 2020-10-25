@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/nfpm"
@@ -189,7 +190,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 				VersionMetadata: overridden.Deb.VersionMetadata,
 				Signature: nfpm.DebSignature{
 					KeyFile:       overridden.Deb.Signature.KeyFile,
-					KeyPassphrase: overridden.Deb.Signature.KeyPassphrase,
+					KeyPassphrase: getPassphraseFromEnv(ctx, "DEB", fpm.ID),
 					Type:          overridden.Deb.Signature.Type,
 				},
 			},
@@ -233,4 +234,23 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		},
 	})
 	return nil
+}
+
+func getPassphraseFromEnv(ctx *context.Context, packager string, nfpmID string) string {
+	var passphrase string
+
+	nfpmID = strings.ToUpper(nfpmID)
+	packagerSpecificPassphrase := ctx.Env[fmt.Sprintf(
+		"NFPM_%s_%s_PASSPHRASE",
+		nfpmID,
+		packager,
+	)]
+	if packagerSpecificPassphrase != "" {
+		passphrase = packagerSpecificPassphrase
+	} else {
+		generalPassphrase := ctx.Env[fmt.Sprintf("NFPM_%s_PASSPHRASE", nfpmID)]
+		passphrase = generalPassphrase
+	}
+
+	return passphrase
 }
