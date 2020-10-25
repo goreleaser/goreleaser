@@ -183,8 +183,11 @@ nfpms:
       # The package is signed if a key_file is set
       signature:
         # PGP secret key (can also be ASCII-armored). The passphrase is taken
-        # from the environment variable $NFPM_DEB_PASSPHRASE with a fallback
-        # to #NFPM_PASSPHRASE.
+        # from the environment variable $NFPM_ID_DEB_PASSPHRASE with a fallback
+        # to $NFPM_ID_PASSPHRASE, where ID is the id of the current nfpm config.
+        # The id will be transformed to uppercase.
+        # E.g. If your nfpm id is 'default' then the deb-specific passphrase
+        # should be set as $NFPM_DEFAULT_DEB_PASSPHRASE
         key_file: key.gpg
         # The type describes the signers role, possible values are "origin",
         # "maint" and "archive". If unset, the type defaults to "origin".
