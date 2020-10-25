@@ -405,14 +405,14 @@ func TestDebSpecificConfig(t *testing.T) {
 
 	t.Run("general passphrase set", func(t *testing.T) {
 		ctx.Env = map[string]string{
-			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
+			"NFPM_SOMEID_PASSPHRASE": "hunter2",
 		}
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("packager specific passphrase set", func(t *testing.T) {
 		ctx.Env = map[string]string{
-			"NFPM_SOMEID_PASSPHRASE": "hunter2",
+			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
 		}
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
