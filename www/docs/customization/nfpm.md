@@ -157,7 +157,7 @@ nfpms:
         scripts:
           preinstall: "scripts/preinstall-rpm.sh"
 
-    # Custon configuration applied only to the Deb packager.
+    # Custom configuration applied only to the Deb packager.
     deb:
       # Custom deb rules script.
       scripts:
