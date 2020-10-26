@@ -216,6 +216,21 @@ nfpms:
         # The type describes the signers role, possible values are "origin",
         # "maint" and "archive". If unset, the type defaults to "origin".
         type: origin
+
+    apk:
+      # The package is signed if a key_file is set
+      signature:
+        # RSA private key in the PEM format. The passphrase is taken
+        # from the environment variable $NFPM_ID_APK_PASSPHRASE with a fallback
+        # to $NFPM_ID_PASSPHRASE, where ID is the id of the current nfpm config.
+        # The id will be transformed to uppercase.
+        # E.g. If your nfpm id is 'default' then the deb-specific passphrase
+        # should be set as $NFPM_DEFAULT_APK_PASSPHRASE
+        key_file: key.gpg
+        # The name of the signing key. When verifying a package, the signature
+        # is matched to the public key store in /etc/apk/keys/<key_name>.rsa.pub.
+        # If unset, it defaults to the maintainer email address.
+        key_name: origin
 ```
 
 !!! tip
