@@ -382,7 +382,7 @@ type NFPMAPKSignature struct {
 	KeyName string `yaml:"key_name,omitempty"`
 }
 
-// NFPMAPK is custom config only avaiable on apk packages.
+// NFPMAPK is custom config only available on apk packages.
 type NFPMAPK struct {
 	Signature NFPMAPKSignature `yaml:"signature,omitempty"`
 }
