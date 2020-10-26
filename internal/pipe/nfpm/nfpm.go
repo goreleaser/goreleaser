@@ -194,6 +194,15 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 					Type:          overridden.Deb.Signature.Type,
 				},
 			},
+			RPM: nfpm.RPM{
+				Group:                overridden.RPM.Group,
+				Compression:          overridden.RPM.Compression,
+				ConfigNoReplaceFiles: overridden.RPM.ConfigNoReplaceFiles,
+				Signature: nfpm.RPMSignature{
+					KeyFile:       overridden.RPM.Signature.KeyFile,
+					KeyPassphrase: getPassphraseFromEnv(ctx, "RPM", fpm.ID),
+				},
+			},
 		},
 	}
 

@@ -323,6 +323,21 @@ type NFPMScripts struct {
 	PostRemove  string `yaml:"postremove,omitempty"`
 }
 
+type NFPMRPMSignature struct {
+	// PGP secret key, can be ASCII-armored
+	KeyFile       string `yaml:"key_file,omitempty"`
+	KeyPassphrase string `yaml:"-"` // populated from environment variable
+}
+
+// NFPMRPM is custom configs that are only available on RPM packages.
+type NFPMRPM struct {
+	Group       string `yaml:"group,omitempty"`
+	Compression string `yaml:"compression,omitempty"`
+	// https://www.cl.cam.ac.uk/~jw35/docs/rpm_config.html
+	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"`
+	Signature            NFPMRPMSignature  `yaml:"signature,omitempty"`
+}
+
 // NFPMDebScripts is scripts only available on deb packages.
 type NFPMDebScripts struct {
 	Rules string `yaml:"rules,omitempty"`
@@ -373,6 +388,7 @@ type NFPMOverridables struct {
 	Files            map[string]string `yaml:",omitempty"`
 	ConfigFiles      map[string]string `yaml:"config_files,omitempty"`
 	Scripts          NFPMScripts       `yaml:"scripts,omitempty"`
+	RPM              NFPMRPM           `yaml:"rpm,omitempty"`
 	Deb              NFPMDeb           `yaml:"deb,omitempty"`
 }
 
