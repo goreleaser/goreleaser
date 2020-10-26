@@ -157,6 +157,30 @@ nfpms:
         scripts:
           preinstall: "scripts/preinstall-rpm.sh"
 
+    # Custon configuration applied only to the RPM packager.
+    rpm:
+      # The package group. This option is deprecated by most distros
+      # but required by old distros like CentOS 5 / EL 5 and earlier.
+      group: Unspecified
+
+      # Compression algorithm.
+      compression: lzma
+
+      # These config files will not be replaced by new versions if they were
+      # changed by the user. Corresponds to %config(noreplace).
+      config_noreplace_files:
+        path/to/local/bar.con: /etc/bar.conf
+
+      # The package is signed if a key_file is set
+      signature:
+        # PGP secret key (can also be ASCII-armored). The passphrase is taken
+        # from the environment variable $NFPM_ID_RPM_PASSPHRASE with a fallback
+        # to $NFPM_ID_PASSPHRASE, where ID is the id of the current nfpm config.
+        # The id will be transformed to uppercase.
+        # E.g. If your nfpm id is 'default' then the rpm-specific passphrase
+        # should be set as $NFPM_DEFAULT_RPM_PASSPHRASE
+        key_file: key.gpg
+
     # Custom configuration applied only to the Deb packager.
     deb:
       # Custom deb rules script.
