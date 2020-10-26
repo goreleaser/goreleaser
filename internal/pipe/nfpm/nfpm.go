@@ -203,6 +203,13 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 					KeyPassphrase: getPassphraseFromEnv(ctx, "RPM", fpm.ID),
 				},
 			},
+			APK: nfpm.APK{
+				Signature: nfpm.APKSignature{
+					KeyFile:       overridden.APK.Signature.KeyFile,
+					KeyPassphrase: getPassphraseFromEnv(ctx, "APK", fpm.ID),
+					KeyName:       overridden.APK.Signature.KeyName,
+				},
+			},
 		},
 	}
 

@@ -373,6 +373,20 @@ type NFPMDeb struct {
 	Signature       NFPMDebSignature `yaml:"signature,omitempty"`
 }
 
+// NFPMAPKSignature contains config for signing apk packages created by nfpm.
+type NFPMAPKSignature struct {
+	// RSA private key in PEM format
+	KeyFile       string `yaml:"key_file,omitempty"`
+	KeyPassphrase string `yaml:"-"` // populated from environment variable
+	// defaults to <maintainer email>.rsa.pub
+	KeyName string `yaml:"key_name,omitempty"`
+}
+
+// NFPMAPK is custom config only avaiable on apk packages.
+type NFPMAPK struct {
+	Signature NFPMAPKSignature `yaml:"signature,omitempty"`
+}
+
 // NFPMOverridables is used to specify per package format settings.
 type NFPMOverridables struct {
 	FileNameTemplate string            `yaml:"file_name_template,omitempty"`
@@ -390,6 +404,7 @@ type NFPMOverridables struct {
 	Scripts          NFPMScripts       `yaml:"scripts,omitempty"`
 	RPM              NFPMRPM           `yaml:"rpm,omitempty"`
 	Deb              NFPMDeb           `yaml:"deb,omitempty"`
+	APK              NFPMAPK           `yaml:"apk,omitempty"`
 }
 
 // Sign config.
