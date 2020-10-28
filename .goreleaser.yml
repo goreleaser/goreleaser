@@ -4,6 +4,7 @@ env:
 before:
   hooks:
     - go mod download
+    - ./scripts/completions.sh
 builds:
 - env:
     - CGO_ENABLED=0
@@ -89,6 +90,10 @@ archives:
     format_overrides:
     - goos: windows
       format: zip
+    files:
+      - README.md
+      - LICENSE.md
+      - completions/*
 brews:
   - tap:
       owner: goreleaser
@@ -100,6 +105,11 @@ brews:
       system "#{bin}/goreleaser -v"
     dependencies:
     - name: go
+    install: |-
+      bin.install "goreleaser"
+      bash_completion.install "completions/goreleaser.bash" => "goreleaser"
+      zsh_completion.install "completions/goreleaser.zsh" => "_goreleaser"
+      fish_completion.install "completions/goreleaser.fish"
 scoop:
   bucket:
     owner: goreleaser
