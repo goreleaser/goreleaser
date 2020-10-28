@@ -83,17 +83,25 @@ func (Pipe) Default(ctx *context.Context) error {
 		var brew = &ctx.Config.Brews[i]
 
 		if brew.Install == "" {
-			// TODO: maybe replace this with a simplear also optimistic
+			// TODO: maybe replace this with a simpler also optimistic
 			// approach of just doing `bin.install "project_name"`?
 			var installs []string
 			for _, build := range ctx.Config.Builds {
 				if !isBrewBuild(build) {
 					continue
 				}
-				installs = append(
-					installs,
-					fmt.Sprintf(`bin.install "%s"`, build.Binary),
-				)
+				install := fmt.Sprintf(`bin.install "%s"`, build.Binary)
+				// Do not add duplicate "bin.install" statements when binary names overlap.
+				var found bool
+				for _, instruction := range installs {
+					if instruction == install {
+						found = true
+						break
+					}
+				}
+				if !found {
+					installs = append(installs, install)
+				}
 			}
 			brew.Install = strings.Join(installs, "\n")
 			log.Warnf("optimistically guessing `brew[%d].install`, double check", i)
