@@ -9,7 +9,7 @@ require (
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/client9/misspell v0.3.4
-	github.com/fatih/color v1.9.0
+	github.com/fatih/color v1.10.0
 	github.com/golangci/golangci-lint v1.31.0
 	github.com/google/go-github/v28 v28.1.1
 	github.com/goreleaser/nfpm v1.8.0
