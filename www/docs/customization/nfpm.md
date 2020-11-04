@@ -186,6 +186,8 @@ nfpms:
       # Custom deb rules script.
       scripts:
         rules: foo.sh
+        # Deb templates file, when using debconf.
+        templates: templates
 
       # Custom deb triggers
       triggers:

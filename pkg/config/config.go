@@ -340,7 +340,8 @@ type NFPMRPM struct {
 
 // NFPMDebScripts is scripts only available on deb packages.
 type NFPMDebScripts struct {
-	Rules string `yaml:"rules,omitempty"`
+	Rules     string `yaml:"rules,omitempty"`
+	Templates string `yaml:"templates,omitempty"`
 }
 
 // NFPMDebTriggers contains triggers only available for deb packages.

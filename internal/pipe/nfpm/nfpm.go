@@ -176,7 +176,8 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 			},
 			Deb: nfpm.Deb{
 				Scripts: nfpm.DebScripts{
-					Rules: overridden.Deb.Scripts.Rules,
+					Rules:     overridden.Deb.Scripts.Rules,
+					Templates: overridden.Deb.Scripts.Templates,
 				},
 				Triggers: nfpm.DebTriggers{
 					Interest:        overridden.Deb.Triggers.Interest,
