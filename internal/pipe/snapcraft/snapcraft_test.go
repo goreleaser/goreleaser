@@ -80,8 +80,8 @@ func TestRunPipe(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"), "foo")
-	addBinaries(t, ctx, "bar", filepath.Join(dist, "bar"), "bar")
+	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"))
+	addBinaries(t, ctx, "bar", filepath.Join(dist, "bar"))
 	require.NoError(t, Pipe{}.Run(ctx))
 	list := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List()
 	require.Len(t, list, 9)
@@ -95,7 +95,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, err)
 	var ctx = context.New(config.Project{
-		ProjectName: "mybin",
+		ProjectName: "foo",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
 			{
@@ -108,7 +108,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "foo", dist, "mybin")
+	addBinaries(t, ctx, "foo", dist)
 	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
 }
 
@@ -136,7 +136,7 @@ func TestRunPipeWithName(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "foo", dist, "mybin")
+	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	require.NoError(t, err)
@@ -146,42 +146,7 @@ func TestRunPipeWithName(t *testing.T) {
 	require.Equal(t, "testsnapname", metadata.Name)
 	require.Equal(t, "core18", metadata.Base)
 	require.Equal(t, "MIT", metadata.License)
-	require.Equal(t, "mybin", metadata.Apps["testsnapname"].Command)
-}
-
-func TestRunPipeWithBinaryInDir(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
-	defer os.RemoveAll(folder)
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, err)
-	var ctx = context.New(config.Project{
-		ProjectName: "testprojectname",
-		Dist:        dist,
-		Snapcrafts: []config.Snapcraft{
-			{
-				NameTemplate: "foo_{{.Arch}}",
-				Name:         "testsnapname",
-				Summary:      "test summary",
-				Description:  "test description",
-				Builds:       []string{"foo"},
-			},
-		},
-	})
-	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "foo", dist, "bin/mybin")
-	require.NoError(t, Pipe{}.Run(ctx))
-	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
-	require.NoError(t, err)
-	var metadata Metadata
-	err = yaml.Unmarshal(yamlFile, &metadata)
-	require.NoError(t, err)
-	require.Equal(t, "testsnapname", metadata.Name)
-	require.Equal(t, "", metadata.Base)
-	require.Equal(t, "", metadata.License)
-	require.Equal(t, "mybin", metadata.Apps["testsnapname"].Command)
+	require.Equal(t, "foo", metadata.Apps["testsnapname"].Command)
 }
 
 func TestRunPipeMetadata(t *testing.T) {
@@ -201,7 +166,7 @@ func TestRunPipeMetadata(t *testing.T) {
 				Summary:      "test summary",
 				Description:  "test description",
 				Apps: map[string]config.SnapcraftAppMetadata{
-					"mybin": {
+					"foo": {
 						Plugs:            []string{"home", "network", "personal-files"},
 						Daemon:           "simple",
 						Args:             "--foo --bar",
@@ -219,21 +184,21 @@ func TestRunPipeMetadata(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "foo", dist, "mybin")
+	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	require.NoError(t, err)
 	var metadata Metadata
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	require.NoError(t, err)
-	require.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["mybin"].Plugs)
-	require.Equal(t, "simple", metadata.Apps["mybin"].Daemon)
-	require.Equal(t, "mybin --foo --bar", metadata.Apps["mybin"].Command)
-	require.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["mybin"].Plugs)
-	require.Equal(t, "simple", metadata.Apps["mybin"].Daemon)
-	require.Equal(t, "mybin --foo --bar", metadata.Apps["mybin"].Command)
+	require.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["foo"].Plugs)
+	require.Equal(t, "simple", metadata.Apps["foo"].Daemon)
+	require.Equal(t, "foo --foo --bar", metadata.Apps["foo"].Command)
+	require.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["foo"].Plugs)
+	require.Equal(t, "simple", metadata.Apps["foo"].Daemon)
+	require.Equal(t, "foo --foo --bar", metadata.Apps["foo"].Command)
 	require.Equal(t, map[interface{}]interface{}{"read": []interface{}{"$HOME/test"}}, metadata.Plugs["personal-files"])
-	require.Equal(t, "always", metadata.Apps["mybin"].RestartCondition)
+	require.Equal(t, "always", metadata.Apps["foo"].RestartCondition)
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {
@@ -269,7 +234,7 @@ func TestRunNoArguments(t *testing.T) {
 				Summary:      "test summary",
 				Description:  "test description",
 				Apps: map[string]config.SnapcraftAppMetadata{
-					"mybin": {
+					"foo": {
 						Daemon: "simple",
 						Args:   "",
 					},
@@ -280,14 +245,14 @@ func TestRunNoArguments(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "foo", dist, "mybin")
+	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	require.NoError(t, err)
 	var metadata Metadata
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	require.NoError(t, err)
-	require.Equal(t, "mybin", metadata.Apps["mybin"].Command)
+	require.Equal(t, "foo", metadata.Apps["foo"].Command)
 }
 
 func TestCompleter(t *testing.T) {
@@ -306,10 +271,10 @@ func TestCompleter(t *testing.T) {
 				Summary:      "test summary",
 				Description:  "test description",
 				Apps: map[string]config.SnapcraftAppMetadata{
-					"mybin": {
+					"foo": {
 						Daemon:    "simple",
 						Args:      "",
-						Completer: "testdata/mybin-completer.bash",
+						Completer: "testdata/foo-completer.bash",
 					},
 				},
 				Builds: []string{"foo", "bar"},
@@ -318,16 +283,16 @@ func TestCompleter(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "foo", dist, "mybin")
-	addBinaries(t, ctx, "bar", dist, "mybin")
+	addBinaries(t, ctx, "foo", dist)
+	addBinaries(t, ctx, "bar", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	require.NoError(t, err)
 	var metadata Metadata
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	require.NoError(t, err)
-	require.Equal(t, "mybin", metadata.Apps["mybin"].Command)
-	require.Equal(t, "testdata/mybin-completer.bash", metadata.Apps["mybin"].Completer)
+	require.Equal(t, "foo", metadata.Apps["foo"].Command)
+	require.Equal(t, "testdata/foo-completer.bash", metadata.Apps["foo"].Completer)
 }
 
 func TestCommand(t *testing.T) {
@@ -346,10 +311,10 @@ func TestCommand(t *testing.T) {
 				Summary:      "test summary",
 				Description:  "test description",
 				Apps: map[string]config.SnapcraftAppMetadata{
-					"mybin": {
+					"foo": {
 						Daemon:  "simple",
-						Args:    "",
-						Command: "custom command",
+						Args:    "--bar custom command",
+						Command: "foo",
 					},
 				},
 				Builds: []string{"foo"},
@@ -358,14 +323,14 @@ func TestCommand(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "foo", dist, "mybin")
+	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := ioutil.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
 	require.NoError(t, err)
 	var metadata Metadata
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	require.NoError(t, err)
-	require.Equal(t, "custom command", metadata.Apps["mybin"].Command)
+	require.Equal(t, "foo --bar custom command", metadata.Apps["foo"].Command)
 }
 
 func TestExtraFile(t *testing.T) {
@@ -383,13 +348,6 @@ func TestExtraFile(t *testing.T) {
 				NameTemplate: "foo_{{.Arch}}",
 				Summary:      "test summary",
 				Description:  "test description",
-				Apps: map[string]config.SnapcraftAppMetadata{
-					"mybin": {
-						Daemon:  "simple",
-						Args:    "",
-						Command: "custom command",
-					},
-				},
 				Files: []config.SnapcraftExtraFiles{
 					{
 						Source:      "testdata/extra-file.txt",
@@ -406,7 +364,7 @@ func TestExtraFile(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "v1.2.3"
-	addBinaries(t, ctx, "foo", dist, "mybin")
+	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 
 	srcFile, err := os.Stat("testdata/extra-file.txt")
@@ -478,7 +436,7 @@ func TestDefaultSet(t *testing.T) {
 	require.Equal(t, "foo", ctx.Config.Snapcrafts[0].NameTemplate)
 }
 
-func addBinaries(t *testing.T, ctx *context.Context, name, dist, dest string) {
+func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386", "arm6"} {
 			var folder = goos + goarch
@@ -487,7 +445,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist, dest string) {
 			_, err := os.Create(binPath)
 			require.NoError(t, err)
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   dest,
+				Name:   name,
 				Path:   binPath,
 				Goarch: goarch,
 				Goos:   goos,

@@ -42,7 +42,7 @@ may have some extra fields:
 | `.Mips`         | `GOMIPS` (usually allow replacements) |
 | `.Binary`       | Binary name                           |
 | `.ArtifactName` | Archive name                          |
-| `.ArtifactPath` | Relative path to artifact             |
+| `.ArtifactPath` | Absolute path to artifact             |
 
 On the NFPM name template field, you can use those extra fields as well:
 

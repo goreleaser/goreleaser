@@ -3,7 +3,7 @@ title: NFPM
 ---
 
 GoReleaser can be wired to [nfpm](https://github.com/goreleaser/nfpm) to
-generate and publish `.deb` and `.rpm` packages.
+generate and publish `.deb`, `.rpm` and `.apk` packages.
 
 Available options:
 
