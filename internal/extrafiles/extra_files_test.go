@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestShouldGetAllFiles(t *testing.T) {
+func TestShouldGetSpecificFile(t *testing.T) {
 	globs := []config.ExtraFile{
 		{Glob: "./testdata/file1.golden"},
 	}
@@ -16,9 +16,21 @@ func TestShouldGetAllFiles(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, len(files))
 
-	path, ok := files["file1.golden"]
-	require.True(t, ok)
-	require.Equal(t, path, "./testdata/file1.golden")
+	require.Equal(t, "testdata/file1.golden", files["file1.golden"])
+}
+
+func TestShouldGetFilesWithSuperStar(t *testing.T) {
+	globs := []config.ExtraFile{
+		{Glob: "./**/file?.golden"},
+	}
+
+	files, err := Find(globs)
+	require.NoError(t, err)
+	require.Equal(t, 3, len(files))
+
+	require.Equal(t, "testdata/file2.golden", files["file2.golden"])
+	require.Equal(t, "testdata/file1.golden", files["file1.golden"])
+	require.Equal(t, "testdata/sub/file5.golden", files["file5.golden"])
 }
 
 func TestShouldGetAllFilesWithGoldenExtension(t *testing.T) {
@@ -30,13 +42,8 @@ func TestShouldGetAllFilesWithGoldenExtension(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 2, len(files))
 
-	path, ok := files["file1.golden"]
-	require.True(t, ok)
-	require.Equal(t, path, "testdata/file1.golden")
-
-	path, ok = files["file2.golden"]
-	require.True(t, ok)
-	require.Equal(t, path, "testdata/file2.golden")
+	require.Equal(t, "testdata/file1.golden", files["file1.golden"])
+	require.Equal(t, "testdata/file2.golden", files["file2.golden"])
 }
 
 func TestShouldGetAllFilesInsideTestdata(t *testing.T) {
@@ -48,15 +55,7 @@ func TestShouldGetAllFilesInsideTestdata(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 3, len(files))
 
-	path, ok := files["file1.golden"]
-	require.True(t, ok)
-	require.Equal(t, path, "testdata/file1.golden")
-
-	path, ok = files["file2.golden"]
-	require.True(t, ok)
-	require.Equal(t, path, "testdata/file2.golden")
-
-	path, ok = files["file3.gold"]
-	require.True(t, ok)
-	require.Equal(t, path, "testdata/file3.gold")
+	require.Equal(t, "testdata/file1.golden", files["file1.golden"])
+	require.Equal(t, "testdata/file2.golden", files["file2.golden"])
+	require.Equal(t, "testdata/file3.gold", files["file3.gold"])
 }
