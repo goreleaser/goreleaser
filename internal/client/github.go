@@ -38,8 +38,8 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	base.(*http.Transport).TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: ctx.Config.GitHubURLs.SkipTLSVerify,
 	}
-	httpClient.Transport.(*oauth2.Transport).Base = base
 	base.(*http.Transport).Proxy = http.ProxyFromEnvironment
+	httpClient.Transport.(*oauth2.Transport).Base = base
 	client := github.NewClient(httpClient)
 	if ctx.Config.GitHubURLs.API != "" {
 		api, err := url.Parse(ctx.Config.GitHubURLs.API)
