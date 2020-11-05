@@ -124,82 +124,83 @@ func contains(s string, ss []string) bool {
 	return false
 }
 
-// list from https://golang.org/doc/install/source#environment
+// lists from https://golang.org/doc/install/source#environment
 // nolint: gochecknoglobals
-var validTargets = []string{
-	"aixppc64",
-	"android386",
-	"androidamd64",
-	"androidarm",
-	"androidarm64",
-	// "darwin386", - deprecated on latest go 1.15+
-	"darwinamd64",
-	// "darwinarm", - requires admin rights and other ios stuff
-	// "darwinarm64", - requires admin rights and other ios stuff
-	"dragonflyamd64",
-	"freebsd386",
-	"freebsdamd64",
-	"freebsdarm",
-	"freebsdarm64", // not on the official list for some reason, yet its supported on go 1.14+
-	"illumosamd64",
-	"jswasm",
-	"linux386",
-	"linuxamd64",
-	"linuxarm",
-	"linuxarm64",
-	"linuxppc64",
-	"linuxppc64le",
-	"linuxmips",
-	"linuxmipsle",
-	"linuxmips64",
-	"linuxmips64le",
-	"linuxs390x",
-	"netbsd386",
-	"netbsdamd64",
-	"netbsdarm",
-	"openbsd386",
-	"openbsdamd64",
-	"openbsdarm",
-	"openbsdarm64",
-	"plan9386",
-	"plan9amd64",
-	"plan9arm",
-	"solarisamd64",
-	"windows386",
-	"windowsamd64",
-}
+var (
+	validTargets = []string{
+		"aixppc64",
+		"android386",
+		"androidamd64",
+		"androidarm",
+		"androidarm64",
+		// "darwin386", - deprecated on latest go 1.15+
+		"darwinamd64",
+		// "darwinarm", - requires admin rights and other ios stuff
+		// "darwinarm64", - requires admin rights and other ios stuff
+		"dragonflyamd64",
+		"freebsd386",
+		"freebsdamd64",
+		"freebsdarm",
+		"freebsdarm64", // not on the official list for some reason, yet its supported on go 1.14+
+		"illumosamd64",
+		"jswasm",
+		"linux386",
+		"linuxamd64",
+		"linuxarm",
+		"linuxarm64",
+		"linuxppc64",
+		"linuxppc64le",
+		"linuxmips",
+		"linuxmipsle",
+		"linuxmips64",
+		"linuxmips64le",
+		"linuxs390x",
+		"netbsd386",
+		"netbsdamd64",
+		"netbsdarm",
+		"openbsd386",
+		"openbsdamd64",
+		"openbsdarm",
+		"openbsdarm64",
+		"plan9386",
+		"plan9amd64",
+		"plan9arm",
+		"solarisamd64",
+		"windows386",
+		"windowsamd64",
+	}
 
-var validGoos = []string{
-	"aix",
-	"android",
-	"darwin",
-	"dragonfly",
-	"freebsd",
-	"illumos",
-	"js",
-	"linux",
-	"netbsd",
-	"openbsd",
-	"plan9",
-	"solaris",
-	"windows",
-}
+	validGoos = []string{
+		"aix",
+		"android",
+		"darwin",
+		"dragonfly",
+		"freebsd",
+		"illumos",
+		"js",
+		"linux",
+		"netbsd",
+		"openbsd",
+		"plan9",
+		"solaris",
+		"windows",
+	}
 
-var validGoarch = []string{
-	"386",
-	"amd64",
-	"arm",
-	"arm64",
-	"mips",
-	"mips64",
-	"mips64le",
-	"mipsle",
-	"ppc64",
-	"ppc64le",
-	"s390x",
-	"wasm",
-}
+	validGoarch = []string{
+		"386",
+		"amd64",
+		"arm",
+		"arm64",
+		"mips",
+		"mips64",
+		"mips64le",
+		"mipsle",
+		"ppc64",
+		"ppc64le",
+		"s390x",
+		"wasm",
+	}
 
-var validGoarm = []string{"5", "6", "7"}
-
-var validGomips = []string{"hardfloat", "softfloat"}
+	validGoarm  = []string{"5", "6", "7"}
+	validGomips = []string{"hardfloat", "softfloat"}
+)
