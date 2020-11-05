@@ -323,6 +323,71 @@ type NFPMScripts struct {
 	PostRemove  string `yaml:"postremove,omitempty"`
 }
 
+type NFPMRPMSignature struct {
+	// PGP secret key, can be ASCII-armored
+	KeyFile       string `yaml:"key_file,omitempty"`
+	KeyPassphrase string `yaml:"-"` // populated from environment variable
+}
+
+// NFPMRPM is custom configs that are only available on RPM packages.
+type NFPMRPM struct {
+	Group       string `yaml:"group,omitempty"`
+	Compression string `yaml:"compression,omitempty"`
+	// https://www.cl.cam.ac.uk/~jw35/docs/rpm_config.html
+	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"`
+	Signature            NFPMRPMSignature  `yaml:"signature,omitempty"`
+}
+
+// NFPMDebScripts is scripts only available on deb packages.
+type NFPMDebScripts struct {
+	Rules     string `yaml:"rules,omitempty"`
+	Templates string `yaml:"templates,omitempty"`
+}
+
+// NFPMDebTriggers contains triggers only available for deb packages.
+// https://wiki.debian.org/DpkgTriggers
+// https://man7.org/linux/man-pages/man5/deb-triggers.5.html
+type NFPMDebTriggers struct {
+	Interest        []string `yaml:"interest,omitempty"`
+	InterestAwait   []string `yaml:"interest_await,omitempty"`
+	InterestNoAwait []string `yaml:"interest_noawait,omitempty"`
+	Activate        []string `yaml:"activate,omitempty"`
+	ActivateAwait   []string `yaml:"activate_await,omitempty"`
+	ActivateNoAwait []string `yaml:"activate_noawait,omitempty"`
+}
+
+// NFPMDebSignature contains config for signing deb packages created by nfpm.
+type NFPMDebSignature struct {
+	// PGP secret key, can be ASCII-armored
+	KeyFile       string `yaml:"key_file,omitempty"`
+	KeyPassphrase string `yaml:"-"` // populated from environment variable
+	// origin, maint or archive (defaults to origin)
+	Type string `yaml:"type,omitempty"`
+}
+
+// NFPMDeb is custom configs that are only available on deb packages.
+type NFPMDeb struct {
+	Scripts         NFPMDebScripts   `yaml:"scripts,omitempty"`
+	Triggers        NFPMDebTriggers  `yaml:"triggers,omitempty"`
+	Breaks          []string         `yaml:"breaks,omitempty"`
+	VersionMetadata string           `yaml:"metadata,omitempty"` // Deprecated: Moved to Info
+	Signature       NFPMDebSignature `yaml:"signature,omitempty"`
+}
+
+// NFPMAPKSignature contains config for signing apk packages created by nfpm.
+type NFPMAPKSignature struct {
+	// RSA private key in PEM format
+	KeyFile       string `yaml:"key_file,omitempty"`
+	KeyPassphrase string `yaml:"-"` // populated from environment variable
+	// defaults to <maintainer email>.rsa.pub
+	KeyName string `yaml:"key_name,omitempty"`
+}
+
+// NFPMAPK is custom config only available on apk packages.
+type NFPMAPK struct {
+	Signature NFPMAPKSignature `yaml:"signature,omitempty"`
+}
+
 // NFPMOverridables is used to specify per package format settings.
 type NFPMOverridables struct {
 	FileNameTemplate string            `yaml:"file_name_template,omitempty"`
@@ -338,6 +403,9 @@ type NFPMOverridables struct {
 	Files            map[string]string `yaml:",omitempty"`
 	ConfigFiles      map[string]string `yaml:"config_files,omitempty"`
 	Scripts          NFPMScripts       `yaml:"scripts,omitempty"`
+	RPM              NFPMRPM           `yaml:"rpm,omitempty"`
+	Deb              NFPMDeb           `yaml:"deb,omitempty"`
+	APK              NFPMAPK           `yaml:"apk,omitempty"`
 }
 
 // Sign config.
