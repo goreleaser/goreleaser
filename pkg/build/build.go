@@ -33,6 +33,6 @@ type Options struct {
 
 // Builder defines a builder.
 type Builder interface {
-	WithDefaults(build config.Build) config.Build
+	WithDefaults(build config.Build) (config.Build, error)
 	Build(ctx *context.Context, build config.Build, options Options) error
 }

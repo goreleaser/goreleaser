@@ -22,10 +22,24 @@ func (t target) String() string {
 	return fmt.Sprintf("%s_%s", t.os, t.arch)
 }
 
-func matrix(build config.Build) (result []string) {
+func matrix(build config.Build) ([]string, error) {
 	// nolint:prealloc
 	var targets []target
+	// nolint:prealloc
+	var result []string
 	for _, target := range allBuildTargets(build) {
+		if !contains(target.os, validGoos) {
+			return result, fmt.Errorf("invalid goos: %s", target.os)
+		}
+		if !contains(target.arch, validGoarch) {
+			return result, fmt.Errorf("invalid goarch: %s", target.arch)
+		}
+		if target.arm != "" && !contains(target.arm, validGoarm) {
+			return result, fmt.Errorf("invalid goarm: %s", target.arm)
+		}
+		if target.mips != "" && !contains(target.mips, validGomips) {
+			return result, fmt.Errorf("invalid gomips: %s", target.mips)
+		}
 		if !valid(target) {
 			log.WithField("target", target).
 				Debug("skipped invalid build")
@@ -41,7 +55,7 @@ func matrix(build config.Build) (result []string) {
 	for _, target := range targets {
 		result = append(result, target.String())
 	}
-	return
+	return result, nil
 }
 
 func allBuildTargets(build config.Build) (targets []target) {
@@ -98,56 +112,95 @@ func ignored(build config.Build, target target) bool {
 }
 
 func valid(target target) bool {
-	var s = target.os + target.arch
-	for _, a := range validTargets {
-		if a == s {
+	return contains(target.os+target.arch, validTargets)
+}
+
+func contains(s string, ss []string) bool {
+	for _, z := range ss {
+		if z == s {
 			return true
 		}
 	}
 	return false
 }
 
-// list from https://golang.org/doc/install/source#environment
+// lists from https://golang.org/doc/install/source#environment
 // nolint: gochecknoglobals
-var validTargets = []string{
-	"aixppc64",
-	"android386",
-	"androidamd64",
-	"androidarm",
-	"androidarm64",
-	// "darwin386", - deprecated on latest go 1.15+
-	"darwinamd64",
-	// "darwinarm", - requires admin rights and other ios stuff
-	// "darwinarm64", - requires admin rights and other ios stuff
-	"dragonflyamd64",
-	"freebsd386",
-	"freebsdamd64",
-	"freebsdarm",
-	"freebsdarm64", // not on the official list for some reason, yet its supported on go 1.14+
-	"illumosamd64",
-	"jswasm",
-	"linux386",
-	"linuxamd64",
-	"linuxarm",
-	"linuxarm64",
-	"linuxppc64",
-	"linuxppc64le",
-	"linuxmips",
-	"linuxmipsle",
-	"linuxmips64",
-	"linuxmips64le",
-	"linuxs390x",
-	"netbsd386",
-	"netbsdamd64",
-	"netbsdarm",
-	"openbsd386",
-	"openbsdamd64",
-	"openbsdarm",
-	"openbsdarm64",
-	"plan9386",
-	"plan9amd64",
-	"plan9arm",
-	"solarisamd64",
-	"windows386",
-	"windowsamd64",
-}
+var (
+	validTargets = []string{
+		"aixppc64",
+		"android386",
+		"androidamd64",
+		"androidarm",
+		"androidarm64",
+		// "darwin386", - deprecated on latest go 1.15+
+		"darwinamd64",
+		// "darwinarm", - requires admin rights and other ios stuff
+		// "darwinarm64", - requires admin rights and other ios stuff
+		"dragonflyamd64",
+		"freebsd386",
+		"freebsdamd64",
+		"freebsdarm",
+		"freebsdarm64", // not on the official list for some reason, yet its supported on go 1.14+
+		"illumosamd64",
+		"jswasm",
+		"linux386",
+		"linuxamd64",
+		"linuxarm",
+		"linuxarm64",
+		"linuxppc64",
+		"linuxppc64le",
+		"linuxmips",
+		"linuxmipsle",
+		"linuxmips64",
+		"linuxmips64le",
+		"linuxs390x",
+		"netbsd386",
+		"netbsdamd64",
+		"netbsdarm",
+		"openbsd386",
+		"openbsdamd64",
+		"openbsdarm",
+		"openbsdarm64",
+		"plan9386",
+		"plan9amd64",
+		"plan9arm",
+		"solarisamd64",
+		"windows386",
+		"windowsamd64",
+	}
+
+	validGoos = []string{
+		"aix",
+		"android",
+		"darwin",
+		"dragonfly",
+		"freebsd",
+		"illumos",
+		"js",
+		"linux",
+		"netbsd",
+		"openbsd",
+		"plan9",
+		"solaris",
+		"windows",
+	}
+
+	validGoarch = []string{
+		"386",
+		"amd64",
+		"arm",
+		"arm64",
+		"mips",
+		"mips64",
+		"mips64le",
+		"mipsle",
+		"ppc64",
+		"ppc64le",
+		"s390x",
+		"wasm",
+	}
+
+	validGoarm  = []string{"5", "6", "7"}
+	validGomips = []string{"hardfloat", "softfloat"}
+)
