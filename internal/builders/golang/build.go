@@ -34,7 +34,7 @@ func init() {
 type Builder struct{}
 
 // WithDefaults sets the defaults for a golang build and returns it.
-func (*Builder) WithDefaults(build config.Build) config.Build {
+func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 	if build.Dir == "" {
 		build.Dir = "."
 	}
@@ -54,12 +54,16 @@ func (*Builder) WithDefaults(build config.Build) config.Build {
 		if len(build.Goarm) == 0 {
 			build.Goarm = []string{"6"}
 		}
-		build.Targets = matrix(build)
+		targets, err := matrix(build)
+		build.Targets = targets
+		if err != nil {
+			return build, err
+		}
 	}
 	if build.GoBinary == "" {
 		build.GoBinary = "go"
 	}
-	return build
+	return build, nil
 }
 
 // Build builds a golang build.

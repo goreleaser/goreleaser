@@ -51,18 +51,24 @@ func (Pipe) Run(ctx *context.Context) error {
 func (Pipe) Default(ctx *context.Context) error {
 	var ids = ids.New("builds")
 	for i, build := range ctx.Config.Builds {
-		ctx.Config.Builds[i] = buildWithDefaults(ctx, build)
+		build, err := buildWithDefaults(ctx, build)
+		if err != nil {
+			return err
+		}
+		ctx.Config.Builds[i] = build
 		ids.Inc(ctx.Config.Builds[i].ID)
 	}
 	if len(ctx.Config.Builds) == 0 {
-		ctx.Config.Builds = []config.Build{
-			buildWithDefaults(ctx, ctx.Config.SingleBuild),
+		build, err := buildWithDefaults(ctx, ctx.Config.SingleBuild)
+		if err != nil {
+			return err
 		}
+		ctx.Config.Builds = []config.Build{build}
 	}
 	return ids.Validate()
 }
 
-func buildWithDefaults(ctx *context.Context, build config.Build) config.Build {
+func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, error) {
 	if build.Lang == "" {
 		build.Lang = "go"
 	}

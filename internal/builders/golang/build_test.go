@@ -94,9 +94,56 @@ func TestWithDefaults(t *testing.T) {
 			}
 			var ctx = context.New(config)
 			ctx.Git.CurrentTag = "5.6.7"
-			var build = Default.WithDefaults(ctx.Config.Builds[0])
+			build, err := Default.WithDefaults(ctx.Config.Builds[0])
+			require.NoError(t, err)
 			require.ElementsMatch(t, build.Targets, testcase.targets)
 			require.EqualValues(t, testcase.goBinary, build.GoBinary)
+		})
+	}
+}
+
+func TestInvalidTargets(t *testing.T) {
+	type testcase struct {
+		build       config.Build
+		expectedErr string
+	}
+	for s, tc := range map[string]testcase{
+		"goos": {
+			build: config.Build{
+				Goos: []string{"darwin", "darwim"},
+			},
+			expectedErr: "invalid goos: darwim",
+		},
+		"goarch": {
+			build: config.Build{
+				Goarch: []string{"amd64", "i386", "386"},
+			},
+			expectedErr: "invalid goarch: i386",
+		},
+		"goarm": {
+			build: config.Build{
+				Goarch: []string{"arm"},
+				Goarm:  []string{"6", "9", "8", "7"},
+			},
+			expectedErr: "invalid goarm: 9",
+		},
+		"gomips": {
+			build: config.Build{
+				Goarch: []string{"mips"},
+				Gomips: []string{"softfloat", "mehfloat", "hardfloat"},
+			},
+			expectedErr: "invalid gomips: mehfloat",
+		},
+	} {
+		t.Run(s, func(t *testing.T) {
+			var config = config.Project{
+				Builds: []config.Build{
+					tc.build,
+				},
+			}
+			var ctx = context.New(config)
+			_, err := Default.WithDefaults(ctx.Config.Builds[0])
+			require.EqualError(t, err, tc.expectedErr)
 		})
 	}
 }

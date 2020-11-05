@@ -53,6 +53,8 @@ func TestAllBuildTargets(t *testing.T) {
 			},
 		},
 	}
+	result, err := matrix(build)
+	require.NoError(t, err)
 	require.Equal(t, []string{
 		"linux_386",
 		"linux_amd64",
@@ -74,7 +76,7 @@ func TestAllBuildTargets(t *testing.T) {
 		"openbsd_amd64",
 		"openbsd_arm64",
 		"js_wasm",
-	}, matrix(build))
+	}, result)
 }
 
 func TestGoosGoarchCombos(t *testing.T) {
