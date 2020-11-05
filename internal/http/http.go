@@ -311,6 +311,7 @@ func getHTTPClient(upload *config.Upload) (*h.Client, error) {
 	pool.AppendCertsFromPEM([]byte(upload.TrustedCerts)) // already validated certs checked by CheckConfig
 	return &h.Client{
 		Transport: &h.Transport{
+			Proxy: h.ProxyFromEnvironment,
 			TLSClientConfig: &tls.Config{ // nolint: gosec
 				RootCAs: pool,
 			},

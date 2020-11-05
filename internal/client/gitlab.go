@@ -28,6 +28,7 @@ type gitlabClient struct {
 // NewGitLab returns a gitlab client implementation.
 func NewGitLab(ctx *context.Context, token string) (Client, error) {
 	transport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
 		TLSClientConfig: &tls.Config{
 			// nolint: gosec
 			InsecureSkipVerify: ctx.Config.GitLabURLs.SkipTLSVerify,
