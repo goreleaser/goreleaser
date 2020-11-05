@@ -163,8 +163,6 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 	require.True(t, client.UploadedFile)
 	require.Contains(t, client.UploadedFileNames, "bin.deb")
 	require.Contains(t, client.UploadedFileNames, "bin.tar.gz")
-	require.Contains(t, client.UploadedFileNames, "release1.golden")
-	require.Contains(t, client.UploadedFileNames, "release2.golden")
 	require.Contains(t, client.UploadedFileNames, "f1")
 	require.NotContains(t, client.UploadedFileNames, "filtered.deb")
 	require.NotContains(t, client.UploadedFileNames, "filtered.tar.gz")
