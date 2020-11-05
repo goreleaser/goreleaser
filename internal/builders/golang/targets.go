@@ -22,10 +22,24 @@ func (t target) String() string {
 	return fmt.Sprintf("%s_%s", t.os, t.arch)
 }
 
-func matrix(build config.Build) (result []string) {
+func matrix(build config.Build) ([]string, error) {
 	// nolint:prealloc
 	var targets []target
+	// nolint:prealloc
+	var result []string
 	for _, target := range allBuildTargets(build) {
+		if !contains(target.os, validGoos) {
+			return result, fmt.Errorf("invalid goos: %s", target.os)
+		}
+		if !contains(target.arch, validGoarch) {
+			return result, fmt.Errorf("invalid goarch: %s", target.arch)
+		}
+		if target.arm != "" && !contains(target.arm, validGoarm) {
+			return result, fmt.Errorf("invalid goarm: %s", target.arm)
+		}
+		if target.mips != "" && !contains(target.mips, validGomips) {
+			return result, fmt.Errorf("invalid gomips: %s", target.mips)
+		}
 		if !valid(target) {
 			log.WithField("target", target).
 				Debug("skipped invalid build")
@@ -41,7 +55,7 @@ func matrix(build config.Build) (result []string) {
 	for _, target := range targets {
 		result = append(result, target.String())
 	}
-	return
+	return result, nil
 }
 
 func allBuildTargets(build config.Build) (targets []target) {
@@ -98,9 +112,12 @@ func ignored(build config.Build, target target) bool {
 }
 
 func valid(target target) bool {
-	var s = target.os + target.arch
-	for _, a := range validTargets {
-		if a == s {
+	return contains(target.os+target.arch, validTargets)
+}
+
+func contains(s string, ss []string) bool {
+	for _, z := range ss {
+		if z == s {
 			return true
 		}
 	}
@@ -151,3 +168,38 @@ var validTargets = []string{
 	"windows386",
 	"windowsamd64",
 }
+
+var validGoos = []string{
+	"aix",
+	"android",
+	"darwin",
+	"dragonfly",
+	"freebsd",
+	"illumos",
+	"js",
+	"linux",
+	"netbsd",
+	"openbsd",
+	"plan9",
+	"solaris",
+	"windows",
+}
+
+var validGoarch = []string{
+	"386",
+	"amd64",
+	"arm",
+	"arm64",
+	"mips",
+	"mips64",
+	"mips64le",
+	"mipsle",
+	"ppc64",
+	"ppc64le",
+	"s390x",
+	"wasm",
+}
+
+var validGoarm = []string{"5", "6", "7"}
+
+var validGomips = []string{"hardfloat", "softfloat"}

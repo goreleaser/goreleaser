@@ -17,15 +17,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type fakeBuilder struct {
-	fail bool
-}
-
-func (*fakeBuilder) WithDefaults(build config.Build) config.Build {
-	return build
-}
-
 var errFailedBuild = errors.New("fake builder failed")
+var errFailedDefault = errors.New("fake builder defaults failed")
+
+type fakeBuilder struct {
+	fail        bool
+	failDefault bool
+}
+
+func (f *fakeBuilder) WithDefaults(build config.Build) (config.Build, error) {
+	if f.failDefault {
+		return build, errFailedDefault
+	}
+	return build, nil
+}
 
 func (f *fakeBuilder) Build(ctx *context.Context, build config.Build, options api.Options) error {
 	if f.fail {
@@ -47,6 +52,9 @@ func init() {
 	api.Register("fake", &fakeBuilder{})
 	api.Register("fakeFail", &fakeBuilder{
 		fail: true,
+	})
+	api.Register("fakeFailDefault", &fakeBuilder{
+		failDefault: true,
 	})
 }
 
@@ -212,6 +220,22 @@ func TestDefaultNoBuilds(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 }
 
+func TestDefaultFail(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var config = config.Project{
+		Dist: folder,
+		Builds: []config.Build{
+			{
+				Lang: "fakeFailDefault",
+			},
+		},
+	}
+	var ctx = context.New(config)
+	require.EqualError(t, Pipe{}.Default(ctx), errFailedDefault.Error())
+	require.Empty(t, ctx.Artifacts.List())
+}
+
 func TestDefaultExpandEnv(t *testing.T) {
 	require.NoError(t, os.Setenv("XBAR", "FOOBAR"))
 	var ctx = &context.Context{
@@ -349,6 +373,20 @@ func TestDefaultFillSingleBuild(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Builds, 1)
 	require.Equal(t, ctx.Config.Builds[0].Binary, "foo")
+}
+
+func TestDefaultFailSingleBuild(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var config = config.Project{
+		Dist: folder,
+		SingleBuild: config.Build{
+			Lang: "fakeFailDefault",
+		},
+	}
+	var ctx = context.New(config)
+	require.EqualError(t, Pipe{}.Default(ctx), errFailedDefault.Error())
+	require.Empty(t, ctx.Artifacts.List())
 }
 
 func TestSkipBuild(t *testing.T) {
