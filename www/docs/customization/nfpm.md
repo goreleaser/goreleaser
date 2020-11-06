@@ -137,7 +137,7 @@ nfpms:
       preremove: "scripts/preremove.sh"
       postremove: "scripts/postremove.sh"
 
-    # Some attributes can be overriden per package format.
+    # Some attributes can be overridden per package format.
     overrides:
       deb:
         conflicts:
