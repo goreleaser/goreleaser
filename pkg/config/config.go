@@ -399,6 +399,7 @@ type NFPMOverridables struct {
 	Recommends       []string          `yaml:",omitempty"`
 	Suggests         []string          `yaml:",omitempty"`
 	Conflicts        []string          `yaml:",omitempty"`
+	Replaces         []string          `yaml:",omitempty"`
 	EmptyFolders     []string          `yaml:"empty_folders,omitempty"`
 	Files            map[string]string `yaml:",omitempty"`
 	ConfigFiles      map[string]string `yaml:"config_files,omitempty"`

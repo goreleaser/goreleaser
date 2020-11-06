@@ -85,6 +85,10 @@ nfpms:
       - svn
       - bash
 
+    # Packages it replaces.
+    replaces:
+      - fish
+
     # Override default /usr/local/bin destination for binaries
     bindir: /usr/bin
 
@@ -133,7 +137,7 @@ nfpms:
       preremove: "scripts/preremove.sh"
       postremove: "scripts/postremove.sh"
 
-    # Some attributes can be overrided per package format.
+    # Some attributes can be overridden per package format.
     overrides:
       deb:
         conflicts:
@@ -144,6 +148,8 @@ nfpms:
           - gitk
         recommends:
           - tig
+        replaces:
+          - bash
         empty_folders:
           - /var/log/bar
       rpm:
