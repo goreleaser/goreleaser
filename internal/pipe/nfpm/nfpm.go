@@ -165,6 +165,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 			Depends:      overridden.Dependencies,
 			Recommends:   overridden.Recommends,
 			Suggests:     overridden.Suggests,
+			Replaces:     overridden.Replaces,
 			EmptyFolders: overridden.EmptyFolders,
 			Files:        files,
 			ConfigFiles:  overridden.ConfigFiles,
