@@ -10,15 +10,14 @@ require (
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/client9/misspell v0.3.4
 	github.com/fatih/color v1.10.0
-	github.com/gobwas/glob v0.2.3
 	github.com/golangci/golangci-lint v1.31.0
 	github.com/google/go-github/v28 v28.1.1
+	github.com/goreleaser/fileglob v0.1.0
 	github.com/goreleaser/nfpm v1.9.0
 	github.com/hashicorp/go-version v1.2.1 // indirect
 	github.com/imdario/mergo v0.3.11
 	github.com/jarcoal/httpmock v1.0.6
 	github.com/mattn/go-shellwords v1.0.10
-	github.com/mattn/go-zglob v0.0.4-0.20201013150311-602f75124917
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.1
 	github.com/stretchr/testify v1.6.1

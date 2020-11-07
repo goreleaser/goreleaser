@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/apex/log"
-	"github.com/gobwas/glob"
+	"github.com/goreleaser/fileglob"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
@@ -18,18 +17,9 @@ func Find(files []config.ExtraFile) (map[string]string, error) {
 		if extra.Glob == "" {
 			continue
 		}
-		var files []string
-		g, err := glob.Compile(strings.TrimPrefix(extra.Glob, "./"), '/')
+		files, err := fileglob.Glob(extra.Glob)
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %w", extra.Glob, err)
-		}
-		if err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
-			if g.Match(path) {
-				files = append(files, path)
-			}
-			return nil
-		}); err != nil {
-			return nil, err
 		}
 		for _, file := range files {
 			info, err := os.Stat(file)
