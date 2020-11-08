@@ -14,9 +14,19 @@ func TestShouldGetSpecificFile(t *testing.T) {
 
 	files, err := Find(globs)
 	require.NoError(t, err)
-	require.Equal(t, 1, len(files))
+	require.Len(t, files, 1)
 
 	require.Equal(t, "testdata/file1.golden", files["file1.golden"])
+}
+
+func TestFailToGetSpecificFile(t *testing.T) {
+	globs := []config.ExtraFile{
+		{Glob: "./testdata/file453.golden"},
+	}
+
+	files, err := Find(globs)
+	require.EqualError(t, err, "globbing failed for pattern ./testdata/file453.golden: file does not exist")
+	require.Empty(t, files)
 }
 
 func TestShouldGetFilesWithSuperStar(t *testing.T) {
@@ -26,7 +36,7 @@ func TestShouldGetFilesWithSuperStar(t *testing.T) {
 
 	files, err := Find(globs)
 	require.NoError(t, err)
-	require.Equal(t, 3, len(files))
+	require.Len(t, files, 3)
 
 	require.Equal(t, "testdata/file2.golden", files["file2.golden"])
 	require.Equal(t, "testdata/file1.golden", files["file1.golden"])
@@ -40,7 +50,7 @@ func TestShouldGetAllFilesWithGoldenExtension(t *testing.T) {
 
 	files, err := Find(globs)
 	require.NoError(t, err)
-	require.Equal(t, 2, len(files))
+	require.Len(t, files, 2)
 
 	require.Equal(t, "testdata/file1.golden", files["file1.golden"])
 	require.Equal(t, "testdata/file2.golden", files["file2.golden"])
@@ -53,9 +63,10 @@ func TestShouldGetAllFilesInsideTestdata(t *testing.T) {
 
 	files, err := Find(globs)
 	require.NoError(t, err)
-	require.Equal(t, 3, len(files))
+	require.Len(t, files, 4)
 
 	require.Equal(t, "testdata/file1.golden", files["file1.golden"])
 	require.Equal(t, "testdata/file2.golden", files["file2.golden"])
 	require.Equal(t, "testdata/file3.gold", files["file3.gold"])
+	require.Equal(t, "testdata/sub/file5.golden", files["file5.golden"])
 }

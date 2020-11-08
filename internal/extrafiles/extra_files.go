@@ -21,6 +21,9 @@ func Find(files []config.ExtraFile) (map[string]string, error) {
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %w", extra.Glob, err)
 		}
+		if len(files) == 0 {
+			return result, fmt.Errorf("globbing failed for pattern %s: file does not exist", extra.Glob)
+		}
 		for _, file := range files {
 			info, err := os.Stat(file)
 			if err == nil && info.IsDir() {
