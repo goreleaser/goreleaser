@@ -253,7 +253,7 @@ func TestRunPipeExtraFileNotFound(t *testing.T) {
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 	client := &DummyClient{}
-	require.EqualError(t, doPublish(ctx, client), "globbing failed for pattern ./nope: file does not exist")
+	require.EqualError(t, doPublish(ctx, client), "globbing failed for pattern ./nope: matching \"nope\": file does not exist")
 	require.True(t, client.CreatedRelease)
 	require.False(t, client.UploadedFile)
 }
