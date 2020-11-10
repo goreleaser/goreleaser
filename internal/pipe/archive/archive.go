@@ -13,7 +13,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/campoy/unique"
-	"github.com/mattn/go-zglob"
+	"github.com/goreleaser/fileglob"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
@@ -240,7 +240,7 @@ func findFiles(template *tmpl.Template, archive config.Archive) (result []string
 		if err != nil {
 			return result, fmt.Errorf("failed to apply template %s: %w", glob, err)
 		}
-		files, err := zglob.Glob(replaced)
+		files, err := fileglob.Glob(replaced)
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %w", glob, err)
 		}

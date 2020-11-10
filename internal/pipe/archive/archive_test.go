@@ -157,8 +157,6 @@ func TestRunPipe(t *testing.T) {
 						t,
 						[]string{
 							fmt.Sprintf("README.%s.md", os),
-							"foo/bar",
-							"foo/bar/foobar",
 							"foo/bar/foobar/blah.txt",
 							"bin/mybin",
 						},
@@ -426,7 +424,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 			"ID":     "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: globbing failed for pattern [x-]: file does not exist`)
+	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: globbing failed for pattern [x-]: compile glob pattern: unexpected end of input`)
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
