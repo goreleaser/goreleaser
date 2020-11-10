@@ -189,19 +189,16 @@ func upload(ctx *context.Context, cli client.Client, releaseID string, artifact 
 	}
 
 	var err error
-loop:
 	for try < 10 {
 		err = tryUpload()
 		if err == nil {
 			return nil
 		}
-		switch err.(type) {
-		case client.RetriableError:
+		if errors.As(err, &client.RetriableError{}) {
 			time.Sleep(time.Duration(try*50) * time.Millisecond)
 			continue
-		default:
-			break loop
 		}
+		break
 	}
 
 	return fmt.Errorf("failed to upload %s after %d tries: %w", artifact.Name, try, err)

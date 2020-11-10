@@ -39,7 +39,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		out, err := cmd.CombinedOutput()
 		log.WithField("cmd", step).Debug(string(out))
 		if err != nil {
-			return fmt.Errorf("hook failed: %s: %s; output: %s", step, err.Error(), string(out))
+			return fmt.Errorf("hook failed: %s: %w; output: %s", step, err, string(out))
 		}
 	}
 	return nil
