@@ -331,10 +331,12 @@ type NFPMRPMSignature struct {
 
 // NFPMRPM is custom configs that are only available on RPM packages.
 type NFPMRPM struct {
+	Summary     string `yaml:"summary,omitempty"`
 	Group       string `yaml:"group,omitempty"`
 	Compression string `yaml:"compression,omitempty"`
 	// https://www.cl.cam.ac.uk/~jw35/docs/rpm_config.html
 	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"`
+	GhostFiles           []string          `yaml:"ghost_files,omitempty"`
 	Signature            NFPMRPMSignature  `yaml:"signature,omitempty"`
 }
 
