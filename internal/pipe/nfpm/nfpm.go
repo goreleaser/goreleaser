@@ -197,10 +197,10 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 				},
 			},
 			RPM: nfpm.RPM{
-				Summary: overridden.RPM.Summary,
+				Summary:              overridden.RPM.Summary,
 				Group:                overridden.RPM.Group,
 				Compression:          overridden.RPM.Compression,
-				GhostFiles: overridden.RPM.GhostFiles,
+				GhostFiles:           overridden.RPM.GhostFiles,
 				ConfigNoReplaceFiles: overridden.RPM.ConfigNoReplaceFiles,
 				Signature: nfpm.RPMSignature{
 					KeyFile:       overridden.RPM.Signature.KeyFile,
