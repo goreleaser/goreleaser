@@ -240,20 +240,26 @@ func (s *GiteaupdateReleaseSuite) TestError() {
 	require.Nil(t, release)
 }
 
-func TestGiteaupdateReleaseSuite(t *testing.T) {
-	suite.Run(t, new(GiteaupdateReleaseSuite))
+func (s *GiteaupdateReleaseSuite) TestGiteaCreateFile() {
+	fileEndpoint := fmt.Sprintf("%s/api/v1/repos/%s/%s/contents/%s", s.url, s.owner, s.repoName, "file.txt")
+
+	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/api/v1/version", s.url), httpmock.NewStringResponder(200, "{\"version\":\"1.12.0\"}"))
+	httpmock.RegisterResponder("GET", fileEndpoint, httpmock.NewStringResponder(404, ""))
+	httpmock.RegisterResponder("POST", fileEndpoint, httpmock.NewStringResponder(201, "{\n  \"content\": {\n    \"name\": \"test.file\",\n    \"path\": \"test.file\",\n    \"sha\": \"3b18e512dba79e4c8300dd08aeb37f8e728b8dad\",\n    \"type\": \"file\",\n    \"size\": 12,\n    \"encoding\": \"base64\",\n    \"content\": \"aGVsbG8gd29ybGQK\"\n  }\n}"))
+
+	author := config.CommitAuthor{Name: s.owner}
+	repo := Repo{Owner: s.owner, Name: s.repoName}
+	content := []byte("hello world")
+	path := "file.txt"
+	message := "add hello world"
+	err := s.client.CreateFile(s.ctx, author, repo, content, path, message)
+	if !assert.Nil(s.T(), err) {
+		assert.Equal(s.T(), "", err.Error())
+	}
 }
 
-func TestGiteaCreateFile(t *testing.T) {
-	client := giteaClient{}
-	ctx := context.Context{}
-	author := config.CommitAuthor{}
-	repo := Repo{}
-	content := []byte{}
-	path := ""
-	message := ""
-	file := client.CreateFile(&ctx, author, repo, content, path, message)
-	require.Nil(t, file)
+func TestGiteaupdateReleaseSuite(t *testing.T) {
+	suite.Run(t, new(GiteaupdateReleaseSuite))
 }
 
 type GiteaCreateReleaseSuite struct {
