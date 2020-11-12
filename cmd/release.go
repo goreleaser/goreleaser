@@ -41,6 +41,7 @@ func newReleaseCmd() *releaseCmd {
 		Short:         "Releases the current project",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		Args:          cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			start := time.Now()
 

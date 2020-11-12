@@ -25,6 +25,7 @@ func newCheckCmd() *checkCmd {
 		Short:         "Checks if configuration is valid",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		Args:          cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := loadConfig(root.config)
 			if err != nil {
