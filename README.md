@@ -16,7 +16,7 @@ For questions, support and general discussion, please use [GitHub Discussions](h
 
 ## Get GoReleaser
 
-- [On my machine](https://goreleaser.com/install/);
+- [On your machine](https://goreleaser.com/install/);
 - [On CI/CD systems](https://goreleaser.com/ci/).
 
 ## Documentation
