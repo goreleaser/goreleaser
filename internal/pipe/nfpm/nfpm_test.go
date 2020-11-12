@@ -244,7 +244,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 			"ID": "default",
 		},
 	})
-	require.Contains(t, Pipe{}.Run(ctx).Error(), `dist/mybin/mybin: file does not exist`)
+	require.Contains(t, Pipe{}.Run(ctx).Error(), `dist/mybin/mybin": file does not exist`)
 }
 
 func TestInvalidConfig(t *testing.T) {
