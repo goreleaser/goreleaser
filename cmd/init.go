@@ -22,6 +22,7 @@ func newInitCmd() *initCmd {
 		Short:         "Generates a .goreleaser.yml file",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		Args:          cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			f, err := os.OpenFile(root.config, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0644)
 			if err != nil {
