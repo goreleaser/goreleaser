@@ -342,6 +342,33 @@ func TestBuildCodeInSubdir(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestBuildWithDotGoDir(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	require.NoError(t, os.Mkdir(filepath.Join(folder, ".go"), 0755))
+	writeGoodMain(t, folder)
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				ID:       "foo",
+				Env:      []string{"GO111MODULE=off"},
+				Binary:   "foo",
+				Targets:  []string{runtimeTarget},
+				GoBinary: "go",
+			},
+		},
+	}
+	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
+	var build = ctx.Config.Builds[0]
+	require.NoError(t, Default.Build(ctx, build, api.Options{
+		Target: runtimeTarget,
+		Name:   build.Binary,
+		Path:   filepath.Join(folder, "dist", runtimeTarget, build.Binary),
+		Ext:    "",
+	}))
+}
+
 func TestBuildFailed(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
