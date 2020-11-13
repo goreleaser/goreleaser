@@ -95,6 +95,25 @@ func TestFullFormulae(t *testing.T) {
 	require.Equal(t, string(bts), formulae)
 }
 
+func TestFullFormulaeLinuxOnly(t *testing.T) {
+	data := defaultTemplateData
+	data.MacOS = downloadable{}
+	data.Install = []string{`bin.install "test"`}
+	formulae, err := doBuildFormula(context.New(config.Project{
+		ProjectName: "foo",
+	}), data)
+	require.NoError(t, err)
+
+	var golden = "testdata/test_linux_only.rb.golden"
+	if *update {
+		err := ioutil.WriteFile(golden, []byte(formulae), 0655)
+		require.NoError(t, err)
+	}
+	bts, err := ioutil.ReadFile(golden)
+	require.NoError(t, err)
+	require.Equal(t, string(bts), formulae)
+}
+
 func TestFormulaeSimple(t *testing.T) {
 	formulae, err := doBuildFormula(context.New(config.Project{}), defaultTemplateData)
 	require.NoError(t, err)
@@ -504,7 +523,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 	}
 }
 
-func TestRunPipeNoDarwin64Build(t *testing.T) {
+func TestRunPipeNoBuilds(t *testing.T) {
 	var ctx = &context.Context{
 		TokenType: context.TokenTypeGitHub,
 		Config: config.Project{
