@@ -45,15 +45,15 @@ var defaultTemplateData = templateData{
 		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
 		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
 	},
-	Linux: downloadable{
+	LinuxAmd64: downloadable{
 		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
 		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 	},
-	Arm: downloadable{
+	LinuxArm: downloadable{
 		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
 		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 	},
-	Arm64: downloadable{
+	LinuxArm64: downloadable{
 		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
 		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 	},

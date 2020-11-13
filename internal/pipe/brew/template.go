@@ -18,9 +18,9 @@ type templateData struct {
 	CustomRequire    string
 	CustomBlock      []string
 	MacOS            downloadable
-	Linux            downloadable
-	Arm              downloadable
-	Arm64            downloadable
+	LinuxAmd64       downloadable
+	LinuxArm         downloadable
+	LinuxArm64       downloadable
 }
 
 type downloadable struct {
@@ -37,10 +37,9 @@ class {{ .Name }} < Formula
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
   bottle :unneeded
-  {{- if and (not .MacOS.DownloadURL) (or .Linux.DownloadURL .Arm.DownloadURL .Arm64.DownloadURL) }}
-  depends_on :linux
+  {{- if and (not .MacOS.DownloadURL) (or .LinuxAmd64.DownloadURL .LinuxArm.DownloadURL .LinuxArm64.DownloadURL) }}
+  depends_on :LinuxAmd64
   {{- end }}
-
 
   {{- if .MacOS.DownloadURL }}
   if OS.mac?
@@ -50,27 +49,27 @@ class {{ .Name }} < Formula
   end
   {{- end }}
 
-  {{- if .Linux.DownloadURL }}
-  if OS.linux? && Hardware::CPU.intel?
-    url "{{ .Linux.DownloadURL }}"
+  {{- if .LinuxAmd64.DownloadURL }}
+  if OS.LinuxAmd64? && Hardware::CPU.intel?
+    url "{{ .LinuxAmd64.DownloadURL }}"
     {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-    sha256 "{{ .Linux.SHA256 }}"
+    sha256 "{{ .LinuxAmd64.SHA256 }}"
   end
   {{- end }}
 
-  {{- if .Arm.DownloadURL }}
-  if OS.linux? && Hardware::CPU.arm? && !Hardware::CPU.is_64_bit?
-    url "{{ .Arm.DownloadURL }}"
+  {{- if .LinuxArm.DownloadURL }}
+  if OS.LinuxAmd64? && Hardware::CPU.LinuxArm? && !Hardware::CPU.is_64_bit?
+    url "{{ .LinuxArm.DownloadURL }}"
     {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-    sha256 "{{ .Arm.SHA256 }}"
+    sha256 "{{ .LinuxArm.SHA256 }}"
   end
   {{- end }}
 
-  {{- if .Arm64.DownloadURL }}
-  if OS.linux? && Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-    url "{{ .Arm64.DownloadURL }}"
+  {{- if .LinuxArm64.DownloadURL }}
+  if OS.LinuxAmd64? && Hardware::CPU.LinuxArm? && Hardware::CPU.is_64_bit?
+    url "{{ .LinuxArm64.DownloadURL }}"
     {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-    sha256 "{{ .Arm64.SHA256 }}"
+    sha256 "{{ .LinuxArm64.SHA256 }}"
   end
   {{- end }}
 

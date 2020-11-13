@@ -310,21 +310,21 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 			result.MacOS = down
 		} else if artifact.Goos == "linux" {
 			switch artifact.Goarch {
-			case "386", "amd64":
-				if result.Linux.DownloadURL != "" {
+			case "amd64":
+				if result.LinuxAmd64.DownloadURL != "" {
 					return result, ErrMultipleArchivesSameOS
 				}
-				result.Linux = down
+				result.LinuxAmd64 = down
 			case "arm":
-				if result.Arm.DownloadURL != "" {
+				if result.LinuxArm.DownloadURL != "" {
 					return result, ErrMultipleArchivesSameOS
 				}
-				result.Arm = down
+				result.LinuxArm = down
 			case "arm64":
-				if result.Arm64.DownloadURL != "" {
+				if result.LinuxArm64.DownloadURL != "" {
 					return result, ErrMultipleArchivesSameOS
 				}
-				result.Arm64 = down
+				result.LinuxArm64 = down
 			}
 		}
 	}
