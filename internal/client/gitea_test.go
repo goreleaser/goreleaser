@@ -241,6 +241,7 @@ func (s *GiteaupdateReleaseSuite) TestError() {
 }
 
 func (s *GiteaupdateReleaseSuite) TestGiteaCreateFile() {
+	t := s.T()
 	fileEndpoint := fmt.Sprintf("%s/api/v1/repos/%s/%s/contents/%s", s.url, s.owner, s.repoName, "file.txt")
 
 	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/api/v1/version", s.url), httpmock.NewStringResponder(200, "{\"version\":\"1.12.0\"}"))
@@ -253,9 +254,7 @@ func (s *GiteaupdateReleaseSuite) TestGiteaCreateFile() {
 	path := "file.txt"
 	message := "add hello world"
 	err := s.client.CreateFile(s.ctx, author, repo, content, path, message)
-	if !assert.Nil(s.T(), err) {
-		assert.Equal(s.T(), "", err.Error())
-	}
+	require.Nil(t, err)
 }
 
 func TestGiteaupdateReleaseSuite(t *testing.T) {
