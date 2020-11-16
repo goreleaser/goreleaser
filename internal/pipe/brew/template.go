@@ -38,9 +38,9 @@ class {{ .Name }} < Formula
   version "{{ .Version }}"
   bottle :unneeded
   {{- if and (not .MacOS.DownloadURL) (or .LinuxAmd64.DownloadURL .LinuxArm.DownloadURL .LinuxArm64.DownloadURL) }}
-  depends_on :LinuxAmd64
+  depends_on :linux
   {{- end }}
-
+  {{- printf "\n" }}
   {{- if .MacOS.DownloadURL }}
   if OS.mac?
     url "{{ .MacOS.DownloadURL }}"
@@ -50,7 +50,7 @@ class {{ .Name }} < Formula
   {{- end }}
 
   {{- if .LinuxAmd64.DownloadURL }}
-  if OS.LinuxAmd64? && Hardware::CPU.intel?
+  if OS.linux? && Hardware::CPU.intel?
     url "{{ .LinuxAmd64.DownloadURL }}"
     {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
     sha256 "{{ .LinuxAmd64.SHA256 }}"
@@ -58,7 +58,7 @@ class {{ .Name }} < Formula
   {{- end }}
 
   {{- if .LinuxArm.DownloadURL }}
-  if OS.LinuxAmd64? && Hardware::CPU.LinuxArm? && !Hardware::CPU.is_64_bit?
+  if OS.linux? && Hardware::CPU.arm? && !Hardware::CPU.is_64_bit?
     url "{{ .LinuxArm.DownloadURL }}"
     {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
     sha256 "{{ .LinuxArm.SHA256 }}"
@@ -66,7 +66,7 @@ class {{ .Name }} < Formula
   {{- end }}
 
   {{- if .LinuxArm64.DownloadURL }}
-  if OS.LinuxAmd64? && Hardware::CPU.LinuxArm? && Hardware::CPU.is_64_bit?
+  if OS.linux? && Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
     url "{{ .LinuxArm64.DownloadURL }}"
     {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
     sha256 "{{ .LinuxArm64.SHA256 }}"
