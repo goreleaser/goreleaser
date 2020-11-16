@@ -8,16 +8,14 @@ class MultipleArmv5 < Formula
   if OS.mac?
     url "https://dummyhost/download/v1.0.1/bin.tar.gz"
     sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-  elsif OS.linux?
-    if Hardware::CPU.arm?
-      if Hardware::CPU.is_64_bit?
-        url "https://dummyhost/download/v1.0.1/arm64.tar.gz"
-        sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      else
-        url "https://dummyhost/download/v1.0.1/armv5.tar.gz"
-        sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      end
-    end
+  end
+  if OS.linux? && Hardware::CPU.arm? && !Hardware::CPU.is_64_bit?
+    url "https://dummyhost/download/v1.0.1/armv5.tar.gz"
+    sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  end
+  if OS.linux? && Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
+    url "https://dummyhost/download/v1.0.1/arm64.tar.gz"
+    sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   end
   
   depends_on "zsh"
