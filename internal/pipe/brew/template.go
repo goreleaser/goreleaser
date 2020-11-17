@@ -18,9 +18,9 @@ type templateData struct {
 	CustomRequire    string
 	CustomBlock      []string
 	MacOS            downloadable
-	Linux            downloadable
-	Arm              downloadable
-	Arm64            downloadable
+	LinuxAmd64       downloadable
+	LinuxArm         downloadable
+	LinuxArm64       downloadable
 }
 
 type downloadable struct {
@@ -37,39 +37,41 @@ class {{ .Name }} < Formula
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
   bottle :unneeded
-
+  {{- if and (not .MacOS.DownloadURL) (or .LinuxAmd64.DownloadURL .LinuxArm.DownloadURL .LinuxArm64.DownloadURL) }}
+  depends_on :linux
+  {{- end }}
+  {{- printf "\n" }}
+  {{- if .MacOS.DownloadURL }}
   if OS.mac?
-    {{- if .MacOS.DownloadURL }}
     url "{{ .MacOS.DownloadURL }}"
     {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
     sha256 "{{ .MacOS.SHA256 }}"
-    {{- end }}
-  elsif OS.linux?
-    {{- if .Linux.DownloadURL }}
-    if Hardware::CPU.intel?
-      url "{{ .Linux.DownloadURL }}"
-      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-      sha256 "{{ .Linux.SHA256 }}"
-    end
-    {{- end }}
-	{{- if or .Arm.DownloadURL .Arm64.DownloadURL }}
-    if Hardware::CPU.arm?
-      if Hardware::CPU.is_64_bit?
-        {{- if .Arm64.DownloadURL }}
-        url "{{ .Arm64.DownloadURL }}"
-        {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-        sha256 "{{ .Arm64.SHA256 }}"
-        {{- end }}
-      else
-        {{- if .Arm.DownloadURL }}
-        url "{{ .Arm.DownloadURL }}"
-        {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-        sha256 "{{ .Arm.SHA256 }}"
-        {{- end }}
-      end
-    end
-	{{- end }}
   end
+  {{- end }}
+
+  {{- if .LinuxAmd64.DownloadURL }}
+  if OS.linux? && Hardware::CPU.intel?
+    url "{{ .LinuxAmd64.DownloadURL }}"
+    {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+    sha256 "{{ .LinuxAmd64.SHA256 }}"
+  end
+  {{- end }}
+
+  {{- if .LinuxArm.DownloadURL }}
+  if OS.linux? && Hardware::CPU.arm? && !Hardware::CPU.is_64_bit?
+    url "{{ .LinuxArm.DownloadURL }}"
+    {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+    sha256 "{{ .LinuxArm.SHA256 }}"
+  end
+  {{- end }}
+
+  {{- if .LinuxArm64.DownloadURL }}
+  if OS.linux? && Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
+    url "{{ .LinuxArm64.DownloadURL }}"
+    {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+    sha256 "{{ .LinuxArm64.SHA256 }}"
+  end
+  {{- end }}
 
   {{- with .CustomBlock }}
   {{ range $index, $element := . }}
