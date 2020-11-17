@@ -18,6 +18,7 @@ import (
 
 // GitInfo includes tags and diffs used in some point.
 type GitInfo struct {
+	Branch      string
 	CurrentTag  string
 	Commit      string
 	ShortCommit string

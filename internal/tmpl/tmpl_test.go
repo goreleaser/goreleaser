@@ -26,6 +26,7 @@ func TestWithArtifact(t *testing.T) {
 		Minor: 2,
 		Patch: 3,
 	}
+	ctx.Git.Branch = "test-branch"
 	ctx.Git.Commit = "commit"
 	ctx.Git.FullCommit = "fullcommit"
 	ctx.Git.ShortCommit = "shortcommit"
@@ -38,6 +39,7 @@ func TestWithArtifact(t *testing.T) {
 		"1.2.3":       "{{.Version}}",
 		"v1.2.3":      "{{.Tag}}",
 		"1-2-3":       "{{.Major}}-{{.Minor}}-{{.Patch}}",
+		"test-branch": "{{.Branch}}",
 		"commit":      "{{.Commit}}",
 		"fullcommit":  "{{.FullCommit}}",
 		"shortcommit": "{{.ShortCommit}}",

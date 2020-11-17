@@ -39,6 +39,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // nolint: gochecknoglobals
 var fakeInfo = context.GitInfo{
+	Branch:      "none",
 	CurrentTag:  "v0.0.0",
 	Commit:      "none",
 	ShortCommit: "none",
@@ -65,6 +66,10 @@ func getInfo(ctx *context.Context) (context.GitInfo, error) {
 }
 
 func getGitInfo() (context.GitInfo, error) {
+	branch, err := getBranch()
+	if err != nil {
+		return context.GitInfo{}, fmt.Errorf("couldn't get current branch: %w", err)
+	}
 	short, err := getShortCommit()
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get current commit: %w", err)
@@ -84,6 +89,7 @@ func getGitInfo() (context.GitInfo, error) {
 	tag, err := getTag()
 	if err != nil {
 		return context.GitInfo{
+			Branch:      branch,
 			Commit:      full,
 			FullCommit:  full,
 			ShortCommit: short,
@@ -93,6 +99,7 @@ func getGitInfo() (context.GitInfo, error) {
 		}, ErrNoTag
 	}
 	return context.GitInfo{
+		Branch:      branch,
 		CurrentTag:  tag,
 		Commit:      full,
 		FullCommit:  full,
@@ -121,6 +128,10 @@ func validate(ctx *context.Context) error {
 		}
 	}
 	return nil
+}
+
+func getBranch() (string, error) {
+	return git.Clean(git.Run("rev-parse", "--abbrev-ref", "HEAD", "--quiet"))
 }
 
 func getCommitDate() (time.Time, error) {
