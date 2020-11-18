@@ -14,6 +14,7 @@ On fields that support templating, these fields are always available:
 |--------------------|------------------------------------------------------------------------------------------------------------------------------|
 | `.ProjectName`     | the project name                                                                                                             |
 | `.Version`         | the version being released (`v` prefix stripped),<br>or `{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}` in case of snapshot release |
+| `.Branch`          | the current git branch                                                                                                       |
 | `.Tag`             | the current git tag                                                                                                          |
 | `.ShortCommit`     | the git commit short hash                                                                                                    |
 | `.FullCommit`      | the git commit full hash                                                                                                     |
