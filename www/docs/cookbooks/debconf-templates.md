@@ -19,7 +19,7 @@ Description: Poor misguided one. Why are you installing this package?
  discover the error in your ways.
 ```
 
-Maintainer script file that will trigger questions, usually its `postinst` because all package files are allready installed:
+Maintainer script file that will trigger questions, usually its `postinst` because all package files are already installed:
 
 ```sh
 #!/bin/sh -e
