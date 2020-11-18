@@ -207,8 +207,9 @@ nfpms:
 
     # Custom configuration applied only to the Deb packager.
     deb:
-      # Custom deb rules script.
+      # Custom deb special files.
       scripts:
+        # Deb rules script.
         rules: foo.sh
         # Deb templates file, when using debconf.
         templates: templates
