@@ -64,7 +64,7 @@ blobs:
 ```
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).
 
 ## Authentication
 

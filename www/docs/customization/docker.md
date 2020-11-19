@@ -14,7 +14,7 @@ If you have only one `build` setup,
 the configuration is as easy as adding the
 name of your image to your `.goreleaser.yml` file:
 
-The docker image declaration supports templating. Learn more about the [name template engine](/customization/templates).
+The docker image declaration supports templating. Learn more about the [name template engine](/customization/templates/).
 
 ```yaml
 dockers:
@@ -103,7 +103,7 @@ dockers:
 ```
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).
 
 These settings should allow you to generate multiple Docker images,
 for example, using multiple `FROM` statements,
@@ -130,7 +130,7 @@ This will build and public the following images:
 - `myuser/foo`
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).
 
 ## Keeping docker images updated for current major
 
@@ -162,7 +162,7 @@ With these settings you can hopefully push several different docker images
 with multiple tags.
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).
 
 ## Publishing to multiple docker registries
 
@@ -220,4 +220,4 @@ docker build -t myuser/myimage . \
 ```
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).

@@ -76,7 +76,7 @@ archives:
 ```
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).
 
 !!! tip
     You can add entire folders, its subfolders and files by using the glob notation,
