@@ -144,7 +144,7 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
     `draft` and `prerelease` are only supported by GitHub and Gitea.
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).
 
 ## Customize the changelog
 

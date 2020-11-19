@@ -146,7 +146,7 @@ snapcrafts:
 ```
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).
 
 !!! note
     GoReleaser will not install `snapcraft` nor any of its dependencies for you.
