@@ -406,3 +406,26 @@ func (s *GiteaUploadSuite) TestSuccess() {
 func TestGiteaUploadSuite(t *testing.T) {
 	suite.Run(t, new(GiteaUploadSuite))
 }
+
+func TestGiteaReleaseURLTemplate(t *testing.T) {
+	var ctx = context.New(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API:      "https://gitea.com/api/v1",
+			Download: "https://gitea.com",
+		},
+		Release: config.Release{
+			Gitea: config.Repo{
+				Owner: "owner",
+				Name:  "name",
+			},
+		},
+	})
+	client, err := NewGitea(ctx, ctx.Token)
+	require.NoError(t, err)
+
+	urlTpl, err := client.ReleaseURLTemplate(ctx)
+	require.NoError(t, err)
+
+	expectedUrl := "https://gitea.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+	require.Equal(t, expectedUrl, urlTpl)
+}
