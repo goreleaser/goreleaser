@@ -22,7 +22,7 @@ type GetInstanceURLSuite struct {
 
 func (s *GetInstanceURLSuite) TestWithScheme() {
 	t := s.T()
-	rootURL := "https://git.dtluna.net"
+	rootURL := "https://gitea.com"
 	result, err := getInstanceURL(rootURL + "/api/v1")
 	require.NoError(t, err)
 	require.Equal(t, rootURL, result)
@@ -30,7 +30,7 @@ func (s *GetInstanceURLSuite) TestWithScheme() {
 
 func (s *GetInstanceURLSuite) TestParseError() {
 	t := s.T()
-	host := "://.dtluna.net"
+	host := "://wrong.gitea.com"
 	result, err := getInstanceURL(host)
 	require.Error(t, err)
 	require.Empty(t, result)
@@ -38,7 +38,7 @@ func (s *GetInstanceURLSuite) TestParseError() {
 
 func (s *GetInstanceURLSuite) TestNoScheme() {
 	t := s.T()
-	host := "git.dtluna.net"
+	host := "gitea.com"
 	result, err := getInstanceURL(host)
 	require.Error(t, err)
 	require.Empty(t, result)
@@ -113,7 +113,7 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 			CurrentTag:  s.tag,
 			Commit:      s.commit,
 			ShortCommit: s.commit[0:2],
-			URL:         "https://git.dtluna.net/goreleaser/goreleaser.git",
+			URL:         "https://gitea.com/goreleaser/goreleaser.git",
 		},
 		PreRelease: s.isPrerelease,
 	}
