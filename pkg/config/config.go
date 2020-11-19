@@ -30,6 +30,7 @@ type GitLabURLs struct {
 // GiteaURLs holds the URLs to be used when using gitea.
 type GiteaURLs struct {
 	API           string `yaml:"api,omitempty"`
+	Download      string `yaml:"download,omitempty"`
 	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
 }
 

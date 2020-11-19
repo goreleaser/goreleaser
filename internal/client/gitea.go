@@ -228,7 +228,12 @@ func (c *giteaClient) CreateRelease(ctx *context.Context, body string) (string, 
 }
 
 func (c *giteaClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
-	return "", NotImplementedError{TokenType: context.TokenTypeGitea}
+	return fmt.Sprintf(
+		"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+		ctx.Config.GiteaURLs.Download,
+		ctx.Config.Release.Gitea.Owner,
+		ctx.Config.Release.Gitea.Name,
+	), nil
 }
 
 // Upload uploads a file into a release repository.

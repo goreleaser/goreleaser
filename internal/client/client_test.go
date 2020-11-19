@@ -19,7 +19,8 @@ func TestClientNewGitea(t *testing.T) {
 	ctx := &context.Context{
 		Config: config.Project{
 			GiteaURLs: config.GiteaURLs{
-				API: "https://git.dtluna.net/api/v1",
+				API:      "https://git.dtluna.net/api/v1",
+				Download: "https://git.dtluna.net",
 			},
 		},
 		TokenType: context.TokenTypeGitea,
