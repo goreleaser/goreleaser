@@ -104,4 +104,16 @@ func TestFillPartial(t *testing.T) {
 	require.Empty(t, ctx.Config.Dockers[0].Goarm)
 	require.Equal(t, "disttt", ctx.Config.Dist)
 	require.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
+
+	ctx = &context.Context{
+		TokenType: context.TokenTypeGitea,
+
+		Config: config.Project{
+			GiteaURLs: config.GiteaURLs{
+				API: "https://gitea.com/api/v1",
+			},
+		},
+	}
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "https://gitea.com", ctx.Config.GiteaURLs.Download)
 }
