@@ -41,6 +41,21 @@ func TestSingleCommit(t *testing.T) {
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 }
 
+func TestBranch(t *testing.T) {
+	_, back := testlib.Mktmp(t)
+	defer back()
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "test-branch-commit")
+	testlib.GitTag(t, "test-branch-tag")
+	testlib.GitCheckoutBranch(t, "test-branch")
+	var ctx = &context.Context{
+		Config: config.Project{},
+	}
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "test-branch", ctx.Git.Branch)
+}
+
 func TestNoRemote(t *testing.T) {
 	_, back := testlib.Mktmp(t)
 	defer back()
