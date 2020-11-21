@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/tls"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -85,8 +86,42 @@ func (c *giteaClient) CreateFile(
 	path,
 	message string,
 ) error {
-	//TODO: implement for brew and scoop support for Gitea-hosted repos
-	return nil
+	// use default branch
+	branchName := ""
+
+	fileOptions := gitea.FileOptions{
+		Message:    message,
+		BranchName: branchName,
+		Author: gitea.Identity{
+			Name:  commitAuthor.Name,
+			Email: commitAuthor.Email,
+		},
+		Committer: gitea.Identity{
+			Name:  commitAuthor.Name,
+			Email: commitAuthor.Email,
+		},
+	}
+
+	currentFile, resp, err := c.client.GetContents(repo.Owner, repo.Name, branchName, path)
+	// file not exist, create it
+	if err != nil {
+		if resp == nil || resp.StatusCode != http.StatusNotFound {
+			return err
+		}
+		_, _, err = c.client.CreateFile(repo.Owner, repo.Name, path, gitea.CreateFileOptions{
+			FileOptions: fileOptions,
+			Content:     base64.StdEncoding.EncodeToString(content),
+		})
+		return err
+	}
+
+	// update file
+	_, _, err = c.client.UpdateFile(repo.Owner, repo.Name, path, gitea.UpdateFileOptions{
+		FileOptions: fileOptions,
+		SHA:         currentFile.SHA,
+		Content:     base64.StdEncoding.EncodeToString(content),
+	})
+	return err
 }
 
 func (c *giteaClient) createRelease(ctx *context.Context, title, body string) (*gitea.Release, error) {
@@ -193,7 +228,12 @@ func (c *giteaClient) CreateRelease(ctx *context.Context, body string) (string, 
 }
 
 func (c *giteaClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
-	return "", NotImplementedError{TokenType: context.TokenTypeGitea}
+	return fmt.Sprintf(
+		"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
+		ctx.Config.GiteaURLs.Download,
+		ctx.Config.Release.Gitea.Owner,
+		ctx.Config.Release.Gitea.Name,
+	), nil
 }
 
 // Upload uploads a file into a release repository.

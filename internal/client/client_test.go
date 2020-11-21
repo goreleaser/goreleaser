@@ -19,7 +19,9 @@ func TestClientNewGitea(t *testing.T) {
 	ctx := &context.Context{
 		Config: config.Project{
 			GiteaURLs: config.GiteaURLs{
-				API: "https://git.dtluna.net/api/v1",
+				// TODO: use a mocked http server to cover version api
+				API:      "https://gitea.com/api/v1",
+				Download: "https://gitea.com",
 			},
 		},
 		TokenType: context.TokenTypeGitea,
@@ -35,7 +37,7 @@ func TestClientNewGiteaInvalidURL(t *testing.T) {
 	ctx := &context.Context{
 		Config: config.Project{
 			GiteaURLs: config.GiteaURLs{
-				API: "://git.dtluna.net/api/v1",
+				API: "://gitea.com/api/v1",
 			},
 		},
 		TokenType: context.TokenTypeGitea,

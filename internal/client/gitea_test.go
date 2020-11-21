@@ -22,7 +22,7 @@ type GetInstanceURLSuite struct {
 
 func (s *GetInstanceURLSuite) TestWithScheme() {
 	t := s.T()
-	rootURL := "https://git.dtluna.net"
+	rootURL := "https://gitea.com"
 	result, err := getInstanceURL(rootURL + "/api/v1")
 	require.NoError(t, err)
 	require.Equal(t, rootURL, result)
@@ -30,7 +30,7 @@ func (s *GetInstanceURLSuite) TestWithScheme() {
 
 func (s *GetInstanceURLSuite) TestParseError() {
 	t := s.T()
-	host := "://.dtluna.net"
+	host := "://wrong.gitea.com"
 	result, err := getInstanceURL(host)
 	require.Error(t, err)
 	require.Empty(t, result)
@@ -38,7 +38,7 @@ func (s *GetInstanceURLSuite) TestParseError() {
 
 func (s *GetInstanceURLSuite) TestNoScheme() {
 	t := s.T()
-	host := "git.dtluna.net"
+	host := "gitea.com"
 	result, err := getInstanceURL(host)
 	require.Error(t, err)
 	require.Empty(t, result)
@@ -113,7 +113,7 @@ func (s *GiteaReleasesTestSuite) SetupTest() {
 			CurrentTag:  s.tag,
 			Commit:      s.commit,
 			ShortCommit: s.commit[0:2],
-			URL:         "https://git.dtluna.net/goreleaser/goreleaser.git",
+			URL:         "https://gitea.com/goreleaser/goreleaser.git",
 		},
 		PreRelease: s.isPrerelease,
 	}
@@ -240,20 +240,25 @@ func (s *GiteaupdateReleaseSuite) TestError() {
 	require.Nil(t, release)
 }
 
-func TestGiteaupdateReleaseSuite(t *testing.T) {
-	suite.Run(t, new(GiteaupdateReleaseSuite))
+func (s *GiteaupdateReleaseSuite) TestGiteaCreateFile() {
+	t := s.T()
+	fileEndpoint := fmt.Sprintf("%s/api/v1/repos/%s/%s/contents/%s", s.url, s.owner, s.repoName, "file.txt")
+
+	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/api/v1/version", s.url), httpmock.NewStringResponder(200, "{\"version\":\"1.12.0\"}"))
+	httpmock.RegisterResponder("GET", fileEndpoint, httpmock.NewStringResponder(404, ""))
+	httpmock.RegisterResponder("POST", fileEndpoint, httpmock.NewStringResponder(201, "{\n  \"content\": {\n    \"name\": \"test.file\",\n    \"path\": \"test.file\",\n    \"sha\": \"3b18e512dba79e4c8300dd08aeb37f8e728b8dad\",\n    \"type\": \"file\",\n    \"size\": 12,\n    \"encoding\": \"base64\",\n    \"content\": \"aGVsbG8gd29ybGQK\"\n  }\n}"))
+
+	author := config.CommitAuthor{Name: s.owner}
+	repo := Repo{Owner: s.owner, Name: s.repoName}
+	content := []byte("hello world")
+	path := "file.txt"
+	message := "add hello world"
+	err := s.client.CreateFile(s.ctx, author, repo, content, path, message)
+	require.Nil(t, err)
 }
 
-func TestGiteaCreateFile(t *testing.T) {
-	client := giteaClient{}
-	ctx := context.Context{}
-	author := config.CommitAuthor{}
-	repo := Repo{}
-	content := []byte{}
-	path := ""
-	message := ""
-	file := client.CreateFile(&ctx, author, repo, content, path, message)
-	require.Nil(t, file)
+func TestGiteaupdateReleaseSuite(t *testing.T) {
+	suite.Run(t, new(GiteaupdateReleaseSuite))
 }
 
 type GiteaCreateReleaseSuite struct {
@@ -400,4 +405,27 @@ func (s *GiteaUploadSuite) TestSuccess() {
 
 func TestGiteaUploadSuite(t *testing.T) {
 	suite.Run(t, new(GiteaUploadSuite))
+}
+
+func TestGiteaReleaseURLTemplate(t *testing.T) {
+	var ctx = context.New(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API:      "https://gitea.com/api/v1",
+			Download: "https://gitea.com",
+		},
+		Release: config.Release{
+			Gitea: config.Repo{
+				Owner: "owner",
+				Name:  "name",
+			},
+		},
+	})
+	client, err := NewGitea(ctx, ctx.Token)
+	require.NoError(t, err)
+
+	urlTpl, err := client.ReleaseURLTemplate(ctx)
+	require.NoError(t, err)
+
+	expectedUrl := "https://gitea.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+	require.Equal(t, expectedUrl, urlTpl)
 }
