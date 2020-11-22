@@ -72,6 +72,7 @@ func assertDefaultTemplateData(t *testing.T, formulae string) {
 
 func TestFullFormulae(t *testing.T) {
 	data := defaultTemplateData
+	data.License = "MIT"
 	data.Caveats = []string{"Here are some caveats"}
 	data.Dependencies = []config.HomebrewDependency{{Name: "gtk+"}}
 	data.Conflicts = []string{"svn"}

@@ -266,6 +266,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		Desc:             cfg.Description,
 		Homepage:         cfg.Homepage,
 		Version:          ctx.Version,
+		License:          cfg.License,
 		Caveats:          split(cfg.Caveats),
 		Dependencies:     cfg.Dependencies,
 		Conflicts:        cfg.Conflicts,
