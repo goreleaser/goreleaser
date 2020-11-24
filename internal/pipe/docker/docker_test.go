@@ -725,6 +725,24 @@ func TestDefault(t *testing.T) {
 	require.Empty(t, docker.Builds)
 }
 
+func TestDefaultDockerfile(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Builds: []config.Build{
+				{},
+			},
+			Dockers: []config.Docker{
+				{},
+				{},
+			},
+		},
+	}
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Len(t, ctx.Config.Dockers, 2)
+	require.Equal(t, "Dockerfile", ctx.Config.Dockers[0].Dockerfile)
+	require.Equal(t, "Dockerfile", ctx.Config.Dockers[1].Dockerfile)
+}
+
 func TestDefaultBinaries(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
