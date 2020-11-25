@@ -104,7 +104,11 @@ func (Pipe) Run(ctx *context.Context) error {
 	if len(ctx.ReleaseFooter) > 0 {
 		changelogElements = append(changelogElements, ctx.ReleaseFooter)
 	}
+
 	ctx.ReleaseNotes = strings.Join(changelogElements, "\n\n")
+	if !strings.HasSuffix(ctx.ReleaseNotes, "\n") {
+		ctx.ReleaseNotes += "\n"
+	}
 
 	var path = filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
