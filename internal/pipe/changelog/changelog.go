@@ -94,15 +94,17 @@ func (Pipe) Run(ctx *context.Context) error {
 		changelogStringJoiner = "   \n"
 	}
 
-	ctx.ReleaseNotes = strings.Join(
-		[]string{
-			ctx.ReleaseHeader,
-			"## Changelog",
-			strings.Join(entries, changelogStringJoiner),
-			ctx.ReleaseFooter,
-		},
-		"\n\n",
-	)
+	changelogElements := []string{
+		"## Changelog",
+		strings.Join(entries, changelogStringJoiner),
+	}
+	if len(ctx.ReleaseHeader) > 0 {
+		changelogElements = append([]string{ctx.ReleaseHeader}, changelogElements...)
+	}
+	if len(ctx.ReleaseFooter) > 0 {
+		changelogElements = append(changelogElements, ctx.ReleaseFooter)
+	}
+	ctx.ReleaseNotes = strings.Join(changelogElements, "\n\n")
 
 	var path = filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
