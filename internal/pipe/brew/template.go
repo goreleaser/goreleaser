@@ -7,6 +7,7 @@ type templateData struct {
 	Desc             string
 	Homepage         string
 	Version          string
+	License          string
 	Caveats          []string
 	Plist            string
 	DownloadStrategy string
@@ -36,6 +37,9 @@ class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
+  {{ if .License -}}
+  license "{{ .License }}"
+  {{ end -}}
   bottle :unneeded
   {{- if and (not .MacOS.DownloadURL) (or .LinuxAmd64.DownloadURL .LinuxArm.DownloadURL .LinuxArm64.DownloadURL) }}
   depends_on :linux

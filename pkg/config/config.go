@@ -102,6 +102,7 @@ type Homebrew struct {
 	Conflicts        []string             `yaml:",omitempty"`
 	Description      string               `yaml:",omitempty"`
 	Homepage         string               `yaml:",omitempty"`
+	License          string               `yaml:",omitempty"`
 	SkipUpload       string               `yaml:"skip_upload,omitempty"`
 	DownloadStrategy string               `yaml:"download_strategy,omitempty"`
 	URLTemplate      string               `yaml:"url_template,omitempty"`

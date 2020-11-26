@@ -1,6 +1,7 @@
 package brew
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -257,7 +258,28 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	if err := t.Execute(&out, data); err != nil {
 		return "", err
 	}
-	return tmpl.New(ctx).Apply(out.String())
+
+	content, err := tmpl.New(ctx).Apply(out.String())
+	if err != nil {
+		return "", err
+	}
+	out.Reset()
+
+	// Sanitize the template output and get rid of trailing whitespace.
+	var (
+		r = strings.NewReader(content)
+		s = bufio.NewScanner(r)
+	)
+	for s.Scan() {
+		l := strings.TrimRight(s.Text(), " ")
+		_, _ = out.WriteString(l)
+		_ = out.WriteByte('\n')
+	}
+	if err := s.Err(); err != nil {
+		return "", err
+	}
+
+	return out.String(), nil
 }
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
@@ -266,6 +288,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		Desc:             cfg.Description,
 		Homepage:         cfg.Homepage,
 		Version:          ctx.Version,
+		License:          cfg.License,
 		Caveats:          split(cfg.Caveats),
 		Dependencies:     cfg.Dependencies,
 		Conflicts:        cfg.Conflicts,
