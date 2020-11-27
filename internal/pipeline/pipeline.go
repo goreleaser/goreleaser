@@ -34,7 +34,7 @@ type Piper interface {
 	Run(ctx *context.Context) error
 }
 
-// BuildPipeline contains all build-related pipe implementations in order
+// BuildPipeline contains all build-related pipe implementations in order.
 // nolint:gochecknoglobals
 var BuildPipeline = []Piper{
 	env.Pipe{},             // load and validate environment variables
@@ -49,7 +49,7 @@ var BuildPipeline = []Piper{
 	build.Pipe{},           // build
 }
 
-// Pipeline contains all pipe implementations in order
+// Pipeline contains all pipe implementations in order.
 // nolint: gochecknoglobals
 var Pipeline = append(
 	BuildPipeline,
