@@ -90,6 +90,10 @@ func TestShouldPrependRelease(t *testing.T) {
 	})
 
 	t.Run("__complete", func(t *testing.T) {
-		require.False(t, result([]string{"help"}))
+		require.False(t, result([]string{"__complete"}))
+	})
+
+	t.Run("__completeNoDesc", func(t *testing.T) {
+		require.False(t, result([]string{"__completeNoDesc"}))
 	})
 }
