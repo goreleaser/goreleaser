@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/apex/log"
@@ -16,11 +15,7 @@ func Execute(version string, exit func(int), args []string) {
 	if os.Getenv("CI") != "" {
 		color.NoColor = false
 	}
-
 	log.SetHandler(cli.Default)
-
-	fmt.Println()
-	defer fmt.Println()
 	newRootCmd(version, exit).Execute(args)
 }
 
