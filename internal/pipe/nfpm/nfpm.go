@@ -169,6 +169,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 			EmptyFolders: overridden.EmptyFolders,
 			Files:        files,
 			ConfigFiles:  overridden.ConfigFiles,
+			Symlinks:     overridden.Symlinks,
 			Scripts: nfpm.Scripts{
 				PreInstall:  overridden.Scripts.PreInstall,
 				PostInstall: overridden.Scripts.PostInstall,

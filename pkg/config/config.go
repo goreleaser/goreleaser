@@ -407,6 +407,7 @@ type NFPMOverridables struct {
 	EmptyFolders     []string          `yaml:"empty_folders,omitempty"`
 	Files            map[string]string `yaml:",omitempty"`
 	ConfigFiles      map[string]string `yaml:"config_files,omitempty"`
+	Symlinks         map[string]string `yaml:"symlinks,omitempty"`
 	Scripts          NFPMScripts       `yaml:"scripts,omitempty"`
 	RPM              NFPMRPM           `yaml:"rpm,omitempty"`
 	Deb              NFPMDeb           `yaml:"deb,omitempty"`

@@ -128,6 +128,10 @@ nfpms:
       "tmp/app_generated.conf": "/etc/app.conf"
       "conf/*.conf": "/etc/foo/"
 
+    # Symlinks mapping from symlink name inside package to target inside package (overridable)
+    symlinks:
+      /sbin/foo: /usr/local/bin/foo
+
     # Scripts to execute during the installation of the package.
     # Keys are the possible targets during the installation process
     # Values are the paths to the scripts which will be executed

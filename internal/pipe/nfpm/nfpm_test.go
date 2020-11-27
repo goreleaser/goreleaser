@@ -112,6 +112,9 @@ func TestRunPipe(t *testing.T) {
 					ConfigFiles: map[string]string{
 						"./testdata/testfile.txt": "/etc/nope.conf",
 					},
+					Symlinks: map[string]string{
+						"/etc/nope2.conf": "/etc/nope.conf",
+					},
 					Replacements: map[string]string{
 						"linux": "Tux",
 					},
