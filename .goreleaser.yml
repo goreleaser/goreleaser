@@ -101,6 +101,7 @@ brews:
     folder: Formula
     homepage:  https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible
+    license: MIT
     test: |
       system "#{bin}/goreleaser -v"
     dependencies:

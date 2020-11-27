@@ -84,6 +84,10 @@ brews:
     # Default is empty.
     description: "Software to create fast and easy drum rolls."
 
+    # SPDX identifier of your app's license.
+    # Default is empty.
+    license: "MIT"
+
     # Setting this will prevent goreleaser to actually try to commit the updated
     # formula - instead, the formula file will be stored on the dist folder only,
     # leaving the responsibility of publishing it to the user.
