@@ -77,7 +77,7 @@ jobs:
         run: |
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
             ./goreleaser
-          else
+          elif [[ $GITHUB_REF == refs/heads/master ]]; then
             ./goreleaser --snapshot
           fi
       -
