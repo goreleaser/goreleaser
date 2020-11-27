@@ -87,8 +87,9 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 		return false
 	}
 
-	// allow help and __complete commands.
-	if len(args) > 0 && (args[0] == "help" || args[0] == "__complete") {
+	// allow help and the two __complete commands.
+	if len(args) > 0 && (args[0] == "help" ||
+		args[0] == cobra.ShellCompRequestCmd || args[0] == cobra.ShellCompNoDescRequestCmd) {
 		return false
 	}
 
