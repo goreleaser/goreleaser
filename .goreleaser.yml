@@ -35,12 +35,12 @@ changelog:
     - go mod tidy
 dockers:
 - image_templates:
-  - 'goreleaser/goreleaser:{{ .Tag }}-cgo'
-  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-cgo'
-  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo'
-  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo'
-  - 'goreleaser/goreleaser:latest-cgo'
-  - 'ghcr.io/goreleaser/goreleaser:latest-cgo'
+  - 'goreleaser/goreleaser:{{ .Tag }}-cgo-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-cgo-amd64'
+  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo-amd64'
+  - 'goreleaser/goreleaser:latest-cgo-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:latest-cgo-amd64'
   dockerfile: Dockerfile.cgo
   binaries:
   - goreleaser
@@ -50,15 +50,40 @@ dockers:
   - "--label=org.opencontainers.image.name={{.ProjectName}}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
+  - "--label=org.opencontainers.image.source={{.GitURL}}"
+  - "--build-arg"
+  - "ARCH=amd64"
   extra_files:
   - scripts/entrypoint.sh
 - image_templates:
-  - 'goreleaser/goreleaser:{{ .Tag }}'
-  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}'
-  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
-  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
-  - 'goreleaser/goreleaser:latest'
-  - 'ghcr.io/goreleaser/goreleaser:latest'
+  - 'goreleaser/goreleaser:{{ .Tag }}-cgo-arm64v8'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-cgo-arm64v8'
+  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo-arm64v8'
+  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-cgo-arm64v8'
+  - 'goreleaser/goreleaser:latest-cgo-arm64v8'
+  - 'ghcr.io/goreleaser/goreleaser:latest-cgo-arm64v8'
+  dockerfile: Dockerfile.cgo
+  binaries:
+  - goreleaser
+  build_flag_templates:
+  - "--pull"
+  - "--label=org.opencontainers.image.created={{.Date}}"
+  - "--label=org.opencontainers.image.name={{.ProjectName}}"
+  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+  - "--label=org.opencontainers.image.version={{.Version}}"
+  - "--label=org.opencontainers.image.source={{.GitURL}}"
+  - "--build-arg"
+  - "ARCH=arm64v8"
+  goarch: arm64
+  extra_files:
+  - scripts/entrypoint.sh
+- image_templates:
+  - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
+  - 'goreleaser/goreleaser:latest-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:latest-amd64'
   dockerfile: Dockerfile
   binaries:
   - goreleaser
@@ -69,16 +94,57 @@ dockers:
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
   - "--label=org.opencontainers.image.source={{.GitURL}}"
-  - "--label=com.github.actions.name={{.ProjectName}}"
-  - "--label=com.github.actions.description=Deliver Go binaries as fast and easily as possible"
-  - "--label=com.github.actions.icon=terminal"
-  - "--label=com.github.actions.color=blue"
-  - "--label=repository=http://github.com/goreleaser/goreleaser"
-  - "--label=homepage=http://goreleaser.com"
-  - "--label=maintainer=Carlos Becker <goreleaser@carlosbecker.com>"
-
+  - "--build-arg"
+  - "ARCH=amd64"
   extra_files:
   - scripts/entrypoint.sh
+- image_templates:
+  - 'goreleaser/goreleaser:{{ .Tag }}-arm64v8'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64v8'
+  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
+  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
+  - 'goreleaser/goreleaser:latest-arm64v8'
+  - 'ghcr.io/goreleaser/goreleaser:latest-arm64v8'
+  dockerfile: Dockerfile
+  binaries:
+  - goreleaser
+  build_flag_templates:
+  - "--pull"
+  - "--label=org.opencontainers.image.created={{.Date}}"
+  - "--label=org.opencontainers.image.name={{.ProjectName}}"
+  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+  - "--label=org.opencontainers.image.version={{.Version}}"
+  - "--label=org.opencontainers.image.source={{.GitURL}}"
+  - "--build-arg"
+  - "ARCH=arm64v8"
+  goarch: arm64
+  extra_files:
+  - scripts/entrypoint.sh
+docker_manifests:
+- name_template: 'goreleaser/goreleaser:{{ .Tag }}'
+  image_templates:
+  - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'goreleaser/goreleaser:{{ .Tag }}-arm64v8'
+- name_template: 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}'
+  image_templates:
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64v8'
+- name_template: 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
+  image_templates:
+  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
+  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
+- name_template: 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
+  image_templates:
+  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
+- name_template: 'goreleaser/goreleaser:latest'
+  image_templates:
+  - 'goreleaser/goreleaser:latest-amd64'
+  - 'goreleaser/goreleaser:latest-arm64v8'
+- name_template: 'ghcr.io/goreleaser/goreleaser:latest'
+  image_templates:
+  - 'ghcr.io/goreleaser/goreleaser:latest-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:latest-arm64v8'
 archives:
   - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     replacements:

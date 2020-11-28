@@ -490,6 +490,14 @@ type Docker struct {
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
 }
 
+// DockerManifest config.
+type DockerManifest struct {
+	NameTemplate   string   `yaml:"name_template,omitempty"`
+	ImageTemplates []string `yaml:"image_templates,omitempty"`
+	CreateFlags    []string `yaml:"create_flags,omitempty"`
+	PushFlags      []string `yaml:"push_flags,omitempty"`
+}
+
 // Filters config.
 type Filters struct {
 	Exclude []string `yaml:",omitempty"`
@@ -563,29 +571,30 @@ type Source struct {
 
 // Project includes all project configuration.
 type Project struct {
-	ProjectName   string      `yaml:"project_name,omitempty"`
-	Env           []string    `yaml:",omitempty"`
-	Release       Release     `yaml:",omitempty"`
-	Milestones    []Milestone `yaml:",omitempty"`
-	Brews         []Homebrew  `yaml:",omitempty"`
-	Scoop         Scoop       `yaml:",omitempty"`
-	Builds        []Build     `yaml:",omitempty"`
-	Archives      []Archive   `yaml:",omitempty"`
-	NFPMs         []NFPM      `yaml:"nfpms,omitempty"`
-	Snapcrafts    []Snapcraft `yaml:",omitempty"`
-	Snapshot      Snapshot    `yaml:",omitempty"`
-	Checksum      Checksum    `yaml:",omitempty"`
-	Dockers       []Docker    `yaml:",omitempty"`
-	Artifactories []Upload    `yaml:",omitempty"`
-	Uploads       []Upload    `yaml:",omitempty"`
-	Blobs         []Blob      `yaml:"blobs,omitempty"`
-	Publishers    []Publisher `yaml:"publishers,omitempty"`
-	Changelog     Changelog   `yaml:",omitempty"`
-	Dist          string      `yaml:",omitempty"`
-	Signs         []Sign      `yaml:",omitempty"`
-	EnvFiles      EnvFiles    `yaml:"env_files,omitempty"`
-	Before        Before      `yaml:",omitempty"`
-	Source        Source      `yaml:",omitempty"`
+	ProjectName     string           `yaml:"project_name,omitempty"`
+	Env             []string         `yaml:",omitempty"`
+	Release         Release          `yaml:",omitempty"`
+	Milestones      []Milestone      `yaml:",omitempty"`
+	Brews           []Homebrew       `yaml:",omitempty"`
+	Scoop           Scoop            `yaml:",omitempty"`
+	Builds          []Build          `yaml:",omitempty"`
+	Archives        []Archive        `yaml:",omitempty"`
+	NFPMs           []NFPM           `yaml:"nfpms,omitempty"`
+	Snapcrafts      []Snapcraft      `yaml:",omitempty"`
+	Snapshot        Snapshot         `yaml:",omitempty"`
+	Checksum        Checksum         `yaml:",omitempty"`
+	Dockers         []Docker         `yaml:",omitempty"`
+	DockerManifests []DockerManifest `yaml:"docker_manifests,omitempty"`
+	Artifactories   []Upload         `yaml:",omitempty"`
+	Uploads         []Upload         `yaml:",omitempty"`
+	Blobs           []Blob           `yaml:"blobs,omitempty"`
+	Publishers      []Publisher      `yaml:"publishers,omitempty"`
+	Changelog       Changelog        `yaml:",omitempty"`
+	Dist            string           `yaml:",omitempty"`
+	Signs           []Sign           `yaml:",omitempty"`
+	EnvFiles        EnvFiles         `yaml:"env_files,omitempty"`
+	Before          Before           `yaml:",omitempty"`
+	Source          Source           `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

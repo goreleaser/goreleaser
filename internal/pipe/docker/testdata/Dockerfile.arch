@@ -1,0 +1,3 @@
+ARG ARCH
+FROM ${ARCH}/alpine
+ADD mybin /

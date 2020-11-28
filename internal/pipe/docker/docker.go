@@ -1,4 +1,3 @@
-// Package docker provides a Pipe that creates and pushes a Docker image
 package docker
 
 import (
