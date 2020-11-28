@@ -20,6 +20,9 @@ jobs:
         with:
           fetch-depth: 0
       -
+        name: Allow arm64 builds
+        run: sudo docker run --privileged linuxkit/binfmt:v0.7
+      -
         name: Set up Snapcraft
         run: |
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
