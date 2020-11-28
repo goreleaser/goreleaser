@@ -66,6 +66,7 @@ nav:
   - customization/checksum.md
   - customization/publishers.md
   - customization/docker.md
+  - customization/docker_manifest.md
   - customization/env.md
   - customization/hooks.md
   - customization/homebrew.md
