@@ -492,10 +492,10 @@ type Docker struct {
 
 // DockerManifest config.
 type DockerManifest struct {
-	ManifestTemplate string   `yaml:"manifest_template,omitempty"`
-	ImageTemplates   []string `yaml:"image_templates,omitempty"`
-	CreateFlags      []string `yaml:"create_flags,omitempty"`
-	PushFlags        []string `yaml:"push_flags,omitempty"`
+	NameTemplate   string   `yaml:"name_template,omitempty"`
+	ImageTemplates []string `yaml:"image_templates,omitempty"`
+	CreateFlags    []string `yaml:"create_flags,omitempty"`
+	PushFlags      []string `yaml:"push_flags,omitempty"`
 }
 
 // Filters config.

@@ -121,27 +121,27 @@ dockers:
   extra_files:
   - scripts/entrypoint.sh
 docker_manifests:
-- manifest_template: 'goreleaser/goreleaser:{{ .Tag }}'
+- name_template: 'goreleaser/goreleaser:{{ .Tag }}'
   image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
   - 'goreleaser/goreleaser:{{ .Tag }}-arm64v8'
-- manifest_template: 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}'
+- name_template: 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}'
   image_templates:
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64v8'
-- manifest_template: 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
+- name_template: 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
   image_templates:
   - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
   - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
-- manifest_template: 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
+- name_template: 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
   image_templates:
   - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
   - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
-- manifest_template: 'goreleaser/goreleaser:latest'
+- name_template: 'goreleaser/goreleaser:latest'
   image_templates:
   - 'goreleaser/goreleaser:latest-amd64'
   - 'goreleaser/goreleaser:latest-arm64v8'
-- manifest_template: 'ghcr.io/goreleaser/goreleaser:latest'
+- name_template: 'ghcr.io/goreleaser/goreleaser:latest'
   image_templates:
   - 'ghcr.io/goreleaser/goreleaser:latest-amd64'
   - 'ghcr.io/goreleaser/goreleaser:latest-arm64v8'

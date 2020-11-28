@@ -9,6 +9,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -29,31 +30,47 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 	for _, manifest := range ctx.Config.DockerManifests {
 		manifest := manifest
 		g.Go(func() error {
-			man, err := tmpl.New(ctx).Apply(manifest.ManifestTemplate)
+			name, err := manifestName(ctx, manifest)
 			if err != nil {
 				return err
 			}
-			var imgs []string
-			for _, img := range manifest.ImageTemplates {
-				str, err := tmpl.New(ctx).Apply(img)
-				if err != nil {
-					return err
-				}
-				imgs = append(imgs, str)
-			}
-			if strings.TrimSpace(man) == "" {
-				return pipe.Skip("manifest name is empty")
-			}
-			if strings.TrimSpace(strings.Join(manifest.ImageTemplates, "")) == "" {
-				return pipe.Skip("manifest has no images")
-			}
-			if err := dockerManifestCreate(ctx, man, imgs, manifest.CreateFlags); err != nil {
+			images, err := manifestImages(ctx, manifest)
+			if err != nil {
 				return err
 			}
-			return dockerManifestPush(ctx, man, manifest.PushFlags)
+			if err := dockerManifestCreate(ctx, name, images, manifest.CreateFlags); err != nil {
+				return err
+			}
+			return dockerManifestPush(ctx, name, manifest.PushFlags)
 		})
 	}
 	return g.Wait()
+}
+
+func manifestName(ctx *context.Context, manifest config.DockerManifest) (string, error) {
+	name, err := tmpl.New(ctx).Apply(manifest.NameTemplate)
+	if err != nil {
+		return name, err
+	}
+	if strings.TrimSpace(name) == "" {
+		return name, pipe.Skip("manifest name is empty")
+	}
+	return name, nil
+}
+
+func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]string, error) {
+	var imgs []string
+	for _, img := range manifest.ImageTemplates {
+		str, err := tmpl.New(ctx).Apply(img)
+		if err != nil {
+			return []string{}, err
+		}
+		imgs = append(imgs, str)
+	}
+	if strings.TrimSpace(strings.Join(manifest.ImageTemplates, "")) == "" {
+		return imgs, pipe.Skip("manifest has no images")
+	}
+	return imgs, nil
 }
 
 func dockerManifestCreate(ctx *context.Context, manifest string, images, flags []string) error {

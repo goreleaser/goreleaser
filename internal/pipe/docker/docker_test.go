@@ -121,7 +121,7 @@ func TestRunPipe(t *testing.T) {
 			manifests: []config.DockerManifest{
 				{
 					// XXX: fails if :latest https://github.com/docker/distribution/issues/3100
-					ManifestTemplate: registry + "goreleaser/test_multiarch:test",
+					NameTemplate: registry + "goreleaser/test_multiarch:test",
 					ImageTemplates: []string{
 						registry + "goreleaser/test_multiarch:test-amd64",
 						registry + "goreleaser/test_multiarch:test-arm64v8",
@@ -152,7 +152,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			manifests: []config.DockerManifest{
 				{
-					ManifestTemplate: registry + "goreleaser/test_multiarch_fail:test",
+					NameTemplate: registry + "goreleaser/test_multiarch_fail:test",
 					ImageTemplates:   []string{registry + "goreleaser/test_multiarch_fail:latest-amd64"},
 					CreateFlags:      []string{"--insecure"},
 					PushFlags:        []string{"--insecure"},
@@ -176,7 +176,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			manifests: []config.DockerManifest{
 				{
-					ManifestTemplate: registry + "goreleaser/test_multiarch_manifest_tmpl_error:{{ .Goos }",
+					NameTemplate: registry + "goreleaser/test_multiarch_manifest_tmpl_error:{{ .Goos }",
 					ImageTemplates:   []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
 				},
 			},
@@ -198,7 +198,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			manifests: []config.DockerManifest{
 				{
-					ManifestTemplate: registry + "goreleaser/test_multiarch_img_tmpl_error",
+					NameTemplate: registry + "goreleaser/test_multiarch_img_tmpl_error",
 					ImageTemplates:   []string{registry + "goreleaser/test_multiarch_img_tmpl_error:{{ .Goos }"},
 				},
 			},
@@ -220,7 +220,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			manifests: []config.DockerManifest{
 				{
-					ManifestTemplate: "  ",
+					NameTemplate: "  ",
 					ImageTemplates:   []string{registry + "goreleaser/test_multiarch_no_mainifest_name"},
 				},
 			},
@@ -242,7 +242,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			manifests: []config.DockerManifest{
 				{
-					ManifestTemplate: "ignored",
+					NameTemplate: "ignored",
 					ImageTemplates:   []string{" ", "   ", ""},
 				},
 			},

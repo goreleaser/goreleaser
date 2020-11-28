@@ -26,7 +26,7 @@ docker_manifests:
 -
   # Name template for the manifest.
   # Defaults to empty.
-  manifest_template: foo/bar:{{ .Version }}
+  name_template: foo/bar:{{ .Version }}
 
   # Image name templates to be added to this manifest.
   # Defaults to empty.
@@ -106,7 +106,7 @@ dockers:
   - "--build-arg"
   - "ARCH=arm64v8"
 docker_manifests:
-- manifest_template: foo/bar:{{ .Version }}
+- name_template: foo/bar:{{ .Version }}
   image_templates:
   - foo/bar:{{ .Version }}-amd64
   - foo/bar:{{ .Version }}-arm64v8
