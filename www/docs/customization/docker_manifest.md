@@ -33,6 +33,16 @@ docker_manifests:
   image_templates:
   - foo/bar:{{ .Version }}-amd64
   - foo/bar:{{ .Version }}-arm64v8
+
+  # Extra flags to be passed down to the manifest create command.
+  # Defaults to empty.
+  create_flags:
+  - --insecure
+
+  # Extra flags to be passed down to the manifest push command.
+  # Defaults to empty.
+  push_flags:
+  - --insecure
 ```
 
 !!! tip
