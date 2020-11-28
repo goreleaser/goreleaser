@@ -288,3 +288,28 @@ func TestByFormats(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByFormats("zip")).items, 2)
 	require.Len(t, artifacts.Filter(ByFormats("zip", "tar.gz")).items, 3)
 }
+
+func TestTypeToString(t *testing.T) {
+	for _, a := range []Type{
+		UploadableArchive,
+		UploadableBinary,
+		UploadableFile,
+		Binary,
+		LinuxPackage,
+		PublishableSnapcraft,
+		Snapcraft,
+		PublishableDockerImage,
+		DockerImage,
+		DockerManifest,
+		Checksum,
+		Signature,
+		UploadableSourceArchive,
+	} {
+		t.Run(a.String(), func(t *testing.T) {
+			require.NotEqual(t, "unknown", a.String())
+		})
+	}
+	t.Run("unknown", func(t *testing.T) {
+		require.Equal(t, "unknown", Type(9999).String())
+	})
+}
