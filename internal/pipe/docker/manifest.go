@@ -3,9 +3,11 @@ package docker
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -23,34 +25,44 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
-	var tmplt = tmpl.New(ctx)
+	var g = semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, manifest := range ctx.Config.DockerManifests {
-		var imgs []string
-		for _, img := range manifest.ImageTemplates {
-			str, err := tmplt.Apply(img)
-			if err != nil {
+		manifest:=manifest
+		g.Go(func() error {
+			man, err:= tmpl.New(ctx).Apply(manifest.ManifestTemplate)
+			if err != nil{
 				return err
 			}
-			imgs = append(imgs, str)
-		}
-		man, err:= tmplt.Apply(manifest.ManifestTemplate)
-		if err != nil{
-			return err
-		}
-		if err := dockerManifestCreate(ctx, man, imgs); err != nil {
-			return err
-		}
-		return dockerManifestPush(ctx, man)
+			var imgs []string
+			for _, img := range manifest.ImageTemplates {
+				str, err := tmpl.New(ctx).Apply(img)
+				if err != nil {
+					return err
+				}
+				imgs = append(imgs, str)
+			}
+			if strings.TrimSpace(man) == "" {
+				return pipe.Skip("manifest name is empty")
+			}
+			if strings.TrimSpace(strings.Join(manifest.ImageTemplates, "")) == "" {
+				return pipe.Skip("manifest has no images")
+			}
+			if err := dockerManifestCreate(ctx, man, imgs, manifest.CreateFlags); err != nil {
+				return err
+			}
+			return dockerManifestPush(ctx, man, manifest.PushFlags)
+		})
 	}
-	return nil
+	return g.Wait()
 }
 
-func dockerManifestCreate(ctx *context.Context, manifest string, images []string) error {
+func dockerManifestCreate(ctx *context.Context, manifest string, images, flags []string) error {
 	log.WithField("manifest", manifest).Info("creating docker manifest")
 	var args = []string{"manifest", "create", manifest}
 	for _, img := range images {
 		args = append(args, "--amend", img)
 	}
+	args = append(args, flags...)
 	/* #nosec */
 	var cmd = exec.CommandContext(ctx, "docker", args...)
 	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
@@ -62,10 +74,12 @@ func dockerManifestCreate(ctx *context.Context, manifest string, images []string
 	return nil
 }
 
-func dockerManifestPush(ctx *context.Context, manifest string) error {
+func dockerManifestPush(ctx *context.Context, manifest string, flags []string) error {
 	log.WithField("manifest", manifest).Info("pushing docker manifest")
+	var args = []string{"manifest", "push", manifest}
+	args = append(args, flags...)
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, "docker", "manifest", "push", manifest)
+	var cmd = exec.CommandContext(ctx, "docker", args...)
 	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
