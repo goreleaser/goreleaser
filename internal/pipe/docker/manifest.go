@@ -59,7 +59,7 @@ func manifestName(ctx *context.Context, manifest config.DockerManifest) (string,
 }
 
 func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]string, error) {
-	var imgs []string
+	var imgs = make([]string, 0, len(manifest.ImageTemplates))
 	for _, img := range manifest.ImageTemplates {
 		str, err := tmpl.New(ctx).Apply(img)
 		if err != nil {
