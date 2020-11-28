@@ -6,7 +6,8 @@ RUN apk add --no-cache bash \
                        docker-cli \
                        git \
                        mercurial \
-                       make
+                       make \
+                       build-base
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD [ "-h" ]
