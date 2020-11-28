@@ -27,10 +27,10 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 	}
 	var g = semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, manifest := range ctx.Config.DockerManifests {
-		manifest:=manifest
+		manifest := manifest
 		g.Go(func() error {
-			man, err:= tmpl.New(ctx).Apply(manifest.ManifestTemplate)
-			if err != nil{
+			man, err := tmpl.New(ctx).Apply(manifest.ManifestTemplate)
+			if err != nil {
 				return err
 			}
 			var imgs []string

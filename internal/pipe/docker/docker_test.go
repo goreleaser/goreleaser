@@ -125,11 +125,11 @@ func TestRunPipe(t *testing.T) {
 		"multiarch manifest template error": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates:     []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
-					Goos:               "linux",
-					Goarch:             "arm64",
-					Dockerfile:         "testdata/Dockerfile",
-					Binaries:           []string{"mybin"},
+					ImageTemplates: []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
+					Goos:           "linux",
+					Goarch:         "arm64",
+					Dockerfile:     "testdata/Dockerfile",
+					Binaries:       []string{"mybin"},
 				},
 			},
 			manifests: []config.DockerManifest{
@@ -147,11 +147,11 @@ func TestRunPipe(t *testing.T) {
 		"multiarch image template error": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates:     []string{registry + "goreleaser/test_multiarch_img_tmpl_error"},
-					Goos:               "linux",
-					Goarch:             "arm64",
-					Dockerfile:         "testdata/Dockerfile",
-					Binaries:           []string{"mybin"},
+					ImageTemplates: []string{registry + "goreleaser/test_multiarch_img_tmpl_error"},
+					Goos:           "linux",
+					Goarch:         "arm64",
+					Dockerfile:     "testdata/Dockerfile",
+					Binaries:       []string{"mybin"},
 				},
 			},
 			manifests: []config.DockerManifest{
