@@ -42,13 +42,13 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			if err := dockerManifestCreate(ctx, name, images, manifest.CreateFlags); err != nil {
 				return err
 			}
-			if err:= dockerManifestPush(ctx, name, manifest.PushFlags); err != nil {
+			if err := dockerManifestPush(ctx, name, manifest.PushFlags); err != nil {
 				return err
 			}
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Type:   artifact.DockerManifest,
-				Name:   name,
-				Path:   name,
+				Type: artifact.DockerManifest,
+				Name: name,
+				Path: name,
 			})
 			return nil
 		})

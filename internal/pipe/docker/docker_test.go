@@ -152,10 +152,10 @@ func TestRunPipe(t *testing.T) {
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate: registry + "goreleaser/test_multiarch_fail:test",
-					ImageTemplates:   []string{registry + "goreleaser/test_multiarch_fail:latest-amd64"},
-					CreateFlags:      []string{"--insecure"},
-					PushFlags:        []string{"--insecure"},
+					NameTemplate:   registry + "goreleaser/test_multiarch_fail:test",
+					ImageTemplates: []string{registry + "goreleaser/test_multiarch_fail:latest-amd64"},
+					CreateFlags:    []string{"--insecure"},
+					PushFlags:      []string{"--insecure"},
 				},
 			},
 			expect:              []string{registry + "goreleaser/test_multiarch_fail:latest-arm64v8"},
@@ -176,8 +176,8 @@ func TestRunPipe(t *testing.T) {
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate: registry + "goreleaser/test_multiarch_manifest_tmpl_error:{{ .Goos }",
-					ImageTemplates:   []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
+					NameTemplate:   registry + "goreleaser/test_multiarch_manifest_tmpl_error:{{ .Goos }",
+					ImageTemplates: []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
 				},
 			},
 			expect:              []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
@@ -198,8 +198,8 @@ func TestRunPipe(t *testing.T) {
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate: registry + "goreleaser/test_multiarch_img_tmpl_error",
-					ImageTemplates:   []string{registry + "goreleaser/test_multiarch_img_tmpl_error:{{ .Goos }"},
+					NameTemplate:   registry + "goreleaser/test_multiarch_img_tmpl_error",
+					ImageTemplates: []string{registry + "goreleaser/test_multiarch_img_tmpl_error:{{ .Goos }"},
 				},
 			},
 			expect:              []string{registry + "goreleaser/test_multiarch_img_tmpl_error"},
@@ -220,8 +220,8 @@ func TestRunPipe(t *testing.T) {
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate: "  ",
-					ImageTemplates:   []string{registry + "goreleaser/test_multiarch_no_mainifest_name"},
+					NameTemplate:   "  ",
+					ImageTemplates: []string{registry + "goreleaser/test_multiarch_no_mainifest_name"},
 				},
 			},
 			expect:              []string{registry + "goreleaser/test_multiarch_no_mainifest_name"},
@@ -242,8 +242,8 @@ func TestRunPipe(t *testing.T) {
 			},
 			manifests: []config.DockerManifest{
 				{
-					NameTemplate: "ignored",
-					ImageTemplates:   []string{" ", "   ", ""},
+					NameTemplate:   "ignored",
+					ImageTemplates: []string{" ", "   ", ""},
 				},
 			},
 			expect:              []string{registry + "goreleaser/test_multiarch_no_mainifest_images"},
