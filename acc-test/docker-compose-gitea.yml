@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+  server:
+    image: gitea/gitea:latest
+    hostname: local-gitea
+    container_name: local-gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - INSTALL_LOCK=true
+      - PASSWORD_COMPLEXITY=off
+      - SSH_PORT=222
+    restart: always
+    networks:
+      - gitea
+    volumes:
+      - ./gitea:/data
+    ports:
+      - "3000:3000"
+      - "222:22"
+
+networks:
+  gitea:
+    name: "gitea-network"

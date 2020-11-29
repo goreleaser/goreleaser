@@ -9,3 +9,7 @@ site/
 www/docs/static/releases.json
 .vercel
 completions/
+# for acc test setup
+acc-test/gitlab-*
+acc-test/gitea*
+acc-test/homebrew-*
