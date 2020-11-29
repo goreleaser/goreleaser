@@ -40,6 +40,8 @@ const (
 	PublishableDockerImage
 	// DockerImage is a published Docker image.
 	DockerImage
+	// DockerManifest is a published Docker manifest.
+	DockerManifest
 	// Checksum is a checksums file.
 	Checksum
 	// Signature is a signature file.
@@ -60,6 +62,8 @@ func (t Type) String() string {
 		return "Linux Package"
 	case PublishableDockerImage, DockerImage:
 		return "Docker Image"
+	case DockerManifest:
+		return "Docker Manifest"
 	case PublishableSnapcraft, Snapcraft:
 		return "Snap"
 	case Checksum:

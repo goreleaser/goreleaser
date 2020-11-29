@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -41,6 +42,11 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			if err := dockerManifestCreate(ctx, name, images, manifest.CreateFlags); err != nil {
 				return err
 			}
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Type: artifact.DockerManifest,
+				Name: name,
+				Path: name,
+			})
 			return dockerManifestPush(ctx, name, manifest.PushFlags)
 		})
 	}

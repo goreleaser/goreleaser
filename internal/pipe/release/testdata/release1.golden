@@ -6,3 +6,9 @@ feature2: other description
 - `docker pull goreleaser/goreleaser:0.40.0`
 - `docker pull goreleaser/goreleaser:latest`
 - `docker pull goreleaser/godownloader:v0.1.0`
+- `docker pull goreleaser/goreleaser:0.40.0-amd64`
+- `docker pull goreleaser/goreleaser:latest-amd64`
+- `docker pull goreleaser/godownloader:v0.1.0-amd64`
+- `docker pull goreleaser/goreleaser:0.40.0-arm64`
+- `docker pull goreleaser/goreleaser:latest-arm64`
+- `docker pull goreleaser/godownloader:v0.1.0-arm64`

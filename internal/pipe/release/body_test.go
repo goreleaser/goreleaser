@@ -24,6 +24,19 @@ func TestDescribeBody(t *testing.T) {
 	} {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: d,
+			Type: artifact.DockerManifest,
+		})
+	}
+	for _, d := range []string{
+		"goreleaser/goreleaser:0.40.0-amd64",
+		"goreleaser/goreleaser:latest-amd64",
+		"goreleaser/godownloader:v0.1.0-amd64",
+		"goreleaser/goreleaser:0.40.0-arm64",
+		"goreleaser/goreleaser:latest-arm64",
+		"goreleaser/godownloader:v0.1.0-arm64",
+	} {
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: d,
 			Type: artifact.DockerImage,
 		})
 	}
