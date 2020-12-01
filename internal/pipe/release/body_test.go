@@ -13,7 +13,6 @@ import (
 
 var update = flag.Bool("update", false, "update .golden files")
 
-
 func TestDescribeBody(t *testing.T) {
 	var changelog = "feature1: description\nfeature2: other description"
 	var ctx = context.New(config.Project{})
@@ -39,7 +38,6 @@ func TestDescribeBody(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, string(bts), out.String())
 }
-
 
 func TestDescribeBodyWithDockerManifest(t *testing.T) {
 	var changelog = "feature1: description\nfeature2: other description"
