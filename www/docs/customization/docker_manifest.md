@@ -10,6 +10,10 @@ For it to work, it [has to be enabled in the client configurations](https://gith
 
 Please make sure `docker manifest` works before opening issues.
 
+Notice that if you have something in the `docker_manifests` section in your
+config file, GoReleaser will add the manifest's to the release notes
+instead of the Docker images names.
+
 !!! warning
     Please note that this is a beta feature, and it may change or be removed
     at any time.

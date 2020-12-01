@@ -26,8 +26,10 @@ func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 	for _, a := range ctx.Artifacts.Filter(artifact.ByType(artifact.DockerManifest)).List() {
 		dockers = append(dockers, a.Name)
 	}
-	for _, a := range ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImage)).List() {
-		dockers = append(dockers, a.Name)
+	if len(dockers) == 0 {
+		for _, a := range ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImage)).List() {
+			dockers = append(dockers, a.Name)
+		}
 	}
 	var bodyTemplate = template.Must(template.New("release").Parse(bodyTemplateText))
 	err := bodyTemplate.Execute(&out, struct {
