@@ -250,6 +250,7 @@ func checkMain(build config.Build) error {
 	return fmt.Errorf("build for %s does not contain a main function", build.Binary)
 }
 
+// TODO: can be removed once we migrate from go 1.15 to 1.16.
 func fileFilter(info os.FileInfo) bool {
 	return !info.IsDir()
 }
