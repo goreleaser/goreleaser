@@ -791,6 +791,45 @@ func Test_buildManifest(t *testing.T) {
 			},
 		},
 		{
+			"testdata/test_buildmanifest_pre_post_install.json.golden",
+			&context.Context{
+				Context:   ctx.Background(),
+				TokenType: context.TokenTypeGitHub,
+				Git: context.GitInfo{
+					CurrentTag: "v1.0.1",
+				},
+				Version:   "1.0.1",
+				Artifacts: artifact.New(),
+				Config: config.Project{
+					GitHubURLs: config.GitHubURLs{
+						Download: "https://github.com",
+					},
+					Dist:        ".",
+					ProjectName: "run-pipe",
+					Archives: []config.Archive{
+						{Format: "tar.gz"},
+					},
+					Release: config.Release{
+						GitHub: config.Repo{
+							Owner: "test",
+							Name:  "test",
+						},
+					},
+					Scoop: config.Scoop{
+						Bucket: config.RepoRef{
+							Owner: "test",
+							Name:  "test",
+						},
+						Description: "A run pipe test formula",
+						Homepage:    "https://github.com/goreleaser",
+						Persist:     []string{"data", "config", "test.ini"},
+						PreInstall:  []string{"Write-Host 'Running preinstall command'"},
+						PostInstall: []string{"Write-Host 'Running postinstall command'"},
+					},
+				},
+			},
+		},
+		{
 			"testdata/test_buildmanifest_url_template.json.golden",
 			&context.Context{
 				Context:   ctx.Background(),

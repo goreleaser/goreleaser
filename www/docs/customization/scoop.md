@@ -49,6 +49,14 @@ scoop:
   persist:
   - "data"
   - "config.toml"
+
+  # An array of commands to be executed before an application is installed.
+  # Default is empty.
+  pre_install: ["Write-Host 'Running preinstall command'"]
+
+  # An array of commands to be executed after an application is installed.
+  # Default is empty.
+  post_install: ["Write-Host 'Running postinstall command'"]
 ```
 
 By defining the `scoop` section, GoReleaser will take care of publishing the

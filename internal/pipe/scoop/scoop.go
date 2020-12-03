@@ -142,12 +142,14 @@ func doRun(ctx *context.Context, cl client.Client) error {
 // Manifest represents a scoop.sh App Manifest.
 // more info: https://github.com/lukesampson/scoop/wiki/App-Manifests
 type Manifest struct {
-	Version      string              `json:"version"`               // The version of the app that this manifest installs.
-	Architecture map[string]Resource `json:"architecture"`          // `architecture`: If the app has 32- and 64-bit versions, architecture can be used to wrap the differences.
-	Homepage     string              `json:"homepage,omitempty"`    // `homepage`: The home page for the program.
-	License      string              `json:"license,omitempty"`     // `license`: The software license for the program. For well-known licenses, this will be a string like "MIT" or "GPL2". For custom licenses, this should be the URL of the license.
-	Description  string              `json:"description,omitempty"` // Description of the app
-	Persist      []string            `json:"persist,omitempty"`     // Persist data between updates
+	Version      string              `json:"version"`                // The version of the app that this manifest installs.
+	Architecture map[string]Resource `json:"architecture"`           // `architecture`: If the app has 32- and 64-bit versions, architecture can be used to wrap the differences.
+	Homepage     string              `json:"homepage,omitempty"`     // `homepage`: The home page for the program.
+	License      string              `json:"license,omitempty"`      // `license`: The software license for the program. For well-known licenses, this will be a string like "MIT" or "GPL2". For custom licenses, this should be the URL of the license.
+	Description  string              `json:"description,omitempty"`  // Description of the app
+	Persist      []string            `json:"persist,omitempty"`      // Persist data between updates
+	PreInstall   []string            `json:"pre_install,omitempty"`  // An array of strings, of the commands to be executed before an application is installed.
+	PostInstall  []string            `json:"post_install,omitempty"` // An array of strings, of the commands to be executed after an application is installed.
 }
 
 // Resource represents a combination of a url and a binary name for an architecture.
@@ -175,6 +177,8 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 		License:      ctx.Config.Scoop.License,
 		Description:  ctx.Config.Scoop.Description,
 		Persist:      ctx.Config.Scoop.Persist,
+		PreInstall:   ctx.Config.Scoop.PreInstall,
+		PostInstall:  ctx.Config.Scoop.PostInstall,
 	}
 
 	if ctx.Config.Scoop.URLTemplate == "" {
