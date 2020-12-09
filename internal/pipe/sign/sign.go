@@ -2,9 +2,11 @@ package sign
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -15,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // Pipe for artifact signing.
@@ -116,9 +117,22 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 		var arg = expand(a, env)
 		arg, err := tmpl.New(ctx).WithEnv(env).Apply(arg)
 		if err != nil {
-			return nil, errors.Wrapf(err, "sign failed: %s: invalid template", a)
+			return nil, fmt.Errorf("sign failed: %s: invalid template: %w", a, err)
 		}
 		args = append(args, arg)
+	}
+
+	var stdin io.Reader
+	if cfg.Stdin != nil {
+		stdin = strings.NewReader(*cfg.Stdin)
+	} else if cfg.StdinFile != "" {
+		f, err := os.Open(cfg.StdinFile)
+		if err != nil {
+			return nil, fmt.Errorf("sign failed: cannot open file %s: %w", cfg.StdinFile, err)
+		}
+		defer f.Close()
+
+		stdin = f
 	}
 
 	// The GoASTScanner flags this as a security risk.
@@ -128,6 +142,9 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
 	cmd.Stderr = logext.NewWriter(log.WithField("cmd", cfg.Cmd))
 	cmd.Stdout = cmd.Stderr
+	if stdin != nil {
+		cmd.Stdin = stdin
+	}
 	log.WithField("cmd", cmd.Args).Info("signing")
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("sign: %s failed", cfg.Cmd)

@@ -18,3 +18,5 @@ linters:
     - gofumpt
     - gci
     - nlreturn
+    - exhaustivestruct
+    - wrapcheck

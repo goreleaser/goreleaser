@@ -1,6 +1,7 @@
 package golang
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -18,7 +19,6 @@ import (
 	api "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // Default builder instance.
@@ -34,7 +34,7 @@ func init() {
 type Builder struct{}
 
 // WithDefaults sets the defaults for a golang build and returns it.
-func (*Builder) WithDefaults(build config.Build) config.Build {
+func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 	if build.Dir == "" {
 		build.Dir = "."
 	}
@@ -54,12 +54,16 @@ func (*Builder) WithDefaults(build config.Build) config.Build {
 		if len(build.Goarm) == 0 {
 			build.Goarm = []string{"6"}
 		}
-		build.Targets = matrix(build)
+		targets, err := matrix(build)
+		build.Targets = targets
+		if err != nil {
+			return build, err
+		}
 	}
 	if build.GoBinary == "" {
 		build.GoBinary = "go"
 	}
-	return build
+	return build, nil
 }
 
 // Build builds a golang build.
@@ -122,7 +126,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 
 	cmd = append(cmd, "-o", options.Path, build.Main)
 	if err := run(ctx, cmd, env, build.Dir); err != nil {
-		return errors.Wrapf(err, "failed to build for %s", options.Target)
+		return fmt.Errorf("failed to build for %s: %w", options.Target, err)
 	}
 
 	if build.ModTimestamp != "" {
@@ -137,7 +141,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		modTime := time.Unix(modUnix, 0)
 		err = os.Chtimes(options.Path, modTime, modTime)
 		if err != nil {
-			return errors.Wrapf(err, "failed to change times for %s", options.Target)
+			return fmt.Errorf("failed to change times for %s: %w", options.Target, err)
 		}
 	}
 
@@ -223,9 +227,9 @@ func checkMain(build config.Build) error {
 		return ferr
 	}
 	if stat.IsDir() {
-		packs, err := parser.ParseDir(token.NewFileSet(), main, nil, 0)
+		packs, err := parser.ParseDir(token.NewFileSet(), main, fileFilter, 0)
 		if err != nil {
-			return errors.Wrapf(err, "failed to parse dir: %s", main)
+			return fmt.Errorf("failed to parse dir: %s: %w", main, err)
 		}
 		for _, pack := range packs {
 			for _, file := range pack.Files {
@@ -238,12 +242,17 @@ func checkMain(build config.Build) error {
 	}
 	file, err := parser.ParseFile(token.NewFileSet(), main, nil, 0)
 	if err != nil {
-		return errors.Wrapf(err, "failed to parse file: %s", main)
+		return fmt.Errorf("failed to parse file: %s: %w", main, err)
 	}
 	if hasMain(file) {
 		return nil
 	}
 	return fmt.Errorf("build for %s does not contain a main function", build.Binary)
+}
+
+// TODO: can be removed once we migrate from go 1.15 to 1.16.
+func fileFilter(info os.FileInfo) bool {
+	return !info.IsDir()
 }
 
 func hasMain(file *ast.File) bool {

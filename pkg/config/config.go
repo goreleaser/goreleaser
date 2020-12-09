@@ -30,6 +30,7 @@ type GitLabURLs struct {
 // GiteaURLs holds the URLs to be used when using gitea.
 type GiteaURLs struct {
 	API           string `yaml:"api,omitempty"`
+	Download      string `yaml:"download,omitempty"`
 	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
 }
 
@@ -95,11 +96,13 @@ type Homebrew struct {
 	Caveats          string               `yaml:",omitempty"`
 	Plist            string               `yaml:",omitempty"`
 	Install          string               `yaml:",omitempty"`
+	PostInstall      string               `yaml:"post_install,omitempty"`
 	Dependencies     []HomebrewDependency `yaml:",omitempty"`
 	Test             string               `yaml:",omitempty"`
 	Conflicts        []string             `yaml:",omitempty"`
 	Description      string               `yaml:",omitempty"`
 	Homepage         string               `yaml:",omitempty"`
+	License          string               `yaml:",omitempty"`
 	SkipUpload       string               `yaml:"skip_upload,omitempty"`
 	DownloadStrategy string               `yaml:"download_strategy,omitempty"`
 	URLTemplate      string               `yaml:"url_template,omitempty"`
@@ -108,7 +111,7 @@ type Homebrew struct {
 	IDs              []string             `yaml:"ids,omitempty"`
 	Goarm            string               `yaml:"goarm,omitempty"`
 
-	// Deprecated in favour of Tap
+	// Deprecated: in favour of Tap
 	GitHub Repo `yaml:",omitempty"`
 	GitLab Repo `yaml:",omitempty"`
 }
@@ -125,6 +128,8 @@ type Scoop struct {
 	URLTemplate           string       `yaml:"url_template,omitempty"`
 	Persist               []string     `yaml:"persist,omitempty"`
 	SkipUpload            string       `yaml:"skip_upload,omitempty"`
+	PreInstall            []string     `yaml:"pre_install,omitempty"`
+	PostInstall           []string     `yaml:"post_install,omitempty"`
 }
 
 // CommitAuthor is the author of a Git commit.
@@ -260,14 +265,15 @@ type FormatOverride struct {
 
 // Archive config used for the archive.
 type Archive struct {
-	ID              string            `yaml:",omitempty"`
-	Builds          []string          `yaml:",omitempty"`
-	NameTemplate    string            `yaml:"name_template,omitempty"`
-	Replacements    map[string]string `yaml:",omitempty"`
-	Format          string            `yaml:",omitempty"`
-	FormatOverrides []FormatOverride  `yaml:"format_overrides,omitempty"`
-	WrapInDirectory string            `yaml:"wrap_in_directory,omitempty"`
-	Files           []string          `yaml:",omitempty"`
+	ID                        string            `yaml:",omitempty"`
+	Builds                    []string          `yaml:",omitempty"`
+	NameTemplate              string            `yaml:"name_template,omitempty"`
+	Replacements              map[string]string `yaml:",omitempty"`
+	Format                    string            `yaml:",omitempty"`
+	FormatOverrides           []FormatOverride  `yaml:"format_overrides,omitempty"`
+	WrapInDirectory           string            `yaml:"wrap_in_directory,omitempty"`
+	Files                     []string          `yaml:",omitempty"`
+	AllowDifferentBinaryCount bool              `yaml:"allow_different_binary_count"`
 }
 
 // Release config used for the GitHub/GitLab release.
@@ -321,6 +327,73 @@ type NFPMScripts struct {
 	PostRemove  string `yaml:"postremove,omitempty"`
 }
 
+type NFPMRPMSignature struct {
+	// PGP secret key, can be ASCII-armored
+	KeyFile       string `yaml:"key_file,omitempty"`
+	KeyPassphrase string `yaml:"-"` // populated from environment variable
+}
+
+// NFPMRPM is custom configs that are only available on RPM packages.
+type NFPMRPM struct {
+	Summary     string `yaml:"summary,omitempty"`
+	Group       string `yaml:"group,omitempty"`
+	Compression string `yaml:"compression,omitempty"`
+	// https://www.cl.cam.ac.uk/~jw35/docs/rpm_config.html
+	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"`
+	GhostFiles           []string          `yaml:"ghost_files,omitempty"`
+	Signature            NFPMRPMSignature  `yaml:"signature,omitempty"`
+}
+
+// NFPMDebScripts is scripts only available on deb packages.
+type NFPMDebScripts struct {
+	Rules     string `yaml:"rules,omitempty"`
+	Templates string `yaml:"templates,omitempty"`
+}
+
+// NFPMDebTriggers contains triggers only available for deb packages.
+// https://wiki.debian.org/DpkgTriggers
+// https://man7.org/linux/man-pages/man5/deb-triggers.5.html
+type NFPMDebTriggers struct {
+	Interest        []string `yaml:"interest,omitempty"`
+	InterestAwait   []string `yaml:"interest_await,omitempty"`
+	InterestNoAwait []string `yaml:"interest_noawait,omitempty"`
+	Activate        []string `yaml:"activate,omitempty"`
+	ActivateAwait   []string `yaml:"activate_await,omitempty"`
+	ActivateNoAwait []string `yaml:"activate_noawait,omitempty"`
+}
+
+// NFPMDebSignature contains config for signing deb packages created by nfpm.
+type NFPMDebSignature struct {
+	// PGP secret key, can be ASCII-armored
+	KeyFile       string `yaml:"key_file,omitempty"`
+	KeyPassphrase string `yaml:"-"` // populated from environment variable
+	// origin, maint or archive (defaults to origin)
+	Type string `yaml:"type,omitempty"`
+}
+
+// NFPMDeb is custom configs that are only available on deb packages.
+type NFPMDeb struct {
+	Scripts         NFPMDebScripts   `yaml:"scripts,omitempty"`
+	Triggers        NFPMDebTriggers  `yaml:"triggers,omitempty"`
+	Breaks          []string         `yaml:"breaks,omitempty"`
+	VersionMetadata string           `yaml:"metadata,omitempty"` // Deprecated: Moved to Info
+	Signature       NFPMDebSignature `yaml:"signature,omitempty"`
+}
+
+// NFPMAPKSignature contains config for signing apk packages created by nfpm.
+type NFPMAPKSignature struct {
+	// RSA private key in PEM format
+	KeyFile       string `yaml:"key_file,omitempty"`
+	KeyPassphrase string `yaml:"-"` // populated from environment variable
+	// defaults to <maintainer email>.rsa.pub
+	KeyName string `yaml:"key_name,omitempty"`
+}
+
+// NFPMAPK is custom config only available on apk packages.
+type NFPMAPK struct {
+	Signature NFPMAPKSignature `yaml:"signature,omitempty"`
+}
+
 // NFPMOverridables is used to specify per package format settings.
 type NFPMOverridables struct {
 	FileNameTemplate string            `yaml:"file_name_template,omitempty"`
@@ -332,10 +405,15 @@ type NFPMOverridables struct {
 	Recommends       []string          `yaml:",omitempty"`
 	Suggests         []string          `yaml:",omitempty"`
 	Conflicts        []string          `yaml:",omitempty"`
+	Replaces         []string          `yaml:",omitempty"`
 	EmptyFolders     []string          `yaml:"empty_folders,omitempty"`
 	Files            map[string]string `yaml:",omitempty"`
 	ConfigFiles      map[string]string `yaml:"config_files,omitempty"`
+	Symlinks         map[string]string `yaml:"symlinks,omitempty"`
 	Scripts          NFPMScripts       `yaml:"scripts,omitempty"`
+	RPM              NFPMRPM           `yaml:"rpm,omitempty"`
+	Deb              NFPMDeb           `yaml:"deb,omitempty"`
+	APK              NFPMAPK           `yaml:"apk,omitempty"`
 }
 
 // Sign config.
@@ -346,15 +424,18 @@ type Sign struct {
 	Signature string   `yaml:"signature,omitempty"`
 	Artifacts string   `yaml:"artifacts,omitempty"`
 	IDs       []string `yaml:"ids,omitempty"`
+	Stdin     *string  `yaml:"stdin,omitempty"`
+	StdinFile string   `yaml:"stdin_file,omitempty"`
 }
 
 // SnapcraftAppMetadata for the binaries that will be in the snap package.
 type SnapcraftAppMetadata struct {
-	Plugs     []string
-	Daemon    string
-	Args      string
-	Completer string `yaml:",omitempty"`
-	Command   string `yaml:"command"`
+	Plugs            []string
+	Daemon           string
+	Args             string
+	Completer        string `yaml:",omitempty"`
+	Command          string `yaml:"command"`
+	RestartCondition string `yaml:"restart_condition,omitempty"`
 }
 
 // Snapcraft config.
@@ -410,6 +491,14 @@ type Docker struct {
 	SkipPush           string   `yaml:"skip_push,omitempty"`
 	Files              []string `yaml:"extra_files,omitempty"`
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
+}
+
+// DockerManifest config.
+type DockerManifest struct {
+	NameTemplate   string   `yaml:"name_template,omitempty"`
+	ImageTemplates []string `yaml:"image_templates,omitempty"`
+	CreateFlags    []string `yaml:"create_flags,omitempty"`
+	PushFlags      []string `yaml:"push_flags,omitempty"`
 }
 
 // Filters config.
@@ -485,29 +574,30 @@ type Source struct {
 
 // Project includes all project configuration.
 type Project struct {
-	ProjectName   string      `yaml:"project_name,omitempty"`
-	Env           []string    `yaml:",omitempty"`
-	Release       Release     `yaml:",omitempty"`
-	Milestones    []Milestone `yaml:",omitempty"`
-	Brews         []Homebrew  `yaml:",omitempty"`
-	Scoop         Scoop       `yaml:",omitempty"`
-	Builds        []Build     `yaml:",omitempty"`
-	Archives      []Archive   `yaml:",omitempty"`
-	NFPMs         []NFPM      `yaml:"nfpms,omitempty"`
-	Snapcrafts    []Snapcraft `yaml:",omitempty"`
-	Snapshot      Snapshot    `yaml:",omitempty"`
-	Checksum      Checksum    `yaml:",omitempty"`
-	Dockers       []Docker    `yaml:",omitempty"`
-	Artifactories []Upload    `yaml:",omitempty"`
-	Uploads       []Upload    `yaml:",omitempty"`
-	Blobs         []Blob      `yaml:"blobs,omitempty"`
-	Publishers    []Publisher `yaml:"publishers,omitempty"`
-	Changelog     Changelog   `yaml:",omitempty"`
-	Dist          string      `yaml:",omitempty"`
-	Signs         []Sign      `yaml:",omitempty"`
-	EnvFiles      EnvFiles    `yaml:"env_files,omitempty"`
-	Before        Before      `yaml:",omitempty"`
-	Source        Source      `yaml:",omitempty"`
+	ProjectName     string           `yaml:"project_name,omitempty"`
+	Env             []string         `yaml:",omitempty"`
+	Release         Release          `yaml:",omitempty"`
+	Milestones      []Milestone      `yaml:",omitempty"`
+	Brews           []Homebrew       `yaml:",omitempty"`
+	Scoop           Scoop            `yaml:",omitempty"`
+	Builds          []Build          `yaml:",omitempty"`
+	Archives        []Archive        `yaml:",omitempty"`
+	NFPMs           []NFPM           `yaml:"nfpms,omitempty"`
+	Snapcrafts      []Snapcraft      `yaml:",omitempty"`
+	Snapshot        Snapshot         `yaml:",omitempty"`
+	Checksum        Checksum         `yaml:",omitempty"`
+	Dockers         []Docker         `yaml:",omitempty"`
+	DockerManifests []DockerManifest `yaml:"docker_manifests,omitempty"`
+	Artifactories   []Upload         `yaml:",omitempty"`
+	Uploads         []Upload         `yaml:",omitempty"`
+	Blobs           []Blob           `yaml:"blobs,omitempty"`
+	Publishers      []Publisher      `yaml:"publishers,omitempty"`
+	Changelog       Changelog        `yaml:",omitempty"`
+	Dist            string           `yaml:",omitempty"`
+	Signs           []Sign           `yaml:",omitempty"`
+	EnvFiles        EnvFiles         `yaml:"env_files,omitempty"`
+	Before          Before           `yaml:",omitempty"`
+	Source          Source           `yaml:",omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

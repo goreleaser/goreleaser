@@ -11,12 +11,17 @@ on:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v2.3.2
+        uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 0
+      -
+        name: Allow arm64 builds
+        run: sudo docker run --privileged linuxkit/binfmt:v0.7
       -
         name: Set up Snapcraft
         run: |
@@ -44,7 +49,7 @@ jobs:
           make ci
       -
         name: Upload coverage
-        uses: codecov/codecov-action@v1.0.13
+        uses: codecov/codecov-action@v1.0.15
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.txt
@@ -76,9 +81,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            ./goreleaser --parallelism 2
-          else
-            ./goreleaser --snapshot --parallelism 2
+            ./goreleaser
+          elif [[ $GITHUB_REF == refs/heads/master ]]; then
+            ./goreleaser --snapshot
           fi
       -
         name: Clear

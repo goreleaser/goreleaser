@@ -16,7 +16,6 @@ import (
 	"sync"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
 )
 
 // Type defines the type of an artifact.
@@ -41,6 +40,8 @@ const (
 	PublishableDockerImage
 	// DockerImage is a published Docker image.
 	DockerImage
+	// DockerManifest is a published Docker manifest.
+	DockerManifest
 	// Checksum is a checksums file.
 	Checksum
 	// Signature is a signature file.
@@ -61,6 +62,8 @@ func (t Type) String() string {
 		return "Linux Package"
 	case PublishableDockerImage, DockerImage:
 		return "Docker Image"
+	case DockerManifest:
+		return "Docker Manifest"
 	case PublishableSnapcraft, Snapcraft:
 		return "Snap"
 	case Checksum:
@@ -101,7 +104,7 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	log.Debugf("calculating checksum for %s", a.Path)
 	file, err := os.Open(a.Path)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to checksum")
+		return "", fmt.Errorf("failed to checksum: %w", err)
 	}
 	defer file.Close()
 	var h hash.Hash
@@ -125,7 +128,7 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	}
 	_, err = io.Copy(h, file)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to checksum")
+		return "", fmt.Errorf("failed to checksum: %w", err)
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
 }

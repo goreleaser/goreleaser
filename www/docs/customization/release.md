@@ -87,6 +87,9 @@ release:
     - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
 ```
 
+!!! tip
+    If you use GitLab subgroups, you need to specify it in the `owner` field, e.g. `mygroup/mysubgroup`.
+
 !!! warning
     Only GitLab `v11.7+` are supported for releases.
 
@@ -141,7 +144,7 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
     `draft` and `prerelease` are only supported by GitHub and Gitea.
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).
 
 ## Customize the changelog
 

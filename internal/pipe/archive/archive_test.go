@@ -157,8 +157,6 @@ func TestRunPipe(t *testing.T) {
 						t,
 						[]string{
 							fmt.Sprintf("README.%s.md", os),
-							"foo/bar",
-							"foo/bar/foobar",
 							"foo/bar/foobar/blah.txt",
 							"bin/mybin",
 						},
@@ -179,6 +177,93 @@ func TestRunPipe(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRunPipeDifferentBinaryCount(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	for _, arch := range []string{"darwinamd64", "linuxamd64"} {
+		createFakeBinary(t, dist, arch, "bin/mybin")
+	}
+	createFakeBinary(t, dist, "darwinamd64", "bin/foobar")
+	var ctx = context.New(config.Project{
+		Dist:        dist,
+		ProjectName: "foobar",
+		Archives: []config.Archive{
+			{
+				ID:           "myid",
+				Format:       "tar.gz",
+				Builds:       []string{"default", "foobar"},
+				NameTemplate: defaultNameTemplate,
+			},
+		},
+	})
+	var darwinBuild = &artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "bin/mybin",
+		Path:   filepath.Join(dist, "darwinamd64", "bin", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			"Binary": "bin/mybin",
+			"ID":     "default",
+		},
+	}
+	var darwinBuild2 = &artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Name:   "bin/foobar",
+		Path:   filepath.Join(dist, "darwinamd64", "bin", "foobar"),
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			"Binary": "bin/foobar",
+			"ID":     "foobar",
+		},
+	}
+	var linuxArmBuild = &artifact.Artifact{
+		Goos:   "linux",
+		Goarch: "amd64",
+		Name:   "bin/mybin",
+		Path:   filepath.Join(dist, "linuxamd64", "bin", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			"Binary": "bin/mybin",
+			"ID":     "default",
+		},
+	}
+
+	ctx.Artifacts.Add(darwinBuild)
+	ctx.Artifacts.Add(darwinBuild2)
+	ctx.Artifacts.Add(linuxArmBuild)
+	ctx.Version = "0.0.1"
+	ctx.Git.CurrentTag = "v0.0.1"
+
+	t.Run("check enabled", func(t *testing.T) {
+		ctx.Config.Archives[0].AllowDifferentBinaryCount = false
+		require.EqualError(t, Pipe{}.Run(ctx), "invalid archive: 0: "+ErrArchiveDifferentBinaryCount.Error())
+	})
+
+	t.Run("check disabled", func(t *testing.T) {
+		ctx.Config.Archives[0].AllowDifferentBinaryCount = true
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+}
+
+func TestRunPipeNoBinaries(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	var ctx = context.New(config.Project{
+		Dist:        dist,
+		ProjectName: "foobar",
+		Archives:    []config.Archive{{}},
+	})
+	ctx.Version = "0.0.1"
+	ctx.Git.CurrentTag = "v0.0.1"
+	require.NoError(t, Pipe{}.Run(ctx))
 }
 
 func zipFiles(t *testing.T, path string) []string {
@@ -339,7 +424,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 			"ID":     "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: globbing failed for pattern [x-]: file does not exist`)
+	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: globbing failed for pattern [x-]: compile glob pattern: unexpected end of input`)
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {

@@ -9,25 +9,25 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPipeDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func Test(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
 	dist := filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(dist, 0755))
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
 		},
 	)
-	assert.NoError(t, Pipe{}.Run(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
 	bts, err := ioutil.ReadFile(filepath.Join(dist, "config.yaml"))
-	assert.NoError(t, err)
-	assert.NotEmpty(t, string(bts))
+	require.NoError(t, err)
+	require.NotEmpty(t, string(bts))
 }

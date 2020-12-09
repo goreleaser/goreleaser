@@ -14,14 +14,13 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 var update = flag.Bool("update", false, "update .golden files")
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestDefault(t *testing.T) {
@@ -54,11 +53,11 @@ func TestDefault(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoop.Name)
-	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Name)
-	assert.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Email)
-	assert.NotEmpty(t, ctx.Config.Scoop.CommitMessageTemplate)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoop.Name)
+	require.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Name)
+	require.NotEmpty(t, ctx.Config.Scoop.CommitAuthor.Email)
+	require.NotEmpty(t, ctx.Config.Scoop.CommitMessageTemplate)
 }
 
 func Test_doRun(t *testing.T) {
@@ -70,12 +69,12 @@ func Test_doRun(t *testing.T) {
 	type errChecker func(*testing.T, error)
 	var shouldErr = func(msg string) errChecker {
 		return func(t *testing.T, err error) {
-			assert.Error(t, err)
-			assert.EqualError(t, err, msg)
+			require.Error(t, err)
+			require.EqualError(t, err, msg)
 		}
 	}
 	var shouldNotErr = func(t *testing.T, err error) {
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
 	type args struct {
 		ctx    *context.Context
@@ -787,6 +786,45 @@ func Test_buildManifest(t *testing.T) {
 						Description: "A run pipe test formula",
 						Homepage:    "https://github.com/goreleaser",
 						Persist:     []string{"data", "config", "test.ini"},
+					},
+				},
+			},
+		},
+		{
+			"testdata/test_buildmanifest_pre_post_install.json.golden",
+			&context.Context{
+				Context:   ctx.Background(),
+				TokenType: context.TokenTypeGitHub,
+				Git: context.GitInfo{
+					CurrentTag: "v1.0.1",
+				},
+				Version:   "1.0.1",
+				Artifacts: artifact.New(),
+				Config: config.Project{
+					GitHubURLs: config.GitHubURLs{
+						Download: "https://github.com",
+					},
+					Dist:        ".",
+					ProjectName: "run-pipe",
+					Archives: []config.Archive{
+						{Format: "tar.gz"},
+					},
+					Release: config.Release{
+						GitHub: config.Repo{
+							Owner: "test",
+							Name:  "test",
+						},
+					},
+					Scoop: config.Scoop{
+						Bucket: config.RepoRef{
+							Owner: "test",
+							Name:  "test",
+						},
+						Description: "A run pipe test formula",
+						Homepage:    "https://github.com/goreleaser",
+						Persist:     []string{"data", "config", "test.ini"},
+						PreInstall:  []string{"Write-Host 'Running preinstall command'"},
+						PostInstall: []string{"Write-Host 'Running postinstall command'"},
 					},
 				},
 			},

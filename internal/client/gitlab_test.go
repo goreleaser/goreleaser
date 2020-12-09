@@ -6,7 +6,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestExtractHashFromProjectFileURL(t *testing.T) {
@@ -16,7 +16,7 @@ func TestExtractHashFromProjectFileURL(t *testing.T) {
 	if err != nil {
 		t.Errorf("expexted no error but got: %v", err)
 	}
-	assert.Equal(t, givenHash, extractedHash)
+	require.Equal(t, givenHash, extractedHash)
 }
 
 func TestFailToExtractHashFromProjectFileURL(t *testing.T) {
@@ -48,11 +48,11 @@ func TestGitLabReleaseURLTemplate(t *testing.T) {
 		},
 	})
 	client, err := NewGitLab(ctx, ctx.Token)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	urlTpl, err := client.ReleaseURLTemplate(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	expectedUrl := "https://gitlab.com/owner/name/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}"
-	assert.Equal(t, expectedUrl, urlTpl)
+	require.Equal(t, expectedUrl, urlTpl)
 }

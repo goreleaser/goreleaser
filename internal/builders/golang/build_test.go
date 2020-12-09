@@ -16,7 +16,6 @@ import (
 	api "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -95,9 +94,56 @@ func TestWithDefaults(t *testing.T) {
 			}
 			var ctx = context.New(config)
 			ctx.Git.CurrentTag = "5.6.7"
-			var build = Default.WithDefaults(ctx.Config.Builds[0])
-			assert.ElementsMatch(t, build.Targets, testcase.targets)
-			assert.EqualValues(t, testcase.goBinary, build.GoBinary)
+			build, err := Default.WithDefaults(ctx.Config.Builds[0])
+			require.NoError(t, err)
+			require.ElementsMatch(t, build.Targets, testcase.targets)
+			require.EqualValues(t, testcase.goBinary, build.GoBinary)
+		})
+	}
+}
+
+func TestInvalidTargets(t *testing.T) {
+	type testcase struct {
+		build       config.Build
+		expectedErr string
+	}
+	for s, tc := range map[string]testcase{
+		"goos": {
+			build: config.Build{
+				Goos: []string{"darwin", "darwim"},
+			},
+			expectedErr: "invalid goos: darwim",
+		},
+		"goarch": {
+			build: config.Build{
+				Goarch: []string{"amd64", "i386", "386"},
+			},
+			expectedErr: "invalid goarch: i386",
+		},
+		"goarm": {
+			build: config.Build{
+				Goarch: []string{"arm"},
+				Goarm:  []string{"6", "9", "8", "7"},
+			},
+			expectedErr: "invalid goarm: 9",
+		},
+		"gomips": {
+			build: config.Build{
+				Goarch: []string{"mips"},
+				Gomips: []string{"softfloat", "mehfloat", "hardfloat"},
+			},
+			expectedErr: "invalid gomips: mehfloat",
+		},
+	} {
+		t.Run(s, func(t *testing.T) {
+			var config = config.Project{
+				Builds: []config.Build{
+					tc.build,
+				},
+			}
+			var ctx = context.New(config)
+			_, err := Default.WithDefaults(ctx.Config.Builds[0])
+			require.EqualError(t, err, tc.expectedErr)
 		})
 	}
 }
@@ -152,9 +198,9 @@ func TestBuild(t *testing.T) {
 			Path:   filepath.Join(folder, "dist", target, bin+ext),
 			Ext:    ext,
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
-	assert.ElementsMatch(t, ctx.Artifacts.List(), []*artifact.Artifact{
+	require.ElementsMatch(t, ctx.Artifacts.List(), []*artifact.Artifact{
 		{
 			Name:   "bin/foo-v5.6.7",
 			Path:   filepath.Join(folder, "dist", "linux_amd64", "bin", "foo-v5.6.7"),
@@ -251,7 +297,7 @@ func TestBuild(t *testing.T) {
 		}
 
 		fi, err := os.Stat(bin.Path)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		// make this a suitable map key, per docs: https://golang.org/pkg/time/#Time
 		modTime := fi.ModTime().UTC().Round(0)
@@ -268,7 +314,7 @@ func TestBuildCodeInSubdir(t *testing.T) {
 	defer back()
 	subdir := filepath.Join(folder, "bar")
 	err := os.Mkdir(subdir, 0755)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	writeGoodMain(t, subdir)
 	var config = config.Project{
 		Builds: []config.Build{
@@ -293,7 +339,34 @@ func TestBuildCodeInSubdir(t *testing.T) {
 		Path:   filepath.Join(folder, "dist", runtimeTarget, build.Binary),
 		Ext:    "",
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
+}
+
+func TestBuildWithDotGoDir(t *testing.T) {
+	folder, back := testlib.Mktmp(t)
+	defer back()
+	require.NoError(t, os.Mkdir(filepath.Join(folder, ".go"), 0755))
+	writeGoodMain(t, folder)
+	var config = config.Project{
+		Builds: []config.Build{
+			{
+				ID:       "foo",
+				Env:      []string{"GO111MODULE=off"},
+				Binary:   "foo",
+				Targets:  []string{runtimeTarget},
+				GoBinary: "go",
+			},
+		},
+	}
+	var ctx = context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
+	var build = ctx.Config.Builds[0]
+	require.NoError(t, Default.Build(ctx, build, api.Options{
+		Target: runtimeTarget,
+		Name:   build.Binary,
+		Path:   filepath.Join(folder, "dist", runtimeTarget, build.Binary),
+		Ext:    "",
+	}))
 }
 
 func TestBuildFailed(t *testing.T) {
@@ -318,7 +391,7 @@ func TestBuildFailed(t *testing.T) {
 		Target: "darwin_amd64",
 	})
 	assertContainsError(t, err, `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
-	assert.Empty(t, ctx.Artifacts.List())
+	require.Empty(t, ctx.Artifacts.List())
 }
 
 func TestBuildInvalidTarget(t *testing.T) {
@@ -343,8 +416,8 @@ func TestBuildInvalidTarget(t *testing.T) {
 		Name:   build.Binary,
 		Path:   filepath.Join(folder, "dist", target, build.Binary),
 	})
-	assert.EqualError(t, err, "linux is not a valid build target")
-	assert.Len(t, ctx.Artifacts.List(), 0)
+	require.EqualError(t, err, "linux is not a valid build target")
+	require.Len(t, ctx.Artifacts.List(), 0)
 }
 
 func TestRunInvalidAsmflags(t *testing.T) {
@@ -367,7 +440,7 @@ func TestRunInvalidAsmflags(t *testing.T) {
 	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
-	assert.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunInvalidGcflags(t *testing.T) {
@@ -390,7 +463,7 @@ func TestRunInvalidGcflags(t *testing.T) {
 	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
-	assert.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunInvalidLdflags(t *testing.T) {
@@ -414,7 +487,7 @@ func TestRunInvalidLdflags(t *testing.T) {
 	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
-	assert.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunInvalidFlags(t *testing.T) {
@@ -436,7 +509,7 @@ func TestRunInvalidFlags(t *testing.T) {
 	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
-	assert.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunPipeWithoutMainFunc(t *testing.T) {
@@ -458,25 +531,25 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 	ctx.Git.CurrentTag = "5.6.7"
 	t.Run("empty", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = ""
-		assert.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}), `build for no-main does not contain a main function`)
 	})
 	t.Run("not main.go", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "foo.go"
-		assert.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}), `stat foo.go: no such file or directory`)
 	})
 	t.Run("glob", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."
-		assert.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}), `build for no-main does not contain a main function`)
 	})
 	t.Run("fixed main.go", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "main.go"
-		assert.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}), `build for no-main does not contain a main function`)
 	})
@@ -485,7 +558,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 	folder, back := testlib.Mktmp(t)
 	defer back()
-	assert.NoError(t, ioutil.WriteFile(
+	require.NoError(t, ioutil.WriteFile(
 		filepath.Join(folder, "foo.go"),
 		[]byte("package main\nfunc main() {println(0)}"),
 		0644,
@@ -507,19 +580,19 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 	ctx.Git.CurrentTag = "5.6.7"
 	t.Run("empty", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = ""
-		assert.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}))
 	})
 	t.Run("foo.go", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "foo.go"
-		assert.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}))
 	})
 	t.Run("glob", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."
-		assert.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}))
 	})
@@ -542,16 +615,16 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	var artifact = &artifact.Artifact{Goarch: "amd64"}
 	flags, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).
 		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }} -X main.arch={{.Arch}} -X main.commitDate={{.CommitDate}}`)
-	assert.NoError(t, err)
-	assert.Contains(t, flags, "-s -w")
-	assert.Contains(t, flags, "-X main.version=1.2.3")
-	assert.Contains(t, flags, "-X main.tag=v1.2.3")
-	assert.Contains(t, flags, "-X main.commit=123")
-	assert.Contains(t, flags, fmt.Sprintf("-X main.date=%d", run.Year()))
-	assert.Contains(t, flags, fmt.Sprintf("-X main.time=%d", run.Year()))
-	assert.Contains(t, flags, `-X "main.foo=123"`)
-	assert.Contains(t, flags, `-X main.arch=amd64`)
-	assert.Contains(t, flags, fmt.Sprintf("-X main.commitDate=%d", commit.Year()))
+	require.NoError(t, err)
+	require.Contains(t, flags, "-s -w")
+	require.Contains(t, flags, "-X main.version=1.2.3")
+	require.Contains(t, flags, "-X main.tag=v1.2.3")
+	require.Contains(t, flags, "-X main.commit=123")
+	require.Contains(t, flags, fmt.Sprintf("-X main.date=%d", run.Year()))
+	require.Contains(t, flags, fmt.Sprintf("-X main.time=%d", run.Year()))
+	require.Contains(t, flags, `-X "main.foo=123"`)
+	require.Contains(t, flags, `-X main.arch=amd64`)
+	require.Contains(t, flags, fmt.Sprintf("-X main.commitDate=%d", commit.Year()))
 }
 
 func TestInvalidTemplate(t *testing.T) {
@@ -563,8 +636,8 @@ func TestInvalidTemplate(t *testing.T) {
 			var ctx = context.New(config.Project{})
 			ctx.Git.CurrentTag = "3.4.1"
 			flags, err := tmpl.New(ctx).Apply(template)
-			assert.EqualError(tt, err, eerr)
-			assert.Empty(tt, flags)
+			require.EqualError(tt, err, eerr)
+			require.Empty(tt, flags)
 		})
 	}
 }
@@ -606,9 +679,9 @@ func TestProcessFlags(t *testing.T) {
 	}
 
 	flags, err := processFlags(ctx, artifact, []string{}, source, "-testflag=")
-	assert.NoError(t, err)
-	assert.Len(t, flags, 7)
-	assert.Equal(t, expected, flags)
+	require.NoError(t, err)
+	require.Len(t, flags, 7)
+	require.Equal(t, expected, flags)
 }
 
 func TestProcessFlagsInvalid(t *testing.T) {
@@ -621,8 +694,8 @@ func TestProcessFlagsInvalid(t *testing.T) {
 	var expected = `template: tmpl:1: unexpected "}" in operand`
 
 	flags, err := processFlags(ctx, &artifact.Artifact{}, []string{}, source, "-testflag=")
-	assert.EqualError(t, err, expected)
-	assert.Nil(t, flags)
+	require.EqualError(t, err, expected)
+	require.Nil(t, flags)
 }
 
 func TestJoinLdFlags(t *testing.T) {
@@ -636,7 +709,7 @@ func TestJoinLdFlags(t *testing.T) {
 
 	for _, test := range tests {
 		joinedLdFlags := joinLdFlags(test.input)
-		assert.Equal(t, joinedLdFlags, test.output)
+		require.Equal(t, joinedLdFlags, test.output)
 	}
 }
 
@@ -695,7 +768,7 @@ func TestBuildModTimestamp(t *testing.T) {
 			Path:   filepath.Join(folder, "dist", target, bin+ext),
 			Ext:    ext,
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
 
 	for _, bin := range ctx.Artifacts.List() {
@@ -704,8 +777,8 @@ func TestBuildModTimestamp(t *testing.T) {
 		}
 
 		fi, err := os.Stat(bin.Path)
-		assert.NoError(t, err)
-		assert.True(t, modTime.Equal(fi.ModTime()), "inconsistent mod times found when specifying ModTimestamp")
+		require.NoError(t, err)
+		require.True(t, modTime.Equal(fi.ModTime()), "inconsistent mod times found when specifying ModTimestamp")
 	}
 }
 
@@ -714,7 +787,7 @@ func TestBuildModTimestamp(t *testing.T) {
 //
 
 func writeMainWithoutMainFunc(t *testing.T, folder string) {
-	assert.NoError(t, ioutil.WriteFile(
+	require.NoError(t, ioutil.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nconst a = 2\nfunc notMain() {println(0)}"),
 		0644,
@@ -722,7 +795,7 @@ func writeMainWithoutMainFunc(t *testing.T, folder string) {
 }
 
 func writeGoodMain(t *testing.T, folder string) {
-	assert.NoError(t, ioutil.WriteFile(
+	require.NoError(t, ioutil.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nvar a = 1\nfunc main() {println(0)}"),
 		0644,
@@ -730,6 +803,6 @@ func writeGoodMain(t *testing.T, folder string) {
 }
 
 func assertContainsError(t *testing.T, err error, s string) {
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), s)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), s)
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +25,7 @@ func newCheckCmd() *checkCmd {
 		Short:         "Checks if configuration is valid",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		Args:          cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := loadConfig(root.config)
 			if err != nil {
@@ -39,7 +39,7 @@ func newCheckCmd() *checkCmd {
 				return defaults.Pipe{}.Run(ctx)
 			}); err != nil {
 				log.WithError(err).Error(color.New(color.Bold).Sprintf("config is invalid"))
-				return errors.Wrap(err, "invalid config")
+				return fmt.Errorf("invalid config: %w", err)
 			}
 
 			if ctx.Deprecated {

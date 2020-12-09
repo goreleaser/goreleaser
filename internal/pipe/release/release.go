@@ -1,6 +1,8 @@
 package release
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"time"
 
@@ -12,7 +14,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // ErrMultipleReleases indicates that multiple releases are defined. ATM only one of them is allowed.
@@ -133,7 +134,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 
 	for name, path := range extraFiles {
 		if _, err := os.Stat(path); os.IsNotExist(err) {
-			return errors.Wrapf(err, "failed to upload %s", name)
+			return fmt.Errorf("failed to upload %s: %w", name, err)
 		}
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name: name,
@@ -188,20 +189,17 @@ func upload(ctx *context.Context, cli client.Client, releaseID string, artifact 
 	}
 
 	var err error
-loop:
 	for try < 10 {
 		err = tryUpload()
 		if err == nil {
 			return nil
 		}
-		switch err.(type) {
-		case client.RetriableError:
+		if errors.As(err, &client.RetriableError{}) {
 			time.Sleep(time.Duration(try*50) * time.Millisecond)
 			continue
-		default:
-			break loop
 		}
+		break
 	}
 
-	return errors.Wrapf(err, "failed to upload %s after %d tries", artifact.Name, try)
+	return fmt.Errorf("failed to upload %s after %d tries: %w", artifact.Name, try, err)
 }

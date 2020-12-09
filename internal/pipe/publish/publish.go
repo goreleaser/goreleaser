@@ -16,7 +16,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/upload"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // Pipe that publishes artifacts.
@@ -41,6 +40,7 @@ var publishers = []Publisher{
 	custompublishers.Pipe{},
 	artifactory.Pipe{},
 	docker.Pipe{},
+	docker.ManifestPipe{},
 	snapcraft.Pipe{},
 	// This should be one of the last steps
 	release.Pipe{},
@@ -58,7 +58,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			middleware.ErrHandler(publisher.Publish),
 			middleware.ExtraPadding,
 		)(ctx); err != nil {
-			return errors.Wrapf(err, "%s: failed to publish artifacts", publisher.String())
+			return fmt.Errorf("%s: failed to publish artifacts: %w", publisher.String(), err)
 		}
 	}
 	return nil

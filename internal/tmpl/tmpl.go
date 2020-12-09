@@ -29,6 +29,7 @@ const (
 	version         = "Version"
 	rawVersion      = "RawVersion"
 	tag             = "Tag"
+	branch          = "Branch"
 	commit          = "Commit"
 	shortCommit     = "ShortCommit"
 	fullCommit      = "FullCommit"
@@ -74,6 +75,7 @@ func New(ctx *context.Context) *Template {
 			version:         ctx.Version,
 			rawVersion:      rawVersionV,
 			tag:             ctx.Git.CurrentTag,
+			branch:          ctx.Git.Branch,
 			commit:          ctx.Git.Commit,
 			shortCommit:     ctx.Git.ShortCommit,
 			fullCommit:      ctx.Git.FullCommit,

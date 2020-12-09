@@ -2,12 +2,12 @@
 package upload
 
 import (
+	"fmt"
 	h "net/http"
 
 	"github.com/goreleaser/goreleaser/internal/http"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // Pipe for http publishing.
@@ -40,7 +40,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 	return http.Upload(ctx, ctx.Config.Uploads, "upload", func(res *h.Response) error {
 		if c := res.StatusCode; c < 200 || 299 < c {
-			return errors.Errorf("unexpected http response status: %s", res.Status)
+			return fmt.Errorf("unexpected http response status: %s", res.Status)
 		}
 		return nil
 	})

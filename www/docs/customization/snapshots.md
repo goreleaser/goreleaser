@@ -29,7 +29,7 @@ This means that if you use `{{ .Version }}` on your name templates, you'll
 get the snapshot version.
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).
 
 Note that the idea behind GoReleaser's snapshots if mostly for local builds
 or to validate your build on the CI pipeline. Artifacts shouldn't be uploaded

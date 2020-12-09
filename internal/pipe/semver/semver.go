@@ -1,11 +1,12 @@
 package semver
 
 import (
+	"fmt"
+
 	"github.com/Masterminds/semver/v3"
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // Pipe is a global hook pipe.
@@ -29,7 +30,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				Warn("current tag is not a semantic tag")
 			return pipe.ErrSkipValidateEnabled
 		}
-		return errors.Wrapf(err, "failed to parse tag %s as semver", ctx.Git.CurrentTag)
+		return fmt.Errorf("failed to parse tag %s as semver: %w", ctx.Git.CurrentTag, err)
 	}
 	ctx.Semver = context.Semver{
 		Major:      sv.Major(),

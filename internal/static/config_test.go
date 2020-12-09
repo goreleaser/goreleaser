@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestExampleConfig(t *testing.T) {
 	_, err := config.LoadReader(strings.NewReader(ExampleConfig))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

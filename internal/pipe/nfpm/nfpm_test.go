@@ -101,6 +101,7 @@ func TestRunPipe(t *testing.T) {
 					Dependencies:     []string{"make"},
 					Recommends:       []string{"svn"},
 					Suggests:         []string{"bzr"},
+					Replaces:         []string{"fish"},
 					Conflicts:        []string{"git"},
 					EmptyFolders:     []string{"/var/log/foobar"},
 					Release:          "10",
@@ -110,6 +111,9 @@ func TestRunPipe(t *testing.T) {
 					},
 					ConfigFiles: map[string]string{
 						"./testdata/testfile.txt": "/etc/nope.conf",
+					},
+					Symlinks: map[string]string{
+						"/etc/nope2.conf": "/etc/nope.conf",
 					},
 					Replacements: map[string]string{
 						"linux": "Tux",
@@ -243,7 +247,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 			"ID": "default",
 		},
 	})
-	require.Contains(t, Pipe{}.Run(ctx).Error(), `dist/mybin/mybin: file does not exist`)
+	require.Contains(t, Pipe{}.Run(ctx).Error(), `dist/mybin/mybin": file does not exist`)
 }
 
 func TestInvalidConfig(t *testing.T) {
@@ -347,6 +351,220 @@ func TestOverrides(t *testing.T) {
 	require.Equal(t, "bar", merged.FileNameTemplate)
 }
 
+func TestDebSpecificConfig(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	require.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	var binPath = filepath.Join(dist, "mybin", "mybin")
+	_, err = os.Create(binPath)
+	require.NoError(t, err)
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:      "someid",
+				Builds:  []string{"default"},
+				Formats: []string{"deb"},
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+					Files: map[string]string{
+						"./testdata/testfile.txt": "/usr/share/testfile.txt",
+					},
+					Deb: config.NFPMDeb{
+						Signature: config.NFPMDebSignature{
+							KeyFile: "./testdata/privkey.gpg",
+						},
+					},
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"ID": "default",
+				},
+			})
+		}
+	}
+
+	t.Run("no passphrase set", func(t *testing.T) {
+		require.Contains(
+			t,
+			Pipe{}.Run(ctx).Error(),
+			`key is encrypted but no passphrase was provided`,
+		)
+	})
+
+	t.Run("general passphrase set", func(t *testing.T) {
+		ctx.Env = map[string]string{
+			"NFPM_SOMEID_PASSPHRASE": "hunter2",
+		}
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("packager specific passphrase set", func(t *testing.T) {
+		ctx.Env = map[string]string{
+			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
+		}
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+}
+
+func TestRPMSpecificConfig(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	require.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	var binPath = filepath.Join(dist, "mybin", "mybin")
+	_, err = os.Create(binPath)
+	require.NoError(t, err)
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:      "someid",
+				Builds:  []string{"default"},
+				Formats: []string{"rpm"},
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+					Files: map[string]string{
+						"./testdata/testfile.txt": "/usr/share/testfile.txt",
+					},
+					RPM: config.NFPMRPM{
+						Signature: config.NFPMRPMSignature{
+							KeyFile: "./testdata/privkey.gpg",
+						},
+					},
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"ID": "default",
+				},
+			})
+		}
+	}
+
+	t.Run("no passphrase set", func(t *testing.T) {
+		require.Contains(
+			t,
+			Pipe{}.Run(ctx).Error(),
+			`key is encrypted but no passphrase was provided`,
+		)
+	})
+
+	t.Run("general passphrase set", func(t *testing.T) {
+		ctx.Env = map[string]string{
+			"NFPM_SOMEID_PASSPHRASE": "hunter2",
+		}
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("packager specific passphrase set", func(t *testing.T) {
+		ctx.Env = map[string]string{
+			"NFPM_SOMEID_RPM_PASSPHRASE": "hunter2",
+		}
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+}
+
+func TestAPKSpecificConfig(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	require.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	var binPath = filepath.Join(dist, "mybin", "mybin")
+	_, err = os.Create(binPath)
+	require.NoError(t, err)
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:         "someid",
+				Maintainer: "me@me",
+				Builds:     []string{"default"},
+				Formats:    []string{"apk"},
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+					Files: map[string]string{
+						"./testdata/testfile.txt": "/usr/share/testfile.txt",
+					},
+					APK: config.NFPMAPK{
+						Signature: config.NFPMAPKSignature{
+							KeyFile: "./testdata/rsa.priv",
+						},
+					},
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"ID": "default",
+				},
+			})
+		}
+	}
+
+	t.Run("no passphrase set", func(t *testing.T) {
+		require.Contains(
+			t,
+			Pipe{}.Run(ctx).Error(),
+			`key is encrypted but no passphrase was provided`,
+		)
+	})
+
+	t.Run("general passphrase set", func(t *testing.T) {
+		ctx.Env = map[string]string{
+			"NFPM_SOMEID_PASSPHRASE": "hunter2",
+		}
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("packager specific passphrase set", func(t *testing.T) {
+		ctx.Env = map[string]string{
+			"NFPM_SOMEID_APK_PASSPHRASE": "hunter2",
+		}
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+}
+
 func TestSeveralNFPMsWithTheSameID(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -393,6 +611,7 @@ func TestMeta(t *testing.T) {
 					Dependencies:     []string{"make"},
 					Recommends:       []string{"svn"},
 					Suggests:         []string{"bzr"},
+					Replaces:         []string{"fish"},
 					Conflicts:        []string{"git"},
 					EmptyFolders:     []string{"/var/log/foobar"},
 					Release:          "10",

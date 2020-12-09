@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	h "net/http"
@@ -16,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -137,7 +137,7 @@ func checks(checks ...check) func(rs []*h.Request) error {
 				}
 			}
 			if !found {
-				return errors.Errorf("check not found for request %+v", r)
+				return fmt.Errorf("check not found for request %+v", r)
 			}
 		}
 		return nil
@@ -147,27 +147,27 @@ func checks(checks ...check) func(rs []*h.Request) error {
 func doCheck(c check, r *h.Request) error {
 	contentLength := int64(len(c.content))
 	if r.ContentLength != contentLength {
-		return errors.Errorf("request content-length header value %v unexpected, wanted %v", r.ContentLength, contentLength)
+		return fmt.Errorf("request content-length header value %v unexpected, wanted %v", r.ContentLength, contentLength)
 	}
 	bs, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		return errors.Errorf("reading request body: %v", err)
+		return fmt.Errorf("reading request body: %v", err)
 	}
 	if !bytes.Equal(bs, c.content) {
 		return errors.New("content does not match")
 	}
 	if int64(len(bs)) != contentLength {
-		return errors.Errorf("request content length %v unexpected, wanted %v", int64(len(bs)), contentLength)
+		return fmt.Errorf("request content length %v unexpected, wanted %v", int64(len(bs)), contentLength)
 	}
 	if r.RequestURI != c.path {
-		return errors.Errorf("bad request uri %q, expecting %q", r.RequestURI, c.path)
+		return fmt.Errorf("bad request uri %q, expecting %q", r.RequestURI, c.path)
 	}
 	if u, p, ok := r.BasicAuth(); !ok || u != c.user || p != c.pass {
-		return errors.Errorf("bad basic auth credentials: %s/%s", u, p)
+		return fmt.Errorf("bad basic auth credentials: %s/%s", u, p)
 	}
 	for k, v := range c.headers {
 		if r.Header.Get(k) != v {
-			return errors.Errorf("bad header value for %s: expected %s, got %s", k, v, r.Header.Get(k))
+			return fmt.Errorf("bad header value for %s: expected %s, got %s", k, v, r.Header.Get(k))
 		}
 	}
 	return nil
@@ -203,7 +203,7 @@ func TestUpload(t *testing.T) {
 		if r.StatusCode/100 == 2 {
 			return nil
 		}
-		return errors.Errorf("unexpected http status code: %v", r.StatusCode)
+		return fmt.Errorf("unexpected http status code: %v", r.StatusCode)
 	}
 	ctx := context.New(config.Project{
 		ProjectName: "blah",

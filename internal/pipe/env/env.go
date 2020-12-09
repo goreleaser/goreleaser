@@ -4,12 +4,13 @@ package env
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"os"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/pkg/errors"
 )
 
 // ErrMissingToken indicates an error when GITHUB_TOKEN, GITLAB_TOKEN and GITEA_TOKEN are all missing in the environment.
@@ -98,15 +99,15 @@ func checkErrors(ctx *context.Context, noTokens, noTokenErrs bool, gitlabTokenEr
 	}
 
 	if gitlabTokenErr != nil {
-		return errors.Wrap(gitlabTokenErr, "failed to load gitlab token")
+		return fmt.Errorf("failed to load gitlab token: %w", gitlabTokenErr)
 	}
 
 	if githubTokenErr != nil {
-		return errors.Wrap(githubTokenErr, "failed to load github token")
+		return fmt.Errorf("failed to load github token: %w", githubTokenErr)
 	}
 
 	if giteaTokenErr != nil {
-		return errors.Wrap(giteaTokenErr, "failed to load gitea token")
+		return fmt.Errorf("failed to load gitea token: %w", giteaTokenErr)
 	}
 	return nil
 }

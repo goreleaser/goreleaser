@@ -94,15 +94,21 @@ func (Pipe) Run(ctx *context.Context) error {
 		changelogStringJoiner = "   \n"
 	}
 
-	ctx.ReleaseNotes = strings.Join(
-		[]string{
-			ctx.ReleaseHeader,
-			"## Changelog",
-			strings.Join(entries, changelogStringJoiner),
-			ctx.ReleaseFooter,
-		},
-		"\n\n",
-	)
+	changelogElements := []string{
+		"## Changelog",
+		strings.Join(entries, changelogStringJoiner),
+	}
+	if len(ctx.ReleaseHeader) > 0 {
+		changelogElements = append([]string{ctx.ReleaseHeader}, changelogElements...)
+	}
+	if len(ctx.ReleaseFooter) > 0 {
+		changelogElements = append(changelogElements, ctx.ReleaseFooter)
+	}
+
+	ctx.ReleaseNotes = strings.Join(changelogElements, "\n\n")
+	if !strings.HasSuffix(ctx.ReleaseNotes, "\n") {
+		ctx.ReleaseNotes += "\n"
+	}
 
 	var path = filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
@@ -214,7 +220,6 @@ func previous(tag string) (result string, err error) {
 	return
 }
 
-// nolint: gochecknoglobals
 var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
 
 // isSHA1 te lets us know if the ref is a SHA1 or not.

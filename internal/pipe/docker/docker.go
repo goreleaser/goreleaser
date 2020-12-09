@@ -1,7 +1,7 @@
-// Package docker provides a Pipe that creates and pushes a Docker image
 package docker
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -16,7 +16,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // ErrNoDocker is shown when docker cannot be found in $PATH.
@@ -40,6 +39,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Goarch == "" {
 			docker.Goarch = "amd64"
 		}
+		if docker.Dockerfile == "" {
+			docker.Dockerfile = "Dockerfile"
+		}
 		for _, f := range docker.Files {
 			if f == "." || strings.HasPrefix(f, ctx.Config.Dist) {
 				return fmt.Errorf("invalid docker.files: can't be . or inside dist folder: %s", f)
@@ -54,9 +56,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Dockers[0].Binaries = []string{
 			ctx.Config.Builds[0].Binary,
 		}
-	}
-	if ctx.Config.Dockers[0].Dockerfile == "" {
-		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
 	}
 	return nil
 }
@@ -97,7 +96,7 @@ func doRun(ctx *context.Context) error {
 			for i := range docker.Binaries {
 				bin, err := tmpl.New(ctx).Apply(docker.Binaries[i])
 				if err != nil {
-					return errors.Wrapf(err, "failed to execute binary template '%s'", docker.Binaries[i])
+					return fmt.Errorf("failed to execute binary template '%s': %w", docker.Binaries[i], err)
 				}
 				binaryNames[i] = bin
 			}
@@ -139,7 +138,7 @@ func doRun(ctx *context.Context) error {
 func process(ctx *context.Context, docker config.Docker, bins []*artifact.Artifact) error {
 	tmp, err := ioutil.TempDir(ctx.Config.Dist, "goreleaserdocker")
 	if err != nil {
-		return errors.Wrap(err, "failed to create temporary dir")
+		return fmt.Errorf("failed to create temporary dir: %w", err)
 	}
 	log.Debug("tempdir: " + tmp)
 
@@ -149,19 +148,19 @@ func process(ctx *context.Context, docker config.Docker, bins []*artifact.Artifa
 	}
 
 	if err := os.Link(docker.Dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
-		return errors.Wrap(err, "failed to link dockerfile")
+		return fmt.Errorf("failed to link dockerfile: %w", err)
 	}
 	for _, file := range docker.Files {
 		if err := os.MkdirAll(filepath.Join(tmp, filepath.Dir(file)), 0755); err != nil {
-			return errors.Wrapf(err, "failed to link extra file '%s'", file)
+			return fmt.Errorf("failed to link extra file '%s': %w", file, err)
 		}
 		if err := link(file, filepath.Join(tmp, file)); err != nil {
-			return errors.Wrapf(err, "failed to link extra file '%s'", file)
+			return fmt.Errorf("failed to link extra file '%s': %w", file, err)
 		}
 	}
 	for _, bin := range bins {
 		if err := os.Link(bin.Path, filepath.Join(tmp, filepath.Base(bin.Path))); err != nil {
-			return errors.Wrap(err, "failed to link binary")
+			return fmt.Errorf("failed to link binary: %w", err)
 		}
 	}
 
@@ -205,7 +204,7 @@ func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string
 	for _, imageTemplate := range docker.ImageTemplates {
 		image, err := tmpl.New(ctx).Apply(imageTemplate)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to execute image template '%s'", imageTemplate)
+			return nil, fmt.Errorf("failed to execute image template '%s': %w", imageTemplate, err)
 		}
 
 		images = append(images, image)
@@ -220,7 +219,7 @@ func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]st
 	for _, buildFlagTemplate := range docker.BuildFlagTemplates {
 		buildFlag, err := tmpl.New(ctx).Apply(buildFlagTemplate)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to process build flag template '%s'", buildFlagTemplate)
+			return nil, fmt.Errorf("failed to process build flag template '%s': %w", buildFlagTemplate, err)
 		}
 		buildFlags = append(buildFlags, buildFlag)
 	}
@@ -258,7 +257,7 @@ func dockerBuild(ctx *context.Context, root string, images, flags []string) erro
 	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return errors.Wrapf(err, "failed to build docker image: %s: \n%s", images[0], string(out))
+		return fmt.Errorf("failed to build docker image: %s: \n%s: %w", images[0], string(out), err)
 	}
 	log.Debugf("docker build output: \n%s", string(out))
 	return nil
@@ -280,7 +279,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	log.WithField("cmd", cmd.Args).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return errors.Wrapf(err, "failed to push docker image: \n%s", string(out))
+		return fmt.Errorf("failed to push docker image: \n%s: %w", string(out), err)
 	}
 	log.Debugf("docker push output: \n%s", string(out))
 	ctx.Artifacts.Add(&artifact.Artifact{

@@ -16,12 +16,14 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 var originKeyring = "testdata/gnupg"
 var keyring string
+
+const user = "nopass"
+const passwordUser = "password"
 
 func TestMain(m *testing.M) {
 	rand.Seed(time.Now().UnixNano())
@@ -31,12 +33,13 @@ func TestMain(m *testing.M) {
 		fmt.Printf("failed to copy %s to %s: %s", originKeyring, keyring, err)
 		os.Exit(1)
 	}
+
 	defer os.RemoveAll(keyring)
 	os.Exit(m.Run())
 }
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestSignDefault(t *testing.T) {
@@ -46,11 +49,11 @@ func TestSignDefault(t *testing.T) {
 		},
 	}
 	err := Pipe{}.Default(ctx)
-	assert.NoError(t, err)
-	assert.Equal(t, ctx.Config.Signs[0].Cmd, "gpg")
-	assert.Equal(t, ctx.Config.Signs[0].Signature, "${artifact}.sig")
-	assert.Equal(t, ctx.Config.Signs[0].Args, []string{"--output", "$signature", "--detach-sig", "$artifact"})
-	assert.Equal(t, ctx.Config.Signs[0].Artifacts, "none")
+	require.NoError(t, err)
+	require.Equal(t, ctx.Config.Signs[0].Cmd, "gpg")
+	require.Equal(t, ctx.Config.Signs[0].Signature, "${artifact}.sig")
+	require.Equal(t, ctx.Config.Signs[0].Args, []string{"--output", "$signature", "--detach-sig", "$artifact"})
+	require.Equal(t, ctx.Config.Signs[0].Artifacts, "none")
 }
 
 func TestSignDisabled(t *testing.T) {
@@ -59,14 +62,14 @@ func TestSignDisabled(t *testing.T) {
 		{Artifacts: "none"},
 	}
 	err := Pipe{}.Run(ctx)
-	assert.EqualError(t, err, "artifact signing is disabled")
+	require.EqualError(t, err, "artifact signing is disabled")
 }
 
 func TestSignSkipped(t *testing.T) {
 	ctx := context.New(config.Project{})
 	ctx.SkipSign = true
 	err := Pipe{}.Run(ctx)
-	assert.EqualError(t, err, "artifact signing is disabled")
+	require.EqualError(t, err, "artifact signing is disabled")
 }
 
 func TestSignInvalidArtifacts(t *testing.T) {
@@ -75,16 +78,18 @@ func TestSignInvalidArtifacts(t *testing.T) {
 		{Artifacts: "foo"},
 	}
 	err := Pipe{}.Run(ctx)
-	assert.EqualError(t, err, "invalid list of artifacts to sign: foo")
+	require.EqualError(t, err, "invalid list of artifacts to sign: foo")
 }
 
 func TestSignArtifacts(t *testing.T) {
+	stdin := passwordUser
 	tests := []struct {
 		desc           string
 		ctx            *context.Context
 		signaturePaths []string
 		signatureNames []string
 		expectedErrMsg string
+		user           string
 	}{
 		{
 			desc:           "sign errors",
@@ -283,21 +288,102 @@ func TestSignArtifacts(t *testing.T) {
 			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
 			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
 		},
+		{
+			desc: "sign single with password from stdin",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Args: []string{
+								"-u",
+								passwordUser,
+								"--batch",
+								"--pinentry-mode",
+								"loopback",
+								"--passphrase-fd",
+								"0",
+								"--output",
+								"${signature}",
+								"--detach-sign",
+								"${artifact}",
+							},
+							Stdin: &stdin,
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
+			user:           passwordUser,
+		},
+		{
+			desc: "sign single with password from stdin_file",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Args: []string{
+								"-u",
+								passwordUser,
+								"--batch",
+								"--pinentry-mode",
+								"loopback",
+								"--passphrase-fd",
+								"0",
+								"--output",
+								"${signature}",
+								"--detach-sign",
+								"${artifact}",
+							},
+							StdinFile: filepath.Join(keyring, passwordUser),
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
+			user:           passwordUser,
+		},
+		{
+			desc: "missing stdin_file",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Args: []string{
+								"--batch",
+								"--pinentry-mode",
+								"loopback",
+								"--passphrase-fd",
+								"0",
+							},
+							StdinFile: "/tmp/non-existing-file",
+						},
+					},
+				},
+			),
+			expectedErrMsg: `sign failed: cannot open file /tmp/non-existing-file: open /tmp/non-existing-file: no such file or directory`,
+		},
 	}
 
 	for _, test := range tests {
+		if test.user == "" {
+			test.user = user
+		}
+
 		t.Run(test.desc, func(tt *testing.T) {
-			testSign(tt, test.ctx, test.signaturePaths, test.signatureNames, test.expectedErrMsg)
+			testSign(tt, test.ctx, test.signaturePaths, test.signatureNames, test.user, test.expectedErrMsg)
 		})
 	}
 }
 
-const user = "nopass"
-
-func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signatureNames []string, expectedErrMsg string) {
+func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signatureNames []string, user, expectedErrMsg string) {
 	// create temp dir for file and signature
 	tmpdir, err := ioutil.TempDir("", "goreleaser")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer os.RemoveAll(tmpdir)
 
 	ctx.Config.Dist = tmpdir
@@ -305,14 +391,14 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 	// create some fake artifacts
 	var artifacts = []string{"artifact1", "artifact2", "artifact3", "checksum", "checksum2"}
 	err = os.Mkdir(filepath.Join(tmpdir, "linux_amd64"), os.ModePerm)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	for _, f := range artifacts {
 		file := filepath.Join(tmpdir, f)
-		assert.NoError(t, ioutil.WriteFile(file, []byte("foo"), 0644))
+		require.NoError(t, ioutil.WriteFile(file, []byte("foo"), 0644))
 	}
-	assert.NoError(t, ioutil.WriteFile(filepath.Join(tmpdir, "linux_amd64", "artifact4"), []byte("foo"), 0644))
+	require.NoError(t, ioutil.WriteFile(filepath.Join(tmpdir, "linux_amd64", "artifact4"), []byte("foo"), 0644))
 	artifacts = append(artifacts, "linux_amd64/artifact4")
-	assert.NoError(t, ioutil.WriteFile(filepath.Join(tmpdir, "artifact5.tar.gz"), []byte("foo"), 0644))
+	require.NoError(t, ioutil.WriteFile(filepath.Join(tmpdir, "artifact5.tar.gz"), []byte("foo"), 0644))
 	artifacts = append(artifacts, "artifact5.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "artifact1",
@@ -364,7 +450,7 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 
 	// configure the pipeline
 	// make sure we are using the test keyring
-	assert.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
 	for i := range ctx.Config.Signs {
 		ctx.Config.Signs[i].Args = append(
 			[]string{"--homedir", keyring},
@@ -374,15 +460,15 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 
 	// run the pipeline
 	if expectedErrMsg != "" {
-		assert.EqualError(t, Pipe{}.Run(ctx), expectedErrMsg)
+		require.EqualError(t, Pipe{}.Run(ctx), expectedErrMsg)
 		return
 	}
 
-	assert.NoError(t, Pipe{}.Run(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
 
 	// ensure all artifacts have an ID
 	for _, arti := range ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List() {
-		assert.NotEmptyf(t, arti.ExtraOr("ID", ""), ".Extra.ID on %s", arti.Path)
+		require.NotEmptyf(t, arti.ExtraOr("ID", ""), ".Extra.ID on %s", arti.Path)
 	}
 
 	// verify that only the artifacts and the signatures are in the dist dir
@@ -403,15 +489,15 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 			gotFiles = append(gotFiles, relPath)
 			return nil
 		})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	wantFiles := append(artifacts, signaturePaths...)
 	sort.Strings(wantFiles)
-	assert.ElementsMatch(t, wantFiles, gotFiles)
+	require.ElementsMatch(t, wantFiles, gotFiles)
 
 	// verify the signatures
 	for _, sig := range signaturePaths {
-		verifySignature(t, ctx, sig)
+		verifySignature(t, ctx, sig, user)
 	}
 
 	var signArtifacts []string
@@ -419,16 +505,16 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 		signArtifacts = append(signArtifacts, sig.Name)
 	}
 	// check signature is an artifact
-	assert.ElementsMatch(t, signArtifacts, signatureNames)
+	require.ElementsMatch(t, signArtifacts, signatureNames)
 }
 
-func verifySignature(t *testing.T, ctx *context.Context, sig string) {
+func verifySignature(t *testing.T, ctx *context.Context, sig string, user string) {
 	artifact := strings.Replace(sig, filepath.Ext(sig), "", 1)
 
 	// verify signature was made with key for usesr 'nopass'
 	cmd := exec.Command("gpg", "--homedir", keyring, "--verify", filepath.Join(ctx.Config.Dist, sig), filepath.Join(ctx.Config.Dist, artifact))
 	out, err := cmd.CombinedOutput()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// check if the signature matches the user we expect to do this properly we
 	// might need to have either separate keyrings or export the key from the

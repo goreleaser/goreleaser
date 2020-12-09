@@ -18,7 +18,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gocloud.dev/blob"
 )
@@ -26,15 +25,15 @@ import (
 func TestMinioUpload(t *testing.T) {
 	var listen = randomListen(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	srcpath := filepath.Join(folder, "source.tar.gz")
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
 	checkpath := filepath.Join(folder, "check.txt")
-	assert.NoError(t, ioutil.WriteFile(checkpath, []byte("fake checksums"), 0744))
-	assert.NoError(t, ioutil.WriteFile(srcpath, []byte("fake\nsrc"), 0744))
-	assert.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
-	assert.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
+	require.NoError(t, ioutil.WriteFile(checkpath, []byte("fake checksums"), 0744))
+	require.NoError(t, ioutil.WriteFile(srcpath, []byte("fake\nsrc"), 0744))
+	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
+	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
@@ -82,8 +81,8 @@ func TestMinioUpload(t *testing.T) {
 	defer stop(t, name)
 	start(t, name, listen)
 	prepareEnv(t, listen)
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.NoError(t, Pipe{}.Publish(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
 
 	require.Subset(t, getFiles(t, ctx, ctx.Config.Blobs[0]), []string{
 		"testupload/v1.0.0/bin.deb",
@@ -96,14 +95,14 @@ func TestMinioUpload(t *testing.T) {
 func TestMinioUploadCustomBucketID(t *testing.T) {
 	var listen = randomListen(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
-	assert.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
-	assert.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
+	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
+	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
 	// Set custom BUCKET_ID env variable.
 	err = os.Setenv("BUCKET_ID", "test")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
@@ -130,20 +129,20 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 	defer stop(t, name)
 	start(t, name, listen)
 	prepareEnv(t, listen)
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.NoError(t, Pipe{}.Publish(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
 }
 
 func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 	var listen = randomListen(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
-	assert.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
-	assert.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
+	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
+	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
 	// Set custom BUCKET_ID env variable.
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
@@ -170,22 +169,22 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 	defer stop(t, name)
 	start(t, name, listen)
 	prepareEnv(t, listen)
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Error(t, Pipe{}.Publish(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Error(t, Pipe{}.Publish(ctx))
 }
 
 func TestMinioUploadSkipPublish(t *testing.T) {
 	var listen = randomListen(t)
 	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	srcpath := filepath.Join(folder, "source.tar.gz")
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
 	checkpath := filepath.Join(folder, "check.txt")
-	assert.NoError(t, ioutil.WriteFile(checkpath, []byte("fake checksums"), 0744))
-	assert.NoError(t, ioutil.WriteFile(srcpath, []byte("fake\nsrc"), 0744))
-	assert.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
-	assert.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
+	require.NoError(t, ioutil.WriteFile(checkpath, []byte("fake checksums"), 0744))
+	require.NoError(t, ioutil.WriteFile(srcpath, []byte("fake\nsrc"), 0744))
+	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
+	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
@@ -234,8 +233,8 @@ func TestMinioUploadSkipPublish(t *testing.T) {
 	defer stop(t, name)
 	start(t, name, listen)
 	prepareEnv(t, listen)
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.NoError(t, Pipe{}.Publish(ctx))
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
 
 	require.NotContains(t, getFiles(t, ctx, ctx.Config.Blobs[0]), []string{
 		"testupload/v1.2.0/bin.deb",

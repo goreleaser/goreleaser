@@ -10,7 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDefaultWithRepoConfig(t *testing.T) {
@@ -32,9 +32,9 @@ func TestDefaultWithRepoConfig(t *testing.T) {
 		},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "configrepo", ctx.Config.Milestones[0].Repo.Name)
-	assert.Equal(t, "configowner", ctx.Config.Milestones[0].Repo.Owner)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "configrepo", ctx.Config.Milestones[0].Repo.Name)
+	require.Equal(t, "configowner", ctx.Config.Milestones[0].Repo.Owner)
 }
 
 func TestDefaultWithRepoRemote(t *testing.T) {
@@ -45,9 +45,9 @@ func TestDefaultWithRepoRemote(t *testing.T) {
 
 	var ctx = context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "githubrepo", ctx.Config.Milestones[0].Repo.Name)
-	assert.Equal(t, "githubowner", ctx.Config.Milestones[0].Repo.Owner)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "githubrepo", ctx.Config.Milestones[0].Repo.Name)
+	require.Equal(t, "githubowner", ctx.Config.Milestones[0].Repo.Owner)
 }
 
 func TestDefaultWithNameTemplate(t *testing.T) {
@@ -60,8 +60,8 @@ func TestDefaultWithNameTemplate(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "confignametemplate", ctx.Config.Milestones[0].NameTemplate)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "confignametemplate", ctx.Config.Milestones[0].NameTemplate)
 }
 
 func TestDefaultWithoutGitRepo(t *testing.T) {
@@ -71,8 +71,8 @@ func TestDefaultWithoutGitRepo(t *testing.T) {
 		Config: config.Project{},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
-	assert.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
-	assert.Empty(t, ctx.Config.Milestones[0].Repo.String())
+	require.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
+	require.Empty(t, ctx.Config.Milestones[0].Repo.String())
 }
 
 func TestDefaultWithoutGitRepoOrigin(t *testing.T) {
@@ -83,8 +83,8 @@ func TestDefaultWithoutGitRepoOrigin(t *testing.T) {
 	}
 	ctx.TokenType = context.TokenTypeGitHub
 	testlib.GitInit(t)
-	assert.EqualError(t, Pipe{}.Default(ctx), "repository doesn't have an `origin` remote")
-	assert.Empty(t, ctx.Config.Milestones[0].Repo.String())
+	require.EqualError(t, Pipe{}.Default(ctx), "repository doesn't have an `origin` remote")
+	require.Empty(t, ctx.Config.Milestones[0].Repo.String())
 }
 
 func TestDefaultWithoutGitRepoSnapshot(t *testing.T) {
@@ -95,8 +95,8 @@ func TestDefaultWithoutGitRepoSnapshot(t *testing.T) {
 	}
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Snapshot = true
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Empty(t, ctx.Config.Milestones[0].Repo.String())
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Empty(t, ctx.Config.Milestones[0].Repo.String())
 }
 
 func TestDefaultWithoutNameTemplate(t *testing.T) {
@@ -105,12 +105,12 @@ func TestDefaultWithoutNameTemplate(t *testing.T) {
 			Milestones: []config.Milestone{},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "{{ .Tag }}", ctx.Config.Milestones[0].NameTemplate)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "{{ .Tag }}", ctx.Config.Milestones[0].NameTemplate)
 }
 
 func TestString(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestPublishCloseDisabled(t *testing.T) {
@@ -123,7 +123,7 @@ func TestPublishCloseDisabled(t *testing.T) {
 	})
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doPublish(ctx, client))
-	assert.Equal(t, "", client.ClosedMilestone)
+	require.Equal(t, "", client.ClosedMilestone)
 }
 
 func TestPublishCloseEnabled(t *testing.T) {
@@ -141,8 +141,8 @@ func TestPublishCloseEnabled(t *testing.T) {
 	})
 	ctx.Git.CurrentTag = "v1.0.0"
 	client := &DummyClient{}
-	assert.NoError(t, doPublish(ctx, client))
-	assert.Equal(t, "v1.0.0", client.ClosedMilestone)
+	require.NoError(t, doPublish(ctx, client))
+	require.Equal(t, "v1.0.0", client.ClosedMilestone)
 }
 
 func TestPublishCloseError(t *testing.T) {
@@ -163,8 +163,8 @@ func TestPublishCloseError(t *testing.T) {
 	client := &DummyClient{
 		FailToCloseMilestone: true,
 	}
-	assert.NoError(t, doPublish(ctx, client))
-	assert.Equal(t, "", client.ClosedMilestone)
+	require.NoError(t, doPublish(ctx, client))
+	require.Equal(t, "", client.ClosedMilestone)
 }
 
 func TestPublishCloseFailOnError(t *testing.T) {
@@ -186,8 +186,8 @@ func TestPublishCloseFailOnError(t *testing.T) {
 	client := &DummyClient{
 		FailToCloseMilestone: true,
 	}
-	assert.Error(t, doPublish(ctx, client))
-	assert.Equal(t, "", client.ClosedMilestone)
+	require.Error(t, doPublish(ctx, client))
+	require.Equal(t, "", client.ClosedMilestone)
 }
 
 type DummyClient struct {

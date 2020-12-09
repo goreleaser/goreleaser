@@ -1,7 +1,9 @@
 package brew
 
 import (
+	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -17,7 +19,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/pkg/errors"
 )
 
 // ErrNoArchivesFound happens when 0 archives are found.
@@ -83,21 +84,31 @@ func (Pipe) Default(ctx *context.Context) error {
 		var brew = &ctx.Config.Brews[i]
 
 		if brew.Install == "" {
-			// TODO: maybe replace this with a simplear also optimistic
+			// TODO: maybe replace this with a simpler also optimistic
 			// approach of just doing `bin.install "project_name"`?
 			var installs []string
 			for _, build := range ctx.Config.Builds {
 				if !isBrewBuild(build) {
 					continue
 				}
-				installs = append(
-					installs,
-					fmt.Sprintf(`bin.install "%s"`, build.Binary),
-				)
+				install := fmt.Sprintf(`bin.install "%s"`, build.Binary)
+				// Do not add duplicate "bin.install" statements when binary names overlap.
+				var found bool
+				for _, instruction := range installs {
+					if instruction == install {
+						found = true
+						break
+					}
+				}
+				if !found {
+					installs = append(installs, install)
+				}
 			}
 			brew.Install = strings.Join(installs, "\n")
-			log.Warnf("optimistically guessing `brew[%d].installs`, double check", i)
+			log.Warnf("optimistically guessing `brew[%d].install`, double check", i)
 		}
+
+		//nolint: staticcheck
 		if brew.GitHub.String() != "" {
 			deprecate.Notice(ctx, "brews.github")
 			brew.Tap.Owner = brew.GitHub.Owner
@@ -202,7 +213,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	var path = filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
 	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil { //nolint: gosec
-		return errors.Wrap(err, "failed to write brew formula")
+		return fmt.Errorf("failed to write brew formula: %w", err)
 	}
 
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
@@ -247,7 +258,28 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	if err := t.Execute(&out, data); err != nil {
 		return "", err
 	}
-	return tmpl.New(ctx).Apply(out.String())
+
+	content, err := tmpl.New(ctx).Apply(out.String())
+	if err != nil {
+		return "", err
+	}
+	out.Reset()
+
+	// Sanitize the template output and get rid of trailing whitespace.
+	var (
+		r = strings.NewReader(content)
+		s = bufio.NewScanner(r)
+	)
+	for s.Scan() {
+		l := strings.TrimRight(s.Text(), " ")
+		_, _ = out.WriteString(l)
+		_ = out.WriteByte('\n')
+	}
+	if err := s.Err(); err != nil {
+		return "", err
+	}
+
+	return out.String(), nil
 }
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
@@ -256,11 +288,13 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		Desc:             cfg.Description,
 		Homepage:         cfg.Homepage,
 		Version:          ctx.Version,
+		License:          cfg.License,
 		Caveats:          split(cfg.Caveats),
 		Dependencies:     cfg.Dependencies,
 		Conflicts:        cfg.Conflicts,
 		Plist:            cfg.Plist,
 		Install:          split(cfg.Install),
+		PostInstall:      cfg.PostInstall,
 		Tests:            split(cfg.Test),
 		DownloadStrategy: cfg.DownloadStrategy,
 		CustomRequire:    cfg.CustomRequire,
@@ -299,21 +333,21 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 			result.MacOS = down
 		} else if artifact.Goos == "linux" {
 			switch artifact.Goarch {
-			case "386", "amd64":
-				if result.Linux.DownloadURL != "" {
+			case "amd64":
+				if result.LinuxAmd64.DownloadURL != "" {
 					return result, ErrMultipleArchivesSameOS
 				}
-				result.Linux = down
+				result.LinuxAmd64 = down
 			case "arm":
-				if result.Arm.DownloadURL != "" {
+				if result.LinuxArm.DownloadURL != "" {
 					return result, ErrMultipleArchivesSameOS
 				}
-				result.Arm = down
+				result.LinuxArm = down
 			case "arm64":
-				if result.Arm64.DownloadURL != "" {
+				if result.LinuxArm64.DownloadURL != "" {
 					return result, ErrMultipleArchivesSameOS
 				}
-				result.Arm64 = down
+				result.LinuxArm64 = down
 			}
 		}
 	}
@@ -330,8 +364,8 @@ func split(s string) []string {
 }
 
 func formulaNameFor(name string) string {
-	name = strings.Replace(name, "-", " ", -1)
-	name = strings.Replace(name, "_", " ", -1)
-	name = strings.Replace(name, "@", "AT", -1)
-	return strings.Replace(strings.Title(name), " ", "", -1)
+	name = strings.ReplaceAll(name, "-", " ")
+	name = strings.ReplaceAll(name, "_", " ")
+	name = strings.ReplaceAll(name, "@", "AT")
+	return strings.ReplaceAll(strings.Title(name), " ", "")
 }

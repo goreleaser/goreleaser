@@ -1,6 +1,7 @@
 package git
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
@@ -8,7 +9,6 @@ import (
 	"time"
 
 	"github.com/apex/log"
-	"github.com/pkg/errors"
 
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -39,6 +39,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // nolint: gochecknoglobals
 var fakeInfo = context.GitInfo{
+	Branch:      "none",
 	CurrentTag:  "v0.0.0",
 	Commit:      "none",
 	ShortCommit: "none",
@@ -65,25 +66,30 @@ func getInfo(ctx *context.Context) (context.GitInfo, error) {
 }
 
 func getGitInfo() (context.GitInfo, error) {
+	branch, err := getBranch()
+	if err != nil {
+		return context.GitInfo{}, fmt.Errorf("couldn't get current branch: %w", err)
+	}
 	short, err := getShortCommit()
 	if err != nil {
-		return context.GitInfo{}, errors.Wrap(err, "couldn't get current commit")
+		return context.GitInfo{}, fmt.Errorf("couldn't get current commit: %w", err)
 	}
 	full, err := getFullCommit()
 	if err != nil {
-		return context.GitInfo{}, errors.Wrap(err, "couldn't get current commit")
+		return context.GitInfo{}, fmt.Errorf("couldn't get current commit: %w", err)
 	}
 	date, err := getCommitDate()
 	if err != nil {
-		return context.GitInfo{}, errors.Wrap(err, "couldn't get commit date")
+		return context.GitInfo{}, fmt.Errorf("couldn't get commit date: %w", err)
 	}
 	url, err := getURL()
 	if err != nil {
-		return context.GitInfo{}, errors.Wrap(err, "couldn't get remote URL")
+		return context.GitInfo{}, fmt.Errorf("couldn't get remote URL: %w", err)
 	}
 	tag, err := getTag()
 	if err != nil {
 		return context.GitInfo{
+			Branch:      branch,
 			Commit:      full,
 			FullCommit:  full,
 			ShortCommit: short,
@@ -93,6 +99,7 @@ func getGitInfo() (context.GitInfo, error) {
 		}, ErrNoTag
 	}
 	return context.GitInfo{
+		Branch:      branch,
 		CurrentTag:  tag,
 		Commit:      full,
 		FullCommit:  full,
@@ -121,6 +128,10 @@ func validate(ctx *context.Context) error {
 		}
 	}
 	return nil
+}
+
+func getBranch() (string, error) {
+	return git.Clean(git.Run("rev-parse", "--abbrev-ref", "HEAD", "--quiet"))
 }
 
 func getCommitDate() (time.Time, error) {
