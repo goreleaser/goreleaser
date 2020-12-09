@@ -353,6 +353,8 @@ github.com/goreleaser/chglog v0.1.2 h1:tdzAb/ILeMnphzI9zQ7Nkq+T8R9qyXli8GydD8plF
 github.com/goreleaser/chglog v0.1.2/go.mod h1:tTZsFuSZK4epDXfjMkxzcGbrIOXprf0JFp47BjIr3B8=
 github.com/goreleaser/fileglob v0.3.0 h1:ef5bTud50fxihAjR2IWP0lGpyaPOgCD5qWfo14azJyI=
 github.com/goreleaser/fileglob v0.3.0/go.mod h1:kNcPrPzjCp+Ox3jmXLU5QEsjhqrtLBm6OnXAif8KRl8=
+github.com/goreleaser/fileglob v0.3.1 h1:OTFDWqUUHjQazk2N5GdUqEbqT/grBnRARaAXsV07q1Y=
+github.com/goreleaser/fileglob v0.3.1/go.mod h1:kNcPrPzjCp+Ox3jmXLU5QEsjhqrtLBm6OnXAif8KRl8=
 github.com/goreleaser/nfpm v1.10.2 h1:/D5vs9LwFcXTnZqHkJOwuiEag6rgtwKVj1yBvvJZaMA=
 github.com/goreleaser/nfpm v1.10.2/go.mod h1:R3sQteLUCtPD7GJxvDl0eqlkTX0/hqFftT3WUPLjClA=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
