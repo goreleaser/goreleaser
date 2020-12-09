@@ -17,44 +17,90 @@ func TestDescription(t *testing.T) {
 }
 
 func TestPipe(t *testing.T) {
-	var binary = "binary"
-	var checksums = binary + "_bar_checksums.txt"
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
-	var file = filepath.Join(folder, binary)
-	require.NoError(t, ioutil.WriteFile(file, []byte("some string"), 0644))
-	var ctx = context.New(
-		config.Project{
-			Dist:        folder,
-			ProjectName: binary,
-			Checksum: config.Checksum{
-				NameTemplate: "{{ .ProjectName }}_{{ .Env.FOO }}_checksums.txt",
-				Algorithm:    "sha256",
+	const binary = "binary"
+	const archive = binary + ".tar.gz"
+	const linuxPackage = binary + ".rpm"
+	const checksums = binary + "_bar_checksums.txt"
+
+	tests := map[string]struct {
+		ids  []string
+		want []string
+	}{
+		"default": {
+			want: []string{
+				binary,
+				archive,
+				linuxPackage,
 			},
 		},
-	)
-	ctx.Git.CurrentTag = "1.2.3"
-	ctx.Env = map[string]string{"FOO": "bar"}
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: binary,
-		Path: file,
-		Type: artifact.UploadableBinary,
-	})
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: binary + ".tar.gz",
-		Path: file,
-		Type: artifact.UploadableArchive,
-	})
-	require.NoError(t, Pipe{}.Run(ctx))
-	var artifacts []string
-	for _, a := range ctx.Artifacts.List() {
-		artifacts = append(artifacts, a.Name)
+		"select ids": {
+			ids: []string{
+				"id-1",
+				"id-2",
+			},
+			want: []string{
+				binary,
+				archive,
+			},
+		},
 	}
-	require.Contains(t, artifacts, checksums, binary)
-	bts, err := ioutil.ReadFile(filepath.Join(folder, checksums))
-	require.NoError(t, err)
-	require.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary")
-	require.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  binary.tar.gz")
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			folder, err := ioutil.TempDir("", "goreleasertest")
+			require.NoError(t, err)
+			var file = filepath.Join(folder, binary)
+			require.NoError(t, ioutil.WriteFile(file, []byte("some string"), 0644))
+			var ctx = context.New(
+				config.Project{
+					Dist:        folder,
+					ProjectName: binary,
+					Checksum: config.Checksum{
+						NameTemplate: "{{ .ProjectName }}_{{ .Env.FOO }}_checksums.txt",
+						Algorithm:    "sha256",
+						IDs:          tt.ids,
+					},
+				},
+			)
+			ctx.Git.CurrentTag = "1.2.3"
+			ctx.Env = map[string]string{"FOO": "bar"}
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name: binary,
+				Path: file,
+				Type: artifact.UploadableBinary,
+				Extra: map[string]interface{}{
+					"ID": "id-1",
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name: archive,
+				Path: file,
+				Type: artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					"ID": "id-2",
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name: linuxPackage,
+				Path: file,
+				Type: artifact.LinuxPackage,
+				Extra: map[string]interface{}{
+					"ID": "id-3",
+				},
+			})
+			require.NoError(t, Pipe{}.Run(ctx))
+			var artifacts []string
+			for _, a := range ctx.Artifacts.List() {
+				artifacts = append(artifacts, a.Name)
+			}
+			require.Contains(t, artifacts, checksums, binary)
+			bts, err := ioutil.ReadFile(filepath.Join(folder, checksums))
+			require.NoError(t, err)
+			for _, want := range tt.want {
+				require.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  "+want)
+			}
+		})
+	}
+
 }
 
 func TestPipeSkipTrue(t *testing.T) {
