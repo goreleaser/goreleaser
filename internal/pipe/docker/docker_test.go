@@ -1076,8 +1076,8 @@ func TestLinkTwoLevelDirectory(t *testing.T) {
 	const testFile = "test"
 
 	require.NoError(t, os.Mkdir(srcLevel2, 0755))
-	require.NoError(t, ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644))
-	require.NoError(t, ioutil.WriteFile(srcLevel2+"/"+testFile, []byte("foo"), 0644))
+	require.NoError(t, ioutil.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0644))
+	require.NoError(t, ioutil.WriteFile(filepath.Join(srcLevel2, testFile), []byte("foo"), 0644))
 
 	require.NoError(t, link(srcDir, dstDir))
 
