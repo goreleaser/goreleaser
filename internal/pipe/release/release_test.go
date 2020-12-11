@@ -23,8 +23,7 @@ func TestPipeDescription(t *testing.T) {
 }
 
 func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
 	srcfile, err := os.Create(filepath.Join(folder, "source.tar.gz"))
@@ -99,8 +98,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 }
 
 func TestRunPipeWithIDsThenFilters(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
@@ -210,8 +208,7 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 }
 
 func TestRunPipeUploadFailure(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
 	var config = config.Project{
@@ -282,8 +279,7 @@ func TestRunPipeExtraOverride(t *testing.T) {
 }
 
 func TestRunPipeUploadRetry(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
 	var config = config.Project{

@@ -24,8 +24,7 @@ import (
 
 func TestMinioUpload(t *testing.T) {
 	var listen = randomListen(t)
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	srcpath := filepath.Join(folder, "source.tar.gz")
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
@@ -93,15 +92,13 @@ func TestMinioUpload(t *testing.T) {
 
 func TestMinioUploadCustomBucketID(t *testing.T) {
 	var listen = randomListen(t)
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
 	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
 	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
 	// Set custom BUCKET_ID env variable.
-	err = os.Setenv("BUCKET_ID", "test")
-	require.NoError(t, err)
+	require.NoError(t, os.Setenv("BUCKET_ID", "test"))
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
@@ -133,14 +130,11 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 
 func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 	var listen = randomListen(t)
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
 	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
 	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
-	// Set custom BUCKET_ID env variable.
-	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
@@ -172,8 +166,7 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 
 func TestMinioUploadSkipPublish(t *testing.T) {
 	var listen = randomListen(t)
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	srcpath := filepath.Join(folder, "source.tar.gz")
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")

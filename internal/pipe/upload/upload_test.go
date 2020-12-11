@@ -56,15 +56,13 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 	setup()
 	defer teardown()
 
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	err = ioutil.WriteFile(binPath, d1, 0666)
-	require.NoError(t, err)
+	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -148,8 +146,7 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	setup()
 	defer teardown()
 
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
@@ -219,15 +216,13 @@ func TestRunPipe_ModeBinary_CustomArtifactName(t *testing.T) {
 	setup()
 	defer teardown()
 
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	err = ioutil.WriteFile(binPath, d1, 0666)
-	require.NoError(t, err)
+	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin;deb.distribution=xenial", func(w http.ResponseWriter, r *http.Request) {
@@ -286,8 +281,7 @@ func TestRunPipe_ModeArchive_CustomArtifactName(t *testing.T) {
 	setup()
 	defer teardown()
 
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
@@ -355,8 +349,7 @@ func TestRunPipe_ModeArchive_CustomArtifactName(t *testing.T) {
 }
 
 func TestRunPipe_ArtifactoryDown(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
 
@@ -388,8 +381,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 
@@ -420,7 +412,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 		Goos:   "darwin",
 		Type:   artifact.UploadableBinary,
 	})
-	err = Pipe{}.Publish(ctx)
+	var err = Pipe{}.Publish(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), `upload: error while building the target url: template: tmpl:1: unexpected "/" in operand`)
 }
@@ -429,15 +421,13 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	setup()
 	defer teardown()
 
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	err = ioutil.WriteFile(binPath, d1, 0666)
-	require.NoError(t, err)
+	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -476,7 +466,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	err = Pipe{}.Publish(ctx)
+	var err = Pipe{}.Publish(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "Unauthorized")
 }
@@ -513,15 +503,13 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 }
 
 func TestRunPipe_UnparsableTarget(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	err = ioutil.WriteFile(binPath, d1, 0666)
-	require.NoError(t, err)
+	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
 
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
@@ -578,8 +566,7 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))

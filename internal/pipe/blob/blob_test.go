@@ -122,8 +122,7 @@ func TestPipe_PublishExtraFiles(t *testing.T) {
 func pipePublish(t *testing.T, extra []config.ExtraFile) {
 	gcloudCredentials, _ := filepath.Abs("./testdata/credentials.json")
 
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
 	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))

@@ -155,8 +155,7 @@ func TestGroupByPlatform(t *testing.T) {
 }
 
 func TestChecksum(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var file = filepath.Join(folder, "subject")
 	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
 

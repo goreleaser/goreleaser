@@ -219,8 +219,7 @@ func TestUpload(t *testing.T) {
 	ctx.Env["TEST_A_USERNAME"] = "u2"
 	ctx.Version = "2.1.0"
 	ctx.Artifacts = artifact.New()
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	for _, a := range []struct {
 		ext string
 		typ artifact.Type

@@ -11,8 +11,7 @@ import (
 )
 
 func TestGzFile(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "")
-	require.NoError(t, err)
+	var tmp = t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.gz"))
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck

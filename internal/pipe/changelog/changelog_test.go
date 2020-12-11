@@ -326,7 +326,7 @@ func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
 func TestChangeLogWithReleaseHeader(t *testing.T) {
 	current, err := os.Getwd()
 	require.NoError(t, err)
-	var tmpDir = testlib.Mktmp(t)
+	var tmpdir = testlib.Mktmp(t)
 	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
 	testlib.GitInit(t)
 	var msgs = []string{
@@ -351,7 +351,7 @@ func TestChangeLogWithReleaseHeader(t *testing.T) {
 func TestChangeLogWithTemplatedReleaseHeader(t *testing.T) {
 	current, err := os.Getwd()
 	require.NoError(t, err)
-	var tmpDir = testlib.Mktmp(t)
+	var tmpdir = testlib.Mktmp(t)
 	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
 	testlib.GitInit(t)
 	var msgs = []string{
@@ -375,7 +375,7 @@ func TestChangeLogWithTemplatedReleaseHeader(t *testing.T) {
 func TestChangeLogWithReleaseFooter(t *testing.T) {
 	current, err := os.Getwd()
 	require.NoError(t, err)
-	var tmpDir = testlib.Mktmp(t)
+	var tmpdir = testlib.Mktmp(t)
 	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
 	testlib.GitInit(t)
 	var msgs = []string{
@@ -401,7 +401,7 @@ func TestChangeLogWithReleaseFooter(t *testing.T) {
 func TestChangeLogWithTemplatedReleaseFooter(t *testing.T) {
 	current, err := os.Getwd()
 	require.NoError(t, err)
-	var tmpDir = testlib.Mktmp(t)
+	var tmpdir = testlib.Mktmp(t)
 	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
 	testlib.GitInit(t)
 	var msgs = []string{
@@ -427,7 +427,7 @@ func TestChangeLogWithTemplatedReleaseFooter(t *testing.T) {
 func TestChangeLogWithoutReleaseFooter(t *testing.T) {
 	current, err := os.Getwd()
 	require.NoError(t, err)
-	var tmpDir = testlib.Mktmp(t)
+	var tmpdir = testlib.Mktmp(t)
 	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
 	testlib.GitInit(t)
 	var msgs = []string{

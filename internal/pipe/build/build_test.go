@@ -731,7 +731,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 }
 
 func TestHookComplex(t *testing.T) {
-	var tmpDir = testlib.Mktmp(t)
+	var tmp = testlib.Mktmp(t)
 
 	require.NoError(t, runHook(context.New(config.Project{}), api.Options{}, []string{}, config.BuildHooks{
 		{
