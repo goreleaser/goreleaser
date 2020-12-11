@@ -437,8 +437,7 @@ func TestTemplate(t *testing.T) {
 }
 
 func TestRunHookEnvs(t *testing.T) {
-	tmp, back := testlib.Mktmp(t)
-	defer back()
+	var tmp = testlib.Mktmp(t)
 
 	var build = config.Build{
 		Env: []string{
@@ -653,8 +652,7 @@ func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
 }
 
 func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
-	tmpDir, back := testlib.Mktmp(t)
-	defer back()
+	var tmpDir = testlib.Mktmp(t)
 
 	build := config.Build{
 		Lang:   "fake",
