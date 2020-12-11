@@ -19,8 +19,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestNotAGitFolder(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
@@ -28,8 +27,7 @@ func TestNotAGitFolder(t *testing.T) {
 }
 
 func TestSingleCommit(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit1")
@@ -42,8 +40,7 @@ func TestSingleCommit(t *testing.T) {
 }
 
 func TestBranch(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "test-branch-commit")
@@ -57,8 +54,7 @@ func TestBranch(t *testing.T) {
 }
 
 func TestNoRemote(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
@@ -69,8 +65,7 @@ func TestNoRemote(t *testing.T) {
 }
 
 func TestNewRepository(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
@@ -83,8 +78,7 @@ func TestNewRepository(t *testing.T) {
 // only contains simple commits and no tags. In this case you have
 // to set the --snapshot flag otherwise an error is returned.
 func TestNoTagsNoSnapshot(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "first")
@@ -94,8 +88,7 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 }
 
 func TestDirty(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	dummy, err := os.Create(filepath.Join(folder, "dummy"))
@@ -124,8 +117,7 @@ func TestDirty(t *testing.T) {
 }
 
 func TestTagIsNotLastCommit(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit3")
@@ -137,8 +129,7 @@ func TestTagIsNotLastCommit(t *testing.T) {
 }
 
 func TestValidState(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit3")
@@ -152,8 +143,7 @@ func TestValidState(t *testing.T) {
 }
 
 func TestSnapshotNoTags(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitAdd(t)
@@ -165,8 +155,7 @@ func TestSnapshotNoTags(t *testing.T) {
 }
 
 func TestSnapshotNoCommits(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	var ctx = context.New(config.Project{})
@@ -176,8 +165,7 @@ func TestSnapshotNoCommits(t *testing.T) {
 }
 
 func TestSnapshotWithoutRepo(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = context.New(config.Project{})
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
@@ -185,8 +173,7 @@ func TestSnapshotWithoutRepo(t *testing.T) {
 }
 
 func TestSnapshotDirty(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitAdd(t)
@@ -208,8 +195,7 @@ func TestGitNotInPath(t *testing.T) {
 }
 
 func TestTagFromCI(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit1")
@@ -249,8 +235,7 @@ func TestCommitDate(t *testing.T) {
 	// round to seconds since this is expressed in a Unix timestamp
 	commitDate := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second)
 
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommitWithDate(t, "commit1", commitDate)

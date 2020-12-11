@@ -24,8 +24,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 
 	var ctx = &context.Context{
 		TokenType: context.TokenTypeGitHub,
@@ -61,8 +60,7 @@ func TestDefault(t *testing.T) {
 }
 
 func Test_doRun(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var file = filepath.Join(folder, "archive")
 	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
 

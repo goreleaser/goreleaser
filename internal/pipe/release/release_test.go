@@ -322,8 +322,7 @@ func TestPipeDisabled(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
@@ -335,8 +334,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultWithGitlab(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@gitlab.com:gitlabowner/gitlabrepo.git")
 
@@ -348,8 +346,7 @@ func TestDefaultWithGitlab(t *testing.T) {
 }
 
 func TestDefaultWithGitea(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@gitea.example.com:giteaowner/gitearepo.git")
 
@@ -361,8 +358,7 @@ func TestDefaultWithGitea(t *testing.T) {
 }
 
 func TestDefaultPreReleaseAuto(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
@@ -422,8 +418,7 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 }
 
 func TestDefaultPipeDisabled(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
@@ -439,8 +434,7 @@ func TestDefaultPipeDisabled(t *testing.T) {
 }
 
 func TestDefaultFilled(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
@@ -461,8 +455,7 @@ func TestDefaultFilled(t *testing.T) {
 }
 
 func TestDefaultNotAGitRepo(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
@@ -472,8 +465,7 @@ func TestDefaultNotAGitRepo(t *testing.T) {
 }
 
 func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
@@ -484,8 +476,7 @@ func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
 }
 
 func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
@@ -496,8 +487,7 @@ func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
 }
 
 func TestDefaultGitRepoWithoutRemote(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}

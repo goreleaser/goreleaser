@@ -846,8 +846,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 }
 
 func TestDefaultBinInstallUniqueness(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 
 	var ctx = &context.Context{
 		TokenType: context.TokenTypeGitHub,
@@ -877,8 +876,7 @@ func TestDefaultBinInstallUniqueness(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 
 	var ctx = &context.Context{
 		TokenType: context.TokenTypeGitHub,

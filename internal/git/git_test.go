@@ -25,8 +25,7 @@ func TestGit(t *testing.T) {
 }
 
 func TestGitWarning(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "foo")
 	testlib.GitBranch(t, "tags/1.2.2")

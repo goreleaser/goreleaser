@@ -2,7 +2,6 @@
 package testlib
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -11,13 +10,13 @@ import (
 
 // Mktmp creates a new tempdir, cd into it and provides a back function that
 // cd into the previous directory.
-func Mktmp(t *testing.T) (folder string, back func()) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+func Mktmp(t testing.TB) string {
+	var folder = t.TempDir()
 	current, err := os.Getwd()
 	require.NoError(t, err)
 	require.NoError(t, os.Chdir(folder))
-	return folder, func() {
+	t.Cleanup(func() {
 		require.NoError(t, os.Chdir(current))
-	}
+	})
+	return folder
 }
