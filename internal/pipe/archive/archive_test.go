@@ -795,18 +795,19 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 }
 
 func TestDuplicateFilesInsideArchive(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
+	var folder = t.TempDir()
+
+	f, err := ioutil.TempFile(folder, "")
 	require.NoError(t, err)
 	defer f.Close()
-	defer os.Remove(f.Name())
 
-	ff, err := ioutil.TempFile("", "")
+	ff, err := ioutil.TempFile(folder, "")
 	require.NoError(t, err)
 	defer ff.Close()
-	defer os.Remove(ff.Name())
 
 	a := NewEnhancedArchive(archive.New(f), "")
 	defer a.Close()
+
 	require.NoError(t, a.Add("foo", ff.Name()))
 	require.EqualError(t, a.Add("foo", ff.Name()), "file foo already exists in the archive")
 }

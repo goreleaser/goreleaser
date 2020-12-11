@@ -56,7 +56,7 @@ func GitBranch(t testing.TB, branch string) {
 }
 
 // GitAdd adds all files to stage.
-func GitAdd(t testing.TB {
+func GitAdd(t testing.TB) {
 	out, err := fakeGit("add", "-A")
 	require.NoError(t, err)
 	require.Empty(t, out)

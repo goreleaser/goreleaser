@@ -78,9 +78,8 @@ func TestMinioUpload(t *testing.T) {
 		},
 	})
 	var name = "test_upload"
-	defer stop(t, name)
 	start(t, name, listen)
-	prepareEnv(t, listen)
+	prepareEnv()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
@@ -126,9 +125,8 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 		Path: debpath,
 	})
 	var name = "custom_bucket_id"
-	defer stop(t, name)
 	start(t, name, listen)
-	prepareEnv(t, listen)
+	prepareEnv()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
@@ -166,9 +164,8 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 		Path: debpath,
 	})
 	var name = "invalid_bucket_id"
-	defer stop(t, name)
 	start(t, name, listen)
-	prepareEnv(t, listen)
+	prepareEnv()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Error(t, Pipe{}.Publish(ctx))
 }
@@ -230,9 +227,8 @@ func TestMinioUploadSkipPublish(t *testing.T) {
 		},
 	})
 	var name = "test_upload"
-	defer stop(t, name)
 	start(t, name, listen)
-	prepareEnv(t, listen)
+	prepareEnv()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
@@ -251,17 +247,24 @@ func randomListen(t *testing.T) string {
 	return listener.Addr().String()
 }
 
-func prepareEnv(t *testing.T, listen string) {
+func prepareEnv() {
 	os.Setenv("AWS_ACCESS_KEY_ID", "minio")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "miniostorage")
 	os.Setenv("AWS_REGION", "us-east-1")
 }
 
-func start(t *testing.T, name, listen string) {
+func start(t testing.TB, name, listen string) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
-	removeTestData(t)
+	removeTestData()
+
+	t.Cleanup(func() {
+		if out, err := exec.Command("docker", "stop", name).CombinedOutput(); err != nil {
+			t.Fatalf("failed to stop minio: %s", string(out))
+		}
+		removeTestData()
+	})
 
 	if out, err := exec.Command(
 		"docker", "run", "-d", "--rm",
@@ -291,14 +294,7 @@ func start(t *testing.T, name, listen string) {
 	}
 }
 
-func stop(t *testing.T, name string) {
-	if out, err := exec.Command("docker", "stop", name).CombinedOutput(); err != nil {
-		t.Fatalf("failed to stop minio: %s", string(out))
-	}
-	removeTestData(t)
-}
-
-func removeTestData(t *testing.T) {
+func removeTestData() {
 	_ = os.RemoveAll("./testdata/data/test/testupload") // dont care if it fails
 }
 
