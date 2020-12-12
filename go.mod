@@ -3,7 +3,7 @@ module github.com/goreleaser/goreleaser
 go 1.15
 
 require (
-	code.gitea.io/sdk/gitea v0.13.1
+	code.gitea.io/sdk/gitea v0.13.2
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/apex/log v1.9.0
 	github.com/caarlos0/ctrlc v1.0.0
@@ -22,7 +22,7 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/stretchr/testify v1.6.1
 	github.com/ulikunitz/xz v0.5.8
-	github.com/xanzy/go-gitlab v0.40.0
+	github.com/xanzy/go-gitlab v0.40.1
 	gocloud.dev v0.21.0
 	golang.org/x/oauth2 v0.0.0-20201203001011-0b49973bad19
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
