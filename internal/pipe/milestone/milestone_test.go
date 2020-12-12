@@ -14,8 +14,7 @@ import (
 )
 
 func TestDefaultWithRepoConfig(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:githubowner/githubrepo.git")
 
@@ -38,8 +37,7 @@ func TestDefaultWithRepoConfig(t *testing.T) {
 }
 
 func TestDefaultWithRepoRemote(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:githubowner/githubrepo.git")
 
@@ -65,8 +63,7 @@ func TestDefaultWithNameTemplate(t *testing.T) {
 }
 
 func TestDefaultWithoutGitRepo(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
@@ -76,8 +73,7 @@ func TestDefaultWithoutGitRepo(t *testing.T) {
 }
 
 func TestDefaultWithoutGitRepoOrigin(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
@@ -88,8 +84,7 @@ func TestDefaultWithoutGitRepoOrigin(t *testing.T) {
 }
 
 func TestDefaultWithoutGitRepoSnapshot(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}

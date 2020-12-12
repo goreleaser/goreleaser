@@ -174,8 +174,7 @@ func TestRunPipe(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			folder, err := ioutil.TempDir("", "goreleasertest")
-			require.NoError(t, err)
+			var folder = t.TempDir()
 			var ctx = &context.Context{
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
@@ -232,7 +231,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			})
 
-			_, err = os.Create(path)
+			_, err := os.Create(path)
 			require.NoError(t, err)
 			client := &DummyClient{}
 			var distFile = filepath.Join(folder, name+".rb")
@@ -255,8 +254,7 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeNameTemplate(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var ctx = &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.1",
@@ -297,7 +295,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		},
 	})
 
-	_, err = os.Create(path)
+	_, err := os.Create(path)
 	require.NoError(t, err)
 	client := &DummyClient{}
 	var distFile = filepath.Join(folder, "foo_is_bar.rb")
@@ -318,8 +316,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 }
 
 func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var ctx = &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.1",
@@ -382,7 +379,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 		},
 	})
 
-	_, err = os.Create(path)
+	_, err := os.Create(path)
 	require.NoError(t, err)
 
 	var cli = &DummyClient{}
@@ -409,8 +406,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			ctx.Config.Brews[0].Goarm = "7"
 		},
 	} {
-		folder, err := ioutil.TempDir("", "goreleasertest")
-		require.NoError(t, err)
+		var folder = t.TempDir()
 		var ctx = &context.Context{
 			TokenType: context.TokenTypeGitHub,
 			Git: context.GitInfo{
@@ -723,8 +719,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
@@ -741,7 +736,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
-	_, err = os.Create(path)
+	_, err := os.Create(path)
 	require.NoError(t, err)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
@@ -775,8 +770,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 }
 
 func TestRunEmptyTokenType(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
@@ -792,7 +786,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 	})
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
-	_, err = os.Create(path)
+	_, err := os.Create(path)
 	require.NoError(t, err)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
@@ -810,8 +804,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 }
 
 func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
@@ -828,7 +821,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 	ctx.TokenType = context.TokenTypeGitea
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
-	_, err = os.Create(path)
+	_, err := os.Create(path)
 	require.NoError(t, err)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
@@ -846,8 +839,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 }
 
 func TestDefaultBinInstallUniqueness(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 
 	var ctx = &context.Context{
 		TokenType: context.TokenTypeGitHub,
@@ -877,8 +869,7 @@ func TestDefaultBinInstallUniqueness(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 
 	var ctx = &context.Context{
 		TokenType: context.TokenTypeGitHub,

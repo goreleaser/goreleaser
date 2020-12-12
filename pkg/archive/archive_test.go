@@ -1,7 +1,6 @@
 package archive
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -9,8 +8,7 @@ import (
 )
 
 func TestArchive(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	empty, err := os.Create(folder + "/empty.txt")
 	require.NoError(t, err)
 	require.NoError(t, os.Mkdir(folder+"/folder-inside", 0755))

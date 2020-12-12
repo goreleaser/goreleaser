@@ -14,8 +14,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestFillBasicData(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
@@ -44,8 +43,7 @@ func TestFillBasicData(t *testing.T) {
 }
 
 func TestFillPartial(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 

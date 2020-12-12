@@ -729,12 +729,11 @@ func TestRunPipe(t *testing.T) {
 
 	for name, docker := range table {
 		t.Run(name, func(tt *testing.T) {
-			folder, err := ioutil.TempDir("", "dockertest")
-			require.NoError(tt, err)
+			var folder = t.TempDir()
 			var dist = filepath.Join(folder, "dist")
 			require.NoError(tt, os.Mkdir(dist, 0755))
 			require.NoError(tt, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-			_, err = os.Create(filepath.Join(dist, "mybin", "mybin"))
+			_, err := os.Create(filepath.Join(dist, "mybin", "mybin"))
 			require.NoError(tt, err)
 			_, err = os.Create(filepath.Join(dist, "mybin", "anotherbin"))
 			require.NoError(tt, err)
@@ -1062,94 +1061,28 @@ func TestLinkFile(t *testing.T) {
 }
 
 func TestLinkDirectory(t *testing.T) {
-	const srcDir = "/tmp/testdir"
+	var srcDir = t.TempDir()
+	var dstDir = t.TempDir()
 	const testFile = "test"
-	const dstDir = "/tmp/linkedDir"
-
-	err := os.Mkdir(srcDir, 0755)
-	if err != nil {
-		t.Log(fmt.Sprintf("Cannot create dir: %s", srcDir))
-		t.Fail()
-	}
-	err = ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
-	if err != nil {
-		t.Log("Cannot setup test file")
-		t.Fail()
-	}
-	err = link(srcDir, dstDir)
-	if err != nil {
-		t.Log("Failed to link: ", err)
-		t.Fail()
-	}
-	if inode(srcDir+"/"+testFile) != inode(dstDir+"/"+testFile) {
-		t.Log("Inodes do not match, destination file is not a link")
-		t.Fail()
-	}
-
-	// cleanup
-	err = os.RemoveAll(srcDir)
-	if err != nil {
-		t.Log(fmt.Sprintf("Cannot remove dir: %s", srcDir))
-		t.Fail()
-	}
-	err = os.RemoveAll(dstDir)
-	if err != nil {
-		t.Log(fmt.Sprintf("Cannot remove dir: %s", dstDir))
-		t.Fail()
-	}
+	require.NoError(t, ioutil.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0644))
+	require.NoError(t, link(srcDir, dstDir))
+	require.Equal(t, inode(filepath.Join(srcDir, testFile)), inode(filepath.Join(dstDir, testFile)))
 }
 
 func TestLinkTwoLevelDirectory(t *testing.T) {
-	const srcDir = "/tmp/testdir"
-	const srcLevel2 = srcDir + "/level2"
+	var srcDir = t.TempDir()
+	var dstDir = t.TempDir()
+	var srcLevel2 = filepath.Join(srcDir, "level2")
 	const testFile = "test"
-	const dstDir = "/tmp/linkedDir"
 
-	err := os.Mkdir(srcDir, 0755)
-	if err != nil {
-		t.Log(fmt.Sprintf("Cannot create dir: %s", srcDir))
-		t.Fail()
-	}
-	err = os.Mkdir(srcLevel2, 0755)
-	if err != nil {
-		t.Log(fmt.Sprintf("Cannot create dir: %s", srcLevel2))
-		t.Fail()
-	}
-	err = ioutil.WriteFile(srcDir+"/"+testFile, []byte("foo"), 0644)
-	if err != nil {
-		t.Log("Cannot setup test file")
-		t.Fail()
-	}
-	err = ioutil.WriteFile(srcLevel2+"/"+testFile, []byte("foo"), 0644)
-	if err != nil {
-		t.Log("Cannot setup test file")
-		t.Fail()
-	}
-	err = link(srcDir, dstDir)
-	if err != nil {
-		t.Log("Failed to link: ", err)
-		t.Fail()
-	}
-	if inode(srcDir+"/"+testFile) != inode(dstDir+"/"+testFile) {
-		t.Log("Inodes do not match")
-		t.Fail()
-	}
-	if inode(srcLevel2+"/"+testFile) != inode(dstDir+"/level2/"+testFile) {
-		t.Log("Inodes do not match")
-		t.Fail()
-	}
+	require.NoError(t, os.Mkdir(srcLevel2, 0755))
+	require.NoError(t, ioutil.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0644))
+	require.NoError(t, ioutil.WriteFile(filepath.Join(srcLevel2, testFile), []byte("foo"), 0644))
 
-	// cleanup
-	err = os.RemoveAll(srcDir)
-	if err != nil {
-		t.Log(fmt.Sprintf("Cannot remove dir: %s", srcDir))
-		t.Fail()
-	}
-	err = os.RemoveAll(dstDir)
-	if err != nil {
-		t.Log(fmt.Sprintf("Cannot remove dir: %s", dstDir))
-		t.Fail()
-	}
+	require.NoError(t, link(srcDir, dstDir))
+
+	require.Equal(t, inode(filepath.Join(srcDir, testFile)), inode(filepath.Join(dstDir, testFile)))
+	require.Equal(t, inode(filepath.Join(srcLevel2, testFile)), inode(filepath.Join(dstDir, "level2", testFile)))
 }
 
 func inode(file string) uint64 {

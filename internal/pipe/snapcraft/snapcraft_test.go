@@ -45,12 +45,9 @@ func TestRunPipeMissingInfo(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
-	defer os.RemoveAll(folder)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
@@ -88,12 +85,9 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
-	defer os.RemoveAll(folder)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "foo",
 		Dist:        dist,
@@ -113,12 +107,9 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 }
 
 func TestRunPipeWithName(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
-	defer os.RemoveAll(folder)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
@@ -150,12 +141,9 @@ func TestRunPipeWithName(t *testing.T) {
 }
 
 func TestRunPipeMetadata(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
-	defer os.RemoveAll(folder)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
@@ -219,12 +207,9 @@ func TestNoSnapcraftInPath(t *testing.T) {
 }
 
 func TestRunNoArguments(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
-	defer os.RemoveAll(folder)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
@@ -256,12 +241,9 @@ func TestRunNoArguments(t *testing.T) {
 }
 
 func TestCompleter(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
-	defer os.RemoveAll(folder)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
@@ -296,12 +278,9 @@ func TestCompleter(t *testing.T) {
 }
 
 func TestCommand(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
-	defer os.RemoveAll(folder)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
@@ -334,12 +313,9 @@ func TestCommand(t *testing.T) {
 }
 
 func TestExtraFile(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
-	defer os.RemoveAll(folder)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,

@@ -16,8 +16,7 @@ import (
 func TestArchive(t *testing.T) {
 	for _, format := range []string{"tar.gz", "tar", "zip"} {
 		t.Run(format, func(t *testing.T) {
-			tmp, back := testlib.Mktmp(t)
-			defer back()
+			var tmp = testlib.Mktmp(t)
 			require.NoError(t, os.Mkdir("dist", 0744))
 
 			testlib.GitInit(t)

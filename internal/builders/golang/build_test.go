@@ -149,8 +149,7 @@ func TestInvalidTargets(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	writeGoodMain(t, folder)
 	var config = config.Project{
 		Builds: []config.Build{
@@ -310,8 +309,7 @@ func TestBuild(t *testing.T) {
 }
 
 func TestBuildCodeInSubdir(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	subdir := filepath.Join(folder, "bar")
 	err := os.Mkdir(subdir, 0755)
 	require.NoError(t, err)
@@ -343,8 +341,7 @@ func TestBuildCodeInSubdir(t *testing.T) {
 }
 
 func TestBuildWithDotGoDir(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	require.NoError(t, os.Mkdir(filepath.Join(folder, ".go"), 0755))
 	writeGoodMain(t, folder)
 	var config = config.Project{
@@ -370,8 +367,7 @@ func TestBuildWithDotGoDir(t *testing.T) {
 }
 
 func TestBuildFailed(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	writeGoodMain(t, folder)
 	var config = config.Project{
 		Builds: []config.Build{
@@ -395,8 +391,7 @@ func TestBuildFailed(t *testing.T) {
 }
 
 func TestBuildInvalidTarget(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	writeGoodMain(t, folder)
 	var target = "linux"
 	var config = config.Project{
@@ -421,8 +416,7 @@ func TestBuildInvalidTarget(t *testing.T) {
 }
 
 func TestRunInvalidAsmflags(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	writeGoodMain(t, folder)
 	var config = config.Project{
 		Builds: []config.Build{
@@ -444,8 +438,7 @@ func TestRunInvalidAsmflags(t *testing.T) {
 }
 
 func TestRunInvalidGcflags(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	writeGoodMain(t, folder)
 	var config = config.Project{
 		Builds: []config.Build{
@@ -467,8 +460,7 @@ func TestRunInvalidGcflags(t *testing.T) {
 }
 
 func TestRunInvalidLdflags(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	writeGoodMain(t, folder)
 	var config = config.Project{
 		Builds: []config.Build{
@@ -491,8 +483,7 @@ func TestRunInvalidLdflags(t *testing.T) {
 }
 
 func TestRunInvalidFlags(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	writeGoodMain(t, folder)
 	var config = config.Project{
 		Builds: []config.Build{
@@ -513,8 +504,7 @@ func TestRunInvalidFlags(t *testing.T) {
 }
 
 func TestRunPipeWithoutMainFunc(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	writeMainWithoutMainFunc(t, folder)
 	var config = config.Project{
 		Builds: []config.Build{
@@ -556,8 +546,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 }
 
 func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	require.NoError(t, ioutil.WriteFile(
 		filepath.Join(folder, "foo.go"),
 		[]byte("package main\nfunc main() {println(0)}"),
@@ -717,8 +706,7 @@ func TestBuildModTimestamp(t *testing.T) {
 	// round to seconds since this will be a unix timestamp
 	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
 
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	writeGoodMain(t, folder)
 
 	var config = config.Project{

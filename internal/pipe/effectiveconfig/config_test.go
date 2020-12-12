@@ -17,8 +17,7 @@ func TestPipeDescription(t *testing.T) {
 }
 
 func Test(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	var ctx = context.New(

@@ -17,15 +17,20 @@ func (e *exitMemento) Exit(i int) {
 	e.code = i
 }
 
-func setup(t *testing.T) (current string, back func()) {
+func setup(t testing.TB) string {
 	_ = os.Unsetenv("GITHUB_TOKEN")
 	_ = os.Unsetenv("GITLAB_TOKEN")
 
-	folder, err := ioutil.TempDir("", "")
-	require.NoError(t, err)
 	previous, err := os.Getwd()
 	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		require.NoError(t, os.Chdir(previous))
+	})
+
+	var folder = t.TempDir()
 	require.NoError(t, os.Chdir(folder))
+
 	createGoreleaserYaml(t)
 	createMainGo(t)
 	goModInit(t)
@@ -38,27 +43,26 @@ func setup(t *testing.T) (current string, back func()) {
 	testlib.GitCommit(t, "assd")
 	testlib.GitTag(t, "v0.0.2")
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/fake.git")
-	return folder, func() {
-		require.NoError(t, os.Chdir(previous))
-	}
+
+	return folder
 }
 
-func createFile(t *testing.T, filename, contents string) {
+func createFile(t testing.TB, filename, contents string) {
 	require.NoError(t, ioutil.WriteFile(filename, []byte(contents), 0644))
 }
 
-func createMainGo(t *testing.T) {
+func createMainGo(t testing.TB) {
 	createFile(t, "main.go", "package main\nfunc main() {println(0)}")
 }
 
-func goModInit(t *testing.T) {
+func goModInit(t testing.TB) {
 	createFile(t, "go.mod", `module foo
 
 go 1.15
 `)
 }
 
-func createGoreleaserYaml(t *testing.T) {
+func createGoreleaserYaml(t testing.TB) {
 	var yaml = `build:
   binary: fake
   goos:

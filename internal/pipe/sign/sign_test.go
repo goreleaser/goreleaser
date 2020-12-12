@@ -380,18 +380,14 @@ func TestSignArtifacts(t *testing.T) {
 	}
 }
 
-func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signatureNames []string, user, expectedErrMsg string) {
-	// create temp dir for file and signature
-	tmpdir, err := ioutil.TempDir("", "goreleaser")
-	require.NoError(t, err)
-	defer os.RemoveAll(tmpdir)
+func testSign(t testing.TB, ctx *context.Context, signaturePaths []string, signatureNames []string, user, expectedErrMsg string) {
+	var tmpdir = t.TempDir()
 
 	ctx.Config.Dist = tmpdir
 
 	// create some fake artifacts
 	var artifacts = []string{"artifact1", "artifact2", "artifact3", "checksum", "checksum2"}
-	err = os.Mkdir(filepath.Join(tmpdir, "linux_amd64"), os.ModePerm)
-	require.NoError(t, err)
+	require.NoError(t, os.Mkdir(filepath.Join(tmpdir, "linux_amd64"), os.ModePerm))
 	for _, f := range artifacts {
 		file := filepath.Join(tmpdir, f)
 		require.NoError(t, ioutil.WriteFile(file, []byte("foo"), 0644))
@@ -474,7 +470,7 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 	// verify that only the artifacts and the signatures are in the dist dir
 	gotFiles := []string{}
 
-	err = filepath.Walk(tmpdir,
+	require.NoError(t, filepath.Walk(tmpdir,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -488,8 +484,8 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 			}
 			gotFiles = append(gotFiles, relPath)
 			return nil
-		})
-	require.NoError(t, err)
+		}),
+	)
 
 	wantFiles := append(artifacts, signaturePaths...)
 	sort.Strings(wantFiles)
@@ -508,7 +504,7 @@ func testSign(t *testing.T, ctx *context.Context, signaturePaths []string, signa
 	require.ElementsMatch(t, signArtifacts, signatureNames)
 }
 
-func verifySignature(t *testing.T, ctx *context.Context, sig string, user string) {
+func verifySignature(t testing.TB, ctx *context.Context, sig string, user string) {
 	artifact := strings.Replace(sig, filepath.Ext(sig), "", 1)
 
 	// verify signature was made with key for usesr 'nopass'

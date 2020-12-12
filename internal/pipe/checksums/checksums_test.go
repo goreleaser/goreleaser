@@ -46,8 +46,7 @@ func TestPipe(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			folder, err := ioutil.TempDir("", "goreleasertest")
-			require.NoError(t, err)
+			var folder = t.TempDir()
 			var file = filepath.Join(folder, binary)
 			require.NoError(t, ioutil.WriteFile(file, []byte("some string"), 0644))
 			var ctx = context.New(
@@ -104,8 +103,7 @@ func TestPipe(t *testing.T) {
 }
 
 func TestPipeSkipTrue(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var ctx = context.New(
 		config.Project{
 			Dist: folder,
@@ -114,14 +112,13 @@ func TestPipeSkipTrue(t *testing.T) {
 			},
 		},
 	)
-	err = Pipe{}.Run(ctx)
+	var err = Pipe{}.Run(ctx)
 	testlib.AssertSkipped(t, err)
 	require.EqualError(t, err, `checksum.disable is set`)
 }
 
 func TestPipeFileNotExist(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var ctx = context.New(
 		config.Project{
 			Dist: folder,
@@ -136,7 +133,7 @@ func TestPipeFileNotExist(t *testing.T) {
 		Path: "/nope",
 		Type: artifact.UploadableBinary,
 	})
-	err = Pipe{}.Run(ctx)
+	var err = Pipe{}.Run(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "/nope: no such file or directory")
 }
@@ -152,8 +149,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 		"{{.Env.NOPE}}":           `template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`,
 	} {
 		t.Run(template, func(tt *testing.T) {
-			folder, err := ioutil.TempDir("", "goreleasertest")
-			require.NoError(tt, err)
+			var folder = t.TempDir()
 			var ctx = context.New(
 				config.Project{
 					Dist:        folder,
@@ -183,8 +179,7 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 	_, err = binFile.WriteString("fake artifact")
 	require.NoError(t, err)
 
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var file = filepath.Join(folder, "checksums.txt")
 	require.NoError(t, ioutil.WriteFile(file, []byte("some string"), 0000))
 	var ctx = context.New(

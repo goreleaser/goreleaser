@@ -1,7 +1,6 @@
 package dist
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,8 +11,7 @@ import (
 )
 
 func TestDistDoesNotExist(t *testing.T) {
-	folder, err := ioutil.TempDir("", "disttest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(
 		t,
@@ -28,11 +26,10 @@ func TestDistDoesNotExist(t *testing.T) {
 }
 
 func TestPopulatedDistExists(t *testing.T) {
-	folder, err := ioutil.TempDir("", "disttest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
-	_, err = os.Create(filepath.Join(dist, "mybin"))
+	_, err := os.Create(filepath.Join(dist, "mybin"))
 	require.NoError(t, err)
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -47,8 +44,7 @@ func TestPopulatedDistExists(t *testing.T) {
 }
 
 func TestEmptyDistExists(t *testing.T) {
-	folder, err := ioutil.TempDir("", "disttest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	var ctx = &context.Context{
@@ -57,7 +53,7 @@ func TestEmptyDistExists(t *testing.T) {
 		},
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
-	_, err = os.Stat(dist)
+	_, err := os.Stat(dist)
 	require.False(t, os.IsNotExist(err))
 }
 

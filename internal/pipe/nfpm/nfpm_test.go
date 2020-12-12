@@ -1,7 +1,6 @@
 package nfpm
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -73,13 +72,12 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
-	_, err = os.Create(binPath)
+	_, err := os.Create(binPath)
 	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
@@ -212,8 +210,7 @@ func TestNoBuildsFound(t *testing.T) {
 }
 
 func TestCreateFileDoesntExist(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
@@ -251,8 +248,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 }
 
 func TestInvalidConfig(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
@@ -352,13 +348,12 @@ func TestOverrides(t *testing.T) {
 }
 
 func TestDebSpecificConfig(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
-	_, err = os.Create(binPath)
+	_, err := os.Create(binPath)
 	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
@@ -423,13 +418,12 @@ func TestDebSpecificConfig(t *testing.T) {
 }
 
 func TestRPMSpecificConfig(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
-	_, err = os.Create(binPath)
+	_, err := os.Create(binPath)
 	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
@@ -494,13 +488,12 @@ func TestRPMSpecificConfig(t *testing.T) {
 }
 
 func TestAPKSpecificConfig(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
-	_, err = os.Create(binPath)
+	_, err := os.Create(binPath)
 	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
@@ -582,13 +575,12 @@ func TestSeveralNFPMsWithTheSameID(t *testing.T) {
 }
 
 func TestMeta(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
-	_, err = os.Create(binPath)
+	_, err := os.Create(binPath)
 	require.NoError(t, err)
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
