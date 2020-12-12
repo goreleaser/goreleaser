@@ -3,7 +3,7 @@ module github.com/goreleaser/goreleaser
 go 1.15
 
 require (
-	code.gitea.io/sdk/gitea v0.13.1
+	code.gitea.io/sdk/gitea v0.13.2
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/apex/log v1.9.0
 	github.com/caarlos0/ctrlc v1.0.0
@@ -14,7 +14,6 @@ require (
 	github.com/google/go-github/v28 v28.1.1
 	github.com/goreleaser/fileglob v0.3.1
 	github.com/goreleaser/nfpm v1.10.2
-	github.com/hashicorp/go-version v1.2.1 // indirect
 	github.com/imdario/mergo v0.3.11
 	github.com/jarcoal/httpmock v1.0.6
 	github.com/mattn/go-shellwords v1.0.10
