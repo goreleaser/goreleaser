@@ -190,8 +190,9 @@ func TestChecksumFileDoesntExist(t *testing.T) {
 }
 
 func TestInvalidAlgorithm(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
+	f, err := ioutil.TempFile(t.TempDir(), "")
 	require.NoError(t, err)
+	t.Cleanup(func() { f.Close() })
 	var artifact = Artifact{
 		Path: f.Name(),
 	}

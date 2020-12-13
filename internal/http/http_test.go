@@ -21,15 +21,11 @@ import (
 )
 
 func TestAssetOpenDefault(t *testing.T) {
-	tf, err := ioutil.TempFile("", "")
-	if err != nil {
-		t.Fatalf("can not create tmp file: %v", err)
-		return
-	}
-	fmt.Fprint(tf, "a")
-	tf.Close()
+	var tf = filepath.Join(t.TempDir(), "asset")
+	require.NoError(t, ioutil.WriteFile(tf, []byte("a"), 0765))
+
 	a, err := assetOpenDefault("blah", &artifact.Artifact{
-		Path: tf.Name(),
+		Path: tf,
 	})
 	if err != nil {
 		t.Fatalf("can not open asset: %v", err)
@@ -41,7 +37,6 @@ func TestAssetOpenDefault(t *testing.T) {
 	if string(bs) != "a" {
 		t.Fatalf("unexpected read content")
 	}
-	os.Remove(tf.Name())
 	_, err = assetOpenDefault("blah", &artifact.Artifact{
 		Path: "blah",
 	})

@@ -122,7 +122,7 @@ func TestEmptyGiteaFileEnv(t *testing.T) {
 
 func TestEmptyGithubEnvFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
-	f, err := ioutil.TempFile("", "token")
+	f, err := ioutil.TempFile(t.TempDir(), "token")
 	require.NoError(t, err)
 	require.NoError(t, os.Chmod(f.Name(), 0377))
 	var ctx = &context.Context{
@@ -137,7 +137,7 @@ func TestEmptyGithubEnvFile(t *testing.T) {
 
 func TestEmptyGitlabEnvFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITLAB_TOKEN"))
-	f, err := ioutil.TempFile("", "token")
+	f, err := ioutil.TempFile(t.TempDir(), "token")
 	require.NoError(t, err)
 	require.NoError(t, os.Chmod(f.Name(), 0377))
 	var ctx = &context.Context{
@@ -152,7 +152,7 @@ func TestEmptyGitlabEnvFile(t *testing.T) {
 
 func TestEmptyGiteaEnvFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITEA_TOKEN"))
-	f, err := ioutil.TempFile("", "token")
+	f, err := ioutil.TempFile(t.TempDir(), "token")
 	require.NoError(t, err)
 	require.NoError(t, os.Chmod(f.Name(), 0377))
 	var ctx = &context.Context{
@@ -197,7 +197,7 @@ func TestLoadEnv(t *testing.T) {
 	t.Run("env file exists", func(tt *testing.T) {
 		var env = "SUPER_SECRET_ENV_NOPE"
 		require.NoError(tt, os.Unsetenv(env))
-		f, err := ioutil.TempFile("", "token")
+		f, err := ioutil.TempFile(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123")
 		v, err := loadEnv(env, f.Name())
@@ -207,7 +207,7 @@ func TestLoadEnv(t *testing.T) {
 	t.Run("env file with an empty line at the end", func(tt *testing.T) {
 		var env = "SUPER_SECRET_ENV_NOPE"
 		require.NoError(tt, os.Unsetenv(env))
-		f, err := ioutil.TempFile("", "token")
+		f, err := ioutil.TempFile(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123\n")
 		v, err := loadEnv(env, f.Name())
@@ -217,7 +217,7 @@ func TestLoadEnv(t *testing.T) {
 	t.Run("env file is not readable", func(tt *testing.T) {
 		var env = "SUPER_SECRET_ENV_NOPE"
 		require.NoError(tt, os.Unsetenv(env))
-		f, err := ioutil.TempFile("", "token")
+		f, err := ioutil.TempFile(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123")
 		err = os.Chmod(f.Name(), 0377)

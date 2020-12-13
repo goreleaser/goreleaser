@@ -554,9 +554,9 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 	)
 
 	ctx.TokenType = context.TokenTypeGitHub
-	f, err := ioutil.TempFile("", "")
+	f, err := ioutil.TempFile(t.TempDir(), "")
 	require.NoError(t, err)
-	defer f.Close()
+	t.Cleanup(func() { f.Close() })
 
 	tests := []struct {
 		expectedError error
