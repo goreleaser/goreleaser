@@ -13,7 +13,7 @@ require (
 	github.com/golangci/golangci-lint v1.33.0
 	github.com/google/go-github/v28 v28.1.1
 	github.com/goreleaser/fileglob v0.3.1
-	github.com/goreleaser/nfpm v1.10.2
+	github.com/goreleaser/nfpm v1.10.3
 	github.com/imdario/mergo v0.3.11
 	github.com/jarcoal/httpmock v1.0.6
 	github.com/mattn/go-shellwords v1.0.10
