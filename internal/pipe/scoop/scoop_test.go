@@ -1048,7 +1048,7 @@ func TestWrapInDirectory(t *testing.T) {
 	}
 	bts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
-	require.Equal(t, string(bts), out.String())
+	testlib.EqualIgnoreCRLF(t, string(bts), out.String())
 }
 
 type DummyClient struct {

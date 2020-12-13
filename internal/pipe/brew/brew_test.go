@@ -244,7 +244,7 @@ func TestRunPipe(t *testing.T) {
 			}
 			bts, err := ioutil.ReadFile(golden)
 			require.NoError(t, err)
-			require.Equal(t, string(bts), client.Content)
+			testlib.EqualIgnoreCRLF(t, string(bts), client.Content)
 
 			distBts, err := ioutil.ReadFile(distFile)
 			require.NoError(t, err)
