@@ -1,8 +1,7 @@
 package before
 
 import (
-	"io/ioutil"
-	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -61,21 +60,18 @@ func TestRunPipeFail(t *testing.T) {
 }
 
 func TestRunWithEnv(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
-	require.NoError(t, err)
-	require.NoError(t, os.Remove(f.Name()))
-	defer os.Remove(f.Name())
+	var file = filepath.Join(t.TempDir(), "file")
 	require.NoError(t, Pipe{}.Run(context.New(
 		config.Project{
 			Env: []string{
-				"TEST_FILE=" + f.Name(),
+				"TEST_FILE=" + file,
 			},
 			Before: config.Before{
 				Hooks: []string{"touch {{ .Env.TEST_FILE }}"},
 			},
 		},
 	)))
-	require.FileExists(t, f.Name())
+	require.FileExists(t, file)
 }
 
 func TestInvalidTemplate(t *testing.T) {

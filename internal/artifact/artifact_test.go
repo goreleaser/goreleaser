@@ -1,8 +1,10 @@
 package artifact
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -181,19 +183,22 @@ func TestChecksum(t *testing.T) {
 }
 
 func TestChecksumFileDoesntExist(t *testing.T) {
+	var file = filepath.Join(t.TempDir(), "file")
 	var artifact = Artifact{
-		Path: "/tmp/adasdasdas/asdasd/asdas",
+		Path: file,
 	}
 	sum, err := artifact.Checksum("sha1")
-	require.EqualError(t, err, `failed to checksum: open /tmp/adasdasdas/asdasd/asdas: no such file or directory`)
+	require.Error(t, err)
+	var werr = &os.PathError{}
+	require.True(t, errors.As(err, &werr))
+	require.True(t, os.IsNotExist(werr))
 	require.Empty(t, sum)
 }
 
 func TestInvalidAlgorithm(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
-	require.NoError(t, err)
+	var file = filepath.Join(t.TempDir(), "file")
 	var artifact = Artifact{
-		Path: f.Name(),
+		Path: file,
 	}
 	sum, err := artifact.Checksum("sha1ssss")
 	require.EqualError(t, err, `invalid algorithm: sha1ssss`)

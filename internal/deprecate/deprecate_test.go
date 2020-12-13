@@ -1,8 +1,10 @@
 package deprecate
 
 import (
+	"bytes"
 	"flag"
 	"io/ioutil"
+	"runtime"
 	"testing"
 
 	"github.com/apex/log"
@@ -40,6 +42,10 @@ func TestNotice(t *testing.T) {
 
 	gbts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
+
+	if runtime.GOOS == "windows" {
+		gbts = bytes.ReplaceAll(gbts, []byte("\n"), []byte("\r\n"))
+	}
 
 	require.Equal(t, string(gbts), string(bts))
 }
