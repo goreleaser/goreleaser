@@ -37,7 +37,7 @@ func TestDescribeBody(t *testing.T) {
 	}
 	bts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
-	require.Equal(t, string(bts), strings.ReplaceAll(out.String(), "\r\n", "\n"))
+	require.Equal(t, strings.ReplaceAll(string(bts), "\r\n", "\n"), out.String())
 }
 
 func TestDescribeBodyWithDockerManifest(t *testing.T) {
