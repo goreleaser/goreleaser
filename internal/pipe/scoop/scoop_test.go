@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -751,7 +752,7 @@ func Test_buildManifest(t *testing.T) {
 		ctx      *context.Context
 	}{
 		{
-			"testdata/test_buildmanifest.json.golden",
+			filepath.Join("testdata", "test_buildmanifest.json.golden"),
 			&context.Context{
 				Context:   ctx.Background(),
 				TokenType: context.TokenTypeGitHub,
@@ -788,7 +789,7 @@ func Test_buildManifest(t *testing.T) {
 			},
 		},
 		{
-			"testdata/test_buildmanifest_pre_post_install.json.golden",
+			filepath.Join("testdata", "test_buildmanifest_pre_post_install.json.golden"),
 			&context.Context{
 				Context:   ctx.Background(),
 				TokenType: context.TokenTypeGitHub,
@@ -827,7 +828,7 @@ func Test_buildManifest(t *testing.T) {
 			},
 		},
 		{
-			"testdata/test_buildmanifest_url_template.json.golden",
+			filepath.Join("testdata", "test_buildmanifest_url_template.json.golden"),
 			&context.Context{
 				Context:   ctx.Background(),
 				TokenType: context.TokenTypeGitHub,
@@ -869,7 +870,7 @@ func Test_buildManifest(t *testing.T) {
 			},
 		},
 		{
-			"testdata/test_buildmanifest_gitlab_url_template.json.golden",
+			filepath.Join("testdata", "test_buildmanifest_gitlab_url_template.json.golden"),
 			&context.Context{
 				Context:   ctx.Background(),
 				TokenType: context.TokenTypeGitLab,
@@ -967,7 +968,7 @@ func Test_buildManifest(t *testing.T) {
 			}
 			bts, err := ioutil.ReadFile(tt.filename)
 			require.NoError(t, err)
-			require.Equal(t, string(bts), out.String())
+			require.Equal(t, string(bts), strings.ReplaceAll(out.String(), "\r\n", "\n"))
 		})
 	}
 }
@@ -1042,7 +1043,7 @@ func TestWrapInDirectory(t *testing.T) {
 	out, err := doBuildManifest(mf)
 	require.NoError(t, err)
 
-	var golden = "testdata/test_buildmanifest_wrap.json.golden"
+	var golden = filepath.Join("testdata", "test_buildmanifest_wrap.json.golden")
 	if *update {
 		require.NoError(t, ioutil.WriteFile(golden, out.Bytes(), 0655))
 	}

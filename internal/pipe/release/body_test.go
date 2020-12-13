@@ -3,6 +3,7 @@ package release
 import (
 	"flag"
 	"io/ioutil"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -36,7 +37,7 @@ func TestDescribeBody(t *testing.T) {
 	}
 	bts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
-	require.Equal(t, string(bts), out.String())
+	require.Equal(t, string(bts), strings.ReplaceAll(out.String(), "\r\n", "\n"))
 }
 
 func TestDescribeBodyWithDockerManifest(t *testing.T) {
@@ -75,7 +76,7 @@ func TestDescribeBodyWithDockerManifest(t *testing.T) {
 	}
 	bts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
-	require.Equal(t, string(bts), out.String())
+	require.Equal(t, string(bts), strings.ReplaceAll(out.String(), "\r\n", "\n"))
 }
 
 func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
@@ -93,7 +94,7 @@ func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
 	bts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
 
-	require.Equal(t, string(bts), out.String())
+	require.Equal(t, string(bts), strings.ReplaceAll(out.String(), "\r\n", "\n"))
 }
 
 func TestDontEscapeHTML(t *testing.T) {
