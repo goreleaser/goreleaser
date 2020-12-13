@@ -178,7 +178,7 @@ func (t *Template) Apply(s string) (string, error) {
 	}
 
 	err = tmpl.Execute(&out, t.fields)
-	return strings.ReplaceAll(out.String(), "\r\n", "\n"), err
+	return out.String(), err
 }
 
 type ExpectedSingleEnvErr struct{}

@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -968,7 +967,7 @@ func Test_buildManifest(t *testing.T) {
 			}
 			bts, err := ioutil.ReadFile(tt.filename)
 			require.NoError(t, err)
-			require.Equal(t, string(bts), strings.ReplaceAll(out.String(), "\r\n", "\n"))
+			testlib.EqualIgnoreCRLF(t, string(bts), out.String())
 		})
 	}
 }
