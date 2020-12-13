@@ -1047,12 +1047,14 @@ func Test_processImageTemplates(t *testing.T) {
 }
 
 func TestLinkFile(t *testing.T) {
-	src, err := ioutil.TempFile("", "src")
+	src, err := ioutil.TempFile(t.TempDir(), "src")
 	require.NoError(t, err)
 	require.NoError(t, src.Close())
-	defer os.Remove(src.Name())
 	dst := filepath.Join(filepath.Dir(src.Name()), "dst")
-	defer os.Remove(dst)
+	t.Cleanup(func() {
+		os.Remove(src.Name())
+		os.Remove(dst)
+	})
 	fmt.Println("src:", src.Name())
 	fmt.Println("dst:", dst)
 	require.NoError(t, ioutil.WriteFile(src.Name(), []byte("foo"), 0644))

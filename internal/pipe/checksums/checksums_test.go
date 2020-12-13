@@ -139,8 +139,9 @@ func TestPipeFileNotExist(t *testing.T) {
 }
 
 func TestPipeInvalidNameTemplate(t *testing.T) {
-	binFile, err := ioutil.TempFile("", "goreleasertest-bin")
+	binFile, err := ioutil.TempFile(t.TempDir(), "goreleasertest-bin")
 	require.NoError(t, err)
+	t.Cleanup(func() { binFile.Close() })
 	_, err = binFile.WriteString("fake artifact")
 	require.NoError(t, err)
 
@@ -174,12 +175,13 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 }
 
 func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
-	binFile, err := ioutil.TempFile("", "goreleasertest-bin")
+	var folder = t.TempDir()
+	binFile, err := ioutil.TempFile(folder, "goreleasertest-bin")
 	require.NoError(t, err)
+	t.Cleanup(func() { binFile.Close() })
 	_, err = binFile.WriteString("fake artifact")
 	require.NoError(t, err)
 
-	var folder = t.TempDir()
 	var file = filepath.Join(folder, "checksums.txt")
 	require.NoError(t, ioutil.WriteFile(file, []byte("some string"), 0000))
 	var ctx = context.New(
