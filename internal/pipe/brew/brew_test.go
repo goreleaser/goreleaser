@@ -93,7 +93,7 @@ func TestFullFormulae(t *testing.T) {
 	}
 	bts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
-	require.Equal(t, string(bts), formulae)
+	testlib.EqualIgnoreCRLF(t, string(bts), formulae)
 }
 
 func TestFullFormulaeLinuxOnly(t *testing.T) {
@@ -112,7 +112,7 @@ func TestFullFormulaeLinuxOnly(t *testing.T) {
 	}
 	bts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
-	require.Equal(t, string(bts), formulae)
+	testlib.EqualIgnoreCRLF(t, string(bts), formulae)
 }
 
 func TestFormulaeSimple(t *testing.T) {
@@ -248,7 +248,7 @@ func TestRunPipe(t *testing.T) {
 
 			distBts, err := ioutil.ReadFile(distFile)
 			require.NoError(t, err)
-			require.Equal(t, string(bts), string(distBts))
+			testlib.EqualIgnoreCRLF(t, string(bts), string(distBts))
 		})
 	}
 }
@@ -312,7 +312,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 
 	distBts, err := ioutil.ReadFile(distFile)
 	require.NoError(t, err)
-	require.Equal(t, string(bts), string(distBts))
+	testlib.EqualIgnoreCRLF(t, string(bts), string(distBts))
 }
 
 func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
@@ -516,7 +516,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 
 		distBts, err := ioutil.ReadFile(distFile)
 		require.NoError(t, err)
-		require.Equal(t, string(bts), string(distBts))
+		testlib.EqualIgnoreCRLF(t, string(bts), string(distBts))
 	}
 }
 
