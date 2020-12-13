@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
-	"runtime"
 	"testing"
 
 	"github.com/apex/log"
@@ -44,9 +43,5 @@ func TestNotice(t *testing.T) {
 	gbts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
 
-	if runtime.GOOS == "windows" {
-		gbts = bytes.ReplaceAll(gbts, []byte("\n"), []byte("\r\n"))
-	}
-
-	require.Equal(t, string(gbts), string(bts))
+	require.Equal(t, string(gbts), string(bytes.ReplaceAll(bts, []byte("\r\n"), []byte("\n"))))
 }
