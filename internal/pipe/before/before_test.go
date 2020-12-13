@@ -60,18 +60,18 @@ func TestRunPipeFail(t *testing.T) {
 }
 
 func TestRunWithEnv(t *testing.T) {
-	var file = filepath.Join(t.TempDir(), "file")
+	var f = filepath.Join(t.TempDir(), "file")
 	require.NoError(t, Pipe{}.Run(context.New(
 		config.Project{
 			Env: []string{
-				"TEST_FILE=" + file,
+				"TEST_FILE=" + f,
 			},
 			Before: config.Before{
 				Hooks: []string{"touch {{ .Env.TEST_FILE }}"},
 			},
 		},
 	)))
-	require.FileExists(t, file)
+	require.FileExists(t, f)
 }
 
 func TestInvalidTemplate(t *testing.T) {
