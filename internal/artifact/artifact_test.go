@@ -196,9 +196,10 @@ func TestChecksumFileDoesntExist(t *testing.T) {
 }
 
 func TestInvalidAlgorithm(t *testing.T) {
-	var file = filepath.Join(t.TempDir(), "file")
+	file, err := ioutil.TempFile(t.TempDir(), "file")
+	require.NoError(t, err)
 	var artifact = Artifact{
-		Path: file,
+		Path: file.Name(),
 	}
 	sum, err := artifact.Checksum("sha1ssss")
 	require.EqualError(t, err, `invalid algorithm: sha1ssss`)
