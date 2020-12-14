@@ -1,6 +1,7 @@
 package nfpm
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
