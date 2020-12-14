@@ -218,6 +218,12 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		},
 	}
 
+	if ctx.SkipSign {
+		info.APK.Signature = nfpm.APKSignature{}
+		info.RPM.Signature = nfpm.RPMSignature{}
+		info.Deb.Signature = nfpm.DebSignature{}
+	}
+
 	if err = nfpm.Validate(info); err != nil {
 		return fmt.Errorf("invalid nfpm config: %w", err)
 	}

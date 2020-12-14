@@ -663,3 +663,76 @@ func TestMeta(t *testing.T) {
 		}
 	}
 }
+
+func TestSkipSign(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	require.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	var binPath = filepath.Join(dist, "mybin", "mybin")
+	_, err = os.Create(binPath)
+	require.NoError(t, err)
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:      "someid",
+				Builds:  []string{"default"},
+				Formats: []string{"deb", "rpm", "apk"},
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName:      "foo",
+					FileNameTemplate: defaultNameTemplate,
+					Files: map[string]string{
+						"./testdata/testfile.txt": "/usr/share/testfile.txt",
+					},
+					Deb: config.NFPMDeb{
+						Signature: config.NFPMDebSignature{
+							KeyFile: "/does/not/exist.gpg",
+						},
+					},
+					RPM: config.NFPMRPM{
+						Signature: config.NFPMRPMSignature{
+							KeyFile: "/does/not/exist.gpg",
+						},
+					},
+					APK: config.NFPMAPK{
+						Signature: config.NFPMAPKSignature{
+							KeyFile: "/does/not/exist.gpg",
+						},
+					},
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"ID": "default",
+				},
+			})
+		}
+	}
+
+	t.Run("skip sign not set", func(t *testing.T) {
+		require.Contains(
+			t,
+			Pipe{}.Run(ctx).Error(),
+			`nfpm failed: failed to create signatures: call to signer failed: signing error: reading PGP key file: open /does/not/exist.gpg: no such file or directory`,
+		)
+	})
+
+	t.Run("skip sign set", func(t *testing.T) {
+		ctx.SkipSign = true
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+}
