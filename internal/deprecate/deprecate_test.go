@@ -41,5 +41,6 @@ func TestNotice(t *testing.T) {
 
 	gbts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
+
 	require.Equal(t, string(gbts), string(bts))
 }
