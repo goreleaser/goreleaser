@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/stretchr/testify/require"
 )
 
@@ -41,5 +40,5 @@ func TestGzFile(t *testing.T) {
 
 	bts, err := ioutil.ReadAll(gzf)
 	require.NoError(t, err)
-	testlib.EqualIgnoreCRLF(t, "sub\n", string(bts))
+	require.Equal(t, "sub\n", string(bts))
 }

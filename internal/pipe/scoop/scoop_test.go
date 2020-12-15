@@ -967,7 +967,7 @@ func Test_buildManifest(t *testing.T) {
 			}
 			bts, err := ioutil.ReadFile(tt.filename)
 			require.NoError(t, err)
-			testlib.EqualIgnoreCRLF(t, string(bts), out.String())
+			require.Equal(t, string(bts), out.String())
 		})
 	}
 }
@@ -1048,7 +1048,7 @@ func TestWrapInDirectory(t *testing.T) {
 	}
 	bts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
-	testlib.EqualIgnoreCRLF(t, string(bts), out.String())
+	require.Equal(t, string(bts), out.String())
 }
 
 type DummyClient struct {

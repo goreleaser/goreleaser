@@ -8,7 +8,6 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/fatih/color"
-	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -42,6 +41,5 @@ func TestNotice(t *testing.T) {
 
 	gbts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
-
-	testlib.EqualIgnoreCRLF(t, string(gbts), string(bts))
+	require.Equal(t, string(gbts), string(bts))
 }

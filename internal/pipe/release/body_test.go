@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -37,7 +36,7 @@ func TestDescribeBody(t *testing.T) {
 	}
 	bts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
-	testlib.EqualIgnoreCRLF(t, string(bts), out.String())
+	require.Equal(t, string(bts), out.String())
 }
 
 func TestDescribeBodyWithDockerManifest(t *testing.T) {
@@ -76,7 +75,7 @@ func TestDescribeBodyWithDockerManifest(t *testing.T) {
 	}
 	bts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
-	testlib.EqualIgnoreCRLF(t, string(bts), out.String())
+	require.Equal(t, string(bts), out.String())
 }
 
 func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
@@ -94,7 +93,7 @@ func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
 	bts, err := ioutil.ReadFile(golden)
 	require.NoError(t, err)
 
-	testlib.EqualIgnoreCRLF(t, string(bts), out.String())
+	require.Equal(t, string(bts), out.String())
 }
 
 func TestDontEscapeHTML(t *testing.T) {
