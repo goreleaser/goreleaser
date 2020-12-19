@@ -132,7 +132,7 @@ builds:
 Here is an example with multiple binaries:
 
 ```yaml
-# goreleaser.yml
+# .goreleaser.yml
 builds:
   - main: ./cmd/cli/cli.go
     id: "cli"
@@ -243,7 +243,7 @@ Environment variables are inherited and overridden in the following order:
  very likely to fail.
 
  You can solve this by running `go mod download` before calling `goreleaser` or
- by adding a [hook][] doing that on your `.goreleaser.yaml` file:
+ by adding a [hook][] doing that on your `.goreleaser.yml` file:
 
  ```yaml
  before:

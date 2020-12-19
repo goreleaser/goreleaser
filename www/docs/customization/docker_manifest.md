@@ -81,7 +81,7 @@ Then, on our GoReleaser config file, we need to define both the `dockers` and
 the `docker_manifests` section:
 
 ```yaml
-# goreleaser.yml
+# .goreleaser.yml
 builds:
 - env:
   - CGO_ENABLED=0
