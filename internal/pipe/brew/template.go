@@ -18,7 +18,8 @@ type templateData struct {
 	Tests            []string
 	CustomRequire    string
 	CustomBlock      []string
-	MacOS            downloadable
+	MacOSAmd64       downloadable
+	MacOSArm64       downloadable
 	LinuxAmd64       downloadable
 	LinuxArm         downloadable
 	LinuxArm64       downloadable
@@ -41,15 +42,22 @@ class {{ .Name }} < Formula
   license "{{ .License }}"
   {{ end -}}
   bottle :unneeded
-  {{- if and (not .MacOS.DownloadURL) (or .LinuxAmd64.DownloadURL .LinuxArm.DownloadURL .LinuxArm64.DownloadURL) }}
+  {{- if and (not .MacOSAmd64.DownloadURL) (not .MacOSArm64.DownloadURL) (or .LinuxAmd64.DownloadURL .LinuxArm.DownloadURL .LinuxArm64.DownloadURL) }}
   depends_on :linux
   {{- end }}
   {{- printf "\n" }}
-  {{- if .MacOS.DownloadURL }}
+  {{- if .MacOSAmd64.DownloadURL }}
   if OS.mac?
-    url "{{ .MacOS.DownloadURL }}"
+    url "{{ .MacOSAmd64.DownloadURL }}"
     {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-    sha256 "{{ .MacOS.SHA256 }}"
+    sha256 "{{ .MacOSAmd64.SHA256 }}"
+  end
+  {{- end }}
+  {{- if .MacOSArm64.DownloadURL }}
+  if OS.mac? && Hardware::CPU.arm?
+    url "{{ .MacOSArm64.DownloadURL }}"
+    {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+    sha256 "{{ .MacOSArm64.SHA256 }}"
   end
   {{- end }}
 

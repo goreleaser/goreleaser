@@ -327,10 +327,18 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		}
 		// TODO: refactor
 		if artifact.Goos == "darwin" { // nolint: nestif
-			if result.MacOS.DownloadURL != "" {
-				return result, ErrMultipleArchivesSameOS
+			switch artifact.Goarch {
+			case "amd64":
+				if result.MacOSAmd64.DownloadURL != "" {
+					return result, ErrMultipleArchivesSameOS
+				}
+				result.MacOSAmd64 = down
+			case "arm64":
+				if result.MacOSArm64.DownloadURL != "" {
+					return result, ErrMultipleArchivesSameOS
+				}
+				result.MacOSArm64 = down
 			}
-			result.MacOS = down
 		} else if artifact.Goos == "linux" {
 			switch artifact.Goarch {
 			case "amd64":

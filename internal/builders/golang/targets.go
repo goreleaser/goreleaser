@@ -136,7 +136,7 @@ var (
 		// "darwin386", - deprecated on latest go 1.15+
 		"darwinamd64",
 		// "darwinarm", - requires admin rights and other ios stuff
-		// "darwinarm64", - requires admin rights and other ios stuff
+		"darwinarm64",
 		"dragonflyamd64",
 		"freebsd386",
 		"freebsdamd64",
