@@ -103,6 +103,7 @@ func TestFullFormulae(t *testing.T) {
 func TestFullFormulaeLinuxOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.MacOSAmd64 = downloadable{}
+	data.MacOSArm64 = downloadable{}
 	data.Install = []string{`bin.install "test"`}
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",
