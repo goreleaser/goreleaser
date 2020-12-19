@@ -14,6 +14,7 @@ On fields that support templating, these fields are always available:
 |--------------------|------------------------------------------------------------------------------------------------------------------------------|
 | `.ProjectName`     | the project name                                                                                                             |
 | `.Version`         | the version being released (`v` prefix stripped),<br>or `{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}` in case of snapshot release |
+| `.Branch`          | the current git branch                                                                                                       |
 | `.Tag`             | the current git tag                                                                                                          |
 | `.ShortCommit`     | the git commit short hash                                                                                                    |
 | `.FullCommit`      | the git commit full hash                                                                                                     |
@@ -42,7 +43,7 @@ may have some extra fields:
 | `.Mips`         | `GOMIPS` (usually allow replacements) |
 | `.Binary`       | Binary name                           |
 | `.ArtifactName` | Archive name                          |
-| `.ArtifactPath` | Relative path to artifact             |
+| `.ArtifactPath` | Absolute path to artifact             |
 
 On the NFPM name template field, you can use those extra fields as well:
 

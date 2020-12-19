@@ -1,11 +1,13 @@
-FROM golang:1.15-alpine
+ARG ARCH
+FROM ${ARCH}/golang:1.15-alpine
 
 RUN apk add --no-cache bash \
                        curl \
                        docker-cli \
                        git \
                        mercurial \
-                       make
+                       make \
+                       build-base
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD [ "-h" ]

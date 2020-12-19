@@ -3,7 +3,7 @@ title: NFPM
 ---
 
 GoReleaser can be wired to [nfpm](https://github.com/goreleaser/nfpm) to
-generate and publish `.deb` and `.rpm` packages.
+generate and publish `.deb`, `.rpm` and `.apk` packages.
 
 Available options:
 
@@ -85,6 +85,10 @@ nfpms:
       - svn
       - bash
 
+    # Packages it replaces.
+    replaces:
+      - fish
+
     # Override default /usr/local/bin destination for binaries
     bindir: /usr/bin
 
@@ -124,6 +128,10 @@ nfpms:
       "tmp/app_generated.conf": "/etc/app.conf"
       "conf/*.conf": "/etc/foo/"
 
+    # Symlinks mapping from symlink name inside package to target inside package (overridable)
+    symlinks:
+      /sbin/foo: /usr/local/bin/foo
+
     # Scripts to execute during the installation of the package.
     # Keys are the possible targets during the installation process
     # Values are the paths to the scripts which will be executed
@@ -133,7 +141,7 @@ nfpms:
       preremove: "scripts/preremove.sh"
       postremove: "scripts/postremove.sh"
 
-    # Some attributes can be overrided per package format.
+    # Some attributes can be overridden per package format.
     overrides:
       deb:
         conflicts:
@@ -144,6 +152,8 @@ nfpms:
           - gitk
         recommends:
           - tig
+        replaces:
+          - bash
         empty_folders:
           - /var/log/bar
       rpm:
@@ -156,7 +166,103 @@ nfpms:
           "tmp/app_generated.conf": "/etc/app-rpm.conf"
         scripts:
           preinstall: "scripts/preinstall-rpm.sh"
+
+    # Custon configuration applied only to the RPM packager.
+    rpm:
+      # The package summary.
+      # Defaults to the first line of the description.
+      summary: Explicit Summary for Sample Package
+
+      # The package group. This option is deprecated by most distros
+      # but required by old distros like CentOS 5 / EL 5 and earlier.
+      group: Unspecified
+
+      # Compression algorithm.
+      compression: lzma
+
+      # These config files will not be replaced by new versions if they were
+      # changed by the user. Corresponds to %config(noreplace).
+      config_noreplace_files:
+        path/to/local/bar.con: /etc/bar.conf
+
+      # These files are not actually present in the package, but the file names
+      # are added to the package header. From the RPM directives documentation:
+      #
+      # "There are times when a file should be owned by the package but not
+      # installed - log files and state files are good examples of cases you might
+      # desire this to happen."
+      #
+      # "The way to achieve this, is to use the %ghost directive. By adding this
+      # directive to the line containing a file, RPM will know about the ghosted
+      # file, but will not add it to the package."
+      ghost_files:
+        - /etc/casper.conf
+        - /var/log/boo.log
+
+      # The package is signed if a key_file is set
+      signature:
+        # PGP secret key (can also be ASCII-armored). The passphrase is taken
+        # from the environment variable $NFPM_ID_RPM_PASSPHRASE with a fallback
+        # to $NFPM_ID_PASSPHRASE, where ID is the id of the current nfpm config.
+        # The id will be transformed to uppercase.
+        # E.g. If your nfpm id is 'default' then the rpm-specific passphrase
+        # should be set as $NFPM_DEFAULT_RPM_PASSPHRASE
+        key_file: key.gpg
+
+    # Custom configuration applied only to the Deb packager.
+    deb:
+      # Custom deb special files.
+      scripts:
+        # Deb rules script.
+        rules: foo.sh
+        # Deb templates file, when using debconf.
+        templates: templates
+
+      # Custom deb triggers
+      triggers:
+        # register interrest on a trigger activated by another package
+        # (also available: interest_await, interest_noawait)
+        interest:
+          - some-trigger-name
+        # activate a trigger for another package
+        # (also available: activate_await, activate_noawait)
+        activate:
+          - another-trigger-name
+
+      # Packages which would break if this package would be installed.
+      # The installation of this package is blocked if `some-package`
+      # is already installed.
+      breaks:
+        - some-package
+
+      # The package is signed if a key_file is set
+      signature:
+        # PGP secret key (can also be ASCII-armored). The passphrase is taken
+        # from the environment variable $NFPM_ID_DEB_PASSPHRASE with a fallback
+        # to $NFPM_ID_PASSPHRASE, where ID is the id of the current nfpm config.
+        # The id will be transformed to uppercase.
+        # E.g. If your nfpm id is 'default' then the deb-specific passphrase
+        # should be set as $NFPM_DEFAULT_DEB_PASSPHRASE
+        key_file: key.gpg
+        # The type describes the signers role, possible values are "origin",
+        # "maint" and "archive". If unset, the type defaults to "origin".
+        type: origin
+
+    apk:
+      # The package is signed if a key_file is set
+      signature:
+        # RSA private key in the PEM format. The passphrase is taken
+        # from the environment variable $NFPM_ID_APK_PASSPHRASE with a fallback
+        # to $NFPM_ID_PASSPHRASE, where ID is the id of the current nfpm config.
+        # The id will be transformed to uppercase.
+        # E.g. If your nfpm id is 'default' then the deb-specific passphrase
+        # should be set as $NFPM_DEFAULT_APK_PASSPHRASE
+        key_file: key.gpg
+        # The name of the signing key. When verifying a package, the signature
+        # is matched to the public key store in /etc/apk/keys/<key_name>.rsa.pub.
+        # If unset, it defaults to the maintainer email address.
+        key_name: origin
 ```
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).

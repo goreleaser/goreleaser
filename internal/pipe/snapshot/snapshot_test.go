@@ -6,11 +6,11 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStringer(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
@@ -18,8 +18,8 @@ func TestDefault(t *testing.T) {
 			Snapshot: config.Snapshot{},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}", ctx.Config.Snapshot.NameTemplate)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}", ctx.Config.Snapshot.NameTemplate)
 }
 
 func TestDefaultSet(t *testing.T) {
@@ -30,8 +30,8 @@ func TestDefaultSet(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "snap", ctx.Config.Snapshot.NameTemplate)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "snap", ctx.Config.Snapshot.NameTemplate)
 }
 
 func TestSnapshotInvalidNametemplate(t *testing.T) {
@@ -41,7 +41,7 @@ func TestSnapshotInvalidNametemplate(t *testing.T) {
 		},
 	})
 	ctx.Snapshot = true
-	assert.EqualError(t, Pipe{}.Run(ctx), `failed to generate snapshot name: template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, Pipe{}.Run(ctx), `failed to generate snapshot name: template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestSnapshotEmptyFinalName(t *testing.T) {
@@ -52,7 +52,7 @@ func TestSnapshotEmptyFinalName(t *testing.T) {
 	})
 	ctx.Snapshot = true
 	ctx.Git.CurrentTag = "v1.2.3"
-	assert.EqualError(t, Pipe{}.Run(ctx), "empty snapshot name")
+	require.EqualError(t, Pipe{}.Run(ctx), "empty snapshot name")
 }
 
 func TestNotASnapshot(t *testing.T) {

@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
 )
@@ -41,8 +40,8 @@ func TestAdd(t *testing.T) {
 			return nil
 		})
 	}
-	assert.NoError(t, g.Wait())
-	assert.Len(t, artifacts.List(), 4)
+	require.NoError(t, g.Wait())
+	require.Len(t, artifacts.List(), 4)
 }
 
 func TestFilter(t *testing.T) {
@@ -74,21 +73,21 @@ func TestFilter(t *testing.T) {
 		artifacts.Add(a)
 	}
 
-	assert.Len(t, artifacts.Filter(ByGoos("linux")).items, 1)
-	assert.Len(t, artifacts.Filter(ByGoos("darwin")).items, 0)
+	require.Len(t, artifacts.Filter(ByGoos("linux")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoos("darwin")).items, 0)
 
-	assert.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 1)
-	assert.Len(t, artifacts.Filter(ByGoarch("386")).items, 0)
+	require.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoarch("386")).items, 0)
 
-	assert.Len(t, artifacts.Filter(ByGoarm("6")).items, 1)
-	assert.Len(t, artifacts.Filter(ByGoarm("7")).items, 0)
+	require.Len(t, artifacts.Filter(ByGoarm("6")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoarm("7")).items, 0)
 
-	assert.Len(t, artifacts.Filter(ByType(Checksum)).items, 2)
-	assert.Len(t, artifacts.Filter(ByType(Binary)).items, 0)
+	require.Len(t, artifacts.Filter(ByType(Checksum)).items, 2)
+	require.Len(t, artifacts.Filter(ByType(Binary)).items, 0)
 
-	assert.Len(t, artifacts.Filter(nil).items, 5)
+	require.Len(t, artifacts.Filter(nil).items, 5)
 
-	assert.Len(t, artifacts.Filter(
+	require.Len(t, artifacts.Filter(
 		And(
 			ByType(Checksum),
 			func(a *Artifact) bool {
@@ -97,7 +96,7 @@ func TestFilter(t *testing.T) {
 		),
 	).List(), 1)
 
-	assert.Len(t, artifacts.Filter(
+	require.Len(t, artifacts.Filter(
 		Or(
 			ByType(Checksum),
 			And(
@@ -149,15 +148,14 @@ func TestGroupByPlatform(t *testing.T) {
 	}
 
 	var groups = artifacts.GroupByPlatform()
-	assert.Len(t, groups["linuxamd64"], 2)
-	assert.Len(t, groups["linuxarm6"], 1)
-	assert.Len(t, groups["linuxmipssoftfloat"], 1)
-	assert.Len(t, groups["linuxmipshardfloat"], 1)
+	require.Len(t, groups["linuxamd64"], 2)
+	require.Len(t, groups["linuxarm6"], 1)
+	require.Len(t, groups["linuxmipssoftfloat"], 1)
+	require.Len(t, groups["linuxmipshardfloat"], 1)
 }
 
 func TestChecksum(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var file = filepath.Join(folder, "subject")
 	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
 
@@ -192,8 +190,9 @@ func TestChecksumFileDoesntExist(t *testing.T) {
 }
 
 func TestInvalidAlgorithm(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
+	f, err := ioutil.TempFile(t.TempDir(), "")
 	require.NoError(t, err)
+	t.Cleanup(func() { f.Close() })
 	var artifact = Artifact{
 		Path: f.Name(),
 	}
@@ -288,4 +287,29 @@ func TestByFormats(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByFormats("binary")).items, 1)
 	require.Len(t, artifacts.Filter(ByFormats("zip")).items, 2)
 	require.Len(t, artifacts.Filter(ByFormats("zip", "tar.gz")).items, 3)
+}
+
+func TestTypeToString(t *testing.T) {
+	for _, a := range []Type{
+		UploadableArchive,
+		UploadableBinary,
+		UploadableFile,
+		Binary,
+		LinuxPackage,
+		PublishableSnapcraft,
+		Snapcraft,
+		PublishableDockerImage,
+		DockerImage,
+		DockerManifest,
+		Checksum,
+		Signature,
+		UploadableSourceArchive,
+	} {
+		t.Run(a.String(), func(t *testing.T) {
+			require.NotEqual(t, "unknown", a.String())
+		})
+	}
+	t.Run("unknown", func(t *testing.T) {
+		require.Equal(t, "unknown", Type(9999).String())
+	})
 }

@@ -3,14 +3,12 @@ package exec
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,9 +29,7 @@ func TestExecute(t *testing.T) {
 
 	// Preload artifacts
 	ctx.Artifacts = artifact.New()
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
-	defer os.RemoveAll(folder)
+	var folder = t.TempDir()
 	for _, a := range []struct {
 		id  string
 		ext string
@@ -225,9 +221,8 @@ func TestExecute(t *testing.T) {
 				require.NoError(t, err)
 				return
 			}
-			if assert.Error(t, err) {
-				assert.Equal(t, tc.expectErr.Error(), err.Error())
-			}
+			require.Error(t, err)
+			require.Equal(t, tc.expectErr.Error(), err.Error())
 		})
 	}
 }

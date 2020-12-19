@@ -5,31 +5,31 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/internal/git"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // GitInit inits a new git project.
-func GitInit(t *testing.T) {
+func GitInit(t testing.TB) {
 	out, err := fakeGit("init")
-	assert.NoError(t, err)
-	assert.Contains(t, out, "Initialized empty Git repository")
-	assert.NoError(t, err)
+	require.NoError(t, err)
+	require.Contains(t, out, "Initialized empty Git repository")
+	require.NoError(t, err)
 }
 
 // GitRemoteAdd adds the given url as remote.
-func GitRemoteAdd(t *testing.T, url string) {
+func GitRemoteAdd(t testing.TB, url string) {
 	out, err := fakeGit("remote", "add", "origin", url)
-	assert.NoError(t, err)
-	assert.Empty(t, out)
+	require.NoError(t, err)
+	require.Empty(t, out)
 }
 
 // GitCommit creates a git commits.
-func GitCommit(t *testing.T, msg string) {
+func GitCommit(t testing.TB, msg string) {
 	GitCommitWithDate(t, msg, time.Time{})
 }
 
 // GitCommitWithDate creates a git commit with a commit date.
-func GitCommitWithDate(t *testing.T, msg string, commitDate time.Time) {
+func GitCommitWithDate(t testing.TB, msg string, commitDate time.Time) {
 	env := (map[string]string)(nil)
 	if !commitDate.IsZero() {
 		env = map[string]string{
@@ -37,29 +37,29 @@ func GitCommitWithDate(t *testing.T, msg string, commitDate time.Time) {
 		}
 	}
 	out, err := fakeGitEnv(env, "commit", "--allow-empty", "-m", msg)
-	assert.NoError(t, err)
-	assert.Contains(t, out, "master", msg)
+	require.NoError(t, err)
+	require.Contains(t, out, "master", msg)
 }
 
 // GitTag creates a git tag.
-func GitTag(t *testing.T, tag string) {
+func GitTag(t testing.TB, tag string) {
 	out, err := fakeGit("tag", tag)
-	assert.NoError(t, err)
-	assert.Empty(t, out)
+	require.NoError(t, err)
+	require.Empty(t, out)
 }
 
 // GitBranch creates a git branch.
-func GitBranch(t *testing.T, branch string) {
+func GitBranch(t testing.TB, branch string) {
 	out, err := fakeGit("branch", branch)
-	assert.NoError(t, err)
-	assert.Empty(t, out)
+	require.NoError(t, err)
+	require.Empty(t, out)
 }
 
 // GitAdd adds all files to stage.
-func GitAdd(t *testing.T) {
+func GitAdd(t testing.TB) {
 	out, err := fakeGit("add", "-A")
-	assert.NoError(t, err)
-	assert.Empty(t, out)
+	require.NoError(t, err)
+	require.Empty(t, out)
 }
 
 func fakeGitEnv(env map[string]string, args ...string) (string, error) {
@@ -78,8 +78,8 @@ func fakeGit(args ...string) (string, error) {
 }
 
 // GitCheckoutBranch allows us to change the active branch that we're using.
-func GitCheckoutBranch(t *testing.T, name string) {
+func GitCheckoutBranch(t testing.TB, name string) {
 	out, err := fakeGit("checkout", "-b", name)
-	assert.NoError(t, err)
-	assert.Empty(t, out)
+	require.NoError(t, err)
+	require.Empty(t, out)
 }

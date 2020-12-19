@@ -1,6 +1,7 @@
 package brew
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -83,17 +84,25 @@ func (Pipe) Default(ctx *context.Context) error {
 		var brew = &ctx.Config.Brews[i]
 
 		if brew.Install == "" {
-			// TODO: maybe replace this with a simplear also optimistic
+			// TODO: maybe replace this with a simpler also optimistic
 			// approach of just doing `bin.install "project_name"`?
 			var installs []string
 			for _, build := range ctx.Config.Builds {
 				if !isBrewBuild(build) {
 					continue
 				}
-				installs = append(
-					installs,
-					fmt.Sprintf(`bin.install "%s"`, build.Binary),
-				)
+				install := fmt.Sprintf(`bin.install "%s"`, build.Binary)
+				// Do not add duplicate "bin.install" statements when binary names overlap.
+				var found bool
+				for _, instruction := range installs {
+					if instruction == install {
+						found = true
+						break
+					}
+				}
+				if !found {
+					installs = append(installs, install)
+				}
 			}
 			brew.Install = strings.Join(installs, "\n")
 			log.Warnf("optimistically guessing `brew[%d].install`, double check", i)
@@ -249,7 +258,28 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	if err := t.Execute(&out, data); err != nil {
 		return "", err
 	}
-	return tmpl.New(ctx).Apply(out.String())
+
+	content, err := tmpl.New(ctx).Apply(out.String())
+	if err != nil {
+		return "", err
+	}
+	out.Reset()
+
+	// Sanitize the template output and get rid of trailing whitespace.
+	var (
+		r = strings.NewReader(content)
+		s = bufio.NewScanner(r)
+	)
+	for s.Scan() {
+		l := strings.TrimRight(s.Text(), " ")
+		_, _ = out.WriteString(l)
+		_ = out.WriteByte('\n')
+	}
+	if err := s.Err(); err != nil {
+		return "", err
+	}
+
+	return out.String(), nil
 }
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
@@ -258,6 +288,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		Desc:             cfg.Description,
 		Homepage:         cfg.Homepage,
 		Version:          ctx.Version,
+		License:          cfg.License,
 		Caveats:          split(cfg.Caveats),
 		Dependencies:     cfg.Dependencies,
 		Conflicts:        cfg.Conflicts,
@@ -302,21 +333,21 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 			result.MacOS = down
 		} else if artifact.Goos == "linux" {
 			switch artifact.Goarch {
-			case "386", "amd64":
-				if result.Linux.DownloadURL != "" {
+			case "amd64":
+				if result.LinuxAmd64.DownloadURL != "" {
 					return result, ErrMultipleArchivesSameOS
 				}
-				result.Linux = down
+				result.LinuxAmd64 = down
 			case "arm":
-				if result.Arm.DownloadURL != "" {
+				if result.LinuxArm.DownloadURL != "" {
 					return result, ErrMultipleArchivesSameOS
 				}
-				result.Arm = down
+				result.LinuxArm = down
 			case "arm64":
-				if result.Arm64.DownloadURL != "" {
+				if result.LinuxArm64.DownloadURL != "" {
 					return result, ErrMultipleArchivesSameOS
 				}
-				result.Arm64 = down
+				result.LinuxArm64 = down
 			}
 		}
 	}

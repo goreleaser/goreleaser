@@ -14,7 +14,7 @@ scoop:
   # Template for the url which is determined by the given Token (github or gitlab)
   # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
   # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}"
-  # Gitea is not supported yet, but the support coming
+  # Default for gitea is "https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
   url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
   # Repository to push the app manifest to.
@@ -49,6 +49,14 @@ scoop:
   persist:
   - "data"
   - "config.toml"
+
+  # An array of commands to be executed before an application is installed.
+  # Default is empty.
+  pre_install: ["Write-Host 'Running preinstall command'"]
+
+  # An array of commands to be executed after an application is installed.
+  # Default is empty.
+  post_install: ["Write-Host 'Running postinstall command'"]
 ```
 
 By defining the `scoop` section, GoReleaser will take care of publishing the

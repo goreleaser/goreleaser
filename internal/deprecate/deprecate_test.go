@@ -16,8 +16,9 @@ import (
 var update = flag.Bool("update", false, "update .golden files")
 
 func TestNotice(t *testing.T) {
-	f, err := ioutil.TempFile("", "output.txt")
+	f, err := ioutil.TempFile(t.TempDir(), "output.txt")
 	require.NoError(t, err)
+	t.Cleanup(func() { f.Close() })
 
 	color.NoColor = true
 	log.SetHandler(cli.New(f))

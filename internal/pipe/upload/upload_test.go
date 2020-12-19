@@ -15,7 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -56,15 +56,13 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 	setup()
 	defer teardown()
 
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	err = ioutil.WriteFile(binPath, d1, 0666)
-	assert.NoError(t, err)
+	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -141,19 +139,18 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		})
 	}
 
-	assert.NoError(t, Pipe{}.Publish(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
 }
 
 func TestRunPipe_ModeArchive(t *testing.T) {
 	setup()
 	defer teardown()
 
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
@@ -208,26 +205,24 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 		uploads.Store("deb", true)
 	})
 
-	assert.NoError(t, Pipe{}.Publish(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
 	_, ok := uploads.Load("targz")
-	assert.True(t, ok, "tar.gz file was not uploaded")
+	require.True(t, ok, "tar.gz file was not uploaded")
 	_, ok = uploads.Load("deb")
-	assert.True(t, ok, "deb file was not uploaded")
+	require.True(t, ok, "deb file was not uploaded")
 }
 
 func TestRunPipe_ModeBinary_CustomArtifactName(t *testing.T) {
 	setup()
 	defer teardown()
 
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	err = ioutil.WriteFile(binPath, d1, 0666)
-	assert.NoError(t, err)
+	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin;deb.distribution=xenial", func(w http.ResponseWriter, r *http.Request) {
@@ -279,19 +274,18 @@ func TestRunPipe_ModeBinary_CustomArtifactName(t *testing.T) {
 		})
 	}
 
-	assert.NoError(t, Pipe{}.Publish(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
 }
 
 func TestRunPipe_ModeArchive_CustomArtifactName(t *testing.T) {
 	setup()
 	defer teardown()
 
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
@@ -347,18 +341,17 @@ func TestRunPipe_ModeArchive_CustomArtifactName(t *testing.T) {
 		uploads.Store("deb", true)
 	})
 
-	assert.NoError(t, Pipe{}.Publish(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
 	_, ok := uploads.Load("targz")
-	assert.True(t, ok, "tar.gz file was not uploaded")
+	require.True(t, ok, "tar.gz file was not uploaded")
 	_, ok = uploads.Load("deb")
-	assert.True(t, ok, "deb file was not uploaded")
+	require.True(t, ok, "deb file was not uploaded")
 }
 
 func TestRunPipe_ArtifactoryDown(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",
@@ -383,13 +376,12 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 		Path: tarfile.Name(),
 	})
 	err = Pipe{}.Publish(ctx)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "connection refused")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "connection refused")
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 
@@ -420,24 +412,22 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 		Goos:   "darwin",
 		Type:   artifact.UploadableBinary,
 	})
-	err = Pipe{}.Publish(ctx)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), `upload: error while building the target url: template: tmpl:1: unexpected "/" in operand`)
+	var err = Pipe{}.Publish(ctx)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), `upload: error while building the target url: template: tmpl:1: unexpected "/" in operand`)
 }
 
 func TestRunPipe_BadCredentials(t *testing.T) {
 	setup()
 	defer teardown()
 
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	err = ioutil.WriteFile(binPath, d1, 0666)
-	assert.NoError(t, err)
+	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -476,9 +466,9 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	err = Pipe{}.Publish(ctx)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "Unauthorized")
+	var err = Pipe{}.Publish(ctx)
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "Unauthorized")
 }
 
 func TestRunPipe_FileNotFound(t *testing.T) {
@@ -509,19 +499,17 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Publish(ctx), `open archivetest/dist/mybin/mybin: no such file or directory`)
+	require.EqualError(t, Pipe{}.Publish(ctx), `open archivetest/dist/mybin/mybin: no such file or directory`)
 }
 
 func TestRunPipe_UnparsableTarget(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	err = ioutil.WriteFile(binPath, d1, 0666)
-	assert.NoError(t, err)
+	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
 
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",
@@ -550,7 +538,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Publish(ctx), `upload: upload failed: parse "://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin": missing protocol scheme`)
+	require.EqualError(t, Pipe{}.Publish(ctx), `upload: upload failed: parse "://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin": missing protocol scheme`)
 }
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
@@ -573,16 +561,15 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 	ctx.SkipPublish = true
 
 	err := Pipe{}.Publish(ctx)
-	assert.True(t, pipe.IsSkip(err))
-	assert.EqualError(t, err, pipe.ErrSkipPublishEnabled.Error())
+	require.True(t, pipe.IsSkip(err))
+	require.EqualError(t, err, pipe.ErrSkipPublishEnabled.Error())
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
-	assert.NoError(t, os.Mkdir(dist, 0755))
-	assert.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin")
 
 	var ctx = context.New(config.Project{
@@ -612,15 +599,15 @@ func TestRunPipe_DirUpload(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	assert.EqualError(t, Pipe{}.Publish(ctx), `upload: upload failed: the asset to upload can't be a directory`)
+	require.EqualError(t, Pipe{}.Publish(ctx), `upload: upload failed: the asset to upload can't be a directory`)
 }
 
 func TestDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestNoPuts(t *testing.T) {
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{}))))
+	require.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{}))))
 }
 
 func TestPutsWithoutTarget(t *testing.T) {
@@ -639,7 +626,7 @@ func TestPutsWithoutTarget(t *testing.T) {
 		},
 	}
 
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
+	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestPutsWithoutUsername(t *testing.T) {
@@ -658,11 +645,11 @@ func TestPutsWithoutUsername(t *testing.T) {
 		},
 	}
 
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
+	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestPutsWithoutName(t *testing.T) {
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{
+	require.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{
 		Uploads: []config.Upload{
 			{
 				Method:   h.MethodPut,
@@ -674,7 +661,7 @@ func TestPutsWithoutName(t *testing.T) {
 }
 
 func TestPutsWithoutSecret(t *testing.T) {
-	assert.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{
+	require.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{
 		Uploads: []config.Upload{
 			{
 				Method:   h.MethodPut,
@@ -703,7 +690,7 @@ func TestPutsWithInvalidMode(t *testing.T) {
 			},
 		},
 	}
-	assert.Error(t, Pipe{}.Publish(ctx))
+	require.Error(t, Pipe{}.Publish(ctx))
 }
 
 func TestDefault(t *testing.T) {
@@ -718,11 +705,11 @@ func TestDefault(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Uploads, 1)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Len(t, ctx.Config.Uploads, 1)
 	var upload = ctx.Config.Uploads[0]
-	assert.Equal(t, "archive", upload.Mode)
-	assert.Equal(t, h.MethodPut, upload.Method)
+	require.Equal(t, "archive", upload.Mode)
+	require.Equal(t, h.MethodPut, upload.Method)
 }
 
 func TestDefaultNoPuts(t *testing.T) {
@@ -731,8 +718,8 @@ func TestDefaultNoPuts(t *testing.T) {
 			Uploads: []config.Upload{},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Empty(t, ctx.Config.Uploads)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Empty(t, ctx.Config.Uploads)
 }
 
 func TestDefaultSet(t *testing.T) {
@@ -746,9 +733,9 @@ func TestDefaultSet(t *testing.T) {
 			},
 		},
 	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Len(t, ctx.Config.Uploads, 1)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Len(t, ctx.Config.Uploads, 1)
 	var upload = ctx.Config.Uploads[0]
-	assert.Equal(t, "custom", upload.Mode)
-	assert.Equal(t, h.MethodPost, upload.Method)
+	require.Equal(t, "custom", upload.Mode)
+	require.Equal(t, h.MethodPost, upload.Method)
 }

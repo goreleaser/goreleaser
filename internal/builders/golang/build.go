@@ -34,7 +34,7 @@ func init() {
 type Builder struct{}
 
 // WithDefaults sets the defaults for a golang build and returns it.
-func (*Builder) WithDefaults(build config.Build) config.Build {
+func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 	if build.Dir == "" {
 		build.Dir = "."
 	}
@@ -54,12 +54,16 @@ func (*Builder) WithDefaults(build config.Build) config.Build {
 		if len(build.Goarm) == 0 {
 			build.Goarm = []string{"6"}
 		}
-		build.Targets = matrix(build)
+		targets, err := matrix(build)
+		build.Targets = targets
+		if err != nil {
+			return build, err
+		}
 	}
 	if build.GoBinary == "" {
 		build.GoBinary = "go"
 	}
-	return build
+	return build, nil
 }
 
 // Build builds a golang build.
@@ -223,7 +227,7 @@ func checkMain(build config.Build) error {
 		return ferr
 	}
 	if stat.IsDir() {
-		packs, err := parser.ParseDir(token.NewFileSet(), main, nil, 0)
+		packs, err := parser.ParseDir(token.NewFileSet(), main, fileFilter, 0)
 		if err != nil {
 			return fmt.Errorf("failed to parse dir: %s: %w", main, err)
 		}
@@ -244,6 +248,11 @@ func checkMain(build config.Build) error {
 		return nil
 	}
 	return fmt.Errorf("build for %s does not contain a main function", build.Binary)
+}
+
+// TODO: can be removed once we migrate from go 1.15 to 1.16.
+func fileFilter(info os.FileInfo) bool {
+	return !info.IsDir()
 }
 
 func hasMain(file *ast.File) bool {

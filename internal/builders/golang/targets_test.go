@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAllBuildTargets(t *testing.T) {
@@ -53,7 +53,9 @@ func TestAllBuildTargets(t *testing.T) {
 			},
 		},
 	}
-	assert.Equal(t, []string{
+	result, err := matrix(build)
+	require.NoError(t, err)
+	require.Equal(t, []string{
 		"linux_386",
 		"linux_amd64",
 		"linux_arm_6",
@@ -74,7 +76,7 @@ func TestAllBuildTargets(t *testing.T) {
 		"openbsd_amd64",
 		"openbsd_arm64",
 		"js_wasm",
-	}, matrix(build))
+	}, result)
 }
 
 func TestGoosGoarchCombos(t *testing.T) {
@@ -128,7 +130,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 	}
 	for _, p := range platforms {
 		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {
-			assert.Equal(t, p.valid, valid(target{p.os, p.arch, "", ""}))
+			require.Equal(t, p.valid, valid(target{p.os, p.arch, "", ""}))
 		})
 	}
 }

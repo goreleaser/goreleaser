@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"errors"
 	"os"
 
 	"github.com/apex/log"
@@ -15,11 +15,7 @@ func Execute(version string, exit func(int), args []string) {
 	if os.Getenv("CI") != "" {
 		color.NoColor = false
 	}
-
 	log.SetHandler(cli.Default)
-
-	fmt.Println()
-	defer fmt.Println()
 	newRootCmd(version, exit).Execute(args)
 }
 
@@ -33,7 +29,8 @@ func (cmd *rootCmd) Execute(args []string) {
 	if err := cmd.cmd.Execute(); err != nil {
 		var code = 1
 		var msg = "command failed"
-		if eerr, ok := err.(*exitError); ok {
+		var eerr = &exitError{}
+		if errors.As(err, &eerr) {
 			code = eerr.code
 			if eerr.details != "" {
 				msg = eerr.details
@@ -60,6 +57,7 @@ func newRootCmd(version string, exit func(int)) *rootCmd {
 		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		Args:          cobra.NoArgs,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if root.debug {
 				log.SetLevel(log.DebugLevel)
@@ -74,6 +72,7 @@ func newRootCmd(version string, exit func(int)) *rootCmd {
 		newReleaseCmd().cmd,
 		newCheckCmd().cmd,
 		newInitCmd().cmd,
+		newCompletionCmd().cmd,
 	)
 
 	root.cmd = cmd
@@ -88,8 +87,9 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 		return false
 	}
 
-	// allow help command.
-	if len(args) > 0 && args[0] == "help" {
+	// allow help and the two __complete commands.
+	if len(args) > 0 && (args[0] == "help" ||
+		args[0] == cobra.ShellCompRequestCmd || args[0] == cobra.ShellCompNoDescRequestCmd) {
 		return false
 	}
 

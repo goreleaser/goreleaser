@@ -66,6 +66,7 @@ nav:
   - customization/checksum.md
   - customization/publishers.md
   - customization/docker.md
+  - customization/docker_manifest.md
   - customization/env.md
   - customization/hooks.md
   - customization/homebrew.md
@@ -88,6 +89,8 @@ nav:
   - cookbooks/semantic-release.md
   - cookbooks/release-a-library.md
   - cookbooks/publish-to-nexus.md
+  - cookbooks/cgo-and-crosscompiling.md
+  - cookbooks/debconf-templates.md
 - tutorials.md
 - links.md
 

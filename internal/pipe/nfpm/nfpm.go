@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/nfpm"
@@ -164,16 +165,63 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 			Depends:      overridden.Dependencies,
 			Recommends:   overridden.Recommends,
 			Suggests:     overridden.Suggests,
+			Replaces:     overridden.Replaces,
 			EmptyFolders: overridden.EmptyFolders,
 			Files:        files,
 			ConfigFiles:  overridden.ConfigFiles,
+			Symlinks:     overridden.Symlinks,
 			Scripts: nfpm.Scripts{
 				PreInstall:  overridden.Scripts.PreInstall,
 				PostInstall: overridden.Scripts.PostInstall,
 				PreRemove:   overridden.Scripts.PreRemove,
 				PostRemove:  overridden.Scripts.PostRemove,
 			},
+			Deb: nfpm.Deb{
+				Scripts: nfpm.DebScripts{
+					Rules:     overridden.Deb.Scripts.Rules,
+					Templates: overridden.Deb.Scripts.Templates,
+				},
+				Triggers: nfpm.DebTriggers{
+					Interest:        overridden.Deb.Triggers.Interest,
+					InterestAwait:   overridden.Deb.Triggers.InterestAwait,
+					InterestNoAwait: overridden.Deb.Triggers.InterestNoAwait,
+					Activate:        overridden.Deb.Triggers.Activate,
+					ActivateAwait:   overridden.Deb.Triggers.ActivateAwait,
+					ActivateNoAwait: overridden.Deb.Triggers.ActivateNoAwait,
+				},
+				Breaks:          overridden.Deb.Breaks,
+				VersionMetadata: overridden.Deb.VersionMetadata,
+				Signature: nfpm.DebSignature{
+					KeyFile:       overridden.Deb.Signature.KeyFile,
+					KeyPassphrase: getPassphraseFromEnv(ctx, "DEB", fpm.ID),
+					Type:          overridden.Deb.Signature.Type,
+				},
+			},
+			RPM: nfpm.RPM{
+				Summary:              overridden.RPM.Summary,
+				Group:                overridden.RPM.Group,
+				Compression:          overridden.RPM.Compression,
+				GhostFiles:           overridden.RPM.GhostFiles,
+				ConfigNoReplaceFiles: overridden.RPM.ConfigNoReplaceFiles,
+				Signature: nfpm.RPMSignature{
+					KeyFile:       overridden.RPM.Signature.KeyFile,
+					KeyPassphrase: getPassphraseFromEnv(ctx, "RPM", fpm.ID),
+				},
+			},
+			APK: nfpm.APK{
+				Signature: nfpm.APKSignature{
+					KeyFile:       overridden.APK.Signature.KeyFile,
+					KeyPassphrase: getPassphraseFromEnv(ctx, "APK", fpm.ID),
+					KeyName:       overridden.APK.Signature.KeyName,
+				},
+			},
 		},
+	}
+
+	if ctx.SkipSign {
+		info.APK.Signature = nfpm.APKSignature{}
+		info.RPM.Signature = nfpm.RPMSignature{}
+		info.Deb.Signature = nfpm.DebSignature{}
 	}
 
 	if err = nfpm.Validate(info); err != nil {
@@ -213,4 +261,23 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		},
 	})
 	return nil
+}
+
+func getPassphraseFromEnv(ctx *context.Context, packager string, nfpmID string) string {
+	var passphrase string
+
+	nfpmID = strings.ToUpper(nfpmID)
+	packagerSpecificPassphrase := ctx.Env[fmt.Sprintf(
+		"NFPM_%s_%s_PASSPHRASE",
+		nfpmID,
+		packager,
+	)]
+	if packagerSpecificPassphrase != "" {
+		passphrase = packagerSpecificPassphrase
+	} else {
+		generalPassphrase := ctx.Env[fmt.Sprintf("NFPM_%s_PASSPHRASE", nfpmID)]
+		passphrase = generalPassphrase
+	}
+
+	return passphrase
 }

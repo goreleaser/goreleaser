@@ -3,6 +3,8 @@
 package defaults
 
 import (
+	"strings"
+
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -26,6 +28,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	if ctx.Config.GitLabURLs.Download == "" {
 		ctx.Config.GitLabURLs.Download = client.DefaultGitLabDownloadURL
+	}
+	if ctx.Config.GiteaURLs.Download == "" {
+		ctx.Config.GiteaURLs.Download = strings.ReplaceAll(ctx.Config.GiteaURLs.API, "/api/v1", "")
 	}
 	for _, defaulter := range defaults.Defaulters {
 		if err := middleware.Logging(

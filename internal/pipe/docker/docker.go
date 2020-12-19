@@ -1,4 +1,3 @@
-// Package docker provides a Pipe that creates and pushes a Docker image
 package docker
 
 import (
@@ -40,6 +39,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Goarch == "" {
 			docker.Goarch = "amd64"
 		}
+		if docker.Dockerfile == "" {
+			docker.Dockerfile = "Dockerfile"
+		}
 		for _, f := range docker.Files {
 			if f == "." || strings.HasPrefix(f, ctx.Config.Dist) {
 				return fmt.Errorf("invalid docker.files: can't be . or inside dist folder: %s", f)
@@ -54,9 +56,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Dockers[0].Binaries = []string{
 			ctx.Config.Builds[0].Binary,
 		}
-	}
-	if ctx.Config.Dockers[0].Dockerfile == "" {
-		ctx.Config.Dockers[0].Dockerfile = "Dockerfile"
 	}
 	return nil
 }

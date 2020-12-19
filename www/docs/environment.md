@@ -74,6 +74,7 @@ the `.goreleaser.yml` configuration file:
 # .goreleaser.yml
 gitea_urls:
   api: https://gitea.myinstance.com/api/v1/
+  download: https://gitea.myinstance.com
   # set to true if you use a self-signed certificate
   skip_tls_verify: false
 ```

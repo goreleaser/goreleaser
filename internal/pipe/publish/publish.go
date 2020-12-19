@@ -40,6 +40,7 @@ var publishers = []Publisher{
 	custompublishers.Pipe{},
 	artifactory.Pipe{},
 	docker.Pipe{},
+	docker.ManifestPipe{},
 	snapcraft.Pipe{},
 	// This should be one of the last steps
 	release.Pipe{},

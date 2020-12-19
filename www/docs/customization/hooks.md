@@ -27,4 +27,4 @@ to do things that are more complex than just calling a command with some
 attributes, wrap it in a shell script or into your `Makefile`.
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).

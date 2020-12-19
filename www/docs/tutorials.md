@@ -14,6 +14,7 @@ Tutorials made by the community.
 - [Cross compile with CGO and GoReleaser](https://medium.com/@robdefeo/cross-compile-with-cgo-and-goreleaser-6af884731222?source=friends_link&sk=baf6553fa48cb0e28ea3519615f02576)
 - [GoReleaser + Drone + Github: Tutorial](https://medium.com/@fallion/goreleaser-drone-github-tutorial-9a150103cac0)
 - [Go Release Automation with goreleaser + GitHub Actions](https://blog.toshima.ru/2019/10/20/go-release-automation-with-goreleaser.html)
+- [GitHub Action for release your Go projects as fast and easily as possible](https://dev.to/koddr/github-action-for-release-your-go-projects-as-fast-and-easily-as-possible-20a2)
 
 Want to add your tutorial here? Please do! Click on the `improve this page`
 link bellow!

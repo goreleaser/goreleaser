@@ -9,16 +9,14 @@ import (
 )
 
 func TestBuild(t *testing.T) {
-	_, back := setup(t)
-	defer back()
+	setup(t)
 	var cmd = newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.NoError(t, cmd.cmd.Execute())
 }
 
 func TestBuildInvalidConfig(t *testing.T) {
-	_, back := setup(t)
-	defer back()
+	setup(t)
 	createFile(t, "goreleaser.yml", "foo: bar")
 	var cmd = newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
@@ -26,8 +24,7 @@ func TestBuildInvalidConfig(t *testing.T) {
 }
 
 func TestBuildBrokenProject(t *testing.T) {
-	_, back := setup(t)
-	defer back()
+	setup(t)
 	createFile(t, "main.go", "not a valid go file")
 	var cmd = newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2"})

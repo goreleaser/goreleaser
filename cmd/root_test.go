@@ -41,8 +41,7 @@ func TestRootCmdExitCode(t *testing.T) {
 }
 
 func TestRootRelease(t *testing.T) {
-	_, back := setup(t)
-	defer back()
+	setup(t)
 	var mem = &exitMemento{}
 	var cmd = newRootCmd("", mem.Exit)
 	cmd.Execute([]string{})
@@ -50,8 +49,7 @@ func TestRootRelease(t *testing.T) {
 }
 
 func TestRootReleaseDebug(t *testing.T) {
-	_, back := setup(t)
-	defer back()
+	setup(t)
 	var mem = &exitMemento{}
 	var cmd = newRootCmd("", mem.Exit)
 	cmd.Execute([]string{"r", "--debug"})
@@ -87,5 +85,13 @@ func TestShouldPrependRelease(t *testing.T) {
 
 	t.Run("help", func(t *testing.T) {
 		require.False(t, result([]string{"help"}))
+	})
+
+	t.Run("__complete", func(t *testing.T) {
+		require.False(t, result([]string{"__complete"}))
+	})
+
+	t.Run("__completeNoDesc", func(t *testing.T) {
+		require.False(t, result([]string{"__completeNoDesc"}))
 	})
 }

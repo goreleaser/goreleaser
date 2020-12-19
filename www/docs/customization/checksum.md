@@ -19,10 +19,18 @@ checksum:
   # Default is sha256.
   algorithm: sha256
 
+  # IDs of artifacts to include in the checksums file.
+  # If left empty, all published binaries, archives, linux packages and source archives
+  # are included in the checksums file.
+  # Default is an empty list.
+  ids: 
+    - foo
+    - bar
+
   # Disable the generation/upload of the checksum file.
   # Default is false.
   disable: true
 ```
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).

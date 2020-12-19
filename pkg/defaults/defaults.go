@@ -33,7 +33,7 @@ type Defaulter interface {
 	Default(ctx *context.Context) error
 }
 
-// Defaulters is the list of defaulters
+// Defaulters is the list of defaulters.
 // nolint: gochecknoglobals
 var Defaulters = []Defaulter{
 	snapshot.Pipe{},

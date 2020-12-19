@@ -15,26 +15,25 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPipeDescription(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	srcfile, err := os.Create(filepath.Join(folder, "source.tar.gz"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	filteredtarfile, err := os.Create(filepath.Join(folder, "filtered.tar.gz"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	filtereddebfile, err := os.Create(filepath.Join(folder, "filtered.deb"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var config = config.Project{
 		Dist: folder,
@@ -88,27 +87,26 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		},
 	})
 	client := &DummyClient{}
-	assert.NoError(t, doPublish(ctx, client))
-	assert.True(t, client.CreatedRelease)
-	assert.True(t, client.UploadedFile)
-	assert.Contains(t, client.UploadedFileNames, "source.tar.gz")
-	assert.Contains(t, client.UploadedFileNames, "bin.deb")
-	assert.Contains(t, client.UploadedFileNames, "bin.tar.gz")
-	assert.Contains(t, client.UploadedFileNames, "filtered.deb")
-	assert.Contains(t, client.UploadedFileNames, "filtered.tar.gz")
+	require.NoError(t, doPublish(ctx, client))
+	require.True(t, client.CreatedRelease)
+	require.True(t, client.UploadedFile)
+	require.Contains(t, client.UploadedFileNames, "source.tar.gz")
+	require.Contains(t, client.UploadedFileNames, "bin.deb")
+	require.Contains(t, client.UploadedFileNames, "bin.tar.gz")
+	require.Contains(t, client.UploadedFileNames, "filtered.deb")
+	require.Contains(t, client.UploadedFileNames, "filtered.tar.gz")
 }
 
 func TestRunPipeWithIDsThenFilters(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	filteredtarfile, err := os.Create(filepath.Join(folder, "filtered.tar.gz"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	filtereddebfile, err := os.Create(filepath.Join(folder, "filtered.deb"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	var config = config.Project{
 		Dist: folder,
@@ -158,16 +156,14 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		},
 	})
 	client := &DummyClient{}
-	assert.NoError(t, doPublish(ctx, client))
-	assert.True(t, client.CreatedRelease)
-	assert.True(t, client.UploadedFile)
-	assert.Contains(t, client.UploadedFileNames, "bin.deb")
-	assert.Contains(t, client.UploadedFileNames, "bin.tar.gz")
-	assert.Contains(t, client.UploadedFileNames, "release1.golden")
-	assert.Contains(t, client.UploadedFileNames, "release2.golden")
-	assert.Contains(t, client.UploadedFileNames, "f1")
-	assert.NotContains(t, client.UploadedFileNames, "filtered.deb")
-	assert.NotContains(t, client.UploadedFileNames, "filtered.tar.gz")
+	require.NoError(t, doPublish(ctx, client))
+	require.True(t, client.CreatedRelease)
+	require.True(t, client.UploadedFile)
+	require.Contains(t, client.UploadedFileNames, "bin.deb")
+	require.Contains(t, client.UploadedFileNames, "bin.tar.gz")
+	require.Contains(t, client.UploadedFileNames, "f1")
+	require.NotContains(t, client.UploadedFileNames, "filtered.deb")
+	require.NotContains(t, client.UploadedFileNames, "filtered.tar.gz")
 }
 
 func TestRunPipeReleaseCreationFailed(t *testing.T) {
@@ -184,9 +180,9 @@ func TestRunPipeReleaseCreationFailed(t *testing.T) {
 	client := &DummyClient{
 		FailToCreateRelease: true,
 	}
-	assert.Error(t, doPublish(ctx, client))
-	assert.False(t, client.CreatedRelease)
-	assert.False(t, client.UploadedFile)
+	require.Error(t, doPublish(ctx, client))
+	require.False(t, client.CreatedRelease)
+	require.False(t, client.UploadedFile)
 }
 
 func TestRunPipeWithFileThatDontExist(t *testing.T) {
@@ -206,16 +202,15 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 		Path: "/nope/nope/nope",
 	})
 	client := &DummyClient{}
-	assert.Error(t, doPublish(ctx, client))
-	assert.True(t, client.CreatedRelease)
-	assert.False(t, client.UploadedFile)
+	require.Error(t, doPublish(ctx, client))
+	require.True(t, client.CreatedRelease)
+	require.False(t, client.UploadedFile)
 }
 
 func TestRunPipeUploadFailure(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var config = config.Project{
 		Release: config.Release{
 			GitHub: config.Repo{
@@ -234,9 +229,9 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	client := &DummyClient{
 		FailToUpload: true,
 	}
-	assert.EqualError(t, doPublish(ctx, client), "failed to upload bin.tar.gz after 1 tries: upload failed")
-	assert.True(t, client.CreatedRelease)
-	assert.False(t, client.UploadedFile)
+	require.EqualError(t, doPublish(ctx, client), "failed to upload bin.tar.gz after 1 tries: upload failed")
+	require.True(t, client.CreatedRelease)
+	require.False(t, client.UploadedFile)
 }
 
 func TestRunPipeExtraFileNotFound(t *testing.T) {
@@ -255,9 +250,9 @@ func TestRunPipeExtraFileNotFound(t *testing.T) {
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 	client := &DummyClient{}
-	assert.EqualError(t, doPublish(ctx, client), "globbing failed for pattern ./nope: file does not exist")
-	assert.True(t, client.CreatedRelease)
-	assert.False(t, client.UploadedFile)
+	require.EqualError(t, doPublish(ctx, client), "globbing failed for pattern ./nope: matching \"nope\": file does not exist")
+	require.True(t, client.CreatedRelease)
+	require.False(t, client.UploadedFile)
 }
 
 func TestRunPipeExtraOverride(t *testing.T) {
@@ -276,18 +271,17 @@ func TestRunPipeExtraOverride(t *testing.T) {
 	var ctx = context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 	client := &DummyClient{}
-	assert.NoError(t, doPublish(ctx, client))
-	assert.True(t, client.CreatedRelease)
-	assert.True(t, client.UploadedFile)
-	assert.Contains(t, client.UploadedFileNames, "f1")
-	assert.True(t, strings.HasSuffix(client.UploadedFilePaths["f1"], "testdata/upload_same_name/f1"))
+	require.NoError(t, doPublish(ctx, client))
+	require.True(t, client.CreatedRelease)
+	require.True(t, client.UploadedFile)
+	require.Contains(t, client.UploadedFileNames, "f1")
+	require.True(t, strings.HasSuffix(client.UploadedFilePaths["f1"], "testdata/upload_same_name/f1"))
 }
 
 func TestRunPipeUploadRetry(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
+	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var config = config.Project{
 		Release: config.Release{
 			GitHub: config.Repo{
@@ -306,9 +300,9 @@ func TestRunPipeUploadRetry(t *testing.T) {
 	client := &DummyClient{
 		FailFirstUpload: true,
 	}
-	assert.NoError(t, doPublish(ctx, client))
-	assert.True(t, client.CreatedRelease)
-	assert.True(t, client.UploadedFile)
+	require.NoError(t, doPublish(ctx, client))
+	require.True(t, client.CreatedRelease)
+	require.True(t, client.UploadedFile)
 }
 
 func TestPipeDisabled(t *testing.T) {
@@ -319,52 +313,48 @@ func TestPipeDisabled(t *testing.T) {
 	})
 	client := &DummyClient{}
 	testlib.AssertSkipped(t, doPublish(ctx, client))
-	assert.False(t, client.CreatedRelease)
-	assert.False(t, client.UploadedFile)
+	require.False(t, client.CreatedRelease)
+	require.False(t, client.UploadedFile)
 }
 
 func TestDefault(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
 	var ctx = context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
-	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
+	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
 }
 
 func TestDefaultWithGitlab(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@gitlab.com:gitlabowner/gitlabrepo.git")
 
 	var ctx = context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitLab
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "gitlabrepo", ctx.Config.Release.GitLab.Name)
-	assert.Equal(t, "gitlabowner", ctx.Config.Release.GitLab.Owner)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "gitlabrepo", ctx.Config.Release.GitLab.Name)
+	require.Equal(t, "gitlabowner", ctx.Config.Release.GitLab.Owner)
 }
 
 func TestDefaultWithGitea(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@gitea.example.com:giteaowner/gitearepo.git")
 
 	var ctx = context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitea
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "gitearepo", ctx.Config.Release.Gitea.Name)
-	assert.Equal(t, "giteaowner", ctx.Config.Release.Gitea.Owner)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "gitearepo", ctx.Config.Release.Gitea.Name)
+	require.Equal(t, "giteaowner", ctx.Config.Release.Gitea.Owner)
 }
 
 func TestDefaultPreReleaseAuto(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
@@ -380,8 +370,8 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 			Minor: 0,
 			Patch: 0,
 		}
-		assert.NoError(t, Pipe{}.Default(ctx))
-		assert.Equal(t, false, ctx.PreRelease)
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, false, ctx.PreRelease)
 	})
 
 	t.Run("auto-rc", func(t *testing.T) {
@@ -397,8 +387,8 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 			Patch:      0,
 			Prerelease: "rc1",
 		}
-		assert.NoError(t, Pipe{}.Default(ctx))
-		assert.Equal(t, true, ctx.PreRelease)
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, true, ctx.PreRelease)
 	})
 
 	t.Run("auto-rc-github-setup", func(t *testing.T) {
@@ -418,14 +408,13 @@ func TestDefaultPreReleaseAuto(t *testing.T) {
 			Patch:      0,
 			Prerelease: "rc1",
 		}
-		assert.NoError(t, Pipe{}.Default(ctx))
-		assert.Equal(t, true, ctx.PreRelease)
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, true, ctx.PreRelease)
 	})
 }
 
 func TestDefaultPipeDisabled(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
@@ -435,14 +424,13 @@ func TestDefaultPipeDisabled(t *testing.T) {
 		},
 	})
 	ctx.TokenType = context.TokenTypeGitHub
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
-	assert.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
+	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
 }
 
 func TestDefaultFilled(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
@@ -457,55 +445,51 @@ func TestDefaultFilled(t *testing.T) {
 		},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "foo", ctx.Config.Release.GitHub.Name)
-	assert.Equal(t, "bar", ctx.Config.Release.GitHub.Owner)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "foo", ctx.Config.Release.GitHub.Name)
+	require.Equal(t, "bar", ctx.Config.Release.GitHub.Owner)
 }
 
 func TestDefaultNotAGitRepo(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
-	assert.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
-	assert.Empty(t, ctx.Config.Release.GitHub.String())
+	require.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
+	require.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
 func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
 	testlib.GitInit(t)
-	assert.EqualError(t, Pipe{}.Default(ctx), "repository doesn't have an `origin` remote")
-	assert.Empty(t, ctx.Config.Release.GitHub.String())
+	require.EqualError(t, Pipe{}.Default(ctx), "repository doesn't have an `origin` remote")
+	require.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
 func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Snapshot = true
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Empty(t, ctx.Config.Release.GitHub.String())
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
 func TestDefaultGitRepoWithoutRemote(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	var ctx = &context.Context{
 		Config: config.Project{},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
-	assert.Error(t, Pipe{}.Default(ctx))
-	assert.Empty(t, ctx.Config.Release.GitHub.String())
+	require.Error(t, Pipe{}.Default(ctx))
+	require.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
 func TestDefaultMultipleReleasesDefined(t *testing.T) {
@@ -525,7 +509,7 @@ func TestDefaultMultipleReleasesDefined(t *testing.T) {
 			},
 		},
 	})
-	assert.EqualError(t, Pipe{}.Default(ctx), ErrMultipleReleases.Error())
+	require.EqualError(t, Pipe{}.Default(ctx), ErrMultipleReleases.Error())
 }
 
 type DummyClient struct {
