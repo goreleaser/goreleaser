@@ -116,11 +116,12 @@ func validate(ctx *context.Context) error {
 	if ctx.SkipValidate {
 		return pipe.ErrSkipValidateEnabled
 	}
-	out, err := git.Run("status", "--porcelain")
-	if strings.TrimSpace(out) != "" || err != nil {
-		return ErrDirty{status: out}
+	if status, dirty := git.Status(); dirty {
+		return ErrDirty{
+			status: status,
+		}
 	}
-	_, err = git.Clean(git.Run("describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag))
+	_, err := git.Clean(git.Run("describe", "--exact-match", "--tags", "--match", ctx.Git.CurrentTag))
 	if err != nil {
 		return ErrWrongRef{
 			commit: ctx.Git.Commit,
