@@ -79,7 +79,11 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	var cmd = []string{build.GoBinary, "build"}
 
 	var env = append(ctx.Env.Strings(), build.Env...)
-	env = append(env, target.Env()...)
+	targetEnv, err := target.Env(ctx, env)
+	if err != nil {
+		return err
+	}
+	env = append(env, targetEnv...)
 
 	artifact := &artifact.Artifact{
 		Type:   artifact.Binary,
@@ -204,14 +208,34 @@ func newBuildTarget(s string) (buildTarget, error) {
 	return t, nil
 }
 
-func (b buildTarget) Env() []string {
-	return []string{
-		"GOOS=" + b.os,
-		"GOARCH=" + b.arch,
-		"GOARM=" + b.arm,
-		"GOMIPS=" + b.mips,
-		"GOMIPS64=" + b.mips,
+func (b buildTarget) Env(ctx *context.Context, env []string) ([]string, error) {
+	goos, err := tmpl.New(ctx).WithEnvS(env).Apply(b.os)
+	if err != nil {
+		return nil, err
 	}
+
+	goarch, err := tmpl.New(ctx).WithEnvS(env).Apply(b.arch)
+	if err != nil {
+		return nil, err
+	}
+
+	goarm, err := tmpl.New(ctx).WithEnvS(env).Apply(b.arm)
+	if err != nil {
+		return nil, err
+	}
+
+	gomips, err := tmpl.New(ctx).WithEnvS(env).Apply(b.mips)
+	if err != nil {
+		return nil, err
+	}
+
+	return []string{
+		"GOOS=" + goos,
+		"GOARCH=" + goarch,
+		"GOARM=" + goarm,
+		"GOMIPS=" + gomips,
+		"GOMIPS64=" + gomips,
+	}, nil
 }
 
 func checkMain(build config.Build) error {
