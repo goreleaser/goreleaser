@@ -6,7 +6,6 @@ import (
 	"github.com/apex/log"
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
-	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -24,7 +23,6 @@ type releaseOpts struct {
 	releaseHeader string
 	releaseFooter string
 	snapshot      bool
-	snapshotAuto  bool
 	skipPublish   bool
 	skipSign      bool
 	skipValidate  bool
@@ -68,7 +66,6 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().StringVar(&root.opts.releaseHeader, "release-header", "", "Load custom release notes header from a markdown file")
 	cmd.Flags().StringVar(&root.opts.releaseFooter, "release-footer", "", "Load custom release notes footer from a markdown file")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts")
-	cmd.Flags().BoolVar(&root.opts.snapshotAuto, "snapshot-auto", false, "Same as snapshot but only if Git is currently in a dirty state")
 	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipSign, "skip-sign", false, "Skips signing the artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
@@ -111,9 +108,6 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Con
 	ctx.ReleaseHeader = options.releaseHeader
 	ctx.ReleaseFooter = options.releaseFooter
 	ctx.Snapshot = options.snapshot
-	if _, gitDirty := git.Status(); options.snapshotAuto && gitDirty {
-		ctx.Snapshot = true
-	}
 	ctx.SkipPublish = ctx.Snapshot || options.skipPublish
 	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
 	ctx.SkipSign = options.skipSign

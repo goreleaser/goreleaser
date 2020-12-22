@@ -34,6 +34,3 @@ get the snapshot version.
 Note that the idea behind GoReleaser's snapshots if mostly for local builds
 or to validate your build on the CI pipeline. Artifacts shouldn't be uploaded
 anywhere, and will only be generated to the `dist` folder.
-
-You can also use the `--snapshot-auto` flag to automatically switch to snapshot
-if Git is currently in a dirty state.

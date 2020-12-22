@@ -16,12 +16,6 @@ func IsRepo() bool {
 	return err == nil && strings.TrimSpace(out) == "true"
 }
 
-// Status returns git status in its current state.
-func Status() (string, bool) {
-	out, err := Run("status", "--porcelain")
-	return out, strings.TrimSpace(out) != "" || err != nil
-}
-
 // RunEnv runs a git command with the specified env vars and returns its output or errors.
 func RunEnv(env map[string]string, args ...string) (string, error) {
 	// TODO: use exex.CommandContext here and refactor.

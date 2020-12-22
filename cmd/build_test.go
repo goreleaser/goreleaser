@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"io/ioutil"
-	"path/filepath"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -43,37 +40,6 @@ func TestBuildFlags(t *testing.T) {
 		var ctx = setup(buildOpts{
 			snapshot: true,
 		})
-		require.True(t, ctx.Snapshot)
-		require.True(t, ctx.SkipValidate)
-		require.True(t, ctx.SkipTokenCheck)
-	})
-
-	t.Run("snapshot auto clean", func(t *testing.T) {
-		testlib.Mktmp(t)
-		testlib.GitInit(t)
-		testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
-
-		var ctx = setup(buildOpts{
-			snapshotAuto: true,
-		})
-
-		require.False(t, ctx.Snapshot)
-		require.False(t, ctx.SkipValidate)
-	})
-
-	t.Run("snapshot auto dirty", func(t *testing.T) {
-		var folder = testlib.Mktmp(t)
-		testlib.GitInit(t)
-		testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-		testlib.GitAdd(t)
-		testlib.GitCommit(t, "whatever")
-		testlib.GitTag(t, "v0.0.1")
-		require.NoError(t, ioutil.WriteFile(filepath.Join(folder, "foo"), []byte("foobar"), 0644))
-
-		var ctx = setup(buildOpts{
-			snapshotAuto: true,
-		})
-
 		require.True(t, ctx.Snapshot)
 		require.True(t, ctx.SkipValidate)
 		require.True(t, ctx.SkipTokenCheck)

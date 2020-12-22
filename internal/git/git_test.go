@@ -1,9 +1,7 @@
 package git_test
 
 import (
-	"io/ioutil"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/git"
@@ -46,21 +44,6 @@ func TestRepo(t *testing.T) {
 
 	require.NoError(t, os.Chdir(os.TempDir()))
 	require.False(t, git.IsRepo(), os.TempDir()+" folder should be a git repo")
-}
-
-func TestStatus(t *testing.T) {
-	var folder = testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	dummy, err := os.Create(filepath.Join(folder, "dummy"))
-	require.NoError(t, err)
-	testlib.GitAdd(t)
-	testlib.GitCommit(t, "commit2")
-	testlib.GitTag(t, "v0.0.1")
-	require.NoError(t, ioutil.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0644))
-	status, dirty := git.Status()
-	require.True(t, dirty, "git is currently in a dirty state")
-	require.NotEmpty(t, status, "git status")
 }
 
 func TestClean(t *testing.T) {

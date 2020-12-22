@@ -78,11 +78,15 @@ jobs:
           snapcraft login --with <(echo "$SNAPCRAFT_LOGIN")
       -
         name: GoReleaser
-        if: success() && (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master')
+        if: success()
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          ./goreleaser --snapshot-auto
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            ./goreleaser
+          elif [[ $GITHUB_REF == refs/heads/master ]]; then
+            ./goreleaser --snapshot
+          fi
       -
         name: Clear
         if: always() && startsWith(github.ref, 'refs/tags/v')
