@@ -6,7 +6,6 @@ import (
 	"github.com/apex/log"
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
-	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -21,7 +20,6 @@ type buildCmd struct {
 type buildOpts struct {
 	config        string
 	snapshot      bool
-	snapshotAuto  bool
 	skipValidate  bool
 	skipPostHooks bool
 	rmDist        bool
@@ -61,7 +59,6 @@ func newBuildCmd() *buildCmd {
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot build, skipping all validations and without publishing any artifacts")
-	cmd.Flags().BoolVar(&root.opts.snapshotAuto, "snapshot-auto", false, "Same as snapshot but only if Git is currently in a dirty state")
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
 	cmd.Flags().BoolVar(&root.opts.skipPostHooks, "skip-post-hooks", false, "Skips all post-build hooks")
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
@@ -100,9 +97,6 @@ func setupBuildContext(ctx *context.Context, options buildOpts) *context.Context
 	ctx.Parallelism = options.parallelism
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Snapshot = options.snapshot
-	if _, gitDirty := git.Status(); options.snapshotAuto && gitDirty {
-		ctx.Snapshot = true
-	}
 	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
 	ctx.SkipPostBuildHooks = options.skipPostHooks
 	ctx.RmDist = options.rmDist
