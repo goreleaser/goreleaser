@@ -159,6 +159,8 @@ func TestRunPipe(t *testing.T) {
 		require.Equal(t, pkg.Name, "mybin_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
 	}
+	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
+
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
@@ -721,11 +723,13 @@ func TestMeta(t *testing.T) {
 		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
 	}
 
+	require.Len(t, ctx.Config.NFPMs[0].Contents, 3, "should not modify the config file list")
+
 	// ensure that no binaries added
 	for _, pkg := range packages {
-		files := pkg.ExtraOr("Files", files.Contents{}).(files.Contents)
-		for _, dest := range files {
-			require.NotEqual(t, "/usr/bin/mybin", dest, "binary file should not be added")
+		contents := pkg.ExtraOr("Files", files.Contents{}).(files.Contents)
+		for _, f := range contents {
+			require.NotEqual(t, "/usr/bin/mybin", f.Destination, "binary file should not be added")
 		}
 	}
 }

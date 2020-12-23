@@ -181,6 +181,9 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		return err
 	}
 
+	var contents files.Contents
+	copy(overridden.Contents, contents)
+
 	// FPM meta package should not contain binaries at all
 	if !fpm.Meta {
 		var log = log.WithField("package", name+"."+format).WithField("arch", arch)
@@ -188,14 +191,14 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 			src := binary.Path
 			dst := filepath.Join(fpm.Bindir, binary.Name)
 			log.WithField("src", src).WithField("dst", dst).Debug("adding binary to package")
-			overridden.Contents = append(overridden.Contents, &files.Content{
+			contents = append(contents, &files.Content{
 				Source:      src,
 				Destination: dst,
 			})
 		}
 	}
 
-	log.WithField("files", overridden.Contents).Debug("all archive files")
+	log.WithField("files", contents).Debug("all archive files")
 
 	var info = &nfpm.Info{
 		Arch:        arch,
@@ -218,7 +221,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 			Suggests:     overridden.Suggests,
 			Replaces:     overridden.Replaces,
 			EmptyFolders: overridden.EmptyFolders,
-			Contents:     overridden.Contents,
+			Contents:     contents,
 			Scripts: nfpm.Scripts{
 				PreInstall:  overridden.Scripts.PreInstall,
 				PostInstall: overridden.Scripts.PostInstall,
@@ -304,7 +307,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 			"Builds": binaries,
 			"ID":     fpm.ID,
 			"Format": format,
-			"Files":  overridden.Contents,
+			"Files":  contents,
 		},
 	})
 	return nil
