@@ -86,6 +86,7 @@ func (Pipe) Default(ctx *context.Context) error {
 				fpm.Contents = append(fpm.Contents, &files.Content{
 					Destination: dst,
 					Type:        "ghost",
+					Packager:    "rpm",
 				})
 			}
 			deprecate.Notice(ctx, "nfpms.rpm.ghost_files")
@@ -96,6 +97,7 @@ func (Pipe) Default(ctx *context.Context) error {
 					Source:      src,
 					Destination: dst,
 					Type:        "config|noreplace",
+					Packager:    "rpm",
 				})
 			}
 			deprecate.Notice(ctx, "nfpms.rpm.config_noreplace_files")
