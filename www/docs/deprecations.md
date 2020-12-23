@@ -15,6 +15,140 @@ goreleaser check
 
 ## Active deprecation notices
 
+### nfpms.files
+
+> since 2020-12-21 (v0.149.0)
+
+`files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        files:
+          foo: bar
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - src: foo
+            dst: bar
+    ```
+
+### nfpms.config_files
+
+> since 2020-12-21 (v0.149.0)
+
+`config_files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        config_files:
+          foo: bar
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - src: foo
+            dst: bar
+            type: config
+    ```
+
+### nfpms.symlinks
+
+> since 2020-12-21 (v0.149.0)
+
+`symlinks` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        symlinks:
+          foo: bar
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - src: foo
+            dst: bar
+            type: symlink
+    ```
+
+
+### nfpms.rpm.ghost_files
+
+> since 2020-12-21 (v0.149.0)
+
+`rpm.ghost_files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        rpm:
+          ghost_files:
+            - foo
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - dst: bar
+            type: ghost
+            packager: rpm # optional
+    ```
+
+### nfpms.rpm.config_noreplace_files
+
+> since 2020-12-21 (v0.149.0)
+
+`rpm.config_noreplace_files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        rpm:
+          config_noreplace_files:
+            foo: bar
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - src: foo
+            dst: bar
+            type: config|noreplace
+            packager: rpm # optional
+    ```
+
+
 ### brews.github
 
 > since 2020-07-06 (v0.139.0)

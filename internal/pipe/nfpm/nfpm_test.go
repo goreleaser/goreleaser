@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/stretchr/testify/require"
 )
 
@@ -59,7 +60,7 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:   "mybin",
-				Path:   "whatever",
+				Path:   "testdata/testfile.txt",
 				Goarch: goarch,
 				Goos:   goos,
 				Type:   artifact.Binary,
@@ -658,7 +659,7 @@ func TestMeta(t *testing.T) {
 
 	// ensure that no binaries added
 	for _, pkg := range packages {
-		files := pkg.ExtraOr("Files", map[string]string{}).(map[string]string)
+		files := pkg.ExtraOr("Files", files.Contents{}).(files.Contents)
 		for _, dest := range files {
 			require.NotEqual(t, "/usr/bin/mybin", dest, "binary file should not be added")
 		}
