@@ -111,26 +111,68 @@ nfpms:
     empty_folders:
       - /var/log/foobar
 
-    # Files to add to your package (beyond the binary).
-    # Keys are source paths/globs to get the files from.
-    # Values are the destination locations of the files in the package.
-    # Use globs to add all contents of a folder.
-    files:
-      "scripts/etc/init.d/**": "/etc/init.d"
-      "path/**/glob": "/var/foo/glob"
+    # Contents to add to the package.
+    # GoReleaser will automatically add the binaries.
+    contents:
+      # Basic file that applies to all packagers
+      - src: path/to/local/foo
+        dst: /usr/local/bin/foo
 
-    # Config files to add to your package. They are about the same as
-    # the files keyword, except package managers treat them differently (while
-    # uninstalling, mostly).
-    # Keys are source paths/globs to get the files from.
-    # Values are the destination locations of the files in the package.
-    config_files:
-      "tmp/app_generated.conf": "/etc/app.conf"
-      "conf/*.conf": "/etc/foo/"
+      # Simple config file
+      - src: path/to/local/foo.conf
+        dst: /etc/foo.conf
+        type: config
 
-    # Symlinks mapping from symlink name inside package to target inside package (overridable)
-    symlinks:
-      /sbin/foo: /usr/local/bin/foo
+      # Simple symlink
+      - src: /sbin/foo # link name
+        dst: /usr/local/bin/foo # real location
+        type: "symlink"
+
+      # Corresponds to %config(noreplace) if the packager is rpm, otherwise it is just a config file
+      - src: path/to/local/bar.conf
+        dst: /etc/bar.conf
+        type: "config|noreplace"
+
+      # These files are not actually present in the package, but the file names
+      # are added to the package header. From the RPM directives documentation:
+      #
+      # "There are times when a file should be owned by the package but not
+      # installed - log files and state files are good examples of cases you might
+      # desire this to happen."
+      #
+      # "The way to achieve this, is to use the %ghost directive. By adding this
+      # directive to the line containing a file, RPM will know about the ghosted
+      # file, but will not add it to the package."
+      #
+      # For non rpm packages ghost files are ignored at this time.
+      - dst: /etc/casper.conf
+        type: ghost
+      - dst: /var/log/boo.log
+        type: ghost
+
+      # You can user the packager field to add files that are unique to a specific packager
+      - src: path/to/rpm/file.conf
+        dst: /etc/file.conf
+        type: "config|noreplace"
+        packager: rpm
+      - src: path/to/deb/file.conf
+        dst: /etc/file.conf
+        type: "config|noreplace"
+        packager: deb
+      - src: path/to/apk/file.conf
+        dst: /etc/file.conf
+        type: "config|noreplace"
+        packager: apk
+
+      # Sometimes it is important to be able to set the mtime, mode, owner, or group for a file
+      # that differs from what is on the local build system at build time.
+      - src: path/to/foo
+        dst: /usr/local/foo
+        file_info:
+          mode: 0644
+          mtime: 2008-01-02T15:04:05Z
+          owner: notRoot
+          group: notRoot
 
     # Scripts to execute during the installation of the package.
     # Keys are the possible targets during the installation process

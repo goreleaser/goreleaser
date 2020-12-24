@@ -13,7 +13,7 @@ require (
 	github.com/golangci/golangci-lint v1.33.0
 	github.com/google/go-github/v28 v28.1.1
 	github.com/goreleaser/fileglob v0.3.1
-	github.com/goreleaser/nfpm v1.10.3
+	github.com/goreleaser/nfpm/v2 v2.0.0
 	github.com/imdario/mergo v0.3.11
 	github.com/jarcoal/httpmock v1.0.6
 	github.com/mattn/go-shellwords v1.0.10
@@ -30,3 +30,5 @@ require (
 
 // https://github.com/mattn/go-shellwords/pull/39
 replace github.com/mattn/go-shellwords => github.com/caarlos0/go-shellwords v1.0.11
+
+replace github.com/google/rpmpack => github.com/djgilcrease/rpmpack v0.0.0-20201221224521-5ac1d3b45cee
