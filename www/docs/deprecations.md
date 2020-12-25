@@ -149,6 +149,28 @@ Change this:
     ```
 
 
+### nfpms.deb.version_metadata
+
+> since 2020-12-21 (v0.149.0)
+
+`deb.version_metadata` is deprecated in favor of `version_metadata` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+```yaml
+nfpms:
+-
+  deb:
+    version_metadata: beta1
+```
+
+=== "After"
+```yaml
+-
+  version_metadata: beta1
+```
+
 ### brews.github
 
 > since 2020-07-06 (v0.139.0)

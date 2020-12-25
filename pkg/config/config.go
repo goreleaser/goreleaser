@@ -400,6 +400,8 @@ type NFPMOverridables struct {
 	PackageName      string            `yaml:"package_name,omitempty"`
 	Epoch            string            `yaml:"epoch,omitempty"`
 	Release          string            `yaml:"release,omitempty"`
+	Prerelease       string            `yaml:"prerelease,omitempty"`
+	VersionMetadata  string            `yaml:"version_metadata,omitempty"`
 	Replacements     map[string]string `yaml:",omitempty"`
 	Dependencies     []string          `yaml:",omitempty"`
 	Recommends       []string          `yaml:",omitempty"`
