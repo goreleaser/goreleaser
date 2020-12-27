@@ -98,7 +98,7 @@ on the archive section.
 A working hack is to use something like this:
 
 ```yaml
-# goreleaser.yml
+# .goreleaser.yml
 archives:
 - files:
   - none*
@@ -119,7 +119,7 @@ Presumably, you'll want that file to be the binary, so, your archive section
 will probably look like this:
 
 ```yaml
-# goreleaser.yml
+# .goreleaser.yml
 archives:
 - format: gz
   files:
@@ -138,7 +138,7 @@ extracted with something like `gzip -d file.gz`.
 You can do that by setting `format` to `binary`:
 
 ```yaml
-# goreleaser.yml
+# .goreleaser.yml
 archives:
 - format: binary
 ```

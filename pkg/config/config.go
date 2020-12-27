@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/nfpm/v2/files"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -335,12 +336,11 @@ type NFPMRPMSignature struct {
 
 // NFPMRPM is custom configs that are only available on RPM packages.
 type NFPMRPM struct {
-	Summary     string `yaml:"summary,omitempty"`
-	Group       string `yaml:"group,omitempty"`
-	Compression string `yaml:"compression,omitempty"`
-	// https://www.cl.cam.ac.uk/~jw35/docs/rpm_config.html
-	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"`
-	GhostFiles           []string          `yaml:"ghost_files,omitempty"`
+	Summary              string            `yaml:"summary,omitempty"`
+	Group                string            `yaml:"group,omitempty"`
+	Compression          string            `yaml:"compression,omitempty"`
+	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"` // depreacated: use contents instead
+	GhostFiles           []string          `yaml:"ghost_files,omitempty"`            // depreacated: use contents instead
 	Signature            NFPMRPMSignature  `yaml:"signature,omitempty"`
 }
 
@@ -407,9 +407,10 @@ type NFPMOverridables struct {
 	Conflicts        []string          `yaml:",omitempty"`
 	Replaces         []string          `yaml:",omitempty"`
 	EmptyFolders     []string          `yaml:"empty_folders,omitempty"`
-	Files            map[string]string `yaml:",omitempty"`
-	ConfigFiles      map[string]string `yaml:"config_files,omitempty"`
-	Symlinks         map[string]string `yaml:"symlinks,omitempty"`
+	Contents         files.Contents    `yaml:"contents,omitempty"`
+	Files            map[string]string `yaml:",omitempty"`             // deprecated: use contents instead
+	ConfigFiles      map[string]string `yaml:"config_files,omitempty"` // deprecated: use contents instead
+	Symlinks         map[string]string `yaml:"symlinks,omitempty"`     // deprecated: use contents instead
 	Scripts          NFPMScripts       `yaml:"scripts,omitempty"`
 	RPM              NFPMRPM           `yaml:"rpm,omitempty"`
 	Deb              NFPMDeb           `yaml:"deb,omitempty"`
