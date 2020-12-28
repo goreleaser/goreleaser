@@ -65,14 +65,13 @@ GoReleaser will create and publish the manifest in its publish phase.
 
 ## Example config
 
-In this example we will use Docker's `--build-arg` passing an `ARCH` argument.
+In this example we will use Docker's `--platform` option to specify the target platform.
 This way we can use the same `Dockerfile` for both the `amd64` and the `arm64`
-images:
+images (and possibly others):
 
 ```dockerfile
 # Dockerfile
-ARG ARCH
-FROM ${ARCH}/alpine
+FROM alpine
 COPY mybin /usr/bin/mybin
 ENTRYPOINT ["/usr/bin/mybin"]
 ```
@@ -98,8 +97,7 @@ dockers:
   - mybin
   dockerfile: Dockerfile
   build_flag_templates:
-  - "--build-arg"
-  - "ARCH=amd64"
+  - "--platform=linux/amd64"
 - image_templates:
   - "foo/bar:{{ .Version }}-arm64v8"
   binaries:
@@ -107,8 +105,7 @@ dockers:
   goarch: arm64
   dockerfile: Dockerfile
   build_flag_templates:
-  - "--build-arg"
-  - "ARCH=arm64v8"
+  - "--platform=linux/arm64/v8"
 docker_manifests:
 - name_template: foo/bar:{{ .Version }}
   image_templates:
@@ -117,7 +114,7 @@ docker_manifests:
 ```
 
 !!! warning
-    Notice that `ARCH` needs to be in the Docker arch format, not Go's.
+    Notice that `--platform` needs to be in the Docker platform format, not Go's.
 
 That config will build the 2 Docker images defined, as well as the manifest,
 and push everything to Docker Hub.
