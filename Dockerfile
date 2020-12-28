@@ -1,5 +1,5 @@
 ARG ARCH
-FROM ${ARCH}/golang:1.15-alpine
+FROM ${ARCH}/golang:1.16-alpine
 
 RUN apk add --no-cache bash \
                        curl \
