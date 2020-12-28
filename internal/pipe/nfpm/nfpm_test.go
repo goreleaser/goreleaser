@@ -1,6 +1,7 @@
 package nfpm
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -10,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,7 +47,6 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName:      "foo",
 					FileNameTemplate: defaultNameTemplate,
-					Files:            map[string]string{},
 				},
 			},
 		},
@@ -58,7 +59,7 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:   "mybin",
-				Path:   "whatever",
+				Path:   "testdata/testfile.txt",
 				Goarch: goarch,
 				Goos:   goos,
 				Type:   artifact.Binary,
@@ -104,24 +105,30 @@ func TestRunPipe(t *testing.T) {
 					EmptyFolders:     []string{"/var/log/foobar"},
 					Release:          "10",
 					Epoch:            "20",
-					Files: map[string]string{
-						"./testdata/testfile.txt": "/usr/share/testfile.txt",
-					},
-					ConfigFiles: map[string]string{
-						"./testdata/testfile.txt": "/etc/nope.conf",
-					},
-					Symlinks: map[string]string{
-						"/etc/nope2.conf": "/etc/nope.conf",
+					Contents: []*files.Content{
+						{
+							Source:      "./testdata/testfile.txt",
+							Destination: "/usr/share/testfile.txt",
+						},
+						{
+							Source:      "./testdata/testfile.txt",
+							Destination: "/etc/nope.conf",
+							Type:        "config",
+						},
+						{
+							Source:      "./testdata/testfile.txt",
+							Destination: "/etc/nope-rpm.conf",
+							Type:        "config",
+							Packager:    "rpm",
+						},
+						{
+							Source:      "/etc/nope.conf",
+							Destination: "/etc/nope2.conf",
+							Type:        "symlink",
+						},
 					},
 					Replacements: map[string]string{
 						"linux": "Tux",
-					},
-				},
-				Overrides: map[string]config.NFPMOverridables{
-					"rpm": {
-						ConfigFiles: map[string]string{
-							"./testdata/testfile.txt": "/etc/nope-rpm.conf",
-						},
 					},
 				},
 			},
@@ -152,7 +159,8 @@ func TestRunPipe(t *testing.T) {
 		require.Equal(t, pkg.Name, "mybin_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
 	}
-	require.Len(t, ctx.Config.NFPMs[0].Files, 1, "should not modify the config file list")
+	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
+
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
@@ -223,8 +231,11 @@ func TestCreateFileDoesntExist(t *testing.T) {
 				Builds:  []string{"default"},
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName: "foo",
-					Files: map[string]string{
-						"testdata/testfile.txt": "/var/lib/test/testfile.txt",
+					Contents: []*files.Content{
+						{
+							Source:      "testdata/testfile.txt",
+							Destination: "/var/lib/test/testfile.txt",
+						},
 					},
 				},
 			},
@@ -296,6 +307,55 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.NFPMs[0].PackageName)
 }
 
+func TestDefaultDeprecatedOptions(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			ProjectName: "foobar",
+			NFPMs: []config.NFPM{
+				{
+					NFPMOverridables: config.NFPMOverridables{
+						Files: map[string]string{
+							"testdata/testfile.txt": "/bin/foo",
+						},
+						ConfigFiles: map[string]string{
+							"testdata/testfile.txt": "/etc/foo.conf",
+						},
+						Symlinks: map[string]string{
+							"/etc/foo.conf": "/etc/foov2.conf",
+						},
+						RPM: config.NFPMRPM{
+							GhostFiles: []string{"/etc/ghost.conf"},
+							ConfigNoReplaceFiles: map[string]string{
+								"testdata/testfile.txt": "/etc/foo_keep.conf",
+							},
+						},
+						Deb: config.NFPMDeb{
+							VersionMetadata: "beta1",
+						},
+					},
+				},
+			},
+			Builds: []config.Build{
+				{ID: "foo"},
+				{ID: "bar"},
+			},
+		},
+	}
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "/usr/local/bin", ctx.Config.NFPMs[0].Bindir)
+	require.Equal(t, []string{"foo", "bar"}, ctx.Config.NFPMs[0].Builds)
+	require.ElementsMatch(t, []*files.Content{
+		{Source: "testdata/testfile.txt", Destination: "/bin/foo"},
+		{Source: "testdata/testfile.txt", Destination: "/etc/foo.conf", Type: "config"},
+		{Source: "/etc/foo.conf", Destination: "/etc/foov2.conf", Type: "symlink"},
+		{Destination: "/etc/ghost.conf", Type: "ghost", Packager: "rpm"},
+		{Source: "testdata/testfile.txt", Destination: "/etc/foo_keep.conf", Type: "config|noreplace", Packager: "rpm"},
+	}, ctx.Config.NFPMs[0].Contents)
+	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].FileNameTemplate)
+	require.Equal(t, ctx.Config.ProjectName, ctx.Config.NFPMs[0].PackageName)
+	require.Equal(t, "beta1", ctx.Config.NFPMs[0].VersionMetadata)
+}
+
 func TestDefaultSet(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -365,8 +425,11 @@ func TestDebSpecificConfig(t *testing.T) {
 				Formats: []string{"deb"},
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName: "foo",
-					Files: map[string]string{
-						"./testdata/testfile.txt": "/usr/share/testfile.txt",
+					Contents: []*files.Content{
+						{
+							Source:      "testdata/testfile.txt",
+							Destination: "/usr/share/testfile.txt",
+						},
 					},
 					Deb: config.NFPMDeb{
 						Signature: config.NFPMDebSignature{
@@ -435,8 +498,11 @@ func TestRPMSpecificConfig(t *testing.T) {
 				Formats: []string{"rpm"},
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName: "foo",
-					Files: map[string]string{
-						"./testdata/testfile.txt": "/usr/share/testfile.txt",
+					Contents: []*files.Content{
+						{
+							Source:      "testdata/testfile.txt",
+							Destination: "/usr/share/testfile.txt",
+						},
 					},
 					RPM: config.NFPMRPM{
 						Signature: config.NFPMRPMSignature{
@@ -506,8 +572,11 @@ func TestAPKSpecificConfig(t *testing.T) {
 				Formats:    []string{"apk"},
 				NFPMOverridables: config.NFPMOverridables{
 					PackageName: "foo",
-					Files: map[string]string{
-						"./testdata/testfile.txt": "/usr/share/testfile.txt",
+					Contents: []*files.Content{
+						{
+							Source:      "testdata/testfile.txt",
+							Destination: "/usr/share/testfile.txt",
+						},
 					},
 					APK: config.NFPMAPK{
 						Signature: config.NFPMAPKSignature{
@@ -608,21 +677,25 @@ func TestMeta(t *testing.T) {
 					EmptyFolders:     []string{"/var/log/foobar"},
 					Release:          "10",
 					Epoch:            "20",
-					Files: map[string]string{
-						"./testdata/testfile.txt": "/usr/share/testfile.txt",
-					},
-					ConfigFiles: map[string]string{
-						"./testdata/testfile.txt": "/etc/nope.conf",
+					Contents: []*files.Content{
+						{
+							Source:      "testdata/testfile.txt",
+							Destination: "/usr/share/testfile.txt",
+						},
+						{
+							Source:      "./testdata/testfile.txt",
+							Destination: "/etc/nope.conf",
+							Type:        "config",
+						},
+						{
+							Source:      "./testdata/testfile.txt",
+							Destination: "/etc/nope-rpm.conf",
+							Type:        "config",
+							Packager:    "rpm",
+						},
 					},
 					Replacements: map[string]string{
 						"linux": "Tux",
-					},
-				},
-				Overrides: map[string]config.NFPMOverridables{
-					"rpm": {
-						ConfigFiles: map[string]string{
-							"./testdata/testfile.txt": "/etc/nope-rpm.conf",
-						},
 					},
 				},
 			},
@@ -653,13 +726,90 @@ func TestMeta(t *testing.T) {
 		require.Equal(t, pkg.Name, "mybin_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
 	}
-	require.Len(t, ctx.Config.NFPMs[0].Files, 1, "should not modify the config file list")
+
+	require.Len(t, ctx.Config.NFPMs[0].Contents, 3, "should not modify the config file list")
 
 	// ensure that no binaries added
 	for _, pkg := range packages {
-		files := pkg.ExtraOr("Files", map[string]string{}).(map[string]string)
-		for _, dest := range files {
-			require.NotEqual(t, "/usr/bin/mybin", dest, "binary file should not be added")
+		contents := pkg.ExtraOr("Files", files.Contents{}).(files.Contents)
+		for _, f := range contents {
+			require.NotEqual(t, "/usr/bin/mybin", f.Destination, "binary file should not be added")
 		}
 	}
+}
+
+func TestSkipSign(t *testing.T) {
+	folder, err := ioutil.TempDir("", "archivetest")
+	require.NoError(t, err)
+	var dist = filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+	var binPath = filepath.Join(dist, "mybin", "mybin")
+	_, err = os.Create(binPath)
+	require.NoError(t, err)
+	var ctx = context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:      "someid",
+				Builds:  []string{"default"},
+				Formats: []string{"deb", "rpm", "apk"},
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName:      "foo",
+					FileNameTemplate: defaultNameTemplate,
+					Contents: []*files.Content{
+						{
+							Source:      "testdata/testfile.txt",
+							Destination: "/usr/share/testfile.txt",
+						},
+					},
+					Deb: config.NFPMDeb{
+						Signature: config.NFPMDebSignature{
+							KeyFile: "/does/not/exist.gpg",
+						},
+					},
+					RPM: config.NFPMRPM{
+						Signature: config.NFPMRPMSignature{
+							KeyFile: "/does/not/exist.gpg",
+						},
+					},
+					APK: config.NFPMAPK{
+						Signature: config.NFPMAPKSignature{
+							KeyFile: "/does/not/exist.gpg",
+						},
+					},
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"ID": "default",
+				},
+			})
+		}
+	}
+
+	t.Run("skip sign not set", func(t *testing.T) {
+		require.Contains(
+			t,
+			Pipe{}.Run(ctx).Error(),
+			`nfpm failed: failed to create signatures: call to signer failed: signing error: reading PGP key file: open /does/not/exist.gpg: no such file or directory`,
+		)
+	})
+
+	t.Run("skip sign set", func(t *testing.T) {
+		ctx.SkipSign = true
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
 }
