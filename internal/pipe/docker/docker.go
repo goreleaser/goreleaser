@@ -206,8 +206,15 @@ func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string
 		if err != nil {
 			return nil, fmt.Errorf("failed to execute image template '%s': %w", imageTemplate, err)
 		}
+		if image == "" {
+			continue
+		}
 
 		images = append(images, image)
+	}
+
+	if len(images) == 0 {
+		return images, errors.New("no image templates found")
 	}
 
 	return images, nil
