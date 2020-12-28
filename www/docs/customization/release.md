@@ -196,6 +196,7 @@ goreleaser --release-notes <(some_changelog_generator)
 Some changelog generators you can use:
 
 - [buchanae/github-release-notes](https://github.com/buchanae/github-release-notes)
+- [miniscruff/changie](https://github.com/miniscruff/changie)
 
 !!! info
     If you create the release before running GoReleaser, and the
