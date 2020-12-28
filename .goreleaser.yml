@@ -51,8 +51,7 @@ dockers:
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
   - "--label=org.opencontainers.image.source={{.GitURL}}"
-  - "--build-arg"
-  - "ARCH=amd64"
+  - "--platform=linux/amd64"
   extra_files:
   - scripts/entrypoint.sh
 - image_templates:
@@ -72,8 +71,7 @@ dockers:
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
   - "--label=org.opencontainers.image.source={{.GitURL}}"
-  - "--build-arg"
-  - "ARCH=arm64v8"
+  - "--platform=linux/arm/v8"
   goarch: arm64
   extra_files:
   - scripts/entrypoint.sh
