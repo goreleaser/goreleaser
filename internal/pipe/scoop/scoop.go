@@ -232,7 +232,7 @@ func binaries(a *artifact.Artifact) []string {
 	var bins []string
 	var wrap = a.ExtraOr("WrappedIn", "").(string)
 	for _, b := range a.ExtraOr("Builds", []*artifact.Artifact{}).([]*artifact.Artifact) {
-		bins = append(bins, filepath.Join(wrap, b.Name))
+		bins = append(bins, filepath.ToSlash(filepath.Join(wrap, b.Name)))
 	}
 	return bins
 }
