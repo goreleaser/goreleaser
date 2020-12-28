@@ -309,6 +309,45 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
+		"empty image tag": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						"",
+						registry + "goreleaser/empty_tag:latest",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binaries:   []string{"mybin"},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/empty_tag:latest",
+			},
+			assertImageLabels:   noLabels,
+			assertError:         shouldNotErr,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+		},
+		"no image tags": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						"",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binaries:   []string{"mybin"},
+				},
+			},
+			expect:              []string{},
+			assertImageLabels:   noLabels,
+			assertError:         shouldErr("no image templates found"),
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+		},
 		"valid-with-builds": {
 			dockers: []config.Docker{
 				{
