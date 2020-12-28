@@ -67,6 +67,7 @@ func TestAllBuildTargets(t *testing.T) {
 		"linux_mipsle_softfloat",
 		"linux_mips64le_hardfloat",
 		"darwin_amd64",
+		"darwin_arm64",
 		"freebsd_386",
 		"freebsd_amd64",
 		"freebsd_arm_6",
