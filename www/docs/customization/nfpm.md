@@ -92,12 +92,20 @@ nfpms:
     # Override default /usr/local/bin destination for binaries
     bindir: /usr/bin
 
-    # Package epoch.
-    # Defaults to empty.
-    epoch: 1
+    # Version Epoch.
+    # Default is extracted from `version` if it is semver compatible.
+    epoch: 2
 
-    # Package release.
-    # Defaults to empty.
+    # Version Prerelease.
+    # Default is extracted from `version` if it is semver compatible.
+    prerelease: beta1
+
+    # Version Metadata (previously deb.metadata).
+    # Default is extracted from `version` if it is semver compatible.
+    # Setting metadata might interfere with version comparisons depending on the packager.
+    version_metadata: git
+
+    # Version Release.
     release: 1
 
     # Makes a meta package - an empty package that contains only supporting files and dependencies.
