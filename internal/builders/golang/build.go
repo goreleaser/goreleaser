@@ -227,7 +227,7 @@ func checkMain(build config.Build) error {
 		return ferr
 	}
 	if stat.IsDir() {
-		packs, err := parser.ParseDir(token.NewFileSet(), main, fileFilter, 0)
+		packs, err := parser.ParseDir(token.NewFileSet(), main, nil, 0)
 		if err != nil {
 			return fmt.Errorf("failed to parse dir: %s: %w", main, err)
 		}
@@ -248,11 +248,6 @@ func checkMain(build config.Build) error {
 		return nil
 	}
 	return fmt.Errorf("build for %s does not contain a main function", build.Binary)
-}
-
-// TODO: can be removed once we migrate from go 1.15 to 1.16.
-func fileFilter(info os.FileInfo) bool {
-	return !info.IsDir()
 }
 
 func hasMain(file *ast.File) bool {

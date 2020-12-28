@@ -18,7 +18,7 @@ workflows:
 jobs:
   release:
     docker:
-      - image: circleci/golang:1.15
+      - image: circleci/golang:1.16
     steps:
       - checkout
       - run: curl -sL https://git.io/goreleaser | bash
