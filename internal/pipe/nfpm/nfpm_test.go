@@ -329,6 +329,9 @@ func TestDefaultDeprecatedOptions(t *testing.T) {
 								"testdata/testfile.txt": "/etc/foo_keep.conf",
 							},
 						},
+						Deb: config.NFPMDeb{
+							VersionMetadata: "beta1",
+						},
 					},
 				},
 			},
@@ -350,6 +353,7 @@ func TestDefaultDeprecatedOptions(t *testing.T) {
 	}, ctx.Config.NFPMs[0].Contents)
 	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].FileNameTemplate)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.NFPMs[0].PackageName)
+	require.Equal(t, "beta1", ctx.Config.NFPMs[0].VersionMetadata)
 }
 
 func TestDefaultSet(t *testing.T) {

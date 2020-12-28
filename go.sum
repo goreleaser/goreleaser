@@ -198,8 +198,6 @@ github.com/dimchansky/utfbom v1.1.0 h1:FcM3g+nofKgUteL8dm/UpdRXNC9KmADgTpLKsu0TR
 github.com/dimchansky/utfbom v1.1.0/go.mod h1:rO41eb7gLfo8SF1jd9F8HplJm1Fewwi4mQvIirEdv+8=
 github.com/dimchansky/utfbom v1.1.1 h1:vV6w1AhK4VMnhBno/TPVCoK9U/LP0PkLCS9tbxHdi/U=
 github.com/dimchansky/utfbom v1.1.1/go.mod h1:SxdoEBH5qIqFocHMyGOXVAybYJdr71b1Q/j0mACtrfE=
-github.com/djgilcrease/rpmpack v0.0.0-20201221224521-5ac1d3b45cee h1:2u15NiDCpocHztN+7rvPuklKbmzeZDXmRu6qk49bll8=
-github.com/djgilcrease/rpmpack v0.0.0-20201221224521-5ac1d3b45cee/go.mod h1:+y9lKiqDhR4zkLl+V9h4q0rdyrYVsWWm6LLCQP33DIk=
 github.com/emirpasic/gods v1.12.0 h1:QAUIPSaCu4G+POclxeqb3F+WPpdKqFGlw36+yOzGlrg=
 github.com/emirpasic/gods v1.12.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
@@ -380,6 +378,8 @@ github.com/google/pprof v0.0.0-20200708004538-1a94d8640e99/go.mod h1:ZgVRPoUq/hf
 github.com/google/pprof v0.0.0-20200905233945-acf8798be1f7/go.mod h1:ZgVRPoUq/hfqzAqh7sHMqb3I9Rq5C59dIz2SbBwJ4eM=
 github.com/google/pprof v0.0.0-20201023163331-3e6fc7fc9c4c/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
+github.com/google/rpmpack v0.0.0-20201225075926-0a97c2c4b688 h1:jyGRCFMyDK/gKe6QRZQWci5+wEUBFElvxLHs3iwO3hY=
+github.com/google/rpmpack v0.0.0-20201225075926-0a97c2c4b688/go.mod h1:+y9lKiqDhR4zkLl+V9h4q0rdyrYVsWWm6LLCQP33DIk=
 github.com/google/subcommands v1.0.1/go.mod h1:ZjhPrFU+Olkh9WazFPsl27BQ4UPiG37m3yTrtFlrHVk=
 github.com/google/uuid v1.0.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=
@@ -400,8 +400,8 @@ github.com/goreleaser/chglog v0.1.2 h1:tdzAb/ILeMnphzI9zQ7Nkq+T8R9qyXli8GydD8plF
 github.com/goreleaser/chglog v0.1.2/go.mod h1:tTZsFuSZK4epDXfjMkxzcGbrIOXprf0JFp47BjIr3B8=
 github.com/goreleaser/fileglob v0.3.1 h1:OTFDWqUUHjQazk2N5GdUqEbqT/grBnRARaAXsV07q1Y=
 github.com/goreleaser/fileglob v0.3.1/go.mod h1:kNcPrPzjCp+Ox3jmXLU5QEsjhqrtLBm6OnXAif8KRl8=
-github.com/goreleaser/nfpm/v2 v2.0.0 h1:bsYhHEpJjLbgOuhKgPpdxVA6Ni7Zvrx6tRRkw3km2uo=
-github.com/goreleaser/nfpm/v2 v2.0.0/go.mod h1:CwZQFnLAUvqz3H1ijvb8SfTz1LYuw+DznSLOQ8uth8s=
+github.com/goreleaser/nfpm/v2 v2.1.0 h1:FumVnlopJ280VDfsLv89fqxcuk82UP+fdinnCqmden4=
+github.com/goreleaser/nfpm/v2 v2.1.0/go.mod h1:GCkOXaUGhQtItbYMqLso9oVIlsfF6NON8OnNJA3KB38=
 github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gostaticanalysis/analysisutil v0.0.0-20190318220348-4088753ea4d3/go.mod h1:eEOZF4jCKGi+aprrirO9e7WKB3beBRtWgqGunKl6pKE=
