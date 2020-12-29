@@ -804,7 +804,7 @@ func TestSkipSign(t *testing.T) {
 		require.Contains(
 			t,
 			Pipe{}.Run(ctx).Error(),
-			`nfpm failed: failed to create signatures: call to signer failed: signing error: reading PGP key file: open /does/not/exist.gpg: no such file or directory`,
+			`open /does/not/exist.gpg: no such file or directory`,
 		)
 	})
 
