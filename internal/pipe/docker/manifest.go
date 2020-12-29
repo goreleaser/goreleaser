@@ -27,7 +27,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
-	var g = semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
+	var g = semerrgroup.NewSkipAware(semerrgroup.New(1))
 	for _, manifest := range ctx.Config.DockerManifests {
 		manifest := manifest
 		g.Go(func() error {
