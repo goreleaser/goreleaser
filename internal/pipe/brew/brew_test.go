@@ -63,6 +63,7 @@ var defaultTemplateData = templateData{
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
+	t.Helper()
 	require.Contains(t, formulae, "class Test < Formula")
 	require.Contains(t, formulae, `homepage "https://google.com"`)
 	require.Contains(t, formulae, `url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`)
