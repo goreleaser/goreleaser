@@ -37,10 +37,6 @@ dockers:
 - image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
-  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
-  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
-  - 'goreleaser/goreleaser:latest-amd64'
-  - 'ghcr.io/goreleaser/goreleaser:latest-amd64'
   dockerfile: Dockerfile
   binaries:
   - goreleaser
@@ -57,10 +53,6 @@ dockers:
 - image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}-arm64v8'
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64v8'
-  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
-  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
-  - 'goreleaser/goreleaser:latest-arm64v8'
-  - 'ghcr.io/goreleaser/goreleaser:latest-arm64v8'
   dockerfile: Dockerfile
   binaries:
   - goreleaser
@@ -84,22 +76,14 @@ docker_manifests:
   image_templates:
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64v8'
-- name_template: 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
-  image_templates:
-  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
-  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
-- name_template: 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
-  image_templates:
-  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
-  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
 - name_template: 'goreleaser/goreleaser:latest'
   image_templates:
-  - 'goreleaser/goreleaser:latest-amd64'
-  - 'goreleaser/goreleaser:latest-arm64v8'
+  - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'goreleaser/goreleaser:{{ .Tag }}-arm64v8'
 - name_template: 'ghcr.io/goreleaser/goreleaser:latest'
   image_templates:
-  - 'ghcr.io/goreleaser/goreleaser:latest-amd64'
-  - 'ghcr.io/goreleaser/goreleaser:latest-arm64v8'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64v8'
 archives:
   - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     replacements:
