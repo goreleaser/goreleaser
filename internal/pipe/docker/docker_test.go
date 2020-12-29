@@ -32,6 +32,7 @@ func TestMain(m *testing.M) {
 }
 
 func start(t *testing.T) {
+	t.Helper()
 	if *it {
 		return
 	}
@@ -50,6 +51,7 @@ func start(t *testing.T) {
 }
 
 func killAndRm(t *testing.T) {
+	t.Helper()
 	if *it {
 		return
 	}
