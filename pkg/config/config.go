@@ -339,8 +339,8 @@ type NFPMRPM struct {
 	Summary              string            `yaml:"summary,omitempty"`
 	Group                string            `yaml:"group,omitempty"`
 	Compression          string            `yaml:"compression,omitempty"`
-	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"` // depreacated: use contents instead
-	GhostFiles           []string          `yaml:"ghost_files,omitempty"`            // depreacated: use contents instead
+	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"` // deprecated: use contents instead
+	GhostFiles           []string          `yaml:"ghost_files,omitempty"`            // deprecated: use contents instead
 	Signature            NFPMRPMSignature  `yaml:"signature,omitempty"`
 }
 
