@@ -731,9 +731,11 @@ func TestMeta(t *testing.T) {
 		require.NotEmpty(t, format)
 		require.Equal(t, pkg.Name, "mybin_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
-		for _, f := range pkg.ExtraOr("Files", files.Contents{}).(files.Contents) {
-			require.NotEqual(t, "/usr/bin/mybin", f.Destination, "binary file should not have been added")
-		}
+		require.ElementsMatch(t, []string{
+			"/usr/share/testfile.txt",
+			"/etc/nope.conf",
+			"/etc/nope-rpm.conf",
+		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
 	}
 
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 3, "should not modify the config file list")
