@@ -24,7 +24,7 @@ builds:
     - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
-changelog:dep
+changelog:
   sort: asc
   filters:
     exclude:
