@@ -234,6 +234,7 @@ func TestMinioUploadSkipPublish(t *testing.T) {
 }
 
 func randomListen(t *testing.T) string {
+	t.Helper()
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
 	listener.Close()
@@ -292,6 +293,7 @@ func removeTestData() {
 }
 
 func getFiles(t *testing.T, ctx *context.Context, cfg config.Blob) []string {
+	t.Helper()
 	url, err := urlFor(ctx, cfg)
 	require.NoError(t, err)
 	conn, err := blob.OpenBucket(ctx, url)

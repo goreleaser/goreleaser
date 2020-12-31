@@ -4,7 +4,6 @@
 package static
 
 // ExampleConfig is the config used within goreleaser init.
-// nolint: gochecknoglobals
 const ExampleConfig = `# This is an example .goreleaser.yml file with some sane defaults.
 # Make sure to check the documentation at http://goreleaser.com
 before:

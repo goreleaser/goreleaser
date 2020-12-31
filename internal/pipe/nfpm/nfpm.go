@@ -185,8 +185,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		return err
 	}
 
-	var contents files.Contents
-	copy(overridden.Contents, contents)
+	var contents = append(files.Contents{}, overridden.Contents...)
 
 	// FPM meta package should not contain binaries at all
 	if !fpm.Meta {
@@ -202,7 +201,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		}
 	}
 
-	log.WithField("files", contents).Debug("all archive files")
+	log.WithField("files", destinations(contents)).Debug("all archive files")
 
 	var info = &nfpm.Info{
 		Arch:            arch,
@@ -316,6 +315,14 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		},
 	})
 	return nil
+}
+
+func destinations(contents files.Contents) []string {
+	var result = make([]string, 0, len(contents))
+	for _, f := range contents {
+		result = append(result, f.Destination)
+	}
+	return result
 }
 
 func getPassphraseFromEnv(ctx *context.Context, packager string, nfpmID string) string {

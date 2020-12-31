@@ -775,6 +775,7 @@ func TestBuildModTimestamp(t *testing.T) {
 //
 
 func writeMainWithoutMainFunc(t *testing.T, folder string) {
+	t.Helper()
 	require.NoError(t, ioutil.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nconst a = 2\nfunc notMain() {println(0)}"),
@@ -783,6 +784,7 @@ func writeMainWithoutMainFunc(t *testing.T, folder string) {
 }
 
 func writeGoodMain(t *testing.T, folder string) {
+	t.Helper()
 	require.NoError(t, ioutil.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nvar a = 1\nfunc main() {println(0)}"),
@@ -791,6 +793,7 @@ func writeGoodMain(t *testing.T, folder string) {
 }
 
 func assertContainsError(t *testing.T, err error, s string) {
+	t.Helper()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), s)
 }

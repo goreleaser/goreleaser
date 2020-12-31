@@ -32,6 +32,7 @@ func TestMain(m *testing.M) {
 }
 
 func start(t *testing.T) {
+	t.Helper()
 	if *it {
 		return
 	}
@@ -50,6 +51,7 @@ func start(t *testing.T) {
 }
 
 func killAndRm(t *testing.T) {
+	t.Helper()
 	if *it {
 		return
 	}
@@ -306,6 +308,45 @@ func TestRunPipe(t *testing.T) {
 				"label=org.label-schema.name=mybin",
 			),
 			assertError:         shouldNotErr,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+		},
+		"empty image tag": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						"",
+						registry + "goreleaser/empty_tag:latest",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binaries:   []string{"mybin"},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/empty_tag:latest",
+			},
+			assertImageLabels:   noLabels,
+			assertError:         shouldNotErr,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+		},
+		"no image tags": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						"",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+					Binaries:   []string{"mybin"},
+				},
+			},
+			expect:              []string{},
+			assertImageLabels:   noLabels,
+			assertError:         shouldErr("no image templates found"),
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},

@@ -24,6 +24,7 @@ func TestDescription(t *testing.T) {
 }
 
 func createFakeBinary(t *testing.T, dist, arch, bin string) {
+	t.Helper()
 	var path = filepath.Join(dist, arch, bin)
 	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0755))
 	_, err := os.Create(path)
@@ -264,6 +265,7 @@ func TestRunPipeNoBinaries(t *testing.T) {
 }
 
 func zipFiles(t *testing.T, path string) []string {
+	t.Helper()
 	f, err := os.Open(path)
 	require.NoError(t, err)
 	info, err := f.Stat()
@@ -278,6 +280,7 @@ func zipFiles(t *testing.T, path string) []string {
 }
 
 func tarFiles(t *testing.T, path string) []string {
+	t.Helper()
 	f, err := os.Open(path)
 	require.NoError(t, err)
 	defer f.Close()
