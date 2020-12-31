@@ -63,7 +63,7 @@ dockers:
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
   - "--label=org.opencontainers.image.source={{.GitURL}}"
-  - "--platform=linux/arm/v8"
+  - "--platform=linux/arm64/v8"
   goarch: arm64
   extra_files:
   - scripts/entrypoint.sh
