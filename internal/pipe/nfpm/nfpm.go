@@ -185,10 +185,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		return err
 	}
 
-	var contents files.Contents
-	for _, f := range overridden.Contents {
-		contents = append(contents, f)
-	}
+	var contents = append(files.Contents{}, overridden.Contents...)
 
 	// FPM meta package should not contain binaries at all
 	if !fpm.Meta {
