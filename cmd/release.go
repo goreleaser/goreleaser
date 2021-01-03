@@ -18,18 +18,12 @@ type releaseCmd struct {
 }
 
 type releaseOpts struct {
-	config        string
+	sharedBuildOpts
 	releaseNotes  string
 	releaseHeader string
 	releaseFooter string
-	snapshot      bool
 	skipPublish   bool
 	skipSign      bool
-	skipValidate  bool
-	rmDist        bool
-	deprecated    bool
-	parallelism   int
-	timeout       time.Duration
 }
 
 func newReleaseCmd() *releaseCmd {
@@ -61,19 +55,13 @@ func newReleaseCmd() *releaseCmd {
 		},
 	}
 
-	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
 	cmd.Flags().StringVar(&root.opts.releaseNotes, "release-notes", "", "Load custom release notes from a markdown file")
 	cmd.Flags().StringVar(&root.opts.releaseHeader, "release-header", "", "Load custom release notes header from a markdown file")
 	cmd.Flags().StringVar(&root.opts.releaseFooter, "release-footer", "", "Load custom release notes footer from a markdown file")
-	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipSign, "skip-sign", false, "Skips signing the artifacts")
-	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
-	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
-	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 4, "Amount tasks to run concurrently")
-	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire release process")
-	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
-	_ = cmd.Flags().MarkHidden("deprecated")
+
+	addSharedBuildFlags(cmd, &root.opts.sharedBuildOpts)
 
 	root.cmd = cmd
 	return root
@@ -102,18 +90,13 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 }
 
 func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Context {
-	ctx.Parallelism = options.parallelism
-	log.Debugf("parallelism: %v", ctx.Parallelism)
+	setupSharedBuildContext(ctx, &options.sharedBuildOpts)
+
 	ctx.ReleaseNotes = options.releaseNotes
 	ctx.ReleaseHeader = options.releaseHeader
 	ctx.ReleaseFooter = options.releaseFooter
-	ctx.Snapshot = options.snapshot
 	ctx.SkipPublish = ctx.Snapshot || options.skipPublish
-	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
 	ctx.SkipSign = options.skipSign
-	ctx.RmDist = options.rmDist
 
-	// test only
-	ctx.Deprecated = options.deprecated
 	return ctx
 }

@@ -38,7 +38,9 @@ func TestBuildFlags(t *testing.T) {
 
 	t.Run("snapshot", func(t *testing.T) {
 		var ctx = setup(buildOpts{
-			snapshot: true,
+			sharedBuildOpts: sharedBuildOpts{
+				snapshot: true,
+			},
 		})
 		require.True(t, ctx.Snapshot)
 		require.True(t, ctx.SkipValidate)
@@ -47,7 +49,9 @@ func TestBuildFlags(t *testing.T) {
 
 	t.Run("skips", func(t *testing.T) {
 		var ctx = setup(buildOpts{
-			skipValidate:  true,
+			sharedBuildOpts: sharedBuildOpts{
+				skipValidate: true,
+			},
 			skipPostHooks: true,
 		})
 		require.True(t, ctx.SkipValidate)
@@ -57,13 +61,17 @@ func TestBuildFlags(t *testing.T) {
 
 	t.Run("parallelism", func(t *testing.T) {
 		require.Equal(t, 1, setup(buildOpts{
-			parallelism: 1,
+			sharedBuildOpts: sharedBuildOpts{
+				parallelism: 1,
+			},
 		}).Parallelism)
 	})
 
 	t.Run("rm dist", func(t *testing.T) {
 		require.True(t, setup(buildOpts{
-			rmDist: true,
+			sharedBuildOpts: sharedBuildOpts{
+				rmDist: true,
+			},
 		}).RmDist)
 	})
 }

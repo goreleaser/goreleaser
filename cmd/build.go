@@ -17,15 +17,30 @@ type buildCmd struct {
 	opts buildOpts
 }
 
+type sharedBuildOpts struct {
+	config       string
+	snapshot     bool
+	skipValidate bool
+	rmDist       bool
+	deprecated   bool
+	parallelism  int
+	timeout      time.Duration
+}
+
 type buildOpts struct {
-	config        string
-	snapshot      bool
-	skipValidate  bool
+	sharedBuildOpts
 	skipPostHooks bool
-	rmDist        bool
-	deprecated    bool
-	parallelism   int
-	timeout       time.Duration
+}
+
+func addSharedBuildFlags(cmd *cobra.Command, opts *sharedBuildOpts) {
+	cmd.Flags().StringVarP(&opts.config, "config", "f", "", "Load configuration from file")
+	cmd.Flags().BoolVar(&opts.snapshot, "snapshot", false, "Generate an unversioned snapshot build, skipping all validations and without publishing any artifacts")
+	cmd.Flags().BoolVar(&opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
+	cmd.Flags().BoolVar(&opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
+	cmd.Flags().IntVarP(&opts.parallelism, "parallelism", "p", 4, "Amount tasks to run concurrently")
+	cmd.Flags().DurationVar(&opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
+	cmd.Flags().BoolVar(&opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
+	_ = cmd.Flags().MarkHidden("deprecated")
 }
 
 func newBuildCmd() *buildCmd {
@@ -57,15 +72,9 @@ func newBuildCmd() *buildCmd {
 		},
 	}
 
-	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
-	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot build, skipping all validations and without publishing any artifacts")
-	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
 	cmd.Flags().BoolVar(&root.opts.skipPostHooks, "skip-post-hooks", false, "Skips all post-build hooks")
-	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
-	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 4, "Amount tasks to run concurrently")
-	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
-	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
-	_ = cmd.Flags().MarkHidden("deprecated")
+
+	addSharedBuildFlags(cmd, &root.opts.sharedBuildOpts)
 
 	root.cmd = cmd
 	return root
@@ -93,16 +102,22 @@ func buildProject(options buildOpts) (*context.Context, error) {
 	})
 }
 
-func setupBuildContext(ctx *context.Context, options buildOpts) *context.Context {
+func setupSharedBuildContext(ctx *context.Context, options *sharedBuildOpts) {
 	ctx.Parallelism = options.parallelism
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Snapshot = options.snapshot
 	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
-	ctx.SkipPostBuildHooks = options.skipPostHooks
 	ctx.RmDist = options.rmDist
-	ctx.SkipTokenCheck = true
 
 	// test only
 	ctx.Deprecated = options.deprecated
+}
+
+func setupBuildContext(ctx *context.Context, options buildOpts) *context.Context {
+	setupSharedBuildContext(ctx, &options.sharedBuildOpts)
+
+	ctx.SkipPostBuildHooks = options.skipPostHooks
+	ctx.SkipTokenCheck = true
+
 	return ctx
 }
