@@ -20,8 +20,8 @@ jobs:
         with:
           fetch-depth: 0
       -
-        name: Allow arm64 builds
-        run: sudo docker run --privileged linuxkit/binfmt:v0.7
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
       - name: apt update
         run: sudo apt-get update
       -
