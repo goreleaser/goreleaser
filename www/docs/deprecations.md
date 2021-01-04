@@ -171,61 +171,6 @@ nfpms:
   version_metadata: beta1
 ```
 
-### brews.github
-
-> since 2020-07-06 (v0.139.0)
-
-GitHub section was deprecated in favour of `tap` which
-reflects Homebrew's naming convention. GitHub will be picked
-automatically when GitHub token is passed.
-
-Change this:
-
-=== "Before"
-    ```yaml
-    brews:
-      -
-        github:
-          owner: goreleaser
-          name: homebrew-tap
-    ```
-
-=== "After"
-    ```yaml
-    brews:
-      -
-        tap:
-          owner: goreleaser
-          name: homebrew-tap
-    ```
-
-### brews.gitlab
-
-> since 2020-07-06 (v0.139.0)
-
-GitLab section was deprecated in favour of `tap` which
-reflects Homebrew's naming convention. GitLab will be picked
-automatically when GitLab token is passed.
-
-Change this:
-
-=== "Before"
-    ```yaml
-    brews:
-      -
-        gitlab:
-          owner: goreleaser
-          name: homebrew-tap
-    ```
-
-=== "After"
-    ```yaml
-    brews:
-      -
-        tap:
-          owner: goreleaser
-          name: homebrew-tap
-    ```
 
 <!--
 
@@ -253,6 +198,62 @@ Description.
 ## Expired deprecation notices
 
 The following options were deprecated in the past and were already removed.
+
+### brews.github
+
+> since 2020-07-06 (v0.139.0), removed 2021-01-04 (v0.152.0)
+
+GitHub section was deprecated in favour of `tap` which
+reflects Homebrew's naming convention. GitHub will be picked
+automatically when GitHub token is passed.
+
+Change this:
+
+=== "Before"
+    ```yaml
+    brews:
+      -
+        github:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
+
+=== "After"
+    ```yaml
+    brews:
+      -
+        tap:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
+
+### brews.gitlab
+
+> since 2020-07-06 (v0.139.0), removed 2021-01-04 (v0.152.0)
+
+GitLab section was deprecated in favour of `tap` which
+reflects Homebrew's naming convention. GitLab will be picked
+automatically when GitLab token is passed.
+
+Change this:
+
+=== "Before"
+    ```yaml
+    brews:
+      -
+        gitlab:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
+
+=== "After"
+    ```yaml
+    brews:
+      -
+        tap:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
 
 ### puts
 

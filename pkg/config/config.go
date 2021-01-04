@@ -111,10 +111,6 @@ type Homebrew struct {
 	CustomBlock      string               `yaml:"custom_block,omitempty"`
 	IDs              []string             `yaml:"ids,omitempty"`
 	Goarm            string               `yaml:"goarm,omitempty"`
-
-	// Deprecated: in favour of Tap
-	GitHub Repo `yaml:",omitempty"`
-	GitLab Repo `yaml:",omitempty"`
 }
 
 // Scoop contains the scoop.sh section.
