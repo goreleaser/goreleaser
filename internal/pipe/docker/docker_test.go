@@ -144,7 +144,7 @@ func TestRunPipe(t *testing.T) {
 		"multiarch with buildx": {
 			dockers: []config.Docker{
 				{
-					ImageTemplates:     []string{registry + "goreleaser/test_multiarch_buildx:test-amd64"},
+					ImageTemplates:     []string{registry + "goreleaser/test_multiarch_buildx:amd64"},
 					Goos:               "linux",
 					Goarch:             "amd64",
 					Dockerfile:         "testdata/Dockerfile",
@@ -153,7 +153,7 @@ func TestRunPipe(t *testing.T) {
 					BuildFlagTemplates: []string{"--platform=linux/amd64"},
 				},
 				{
-					ImageTemplates:     []string{registry + "goreleaser/test_multiarch_buildx:test-arm64v8"},
+					ImageTemplates:     []string{registry + "goreleaser/test_multiarch_buildx:arm64v8"},
 					Goos:               "linux",
 					Goarch:             "arm64",
 					Dockerfile:         "testdata/Dockerfile",
@@ -164,19 +164,18 @@ func TestRunPipe(t *testing.T) {
 			},
 			manifests: []config.DockerManifest{
 				{
-					// XXX: fails if :latest https://github.com/docker/distribution/issues/3100
 					NameTemplate: registry + "goreleaser/test_multiarch_buildx:test",
 					ImageTemplates: []string{
-						registry + "goreleaser/test_multiarch_buildx:test-amd64",
-						registry + "goreleaser/test_multiarch_buildx:test-arm64v8",
+						registry + "goreleaser/test_multiarch_buildx:amd64",
+						registry + "goreleaser/test_multiarch_buildx:arm64v8",
 					},
 					CreateFlags: []string{"--insecure"},
 					PushFlags:   []string{"--insecure"},
 				},
 			},
 			expect: []string{
-				registry + "goreleaser/test_multiarch_buildx:test-amd64",
-				registry + "goreleaser/test_multiarch_buildx:test-arm64v8",
+				registry + "goreleaser/test_multiarch_buildx:amd64",
+				registry + "goreleaser/test_multiarch_buildx:arm64v8",
 			},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
@@ -911,7 +910,7 @@ func TestBuildCommand(t *testing.T) {
 			name:   "buildx",
 			buildx: true,
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: []string{"buildx", "build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
+			expect: []string{"buildx", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
 		},
 	}
 	for _, tt := range tests {
