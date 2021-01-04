@@ -86,6 +86,10 @@ type Context struct {
 	Deprecated         bool
 	Parallelism        int
 	Semver             Semver
+
+	// List of Goos and Goarch to build.
+	BuildGoos   []string
+	BuildGoarch []string
 }
 
 // Semver represents a semantic version.

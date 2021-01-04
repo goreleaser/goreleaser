@@ -74,4 +74,24 @@ func TestBuildFlags(t *testing.T) {
 			},
 		}).RmDist)
 	})
+
+	t.Run("goos", func(t *testing.T) {
+		ctx := setup(buildOpts{
+			sharedBuildOpts: sharedBuildOpts{
+				buildGoos: []string{"linux", "darwin"},
+			}})
+
+		require.Equal(t, ctx.BuildGoos[0], "linux")
+		require.Equal(t, ctx.BuildGoos[1], "darwin")
+	})
+
+	t.Run("goarch", func(t *testing.T) {
+		ctx := setup(buildOpts{
+			sharedBuildOpts: sharedBuildOpts{
+				buildGoarch: []string{"x86", "arm64"},
+			}})
+
+		require.Equal(t, ctx.BuildGoarch[0], "x86")
+		require.Equal(t, ctx.BuildGoarch[1], "arm64")
+	})
 }

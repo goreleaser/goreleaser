@@ -25,6 +25,8 @@ type sharedBuildOpts struct {
 	deprecated   bool
 	parallelism  int
 	timeout      time.Duration
+	buildGoos    []string
+	buildGoarch  []string
 }
 
 type buildOpts struct {
@@ -40,6 +42,29 @@ func addSharedBuildFlags(cmd *cobra.Command, opts *sharedBuildOpts) {
 	cmd.Flags().IntVarP(&opts.parallelism, "parallelism", "p", 4, "Amount tasks to run concurrently")
 	cmd.Flags().DurationVar(&opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
 	cmd.Flags().BoolVar(&opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
+
+	// In pipe/build, we special case --goos=^A --goarch=^B. The likely
+	// intent of such a flag combination is to exclude exactly A_B, but
+	// (not A) && (not B) == not (A || B) != not (A && B) by De Morgan's laws.
+	// So if we detect exactly one param in both --goos and --goarch, we
+	// interpret it as the latter [not (A && B)].
+	//
+	// If you truly did intend not (A || B), a simple workaround is to repeat
+	// one of the flags:  --goos=^A,^A --goarch=^B.
+	cmd.Flags().StringSliceVar(
+		&opts.buildGoos,
+		"goos",
+		nil,
+		"Build targets that match any of the specified OSes. Supports negation with ^. "+
+			"If --goarch is passed, then build targets that match both lists.",
+	)
+	cmd.Flags().StringSliceVar(
+		&opts.buildGoarch,
+		"goarch",
+		nil,
+		"Build targets that match any of the specified architectures. Supports negation with ^. "+
+			"If --goos is passed, then build targets that match both lists.",
+	)
 	_ = cmd.Flags().MarkHidden("deprecated")
 }
 
@@ -108,6 +133,8 @@ func setupSharedBuildContext(ctx *context.Context, options *sharedBuildOpts) {
 	ctx.Snapshot = options.snapshot
 	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
 	ctx.RmDist = options.rmDist
+	ctx.BuildGoos = options.buildGoos
+	ctx.BuildGoarch = options.buildGoarch
 
 	// test only
 	ctx.Deprecated = options.deprecated

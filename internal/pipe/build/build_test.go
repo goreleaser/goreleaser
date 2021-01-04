@@ -43,7 +43,9 @@ func (f *fakeBuilder) Build(ctx *context.Context, build config.Build, options ap
 		return err
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: options.Name,
+		Name:   options.Name,
+		Goos:   options.Os,
+		Goarch: options.Arch,
 	})
 	return nil
 }
@@ -728,6 +730,199 @@ func TestBuildOptionsForTarget(t *testing.T) {
 		Os:     "linux",
 		Arch:   "amd64",
 	}, opts)
+}
+
+func getTargets(artifacts []*artifact.Artifact) []string {
+	targets := make([]string, len(artifacts))
+	for i, artifact := range artifacts {
+		targets[i] = artifact.Goos + "_" + artifact.Goarch
+	}
+	return targets
+}
+
+func TestBuildFilterGoosGoarch(t *testing.T) {
+	var tmpDir = testlib.Mktmp(t)
+
+	build := config.Build{
+		Lang:   "fake",
+		Binary: "testing",
+		Targets: []string{
+			"linux_amd64",
+			"darwin_amd64",
+			"windows_amd64",
+			"linux_386",
+			"darwin_386",
+			"windows_386",
+			"linux_ppc64",
+			"darwin_ppc64",
+			"windows_ppc64",
+		},
+	}
+
+	t.Run("not windows goos", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist:   tmpDir,
+			Builds: []config.Build{build},
+		})
+		ctx.BuildGoos = []string{"^windows"}
+		ctx.BuildGoarch = []string{}
+
+		err := runPipeOnBuild(ctx, build)
+
+		require.NoError(t, err)
+
+		artifacts := ctx.Artifacts.List()
+		require.Len(t, artifacts, 6)
+		for _, artifact := range artifacts {
+			require.NotEqual(t, artifact.Goos, "windows")
+		}
+	})
+
+	t.Run("want linux goos", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist:   tmpDir,
+			Builds: []config.Build{build},
+		})
+		ctx.BuildGoos = []string{"linux"}
+		ctx.BuildGoarch = []string{}
+
+		err := runPipeOnBuild(ctx, build)
+
+		require.NoError(t, err)
+		artifacts := ctx.Artifacts.List()
+		require.Len(t, artifacts, 3)
+		for _, artifact := range ctx.Artifacts.List() {
+			require.Equal(t, artifact.Goos, "linux")
+		}
+	})
+
+	t.Run("not amd64 goarch", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist:   tmpDir,
+			Builds: []config.Build{build},
+		})
+		ctx.BuildGoos = []string{}
+		ctx.BuildGoarch = []string{"^amd64"}
+
+		err := runPipeOnBuild(ctx, build)
+
+		require.NoError(t, err)
+
+		artifacts := ctx.Artifacts.List()
+		require.Len(t, artifacts, 6)
+		for _, artifact := range artifacts {
+			require.NotEqual(t, artifact.Goarch, "amd64")
+		}
+	})
+
+	t.Run("want 386 goarch", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist:   tmpDir,
+			Builds: []config.Build{build},
+		})
+		ctx.BuildGoos = []string{}
+		ctx.BuildGoarch = []string{"386"}
+
+		err := runPipeOnBuild(ctx, build)
+
+		require.NoError(t, err)
+		artifacts := ctx.Artifacts.List()
+		require.Len(t, artifacts, 3)
+		for _, artifact := range ctx.Artifacts.List() {
+			require.Equal(t, artifact.Goarch, "386")
+		}
+	})
+
+	t.Run("want linux_amd64", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist:   tmpDir,
+			Builds: []config.Build{build},
+		})
+		ctx.BuildGoos = []string{"linux"}
+		ctx.BuildGoarch = []string{"amd64"}
+
+		err := runPipeOnBuild(ctx, build)
+
+		require.NoError(t, err)
+		targets := getTargets(ctx.Artifacts.List())
+		require.ElementsMatch(t, targets, []string{"linux_amd64"})
+	})
+
+	t.Run("want linux ^amd64", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist:   tmpDir,
+			Builds: []config.Build{build},
+		})
+		ctx.BuildGoos = []string{"linux"}
+		ctx.BuildGoarch = []string{"^amd64"}
+
+		err := runPipeOnBuild(ctx, build)
+
+		require.NoError(t, err)
+		targets := getTargets(ctx.Artifacts.List())
+		require.ElementsMatch(t, targets, []string{"linux_386", "linux_ppc64"})
+	})
+
+	t.Run("want ^darwin amd64", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist:   tmpDir,
+			Builds: []config.Build{build},
+		})
+		ctx.BuildGoos = []string{"^darwin"}
+		ctx.BuildGoarch = []string{"amd64"}
+
+		err := runPipeOnBuild(ctx, build)
+
+		require.NoError(t, err)
+		targets := getTargets(ctx.Artifacts.List())
+		require.ElementsMatch(t, targets, []string{"linux_amd64", "windows_amd64"})
+	})
+
+	// Special case -- see the flag definition in /cmd/build.go.
+	t.Run("want ^darwin ^ppc64", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist:   tmpDir,
+			Builds: []config.Build{build},
+		})
+		ctx.BuildGoos = []string{"^darwin"}
+		ctx.BuildGoarch = []string{"^ppc64"}
+
+		err := runPipeOnBuild(ctx, build)
+
+		require.NoError(t, err)
+		targets := getTargets(ctx.Artifacts.List())
+		require.ElementsMatch(t, targets, []string{
+			"linux_386",
+			"darwin_386",
+			"windows_386",
+			"linux_amd64",
+			"darwin_amd64",
+			"windows_amd64",
+			"linux_ppc64",
+			// "darwin_ppc64",
+			"windows_ppc64",
+		})
+	})
+
+	t.Run("want ^darwin^darwin ^ppc64", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist:   tmpDir,
+			Builds: []config.Build{build},
+		})
+		ctx.BuildGoos = []string{"^darwin", "^darwin"}
+		ctx.BuildGoarch = []string{"^ppc64"}
+
+		err := runPipeOnBuild(ctx, build)
+
+		require.NoError(t, err)
+		targets := getTargets(ctx.Artifacts.List())
+		require.ElementsMatch(t, targets, []string{
+			"linux_386",
+			"windows_386",
+			"linux_amd64",
+			"windows_amd64",
+		})
+	})
 }
 
 func TestHookComplex(t *testing.T) {

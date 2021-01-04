@@ -84,6 +84,40 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 	return builders.For(build.Lang).WithDefaults(build)
 }
 
+func isNegated(s string) bool {
+	return s[0] == '^'
+}
+
+func anyMatch(haystack []string, needle string) bool {
+	for _, hay := range haystack {
+		want := !isNegated(hay)
+
+		if want && needle == hay {
+			return true
+		}
+
+		if !want && needle != string(hay[1:]) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Interpret empty lists as "don't filter on this list."
+func shouldBuildTarget(ctx *context.Context, opts *builders.Options) bool {
+	if len(ctx.BuildGoos) == 1 && len(ctx.BuildGoarch) == 1 &&
+		isNegated(ctx.BuildGoos[0]) && isNegated(ctx.BuildGoarch[0]) {
+		// Special case -- see the flag definition in /cmd/build.go.
+		os := ctx.BuildGoos[0][1:]
+		arch := ctx.BuildGoarch[0][1:]
+		return !(os == opts.Os && arch == opts.Arch)
+	}
+
+	return (len(ctx.BuildGoos) == 0 || anyMatch(ctx.BuildGoos, opts.Os)) &&
+		(len(ctx.BuildGoarch) == 0 || anyMatch(ctx.BuildGoarch, opts.Arch))
+}
+
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, target := range build.Targets {
@@ -95,9 +129,16 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 				return err
 			}
 
+			if !shouldBuildTarget(ctx, opts) {
+				log.WithField("binary", opts.Path).Info("skipping")
+				return nil
+			}
+
+			log.WithField("binary", opts.Path).Info("building")
 			if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
 				return fmt.Errorf("pre hook failed: %w", err)
 			}
+
 			if err := doBuild(ctx, build, *opts); err != nil {
 				return err
 			}
@@ -191,7 +232,6 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 		goarch = strings.Split(target, "_")[1]
 	}
 
-	log.WithField("binary", path).Info("building")
 	return &builders.Options{
 		Target: target,
 		Name:   name,
