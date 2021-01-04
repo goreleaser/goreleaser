@@ -141,6 +141,48 @@ func TestRunPipe(t *testing.T) {
 			manifestAssertError: shouldNotErr,
 			assertImageLabels:   noLabels,
 		},
+		"multiarch with buildx": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates:     []string{registry + "goreleaser/test_multiarch_buildx:test-amd64"},
+					Goos:               "linux",
+					Goarch:             "amd64",
+					Dockerfile:         "testdata/Dockerfile",
+					Buildx:             true,
+					Binaries:           []string{"mybin"},
+					BuildFlagTemplates: []string{"--platform=linux/amd64"},
+				},
+				{
+					ImageTemplates:     []string{registry + "goreleaser/test_multiarch_buildx:test-arm64v8"},
+					Goos:               "linux",
+					Goarch:             "arm64",
+					Dockerfile:         "testdata/Dockerfile",
+					Buildx:             true,
+					Binaries:           []string{"mybin"},
+					BuildFlagTemplates: []string{"--platform=linux/arm64"},
+				},
+			},
+			manifests: []config.DockerManifest{
+				{
+					// XXX: fails if :latest https://github.com/docker/distribution/issues/3100
+					NameTemplate: registry + "goreleaser/test_multiarch_buildx:test",
+					ImageTemplates: []string{
+						registry + "goreleaser/test_multiarch_buildx:test-amd64",
+						registry + "goreleaser/test_multiarch_buildx:test-arm64v8",
+					},
+					CreateFlags: []string{"--insecure"},
+					PushFlags:   []string{"--insecure"},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_multiarch_buildx:test-amd64",
+				registry + "goreleaser/test_multiarch_buildx:test-arm64v8",
+			},
+			assertError:         shouldNotErr,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+			assertImageLabels:   noLabels,
+		},
 		"multiarch image not found": {
 			dockers: []config.Docker{
 				{
