@@ -273,7 +273,7 @@ func dockerBuild(ctx *context.Context, root string, images, flags []string, buil
 func buildCommand(buildx bool, images, flags []string) []string {
 	base := []string{"build", "."}
 	if buildx {
-		base = []string{"buildx", "build", "."}
+		base = []string{"buildx", "build", ".", "--load"}
 	}
 	for _, image := range images {
 		base = append(base, "-t", image)
