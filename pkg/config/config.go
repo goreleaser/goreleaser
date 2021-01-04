@@ -494,6 +494,7 @@ type Docker struct {
 	SkipPush           string   `yaml:"skip_push,omitempty"`
 	Files              []string `yaml:"extra_files,omitempty"`
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
+	Buildx             bool     `yaml:"use_buildx,omitempty"`
 }
 
 // DockerManifest config.

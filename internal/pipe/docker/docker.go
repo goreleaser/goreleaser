@@ -169,7 +169,7 @@ func process(ctx *context.Context, docker config.Docker, bins []*artifact.Artifa
 		return err
 	}
 
-	if err := dockerBuild(ctx, tmp, images, buildFlags); err != nil {
+	if err := dockerBuild(ctx, tmp, images, buildFlags, docker.Buildx); err != nil {
 		return err
 	}
 
@@ -256,10 +256,10 @@ func link(src, dest string) error {
 	})
 }
 
-func dockerBuild(ctx *context.Context, root string, images, flags []string) error {
-	log.WithField("image", images[0]).Info("building docker image")
+func dockerBuild(ctx *context.Context, root string, images, flags []string, buildx bool) error {
+	log.WithField("image", images[0]).WithField("buildx", buildx).Info("building docker image")
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, "docker", buildCommand(images, flags)...)
+	var cmd = exec.CommandContext(ctx, "docker", buildCommand(buildx, images, flags)...)
 	cmd.Dir = root
 	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
 	out, err := cmd.CombinedOutput()
@@ -270,8 +270,11 @@ func dockerBuild(ctx *context.Context, root string, images, flags []string) erro
 	return nil
 }
 
-func buildCommand(images, flags []string) []string {
+func buildCommand(buildx bool, images, flags []string) []string {
 	base := []string{"build", "."}
+	if buildx {
+		base = []string{"buildx", "build", "."}
+	}
 	for _, image := range images {
 		base = append(base, "-t", image)
 	}

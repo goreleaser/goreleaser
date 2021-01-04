@@ -38,6 +38,7 @@ dockers:
   - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
   dockerfile: Dockerfile
+  use_buildx: true
   binaries:
   - goreleaser
   build_flag_templates:
@@ -54,6 +55,7 @@ dockers:
   - 'goreleaser/goreleaser:{{ .Tag }}-arm64'
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
   dockerfile: Dockerfile
+  use_buildx: true
   binaries:
   - goreleaser
   build_flag_templates:

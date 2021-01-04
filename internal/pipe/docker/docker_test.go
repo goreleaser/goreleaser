@@ -847,6 +847,7 @@ func TestBuildCommand(t *testing.T) {
 	tests := []struct {
 		name   string
 		flags  []string
+		buildx bool
 		expect []string
 	}{
 		{
@@ -864,11 +865,16 @@ func TestBuildCommand(t *testing.T) {
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
 			expect: []string{"build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
 		},
+		{
+			name:   "buildx",
+			buildx: true,
+			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
+			expect: []string{"buildx", "build", ".", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			command := buildCommand(images, tt.flags)
-			require.Equal(t, tt.expect, command)
+			require.Equal(t, tt.expect, buildCommand(tt.buildx, images, tt.flags))
 		})
 	}
 }
