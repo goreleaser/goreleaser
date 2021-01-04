@@ -25,11 +25,14 @@ jobs:
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      - name: apt update
-        run: sudo apt-get update
+      - name: test
+        run: |
+          docker buildx ls
+          docker buildx inspect
       -
         name: Set up Snapcraft
         run: |
+          sudo apt-get update
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
       -
         name: Set up Go
