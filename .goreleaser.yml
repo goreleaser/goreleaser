@@ -42,12 +42,13 @@ dockers:
   binaries:
   - goreleaser
   build_flag_templates:
-  - "--platform=linux/amd64"
+  - "--pull"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.name={{.ProjectName}}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
   - "--label=org.opencontainers.image.source={{.GitURL}}"
+  - "--platform=linux/amd64"
   extra_files:
   - scripts/entrypoint.sh
 - image_templates:
@@ -58,12 +59,13 @@ dockers:
   binaries:
   - goreleaser
   build_flag_templates:
-  - "--platform=linux/arm64"
+  - "--pull"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.name={{.ProjectName}}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
   - "--label=org.opencontainers.image.source={{.GitURL}}"
+  - "--platform=linux/arm64"
   goarch: arm64
   extra_files:
   - scripts/entrypoint.sh
