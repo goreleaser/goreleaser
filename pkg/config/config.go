@@ -307,6 +307,8 @@ type NFPM struct {
 	ID          string   `yaml:",omitempty"`
 	Builds      []string `yaml:",omitempty"`
 	Formats     []string `yaml:",omitempty"`
+	Section     string   `yaml:",omitempty"`
+	Priority    string   `yaml:",omitempty"`
 	Vendor      string   `yaml:",omitempty"`
 	Homepage    string   `yaml:",omitempty"`
 	Maintainer  string   `yaml:",omitempty"`
