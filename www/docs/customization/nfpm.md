@@ -108,6 +108,12 @@ nfpms:
     # Version Release.
     release: 1
 
+    # Section.
+    section: default
+
+    # Priority.
+    priority: extra
+
     # Makes a meta package - an empty package that contains only supporting files and dependencies.
     # When set to `true`, the `builds` option is ignored.
     # Defaults to false.
