@@ -469,6 +469,21 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"-x-sha256": "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269"}}),
 		},
+		{"custom-headers", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:     ModeBinary,
+					Name:     "a",
+					Target:   s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username: "u2",
+					CustomHeaders: map[string]string{
+						"x-custom-header-name": "custom-header-value",
+					},
+					TrustedCerts: cert(s),
+				}
+			},
+			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"x-custom-header-name": "custom-header-value"}}),
+		},
 	}
 
 	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Upload), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {
