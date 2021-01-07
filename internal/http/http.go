@@ -240,6 +240,11 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	log.Debugf("generated target url: %s", targetURL)
 
 	var headers = map[string]string{}
+	if upload.CustomHeaders != nil {
+		for name, value := range upload.CustomHeaders {
+			headers[name] = value
+		}
+	}
 	if upload.ChecksumHeader != "" {
 		sum, err := artifact.Checksum("sha256")
 		if err != nil {
