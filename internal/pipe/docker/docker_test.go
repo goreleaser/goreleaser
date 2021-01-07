@@ -934,8 +934,9 @@ func TestDefault(t *testing.T) {
 		Config: config.Project{
 			Dockers: []config.Docker{
 				{
-					IDs:    []string{"aa"},
-					Builds: []string{"foo"},
+					IDs:      []string{"aa"},
+					Builds:   []string{"foo"},
+					Binaries: []string{"aaa"},
 				},
 			},
 		},
