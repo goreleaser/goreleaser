@@ -379,7 +379,7 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
-		"valid-with-ids": {
+		"valid with ids": {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
@@ -739,13 +739,13 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/nfpm:latest",
 			},
 		},
-		"nfpm_arm64": {
+		"nfpm multiple binaries on arm64": {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{registry + "goreleaser/nfpm_arm:latest"},
 					Goos:           "linux",
 					Goarch:         "arm64",
-					IDs:            []string{"mybin"},
+					IDs:            []string{"mybin", "anotherbin"},
 					Dockerfile:     "testdata/Dockerfile.nfpm",
 				},
 			},
