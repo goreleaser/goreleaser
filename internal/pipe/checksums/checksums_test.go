@@ -149,7 +149,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 		"{{ .Pro }_checksums.txt": `template: tmpl:1: unexpected "}" in operand`,
 		"{{.Env.NOPE}}":           `template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`,
 	} {
-		t.Run(template, func(tt *testing.T) {
+		t.Run(template, func(t *testing.T) {
 			var folder = t.TempDir()
 			var ctx = context.New(
 				config.Project{
@@ -168,8 +168,8 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 				Path: binFile.Name(),
 			})
 			err = Pipe{}.Run(ctx)
-			require.Error(tt, err)
-			require.Equal(tt, eerr, err.Error())
+			require.Error(t, err)
+			require.Equal(t, eerr, err.Error())
 		})
 	}
 }

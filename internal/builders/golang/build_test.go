@@ -622,12 +622,12 @@ func TestInvalidTemplate(t *testing.T) {
 		"{{ .Nope }":    `template: tmpl:1: unexpected "}" in operand`,
 		"{{.Env.NOPE}}": `template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`,
 	} {
-		t.Run(template, func(tt *testing.T) {
+		t.Run(template, func(t *testing.T) {
 			var ctx = context.New(config.Project{})
 			ctx.Git.CurrentTag = "3.4.1"
 			flags, err := tmpl.New(ctx).Apply(template)
-			require.EqualError(tt, err, eerr)
-			require.Empty(tt, flags)
+			require.EqualError(t, err, eerr)
+			require.Empty(t, flags)
 		})
 	}
 }

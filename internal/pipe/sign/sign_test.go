@@ -374,8 +374,8 @@ func TestSignArtifacts(t *testing.T) {
 			test.user = user
 		}
 
-		t.Run(test.desc, func(tt *testing.T) {
-			testSign(tt, test.ctx, test.signaturePaths, test.signatureNames, test.user, test.expectedErrMsg)
+		t.Run(test.desc, func(t *testing.T) {
+			testSign(t, test.ctx, test.signaturePaths, test.signatureNames, test.user, test.expectedErrMsg)
 		})
 	}
 }

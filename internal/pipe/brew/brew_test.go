@@ -756,17 +756,17 @@ func TestRunPipeNoUpload(t *testing.T) {
 		testlib.AssertSkipped(t, doRun(ctx, ctx.Config.Brews[0], client))
 		require.False(t, client.CreatedFile)
 	}
-	t.Run("skip upload", func(tt *testing.T) {
+	t.Run("skip upload", func(t *testing.T) {
 		ctx.Config.Release.Draft = false
 		ctx.Config.Brews[0].SkipUpload = "true"
 		ctx.SkipPublish = false
-		assertNoPublish(tt)
+		assertNoPublish(t)
 	})
-	t.Run("skip publish", func(tt *testing.T) {
+	t.Run("skip publish", func(t *testing.T) {
 		ctx.Config.Release.Draft = false
 		ctx.Config.Brews[0].SkipUpload = "false"
 		ctx.SkipPublish = true
-		assertNoPublish(tt)
+		assertNoPublish(t)
 	})
 }
 
