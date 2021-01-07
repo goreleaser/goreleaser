@@ -100,6 +100,7 @@ func TestRunPipe(t *testing.T) {
 		assertError         errChecker
 		pubAssertError      errChecker
 		manifestAssertError errChecker
+		extraPrepare        func(ctx *context.Context)
 	}{
 		"multiarch": {
 			dockers: []config.Docker{
@@ -714,7 +715,19 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`/wont-exist: no such file or directory`),
+			assertError:       shouldErr(`/tmp/wont-exist: no such file or directory`),
+			extraPrepare: func(ctx *context.Context) {
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "wont-exist",
+					Path:   "/tmp/wont-exist",
+					Goarch: "amd64",
+					Goos:   "linux",
+					Type:   artifact.Binary,
+					Extra: map[string]interface{}{
+						"ID": "nope",
+					},
+				})
+			},
 		},
 		"multiple_ids": {
 			dockers: []config.Docker{
@@ -841,16 +854,9 @@ func TestRunPipe(t *testing.T) {
 				})
 			}
 
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "wont-exist",
-				Path:   filepath.Join(dist, "wont-exist"),
-				Goarch: "amd64",
-				Goos:   "linux",
-				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
-					"ID": "nope",
-				},
-			})
+			if docker.extraPrepare != nil {
+				docker.extraPrepare(ctx)
+			}
 
 			// this might fail as the image doesnt exist yet, so lets ignore the error
 			for _, img := range docker.expect {
