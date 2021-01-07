@@ -66,6 +66,7 @@ func TestWithDefaults(t *testing.T) {
 			targets: []string{
 				"linux_amd64",
 				"linux_386",
+				"linux_arm64",
 				"darwin_amd64",
 			},
 			goBinary: "go",
@@ -86,7 +87,7 @@ func TestWithDefaults(t *testing.T) {
 			goBinary: "go",
 		},
 	} {
-		t.Run(name, func(tt *testing.T) {
+		t.Run(name, func(t *testing.T) {
 			var config = config.Project{
 				Builds: []config.Build{
 					testcase.build,
