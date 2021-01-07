@@ -49,8 +49,8 @@ func TestWithArtifact(t *testing.T) {
 	} {
 		tmpl := tmpl
 		expect := expect
-		t.Run(expect, func(tt *testing.T) {
-			tt.Parallel()
+		t.Run(expect, func(t *testing.T) {
+			t.Parallel()
 			result, err := New(ctx).WithArtifact(
 				&artifact.Artifact{
 					Name:   "not-this-binary",
@@ -64,13 +64,13 @@ func TestWithArtifact(t *testing.T) {
 				},
 				map[string]string{"linux": "Linux"},
 			).Apply(tmpl)
-			require.NoError(tt, err)
-			require.Equal(tt, expect, result)
+			require.NoError(t, err)
+			require.Equal(t, expect, result)
 		})
 	}
 
-	t.Run("artifact with gitlab ArtifactUploadHash", func(tt *testing.T) {
-		tt.Parallel()
+	t.Run("artifact with gitlab ArtifactUploadHash", func(t *testing.T) {
+		t.Parallel()
 		uploadHash := "820ead5d9d2266c728dce6d4d55b6460"
 		result, err := New(ctx).WithArtifact(
 			&artifact.Artifact{
@@ -83,12 +83,12 @@ func TestWithArtifact(t *testing.T) {
 				},
 			}, map[string]string{},
 		).Apply("{{ .ArtifactUploadHash }}")
-		require.NoError(tt, err)
-		require.Equal(tt, uploadHash, result)
+		require.NoError(t, err)
+		require.Equal(t, uploadHash, result)
 	})
 
-	t.Run("artifact without binary name", func(tt *testing.T) {
-		tt.Parallel()
+	t.Run("artifact without binary name", func(t *testing.T) {
+		t.Parallel()
 		result, err := New(ctx).WithArtifact(
 			&artifact.Artifact{
 				Name:   "another-binary",
@@ -97,15 +97,15 @@ func TestWithArtifact(t *testing.T) {
 				Goarm:  "6",
 			}, map[string]string{},
 		).Apply("{{ .Binary }}")
-		require.NoError(tt, err)
-		require.Equal(tt, ctx.Config.ProjectName, result)
+		require.NoError(t, err)
+		require.Equal(t, ctx.Config.ProjectName, result)
 	})
 
-	t.Run("template using artifact Fields with no artifact", func(tt *testing.T) {
-		tt.Parallel()
+	t.Run("template using artifact Fields with no artifact", func(t *testing.T) {
+		t.Parallel()
 		result, err := New(ctx).Apply("{{ .Os }}")
-		require.EqualError(tt, err, `template: tmpl:1:3: executing "tmpl" at <.Os>: map has no entry for key "Os"`)
-		require.Empty(tt, result)
+		require.EqualError(t, err, `template: tmpl:1:3: executing "tmpl" at <.Os>: map has no entry for key "Os"`)
+		require.Empty(t, result)
 	})
 }
 

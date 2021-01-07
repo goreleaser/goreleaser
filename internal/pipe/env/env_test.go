@@ -16,14 +16,14 @@ func TestDescription(t *testing.T) {
 }
 
 func TestSetDefaultTokenFiles(t *testing.T) {
-	t.Run("empty config", func(tt *testing.T) {
+	t.Run("empty config", func(t *testing.T) {
 		ctx := context.New(config.Project{})
 		setDefaultTokenFiles(ctx)
 		require.Equal(t, "~/.config/goreleaser/github_token", ctx.Config.EnvFiles.GitHubToken)
 		require.Equal(t, "~/.config/goreleaser/gitlab_token", ctx.Config.EnvFiles.GitLabToken)
 		require.Equal(t, "~/.config/goreleaser/gitea_token", ctx.Config.EnvFiles.GiteaToken)
 	})
-	t.Run("custom config config", func(tt *testing.T) {
+	t.Run("custom config config", func(t *testing.T) {
 		cfg := "what"
 		ctx := context.New(config.Project{
 			EnvFiles: config.EnvFiles{
@@ -187,43 +187,43 @@ func TestInvalidEnvReleaseDisabled(t *testing.T) {
 }
 
 func TestLoadEnv(t *testing.T) {
-	t.Run("env exists", func(tt *testing.T) {
+	t.Run("env exists", func(t *testing.T) {
 		var env = "SUPER_SECRET_ENV"
-		require.NoError(tt, os.Setenv(env, "1"))
+		require.NoError(t, os.Setenv(env, "1"))
 		v, err := loadEnv(env, "nope")
-		require.NoError(tt, err)
-		require.Equal(tt, "1", v)
+		require.NoError(t, err)
+		require.Equal(t, "1", v)
 	})
-	t.Run("env file exists", func(tt *testing.T) {
+	t.Run("env file exists", func(t *testing.T) {
 		var env = "SUPER_SECRET_ENV_NOPE"
-		require.NoError(tt, os.Unsetenv(env))
+		require.NoError(t, os.Unsetenv(env))
 		f, err := ioutil.TempFile(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123")
 		v, err := loadEnv(env, f.Name())
-		require.NoError(tt, err)
-		require.Equal(tt, "123", v)
+		require.NoError(t, err)
+		require.Equal(t, "123", v)
 	})
-	t.Run("env file with an empty line at the end", func(tt *testing.T) {
+	t.Run("env file with an empty line at the end", func(t *testing.T) {
 		var env = "SUPER_SECRET_ENV_NOPE"
-		require.NoError(tt, os.Unsetenv(env))
+		require.NoError(t, os.Unsetenv(env))
 		f, err := ioutil.TempFile(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123\n")
 		v, err := loadEnv(env, f.Name())
-		require.NoError(tt, err)
-		require.Equal(tt, "123", v)
+		require.NoError(t, err)
+		require.Equal(t, "123", v)
 	})
-	t.Run("env file is not readable", func(tt *testing.T) {
+	t.Run("env file is not readable", func(t *testing.T) {
 		var env = "SUPER_SECRET_ENV_NOPE"
-		require.NoError(tt, os.Unsetenv(env))
+		require.NoError(t, os.Unsetenv(env))
 		f, err := ioutil.TempFile(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123")
 		err = os.Chmod(f.Name(), 0377)
-		require.NoError(tt, err)
+		require.NoError(t, err)
 		v, err := loadEnv(env, f.Name())
-		require.EqualError(tt, err, fmt.Sprintf("open %s: permission denied", f.Name()))
-		require.Equal(tt, "", v)
+		require.EqualError(t, err, fmt.Sprintf("open %s: permission denied", f.Name()))
+		require.Equal(t, "", v)
 	})
 }
