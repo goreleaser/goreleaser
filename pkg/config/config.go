@@ -483,7 +483,8 @@ type Checksum struct {
 // Docker image config.
 type Docker struct {
 	Binaries           []string `yaml:",omitempty"` // deprecated: no need to use this anymore
-	Builds             []string `yaml:",omitempty"`
+	Builds             []string `yaml:",omitempty"` // deprecated: use IDs instead
+	IDs                []string `yaml:"ids,omitempty"`
 	Goos               string   `yaml:",omitempty"`
 	Goarch             string   `yaml:",omitempty"`
 	Goarm              string   `yaml:",omitempty"`

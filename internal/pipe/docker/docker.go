@@ -46,6 +46,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		if len(docker.Binaries) > 0 {
 			deprecate.Notice(ctx, "docker.binaries")
 		}
+		if len(docker.Builds) > 0 {
+			deprecate.Notice(ctx, "docker.builds")
+			docker.IDs = append(docker.IDs, docker.Builds...)
+		}
 		for _, f := range docker.Files {
 			if f == "." || strings.HasPrefix(f, ctx.Config.Dist) {
 				return fmt.Errorf("invalid docker.files: can't be . or inside dist folder: %s", f)
@@ -86,7 +90,7 @@ func doRun(ctx *context.Context) error {
 	for _, docker := range ctx.Config.Dockers {
 		docker := docker
 		g.Go(func() error {
-			log.WithField("docker", docker).Debug("looking for binaries and packages matching")
+			log.WithField("docker", docker).Debug("looking for artifacts matching")
 			var filters = []artifact.Filter{
 				artifact.ByGoos(docker.Goos),
 				artifact.ByGoarch(docker.Goarch),
@@ -96,12 +100,12 @@ func doRun(ctx *context.Context) error {
 					artifact.ByType(artifact.LinuxPackage),
 				),
 			}
-			if len(docker.Builds) > 0 {
-				filters = append(filters, artifact.ByIDs(docker.Builds...))
+			if len(docker.IDs) > 0 {
+				filters = append(filters, artifact.ByIDs(docker.IDs...))
 			}
-			var packages = ctx.Artifacts.Filter(artifact.And(filters...)).List()
-			log.WithField("packages", packages).Debug("found packages")
-			return process(ctx, docker, packages)
+			var artifacts = ctx.Artifacts.Filter(artifact.And(filters...)).List()
+			log.WithField("artifacts", artifacts).Debug("found artifacts")
+			return process(ctx, docker, artifacts)
 		})
 	}
 	return g.Wait()
