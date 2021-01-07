@@ -810,15 +810,15 @@ func TestRunPipe(t *testing.T) {
 	defer killAndRm(t)
 
 	for name, docker := range table {
-		t.Run(name, func(tt *testing.T) {
+		t.Run(name, func(t *testing.T) {
 			var folder = t.TempDir()
 			var dist = filepath.Join(folder, "dist")
-			require.NoError(tt, os.Mkdir(dist, 0755))
-			require.NoError(tt, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+			require.NoError(t, os.Mkdir(dist, 0755))
+			require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 			_, err := os.Create(filepath.Join(dist, "mybin", "mybin"))
-			require.NoError(tt, err)
+			require.NoError(t, err)
 			_, err = os.Create(filepath.Join(dist, "mybin", "anotherbin"))
-			require.NoError(tt, err)
+			require.NoError(t, err)
 
 			var ctx = context.New(config.Project{
 				ProjectName:     "mybin",
@@ -862,21 +862,21 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			err = Pipe{}.Run(ctx)
-			docker.assertError(tt, err)
+			docker.assertError(t, err)
 			if err == nil {
-				docker.pubAssertError(tt, Pipe{}.Publish(ctx))
-				docker.manifestAssertError(tt, ManifestPipe{}.Publish(ctx))
+				docker.pubAssertError(t, Pipe{}.Publish(ctx))
+				docker.manifestAssertError(t, ManifestPipe{}.Publish(ctx))
 			}
 
 			for _, d := range docker.dockers {
-				docker.assertImageLabels(tt, len(d.ImageTemplates))
+				docker.assertImageLabels(t, len(d.ImageTemplates))
 			}
 
 			// this might should not fail as the image should have been created when
 			// the step ran
 			for _, img := range docker.expect {
-				tt.Log("removing docker image", img)
-				require.NoError(tt, exec.Command("docker", "rmi", img).Run(), "could not delete image %s", img)
+				t.Log("removing docker image", img)
+				require.NoError(t, exec.Command("docker", "rmi", img).Run(), "could not delete image %s", img)
 			}
 
 		})
