@@ -274,3 +274,12 @@ func (artifacts *Artifacts) Filter(filter Filter) Artifacts {
 	}
 	return result
 }
+
+// Paths returns the artifact.Path of the current artifact list.
+func (artifacts Artifacts) Paths() []string {
+	var result []string
+	for _, artifact := range artifacts.List() {
+		result = append(result, artifact.Path)
+	}
+	return result
+}

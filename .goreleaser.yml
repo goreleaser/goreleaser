@@ -39,8 +39,6 @@ dockers:
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
   dockerfile: Dockerfile
   use_buildx: true
-  binaries:
-  - goreleaser
   build_flag_templates:
   - "--pull"
   - "--label=org.opencontainers.image.created={{.Date}}"
@@ -56,8 +54,6 @@ dockers:
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
   dockerfile: Dockerfile
   use_buildx: true
-  binaries:
-  - goreleaser
   build_flag_templates:
   - "--pull"
   - "--label=org.opencontainers.image.created={{.Date}}"

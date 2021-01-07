@@ -15,6 +15,51 @@ goreleaser check
 
 ## Active deprecation notices
 
+### docker.builds
+
+> since 2021-01-07 (v0.154.0)
+
+`builds` is deprecated in favor of `ids`, since now it also allows to copy nfpm packages:
+
+Change this:
+
+=== "Before"
+    ```yaml
+    dockers:
+      -
+        builds: ['a', 'b']
+    ```
+
+=== "After"
+    ```yaml
+    dockers:
+      -
+        ids: ['a', 'b']
+    ```
+
+### docker.binaries
+
+> since 2021-01-07 (v0.154.0)
+
+`binaries` is deprecated and now does nothing.
+If you want to filter something out, use the `ids` property.
+
+Change this:
+
+=== "Before"
+    ```yaml
+    dockers:
+      -
+        binaries: ['foo']
+    ```
+
+=== "After"
+    ```yaml
+    dockers:
+      -
+        ids: ['foo']
+    ```
+
 ### nfpms.files
 
 > since 2020-12-21 (v0.149.0)
@@ -92,7 +137,6 @@ Change this:
             type: symlink
     ```
 
-
 ### nfpms.rpm.ghost_files
 
 > since 2020-12-21 (v0.149.0)
@@ -158,19 +202,19 @@ Change this:
 Change this:
 
 === "Before"
-```yaml
-nfpms:
--
-  deb:
-    version_metadata: beta1
-```
+    ```yaml
+    nfpms:
+      -
+        deb:
+          version_metadata: beta1
+    ```
 
 === "After"
-```yaml
--
-  version_metadata: beta1
-```
-
+    ```yaml
+    nfpms:
+      -
+        version_metadata: beta1
+    ```
 
 <!--
 
