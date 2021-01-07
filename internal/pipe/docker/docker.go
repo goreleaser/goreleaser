@@ -111,7 +111,7 @@ func doRun(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func process(ctx *context.Context, docker config.Docker, bins []*artifact.Artifact) error {
+func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.Artifact) error {
 	tmp, err := ioutil.TempDir(ctx.Config.Dist, "goreleaserdocker")
 	if err != nil {
 		return fmt.Errorf("failed to create temporary dir: %w", err)
@@ -134,9 +134,9 @@ func process(ctx *context.Context, docker config.Docker, bins []*artifact.Artifa
 			return fmt.Errorf("failed to link extra file '%s': %w", file, err)
 		}
 	}
-	for _, bin := range bins {
-		if err := os.Link(bin.Path, filepath.Join(tmp, filepath.Base(bin.Path))); err != nil {
-			return fmt.Errorf("failed to link binary: %w", err)
+	for _, art := range artifacts {
+		if err := os.Link(art.Path, filepath.Join(tmp, filepath.Base(art.Path))); err != nil {
+			return fmt.Errorf("failed to link artifact: %w", err)
 		}
 	}
 

@@ -379,7 +379,7 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
-		"valid-with-builds": {
+		"valid-with-ids": {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{
@@ -388,7 +388,7 @@ func TestRunPipe(t *testing.T) {
 					Goos:       "linux",
 					Goarch:     "amd64",
 					Dockerfile: "testdata/Dockerfile",
-					Builds:     []string{"mybin"},
+					IDs:        []string{"mybin"},
 				},
 			},
 			expect: []string{
@@ -703,7 +703,7 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels: noLabels,
 			assertError:       shouldErr(`failed to link extra file 'testdata/nope.txt'`),
 		},
-		"multiple_binaries": {
+		"multiple_ids": {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{registry + "goreleaser/multiple:latest"},
@@ -739,6 +739,24 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/nfpm:latest",
 			},
 		},
+		"nfpm_arm64": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{registry + "goreleaser/nfpm_arm:latest"},
+					Goos:           "linux",
+					Goarch:         "arm64",
+					IDs:            []string{"mybin"},
+					Dockerfile:     "testdata/Dockerfile.nfpm",
+				},
+			},
+			assertImageLabels:   noLabels,
+			assertError:         shouldNotErr,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+			expect: []string{
+				registry + "goreleaser/nfpm_arm:latest",
+			},
+		},
 	}
 
 	killAndRm(t)
@@ -757,6 +775,10 @@ func TestRunPipe(t *testing.T) {
 			require.NoError(t, err)
 			_, err = os.Create(filepath.Join(dist, "mynfpm.apk"))
 			require.NoError(t, err)
+			for _, arch := range []string{"amd64", "386", "arm64"} {
+				_, err = os.Create(filepath.Join(dist, fmt.Sprintf("mybin_%s.apk", arch)))
+				require.NoError(t, err)
+			}
 
 			var ctx = context.New(config.Project{
 				ProjectName:     "mybin",
@@ -793,9 +815,10 @@ func TestRunPipe(t *testing.T) {
 				}
 			}
 			for _, arch := range []string{"amd64", "386", "arm64"} {
+				var name = fmt.Sprintf("mybin_%s.apk", arch)
 				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   fmt.Sprintf("mynfpm_%s.apk", arch),
-					Path:   filepath.Join(dist, "mynfpm.apk"),
+					Name:   name,
+					Path:   filepath.Join(dist, name),
 					Goarch: arch,
 					Goos:   "linux",
 					Type:   artifact.LinuxPackage,
@@ -943,29 +966,6 @@ func TestDefaultDockerfile(t *testing.T) {
 	require.Equal(t, "Dockerfile", ctx.Config.Dockers[1].Dockerfile)
 }
 
-func TestDefaultBinaries(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
-			Builds: []config.Build{
-				{
-					ID: "foo",
-				},
-			},
-			Dockers: []config.Docker{
-				{
-					Binaries: []string{"foo"},
-				},
-			},
-		},
-	}
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Len(t, ctx.Config.Dockers, 1)
-	var docker = ctx.Config.Dockers[0]
-	require.Equal(t, "linux", docker.Goos)
-	require.Equal(t, "amd64", docker.Goarch)
-	require.Equal(t, []string{"foo"}, docker.Binaries)
-}
-
 func TestDefaultNoDockers(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -1009,10 +1009,9 @@ func TestDefaultSet(t *testing.T) {
 		Config: config.Project{
 			Dockers: []config.Docker{
 				{
-					Builds:     []string{"foo"},
+					IDs:        []string{"foo"},
 					Goos:       "windows",
 					Goarch:     "i386",
-					Binaries:   []string{"bar"},
 					Dockerfile: "Dockerfile.foo",
 				},
 			},
@@ -1023,8 +1022,7 @@ func TestDefaultSet(t *testing.T) {
 	var docker = ctx.Config.Dockers[0]
 	require.Equal(t, "windows", docker.Goos)
 	require.Equal(t, "i386", docker.Goarch)
-	require.Equal(t, "bar", docker.Binaries[0])
-	require.Equal(t, "foo", docker.Builds[0])
+	require.Equal(t, []string{"foo"}, docker.IDs)
 	require.Equal(t, "Dockerfile.foo", docker.Dockerfile)
 }
 
@@ -1038,7 +1036,6 @@ func Test_processImageTemplates(t *testing.T) {
 			},
 			Dockers: []config.Docker{
 				{
-					Binaries:   []string{"foo"},
 					Dockerfile: "Dockerfile.foo",
 					ImageTemplates: []string{
 						"user/image:{{.Tag}}",
