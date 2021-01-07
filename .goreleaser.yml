@@ -1,21 +1,21 @@
 env:
   - GO111MODULE=on
   - GOPROXY=https://gocenter.io
-#before:
-#  hooks:
-#    - go mod download
-#    - ./scripts/completions.sh
+before:
+  hooks:
+    - go mod download
+    - ./scripts/completions.sh
 builds:
 - env:
     - CGO_ENABLED=0
   goos:
     - linux
-#    - darwin
-#    - windows
+    - darwin
+    - windows
   goarch:
-#    - 386
+    - 386
     - amd64
-#    - arm
+    - arm
     - arm64
   mod_timestamp: '{{ .CommitTimestamp }}'
   flags:
