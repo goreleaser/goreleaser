@@ -313,3 +313,14 @@ func TestTypeToString(t *testing.T) {
 		require.Equal(t, "unknown", Type(9999).String())
 	})
 }
+
+func TestPaths(t *testing.T) {
+	var paths = []string{"a/b", "b/c", "d/e", "f/g"}
+	var artifacts = New()
+	for _, a := range paths {
+		artifacts.Add(&Artifact{
+			Path: a,
+		})
+	}
+	require.ElementsMatch(t, paths, artifacts.Paths())
+}

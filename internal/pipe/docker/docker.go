@@ -103,9 +103,9 @@ func doRun(ctx *context.Context) error {
 			if len(docker.IDs) > 0 {
 				filters = append(filters, artifact.ByIDs(docker.IDs...))
 			}
-			var artifacts = ctx.Artifacts.Filter(artifact.And(filters...)).List()
-			log.WithField("artifacts", artifacts).Debug("found artifacts")
-			return process(ctx, docker, artifacts)
+			var artifacts = ctx.Artifacts.Filter(artifact.And(filters...))
+			log.WithField("artifacts", artifacts.Paths()).Debug("found artifacts")
+			return process(ctx, docker, artifacts.List())
 		})
 	}
 	return g.Wait()

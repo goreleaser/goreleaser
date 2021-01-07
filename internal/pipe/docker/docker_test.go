@@ -703,19 +703,6 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels: noLabels,
 			assertError:       shouldErr(`failed to link extra file 'testdata/nope.txt'`),
 		},
-		"no_matching_binaries": {
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{"whatever:latest"},
-					Goos:           "darwin",
-					Goarch:         "amd64",
-					IDs:            []string{"mybinnnn"},
-					Dockerfile:     "testdata/Dockerfile",
-				},
-			},
-			assertImageLabels: noLabels,
-			assertError:       shouldErr(`0 binaries match docker definition: [mybinnnn]: darwin_amd64_, should be 1`),
-		},
 		"multiple_binaries": {
 			dockers: []config.Docker{
 				{
@@ -806,18 +793,16 @@ func TestRunPipe(t *testing.T) {
 				}
 			}
 			for _, arch := range []string{"amd64", "386", "arm64"} {
-				for _, bin := range []string{"mybin", "anotherbin"} {
-					ctx.Artifacts.Add(&artifact.Artifact{
-						Name:   fmt.Sprintf("mynfpm_%s.apk", arch),
-						Path:   filepath.Join(dist, "mynfpm.apk"),
-						Goarch: arch,
-						Goos:   "linux",
-						Type:   artifact.LinuxPackage,
-						Extra: map[string]interface{}{
-							"ID": bin,
-						},
-					})
-				}
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   fmt.Sprintf("mynfpm_%s.apk", arch),
+					Path:   filepath.Join(dist, "mynfpm.apk"),
+					Goarch: arch,
+					Goos:   "linux",
+					Type:   artifact.LinuxPackage,
+					Extra: map[string]interface{}{
+						"ID": "mybin",
+					},
+				})
 			}
 
 			// this might fail as the image doesnt exist yet, so lets ignore the error
@@ -924,13 +909,11 @@ func TestDockerNotInPath(t *testing.T) {
 func TestDefault(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
-			Builds: []config.Build{
-				{
-					Binary: "foo",
-				},
-			},
 			Dockers: []config.Docker{
-				{},
+				{
+					IDs:    []string{"aa"},
+					Builds: []string{"foo"},
+				},
 			},
 		},
 	}
@@ -939,8 +922,7 @@ func TestDefault(t *testing.T) {
 	var docker = ctx.Config.Dockers[0]
 	require.Equal(t, "linux", docker.Goos)
 	require.Equal(t, "amd64", docker.Goarch)
-	require.Equal(t, []string{ctx.Config.Builds[0].Binary}, docker.Binaries)
-	require.Empty(t, docker.Builds)
+	require.Equal(t, []string{"aa", "foo"}, docker.IDs)
 }
 
 func TestDefaultDockerfile(t *testing.T) {
