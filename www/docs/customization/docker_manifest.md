@@ -93,6 +93,7 @@ builds:
 dockers:
 - image_templates:
   - "foo/bar:{{ .Version }}-amd64"
+  use_buildx: true
   binaries:
   - mybin
   dockerfile: Dockerfile
@@ -100,6 +101,7 @@ dockers:
   - "--platform=linux/amd64"
 - image_templates:
   - "foo/bar:{{ .Version }}-arm64v8"
+  use_buildx: true
   binaries:
   - mybin
   goarch: arm64

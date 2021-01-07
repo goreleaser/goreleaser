@@ -111,10 +111,6 @@ type Homebrew struct {
 	CustomBlock      string               `yaml:"custom_block,omitempty"`
 	IDs              []string             `yaml:"ids,omitempty"`
 	Goarm            string               `yaml:"goarm,omitempty"`
-
-	// Deprecated: in favour of Tap
-	GitHub Repo `yaml:",omitempty"`
-	GitLab Repo `yaml:",omitempty"`
 }
 
 // Scoop contains the scoop.sh section.
@@ -311,6 +307,8 @@ type NFPM struct {
 	ID          string   `yaml:",omitempty"`
 	Builds      []string `yaml:",omitempty"`
 	Formats     []string `yaml:",omitempty"`
+	Section     string   `yaml:",omitempty"`
+	Priority    string   `yaml:",omitempty"`
 	Vendor      string   `yaml:",omitempty"`
 	Homepage    string   `yaml:",omitempty"`
 	Maintainer  string   `yaml:",omitempty"`
@@ -494,6 +492,7 @@ type Docker struct {
 	SkipPush           string   `yaml:"skip_push,omitempty"`
 	Files              []string `yaml:"extra_files,omitempty"`
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
+	Buildx             bool     `yaml:"use_buildx,omitempty"`
 }
 
 // DockerManifest config.

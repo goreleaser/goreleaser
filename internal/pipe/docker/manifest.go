@@ -80,7 +80,7 @@ func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]str
 }
 
 func dockerManifestCreate(ctx *context.Context, manifest string, images, flags []string) error {
-	log.WithField("manifest", manifest).Info("creating docker manifest")
+	log.WithField("manifest", manifest).WithField("images", images).Info("creating docker manifest")
 	var args = []string{"manifest", "create", manifest}
 	for _, img := range images {
 		args = append(args, "--amend", img)

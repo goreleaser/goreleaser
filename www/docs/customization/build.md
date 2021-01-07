@@ -70,7 +70,7 @@ builds:
 
     # GOARCH to build for.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Defaults are 386 and amd64.
+    # Defaults are 386, amd64 and arm64.
     goarch:
       - amd64
       - arm

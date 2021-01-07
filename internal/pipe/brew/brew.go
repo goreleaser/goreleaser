@@ -14,7 +14,6 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -106,18 +105,6 @@ func (Pipe) Default(ctx *context.Context) error {
 			}
 			brew.Install = strings.Join(installs, "\n")
 			log.Warnf("optimistically guessing `brew[%d].install`, double check", i)
-		}
-
-		//nolint: staticcheck
-		if brew.GitHub.String() != "" {
-			deprecate.Notice(ctx, "brews.github")
-			brew.Tap.Owner = brew.GitHub.Owner
-			brew.Tap.Name = brew.GitHub.Name
-		}
-		if brew.GitLab.String() != "" {
-			deprecate.Notice(ctx, "brews.gitlab")
-			brew.Tap.Owner = brew.GitLab.Owner
-			brew.Tap.Name = brew.GitLab.Name
 		}
 		if brew.CommitAuthor.Name == "" {
 			brew.CommitAuthor.Name = "goreleaserbot"

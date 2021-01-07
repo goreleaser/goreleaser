@@ -80,6 +80,12 @@ dockers:
     # Path to the Dockerfile (from the project root).
     dockerfile: Dockerfile
 
+    # Wether to use `docker buildx build` instead of `docker build`.
+    # You probably want to set it to true when using flags like `--platform`.
+    # If true, will also add `--load` to the build flags.
+    # Defaults to false.
+    use_buildx: true
+
     # Template of the docker build flags.
     build_flag_templates:
     - "--pull"
@@ -88,6 +94,7 @@ dockers:
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
     - "--build-arg=FOO={{.Env.Bar}}"
+    - "--platform=linux/arm64"
 
     # If your Dockerfile copies files other than the binary itself,
     # you should list them here as well.
@@ -104,6 +111,9 @@ dockers:
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
+
+!!! tip
+    You can also create multi-platform images using the [docker_manifests](/customization/docker_manifest/) config.
 
 These settings should allow you to generate multiple Docker images,
 for example, using multiple `FROM` statements,
