@@ -11,6 +11,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -42,19 +43,13 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Dockerfile == "" {
 			docker.Dockerfile = "Dockerfile"
 		}
+		if len(docker.Binaries) > 0 {
+			deprecate.Notice(ctx, "docker.binaries")
+		}
 		for _, f := range docker.Files {
 			if f == "." || strings.HasPrefix(f, ctx.Config.Dist) {
 				return fmt.Errorf("invalid docker.files: can't be . or inside dist folder: %s", f)
 			}
-		}
-	}
-	// only set defaults if there is exactly 1 docker setup in the config file.
-	if len(ctx.Config.Dockers) != 1 {
-		return nil
-	}
-	if len(ctx.Config.Dockers[0].Binaries) == 0 {
-		ctx.Config.Dockers[0].Binaries = []string{
-			ctx.Config.Builds[0].Binary,
 		}
 	}
 	return nil
@@ -91,45 +86,22 @@ func doRun(ctx *context.Context) error {
 	for _, docker := range ctx.Config.Dockers {
 		docker := docker
 		g.Go(func() error {
-			log.WithField("docker", docker).Debug("looking for binaries matching")
-			var binaryNames = make([]string, len(docker.Binaries))
-			for i := range docker.Binaries {
-				bin, err := tmpl.New(ctx).Apply(docker.Binaries[i])
-				if err != nil {
-					return fmt.Errorf("failed to execute binary template '%s': %w", docker.Binaries[i], err)
-				}
-				binaryNames[i] = bin
-			}
+			log.WithField("docker", docker).Debug("looking for binaries and packages matching")
 			var filters = []artifact.Filter{
 				artifact.ByGoos(docker.Goos),
 				artifact.ByGoarch(docker.Goarch),
 				artifact.ByGoarm(docker.Goarm),
-				artifact.ByType(artifact.Binary),
-				func(a *artifact.Artifact) bool {
-					for _, bin := range binaryNames {
-						if a.ExtraOr("Binary", "").(string) == bin {
-							return true
-						}
-					}
-					return false
-				},
+				artifact.Or(
+					artifact.ByType(artifact.Binary),
+					artifact.ByType(artifact.LinuxPackage),
+				),
 			}
 			if len(docker.Builds) > 0 {
 				filters = append(filters, artifact.ByIDs(docker.Builds...))
 			}
-			var binaries = ctx.Artifacts.Filter(artifact.And(filters...)).List()
-			// TODO: not so good of a check, if one binary match multiple
-			// binaries and the other match none, this will still pass...
-			log.WithField("binaries", binaries).Debug("found binaries")
-			if len(binaries) != len(docker.Binaries) {
-				return fmt.Errorf(
-					"%d binaries match docker definition: %v: %s_%s_%s, should be %d",
-					len(binaries),
-					binaryNames, docker.Goos, docker.Goarch, docker.Goarm,
-					len(docker.Binaries),
-				)
-			}
-			return process(ctx, docker, binaries)
+			var packages = ctx.Artifacts.Filter(artifact.And(filters...)).List()
+			log.WithField("packages", packages).Debug("found packages")
+			return process(ctx, docker, packages)
 		})
 	}
 	return g.Wait()

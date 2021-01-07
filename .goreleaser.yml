@@ -1,21 +1,21 @@
 env:
   - GO111MODULE=on
   - GOPROXY=https://gocenter.io
-before:
-  hooks:
-    - go mod download
-    - ./scripts/completions.sh
+#before:
+#  hooks:
+#    - go mod download
+#    - ./scripts/completions.sh
 builds:
 - env:
     - CGO_ENABLED=0
   goos:
     - linux
-    - darwin
-    - windows
+#    - darwin
+#    - windows
   goarch:
-    - 386
+#    - 386
     - amd64
-    - arm
+#    - arm
     - arm64
   mod_timestamp: '{{ .CommitTimestamp }}'
   flags:
@@ -39,8 +39,6 @@ dockers:
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
   dockerfile: Dockerfile
   use_buildx: true
-  binaries:
-  - goreleaser
   build_flag_templates:
   - "--pull"
   - "--label=org.opencontainers.image.created={{.Date}}"
@@ -56,8 +54,6 @@ dockers:
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
   dockerfile: Dockerfile
   use_buildx: true
-  binaries:
-  - goreleaser
   build_flag_templates:
   - "--pull"
   - "--label=org.opencontainers.image.created={{.Date}}"
