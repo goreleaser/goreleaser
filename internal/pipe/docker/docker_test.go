@@ -721,13 +721,13 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/multiple:latest",
 			},
 		},
-		"nfpm": {
+		"nfpm and multiple binaries": {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{registry + "goreleaser/nfpm:latest"},
 					Goos:           "linux",
 					Goarch:         "amd64",
-					IDs:            []string{"mybin"},
+					IDs:            []string{"mybin", "anotherbin"},
 					Dockerfile:     "testdata/Dockerfile.nfpm",
 				},
 			},
@@ -739,7 +739,7 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/nfpm:latest",
 			},
 		},
-		"nfpm multiple binaries on arm64": {
+		"nfpm and multiple binaries on arm64": {
 			dockers: []config.Docker{
 				{
 					ImageTemplates: []string{registry + "goreleaser/nfpm_arm:latest"},
