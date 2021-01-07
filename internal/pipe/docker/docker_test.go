@@ -715,11 +715,11 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`/tmp/wont-exist: no such file or directory`),
+			assertError:       shouldErr(`/wont-exist: no such file or directory`),
 			extraPrepare: func(ctx *context.Context) {
 				ctx.Artifacts.Add(&artifact.Artifact{
 					Name:   "wont-exist",
-					Path:   "/tmp/wont-exist",
+					Path:   "wont-exist",
 					Goarch: "amd64",
 					Goos:   "linux",
 					Type:   artifact.Binary,
