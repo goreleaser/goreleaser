@@ -24,23 +24,22 @@ goreleaser check
 Change this:
 
 === "Before"
-```yaml
-dockers:
--
-  builds:
-    - a
-    - b
-```
+    ```yaml
+    dockers:
+    -
+      builds:
+        - a
+        - b
+    ```
 
 === "After"
-```yaml
-dockers:
-  -
-    ids:
-      - a
-      - b
-```
-
+    ```yaml
+    dockers:
+      -
+        ids:
+          - a
+          - b
+    ```
 
 ### docker.binaries
 
