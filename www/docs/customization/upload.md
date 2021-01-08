@@ -164,7 +164,7 @@ uploads:
     # A map of custom headers e.g. to support required content types or auth schemes.
     # Default is empty.
     custom_headers:
-      JOB-TOKEN: {{ .Env.CI_JOB_TOKEN }}
+      JOB-TOKEN: "{{ .Env.CI_JOB_TOKEN }}"
 
     # Upload checksums (defaults to false)
     checksum: true
