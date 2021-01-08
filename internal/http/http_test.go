@@ -484,6 +484,36 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"x-custom-header-name": "custom-header-value"}}),
 		},
+		{"custom-headers-with-template", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:     ModeBinary,
+					Name:     "a",
+					Target:   s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username: "u2",
+					CustomHeaders: map[string]string{
+						"x-project-name": "{{ .ProjectName }}",
+					},
+					TrustedCerts: cert(s),
+				}
+			},
+			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"x-project-name": "blah"}}),
+		},
+		{"invalid-template-in-custom-headers", true, true, true, true,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:     ModeBinary,
+					Name:     "a",
+					Target:   s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username: "u2",
+					CustomHeaders: map[string]string{
+						"x-custom-header-name": "{{ .Env.NONEXISTINGVARIABLE and some bad expressions }}",
+					},
+					TrustedCerts: cert(s),
+				}
+			},
+			checks(),
+		},
 	}
 
 	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Upload), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {

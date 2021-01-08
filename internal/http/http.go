@@ -242,7 +242,17 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	var headers = map[string]string{}
 	if upload.CustomHeaders != nil {
 		for name, value := range upload.CustomHeaders {
-			headers[name] = value
+			resolvedValue, err := resolveHeaderTemplate(ctx, upload, artifact, value)
+			if err != nil {
+				msg := fmt.Sprintf("%s: failed to resolve custom_headers template", kind)
+				log.WithError(err).WithFields(log.Fields{
+					"instance":     upload.Name,
+					"header_name":  name,
+					"header_value": value,
+				}).Error(msg)
+				return fmt.Errorf("%s: %w", msg, err)
+			}
+			headers[name] = resolvedValue
 		}
 	}
 	if upload.ChecksumHeader != "" {
@@ -366,4 +376,17 @@ func resolveTargetTemplate(ctx *context.Context, upload *config.Upload, artifact
 	return tmpl.New(ctx).
 		WithArtifact(artifact, replacements).
 		Apply(upload.Target)
+}
+
+// resolveHeaderTemplate returns the resolved custom header template with replaced variables
+// Those variables can be replaced by the given context, goos, goarch, goarm and more.
+func resolveHeaderTemplate(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact, headerValue string) (string, error) {
+	var replacements = map[string]string{}
+	if upload.Mode == ModeBinary {
+		// TODO: multiple archives here
+		replacements = ctx.Config.Archives[0].Replacements
+	}
+	return tmpl.New(ctx).
+		WithArtifact(artifact, replacements).
+		Apply(headerValue)
 }
