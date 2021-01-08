@@ -134,7 +134,7 @@ nfpms:
       - src: ./completions/goreleaser.fish
         dst: /usr/share/fish/completions/goreleaser.fish
       - src: ./completions/goreleaser.zsh
-        dst: /usr/share/zsh/vendor-completions/_goreleaser
+        dst: /usr/local/share/zsh/site-functions/_goreleaser
     formats:
     - apk
     - deb
