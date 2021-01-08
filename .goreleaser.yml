@@ -128,6 +128,13 @@ nfpms:
     maintainer: Carlos Alexandro Becker <root@carlosbecker.com>
     license: MIT
     vendor: GoReleaser
+    contents:
+      - src: ./completions/goreleaser.bash
+        dst: /etc/bash_completion.d/goreleaser
+      - src: ./completions/goreleaser.fish
+        dst: /usr/share/fish/completions/goreleaser.fish
+      - src: ./completions/goreleaser.zsh
+        dst: /usr/local/share/zsh/site-functions/_goreleaser
     formats:
     - apk
     - deb
