@@ -24,6 +24,7 @@ func TestDescription(t *testing.T) {
 }
 
 func createFakeBinary(t *testing.T, dist, arch, bin string) {
+	t.Helper()
 	var path = filepath.Join(dist, arch, bin)
 	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0755))
 	_, err := os.Create(path)
@@ -31,10 +32,9 @@ func createFakeBinary(t *testing.T, dist, arch, bin string) {
 }
 
 func TestRunPipe(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	for _, format := range []string{"tar.gz", "zip"} {
-		t.Run("Archive format "+format, func(tt *testing.T) {
+		t.Run("Archive format "+format, func(t *testing.T) {
 			var dist = filepath.Join(folder, format+"_dist")
 			require.NoError(t, os.Mkdir(dist, 0755))
 			for _, arch := range []string{"darwinamd64", "linux386", "linuxarm7", "linuxmipssoftfloat"} {
@@ -137,7 +137,7 @@ func TestRunPipe(t *testing.T) {
 			ctx.Version = "0.0.1"
 			ctx.Git.CurrentTag = "v0.0.1"
 			ctx.Config.Archives[0].Format = format
-			require.NoError(tt, Pipe{}.Run(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
 			var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
 			for _, arch := range archives {
 				require.Equal(t, "myid", arch.Extra["ID"].(string), "all archives should have the archive ID set")
@@ -180,8 +180,7 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeDifferentBinaryCount(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	for _, arch := range []string{"darwinamd64", "linuxamd64"} {
@@ -252,8 +251,7 @@ func TestRunPipeDifferentBinaryCount(t *testing.T) {
 }
 
 func TestRunPipeNoBinaries(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	var ctx = context.New(config.Project{
@@ -267,6 +265,7 @@ func TestRunPipeNoBinaries(t *testing.T) {
 }
 
 func zipFiles(t *testing.T, path string) []string {
+	t.Helper()
 	f, err := os.Open(path)
 	require.NoError(t, err)
 	info, err := f.Stat()
@@ -281,6 +280,7 @@ func zipFiles(t *testing.T, path string) []string {
 }
 
 func tarFiles(t *testing.T, path string) []string {
+	t.Helper()
 	f, err := os.Open(path)
 	require.NoError(t, err)
 	defer f.Close()
@@ -301,8 +301,7 @@ func tarFiles(t *testing.T, path string) []string {
 }
 
 func TestRunPipeBinary(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
@@ -390,8 +389,7 @@ func TestRunPipeDistRemoved(t *testing.T) {
 }
 
 func TestRunPipeInvalidGlob(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
@@ -428,8 +426,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
@@ -463,8 +460,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 }
 
 func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
@@ -501,8 +497,7 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 }
 
 func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
@@ -537,8 +532,7 @@ func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
 }
 
 func TestRunPipeWrap(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
@@ -670,8 +664,7 @@ func TestFormatFor(t *testing.T) {
 }
 
 func TestBinaryOverride(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
@@ -683,7 +676,7 @@ func TestBinaryOverride(t *testing.T) {
 	_, err = os.Create(filepath.Join(folder, "README.md"))
 	require.NoError(t, err)
 	for _, format := range []string{"tar.gz", "zip"} {
-		t.Run("Archive format "+format, func(tt *testing.T) {
+		t.Run("Archive format "+format, func(t *testing.T) {
 			var ctx = context.New(
 				config.Project{
 					Dist:        dist,
@@ -732,24 +725,23 @@ func TestBinaryOverride(t *testing.T) {
 			ctx.Version = "0.0.1"
 			ctx.Config.Archives[0].Format = format
 
-			require.NoError(tt, Pipe{}.Run(ctx))
+			require.NoError(t, Pipe{}.Run(ctx))
 			var archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive))
 			darwin := archives.Filter(artifact.ByGoos("darwin")).List()[0]
-			require.Equal(tt, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
-			require.Equal(tt, format, darwin.ExtraOr("Format", ""))
-			require.Empty(tt, darwin.ExtraOr("WrappedIn", ""))
+			require.Equal(t, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
+			require.Equal(t, format, darwin.ExtraOr("Format", ""))
+			require.Empty(t, darwin.ExtraOr("WrappedIn", ""))
 
 			archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
 			windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
-			require.Equal(tt, "foobar_0.0.1_windows_amd64.exe", windows.Name)
-			require.Empty(tt, windows.ExtraOr("WrappedIn", ""))
+			require.Equal(t, "foobar_0.0.1_windows_amd64.exe", windows.Name)
+			require.Empty(t, windows.ExtraOr("WrappedIn", ""))
 		})
 	}
 }
 
 func TestRunPipeSameArchiveFilename(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
@@ -806,18 +798,19 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 }
 
 func TestDuplicateFilesInsideArchive(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
+	var folder = t.TempDir()
+
+	f, err := ioutil.TempFile(folder, "")
 	require.NoError(t, err)
 	defer f.Close()
-	defer os.Remove(f.Name())
 
-	ff, err := ioutil.TempFile("", "")
+	ff, err := ioutil.TempFile(folder, "")
 	require.NoError(t, err)
 	defer ff.Close()
-	defer os.Remove(ff.Name())
 
 	a := NewEnhancedArchive(archive.New(f), "")
 	defer a.Close()
+
 	require.NoError(t, a.Add("foo", ff.Name()))
 	require.EqualError(t, a.Add("foo", ff.Name()), "file foo already exists in the archive")
 }

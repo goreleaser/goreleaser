@@ -63,8 +63,7 @@ func TestPipeDescription(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var config = config.Project{
 		Dist: folder,
 		Builds: []config.Build{
@@ -92,8 +91,7 @@ func TestBuild(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var config = config.Project{
 		Dist: folder,
 		Builds: []config.Build{
@@ -115,8 +113,7 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunFullPipe(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var pre = filepath.Join(folder, "pre")
 	var post = filepath.Join(folder, "post")
 	var config = config.Project{
@@ -152,8 +149,7 @@ func TestRunFullPipe(t *testing.T) {
 }
 
 func TestRunFullPipeFail(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var pre = filepath.Join(folder, "pre")
 	var post = filepath.Join(folder, "post")
 	var config = config.Project{
@@ -184,8 +180,7 @@ func TestRunFullPipeFail(t *testing.T) {
 }
 
 func TestRunPipeFailingHooks(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var cfg = config.Project{
 		Dist: folder,
 		Builds: []config.Build{
@@ -221,8 +216,7 @@ func TestDefaultNoBuilds(t *testing.T) {
 }
 
 func TestDefaultFail(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var config = config.Project{
 		Dist: folder,
 		Builds: []config.Build{
@@ -270,7 +264,7 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	require.Equal(t, ".", build.Dir)
 	require.Equal(t, ".", build.Main)
 	require.Equal(t, []string{"linux", "darwin"}, build.Goos)
-	require.Equal(t, []string{"amd64", "386"}, build.Goarch)
+	require.Equal(t, []string{"amd64", "arm64", "386"}, build.Goarch)
 	require.Equal(t, []string{"6"}, build.Goarm)
 	require.Len(t, build.Ldflags, 1)
 	require.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser", build.Ldflags[0])
@@ -340,7 +334,7 @@ func TestDefaultPartialBuilds(t *testing.T) {
 		require.Equal(t, ".", build.Dir)
 		require.Equal(t, "./cmd/main.go", build.Main)
 		require.Equal(t, []string{"linux"}, build.Goos)
-		require.Equal(t, []string{"amd64", "386"}, build.Goarch)
+		require.Equal(t, []string{"amd64", "arm64", "386"}, build.Goarch)
 		require.Equal(t, []string{"6"}, build.Goarm)
 		require.Len(t, build.Ldflags, 1)
 		require.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser", build.Ldflags[0])
@@ -359,8 +353,7 @@ func TestDefaultPartialBuilds(t *testing.T) {
 }
 
 func TestDefaultFillSingleBuild(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -376,8 +369,7 @@ func TestDefaultFillSingleBuild(t *testing.T) {
 }
 
 func TestDefaultFailSingleBuild(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var config = config.Project{
 		Dist: folder,
 		SingleBuild: config.Build{
@@ -390,8 +382,7 @@ func TestDefaultFailSingleBuild(t *testing.T) {
 }
 
 func TestSkipBuild(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var config = config.Project{
 		Dist: folder,
 		Builds: []config.Build{
@@ -446,8 +437,7 @@ func TestTemplate(t *testing.T) {
 }
 
 func TestRunHookEnvs(t *testing.T) {
-	tmp, back := testlib.Mktmp(t)
-	defer back()
+	var tmp = testlib.Mktmp(t)
 
 	var build = config.Build{
 		Env: []string{
@@ -631,9 +621,7 @@ touch "$BAR"`
 }
 
 func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
-	tmpDir, back := testlib.Mktmp(t)
-	defer back()
-
+	var tmpDir = testlib.Mktmp(t)
 	build := config.Build{
 		Lang:   "fake",
 		Goarch: []string{"amd64"},
@@ -664,8 +652,7 @@ func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
 }
 
 func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
-	tmpDir, back := testlib.Mktmp(t)
-	defer back()
+	var tmpDir = testlib.Mktmp(t)
 
 	build := config.Build{
 		Lang:   "fake",
@@ -717,8 +704,7 @@ func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
 }
 
 func TestBuildOptionsForTarget(t *testing.T) {
-	tmpDir, back := testlib.Mktmp(t)
-	defer back()
+	var tmpDir = testlib.Mktmp(t)
 
 	testCases := []struct {
 		name  string
@@ -775,8 +761,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 }
 
 func TestHookComplex(t *testing.T) {
-	tmp, back := testlib.Mktmp(t)
-	defer back()
+	var tmp = testlib.Mktmp(t)
 
 	require.NoError(t, runHook(context.New(config.Project{}), api.Options{}, []string{}, config.BuildHooks{
 		{
@@ -800,8 +785,7 @@ func TestHookInvalidShelCommand(t *testing.T) {
 }
 
 func TestRunHookFailWithLogs(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	var config = config.Project{
 		Dist: folder,
 		Builds: []config.Build{

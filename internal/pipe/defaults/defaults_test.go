@@ -14,8 +14,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestFillBasicData(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
@@ -44,8 +43,7 @@ func TestFillBasicData(t *testing.T) {
 }
 
 func TestFillPartial(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
@@ -97,7 +95,6 @@ func TestFillPartial(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Len(t, ctx.Config.Archives[0].Files, 1)
 	require.Equal(t, `bin.install "testreleaser"`, ctx.Config.Brews[0].Install)
-	require.NotEmpty(t, ctx.Config.Dockers[0].Binaries)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Goos)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Goarch)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)

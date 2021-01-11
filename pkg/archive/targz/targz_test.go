@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -13,8 +12,7 @@ import (
 )
 
 func TestTarGzFile(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "")
-	require.NoError(t, err)
+	var tmp = t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.tar.gz"))
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck

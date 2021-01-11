@@ -1,0 +1,4 @@
+FROM alpine
+ADD mybin_*.apk /
+ADD mybin /
+ADD anotherbin /

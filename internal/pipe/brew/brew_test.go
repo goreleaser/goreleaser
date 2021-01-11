@@ -63,6 +63,7 @@ var defaultTemplateData = templateData{
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
+	t.Helper()
 	require.Contains(t, formulae, "class Test < Formula")
 	require.Contains(t, formulae, `homepage "https://google.com"`)
 	require.Contains(t, formulae, `url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`)
@@ -174,8 +175,7 @@ func TestRunPipe(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			folder, err := ioutil.TempDir("", "goreleasertest")
-			require.NoError(t, err)
+			var folder = t.TempDir()
 			var ctx = &context.Context{
 				Git: context.GitInfo{
 					CurrentTag: "v1.0.1",
@@ -232,7 +232,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			})
 
-			_, err = os.Create(path)
+			_, err := os.Create(path)
 			require.NoError(t, err)
 			client := &DummyClient{}
 			var distFile = filepath.Join(folder, name+".rb")
@@ -255,8 +255,7 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeNameTemplate(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var ctx = &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.1",
@@ -297,7 +296,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		},
 	})
 
-	_, err = os.Create(path)
+	_, err := os.Create(path)
 	require.NoError(t, err)
 	client := &DummyClient{}
 	var distFile = filepath.Join(folder, "foo_is_bar.rb")
@@ -318,8 +317,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 }
 
 func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var ctx = &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.1",
@@ -382,7 +380,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 		},
 	})
 
-	_, err = os.Create(path)
+	_, err := os.Create(path)
 	require.NoError(t, err)
 
 	var cli = &DummyClient{}
@@ -409,8 +407,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			ctx.Config.Brews[0].Goarm = "7"
 		},
 	} {
-		folder, err := ioutil.TempDir("", "goreleasertest")
-		require.NoError(t, err)
+		var folder = t.TempDir()
 		var ctx = &context.Context{
 			TokenType: context.TokenTypeGitHub,
 			Git: context.GitInfo{
@@ -558,9 +555,9 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 	)
 
 	ctx.TokenType = context.TokenTypeGitHub
-	f, err := ioutil.TempFile("", "")
+	f, err := ioutil.TempFile(t.TempDir(), "")
 	require.NoError(t, err)
-	defer f.Close()
+	t.Cleanup(func() { f.Close() })
 
 	tests := []struct {
 		expectedError error
@@ -723,8 +720,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
@@ -741,7 +737,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
-	_, err = os.Create(path)
+	_, err := os.Create(path)
 	require.NoError(t, err)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
@@ -760,23 +756,22 @@ func TestRunPipeNoUpload(t *testing.T) {
 		testlib.AssertSkipped(t, doRun(ctx, ctx.Config.Brews[0], client))
 		require.False(t, client.CreatedFile)
 	}
-	t.Run("skip upload", func(tt *testing.T) {
+	t.Run("skip upload", func(t *testing.T) {
 		ctx.Config.Release.Draft = false
 		ctx.Config.Brews[0].SkipUpload = "true"
 		ctx.SkipPublish = false
-		assertNoPublish(tt)
+		assertNoPublish(t)
 	})
-	t.Run("skip publish", func(tt *testing.T) {
+	t.Run("skip publish", func(t *testing.T) {
 		ctx.Config.Release.Draft = false
 		ctx.Config.Brews[0].SkipUpload = "false"
 		ctx.SkipPublish = true
-		assertNoPublish(tt)
+		assertNoPublish(t)
 	})
 }
 
 func TestRunEmptyTokenType(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
@@ -792,7 +787,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 	})
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
-	_, err = os.Create(path)
+	_, err := os.Create(path)
 	require.NoError(t, err)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
@@ -810,8 +805,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 }
 
 func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var ctx = context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
@@ -828,7 +822,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 	ctx.TokenType = context.TokenTypeGitea
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
-	_, err = os.Create(path)
+	_, err := os.Create(path)
 	require.NoError(t, err)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
@@ -846,8 +840,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 }
 
 func TestDefaultBinInstallUniqueness(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 
 	var ctx = &context.Context{
 		TokenType: context.TokenTypeGitHub,
@@ -877,8 +870,7 @@ func TestDefaultBinInstallUniqueness(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 
 	var ctx = &context.Context{
 		TokenType: context.TokenTypeGitHub,

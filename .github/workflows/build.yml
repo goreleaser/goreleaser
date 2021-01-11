@@ -20,11 +20,15 @@ jobs:
         with:
           fetch-depth: 0
       -
-        name: Allow arm64 builds
-        run: sudo docker run --privileged linuxkit/binfmt:v0.7
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
       -
         name: Set up Snapcraft
         run: |
+          sudo apt-get update
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
       -
         name: Set up Go
@@ -49,7 +53,7 @@ jobs:
           make ci
       -
         name: Upload coverage
-        uses: codecov/codecov-action@v1.0.15
+        uses: codecov/codecov-action@v1.2.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.txt

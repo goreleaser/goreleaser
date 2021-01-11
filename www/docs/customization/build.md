@@ -70,7 +70,7 @@ builds:
 
     # GOARCH to build for.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Defaults are 386 and amd64.
+    # Defaults are 386, amd64 and arm64.
     goarch:
       - amd64
       - arm
@@ -132,7 +132,7 @@ builds:
 Here is an example with multiple binaries:
 
 ```yaml
-# goreleaser.yml
+# .goreleaser.yml
 builds:
   - main: ./cmd/cli/cli.go
     id: "cli"
@@ -254,7 +254,7 @@ Environment variables are inherited and overridden in the following order:
  very likely to fail.
 
  You can solve this by running `go mod download` before calling `goreleaser` or
- by adding a [hook][] doing that on your `.goreleaser.yaml` file:
+ by adding a [hook][] doing that on your `.goreleaser.yml` file:
 
  ```yaml
  before:

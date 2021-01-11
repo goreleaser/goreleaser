@@ -3,7 +3,6 @@ package zip
 import (
 	"archive/zip"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,8 +11,7 @@ import (
 )
 
 func TestZipFile(t *testing.T) {
-	tmp, err := ioutil.TempDir("", "")
-	require.NoError(t, err)
+	var tmp = t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.zip"))
 	require.NoError(t, err)
 	fmt.Println(f.Name())

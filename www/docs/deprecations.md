@@ -15,60 +15,205 @@ goreleaser check
 
 ## Active deprecation notices
 
-### brews.github
+### docker.builds
 
-> since 2020-07-06 (v0.139.0)
+> since 2021-01-07 (v0.154.0)
 
-GitHub section was deprecated in favour of `tap` which
-reflects Homebrew's naming convention. GitHub will be picked
-automatically when GitHub token is passed.
+`builds` is deprecated in favor of `ids`, since now it also allows to copy nfpm packages:
 
 Change this:
 
 === "Before"
     ```yaml
-    brews:
+    dockers:
       -
-        github:
-          owner: goreleaser
-          name: homebrew-tap
+        builds: ['a', 'b']
     ```
 
 === "After"
     ```yaml
-    brews:
+    dockers:
       -
-        tap:
-          owner: goreleaser
-          name: homebrew-tap
+        ids: ['a', 'b']
     ```
 
-### brews.gitlab
+### docker.binaries
 
-> since 2020-07-06 (v0.139.0)
+> since 2021-01-07 (v0.154.0)
 
-GitLab section was deprecated in favour of `tap` which
-reflects Homebrew's naming convention. GitLab will be picked
-automatically when GitLab token is passed.
+`binaries` is deprecated and now does nothing.
+If you want to filter something out, use the `ids` property.
 
 Change this:
 
 === "Before"
     ```yaml
-    brews:
+    dockers:
       -
-        gitlab:
-          owner: goreleaser
-          name: homebrew-tap
+        binaries: ['foo']
     ```
 
 === "After"
     ```yaml
-    brews:
+    dockers:
       -
-        tap:
-          owner: goreleaser
-          name: homebrew-tap
+        ids: ['foo']
+    ```
+
+### nfpms.files
+
+> since 2020-12-21 (v0.149.0)
+
+`files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        files:
+          foo: bar
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - src: foo
+            dst: bar
+    ```
+
+### nfpms.config_files
+
+> since 2020-12-21 (v0.149.0)
+
+`config_files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        config_files:
+          foo: bar
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - src: foo
+            dst: bar
+            type: config
+    ```
+
+### nfpms.symlinks
+
+> since 2020-12-21 (v0.149.0)
+
+`symlinks` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        symlinks:
+          foo: bar
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - src: foo
+            dst: bar
+            type: symlink
+    ```
+
+### nfpms.rpm.ghost_files
+
+> since 2020-12-21 (v0.149.0)
+
+`rpm.ghost_files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        rpm:
+          ghost_files:
+            - foo
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - dst: bar
+            type: ghost
+            packager: rpm # optional
+    ```
+
+### nfpms.rpm.config_noreplace_files
+
+> since 2020-12-21 (v0.149.0)
+
+`rpm.config_noreplace_files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        rpm:
+          config_noreplace_files:
+            foo: bar
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - src: foo
+            dst: bar
+            type: config|noreplace
+            packager: rpm # optional
+    ```
+
+
+### nfpms.deb.version_metadata
+
+> since 2020-12-21 (v0.149.0)
+
+`deb.version_metadata` is deprecated in favor of `version_metadata` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        deb:
+          version_metadata: beta1
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        version_metadata: beta1
     ```
 
 <!--
@@ -97,6 +242,62 @@ Description.
 ## Expired deprecation notices
 
 The following options were deprecated in the past and were already removed.
+
+### brews.github
+
+> since 2020-07-06 (v0.139.0), removed 2021-01-04 (v0.152.0)
+
+GitHub section was deprecated in favour of `tap` which
+reflects Homebrew's naming convention. GitHub will be picked
+automatically when GitHub token is passed.
+
+Change this:
+
+=== "Before"
+    ```yaml
+    brews:
+      -
+        github:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
+
+=== "After"
+    ```yaml
+    brews:
+      -
+        tap:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
+
+### brews.gitlab
+
+> since 2020-07-06 (v0.139.0), removed 2021-01-04 (v0.152.0)
+
+GitLab section was deprecated in favour of `tap` which
+reflects Homebrew's naming convention. GitLab will be picked
+automatically when GitLab token is passed.
+
+Change this:
+
+=== "Before"
+    ```yaml
+    brews:
+      -
+        gitlab:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
+
+=== "After"
+    ```yaml
+    brews:
+      -
+        tap:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
 
 ### puts
 
@@ -383,7 +584,7 @@ FPM is deprecated in favor of nfpm, which is a simpler alternative written
 in Go. The objective is to remove the ruby dependency thus simplify the
 CI/CD pipelines.
 
-Just replace the `fpm` keyword by `nfpm` in your `goreleaser.yaml` file.
+Just replace the `fpm` keyword by `nfpm` in your `.goreleaser.yml` file.
 
 === "Before"
     ```yaml

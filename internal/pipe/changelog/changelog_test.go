@@ -74,8 +74,7 @@ func TestSnapshot(t *testing.T) {
 }
 
 func TestChangelog(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
 	testlib.GitTag(t, "v0.0.1")
@@ -118,8 +117,7 @@ func TestChangelog(t *testing.T) {
 }
 
 func TestChangelogPreviousTagEnv(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
 	testlib.GitTag(t, "v0.0.1")
@@ -142,8 +140,7 @@ func TestChangelogPreviousTagEnv(t *testing.T) {
 }
 
 func TestChangelogForGitlab(t *testing.T) {
-	folder, back := testlib.Mktmp(t)
-	defer back()
+	var folder = testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
 	testlib.GitTag(t, "v0.0.1")
@@ -187,8 +184,7 @@ func TestChangelogForGitlab(t *testing.T) {
 }
 
 func TestChangelogSort(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "whatever")
 	testlib.GitTag(t, "v0.9.9")
@@ -254,8 +250,7 @@ func TestChangelogInvalidSort(t *testing.T) {
 }
 
 func TestChangelogOfFirstRelease(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	var msgs = []string{
 		"initial commit",
@@ -277,8 +272,7 @@ func TestChangelogOfFirstRelease(t *testing.T) {
 }
 
 func TestChangelogFilterInvalidRegex(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "commitssss")
 	testlib.GitTag(t, "v0.0.3")
@@ -298,8 +292,7 @@ func TestChangelogFilterInvalidRegex(t *testing.T) {
 }
 
 func TestChangelogNoTags(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "first")
 	var ctx = context.New(config.Project{})
@@ -308,8 +301,7 @@ func TestChangelogNoTags(t *testing.T) {
 }
 
 func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	var msgs = []string{
 		"initial commit",
@@ -334,8 +326,7 @@ func TestChangelogOnBranchWithSameNameAsTag(t *testing.T) {
 func TestChangeLogWithReleaseHeader(t *testing.T) {
 	current, err := os.Getwd()
 	require.NoError(t, err)
-	tmpdir, back := testlib.Mktmp(t)
-	defer back()
+	var tmpdir = testlib.Mktmp(t)
 	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
 	testlib.GitInit(t)
 	var msgs = []string{
@@ -360,8 +351,7 @@ func TestChangeLogWithReleaseHeader(t *testing.T) {
 func TestChangeLogWithTemplatedReleaseHeader(t *testing.T) {
 	current, err := os.Getwd()
 	require.NoError(t, err)
-	tmpdir, back := testlib.Mktmp(t)
-	defer back()
+	var tmpdir = testlib.Mktmp(t)
 	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
 	testlib.GitInit(t)
 	var msgs = []string{
@@ -385,8 +375,7 @@ func TestChangeLogWithTemplatedReleaseHeader(t *testing.T) {
 func TestChangeLogWithReleaseFooter(t *testing.T) {
 	current, err := os.Getwd()
 	require.NoError(t, err)
-	tmpdir, back := testlib.Mktmp(t)
-	defer back()
+	var tmpdir = testlib.Mktmp(t)
 	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
 	testlib.GitInit(t)
 	var msgs = []string{
@@ -412,8 +401,7 @@ func TestChangeLogWithReleaseFooter(t *testing.T) {
 func TestChangeLogWithTemplatedReleaseFooter(t *testing.T) {
 	current, err := os.Getwd()
 	require.NoError(t, err)
-	tmpdir, back := testlib.Mktmp(t)
-	defer back()
+	var tmpdir = testlib.Mktmp(t)
 	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
 	testlib.GitInit(t)
 	var msgs = []string{
@@ -439,8 +427,7 @@ func TestChangeLogWithTemplatedReleaseFooter(t *testing.T) {
 func TestChangeLogWithoutReleaseFooter(t *testing.T) {
 	current, err := os.Getwd()
 	require.NoError(t, err)
-	tmpdir, back := testlib.Mktmp(t)
-	defer back()
+	var tmpdir = testlib.Mktmp(t)
 	require.NoError(t, os.Symlink(current+"/testdata", tmpdir+"/testdata"))
 	testlib.GitInit(t)
 	var msgs = []string{

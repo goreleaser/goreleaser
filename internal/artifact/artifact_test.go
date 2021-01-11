@@ -155,8 +155,7 @@ func TestGroupByPlatform(t *testing.T) {
 }
 
 func TestChecksum(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	var folder = t.TempDir()
 	var file = filepath.Join(folder, "subject")
 	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
 
@@ -191,8 +190,9 @@ func TestChecksumFileDoesntExist(t *testing.T) {
 }
 
 func TestInvalidAlgorithm(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
+	f, err := ioutil.TempFile(t.TempDir(), "")
 	require.NoError(t, err)
+	t.Cleanup(func() { f.Close() })
 	var artifact = Artifact{
 		Path: f.Name(),
 	}
@@ -312,4 +312,15 @@ func TestTypeToString(t *testing.T) {
 	t.Run("unknown", func(t *testing.T) {
 		require.Equal(t, "unknown", Type(9999).String())
 	})
+}
+
+func TestPaths(t *testing.T) {
+	var paths = []string{"a/b", "b/c", "d/e", "f/g"}
+	var artifacts = New()
+	for _, a := range paths {
+		artifacts.Add(&Artifact{
+			Path: a,
+		})
+	}
+	require.ElementsMatch(t, paths, artifacts.Paths())
 }

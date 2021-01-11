@@ -364,8 +364,9 @@ func (s *GiteaUploadSuite) SetupTest() {
 	t := s.T()
 	s.GiteaReleasesTestSuite.SetupTest()
 	s.artifact = &artifact.Artifact{Name: "ArtifactName"}
-	file, err := ioutil.TempFile("", "gitea_test_tempfile")
+	file, err := ioutil.TempFile(t.TempDir(), "gitea_test_tempfile")
 	require.NoError(t, err)
+	t.Cleanup(func() { file.Close() })
 	require.NotNil(t, file)
 	s.file = file
 	s.releaseAttachmentsURL = fmt.Sprintf("%v/assets", s.releaseURL)

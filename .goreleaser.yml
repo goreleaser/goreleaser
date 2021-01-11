@@ -37,13 +37,8 @@ dockers:
 - image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
-  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
-  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
-  - 'goreleaser/goreleaser:latest-amd64'
-  - 'ghcr.io/goreleaser/goreleaser:latest-amd64'
   dockerfile: Dockerfile
-  binaries:
-  - goreleaser
+  use_buildx: true
   build_flag_templates:
   - "--pull"
   - "--label=org.opencontainers.image.created={{.Date}}"
@@ -51,20 +46,14 @@ dockers:
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
   - "--label=org.opencontainers.image.source={{.GitURL}}"
-  - "--build-arg"
-  - "ARCH=amd64"
+  - "--platform=linux/amd64"
   extra_files:
   - scripts/entrypoint.sh
 - image_templates:
-  - 'goreleaser/goreleaser:{{ .Tag }}-arm64v8'
-  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64v8'
-  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
-  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
-  - 'goreleaser/goreleaser:latest-arm64v8'
-  - 'ghcr.io/goreleaser/goreleaser:latest-arm64v8'
+  - 'goreleaser/goreleaser:{{ .Tag }}-arm64'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
   dockerfile: Dockerfile
-  binaries:
-  - goreleaser
+  use_buildx: true
   build_flag_templates:
   - "--pull"
   - "--label=org.opencontainers.image.created={{.Date}}"
@@ -72,8 +61,7 @@ dockers:
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
   - "--label=org.opencontainers.image.version={{.Version}}"
   - "--label=org.opencontainers.image.source={{.GitURL}}"
-  - "--build-arg"
-  - "ARCH=arm64v8"
+  - "--platform=linux/arm64"
   goarch: arm64
   extra_files:
   - scripts/entrypoint.sh
@@ -81,27 +69,19 @@ docker_manifests:
 - name_template: 'goreleaser/goreleaser:{{ .Tag }}'
   image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
-  - 'goreleaser/goreleaser:{{ .Tag }}-arm64v8'
+  - 'goreleaser/goreleaser:{{ .Tag }}-arm64'
 - name_template: 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}'
   image_templates:
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
-  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64v8'
-- name_template: 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
-  image_templates:
-  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
-  - 'goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
-- name_template: 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}'
-  image_templates:
-  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-amd64'
-  - 'ghcr.io/goreleaser/goreleaser:v{{ .Major }}.{{ .Minor }}-arm64v8'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
 - name_template: 'goreleaser/goreleaser:latest'
   image_templates:
-  - 'goreleaser/goreleaser:latest-amd64'
-  - 'goreleaser/goreleaser:latest-arm64v8'
+  - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'goreleaser/goreleaser:{{ .Tag }}-arm64'
 - name_template: 'ghcr.io/goreleaser/goreleaser:latest'
   image_templates:
-  - 'ghcr.io/goreleaser/goreleaser:latest-amd64'
-  - 'ghcr.io/goreleaser/goreleaser:latest-arm64v8'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
 archives:
   - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     replacements:
@@ -148,6 +128,13 @@ nfpms:
     maintainer: Carlos Alexandro Becker <root@carlosbecker.com>
     license: MIT
     vendor: GoReleaser
+    contents:
+      - src: ./completions/goreleaser.bash
+        dst: /etc/bash_completion.d/goreleaser
+      - src: ./completions/goreleaser.fish
+        dst: /usr/share/fish/completions/goreleaser.fish
+      - src: ./completions/goreleaser.zsh
+        dst: /usr/local/share/zsh/site-functions/_goreleaser
     formats:
     - apk
     - deb

@@ -18,7 +18,7 @@ with [GnuPG](https://www.gnupg.org/) and your default key. To enable signing
 just add
 
 ```yaml
-# goreleaser.yml
+# .goreleaser.yml
 signs:
   - artifacts: checksum
 ```
@@ -86,7 +86,7 @@ If what you want to use does not do it, you can always hack by setting the
 command to `sh -c`. For example:
 
 ```yaml
-# goreleaser.yml
+# .goreleaser.yml
 signs:
 - cmd: sh
   args:

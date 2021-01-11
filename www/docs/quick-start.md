@@ -13,7 +13,7 @@ func main() {
 }
 ```
 
-Run `goreleaser init` to create an example `.goreleaser.yaml` file:
+Run `goreleaser init` to create an example `.goreleaser.yml` file:
 
 ```sh
 goreleaser init

@@ -9,16 +9,14 @@ import (
 )
 
 func TestRelease(t *testing.T) {
-	_, back := setup(t)
-	defer back()
+	setup(t)
 	var cmd = newReleaseCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.NoError(t, cmd.cmd.Execute())
 }
 
 func TestReleaseInvalidConfig(t *testing.T) {
-	_, back := setup(t)
-	defer back()
+	setup(t)
 	createFile(t, "goreleaser.yml", "foo: bar")
 	var cmd = newReleaseCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
@@ -26,8 +24,7 @@ func TestReleaseInvalidConfig(t *testing.T) {
 }
 
 func TestReleaseBrokenProject(t *testing.T) {
-	_, back := setup(t)
-	defer back()
+	setup(t)
 	createFile(t, "main.go", "not a valid go file")
 	var cmd = newReleaseCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2"})

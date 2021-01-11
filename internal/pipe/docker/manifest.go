@@ -27,7 +27,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
-	var g = semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
+	var g = semerrgroup.NewSkipAware(semerrgroup.New(1))
 	for _, manifest := range ctx.Config.DockerManifests {
 		manifest := manifest
 		g.Go(func() error {
@@ -80,7 +80,7 @@ func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]str
 }
 
 func dockerManifestCreate(ctx *context.Context, manifest string, images, flags []string) error {
-	log.WithField("manifest", manifest).Info("creating docker manifest")
+	log.WithField("manifest", manifest).WithField("images", images).Info("creating docker manifest")
 	var args = []string{"manifest", "create", manifest}
 	for _, img := range images {
 		args = append(args, "--amend", img)

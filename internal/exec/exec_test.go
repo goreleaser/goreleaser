@@ -3,7 +3,6 @@ package exec
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"testing"
 
@@ -30,9 +29,7 @@ func TestExecute(t *testing.T) {
 
 	// Preload artifacts
 	ctx.Artifacts = artifact.New()
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
-	defer os.RemoveAll(folder)
+	var folder = t.TempDir()
 	for _, a := range []struct {
 		id  string
 		ext string

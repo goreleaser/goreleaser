@@ -5,8 +5,7 @@ import (
 )
 
 func TestGit(t *testing.T) {
-	_, back := Mktmp(t)
-	defer back()
+	TestMkTemp(t)
 	GitInit(t)
 	GitAdd(t)
 	GitCommit(t, "commit1")
