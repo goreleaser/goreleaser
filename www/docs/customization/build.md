@@ -159,6 +159,17 @@ builds:
       - windows
 ```
 
+The binary name field supports [templating](/customization/templates/). The following build details are exposed:
+
+| Key     | Description                      |
+|---------|----------------------------------|
+| .Os     | `GOOS`                           |
+| .Arch   | `GOARCH`                         |
+| .Target | `GOARM`                          |
+| .Arm    | `GOARM`                          |
+| .Ext    | Extension, e.g. `.exe`           |
+| .Target | Build target, e.g. `darwin_amd64`|
+
 ## Passing environment variables to ldflags
 
 You can do that by using `{{ .Env.VARIABLE_NAME }}` in the template, for
