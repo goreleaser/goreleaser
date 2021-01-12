@@ -165,7 +165,6 @@ The binary name field supports [templating](/customization/templates/). The foll
 |---------|----------------------------------|
 | .Os     | `GOOS`                           |
 | .Arch   | `GOARCH`                         |
-| .Target | `GOARM`                          |
 | .Arm    | `GOARM`                          |
 | .Ext    | Extension, e.g. `.exe`           |
 | .Target | Build target, e.g. `darwin_amd64`|
