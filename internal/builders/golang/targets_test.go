@@ -27,6 +27,7 @@ func TestAllBuildTargets(t *testing.T) {
 			"mips64",
 			"mipsle",
 			"mips64le",
+			"riscv64",
 		},
 		Goarm: []string{
 			"6",
@@ -66,6 +67,7 @@ func TestAllBuildTargets(t *testing.T) {
 		"linux_mipsle_hardfloat",
 		"linux_mipsle_softfloat",
 		"linux_mips64le_hardfloat",
+		"linux_riscv64",
 		"darwin_amd64",
 		"freebsd_386",
 		"freebsd_amd64",
@@ -108,6 +110,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"linux", "ppc64", true},
 		{"linux", "ppc64le", true},
 		{"linux", "s390x", true},
+		{"linux", "riscv64", true},
 		{"netbsd", "386", true},
 		{"netbsd", "amd64", true},
 		{"netbsd", "arm", true},
@@ -127,6 +130,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"darwin", "arm64", false},
 		{"windows", "arm", false},
 		{"windows", "arm64", false},
+		{"windows", "riscv64", false},
 	}
 	for _, p := range platforms {
 		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {
