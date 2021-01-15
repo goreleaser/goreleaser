@@ -753,6 +753,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 	client := &DummyClient{}
 
 	var assertNoPublish = func(t *testing.T) {
+		t.Helper()
 		testlib.AssertSkipped(t, doRun(ctx, ctx.Config.Brews[0], client))
 		require.False(t, client.CreatedFile)
 	}

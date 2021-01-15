@@ -67,11 +67,13 @@ func Test_doRun(t *testing.T) {
 	type errChecker func(*testing.T, error)
 	var shouldErr = func(msg string) errChecker {
 		return func(t *testing.T, err error) {
+			t.Helper()
 			require.Error(t, err)
 			require.EqualError(t, err, msg)
 		}
 	}
 	var shouldNotErr = func(t *testing.T, err error) {
+		t.Helper()
 		require.NoError(t, err)
 	}
 	type args struct {

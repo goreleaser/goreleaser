@@ -67,16 +67,19 @@ func TestRunPipe(t *testing.T) {
 	type errChecker func(*testing.T, error)
 	var shouldErr = func(msg string) errChecker {
 		return func(t *testing.T, err error) {
+			t.Helper()
 			require.Error(t, err)
 			require.Contains(t, err.Error(), msg)
 		}
 	}
 	var shouldNotErr = func(t *testing.T, err error) {
+		t.Helper()
 		require.NoError(t, err)
 	}
 	type imageLabelFinder func(*testing.T, int)
 	var shouldFindImagesWithLabels = func(image string, filters ...string) func(*testing.T, int) {
 		return func(t *testing.T, count int) {
+			t.Helper()
 			for _, filter := range filters {
 				output, err := exec.Command(
 					"docker", "images", "-q", "*/"+image,
@@ -89,7 +92,9 @@ func TestRunPipe(t *testing.T) {
 		}
 
 	}
-	var noLabels = func(t *testing.T, count int) {}
+	var noLabels = func(t *testing.T, count int) {
+		t.Helper()
+	}
 
 	var table = map[string]struct {
 		dockers             []config.Docker

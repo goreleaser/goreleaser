@@ -517,6 +517,7 @@ func TestUpload(t *testing.T) {
 	}
 
 	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Upload), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {
+		t.Helper()
 		requests = nil
 		ctx, upload := setup(srv)
 		wantErr := wantErrPlain
