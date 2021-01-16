@@ -63,6 +63,7 @@ var defaultTemplateData = templateData{
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
+	t.Helper()
 	require.Contains(t, formulae, "class Test < Formula")
 	require.Contains(t, formulae, `homepage "https://google.com"`)
 	require.Contains(t, formulae, `url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`)
@@ -752,20 +753,21 @@ func TestRunPipeNoUpload(t *testing.T) {
 	client := &DummyClient{}
 
 	var assertNoPublish = func(t *testing.T) {
+		t.Helper()
 		testlib.AssertSkipped(t, doRun(ctx, ctx.Config.Brews[0], client))
 		require.False(t, client.CreatedFile)
 	}
-	t.Run("skip upload", func(tt *testing.T) {
+	t.Run("skip upload", func(t *testing.T) {
 		ctx.Config.Release.Draft = false
 		ctx.Config.Brews[0].SkipUpload = "true"
 		ctx.SkipPublish = false
-		assertNoPublish(tt)
+		assertNoPublish(t)
 	})
-	t.Run("skip publish", func(tt *testing.T) {
+	t.Run("skip publish", func(t *testing.T) {
 		ctx.Config.Release.Draft = false
 		ctx.Config.Brews[0].SkipUpload = "false"
 		ctx.SkipPublish = true
-		assertNoPublish(tt)
+		assertNoPublish(t)
 	})
 }
 

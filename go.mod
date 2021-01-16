@@ -10,18 +10,18 @@ require (
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/client9/misspell v0.3.4
 	github.com/fatih/color v1.10.0
-	github.com/golangci/golangci-lint v1.33.0
+	github.com/golangci/golangci-lint v1.35.2
 	github.com/google/go-github/v28 v28.1.1
 	github.com/goreleaser/fileglob v0.3.1
-	github.com/goreleaser/nfpm/v2 v2.0.0
+	github.com/goreleaser/nfpm/v2 v2.2.2
 	github.com/imdario/mergo v0.3.11
-	github.com/jarcoal/httpmock v1.0.6
+	github.com/jarcoal/httpmock v1.0.7
 	github.com/mattn/go-shellwords v1.0.10
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.1
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/ulikunitz/xz v0.5.9
-	github.com/xanzy/go-gitlab v0.40.1
+	github.com/xanzy/go-gitlab v0.42.0
 	gocloud.dev v0.21.0
 	golang.org/x/oauth2 v0.0.0-20201203001011-0b49973bad19
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
@@ -30,5 +30,3 @@ require (
 
 // https://github.com/mattn/go-shellwords/pull/39
 replace github.com/mattn/go-shellwords => github.com/caarlos0/go-shellwords v1.0.11
-
-replace github.com/google/rpmpack => github.com/djgilcrease/rpmpack v0.0.0-20201221224521-5ac1d3b45cee

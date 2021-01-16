@@ -15,6 +15,51 @@ goreleaser check
 
 ## Active deprecation notices
 
+### docker.builds
+
+> since 2021-01-07 (v0.154.0)
+
+`builds` is deprecated in favor of `ids`, since now it also allows to copy nfpm packages:
+
+Change this:
+
+=== "Before"
+    ```yaml
+    dockers:
+      -
+        builds: ['a', 'b']
+    ```
+
+=== "After"
+    ```yaml
+    dockers:
+      -
+        ids: ['a', 'b']
+    ```
+
+### docker.binaries
+
+> since 2021-01-07 (v0.154.0)
+
+`binaries` is deprecated and now does nothing.
+If you want to filter something out, use the `ids` property.
+
+Change this:
+
+=== "Before"
+    ```yaml
+    dockers:
+      -
+        binaries: ['foo']
+    ```
+
+=== "After"
+    ```yaml
+    dockers:
+      -
+        ids: ['foo']
+    ```
+
 ### nfpms.files
 
 > since 2020-12-21 (v0.149.0)
@@ -92,7 +137,6 @@ Change this:
             type: symlink
     ```
 
-
 ### nfpms.rpm.ghost_files
 
 > since 2020-12-21 (v0.149.0)
@@ -149,60 +193,27 @@ Change this:
     ```
 
 
-### brews.github
+### nfpms.deb.version_metadata
 
-> since 2020-07-06 (v0.139.0)
+> since 2020-12-21 (v0.149.0)
 
-GitHub section was deprecated in favour of `tap` which
-reflects Homebrew's naming convention. GitHub will be picked
-automatically when GitHub token is passed.
+`deb.version_metadata` is deprecated in favor of `version_metadata` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
 
 Change this:
 
 === "Before"
     ```yaml
-    brews:
+    nfpms:
       -
-        github:
-          owner: goreleaser
-          name: homebrew-tap
+        deb:
+          version_metadata: beta1
     ```
 
 === "After"
     ```yaml
-    brews:
+    nfpms:
       -
-        tap:
-          owner: goreleaser
-          name: homebrew-tap
-    ```
-
-### brews.gitlab
-
-> since 2020-07-06 (v0.139.0)
-
-GitLab section was deprecated in favour of `tap` which
-reflects Homebrew's naming convention. GitLab will be picked
-automatically when GitLab token is passed.
-
-Change this:
-
-=== "Before"
-    ```yaml
-    brews:
-      -
-        gitlab:
-          owner: goreleaser
-          name: homebrew-tap
-    ```
-
-=== "After"
-    ```yaml
-    brews:
-      -
-        tap:
-          owner: goreleaser
-          name: homebrew-tap
+        version_metadata: beta1
     ```
 
 <!--
@@ -231,6 +242,62 @@ Description.
 ## Expired deprecation notices
 
 The following options were deprecated in the past and were already removed.
+
+### brews.github
+
+> since 2020-07-06 (v0.139.0), removed 2021-01-04 (v0.152.0)
+
+GitHub section was deprecated in favour of `tap` which
+reflects Homebrew's naming convention. GitHub will be picked
+automatically when GitHub token is passed.
+
+Change this:
+
+=== "Before"
+    ```yaml
+    brews:
+      -
+        github:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
+
+=== "After"
+    ```yaml
+    brews:
+      -
+        tap:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
+
+### brews.gitlab
+
+> since 2020-07-06 (v0.139.0), removed 2021-01-04 (v0.152.0)
+
+GitLab section was deprecated in favour of `tap` which
+reflects Homebrew's naming convention. GitLab will be picked
+automatically when GitLab token is passed.
+
+Change this:
+
+=== "Before"
+    ```yaml
+    brews:
+      -
+        gitlab:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
+
+=== "After"
+    ```yaml
+    brews:
+      -
+        tap:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
 
 ### puts
 

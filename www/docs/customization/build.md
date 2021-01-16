@@ -70,7 +70,7 @@ builds:
 
     # GOARCH to build for.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Defaults are 386 and amd64.
+    # Defaults are 386, amd64 and arm64.
     goarch:
       - amd64
       - arm
@@ -158,6 +158,16 @@ builds:
       - darwin
       - windows
 ```
+
+The binary name field supports [templating](/customization/templates/). The following build details are exposed:
+
+| Key     | Description                      |
+|---------|----------------------------------|
+| .Os     | `GOOS`                           |
+| .Arch   | `GOARCH`                         |
+| .Arm    | `GOARM`                          |
+| .Ext    | Extension, e.g. `.exe`           |
+| .Target | Build target, e.g. `darwin_amd64`|
 
 ## Passing environment variables to ldflags
 

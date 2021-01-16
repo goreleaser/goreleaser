@@ -102,6 +102,10 @@ func (Pipe) Default(ctx *context.Context) error {
 			}
 			deprecate.Notice(ctx, "nfpms.rpm.config_noreplace_files")
 		}
+		if fpm.Deb.VersionMetadata != "" {
+			deprecate.Notice(ctx, "nfpms.deb.version_metadata")
+			fpm.VersionMetadata = fpm.Deb.VersionMetadata
+		}
 
 		if len(fpm.Builds) == 0 {
 			for _, b := range ctx.Config.Builds {
@@ -181,8 +185,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		return err
 	}
 
-	var contents files.Contents
-	copy(overridden.Contents, contents)
+	var contents = append(files.Contents{}, overridden.Contents...)
 
 	// FPM meta package should not contain binaries at all
 	if !fpm.Meta {
@@ -198,22 +201,24 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		}
 	}
 
-	log.WithField("files", contents).Debug("all archive files")
+	log.WithField("files", destinations(contents)).Debug("all archive files")
 
 	var info = &nfpm.Info{
-		Arch:        arch,
-		Platform:    "linux",
-		Name:        fpm.PackageName,
-		Version:     ctx.Version,
-		Section:     "",
-		Priority:    "",
-		Epoch:       fpm.Epoch,
-		Release:     fpm.Release,
-		Maintainer:  fpm.Maintainer,
-		Description: fpm.Description,
-		Vendor:      fpm.Vendor,
-		Homepage:    fpm.Homepage,
-		License:     fpm.License,
+		Arch:            arch,
+		Platform:        "linux",
+		Name:            fpm.PackageName,
+		Version:         ctx.Version,
+		Section:         fpm.Section,
+		Priority:        fpm.Priority,
+		Epoch:           fpm.Epoch,
+		Release:         fpm.Release,
+		Prerelease:      fpm.Prerelease,
+		VersionMetadata: fpm.VersionMetadata,
+		Maintainer:      fpm.Maintainer,
+		Description:     fpm.Description,
+		Vendor:          fpm.Vendor,
+		Homepage:        fpm.Homepage,
+		License:         fpm.License,
 		Overridables: nfpm.Overridables{
 			Conflicts:    overridden.Conflicts,
 			Depends:      overridden.Dependencies,
@@ -241,8 +246,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 					ActivateAwait:   overridden.Deb.Triggers.ActivateAwait,
 					ActivateNoAwait: overridden.Deb.Triggers.ActivateNoAwait,
 				},
-				Breaks:          overridden.Deb.Breaks,
-				VersionMetadata: overridden.Deb.VersionMetadata,
+				Breaks: overridden.Deb.Breaks,
 				Signature: nfpm.DebSignature{
 					KeyFile:       overridden.Deb.Signature.KeyFile,
 					KeyPassphrase: getPassphraseFromEnv(ctx, "DEB", fpm.ID),
@@ -311,6 +315,14 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		},
 	})
 	return nil
+}
+
+func destinations(contents files.Contents) []string {
+	var result = make([]string, 0, len(contents))
+	for _, f := range contents {
+		result = append(result, f.Destination)
+	}
+	return result
 }
 
 func getPassphraseFromEnv(ctx *context.Context, packager string, nfpmID string) string {

@@ -29,11 +29,6 @@ fmt:
 
 # Run all the linters
 lint:
-	# TODO: fix tests issues
-	# TODO: fix lll issues
-	# TODO: fix funlen issues
-	# TODO: fix godox issues
-	# TODO: fix wsl issues
 	golangci-lint run ./...
 	misspell -error **/*
 .PHONY: lint

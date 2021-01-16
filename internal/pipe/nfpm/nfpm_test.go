@@ -89,6 +89,8 @@ func TestRunPipe(t *testing.T) {
 				Bindir:      "/usr/bin",
 				Builds:      []string{"default"},
 				Formats:     []string{"deb", "rpm", "apk"},
+				Section:     "somesection",
+				Priority:    "standard",
 				Description: "Some description",
 				License:     "MIT",
 				Maintainer:  "me@me",
@@ -158,9 +160,15 @@ func TestRunPipe(t *testing.T) {
 		require.NotEmpty(t, format)
 		require.Equal(t, pkg.Name, "mybin_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
+		require.ElementsMatch(t, []string{
+			"/usr/share/testfile.txt",
+			"/etc/nope.conf",
+			"/etc/nope-rpm.conf",
+			"/etc/nope2.conf",
+			"/usr/bin/mybin",
+		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
-
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
@@ -329,6 +337,9 @@ func TestDefaultDeprecatedOptions(t *testing.T) {
 								"testdata/testfile.txt": "/etc/foo_keep.conf",
 							},
 						},
+						Deb: config.NFPMDeb{
+							VersionMetadata: "beta1",
+						},
 					},
 				},
 			},
@@ -350,6 +361,7 @@ func TestDefaultDeprecatedOptions(t *testing.T) {
 	}, ctx.Config.NFPMs[0].Contents)
 	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].FileNameTemplate)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.NFPMs[0].PackageName)
+	require.Equal(t, "beta1", ctx.Config.NFPMs[0].VersionMetadata)
 }
 
 func TestDefaultSet(t *testing.T) {
@@ -656,6 +668,8 @@ func TestMeta(t *testing.T) {
 				Bindir:      "/usr/bin",
 				Builds:      []string{"default"},
 				Formats:     []string{"deb", "rpm"},
+				Section:     "somesection",
+				Priority:    "standard",
 				Description: "Some description",
 				License:     "MIT",
 				Maintainer:  "me@me",
@@ -721,17 +735,14 @@ func TestMeta(t *testing.T) {
 		require.NotEmpty(t, format)
 		require.Equal(t, pkg.Name, "mybin_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
+		require.ElementsMatch(t, []string{
+			"/usr/share/testfile.txt",
+			"/etc/nope.conf",
+			"/etc/nope-rpm.conf",
+		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
 	}
 
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 3, "should not modify the config file list")
-
-	// ensure that no binaries added
-	for _, pkg := range packages {
-		contents := pkg.ExtraOr("Files", files.Contents{}).(files.Contents)
-		for _, f := range contents {
-			require.NotEqual(t, "/usr/bin/mybin", f.Destination, "binary file should not be added")
-		}
-	}
 }
 
 func TestSkipSign(t *testing.T) {
@@ -800,7 +811,7 @@ func TestSkipSign(t *testing.T) {
 		require.Contains(
 			t,
 			Pipe{}.Run(ctx).Error(),
-			`nfpm failed: failed to create signatures: call to signer failed: signing error: reading PGP key file: open /does/not/exist.gpg: no such file or directory`,
+			`open /does/not/exist.gpg: no such file or directory`,
 		)
 	})
 

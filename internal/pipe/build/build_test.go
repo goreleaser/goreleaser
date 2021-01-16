@@ -264,7 +264,7 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	require.Equal(t, ".", build.Dir)
 	require.Equal(t, ".", build.Main)
 	require.Equal(t, []string{"linux", "darwin"}, build.Goos)
-	require.Equal(t, []string{"amd64", "386"}, build.Goarch)
+	require.Equal(t, []string{"amd64", "arm64", "386"}, build.Goarch)
 	require.Equal(t, []string{"6"}, build.Goarm)
 	require.Len(t, build.Ldflags, 1)
 	require.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser", build.Ldflags[0])
@@ -334,7 +334,7 @@ func TestDefaultPartialBuilds(t *testing.T) {
 		require.Equal(t, ".", build.Dir)
 		require.Equal(t, "./cmd/main.go", build.Main)
 		require.Equal(t, []string{"linux"}, build.Goos)
-		require.Equal(t, []string{"amd64", "386"}, build.Goarch)
+		require.Equal(t, []string{"amd64", "arm64", "386"}, build.Goarch)
 		require.Equal(t, []string{"6"}, build.Goarm)
 		require.Len(t, build.Ldflags, 1)
 		require.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser", build.Ldflags[0])
@@ -706,28 +706,58 @@ func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
 func TestBuildOptionsForTarget(t *testing.T) {
 	var tmpDir = testlib.Mktmp(t)
 
-	build := config.Build{
-		ID:     "testid",
-		Binary: "testbinary",
-		Targets: []string{
-			"linux_amd64",
-			"darwin_amd64",
-			"windows_amd64",
+	testCases := []struct {
+		name  string
+		build config.Build
+		expectedOpts *api.Options
+	}{
+		{
+			name: "simple options for target",
+			build: config.Build{
+				ID:     "testid",
+				Binary: "testbinary",
+				Targets: []string{
+					"linux_amd64",
+				},
+			},
+			expectedOpts: &api.Options{
+				Name:   "testbinary",
+				Path:   filepath.Join(tmpDir, "testid_linux_amd64", "testbinary"),
+				Target: "linux_amd64",
+				Os:     "linux",
+				Arch:   "amd64",
+			},
+		},
+		{
+			name: "binary name with Os and Arch template variables",
+			build: config.Build{
+				ID:     "testid",
+				Binary: "testbinary_{{.Os}}_{{.Arch}}",
+				Targets: []string{
+					"linux_amd64",
+				},
+			},
+			expectedOpts: &api.Options{
+				Name:   "testbinary_linux_amd64",
+				Path:   filepath.Join(tmpDir, "testid_linux_amd64", "testbinary_linux_amd64"),
+				Target: "linux_amd64",
+				Os:     "linux",
+				Arch:   "amd64",
+			},
 		},
 	}
-	ctx := context.New(config.Project{
-		Dist:   tmpDir,
-		Builds: []config.Build{build},
-	})
-	opts, err := buildOptionsForTarget(ctx, build, "linux_amd64")
-	require.NoError(t, err)
-	require.Equal(t, &api.Options{
-		Name:   "testbinary",
-		Path:   filepath.Join(tmpDir, "testid_linux_amd64", "testbinary"),
-		Target: "linux_amd64",
-		Os:     "linux",
-		Arch:   "amd64",
-	}, opts)
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Dist:   tmpDir,
+				Builds: []config.Build{tc.build},
+			})
+			opts, err := buildOptionsForTarget(ctx, tc.build, tc.build.Targets[0])
+			require.NoError(t, err)
+			require.Equal(t, tc.expectedOpts, opts)
+		})
+	}
 }
 
 func TestHookComplex(t *testing.T) {

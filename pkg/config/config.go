@@ -111,10 +111,6 @@ type Homebrew struct {
 	CustomBlock      string               `yaml:"custom_block,omitempty"`
 	IDs              []string             `yaml:"ids,omitempty"`
 	Goarm            string               `yaml:"goarm,omitempty"`
-
-	// Deprecated: in favour of Tap
-	GitHub Repo `yaml:",omitempty"`
-	GitLab Repo `yaml:",omitempty"`
 }
 
 // Scoop contains the scoop.sh section.
@@ -311,6 +307,8 @@ type NFPM struct {
 	ID          string   `yaml:",omitempty"`
 	Builds      []string `yaml:",omitempty"`
 	Formats     []string `yaml:",omitempty"`
+	Section     string   `yaml:",omitempty"`
+	Priority    string   `yaml:",omitempty"`
 	Vendor      string   `yaml:",omitempty"`
 	Homepage    string   `yaml:",omitempty"`
 	Maintainer  string   `yaml:",omitempty"`
@@ -339,8 +337,8 @@ type NFPMRPM struct {
 	Summary              string            `yaml:"summary,omitempty"`
 	Group                string            `yaml:"group,omitempty"`
 	Compression          string            `yaml:"compression,omitempty"`
-	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"` // depreacated: use contents instead
-	GhostFiles           []string          `yaml:"ghost_files,omitempty"`            // depreacated: use contents instead
+	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"` // deprecated: use contents instead
+	GhostFiles           []string          `yaml:"ghost_files,omitempty"`            // deprecated: use contents instead
 	Signature            NFPMRPMSignature  `yaml:"signature,omitempty"`
 }
 
@@ -400,6 +398,8 @@ type NFPMOverridables struct {
 	PackageName      string            `yaml:"package_name,omitempty"`
 	Epoch            string            `yaml:"epoch,omitempty"`
 	Release          string            `yaml:"release,omitempty"`
+	Prerelease       string            `yaml:"prerelease,omitempty"`
+	VersionMetadata  string            `yaml:"version_metadata,omitempty"`
 	Replacements     map[string]string `yaml:",omitempty"`
 	Dependencies     []string          `yaml:",omitempty"`
 	Recommends       []string          `yaml:",omitempty"`
@@ -482,8 +482,9 @@ type Checksum struct {
 
 // Docker image config.
 type Docker struct {
-	Binaries           []string `yaml:",omitempty"`
-	Builds             []string `yaml:",omitempty"`
+	Binaries           []string `yaml:",omitempty"` // deprecated: no need to use this anymore
+	Builds             []string `yaml:",omitempty"` // deprecated: use IDs instead
+	IDs                []string `yaml:"ids,omitempty"`
 	Goos               string   `yaml:",omitempty"`
 	Goarch             string   `yaml:",omitempty"`
 	Goarm              string   `yaml:",omitempty"`
@@ -492,6 +493,7 @@ type Docker struct {
 	SkipPush           string   `yaml:"skip_push,omitempty"`
 	Files              []string `yaml:"extra_files,omitempty"`
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
+	Buildx             bool     `yaml:"use_buildx,omitempty"`
 }
 
 // DockerManifest config.
@@ -542,17 +544,18 @@ type Blob struct {
 
 // Upload configuration.
 type Upload struct {
-	Name               string   `yaml:",omitempty"`
-	IDs                []string `yaml:"ids,omitempty"`
-	Target             string   `yaml:",omitempty"`
-	Username           string   `yaml:",omitempty"`
-	Mode               string   `yaml:",omitempty"`
-	Method             string   `yaml:",omitempty"`
-	ChecksumHeader     string   `yaml:"checksum_header,omitempty"`
-	TrustedCerts       string   `yaml:"trusted_certificates,omitempty"`
-	Checksum           bool     `yaml:",omitempty"`
-	Signature          bool     `yaml:",omitempty"`
-	CustomArtifactName bool     `yaml:"custom_artifact_name,omitempty"`
+	Name               string            `yaml:",omitempty"`
+	IDs                []string          `yaml:"ids,omitempty"`
+	Target             string            `yaml:",omitempty"`
+	Username           string            `yaml:",omitempty"`
+	Mode               string            `yaml:",omitempty"`
+	Method             string            `yaml:",omitempty"`
+	ChecksumHeader     string            `yaml:"checksum_header,omitempty"`
+	TrustedCerts       string            `yaml:"trusted_certificates,omitempty"`
+	Checksum           bool              `yaml:",omitempty"`
+	Signature          bool              `yaml:",omitempty"`
+	CustomArtifactName bool              `yaml:"custom_artifact_name,omitempty"`
+	CustomHeaders      map[string]string `yaml:"custom_headers,omitempty"`
 }
 
 // Publisher configuration.

@@ -66,6 +66,7 @@ func TestWithDefaults(t *testing.T) {
 			targets: []string{
 				"linux_amd64",
 				"linux_386",
+				"linux_arm64",
 				"darwin_amd64",
 			},
 			goBinary: "go",
@@ -86,7 +87,7 @@ func TestWithDefaults(t *testing.T) {
 			goBinary: "go",
 		},
 	} {
-		t.Run(name, func(tt *testing.T) {
+		t.Run(name, func(t *testing.T) {
 			var config = config.Project{
 				Builds: []config.Build{
 					testcase.build,
@@ -621,12 +622,12 @@ func TestInvalidTemplate(t *testing.T) {
 		"{{ .Nope }":    `template: tmpl:1: unexpected "}" in operand`,
 		"{{.Env.NOPE}}": `template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`,
 	} {
-		t.Run(template, func(tt *testing.T) {
+		t.Run(template, func(t *testing.T) {
 			var ctx = context.New(config.Project{})
 			ctx.Git.CurrentTag = "3.4.1"
 			flags, err := tmpl.New(ctx).Apply(template)
-			require.EqualError(tt, err, eerr)
-			require.Empty(tt, flags)
+			require.EqualError(t, err, eerr)
+			require.Empty(t, flags)
 		})
 	}
 }
@@ -775,6 +776,7 @@ func TestBuildModTimestamp(t *testing.T) {
 //
 
 func writeMainWithoutMainFunc(t *testing.T, folder string) {
+	t.Helper()
 	require.NoError(t, ioutil.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nconst a = 2\nfunc notMain() {println(0)}"),
@@ -783,6 +785,7 @@ func writeMainWithoutMainFunc(t *testing.T, folder string) {
 }
 
 func writeGoodMain(t *testing.T, folder string) {
+	t.Helper()
 	require.NoError(t, ioutil.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nvar a = 1\nfunc main() {println(0)}"),
@@ -791,6 +794,7 @@ func writeGoodMain(t *testing.T, folder string) {
 }
 
 func assertContainsError(t *testing.T, err error, s string) {
+	t.Helper()
 	require.Error(t, err)
 	require.Contains(t, err.Error(), s)
 }

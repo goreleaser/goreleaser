@@ -49,7 +49,7 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 			build.Goos = []string{"linux", "darwin"}
 		}
 		if len(build.Goarch) == 0 {
-			build.Goarch = []string{"amd64", "386"}
+			build.Goarch = []string{"amd64", "arm64", "386"}
 		}
 		if len(build.Goarm) == 0 {
 			build.Goarm = []string{"6"}

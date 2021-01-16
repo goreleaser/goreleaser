@@ -164,8 +164,22 @@ func doBuild(ctx *context.Context, build config.Build, opts builders.Options) er
 
 func buildOptionsForTarget(ctx *context.Context, build config.Build, target string) (*builders.Options, error) {
 	var ext = extFor(target, build.Flags)
+	var goos string
+	var goarch string
 
-	binary, err := tmpl.New(ctx).Apply(build.Binary)
+	if strings.Contains(target, "_") {
+		goos = strings.Split(target, "_")[0]
+		goarch = strings.Split(target, "_")[1]
+	}
+
+	buildOpts := builders.Options{
+		Target: target,
+		Ext:    ext,
+		Os:     goos,
+		Arch:   goarch,
+	}
+
+	binary, err := tmpl.New(ctx).WithBuildOptions(buildOpts).Apply(build.Binary)
 	if err != nil {
 		return nil, err
 	}
@@ -183,23 +197,10 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 		return nil, err
 	}
 
-	var goos string
-	var goarch string
-
-	if strings.Contains(target, "_") {
-		goos = strings.Split(target, "_")[0]
-		goarch = strings.Split(target, "_")[1]
-	}
-
 	log.WithField("binary", path).Info("building")
-	return &builders.Options{
-		Target: target,
-		Name:   name,
-		Path:   path,
-		Ext:    ext,
-		Os:     goos,
-		Arch:   goarch,
-	}, nil
+	buildOpts.Name = name
+	buildOpts.Path = path
+	return &buildOpts, nil
 }
 
 func extFor(target string, flags config.FlagArray) string {
