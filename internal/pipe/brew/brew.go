@@ -103,15 +103,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func contains(ss []string, s string) bool {
-	for _, zs := range ss {
-		if zs == s {
-			return true
-		}
-	}
-	return false
-}
-
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	if brew.Tap.Name == "" {
 		return pipe.Skip("brew section is not configured")
