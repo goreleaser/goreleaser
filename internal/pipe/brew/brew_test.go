@@ -840,36 +840,6 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 	require.Equal(t, ErrTokenTypeNotImplementedForBrew{TokenType: "gitea"}, doRun(ctx, ctx.Config.Brews[0], client))
 }
 
-func TestDefaultBinInstallUniqueness(t *testing.T) {
-	testlib.Mktmp(t)
-
-	var ctx = &context.Context{
-		TokenType: context.TokenTypeGitHub,
-		Config: config.Project{
-			ProjectName: "myproject",
-			Brews: []config.Homebrew{
-				{},
-			},
-			Builds: []config.Build{
-				{
-					ID:     "macos",
-					Binary: "unique",
-					Goos:   []string{"darwin"},
-					Goarch: []string{"amd64"},
-				},
-				{
-					ID:     "macos-cgo",
-					Binary: "unique",
-					Goos:   []string{"darwin"},
-					Goarch: []string{"amd64"},
-				},
-			},
-		},
-	}
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, `bin.install "unique"`, ctx.Config.Brews[0].Install)
-}
-
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 
@@ -906,7 +876,7 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Brews[0].Name)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
-	require.Equal(t, `bin.install "foo"`, ctx.Config.Brews[0].Install)
+	require.Equal(t, `bin.install "myproject"`, ctx.Config.Brews[0].Install)
 }
 
 func TestGHFolder(t *testing.T) {
