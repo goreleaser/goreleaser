@@ -103,15 +103,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func isBrewBuild(build config.Build) bool {
-	for _, ignore := range build.Ignore {
-		if ignore.Goos == "darwin" && ignore.Goarch == "amd64" {
-			return false
-		}
-	}
-	return contains(build.Goos, "darwin") && contains(build.Goarch, "amd64")
-}
-
 func contains(ss []string, s string) bool {
 	for _, zs := range ss {
 		if zs == s {
