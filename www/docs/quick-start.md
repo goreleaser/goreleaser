@@ -80,7 +80,7 @@ goreleaser --snapshot
 Now you can run GoReleaser at the root of your repository:
 
 ```sh
-goreleaser
+goreleaser release
 ```
 
 That's all!
