@@ -83,19 +83,24 @@ Now you can run GoReleaser at the root of your repository:
 goreleaser
 ```
 
-That's all! Check your GitHub project's release page.
-The release should look like this:
+That's all!
 
-<a href="https://github.com/goreleaser/goreleaser/releases">
-  <img width="100%"
-    src="https://cloud.githubusercontent.com/assets/245435/23342061/fbcbd506-fc31-11e6-9d2b-4c1b776dee9c.png">
+Check your GitHub project's releases page!
+
+<a href="https://github.com/goreleaser/example/releases">
+  <figure>
+    <img src="https://img.carlosbecker.dev/goreleaser-github.png"/>
+    <figcaption>Example release on GitHub.</figcaption>
+  </figure>
 </a>
 
-Or check your GitLab project's release page.
-The release should also look like this:
-<a href="https://gitlab.com/mavogel/release-testing/-/releases">
-  <img width="100%"
-    src="https://user-images.githubusercontent.com/8409778/59390011-55fcdf80-8d70-11e9-840f-c568ddc0e965.png">
+Or, if you released to GitLab, check it out too!
+
+<a href="https://gitlab.com/goreleaser/example/-/releases">
+  <figure>
+    <img src="https://img.carlosbecker.dev/goreleaser-gitlab.png"/>
+    <figcaption>Example release on GitLab.</figcaption>
+  </figure>
 </a>
 
 !!! note

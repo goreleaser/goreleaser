@@ -132,7 +132,7 @@ Following environment variables can be used as `step.env` keys
 |----------------|-------------------------------------------------------|
 | `GITHUB_TOKEN` | [GITHUB_TOKEN][github-token] as provided by `secrets` |
 
-## Limitation
+## Limitations
 
 `GITHUB_TOKEN` permissions [are limited to the repository][about-github-token] that contains your workflow.
 
@@ -150,6 +150,17 @@ create a secret named `GH_PAT`, the step will look like this:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 ```
+
+## How does it look like?
+
+You can check [this example repository](https://github.com/goreleaser/example) for a real world example.
+
+<a href="https://github.com/goreleaser/example/releases">
+  <figure>
+    <img src="https://img.carlosbecker.dev/goreleaser-github.png"/>
+    <figcaption>Example release on GitHub.</figcaption>
+  </figure>
+</a>
 
 [goreleaser-action]: https://github.com/goreleaser/goreleaser-action
 [actions]: https://github.com/features/actions

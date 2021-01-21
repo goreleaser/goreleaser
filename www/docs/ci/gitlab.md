@@ -69,3 +69,14 @@ dockers:
   - 'registry.gitlab.com/Group/Project:{{ .Tag }}'
   - 'registry.gitlab.com/Group/Project:latest'
 ```
+
+## How does it look like?
+
+You can check [this example repository](https://gitlab.com/goreleaser/example) for a real world example.
+
+<a href="https://gitlab.com/goreleaser/example/-/releases">
+  <figure>
+    <img src="https://img.carlosbecker.dev/goreleaser-gitlab.png"/>
+    <figcaption>Example release on GitLab.</figcaption>
+  </figure>
+</a>
