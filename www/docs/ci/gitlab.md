@@ -14,8 +14,6 @@ release:
     - docker:dind
 
   variables:
-    GORELEASER_IMAGE: goreleaser/goreleaser:latest
-
     # Optionally use GitLab's built-in image registry.
     # DOCKER_REGISTRY: $CI_REGISTRY
     # DOCKER_USERNAME: $CI_REGISTRY_USER
@@ -34,8 +32,6 @@ release:
       - tags
 
   script: |
-    docker pull $GORELEASER_IMAGE
-
     # GITLAB_TOKEN is needed to create GitLab releases.
     # DOCKER_* are needed to push Docker images.
     docker run --rm --privileged \
@@ -44,7 +40,7 @@ release:
       -v /var/run/docker.sock:/var/run/docker.sock \
       -e DOCKER_USERNAME -e DOCKER_PASSWORD -e DOCKER_REGISTRY  \
       -e GITLAB_TOKEN \
-      $GORELEASER_IMAGE release --rm-dist
+      goreleaser/goreleaser release --rm-dist
 ```
 
 In GitLab CI settings, add variables for `DOCKER_REGISTRY`, `DOCKER_USERNAME`,
@@ -69,8 +65,6 @@ dockers:
 -
   goos: linux
   goarch: amd64
-  binaries:
-  - program
   image_templates:
   - 'registry.gitlab.com/Group/Project:{{ .Tag }}'
   - 'registry.gitlab.com/Group/Project:latest'
