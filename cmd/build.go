@@ -20,6 +20,7 @@ type buildCmd struct {
 
 type buildOpts struct {
 	config        string
+	buildIDs      []string
 	snapshot      bool
 	skipValidate  bool
 	skipPostHooks bool
@@ -65,6 +66,7 @@ func newBuildCmd() *buildCmd {
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", runtime.NumCPU(), "Amount tasks to run concurrently")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
+	cmd.Flags().StringSliceVar(&root.opts.buildIDs, "build-id", nil, "Build only the passed IDs (default empty). This is specified as a comma-separated list of IDs.")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
 
@@ -102,6 +104,7 @@ func setupBuildContext(ctx *context.Context, options buildOpts) *context.Context
 	ctx.SkipPostBuildHooks = options.skipPostHooks
 	ctx.RmDist = options.rmDist
 	ctx.SkipTokenCheck = true
+	ctx.BuildIDs = options.buildIDs
 
 	// test only
 	ctx.Deprecated = options.deprecated

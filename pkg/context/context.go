@@ -86,6 +86,7 @@ type Context struct {
 	Deprecated         bool
 	Parallelism        int
 	Semver             Semver
+	BuildIDs           []string
 }
 
 // Semver represents a semantic version.

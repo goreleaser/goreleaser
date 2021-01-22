@@ -707,8 +707,8 @@ func TestBuildOptionsForTarget(t *testing.T) {
 	var tmpDir = testlib.Mktmp(t)
 
 	testCases := []struct {
-		name  string
-		build config.Build
+		name         string
+		build        config.Build
 		expectedOpts *api.Options
 	}{
 		{

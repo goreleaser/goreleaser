@@ -84,6 +84,19 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 	return builders.For(build.Lang).WithDefaults(build)
 }
 
+func shouldBuildID(ctx *context.Context, buildID string) bool {
+	buildIDs := ctx.BuildIDs
+	if len(buildIDs) > 0 {
+		for _, ID := range buildIDs {
+			if buildID == strings.TrimSpace(ID) {
+				return true
+			}
+		}
+		return false
+	}
+	return true
+}
+
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	var g = semerrgroup.New(ctx.Parallelism)
 	for _, target := range build.Targets {
@@ -93,6 +106,10 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 			opts, err := buildOptionsForTarget(ctx, build, target)
 			if err != nil {
 				return err
+			}
+
+			if !shouldBuildID(ctx, build.ID) {
+				return nil
 			}
 
 			if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {

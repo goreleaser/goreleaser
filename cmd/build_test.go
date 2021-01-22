@@ -15,6 +15,20 @@ func TestBuild(t *testing.T) {
 	require.NoError(t, cmd.cmd.Execute())
 }
 
+func TestBuildWithSpecifcId(t *testing.T) {
+	setup(t)
+	var cmd = newBuildCmd()
+	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated", "--build-id=fake"})
+	require.NoError(t, cmd.cmd.Execute())
+}
+
+func TestBuildWithSpecifcIdNotExists(t *testing.T) {
+	setup(t)
+	var cmd = newBuildCmd()
+	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated", "--build-id=notexists"})
+	require.NoError(t, cmd.cmd.Execute())
+}
+
 func TestBuildInvalidConfig(t *testing.T) {
 	setup(t)
 	createFile(t, "goreleaser.yml", "foo: bar")
@@ -65,5 +79,14 @@ func TestBuildFlags(t *testing.T) {
 		require.True(t, setup(buildOpts{
 			rmDist: true,
 		}).RmDist)
+	})
+
+	t.Run("build-id", func(t *testing.T) {
+		ctx := setup(buildOpts{
+			buildIDs: []string{"id1", "id2"},
+		})
+
+		require.Equal(t, ctx.BuildIDs[0], "id1")
+		require.Equal(t, ctx.BuildIDs[1], "id2")
 	})
 }
