@@ -9,7 +9,7 @@ your build script. Of course, you can also install it locally if you wish.
 
 You can also customize your release process through a `.goreleaser.yml` file.
 
-Once you set ip up, every time you want to create a new release, all you need to do is tag and run
+Once you set it up, every time you want to create a new release, all you need to do is tag and run
 `goreleaser release`:
 
 <script id="asciicast-385826" src="https://asciinema.org/a/385826.js" async></script>
