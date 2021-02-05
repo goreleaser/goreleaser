@@ -12,7 +12,7 @@ require (
 	github.com/fatih/color v1.10.0
 	github.com/golangci/golangci-lint v1.36.0
 	github.com/google/go-github/v28 v28.1.1
-	github.com/goreleaser/fileglob v0.3.1
+	github.com/goreleaser/fileglob v0.4.0
 	github.com/goreleaser/nfpm/v2 v2.2.2
 	github.com/imdario/mergo v0.3.11
 	github.com/jarcoal/httpmock v1.0.8
