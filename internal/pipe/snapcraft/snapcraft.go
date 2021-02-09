@@ -320,7 +320,7 @@ func push(ctx *context.Context, snap *artifact.Artifact) error {
 	log.Info("pushing snap")
 	// TODO: customize --release based on snap.Grade?
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, "snapcraft", "push", "--release=stable", snap.Path)
+	var cmd = exec.CommandContext(ctx, "snapcraft", "upload", "--release=stable", snap.Path)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		if strings.Contains(string(out), reviewWaitMsg) {
 			log.Warn(reviewWaitMsg)
