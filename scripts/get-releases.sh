@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -xeuo pipefail
 
 url="https://api.github.com/repos/goreleaser/goreleaser/releases"
 
