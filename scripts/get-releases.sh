@@ -1,13 +1,13 @@
 #!/bin/bash
-set -xeuo pipefail
+set -euo pipefail
 
 url="https://api.github.com/repos/goreleaser/goreleaser/releases"
 
 get_last_page() {
 	curl -sSf -I -H "Authorization: Bearer $GITHUB_TOKEN" \
 		"$url" |
-		grep -E '^Link: ' |
-		sed -e 's/^Link:.*page=//g' -e 's/>.*$//g'
+		grep -E '^link: ' |
+		sed -e 's/^link:.*page=//g' -e 's/>.*$//g'
 }
 
 last_page="$(get_last_page)"
