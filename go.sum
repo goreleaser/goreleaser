@@ -411,8 +411,8 @@ github.com/goreleaser/fileglob v0.3.1 h1:OTFDWqUUHjQazk2N5GdUqEbqT/grBnRARaAXsV0
 github.com/goreleaser/fileglob v0.3.1/go.mod h1:kNcPrPzjCp+Ox3jmXLU5QEsjhqrtLBm6OnXAif8KRl8=
 github.com/goreleaser/fileglob v0.4.0 h1:bZfPopbWScZi0MrsV+9YcJ0dN8w5OV4OwjDzrHI1Zyw=
 github.com/goreleaser/fileglob v0.4.0/go.mod h1:kNcPrPzjCp+Ox3jmXLU5QEsjhqrtLBm6OnXAif8KRl8=
-github.com/goreleaser/nfpm/v2 v2.2.2 h1:aLGEqhMDcSNg1RHwzUBHwRUbmiK8HfD1sTq8bG7/WMc=
-github.com/goreleaser/nfpm/v2 v2.2.2/go.mod h1:WtPzYQh+Ls57prS9RzXegrGejqILUS1aZibXHTTJ8eI=
+github.com/goreleaser/nfpm/v2 v2.2.3 h1:XWo6DPdaPQ7eYoLraumzZZiO+VyPdVw2EJiTVetuzTE=
+github.com/goreleaser/nfpm/v2 v2.2.3/go.mod h1:WtPzYQh+Ls57prS9RzXegrGejqILUS1aZibXHTTJ8eI=
 github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gostaticanalysis/analysisutil v0.0.0-20190318220348-4088753ea4d3/go.mod h1:eEOZF4jCKGi+aprrirO9e7WKB3beBRtWgqGunKl6pKE=
