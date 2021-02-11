@@ -5,8 +5,8 @@ title: Name Templates
 Several fields in GoReleaser's config file support templating.
 
 Those fields are often suffixed with `_template`, but sometimes they may not
-be. The documentation of each section should explicit in which fields
-templating is available.
+be. The documentation of each section should be explicit about which fields
+support templating.
 
 On fields that support templating, these fields are always available:
 
