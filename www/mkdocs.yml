@@ -92,7 +92,6 @@ nav:
   - cookbooks/publish-to-nexus.md
   - cookbooks/cgo-and-crosscompiling.md
   - cookbooks/debconf-templates.md
-- tutorials.md
 - links.md
 
 markdown_extensions:
