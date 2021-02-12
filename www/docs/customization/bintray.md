@@ -10,7 +10,7 @@ Uploading to Bintray is a simple case of [using HTTP Upload](https://goreleaser.
 * Create a user and/or an org in Bintray
 * Create a generic repository in Bintray
 * Create a package with a name matching your `ProjectName`
-* After publishing, dont' forget to publish the uploaded files (either via UI or [REST API](https://bintray.com/docs/api/#_publish_discard_uploaded_content))
+* After publishing, don't forget to publish the uploaded files (either via UI or [REST API](https://bintray.com/docs/api/#_publish_discard_uploaded_content))
 
 ```yaml
 uploads:

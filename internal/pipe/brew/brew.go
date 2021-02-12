@@ -83,28 +83,8 @@ func (Pipe) Default(ctx *context.Context) error {
 		var brew = &ctx.Config.Brews[i]
 
 		if brew.Install == "" {
-			// TODO: maybe replace this with a simpler also optimistic
-			// approach of just doing `bin.install "project_name"`?
-			var installs []string
-			for _, build := range ctx.Config.Builds {
-				if !isBrewBuild(build) {
-					continue
-				}
-				install := fmt.Sprintf(`bin.install "%s"`, build.Binary)
-				// Do not add duplicate "bin.install" statements when binary names overlap.
-				var found bool
-				for _, instruction := range installs {
-					if instruction == install {
-						found = true
-						break
-					}
-				}
-				if !found {
-					installs = append(installs, install)
-				}
-			}
-			brew.Install = strings.Join(installs, "\n")
-			log.Warnf("optimistically guessing `brew[%d].install`, double check", i)
+			brew.Install = fmt.Sprintf(`bin.install "%s"`, ctx.Config.ProjectName)
+			log.Warnf("optimistically guessing `brew[%d].install` to be `%s`", i, brew.Install)
 		}
 		if brew.CommitAuthor.Name == "" {
 			brew.CommitAuthor.Name = "goreleaserbot"
@@ -121,24 +101,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 
 	return nil
-}
-
-func isBrewBuild(build config.Build) bool {
-	for _, ignore := range build.Ignore {
-		if ignore.Goos == "darwin" && ignore.Goarch == "amd64" {
-			return false
-		}
-	}
-	return contains(build.Goos, "darwin") && contains(build.Goarch, "amd64")
-}
-
-func contains(ss []string, s string) bool {
-	for _, zs := range ss {
-		if zs == s {
-			return true
-		}
-	}
-	return false
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {

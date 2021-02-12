@@ -248,9 +248,11 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 				},
 				Breaks: overridden.Deb.Breaks,
 				Signature: nfpm.DebSignature{
-					KeyFile:       overridden.Deb.Signature.KeyFile,
-					KeyPassphrase: getPassphraseFromEnv(ctx, "DEB", fpm.ID),
-					Type:          overridden.Deb.Signature.Type,
+					PackageSignature: nfpm.PackageSignature{
+						KeyFile:       overridden.Deb.Signature.KeyFile,
+						KeyPassphrase: getPassphraseFromEnv(ctx, "DEB", fpm.ID),
+					},
+					Type: overridden.Deb.Signature.Type,
 				},
 			},
 			RPM: nfpm.RPM{
@@ -258,15 +260,19 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 				Group:       overridden.RPM.Group,
 				Compression: overridden.RPM.Compression,
 				Signature: nfpm.RPMSignature{
-					KeyFile:       overridden.RPM.Signature.KeyFile,
-					KeyPassphrase: getPassphraseFromEnv(ctx, "RPM", fpm.ID),
+					PackageSignature: nfpm.PackageSignature{
+						KeyFile:       overridden.RPM.Signature.KeyFile,
+						KeyPassphrase: getPassphraseFromEnv(ctx, "RPM", fpm.ID),
+					},
 				},
 			},
 			APK: nfpm.APK{
 				Signature: nfpm.APKSignature{
-					KeyFile:       overridden.APK.Signature.KeyFile,
-					KeyPassphrase: getPassphraseFromEnv(ctx, "APK", fpm.ID),
-					KeyName:       overridden.APK.Signature.KeyName,
+					PackageSignature: nfpm.PackageSignature{
+						KeyFile:       overridden.APK.Signature.KeyFile,
+						KeyPassphrase: getPassphraseFromEnv(ctx, "APK", fpm.ID),
+					},
+					KeyName: overridden.APK.Signature.KeyName,
 				},
 			},
 		},

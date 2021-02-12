@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"runtime"
 	"time"
 
 	"github.com/apex/log"
@@ -62,7 +63,7 @@ func newBuildCmd() *buildCmd {
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
 	cmd.Flags().BoolVar(&root.opts.skipPostHooks, "skip-post-hooks", false, "Skips all post-build hooks")
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
-	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 4, "Amount tasks to run concurrently")
+	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", runtime.NumCPU(), "Amount tasks to run concurrently")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")

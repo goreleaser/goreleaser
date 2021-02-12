@@ -482,8 +482,9 @@ type Checksum struct {
 
 // Docker image config.
 type Docker struct {
-	Binaries           []string `yaml:",omitempty"`
-	Builds             []string `yaml:",omitempty"`
+	Binaries           []string `yaml:",omitempty"` // deprecated: no need to use this anymore
+	Builds             []string `yaml:",omitempty"` // deprecated: use IDs instead
+	IDs                []string `yaml:"ids,omitempty"`
 	Goos               string   `yaml:",omitempty"`
 	Goarch             string   `yaml:",omitempty"`
 	Goarm              string   `yaml:",omitempty"`
@@ -543,17 +544,18 @@ type Blob struct {
 
 // Upload configuration.
 type Upload struct {
-	Name               string   `yaml:",omitempty"`
-	IDs                []string `yaml:"ids,omitempty"`
-	Target             string   `yaml:",omitempty"`
-	Username           string   `yaml:",omitempty"`
-	Mode               string   `yaml:",omitempty"`
-	Method             string   `yaml:",omitempty"`
-	ChecksumHeader     string   `yaml:"checksum_header,omitempty"`
-	TrustedCerts       string   `yaml:"trusted_certificates,omitempty"`
-	Checksum           bool     `yaml:",omitempty"`
-	Signature          bool     `yaml:",omitempty"`
-	CustomArtifactName bool     `yaml:"custom_artifact_name,omitempty"`
+	Name               string            `yaml:",omitempty"`
+	IDs                []string          `yaml:"ids,omitempty"`
+	Target             string            `yaml:",omitempty"`
+	Username           string            `yaml:",omitempty"`
+	Mode               string            `yaml:",omitempty"`
+	Method             string            `yaml:",omitempty"`
+	ChecksumHeader     string            `yaml:"checksum_header,omitempty"`
+	TrustedCerts       string            `yaml:"trusted_certificates,omitempty"`
+	Checksum           bool              `yaml:",omitempty"`
+	Signature          bool              `yaml:",omitempty"`
+	CustomArtifactName bool              `yaml:"custom_artifact_name,omitempty"`
+	CustomHeaders      map[string]string `yaml:"custom_headers,omitempty"`
 }
 
 // Publisher configuration.

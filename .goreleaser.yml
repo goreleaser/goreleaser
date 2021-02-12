@@ -39,8 +39,6 @@ dockers:
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
   dockerfile: Dockerfile
   use_buildx: true
-  binaries:
-  - goreleaser
   build_flag_templates:
   - "--pull"
   - "--label=org.opencontainers.image.created={{.Date}}"
@@ -56,8 +54,6 @@ dockers:
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
   dockerfile: Dockerfile
   use_buildx: true
-  binaries:
-  - goreleaser
   build_flag_templates:
   - "--pull"
   - "--label=org.opencontainers.image.created={{.Date}}"
@@ -132,6 +128,13 @@ nfpms:
     maintainer: Carlos Alexandro Becker <root@carlosbecker.com>
     license: MIT
     vendor: GoReleaser
+    contents:
+      - src: ./completions/goreleaser.bash
+        dst: /etc/bash_completion.d/goreleaser
+      - src: ./completions/goreleaser.fish
+        dst: /usr/share/fish/completions/goreleaser.fish
+      - src: ./completions/goreleaser.zsh
+        dst: /usr/local/share/zsh/site-functions/_goreleaser
     formats:
     - apk
     - deb
