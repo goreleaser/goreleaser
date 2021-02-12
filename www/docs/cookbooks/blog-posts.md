@@ -1,5 +1,5 @@
 ---
-title: Tutorials and posts
+title: Blog Posts
 ---
 
 Tutorials made by the community.
