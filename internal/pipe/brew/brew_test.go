@@ -41,9 +41,13 @@ func TestSimpleName(t *testing.T) {
 var defaultTemplateData = templateData{
 	Desc:     "Some desc",
 	Homepage: "https://google.com",
-	MacOS: downloadable{
+	MacOSAmd64: downloadable{
 		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
 		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
+	},
+	MacOSArm64: downloadable{
+		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
+		SHA256:      "1633f61598ab0791e213135923624eb342196b349490sadasdsadsadasdasdsd",
 	},
 	LinuxAmd64: downloadable{
 		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
@@ -99,7 +103,8 @@ func TestFullFormulae(t *testing.T) {
 
 func TestFullFormulaeLinuxOnly(t *testing.T) {
 	data := defaultTemplateData
-	data.MacOS = downloadable{}
+	data.MacOSAmd64 = downloadable{}
+	data.MacOSArm64 = downloadable{}
 	data.Install = []string{`bin.install "test"`}
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",

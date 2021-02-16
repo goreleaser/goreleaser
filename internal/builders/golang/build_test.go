@@ -68,6 +68,7 @@ func TestWithDefaults(t *testing.T) {
 				"linux_386",
 				"linux_arm64",
 				"darwin_amd64",
+				"darwin_arm64",
 			},
 			goBinary: "go",
 		},
