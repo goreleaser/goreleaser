@@ -93,9 +93,29 @@ func TestCheckConfig(t *testing.T) {
 		{"secret missing", args{ctx, &config.Upload{Name: "b", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"target missing", args{ctx, &config.Upload{Name: "a", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"name missing", args{ctx, &config.Upload{Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
+		{"username missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Mode: ModeArchive}, "test"}, true},
+		{"username present", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, false},
 		{"mode missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe"}, "test"}, true},
 		{"mode invalid", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: "blabla"}, "test"}, true},
 		{"cert invalid", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeBinary, TrustedCerts: "bad cert!"}, "test"}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := CheckConfig(tt.args.ctx, tt.args.upload, tt.args.kind); (err != nil) != tt.wantErr {
+				t.Errorf("CheckConfig() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+
+	delete(ctx.Env, "TEST_A_SECRET")
+
+	tests = []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"username missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Mode: ModeArchive}, "test"}, false},
+		{"username present", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
