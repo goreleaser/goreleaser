@@ -50,7 +50,7 @@ class {{ .Name }} < Formula
   {{- end }}
   {{- printf "\n" }}
   {{- if .MacOSAmd64.DownloadURL }}
-  if OS.mac?
+  if OS.mac? && Hardware::CPU.intel?
     url "{{ .MacOSAmd64.DownloadURL }}"
     {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
     sha256 "{{ .MacOSAmd64.SHA256 }}"
