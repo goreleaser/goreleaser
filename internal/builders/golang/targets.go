@@ -1,7 +1,9 @@
 package golang
 
 import (
+	"bytes"
 	"fmt"
+	"os/exec"
 	"strings"
 
 	"github.com/apex/log"
@@ -108,7 +110,15 @@ func ignored(build config.Build, target target) bool {
 		}
 		return true
 	}
+	if target.os == "darwin" && target.arch == "arm64" && !isGo116(build) {
+		return true
+	}
 	return false
+}
+
+func isGo116(build config.Build) bool {
+	bts, err := exec.Command(build.GoBinary, "version").CombinedOutput()
+	return err == nil && bytes.Contains(bts, []byte("go1.16"))
 }
 
 func valid(target target) bool {
