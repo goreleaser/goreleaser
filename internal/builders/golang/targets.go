@@ -1,7 +1,9 @@
 package golang
 
 import (
+	"bytes"
 	"fmt"
+	"os/exec"
 	"strings"
 
 	"github.com/apex/log"
@@ -40,14 +42,16 @@ func matrix(build config.Build) ([]string, error) {
 		if target.mips != "" && !contains(target.mips, validGomips) {
 			return result, fmt.Errorf("invalid gomips: %s", target.mips)
 		}
+		if target.os == "darwin" && target.arch == "arm64" && !isGo116(build) {
+			log.WithField("target", target).Warn("skipped invalid build on go < 1.16")
+			continue
+		}
 		if !valid(target) {
-			log.WithField("target", target).
-				Debug("skipped invalid build")
+			log.WithField("target", target).Debug("skipped invalid build")
 			continue
 		}
 		if ignored(build, target) {
-			log.WithField("target", target).
-				Debug("skipped ignored build")
+			log.WithField("target", target).Debug("skipped ignored build")
 			continue
 		}
 		targets = append(targets, target)
@@ -109,6 +113,11 @@ func ignored(build config.Build, target target) bool {
 		return true
 	}
 	return false
+}
+
+func isGo116(build config.Build) bool {
+	bts, _ := exec.Command(build.GoBinary, "version").CombinedOutput()
+	return bytes.Contains(bts, []byte("go version go1.16"))
 }
 
 func valid(target target) bool {

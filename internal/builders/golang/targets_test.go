@@ -9,7 +9,8 @@ import (
 )
 
 func TestAllBuildTargets(t *testing.T) {
-	var build = config.Build{
+	build := config.Build{
+		GoBinary: "go",
 		Goos: []string{
 			"linux",
 			"darwin",
@@ -83,7 +84,7 @@ func TestAllBuildTargets(t *testing.T) {
 }
 
 func TestGoosGoarchCombos(t *testing.T) {
-	var platforms = []struct {
+	platforms := []struct {
 		os    string
 		arch  string
 		valid bool
