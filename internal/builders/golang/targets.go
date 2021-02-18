@@ -42,6 +42,9 @@ func matrix(build config.Build) ([]string, error) {
 		if target.mips != "" && !contains(target.mips, validGomips) {
 			return result, fmt.Errorf("invalid gomips: %s", target.mips)
 		}
+		if target.os == "darwin" && target.arch == "arm64" && !isGo116(build) {
+			return result, fmt.Errorf("invalid darwin/arm64 on go < 1.16")
+		}
 		if !valid(target) {
 			log.WithField("target", target).
 				Debug("skipped invalid build")
@@ -110,15 +113,12 @@ func ignored(build config.Build, target target) bool {
 		}
 		return true
 	}
-	if target.os == "darwin" && target.arch == "arm64" && !isGo116(build) {
-		return true
-	}
 	return false
 }
 
 func isGo116(build config.Build) bool {
-	bts, err := exec.Command(build.GoBinary, "version").CombinedOutput()
-	return err == nil && bytes.Contains(bts, []byte("go1.16"))
+	bts, _ := exec.Command(build.GoBinary, "version").CombinedOutput()
+	return bytes.Contains(bts, []byte("go version go1.16"))
 }
 
 func valid(target target) bool {

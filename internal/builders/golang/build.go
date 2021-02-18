@@ -35,6 +35,9 @@ type Builder struct{}
 
 // WithDefaults sets the defaults for a golang build and returns it.
 func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
+	if build.GoBinary == "" {
+		build.GoBinary = "go"
+	}
 	if build.Dir == "" {
 		build.Dir = "."
 	}
@@ -59,9 +62,6 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 		if err != nil {
 			return build, err
 		}
-	}
-	if build.GoBinary == "" {
-		build.GoBinary = "go"
 	}
 	return build, nil
 }

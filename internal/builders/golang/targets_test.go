@@ -9,7 +9,8 @@ import (
 )
 
 func TestAllBuildTargets(t *testing.T) {
-	var build = config.Build{
+	build := config.Build{
+		GoBinary: "go",
 		Goos: []string{
 			"linux",
 			"darwin",
