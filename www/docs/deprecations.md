@@ -21,7 +21,7 @@ goreleaser check
 
 Since Go 1.16, `darwin/arm64` is macOS on Apple Silicon instead of `iOS`.
 
-Prior to v0.156.0, GoReleaser would just ignore this target, but since on Go 1.16 it is a valid target, it will
+Prior to v0.156.0, GoReleaser would just ignore this target, but since in Go 1.16 it is a valid target, GoReleaser will
 now build it if the Go version being used is 1.16.
 
 If you want to make sure it is ignored in the future, you need to add this to your build config:
@@ -31,6 +31,8 @@ ignore:
 - goos: darwin
   goarch: arm64
 ```
+
+If you try to use new versions of GoReleaser with Go 1.15, it will warn about it until this deprecation warning expires.
 
 ### docker.builds
 
