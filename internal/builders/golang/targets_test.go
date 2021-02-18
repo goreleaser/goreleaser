@@ -84,7 +84,7 @@ func TestAllBuildTargets(t *testing.T) {
 }
 
 func TestGoosGoarchCombos(t *testing.T) {
-	var platforms = []struct {
+	platforms := []struct {
 		os    string
 		arch  string
 		valid bool

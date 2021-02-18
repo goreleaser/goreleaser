@@ -76,9 +76,9 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	var cmd = []string{build.GoBinary, "build"}
+	cmd := []string{build.GoBinary, "build"}
 
-	var env = append(ctx.Env.Strings(), build.Env...)
+	env := append(ctx.Env.Strings(), build.Env...)
 	env = append(env, target.Env()...)
 
 	artifact := &artifact.Artifact{
@@ -171,8 +171,8 @@ func joinLdFlags(flags []string) string {
 
 func run(ctx *context.Context, command, env []string, dir string) error {
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
-	var log = log.WithField("env", env).WithField("cmd", command)
+	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
+	log := log.WithField("env", env).WithField("cmd", command)
 	cmd.Env = env
 	cmd.Dir = dir
 	log.Debug("running")
@@ -188,7 +188,7 @@ type buildTarget struct {
 }
 
 func newBuildTarget(s string) (buildTarget, error) {
-	var t = buildTarget{}
+	t := buildTarget{}
 	parts := strings.Split(s, "_")
 	if len(parts) < 2 {
 		return t, fmt.Errorf("%s is not a valid build target", s)
@@ -215,7 +215,7 @@ func (b buildTarget) Env() []string {
 }
 
 func checkMain(build config.Build) error {
-	var main = build.Main
+	main := build.Main
 	if main == "" {
 		main = "."
 	}
