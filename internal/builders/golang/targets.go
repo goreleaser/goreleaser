@@ -43,16 +43,15 @@ func matrix(build config.Build) ([]string, error) {
 			return result, fmt.Errorf("invalid gomips: %s", target.mips)
 		}
 		if target.os == "darwin" && target.arch == "arm64" && !isGo116(build) {
-			return result, fmt.Errorf("invalid darwin/arm64 on go < 1.16")
+			log.WithField("target", target).Warn("skipped invalid build on go < 1.16")
+			continue
 		}
 		if !valid(target) {
-			log.WithField("target", target).
-				Debug("skipped invalid build")
+			log.WithField("target", target).Debug("skipped invalid build")
 			continue
 		}
 		if ignored(build, target) {
-			log.WithField("target", target).
-				Debug("skipped ignored build")
+			log.WithField("target", target).Debug("skipped ignored build")
 			continue
 		}
 		targets = append(targets, target)
