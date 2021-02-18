@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
@@ -43,7 +44,10 @@ func matrix(build config.Build) ([]string, error) {
 			return result, fmt.Errorf("invalid gomips: %s", target.mips)
 		}
 		if target.os == "darwin" && target.arch == "arm64" && !isGo116(build) {
-			log.WithField("target", target).Warn("skipped invalid build on go < 1.16")
+			log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
+				"DEPRECATED: skipped darwin/arm64 build on Go < 1.16 for compatibility, check %s for more info.",
+				"https://goreleaser.com/deprecations/#builds-for-darwinarm64",
+			))
 			continue
 		}
 		if !valid(target) {
