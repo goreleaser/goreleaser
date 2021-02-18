@@ -17,7 +17,7 @@ goreleaser check
 
 ### builds for darwin/arm64
 
-> since 2021-02-17 (v0.156.0)
+> since 2021-02-17 (v0.157.0)
 
 Since Go 1.16, `darwin/arm64` is macOS on Apple Silicon instead of `iOS`.
 
