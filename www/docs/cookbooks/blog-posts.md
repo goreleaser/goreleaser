@@ -16,6 +16,7 @@ Tutorials made by the community.
 - [Multi-platform Docker images with GoReleaser and GitHub Actions](https://carlosbecker.com/posts/multi-platform-docker-images-goreleaser-gh-actions/)
 - [Painless Github releases with Drone and GoReleaser](https://medium.com/@stepanvrany/painless-github-releases-with-drone-and-goreleaser-853bbbccd0c0)
 - [Shipping Rust Binaries with GoReleaser](https://medium.com/@jondot/shipping-rust-binaries-with-goreleaser-d5aa42a46be0)
+- [Publishing dep/rpm packages with Goreleaser and Fury.io](https://netdevops.me/2021/building-and-publishing-deb/rpm-packages-with-goreleaser-and-fury.io/)
 
 !!! tip
     Click on the "Edit" button to add your page here.
