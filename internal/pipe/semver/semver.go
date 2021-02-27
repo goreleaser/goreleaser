@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -22,9 +22,11 @@ func (Pipe) Run(ctx *context.Context) error {
 	sv, err := semver.NewVersion(ctx.Git.CurrentTag)
 	if err != nil {
 		if ctx.Snapshot || ctx.SkipValidate {
-			log.WithError(err).
-				WithField("tag", ctx.Git.CurrentTag).
-				Warn("current tag is not a semantic tag, which may cause other things to fail later")
+			deprecate.NoticeCustom(
+				ctx,
+				"skipping-semver-validations",
+				fmt.Sprintf("'%s' is not SemVer-compatible and may cause other issues in the pipeline, check {{ .URL }} for more info", ctx.Git.CurrentTag),
+			)
 		}
 		if ctx.Snapshot {
 			return pipe.ErrSnapshotEnabled
