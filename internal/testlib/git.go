@@ -10,7 +10,7 @@ import (
 
 // GitInit inits a new git project.
 func GitInit(t testing.TB) {
-	out, err := fakeGit("init")
+	out, err := fakeGit("init", "-b", "main")
 	require.NoError(t, err)
 	require.Contains(t, out, "Initialized empty Git repository")
 	require.NoError(t, err)
@@ -38,7 +38,7 @@ func GitCommitWithDate(t testing.TB, msg string, commitDate time.Time) {
 	}
 	out, err := fakeGitEnv(env, "commit", "--allow-empty", "-m", msg)
 	require.NoError(t, err)
-	require.Contains(t, out, "master", msg)
+	require.Contains(t, out, "main", msg)
 }
 
 // GitTag creates a git tag.
