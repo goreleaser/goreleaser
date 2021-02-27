@@ -21,16 +21,18 @@ func (Pipe) String() string {
 func (Pipe) Run(ctx *context.Context) error {
 	sv, err := semver.NewVersion(ctx.Git.CurrentTag)
 	if err != nil {
+		if ctx.Snapshot || ctx.SkipValidate {
+			log.WithError(err).
+				WithField("tag", ctx.Git.CurrentTag).
+				Warn("current tag is not a semantic tag, which may cause other things to fail later")
+		}
 		if ctx.Snapshot {
 			return pipe.ErrSnapshotEnabled
 		}
 		if ctx.SkipValidate {
-			log.WithError(err).
-				WithField("tag", ctx.Git.CurrentTag).
-				Warn("current tag is not a semantic tag")
 			return pipe.ErrSkipValidateEnabled
 		}
-		return fmt.Errorf("failed to parse tag %s as semver: %w", ctx.Git.CurrentTag, err)
+		return fmt.Errorf("failed to parse tag '%s' as semver: %w", ctx.Git.CurrentTag, err)
 	}
 	ctx.Semver = context.Semver{
 		Major:      sv.Major(),
