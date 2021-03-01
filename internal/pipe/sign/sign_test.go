@@ -19,11 +19,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var originKeyring = "testdata/gnupg"
-var keyring string
+var (
+	originKeyring = "testdata/gnupg"
+	keyring       string
+)
 
-const user = "nopass"
-const passwordUser = "password"
+const (
+	user         = "nopass"
+	passwordUser = "password"
+)
 
 func TestMain(m *testing.M) {
 	rand.Seed(time.Now().UnixNano())
@@ -380,21 +384,22 @@ func TestSignArtifacts(t *testing.T) {
 	}
 }
 
-func testSign(t testing.TB, ctx *context.Context, signaturePaths []string, signatureNames []string, user, expectedErrMsg string) {
-	var tmpdir = t.TempDir()
+func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, signatureNames []string, user, expectedErrMsg string) {
+	tb.Helper()
+	tmpdir := tb.TempDir()
 
 	ctx.Config.Dist = tmpdir
 
 	// create some fake artifacts
-	var artifacts = []string{"artifact1", "artifact2", "artifact3", "checksum", "checksum2"}
-	require.NoError(t, os.Mkdir(filepath.Join(tmpdir, "linux_amd64"), os.ModePerm))
+	artifacts := []string{"artifact1", "artifact2", "artifact3", "checksum", "checksum2"}
+	require.NoError(tb, os.Mkdir(filepath.Join(tmpdir, "linux_amd64"), os.ModePerm))
 	for _, f := range artifacts {
 		file := filepath.Join(tmpdir, f)
-		require.NoError(t, ioutil.WriteFile(file, []byte("foo"), 0644))
+		require.NoError(tb, ioutil.WriteFile(file, []byte("foo"), 0o644))
 	}
-	require.NoError(t, ioutil.WriteFile(filepath.Join(tmpdir, "linux_amd64", "artifact4"), []byte("foo"), 0644))
+	require.NoError(tb, ioutil.WriteFile(filepath.Join(tmpdir, "linux_amd64", "artifact4"), []byte("foo"), 0o644))
 	artifacts = append(artifacts, "linux_amd64/artifact4")
-	require.NoError(t, ioutil.WriteFile(filepath.Join(tmpdir, "artifact5.tar.gz"), []byte("foo"), 0644))
+	require.NoError(tb, ioutil.WriteFile(filepath.Join(tmpdir, "artifact5.tar.gz"), []byte("foo"), 0o644))
 	artifacts = append(artifacts, "artifact5.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "artifact1",
@@ -446,7 +451,7 @@ func testSign(t testing.TB, ctx *context.Context, signaturePaths []string, signa
 
 	// configure the pipeline
 	// make sure we are using the test keyring
-	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(tb, Pipe{}.Default(ctx))
 	for i := range ctx.Config.Signs {
 		ctx.Config.Signs[i].Args = append(
 			[]string{"--homedir", keyring},
@@ -456,21 +461,21 @@ func testSign(t testing.TB, ctx *context.Context, signaturePaths []string, signa
 
 	// run the pipeline
 	if expectedErrMsg != "" {
-		require.EqualError(t, Pipe{}.Run(ctx), expectedErrMsg)
+		require.EqualError(tb, Pipe{}.Run(ctx), expectedErrMsg)
 		return
 	}
 
-	require.NoError(t, Pipe{}.Run(ctx))
+	require.NoError(tb, Pipe{}.Run(ctx))
 
 	// ensure all artifacts have an ID
 	for _, arti := range ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List() {
-		require.NotEmptyf(t, arti.ExtraOr("ID", ""), ".Extra.ID on %s", arti.Path)
+		require.NotEmptyf(tb, arti.ExtraOr("ID", ""), ".Extra.ID on %s", arti.Path)
 	}
 
 	// verify that only the artifacts and the signatures are in the dist dir
 	gotFiles := []string{}
 
-	require.NoError(t, filepath.Walk(tmpdir,
+	require.NoError(tb, filepath.Walk(tmpdir,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
@@ -489,11 +494,11 @@ func testSign(t testing.TB, ctx *context.Context, signaturePaths []string, signa
 
 	wantFiles := append(artifacts, signaturePaths...)
 	sort.Strings(wantFiles)
-	require.ElementsMatch(t, wantFiles, gotFiles)
+	require.ElementsMatch(tb, wantFiles, gotFiles)
 
 	// verify the signatures
 	for _, sig := range signaturePaths {
-		verifySignature(t, ctx, sig, user)
+		verifySignature(tb, ctx, sig, user)
 	}
 
 	var signArtifacts []string
@@ -501,28 +506,29 @@ func testSign(t testing.TB, ctx *context.Context, signaturePaths []string, signa
 		signArtifacts = append(signArtifacts, sig.Name)
 	}
 	// check signature is an artifact
-	require.ElementsMatch(t, signArtifacts, signatureNames)
+	require.ElementsMatch(tb, signArtifacts, signatureNames)
 }
 
-func verifySignature(t testing.TB, ctx *context.Context, sig string, user string) {
+func verifySignature(tb testing.TB, ctx *context.Context, sig string, user string) {
+	tb.Helper()
 	artifact := strings.Replace(sig, filepath.Ext(sig), "", 1)
 
 	// verify signature was made with key for usesr 'nopass'
 	cmd := exec.Command("gpg", "--homedir", keyring, "--verify", filepath.Join(ctx.Config.Dist, sig), filepath.Join(ctx.Config.Dist, artifact))
 	out, err := cmd.CombinedOutput()
-	require.NoError(t, err)
+	require.NoError(tb, err)
 
 	// check if the signature matches the user we expect to do this properly we
 	// might need to have either separate keyrings or export the key from the
 	// keyring before we do the verification. For now we punt and look in the
 	// output.
 	if !bytes.Contains(out, []byte(user)) {
-		t.Fatalf("%s: signature is not from %s: %s", sig, user, string(out))
+		tb.Fatalf("%s: signature is not from %s: %s", sig, user, string(out))
 	}
 }
 
 func TestSeveralSignsWithTheSameID(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Signs: []config.Sign{
 				{

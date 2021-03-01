@@ -23,17 +23,17 @@ import (
 )
 
 func TestMinioUpload(t *testing.T) {
-	var listen = randomListen(t)
-	var folder = t.TempDir()
+	listen := randomListen(t)
+	folder := t.TempDir()
 	srcpath := filepath.Join(folder, "source.tar.gz")
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
 	checkpath := filepath.Join(folder, "check.txt")
-	require.NoError(t, ioutil.WriteFile(checkpath, []byte("fake checksums"), 0744))
-	require.NoError(t, ioutil.WriteFile(srcpath, []byte("fake\nsrc"), 0744))
-	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
-	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
-	var ctx = context.New(config.Project{
+	require.NoError(t, ioutil.WriteFile(checkpath, []byte("fake checksums"), 0o744))
+	require.NoError(t, ioutil.WriteFile(srcpath, []byte("fake\nsrc"), 0o744))
+	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
+	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
+	ctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -76,7 +76,7 @@ func TestMinioUpload(t *testing.T) {
 			"ID": "bar",
 		},
 	})
-	var name = "test_upload"
+	name := "test_upload"
 	start(t, name, listen)
 	prepareEnv()
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -91,15 +91,15 @@ func TestMinioUpload(t *testing.T) {
 }
 
 func TestMinioUploadCustomBucketID(t *testing.T) {
-	var listen = randomListen(t)
-	var folder = t.TempDir()
+	listen := randomListen(t)
+	folder := t.TempDir()
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
-	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
-	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
+	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
+	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	// Set custom BUCKET_ID env variable.
 	require.NoError(t, os.Setenv("BUCKET_ID", "test"))
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -121,7 +121,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 		Name: "bin.deb",
 		Path: debpath,
 	})
-	var name = "custom_bucket_id"
+	name := "custom_bucket_id"
 	start(t, name, listen)
 	prepareEnv()
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -129,13 +129,13 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 }
 
 func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
-	var listen = randomListen(t)
-	var folder = t.TempDir()
+	listen := randomListen(t)
+	folder := t.TempDir()
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
-	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
-	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
-	var ctx = context.New(config.Project{
+	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
+	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
+	ctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -157,7 +157,7 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 		Name: "bin.deb",
 		Path: debpath,
 	})
-	var name = "invalid_bucket_id"
+	name := "invalid_bucket_id"
 	start(t, name, listen)
 	prepareEnv()
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -165,17 +165,17 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 }
 
 func TestMinioUploadSkipPublish(t *testing.T) {
-	var listen = randomListen(t)
-	var folder = t.TempDir()
+	listen := randomListen(t)
+	folder := t.TempDir()
 	srcpath := filepath.Join(folder, "source.tar.gz")
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
 	checkpath := filepath.Join(folder, "check.txt")
-	require.NoError(t, ioutil.WriteFile(checkpath, []byte("fake checksums"), 0744))
-	require.NoError(t, ioutil.WriteFile(srcpath, []byte("fake\nsrc"), 0744))
-	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
-	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
-	var ctx = context.New(config.Project{
+	require.NoError(t, ioutil.WriteFile(checkpath, []byte("fake checksums"), 0o744))
+	require.NoError(t, ioutil.WriteFile(srcpath, []byte("fake\nsrc"), 0o744))
+	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
+	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
+	ctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -219,7 +219,7 @@ func TestMinioUploadSkipPublish(t *testing.T) {
 			"ID": "bar",
 		},
 	})
-	var name = "test_upload"
+	name := "test_upload"
 	start(t, name, listen)
 	prepareEnv()
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -247,15 +247,16 @@ func prepareEnv() {
 	os.Setenv("AWS_REGION", "us-east-1")
 }
 
-func start(t testing.TB, name, listen string) {
+func start(tb testing.TB, name, listen string) {
+	tb.Helper()
 	wd, err := os.Getwd()
-	require.NoError(t, err)
+	require.NoError(tb, err)
 
 	removeTestData()
 
-	t.Cleanup(func() {
+	tb.Cleanup(func() {
 		if out, err := exec.Command("docker", "stop", name).CombinedOutput(); err != nil {
-			t.Fatalf("failed to stop minio: %s", string(out))
+			tb.Fatalf("failed to stop minio: %s", string(out))
 		}
 		removeTestData()
 	})
@@ -272,19 +273,19 @@ func start(t testing.TB, name, listen string) {
 		"minio/minio",
 		"server", "/data",
 	).CombinedOutput(); err != nil {
-		t.Fatalf("failed to start minio: %s", string(out))
+		tb.Fatalf("failed to start minio: %s", string(out))
 	}
 
 	for range time.Tick(time.Second) {
 		out, err := exec.Command("docker", "inspect", "--format='{{json .State.Health}}'", name).CombinedOutput()
 		if err != nil {
-			t.Fatalf("failed to check minio status: %s", string(out))
+			tb.Fatalf("failed to check minio status: %s", string(out))
 		}
 		if strings.Contains(string(out), `"Status":"healthy"`) {
-			t.Log("minio is healthy")
+			tb.Log("minio is healthy")
 			break
 		}
-		t.Log("waiting for minio to be healthy")
+		tb.Log("waiting for minio to be healthy")
 	}
 }
 
@@ -299,7 +300,7 @@ func getFiles(t *testing.T, ctx *context.Context, cfg config.Blob) []string {
 	conn, err := blob.OpenBucket(ctx, url)
 	require.NoError(t, err)
 	defer conn.Close()
-	var iter = conn.List(nil)
+	iter := conn.List(nil)
 	var files []string
 	for {
 		file, err := iter.Next(ctx)

@@ -18,6 +18,8 @@ func (e *exitMemento) Exit(i int) {
 }
 
 func setup(tb testing.TB) string {
+	tb.Helper()
+
 	_ = os.Unsetenv("GITHUB_TOKEN")
 	_ = os.Unsetenv("GITLAB_TOKEN")
 
@@ -48,21 +50,25 @@ func setup(tb testing.TB) string {
 }
 
 func createFile(tb testing.TB, filename, contents string) {
+	tb.Helper()
 	require.NoError(tb, ioutil.WriteFile(filename, []byte(contents), 0o644))
 }
 
 func createMainGo(tb testing.TB) {
+	tb.Helper()
 	createFile(tb, "main.go", "package main\nfunc main() {println(0)}")
 }
 
 func goModInit(tb testing.TB) {
+	tb.Helper()
 	createFile(tb, "go.mod", `module foo
 
 go 1.16
 `)
 }
 
-func createGoreleaserYaml(t testing.TB) {
+func createGoreleaserYaml(tb testing.TB) {
+	tb.Helper()
 	yaml := `build:
   binary: fake
   goos:
@@ -74,5 +80,5 @@ release:
     owner: goreleaser
     name: fake
 `
-	createFile(t, "goreleaser.yml", yaml)
+	createFile(tb, "goreleaser.yml", yaml)
 }
