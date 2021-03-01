@@ -21,7 +21,7 @@ Clone `goreleaser` anywhere:
 git clone git@github.com:goreleaser/goreleaser.git
 ```
 
-Install the build and lint dependencies:
+`cd` into the directory and install the dependencies:
 
 ```sh
 make setup
