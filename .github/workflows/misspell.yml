@@ -9,11 +9,10 @@ on:
   pull_request:
 jobs:
   misspell:
-    name: runner / misspell
+    name: spellcheck
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code.
-        uses: actions/checkout@v1
+      - uses: actions/checkout@v1
       - name: misspell
         uses: reviewdog/action-misspell@v1
         with:
