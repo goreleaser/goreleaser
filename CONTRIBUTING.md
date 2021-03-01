@@ -47,8 +47,6 @@ When you are satisfied with the changes, we suggest you run:
 make ci
 ```
 
-Which runs all the linters and tests.
-
 ## Create a commit
 
 Commit messages should be well formatted, and to make that "standardized", we
