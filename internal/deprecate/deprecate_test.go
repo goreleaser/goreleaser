@@ -1,8 +1,9 @@
 package deprecate
 
 import (
+	"bytes"
 	"flag"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/apex/log"
@@ -16,31 +17,47 @@ import (
 var update = flag.Bool("update", false, "update .golden files")
 
 func TestNotice(t *testing.T) {
-	f, err := ioutil.TempFile(t.TempDir(), "output.txt")
-	require.NoError(t, err)
-	t.Cleanup(func() { f.Close() })
+	var w bytes.Buffer
 
 	color.NoColor = true
-	log.SetHandler(cli.New(f))
+	log.SetHandler(cli.New(&w))
 
 	log.Info("first")
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	Notice(ctx, "foo.bar.whatever")
 	log.Info("last")
 	require.True(t, ctx.Deprecated)
 
-	require.NoError(t, f.Close())
-
-	bts, err := ioutil.ReadFile(f.Name())
-	require.NoError(t, err)
-
 	const golden = "testdata/output.txt.golden"
 	if *update {
-		require.NoError(t, ioutil.WriteFile(golden, bts, 0655))
+		require.NoError(t, os.WriteFile(golden, w.Bytes(), 0o655))
 	}
 
-	gbts, err := ioutil.ReadFile(golden)
+	gbts, err := os.ReadFile(golden)
 	require.NoError(t, err)
 
-	require.Equal(t, string(gbts), string(bts))
+	require.Equal(t, string(gbts), w.String())
+}
+
+func TestNoticeCustom(t *testing.T) {
+	var w bytes.Buffer
+
+	color.NoColor = true
+	log.SetHandler(cli.New(&w))
+
+	log.Info("first")
+	ctx := context.New(config.Project{})
+	NoticeCustom(ctx, "something-else", "some custom template with a url {{ .URL }}")
+	log.Info("last")
+	require.True(t, ctx.Deprecated)
+
+	const golden = "testdata/output_custom.txt.golden"
+	if *update {
+		require.NoError(t, os.WriteFile(golden, w.Bytes(), 0o655))
+	}
+
+	gbts, err := os.ReadFile(golden)
+	require.NoError(t, err)
+
+	require.Equal(t, string(gbts), w.String())
 }
