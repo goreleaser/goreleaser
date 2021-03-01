@@ -10,13 +10,14 @@ import (
 
 // Mktmp creates a new tempdir, cd into it and provides a back function that
 // cd into the previous directory.
-func Mktmp(t testing.TB) string {
-	var folder = t.TempDir()
+func Mktmp(tb testing.TB) string {
+	tb.Helper()
+	folder := tb.TempDir()
 	current, err := os.Getwd()
-	require.NoError(t, err)
-	require.NoError(t, os.Chdir(folder))
-	t.Cleanup(func() {
-		require.NoError(t, os.Chdir(current))
+	require.NoError(tb, err)
+	require.NoError(tb, os.Chdir(folder))
+	tb.Cleanup(func() {
+		require.NoError(tb, os.Chdir(current))
 	})
 	return folder
 }

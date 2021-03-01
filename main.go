@@ -1,5 +1,3 @@
-//go:generate go install github.com/golangci/golangci-lint/cmd/golangci-lint
-//go:generate go install github.com/client9/misspell/cmd/misspell
 package main
 
 import (
@@ -26,7 +24,7 @@ func main() {
 }
 
 func buildVersion(version, commit, date, builtBy string) string {
-	var result = version
+	result := version
 	if commit != "" {
 		result = fmt.Sprintf("%s\ncommit: %s", result, commit)
 	}
