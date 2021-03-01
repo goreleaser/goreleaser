@@ -15,7 +15,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestValidSemver(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v1.5.2-rc1"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, context.Semver{
@@ -27,15 +27,15 @@ func TestValidSemver(t *testing.T) {
 }
 
 func TestInvalidSemver(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "aaaav1.5.2-rc1"
-	var err = Pipe{}.Run(ctx)
+	err := Pipe{}.Run(ctx)
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "failed to parse tag aaaav1.5.2-rc1 as semver")
+	require.Contains(t, err.Error(), "failed to parse tag 'aaaav1.5.2-rc1' as semver")
 }
 
 func TestInvalidSemverOnSnapshots(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "aaaav1.5.2-rc1"
 	ctx.Snapshot = true
 	require.EqualError(t, Pipe{}.Run(ctx), pipe.ErrSnapshotEnabled.Error())
@@ -48,7 +48,7 @@ func TestInvalidSemverOnSnapshots(t *testing.T) {
 }
 
 func TestInvalidSemverSkipValidate(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "aaaav1.5.2-rc1"
 	ctx.SkipValidate = true
 	require.EqualError(t, Pipe{}.Run(ctx), pipe.ErrSkipValidateEnabled.Error())
