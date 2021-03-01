@@ -1,5 +1,12 @@
 name: misspell
-on: [pull_request]
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - master
+      - main
+  pull_request:
 jobs:
   misspell:
     name: runner / misspell
