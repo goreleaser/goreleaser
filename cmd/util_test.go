@@ -17,53 +17,53 @@ func (e *exitMemento) Exit(i int) {
 	e.code = i
 }
 
-func setup(t testing.TB) string {
+func setup(tb testing.TB) string {
 	_ = os.Unsetenv("GITHUB_TOKEN")
 	_ = os.Unsetenv("GITLAB_TOKEN")
 
 	previous, err := os.Getwd()
-	require.NoError(t, err)
+	require.NoError(tb, err)
 
-	t.Cleanup(func() {
-		require.NoError(t, os.Chdir(previous))
+	tb.Cleanup(func() {
+		require.NoError(tb, os.Chdir(previous))
 	})
 
-	var folder = t.TempDir()
-	require.NoError(t, os.Chdir(folder))
+	folder := tb.TempDir()
+	require.NoError(tb, os.Chdir(folder))
 
-	createGoreleaserYaml(t)
-	createMainGo(t)
-	goModInit(t)
-	testlib.GitInit(t)
-	testlib.GitAdd(t)
-	testlib.GitCommit(t, "asdf")
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCommit(t, "asas89d")
-	testlib.GitCommit(t, "assssf")
-	testlib.GitCommit(t, "assd")
-	testlib.GitTag(t, "v0.0.2")
-	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/fake.git")
+	createGoreleaserYaml(tb)
+	createMainGo(tb)
+	goModInit(tb)
+	testlib.GitInit(tb)
+	testlib.GitAdd(tb)
+	testlib.GitCommit(tb, "asdf")
+	testlib.GitTag(tb, "v0.0.1")
+	testlib.GitCommit(tb, "asas89d")
+	testlib.GitCommit(tb, "assssf")
+	testlib.GitCommit(tb, "assd")
+	testlib.GitTag(tb, "v0.0.2")
+	testlib.GitRemoteAdd(tb, "git@github.com:goreleaser/fake.git")
 
 	return folder
 }
 
-func createFile(t testing.TB, filename, contents string) {
-	require.NoError(t, ioutil.WriteFile(filename, []byte(contents), 0644))
+func createFile(tb testing.TB, filename, contents string) {
+	require.NoError(tb, ioutil.WriteFile(filename, []byte(contents), 0o644))
 }
 
-func createMainGo(t testing.TB) {
-	createFile(t, "main.go", "package main\nfunc main() {println(0)}")
+func createMainGo(tb testing.TB) {
+	createFile(tb, "main.go", "package main\nfunc main() {println(0)}")
 }
 
-func goModInit(t testing.TB) {
-	createFile(t, "go.mod", `module foo
+func goModInit(tb testing.TB) {
+	createFile(tb, "go.mod", `module foo
 
 go 1.16
 `)
 }
 
 func createGoreleaserYaml(t testing.TB) {
-	var yaml = `build:
+	yaml := `build:
   binary: fake
   goos:
     - linux
