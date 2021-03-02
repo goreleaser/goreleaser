@@ -9,7 +9,7 @@ const ExampleConfig = `# This is an example .goreleaser.yml file with some sane 
 before:
   hooks:
     # You may remove this if you don't use go modules.
-    - go mod download
+    - go mod tidy
     # you may remove this if you don't need go generate
     - go generate ./...
 builds:

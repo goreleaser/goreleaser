@@ -62,6 +62,9 @@ jobs:
         run: |
           ./goreleaser check
       -
+        name: Diff
+        run: git diff
+      -
         name: Docker Login
         if: success() && startsWith(github.ref, 'refs/tags/v')
         env:
