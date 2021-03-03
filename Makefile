@@ -8,7 +8,7 @@ export GOPROXY = https://proxy.golang.org,direct
 
 # Install dependencies
 setup:
-	go mod download
+	go mod tidy
 .PHONY: setup
 
 # Run all the tests

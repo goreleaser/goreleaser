@@ -2,7 +2,7 @@ env:
   - GO111MODULE=on
 before:
   hooks:
-    - go mod download
+    - go mod tidy
     - ./scripts/completions.sh
 builds:
 - env:

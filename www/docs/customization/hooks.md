@@ -15,7 +15,7 @@ before:
   hooks:
   - make clean
   - go generate ./...
-  - go mod download
+  - go mod tidy
   - touch {{ .Env.FILE_TO_TOUCH }}
 ```
 
