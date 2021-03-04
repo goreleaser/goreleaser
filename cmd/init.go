@@ -15,8 +15,8 @@ type initCmd struct {
 }
 
 func newInitCmd() *initCmd {
-	var root = &initCmd{}
-	var cmd = &cobra.Command{
+	root := &initCmd{}
+	cmd := &cobra.Command{
 		Use:           "init",
 		Aliases:       []string{"i"},
 		Short:         "Generates a .goreleaser.yml file",
@@ -24,14 +24,23 @@ func newInitCmd() *initCmd {
 		SilenceErrors: true,
 		Args:          cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f, err := os.OpenFile(root.config, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0644)
+			conf, err := os.OpenFile(root.config, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0o644)
 			if err != nil {
 				return err
 			}
-			defer f.Close()
+			defer conf.Close()
 
 			log.Infof(color.New(color.Bold).Sprintf("Generating %s file", root.config))
-			if _, err := f.WriteString(static.ExampleConfig); err != nil {
+			if _, err := conf.WriteString(static.ExampleConfig); err != nil {
+				return err
+			}
+
+			gitignore, err := os.OpenFile(".gitignore", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
+			if err != nil {
+				return err
+			}
+			defer gitignore.Close()
+			if _, err := gitignore.WriteString("dist/\n"); err != nil {
 				return err
 			}
 
