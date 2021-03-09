@@ -285,6 +285,11 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		info.Deb.Signature = nfpm.DebSignature{}
 	}
 
+	for _, content := range info.Contents {
+		content.Source = filepath.ToSlash(content.Source)
+		content.Destination = filepath.ToSlash(content.Destination)
+	}
+
 	if err = nfpm.Validate(info); err != nil {
 		return fmt.Errorf("invalid nfpm config: %w", err)
 	}
