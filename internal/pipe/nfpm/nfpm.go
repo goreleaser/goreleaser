@@ -196,8 +196,8 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 			dst := filepath.Join(fpm.Bindir, binary.Name)
 			log.WithField("src", src).WithField("dst", dst).Debug("adding binary to package")
 			contents = append(contents, &files.Content{
-				Source:      src,
-				Destination: dst,
+				Source:      filepath.ToSlash(src),
+				Destination: filepath.ToSlash(dst),
 			})
 		}
 	}

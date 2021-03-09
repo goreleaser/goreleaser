@@ -808,10 +808,14 @@ func TestSkipSign(t *testing.T) {
 	}
 
 	t.Run("skip sign not set", func(t *testing.T) {
+		contains := "open /does/not/exist.gpg: no such file or directory"
+		if runtime.GOOS == "windows" {
+			contains = "open /does/not/exist.gpg: The system cannot find the path specified."
+		}
 		require.Contains(
 			t,
 			Pipe{}.Run(ctx).Error(),
-			`open /does/not/exist.gpg: no such file or directory`,
+			contains,
 		)
 	})
 
