@@ -98,6 +98,19 @@ snapcrafts:
         destination: bin/drumroll.wrapper
         mode: 0755
 
+    # With layouts, you can make elements in $SNAP, $SNAP_DATA, $SNAP_COMMON
+    # accessible from locations such as /usr, /var and /etc. This helps when using
+    # pre-compiled binaries and libraries that expect to find files and
+    # directories outside of locations referenced by $SNAP or $SNAP_DATA.
+    # More info about layout here:
+    # https://snapcraft.io/docs/snap-layouts
+    # More info about environment variables here:
+    # https://snapcraft.io/docs/security-sandboxing
+    # Default is empty.
+    layout:
+      /etc/drumroll:
+        bind: $SNAP_DATA/etc
+
     # Each binary built by GoReleaser is an app inside the snap. In this section
     # you can declare extra details for those binaries. It is optional.
     apps:
