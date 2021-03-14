@@ -154,10 +154,7 @@ func TestRunPipeMetadata(t *testing.T) {
 				Summary:      "test summary",
 				Description:  "test description",
 				Layout: map[string]config.SnapcraftLayoutMetadata{
-					"/etc/testprojectname":             {Bind: "$SNAP_DATA/etc"},
-					"/etc/testprojectname/config.yaml": {BindFile: "$SNAP_DATA/etc/config.yaml"},
-					"/etc/testprojectname/symlink":     {Symlink: "$SNAP_DATA/etc/symlink"},
-					"/etc/testprojectname/tmp":         {Type: "tmpfs"},
+					"/etc/testprojectname": {Bind: "$SNAP_DATA/etc"},
 				},
 				Apps: map[string]config.SnapcraftAppMetadata{
 					"foo": {
@@ -194,9 +191,6 @@ func TestRunPipeMetadata(t *testing.T) {
 	require.Equal(t, map[interface{}]interface{}{"read": []interface{}{"$HOME/test"}}, metadata.Plugs["personal-files"])
 	require.Equal(t, "always", metadata.Apps["foo"].RestartCondition)
 	require.Equal(t, "$SNAP_DATA/etc", metadata.Layout["/etc/testprojectname"].Bind)
-	require.Equal(t, "$SNAP_DATA/etc/config.yaml", metadata.Layout["/etc/testprojectname/config.yaml"].BindFile)
-	require.Equal(t, "$SNAP_DATA/etc/symlink", metadata.Layout["/etc/testprojectname/symlink"].Symlink)
-	require.Equal(t, "tmpfs", metadata.Layout["/etc/testprojectname/tmp"].Type)
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {
