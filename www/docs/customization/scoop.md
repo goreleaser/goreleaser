@@ -45,6 +45,13 @@ scoop:
   # Default is empty.
   license: MIT
 
+  # Setting this will prevent goreleaser to actually try to commit the updated
+  # manifest leaving the responsibility of publishing it to the user.
+  # If set to auto, the release will not be uploaded to the scoop bucket
+  # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+  # Default is false.
+  skip_upload: true
+
   # Persist data between application updates
   persist:
   - "data"
