@@ -153,6 +153,9 @@ func TestRunPipeMetadata(t *testing.T) {
 				NameTemplate: "foo_{{.Arch}}",
 				Summary:      "test summary",
 				Description:  "test description",
+				Layout: map[string]config.SnapcraftLayoutMetadata{
+					"/etc/testprojectname": {Bind: "$SNAP_DATA/etc"},
+				},
 				Apps: map[string]config.SnapcraftAppMetadata{
 					"foo": {
 						Plugs:            []string{"home", "network", "personal-files"},
@@ -187,6 +190,7 @@ func TestRunPipeMetadata(t *testing.T) {
 	require.Equal(t, "foo --foo --bar", metadata.Apps["foo"].Command)
 	require.Equal(t, map[interface{}]interface{}{"read": []interface{}{"$HOME/test"}}, metadata.Plugs["personal-files"])
 	require.Equal(t, "always", metadata.Apps["foo"].RestartCondition)
+	require.Equal(t, "$SNAP_DATA/etc", metadata.Layout["/etc/testprojectname"].Bind)
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {
