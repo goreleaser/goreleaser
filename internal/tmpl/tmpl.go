@@ -166,11 +166,12 @@ func (t *Template) Apply(s string) (string, error) {
 			"time": func(s string) string {
 				return time.Now().UTC().Format(s)
 			},
-			"tolower": strings.ToLower,
-			"toupper": strings.ToUpper,
-			"trim":    strings.TrimSpace,
-			"dir":     filepath.Dir,
-			"abs":     filepath.Abs,
+			"tolower":    strings.ToLower,
+			"toupper":    strings.ToUpper,
+			"trim":       strings.TrimSpace,
+			"trimprefix": strings.TrimPrefix,
+			"dir":        filepath.Dir,
+			"abs":        filepath.Abs,
 		}).
 		Parse(s)
 	if err != nil {

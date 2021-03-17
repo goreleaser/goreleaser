@@ -189,6 +189,11 @@ func TestFuncMap(t *testing.T) {
 			Expected: "test",
 		},
 		{
+			Template: `{{ trimprefix "v1.2.4" "v" }}`,
+			Name:     "trimprefix",
+			Expected: "1.2.4",
+		},
+		{
 			Template: `{{ toupper "test" }}`,
 			Name:     "toupper",
 			Expected: "TEST",
