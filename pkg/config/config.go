@@ -439,23 +439,31 @@ type SnapcraftAppMetadata struct {
 	RestartCondition string `yaml:"restart_condition,omitempty"`
 }
 
+type SnapcraftLayoutMetadata struct {
+	Symlink  string `yaml:",omitempty"`
+	Bind     string `yaml:",omitempty"`
+	BindFile string `yaml:"bind_file,omitempty"`
+	Type     string `yaml:",omitempty"`
+}
+
 // Snapcraft config.
 type Snapcraft struct {
 	NameTemplate string            `yaml:"name_template,omitempty"`
 	Replacements map[string]string `yaml:",omitempty"`
 	Publish      bool              `yaml:",omitempty"`
 
-	ID          string                          `yaml:",omitempty"`
-	Builds      []string                        `yaml:",omitempty"`
-	Name        string                          `yaml:",omitempty"`
-	Summary     string                          `yaml:",omitempty"`
-	Description string                          `yaml:",omitempty"`
-	Base        string                          `yaml:",omitempty"`
-	License     string                          `yaml:",omitempty"`
-	Grade       string                          `yaml:",omitempty"`
-	Confinement string                          `yaml:",omitempty"`
-	Apps        map[string]SnapcraftAppMetadata `yaml:",omitempty"`
-	Plugs       map[string]interface{}          `yaml:",omitempty"`
+	ID          string                             `yaml:",omitempty"`
+	Builds      []string                           `yaml:",omitempty"`
+	Name        string                             `yaml:",omitempty"`
+	Summary     string                             `yaml:",omitempty"`
+	Description string                             `yaml:",omitempty"`
+	Base        string                             `yaml:",omitempty"`
+	License     string                             `yaml:",omitempty"`
+	Grade       string                             `yaml:",omitempty"`
+	Confinement string                             `yaml:",omitempty"`
+	Layout      map[string]SnapcraftLayoutMetadata `yaml:",omitempty"`
+	Apps        map[string]SnapcraftAppMetadata    `yaml:",omitempty"`
+	Plugs       map[string]interface{}             `yaml:",omitempty"`
 
 	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty"`
 }

@@ -43,6 +43,7 @@ type Metadata struct {
 	Grade         string `yaml:",omitempty"`
 	Confinement   string `yaml:",omitempty"`
 	Architectures []string
+	Layout        map[string]LayoutMetadata `yaml:",omitempty"`
 	Apps          map[string]AppMetadata
 	Plugs         map[string]interface{} `yaml:",omitempty"`
 }
@@ -54,6 +55,13 @@ type AppMetadata struct {
 	Daemon           string   `yaml:",omitempty"`
 	Completer        string   `yaml:",omitempty"`
 	RestartCondition string   `yaml:"restart-condition,omitempty"`
+}
+
+type LayoutMetadata struct {
+	Symlink  string `yaml:",omitempty"`
+	Bind     string `yaml:",omitempty"`
+	BindFile string `yaml:"bind-file,omitempty"`
+	Type     string `yaml:",omitempty"`
 }
 
 const defaultNameTemplate = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
@@ -199,6 +207,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		Grade:         snap.Grade,
 		Confinement:   snap.Confinement,
 		Architectures: []string{arch},
+		Layout:        map[string]LayoutMetadata{},
 		Apps:          map[string]AppMetadata{},
 	}
 
@@ -213,6 +222,15 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	metadata.Name = ctx.Config.ProjectName
 	if snap.Name != "" {
 		metadata.Name = snap.Name
+	}
+
+	for targetPath, layout := range snap.Layout {
+		metadata.Layout[targetPath] = LayoutMetadata{
+			Symlink:  layout.Symlink,
+			Bind:     layout.Bind,
+			BindFile: layout.BindFile,
+			Type:     layout.Type,
+		}
 	}
 
 	// if the user didn't specify any apps then

@@ -98,6 +98,39 @@ snapcrafts:
         destination: bin/drumroll.wrapper
         mode: 0755
 
+    # With layouts, you can make elements in $SNAP, $SNAP_DATA, $SNAP_COMMON
+    # accessible from locations such as /usr, /var and /etc. This helps when using
+    # pre-compiled binaries and libraries that expect to find files and
+    # directories outside of locations referenced by $SNAP or $SNAP_DATA.
+    # About snap environment variables:
+    # * HOME: set to SNAP_USER_DATA for all commands
+    # * SNAP: read-only install directory
+    # * SNAP_ARCH: the architecture of device (eg, amd64, arm64, armhf, i386, etc)
+    # * SNAP_DATA: writable area for a particular revision of the snap
+    # * SNAP_COMMON: writable area common across all revisions of the snap
+    # * SNAP_LIBRARY_PATH: additional directories which should be added to LD_LIBRARY_PATH
+    # * SNAP_NAME: snap name
+    # * SNAP_INSTANCE_NAME: snap instance name incl. instance key if one is set (snapd 2.36+)
+    # * SNAP_INSTANCE_KEY: instance key if any (snapd 2.36+)
+    # * SNAP_REVISION: store revision of the snap
+    # * SNAP_USER_DATA: per-user writable area for a particular revision of the snap
+    # * SNAP_USER_COMMON: per-user writable area common across all revisions of the snap
+    # * SNAP_VERSION: snap version (from snap.yaml)
+    # More info about layout here:
+    # https://snapcraft.io/docs/snap-layouts
+    # Default is empty.
+    layout:
+      # The path you want to access in sandbox.
+      /etc/drumroll:
+
+        # Which outside file or directory you want to map to sandbox.
+        # Valid keys are:
+        # * bind - Bind-mount a directory.
+        # * bind_file - Bind-mount a file.
+        # * symlink - Create a symbolic link.
+        # * type - Mount a private temporary in-memory filesystem.
+        bind: $SNAP_DATA/etc
+
     # Each binary built by GoReleaser is an app inside the snap. In this section
     # you can declare extra details for those binaries. It is optional.
     apps:
