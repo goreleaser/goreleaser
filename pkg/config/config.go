@@ -442,7 +442,7 @@ type SnapcraftAppMetadata struct {
 type SnapcraftLayoutMetadata struct {
 	Symlink  string `yaml:",omitempty"`
 	Bind     string `yaml:",omitempty"`
-	BindFile string `yaml:"bind-file,omitempty"`
+	BindFile string `yaml:"bind_file,omitempty"`
 	Type     string `yaml:",omitempty"`
 }
 
