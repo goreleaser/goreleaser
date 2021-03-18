@@ -53,7 +53,7 @@ jobs:
           make ci
       -
         name: Upload coverage
-        uses: codecov/codecov-action@v1.2.2
+        uses: codecov/codecov-action@v1.3.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.txt
