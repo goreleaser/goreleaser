@@ -1002,6 +1002,18 @@ func TestDefaultDockerfile(t *testing.T) {
 	require.Equal(t, "Dockerfile", ctx.Config.Dockers[1].Dockerfile)
 }
 
+func TestDraftRelease(t *testing.T) {
+	var ctx = &context.Context{
+		Config: config.Project{
+			Release: config.Release{
+				Draft: true,
+			},
+		},
+	}
+
+	require.False(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
+}
+
 func TestDefaultNoDockers(t *testing.T) {
 	var ctx = &context.Context{
 		Config: config.Project{
