@@ -155,9 +155,6 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
-	if ctx.Config.Release.Draft {
-		return pipe.Skip("release is marked as draft")
-	}
 	if strings.TrimSpace(docker.SkipPush) == "auto" && ctx.Semver.Prerelease != "" {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish")
 	}
