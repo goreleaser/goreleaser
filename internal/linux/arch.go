@@ -6,7 +6,10 @@ import "strings"
 // Arch converts a goarch to a linux-compatible arch.
 func Arch(key string) string {
 	// XXX: list of all linux arches: `go tool dist list | grep linux`
-	var arch = strings.TrimPrefix(key, "linux")
+	arch := strings.TrimPrefix(key, "linux")
+	for _, suffix := range []string{"hardfloat", "softfloat"} {
+		arch = strings.TrimSuffix(arch, suffix)
+	}
 	switch arch {
 	case "386":
 		return "i386"
@@ -18,7 +21,10 @@ func Arch(key string) string {
 		return "armhf"
 	case "arm7": // GOARCH + GOARM
 		return "armhf"
-	default:
-		return arch
+	case "mips64le":
+		return "mips64el"
+	case "mipsle":
+		return "mipsel"
 	}
+	return arch
 }
