@@ -85,7 +85,7 @@ builds:
 
     # GOMIPS and GOMIPS64 to build when GOARCH is mips, mips64, mipsle or mips64le.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Default is empty.
+    # Default is only hardfloat.
     gomips:
       - hardfloat
       - softfloat
