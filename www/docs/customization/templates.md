@@ -62,7 +62,7 @@ On all fields, you have these available functions:
 | `tolower "V1.2"`        | makes input string lowercase. See [ToLower](https://golang.org/pkg/strings/#ToLower)                                           |
 | `toupper "v1.2"`        | makes input string uppercase. See [ToUpper](https://golang.org/pkg/strings/#ToUpper)                                           |
 | `trim " v1.2  "`        | removes all leading and trailing white space. See [TrimSpace](https://golang.org/pkg/strings/#TrimSpace)                       |
-| `trimprefix "v1.2" "v"` | removes provided leading prefix string, if present. See [TrimSpace](https://golang.org/pkg/strings/#TrimPrefix)                |
+| `trimprefix "v1.2" "v"` | removes provided leading prefix string, if present. See [TrimPrefix](https://golang.org/pkg/strings/#TrimPrefix)                |
 | `dir .Path`             | returns all but the last element of path, typically the path's directory. See [Dir](https://golang.org/pkg/path/filepath/#Dir) |
 | `abs .ArtifactPath`     | returns an absolute representation of path. See [Abs](https://golang.org/pkg/path/filepath/#Abs)                               |
 
