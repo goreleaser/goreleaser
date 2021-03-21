@@ -49,7 +49,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	var ids = ids.New("builds")
+	ids := ids.New("builds")
 	for i, build := range ctx.Config.Builds {
 		build, err := buildWithDefaults(ctx, build)
 		if err != nil {
@@ -85,7 +85,10 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 }
 
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
-	var g = semerrgroup.New(ctx.Parallelism)
+	if err := proxy(ctx, build); err != nil {
+		return err
+	}
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, target := range build.Targets {
 		target := target
 		build := build
@@ -93,6 +96,10 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 			opts, err := buildOptionsForTarget(ctx, build, target)
 			if err != nil {
 				return err
+			}
+
+			if build.Proxy != "" && build.Dir == "" {
+				build.Dir = fmt.Sprintf("%s/build_%s", ctx.Config.Dist, build.ID)
 			}
 
 			if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
@@ -111,6 +118,49 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	}
 
 	return g.Wait()
+}
+
+func proxy(ctx *context.Context, build config.Build) error {
+	if build.Proxy == "" {
+		return nil
+	}
+
+	proxy, err := tmpl.New(ctx).Apply(build.Proxy)
+	if err != nil {
+		return err
+	}
+
+	t := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
+		"Proxy": proxy,
+	})
+	mod, err := t.Apply(`module {{ .ProjectName }}
+require {{ .Proxy }} {{ .Tag }}`)
+
+	main, err := t.Apply(`// +build main
+package main
+import _ "{{ .Proxy }}"`)
+	if err != nil {
+		return err
+	}
+
+	dir := fmt.Sprintf("%s/build_%s", ctx.Config.Dist, build.ID)
+
+	if err := os.Mkdir(dir, 0o755); err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(dir+"/main.go", []byte(main), 0o650); err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(dir+"/go.mod", []byte(mod), 0o650); err != nil {
+		return err
+	}
+
+	cmd := exec.CommandContext(ctx, "go", "mod", "tidy")
+	cmd.Dir = dir
+	_, err = cmd.CombinedOutput()
+	return err
 }
 
 func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hooks config.BuildHooks) error {
@@ -163,7 +213,7 @@ func doBuild(ctx *context.Context, build config.Build, opts builders.Options) er
 }
 
 func buildOptionsForTarget(ctx *context.Context, build config.Build, target string) (*builders.Options, error) {
-	var ext = extFor(target, build.Flags)
+	ext := extFor(target, build.Flags)
 	var goos string
 	var goarch string
 
@@ -185,7 +235,7 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	}
 
 	build.Binary = binary
-	var name = build.Binary + ext
+	name := build.Binary + ext
 	path, err := filepath.Abs(
 		filepath.Join(
 			ctx.Config.Dist,
@@ -223,8 +273,8 @@ func extFor(target string, flags config.FlagArray) string {
 
 func run(ctx *context.Context, dir string, command, env []string) error {
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
-	var entry = log.WithField("cmd", command)
+	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
+	entry := log.WithField("cmd", command)
 	cmd.Env = env
 	var b bytes.Buffer
 	cmd.Stderr = io.MultiWriter(logext.NewErrWriter(entry), &b)

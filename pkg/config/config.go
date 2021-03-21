@@ -204,6 +204,7 @@ type Build struct {
 	ModTimestamp string         `yaml:"mod_timestamp,omitempty"`
 	Skip         bool           `yaml:",omitempty"`
 	GoBinary     string         `yaml:",omitempty"`
+	Proxy        string         `yaml:",omitempty"`
 }
 
 type HookConfig struct {
@@ -587,6 +588,7 @@ type Source struct {
 // Project includes all project configuration.
 type Project struct {
 	ProjectName     string           `yaml:"project_name,omitempty"`
+	Proxy           bool             `yaml:",omitempty"`
 	Env             []string         `yaml:",omitempty"`
 	Release         Release          `yaml:",omitempty"`
 	Milestones      []Milestone      `yaml:",omitempty"`
