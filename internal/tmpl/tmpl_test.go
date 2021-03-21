@@ -13,9 +13,10 @@ import (
 )
 
 func TestWithArtifact(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "proj",
 	})
+	ctx.ModulePath = "github.com/goreleaser/goreleaser"
 	ctx.Env = map[string]string{
 		"FOO": "bar",
 	}
@@ -31,21 +32,22 @@ func TestWithArtifact(t *testing.T) {
 	ctx.Git.FullCommit = "fullcommit"
 	ctx.Git.ShortCommit = "shortcommit"
 	for expect, tmpl := range map[string]string{
-		"bar":         "{{.Env.FOO}}",
-		"Linux":       "{{.Os}}",
-		"amd64":       "{{.Arch}}",
-		"6":           "{{.Arm}}",
-		"softfloat":   "{{.Mips}}",
-		"1.2.3":       "{{.Version}}",
-		"v1.2.3":      "{{.Tag}}",
-		"1-2-3":       "{{.Major}}-{{.Minor}}-{{.Patch}}",
-		"test-branch": "{{.Branch}}",
-		"commit":      "{{.Commit}}",
-		"fullcommit":  "{{.FullCommit}}",
-		"shortcommit": "{{.ShortCommit}}",
-		"binary":      "{{.Binary}}",
-		"proj":        "{{.ProjectName}}",
-		"":            "{{.ArtifactUploadHash}}",
+		"bar":                              "{{.Env.FOO}}",
+		"Linux":                            "{{.Os}}",
+		"amd64":                            "{{.Arch}}",
+		"6":                                "{{.Arm}}",
+		"softfloat":                        "{{.Mips}}",
+		"1.2.3":                            "{{.Version}}",
+		"v1.2.3":                           "{{.Tag}}",
+		"1-2-3":                            "{{.Major}}-{{.Minor}}-{{.Patch}}",
+		"test-branch":                      "{{.Branch}}",
+		"commit":                           "{{.Commit}}",
+		"fullcommit":                       "{{.FullCommit}}",
+		"shortcommit":                      "{{.ShortCommit}}",
+		"binary":                           "{{.Binary}}",
+		"proj":                             "{{.ProjectName}}",
+		"":                                 "{{.ArtifactUploadHash}}",
+		"github.com/goreleaser/goreleaser": "{{ .ModulePath }}",
 	} {
 		tmpl := tmpl
 		expect := expect
@@ -126,7 +128,7 @@ func TestEnv(t *testing.T) {
 			out:  "",
 		},
 	}
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Env = map[string]string{
 		"FOO": "BAR",
 	}
@@ -140,7 +142,7 @@ func TestEnv(t *testing.T) {
 }
 
 func TestWithEnv(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Env = map[string]string{
 		"FOO": "BAR",
 	}
@@ -154,7 +156,7 @@ func TestWithEnv(t *testing.T) {
 }
 
 func TestFuncMap(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "proj",
 	})
 	wd, err := os.Getwd()
@@ -293,7 +295,7 @@ func TestInvalidTemplate(t *testing.T) {
 }
 
 func TestEnvNotFound(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v1.2.4"
 	result, err := New(ctx).Apply("{{.Env.FOO}}")
 	require.Empty(t, result)
@@ -301,10 +303,9 @@ func TestEnvNotFound(t *testing.T) {
 }
 
 func TestWithExtraFields(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	out, _ := New(ctx).WithExtraFields(Fields{
 		"MyCustomField": "foo",
 	}).Apply("{{ .MyCustomField }}")
 	require.Equal(t, "foo", out)
-
 }

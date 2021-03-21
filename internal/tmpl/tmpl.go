@@ -44,6 +44,7 @@ const (
 	env             = "Env"
 	date            = "Date"
 	timestamp       = "Timestamp"
+	modulePath      = "ModulePath"
 
 	// artifact-only keys.
 	osKey        = "Os"
@@ -72,6 +73,7 @@ func New(ctx *context.Context) *Template {
 	return &Template{
 		fields: Fields{
 			projectName:     ctx.Config.ProjectName,
+			modulePath:      ctx.ModulePath,
 			version:         ctx.Version,
 			rawVersion:      rawVersionV,
 			tag:             ctx.Git.CurrentTag,
@@ -97,9 +99,9 @@ func New(ctx *context.Context) *Template {
 // WithEnvS overrides template's env field with the given KEY=VALUE list of
 // environment variables.
 func (t *Template) WithEnvS(envs []string) *Template {
-	var result = map[string]string{}
+	result := map[string]string{}
 	for _, env := range envs {
-		var parts = strings.SplitN(env, "=", 2)
+		parts := strings.SplitN(env, "=", 2)
 		result[parts[0]] = parts[1]
 	}
 	return t.WithEnv(result)
@@ -122,7 +124,7 @@ func (t *Template) WithExtraFields(f Fields) *Template {
 
 // WithArtifact populates Fields from the artifact and replacements.
 func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]string) *Template {
-	var bin = a.Extra[binary]
+	bin := a.Extra[binary]
 	if bin == nil {
 		bin = t.fields[projectName]
 	}
