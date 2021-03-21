@@ -124,6 +124,14 @@ builds:
     # Useful for library projects.
     # Default is false
     skip: false
+
+    # Proxy a module from golang.org, made the builds verifiable.
+    # Note that setting this overrides both `dir` and `main`, which should be handled on `proxy`.
+    # Example bellow can be used to build the current project and current tag.
+    # Default is empty.
+    proxy:
+      path: '{{ .ModulePath }}'
+      version: '{{ .Tag }}'
 ```
 
 !!! tip

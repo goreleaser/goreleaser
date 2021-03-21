@@ -204,7 +204,16 @@ type Build struct {
 	ModTimestamp string         `yaml:"mod_timestamp,omitempty"`
 	Skip         bool           `yaml:",omitempty"`
 	GoBinary     string         `yaml:",omitempty"`
-	Proxy        string         `yaml:",omitempty"`
+	Proxy        BuildProxy     `yaml:",omitempty"`
+}
+
+func (b Build) IsProxied() bool {
+	return b.Proxy != BuildProxy{}
+}
+
+type BuildProxy struct {
+	Path    string `yaml:",omitempty"`
+	Version string `yaml:",omitempty"`
 }
 
 type HookConfig struct {

@@ -98,9 +98,9 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 				return err
 			}
 
-			if build.Proxy != "" {
+			if build.Proxy.Path != "" {
 				build.Dir = fmt.Sprintf("%s/build_%s", ctx.Config.Dist, build.ID)
-				proxy, err := tmpl.New(ctx).Apply(build.Proxy)
+				proxy, err := tmpl.New(ctx).Apply(build.Proxy.Path)
 				if err != nil {
 					return fmt.Errorf("failed to proxy module: %w", err)
 				}
@@ -126,27 +126,36 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 }
 
 func proxy(ctx *context.Context, build config.Build) error {
-	if build.Proxy == "" {
+	if !build.IsProxied() {
 		return nil
 	}
 
-	proxy, err := tmpl.New(ctx).Apply(build.Proxy)
+	template := tmpl.New(ctx)
+
+	proxy, err := template.Apply(build.Proxy.Path)
 	if err != nil {
 		return fmt.Errorf("failed to proxy module: %w", err)
 	}
 
-	t := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
-		"Proxy": proxy,
-	})
-	mod, err := t.Apply(`module {{ .ProjectName }}
+	version, err := template.Apply(build.Proxy.Version)
+	if err != nil {
+		return fmt.Errorf("failed to proxy module: %w", err)
+	}
 
-require {{ .Proxy }} {{ .Tag }}
+	template = template.WithExtraFields(tmpl.Fields{
+		"Proxy":   proxy,
+		"Version": version,
+	})
+
+	mod, err := template.Apply(`module {{ .ProjectName }}
+
+require {{ .Proxy }} {{ .Version }}
 `)
 	if err != nil {
 		return fmt.Errorf("failed to proxy module: %w", err)
 	}
 
-	main, err := t.Apply(`// +build main
+	main, err := template.Apply(`// +build main
 package main
 
 import _ "{{ .Proxy }}"

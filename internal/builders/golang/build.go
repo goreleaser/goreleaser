@@ -178,7 +178,7 @@ func run(ctx *context.Context, command, env []string, dir string) error {
 	log := log.WithField("env", env).WithField("cmd", command)
 	cmd.Env = env
 	cmd.Dir = dir
-	log.Debug("runningsss")
+	log.Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
 		return errors.New(string(out))
@@ -218,7 +218,7 @@ func (b buildTarget) Env() []string {
 }
 
 func checkMain(build config.Build) error {
-	if build.Proxy != "" {
+	if build.IsProxied() {
 		return nil
 	}
 	main := build.Main
