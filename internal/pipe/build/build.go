@@ -98,8 +98,13 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 				return err
 			}
 
-			if build.Proxy != "" && build.Dir == "" {
+			if build.Proxy != "" {
 				build.Dir = fmt.Sprintf("%s/build_%s", ctx.Config.Dist, build.ID)
+				proxy, err := tmpl.New(ctx).Apply(build.Proxy)
+				if err != nil {
+					return fmt.Errorf("failed to proxy module: %w", err)
+				}
+				build.Main = proxy
 			}
 
 			if err := runHook(ctx, *opts, build.Env, build.Hooks.Pre); err != nil {
@@ -127,40 +132,49 @@ func proxy(ctx *context.Context, build config.Build) error {
 
 	proxy, err := tmpl.New(ctx).Apply(build.Proxy)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to proxy module: %w", err)
 	}
 
 	t := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"Proxy": proxy,
 	})
 	mod, err := t.Apply(`module {{ .ProjectName }}
-require {{ .Proxy }} {{ .Tag }}`)
+
+require {{ .Proxy }} {{ .Tag }}
+`)
+	if err != nil {
+		return fmt.Errorf("failed to proxy module: %w", err)
+	}
 
 	main, err := t.Apply(`// +build main
 package main
-import _ "{{ .Proxy }}"`)
+
+import _ "{{ .Proxy }}"
+`)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to proxy module: %w", err)
 	}
 
 	dir := fmt.Sprintf("%s/build_%s", ctx.Config.Dist, build.ID)
 
 	if err := os.Mkdir(dir, 0o755); err != nil {
-		return err
+		return fmt.Errorf("failed to proxy module: %w", err)
 	}
 
 	if err := os.WriteFile(dir+"/main.go", []byte(main), 0o650); err != nil {
-		return err
+		return fmt.Errorf("failed to proxy module: %w", err)
 	}
 
 	if err := os.WriteFile(dir+"/go.mod", []byte(mod), 0o650); err != nil {
-		return err
+		return fmt.Errorf("failed to proxy module: %w", err)
 	}
 
 	cmd := exec.CommandContext(ctx, "go", "mod", "tidy")
 	cmd.Dir = dir
-	_, err = cmd.CombinedOutput()
-	return err
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("failed to proxy module: %w: %s", err, string(out))
+	}
+	return nil
 }
 
 func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hooks config.BuildHooks) error {

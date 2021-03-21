@@ -588,7 +588,6 @@ type Source struct {
 // Project includes all project configuration.
 type Project struct {
 	ProjectName     string           `yaml:"project_name,omitempty"`
-	Proxy           bool             `yaml:",omitempty"`
 	Env             []string         `yaml:",omitempty"`
 	Release         Release          `yaml:",omitempty"`
 	Milestones      []Milestone      `yaml:",omitempty"`
