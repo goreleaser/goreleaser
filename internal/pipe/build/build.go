@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/caarlos0/go-shellwords"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -19,7 +20,6 @@ import (
 	builders "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/mattn/go-shellwords"
 
 	// langs to init.
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
