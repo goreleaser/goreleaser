@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/caarlos0/go-shellwords"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -19,7 +20,6 @@ import (
 	builders "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/mattn/go-shellwords"
 
 	// langs to init.
 	_ "github.com/goreleaser/goreleaser/internal/builders/golang"
@@ -49,7 +49,7 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	var ids = ids.New("builds")
+	ids := ids.New("builds")
 	for i, build := range ctx.Config.Builds {
 		build, err := buildWithDefaults(ctx, build)
 		if err != nil {
@@ -85,7 +85,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 }
 
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
-	var g = semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, target := range build.Targets {
 		target := target
 		build := build
@@ -163,7 +163,7 @@ func doBuild(ctx *context.Context, build config.Build, opts builders.Options) er
 }
 
 func buildOptionsForTarget(ctx *context.Context, build config.Build, target string) (*builders.Options, error) {
-	var ext = extFor(target, build.Flags)
+	ext := extFor(target, build.Flags)
 	var goos string
 	var goarch string
 
@@ -185,7 +185,7 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	}
 
 	build.Binary = binary
-	var name = build.Binary + ext
+	name := build.Binary + ext
 	path, err := filepath.Abs(
 		filepath.Join(
 			ctx.Config.Dist,
@@ -223,8 +223,8 @@ func extFor(target string, flags config.FlagArray) string {
 
 func run(ctx *context.Context, dir string, command, env []string) error {
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, command[0], command[1:]...)
-	var entry = log.WithField("cmd", command)
+	cmd := exec.CommandContext(ctx, command[0], command[1:]...)
+	entry := log.WithField("cmd", command)
 	cmd.Env = env
 	var b bytes.Buffer
 	cmd.Stderr = io.MultiWriter(logext.NewErrWriter(entry), &b)
