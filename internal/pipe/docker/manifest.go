@@ -86,7 +86,7 @@ func dockerManifestRm(ctx *context.Context, manifest string) error {
 	log.WithField("manifest", manifest).Info("removing local docker manifest")
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, "docker", "manifest", "rm", manifest)
-	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
+	log.WithField("cmd", cmd.Args).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		if strings.Contains(string(out), "No such manifest: "+manifest) {
@@ -101,13 +101,11 @@ func dockerManifestRm(ctx *context.Context, manifest string) error {
 func dockerManifestCreate(ctx *context.Context, manifest string, images, flags []string) error {
 	log.WithField("manifest", manifest).WithField("images", images).Info("creating docker manifest")
 	args := []string{"manifest", "create", manifest}
-	for _, img := range images {
-		args = append(args, img)
-	}
+	args = append(args, images...)
 	args = append(args, flags...)
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, "docker", args...)
-	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
+	log.WithField("cmd", cmd.Args).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to create docker manifest: %s: \n%s: %w", manifest, string(out), err)
@@ -122,7 +120,7 @@ func dockerManifestPush(ctx *context.Context, manifest string, flags []string) e
 	args = append(args, flags...)
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, "docker", args...)
-	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
+	log.WithField("cmd", cmd.Args).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to push docker manifest: %s: \n%s: %w", manifest, string(out), err)
