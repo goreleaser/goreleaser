@@ -31,6 +31,7 @@ On fields that support templating, these fields are always available:
 | `.Env`             | a map with system's environment variables                                                                                    |
 | `.Date`            | current UTC date in RFC 3339 format                                                                                          |
 | `.Timestamp`       | current UTC time in Unix format                                                                                              |
+| `.ModulePath`      | the go module path, as reported by `go list -m`                                                                              |
 
 On fields that are related to a single artifact (e.g., the binary name), you
 may have some extra fields:

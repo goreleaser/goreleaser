@@ -4,6 +4,7 @@ package pipeline
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/semver"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
 
@@ -37,6 +38,7 @@ type Piper interface {
 // BuildPipeline contains all build-related pipe implementations in order.
 // nolint:gochecknoglobals
 var BuildPipeline = []Piper{
+	gomod.Pipe{},           // setup gomod-related stuff
 	env.Pipe{},             // load and validate environment variables
 	git.Pipe{},             // get and validate git repo state
 	semver.Pipe{},          // parse current tag to a semver
