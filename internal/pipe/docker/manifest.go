@@ -89,6 +89,9 @@ func dockerManifestRm(ctx *context.Context, manifest string) error {
 	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
+		if strings.Contains(string(out), "No such manifest: "+manifest) {
+			return nil
+		}
 		return fmt.Errorf("failed to remove local docker manifest: %s: \n%s: %w", manifest, string(out), err)
 	}
 	log.Debugf("docker manifest rm output: \n%s", string(out))
