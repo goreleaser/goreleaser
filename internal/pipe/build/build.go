@@ -179,6 +179,20 @@ import _ "{{ .Proxy }}"
 		return build, fmt.Errorf("failed to proxy module: %w", err)
 	}
 
+	sumr, err := os.OpenFile("go.sum", os.O_RDONLY, 0o650)
+	if err != nil {
+		return build, fmt.Errorf("failed to proxy module: %w", err)
+	}
+
+	sumw, err := os.OpenFile(dir+"/go.sum", os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o650)
+	if err != nil {
+		return build, fmt.Errorf("failed to proxy module: %w", err)
+	}
+
+	if _, err := io.Copy(sumw, sumr); err != nil {
+		return build, fmt.Errorf("failed to proxy module: %w", err)
+	}
+
 	log.Debugf("tidying")
 	cmd := exec.CommandContext(ctx, "go", "mod", "tidy")
 	cmd.Dir = dir
