@@ -14,7 +14,6 @@ var (
 	commit  = ""
 	date    = ""
 	builtBy = ""
-	mod     = ""
 )
 
 func main() {
