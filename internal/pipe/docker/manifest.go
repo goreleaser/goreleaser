@@ -27,12 +27,15 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
-	var g = semerrgroup.NewSkipAware(semerrgroup.New(1))
+	g := semerrgroup.NewSkipAware(semerrgroup.New(1))
 	for _, manifest := range ctx.Config.DockerManifests {
 		manifest := manifest
 		g.Go(func() error {
 			name, err := manifestName(ctx, manifest)
 			if err != nil {
+				return err
+			}
+			if err := dockerManifestRm(ctx, name); err != nil {
 				return err
 			}
 			images, err := manifestImages(ctx, manifest)
@@ -65,7 +68,7 @@ func manifestName(ctx *context.Context, manifest config.DockerManifest) (string,
 }
 
 func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]string, error) {
-	var imgs = make([]string, 0, len(manifest.ImageTemplates))
+	imgs := make([]string, 0, len(manifest.ImageTemplates))
 	for _, img := range manifest.ImageTemplates {
 		str, err := tmpl.New(ctx).Apply(img)
 		if err != nil {
@@ -79,16 +82,31 @@ func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]str
 	return imgs, nil
 }
 
+func dockerManifestRm(ctx *context.Context, manifest string) error {
+	log.WithField("manifest", manifest).Info("removing local docker manifest")
+	/* #nosec */
+	cmd := exec.CommandContext(ctx, "docker", "manifest", "rm", manifest)
+	log.WithField("cmd", cmd.Args).Debug("running")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		if strings.HasPrefix(string(out), "No such manifest: ") {
+			// ignore "no such manifest" error, is the state we want in the end...
+			return nil
+		}
+		return fmt.Errorf("failed to remove local docker manifest: %s: \n%s: %w", manifest, string(out), err)
+	}
+	log.Debugf("docker manifest rm output: \n%s", string(out))
+	return nil
+}
+
 func dockerManifestCreate(ctx *context.Context, manifest string, images, flags []string) error {
 	log.WithField("manifest", manifest).WithField("images", images).Info("creating docker manifest")
-	var args = []string{"manifest", "create", manifest}
-	for _, img := range images {
-		args = append(args, "--amend", img)
-	}
+	args := []string{"manifest", "create", manifest}
+	args = append(args, images...)
 	args = append(args, flags...)
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, "docker", args...)
-	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
+	cmd := exec.CommandContext(ctx, "docker", args...)
+	log.WithField("cmd", cmd.Args).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to create docker manifest: %s: \n%s: %w", manifest, string(out), err)
@@ -99,11 +117,11 @@ func dockerManifestCreate(ctx *context.Context, manifest string, images, flags [
 
 func dockerManifestPush(ctx *context.Context, manifest string, flags []string) error {
 	log.WithField("manifest", manifest).Info("pushing docker manifest")
-	var args = []string{"manifest", "push", manifest}
+	args := []string{"manifest", "push", manifest}
 	args = append(args, flags...)
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, "docker", args...)
-	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
+	cmd := exec.CommandContext(ctx, "docker", args...)
+	log.WithField("cmd", cmd.Args).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to push docker manifest: %s: \n%s: %w", manifest, string(out), err)

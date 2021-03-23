@@ -19,9 +19,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var it = flag.Bool("it", false, "push images to docker hub")
-var registry = "localhost:5000/"
-var altRegistry = "localhost:5050/"
+var (
+	it          = flag.Bool("it", false, "push images to docker hub")
+	registry    = "localhost:5000/"
+	altRegistry = "localhost:5050/"
+)
 
 func TestMain(m *testing.M) {
 	flag.Parse()
@@ -65,19 +67,19 @@ func killAndRm(t *testing.T) {
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
 func TestRunPipe(t *testing.T) {
 	type errChecker func(*testing.T, error)
-	var shouldErr = func(msg string) errChecker {
+	shouldErr := func(msg string) errChecker {
 		return func(t *testing.T, err error) {
 			t.Helper()
 			require.Error(t, err)
 			require.Contains(t, err.Error(), msg)
 		}
 	}
-	var shouldNotErr = func(t *testing.T, err error) {
+	shouldNotErr := func(t *testing.T, err error) {
 		t.Helper()
 		require.NoError(t, err)
 	}
 	type imageLabelFinder func(*testing.T, int)
-	var shouldFindImagesWithLabels = func(image string, filters ...string) func(*testing.T, int) {
+	shouldFindImagesWithLabels := func(image string, filters ...string) func(*testing.T, int) {
 		return func(t *testing.T, count int) {
 			t.Helper()
 			for _, filter := range filters {
@@ -90,13 +92,12 @@ func TestRunPipe(t *testing.T) {
 				require.Equal(t, count, len(lines))
 			}
 		}
-
 	}
-	var noLabels = func(t *testing.T, count int) {
+	noLabels := func(t *testing.T, count int) {
 		t.Helper()
 	}
 
-	var table = map[string]struct {
+	table := map[string]struct {
 		dockers             []config.Docker
 		manifests           []config.DockerManifest
 		env                 map[string]string
@@ -105,7 +106,7 @@ func TestRunPipe(t *testing.T) {
 		assertError         errChecker
 		pubAssertError      errChecker
 		manifestAssertError errChecker
-		extraPrepare        func(ctx *context.Context)
+		extraPrepare        func(t *testing.T, ctx *context.Context)
 	}{
 		"multiarch": {
 			dockers: []config.Docker{
@@ -144,6 +145,55 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 			assertImageLabels:   noLabels,
+		},
+		"multiarch with previous existing manifest": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates:     []string{registry + "goreleaser/test_multiarch:2test-amd64"},
+					Goos:               "linux",
+					Goarch:             "amd64",
+					Dockerfile:         "testdata/Dockerfile.arch",
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=amd64"},
+				},
+				{
+					ImageTemplates:     []string{registry + "goreleaser/test_multiarch:2test-arm64v8"},
+					Goos:               "linux",
+					Goarch:             "arm64",
+					Dockerfile:         "testdata/Dockerfile.arch",
+					BuildFlagTemplates: []string{"--build-arg", "ARCH=arm64v8"},
+				},
+			},
+			manifests: []config.DockerManifest{
+				{
+					// XXX: fails if :latest https://github.com/docker/distribution/issues/3100
+					NameTemplate: registry + "goreleaser/test_multiarch:2test",
+					ImageTemplates: []string{
+						registry + "goreleaser/test_multiarch:2test-amd64",
+						registry + "goreleaser/test_multiarch:2test-arm64v8",
+					},
+					CreateFlags: []string{"--insecure"},
+					PushFlags:   []string{"--insecure"},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_multiarch:2test-amd64",
+				registry + "goreleaser/test_multiarch:2test-arm64v8",
+			},
+			assertError:         shouldNotErr,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+			assertImageLabels:   noLabels,
+			extraPrepare: func(t *testing.T, ctx *context.Context) {
+				for _, cmd := range []string{
+					fmt.Sprintf("docker build -t %sgoreleaser/dummy:v1 --platform linux/amd64 -f testdata/Dockerfile.dummy .", registry),
+					fmt.Sprintf("docker push %sgoreleaser/dummy:v1", registry),
+					fmt.Sprintf("docker manifest create %sgoreleaser/test_multiarch:2test --amend %sgoreleaser/dummy:v1 --insecure", registry, registry),
+				} {
+					parts := strings.Fields(cmd)
+					out, err := exec.CommandContext(ctx, parts[0], parts[1:]...).CombinedOutput()
+					require.NoError(t, err, cmd+": "+string(out))
+				}
+			},
 		},
 		"multiarch with buildx": {
 			dockers: []config.Docker{
@@ -578,7 +628,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("pull access denied for nope, repository does not exist"),
+			assertError:       shouldErr("pull access denied"),
 		},
 		"tag_template_error": {
 			dockers: []config.Docker{
@@ -721,7 +771,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldErr(`/wont-exist: no such file or directory`),
-			extraPrepare: func(ctx *context.Context) {
+			extraPrepare: func(t *testing.T, ctx *context.Context) {
 				ctx.Artifacts.Add(&artifact.Artifact{
 					Name:   "wont-exist",
 					Path:   "wont-exist",
@@ -796,10 +846,10 @@ func TestRunPipe(t *testing.T) {
 
 	for name, docker := range table {
 		t.Run(name, func(t *testing.T) {
-			var folder = t.TempDir()
-			var dist = filepath.Join(folder, "dist")
-			require.NoError(t, os.Mkdir(dist, 0755))
-			require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
+			folder := t.TempDir()
+			dist := filepath.Join(folder, "dist")
+			require.NoError(t, os.Mkdir(dist, 0o755))
+			require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 			_, err := os.Create(filepath.Join(dist, "mybin", "mybin"))
 			require.NoError(t, err)
 			_, err = os.Create(filepath.Join(dist, "mybin", "anotherbin"))
@@ -811,7 +861,7 @@ func TestRunPipe(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			var ctx = context.New(config.Project{
+			ctx := context.New(config.Project{
 				ProjectName:     "mybin",
 				Dist:            dist,
 				Dockers:         docker.dockers,
@@ -846,7 +896,7 @@ func TestRunPipe(t *testing.T) {
 				}
 			}
 			for _, arch := range []string{"amd64", "386", "arm64"} {
-				var name = fmt.Sprintf("mybin_%s.apk", arch)
+				name := fmt.Sprintf("mybin_%s.apk", arch)
 				ctx.Artifacts.Add(&artifact.Artifact{
 					Name:   name,
 					Path:   filepath.Join(dist, name),
@@ -860,7 +910,7 @@ func TestRunPipe(t *testing.T) {
 			}
 
 			if docker.extraPrepare != nil {
-				docker.extraPrepare(ctx)
+				docker.extraPrepare(t, ctx)
 			}
 
 			// this might fail as the image doesnt exist yet, so lets ignore the error
@@ -885,7 +935,6 @@ func TestRunPipe(t *testing.T) {
 				t.Log("removing docker image", img)
 				require.NoError(t, exec.Command("docker", "rmi", img).Run(), "could not delete image %s", img)
 			}
-
 		})
 	}
 }
@@ -946,12 +995,12 @@ func TestNoDockerWithoutImageName(t *testing.T) {
 }
 
 func TestDockerNotInPath(t *testing.T) {
-	var path = os.Getenv("PATH")
+	path := os.Getenv("PATH")
 	defer func() {
 		require.NoError(t, os.Setenv("PATH", path))
 	}()
 	require.NoError(t, os.Setenv("PATH", ""))
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Version: "1.0.0",
 		Config: config.Project{
 			Dockers: []config.Docker{
@@ -965,7 +1014,7 @@ func TestDockerNotInPath(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Dockers: []config.Docker{
 				{
@@ -978,14 +1027,14 @@ func TestDefault(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Dockers, 1)
-	var docker = ctx.Config.Dockers[0]
+	docker := ctx.Config.Dockers[0]
 	require.Equal(t, "linux", docker.Goos)
 	require.Equal(t, "amd64", docker.Goarch)
 	require.Equal(t, []string{"aa", "foo"}, docker.IDs)
 }
 
 func TestDefaultDockerfile(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Builds: []config.Build{
 				{},
@@ -1003,7 +1052,7 @@ func TestDefaultDockerfile(t *testing.T) {
 }
 
 func TestDraftRelease(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Release: config.Release{
 				Draft: true,
@@ -1015,7 +1064,7 @@ func TestDraftRelease(t *testing.T) {
 }
 
 func TestDefaultNoDockers(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Dockers: []config.Docker{},
 		},
@@ -1025,7 +1074,7 @@ func TestDefaultNoDockers(t *testing.T) {
 }
 
 func TestDefaultFilesDot(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Dist: "/tmp/distt",
 			Dockers: []config.Docker{
@@ -1039,7 +1088,7 @@ func TestDefaultFilesDot(t *testing.T) {
 }
 
 func TestDefaultFilesDis(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Dist: "/tmp/dist",
 			Dockers: []config.Docker{
@@ -1053,7 +1102,7 @@ func TestDefaultFilesDis(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Dockers: []config.Docker{
 				{
@@ -1067,7 +1116,7 @@ func TestDefaultSet(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Dockers, 1)
-	var docker = ctx.Config.Dockers[0]
+	docker := ctx.Config.Dockers[0]
 	require.Equal(t, "windows", docker.Goos)
 	require.Equal(t, "i386", docker.Goarch)
 	require.Equal(t, []string{"foo"}, docker.IDs)
@@ -1075,7 +1124,7 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func Test_processImageTemplates(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Builds: []config.Build{
 				{
@@ -1136,29 +1185,29 @@ func TestLinkFile(t *testing.T) {
 	})
 	fmt.Println("src:", src.Name())
 	fmt.Println("dst:", dst)
-	require.NoError(t, ioutil.WriteFile(src.Name(), []byte("foo"), 0644))
+	require.NoError(t, ioutil.WriteFile(src.Name(), []byte("foo"), 0o644))
 	require.NoError(t, link(src.Name(), dst))
 	require.Equal(t, inode(src.Name()), inode(dst))
 }
 
 func TestLinkDirectory(t *testing.T) {
-	var srcDir = t.TempDir()
-	var dstDir = t.TempDir()
+	srcDir := t.TempDir()
+	dstDir := t.TempDir()
 	const testFile = "test"
-	require.NoError(t, ioutil.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0644))
+	require.NoError(t, ioutil.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
 	require.NoError(t, link(srcDir, dstDir))
 	require.Equal(t, inode(filepath.Join(srcDir, testFile)), inode(filepath.Join(dstDir, testFile)))
 }
 
 func TestLinkTwoLevelDirectory(t *testing.T) {
-	var srcDir = t.TempDir()
-	var dstDir = t.TempDir()
-	var srcLevel2 = filepath.Join(srcDir, "level2")
+	srcDir := t.TempDir()
+	dstDir := t.TempDir()
+	srcLevel2 := filepath.Join(srcDir, "level2")
 	const testFile = "test"
 
-	require.NoError(t, os.Mkdir(srcLevel2, 0755))
-	require.NoError(t, ioutil.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0644))
-	require.NoError(t, ioutil.WriteFile(filepath.Join(srcLevel2, testFile), []byte("foo"), 0644))
+	require.NoError(t, os.Mkdir(srcLevel2, 0o755))
+	require.NoError(t, ioutil.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
+	require.NoError(t, ioutil.WriteFile(filepath.Join(srcLevel2, testFile), []byte("foo"), 0o644))
 
 	require.NoError(t, link(srcDir, dstDir))
 
