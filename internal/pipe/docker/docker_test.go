@@ -184,6 +184,7 @@ func TestRunPipe(t *testing.T) {
 			manifestAssertError: shouldNotErr,
 			assertImageLabels:   noLabels,
 			extraPrepare: func(t *testing.T, ctx *context.Context) {
+				t.Helper()
 				for _, cmd := range []string{
 					fmt.Sprintf("docker build -t %sgoreleaser/dummy:v1 --platform linux/amd64 -f testdata/Dockerfile.dummy .", registry),
 					fmt.Sprintf("docker push %sgoreleaser/dummy:v1", registry),
@@ -772,6 +773,7 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels: noLabels,
 			assertError:       shouldErr(`/wont-exist: no such file or directory`),
 			extraPrepare: func(t *testing.T, ctx *context.Context) {
+				t.Helper()
 				ctx.Artifacts.Add(&artifact.Artifact{
 					Name:   "wont-exist",
 					Path:   "wont-exist",
