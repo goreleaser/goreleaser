@@ -36,7 +36,11 @@ func (Pipe) Run(ctx *context.Context) error {
 	ctx.ModulePath = result
 
 	if !ctx.Config.GoMod.Proxy {
-		return nil
+		return pipe.Skip("gomod.proxy is disabled")
+	}
+
+	if ctx.Snapshot {
+		return pipe.ErrSnapshotEnabled
 	}
 
 	return setupProxy(ctx)
@@ -104,8 +108,9 @@ import _ "{{ .ModulePath }}"
 	}
 
 	for i := range ctx.Config.Builds {
-		ctx.Config.Builds[i].Main = path.Join(ctx.ModulePath, ctx.Config.Builds[i].Main)
-		ctx.Config.Builds[i].Dir = dir
+		build := &ctx.Config.Builds[i]
+		build.Main = path.Join(ctx.ModulePath, build.Main)
+		build.Dir = dir
 	}
 
 	return nil
