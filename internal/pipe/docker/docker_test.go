@@ -106,7 +106,7 @@ func TestRunPipe(t *testing.T) {
 		assertError         errChecker
 		pubAssertError      errChecker
 		manifestAssertError errChecker
-		extraPrepare        func(tb testing.TB, ctx *context.Context)
+		extraPrepare        func(t *testing.T, ctx *context.Context)
 	}{
 		"multiarch": {
 			dockers: []config.Docker{
@@ -183,7 +183,7 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 			assertImageLabels:   noLabels,
-			extraPrepare: func(tb testing.TB, ctx *context.Context) {
+			extraPrepare: func(t *testing.T, ctx *context.Context) {
 				for _, cmd := range []string{
 					fmt.Sprintf("docker build -t %sgoreleaser/dummy:v1 --platform linux/amd64 -f testdata/Dockerfile.dummy .", registry),
 					fmt.Sprintf("docker push %sgoreleaser/dummy:v1", registry),
@@ -191,7 +191,7 @@ func TestRunPipe(t *testing.T) {
 				} {
 					parts := strings.Fields(cmd)
 					out, err := exec.CommandContext(ctx, parts[0], parts[1:]...).CombinedOutput()
-					require.NoError(tb, err, cmd+": "+string(out))
+					require.NoError(t, err, cmd+": "+string(out))
 				}
 			},
 		},
@@ -771,7 +771,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels: noLabels,
 			assertError:       shouldErr(`/wont-exist: no such file or directory`),
-			extraPrepare: func(tb testing.TB, ctx *context.Context) {
+			extraPrepare: func(t *testing.T, ctx *context.Context) {
 				ctx.Artifacts.Add(&artifact.Artifact{
 					Name:   "wont-exist",
 					Path:   "wont-exist",
