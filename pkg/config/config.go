@@ -204,16 +204,6 @@ type Build struct {
 	ModTimestamp string         `yaml:"mod_timestamp,omitempty"`
 	Skip         bool           `yaml:",omitempty"`
 	GoBinary     string         `yaml:",omitempty"`
-	Proxy        BuildProxy     `yaml:",omitempty"`
-}
-
-func (b Build) IsProxied() bool {
-	return b.Proxy != BuildProxy{}
-}
-
-type BuildProxy struct {
-	Path    string `yaml:",omitempty"`
-	Version string `yaml:",omitempty"`
 }
 
 type HookConfig struct {
@@ -620,6 +610,7 @@ type Project struct {
 	EnvFiles        EnvFiles         `yaml:"env_files,omitempty"`
 	Before          Before           `yaml:",omitempty"`
 	Source          Source           `yaml:",omitempty"`
+	GoMod           GoMod            `yaml:"gomod,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
@@ -632,6 +623,10 @@ type Project struct {
 
 	// should be set if using Gitea
 	GiteaURLs GiteaURLs `yaml:"gitea_urls,omitempty"`
+}
+
+type GoMod struct {
+	Proxy bool `yaml:",omitempty"`
 }
 
 // Load config file.

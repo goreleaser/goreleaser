@@ -85,11 +85,6 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 }
 
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
-	build, err := proxy(ctx, build)
-	if err != nil {
-		return err
-	}
-
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, target := range build.Targets {
 		target := target
@@ -116,93 +111,6 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	}
 
 	return g.Wait()
-}
-
-func proxy(ctx *context.Context, build config.Build) (config.Build, error) {
-	if !build.IsProxied() {
-		return build, nil
-	}
-
-	template := tmpl.New(ctx)
-
-	proxy, err := template.Apply(build.Proxy.Path)
-	if err != nil {
-		return build, fmt.Errorf("failed to proxy module: %w", err)
-	}
-
-	version, err := template.Apply(build.Proxy.Version)
-	if err != nil {
-		return build, fmt.Errorf("failed to proxy module: %w", err)
-	}
-
-	log := log.WithField("id", build.ID)
-	log.Infof("proxying %s@%s", proxy, version)
-
-	template = template.WithExtraFields(tmpl.Fields{
-		"Proxy":   proxy,
-		"Version": version,
-	})
-
-	mod, err := template.Apply(`
-module {{ .ProjectName }}
-
-require {{ .Proxy }} {{ .Version }}
-
-`)
-	if err != nil {
-		return build, fmt.Errorf("failed to proxy module: %w", err)
-	}
-
-	main, err := template.Apply(`
-// +build main
-package main
-
-import _ "{{ .Proxy }}"
-`)
-	if err != nil {
-		return build, fmt.Errorf("failed to proxy module: %w", err)
-	}
-
-	dir := fmt.Sprintf("%s/build_%s", ctx.Config.Dist, build.ID)
-
-	log.Debugf("creating needed files")
-
-	if err := os.Mkdir(dir, 0o755); err != nil {
-		return build, fmt.Errorf("failed to proxy module: %w", err)
-	}
-
-	if err := os.WriteFile(dir+"/main.go", []byte(main), 0o650); err != nil {
-		return build, fmt.Errorf("failed to proxy module: %w", err)
-	}
-
-	if err := os.WriteFile(dir+"/go.mod", []byte(mod), 0o650); err != nil {
-		return build, fmt.Errorf("failed to proxy module: %w", err)
-	}
-
-	sumr, err := os.OpenFile("go.sum", os.O_RDONLY, 0o650)
-	if err != nil {
-		return build, fmt.Errorf("failed to proxy module: %w", err)
-	}
-
-	sumw, err := os.OpenFile(dir+"/go.sum", os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0o650)
-	if err != nil {
-		return build, fmt.Errorf("failed to proxy module: %w", err)
-	}
-
-	if _, err := io.Copy(sumw, sumr); err != nil {
-		return build, fmt.Errorf("failed to proxy module: %w", err)
-	}
-
-	log.Debugf("tidying")
-	cmd := exec.CommandContext(ctx, "go", "mod", "tidy")
-	cmd.Dir = dir
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return build, fmt.Errorf("failed to proxy module: %w: %s", err, string(out))
-	}
-
-	build.Main = proxy
-	build.Dir = dir
-	return build, nil
 }
 
 func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hooks config.BuildHooks) error {

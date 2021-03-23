@@ -4,6 +4,8 @@ env:
 #  hooks:
 #    - go mod tidy
 #    - ./scripts/completions.sh
+gomod:
+  proxy: true
 builds:
 - env:
     - CGO_ENABLED=0
@@ -17,9 +19,6 @@ builds:
 #    - arm
     - arm64
   mod_timestamp: '{{ .CommitTimestamp }}'
-  proxy:
-    path: '{{ .ModulePath }}'
-    version: '{{ .Tag }}'
   flags:
     - -trimpath
   ldflags:

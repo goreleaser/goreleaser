@@ -71,8 +71,10 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 // Build builds a golang build.
 func (*Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
-	if err := checkMain(build); err != nil {
-		return err
+	if !ctx.Config.GoMod.Proxy {
+		if err := checkMain(build); err != nil {
+			return err
+		}
 	}
 	target, err := newBuildTarget(options.Target)
 	if err != nil {
@@ -218,9 +220,6 @@ func (b buildTarget) Env() []string {
 }
 
 func checkMain(build config.Build) error {
-	if build.IsProxied() {
-		return nil
-	}
 	main := build.Main
 	if main == "" {
 		main = "."

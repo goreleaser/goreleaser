@@ -62,6 +62,7 @@ nav:
   - customization/artifactory.md
   - customization/bintray.md
   - customization/blob.md
+  - customization/gomod.md
   - customization/build.md
   - customization/checksum.md
   - customization/publishers.md
