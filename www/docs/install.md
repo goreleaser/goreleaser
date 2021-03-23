@@ -7,7 +7,7 @@ Here are the steps for each of them:
 
 ## Install the pre-compiled binary
 
-**homebrew tap** (only on macOS for now):
+**homebrew tap**:
 
 ```sh
 brew install goreleaser/tap/goreleaser
@@ -32,15 +32,20 @@ scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
 scoop install goreleaser
 ```
 
-**deb/rpm**:
+**deb/rpm/apk**:
 
-Download the `.deb` or `.rpm` from the [releases page][releases] and
-install with `dpkg -i` and `rpm -i` respectively.
+Download the `.deb`, `.rpm` or `.apk` from the [releases page][releases] and install them with the appropriate tools.
 
-**Shell script**:
+**shell script**:
 
 ```sh
 curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
+```
+
+**go install**:
+
+```sh
+go install github.com/goreleaser/goreleaser
 ```
 
 **manually**:
@@ -90,26 +95,26 @@ steps on our [contributing guide](/contributing).
 
 If you just want to build from source for whatever reason, follow these steps:
 
-**Clone:**
+**clone:**
 
 ```sh
 git clone https://github.com/goreleaser/goreleaser
 cd goreleaser
 ```
 
-**Get the dependencies:**
+**get the dependencies:**
 
 ```sh
-go get ./...
+go mod tidy
 ```
 
-**Build:**
+**build:**
 
 ```sh
 go build -o goreleaser .
 ```
 
-**Verify it works:**
+**verify it works:**
 
 ```sh
 ./goreleaser --version
