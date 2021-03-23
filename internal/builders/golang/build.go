@@ -227,7 +227,7 @@ func checkMain(build config.Build) error {
 	}
 	stat, ferr := os.Stat(main)
 	if ferr != nil {
-		return ferr
+		return fmt.Errorf("couldn't find main file: %w", ferr)
 	}
 	if stat.IsDir() {
 		packs, err := parser.ParseDir(token.NewFileSet(), main, nil, 0)
