@@ -89,12 +89,12 @@ func TestWithDefaults(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
-			var config = config.Project{
+			config := config.Project{
 				Builds: []config.Build{
 					testcase.build,
 				},
 			}
-			var ctx = context.New(config)
+			ctx := context.New(config)
 			ctx.Git.CurrentTag = "5.6.7"
 			build, err := Default.WithDefaults(ctx.Config.Builds[0])
 			require.NoError(t, err)
@@ -138,12 +138,12 @@ func TestInvalidTargets(t *testing.T) {
 		},
 	} {
 		t.Run(s, func(t *testing.T) {
-			var config = config.Project{
+			config := config.Project{
 				Builds: []config.Build{
 					tc.build,
 				},
 			}
-			var ctx = context.New(config)
+			ctx := context.New(config)
 			_, err := Default.WithDefaults(ctx.Config.Builds[0])
 			require.EqualError(t, err, tc.expectedErr)
 		})
@@ -151,9 +151,9 @@ func TestInvalidTargets(t *testing.T) {
 }
 
 func TestBuild(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
-	var config = config.Project{
+	config := config.Project{
 		Builds: []config.Build{
 			{
 				ID:     "foo",
@@ -175,11 +175,11 @@ func TestBuild(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Env["GO_FLAGS"] = "-v"
 	ctx.Git.CurrentTag = "5.6.7"
 	ctx.Version = "v" + ctx.Git.CurrentTag
-	var build = ctx.Config.Builds[0]
+	build := ctx.Config.Builds[0]
 	for _, target := range build.Targets {
 		var ext string
 		if strings.HasPrefix(target, "windows") {
@@ -193,7 +193,7 @@ func TestBuild(t *testing.T) {
 		// injecting some delay here to force inconsistent mod times on bins
 		time.Sleep(2 * time.Second)
 
-		var err = Default.Build(ctx, build, api.Options{
+		err := Default.Build(ctx, build, api.Options{
 			Target: target,
 			Name:   bin + ext,
 			Path:   filepath.Join(folder, "dist", target, bin+ext),
@@ -311,12 +311,12 @@ func TestBuild(t *testing.T) {
 }
 
 func TestBuildCodeInSubdir(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	subdir := filepath.Join(folder, "bar")
-	err := os.Mkdir(subdir, 0755)
+	err := os.Mkdir(subdir, 0o755)
 	require.NoError(t, err)
 	writeGoodMain(t, subdir)
-	var config = config.Project{
+	config := config.Project{
 		Builds: []config.Build{
 			{
 				ID:     "foo",
@@ -330,9 +330,9 @@ func TestBuildCodeInSubdir(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "5.6.7"
-	var build = ctx.Config.Builds[0]
+	build := ctx.Config.Builds[0]
 	err = Default.Build(ctx, build, api.Options{
 		Target: runtimeTarget,
 		Name:   build.Binary,
@@ -343,10 +343,10 @@ func TestBuildCodeInSubdir(t *testing.T) {
 }
 
 func TestBuildWithDotGoDir(t *testing.T) {
-	var folder = testlib.Mktmp(t)
-	require.NoError(t, os.Mkdir(filepath.Join(folder, ".go"), 0755))
+	folder := testlib.Mktmp(t)
+	require.NoError(t, os.Mkdir(filepath.Join(folder, ".go"), 0o755))
 	writeGoodMain(t, folder)
-	var config = config.Project{
+	config := config.Project{
 		Builds: []config.Build{
 			{
 				ID:       "foo",
@@ -357,9 +357,9 @@ func TestBuildWithDotGoDir(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "5.6.7"
-	var build = ctx.Config.Builds[0]
+	build := ctx.Config.Builds[0]
 	require.NoError(t, Default.Build(ctx, build, api.Options{
 		Target: runtimeTarget,
 		Name:   build.Binary,
@@ -369,9 +369,9 @@ func TestBuildWithDotGoDir(t *testing.T) {
 }
 
 func TestBuildFailed(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
-	var config = config.Project{
+	config := config.Project{
 		Builds: []config.Build{
 			{
 				ID:    "buildid",
@@ -383,9 +383,9 @@ func TestBuildFailed(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "5.6.7"
-	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: "darwin_amd64",
 	})
 	assertContainsError(t, err, `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
@@ -393,10 +393,10 @@ func TestBuildFailed(t *testing.T) {
 }
 
 func TestBuildInvalidTarget(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
-	var target = "linux"
-	var config = config.Project{
+	target := "linux"
+	config := config.Project{
 		Builds: []config.Build{
 			{
 				ID:      "foo",
@@ -405,10 +405,10 @@ func TestBuildInvalidTarget(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "5.6.7"
-	var build = ctx.Config.Builds[0]
-	var err = Default.Build(ctx, build, api.Options{
+	build := ctx.Config.Builds[0]
+	err := Default.Build(ctx, build, api.Options{
 		Target: target,
 		Name:   build.Binary,
 		Path:   filepath.Join(folder, "dist", target, build.Binary),
@@ -418,9 +418,9 @@ func TestBuildInvalidTarget(t *testing.T) {
 }
 
 func TestRunInvalidAsmflags(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
-	var config = config.Project{
+	config := config.Project{
 		Builds: []config.Build{
 			{
 				Binary:   "nametest",
@@ -431,18 +431,18 @@ func TestRunInvalidAsmflags(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "5.6.7"
-	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
 	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunInvalidGcflags(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
-	var config = config.Project{
+	config := config.Project{
 		Builds: []config.Build{
 			{
 				Binary:  "nametest",
@@ -453,18 +453,18 @@ func TestRunInvalidGcflags(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "5.6.7"
-	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
 	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunInvalidLdflags(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
-	var config = config.Project{
+	config := config.Project{
 		Builds: []config.Build{
 			{
 				Binary:  "nametest",
@@ -476,18 +476,18 @@ func TestRunInvalidLdflags(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "5.6.7"
-	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
 	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunInvalidFlags(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
-	var config = config.Project{
+	config := config.Project{
 		Builds: []config.Build{
 			{
 				Binary: "nametest",
@@ -498,17 +498,17 @@ func TestRunInvalidFlags(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
-	var err = Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+	ctx := context.New(config)
+	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
 	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunPipeWithoutMainFunc(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	writeMainWithoutMainFunc(t, folder)
-	var config = config.Project{
+	config := config.Project{
 		Builds: []config.Build{
 			{
 				Binary: "no-main",
@@ -519,7 +519,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "5.6.7"
 	t.Run("empty", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = ""
@@ -531,7 +531,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].Main = "foo.go"
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
-		}), `stat foo.go: no such file or directory`)
+		}), `couldn't find main file: stat foo.go: no such file or directory`)
 	})
 	t.Run("glob", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."
@@ -548,13 +548,13 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 }
 
 func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	require.NoError(t, ioutil.WriteFile(
 		filepath.Join(folder, "foo.go"),
 		[]byte("package main\nfunc main() {println(0)}"),
-		0644,
+		0o644,
 	))
-	var config = config.Project{
+	config := config.Project{
 		Builds: []config.Build{
 			{
 				Env:    []string{"GO111MODULE=off"},
@@ -567,7 +567,7 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "5.6.7"
 	t.Run("empty", func(t *testing.T) {
 		ctx.Config.Builds[0].Main = ""
@@ -593,7 +593,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 	run := time.Now().UTC()
 	commit := time.Now().AddDate(-1, 0, 0)
 
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.2.3",
 			Commit:     "123",
@@ -603,7 +603,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 		Version: "1.2.3",
 		Env:     map[string]string{"FOO": "123"},
 	}
-	var artifact = &artifact.Artifact{Goarch: "amd64"}
+	artifact := &artifact.Artifact{Goarch: "amd64"}
 	flags, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).
 		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }} -X main.arch={{.Arch}} -X main.commitDate={{.CommitDate}}`)
 	require.NoError(t, err)
@@ -624,7 +624,7 @@ func TestInvalidTemplate(t *testing.T) {
 		"{{.Env.NOPE}}": `template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`,
 	} {
 		t.Run(template, func(t *testing.T) {
-			var ctx = context.New(config.Project{})
+			ctx := context.New(config.Project{})
 			ctx.Git.CurrentTag = "3.4.1"
 			flags, err := tmpl.New(ctx).Apply(template)
 			require.EqualError(t, err, eerr)
@@ -634,12 +634,12 @@ func TestInvalidTemplate(t *testing.T) {
 }
 
 func TestProcessFlags(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Version: "1.2.3",
 	}
 	ctx.Git.CurrentTag = "5.6.7"
 
-	var artifact = &artifact.Artifact{
+	artifact := &artifact.Artifact{
 		Name:   "name",
 		Goos:   "darwin",
 		Goarch: "amd64",
@@ -649,7 +649,7 @@ func TestProcessFlags(t *testing.T) {
 		},
 	}
 
-	var source = []string{
+	source := []string{
 		"flag",
 		"{{.Version}}",
 		"{{.Os}}",
@@ -659,7 +659,7 @@ func TestProcessFlags(t *testing.T) {
 		"{{.ArtifactName}}",
 	}
 
-	var expected = []string{
+	expected := []string{
 		"-testflag=flag",
 		"-testflag=1.2.3",
 		"-testflag=darwin",
@@ -676,13 +676,13 @@ func TestProcessFlags(t *testing.T) {
 }
 
 func TestProcessFlagsInvalid(t *testing.T) {
-	var ctx = &context.Context{}
+	ctx := &context.Context{}
 
-	var source = []string{
+	source := []string{
 		"{{.Version}",
 	}
 
-	var expected = `template: tmpl:1: unexpected "}" in operand`
+	expected := `template: tmpl:1: unexpected "}" in operand`
 
 	flags, err := processFlags(ctx, &artifact.Artifact{}, []string{}, source, "-testflag=")
 	require.EqualError(t, err, expected)
@@ -708,10 +708,10 @@ func TestBuildModTimestamp(t *testing.T) {
 	// round to seconds since this will be a unix timestamp
 	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
 
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	writeGoodMain(t, folder)
 
-	var config = config.Project{
+	config := config.Project{
 		Builds: []config.Build{
 			{
 				ID:     "foo",
@@ -734,11 +734,11 @@ func TestBuildModTimestamp(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Env["GO_FLAGS"] = "-v"
 	ctx.Git.CurrentTag = "5.6.7"
 	ctx.Version = "v" + ctx.Git.CurrentTag
-	var build = ctx.Config.Builds[0]
+	build := ctx.Config.Builds[0]
 	for _, target := range build.Targets {
 		var ext string
 		if strings.HasPrefix(target, "windows") {
@@ -752,7 +752,7 @@ func TestBuildModTimestamp(t *testing.T) {
 		// injecting some delay here to force inconsistent mod times on bins
 		time.Sleep(2 * time.Second)
 
-		var err = Default.Build(ctx, build, api.Options{
+		err := Default.Build(ctx, build, api.Options{
 			Target: target,
 			Name:   bin + ext,
 			Path:   filepath.Join(folder, "dist", target, bin+ext),
@@ -781,7 +781,7 @@ func writeMainWithoutMainFunc(t *testing.T, folder string) {
 	require.NoError(t, ioutil.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nconst a = 2\nfunc notMain() {println(0)}"),
-		0644,
+		0o644,
 	))
 }
 
@@ -790,7 +790,7 @@ func writeGoodMain(t *testing.T, folder string) {
 	require.NoError(t, ioutil.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nvar a = 1\nfunc main() {println(0)}"),
-		0644,
+		0o644,
 	))
 }
 
