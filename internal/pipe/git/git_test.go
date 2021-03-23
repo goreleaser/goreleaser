@@ -3,6 +3,7 @@ package git
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
@@ -20,7 +21,7 @@ func TestDescription(t *testing.T) {
 
 func TestNotAGitFolder(t *testing.T) {
 	testlib.Mktmp(t)
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.EqualError(t, Pipe{}.Run(ctx), ErrNotRepository.Error())
@@ -32,7 +33,7 @@ func TestSingleCommit(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -46,7 +47,7 @@ func TestBranch(t *testing.T) {
 	testlib.GitCommit(t, "test-branch-commit")
 	testlib.GitTag(t, "test-branch-tag")
 	testlib.GitCheckoutBranch(t, "test-branch")
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -58,7 +59,7 @@ func TestNoRemote(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.EqualError(t, Pipe{}.Run(ctx), "couldn't get remote URL: fatal: No remote configured to list refs from.")
@@ -67,7 +68,7 @@ func TestNoRemote(t *testing.T) {
 func TestNewRepository(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	// TODO: improve this error handling
@@ -82,13 +83,13 @@ func TestNoTagsNoSnapshot(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "first")
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Snapshot = false
 	require.EqualError(t, Pipe{}.Run(ctx), `git doesn't contain any tags. Either add a tag or use --snapshot`)
 }
 
 func TestDirty(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	dummy, err := os.Create(filepath.Join(folder, "dummy"))
@@ -96,22 +97,48 @@ func TestDirty(t *testing.T) {
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "commit2")
 	testlib.GitTag(t, "v0.0.1")
-	require.NoError(t, ioutil.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0644))
+	require.NoError(t, ioutil.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0o644))
 	t.Run("all checks up", func(t *testing.T) {
-		err = Pipe{}.Run(context.New(config.Project{}))
+		err := Pipe{}.Run(context.New(config.Project{}))
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "git is currently in a dirty state")
 	})
 	t.Run("skip validate is set", func(t *testing.T) {
 		ctx := context.New(config.Project{})
 		ctx.SkipValidate = true
-		err = Pipe{}.Run(ctx)
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	})
 	t.Run("snapshot", func(t *testing.T) {
 		ctx := context.New(config.Project{})
 		ctx.Snapshot = true
-		err = Pipe{}.Run(ctx)
+		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	})
+}
+
+func TestShallowClone(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	require.NoError(
+		t,
+		exec.Command(
+			"git", "clone",
+			"--depth", "1",
+			"--branch", "v0.160.0",
+			"https://github.com/goreleaser/goreleaser",
+			folder,
+		).Run(),
+	)
+	t.Run("all checks up", func(t *testing.T) {
+		err := Pipe{}.Run(context.New(config.Project{}))
+		require.EqualError(t, err, ErrShallowClone.Error())
+	})
+	t.Run("skip validate is set", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		ctx.SkipValidate = true
+		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	})
+	t.Run("snapshot", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		ctx.Snapshot = true
 		testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	})
 }
@@ -136,7 +163,7 @@ func TestValidState(t *testing.T) {
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "commit4")
 	testlib.GitTag(t, "v0.0.2")
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
 	require.Equal(t, "git@github.com:foo/bar.git", ctx.Git.URL)
@@ -148,7 +175,7 @@ func TestSnapshotNoTags(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "whatever")
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
@@ -158,7 +185,7 @@ func TestSnapshotNoCommits(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, fakeInfo, ctx.Git)
@@ -166,27 +193,27 @@ func TestSnapshotNoCommits(t *testing.T) {
 
 func TestSnapshotWithoutRepo(t *testing.T) {
 	testlib.Mktmp(t)
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, fakeInfo, ctx.Git)
 }
 
 func TestSnapshotDirty(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "whatever")
 	testlib.GitTag(t, "v0.0.1")
-	require.NoError(t, ioutil.WriteFile(filepath.Join(folder, "foo"), []byte("foobar"), 0644))
-	var ctx = context.New(config.Project{})
+	require.NoError(t, ioutil.WriteFile(filepath.Join(folder, "foo"), []byte("foobar"), 0o644))
+	ctx := context.New(config.Project{})
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
 func TestGitNotInPath(t *testing.T) {
-	var path = os.Getenv("PATH")
+	path := os.Getenv("PATH")
 	defer func() {
 		require.NoError(t, os.Setenv("PATH", path))
 	}()
@@ -219,7 +246,7 @@ func TestTagFromCI(t *testing.T) {
 			require.NoError(t, os.Setenv(name, value))
 		}
 
-		var ctx = &context.Context{
+		ctx := &context.Context{
 			Config: config.Project{},
 		}
 		require.NoError(t, Pipe{}.Run(ctx))
@@ -240,7 +267,7 @@ func TestCommitDate(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommitWithDate(t, "commit1", commitDate)
 	testlib.GitTag(t, "v0.0.1")
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.NoError(t, Pipe{}.Run(ctx))

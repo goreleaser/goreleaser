@@ -116,6 +116,9 @@ func validate(ctx *context.Context) error {
 	if ctx.SkipValidate {
 		return pipe.ErrSkipValidateEnabled
 	}
+	if _, err := os.Stat(".git/shallow"); err == nil {
+		return ErrShallowClone
+	}
 	out, err := git.Run("status", "--porcelain")
 	if strings.TrimSpace(out) != "" || err != nil {
 		return ErrDirty{status: out}
