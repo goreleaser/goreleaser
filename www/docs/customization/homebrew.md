@@ -132,6 +132,13 @@ brews:
     install: |
       bin.install "program"
       ...
+      
+    # Custom post_install script for brew.
+    # Could be used to do any additional work after the "install" script
+    # Default is empty.
+    post_install: |
+    	etc.install "app-config.conf"
+    	...
 ```
 
 !!! tip
@@ -170,6 +177,10 @@ class Program < Formula
 
   def install
     bin.install "program"
+  end
+  
+  def post_install
+  	etc.install "app-config.conf"
   end
 end
 ```
