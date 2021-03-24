@@ -2,19 +2,32 @@
 title: Go Modules
 ---
 
-GoReleaser have some integrations with Go Modules, namely the proxy feature, which allow you to make your builds verifiable
-via `go version -m mybinary`.
+GoReleaser has support for creating verifiable builds.
+A [verifiable build][vgo] is one that records enough information to be precise about exactly how to repeat it.
+All dependencies are loaded via `proxy.golang.org`, and verified against the checksum database `sum.golang.org`.
+A GoReleaser-created verifiable build will include module information in the resulting binary, which can be printed using `go version -m mybinary`.
+
+Configuration options available are described bellow.
 
 ```yaml
 # goreleaser.yml
 
-# Proxy a module from proxy.golang.org, making the builds verifiable.
-# This will only be effective if running against a tag. Snapshots will ignore this setting.
-#
-# Default is false.
 gomod:
+  # Proxy a module from proxy.golang.org, making the builds verifiable.
+  # This will only be effective if running against a tag. Snapshots will ignore this setting.
+  #
+  # Default is false.
   proxy: true
+
+  # If proxy is true, use these environment variables when running `go mod` commands (namely, `go mod tidy`).
+  # Defaults to `os.Environ()`.
+  env:
+    - GOPROXY=https://proxy.golang.org,direct
+    - GOSUMDB=sum.golang.org
+    - GOPRIVATE=example.com/blah
 ```
 
 !!! tip
     You can use `debug.ReadBuildInfo()` to get the version/checksum/dependencies of the module.
+
+[vgo]: https://research.swtch.com/vgo-repro

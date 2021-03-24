@@ -120,6 +120,7 @@ import _ "{{ .Main }}"
 	log.Debugf("tidying")
 	cmd := exec.CommandContext(ctx, "go", "mod", "tidy")
 	cmd.Dir = dir
+	cmd.Env = append(ctx.Config.GoMod.Env, os.Environ()...)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("failed to proxy module: %w: %s", err, string(out))
 	}

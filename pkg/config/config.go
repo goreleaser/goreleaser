@@ -626,7 +626,8 @@ type Project struct {
 }
 
 type GoMod struct {
-	Proxy bool `yaml:",omitempty"`
+	Proxy bool     `yaml:",omitempty"`
+	Env   []string `yaml:",omitempty"`
 }
 
 // Load config file.
