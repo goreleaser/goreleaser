@@ -117,7 +117,7 @@ func validate(ctx *context.Context) error {
 		return pipe.ErrSkipValidateEnabled
 	}
 	if _, err := os.Stat(".git/shallow"); err == nil {
-		return ErrShallowClone
+		log.Warn("running against a shallow clone - check your CI documentation at https://goreleaser.com/ci")
 	}
 	out, err := git.Run("status", "--porcelain")
 	if strings.TrimSpace(out) != "" || err != nil {

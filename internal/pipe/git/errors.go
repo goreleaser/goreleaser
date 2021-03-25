@@ -33,7 +33,3 @@ var ErrNotRepository = errors.New("current folder is not a git repository")
 
 // ErrNoGit happens when git is not present in PATH.
 var ErrNoGit = errors.New("git not present in PATH")
-
-// ErrShallowClone happens when goreleaser runs against a shallow copy of a repo.
-// You'll need to setup your clone step to clone the whole repo instead.
-var ErrShallowClone = errors.New("refusing to run against a shallow clone, please make sure to clone the whole tree")

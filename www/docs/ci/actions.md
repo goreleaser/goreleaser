@@ -45,8 +45,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-!!! info
-    Note the `fetch-depth: 0` option on the `Checkout` workflow step. It is required for the change log to work correctly.
+!!! warning
+    Note the `fetch-depth: 0` option on the `Checkout` workflow step. It is required for GoReleaser to work properly.
+    Without that, you might see a "refusing to run against a shallow clone" error.
 
 ### Run on new tag
 
