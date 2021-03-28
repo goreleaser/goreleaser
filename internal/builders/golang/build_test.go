@@ -54,6 +54,7 @@ func TestWithDefaults(t *testing.T) {
 				"linux_mips_softfloat",
 				"darwin_amd64",
 				"windows_amd64",
+				"windows_arm_6",
 				"linux_arm_6",
 			},
 			goBinary: "go1.2.3",
