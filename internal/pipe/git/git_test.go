@@ -128,8 +128,8 @@ func TestShallowClone(t *testing.T) {
 		).Run(),
 	)
 	t.Run("all checks up", func(t *testing.T) {
-		err := Pipe{}.Run(context.New(config.Project{}))
-		require.EqualError(t, err, ErrShallowClone.Error())
+		// its just a warning now
+		require.NoError(t, Pipe{}.Run(context.New(config.Project{})))
 	})
 	t.Run("skip validate is set", func(t *testing.T) {
 		ctx := context.New(config.Project{})
