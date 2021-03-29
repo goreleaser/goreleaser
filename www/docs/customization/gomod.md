@@ -25,6 +25,10 @@ gomod:
     - GOPROXY=https://proxy.golang.org,direct
     - GOSUMDB=sum.golang.org
     - GOPRIVATE=example.com/blah
+
+  # Which Go binary to use.
+  # Defaults to `go`.
+  gobinary: go1.15
 ```
 
 !!! tip

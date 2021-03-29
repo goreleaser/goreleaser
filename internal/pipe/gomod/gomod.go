@@ -1,3 +1,5 @@
+// Package gomod provides go modules utilities, such as template variables and the ability to proxy the module from
+// proxy.golang.org.
 package gomod
 
 import (
@@ -6,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/apex/log"
@@ -22,9 +25,17 @@ func (Pipe) String() string {
 	return "loading go mod information"
 }
 
+// Default sets the pipe defaults.
+func (Pipe) Default(ctx *context.Context) error {
+	if ctx.Config.GoMod.GoBinary == "" {
+		ctx.Config.GoMod.GoBinary = "go"
+	}
+	return nil
+}
+
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	out, err := exec.CommandContext(ctx, "go", "list", "-m").CombinedOutput()
+	out, err := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "list", "-m").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to get module path: %w: %s", err, string(out))
 	}
@@ -58,6 +69,19 @@ func setupProxy(ctx *context.Context) error {
 	return nil
 }
 
+const goModTpl = `
+module {{ .BuildID }}
+
+require {{ .ModulePath }} {{ .Tag }}
+`
+
+const mainGoTpl = `
+// +build main
+package main
+
+import _ "{{ .Main }}"
+`
+
 func proxyBuild(ctx *context.Context, build *config.Build) error {
 	mainPackage := path.Join(ctx.ModulePath, build.Main)
 	template := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
@@ -67,26 +91,17 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 
 	log.Infof("proxying %s@%s to build %s", ctx.ModulePath, ctx.Git.CurrentTag, mainPackage)
 
-	mod, err := template.Apply(`
-module {{ .BuildID }}
-
-require {{ .ModulePath }} {{ .Tag }}
-`)
+	mod, err := template.Apply(goModTpl)
 	if err != nil {
 		return fmt.Errorf("failed to proxy module: %w", err)
 	}
 
-	main, err := template.Apply(`
-// +build main
-package main
-
-import _ "{{ .Main }}"
-`)
+	main, err := template.Apply(mainGoTpl)
 	if err != nil {
 		return fmt.Errorf("failed to proxy module: %w", err)
 	}
 
-	dir := fmt.Sprintf("%s/proxy/%s", ctx.Config.Dist, build.ID)
+	dir := filepath.Join(ctx.Config.Dist, "proxy", build.ID)
 
 	log.Debugf("creating needed files")
 
@@ -94,31 +109,20 @@ import _ "{{ .Main }}"
 		return fmt.Errorf("failed to proxy module: %w", err)
 	}
 
-	if err := os.WriteFile(dir+"/main.go", []byte(main), 0o666); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "main.go"), []byte(main), 0o666); err != nil {
 		return fmt.Errorf("failed to proxy module: %w", err)
 	}
 
-	if err := os.WriteFile(dir+"/go.mod", []byte(mod), 0o666); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte(mod), 0o666); err != nil {
 		return fmt.Errorf("failed to proxy module: %w", err)
 	}
 
-	sumr, err := os.OpenFile("go.sum", os.O_RDONLY, 0o666)
-	if err != nil {
-		return fmt.Errorf("failed to proxy module: %w", err)
-	}
-
-	sumw, err := os.Create(dir + "/go.sum")
-	if err != nil {
-		return fmt.Errorf("failed to proxy module: %w", err)
-	}
-	defer sumw.Close()
-
-	if _, err := io.Copy(sumw, sumr); err != nil {
-		return fmt.Errorf("failed to proxy module: %w", err)
+	if err := copyGoSum("go.sum", filepath.Join(dir, "go.sum")); err != nil {
+		return err
 	}
 
 	log.Debugf("tidying")
-	cmd := exec.CommandContext(ctx, "go", "mod", "tidy")
+	cmd := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "mod", "tidy")
 	cmd.Dir = dir
 	cmd.Env = append(ctx.Config.GoMod.Env, os.Environ()...)
 	if out, err := cmd.CombinedOutput(); err != nil {
@@ -127,5 +131,24 @@ import _ "{{ .Main }}"
 
 	build.Main = mainPackage
 	build.Dir = dir
+	return nil
+}
+
+func copyGoSum(src, dst string) error {
+	r, err := os.OpenFile(src, os.O_RDONLY, 0o666)
+	if err != nil {
+		return fmt.Errorf("failed to proxy module: %w", err)
+	}
+
+	w, err := os.Create(dst)
+	if err != nil {
+		return fmt.Errorf("failed to proxy module: %w", err)
+	}
+	defer w.Close()
+
+	if _, err := io.Copy(w, r); err != nil {
+		return fmt.Errorf("failed to proxy module: %w", err)
+	}
+
 	return nil
 }
