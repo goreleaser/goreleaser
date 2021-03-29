@@ -2,8 +2,6 @@ package gomod
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -17,6 +15,18 @@ import (
 
 func TestRun(t *testing.T) {
 	ctx := context.New(config.Project{})
+	require.NoError(t, Pipe{}.Default(ctx))
+	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	require.Equal(t, "github.com/goreleaser/goreleaser", ctx.ModulePath)
+}
+
+func TestRunSnapshot(t *testing.T) {
+	ctx := context.New(config.Project{
+		GoMod: config.GoMod{
+			Proxy: true,
+		},
+	})
+	ctx.Snapshot = true
 	require.NoError(t, Pipe{}.Default(ctx))
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, "github.com/goreleaser/goreleaser", ctx.ModulePath)
@@ -64,15 +74,17 @@ func TestGoModProxy(t *testing.T) {
 			},
 		})
 		ctx.Git.CurrentTag = "v0.161.1"
-		ctx.ModulePath = "github.com/goreleaser/goreleaser"
 
-		setupGoModSumFromURL(t, "https://raw.githubusercontent.com/goreleaser/goreleaser/v0.161.1")
+		mod := "github.com/goreleaser/goreleaser"
+
+		fakeGoModAndSum(t, mod)
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NoError(t, Pipe{}.Run(ctx))
-		requireGoMod(t, "github.com/goreleaser/goreleaser", "v0.161.1")
-		requireMainGo(t, "github.com/goreleaser/goreleaser")
-		require.Equal(t, "github.com/goreleaser/goreleaser", ctx.Config.Builds[0].Main)
+		requireGoMod(t, mod, "v0.161.1")
+		requireMainGo(t, mod)
+		require.Equal(t, mod, ctx.Config.Builds[0].Main)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
+		require.Equal(t, mod, ctx.ModulePath)
 	})
 
 	t.Run("nfpm", func(t *testing.T) {
@@ -93,15 +105,54 @@ func TestGoModProxy(t *testing.T) {
 			},
 		})
 		ctx.Git.CurrentTag = "v2.3.1"
-		ctx.ModulePath = "github.com/goreleaser/nfpm/v2"
 
-		setupGoModSumFromURL(t, "https://raw.githubusercontent.com/goreleaser/nfpm/v2.3.1")
+		mod := "github.com/goreleaser/nfpm/v2"
+		fakeGoModAndSum(t, mod)
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NoError(t, Pipe{}.Run(ctx))
-		requireGoMod(t, "github.com/goreleaser/nfpm/v2", "v2.3.1")
-		requireMainGo(t, "github.com/goreleaser/nfpm/v2/cmd/nfpm")
-		require.Equal(t, "github.com/goreleaser/nfpm/v2/cmd/nfpm", ctx.Config.Builds[0].Main)
+		requireGoMod(t, mod, "v2.3.1")
+		requireMainGo(t, mod+"/cmd/nfpm")
+		require.Equal(t, mod+"/cmd/nfpm", ctx.Config.Builds[0].Main)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
+		require.Equal(t, mod, ctx.ModulePath)
+	})
+
+	t.Run("no perms", func(t *testing.T) {
+		for file, mode := range map[string]os.FileMode{
+			"go.mod":          0o500,
+			"go.sum":          0o500,
+			"main.go":         0o500,
+			"../../../go.sum": 0o300,
+		} {
+			t.Run(file, func(t *testing.T) {
+				dir := testlib.Mktmp(t)
+				dist := filepath.Join(dir, "dist")
+				ctx := context.New(config.Project{
+					Dist: dist,
+					GoMod: config.GoMod{
+						Proxy: true,
+					},
+					Builds: []config.Build{
+						{
+							ID:     "foo",
+							Goos:   []string{runtime.GOOS},
+							Goarch: []string{runtime.GOARCH},
+						},
+					},
+				})
+				ctx.Git.CurrentTag = "v0.161.1"
+
+				mod := "github.com/goreleaser/goreleaser"
+
+				fakeGoModAndSum(t, mod)
+				require.NoError(t, Pipe{}.Default(ctx))
+				require.NoError(t, Pipe{}.Run(ctx)) // should succeed at first
+
+				// change perms of a file and run again, which should now fail on that file.
+				require.NoError(t, os.Chmod(filepath.Join(dist, "proxy", "foo", file), mode))
+				require.ErrorAs(t, Pipe{}.Run(ctx), &ErrProxy{})
+			})
+		}
 	})
 }
 
@@ -131,22 +182,9 @@ import _ "%s"
 `, module), string(main))
 }
 
-func setupGoModSumFromURL(tb testing.TB, url string) {
+func fakeGoModAndSum(tb testing.TB, module string) {
 	tb.Helper()
 
-	require.NoError(tb, os.WriteFile("go.mod", getBody(tb, url+"/go.mod"), 0o666))
-	require.NoError(tb, os.WriteFile("go.sum", getBody(tb, url+"/go.sum"), 0o666))
-}
-
-func getBody(tb testing.TB, url string) []byte {
-	tb.Helper()
-
-	res, err := http.Get(url)
-	require.NoError(tb, err)
-	tb.Cleanup(func() {
-		require.NoError(tb, res.Body.Close())
-	})
-	bts, err := ioutil.ReadAll(res.Body)
-	require.NoError(tb, err)
-	return bts
+	require.NoError(tb, os.WriteFile("go.mod", []byte(fmt.Sprintf("module %s\n", module)), 0o666))
+	require.NoError(tb, os.WriteFile("go.sum", []byte("\n"), 0o666))
 }

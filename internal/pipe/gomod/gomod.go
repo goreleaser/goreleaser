@@ -82,6 +82,37 @@ package main
 import _ "{{ .Main }}"
 `
 
+// ErrProxy happens when something goes wrong while proxying the current go module.
+type ErrProxy struct {
+	err     error
+	details string
+}
+
+func newErrProxy(err error) error {
+	return ErrProxy{
+		err: err,
+	}
+}
+
+func newDetailedErrProxy(err error, details string) error {
+	return ErrProxy{
+		err:     err,
+		details: details,
+	}
+}
+
+func (e ErrProxy) Error() string {
+	out := fmt.Sprintf("failed to proxy module: %v", e.err)
+	if e.details != "" {
+		return fmt.Sprintf("%s: %s", out, e.details)
+	}
+	return out
+}
+
+func (e ErrProxy) Unwrap() error {
+	return e.err
+}
+
 func proxyBuild(ctx *context.Context, build *config.Build) error {
 	mainPackage := path.Join(ctx.ModulePath, build.Main)
 	template := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
@@ -93,12 +124,12 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 
 	mod, err := template.Apply(goModTpl)
 	if err != nil {
-		return fmt.Errorf("failed to proxy module: %w", err)
+		return newErrProxy(err)
 	}
 
 	main, err := template.Apply(mainGoTpl)
 	if err != nil {
-		return fmt.Errorf("failed to proxy module: %w", err)
+		return newErrProxy(err)
 	}
 
 	dir := filepath.Join(ctx.Config.Dist, "proxy", build.ID)
@@ -106,19 +137,19 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 	log.Debugf("creating needed files")
 
 	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return fmt.Errorf("failed to proxy module: %w", err)
+		return newErrProxy(err)
 	}
 
 	if err := os.WriteFile(filepath.Join(dir, "main.go"), []byte(main), 0o666); err != nil {
-		return fmt.Errorf("failed to proxy module: %w", err)
+		return newErrProxy(err)
 	}
 
 	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte(mod), 0o666); err != nil {
-		return fmt.Errorf("failed to proxy module: %w", err)
+		return newErrProxy(err)
 	}
 
 	if err := copyGoSum("go.sum", filepath.Join(dir, "go.sum")); err != nil {
-		return err
+		return newErrProxy(err)
 	}
 
 	log.Debugf("tidying")
@@ -126,7 +157,7 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 	cmd.Dir = dir
 	cmd.Env = append(ctx.Config.GoMod.Env, os.Environ()...)
 	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("failed to proxy module: %w: %s", err, string(out))
+		return newDetailedErrProxy(err, string(out))
 	}
 
 	build.Main = mainPackage
@@ -137,18 +168,15 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 func copyGoSum(src, dst string) error {
 	r, err := os.OpenFile(src, os.O_RDONLY, 0o666)
 	if err != nil {
-		return fmt.Errorf("failed to proxy module: %w", err)
+		return err
 	}
 
 	w, err := os.Create(dst)
 	if err != nil {
-		return fmt.Errorf("failed to proxy module: %w", err)
+		return err
 	}
 	defer w.Close()
 
-	if _, err := io.Copy(w, r); err != nil {
-		return fmt.Errorf("failed to proxy module: %w", err)
-	}
-
-	return nil
+	_, err = io.Copy(w, r)
+	return err
 }
