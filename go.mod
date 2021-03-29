@@ -26,3 +26,8 @@ require (
 	golang.org/x/tools v0.0.0-20210105210202-9ed45478a130 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
+
+replace (
+	github.com/google/rpmpack => github.com/newrelic-forks/rpmpack v0.0.0-20210329155958-6665fc2d4767
+	github.com/goreleaser/nfpm/v2 v2.3.100 => github.com/newrelic-forks/nfpm/v2 v2.3.2-0.20210329163229-0c4f1f2261a0
+)
