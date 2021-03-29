@@ -332,6 +332,12 @@ type NFPMRPMSignature struct {
 	KeyPassphrase string `yaml:"-"` // populated from environment variable
 }
 
+// NFPMRPMScripts represents scripts only available on RPM packages.
+type NFPMRPMScripts struct {
+	PreTrans  string `yaml:"pretrans,omitempty"`
+	PostTrans string `yaml:"posttrans,omitempty"`
+}
+
 // NFPMRPM is custom configs that are only available on RPM packages.
 type NFPMRPM struct {
 	Summary              string            `yaml:"summary,omitempty"`
@@ -340,6 +346,7 @@ type NFPMRPM struct {
 	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"` // deprecated: use contents instead
 	GhostFiles           []string          `yaml:"ghost_files,omitempty"`            // deprecated: use contents instead
 	Signature            NFPMRPMSignature  `yaml:"signature,omitempty"`
+	Scripts              NFPMRPMScripts    `yaml:"scripts,omitempty"`
 }
 
 // NFPMDebScripts is scripts only available on deb packages.
