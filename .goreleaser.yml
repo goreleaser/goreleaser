@@ -1,22 +1,22 @@
 env:
   - GO111MODULE=on
-#before:
-#  hooks:
-#    - go mod tidy
-#    - ./scripts/completions.sh
+before:
+  hooks:
+    - go mod tidy
+    - ./scripts/completions.sh
 gomod:
   proxy: true
 builds:
 - env:
     - CGO_ENABLED=0
   goos:
-#    - linux
+    - linux
     - darwin
-#    - windows
+    - windows
   goarch:
-#    - 386
+    - 386
     - amd64
-#    - arm
+    - arm
     - arm64
   mod_timestamp: '{{ .CommitTimestamp }}'
   flags:
