@@ -139,7 +139,8 @@ func setupGoModSumFromURL(tb testing.TB, url string) {
 }
 
 func getBody(tb testing.TB, url string) []byte {
-	tb.Log("URL", url)
+	tb.Helper()
+
 	res, err := http.Get(url)
 	require.NoError(tb, err)
 	tb.Cleanup(func() {
