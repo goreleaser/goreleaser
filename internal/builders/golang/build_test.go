@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -546,6 +547,47 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 			Target: runtimeTarget,
 		}), `build for no-main does not contain a main function`)
 	})
+}
+
+func TestRunPipeWithProxiedRepo(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	proxied := filepath.Join(folder, "dist/proxy/default")
+	require.NoError(t, os.MkdirAll(proxied, 0o750))
+	require.NoError(t, ioutil.WriteFile(
+		filepath.Join(proxied, "main.go"),
+		[]byte("// +build: main\npackage main\nimport github.com/goreleaser/goreleaser"),
+		0o666,
+	))
+	require.NoError(t, ioutil.WriteFile(
+		filepath.Join(proxied, "go.mod"),
+		[]byte("module foo\nrequire github.com/goreleaser/goreleaser v0.161.1"),
+		0o666,
+	))
+	cmd := exec.Command("go", "mod", "download")
+	cmd.Dir = proxied
+	require.NoError(t, cmd.Run())
+	config := config.Project{
+		GoMod: config.GoMod{
+			Proxy: true,
+		},
+		Builds: []config.Build{
+			{
+				Binary: "foo",
+				Hooks:  config.HookConfig{},
+				Main:   "github.com/goreleaser/goreleaser",
+				Dir:    proxied,
+				Targets: []string{
+					runtimeTarget,
+				},
+				GoBinary: "go",
+			},
+		},
+	}
+	ctx := context.New(config)
+
+	require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		Target: runtimeTarget,
+	}))
 }
 
 func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
