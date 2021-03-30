@@ -19,6 +19,11 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+const (
+	go115NotAGoModuleError = "go list -m: not using modules"
+	go116NotAGoModuleError = "command-line-arguments"
+)
+
 // Pipe for env.
 type Pipe struct{}
 
@@ -33,11 +38,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 	return nil
 }
-
-const (
-	go115NotAGoModuleError = "go list -m: not using modules"
-	go116NotAGoModuleError = "command-line-arguments"
-)
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
