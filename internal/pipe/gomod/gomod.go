@@ -3,6 +3,7 @@
 package gomod
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -168,6 +169,9 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 func copyGoSum(src, dst string) error {
 	r, err := os.OpenFile(src, os.O_RDONLY, 0o666)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
 		return err
 	}
 

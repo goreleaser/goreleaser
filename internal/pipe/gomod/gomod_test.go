@@ -80,7 +80,7 @@ func TestGoModProxy(t *testing.T) {
 		fakeGoModAndSum(t, mod)
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NoError(t, Pipe{}.Run(ctx))
-		requireGoMod(t, mod, "v0.161.1")
+		requireGoMod(t, mod, ctx.Git.CurrentTag)
 		requireMainGo(t, mod)
 		require.Equal(t, mod, ctx.Config.Builds[0].Main)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
@@ -110,9 +110,39 @@ func TestGoModProxy(t *testing.T) {
 		fakeGoModAndSum(t, mod)
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.NoError(t, Pipe{}.Run(ctx))
-		requireGoMod(t, mod, "v2.3.1")
+		requireGoMod(t, mod, ctx.Git.CurrentTag)
 		requireMainGo(t, mod+"/cmd/nfpm")
 		require.Equal(t, mod+"/cmd/nfpm", ctx.Config.Builds[0].Main)
+		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
+		require.Equal(t, mod, ctx.ModulePath)
+	})
+
+	// this repo does not have a go.sum file, which is ok, a project might not have any dependencies
+	t.Run("no go.sum", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := context.New(config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy: true,
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+				},
+			},
+		})
+		ctx.Git.CurrentTag = "v0.0.1"
+
+		mod := "github.com/goreleaser/example-mod-proxy"
+		fakeGoMod(t, mod)
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		requireGoMod(t, mod, ctx.Git.CurrentTag)
+		requireMainGo(t, mod)
+		require.Equal(t, mod, ctx.Config.Builds[0].Main)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
 		require.Equal(t, mod, ctx.ModulePath)
 	})
@@ -185,6 +215,11 @@ import _ "%s"
 func fakeGoModAndSum(tb testing.TB, module string) {
 	tb.Helper()
 
-	require.NoError(tb, os.WriteFile("go.mod", []byte(fmt.Sprintf("module %s\n", module)), 0o666))
+	fakeGoMod(tb, module)
 	require.NoError(tb, os.WriteFile("go.sum", []byte("\n"), 0o666))
+}
+
+func fakeGoMod(tb testing.TB, module string) {
+	tb.Helper()
+	require.NoError(tb, os.WriteFile("go.mod", []byte(fmt.Sprintf("module %s\n", module)), 0o666))
 }
