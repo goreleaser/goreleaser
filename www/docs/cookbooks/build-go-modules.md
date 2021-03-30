@@ -15,22 +15,23 @@ gomod:
 
 In practice, what this does is:
 
-- for each of your builds, create a `dist/proxy/$BUILD_ID`;
-- creates a `go.mod` that requires your root module at the _current tag_;
-- creates a `main.go` that imports your main module;
-- copy the projects `go.sum` to that folder.
+- for each of your builds, create a `dist/proxy/{{ build.id }}`;
+- creates a `go.mod` that requires your __main module__ at the __current tag__;
+- creates a `main.go` that imports your __main package__;
+- copy the project's `go.sum` to that folder.
 
 In which:
 
-- _root module_: is the output of `go list -m`;
-- _main module_: is the _root module_ + your build's `main`;
-- _current tag_: is the tag that is being built.
+- __build.id__: the `id` property in your `build` definition;
+- __main module__: is the output of `go list -m`;
+- __main package__: is the __main module__ + your build's `main`;
+- __current tag__: is the tag that is being built.
 
 So, let's say:
 
-- _root module_: `github.com/goreleaser/nfpm/v2`;
+- __main module__: `github.com/goreleaser/nfpm/v2`;
 - build's `main`: `./cmd/nfpm/`;
-- _current tag_: `v2.5.0`.
+- __current tag__: `v2.5.0`.
 
 GoReleaser will create a `main.go` like:
 
@@ -61,12 +62,13 @@ And, to build, it will use something like:
 go build -o nfpm github.com/goreleaser/nfpm/v2/cmd/nfpm
 ```
 
-This will resolve the source code from the defined module proxy.
+This will resolve the source code from the defined module proxy using `proxy.golang.org`.
+Your project's `go.sum` will be used to verify any modules that are downloaded, with `sum.golang.org` "filling in" any gaps.
 
 ## Limitations
 
 1. Extra files will still be copied from the current project's root folder and not from the proxy cache;
-1. You can't build modules that are not your current module
+1. You can't build packages that are not contained in the main module.
 
 ## More information
 
