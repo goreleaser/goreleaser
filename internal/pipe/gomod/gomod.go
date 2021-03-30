@@ -34,6 +34,11 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+const (
+	go115NotAGoModuleError = "go list -m: not using modules"
+	go116NotAGoModuleError = "command-line-arguments"
+)
+
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	out, err := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "list", "-m").CombinedOutput()
@@ -42,7 +47,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 
 	result := strings.TrimSpace(string(out))
-	if result == "command-line-arguments" {
+	if result == go115NotAGoModuleError || result == go116NotAGoModuleError {
 		return pipe.Skip("not a go module")
 	}
 
