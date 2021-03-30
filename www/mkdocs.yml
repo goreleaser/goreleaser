@@ -88,6 +88,7 @@ nav:
 - Cookbooks:
   - About: cookbooks/index.md
   - Blog Posts: cookbooks/blog-posts.md
+  - cookbooks//build-go-modules.md
   - cookbooks/semantic-release.md
   - cookbooks/release-a-library.md
   - cookbooks/publish-to-nexus.md
