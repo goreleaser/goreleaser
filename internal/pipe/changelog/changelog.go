@@ -110,9 +110,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.ReleaseNotes += "\n"
 	}
 
-	path := filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
+	var path = filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
-	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint: gosec
+	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0644) //nolint: gosec
 }
 
 func loadFromFile(file string) (string, error) {
@@ -140,7 +140,7 @@ func buildChangelog(ctx *context.Context) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	entries := strings.Split(log, "\n")
+	var entries = strings.Split(log, "\n")
 	entries = entries[0 : len(entries)-1]
 	entries, err = filterEntries(ctx, entries)
 	if err != nil {
@@ -161,15 +161,15 @@ func filterEntries(ctx *context.Context, entries []string) ([]string, error) {
 }
 
 func sortEntries(ctx *context.Context, entries []string) []string {
-	direction := ctx.Config.Changelog.Sort
+	var direction = ctx.Config.Changelog.Sort
 	if direction == "" {
 		return entries
 	}
-	result := make([]string, len(entries))
+	var result = make([]string, len(entries))
 	copy(result, entries)
 	sort.Slice(result, func(i, j int) bool {
-		imsg := extractCommitInfo(result[i])
-		jmsg := extractCommitInfo(result[j])
+		var imsg = extractCommitInfo(result[i])
+		var jmsg = extractCommitInfo(result[j])
 		if direction == "asc" {
 			return strings.Compare(imsg, jmsg) < 0
 		}
@@ -203,7 +203,7 @@ func getChangelog(tag string) (string, error) {
 }
 
 func gitLog(refs ...string) (string, error) {
-	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
+	var args = []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
 	args = append(args, refs...)
 	return git.Run(args...)
 }
