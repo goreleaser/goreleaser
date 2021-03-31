@@ -4,6 +4,8 @@ before:
   hooks:
     - go mod tidy
     - ./scripts/completions.sh
+gomod:
+  proxy: true
 builds:
 - env:
     - CGO_ENABLED=0

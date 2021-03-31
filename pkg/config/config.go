@@ -610,6 +610,7 @@ type Project struct {
 	EnvFiles        EnvFiles         `yaml:"env_files,omitempty"`
 	Before          Before           `yaml:",omitempty"`
 	Source          Source           `yaml:",omitempty"`
+	GoMod           GoMod            `yaml:"gomod,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
@@ -622,6 +623,12 @@ type Project struct {
 
 	// should be set if using Gitea
 	GiteaURLs GiteaURLs `yaml:"gitea_urls,omitempty"`
+}
+
+type GoMod struct {
+	Proxy    bool     `yaml:",omitempty"`
+	Env      []string `yaml:",omitempty"`
+	GoBinary string   `yaml:",omitempty"`
 }
 
 // Load config file.

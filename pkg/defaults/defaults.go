@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
+	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/project"
@@ -39,6 +40,7 @@ var Defaulters = []Defaulter{
 	snapshot.Pipe{},
 	release.Pipe{},
 	project.Pipe{},
+	gomod.Pipe{},
 	build.Pipe{},
 	sourcearchive.Pipe{},
 	archive.Pipe{},
