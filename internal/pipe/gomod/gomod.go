@@ -42,13 +42,12 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	out, err := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "list", "-m").CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to get module path: %w: %s", err, string(out))
-	}
-
 	result := strings.TrimSpace(string(out))
 	if result == go115NotAGoModuleError || result == go116NotAGoModuleError {
 		return pipe.Skip("not a go module")
+	}
+	if err != nil {
+		return fmt.Errorf("failed to get module path: %w: %s", err, string(out))
 	}
 
 	ctx.ModulePath = result
