@@ -65,6 +65,28 @@ go build -o nfpm github.com/goreleaser/nfpm/v2/cmd/nfpm
 This will resolve the source code from the defined module proxy using `proxy.golang.org`.
 Your project's `go.sum` will be used to verify any modules that are downloaded, with `sum.golang.org` "filling in" any gaps.
 
+## Getting the version from the module
+
+You can also get the module version at runtime using [`debug#ReadBuildInfo`](https://pkg.go.dev/runtime/debug#ReadBuildInfo).
+It is useful to display the version of your program to the user, for example.
+
+```golang
+package main
+
+import (
+	"fmt"
+	"runtime/debug"
+)
+
+func main() {
+  if info, ok := debug.ReadBuildInfo(); ok && info.Main.Sum != "" {
+    fmt.Println(info)
+  }
+}
+```
+
+You can also use `go version -m my_program` to display the go module information.
+
 ## Limitations
 
 1. Extra files will still be copied from the current project's root folder and not from the proxy cache;
