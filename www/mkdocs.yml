@@ -17,13 +17,15 @@ theme:
   features:
     - navigation.instant
   palette:
-    - scheme: default # Light mode
+    - media: "(prefers-color-scheme: light)"  # Light mode
+      scheme: default
       toggle:
-        icon: material/toggle-switch-off-outline
+        icon: material/lightbulb-outline
         name: Switch to light mode
-    - scheme: slate # Dark mode
+    - media: "(prefers-color-scheme: dark)"  # Dark mode
+      scheme: slate
       toggle:
-        icon: material/toggle-switch
+        icon: material/lightbulb
         name: Switch to dark mode
 
 plugins:
