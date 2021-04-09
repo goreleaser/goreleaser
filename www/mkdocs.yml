@@ -1,4 +1,5 @@
 site_name: GoReleaser
+site_url: https://goreleaser.com
 site_description: Deliver Go binaries as fast and easily as possible
 copyright: Made with ❤️ by GoReleaser contributors.
 repo_name: goreleaser/goreleaser
@@ -13,6 +14,19 @@ theme:
   favicon: static/favicon.ico
   include_search_page: false
   search_index_only: true
+  features:
+    - navigation.instant
+  palette:
+    - media: "(prefers-color-scheme: light)"  # Light mode
+      scheme: default
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: dark)"  # Dark mode
+      scheme: slate
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
 
 plugins:
   # disable temporarely because its freezing the page
@@ -22,7 +36,6 @@ plugins:
       - en
   - minify:
       minify_html: true
-
 
 extra:
   social:
