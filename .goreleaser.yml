@@ -18,6 +18,7 @@ builds:
     - amd64
     - arm
     - arm64
+    - ppc64le
   mod_timestamp: '{{ .CommitTimestamp }}'
   flags:
     - -trimpath
@@ -66,23 +67,43 @@ dockers:
   goarch: arm64
   extra_files:
   - scripts/entrypoint.sh
+- image_templates:
+  - 'goreleaser/goreleaser:{{ .Tag }}-ppc64le'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-ppc64le'
+  dockerfile: Dockerfile
+  use_buildx: true
+  build_flag_templates:
+  - "--pull"
+  - "--label=org.opencontainers.image.created={{.Date}}"
+  - "--label=org.opencontainers.image.name={{.ProjectName}}"
+  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+  - "--label=org.opencontainers.image.version={{.Version}}"
+  - "--label=org.opencontainers.image.source={{.GitURL}}"
+  - "--platform=linux/ppc64le"
+  goarch: ppc64le
+  extra_files:
+  - scripts/entrypoint.sh
 docker_manifests:
 - name_template: 'goreleaser/goreleaser:{{ .Tag }}'
   image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
   - 'goreleaser/goreleaser:{{ .Tag }}-arm64'
+  - 'goreleaser/goreleaser:{{ .Tag }}-ppc64le'
 - name_template: 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}'
   image_templates:
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-ppc64le'
 - name_template: 'goreleaser/goreleaser:latest'
   image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
   - 'goreleaser/goreleaser:{{ .Tag }}-arm64'
+  - 'goreleaser/goreleaser:{{ .Tag }}-ppc64le'
 - name_template: 'ghcr.io/goreleaser/goreleaser:latest'
   image_templates:
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-ppc64le'
 archives:
   - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     replacements:
