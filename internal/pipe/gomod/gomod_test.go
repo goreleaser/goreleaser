@@ -184,6 +184,35 @@ func TestGoModProxy(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("goreleaser with main.go", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := context.New(config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy: true,
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   "main.go",
+				},
+			},
+		})
+		ctx.Git.CurrentTag = "v0.161.1"
+
+		mod := "github.com/goreleaser/goreleaser"
+
+		fakeGoModAndSum(t, mod)
+		require.NoError(t, Pipe{}.Default(ctx))
+		err := Pipe{}.Run(ctx)
+		require.ErrorAs(t, err, &ErrProxy{})
+		require.ErrorIs(t, err, errNotAMainPackage)
+		require.EqualError(t, err, "failed to proxy module: build.main needs to be a package: please change builds.foo.main to a package instead of main.go")
+	})
 }
 
 func requireGoMod(tb testing.TB, module, version string) {

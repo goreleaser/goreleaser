@@ -24,6 +24,8 @@ const (
 	go116NotAGoModuleError = "command-line-arguments"
 )
 
+var errNotAMainPackage = errors.New("build.main needs to be a package")
+
 // Pipe for env.
 type Pipe struct{}
 
@@ -119,6 +121,13 @@ func (e ErrProxy) Unwrap() error {
 }
 
 func proxyBuild(ctx *context.Context, build *config.Build) error {
+	if strings.HasSuffix(build.Main, ".go") {
+		return newDetailedErrProxy(
+			errNotAMainPackage,
+			fmt.Sprintf("please change builds.%s.main to a package instead of %s", build.ID, build.Main),
+		)
+	}
+
 	mainPackage := path.Join(ctx.ModulePath, build.Main)
 	template := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"Main":    mainPackage,
