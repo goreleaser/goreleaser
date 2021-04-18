@@ -942,6 +942,23 @@ func Test_buildManifest(t *testing.T) {
 					},
 				},
 				{
+					Name:   "foo_1.0.1_windows_arm.tar.gz",
+					Goos:   "windows",
+					Goarch: "arm",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+						"Builds": []*artifact.Artifact{
+							{
+								Name: "foo.exe",
+							},
+							{
+								Name: "bar.exe",
+							},
+						},
+					},
+				},
+				{
 					Name:   "foo_1.0.1_windows_386.tar.gz",
 					Goos:   "windows",
 					Goarch: "386",
