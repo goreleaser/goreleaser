@@ -193,9 +193,18 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 	}
 
 	for _, artifact := range artifacts {
-		var arch = "64bit"
-		if artifact.Goarch == "386" {
+		if artifact.Goos != "windows" {
+			continue
+		}
+
+		var arch string
+		switch {
+		case artifact.Goarch == "386":
 			arch = "32bit"
+		case artifact.Goarch == "amd64":
+			arch = "64bit"
+		default:
+			continue
 		}
 
 		url, err := tmpl.New(ctx).
