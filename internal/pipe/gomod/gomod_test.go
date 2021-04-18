@@ -208,10 +208,12 @@ func TestGoModProxy(t *testing.T) {
 
 		fakeGoModAndSum(t, mod)
 		require.NoError(t, Pipe{}.Default(ctx))
-		err := Pipe{}.Run(ctx)
-		require.ErrorAs(t, err, &ErrProxy{})
-		require.ErrorIs(t, err, errNotAMainPackage)
-		require.EqualError(t, err, "failed to proxy module: build.main needs to be a package: please change builds.foo.main to a package instead of main.go")
+		require.NoError(t, Pipe{}.Run(ctx))
+		requireGoMod(t, mod, ctx.Git.CurrentTag)
+		requireMainGo(t, mod)
+		require.Equal(t, mod, ctx.Config.Builds[0].Main)
+		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
+		require.Equal(t, mod, ctx.ModulePath)
 	})
 }
 
