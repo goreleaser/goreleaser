@@ -36,10 +36,10 @@ func (Pipe) Default(ctx *context.Context) error {
 // Publish to specified blob bucket url.
 func (Pipe) Publish(ctx *context.Context) error {
 	if len(ctx.Config.Blobs) == 0 {
-		return pipe.Skip("blobs section is not configured")
+		return pipe.ErrSkipDisabledPipe
 	}
 
-	var g = semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, conf := range ctx.Config.Blobs {
 		conf := conf
 		g.Go(func() error {
