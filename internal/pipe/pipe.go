@@ -27,9 +27,18 @@ func IsSkip(err error) bool {
 	return errors.As(err, &ErrSkip{})
 }
 
+func IsExpectedSkip(err error) bool {
+	skipErr := ErrSkip{}
+	if !errors.As(err, &skipErr) {
+		return false
+	}
+	return skipErr.expected
+}
+
 // ErrSkip occurs when a pipe is skipped for some reason.
 type ErrSkip struct {
-	reason string
+	reason   string
+	expected bool
 }
 
 // Error implements the error interface. returns the reason the pipe was skipped.
@@ -40,6 +49,11 @@ func (e ErrSkip) Error() string {
 // Skip skips this pipe with the given reason.
 func Skip(reason string) ErrSkip {
 	return ErrSkip{reason: reason}
+}
+
+// ExpectedSkip skips this pipe with the given reason.
+func ExpectedSkip(reason string) ErrSkip {
+	return ErrSkip{reason: reason, expected: true}
 }
 
 // SkipMemento remembers previous skip errors so you can return them all at once later.

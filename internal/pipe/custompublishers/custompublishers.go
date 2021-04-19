@@ -18,7 +18,7 @@ func (Pipe) String() string {
 // Publish artifacts.
 func (Pipe) Publish(ctx *context.Context) error {
 	if len(ctx.Config.Publishers) == 0 {
-		return pipe.Skip("publishers section is not configured")
+		return pipe.ExpectedSkip("publishers section is not configured")
 	}
 
 	return exec.Execute(ctx, ctx.Config.Publishers)

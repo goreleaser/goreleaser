@@ -44,7 +44,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	out, err := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "list", "-m").CombinedOutput()
 	result := strings.TrimSpace(string(out))
 	if result == go115NotAGoModuleError || result == go116NotAGoModuleError {
-		return pipe.Skip("not a go module")
+		return pipe.ExpectedSkip("not a go module")
 	}
 	if err != nil {
 		return fmt.Errorf("failed to get module path: %w: %s", err, string(out))
@@ -53,7 +53,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	ctx.ModulePath = result
 
 	if !ctx.Config.GoMod.Proxy {
-		return pipe.Skip("gomod.proxy is disabled")
+		return pipe.ExpectedSkip("gomod.proxy is disabled")
 	}
 
 	if ctx.Snapshot {

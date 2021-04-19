@@ -14,7 +14,7 @@ type Padding int
 const DefaultInitialPadding Padding = 3
 
 // ExtraPadding is the double of the DefaultInitialPadding.
-const ExtraPadding Padding = DefaultInitialPadding * 2
+const ExtraPadding = DefaultInitialPadding * 2
 
 // Logging pretty prints the given action and its title.
 // You can have different padding levels by providing different initial
