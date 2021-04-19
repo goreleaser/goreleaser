@@ -46,7 +46,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.ReleaseNotes = notes
 	}
 	if ctx.Config.Changelog.Skip {
-		return pipe.ExpectedSkip("changelog should not be built")
+		return pipe.ExpectedSkip()
 	}
 	if ctx.Snapshot {
 		return pipe.Skip("not available for snapshots")

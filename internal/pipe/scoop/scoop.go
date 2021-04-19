@@ -64,7 +64,7 @@ func (Pipe) Default(ctx *context.Context) error {
 func doRun(ctx *context.Context, cl client.Client) error {
 	scoop := ctx.Config.Scoop
 	if scoop.Bucket.Name == "" {
-		return pipe.ExpectedSkip("scoop section is not configured")
+		return pipe.ExpectedSkip()
 	}
 
 	if scoop.Bucket.Token != "" {

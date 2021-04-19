@@ -38,7 +38,7 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) (err error) {
 	if ctx.Config.Checksum.Disable {
-		return pipe.ExpectedSkip("checksum.disable is set")
+		return pipe.ExpectedSkip()
 	}
 	filter := artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),

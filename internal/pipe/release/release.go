@@ -113,7 +113,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 func doPublish(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Release.Disable {
-		return pipe.ExpectedSkip("release pipe is disabled")
+		return pipe.ExpectedSkip()
 	}
 	log.WithField("tag", ctx.Git.CurrentTag).
 		WithField("repo", ctx.Config.Release.GitHub.String()).

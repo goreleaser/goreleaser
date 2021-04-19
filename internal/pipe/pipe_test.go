@@ -16,13 +16,12 @@ func TestSkipPipe(t *testing.T) {
 
 func TestIsSkip(t *testing.T) {
 	require.True(t, IsSkip(Skip("whatever")))
-	require.True(t, IsSkip(ExpectedSkip("whatever")))
+	require.True(t, IsSkip(ExpectedSkip()))
 	require.False(t, IsSkip(errors.New("nope")))
 }
 
 func TestIsExpectedSkip(t *testing.T) {
-	require.True(t, IsSkip(ExpectedSkip("whatever")))
-	require.True(t, IsSkip(ExpectedSkip("whatever")))
+	require.True(t, IsSkip(ExpectedSkip()))
 	require.True(t, IsSkip(Skip("nope")))
 }
 

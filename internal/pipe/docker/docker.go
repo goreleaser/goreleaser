@@ -62,7 +62,7 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	if len(ctx.Config.Dockers) == 0 || len(ctx.Config.Dockers[0].ImageTemplates) == 0 {
-		return pipe.ExpectedSkip("docker section is not configured")
+		return pipe.ExpectedSkip()
 	}
 	_, err := exec.LookPath("docker")
 	if err != nil {

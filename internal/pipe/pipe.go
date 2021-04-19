@@ -51,9 +51,9 @@ func Skip(reason string) ErrSkip {
 	return ErrSkip{reason: reason}
 }
 
-// ExpectedSkip skips this pipe with the given reason.
-func ExpectedSkip(reason string) ErrSkip {
-	return ErrSkip{reason: reason, expected: true}
+// ExpectedSkip skips this pipe because it is disabled or not configured, i.e., its expected to be skip..
+func ExpectedSkip() ErrSkip {
+	return ErrSkip{reason: "pipe not configured/disabled", expected: true}
 }
 
 // SkipMemento remembers previous skip errors so you can return them all at once later.

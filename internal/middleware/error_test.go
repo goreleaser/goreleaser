@@ -18,7 +18,7 @@ func TestError(t *testing.T) {
 	})
 
 	t.Run("pipe expected skipped", func(t *testing.T) {
-		require.NoError(t, ErrHandler(mockAction(pipe.ExpectedSkip("foo")))(ctx))
+		require.NoError(t, ErrHandler(mockAction(pipe.ExpectedSkip()))(ctx))
 	})
 
 	t.Run("some err", func(t *testing.T) {
