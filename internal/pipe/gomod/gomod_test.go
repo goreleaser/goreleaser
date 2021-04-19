@@ -184,6 +184,37 @@ func TestGoModProxy(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("goreleaser with main.go", func(t *testing.T) {
+		dir := testlib.Mktmp(t)
+		dist := filepath.Join(dir, "dist")
+		ctx := context.New(config.Project{
+			Dist: dist,
+			GoMod: config.GoMod{
+				Proxy: true,
+			},
+			Builds: []config.Build{
+				{
+					ID:     "foo",
+					Goos:   []string{runtime.GOOS},
+					Goarch: []string{runtime.GOARCH},
+					Main:   "main.go",
+				},
+			},
+		})
+		ctx.Git.CurrentTag = "v0.161.1"
+
+		mod := "github.com/goreleaser/goreleaser"
+
+		fakeGoModAndSum(t, mod)
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.NoError(t, Pipe{}.Run(ctx))
+		requireGoMod(t, mod, ctx.Git.CurrentTag)
+		requireMainGo(t, mod)
+		require.Equal(t, mod, ctx.Config.Builds[0].Main)
+		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
+		require.Equal(t, mod, ctx.ModulePath)
+	})
 }
 
 func requireGoMod(tb testing.TB, module, version string) {
