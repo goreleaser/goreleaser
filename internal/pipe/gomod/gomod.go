@@ -120,6 +120,11 @@ func (e ErrProxy) Unwrap() error {
 
 func proxyBuild(ctx *context.Context, build *config.Build) error {
 	mainPackage := path.Join(ctx.ModulePath, build.Main)
+	if strings.HasSuffix(build.Main, ".go") {
+		pkg := path.Dir(build.Main)
+		log.Warnf("guessing package of '%s' to be '%s', if this is incorrect, setup 'build.%s.main' to be the correct package", build.Main, pkg, build.ID)
+		mainPackage = path.Join(ctx.ModulePath, pkg)
+	}
 	template := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"Main":    mainPackage,
 		"BuildID": build.ID,

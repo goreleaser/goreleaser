@@ -24,8 +24,10 @@ builds:
     dir: go
 
     # Path to main.go file or main package.
+    # Notice: when used with `gomod.proxy`, this must be a package.
+    #
     # Default is `.`.
-    main: ./cmd/main.go
+    main: ./cmd/my-app
 
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
@@ -134,7 +136,7 @@ Here is an example with multiple binaries:
 ```yaml
 # .goreleaser.yml
 builds:
-  - main: ./cmd/cli/cli.go
+  - main: ./cmd/cli
     id: "cli"
     binary: cli
     goos:
@@ -142,7 +144,7 @@ builds:
       - darwin
       - windows
 
-  - main: ./cmd/worker/worker.go
+  - main: ./cmd/worker
     id: "worker"
     binary: worker
     goos:
@@ -150,7 +152,7 @@ builds:
       - darwin
       - windows
 
-  - main: ./cmd/tracker/tracker.go
+  - main: ./cmd/tracker
     id: "tracker"
     binary: tracker
     goos:
