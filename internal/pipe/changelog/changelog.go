@@ -46,7 +46,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.ReleaseNotes = notes
 	}
 	if ctx.Config.Changelog.Skip {
-		return pipe.ExpectedSkip()
+		return pipe.ErrSkipDisabledPipe
 	}
 	if ctx.Snapshot {
 		return pipe.Skip("not available for snapshots")

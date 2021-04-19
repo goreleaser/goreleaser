@@ -53,7 +53,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	ctx.ModulePath = result
 
 	if !ctx.Config.GoMod.Proxy {
-		return pipe.ExpectedSkip()
+		return pipe.ErrSkipDisabledPipe
 	}
 
 	if ctx.Snapshot {

@@ -469,7 +469,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
-			shouldErr("scoop section is not configured"),
+			shouldErr(pipe.ErrSkipDisabledPipe.Error()),
 		},
 		{
 			"no publish",

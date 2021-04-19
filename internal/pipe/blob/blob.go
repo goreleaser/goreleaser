@@ -36,7 +36,7 @@ func (Pipe) Default(ctx *context.Context) error {
 // Publish to specified blob bucket url.
 func (Pipe) Publish(ctx *context.Context) error {
 	if len(ctx.Config.Blobs) == 0 {
-		return pipe.ExpectedSkip()
+		return pipe.ErrSkipDisabledPipe
 	}
 
 	g := semerrgroup.New(ctx.Parallelism)

@@ -22,7 +22,7 @@ func (Pipe) String() string {
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) (err error) {
 	if !ctx.Config.Source.Enabled {
-		return pipe.ExpectedSkip()
+		return pipe.ErrSkipDisabledPipe
 	}
 
 	name, err := tmpl.New(ctx).Apply(ctx.Config.Source.NameTemplate)
