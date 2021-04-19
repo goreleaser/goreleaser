@@ -15,7 +15,7 @@ Configuration options available are described bellow.
 gomod:
   # Proxy a module from proxy.golang.org, making the builds verifiable.
   # This will only be effective if running against a tag. Snapshots will ignore this setting.
-  # Notice: for this to work you `build.main` must be a package, not a `.go` file.
+  # Notice: for this to work your `build.main` must be a package, not a `.go` file.
   #
   # Default is false.
   proxy: true
