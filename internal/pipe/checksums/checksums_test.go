@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -114,7 +115,7 @@ func TestPipeSkipTrue(t *testing.T) {
 	)
 	var err = Pipe{}.Run(ctx)
 	testlib.AssertSkipped(t, err)
-	require.EqualError(t, err, `checksum.disable is set`)
+	require.EqualError(t, err, pipe.ErrSkipDisabledPipe.Error())
 }
 
 func TestPipeFileNotExist(t *testing.T) {
