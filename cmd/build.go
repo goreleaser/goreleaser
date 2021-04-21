@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
 	"runtime"
 	"time"
 
@@ -9,6 +11,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/spf13/cobra"
 )
@@ -20,6 +23,7 @@ type buildCmd struct {
 
 type buildOpts struct {
 	config        string
+	id            string
 	snapshot      bool
 	skipValidate  bool
 	skipPostHooks bool
@@ -27,12 +31,13 @@ type buildOpts struct {
 	deprecated    bool
 	parallelism   int
 	timeout       time.Duration
+	singleTarget  bool
 }
 
 func newBuildCmd() *buildCmd {
-	var root = &buildCmd{}
+	root := &buildCmd{}
 	// nolint: dupl
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:           "build",
 		Aliases:       []string{"b"},
 		Short:         "Builds the current project",
@@ -65,6 +70,8 @@ func newBuildCmd() *buildCmd {
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", runtime.NumCPU(), "Amount tasks to run concurrently")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
+	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH")
+	cmd.Flags().StringVar(&root.opts.id, "id", "", "Builds only the specified build id")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
 
@@ -79,7 +86,9 @@ func buildProject(options buildOpts) (*context.Context, error) {
 	}
 	ctx, cancel := context.NewWithTimeout(cfg, options.timeout)
 	defer cancel()
-	setupBuildContext(ctx, options)
+	if err := setupBuildContext(ctx, options); err != nil {
+		return nil, err
+	}
 	return ctx, ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipeline.BuildPipeline {
 			if err := middleware.Logging(
@@ -94,7 +103,7 @@ func buildProject(options buildOpts) (*context.Context, error) {
 	})
 }
 
-func setupBuildContext(ctx *context.Context, options buildOpts) *context.Context {
+func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	ctx.Parallelism = options.parallelism
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Snapshot = options.snapshot
@@ -103,7 +112,59 @@ func setupBuildContext(ctx *context.Context, options buildOpts) *context.Context
 	ctx.RmDist = options.rmDist
 	ctx.SkipTokenCheck = true
 
+	if options.singleTarget {
+		setupBuildSingleTarget(ctx)
+	}
+
+	if options.id != "" {
+		if err := setupBuildID(ctx, options.id); err != nil {
+			return err
+		}
+	}
+
 	// test only
 	ctx.Deprecated = options.deprecated
-	return ctx
+	return nil
+}
+
+func setupBuildSingleTarget(ctx *context.Context) {
+	goos := os.Getenv("GOOS")
+	if goos == "" {
+		goos = runtime.GOOS
+	}
+	goarch := os.Getenv("GOARCH")
+	if goarch == "" {
+		goarch = runtime.GOARCH
+	}
+	log.Infof("building only for %s/%s", goos, goarch)
+	if len(ctx.Config.Builds) == 0 {
+		ctx.Config.Builds = append(ctx.Config.Builds, config.Build{})
+	}
+	for i := range ctx.Config.Builds {
+		build := &ctx.Config.Builds[i]
+		build.Goos = []string{goos}
+		build.Goarch = []string{goarch}
+	}
+}
+
+func setupBuildID(ctx *context.Context, id string) error {
+	if len(ctx.Config.Builds) < 2 {
+		log.Warn("single build in config, '--id' ignored")
+		return nil
+	}
+
+	var keep []config.Build
+	for _, build := range ctx.Config.Builds {
+		if build.ID == id {
+			keep = append(keep, build)
+			break
+		}
+	}
+
+	if len(keep) == 0 {
+		return fmt.Errorf("no builds with id '%s'", id)
+	}
+
+	ctx.Config.Builds = keep
+	return nil
 }
