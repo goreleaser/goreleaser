@@ -42,7 +42,9 @@ func TestBuildBrokenProject(t *testing.T) {
 
 func TestBuildFlags(t *testing.T) {
 	setup := func(opts buildOpts) *context.Context {
-		return setupBuildContext(context.New(config.Project{}), opts)
+		ctx := context.New(config.Project{})
+		require.NoError(t, setupBuildContext(ctx, opts))
+		return ctx
 	}
 
 	t.Run("snapshot", func(t *testing.T) {
@@ -97,6 +99,60 @@ func TestBuildFlags(t *testing.T) {
 			result := setup(opts)
 			require.Equal(t, []string{"linux"}, result.Config.Builds[0].Goos)
 			require.Equal(t, []string{"arm64"}, result.Config.Builds[0].Goarch)
+		})
+	})
+
+	t.Run("id", func(t *testing.T) {
+		t.Run("match", func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Builds: []config.Build{
+					{
+						ID: "default",
+					},
+					{
+						ID: "foo",
+					},
+				},
+			})
+			require.NoError(t, setupBuildContext(ctx, buildOpts{
+				id: "foo",
+			}))
+		})
+
+		t.Run("dont match", func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Builds: []config.Build{
+					{
+						ID: "foo",
+					},
+					{
+						ID: "bazz",
+					},
+				},
+			})
+			require.EqualError(t, setupBuildContext(ctx, buildOpts{
+				id: "bar",
+			}), "no builds with id 'bar'")
+		})
+
+		t.Run("default config", func(t *testing.T) {
+			ctx := context.New(config.Project{})
+			require.NoError(t, setupBuildContext(ctx, buildOpts{
+				id: "aaa",
+			}))
+		})
+
+		t.Run("single build config", func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Builds: []config.Build{
+					{
+						ID: "foo",
+					},
+				},
+			})
+			require.NoError(t, setupBuildContext(ctx, buildOpts{
+				id: "not foo but doesnt matter",
+			}))
 		})
 	})
 }
