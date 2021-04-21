@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/apex/log"
-	"github.com/google/go-github/v28/github"
+	"github.com/google/go-github/v35/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -60,7 +60,6 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 // CloseMilestone closes a given milestone.
 func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
 	milestone, err := c.getMilestoneByTitle(ctx, repo, title)
-
 	if err != nil {
 		return err
 	}
@@ -139,12 +138,13 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		return "", err
 	}
 
-	var data = &github.RepositoryRelease{
-		Name:       github.String(title),
-		TagName:    github.String(ctx.Git.CurrentTag),
-		Body:       github.String(body),
-		Draft:      github.Bool(ctx.Config.Release.Draft),
-		Prerelease: github.Bool(ctx.PreRelease),
+	data := &github.RepositoryRelease{
+		Name:                   github.String(title),
+		TagName:                github.String(ctx.Git.CurrentTag),
+		Body:                   github.String(body),
+		Draft:                  github.Bool(ctx.Config.Release.Draft),
+		Prerelease:             github.Bool(ctx.PreRelease),
+		DiscussionCategoryName: github.String(ctx.Config.Release.DiscussionCategoryName),
 	}
 	release, _, err = c.client.Repositories.GetReleaseByTag(
 		ctx,
@@ -229,7 +229,6 @@ func (c *githubClient) getMilestoneByTitle(ctx *context.Context, repo Repo, titl
 			repo.Name,
 			opts,
 		)
-
 		if err != nil {
 			return nil, err
 		}
