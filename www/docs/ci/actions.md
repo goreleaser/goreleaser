@@ -21,6 +21,9 @@ on:
   pull_request:
   push:
 
+permissions:
+  contents: write
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -133,7 +136,16 @@ Following environment variables can be used as `step.env` keys
 |----------------|-------------------------------------------------------|
 | `GITHUB_TOKEN` | [GITHUB_TOKEN][github-token] as provided by `secrets` |
 
-## Limitations
+## Token Permissions
+
+The following [permissions](https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token) are required by GoReleaser:
+
+ - `content: write` if you wish to
+    - [upload archives as GitHub Releases](/customization/release/), or
+    - publish to [Homebrew](/customization/homebrew/), or [Scoop](/customization/scoop/) (assuming it's part of the same repository)
+ - or just `content: read` if you don't need any of the above
+ - `packages: write` if you [push Docker images](/customization/docker/) to GitHub
+ - `issues: write` if you use [milestone closing capability](/customization/milestone/)
 
 `GITHUB_TOKEN` permissions [are limited to the repository][about-github-token] that contains your workflow.
 
