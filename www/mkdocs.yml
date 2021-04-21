@@ -73,7 +73,6 @@ nav:
   - About: customization/index.md
   - customization/archive.md
   - customization/artifactory.md
-  - customization/bintray.md
   - customization/blob.md
   - customization/gomod.md
   - customization/build.md
@@ -107,6 +106,7 @@ nav:
   - cookbooks/publish-to-nexus.md
   - cookbooks/cgo-and-crosscompiling.md
   - cookbooks/debconf-templates.md
+  - cookbooks/upload-to-bintray.md
 - links.md
 
 markdown_extensions:
