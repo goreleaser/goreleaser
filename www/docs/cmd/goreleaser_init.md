@@ -19,7 +19,7 @@ goreleaser init [flags]
       --debug   Enable debug mode
 ```
 
-### SEE ALSO
+### See also
 
 * [goreleaser](/cmd/goreleaser)	 - Deliver Go binaries as fast and easily as possible
 

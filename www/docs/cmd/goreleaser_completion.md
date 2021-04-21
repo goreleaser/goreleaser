@@ -64,7 +64,7 @@ goreleaser completion [bash|zsh|fish]
       --debug   Enable debug mode
 ```
 
-### SEE ALSO
+### See also
 
 * [goreleaser](/cmd/goreleaser)	 - Deliver Go binaries as fast and easily as possible
 

@@ -9,7 +9,7 @@ Deliver Go binaries as fast and easily as possible
   -h, --help    help for goreleaser
 ```
 
-### SEE ALSO
+### See also
 
 * [goreleaser build](/cmd/goreleaser_build)	 - Builds the current project
 * [goreleaser check](/cmd/goreleaser_check)	 - Checks if configuration is valid
