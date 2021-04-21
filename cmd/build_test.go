@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+	"runtime"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -10,15 +12,22 @@ import (
 
 func TestBuild(t *testing.T) {
 	setup(t)
-	var cmd = newBuildCmd()
+	cmd := newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
+	require.NoError(t, cmd.cmd.Execute())
+}
+
+func TestBuildSingleTarget(t *testing.T) {
+	setup(t)
+	cmd := newBuildCmd()
+	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated", "--single-target"})
 	require.NoError(t, cmd.cmd.Execute())
 }
 
 func TestBuildInvalidConfig(t *testing.T) {
 	setup(t)
 	createFile(t, "goreleaser.yml", "foo: bar")
-	var cmd = newBuildCmd()
+	cmd := newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.EqualError(t, cmd.cmd.Execute(), "yaml: unmarshal errors:\n  line 1: field foo not found in type config.Project")
 }
@@ -26,18 +35,18 @@ func TestBuildInvalidConfig(t *testing.T) {
 func TestBuildBrokenProject(t *testing.T) {
 	setup(t)
 	createFile(t, "main.go", "not a valid go file")
-	var cmd = newBuildCmd()
+	cmd := newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2"})
 	require.EqualError(t, cmd.cmd.Execute(), "failed to parse dir: .: main.go:1:1: expected 'package', found not")
 }
 
 func TestBuildFlags(t *testing.T) {
-	var setup = func(opts buildOpts) *context.Context {
+	setup := func(opts buildOpts) *context.Context {
 		return setupBuildContext(context.New(config.Project{}), opts)
 	}
 
 	t.Run("snapshot", func(t *testing.T) {
-		var ctx = setup(buildOpts{
+		ctx := setup(buildOpts{
 			snapshot: true,
 		})
 		require.True(t, ctx.Snapshot)
@@ -46,7 +55,7 @@ func TestBuildFlags(t *testing.T) {
 	})
 
 	t.Run("skips", func(t *testing.T) {
-		var ctx = setup(buildOpts{
+		ctx := setup(buildOpts{
 			skipValidate:  true,
 			skipPostHooks: true,
 		})
@@ -65,5 +74,29 @@ func TestBuildFlags(t *testing.T) {
 		require.True(t, setup(buildOpts{
 			rmDist: true,
 		}).RmDist)
+	})
+
+	t.Run("single-target", func(t *testing.T) {
+		opts := buildOpts{
+			singleTarget: true,
+		}
+
+		t.Run("runtime", func(t *testing.T) {
+			result := setup(opts)
+			require.Equal(t, []string{runtime.GOOS}, result.Config.Builds[0].Goos)
+			require.Equal(t, []string{runtime.GOARCH}, result.Config.Builds[0].Goarch)
+		})
+
+		t.Run("from env", func(t *testing.T) {
+			os.Setenv("GOOS", "linux")
+			os.Setenv("GOARCH", "arm64")
+			t.Cleanup(func() {
+				os.Unsetenv("GOOS")
+				os.Unsetenv("GOARCH")
+			})
+			result := setup(opts)
+			require.Equal(t, []string{"linux"}, result.Config.Builds[0].Goos)
+			require.Equal(t, []string{"arm64"}, result.Config.Builds[0].Goarch)
+		})
 	})
 }

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"os"
 	"runtime"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/spf13/cobra"
 )
@@ -27,12 +29,13 @@ type buildOpts struct {
 	deprecated    bool
 	parallelism   int
 	timeout       time.Duration
+	singleTarget  bool
 }
 
 func newBuildCmd() *buildCmd {
-	var root = &buildCmd{}
+	root := &buildCmd{}
 	// nolint: dupl
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:           "build",
 		Aliases:       []string{"b"},
 		Short:         "Builds the current project",
@@ -65,6 +68,7 @@ func newBuildCmd() *buildCmd {
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", runtime.NumCPU(), "Amount tasks to run concurrently")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
+	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
 
@@ -102,6 +106,26 @@ func setupBuildContext(ctx *context.Context, options buildOpts) *context.Context
 	ctx.SkipPostBuildHooks = options.skipPostHooks
 	ctx.RmDist = options.rmDist
 	ctx.SkipTokenCheck = true
+
+	if options.singleTarget {
+		goos := os.Getenv("GOOS")
+		if goos == "" {
+			goos = runtime.GOOS
+		}
+		goarch := os.Getenv("GOARCH")
+		if goarch == "" {
+			goarch = runtime.GOARCH
+		}
+		log.Infof("building only for %s/%s", goos, goarch)
+		if len(ctx.Config.Builds) == 0 {
+			ctx.Config.Builds = append(ctx.Config.Builds, config.Build{})
+		}
+		for i := range ctx.Config.Builds {
+			build := &ctx.Config.Builds[i]
+			build.Goos = []string{goos}
+			build.Goarch = []string{goarch}
+		}
+	}
 
 	// test only
 	ctx.Deprecated = options.deprecated
