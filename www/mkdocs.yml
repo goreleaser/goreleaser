@@ -74,26 +74,26 @@ nav:
   - customization/archive.md
   - customization/artifactory.md
   - customization/blob.md
-  - customization/gomod.md
   - customization/build.md
   - customization/checksum.md
-  - customization/publishers.md
   - customization/docker.md
   - customization/docker_manifest.md
   - customization/env.md
-  - customization/hooks.md
+  - customization/gomod.md
   - customization/homebrew.md
-  - customization/upload.md
-  - customization/templates.md
+  - customization/hooks.md
   - customization/milestone.md
   - customization/nfpm.md
   - customization/project.md
+  - customization/publishers.md
   - customization/release.md
   - customization/scoop.md
   - customization/sign.md
   - customization/snapcraft.md
   - customization/snapshots.md
   - customization/source.md
+  - customization/templates.md
+  - customization/upload.md
 - deprecations.md
 - sponsors.md
 - contributing.md
@@ -101,11 +101,11 @@ nav:
   - About: cookbooks/index.md
   - Blog Posts: cookbooks/blog-posts.md
   - cookbooks//build-go-modules.md
-  - cookbooks/semantic-release.md
-  - cookbooks/release-a-library.md
-  - cookbooks/publish-to-nexus.md
   - cookbooks/cgo-and-crosscompiling.md
   - cookbooks/debconf-templates.md
+  - cookbooks/publish-to-nexus.md
+  - cookbooks/release-a-library.md
+  - cookbooks/semantic-release.md
   - cookbooks/upload-to-bintray.md
 - links.md
 
