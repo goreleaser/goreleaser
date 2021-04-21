@@ -94,9 +94,14 @@ nav:
   - customization/source.md
   - customization/templates.md
   - customization/upload.md
+- Command Line Usage:
+    - goreleaser: cmd/goreleaser.md
+    - goreleaser init: cmd/goreleaser_init.md
+    - goreleaser check: cmd/goreleaser_check.md
+    - goreleaser build: cmd/goreleaser_build.md
+    - goreleaser release: cmd/goreleaser_release.md
+    - goreleaser completion: cmd/goreleaser_completion.md
 - deprecations.md
-- sponsors.md
-- contributing.md
 - Cookbooks:
   - About: cookbooks/index.md
   - Blog Posts: cookbooks/blog-posts.md
@@ -107,6 +112,8 @@ nav:
   - cookbooks/release-a-library.md
   - cookbooks/semantic-release.md
   - cookbooks/upload-to-bintray.md
+- sponsors.md
+- contributing.md
 - links.md
 
 markdown_extensions:
