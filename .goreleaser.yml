@@ -154,3 +154,5 @@ snapcrafts:
     grade: stable
     confinement: classic
     publish: true
+release:
+  discussion_category_name: "New Releases"
