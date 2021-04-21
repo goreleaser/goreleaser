@@ -1,5 +1,3 @@
-//go:generate go run . docs
-//go:generate ./scripts/completions.sh
 package main
 
 import (

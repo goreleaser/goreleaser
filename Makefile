@@ -48,9 +48,7 @@ serve:
 .PHONY: serve
 
 vercel:
-	yum install -y jq go
-	go mod tidy
-	go generate -x ./...
+	yum install -y jq
 	pip install mkdocs-material mkdocs-minify-plugin
 	./scripts/get-releases.sh
 	(cd www && mkdocs build)
