@@ -66,5 +66,5 @@ goreleaser completion [bash|zsh|fish]
 
 ### SEE ALSO
 
-* [goreleaser](goreleaser.md)	 - Deliver Go binaries as fast and easily as possible
+* [goreleaser](/cmd/goreleaser)	 - Deliver Go binaries as fast and easily as possible
 

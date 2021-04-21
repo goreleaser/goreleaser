@@ -68,7 +68,7 @@ func newBuildCmd() *buildCmd {
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
 	cmd.Flags().BoolVar(&root.opts.skipPostHooks, "skip-post-hooks", false, "Skips all post-build hooks")
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
-	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", runtime.NumCPU(), "Amount tasks to run concurrently")
+	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
 	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH")
 	cmd.Flags().StringVar(&root.opts.id, "id", "", "Builds only the specified build id")
@@ -104,7 +104,10 @@ func buildProject(options buildOpts) (*context.Context, error) {
 }
 
 func setupBuildContext(ctx *context.Context, options buildOpts) error {
-	ctx.Parallelism = options.parallelism
+	ctx.Parallelism = runtime.NumCPU()
+	if options.parallelism > 0 {
+		ctx.Parallelism = options.parallelism
+	}
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Snapshot = options.snapshot
 	ctx.SkipValidate = ctx.Snapshot || options.skipValidate

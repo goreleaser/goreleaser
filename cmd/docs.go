@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 )
@@ -20,7 +22,11 @@ func newDocsCmd() *docsCmd {
 		Args:                  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			root.cmd.Root().DisableAutoGenTag = true
-			return doc.GenMarkdownTree(root.cmd.Root(), "www/docs/cmd")
+			return doc.GenMarkdownTreeCustom(root.cmd.Root(), "www/docs/cmd", func(_ string) string {
+				return ""
+			}, func(s string) string {
+				return "/cmd/" + strings.TrimSuffix(s, ".md")
+			})
 		},
 	}
 

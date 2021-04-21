@@ -11,7 +11,7 @@ goreleaser release [flags]
 ```
   -f, --config string           Load configuration from file
   -h, --help                    help for release
-  -p, --parallelism int         Amount tasks to run concurrently (default 8)
+  -p, --parallelism int         Amount tasks to run concurrently (default: number of CPUs)
       --release-footer string   Load custom release notes footer from a markdown file
       --release-header string   Load custom release notes header from a markdown file
       --release-notes string    Load custom release notes from a markdown file
@@ -31,5 +31,5 @@ goreleaser release [flags]
 
 ### SEE ALSO
 
-* [goreleaser](goreleaser.md)	 - Deliver Go binaries as fast and easily as possible
+* [goreleaser](/cmd/goreleaser)	 - Deliver Go binaries as fast and easily as possible
 

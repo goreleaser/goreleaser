@@ -12,7 +12,7 @@ goreleaser build [flags]
   -f, --config string      Load configuration from file
   -h, --help               help for build
       --id string          Builds only the specified build id
-  -p, --parallelism int    Amount tasks to run concurrently (default 8)
+  -p, --parallelism int    Amount tasks to run concurrently (default: number of CPUs)
       --rm-dist            Remove the dist folder before building
       --single-target      Builds only for current GOOS and GOARCH
       --skip-post-hooks    Skips all post-build hooks
@@ -29,5 +29,5 @@ goreleaser build [flags]
 
 ### SEE ALSO
 
-* [goreleaser](goreleaser.md)	 - Deliver Go binaries as fast and easily as possible
+* [goreleaser](/cmd/goreleaser)	 - Deliver Go binaries as fast and easily as possible
 
