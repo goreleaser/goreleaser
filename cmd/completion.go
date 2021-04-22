@@ -7,40 +7,50 @@ type completionCmd struct {
 }
 
 func newCompletionCmd() *completionCmd {
-	var root = &completionCmd{}
-	var cmd = &cobra.Command{
+	root := &completionCmd{}
+	cmd := &cobra.Command{
 		Use:   "completion [bash|zsh|fish]",
-		Short: "Print shell autocompletion scripts for goreleaser",
-		Long: `To load completions:
+		Short: "Prints shell autocompletion scripts for GoReleaser",
+		Long: `Allows you to setup your shell to autocomple GoReleaser commands and flags.
 
-Bash:
+#### Bash
 
-$ source <(goreleaser completion bash)
+	$ source <(goreleaser completion bash)
 
-# To load completions for each session, execute once:
-Linux:
-  $ goreleaser completion bash > /etc/bash_completion.d/goreleaser
-MacOS:
-  $ goreleaser completion bash > /usr/local/etc/bash_completion.d/goreleaser
+To load completions for each session, execute once:
 
-Zsh:
+##### Linux
 
-# If shell completion is not already enabled in your environment you will need
-# to enable it.  You can execute the following once:
+	$ goreleaser completion bash > /etc/bash_completion.d/goreleaser
 
-$ echo "autoload -U compinit; compinit" >> ~/.zshrc
+##### MacOS
 
-# To load completions for each session, execute once:
-$ goreleaser completion zsh > "${fpath[1]}/_goreleaser"
+	$ goreleaser completion bash > /usr/local/etc/bash_completion.d/goreleaser
 
-# You will need to start a new shell for this setup to take effect.
+#### ZSH
 
-Fish:
+If shell completion is not already enabled in your environment you will need to enable it.
+You can execute the following once:
 
-$ goreleaser completion fish | source
+	$ echo "autoload -U compinit; compinit" >> ~/.zshrc
 
-# To load completions for each session, execute once:
-$ goreleaser completion fish > ~/.config/fish/completions/goreleaser.fish
+To load completions for each session, execute once:
+
+	$ goreleaser completion zsh > "${fpath[1]}/_goreleaser"
+
+You will need to start a new shell for this setup to take effect.
+
+#### Fish
+
+	$ goreleaser completion fish | source
+
+To load completions for each session, execute once:
+
+	$ goreleaser completion fish > ~/.config/fish/completions/goreleaser.fish
+
+**NOTE**: If you are using an official GoReleaser package, it should setup autocompletions for you out of the box.
+
+### Usage
 `,
 		SilenceUsage:          true,
 		DisableFlagsInUseLine: true,

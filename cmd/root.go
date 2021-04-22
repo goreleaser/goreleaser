@@ -27,9 +27,9 @@ func (cmd *rootCmd) Execute(args []string) {
 	}
 
 	if err := cmd.cmd.Execute(); err != nil {
-		var code = 1
-		var msg = "command failed"
-		var eerr = &exitError{}
+		code := 1
+		msg := "command failed"
+		eerr := &exitError{}
 		if errors.As(err, &eerr) {
 			code = eerr.code
 			if eerr.details != "" {
@@ -48,10 +48,10 @@ type rootCmd struct {
 }
 
 func newRootCmd(version string, exit func(int)) *rootCmd {
-	var root = &rootCmd{
+	root := &rootCmd{
 		exit: exit,
 	}
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:           "goreleaser",
 		Short:         "Deliver Go binaries as fast and easily as possible",
 		Version:       version,
@@ -73,6 +73,7 @@ func newRootCmd(version string, exit func(int)) *rootCmd {
 		newCheckCmd().cmd,
 		newInitCmd().cmd,
 		newCompletionCmd().cmd,
+		newDocsCmd().cmd,
 	)
 
 	root.cmd = cmd
