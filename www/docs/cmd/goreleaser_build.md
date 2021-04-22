@@ -1,4 +1,4 @@
-## goreleaser build
+# goreleaser build
 
 Builds the current project
 
@@ -6,7 +6,7 @@ Builds the current project
 goreleaser build [flags]
 ```
 
-### Options
+## Options
 
 ```
   -f, --config string      Load configuration from file
@@ -21,13 +21,13 @@ goreleaser build [flags]
       --timeout duration   Timeout to the entire build process (default 30m0s)
 ```
 
-### Options inherited from parent commands
+## Options inherited from parent commands
 
 ```
       --debug   Enable debug mode
 ```
 
-### See also
+## See also
 
 * [goreleaser](/cmd/goreleaser)	 - Deliver Go binaries as fast and easily as possible
 

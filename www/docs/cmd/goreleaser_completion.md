@@ -1,28 +1,26 @@
-## goreleaser completion
+# goreleaser completion
 
 Prints shell autocompletion scripts for GoReleaser
 
-### Synopsis
+## Synopsis
 
-Prints shell autocompletion scripts for GoReleaser.
+Allows you to setup your shell to autocomple GoReleaser commands and flags.
 
-To load completions:
-
-#### Bash:
+### Bash
 
 	$ source <(goreleaser completion bash)
 
 To load completions for each session, execute once:
 
-##### Linux:
+#### Linux
 
 	$ goreleaser completion bash > /etc/bash_completion.d/goreleaser
 
-##### MacOS:
+#### MacOS
 
 	$ goreleaser completion bash > /usr/local/etc/bash_completion.d/goreleaser
 
-#### Zsh:
+### ZSH
 
 If shell completion is not already enabled in your environment you will need to enable it.
 You can execute the following once:
@@ -35,7 +33,7 @@ To load completions for each session, execute once:
 
 You will need to start a new shell for this setup to take effect.
 
-#### Fish:
+### Fish
 
 	$ goreleaser completion fish | source
 
@@ -43,28 +41,28 @@ To load completions for each session, execute once:
 
 	$ goreleaser completion fish > ~/.config/fish/completions/goreleaser.fish
 
-If you are using an official GoReleaser package, it should do this for you automatically.
+**NOTE**: If you are using an official GoReleaser package, it should setup autocompletions for you out of the box.
 
----
+## Usage
 
 
 ```
 goreleaser completion [bash|zsh|fish]
 ```
 
-### Options
+## Options
 
 ```
   -h, --help   help for completion
 ```
 
-### Options inherited from parent commands
+## Options inherited from parent commands
 
 ```
       --debug   Enable debug mode
 ```
 
-### See also
+## See also
 
 * [goreleaser](/cmd/goreleaser)	 - Deliver Go binaries as fast and easily as possible
 

@@ -1,15 +1,15 @@
-## goreleaser
+# goreleaser
 
 Deliver Go binaries as fast and easily as possible
 
-### Options
+## Options
 
 ```
       --debug   Enable debug mode
   -h, --help    help for goreleaser
 ```
 
-### See also
+## See also
 
 * [goreleaser build](/cmd/goreleaser_build)	 - Builds the current project
 * [goreleaser check](/cmd/goreleaser_check)	 - Checks if configuration is valid

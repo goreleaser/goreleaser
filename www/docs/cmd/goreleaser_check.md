@@ -1,4 +1,4 @@
-## goreleaser check
+# goreleaser check
 
 Checks if configuration is valid
 
@@ -6,20 +6,20 @@ Checks if configuration is valid
 goreleaser check [flags]
 ```
 
-### Options
+## Options
 
 ```
   -f, --config string   Configuration file to check
   -h, --help            help for check
 ```
 
-### Options inherited from parent commands
+## Options inherited from parent commands
 
 ```
       --debug   Enable debug mode
 ```
 
-### See also
+## See also
 
 * [goreleaser](/cmd/goreleaser)	 - Deliver Go binaries as fast and easily as possible
 
