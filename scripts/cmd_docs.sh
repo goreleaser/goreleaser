@@ -1,9 +1,18 @@
 #!/bin/sh
 set -e
+
+SED="sed"
+if which gsed >/dev/null 2>&1; then
+	SED="gsed"
+fi
+
 rm -rf www/docs/cmd/*.md
 go run . docs
-if which gsed; then
-	gsed -i'' -e 's/SEE ALSO/See also/g' -e 's/^## /# /g' -e 's/^### /## /g' -e 's/^#### /### /g' -e 's/^##### /#### /g' ./www/docs/cmd/*.md
-else
-	sed -i'' 's/SEE ALSO/See also/g' ./www/docs/cmd/*.md
-fi
+"$SED" \
+	-i'' \
+	-e 's/SEE ALSO/See also/g' \
+	-e 's/^## /# /g' \
+	-e 's/^### /## /g' \
+	-e 's/^#### /### /g' \
+	-e 's/^##### /#### /g' \
+	./www/docs/cmd/*.md
