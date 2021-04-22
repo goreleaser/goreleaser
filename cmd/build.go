@@ -41,6 +41,12 @@ func newBuildCmd() *buildCmd {
 		Use:           "build",
 		Aliases:       []string{"b"},
 		Short:         "Builds the current project",
+		Long: `The build command allows you to execute only a subset of the pipeline, i.e. only the build step with its dependencies.
+
+It allows you to quickly check if your GoReleaser build configurations are doing what you expect.
+
+Finally, it allows you to generate a local build for your current machine only using the `+ "`--single-target`"+` option, and specific build IDs using the `+"`--id`"+` option.
+`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args:          cobra.NoArgs,
@@ -64,7 +70,7 @@ func newBuildCmd() *buildCmd {
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
-	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot build, skipping all validations and without publishing any artifacts")
+	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot build, skipping all validations")
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
 	cmd.Flags().BoolVar(&root.opts.skipPostHooks, "skip-post-hooks", false, "Skips all post-build hooks")
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")

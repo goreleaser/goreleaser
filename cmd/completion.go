@@ -49,8 +49,6 @@ To load completions for each session, execute once:
 	$ goreleaser completion fish > ~/.config/fish/completions/goreleaser.fish
 
 **NOTE**: If you are using an official GoReleaser package, it should setup autocompletions for you out of the box.
-
-### Usage
 `,
 		SilenceUsage:          true,
 		DisableFlagsInUseLine: true,

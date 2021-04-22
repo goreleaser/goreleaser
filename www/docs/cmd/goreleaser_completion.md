@@ -43,8 +43,6 @@ To load completions for each session, execute once:
 
 **NOTE**: If you are using an official GoReleaser package, it should setup autocompletions for you out of the box.
 
-## Usage
-
 
 ```
 goreleaser completion [bash|zsh|fish]
