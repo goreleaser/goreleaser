@@ -6,10 +6,10 @@ import (
 	"os/exec"
 
 	"github.com/apex/log"
+	"github.com/caarlos0/go-shellwords"
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/mattn/go-shellwords"
 )
 
 // Pipe is a global hook pipe.
@@ -22,7 +22,7 @@ func (Pipe) String() string {
 
 // Run executes the hooks.
 func (Pipe) Run(ctx *context.Context) error {
-	var tmpl = tmpl.New(ctx)
+	tmpl := tmpl.New(ctx)
 	/* #nosec */
 	for _, step := range ctx.Config.Before.Hooks {
 		s, err := tmpl.Apply(step)

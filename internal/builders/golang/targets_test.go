@@ -9,12 +9,14 @@ import (
 )
 
 func TestAllBuildTargets(t *testing.T) {
-	var build = config.Build{
+	build := config.Build{
+		GoBinary: "go",
 		Goos: []string{
 			"linux",
 			"darwin",
 			"freebsd",
 			"openbsd",
+			"windows",
 			"js",
 		},
 		Goarch: []string{
@@ -27,6 +29,7 @@ func TestAllBuildTargets(t *testing.T) {
 			"mips64",
 			"mipsle",
 			"mips64le",
+			"riscv64",
 		},
 		Goarm: []string{
 			"6",
@@ -66,7 +69,9 @@ func TestAllBuildTargets(t *testing.T) {
 		"linux_mipsle_hardfloat",
 		"linux_mipsle_softfloat",
 		"linux_mips64le_hardfloat",
+		"linux_riscv64",
 		"darwin_amd64",
+		"darwin_arm64",
 		"freebsd_386",
 		"freebsd_amd64",
 		"freebsd_arm_6",
@@ -75,12 +80,16 @@ func TestAllBuildTargets(t *testing.T) {
 		"openbsd_386",
 		"openbsd_amd64",
 		"openbsd_arm64",
+		"windows_386",
+		"windows_amd64",
+		"windows_arm_6",
+		"windows_arm_7",
 		"js_wasm",
 	}, result)
 }
 
 func TestGoosGoarchCombos(t *testing.T) {
-	var platforms = []struct {
+	platforms := []struct {
 		os    string
 		arch  string
 		valid bool
@@ -92,6 +101,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"android", "arm", true},
 		{"android", "arm64", true},
 		{"darwin", "amd64", true},
+		{"darwin", "arm64", true},
 		{"dragonfly", "amd64", true},
 		{"freebsd", "386", true},
 		{"freebsd", "amd64", true},
@@ -108,6 +118,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"linux", "ppc64", true},
 		{"linux", "ppc64le", true},
 		{"linux", "s390x", true},
+		{"linux", "riscv64", true},
 		{"netbsd", "386", true},
 		{"netbsd", "amd64", true},
 		{"netbsd", "arm", true},
@@ -120,13 +131,13 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"solaris", "amd64", true},
 		{"windows", "386", true},
 		{"windows", "amd64", true},
+		{"windows", "arm", true},
 		{"js", "wasm", true},
 		// invalid targets
 		{"darwin", "386", false},
 		{"darwin", "arm", false},
-		{"darwin", "arm64", false},
-		{"windows", "arm", false},
 		{"windows", "arm64", false},
+		{"windows", "riscv64", false},
 	}
 	for _, p := range platforms {
 		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {

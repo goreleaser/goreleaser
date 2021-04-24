@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -114,7 +115,7 @@ func TestPipeSkipTrue(t *testing.T) {
 	)
 	var err = Pipe{}.Run(ctx)
 	testlib.AssertSkipped(t, err)
-	require.EqualError(t, err, `checksum.disable is set`)
+	require.EqualError(t, err, pipe.ErrSkipDisabledPipe.Error())
 }
 
 func TestPipeFileNotExist(t *testing.T) {
@@ -149,7 +150,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 		"{{ .Pro }_checksums.txt": `template: tmpl:1: unexpected "}" in operand`,
 		"{{.Env.NOPE}}":           `template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`,
 	} {
-		t.Run(template, func(tt *testing.T) {
+		t.Run(template, func(t *testing.T) {
 			var folder = t.TempDir()
 			var ctx = context.New(
 				config.Project{
@@ -168,8 +169,8 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 				Path: binFile.Name(),
 			})
 			err = Pipe{}.Run(ctx)
-			require.Error(tt, err)
-			require.Equal(tt, eerr, err.Error())
+			require.Error(t, err)
+			require.Equal(t, eerr, err.Error())
 		})
 	}
 }

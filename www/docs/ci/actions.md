@@ -21,6 +21,9 @@ on:
   pull_request:
   push:
 
+permissions:
+  contents: write
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -34,7 +37,7 @@ jobs:
         name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15
+          go-version: 1.16
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
@@ -45,8 +48,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-!!! info
-    Note the `fetch-depth: 0` option on the `Checkout` workflow step. It is required for the change log to work correctly.
+!!! warning
+    Note the `fetch-depth: 0` option on the `Checkout` workflow step. It is required for GoReleaser to work properly.
+    Without that, GoReleaser might fail or behave incorrectly.
 
 ### Run on new tag
 
@@ -132,7 +136,16 @@ Following environment variables can be used as `step.env` keys
 |----------------|-------------------------------------------------------|
 | `GITHUB_TOKEN` | [GITHUB_TOKEN][github-token] as provided by `secrets` |
 
-## Limitation
+## Token Permissions
+
+The following [permissions](https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token) are required by GoReleaser:
+
+ - `content: write` if you wish to
+    - [upload archives as GitHub Releases](/customization/release/), or
+    - publish to [Homebrew](/customization/homebrew/), or [Scoop](/customization/scoop/) (assuming it's part of the same repository)
+ - or just `content: read` if you don't need any of the above
+ - `packages: write` if you [push Docker images](/customization/docker/) to GitHub
+ - `issues: write` if you use [milestone closing capability](/customization/milestone/)
 
 `GITHUB_TOKEN` permissions [are limited to the repository][about-github-token] that contains your workflow.
 
@@ -150,6 +163,19 @@ create a secret named `GH_PAT`, the step will look like this:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 ```
+
+You can also read the [GitHub documentation](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) about it.
+
+## How does it look like?
+
+You can check [this example repository](https://github.com/goreleaser/example) for a real world example.
+
+<a href="https://github.com/goreleaser/example/releases">
+  <figure>
+    <img src="https://img.carlosbecker.dev/goreleaser-github.png"/>
+    <figcaption>Example release on GitHub.</figcaption>
+  </figure>
+</a>
 
 [goreleaser-action]: https://github.com/goreleaser/goreleaser-action
 [actions]: https://github.com/features/actions

@@ -14,7 +14,6 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -64,9 +63,9 @@ func (Pipe) Publish(ctx *context.Context) error {
 func publishAll(ctx *context.Context, cli client.Client) error {
 	// even if one of them skips, we run them all, and then show return the skips all at once.
 	// this is needed so we actually create the `dist/foo.rb` file, which is useful for debugging.
-	var skips = pipe.SkipMemento{}
+	skips := pipe.SkipMemento{}
 	for _, brew := range ctx.Config.Brews {
-		var err = doRun(ctx, brew, cli)
+		err := doRun(ctx, brew, cli)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
 			continue
@@ -81,43 +80,11 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Brews {
-		var brew = &ctx.Config.Brews[i]
+		brew := &ctx.Config.Brews[i]
 
 		if brew.Install == "" {
-			// TODO: maybe replace this with a simpler also optimistic
-			// approach of just doing `bin.install "project_name"`?
-			var installs []string
-			for _, build := range ctx.Config.Builds {
-				if !isBrewBuild(build) {
-					continue
-				}
-				install := fmt.Sprintf(`bin.install "%s"`, build.Binary)
-				// Do not add duplicate "bin.install" statements when binary names overlap.
-				var found bool
-				for _, instruction := range installs {
-					if instruction == install {
-						found = true
-						break
-					}
-				}
-				if !found {
-					installs = append(installs, install)
-				}
-			}
-			brew.Install = strings.Join(installs, "\n")
-			log.Warnf("optimistically guessing `brew[%d].install`, double check", i)
-		}
-
-		//nolint: staticcheck
-		if brew.GitHub.String() != "" {
-			deprecate.Notice(ctx, "brews.github")
-			brew.Tap.Owner = brew.GitHub.Owner
-			brew.Tap.Name = brew.GitHub.Name
-		}
-		if brew.GitLab.String() != "" {
-			deprecate.Notice(ctx, "brews.gitlab")
-			brew.Tap.Owner = brew.GitLab.Owner
-			brew.Tap.Name = brew.GitLab.Name
+			brew.Install = fmt.Sprintf(`bin.install "%s"`, ctx.Config.ProjectName)
+			log.Warnf("optimistically guessing `brew[%d].install` to be `%s`", i, brew.Install)
 		}
 		if brew.CommitAuthor.Name == "" {
 			brew.CommitAuthor.Name = "goreleaserbot"
@@ -136,27 +103,9 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func isBrewBuild(build config.Build) bool {
-	for _, ignore := range build.Ignore {
-		if ignore.Goos == "darwin" && ignore.Goarch == "amd64" {
-			return false
-		}
-	}
-	return contains(build.Goos, "darwin") && contains(build.Goarch, "amd64")
-}
-
-func contains(ss []string, s string) bool {
-	for _, zs := range ss {
-		if zs == s {
-			return true
-		}
-	}
-	return false
-}
-
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	if brew.Tap.Name == "" {
-		return pipe.Skip("brew section is not configured")
+		return pipe.ErrSkipDisabledPipe
 	}
 
 	if brew.Tap.Token != "" {
@@ -173,7 +122,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	}
 
 	// TODO: properly cover this with tests
-	var filters = []artifact.Filter{
+	filters := []artifact.Filter{
 		artifact.Or(
 			artifact.ByGoos("darwin"),
 			artifact.ByGoos("linux"),
@@ -193,7 +142,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 		filters = append(filters, artifact.ByIDs(brew.IDs...))
 	}
 
-	var archives = ctx.Artifacts.Filter(artifact.And(filters...)).List()
+	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
 	if len(archives) == 0 {
 		return ErrNoArchivesFound
 	}
@@ -209,10 +158,10 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 		return err
 	}
 
-	var filename = brew.Name + ".rb"
-	var path = filepath.Join(ctx.Config.Dist, filename)
+	filename := brew.Name + ".rb"
+	path := filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("formula", path).Info("writing")
-	if err := ioutil.WriteFile(path, []byte(content), 0644); err != nil { //nolint: gosec
+	if err := ioutil.WriteFile(path, []byte(content), 0o644); err != nil { //nolint: gosec
 		return fmt.Errorf("failed to write brew formula: %w", err)
 	}
 
@@ -228,12 +177,12 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 
 	repo := client.RepoFromRef(brew.Tap)
 
-	var gpath = buildFormulaPath(brew.Folder, filename)
+	gpath := buildFormulaPath(brew.Folder, filename)
 	log.WithField("formula", gpath).
 		WithField("repo", repo.String()).
 		Info("pushing")
 
-	var msg = fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
+	msg := fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
 	return cl.CreateFile(ctx, brew.CommitAuthor, repo, []byte(content), gpath, msg)
 }
 
@@ -283,7 +232,7 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 }
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
-	var result = templateData{
+	result := templateData{
 		Name:             formulaNameFor(cfg.Name),
 		Desc:             cfg.Description,
 		Homepage:         cfg.Homepage,
@@ -321,16 +270,24 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		if err != nil {
 			return result, err
 		}
-		var down = downloadable{
+		down := downloadable{
 			DownloadURL: url,
 			SHA256:      sum,
 		}
 		// TODO: refactor
 		if artifact.Goos == "darwin" { // nolint: nestif
-			if result.MacOS.DownloadURL != "" {
-				return result, ErrMultipleArchivesSameOS
+			switch artifact.Goarch {
+			case "amd64":
+				if result.MacOSAmd64.DownloadURL != "" {
+					return result, ErrMultipleArchivesSameOS
+				}
+				result.MacOSAmd64 = down
+			case "arm64":
+				if result.MacOSArm64.DownloadURL != "" {
+					return result, ErrMultipleArchivesSameOS
+				}
+				result.MacOSArm64 = down
 			}
-			result.MacOS = down
 		} else if artifact.Goos == "linux" {
 			switch artifact.Goarch {
 			case "amd64":

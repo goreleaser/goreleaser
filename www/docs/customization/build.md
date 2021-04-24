@@ -24,8 +24,10 @@ builds:
     dir: go
 
     # Path to main.go file or main package.
+    # Notice: when used with `gomod.proxy`, this must be a package.
+    #
     # Default is `.`.
-    main: ./cmd/main.go
+    main: ./cmd/my-app
 
     # Binary name.
     # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
@@ -70,7 +72,7 @@ builds:
 
     # GOARCH to build for.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Defaults are 386 and amd64.
+    # Defaults are 386, amd64 and arm64.
     goarch:
       - amd64
       - arm
@@ -85,7 +87,7 @@ builds:
 
     # GOMIPS and GOMIPS64 to build when GOARCH is mips, mips64, mipsle or mips64le.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Default is empty.
+    # Default is only hardfloat.
     gomips:
       - hardfloat
       - softfloat
@@ -134,7 +136,7 @@ Here is an example with multiple binaries:
 ```yaml
 # .goreleaser.yml
 builds:
-  - main: ./cmd/cli/cli.go
+  - main: ./cmd/cli
     id: "cli"
     binary: cli
     goos:
@@ -142,7 +144,7 @@ builds:
       - darwin
       - windows
 
-  - main: ./cmd/worker/worker.go
+  - main: ./cmd/worker
     id: "worker"
     binary: worker
     goos:
@@ -150,7 +152,7 @@ builds:
       - darwin
       - windows
 
-  - main: ./cmd/tracker/tracker.go
+  - main: ./cmd/tracker
     id: "tracker"
     binary: tracker
     goos:
@@ -158,6 +160,16 @@ builds:
       - darwin
       - windows
 ```
+
+The binary name field supports [templating](/customization/templates/). The following build details are exposed:
+
+| Key     | Description                      |
+|---------|----------------------------------|
+| .Os     | `GOOS`                           |
+| .Arch   | `GOARCH`                         |
+| .Arm    | `GOARM`                          |
+| .Ext    | Extension, e.g. `.exe`           |
+| .Target | Build target, e.g. `darwin_amd64`|
 
 ## Passing environment variables to ldflags
 
@@ -242,13 +254,13 @@ Environment variables are inherited and overridden in the following order:
  try to download the dependencies. Since several builds run in parallel, it is
  very likely to fail.
 
- You can solve this by running `go mod download` before calling `goreleaser` or
+ You can solve this by running `go mod tidy` before calling `goreleaser` or
  by adding a [hook][] doing that on your `.goreleaser.yml` file:
 
  ```yaml
  before:
    hooks:
-   - go mod download
+   - go mod tidy
  # rest of the file...
  ```
 

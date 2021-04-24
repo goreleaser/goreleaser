@@ -4,6 +4,7 @@ package pipeline
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/semver"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
 
@@ -44,6 +45,7 @@ var BuildPipeline = []Piper{
 	defaults.Pipe{},        // load default configs
 	snapshot.Pipe{},        // snapshot version handling
 	dist.Pipe{},            // ensure ./dist is clean
+	gomod.Pipe{},           // setup gomod-related stuff
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
 	changelog.Pipe{},       // builds the release changelog
 	build.Pipe{},           // build

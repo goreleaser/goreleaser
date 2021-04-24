@@ -120,6 +120,7 @@ func TestPipe_PublishExtraFiles(t *testing.T) {
 }
 
 func pipePublish(t *testing.T, extra []config.ExtraFile) {
+	t.Helper()
 	gcloudCredentials, _ := filepath.Abs("./testdata/credentials.json")
 
 	var folder = t.TempDir()

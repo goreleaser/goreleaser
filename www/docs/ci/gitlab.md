@@ -1,7 +1,52 @@
 # GitLab CI
 
-To create GitLab releases and push images to a Docker registry, add a file
-`.gitlab-ci.yml` to the root of the project:
+Below are some example GitLab CI jobs that use GoReleaser to release a project. 
+
+## Basic Releasing
+
+You can easily run GoReleaser in GitLab CI using its Docker container. 
+
+In the repository's GitLab CI settings, add a `GITLAB_TOKEN` variable. The value should
+be an API token with `api` scope for a user that has access to the project. This
+variable should be masked and optionally protected if the job will only run on
+protected branches and tags.
+See [Quick Start](https://goreleaser.com/quick-start/) for more information on 
+GoReleaser's environment variables.
+
+Add a `.gitlab-ci.yml` file to the root of the project:
+
+```yaml
+stages:
+  - release
+
+release:
+  stage: release
+  image:
+    name: goreleaser/goreleaser
+    entrypoint: ['']
+  only:
+    - tags
+  variables:
+    # Disable shallow cloning so that goreleaser can diff between tags to
+    # generate a changelog.
+    GIT_DEPTH: 0
+  script:
+    - goreleaser release --rm-dist
+```
+
+Notice that `entrypoint` is intentionally blank. See the 
+[GitLab documentation on entrypoints](https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#overriding-the-entrypoint-of-an-image) 
+for more information.
+
+When tags are pushed to the repository, 
+an available GitLab Runner with the Docker executor will pick up the release job. 
+`goreleaser/goreleaser` will start in a container and the repository will be mounted inside. 
+Finally, the `script` section will run within the container starting in your project's directory. 
+
+## Releasing Archives and Pushing Images
+
+Pushing images to a registry requires using Docker-in-Docker. To create GitLab releases and push 
+images to a Docker registry, add a file `.gitlab-ci.yml` to the root of the project:
 
 ```yaml
 stages:
@@ -14,8 +59,6 @@ release:
     - docker:dind
 
   variables:
-    GORELEASER_IMAGE: goreleaser/goreleaser:latest
-
     # Optionally use GitLab's built-in image registry.
     # DOCKER_REGISTRY: $CI_REGISTRY
     # DOCKER_USERNAME: $CI_REGISTRY_USER
@@ -34,8 +77,6 @@ release:
       - tags
 
   script: |
-    docker pull $GORELEASER_IMAGE
-
     # GITLAB_TOKEN is needed to create GitLab releases.
     # DOCKER_* are needed to push Docker images.
     docker run --rm --privileged \
@@ -44,7 +85,7 @@ release:
       -v /var/run/docker.sock:/var/run/docker.sock \
       -e DOCKER_USERNAME -e DOCKER_PASSWORD -e DOCKER_REGISTRY  \
       -e GITLAB_TOKEN \
-      $GORELEASER_IMAGE release --rm-dist
+      goreleaser/goreleaser release --rm-dist
 ```
 
 In GitLab CI settings, add variables for `DOCKER_REGISTRY`, `DOCKER_USERNAME`,
@@ -69,9 +110,18 @@ dockers:
 -
   goos: linux
   goarch: amd64
-  binaries:
-  - program
   image_templates:
   - 'registry.gitlab.com/Group/Project:{{ .Tag }}'
   - 'registry.gitlab.com/Group/Project:latest'
 ```
+
+## Example Repository
+
+You can check [this example repository](https://gitlab.com/goreleaser/example) for a real world example.
+
+<a href="https://gitlab.com/goreleaser/example/-/releases">
+  <figure>
+    <img src="https://img.carlosbecker.dev/goreleaser-gitlab.png"/>
+    <figcaption>Example release on GitLab.</figcaption>
+  </figure>
+</a>

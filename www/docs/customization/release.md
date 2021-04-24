@@ -28,6 +28,10 @@ release:
   # Default is false.
   draft: true
 
+  # If set, will create a release discussion in the category specified.
+  # Default is empty.
+  discussion_category_name: General
+
   # If set to auto, will mark the release as not ready for production
   # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
   # If set to true, will mark the release as not ready for production.
@@ -157,11 +161,15 @@ changelog:
   # Set it to true if you wish to skip the changelog generation.
   # This may result in an empty release notes on GitHub/GitLab/Gitea.
   skip: true
-  # could either be asc, desc or empty
+
+  # Sorts the changelog by the commit's messages.
+  # Could either be asc, desc or empty
   # Default is empty
   sort: asc
+
   filters:
-    # commit messages matching the regexp listed here will be removed from
+
+    # Commit messages matching the regexp listed here will be removed from
     # the changelog
     # Default is empty
     exclude:

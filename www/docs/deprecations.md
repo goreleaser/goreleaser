@@ -15,6 +15,79 @@ goreleaser check
 
 ## Active deprecation notices
 
+### Skipping SemVer Validations
+
+> since 2021-02-28 (v0.158.0)
+
+GoReleaser skips SemVer validations when run with `--skip-validations` or `--snapshot`.
+This causes other problems later, such as [invalid Linux packages](https://github.com/goreleaser/goreleaser/issues/2081).
+Because of that, once this deprecation expires, GoReleaser will hard fail on non-semver versions, as stated on our
+[limitations page](https://goreleaser.com/limitations/semver/).
+
+### builds for darwin/arm64
+
+> since 2021-02-17 (v0.157.0)
+
+Since Go 1.16, `darwin/arm64` is macOS on Apple Silicon instead of `iOS`.
+
+Prior to v0.156.0, GoReleaser would just ignore this target, but since in Go 1.16 it is a valid target, GoReleaser will
+now build it if the Go version being used is 1.16.
+
+If you want to make sure it is ignored in the future, you need to add this to your build config:
+
+```yaml
+ignore:
+- goos: darwin
+  goarch: arm64
+```
+
+If you try to use new versions of GoReleaser with Go 1.15, it will warn about it until this deprecation warning expires.
+
+### docker.builds
+
+> since 2021-01-07 (v0.154.0)
+
+`builds` is deprecated in favor of `ids`, since now it also allows to copy nfpm packages:
+
+Change this:
+
+=== "Before"
+    ```yaml
+    dockers:
+      -
+        builds: ['a', 'b']
+    ```
+
+=== "After"
+    ```yaml
+    dockers:
+      -
+        ids: ['a', 'b']
+    ```
+
+### docker.binaries
+
+> since 2021-01-07 (v0.154.0)
+
+`binaries` is deprecated and now does nothing.
+If you want to filter something out, use the `ids` property.
+
+Change this:
+
+=== "Before"
+    ```yaml
+    dockers:
+      -
+        binaries: ['foo']
+    ```
+
+=== "After"
+    ```yaml
+    dockers:
+      -
+        ids: ['foo']
+    ```
+
 ### nfpms.files
 
 > since 2020-12-21 (v0.149.0)
@@ -92,7 +165,6 @@ Change this:
             type: symlink
     ```
 
-
 ### nfpms.rpm.ghost_files
 
 > since 2020-12-21 (v0.149.0)
@@ -158,73 +230,18 @@ Change this:
 Change this:
 
 === "Before"
-```yaml
-nfpms:
--
-  deb:
-    version_metadata: beta1
-```
-
-=== "After"
-```yaml
--
-  version_metadata: beta1
-```
-
-### brews.github
-
-> since 2020-07-06 (v0.139.0)
-
-GitHub section was deprecated in favour of `tap` which
-reflects Homebrew's naming convention. GitHub will be picked
-automatically when GitHub token is passed.
-
-Change this:
-
-=== "Before"
     ```yaml
-    brews:
+    nfpms:
       -
-        github:
-          owner: goreleaser
-          name: homebrew-tap
+        deb:
+          version_metadata: beta1
     ```
 
 === "After"
     ```yaml
-    brews:
+    nfpms:
       -
-        tap:
-          owner: goreleaser
-          name: homebrew-tap
-    ```
-
-### brews.gitlab
-
-> since 2020-07-06 (v0.139.0)
-
-GitLab section was deprecated in favour of `tap` which
-reflects Homebrew's naming convention. GitLab will be picked
-automatically when GitLab token is passed.
-
-Change this:
-
-=== "Before"
-    ```yaml
-    brews:
-      -
-        gitlab:
-          owner: goreleaser
-          name: homebrew-tap
-    ```
-
-=== "After"
-    ```yaml
-    brews:
-      -
-        tap:
-          owner: goreleaser
-          name: homebrew-tap
+        version_metadata: beta1
     ```
 
 <!--
@@ -253,6 +270,62 @@ Description.
 ## Expired deprecation notices
 
 The following options were deprecated in the past and were already removed.
+
+### brews.github
+
+> since 2020-07-06 (v0.139.0), removed 2021-01-04 (v0.152.0)
+
+GitHub section was deprecated in favour of `tap` which
+reflects Homebrew's naming convention. GitHub will be picked
+automatically when GitHub token is passed.
+
+Change this:
+
+=== "Before"
+    ```yaml
+    brews:
+      -
+        github:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
+
+=== "After"
+    ```yaml
+    brews:
+      -
+        tap:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
+
+### brews.gitlab
+
+> since 2020-07-06 (v0.139.0), removed 2021-01-04 (v0.152.0)
+
+GitLab section was deprecated in favour of `tap` which
+reflects Homebrew's naming convention. GitLab will be picked
+automatically when GitLab token is passed.
+
+Change this:
+
+=== "Before"
+    ```yaml
+    brews:
+      -
+        gitlab:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
+
+=== "After"
+    ```yaml
+    brews:
+      -
+        tap:
+          owner: goreleaser
+          name: homebrew-tap
+    ```
 
 ### puts
 

@@ -5,6 +5,7 @@ import (
 	"os/exec"
 
 	"github.com/apex/log"
+	"github.com/caarlos0/go-shellwords"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -12,7 +13,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/mattn/go-shellwords"
 )
 
 func Execute(ctx *context.Context, publishers []config.Publisher) error {
@@ -36,7 +36,7 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 	artifacts := filterArtifacts(ctx.Artifacts, publisher)
 	log.Debugf("will execute custom publisher with %d artifacts", len(artifacts))
 
-	var g = semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range artifacts {
 		artifact := artifact
 		g.Go(func() error {
@@ -57,8 +57,8 @@ func executeCommand(c *command) error {
 		WithField("env", c.Env).
 		Debug("executing command")
 
-	// nolint: gosec
-	var cmd = exec.CommandContext(c.Ctx, c.Args[0], c.Args[1:]...)
+		// nolint: gosec
+	cmd := exec.CommandContext(c.Ctx, c.Args[0], c.Args[1:]...)
 	cmd.Env = c.Env
 	if c.Dir != "" {
 		cmd.Dir = c.Dir
@@ -94,7 +94,7 @@ func filterArtifacts(artifacts artifact.Artifacts, publisher config.Publisher) [
 		filters = append(filters, artifact.ByType(artifact.Signature))
 	}
 
-	var filter = artifact.Or(filters...)
+	filter := artifact.Or(filters...)
 
 	if len(publisher.IDs) > 0 {
 		filter = artifact.And(filter, artifact.ByIDs(publisher.IDs...))

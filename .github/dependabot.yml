@@ -7,6 +7,7 @@ updates:
       time: "08:00"
     labels:
       - "dependencies"
+      - "automerge"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -14,3 +15,4 @@ updates:
       time: "08:00"
     labels:
       - "dependencies"
+      - "automerge"

@@ -26,7 +26,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 func (Pipe) Run(ctx *context.Context) error {
 	if !ctx.Snapshot {
-		return pipe.Skip("not a snapshot")
+		return pipe.ErrSkipDisabledPipe
 	}
 	name, err := tmpl.New(ctx).Apply(ctx.Config.Snapshot.NameTemplate)
 	if err != nil {

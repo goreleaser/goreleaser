@@ -93,9 +93,29 @@ func TestCheckConfig(t *testing.T) {
 		{"secret missing", args{ctx, &config.Upload{Name: "b", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"target missing", args{ctx, &config.Upload{Name: "a", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"name missing", args{ctx, &config.Upload{Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
+		{"username missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Mode: ModeArchive}, "test"}, true},
+		{"username present", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, false},
 		{"mode missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe"}, "test"}, true},
 		{"mode invalid", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: "blabla"}, "test"}, true},
 		{"cert invalid", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeBinary, TrustedCerts: "bad cert!"}, "test"}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := CheckConfig(tt.args.ctx, tt.args.upload, tt.args.kind); (err != nil) != tt.wantErr {
+				t.Errorf("CheckConfig() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+
+	delete(ctx.Env, "TEST_A_SECRET")
+
+	tests = []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"username missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Mode: ModeArchive}, "test"}, false},
+		{"username present", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -469,9 +489,55 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"-x-sha256": "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269"}}),
 		},
+		{"custom-headers", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:     ModeBinary,
+					Name:     "a",
+					Target:   s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username: "u2",
+					CustomHeaders: map[string]string{
+						"x-custom-header-name": "custom-header-value",
+					},
+					TrustedCerts: cert(s),
+				}
+			},
+			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"x-custom-header-name": "custom-header-value"}}),
+		},
+		{"custom-headers-with-template", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:     ModeBinary,
+					Name:     "a",
+					Target:   s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username: "u2",
+					CustomHeaders: map[string]string{
+						"x-project-name": "{{ .ProjectName }}",
+					},
+					TrustedCerts: cert(s),
+				}
+			},
+			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"x-project-name": "blah"}}),
+		},
+		{"invalid-template-in-custom-headers", true, true, true, true,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:     ModeBinary,
+					Name:     "a",
+					Target:   s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username: "u2",
+					CustomHeaders: map[string]string{
+						"x-custom-header-name": "{{ .Env.NONEXISTINGVARIABLE and some bad expressions }}",
+					},
+					TrustedCerts: cert(s),
+				}
+			},
+			checks(),
+		},
 	}
 
 	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Upload), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {
+		t.Helper()
 		requests = nil
 		ctx, upload := setup(srv)
 		wantErr := wantErrPlain

@@ -5,8 +5,8 @@ title: Name Templates
 Several fields in GoReleaser's config file support templating.
 
 Those fields are often suffixed with `_template`, but sometimes they may not
-be. The documentation of each section should explicit in which fields
-templating is available.
+be. The documentation of each section should be explicit about which fields
+support templating.
 
 On fields that support templating, these fields are always available:
 
@@ -31,6 +31,7 @@ On fields that support templating, these fields are always available:
 | `.Env`             | a map with system's environment variables                                                                                    |
 | `.Date`            | current UTC date in RFC 3339 format                                                                                          |
 | `.Timestamp`       | current UTC time in Unix format                                                                                              |
+| `.ModulePath`      | the go module path, as reported by `go list -m`                                                                              |
 
 On fields that are related to a single artifact (e.g., the binary name), you
 may have some extra fields:
@@ -47,10 +48,11 @@ may have some extra fields:
 
 On the NFPM name template field, you can use those extra fields as well:
 
-| Key        | Description                  |
-|------------|------------------------------|
-| `.Release` | Release from the nfpm config |
-| `.Epoch`   | Epoch from the nfpm config   |
+| Key            | Description                                                |
+|----------------|------------------------------------------------------------|
+| `.Release`     | Release from the nfpm config                               |
+| `.Epoch`       | Epoch from the nfpm config                                 |
+| `.PackageName` | Package the name. Same as `ProjectName` if not overridden. |
 
 On all fields, you have these available functions:
 
@@ -61,6 +63,7 @@ On all fields, you have these available functions:
 | `tolower "V1.2"`        | makes input string lowercase. See [ToLower](https://golang.org/pkg/strings/#ToLower)                                           |
 | `toupper "v1.2"`        | makes input string uppercase. See [ToUpper](https://golang.org/pkg/strings/#ToUpper)                                           |
 | `trim " v1.2  "`        | removes all leading and trailing white space. See [TrimSpace](https://golang.org/pkg/strings/#TrimSpace)                       |
+| `trimprefix "v1.2" "v"` | removes provided leading prefix string, if present. See [TrimPrefix](https://golang.org/pkg/strings/#TrimPrefix)                |
 | `dir .Path`             | returns all but the last element of path, typically the path's directory. See [Dir](https://golang.org/pkg/path/filepath/#Dir) |
 | `abs .ArtifactPath`     | returns an absolute representation of path. See [Abs](https://golang.org/pkg/path/filepath/#Abs)                               |
 

@@ -1,10 +1,13 @@
 package golang
 
 import (
+	"bytes"
 	"fmt"
+	"os/exec"
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
@@ -40,14 +43,19 @@ func matrix(build config.Build) ([]string, error) {
 		if target.mips != "" && !contains(target.mips, validGomips) {
 			return result, fmt.Errorf("invalid gomips: %s", target.mips)
 		}
+		if target.os == "darwin" && target.arch == "arm64" && !isGo116(build) {
+			log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
+				"DEPRECATED: skipped darwin/arm64 build on Go < 1.16 for compatibility, check %s for more info.",
+				"https://goreleaser.com/deprecations/#builds-for-darwinarm64",
+			))
+			continue
+		}
 		if !valid(target) {
-			log.WithField("target", target).
-				Debug("skipped invalid build")
+			log.WithField("target", target).Debug("skipped invalid build")
 			continue
 		}
 		if ignored(build, target) {
-			log.WithField("target", target).
-				Debug("skipped ignored build")
+			log.WithField("target", target).Debug("skipped ignored build")
 			continue
 		}
 		targets = append(targets, target)
@@ -111,6 +119,11 @@ func ignored(build config.Build, target target) bool {
 	return false
 }
 
+func isGo116(build config.Build) bool {
+	bts, _ := exec.Command(build.GoBinary, "version").CombinedOutput()
+	return bytes.Contains(bts, []byte("go version go1.16"))
+}
+
 func valid(target target) bool {
 	return contains(target.os+target.arch, validTargets)
 }
@@ -133,10 +146,8 @@ var (
 		"androidamd64",
 		"androidarm",
 		"androidarm64",
-		// "darwin386", - deprecated on latest go 1.15+
 		"darwinamd64",
-		// "darwinarm", - requires admin rights and other ios stuff
-		// "darwinarm64", - requires admin rights and other ios stuff
+		"darwinarm64",
 		"dragonflyamd64",
 		"freebsd386",
 		"freebsdamd64",
@@ -155,6 +166,7 @@ var (
 		"linuxmips64",
 		"linuxmips64le",
 		"linuxs390x",
+		"linuxriscv64",
 		"netbsd386",
 		"netbsdamd64",
 		"netbsdarm",
@@ -166,6 +178,7 @@ var (
 		"plan9amd64",
 		"plan9arm",
 		"solarisamd64",
+		"windowsarm",
 		"windows386",
 		"windowsamd64",
 	}
@@ -199,6 +212,7 @@ var (
 		"ppc64le",
 		"s390x",
 		"wasm",
+		"riscv64",
 	}
 
 	validGoarm  = []string{"5", "6", "7"}

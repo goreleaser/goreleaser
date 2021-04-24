@@ -38,12 +38,14 @@ func teardown() {
 }
 
 func testMethod(t *testing.T, r *http.Request, want string) {
+	t.Helper()
 	if got := r.Method; got != want {
 		t.Errorf("Request method: %v, want %v", got, want)
 	}
 }
 
 func testHeader(t *testing.T, r *http.Request, header, want string) {
+	t.Helper()
 	if got := r.Header.Get(header); got != want {
 		t.Errorf("Header.Get(%q) returned %q, want %q", header, got, want)
 	}

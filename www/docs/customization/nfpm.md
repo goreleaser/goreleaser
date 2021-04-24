@@ -21,7 +21,7 @@ nfpms:
     package_name: foo
 
     # You can change the file name of the package.
-    # Default: `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}`
+    # Default: `{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}`
     file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
     # Build IDs for the builds you want to create NFPM packages for.
@@ -108,6 +108,12 @@ nfpms:
     # Version Release.
     release: 1
 
+    # Section.
+    section: default
+
+    # Priority.
+    priority: extra
+
     # Makes a meta package - an empty package that contains only supporting files and dependencies.
     # When set to `true`, the `builds` option is ignored.
     # Defaults to false.
@@ -131,12 +137,13 @@ nfpms:
         dst: /etc/foo.conf
         type: config
 
-      # Simple symlink
-      - src: /sbin/foo # link name
-        dst: /usr/local/bin/foo # real location
+      # Simple symlink.
+      # Corresponds to `ln -s /sbin/foo /usr/local/bin/foo`
+      - src: /sbin/foo
+        dst: /usr/local/bin/foo
         type: "symlink"
 
-      # Corresponds to %config(noreplace) if the packager is rpm, otherwise it is just a config file
+      # Corresponds to `%config(noreplace)` if the packager is rpm, otherwise it is just a config file
       - src: path/to/local/bar.conf
         dst: /etc/bar.conf
         type: "config|noreplace"

@@ -40,22 +40,27 @@ jobs:
         with:
           fetch-depth: 0
       -
-        name: Allow arm64 builds
-        run: sudo docker run --privileged linuxkit/binfmt:v0.7
-      - name: apt update
-        run: sudo apt-get update
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
       -
         name: Set up Snapcraft
+        # FIXME: the mkdirs are a hack for https://github.com/goreleaser/goreleaser/issues/1715
         run: |
+          sudo apt-get update
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
+          mkdir -p $HOME/.cache/snapcraft/download
+          mkdir -p $HOME/.cache/snapcraft/stage-packages
       -
         name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.15
+          go-version: '1.16'
       -
         name: Cache Go modules
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.5
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -71,7 +76,7 @@ jobs:
           make ci
       -
         name: Upload coverage
-        uses: codecov/codecov-action@v1.1.1
+        uses: codecov/codecov-action@v1.4.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.txt
@@ -79,6 +84,9 @@ jobs:
         name: Check
         run: |
           ./goreleaser check
+      -
+        name: Diff
+        run: git diff
       -
         name: Docker Login
         if: success() && startsWith(github.ref, 'refs/tags/v')

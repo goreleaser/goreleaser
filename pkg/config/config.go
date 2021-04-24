@@ -111,10 +111,6 @@ type Homebrew struct {
 	CustomBlock      string               `yaml:"custom_block,omitempty"`
 	IDs              []string             `yaml:"ids,omitempty"`
 	Goarm            string               `yaml:"goarm,omitempty"`
-
-	// Deprecated: in favour of Tap
-	GitHub Repo `yaml:",omitempty"`
-	GitLab Repo `yaml:",omitempty"`
 }
 
 // Scoop contains the scoop.sh section.
@@ -279,15 +275,16 @@ type Archive struct {
 
 // Release config used for the GitHub/GitLab release.
 type Release struct {
-	GitHub       Repo        `yaml:",omitempty"`
-	GitLab       Repo        `yaml:",omitempty"`
-	Gitea        Repo        `yaml:",omitempty"`
-	Draft        bool        `yaml:",omitempty"`
-	Disable      bool        `yaml:",omitempty"`
-	Prerelease   string      `yaml:",omitempty"`
-	NameTemplate string      `yaml:"name_template,omitempty"`
-	IDs          []string    `yaml:"ids,omitempty"`
-	ExtraFiles   []ExtraFile `yaml:"extra_files,omitempty"`
+	GitHub                 Repo        `yaml:",omitempty"`
+	GitLab                 Repo        `yaml:",omitempty"`
+	Gitea                  Repo        `yaml:",omitempty"`
+	Draft                  bool        `yaml:",omitempty"`
+	Disable                bool        `yaml:",omitempty"`
+	Prerelease             string      `yaml:",omitempty"`
+	NameTemplate           string      `yaml:"name_template,omitempty"`
+	IDs                    []string    `yaml:"ids,omitempty"`
+	ExtraFiles             []ExtraFile `yaml:"extra_files,omitempty"`
+	DiscussionCategoryName string      `yaml:"discussion_category_name,omitempty"`
 }
 
 // Milestone config used for VCS milestone.
@@ -311,6 +308,8 @@ type NFPM struct {
 	ID          string   `yaml:",omitempty"`
 	Builds      []string `yaml:",omitempty"`
 	Formats     []string `yaml:",omitempty"`
+	Section     string   `yaml:",omitempty"`
+	Priority    string   `yaml:",omitempty"`
 	Vendor      string   `yaml:",omitempty"`
 	Homepage    string   `yaml:",omitempty"`
 	Maintainer  string   `yaml:",omitempty"`
@@ -339,8 +338,8 @@ type NFPMRPM struct {
 	Summary              string            `yaml:"summary,omitempty"`
 	Group                string            `yaml:"group,omitempty"`
 	Compression          string            `yaml:"compression,omitempty"`
-	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"` // depreacated: use contents instead
-	GhostFiles           []string          `yaml:"ghost_files,omitempty"`            // depreacated: use contents instead
+	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"` // deprecated: use contents instead
+	GhostFiles           []string          `yaml:"ghost_files,omitempty"`            // deprecated: use contents instead
 	Signature            NFPMRPMSignature  `yaml:"signature,omitempty"`
 }
 
@@ -441,23 +440,31 @@ type SnapcraftAppMetadata struct {
 	RestartCondition string `yaml:"restart_condition,omitempty"`
 }
 
+type SnapcraftLayoutMetadata struct {
+	Symlink  string `yaml:",omitempty"`
+	Bind     string `yaml:",omitempty"`
+	BindFile string `yaml:"bind_file,omitempty"`
+	Type     string `yaml:",omitempty"`
+}
+
 // Snapcraft config.
 type Snapcraft struct {
 	NameTemplate string            `yaml:"name_template,omitempty"`
 	Replacements map[string]string `yaml:",omitempty"`
 	Publish      bool              `yaml:",omitempty"`
 
-	ID          string                          `yaml:",omitempty"`
-	Builds      []string                        `yaml:",omitempty"`
-	Name        string                          `yaml:",omitempty"`
-	Summary     string                          `yaml:",omitempty"`
-	Description string                          `yaml:",omitempty"`
-	Base        string                          `yaml:",omitempty"`
-	License     string                          `yaml:",omitempty"`
-	Grade       string                          `yaml:",omitempty"`
-	Confinement string                          `yaml:",omitempty"`
-	Apps        map[string]SnapcraftAppMetadata `yaml:",omitempty"`
-	Plugs       map[string]interface{}          `yaml:",omitempty"`
+	ID          string                             `yaml:",omitempty"`
+	Builds      []string                           `yaml:",omitempty"`
+	Name        string                             `yaml:",omitempty"`
+	Summary     string                             `yaml:",omitempty"`
+	Description string                             `yaml:",omitempty"`
+	Base        string                             `yaml:",omitempty"`
+	License     string                             `yaml:",omitempty"`
+	Grade       string                             `yaml:",omitempty"`
+	Confinement string                             `yaml:",omitempty"`
+	Layout      map[string]SnapcraftLayoutMetadata `yaml:",omitempty"`
+	Apps        map[string]SnapcraftAppMetadata    `yaml:",omitempty"`
+	Plugs       map[string]interface{}             `yaml:",omitempty"`
 
 	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty"`
 }
@@ -484,8 +491,9 @@ type Checksum struct {
 
 // Docker image config.
 type Docker struct {
-	Binaries           []string `yaml:",omitempty"`
-	Builds             []string `yaml:",omitempty"`
+	Binaries           []string `yaml:",omitempty"` // deprecated: no need to use this anymore
+	Builds             []string `yaml:",omitempty"` // deprecated: use IDs instead
+	IDs                []string `yaml:"ids,omitempty"`
 	Goos               string   `yaml:",omitempty"`
 	Goarch             string   `yaml:",omitempty"`
 	Goarm              string   `yaml:",omitempty"`
@@ -494,6 +502,7 @@ type Docker struct {
 	SkipPush           string   `yaml:"skip_push,omitempty"`
 	Files              []string `yaml:"extra_files,omitempty"`
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
+	Buildx             bool     `yaml:"use_buildx,omitempty"`
 }
 
 // DockerManifest config.
@@ -544,17 +553,18 @@ type Blob struct {
 
 // Upload configuration.
 type Upload struct {
-	Name               string   `yaml:",omitempty"`
-	IDs                []string `yaml:"ids,omitempty"`
-	Target             string   `yaml:",omitempty"`
-	Username           string   `yaml:",omitempty"`
-	Mode               string   `yaml:",omitempty"`
-	Method             string   `yaml:",omitempty"`
-	ChecksumHeader     string   `yaml:"checksum_header,omitempty"`
-	TrustedCerts       string   `yaml:"trusted_certificates,omitempty"`
-	Checksum           bool     `yaml:",omitempty"`
-	Signature          bool     `yaml:",omitempty"`
-	CustomArtifactName bool     `yaml:"custom_artifact_name,omitempty"`
+	Name               string            `yaml:",omitempty"`
+	IDs                []string          `yaml:"ids,omitempty"`
+	Target             string            `yaml:",omitempty"`
+	Username           string            `yaml:",omitempty"`
+	Mode               string            `yaml:",omitempty"`
+	Method             string            `yaml:",omitempty"`
+	ChecksumHeader     string            `yaml:"checksum_header,omitempty"`
+	TrustedCerts       string            `yaml:"trusted_certificates,omitempty"`
+	Checksum           bool              `yaml:",omitempty"`
+	Signature          bool              `yaml:",omitempty"`
+	CustomArtifactName bool              `yaml:"custom_artifact_name,omitempty"`
+	CustomHeaders      map[string]string `yaml:"custom_headers,omitempty"`
 }
 
 // Publisher configuration.
@@ -601,6 +611,7 @@ type Project struct {
 	EnvFiles        EnvFiles         `yaml:"env_files,omitempty"`
 	Before          Before           `yaml:",omitempty"`
 	Source          Source           `yaml:",omitempty"`
+	GoMod           GoMod            `yaml:"gomod,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
@@ -613,6 +624,12 @@ type Project struct {
 
 	// should be set if using Gitea
 	GiteaURLs GiteaURLs `yaml:"gitea_urls,omitempty"`
+}
+
+type GoMod struct {
+	Proxy    bool     `yaml:",omitempty"`
+	Env      []string `yaml:",omitempty"`
+	GoBinary string   `yaml:",omitempty"`
 }
 
 // Load config file.

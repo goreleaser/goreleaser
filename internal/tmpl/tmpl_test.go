@@ -13,9 +13,10 @@ import (
 )
 
 func TestWithArtifact(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "proj",
 	})
+	ctx.ModulePath = "github.com/goreleaser/goreleaser"
 	ctx.Env = map[string]string{
 		"FOO": "bar",
 	}
@@ -31,26 +32,27 @@ func TestWithArtifact(t *testing.T) {
 	ctx.Git.FullCommit = "fullcommit"
 	ctx.Git.ShortCommit = "shortcommit"
 	for expect, tmpl := range map[string]string{
-		"bar":         "{{.Env.FOO}}",
-		"Linux":       "{{.Os}}",
-		"amd64":       "{{.Arch}}",
-		"6":           "{{.Arm}}",
-		"softfloat":   "{{.Mips}}",
-		"1.2.3":       "{{.Version}}",
-		"v1.2.3":      "{{.Tag}}",
-		"1-2-3":       "{{.Major}}-{{.Minor}}-{{.Patch}}",
-		"test-branch": "{{.Branch}}",
-		"commit":      "{{.Commit}}",
-		"fullcommit":  "{{.FullCommit}}",
-		"shortcommit": "{{.ShortCommit}}",
-		"binary":      "{{.Binary}}",
-		"proj":        "{{.ProjectName}}",
-		"":            "{{.ArtifactUploadHash}}",
+		"bar":                              "{{.Env.FOO}}",
+		"Linux":                            "{{.Os}}",
+		"amd64":                            "{{.Arch}}",
+		"6":                                "{{.Arm}}",
+		"softfloat":                        "{{.Mips}}",
+		"1.2.3":                            "{{.Version}}",
+		"v1.2.3":                           "{{.Tag}}",
+		"1-2-3":                            "{{.Major}}-{{.Minor}}-{{.Patch}}",
+		"test-branch":                      "{{.Branch}}",
+		"commit":                           "{{.Commit}}",
+		"fullcommit":                       "{{.FullCommit}}",
+		"shortcommit":                      "{{.ShortCommit}}",
+		"binary":                           "{{.Binary}}",
+		"proj":                             "{{.ProjectName}}",
+		"":                                 "{{.ArtifactUploadHash}}",
+		"github.com/goreleaser/goreleaser": "{{ .ModulePath }}",
 	} {
 		tmpl := tmpl
 		expect := expect
-		t.Run(expect, func(tt *testing.T) {
-			tt.Parallel()
+		t.Run(expect, func(t *testing.T) {
+			t.Parallel()
 			result, err := New(ctx).WithArtifact(
 				&artifact.Artifact{
 					Name:   "not-this-binary",
@@ -64,13 +66,13 @@ func TestWithArtifact(t *testing.T) {
 				},
 				map[string]string{"linux": "Linux"},
 			).Apply(tmpl)
-			require.NoError(tt, err)
-			require.Equal(tt, expect, result)
+			require.NoError(t, err)
+			require.Equal(t, expect, result)
 		})
 	}
 
-	t.Run("artifact with gitlab ArtifactUploadHash", func(tt *testing.T) {
-		tt.Parallel()
+	t.Run("artifact with gitlab ArtifactUploadHash", func(t *testing.T) {
+		t.Parallel()
 		uploadHash := "820ead5d9d2266c728dce6d4d55b6460"
 		result, err := New(ctx).WithArtifact(
 			&artifact.Artifact{
@@ -83,12 +85,12 @@ func TestWithArtifact(t *testing.T) {
 				},
 			}, map[string]string{},
 		).Apply("{{ .ArtifactUploadHash }}")
-		require.NoError(tt, err)
-		require.Equal(tt, uploadHash, result)
+		require.NoError(t, err)
+		require.Equal(t, uploadHash, result)
 	})
 
-	t.Run("artifact without binary name", func(tt *testing.T) {
-		tt.Parallel()
+	t.Run("artifact without binary name", func(t *testing.T) {
+		t.Parallel()
 		result, err := New(ctx).WithArtifact(
 			&artifact.Artifact{
 				Name:   "another-binary",
@@ -97,15 +99,15 @@ func TestWithArtifact(t *testing.T) {
 				Goarm:  "6",
 			}, map[string]string{},
 		).Apply("{{ .Binary }}")
-		require.NoError(tt, err)
-		require.Equal(tt, ctx.Config.ProjectName, result)
+		require.NoError(t, err)
+		require.Equal(t, ctx.Config.ProjectName, result)
 	})
 
-	t.Run("template using artifact Fields with no artifact", func(tt *testing.T) {
-		tt.Parallel()
+	t.Run("template using artifact Fields with no artifact", func(t *testing.T) {
+		t.Parallel()
 		result, err := New(ctx).Apply("{{ .Os }}")
-		require.EqualError(tt, err, `template: tmpl:1:3: executing "tmpl" at <.Os>: map has no entry for key "Os"`)
-		require.Empty(tt, result)
+		require.EqualError(t, err, `template: tmpl:1:3: executing "tmpl" at <.Os>: map has no entry for key "Os"`)
+		require.Empty(t, result)
 	})
 }
 
@@ -126,7 +128,7 @@ func TestEnv(t *testing.T) {
 			out:  "",
 		},
 	}
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Env = map[string]string{
 		"FOO": "BAR",
 	}
@@ -140,7 +142,7 @@ func TestEnv(t *testing.T) {
 }
 
 func TestWithEnv(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Env = map[string]string{
 		"FOO": "BAR",
 	}
@@ -154,7 +156,7 @@ func TestWithEnv(t *testing.T) {
 }
 
 func TestFuncMap(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "proj",
 	})
 	wd, err := os.Getwd()
@@ -187,6 +189,11 @@ func TestFuncMap(t *testing.T) {
 			Template: `{{ tolower "TEST" }}`,
 			Name:     "tolower",
 			Expected: "test",
+		},
+		{
+			Template: `{{ trimprefix "v1.2.4" "v" }}`,
+			Name:     "trimprefix",
+			Expected: "1.2.4",
 		},
 		{
 			Template: `{{ toupper "test" }}`,
@@ -288,7 +295,7 @@ func TestInvalidTemplate(t *testing.T) {
 }
 
 func TestEnvNotFound(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v1.2.4"
 	result, err := New(ctx).Apply("{{.Env.FOO}}")
 	require.Empty(t, result)
@@ -296,10 +303,9 @@ func TestEnvNotFound(t *testing.T) {
 }
 
 func TestWithExtraFields(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	out, _ := New(ctx).WithExtraFields(Fields{
 		"MyCustomField": "foo",
 	}).Apply("{{ .MyCustomField }}")
 	require.Equal(t, "foo", out)
-
 }

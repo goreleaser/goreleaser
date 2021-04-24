@@ -96,12 +96,16 @@ func CheckConfig(ctx *context.Context, upload *config.Upload, kind string) error
 		return misconfigured(kind, upload, "mode must be 'binary' or 'archive'")
 	}
 
-	if _, err := getUsername(ctx, upload, kind); err != nil {
-		return err
+	username := getUsername(ctx, upload, kind)
+	password := getPassword(ctx, upload, kind)
+	passwordEnv := fmt.Sprintf("%s_%s_SECRET", strings.ToUpper(kind), strings.ToUpper(upload.Name))
+
+	if password != "" && username == "" {
+		return misconfigured(kind, upload, fmt.Sprintf("'username' is required when '%s' environment variable is set", passwordEnv))
 	}
 
-	if _, err := getPassword(ctx, upload, kind); err != nil {
-		return err
+	if username != "" && password == "" {
+		return misconfigured(kind, upload, fmt.Sprintf("environment variable '%s' is required when 'username' is set", passwordEnv))
 	}
 
 	if upload.TrustedCerts != "" && !x509.NewCertPool().AppendCertsFromPEM([]byte(upload.TrustedCerts)) {
@@ -111,25 +115,20 @@ func CheckConfig(ctx *context.Context, upload *config.Upload, kind string) error
 	return nil
 }
 
-func getUsername(ctx *context.Context, upload *config.Upload, kind string) (string, error) {
+// username is optional
+func getUsername(ctx *context.Context, upload *config.Upload, kind string) string {
 	if upload.Username != "" {
-		return upload.Username, nil
+		return upload.Username
 	}
+
 	var key = fmt.Sprintf("%s_%s_USERNAME", strings.ToUpper(kind), strings.ToUpper(upload.Name))
-	user, ok := ctx.Env[key]
-	if !ok {
-		return "", misconfigured(kind, upload, fmt.Sprintf("missing username or %s environment variable", key))
-	}
-	return user, nil
+	return ctx.Env[key]
 }
 
-func getPassword(ctx *context.Context, upload *config.Upload, kind string) (string, error) {
+// password is optional
+func getPassword(ctx *context.Context, upload *config.Upload, kind string) string {
 	var key = fmt.Sprintf("%s_%s_SECRET", strings.ToUpper(kind), strings.ToUpper(upload.Name))
-	pwd, ok := ctx.Env[key]
-	if !ok {
-		return "", misconfigured(kind, upload, fmt.Sprintf("missing %s environment variable", key))
-	}
-	return pwd, nil
+	return ctx.Env[key]
 }
 
 func misconfigured(kind string, upload *config.Upload, reason string) error {
@@ -204,15 +203,10 @@ func uploadWithFilter(ctx *context.Context, upload *config.Upload, filter artifa
 
 // uploadAsset uploads file to target and logs all actions.
 func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact, kind string, check ResponseChecker) error {
-	username, err := getUsername(ctx, upload, kind)
-	if err != nil {
-		return err
-	}
-
-	secret, err := getPassword(ctx, upload, kind)
-	if err != nil {
-		return err
-	}
+	// username and secret are optional since the server may not support/need
+	// basic authentication always
+	username := getUsername(ctx, upload, kind)
+	secret := getPassword(ctx, upload, kind)
 
 	// Generate the target url
 	targetURL, err := resolveTargetTemplate(ctx, upload, artifact)
@@ -240,6 +234,21 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 	log.Debugf("generated target url: %s", targetURL)
 
 	var headers = map[string]string{}
+	if upload.CustomHeaders != nil {
+		for name, value := range upload.CustomHeaders {
+			resolvedValue, err := resolveHeaderTemplate(ctx, upload, artifact, value)
+			if err != nil {
+				msg := fmt.Sprintf("%s: failed to resolve custom_headers template", kind)
+				log.WithError(err).WithFields(log.Fields{
+					"instance":     upload.Name,
+					"header_name":  name,
+					"header_value": value,
+				}).Error(msg)
+				return fmt.Errorf("%s: %w", msg, err)
+			}
+			headers[name] = resolvedValue
+		}
+	}
 	if upload.ChecksumHeader != "" {
 		sum, err := artifact.Checksum("sha256")
 		if err != nil {
@@ -253,7 +262,6 @@ func uploadAsset(ctx *context.Context, upload *config.Upload, artifact *artifact
 		msg := fmt.Sprintf("%s: upload failed", kind)
 		log.WithError(err).WithFields(log.Fields{
 			"instance": upload.Name,
-			"username": username,
 		}).Error(msg)
 		return fmt.Errorf("%s: %w", msg, err)
 	}
@@ -286,7 +294,10 @@ func newUploadRequest(ctx *context.Context, method, target, username, secret str
 		return nil, err
 	}
 	req.ContentLength = a.Size
-	req.SetBasicAuth(username, secret)
+
+	if username != "" && secret != "" {
+		req.SetBasicAuth(username, secret)
+	}
 
 	for k, v := range headers {
 		req.Header.Add(k, v)
@@ -361,4 +372,17 @@ func resolveTargetTemplate(ctx *context.Context, upload *config.Upload, artifact
 	return tmpl.New(ctx).
 		WithArtifact(artifact, replacements).
 		Apply(upload.Target)
+}
+
+// resolveHeaderTemplate returns the resolved custom header template with replaced variables
+// Those variables can be replaced by the given context, goos, goarch, goarm and more.
+func resolveHeaderTemplate(ctx *context.Context, upload *config.Upload, artifact *artifact.Artifact, headerValue string) (string, error) {
+	var replacements = map[string]string{}
+	if upload.Mode == ModeBinary {
+		// TODO: multiple archives here
+		replacements = ctx.Config.Archives[0].Replacements
+	}
+	return tmpl.New(ctx).
+		WithArtifact(artifact, replacements).
+		Apply(headerValue)
 }

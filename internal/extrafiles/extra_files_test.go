@@ -25,7 +25,7 @@ func TestFailToGetSpecificFile(t *testing.T) {
 	}
 
 	files, err := Find(globs)
-	require.EqualError(t, err, "globbing failed for pattern ./testdata/file453.golden: matching \"testdata/file453.golden\": file does not exist")
+	require.EqualError(t, err, "globbing failed for pattern ./testdata/file453.golden: matching \"./testdata/file453.golden\": file does not exist")
 	require.Empty(t, files)
 }
 

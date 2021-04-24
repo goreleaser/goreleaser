@@ -113,7 +113,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 func doPublish(ctx *context.Context, client client.Client) error {
 	if ctx.Config.Release.Disable {
-		return pipe.Skip("release pipe is disabled")
+		return pipe.ErrSkipDisabledPipe
 	}
 	log.WithField("tag", ctx.Git.CurrentTag).
 		WithField("repo", ctx.Config.Release.GitHub.String()).
@@ -143,7 +143,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		})
 	}
 
-	var filters = artifact.Or(
+	filters := artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
 		artifact.ByType(artifact.UploadableSourceArchive),
@@ -158,7 +158,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 
 	filters = artifact.Or(filters, artifact.ByType(artifact.UploadableFile))
 
-	var g = semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filters).List() {
 		artifact := artifact
 		g.Go(func() error {

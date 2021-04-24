@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"runtime"
 	"time"
 
 	"github.com/apex/log"
@@ -33,9 +34,9 @@ type releaseOpts struct {
 }
 
 func newReleaseCmd() *releaseCmd {
-	var root = &releaseCmd{}
+	root := &releaseCmd{}
 	// nolint: dupl
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:           "release",
 		Aliases:       []string{"r"},
 		Short:         "Releases the current project",
@@ -70,7 +71,7 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().BoolVar(&root.opts.skipSign, "skip-sign", false, "Skips signing the artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
-	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 4, "Amount tasks to run concurrently")
+	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire release process")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
@@ -102,7 +103,10 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 }
 
 func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Context {
-	ctx.Parallelism = options.parallelism
+	ctx.Parallelism = runtime.NumCPU()
+	if options.parallelism > 0 {
+		ctx.Parallelism = options.parallelism
+	}
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.ReleaseNotes = options.releaseNotes
 	ctx.ReleaseHeader = options.releaseHeader

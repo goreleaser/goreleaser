@@ -1,4 +1,5 @@
 site_name: GoReleaser
+site_url: https://goreleaser.com
 site_description: Deliver Go binaries as fast and easily as possible
 copyright: Made with ❤️ by GoReleaser contributors.
 repo_name: goreleaser/goreleaser
@@ -13,6 +14,19 @@ theme:
   favicon: static/favicon.ico
   include_search_page: false
   search_index_only: true
+  features:
+    - navigation.instant
+  palette:
+    - media: "(prefers-color-scheme: light)"  # Light mode
+      scheme: default
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: dark)"  # Dark mode
+      scheme: slate
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
 
 plugins:
   # disable temporarely because its freezing the page
@@ -22,7 +36,6 @@ plugins:
       - en
   - minify:
       minify_html: true
-
 
 extra:
   social:
@@ -60,38 +73,47 @@ nav:
   - About: customization/index.md
   - customization/archive.md
   - customization/artifactory.md
-  - customization/bintray.md
   - customization/blob.md
   - customization/build.md
   - customization/checksum.md
-  - customization/publishers.md
   - customization/docker.md
   - customization/docker_manifest.md
   - customization/env.md
-  - customization/hooks.md
+  - customization/gomod.md
   - customization/homebrew.md
-  - customization/upload.md
-  - customization/templates.md
+  - customization/hooks.md
   - customization/milestone.md
   - customization/nfpm.md
   - customization/project.md
+  - customization/publishers.md
   - customization/release.md
   - customization/scoop.md
   - customization/sign.md
   - customization/snapcraft.md
   - customization/snapshots.md
   - customization/source.md
+  - customization/templates.md
+  - customization/upload.md
+- Command Line Usage:
+    - goreleaser: cmd/goreleaser.md
+    - goreleaser init: cmd/goreleaser_init.md
+    - goreleaser check: cmd/goreleaser_check.md
+    - goreleaser build: cmd/goreleaser_build.md
+    - goreleaser release: cmd/goreleaser_release.md
+    - goreleaser completion: cmd/goreleaser_completion.md
 - deprecations.md
-- sponsors.md
-- contributing.md
 - Cookbooks:
   - About: cookbooks/index.md
-  - cookbooks/semantic-release.md
-  - cookbooks/release-a-library.md
-  - cookbooks/publish-to-nexus.md
+  - Blog Posts: cookbooks/blog-posts.md
+  - cookbooks//build-go-modules.md
   - cookbooks/cgo-and-crosscompiling.md
   - cookbooks/debconf-templates.md
-- tutorials.md
+  - cookbooks/publish-to-nexus.md
+  - cookbooks/release-a-library.md
+  - cookbooks/semantic-release.md
+  - cookbooks/upload-to-bintray.md
+- sponsors.md
+- contributing.md
 - links.md
 
 markdown_extensions:

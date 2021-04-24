@@ -10,7 +10,7 @@ conduct](/CODE_OF_CONDUCT.md).
 Prerequisites:
 
 - `make`
-- [Go 1.15+](https://golang.org/doc/install)
+- [Go 1.16+](https://golang.org/doc/install)
 - [snapcraft](https://snapcraft.io/)
 - [Docker](https://www.docker.com/)
 - `gpg` (probably already installed on your system)
@@ -21,7 +21,7 @@ Clone `goreleaser` anywhere:
 git clone git@github.com:goreleaser/goreleaser.git
 ```
 
-Install the build and lint dependencies:
+`cd` into the directory and install the dependencies:
 
 ```sh
 make setup
@@ -46,8 +46,6 @@ When you are satisfied with the changes, we suggest you run:
 ```sh
 make ci
 ```
-
-Which runs all the linters and tests.
 
 ## Create a commit
 

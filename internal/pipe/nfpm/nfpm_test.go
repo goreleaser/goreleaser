@@ -20,7 +20,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestRunPipeNoFormats(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Version: "1.0.0",
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.0",
@@ -37,7 +37,7 @@ func TestRunPipeNoFormats(t *testing.T) {
 }
 
 func TestRunPipeInvalidFormat(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "nope",
 		NFPMs: []config.NFPM{
 			{
@@ -73,14 +73,14 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	_, err := os.Create(binPath)
 	require.NoError(t, err)
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -89,6 +89,8 @@ func TestRunPipe(t *testing.T) {
 				Bindir:      "/usr/bin",
 				Builds:      []string{"default"},
 				Formats:     []string{"deb", "rpm", "apk"},
+				Section:     "somesection",
+				Priority:    "standard",
 				Description: "Some description",
 				License:     "MIT",
 				Maintainer:  "me@me",
@@ -151,20 +153,26 @@ func TestRunPipe(t *testing.T) {
 		}
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
-	var packages = ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
 	require.Len(t, packages, 6)
 	for _, pkg := range packages {
-		var format = pkg.ExtraOr("Format", "").(string)
+		format := pkg.ExtraOr("Format", "").(string)
 		require.NotEmpty(t, format)
-		require.Equal(t, pkg.Name, "mybin_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
+		require.Equal(t, pkg.Name, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
+		require.ElementsMatch(t, []string{
+			"/usr/share/testfile.txt",
+			"/etc/nope.conf",
+			"/etc/nope-rpm.conf",
+			"/etc/nope2.conf",
+			"/usr/bin/mybin",
+		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
-
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Parallelism: runtime.NumCPU(),
 		Artifacts:   artifact.New(),
 		Config: config.Project{
@@ -193,7 +201,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 }
 
 func TestNoBuildsFound(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Parallelism: runtime.NumCPU(),
 		Artifacts:   artifact.New(),
 		Config: config.Project{
@@ -218,11 +226,11 @@ func TestNoBuildsFound(t *testing.T) {
 }
 
 func TestCreateFileDoesntExist(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var ctx = context.New(config.Project{
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	ctx := context.New(config.Project{
 		Dist:        dist,
 		ProjectName: "asd",
 		NFPMs: []config.NFPM{
@@ -259,11 +267,11 @@ func TestCreateFileDoesntExist(t *testing.T) {
 }
 
 func TestInvalidConfig(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var ctx = context.New(config.Project{
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	ctx := context.New(config.Project{
 		Dist: dist,
 		NFPMs: []config.NFPM{
 			{
@@ -288,7 +296,7 @@ func TestInvalidConfig(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			ProjectName: "foobar",
 			NFPMs: []config.NFPM{
@@ -308,7 +316,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultDeprecatedOptions(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			ProjectName: "foobar",
 			NFPMs: []config.NFPM{
@@ -357,7 +365,7 @@ func TestDefaultDeprecatedOptions(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Builds: []config.Build{
 				{ID: "foo"},
@@ -381,7 +389,7 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func TestOverrides(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			NFPMs: []config.NFPM{
 				{
@@ -408,14 +416,14 @@ func TestOverrides(t *testing.T) {
 }
 
 func TestDebSpecificConfig(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	_, err := os.Create(binPath)
 	require.NoError(t, err)
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -481,14 +489,14 @@ func TestDebSpecificConfig(t *testing.T) {
 }
 
 func TestRPMSpecificConfig(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	_, err := os.Create(binPath)
 	require.NoError(t, err)
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -554,14 +562,14 @@ func TestRPMSpecificConfig(t *testing.T) {
 }
 
 func TestAPKSpecificConfig(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	_, err := os.Create(binPath)
 	require.NoError(t, err)
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -628,7 +636,7 @@ func TestAPKSpecificConfig(t *testing.T) {
 }
 
 func TestSeveralNFPMsWithTheSameID(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			NFPMs: []config.NFPM{
 				{
@@ -644,14 +652,14 @@ func TestSeveralNFPMsWithTheSameID(t *testing.T) {
 }
 
 func TestMeta(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	_, err := os.Create(binPath)
 	require.NoError(t, err)
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -660,6 +668,8 @@ func TestMeta(t *testing.T) {
 				Bindir:      "/usr/bin",
 				Builds:      []string{"default"},
 				Formats:     []string{"deb", "rpm"},
+				Section:     "somesection",
+				Priority:    "standard",
 				Description: "Some description",
 				License:     "MIT",
 				Maintainer:  "me@me",
@@ -718,36 +728,33 @@ func TestMeta(t *testing.T) {
 		}
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
-	var packages = ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
 	require.Len(t, packages, 4)
 	for _, pkg := range packages {
-		var format = pkg.ExtraOr("Format", "").(string)
+		format := pkg.ExtraOr("Format", "").(string)
 		require.NotEmpty(t, format)
-		require.Equal(t, pkg.Name, "mybin_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
+		require.Equal(t, pkg.Name, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
+		require.ElementsMatch(t, []string{
+			"/usr/share/testfile.txt",
+			"/etc/nope.conf",
+			"/etc/nope-rpm.conf",
+		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
 	}
 
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 3, "should not modify the config file list")
-
-	// ensure that no binaries added
-	for _, pkg := range packages {
-		contents := pkg.ExtraOr("Files", files.Contents{}).(files.Contents)
-		for _, f := range contents {
-			require.NotEqual(t, "/usr/bin/mybin", f.Destination, "binary file should not be added")
-		}
-	}
 }
 
 func TestSkipSign(t *testing.T) {
 	folder, err := ioutil.TempDir("", "archivetest")
 	require.NoError(t, err)
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	_, err = os.Create(binPath)
 	require.NoError(t, err)
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		NFPMs: []config.NFPM{
@@ -801,10 +808,14 @@ func TestSkipSign(t *testing.T) {
 	}
 
 	t.Run("skip sign not set", func(t *testing.T) {
+		contains := "open /does/not/exist.gpg: no such file or directory"
+		if runtime.GOOS == "windows" {
+			contains = "open /does/not/exist.gpg: The system cannot find the path specified."
+		}
 		require.Contains(
 			t,
 			Pipe{}.Run(ctx).Error(),
-			`nfpm failed: failed to create signatures: call to signer failed: signing error: reading PGP key file: open /does/not/exist.gpg: no such file or directory`,
+			contains,
 		)
 	})
 

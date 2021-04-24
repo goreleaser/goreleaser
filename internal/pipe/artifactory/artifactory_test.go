@@ -37,12 +37,14 @@ func teardown() {
 }
 
 func testMethod(t *testing.T, r *http.Request, want string) {
+	t.Helper()
 	if got := r.Method; got != want {
 		t.Errorf("Request method: %v, want %v", got, want)
 	}
 }
 
 func testHeader(t *testing.T, r *http.Request, header, want string) {
+	t.Helper()
 	if got := r.Header.Get(header); got != want {
 		t.Errorf("Header.Get(%q) returned %q, want %q", header, got, want)
 	}
@@ -55,13 +57,13 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 	setup()
 	defer teardown()
 
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
+	require.NoError(t, ioutil.WriteFile(binPath, d1, 0o666))
 
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -169,7 +171,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 		  }`)
 	})
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -212,13 +214,13 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	setup()
 	defer teardown()
 
-	var folder = t.TempDir()
+	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
 	require.NoError(t, err)
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
 		Artifactories: []config.Upload{
@@ -313,11 +315,11 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 }
 
 func TestRunPipe_ArtifactoryDown(t *testing.T) {
-	var folder = t.TempDir()
+	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
 		Artifactories: []config.Upload{
@@ -346,11 +348,11 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	binPath := filepath.Join(dist, "mybin", "mybin")
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -385,13 +387,13 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	setup()
 	defer teardown()
 
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
+	require.NoError(t, ioutil.WriteFile(binPath, d1, 0o666))
 
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -409,7 +411,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		  }`)
 	})
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -436,7 +438,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	var err = Pipe{}.Publish(ctx)
+	err := Pipe{}.Publish(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "Bad credentials")
 }
@@ -445,13 +447,13 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 	setup()
 	defer teardown()
 
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
+	require.NoError(t, ioutil.WriteFile(binPath, d1, 0o666))
 
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -468,7 +470,7 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 		  }`)
 	})
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -499,7 +501,7 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 }
 
 func TestRunPipe_FileNotFound(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        "archivetest/dist",
 		Artifactories: []config.Upload{
@@ -530,15 +532,15 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 }
 
 func TestRunPipe_UnparsableTarget(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
+	require.NoError(t, ioutil.WriteFile(binPath, d1, 0o666))
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -569,7 +571,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 }
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Artifactories: []config.Upload{
 			{
 				Name:     "production",
@@ -594,13 +596,13 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin")
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Artifactories: []config.Upload{
@@ -635,13 +637,13 @@ func TestDescription(t *testing.T) {
 }
 
 func TestNoArtifactories(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
 
 func TestArtifactoriesWithoutTarget(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Env: map[string]string{
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
@@ -660,7 +662,7 @@ func TestArtifactoriesWithoutTarget(t *testing.T) {
 }
 
 func TestArtifactoriesWithoutUsername(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Env: map[string]string{
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
@@ -679,7 +681,7 @@ func TestArtifactoriesWithoutUsername(t *testing.T) {
 }
 
 func TestArtifactoriesWithoutName(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Artifactories: []config.Upload{
 			{
 				Username: "deployuser",
@@ -692,7 +694,7 @@ func TestArtifactoriesWithoutName(t *testing.T) {
 }
 
 func TestArtifactoriesWithoutSecret(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Artifactories: []config.Upload{
 			{
 				Name:     "production",
@@ -706,7 +708,7 @@ func TestArtifactoriesWithoutSecret(t *testing.T) {
 }
 
 func TestArtifactoriesWithInvalidMode(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Env: map[string]string{
 			"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
 		},
@@ -727,7 +729,7 @@ func TestArtifactoriesWithInvalidMode(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Artifactories: []config.Upload{
 				{
@@ -741,12 +743,12 @@ func TestDefault(t *testing.T) {
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Artifactories, 1)
-	var artifactory = ctx.Config.Artifactories[0]
+	artifactory := ctx.Config.Artifactories[0]
 	require.Equal(t, "archive", artifactory.Mode)
 }
 
 func TestDefaultNoArtifactories(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Artifactories: []config.Upload{},
 		},
@@ -756,18 +758,19 @@ func TestDefaultNoArtifactories(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Artifactories: []config.Upload{
 				{
-					Mode: "custom",
+					Mode:           "custom",
+					ChecksumHeader: "foo",
 				},
 			},
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Artifactories, 1)
-	var artifactory = ctx.Config.Artifactories[0]
+	artifactory := ctx.Config.Artifactories[0]
 	require.Equal(t, "custom", artifactory.Mode)
-	require.Equal(t, "X-Checksum-SHA256", artifactory.ChecksumHeader)
+	require.Equal(t, "foo", artifactory.ChecksumHeader)
 }

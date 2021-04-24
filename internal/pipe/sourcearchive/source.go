@@ -22,15 +22,15 @@ func (Pipe) String() string {
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) (err error) {
 	if !ctx.Config.Source.Enabled {
-		return pipe.Skip("source pipe is disabled")
+		return pipe.ErrSkipDisabledPipe
 	}
 
 	name, err := tmpl.New(ctx).Apply(ctx.Config.Source.NameTemplate)
 	if err != nil {
 		return err
 	}
-	var filename = name + "." + ctx.Config.Source.Format
-	var path = filepath.Join(ctx.Config.Dist, filename)
+	filename := name + "." + ctx.Config.Source.Format
+	path := filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("file", filename).Info("creating source archive")
 	out, err := git.Clean(git.Run("archive", "-o", path, ctx.Git.FullCommit))
 	log.Debug(out)
@@ -47,7 +47,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	var archive = &ctx.Config.Source
+	archive := &ctx.Config.Source
 	if archive.Format == "" {
 		archive.Format = "tar.gz"
 	}

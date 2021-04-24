@@ -6,10 +6,9 @@ export PATH := ./bin:$(PATH)
 export GO111MODULE := on
 export GOPROXY = https://proxy.golang.org,direct
 
-# Install all the build and lint dependencies
+# Install dependencies
 setup:
-	go mod download
-	go generate -v ./...
+	go mod tidy
 .PHONY: setup
 
 # Run all the tests
@@ -24,22 +23,11 @@ cover: test
 
 # gofmt and goimports all go files
 fmt:
-	find . -name '*.go' -not -wholename './vendor/*' | while read -r file; do gofmt -w -s "$$file"; goimports -w "$$file"; done
+	gofumpt -w .
 .PHONY: fmt
 
-# Run all the linters
-lint:
-	# TODO: fix tests issues
-	# TODO: fix lll issues
-	# TODO: fix funlen issues
-	# TODO: fix godox issues
-	# TODO: fix wsl issues
-	golangci-lint run ./...
-	misspell -error **/*
-.PHONY: lint
-
 # Run all the tests and code checks
-ci: build test lint
+ci: build test
 .PHONY: ci
 
 # Build a beta version of goreleaser
