@@ -10,7 +10,7 @@ require (
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
 	github.com/fatih/color v1.10.0
-	github.com/google/go-github/v35 v35.0.1-0.20210421135231-b235769d1606
+	github.com/google/go-github/v35 v35.1.0
 	github.com/goreleaser/fileglob v1.2.0
 	github.com/goreleaser/nfpm/v2 v2.4.0
 	github.com/imdario/mergo v0.3.12

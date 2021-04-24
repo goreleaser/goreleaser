@@ -275,8 +275,8 @@ github.com/google/go-cmp v0.5.1/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.5.2/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.4 h1:L8R9j+yAqZuZjsqh/z+F1NCffTKKLShY6zXTItVIZ8M=
 github.com/google/go-cmp v0.5.4/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
-github.com/google/go-github/v35 v35.0.1-0.20210421135231-b235769d1606 h1:+8mvMVu+3yXBi/HdWq39mWbt/60u9qS+dkVZfjqEnt8=
-github.com/google/go-github/v35 v35.0.1-0.20210421135231-b235769d1606/go.mod h1:s0515YVTI+IMrDoy9Y4pHt9ShGpzHvHO8rZ7L7acgvs=
+github.com/google/go-github/v35 v35.1.0 h1:KkwZnKWQ/0YryvXjZlCN/3EGRJNp6VCZPKo+RG9mG28=
+github.com/google/go-github/v35 v35.1.0/go.mod h1:s0515YVTI+IMrDoy9Y4pHt9ShGpzHvHO8rZ7L7acgvs=
 github.com/google/go-querystring v1.0.0 h1:Xkwi/a1rcvNg1PPYe5vI8GbeBY/jrVuDX5ASuANWTrk=
 github.com/google/go-querystring v1.0.0/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO6wN/zVPAxq5ck=
 github.com/google/go-replayers/grpcreplay v1.0.0 h1:B5kVOzJ1hBgnevTgIWhSTatQ3608yu/2NnU0Ta1d0kY=
