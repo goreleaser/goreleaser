@@ -183,6 +183,7 @@ func copyGoSum(src, dst string) error {
 		}
 		return err
 	}
+	defer r.Close()
 
 	w, err := os.Create(dst)
 	if err != nil {
