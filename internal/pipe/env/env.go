@@ -128,6 +128,7 @@ func loadEnv(env, path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer f.Close()
 	bts, _, err := bufio.NewReader(f).ReadLine()
 	return string(bts), err
 }
