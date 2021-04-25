@@ -2,7 +2,6 @@ package upload
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	h "net/http"
 	"net/http/httptest"
@@ -64,7 +63,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
+	require.NoError(t, os.WriteFile(binPath, d1, 0666))
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -226,7 +225,7 @@ func TestRunPipe_ModeBinary_CustomArtifactName(t *testing.T) {
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
+	require.NoError(t, os.WriteFile(binPath, d1, 0666))
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin;deb.distribution=xenial", func(w http.ResponseWriter, r *http.Request) {
@@ -434,7 +433,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
+	require.NoError(t, os.WriteFile(binPath, d1, 0666))
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -516,7 +515,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
 	var binPath = filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
+	require.NoError(t, os.WriteFile(binPath, d1, 0666))
 
 	var ctx = context.New(config.Project{
 		ProjectName: "mybin",

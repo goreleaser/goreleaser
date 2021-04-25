@@ -4,7 +4,6 @@ package changelog
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -112,11 +111,11 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	path := filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
-	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint: gosec
+	return os.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint: gosec
 }
 
 func loadFromFile(file string) (string, error) {
-	bts, err := ioutil.ReadFile(file)
+	bts, err := os.ReadFile(file)
 	if err != nil {
 		return "", err
 	}

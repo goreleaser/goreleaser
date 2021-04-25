@@ -3,7 +3,6 @@ package sign
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -395,11 +394,11 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 	require.NoError(tb, os.Mkdir(filepath.Join(tmpdir, "linux_amd64"), os.ModePerm))
 	for _, f := range artifacts {
 		file := filepath.Join(tmpdir, f)
-		require.NoError(tb, ioutil.WriteFile(file, []byte("foo"), 0o644))
+		require.NoError(tb, os.WriteFile(file, []byte("foo"), 0o644))
 	}
-	require.NoError(tb, ioutil.WriteFile(filepath.Join(tmpdir, "linux_amd64", "artifact4"), []byte("foo"), 0o644))
+	require.NoError(tb, os.WriteFile(filepath.Join(tmpdir, "linux_amd64", "artifact4"), []byte("foo"), 0o644))
 	artifacts = append(artifacts, "linux_amd64/artifact4")
-	require.NoError(tb, ioutil.WriteFile(filepath.Join(tmpdir, "artifact5.tar.gz"), []byte("foo"), 0o644))
+	require.NoError(tb, os.WriteFile(filepath.Join(tmpdir, "artifact5.tar.gz"), []byte("foo"), 0o644))
 	artifacts = append(artifacts, "artifact5.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "artifact1",

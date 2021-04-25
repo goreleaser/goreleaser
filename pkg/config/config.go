@@ -4,7 +4,6 @@ package config
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -645,7 +644,7 @@ func Load(file string) (config Project, err error) {
 
 // LoadReader config via io.Reader.
 func LoadReader(fd io.Reader) (config Project, err error) {
-	data, err := ioutil.ReadAll(fd)
+	data, err := io.ReadAll(fd)
 	if err != nil {
 		return config, err
 	}

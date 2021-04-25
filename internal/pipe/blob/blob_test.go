@@ -1,7 +1,6 @@
 package blob
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -126,8 +125,8 @@ func pipePublish(t *testing.T, extra []config.ExtraFile) {
 	var folder = t.TempDir()
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
-	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
-	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
+	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
+	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0744))
 
 	// Azure Blob Context
 	var azblobctx = context.New(config.Project{

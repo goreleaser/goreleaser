@@ -2,7 +2,6 @@ package artifactory
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -63,7 +62,7 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0o666))
+	require.NoError(t, os.WriteFile(binPath, d1, 0o666))
 
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -396,7 +395,7 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0o666))
+	require.NoError(t, os.WriteFile(binPath, d1, 0o666))
 
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -456,7 +455,7 @@ func TestRunPipe_UnparsableErrorResponse(t *testing.T) {
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0o666))
+	require.NoError(t, os.WriteFile(binPath, d1, 0o666))
 
 	// Dummy artifactories
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
@@ -541,7 +540,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0o666))
+	require.NoError(t, os.WriteFile(binPath, d1, 0o666))
 
 	ctx := context.New(config.Project{
 		ProjectName: "mybin",

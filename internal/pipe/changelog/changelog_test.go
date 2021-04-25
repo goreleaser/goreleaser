@@ -1,7 +1,6 @@
 package changelog
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -111,7 +110,7 @@ func TestChangelog(t *testing.T) {
 	require.NotContains(t, ctx.ReleaseNotes, "cArs")
 	require.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
 
-	bts, err := ioutil.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
+	bts, err := os.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
 	require.NoError(t, err)
 	require.NotEmpty(t, string(bts))
 }
@@ -178,7 +177,7 @@ func TestChangelogForGitlab(t *testing.T) {
 	require.NotContains(t, ctx.ReleaseNotes, "cArs")
 	require.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
 
-	bts, err := ioutil.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
+	bts, err := os.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
 	require.NoError(t, err)
 	require.NotEmpty(t, string(bts))
 }

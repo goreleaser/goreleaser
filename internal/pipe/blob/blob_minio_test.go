@@ -6,7 +6,6 @@ package blob
 
 import (
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
@@ -29,10 +28,10 @@ func TestMinioUpload(t *testing.T) {
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
 	checkpath := filepath.Join(folder, "check.txt")
-	require.NoError(t, ioutil.WriteFile(checkpath, []byte("fake checksums"), 0o744))
-	require.NoError(t, ioutil.WriteFile(srcpath, []byte("fake\nsrc"), 0o744))
-	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
-	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
+	require.NoError(t, os.WriteFile(checkpath, []byte("fake checksums"), 0o744))
+	require.NoError(t, os.WriteFile(srcpath, []byte("fake\nsrc"), 0o744))
+	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
+	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	ctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
@@ -95,8 +94,8 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 	folder := t.TempDir()
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
-	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
-	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
+	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
+	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	// Set custom BUCKET_ID env variable.
 	require.NoError(t, os.Setenv("BUCKET_ID", "test"))
 	ctx := context.New(config.Project{
@@ -133,8 +132,8 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 	folder := t.TempDir()
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
-	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
-	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
+	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
+	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	ctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
@@ -171,10 +170,10 @@ func TestMinioUploadSkipPublish(t *testing.T) {
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
 	checkpath := filepath.Join(folder, "check.txt")
-	require.NoError(t, ioutil.WriteFile(checkpath, []byte("fake checksums"), 0o744))
-	require.NoError(t, ioutil.WriteFile(srcpath, []byte("fake\nsrc"), 0o744))
-	require.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
-	require.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
+	require.NoError(t, os.WriteFile(checkpath, []byte("fake checksums"), 0o744))
+	require.NoError(t, os.WriteFile(srcpath, []byte("fake\nsrc"), 0o744))
+	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
+	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 	ctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",

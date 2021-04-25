@@ -4,7 +4,6 @@ package dist
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/apex/log"
@@ -33,7 +32,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		}
 		return err
 	}
-	files, err := ioutil.ReadDir(ctx.Config.Dist)
+	files, err := os.ReadDir(ctx.Config.Dist)
 	if err != nil {
 		return
 	}
