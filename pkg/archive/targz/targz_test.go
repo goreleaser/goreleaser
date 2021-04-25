@@ -15,10 +15,9 @@ func TestTarGzFile(t *testing.T) {
 	var tmp = t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.tar.gz"))
 	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, f.Close())
-	})
+	defer f.Close() // nolint: errcheck
 	archive := New(f)
+	defer archive.Close() // nolint: errcheck
 
 	require.Error(t, archive.Add("nope.txt", "../testdata/nope.txt"))
 	require.NoError(t, archive.Add("foo.txt", "../testdata/foo.txt"))
