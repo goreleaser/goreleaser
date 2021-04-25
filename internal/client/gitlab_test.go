@@ -35,7 +35,7 @@ func TestFailToExtractHashFromProjectFileURL(t *testing.T) {
 }
 
 func TestGitLabReleaseURLTemplate(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		GitLabURLs: config.GitLabURLs{
 			// default URL would otherwise be set via pipe/defaults
 			Download: DefaultGitLabDownloadURL,

@@ -10,7 +10,7 @@ import (
 )
 
 func TestCustomProjectName(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "foo",
 		Release: config.Release{
 			GitHub: config.Repo{
@@ -24,7 +24,7 @@ func TestCustomProjectName(t *testing.T) {
 }
 
 func TestEmptyProjectName_DefaultsToGitHubRelease(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Release: config.Release{
 			GitHub: config.Repo{
 				Owner: "bar",
@@ -37,7 +37,7 @@ func TestEmptyProjectName_DefaultsToGitHubRelease(t *testing.T) {
 }
 
 func TestEmptyProjectName_DefaultsToGitLabRelease(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Release: config.Release{
 			GitLab: config.Repo{
 				Owner: "bar",
@@ -50,7 +50,7 @@ func TestEmptyProjectName_DefaultsToGitLabRelease(t *testing.T) {
 }
 
 func TestEmptyProjectName_DefaultsToGiteaRelease(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Release: config.Release{
 			Gitea: config.Repo{
 				Owner: "bar",
@@ -63,7 +63,7 @@ func TestEmptyProjectName_DefaultsToGiteaRelease(t *testing.T) {
 }
 
 func TestEmptyProjectNameAndRelease(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Release: config.Release{
 			GitHub: config.Repo{},
 		},

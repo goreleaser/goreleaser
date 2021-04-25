@@ -154,7 +154,7 @@ func (artifacts Artifacts) List() []*Artifact {
 
 // GroupByPlatform groups the artifacts by their platform.
 func (artifacts Artifacts) GroupByPlatform() map[string][]*Artifact {
-	var result = map[string][]*Artifact{}
+	result := map[string][]*Artifact{}
 	for _, a := range artifacts.items {
 		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips
 		result[plat] = append(result[plat], a)
@@ -208,7 +208,7 @@ func ByType(t Type) Filter {
 
 // ByFormats filters artifacts by a `Format` extra field.
 func ByFormats(formats ...string) Filter {
-	var filters = make([]Filter, 0, len(formats))
+	filters := make([]Filter, 0, len(formats))
 	for _, format := range formats {
 		format := format
 		filters = append(filters, func(a *Artifact) bool {
@@ -220,7 +220,7 @@ func ByFormats(formats ...string) Filter {
 
 // ByIDs filter artifacts by an `ID` extra field.
 func ByIDs(ids ...string) Filter {
-	var filters = make([]Filter, 0, len(ids))
+	filters := make([]Filter, 0, len(ids))
 	for _, id := range ids {
 		id := id
 		filters = append(filters, func(a *Artifact) bool {
@@ -266,7 +266,7 @@ func (artifacts *Artifacts) Filter(filter Filter) Artifacts {
 		return *artifacts
 	}
 
-	var result = New()
+	result := New()
 	for _, a := range artifacts.items {
 		if filter(a) {
 			result.items = append(result.items, a)

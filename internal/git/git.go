@@ -19,12 +19,12 @@ func IsRepo() bool {
 // RunEnv runs a git command with the specified env vars and returns its output or errors.
 func RunEnv(env map[string]string, args ...string) (string, error) {
 	// TODO: use exex.CommandContext here and refactor.
-	var extraArgs = []string{
+	extraArgs := []string{
 		"-c", "log.showSignature=false",
 	}
 	args = append(extraArgs, args...)
 	/* #nosec */
-	var cmd = exec.Command("git", args...)
+	cmd := exec.Command("git", args...)
 
 	if env != nil {
 		cmd.Env = []string{}

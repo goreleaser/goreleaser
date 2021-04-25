@@ -10,7 +10,7 @@ import (
 
 func TestRelease(t *testing.T) {
 	setup(t)
-	var cmd = newReleaseCmd()
+	cmd := newReleaseCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.NoError(t, cmd.cmd.Execute())
 }
@@ -18,7 +18,7 @@ func TestRelease(t *testing.T) {
 func TestReleaseInvalidConfig(t *testing.T) {
 	setup(t)
 	createFile(t, "goreleaser.yml", "foo: bar")
-	var cmd = newReleaseCmd()
+	cmd := newReleaseCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.EqualError(t, cmd.cmd.Execute(), "yaml: unmarshal errors:\n  line 1: field foo not found in type config.Project")
 }
@@ -26,18 +26,18 @@ func TestReleaseInvalidConfig(t *testing.T) {
 func TestReleaseBrokenProject(t *testing.T) {
 	setup(t)
 	createFile(t, "main.go", "not a valid go file")
-	var cmd = newReleaseCmd()
+	cmd := newReleaseCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2"})
 	require.EqualError(t, cmd.cmd.Execute(), "failed to parse dir: .: main.go:1:1: expected 'package', found not")
 }
 
 func TestReleaseFlags(t *testing.T) {
-	var setup = func(opts releaseOpts) *context.Context {
+	setup := func(opts releaseOpts) *context.Context {
 		return setupReleaseContext(context.New(config.Project{}), opts)
 	}
 
 	t.Run("snapshot", func(t *testing.T) {
-		var ctx = setup(releaseOpts{
+		ctx := setup(releaseOpts{
 			snapshot: true,
 		})
 		require.True(t, ctx.Snapshot)
@@ -46,7 +46,7 @@ func TestReleaseFlags(t *testing.T) {
 	})
 
 	t.Run("skips", func(t *testing.T) {
-		var ctx = setup(releaseOpts{
+		ctx := setup(releaseOpts{
 			skipPublish:  true,
 			skipSign:     true,
 			skipValidate: true,
@@ -63,10 +63,10 @@ func TestReleaseFlags(t *testing.T) {
 	})
 
 	t.Run("notes", func(t *testing.T) {
-		var notes = "foo.md"
-		var header = "header.md"
-		var footer = "footer.md"
-		var ctx = setup(releaseOpts{
+		notes := "foo.md"
+		header := "header.md"
+		footer := "footer.md"
+		ctx := setup(releaseOpts{
 			releaseNotes:  notes,
 			releaseHeader: header,
 			releaseFooter: footer,

@@ -18,7 +18,7 @@ func TestDefaultWithRepoConfig(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:githubowner/githubrepo.git")
 
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Milestones: []config.Milestone{
 				{
@@ -41,7 +41,7 @@ func TestDefaultWithRepoRemote(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:githubowner/githubrepo.git")
 
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "githubrepo", ctx.Config.Milestones[0].Repo.Name)
@@ -49,7 +49,7 @@ func TestDefaultWithRepoRemote(t *testing.T) {
 }
 
 func TestDefaultWithNameTemplate(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Milestones: []config.Milestone{
 				{
@@ -64,7 +64,7 @@ func TestDefaultWithNameTemplate(t *testing.T) {
 
 func TestDefaultWithoutGitRepo(t *testing.T) {
 	testlib.Mktmp(t)
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
@@ -74,7 +74,7 @@ func TestDefaultWithoutGitRepo(t *testing.T) {
 
 func TestDefaultWithoutGitRepoOrigin(t *testing.T) {
 	testlib.Mktmp(t)
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
@@ -85,7 +85,7 @@ func TestDefaultWithoutGitRepoOrigin(t *testing.T) {
 
 func TestDefaultWithoutGitRepoSnapshot(t *testing.T) {
 	testlib.Mktmp(t)
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
@@ -95,7 +95,7 @@ func TestDefaultWithoutGitRepoSnapshot(t *testing.T) {
 }
 
 func TestDefaultWithoutNameTemplate(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Milestones: []config.Milestone{},
 		},
@@ -109,7 +109,7 @@ func TestString(t *testing.T) {
 }
 
 func TestPublishCloseDisabled(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Milestones: []config.Milestone{
 			{
 				Close: false,
@@ -122,7 +122,7 @@ func TestPublishCloseDisabled(t *testing.T) {
 }
 
 func TestPublishCloseEnabled(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Milestones: []config.Milestone{
 			{
 				Close:        true,
@@ -141,7 +141,7 @@ func TestPublishCloseEnabled(t *testing.T) {
 }
 
 func TestPublishCloseError(t *testing.T) {
-	var config = config.Project{
+	config := config.Project{
 		Milestones: []config.Milestone{
 			{
 				Close:        true,
@@ -153,7 +153,7 @@ func TestPublishCloseError(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "v1.0.0"
 	client := &DummyClient{
 		FailToCloseMilestone: true,
@@ -163,7 +163,7 @@ func TestPublishCloseError(t *testing.T) {
 }
 
 func TestPublishCloseFailOnError(t *testing.T) {
-	var config = config.Project{
+	config := config.Project{
 		Milestones: []config.Milestone{
 			{
 				Close:        true,
@@ -176,7 +176,7 @@ func TestPublishCloseFailOnError(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "v1.0.0"
 	client := &DummyClient{
 		FailToCloseMilestone: true,

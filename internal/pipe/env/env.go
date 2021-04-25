@@ -28,7 +28,7 @@ func (Pipe) String() string {
 }
 
 func setDefaultTokenFiles(ctx *context.Context) {
-	var env = &ctx.Config.EnvFiles
+	env := &ctx.Config.EnvFiles
 	if env.GitHubToken == "" {
 		env.GitHubToken = "~/.config/goreleaser/github_token"
 	}

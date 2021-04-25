@@ -14,8 +14,8 @@ import (
 var update = flag.Bool("update", false, "update .golden files")
 
 func TestDescribeBody(t *testing.T) {
-	var changelog = "feature1: description\nfeature2: other description"
-	var ctx = context.New(config.Project{})
+	changelog := "feature1: description\nfeature2: other description"
+	ctx := context.New(config.Project{})
 	ctx.ReleaseNotes = changelog
 	for _, d := range []string{
 		"goreleaser/goreleaser:0.40.0",
@@ -30,9 +30,9 @@ func TestDescribeBody(t *testing.T) {
 	out, err := describeBody(ctx)
 	require.NoError(t, err)
 
-	var golden = "testdata/release1.golden"
+	golden := "testdata/release1.golden"
 	if *update {
-		_ = os.WriteFile(golden, out.Bytes(), 0755)
+		_ = os.WriteFile(golden, out.Bytes(), 0o755)
 	}
 	bts, err := os.ReadFile(golden)
 	require.NoError(t, err)
@@ -40,8 +40,8 @@ func TestDescribeBody(t *testing.T) {
 }
 
 func TestDescribeBodyWithDockerManifest(t *testing.T) {
-	var changelog = "feature1: description\nfeature2: other description"
-	var ctx = context.New(config.Project{})
+	changelog := "feature1: description\nfeature2: other description"
+	ctx := context.New(config.Project{})
 	ctx.ReleaseNotes = changelog
 	for _, d := range []string{
 		"goreleaser/goreleaser:0.40.0",
@@ -69,9 +69,9 @@ func TestDescribeBodyWithDockerManifest(t *testing.T) {
 	out, err := describeBody(ctx)
 	require.NoError(t, err)
 
-	var golden = "testdata/release3.golden"
+	golden := "testdata/release3.golden"
 	if *update {
-		_ = os.WriteFile(golden, out.Bytes(), 0755)
+		_ = os.WriteFile(golden, out.Bytes(), 0o755)
 	}
 	bts, err := os.ReadFile(golden)
 	require.NoError(t, err)
@@ -79,16 +79,16 @@ func TestDescribeBodyWithDockerManifest(t *testing.T) {
 }
 
 func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
-	var changelog = "feature1: description\nfeature2: other description"
-	var ctx = &context.Context{
+	changelog := "feature1: description\nfeature2: other description"
+	ctx := &context.Context{
 		ReleaseNotes: changelog,
 	}
 	out, err := describeBody(ctx)
 	require.NoError(t, err)
 
-	var golden = "testdata/release2.golden"
+	golden := "testdata/release2.golden"
 	if *update {
-		_ = os.WriteFile(golden, out.Bytes(), 0655)
+		_ = os.WriteFile(golden, out.Bytes(), 0o655)
 	}
 	bts, err := os.ReadFile(golden)
 	require.NoError(t, err)
@@ -97,8 +97,8 @@ func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
 }
 
 func TestDontEscapeHTML(t *testing.T) {
-	var changelog = "<h1>test</h1>"
-	var ctx = context.New(config.Project{})
+	changelog := "<h1>test</h1>"
+	ctx := context.New(config.Project{})
 	ctx.ReleaseNotes = changelog
 
 	out, err := describeBody(ctx)

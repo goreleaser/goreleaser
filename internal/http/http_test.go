@@ -21,8 +21,8 @@ import (
 )
 
 func TestAssetOpenDefault(t *testing.T) {
-	var tf = filepath.Join(t.TempDir(), "asset")
-	require.NoError(t, os.WriteFile(tf, []byte("a"), 0765))
+	tf := filepath.Join(t.TempDir(), "asset")
+	require.NoError(t, os.WriteFile(tf, []byte("a"), 0o765))
 
 	a, err := assetOpenDefault("blah", &artifact.Artifact{
 		Path: tf,
@@ -237,7 +237,7 @@ func TestUpload(t *testing.T) {
 	ctx.Env["TEST_A_USERNAME"] = "u2"
 	ctx.Version = "2.1.0"
 	ctx.Artifacts = artifact.New()
-	var folder = t.TempDir()
+	folder := t.TempDir()
 	for _, a := range []struct {
 		ext string
 		typ artifact.Type
@@ -250,8 +250,8 @@ func TestUpload(t *testing.T) {
 		{"sum", artifact.Checksum},
 		{"sig", artifact.Signature},
 	} {
-		var file = filepath.Join(folder, "a."+a.ext)
-		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0644))
+		file := filepath.Join(folder, "a."+a.ext)
+		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "a." + a.ext,
 			Goos:   "linux",
@@ -273,7 +273,8 @@ func TestUpload(t *testing.T) {
 		setup        func(*httptest.Server) (*context.Context, config.Upload)
 		check        func(r []*h.Request) error
 	}{
-		{"wrong-mode", true, true, true, true,
+		{
+			"wrong-mode", true, true, true, true,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         "wrong-mode",
@@ -285,7 +286,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(),
 		},
-		{"username-from-env", true, true, false, false,
+		{
+			"username-from-env", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeArchive,
@@ -299,7 +301,8 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u2", "x", content, map[string]string{}},
 			),
 		},
-		{"post", true, true, false, false,
+		{
+			"post", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Method:       h.MethodPost,
@@ -315,7 +318,8 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
 			),
 		},
-		{"archive", true, true, false, false,
+		{
+			"archive", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeArchive,
@@ -330,7 +334,8 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
 			),
 		},
-		{"archive_with_os_tmpl", true, true, false, false,
+		{
+			"archive_with_os_tmpl", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeArchive,
@@ -345,7 +350,8 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/linux/amd64/a.tar", "u1", "x", content, map[string]string{}},
 			),
 		},
-		{"archive_with_ids", true, true, false, false,
+		{
+			"archive_with_ids", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeArchive,
@@ -361,7 +367,8 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
 			),
 		},
-		{"binary", true, true, false, false,
+		{
+			"binary", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -373,7 +380,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
-		{"binary_with_os_tmpl", true, true, false, false,
+		{
+			"binary_with_os_tmpl", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -385,7 +393,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/Linux/amd64/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
-		{"binary_with_ids", true, true, false, false,
+		{
+			"binary_with_ids", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -398,7 +407,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
-		{"binary-add-ending-bar", true, true, false, false,
+		{
+			"binary-add-ending-bar", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -410,7 +420,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
-		{"archive-with-checksum-and-signature", true, true, false, false,
+		{
+			"archive-with-checksum-and-signature", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeArchive,
@@ -429,7 +440,8 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.sig", "u3", "x", content, map[string]string{}},
 			),
 		},
-		{"bad-template", true, true, true, true,
+		{
+			"bad-template", true, true, true, true,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -443,7 +455,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(),
 		},
-		{"failed-request", true, true, true, true,
+		{
+			"failed-request", true, true, true, true,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -457,7 +470,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(),
 		},
-		{"broken-cert", false, true, false, true,
+		{
+			"broken-cert", false, true, false, true,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -471,7 +485,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(),
 		},
-		{"skip-publishing", true, true, true, true,
+		{
+			"skip-publishing", true, true, true, true,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				c := *ctx
 				c.SkipPublish = true
@@ -479,7 +494,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(),
 		},
-		{"checksumheader", true, true, false, false,
+		{
+			"checksumheader", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:           ModeBinary,
@@ -492,7 +508,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"-x-sha256": "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269"}}),
 		},
-		{"custom-headers", true, true, false, false,
+		{
+			"custom-headers", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:     ModeBinary,
@@ -507,7 +524,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"x-custom-header-name": "custom-header-value"}}),
 		},
-		{"custom-headers-with-template", true, true, false, false,
+		{
+			"custom-headers-with-template", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:     ModeBinary,
@@ -522,7 +540,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"x-project-name": "blah"}}),
 		},
-		{"invalid-template-in-custom-headers", true, true, true, true,
+		{
+			"invalid-template-in-custom-headers", true, true, true, true,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:     ModeBinary,
@@ -572,7 +591,6 @@ func TestUpload(t *testing.T) {
 			})
 		}
 	}
-
 }
 
 func cert(srv *httptest.Server) string {

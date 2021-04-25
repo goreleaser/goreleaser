@@ -10,8 +10,7 @@ import (
 )
 
 // Pipe that writes the effective config file to dist.
-type Pipe struct {
-}
+type Pipe struct{}
 
 func (Pipe) String() string {
 	return "writing effective config file"
@@ -19,11 +18,11 @@ func (Pipe) String() string {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) (err error) {
-	var path = filepath.Join(ctx.Config.Dist, "config.yaml")
+	path := filepath.Join(ctx.Config.Dist, "config.yaml")
 	bts, err := yaml.Marshal(ctx.Config)
 	if err != nil {
 		return err
 	}
 	log.WithField("config", path).Info("writing")
-	return os.WriteFile(path, bts, 0644) //nolint: gosec
+	return os.WriteFile(path, bts, 0o644) //nolint: gosec
 }

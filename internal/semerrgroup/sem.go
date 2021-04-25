@@ -89,7 +89,7 @@ type skipAwareGroup struct {
 // Go execs runs `fn` and saves the result if no error has been encountered.
 func (s *skipAwareGroup) Go(fn func() error) {
 	s.g.Go(func() error {
-		var err = fn()
+		err := fn()
 		// if the err is a skip, set it for later, but return nil for now so the
 		// the group proceeds.
 		if pipe.IsSkip(err) {

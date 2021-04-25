@@ -9,7 +9,7 @@ import (
 
 func TestUnmarshalHomebrewDependency(t *testing.T) {
 	t.Run("string arr", func(t *testing.T) {
-		var conf = `
+		conf := `
 brews:
 - name: foo
   dependencies:
@@ -30,7 +30,7 @@ brews:
 	})
 
 	t.Run("mixed", func(t *testing.T) {
-		var conf = `
+		conf := `
 brews:
 - name: foo
   dependencies:
@@ -56,7 +56,7 @@ brews:
 	})
 
 	t.Run("mixed", func(t *testing.T) {
-		var conf = `
+		conf := `
 brews:
 - name: foo
   dependencies:

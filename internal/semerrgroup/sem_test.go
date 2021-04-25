@@ -11,7 +11,7 @@ import (
 )
 
 func TestSemaphore(t *testing.T) {
-	var g = New(4)
+	g := New(4)
 	var lock sync.Mutex
 	var counter int
 	for i := 0; i < 10; i++ {
@@ -28,9 +28,9 @@ func TestSemaphore(t *testing.T) {
 }
 
 func TestSemaphoreOrder(t *testing.T) {
-	var num = 10
-	var g = New(1)
-	var output = []int{}
+	num := 10
+	g := New(1)
+	output := []int{}
 	for i := 0; i < num; i++ {
 		i := i
 		g.Go(func() error {
@@ -43,8 +43,8 @@ func TestSemaphoreOrder(t *testing.T) {
 }
 
 func TestSemaphoreOrderError(t *testing.T) {
-	var g = New(1)
-	var output = []int{}
+	g := New(1)
+	output := []int{}
 	for i := 0; i < 10; i++ {
 		i := i
 		g.Go(func() error {
@@ -57,7 +57,7 @@ func TestSemaphoreOrderError(t *testing.T) {
 }
 
 func TestSemaphoreSkipAware(t *testing.T) {
-	var g = NewSkipAware(New(1))
+	g := NewSkipAware(New(1))
 	var lock sync.Mutex
 	var counter int
 	for i := 0; i < 10; i++ {
@@ -74,7 +74,7 @@ func TestSemaphoreSkipAware(t *testing.T) {
 }
 
 func TestSemaphoreSkipAndRealError(t *testing.T) {
-	var g = NewSkipAware(New(10))
+	g := NewSkipAware(New(10))
 	for i := 0; i < 100; i++ {
 		g.Go(func() error {
 			time.Sleep(10 * time.Millisecond)

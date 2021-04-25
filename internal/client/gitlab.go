@@ -34,7 +34,7 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 			InsecureSkipVerify: ctx.Config.GitLabURLs.SkipTLSVerify,
 		},
 	}
-	var options = []gitlab.ClientOptionFunc{
+	options := []gitlab.ClientOptionFunc{
 		gitlab.WithHTTPClient(&http.Client{
 			Transport: transport,
 		}),
@@ -52,7 +52,6 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 // CloseMilestone closes a given milestone.
 func (c *gitlabClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
 	milestone, err := c.getMilestoneByTitle(repo, title)
-
 	if err != nil {
 		return err
 	}
@@ -287,7 +286,6 @@ func (c *gitlabClient) Upload(
 		file.Name(),
 		nil,
 	)
-
 	if err != nil {
 		return err
 	}
@@ -308,7 +306,6 @@ func (c *gitlabClient) Upload(
 			Name: &name,
 			URL:  &linkURL,
 		})
-
 	if err != nil {
 		return RetriableError{err}
 	}
@@ -360,7 +357,6 @@ func (c *gitlabClient) getMilestoneByTitle(repo Repo, title string) (*gitlab.Mil
 
 	for {
 		milestones, resp, err := c.client.Milestones.ListMilestones(repo.String(), opts)
-
 		if err != nil {
 			return nil, err
 		}

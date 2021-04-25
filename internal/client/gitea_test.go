@@ -162,7 +162,6 @@ func (s *GetExistingReleaseSuite) TestReleaseExists() {
 	require.NotNil(t, result)
 	require.Equal(t, *result, release)
 	require.NoError(t, err)
-
 }
 
 func TestGetExistingReleaseSuite(t *testing.T) {
@@ -409,7 +408,7 @@ func TestGiteaUploadSuite(t *testing.T) {
 }
 
 func TestGiteaReleaseURLTemplate(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API:      "https://gitea.com/api/v1",
 			Download: "https://gitea.com",

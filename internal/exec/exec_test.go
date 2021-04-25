@@ -29,7 +29,7 @@ func TestExecute(t *testing.T) {
 
 	// Preload artifacts
 	ctx.Artifacts = artifact.New()
-	var folder = t.TempDir()
+	folder := t.TempDir()
 	for _, a := range []struct {
 		id  string
 		ext string
@@ -43,8 +43,8 @@ func TestExecute(t *testing.T) {
 		{"checksum", "sum", artifact.Checksum},
 		{"signature", "sig", artifact.Signature},
 	} {
-		var file = filepath.Join(folder, "a."+a.ext)
-		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0644))
+		file := filepath.Join(folder, "a."+a.ext)
+		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "a." + a.ext,
 			Goos:   "linux",

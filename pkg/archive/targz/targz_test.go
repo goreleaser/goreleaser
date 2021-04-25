@@ -12,7 +12,7 @@ import (
 )
 
 func TestTarGzFile(t *testing.T) {
-	var tmp = t.TempDir()
+	tmp := t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.tar.gz"))
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
@@ -55,7 +55,7 @@ func TestTarGzFile(t *testing.T) {
 		paths = append(paths, next.Name)
 		t.Logf("%s: %v", next.Name, next.FileInfo().Mode())
 		if next.Name == "sub1/executable" {
-			var ex = next.FileInfo().Mode() | 0111
+			ex := next.FileInfo().Mode() | 0o111
 			require.Equal(t, next.FileInfo().Mode().String(), ex.String())
 		}
 	}

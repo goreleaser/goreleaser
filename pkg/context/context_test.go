@@ -12,7 +12,7 @@ import (
 func TestNew(t *testing.T) {
 	require.NoError(t, os.Setenv("FOO", "NOT BAR"))
 	require.NoError(t, os.Setenv("BAR", "1"))
-	var ctx = New(config.Project{
+	ctx := New(config.Project{
 		Env: []string{
 			"FOO=BAR",
 		},

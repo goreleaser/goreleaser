@@ -40,7 +40,7 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 		return bucketURL, nil
 	}
 
-	var query = url.Values{}
+	query := url.Values{}
 	if conf.Endpoint != "" {
 		query.Add("endpoint", conf.Endpoint)
 		query.Add("s3ForcePathStyle", "true")
@@ -73,7 +73,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		return err
 	}
 
-	var filter = artifact.Or(
+	filter := artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
 		artifact.ByType(artifact.UploadableSourceArchive),
@@ -85,19 +85,19 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
 	}
 
-	var up = newUploader(ctx)
+	up := newUploader(ctx)
 	if err := up.Open(ctx, bucketURL); err != nil {
 		return handleError(err, bucketURL)
 	}
 	defer up.Close()
 
-	var g = semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
 		artifact := artifact
 		g.Go(func() error {
 			// TODO: replace this with ?prefix=folder on the bucket url
-			var dataFile = artifact.Path
-			var uploadFile = path.Join(folder, artifact.Name)
+			dataFile := artifact.Path
+			uploadFile := path.Join(folder, artifact.Name)
 
 			err := uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
 
@@ -113,7 +113,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		name := name
 		fullpath := fullpath
 		g.Go(func() error {
-			var uploadFile = path.Join(folder, name)
+			uploadFile := path.Join(folder, name)
 
 			err := uploadData(ctx, conf, up, fullpath, uploadFile, bucketURL)
 
@@ -215,6 +215,7 @@ func (u *productionUploader) Close() error {
 	}
 	return u.bucket.Close()
 }
+
 func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
 	log.WithFields(log.Fields{
 		"bucket": bucket,
