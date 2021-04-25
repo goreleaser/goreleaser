@@ -17,6 +17,7 @@ func TestTarGzFile(t *testing.T) {
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
 	archive := New(f)
+	defer archive.Close() // nolint: errcheck
 
 	require.Error(t, archive.Add("nope.txt", "../testdata/nope.txt"))
 	require.NoError(t, archive.Add("foo.txt", "../testdata/foo.txt"))

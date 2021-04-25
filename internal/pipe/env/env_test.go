@@ -124,6 +124,7 @@ func TestEmptyGithubEnvFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
 	f, err := ioutil.TempFile(t.TempDir(), "token")
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	require.NoError(t, os.Chmod(f.Name(), 0377))
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -139,6 +140,7 @@ func TestEmptyGitlabEnvFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITLAB_TOKEN"))
 	f, err := ioutil.TempFile(t.TempDir(), "token")
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	require.NoError(t, os.Chmod(f.Name(), 0377))
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -154,6 +156,7 @@ func TestEmptyGiteaEnvFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITEA_TOKEN"))
 	f, err := ioutil.TempFile(t.TempDir(), "token")
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	require.NoError(t, os.Chmod(f.Name(), 0377))
 	var ctx = &context.Context{
 		Config: config.Project{
@@ -200,6 +203,7 @@ func TestLoadEnv(t *testing.T) {
 		f, err := ioutil.TempFile(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123")
+		require.NoError(t, f.Close())
 		v, err := loadEnv(env, f.Name())
 		require.NoError(t, err)
 		require.Equal(t, "123", v)
@@ -210,6 +214,7 @@ func TestLoadEnv(t *testing.T) {
 		f, err := ioutil.TempFile(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123\n")
+		require.NoError(t, f.Close())
 		v, err := loadEnv(env, f.Name())
 		require.NoError(t, err)
 		require.Equal(t, "123", v)
@@ -220,6 +225,7 @@ func TestLoadEnv(t *testing.T) {
 		f, err := ioutil.TempFile(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123")
+		require.NoError(t, f.Close())
 		err = os.Chmod(f.Name(), 0377)
 		require.NoError(t, err)
 		v, err := loadEnv(env, f.Name())

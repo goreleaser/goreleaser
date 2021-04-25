@@ -29,8 +29,9 @@ func TestPopulatedDistExists(t *testing.T) {
 	var folder = t.TempDir()
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
-	_, err := os.Create(filepath.Join(dist, "mybin"))
+	f, err := os.Create(filepath.Join(dist, "mybin"))
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	var ctx = &context.Context{
 		Config: config.Project{
 			Dist: dist,

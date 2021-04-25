@@ -217,8 +217,10 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, tarfile.Close())
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
 	require.NoError(t, err)
+	require.NoError(t, debfile.Close())
 
 	ctx := context.New(config.Project{
 		ProjectName: "goreleaser",
@@ -318,6 +320,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, tarfile.Close())
 
 	ctx := context.New(config.Project{
 		ProjectName: "goreleaser",

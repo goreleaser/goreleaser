@@ -852,15 +852,19 @@ func TestRunPipe(t *testing.T) {
 			dist := filepath.Join(folder, "dist")
 			require.NoError(t, os.Mkdir(dist, 0o755))
 			require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
-			_, err := os.Create(filepath.Join(dist, "mybin", "mybin"))
+			f, err := os.Create(filepath.Join(dist, "mybin", "mybin"))
 			require.NoError(t, err)
-			_, err = os.Create(filepath.Join(dist, "mybin", "anotherbin"))
+			require.NoError(t, f.Close())
+			f, err = os.Create(filepath.Join(dist, "mybin", "anotherbin"))
 			require.NoError(t, err)
-			_, err = os.Create(filepath.Join(dist, "mynfpm.apk"))
+			require.NoError(t, f.Close())
+			f, err = os.Create(filepath.Join(dist, "mynfpm.apk"))
 			require.NoError(t, err)
+			require.NoError(t, f.Close())
 			for _, arch := range []string{"amd64", "386", "arm64"} {
-				_, err = os.Create(filepath.Join(dist, fmt.Sprintf("mybin_%s.apk", arch)))
+				f, err = os.Create(filepath.Join(dist, fmt.Sprintf("mybin_%s.apk", arch)))
 				require.NoError(t, err)
+				require.NoError(t, f.Close())
 			}
 
 			ctx := context.New(config.Project{
@@ -1177,14 +1181,11 @@ func Test_processImageTemplates(t *testing.T) {
 }
 
 func TestLinkFile(t *testing.T) {
-	src, err := ioutil.TempFile(t.TempDir(), "src")
+	dir := t.TempDir()
+	src, err := ioutil.TempFile(dir, "src")
 	require.NoError(t, err)
 	require.NoError(t, src.Close())
-	dst := filepath.Join(filepath.Dir(src.Name()), "dst")
-	t.Cleanup(func() {
-		os.Remove(src.Name())
-		os.Remove(dst)
-	})
+	dst := filepath.Join(dir, "dst")
 	fmt.Println("src:", src.Name())
 	fmt.Println("dst:", dst)
 	require.NoError(t, ioutil.WriteFile(src.Name(), []byte("foo"), 0o644))

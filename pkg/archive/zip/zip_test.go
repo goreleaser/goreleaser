@@ -2,7 +2,6 @@ package zip
 
 import (
 	"archive/zip"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,9 +13,9 @@ func TestZipFile(t *testing.T) {
 	var tmp = t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.zip"))
 	require.NoError(t, err)
-	fmt.Println(f.Name())
 	defer f.Close() // nolint: errcheck
 	archive := New(f)
+	defer archive.Close() // nolint: errcheck
 
 	require.Error(t, archive.Add("nope.txt", "../testdata/nope.txt"))
 	require.NoError(t, archive.Add("foo.txt", "../testdata/foo.txt"))
@@ -30,7 +29,6 @@ func TestZipFile(t *testing.T) {
 	require.Error(t, archive.Add("tar.go", "tar.go"))
 	require.NoError(t, f.Close())
 
-	t.Log(f.Name())
 	f, err = os.Open(f.Name())
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
