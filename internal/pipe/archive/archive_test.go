@@ -27,8 +27,9 @@ func createFakeBinary(t *testing.T, dist, arch, bin string) {
 	t.Helper()
 	var path = filepath.Join(dist, arch, bin)
 	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0755))
-	_, err := os.Create(path)
+	f, err := os.Create(path)
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 }
 
 func TestRunPipe(t *testing.T) {
@@ -42,12 +43,14 @@ func TestRunPipe(t *testing.T) {
 			}
 			createFakeBinary(t, dist, "windowsamd64", "bin/mybin.exe")
 			for _, tt := range []string{"darwin", "linux", "windows"} {
-				_, err := os.Create(filepath.Join(folder, fmt.Sprintf("README.%s.md", tt)))
+				f, err := os.Create(filepath.Join(folder, fmt.Sprintf("README.%s.md", tt)))
 				require.NoError(t, err)
+				require.NoError(t, f.Close())
 			}
 			require.NoError(t, os.MkdirAll(filepath.Join(folder, "foo", "bar", "foobar"), 0755))
-			_, err := os.Create(filepath.Join(filepath.Join(folder, "foo", "bar", "foobar", "blah.txt")))
+			f, err := os.Create(filepath.Join(filepath.Join(folder, "foo", "bar", "foobar", "blah.txt")))
 			require.NoError(t, err)
+			require.NoError(t, f.Close())
 			var ctx = context.New(
 				config.Project{
 					Dist:        dist,
@@ -306,12 +309,15 @@ func TestRunPipeBinary(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "windowsamd64"), 0755))
-	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
-	_, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
+	require.NoError(t, f.Close())
+	f, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
 	require.NoError(t, err)
-	_, err = os.Create(filepath.Join(folder, "README.md"))
+	require.NoError(t, f.Close())
+	f, err = os.Create(filepath.Join(folder, "README.md"))
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
@@ -393,8 +399,9 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
-	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
@@ -430,8 +437,9 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
-	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
@@ -464,8 +472,9 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
-	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
@@ -501,8 +510,9 @@ func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
-	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
@@ -536,10 +546,12 @@ func TestRunPipeWrap(t *testing.T) {
 	var dist = filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
-	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
-	_, err = os.Create(filepath.Join(folder, "README.md"))
+	require.NoError(t, f.Close())
+	f, err = os.Create(filepath.Join(folder, "README.md"))
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	var ctx = context.New(
 		config.Project{
 			Dist: dist,
@@ -578,7 +590,7 @@ func TestRunPipeWrap(t *testing.T) {
 	require.Equal(t, "foo_macOS", archives[0].ExtraOr("WrappedIn", ""))
 
 	// Check archive contents
-	f, err := os.Open(filepath.Join(dist, "foo.tar.gz"))
+	f, err = os.Open(filepath.Join(dist, "foo.tar.gz"))
 	require.NoError(t, err)
 	defer func() { require.NoError(t, f.Close()) }()
 	gr, err := gzip.NewReader(f)
@@ -669,12 +681,15 @@ func TestBinaryOverride(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "windowsamd64"), 0755))
-	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
-	_, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
+	require.NoError(t, f.Close())
+	f, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
 	require.NoError(t, err)
-	_, err = os.Create(filepath.Join(folder, "README.md"))
+	require.NoError(t, f.Close())
+	f, err = os.Create(filepath.Join(folder, "README.md"))
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	for _, format := range []string{"tar.gz", "zip"} {
 		t.Run("Archive format "+format, func(t *testing.T) {
 			var ctx = context.New(
@@ -746,10 +761,12 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "windowsamd64"), 0755))
-	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
-	_, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
+	require.NoError(t, f.Close())
+	f, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	var ctx = context.New(
 		config.Project{
 			Dist:        dist,
@@ -802,14 +819,18 @@ func TestDuplicateFilesInsideArchive(t *testing.T) {
 
 	f, err := ioutil.TempFile(folder, "")
 	require.NoError(t, err)
-	defer f.Close()
+	t.Cleanup(func() {
+		require.NoError(t, f.Close())
+	})
 
 	ff, err := ioutil.TempFile(folder, "")
 	require.NoError(t, err)
-	defer ff.Close()
+	require.NoError(t, ff.Close())
 
 	a := NewEnhancedArchive(archive.New(f), "")
-	defer a.Close()
+	t.Cleanup(func() {
+		require.NoError(t, a.Close())
+	})
 
 	require.NoError(t, a.Add("foo", ff.Name()))
 	require.EqualError(t, a.Add("foo", ff.Name()), "file foo already exists in the archive")

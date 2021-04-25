@@ -237,8 +237,9 @@ func TestRunPipe(t *testing.T) {
 				},
 			})
 
-			_, err := os.Create(path)
+			f, err := os.Create(path)
 			require.NoError(t, err)
+			require.NoError(t, f.Close())
 			client := &DummyClient{}
 			var distFile = filepath.Join(folder, name+".rb")
 
@@ -301,8 +302,9 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		},
 	})
 
-	_, err := os.Create(path)
+	f, err := os.Create(path)
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	client := &DummyClient{}
 	var distFile = filepath.Join(folder, "foo_is_bar.rb")
 
@@ -385,8 +387,9 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 		},
 	})
 
-	_, err := os.Create(path)
+	f, err := os.Create(path)
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 
 	var cli = &DummyClient{}
 	require.EqualError(t, publishAll(ctx, cli), `brew.skip_upload is set`)
@@ -503,8 +506,9 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 					"Format": "tar.gz",
 				},
 			})
-			_, err := os.Create(path)
+			f, err := os.Create(path)
 			require.NoError(t, err)
+			require.NoError(t, f.Close())
 		}
 
 		client := &DummyClient{}
@@ -562,7 +566,9 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 	ctx.TokenType = context.TokenTypeGitHub
 	f, err := ioutil.TempFile(t.TempDir(), "")
 	require.NoError(t, err)
-	t.Cleanup(func() { f.Close() })
+	t.Cleanup(func() {
+		require.NoError(t, f.Close())
+	})
 
 	tests := []struct {
 		expectedError error
@@ -742,8 +748,9 @@ func TestRunPipeNoUpload(t *testing.T) {
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
-	_, err := os.Create(path)
+	f, err := os.Create(path)
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
 		Path:   path,
@@ -793,8 +800,9 @@ func TestRunEmptyTokenType(t *testing.T) {
 	})
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
-	_, err := os.Create(path)
+	f, err := os.Create(path)
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
 		Path:   path,
@@ -828,8 +836,9 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 	ctx.TokenType = context.TokenTypeGitea
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	var path = filepath.Join(folder, "whatever.tar.gz")
-	_, err := os.Create(path)
+	f, err := os.Create(path)
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
 		Path:   path,

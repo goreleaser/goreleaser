@@ -30,6 +30,9 @@ func TestAssetOpenDefault(t *testing.T) {
 	if err != nil {
 		t.Fatalf("can not open asset: %v", err)
 	}
+	t.Cleanup(func() {
+		require.NoError(t, a.ReadCloser.Close())
+	})
 	bs, err := ioutil.ReadAll(a.ReadCloser)
 	if err != nil {
 		t.Fatalf("can not read asset: %v", err)

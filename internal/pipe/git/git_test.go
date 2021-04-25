@@ -94,6 +94,7 @@ func TestDirty(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	dummy, err := os.Create(filepath.Join(folder, "dummy"))
 	require.NoError(t, err)
+	require.NoError(t, dummy.Close())
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "commit2")
 	testlib.GitTag(t, "v0.0.1")

@@ -16,14 +16,13 @@ func TestGzFile(t *testing.T) {
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
 	archive := New(f)
+	defer archive.Close() // nolint: errcheck
 
 	require.NoError(t, archive.Add("sub1/sub2/subfoo.txt", "../testdata/sub1/sub2/subfoo.txt"))
 	require.EqualError(t, archive.Add("foo.txt", "../testdata/foo.txt"), "gzip: failed to add foo.txt, only one file can be archived in gz format")
 	require.NoError(t, archive.Close())
-
 	require.NoError(t, f.Close())
 
-	t.Log(f.Name())
 	f, err = os.Open(f.Name())
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
