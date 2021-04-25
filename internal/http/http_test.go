@@ -27,9 +27,6 @@ func TestAssetOpenDefault(t *testing.T) {
 	a, err := assetOpenDefault("blah", &artifact.Artifact{
 		Path: tf,
 	})
-	t.Cleanup(func() {
-		require.NoError(t, a.ReadCloser.Close())
-	})
 	if err != nil {
 		t.Fatalf("can not open asset: %v", err)
 	}
