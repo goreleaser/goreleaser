@@ -60,7 +60,7 @@ func TestRunPipeFail(t *testing.T) {
 }
 
 func TestRunWithEnv(t *testing.T) {
-	var f = filepath.Join(t.TempDir(), "testfile")
+	f := filepath.Join(t.TempDir(), "testfile")
 	require.NoError(t, Pipe{}.Run(context.New(
 		config.Project{
 			Env: []string{

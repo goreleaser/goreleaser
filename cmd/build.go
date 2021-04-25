@@ -38,14 +38,14 @@ func newBuildCmd() *buildCmd {
 	root := &buildCmd{}
 	// nolint: dupl
 	cmd := &cobra.Command{
-		Use:           "build",
-		Aliases:       []string{"b"},
-		Short:         "Builds the current project",
+		Use:     "build",
+		Aliases: []string{"b"},
+		Short:   "Builds the current project",
 		Long: `The build command allows you to execute only a subset of the pipeline, i.e. only the build step with its dependencies.
 
 It allows you to quickly check if your GoReleaser build configurations are doing what you expect.
 
-Finally, it allows you to generate a local build for your current machine only using the `+ "`--single-target`"+` option, and specific build IDs using the `+"`--id`"+` option.
+Finally, it allows you to generate a local build for your current machine only using the ` + "`--single-target`" + ` option, and specific build IDs using the ` + "`--id`" + ` option.
 `,
 		SilenceUsage:  true,
 		SilenceErrors: true,

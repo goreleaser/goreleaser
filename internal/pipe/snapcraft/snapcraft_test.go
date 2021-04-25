@@ -31,7 +31,7 @@ func TestRunPipeMissingInfo(t *testing.T) {
 		pipe.Skip("no summary nor description were provided"): {},
 	} {
 		t.Run(fmt.Sprintf("testing if %v happens", eerr), func(t *testing.T) {
-			var ctx = &context.Context{
+			ctx := &context.Context{
 				Config: config.Project{
 					Snapcrafts: []config.Snapcraft{
 						snap,
@@ -44,10 +44,10 @@ func TestRunPipeMissingInfo(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	var ctx = context.New(config.Project{
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -84,10 +84,10 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	var ctx = context.New(config.Project{
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := context.New(config.Project{
 		ProjectName: "foo",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -106,10 +106,10 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 }
 
 func TestRunPipeWithName(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	var ctx = context.New(config.Project{
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -140,10 +140,10 @@ func TestRunPipeWithName(t *testing.T) {
 }
 
 func TestRunPipeMetadata(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	var ctx = context.New(config.Project{
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -193,12 +193,12 @@ func TestRunPipeMetadata(t *testing.T) {
 }
 
 func TestNoSnapcraftInPath(t *testing.T) {
-	var path = os.Getenv("PATH")
+	path := os.Getenv("PATH")
 	defer func() {
 		require.NoError(t, os.Setenv("PATH", path))
 	}()
 	require.NoError(t, os.Setenv("PATH", ""))
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Snapcrafts: []config.Snapcraft{
 			{
 				Summary:     "dummy",
@@ -210,10 +210,10 @@ func TestNoSnapcraftInPath(t *testing.T) {
 }
 
 func TestRunNoArguments(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	var ctx = context.New(config.Project{
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -244,10 +244,10 @@ func TestRunNoArguments(t *testing.T) {
 }
 
 func TestCompleter(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	var ctx = context.New(config.Project{
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -281,10 +281,10 @@ func TestCompleter(t *testing.T) {
 }
 
 func TestCommand(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	var ctx = context.New(config.Project{
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -316,10 +316,10 @@ func TestCommand(t *testing.T) {
 }
 
 func TestExtraFile(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	var ctx = context.New(config.Project{
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := context.New(config.Project{
 		ProjectName: "testprojectname",
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
@@ -331,7 +331,7 @@ func TestExtraFile(t *testing.T) {
 					{
 						Source:      "testdata/extra-file.txt",
 						Destination: "a/b/c/extra-file.txt",
-						Mode:        0755,
+						Mode:        0o755,
 					},
 					{
 						Source: "testdata/extra-file-2.txt",
@@ -351,18 +351,18 @@ func TestExtraFile(t *testing.T) {
 	destFile, err := os.Stat(filepath.Join(dist, "foo_amd64", "prime", "a", "b", "c", "extra-file.txt"))
 	require.NoError(t, err)
 	require.Equal(t, inode(srcFile), inode(destFile))
-	require.Equal(t, destFile.Mode(), os.FileMode(0755))
+	require.Equal(t, destFile.Mode(), os.FileMode(0o755))
 
 	srcFile, err = os.Stat("testdata/extra-file-2.txt")
 	require.NoError(t, err)
 	destFileWithDefaults, err := os.Stat(filepath.Join(dist, "foo_amd64", "prime", "testdata", "extra-file-2.txt"))
 	require.NoError(t, err)
-	require.Equal(t, destFileWithDefaults.Mode(), os.FileMode(0644))
+	require.Equal(t, destFileWithDefaults.Mode(), os.FileMode(0o644))
 	require.Equal(t, inode(srcFile), inode(destFileWithDefaults))
 }
 
 func TestDefault(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Builds: []config.Build{
 			{
 				ID: "foo",
@@ -378,7 +378,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestPublish(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   "nope.snap",
@@ -391,7 +391,7 @@ func TestPublish(t *testing.T) {
 }
 
 func TestPublishSkip(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.SkipPublish = true
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
@@ -404,7 +404,7 @@ func TestPublishSkip(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Snapcrafts: []config.Snapcraft{
 			{
 				NameTemplate: "foo",
@@ -419,9 +419,9 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 	t.Helper()
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386", "arm6"} {
-			var folder = goos + goarch
-			require.NoError(t, os.MkdirAll(filepath.Join(dist, folder), 0755))
-			var binPath = filepath.Join(dist, folder, name)
+			folder := goos + goarch
+			require.NoError(t, os.MkdirAll(filepath.Join(dist, folder), 0o755))
+			binPath := filepath.Join(dist, folder, name)
 			f, err := os.Create(binPath)
 			require.NoError(t, err)
 			require.NoError(t, f.Close())
@@ -440,7 +440,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 }
 
 func TestSeveralSnapssWithTheSameID(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Snapcrafts: []config.Snapcraft{
 				{

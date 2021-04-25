@@ -23,7 +23,7 @@ func TestNoBlob(t *testing.T) {
 
 func TestDefaultsNoConfig(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Blobs: []config.Blob{
 			{},
 		},
@@ -33,7 +33,7 @@ func TestDefaultsNoConfig(t *testing.T) {
 
 func TestDefaultsNoBucket(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Blobs: []config.Blob{
 			{
 				Provider: "azblob",
@@ -45,7 +45,7 @@ func TestDefaultsNoBucket(t *testing.T) {
 
 func TestDefaultsNoProvider(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Blobs: []config.Blob{
 			{
 				Bucket: "goreleaser-bucket",
@@ -56,7 +56,7 @@ func TestDefaultsNoProvider(t *testing.T) {
 }
 
 func TestDefaults(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Blobs: []config.Blob{
 			{
 				Bucket:   "foo",
@@ -86,7 +86,7 @@ func TestDefaults(t *testing.T) {
 }
 
 func TestDefaultsWithProvider(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Blobs: []config.Blob{
 			{
 				Bucket:   "foo",
@@ -110,7 +110,7 @@ func TestPipe_Publish(t *testing.T) {
 }
 
 func TestPipe_PublishExtraFiles(t *testing.T) {
-	var extra = []config.ExtraFile{
+	extra := []config.ExtraFile{
 		{
 			Glob: "./testdata/file.golden",
 		},
@@ -122,14 +122,14 @@ func pipePublish(t *testing.T, extra []config.ExtraFile) {
 	t.Helper()
 	gcloudCredentials, _ := filepath.Abs("./testdata/credentials.json")
 
-	var folder = t.TempDir()
+	folder := t.TempDir()
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
-	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
-	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0744))
+	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
+	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
 
 	// Azure Blob Context
-	var azblobctx = context.New(config.Project{
+	azblobctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -154,7 +154,7 @@ func pipePublish(t *testing.T, extra []config.ExtraFile) {
 	})
 
 	// Google Cloud Storage Context
-	var gsctx = context.New(config.Project{
+	gsctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{
@@ -180,7 +180,7 @@ func pipePublish(t *testing.T, extra []config.ExtraFile) {
 	})
 
 	// AWS S3 Context
-	var s3ctx = context.New(config.Project{
+	s3ctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
 		Blobs: []config.Blob{

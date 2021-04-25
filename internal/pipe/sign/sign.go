@@ -28,7 +28,7 @@ func (Pipe) String() string {
 
 // Default sets the Pipes defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	var ids = ids.New("signs")
+	ids := ids.New("signs")
 	for i := range ctx.Config.Signs {
 		cfg := &ctx.Config.Signs[i]
 		if cfg.Cmd == "" {
@@ -57,7 +57,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		return pipe.ErrSkipSignEnabled
 	}
 
-	var g = semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.New(ctx.Parallelism)
 	for i := range ctx.Config.Signs {
 		cfg := ctx.Config.Signs[i]
 		g.Go(func() error {
@@ -114,7 +114,7 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 	// nolint:prealloc
 	var args []string
 	for _, a := range cfg.Args {
-		var arg = expand(a, env)
+		arg := expand(a, env)
 		arg, err := tmpl.New(ctx).WithEnv(env).Apply(arg)
 		if err != nil {
 			return nil, fmt.Errorf("sign failed: %s: invalid template: %w", a, err)

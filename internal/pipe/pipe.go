@@ -24,7 +24,7 @@ var ErrSkipValidateEnabled = Skip("validation is disabled")
 
 // ErrSkipDisabledPipe happens when a pipe is skipped because it is not configured.
 var ErrSkipDisabledPipe = ErrSkip{
-	reason: "pipe not configured/disabled",
+	reason:   "pipe not configured/disabled",
 	expected: true,
 }
 

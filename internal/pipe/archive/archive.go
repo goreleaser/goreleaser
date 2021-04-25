@@ -46,12 +46,12 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	var ids = ids.New("archives")
+	ids := ids.New("archives")
 	if len(ctx.Config.Archives) == 0 {
 		ctx.Config.Archives = append(ctx.Config.Archives, config.Archive{})
 	}
 	for i := range ctx.Config.Archives {
-		var archive = &ctx.Config.Archives[i]
+		archive := &ctx.Config.Archives[i]
 		if archive.Format == "" {
 			archive.Format = "tar.gz"
 		}
@@ -88,10 +88,10 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	var g = semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.New(ctx.Parallelism)
 	for i, archive := range ctx.Config.Archives {
 		archive := archive
-		var artifacts = ctx.Artifacts.Filter(
+		artifacts := ctx.Artifacts.Filter(
 			artifact.And(
 				artifact.ByType(artifact.Binary),
 				artifact.ByIDs(archive.Builds...),
@@ -115,7 +115,7 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func checkArtifacts(artifacts map[string][]*artifact.Artifact) error {
-	var lens = map[int]bool{}
+	lens := map[int]bool{}
 	for _, v := range artifacts {
 		lens[len(v)] = true
 	}
@@ -126,7 +126,7 @@ func checkArtifacts(artifacts map[string][]*artifact.Artifact) error {
 }
 
 func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {
-	var format = packageFormat(arch, binaries[0].Goos)
+	format := packageFormat(arch, binaries[0].Goos)
 	folder, err := tmpl.New(ctx).
 		WithArtifact(binaries[0], arch.Replacements).
 		Apply(arch.NameTemplate)
@@ -135,7 +135,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	}
 	archivePath := filepath.Join(ctx.Config.Dist, folder+"."+format)
 	lock.Lock()
-	if err := os.MkdirAll(filepath.Dir(archivePath), 0755|os.ModeDir); err != nil {
+	if err := os.MkdirAll(filepath.Dir(archivePath), 0o755|os.ModeDir); err != nil {
 		lock.Unlock()
 		return err
 	}
@@ -151,7 +151,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	lock.Unlock()
 	defer archiveFile.Close()
 
-	var log = log.WithField("archive", archivePath)
+	log := log.WithField("archive", archivePath)
 	log.Info("creating")
 
 	template := tmpl.New(ctx).
@@ -161,7 +161,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		return err
 	}
 
-	var a = NewEnhancedArchive(archive.New(archiveFile), wrap)
+	a := NewEnhancedArchive(archive.New(archiveFile), wrap)
 	defer a.Close()
 
 	files, err := findFiles(template, arch)

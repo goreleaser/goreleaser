@@ -15,16 +15,16 @@ import (
 func TestArchive(t *testing.T) {
 	for _, format := range []string{"tar.gz", "tar", "zip"} {
 		t.Run(format, func(t *testing.T) {
-			var tmp = testlib.Mktmp(t)
-			require.NoError(t, os.Mkdir("dist", 0744))
+			tmp := testlib.Mktmp(t)
+			require.NoError(t, os.Mkdir("dist", 0o744))
 
 			testlib.GitInit(t)
-			require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0655))
-			require.NoError(t, os.WriteFile("README.md", []byte("# my dope fake project"), 0655))
+			require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0o655))
+			require.NoError(t, os.WriteFile("README.md", []byte("# my dope fake project"), 0o655))
 			testlib.GitAdd(t)
 			testlib.GitCommit(t, "feat: first")
 
-			var ctx = context.New(config.Project{
+			ctx := context.New(config.Project{
 				ProjectName: "foo",
 				Dist:        "dist",
 				Source: config.Source{
@@ -38,7 +38,7 @@ func TestArchive(t *testing.T) {
 			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, Pipe{}.Run(ctx))
 
-			var artifacts = ctx.Artifacts.List()
+			artifacts := ctx.Artifacts.List()
 			require.Len(t, artifacts, 1)
 			require.Equal(t, artifact.Artifact{
 				Type: artifact.UploadableSourceArchive,
@@ -56,7 +56,7 @@ func TestArchive(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, config.Source{
 		NameTemplate: "{{ .ProjectName }}-{{ .Version }}",
@@ -65,7 +65,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Source: config.Source{
 			Enabled:      true,
 			NameTemplate: "{{ .foo }-asdda",

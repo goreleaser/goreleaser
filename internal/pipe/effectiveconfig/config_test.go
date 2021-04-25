@@ -16,10 +16,10 @@ func TestPipeDescription(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	var folder = testlib.Mktmp(t)
+	folder := testlib.Mktmp(t)
 	dist := filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	var ctx = context.New(
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := context.New(
 		config.Project{
 			Dist: dist,
 		},

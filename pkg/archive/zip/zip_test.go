@@ -10,7 +10,7 @@ import (
 )
 
 func TestZipFile(t *testing.T) {
-	var tmp = t.TempDir()
+	tmp := t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.zip"))
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
@@ -40,12 +40,12 @@ func TestZipFile(t *testing.T) {
 	r, err := zip.NewReader(f, info.Size())
 	require.NoError(t, err)
 
-	var paths = make([]string, len(r.File))
+	paths := make([]string, len(r.File))
 	for i, zf := range r.File {
 		paths[i] = zf.Name
 		t.Logf("%s: %v", zf.Name, zf.Mode())
 		if zf.Name == "sub1/executable" {
-			var ex = zf.Mode() | 0111
+			ex := zf.Mode() | 0o111
 			require.Equal(t, zf.Mode().String(), ex.String())
 		}
 	}

@@ -48,10 +48,10 @@ func TestPipe(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			var folder = t.TempDir()
-			var file = filepath.Join(folder, binary)
-			require.NoError(t, os.WriteFile(file, []byte("some string"), 0644))
-			var ctx = context.New(
+			folder := t.TempDir()
+			file := filepath.Join(folder, binary)
+			require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
+			ctx := context.New(
 				config.Project{
 					Dist:        folder,
 					ProjectName: binary,
@@ -101,12 +101,11 @@ func TestPipe(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestPipeSkipTrue(t *testing.T) {
-	var folder = t.TempDir()
-	var ctx = context.New(
+	folder := t.TempDir()
+	ctx := context.New(
 		config.Project{
 			Dist: folder,
 			Checksum: config.Checksum{
@@ -114,14 +113,14 @@ func TestPipeSkipTrue(t *testing.T) {
 			},
 		},
 	)
-	var err = Pipe{}.Run(ctx)
+	err := Pipe{}.Run(ctx)
 	testlib.AssertSkipped(t, err)
 	require.EqualError(t, err, pipe.ErrSkipDisabledPipe.Error())
 }
 
 func TestPipeFileNotExist(t *testing.T) {
-	var folder = t.TempDir()
-	var ctx = context.New(
+	folder := t.TempDir()
+	ctx := context.New(
 		config.Project{
 			Dist: folder,
 			Checksum: config.Checksum{
@@ -135,7 +134,7 @@ func TestPipeFileNotExist(t *testing.T) {
 		Path: "/nope",
 		Type: artifact.UploadableBinary,
 	})
-	var err = Pipe{}.Run(ctx)
+	err := Pipe{}.Run(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "/nope: no such file or directory")
 }
@@ -152,8 +151,8 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 		"{{.Env.NOPE}}":           `template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`,
 	} {
 		t.Run(template, func(t *testing.T) {
-			var folder = t.TempDir()
-			var ctx = context.New(
+			folder := t.TempDir()
+			ctx := context.New(
 				config.Project{
 					Dist:        folder,
 					ProjectName: "name",
@@ -177,16 +176,16 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 }
 
 func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
-	var folder = t.TempDir()
+	folder := t.TempDir()
 	binFile, err := ioutil.TempFile(folder, "goreleasertest-bin")
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, binFile.Close()) })
 	_, err = binFile.WriteString("fake artifact")
 	require.NoError(t, err)
 
-	var file = filepath.Join(folder, "checksums.txt")
-	require.NoError(t, os.WriteFile(file, []byte("some string"), 0000))
-	var ctx = context.New(
+	file := filepath.Join(folder, "checksums.txt")
+	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o000))
+	ctx := context.New(
 		config.Project{
 			Dist: folder,
 			Checksum: config.Checksum{
@@ -207,13 +206,13 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 }
 
 func TestPipeWhenNoArtifacts(t *testing.T) {
-	var ctx = &context.Context{}
+	ctx := &context.Context{}
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Len(t, ctx.Artifacts.List(), 0)
 }
 
 func TestDefault(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Checksum: config.Checksum{},
 		},
@@ -228,7 +227,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Checksum: config.Checksum{
 				NameTemplate: "checksums.txt",
