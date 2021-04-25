@@ -1,7 +1,6 @@
 package sourcearchive
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -20,8 +19,8 @@ func TestArchive(t *testing.T) {
 			require.NoError(t, os.Mkdir("dist", 0744))
 
 			testlib.GitInit(t)
-			require.NoError(t, ioutil.WriteFile("code.txt", []byte("not really code"), 0655))
-			require.NoError(t, ioutil.WriteFile("README.md", []byte("# my dope fake project"), 0655))
+			require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0655))
+			require.NoError(t, os.WriteFile("README.md", []byte("# my dope fake project"), 0655))
 			testlib.GitAdd(t)
 			testlib.GitCommit(t, "feat: first")
 

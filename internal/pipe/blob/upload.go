@@ -3,8 +3,8 @@ package blob
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/url"
+	"os"
 	"path"
 
 	"github.com/apex/log"
@@ -166,7 +166,7 @@ func newUploader(ctx *context.Context) uploader {
 }
 
 func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return data, fmt.Errorf("failed to open file %s: %w", path, err)
 	}

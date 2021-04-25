@@ -5,7 +5,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	h "net/http"
 	"net/http/httptest"
 	"os"
@@ -22,7 +22,7 @@ import (
 
 func TestAssetOpenDefault(t *testing.T) {
 	var tf = filepath.Join(t.TempDir(), "asset")
-	require.NoError(t, ioutil.WriteFile(tf, []byte("a"), 0765))
+	require.NoError(t, os.WriteFile(tf, []byte("a"), 0765))
 
 	a, err := assetOpenDefault("blah", &artifact.Artifact{
 		Path: tf,
@@ -33,7 +33,7 @@ func TestAssetOpenDefault(t *testing.T) {
 	t.Cleanup(func() {
 		require.NoError(t, a.ReadCloser.Close())
 	})
-	bs, err := ioutil.ReadAll(a.ReadCloser)
+	bs, err := io.ReadAll(a.ReadCloser)
 	if err != nil {
 		t.Fatalf("can not read asset: %v", err)
 	}
@@ -167,7 +167,7 @@ func doCheck(c check, r *h.Request) error {
 	if r.ContentLength != contentLength {
 		return fmt.Errorf("request content-length header value %v unexpected, wanted %v", r.ContentLength, contentLength)
 	}
-	bs, err := ioutil.ReadAll(r.Body)
+	bs, err := io.ReadAll(r.Body)
 	if err != nil {
 		return fmt.Errorf("reading request body: %v", err)
 	}
@@ -197,13 +197,13 @@ func TestUpload(t *testing.T) {
 	var m sync.Mutex
 	mux := h.NewServeMux()
 	mux.Handle("/", h.HandlerFunc(func(w h.ResponseWriter, r *h.Request) {
-		bs, err := ioutil.ReadAll(r.Body)
+		bs, err := io.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(h.StatusInternalServerError)
 			fmt.Fprintf(w, "reading request body: %v", err)
 			return
 		}
-		r.Body = ioutil.NopCloser(bytes.NewReader(bs))
+		r.Body = io.NopCloser(bytes.NewReader(bs))
 		m.Lock()
 		requests = append(requests, r)
 		m.Unlock()
@@ -212,7 +212,7 @@ func TestUpload(t *testing.T) {
 	}))
 	assetOpen = func(k string, a *artifact.Artifact) (*asset, error) {
 		return &asset{
-			ReadCloser: ioutil.NopCloser(bytes.NewReader(content)),
+			ReadCloser: io.NopCloser(bytes.NewReader(content)),
 			Size:       int64(len(content)),
 		}, nil
 	}
@@ -251,7 +251,7 @@ func TestUpload(t *testing.T) {
 		{"sig", artifact.Signature},
 	} {
 		var file = filepath.Join(folder, "a."+a.ext)
-		require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0644))
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "a." + a.ext,
 			Goos:   "linux",

@@ -2,7 +2,7 @@ package release
 
 import (
 	"flag"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -32,9 +32,9 @@ func TestDescribeBody(t *testing.T) {
 
 	var golden = "testdata/release1.golden"
 	if *update {
-		_ = ioutil.WriteFile(golden, out.Bytes(), 0755)
+		_ = os.WriteFile(golden, out.Bytes(), 0755)
 	}
-	bts, err := ioutil.ReadFile(golden)
+	bts, err := os.ReadFile(golden)
 	require.NoError(t, err)
 	require.Equal(t, string(bts), out.String())
 }
@@ -71,9 +71,9 @@ func TestDescribeBodyWithDockerManifest(t *testing.T) {
 
 	var golden = "testdata/release3.golden"
 	if *update {
-		_ = ioutil.WriteFile(golden, out.Bytes(), 0755)
+		_ = os.WriteFile(golden, out.Bytes(), 0755)
 	}
-	bts, err := ioutil.ReadFile(golden)
+	bts, err := os.ReadFile(golden)
 	require.NoError(t, err)
 	require.Equal(t, string(bts), out.String())
 }
@@ -88,9 +88,9 @@ func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
 
 	var golden = "testdata/release2.golden"
 	if *update {
-		_ = ioutil.WriteFile(golden, out.Bytes(), 0655)
+		_ = os.WriteFile(golden, out.Bytes(), 0655)
 	}
-	bts, err := ioutil.ReadFile(golden)
+	bts, err := os.ReadFile(golden)
 	require.NoError(t, err)
 
 	require.Equal(t, string(bts), out.String())

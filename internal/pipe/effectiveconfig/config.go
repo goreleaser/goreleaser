@@ -1,7 +1,7 @@
 package effectiveconfig
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/apex/log"
@@ -25,5 +25,5 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return err
 	}
 	log.WithField("config", path).Info("writing")
-	return ioutil.WriteFile(path, bts, 0644) //nolint: gosec
+	return os.WriteFile(path, bts, 0644) //nolint: gosec
 }

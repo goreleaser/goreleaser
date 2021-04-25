@@ -1188,7 +1188,7 @@ func TestLinkFile(t *testing.T) {
 	dst := filepath.Join(dir, "dst")
 	fmt.Println("src:", src.Name())
 	fmt.Println("dst:", dst)
-	require.NoError(t, ioutil.WriteFile(src.Name(), []byte("foo"), 0o644))
+	require.NoError(t, os.WriteFile(src.Name(), []byte("foo"), 0o644))
 	require.NoError(t, link(src.Name(), dst))
 	require.Equal(t, inode(src.Name()), inode(dst))
 }
@@ -1197,7 +1197,7 @@ func TestLinkDirectory(t *testing.T) {
 	srcDir := t.TempDir()
 	dstDir := t.TempDir()
 	const testFile = "test"
-	require.NoError(t, ioutil.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
 	require.NoError(t, link(srcDir, dstDir))
 	require.Equal(t, inode(filepath.Join(srcDir, testFile)), inode(filepath.Join(dstDir, testFile)))
 }
@@ -1209,8 +1209,8 @@ func TestLinkTwoLevelDirectory(t *testing.T) {
 	const testFile = "test"
 
 	require.NoError(t, os.Mkdir(srcLevel2, 0o755))
-	require.NoError(t, ioutil.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
-	require.NoError(t, ioutil.WriteFile(filepath.Join(srcLevel2, testFile), []byte("foo"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(srcLevel2, testFile), []byte("foo"), 0o644))
 
 	require.NoError(t, link(srcDir, dstDir))
 

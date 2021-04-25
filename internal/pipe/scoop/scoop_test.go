@@ -3,7 +3,6 @@ package scoop
 import (
 	ctx "context"
 	"flag"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -62,7 +61,7 @@ func TestDefault(t *testing.T) {
 func Test_doRun(t *testing.T) {
 	var folder = testlib.Mktmp(t)
 	var file = filepath.Join(folder, "archive")
-	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0644))
 
 	type errChecker func(*testing.T, error)
 	var shouldErr = func(msg string) errChecker {
@@ -746,7 +745,7 @@ func Test_doRun(t *testing.T) {
 func Test_buildManifest(t *testing.T) {
 	var folder = t.TempDir()
 	var file = filepath.Join(folder, "archive")
-	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0644))
 
 	tests := []struct {
 		filename string
@@ -982,9 +981,9 @@ func Test_buildManifest(t *testing.T) {
 			require.NoError(t, err)
 
 			if *update {
-				require.NoError(t, ioutil.WriteFile(tt.filename, out.Bytes(), 0655))
+				require.NoError(t, os.WriteFile(tt.filename, out.Bytes(), 0655))
 			}
-			bts, err := ioutil.ReadFile(tt.filename)
+			bts, err := os.ReadFile(tt.filename)
 			require.NoError(t, err)
 			require.Equal(t, string(bts), out.String())
 		})
@@ -994,7 +993,7 @@ func Test_buildManifest(t *testing.T) {
 func TestWrapInDirectory(t *testing.T) {
 	var folder = t.TempDir()
 	var file = filepath.Join(folder, "archive")
-	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0644))
 	var ctx = &context.Context{
 		TokenType: context.TokenTypeGitLab,
 		Git: context.GitInfo{
@@ -1063,9 +1062,9 @@ func TestWrapInDirectory(t *testing.T) {
 
 	var golden = "testdata/test_buildmanifest_wrap.json.golden"
 	if *update {
-		require.NoError(t, ioutil.WriteFile(golden, out.Bytes(), 0655))
+		require.NoError(t, os.WriteFile(golden, out.Bytes(), 0655))
 	}
-	bts, err := ioutil.ReadFile(golden)
+	bts, err := os.ReadFile(golden)
 	require.NoError(t, err)
 	require.Equal(t, string(bts), out.String())
 }

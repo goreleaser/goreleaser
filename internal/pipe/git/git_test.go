@@ -1,7 +1,6 @@
 package git
 
 import (
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -98,7 +97,7 @@ func TestDirty(t *testing.T) {
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "commit2")
 	testlib.GitTag(t, "v0.0.1")
-	require.NoError(t, ioutil.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0o644))
+	require.NoError(t, os.WriteFile(dummy.Name(), []byte("lorem ipsum"), 0o644))
 	t.Run("all checks up", func(t *testing.T) {
 		err := Pipe{}.Run(context.New(config.Project{}))
 		require.Error(t, err)
@@ -207,7 +206,7 @@ func TestSnapshotDirty(t *testing.T) {
 	testlib.GitAdd(t)
 	testlib.GitCommit(t, "whatever")
 	testlib.GitTag(t, "v0.0.1")
-	require.NoError(t, ioutil.WriteFile(filepath.Join(folder, "foo"), []byte("foobar"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(folder, "foo"), []byte("foobar"), 0o644))
 	ctx := context.New(config.Project{})
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))

@@ -4,7 +4,6 @@ package snapcraft
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -306,7 +305,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	}
 
 	log.WithField("file", file).Debugf("writing metadata file")
-	if err = ioutil.WriteFile(file, out, 0644); err != nil { //nolint: gosec
+	if err = os.WriteFile(file, out, 0644); err != nil { //nolint: gosec
 		return err
 	}
 

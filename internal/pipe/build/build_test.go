@@ -3,7 +3,6 @@ package build
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -39,7 +38,7 @@ func (f *fakeBuilder) Build(ctx *context.Context, build config.Build, options ap
 	if err := os.MkdirAll(filepath.Dir(options.Path), 0755); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(options.Path, []byte("foo"), 0755); err != nil {
+	if err := os.WriteFile(options.Path, []byte("foo"), 0755); err != nil {
 		return err
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -609,7 +608,7 @@ func TestRunHookEnvs(t *testing.T) {
 	t.Run("build env inside shell", func(t *testing.T) {
 		var shell = `#!/bin/sh -e
 touch "$BAR"`
-		err := ioutil.WriteFile(filepath.Join(tmp, "test.sh"), []byte(shell), 0750)
+		err := os.WriteFile(filepath.Join(tmp, "test.sh"), []byte(shell), 0750)
 		require.NoError(t, err)
 		err = runHook(context.New(config.Project{
 			Builds: []config.Build{
@@ -708,8 +707,8 @@ func TestBuildOptionsForTarget(t *testing.T) {
 	var tmpDir = testlib.Mktmp(t)
 
 	testCases := []struct {
-		name  string
-		build config.Build
+		name         string
+		build        config.Build
 		expectedOpts *api.Options
 	}{
 		{

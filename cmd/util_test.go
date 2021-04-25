@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -51,7 +50,7 @@ func setup(tb testing.TB) string {
 
 func createFile(tb testing.TB, filename, contents string) {
 	tb.Helper()
-	require.NoError(tb, ioutil.WriteFile(filename, []byte(contents), 0o644))
+	require.NoError(tb, os.WriteFile(filename, []byte(contents), 0o644))
 }
 
 func createMainGo(tb testing.TB) {

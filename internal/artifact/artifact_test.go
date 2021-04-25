@@ -3,6 +3,7 @@ package artifact
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -157,7 +158,7 @@ func TestGroupByPlatform(t *testing.T) {
 func TestChecksum(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, "subject")
-	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0o644))
+	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
 	artifact := Artifact{
 		Path: file,

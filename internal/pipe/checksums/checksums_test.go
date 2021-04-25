@@ -2,6 +2,7 @@ package checksums
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -49,7 +50,7 @@ func TestPipe(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			var folder = t.TempDir()
 			var file = filepath.Join(folder, binary)
-			require.NoError(t, ioutil.WriteFile(file, []byte("some string"), 0644))
+			require.NoError(t, os.WriteFile(file, []byte("some string"), 0644))
 			var ctx = context.New(
 				config.Project{
 					Dist:        folder,
@@ -93,7 +94,7 @@ func TestPipe(t *testing.T) {
 				artifacts = append(artifacts, a.Name)
 			}
 			require.Contains(t, artifacts, checksums, binary)
-			bts, err := ioutil.ReadFile(filepath.Join(folder, checksums))
+			bts, err := os.ReadFile(filepath.Join(folder, checksums))
 			require.NoError(t, err)
 			for _, want := range tt.want {
 				require.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  "+want)
@@ -184,7 +185,7 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 	require.NoError(t, err)
 
 	var file = filepath.Join(folder, "checksums.txt")
-	require.NoError(t, ioutil.WriteFile(file, []byte("some string"), 0000))
+	require.NoError(t, os.WriteFile(file, []byte("some string"), 0000))
 	var ctx = context.New(
 		config.Project{
 			Dist: folder,

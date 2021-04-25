@@ -2,7 +2,7 @@ package exec
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -44,7 +44,7 @@ func TestExecute(t *testing.T) {
 		{"signature", "sig", artifact.Signature},
 	} {
 		var file = filepath.Join(folder, "a."+a.ext)
-		require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0644))
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "a." + a.ext,
 			Goos:   "linux",

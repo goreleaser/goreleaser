@@ -4,7 +4,7 @@ package artifactory
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	h "net/http"
 
 	"github.com/goreleaser/goreleaser/internal/http"
@@ -81,7 +81,7 @@ func checkResponse(r *h.Response) error {
 		return nil
 	}
 	errorResponse := &errorResponse{Response: r}
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err == nil && data != nil {
 		err := json.Unmarshal(data, errorResponse)
 		if err != nil {

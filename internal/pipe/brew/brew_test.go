@@ -93,10 +93,10 @@ func TestFullFormulae(t *testing.T) {
 
 	var golden = "testdata/test.rb.golden"
 	if *update {
-		err := ioutil.WriteFile(golden, []byte(formulae), 0655)
+		err := os.WriteFile(golden, []byte(formulae), 0655)
 		require.NoError(t, err)
 	}
-	bts, err := ioutil.ReadFile(golden)
+	bts, err := os.ReadFile(golden)
 	require.NoError(t, err)
 	require.Equal(t, string(bts), formulae)
 }
@@ -113,10 +113,10 @@ func TestFullFormulaeLinuxOnly(t *testing.T) {
 
 	var golden = "testdata/test_linux_only.rb.golden"
 	if *update {
-		err := ioutil.WriteFile(golden, []byte(formulae), 0655)
+		err := os.WriteFile(golden, []byte(formulae), 0655)
 		require.NoError(t, err)
 	}
-	bts, err := ioutil.ReadFile(golden)
+	bts, err := os.ReadFile(golden)
 	require.NoError(t, err)
 	require.Equal(t, string(bts), formulae)
 }
@@ -247,13 +247,13 @@ func TestRunPipe(t *testing.T) {
 			require.True(t, client.CreatedFile)
 			var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
 			if *update {
-				require.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
+				require.NoError(t, os.WriteFile(golden, []byte(client.Content), 0655))
 			}
-			bts, err := ioutil.ReadFile(golden)
+			bts, err := os.ReadFile(golden)
 			require.NoError(t, err)
 			require.Equal(t, string(bts), client.Content)
 
-			distBts, err := ioutil.ReadFile(distFile)
+			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
 			require.Equal(t, string(bts), string(distBts))
 		})
@@ -312,13 +312,13 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.True(t, client.CreatedFile)
 	var golden = "testdata/foo_is_bar.rb.golden"
 	if *update {
-		require.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
+		require.NoError(t, os.WriteFile(golden, []byte(client.Content), 0655))
 	}
-	bts, err := ioutil.ReadFile(golden)
+	bts, err := os.ReadFile(golden)
 	require.NoError(t, err)
 	require.Equal(t, string(bts), client.Content)
 
-	distBts, err := ioutil.ReadFile(distFile)
+	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, string(bts), string(distBts))
 }
@@ -518,13 +518,13 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 		require.True(t, client.CreatedFile)
 		var golden = fmt.Sprintf("testdata/%s.rb.golden", name)
 		if *update {
-			require.NoError(t, ioutil.WriteFile(golden, []byte(client.Content), 0655))
+			require.NoError(t, os.WriteFile(golden, []byte(client.Content), 0655))
 		}
-		bts, err := ioutil.ReadFile(golden)
+		bts, err := os.ReadFile(golden)
 		require.NoError(t, err)
 		require.Equal(t, string(bts), client.Content)
 
-		distBts, err := ioutil.ReadFile(distFile)
+		distBts, err := os.ReadFile(distFile)
 		require.NoError(t, err)
 		require.Equal(t, string(bts), string(distBts))
 	}

@@ -3,7 +3,7 @@ package release
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -559,7 +559,7 @@ func (c *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *a
 		c.UploadedFilePaths = map[string]string{}
 	}
 	// ensure file is read to better mimic real behavior
-	_, err := ioutil.ReadAll(file)
+	_, err := io.ReadAll(file)
 	if err != nil {
 		return fmt.Errorf("unexpected error: %w", err)
 	}

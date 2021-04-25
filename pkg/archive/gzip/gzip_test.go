@@ -2,7 +2,7 @@ package gzip
 
 import (
 	"compress/gzip"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -37,7 +37,7 @@ func TestGzFile(t *testing.T) {
 
 	require.Equal(t, "sub1/sub2/subfoo.txt", gzf.Name)
 
-	bts, err := ioutil.ReadAll(gzf)
+	bts, err := io.ReadAll(gzf)
 	require.NoError(t, err)
 	require.Equal(t, "sub\n", string(bts))
 }
