@@ -271,9 +271,6 @@ func zipFiles(t *testing.T, path string) []string {
 	t.Helper()
 	f, err := os.Open(path)
 	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, f.Close())
-	})
 	info, err := f.Stat()
 	require.NoError(t, err)
 	r, err := zip.NewReader(f, info.Size())
@@ -289,14 +286,10 @@ func tarFiles(t *testing.T, path string) []string {
 	t.Helper()
 	f, err := os.Open(path)
 	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, f.Close())
-	})
+	defer f.Close()
 	gr, err := gzip.NewReader(f)
 	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, gr.Close())
-	})
+	defer gr.Close()
 	var r = tar.NewReader(gr)
 	var paths []string
 	for {
@@ -599,14 +592,10 @@ func TestRunPipeWrap(t *testing.T) {
 	// Check archive contents
 	f, err = os.Open(filepath.Join(dist, "foo.tar.gz"))
 	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, f.Close())
-	})
+	defer func() { require.NoError(t, f.Close()) }()
 	gr, err := gzip.NewReader(f)
 	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, gr.Close())
-	})
+	defer func() { require.NoError(t, gr.Close()) }()
 	r := tar.NewReader(gr)
 	for _, n := range []string{"README.md", "mybin"} {
 		h, err := r.Next()
@@ -614,7 +603,7 @@ func TestRunPipeWrap(t *testing.T) {
 			break
 		}
 		require.NoError(t, err)
-		require.Equal(t, "foo_macOS/"+ n, h.Name)
+		require.Equal(t, filepath.Join("foo_macOS", n), h.Name)
 	}
 }
 
