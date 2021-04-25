@@ -78,8 +78,9 @@ func TestRunPipe(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin", "mybin")
-	_, err := os.Create(binPath)
+	f, err := os.Create(binPath)
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
@@ -421,8 +422,9 @@ func TestDebSpecificConfig(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin", "mybin")
-	_, err := os.Create(binPath)
+	f, err := os.Create(binPath)
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
@@ -494,8 +496,9 @@ func TestRPMSpecificConfig(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin", "mybin")
-	_, err := os.Create(binPath)
+	f, err := os.Create(binPath)
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
@@ -567,8 +570,9 @@ func TestAPKSpecificConfig(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin", "mybin")
-	_, err := os.Create(binPath)
+	f, err := os.Create(binPath)
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
@@ -657,8 +661,9 @@ func TestMeta(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0o755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
 	binPath := filepath.Join(dist, "mybin", "mybin")
-	_, err := os.Create(binPath)
+	f, err := os.Create(binPath)
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,

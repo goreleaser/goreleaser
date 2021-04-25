@@ -358,6 +358,7 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 	var folder = t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, tarfile.Close())
 
 	var ctx = context.New(config.Project{
 		ProjectName: "goreleaser",

@@ -38,7 +38,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	require.NoError(t, filteredtarfile.Close())
 	filtereddebfile, err := os.Create(filepath.Join(folder, "filtered.deb"))
 	require.NoError(t, err)
-	require.NoError(t, filteredtarfile.Close())
+	require.NoError(t, filtereddebfile.Close())
 
 	config := config.Project{
 		Dist: folder,

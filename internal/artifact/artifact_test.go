@@ -15,7 +15,7 @@ var _ fmt.Stringer = Type(0)
 
 func TestAdd(t *testing.T) {
 	var g errgroup.Group
-	var artifacts = New()
+	artifacts := New()
 	for _, a := range []*Artifact{
 		{
 			Name: "foo",
@@ -45,7 +45,7 @@ func TestAdd(t *testing.T) {
 }
 
 func TestFilter(t *testing.T) {
-	var data = []*Artifact{
+	data := []*Artifact{
 		{
 			Name:   "foo",
 			Goos:   "linux",
@@ -68,7 +68,7 @@ func TestFilter(t *testing.T) {
 			Type: Checksum,
 		},
 	}
-	var artifacts = New()
+	artifacts := New()
 	for _, a := range data {
 		artifacts.Add(a)
 	}
@@ -108,7 +108,7 @@ func TestFilter(t *testing.T) {
 }
 
 func TestGroupByPlatform(t *testing.T) {
-	var data = []*Artifact{
+	data := []*Artifact{
 		{
 			Name:   "foo",
 			Goos:   "linux",
@@ -142,12 +142,12 @@ func TestGroupByPlatform(t *testing.T) {
 			Type: Checksum,
 		},
 	}
-	var artifacts = New()
+	artifacts := New()
 	for _, a := range data {
 		artifacts.Add(a)
 	}
 
-	var groups = artifacts.GroupByPlatform()
+	groups := artifacts.GroupByPlatform()
 	require.Len(t, groups["linuxamd64"], 2)
 	require.Len(t, groups["linuxarm6"], 1)
 	require.Len(t, groups["linuxmipssoftfloat"], 1)
@@ -155,11 +155,11 @@ func TestGroupByPlatform(t *testing.T) {
 }
 
 func TestChecksum(t *testing.T) {
-	var folder = t.TempDir()
-	var file = filepath.Join(folder, "subject")
-	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+	folder := t.TempDir()
+	file := filepath.Join(folder, "subject")
+	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
-	var artifact = Artifact{
+	artifact := Artifact{
 		Path: file,
 	}
 
@@ -181,13 +181,12 @@ func TestChecksum(t *testing.T) {
 }
 
 func TestChecksumFileDoesntExist(t *testing.T) {
-	var file = filepath.Join(t.TempDir(), "nope")
-	var artifact = Artifact{
+	file := filepath.Join(t.TempDir(), "nope")
+	artifact := Artifact{
 		Path: file,
 	}
 	sum, err := artifact.Checksum("sha1")
-	require.Error(t, err)
-	// require.True(t, os.IsNotExist(err)) fails on windows for some reason
+	require.EqualError(t, err, fmt.Sprintf(`failed to checksum: open %s: no such file or directory`, file))
 	require.Empty(t, sum)
 }
 
@@ -195,7 +194,7 @@ func TestInvalidAlgorithm(t *testing.T) {
 	f, err := ioutil.TempFile(t.TempDir(), "")
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	var artifact = Artifact{
+	artifact := Artifact{
 		Path: f.Name(),
 	}
 	sum, err := artifact.Checksum("sha1ssss")
@@ -208,7 +207,7 @@ func TestCleanup(t *testing.T)  {
 }
 
 func TestExtraOr(t *testing.T) {
-	var a = &Artifact{
+	a := &Artifact{
 		Extra: map[string]interface{}{
 			"Foo": "foo",
 		},
@@ -218,7 +217,7 @@ func TestExtraOr(t *testing.T) {
 }
 
 func TestByIDs(t *testing.T) {
-	var data = []*Artifact{
+	data := []*Artifact{
 		{
 			Name: "foo",
 			Extra: map[string]interface{}{
@@ -248,7 +247,7 @@ func TestByIDs(t *testing.T) {
 			Type: Checksum,
 		},
 	}
-	var artifacts = New()
+	artifacts := New()
 	for _, a := range data {
 		artifacts.Add(a)
 	}
@@ -259,7 +258,7 @@ func TestByIDs(t *testing.T) {
 }
 
 func TestByFormats(t *testing.T) {
-	var data = []*Artifact{
+	data := []*Artifact{
 		{
 			Name: "foo",
 			Extra: map[string]interface{}{
@@ -285,7 +284,7 @@ func TestByFormats(t *testing.T) {
 			},
 		},
 	}
-	var artifacts = New()
+	artifacts := New()
 	for _, a := range data {
 		artifacts.Add(a)
 	}
@@ -321,8 +320,8 @@ func TestTypeToString(t *testing.T) {
 }
 
 func TestPaths(t *testing.T) {
-	var paths = []string{"a/b", "b/c", "d/e", "f/g"}
-	var artifacts = New()
+	paths := []string{"a/b", "b/c", "d/e", "f/g"}
+	artifacts := New()
 	for _, a := range paths {
 		artifacts.Add(&Artifact{
 			Path: a,

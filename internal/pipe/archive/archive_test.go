@@ -692,12 +692,15 @@ func TestBinaryOverride(t *testing.T) {
 	require.NoError(t, os.Mkdir(dist, 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "darwinamd64"), 0755))
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "windowsamd64"), 0755))
-	_, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
+	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
-	_, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
+	require.NoError(t, f.Close())
+	f, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
 	require.NoError(t, err)
-	_, err = os.Create(filepath.Join(folder, "README.md"))
+	require.NoError(t, f.Close())
+	f, err = os.Create(filepath.Join(folder, "README.md"))
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	for _, format := range []string{"tar.gz", "zip"} {
 		t.Run("Archive format "+format, func(t *testing.T) {
 			var ctx = context.New(
@@ -771,10 +774,10 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 	require.NoError(t, os.Mkdir(filepath.Join(dist, "windowsamd64"), 0755))
 	f, err := os.Create(filepath.Join(dist, "darwinamd64", "mybin"))
 	require.NoError(t, err)
-			require.NoError(t, f.Close())
+	require.NoError(t, f.Close())
 	f, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
-		require.NoError(t, f.Close())
 	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	var ctx = context.New(
 		config.Project{
 			Dist:        dist,
@@ -827,14 +830,18 @@ func TestDuplicateFilesInsideArchive(t *testing.T) {
 
 	f, err := ioutil.TempFile(folder, "")
 	require.NoError(t, err)
-	defer f.Close()
+	t.Cleanup(func() {
+		require.NoError(t, f.Close())
+	})
 
 	ff, err := ioutil.TempFile(folder, "")
 	require.NoError(t, err)
-	defer ff.Close()
+	require.NoError(t, ff.Close())
 
 	a := NewEnhancedArchive(archive.New(f), "")
-	defer a.Close()
+	t.Cleanup(func() {
+		require.NoError(t, a.Close())
+	})
 
 	require.NoError(t, a.Add("foo", ff.Name()))
 	require.EqualError(t, a.Add("foo", ff.Name()), "file foo already exists in the archive")

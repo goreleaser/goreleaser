@@ -13,7 +13,7 @@ func TestArchive(t *testing.T) {
 	empty, err := os.Create(filepath.Join(folder, "empty.txt"))
 	require.NoError(t, err)
 	require.NoError(t, empty.Close())
-	require.NoError(t, os.Mkdir(filepath.Join(folder, "folder-inside"), 0755))
+	require.NoError(t, os.Mkdir(folder+"/folder-inside", 0755))
 
 	for _, format := range []string{"tar.gz", "zip", "gz", "tar.xz", "willbeatargzanyway"} {
 		format := format
@@ -24,9 +24,12 @@ func TestArchive(t *testing.T) {
 				require.NoError(t, file.Close())
 			})
 			var archive = New(file)
+			t.Cleanup(func() {
+				require.NoError(t, archive.Close())
+				require.NoError(t, file.Close())
+			})
 			require.NoError(t, archive.Add("empty.txt", empty.Name()))
 			require.Error(t, archive.Add("dont.txt", empty.Name()+"_nope"))
-			require.NoError(t, archive.Close())
 		})
 	}
 }

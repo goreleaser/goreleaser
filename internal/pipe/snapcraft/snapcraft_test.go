@@ -423,8 +423,9 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 			var folder = goos + goarch
 			require.NoError(t, os.MkdirAll(filepath.Join(dist, folder), 0755))
 			var binPath = filepath.Join(dist, folder, name)
-			_, err := os.Create(binPath)
+			f, err := os.Create(binPath)
 			require.NoError(t, err)
+			require.NoError(t, f.Close())
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:   name,
 				Path:   binPath,
