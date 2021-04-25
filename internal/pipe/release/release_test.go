@@ -26,14 +26,19 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, tarfile.Close())
 	srcfile, err := os.Create(filepath.Join(folder, "source.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, srcfile.Close())
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
 	require.NoError(t, err)
+	require.NoError(t, debfile.Close())
 	filteredtarfile, err := os.Create(filepath.Join(folder, "filtered.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, filteredtarfile.Close())
 	filtereddebfile, err := os.Create(filepath.Join(folder, "filtered.deb"))
 	require.NoError(t, err)
+	require.NoError(t, filteredtarfile.Close())
 
 	config := config.Project{
 		Dist: folder,
@@ -101,12 +106,16 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, tarfile.Close())
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
 	require.NoError(t, err)
+	require.NoError(t, debfile.Close())
 	filteredtarfile, err := os.Create(filepath.Join(folder, "filtered.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, filteredtarfile.Close())
 	filtereddebfile, err := os.Create(filepath.Join(folder, "filtered.deb"))
 	require.NoError(t, err)
+	require.NoError(t, filtereddebfile.Close())
 
 	config := config.Project{
 		Dist: folder,
@@ -211,6 +220,7 @@ func TestRunPipeUploadFailure(t *testing.T) {
 	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, tarfile.Close())
 	config := config.Project{
 		Release: config.Release{
 			GitHub: config.Repo{
@@ -282,6 +292,7 @@ func TestRunPipeUploadRetry(t *testing.T) {
 	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, tarfile.Close())
 	config := config.Project{
 		Release: config.Release{
 			GitHub: config.Repo{
