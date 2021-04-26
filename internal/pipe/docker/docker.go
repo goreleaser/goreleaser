@@ -32,7 +32,7 @@ func (Pipe) String() string {
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Dockers {
-		var docker = &ctx.Config.Dockers[i]
+		docker := &ctx.Config.Dockers[i]
 
 		if docker.Goos == "" {
 			docker.Goos = "linux"
@@ -62,7 +62,7 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	if len(ctx.Config.Dockers) == 0 || len(ctx.Config.Dockers[0].ImageTemplates) == 0 {
-		return pipe.Skip("docker section is not configured")
+		return pipe.ErrSkipDisabledPipe
 	}
 	_, err := exec.LookPath("docker")
 	if err != nil {
@@ -76,7 +76,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
-	var images = ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableDockerImage)).List()
+	images := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableDockerImage)).List()
 	for _, image := range images {
 		if err := dockerPush(ctx, image); err != nil {
 			return err
@@ -86,12 +86,12 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context) error {
-	var g = semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
+	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, docker := range ctx.Config.Dockers {
 		docker := docker
 		g.Go(func() error {
 			log.WithField("docker", docker).Debug("looking for artifacts matching")
-			var filters = []artifact.Filter{
+			filters := []artifact.Filter{
 				artifact.ByGoos(docker.Goos),
 				artifact.ByGoarch(docker.Goarch),
 				artifact.ByGoarm(docker.Goarm),
@@ -103,7 +103,7 @@ func doRun(ctx *context.Context) error {
 			if len(docker.IDs) > 0 {
 				filters = append(filters, artifact.ByIDs(docker.IDs...))
 			}
-			var artifacts = ctx.Artifacts.Filter(artifact.And(filters...))
+			artifacts := ctx.Artifacts.Filter(artifact.And(filters...))
 			log.WithField("artifacts", artifacts.Paths()).Debug("found artifacts")
 			return process(ctx, docker, artifacts.List())
 		})
@@ -127,7 +127,7 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 		return fmt.Errorf("failed to link dockerfile: %w", err)
 	}
 	for _, file := range docker.Files {
-		if err := os.MkdirAll(filepath.Join(tmp, filepath.Dir(file)), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Join(tmp, filepath.Dir(file)), 0o755); err != nil {
 			return fmt.Errorf("failed to link extra file '%s': %w", file, err)
 		}
 		if err := link(file, filepath.Join(tmp, file)); err != nil {
@@ -217,7 +217,7 @@ func link(src, dest string) error {
 		// - dest = "dist/linuxamd64/b"
 		// - path = "a/b/c.txt"
 		// So we join "a/b" with "c.txt" and use it as the destination.
-		var dst = filepath.Join(dest, strings.Replace(path, src, "", 1))
+		dst := filepath.Join(dest, strings.Replace(path, src, "", 1))
 		log.WithFields(log.Fields{
 			"src": path,
 			"dst": dst,
@@ -232,7 +232,7 @@ func link(src, dest string) error {
 func dockerBuild(ctx *context.Context, root string, images, flags []string, buildx bool) error {
 	log.WithField("image", images[0]).WithField("buildx", buildx).Info("building docker image")
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, "docker", buildCommand(buildx, images, flags)...)
+	cmd := exec.CommandContext(ctx, "docker", buildCommand(buildx, images, flags)...)
 	cmd.Dir = root
 	log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir).Debug("running")
 	out, err := cmd.CombinedOutput()
@@ -258,7 +258,7 @@ func buildCommand(buildx bool, images, flags []string) []string {
 func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	log.WithField("image", image.Name).Info("pushing docker image")
 	/* #nosec */
-	var cmd = exec.CommandContext(ctx, "docker", "push", image.Name)
+	cmd := exec.CommandContext(ctx, "docker", "push", image.Name)
 	log.WithField("cmd", cmd.Args).Debug("running")
 	out, err := cmd.CombinedOutput()
 	if err != nil {

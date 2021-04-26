@@ -4,6 +4,8 @@ before:
   hooks:
     - go mod tidy
     - ./scripts/completions.sh
+gomod:
+  proxy: true
 builds:
 - env:
     - CGO_ENABLED=0
@@ -152,3 +154,5 @@ snapcrafts:
     grade: stable
     confinement: classic
     publish: true
+release:
+  discussion_category_name: "New Releases"

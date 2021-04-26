@@ -12,8 +12,9 @@ import (
 func TestStringer(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
+
 func TestDefault(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Snapshot: config.Snapshot{},
 		},
@@ -23,7 +24,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Snapshot: config.Snapshot{
 				NameTemplate: "snap",
@@ -35,7 +36,7 @@ func TestDefaultSet(t *testing.T) {
 }
 
 func TestSnapshotInvalidNametemplate(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Snapshot: config.Snapshot{
 			NameTemplate: "{{.ShortCommit}{{{sss}}}",
 		},
@@ -45,7 +46,7 @@ func TestSnapshotInvalidNametemplate(t *testing.T) {
 }
 
 func TestSnapshotEmptyFinalName(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Snapshot: config.Snapshot{
 			NameTemplate: "{{ .Commit }}",
 		},
@@ -56,6 +57,6 @@ func TestSnapshotEmptyFinalName(t *testing.T) {
 }
 
 func TestNotASnapshot(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }

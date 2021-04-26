@@ -38,7 +38,7 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) (err error) {
 	if ctx.Config.Checksum.Disable {
-		return pipe.Skip("checksum.disable is set")
+		return pipe.ErrSkipDisabledPipe
 	}
 	filter := artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
@@ -55,7 +55,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return nil
 	}
 
-	var g = semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.New(ctx.Parallelism)
 	sumLines := make([]string, len(artifactList))
 	for i, artifact := range artifactList {
 		i := i
@@ -82,7 +82,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	file, err := os.OpenFile(
 		filepath.Join(ctx.Config.Dist, filename),
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
-		0644,
+		0o644,
 	)
 	if err != nil {
 		return err

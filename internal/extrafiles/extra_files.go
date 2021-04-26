@@ -12,7 +12,7 @@ import (
 
 // Find resolves extra files globs et al into a map of names/paths or an error.
 func Find(files []config.ExtraFile) (map[string]string, error) {
-	var result = map[string]string{}
+	result := map[string]string{}
 	for _, extra := range files {
 		if extra.Glob == "" {
 			continue
@@ -27,7 +27,7 @@ func Find(files []config.ExtraFile) (map[string]string, error) {
 				log.Debugf("ignoring directory %s", file)
 				continue
 			}
-			var name = filepath.Base(file)
+			name := filepath.Base(file)
 			if old, ok := result[name]; ok {
 				log.Warnf("overriding %s with %s for name %s", old, file, name)
 			}

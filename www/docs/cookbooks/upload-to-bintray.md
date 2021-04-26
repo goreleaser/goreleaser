@@ -1,10 +1,8 @@
----
-title: Bintray
----
+# Upload to Bintray
 
 ## How it works
 
-Uploading to Bintray is a simple case of [using HTTP Upload](https://goreleaser.com/customization/upload/).
+Uploading to Bintray is a simple case of [using HTTP Upload](/customization/upload/).
 
 ### Pre and post requisites:
 * Create a user and/or an org in Bintray
@@ -19,4 +17,4 @@ uploads:
     username: goreleaser
 ```
 
-Please see [HTTP Upload](https://goreleaser.com/customization/upload/) for more details.
+Please see [HTTP Upload](/customization/upload/) for more details.

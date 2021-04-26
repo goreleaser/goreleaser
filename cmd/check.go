@@ -18,8 +18,8 @@ type checkCmd struct {
 }
 
 func newCheckCmd() *checkCmd {
-	var root = &checkCmd{}
-	var cmd = &cobra.Command{
+	root := &checkCmd{}
+	cmd := &cobra.Command{
 		Use:           "check",
 		Aliases:       []string{"c"},
 		Short:         "Checks if configuration is valid",
@@ -31,7 +31,7 @@ func newCheckCmd() *checkCmd {
 			if err != nil {
 				return err
 			}
-			var ctx = context.New(cfg)
+			ctx := context.New(cfg)
 			ctx.Deprecated = root.deprecated
 
 			if err := ctrlc.Default.Run(ctx, func() error {

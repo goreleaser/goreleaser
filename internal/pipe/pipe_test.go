@@ -8,19 +8,25 @@ import (
 )
 
 func TestSkipPipe(t *testing.T) {
-	var reason = "this is a test"
-	var err = Skip(reason)
+	reason := "this is a test"
+	err := Skip(reason)
 	require.Error(t, err)
 	require.Equal(t, reason, err.Error())
 }
 
 func TestIsSkip(t *testing.T) {
 	require.True(t, IsSkip(Skip("whatever")))
+	require.True(t, IsSkip(ErrSkipDisabledPipe))
 	require.False(t, IsSkip(errors.New("nope")))
 }
 
+func TestIsExpectedSkip(t *testing.T) {
+	require.True(t, IsSkip(ErrSkipDisabledPipe))
+	require.True(t, IsSkip(Skip("nope")))
+}
+
 func TestSkipMemento(t *testing.T) {
-	var m = SkipMemento{}
+	m := SkipMemento{}
 	m.Remember(Skip("foo"))
 	m.Remember(Skip("bar"))
 	// test duplicated errors

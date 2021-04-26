@@ -7,14 +7,14 @@ import (
 )
 
 func TestIDs(t *testing.T) {
-	var ids = New("foos")
+	ids := New("foos")
 	ids.Inc("foo")
 	ids.Inc("bar")
 	require.NoError(t, ids.Validate())
 }
 
 func TestIDsError(t *testing.T) {
-	var ids = New("builds")
+	ids := New("builds")
 	ids.Inc("foo")
 	ids.Inc("bar")
 	ids.Inc("foo")

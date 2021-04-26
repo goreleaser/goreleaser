@@ -17,6 +17,10 @@ func TestError(t *testing.T) {
 		require.NoError(t, ErrHandler(mockAction(pipe.ErrSkipValidateEnabled))(ctx))
 	})
 
+	t.Run("pipe expected skipped", func(t *testing.T) {
+		require.NoError(t, ErrHandler(mockAction(pipe.ErrSkipDisabledPipe))(ctx))
+	})
+
 	t.Run("some err", func(t *testing.T) {
 		require.Error(t, ErrHandler(mockAction(fmt.Errorf("pipe errored")))(ctx))
 	})

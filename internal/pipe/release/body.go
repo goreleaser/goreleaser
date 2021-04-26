@@ -31,7 +31,7 @@ func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 			dockers = append(dockers, a.Name)
 		}
 	}
-	var bodyTemplate = template.Must(template.New("release").Parse(bodyTemplateText))
+	bodyTemplate := template.Must(template.New("release").Parse(bodyTemplateText))
 	err := bodyTemplate.Execute(&out, struct {
 		ReleaseNotes string
 		DockerImages []string

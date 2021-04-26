@@ -4,7 +4,6 @@ package changelog
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -46,7 +45,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.ReleaseNotes = notes
 	}
 	if ctx.Config.Changelog.Skip {
-		return pipe.Skip("changelog should not be built")
+		return pipe.ErrSkipDisabledPipe
 	}
 	if ctx.Snapshot {
 		return pipe.Skip("not available for snapshots")
@@ -110,13 +109,13 @@ func (Pipe) Run(ctx *context.Context) error {
 		ctx.ReleaseNotes += "\n"
 	}
 
-	var path = filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
+	path := filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
-	return ioutil.WriteFile(path, []byte(ctx.ReleaseNotes), 0644) //nolint: gosec
+	return os.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint: gosec
 }
 
 func loadFromFile(file string) (string, error) {
-	bts, err := ioutil.ReadFile(file)
+	bts, err := os.ReadFile(file)
 	if err != nil {
 		return "", err
 	}
@@ -140,7 +139,7 @@ func buildChangelog(ctx *context.Context) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	var entries = strings.Split(log, "\n")
+	entries := strings.Split(log, "\n")
 	entries = entries[0 : len(entries)-1]
 	entries, err = filterEntries(ctx, entries)
 	if err != nil {
@@ -161,15 +160,15 @@ func filterEntries(ctx *context.Context, entries []string) ([]string, error) {
 }
 
 func sortEntries(ctx *context.Context, entries []string) []string {
-	var direction = ctx.Config.Changelog.Sort
+	direction := ctx.Config.Changelog.Sort
 	if direction == "" {
 		return entries
 	}
-	var result = make([]string, len(entries))
+	result := make([]string, len(entries))
 	copy(result, entries)
 	sort.Slice(result, func(i, j int) bool {
-		var imsg = extractCommitInfo(result[i])
-		var jmsg = extractCommitInfo(result[j])
+		imsg := extractCommitInfo(result[i])
+		jmsg := extractCommitInfo(result[j])
 		if direction == "asc" {
 			return strings.Compare(imsg, jmsg) < 0
 		}
@@ -203,7 +202,7 @@ func getChangelog(tag string) (string, error) {
 }
 
 func gitLog(refs ...string) (string, error) {
-	var args = []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
+	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
 	args = append(args, refs...)
 	return git.Run(args...)
 }

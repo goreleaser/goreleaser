@@ -2,7 +2,7 @@ package gzip
 
 import (
 	"compress/gzip"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,19 +11,18 @@ import (
 )
 
 func TestGzFile(t *testing.T) {
-	var tmp = t.TempDir()
+	tmp := t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.gz"))
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
 	archive := New(f)
+	defer archive.Close() // nolint: errcheck
 
 	require.NoError(t, archive.Add("sub1/sub2/subfoo.txt", "../testdata/sub1/sub2/subfoo.txt"))
 	require.EqualError(t, archive.Add("foo.txt", "../testdata/foo.txt"), "gzip: failed to add foo.txt, only one file can be archived in gz format")
 	require.NoError(t, archive.Close())
-
 	require.NoError(t, f.Close())
 
-	t.Log(f.Name())
 	f, err = os.Open(f.Name())
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
@@ -38,7 +37,7 @@ func TestGzFile(t *testing.T) {
 
 	require.Equal(t, "sub1/sub2/subfoo.txt", gzf.Name)
 
-	bts, err := ioutil.ReadAll(gzf)
+	bts, err := io.ReadAll(gzf)
 	require.NoError(t, err)
 	require.Equal(t, "sub\n", string(bts))
 }

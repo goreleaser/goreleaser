@@ -23,7 +23,7 @@ func TestEmptyRepoNameAndOwner(t *testing.T) {
 }
 
 func TestLoadReader(t *testing.T) {
-	var conf = `
+	conf := `
 nfpms:
   - homepage: http://goreleaser.github.io
 `
@@ -39,6 +39,7 @@ type errorReader struct{}
 func (errorReader) Read(p []byte) (n int, err error) {
 	return 1, fmt.Errorf("error")
 }
+
 func TestLoadBadReader(t *testing.T) {
 	_, err := LoadReader(errorReader{})
 	require.Error(t, err)
@@ -47,7 +48,7 @@ func TestLoadBadReader(t *testing.T) {
 func TestFile(t *testing.T) {
 	f, err := ioutil.TempFile(t.TempDir(), "config")
 	require.NoError(t, err)
-	t.Cleanup(func() { f.Close() })
+	require.NoError(t, f.Close())
 	_, err = Load(filepath.Join(f.Name()))
 	require.NoError(t, err)
 }

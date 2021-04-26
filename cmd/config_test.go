@@ -17,7 +17,7 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 		"goreleaser.yaml",
 	} {
 		t.Run(name, func(t *testing.T) {
-			var folder = setup(t)
+			folder := setup(t)
 			require.NoError(t, os.Rename(
 				filepath.Join(folder, "goreleaser.yml"),
 				filepath.Join(folder, name),
@@ -30,7 +30,7 @@ func TestConfigFlagNotSetButExists(t *testing.T) {
 }
 
 func TestConfigFileDoesntExist(t *testing.T) {
-	var folder = setup(t)
+	folder := setup(t)
 	err := os.Remove(filepath.Join(folder, "goreleaser.yml"))
 	require.NoError(t, err)
 	proj, err := loadConfig("")

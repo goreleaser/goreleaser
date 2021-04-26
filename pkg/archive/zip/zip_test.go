@@ -2,7 +2,6 @@ package zip
 
 import (
 	"archive/zip"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,12 +10,12 @@ import (
 )
 
 func TestZipFile(t *testing.T) {
-	var tmp = t.TempDir()
+	tmp := t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.zip"))
 	require.NoError(t, err)
-	fmt.Println(f.Name())
 	defer f.Close() // nolint: errcheck
 	archive := New(f)
+	defer archive.Close() // nolint: errcheck
 
 	require.Error(t, archive.Add("nope.txt", "../testdata/nope.txt"))
 	require.NoError(t, archive.Add("foo.txt", "../testdata/foo.txt"))
@@ -30,7 +29,6 @@ func TestZipFile(t *testing.T) {
 	require.Error(t, archive.Add("tar.go", "tar.go"))
 	require.NoError(t, f.Close())
 
-	t.Log(f.Name())
 	f, err = os.Open(f.Name())
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
@@ -42,12 +40,12 @@ func TestZipFile(t *testing.T) {
 	r, err := zip.NewReader(f, info.Size())
 	require.NoError(t, err)
 
-	var paths = make([]string, len(r.File))
+	paths := make([]string, len(r.File))
 	for i, zf := range r.File {
 		paths[i] = zf.Name
 		t.Logf("%s: %v", zf.Name, zf.Mode())
 		if zf.Name == "sub1/executable" {
-			var ex = zf.Mode() | 0111
+			ex := zf.Mode() | 0o111
 			require.Equal(t, zf.Mode().String(), ex.String())
 		}
 	}

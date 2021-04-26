@@ -12,11 +12,12 @@ import (
 )
 
 func TestTarXzFile(t *testing.T) {
-	var tmp = t.TempDir()
+	tmp := t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.tar.xz"))
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
 	archive := New(f)
+	defer archive.Close() // nolint: errcheck
 
 	require.Error(t, archive.Add("nope.txt", "../testdata/nope.txt"))
 	require.NoError(t, archive.Add("foo.txt", "../testdata/foo.txt"))
@@ -30,7 +31,6 @@ func TestTarXzFile(t *testing.T) {
 	require.Error(t, archive.Add("tar.go", "tar.go"))
 	require.NoError(t, f.Close())
 
-	t.Log(f.Name())
 	f, err = os.Open(f.Name())
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
@@ -41,7 +41,6 @@ func TestTarXzFile(t *testing.T) {
 
 	xzf, err := xz.NewReader(f)
 	require.NoError(t, err)
-	//defer xzf.Close() // nolint: errcheck
 
 	var paths []string
 	r := tar.NewReader(xzf)
@@ -54,7 +53,7 @@ func TestTarXzFile(t *testing.T) {
 		paths = append(paths, next.Name)
 		t.Logf("%s: %v", next.Name, next.FileInfo().Mode())
 		if next.Name == "sub1/executable" {
-			var ex = next.FileInfo().Mode() | 0111
+			ex := next.FileInfo().Mode() | 0o111
 			require.Equal(t, next.FileInfo().Mode().String(), ex.String())
 		}
 	}

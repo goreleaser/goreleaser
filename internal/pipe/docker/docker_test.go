@@ -852,15 +852,19 @@ func TestRunPipe(t *testing.T) {
 			dist := filepath.Join(folder, "dist")
 			require.NoError(t, os.Mkdir(dist, 0o755))
 			require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
-			_, err := os.Create(filepath.Join(dist, "mybin", "mybin"))
+			f, err := os.Create(filepath.Join(dist, "mybin", "mybin"))
 			require.NoError(t, err)
-			_, err = os.Create(filepath.Join(dist, "mybin", "anotherbin"))
+			require.NoError(t, f.Close())
+			f, err = os.Create(filepath.Join(dist, "mybin", "anotherbin"))
 			require.NoError(t, err)
-			_, err = os.Create(filepath.Join(dist, "mynfpm.apk"))
+			require.NoError(t, f.Close())
+			f, err = os.Create(filepath.Join(dist, "mynfpm.apk"))
 			require.NoError(t, err)
+			require.NoError(t, f.Close())
 			for _, arch := range []string{"amd64", "386", "arm64"} {
-				_, err = os.Create(filepath.Join(dist, fmt.Sprintf("mybin_%s.apk", arch)))
+				f, err = os.Create(filepath.Join(dist, fmt.Sprintf("mybin_%s.apk", arch)))
 				require.NoError(t, err)
+				require.NoError(t, f.Close())
 			}
 
 			ctx := context.New(config.Project{
@@ -1177,17 +1181,14 @@ func Test_processImageTemplates(t *testing.T) {
 }
 
 func TestLinkFile(t *testing.T) {
-	src, err := ioutil.TempFile(t.TempDir(), "src")
+	dir := t.TempDir()
+	src, err := ioutil.TempFile(dir, "src")
 	require.NoError(t, err)
 	require.NoError(t, src.Close())
-	dst := filepath.Join(filepath.Dir(src.Name()), "dst")
-	t.Cleanup(func() {
-		os.Remove(src.Name())
-		os.Remove(dst)
-	})
+	dst := filepath.Join(dir, "dst")
 	fmt.Println("src:", src.Name())
 	fmt.Println("dst:", dst)
-	require.NoError(t, ioutil.WriteFile(src.Name(), []byte("foo"), 0o644))
+	require.NoError(t, os.WriteFile(src.Name(), []byte("foo"), 0o644))
 	require.NoError(t, link(src.Name(), dst))
 	require.Equal(t, inode(src.Name()), inode(dst))
 }
@@ -1196,7 +1197,7 @@ func TestLinkDirectory(t *testing.T) {
 	srcDir := t.TempDir()
 	dstDir := t.TempDir()
 	const testFile = "test"
-	require.NoError(t, ioutil.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
 	require.NoError(t, link(srcDir, dstDir))
 	require.Equal(t, inode(filepath.Join(srcDir, testFile)), inode(filepath.Join(dstDir, testFile)))
 }
@@ -1208,8 +1209,8 @@ func TestLinkTwoLevelDirectory(t *testing.T) {
 	const testFile = "test"
 
 	require.NoError(t, os.Mkdir(srcLevel2, 0o755))
-	require.NoError(t, ioutil.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
-	require.NoError(t, ioutil.WriteFile(filepath.Join(srcLevel2, testFile), []byte("foo"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(srcLevel2, testFile), []byte("foo"), 0o644))
 
 	require.NoError(t, link(srcDir, dstDir))
 

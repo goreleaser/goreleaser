@@ -162,7 +162,6 @@ func (s *GetExistingReleaseSuite) TestReleaseExists() {
 	require.NotNil(t, result)
 	require.Equal(t, *result, release)
 	require.NoError(t, err)
-
 }
 
 func TestGetExistingReleaseSuite(t *testing.T) {
@@ -366,17 +365,17 @@ func (s *GiteaUploadSuite) SetupTest() {
 	s.artifact = &artifact.Artifact{Name: "ArtifactName"}
 	file, err := ioutil.TempFile(t.TempDir(), "gitea_test_tempfile")
 	require.NoError(t, err)
-	t.Cleanup(func() { file.Close() })
 	require.NotNil(t, file)
+	t.Cleanup(func() {
+		_ = file.Close()
+	})
 	s.file = file
 	s.releaseAttachmentsURL = fmt.Sprintf("%v/assets", s.releaseURL)
 }
 
 func (s *GiteaUploadSuite) TearDownTest() {
-	t := s.T()
 	s.GiteaReleasesTestSuite.TearDownTest()
-	err := s.file.Close()
-	require.NoError(t, err)
+	require.NoError(s.T(), s.file.Close())
 }
 
 func (s *GiteaUploadSuite) TestErrorParsingReleaseID() {
@@ -409,7 +408,7 @@ func TestGiteaUploadSuite(t *testing.T) {
 }
 
 func TestGiteaReleaseURLTemplate(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		GiteaURLs: config.GiteaURLs{
 			API:      "https://gitea.com/api/v1",
 			Download: "https://gitea.com",

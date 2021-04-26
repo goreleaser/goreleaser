@@ -37,7 +37,7 @@ func TestSetDefaultTokenFiles(t *testing.T) {
 
 func TestValidGithubEnv(t *testing.T) {
 	require.NoError(t, os.Setenv("GITHUB_TOKEN", "asdf"))
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -49,7 +49,7 @@ func TestValidGithubEnv(t *testing.T) {
 
 func TestValidGitlabEnv(t *testing.T) {
 	require.NoError(t, os.Setenv("GITLAB_TOKEN", "qwertz"))
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -61,7 +61,7 @@ func TestValidGitlabEnv(t *testing.T) {
 
 func TestValidGiteaEnv(t *testing.T) {
 	require.NoError(t, os.Setenv("GITEA_TOKEN", "token"))
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -74,7 +74,7 @@ func TestValidGiteaEnv(t *testing.T) {
 func TestInvalidEnv(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
 	require.NoError(t, os.Unsetenv("GITLAB_TOKEN"))
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.Error(t, Pipe{}.Run(ctx))
@@ -85,7 +85,7 @@ func TestMultipleEnvTokens(t *testing.T) {
 	require.NoError(t, os.Setenv("GITHUB_TOKEN", "asdf"))
 	require.NoError(t, os.Setenv("GITLAB_TOKEN", "qwertz"))
 	require.NoError(t, os.Setenv("GITEA_TOKEN", "token"))
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.Error(t, Pipe{}.Run(ctx))
@@ -98,7 +98,7 @@ func TestMultipleEnvTokens(t *testing.T) {
 
 func TestEmptyGithubFileEnv(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.Error(t, Pipe{}.Run(ctx))
@@ -106,7 +106,7 @@ func TestEmptyGithubFileEnv(t *testing.T) {
 
 func TestEmptyGitlabFileEnv(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITLAB_TOKEN"))
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.Error(t, Pipe{}.Run(ctx))
@@ -114,7 +114,7 @@ func TestEmptyGitlabFileEnv(t *testing.T) {
 
 func TestEmptyGiteaFileEnv(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITEA_TOKEN"))
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.Error(t, Pipe{}.Run(ctx))
@@ -124,8 +124,9 @@ func TestEmptyGithubEnvFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
 	f, err := ioutil.TempFile(t.TempDir(), "token")
 	require.NoError(t, err)
-	require.NoError(t, os.Chmod(f.Name(), 0377))
-	var ctx = &context.Context{
+	require.NoError(t, f.Close())
+	require.NoError(t, os.Chmod(f.Name(), 0o377))
+	ctx := &context.Context{
 		Config: config.Project{
 			EnvFiles: config.EnvFiles{
 				GitHubToken: f.Name(),
@@ -139,8 +140,9 @@ func TestEmptyGitlabEnvFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITLAB_TOKEN"))
 	f, err := ioutil.TempFile(t.TempDir(), "token")
 	require.NoError(t, err)
-	require.NoError(t, os.Chmod(f.Name(), 0377))
-	var ctx = &context.Context{
+	require.NoError(t, f.Close())
+	require.NoError(t, os.Chmod(f.Name(), 0o377))
+	ctx := &context.Context{
 		Config: config.Project{
 			EnvFiles: config.EnvFiles{
 				GitLabToken: f.Name(),
@@ -154,8 +156,9 @@ func TestEmptyGiteaEnvFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITEA_TOKEN"))
 	f, err := ioutil.TempFile(t.TempDir(), "token")
 	require.NoError(t, err)
-	require.NoError(t, os.Chmod(f.Name(), 0377))
-	var ctx = &context.Context{
+	require.NoError(t, f.Close())
+	require.NoError(t, os.Chmod(f.Name(), 0o377))
+	ctx := &context.Context{
 		Config: config.Project{
 			EnvFiles: config.EnvFiles{
 				GiteaToken: f.Name(),
@@ -167,7 +170,7 @@ func TestEmptyGiteaEnvFile(t *testing.T) {
 
 func TestInvalidEnvChecksSkipped(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config:      config.Project{},
 		SkipPublish: true,
 	}
@@ -176,7 +179,7 @@ func TestInvalidEnvChecksSkipped(t *testing.T) {
 
 func TestInvalidEnvReleaseDisabled(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Release: config.Release{
 				Disable: true,
@@ -188,39 +191,42 @@ func TestInvalidEnvReleaseDisabled(t *testing.T) {
 
 func TestLoadEnv(t *testing.T) {
 	t.Run("env exists", func(t *testing.T) {
-		var env = "SUPER_SECRET_ENV"
+		env := "SUPER_SECRET_ENV"
 		require.NoError(t, os.Setenv(env, "1"))
 		v, err := loadEnv(env, "nope")
 		require.NoError(t, err)
 		require.Equal(t, "1", v)
 	})
 	t.Run("env file exists", func(t *testing.T) {
-		var env = "SUPER_SECRET_ENV_NOPE"
+		env := "SUPER_SECRET_ENV_NOPE"
 		require.NoError(t, os.Unsetenv(env))
 		f, err := ioutil.TempFile(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123")
+		require.NoError(t, f.Close())
 		v, err := loadEnv(env, f.Name())
 		require.NoError(t, err)
 		require.Equal(t, "123", v)
 	})
 	t.Run("env file with an empty line at the end", func(t *testing.T) {
-		var env = "SUPER_SECRET_ENV_NOPE"
+		env := "SUPER_SECRET_ENV_NOPE"
 		require.NoError(t, os.Unsetenv(env))
 		f, err := ioutil.TempFile(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123\n")
+		require.NoError(t, f.Close())
 		v, err := loadEnv(env, f.Name())
 		require.NoError(t, err)
 		require.Equal(t, "123", v)
 	})
 	t.Run("env file is not readable", func(t *testing.T) {
-		var env = "SUPER_SECRET_ENV_NOPE"
+		env := "SUPER_SECRET_ENV_NOPE"
 		require.NoError(t, os.Unsetenv(env))
 		f, err := ioutil.TempFile(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123")
-		err = os.Chmod(f.Name(), 0377)
+		require.NoError(t, f.Close())
+		err = os.Chmod(f.Name(), 0o377)
 		require.NoError(t, err)
 		v, err := loadEnv(env, f.Name())
 		require.EqualError(t, err, fmt.Sprintf("open %s: permission denied", f.Name()))

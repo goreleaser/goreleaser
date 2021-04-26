@@ -63,11 +63,10 @@ func doPublish(ctx *context.Context, vcsClient client.Client) error {
 		milestone := &ctx.Config.Milestones[i]
 
 		if !milestone.Close {
-			return pipe.Skip("milestone pipe is disabled")
+			return pipe.ErrSkipDisabledPipe
 		}
 
 		name, err := tmpl.New(ctx).Apply(milestone.NameTemplate)
-
 		if err != nil {
 			return err
 		}

@@ -2,8 +2,8 @@ package golang
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -548,9 +548,50 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 	})
 }
 
+func TestRunPipeWithProxiedRepo(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	proxied := filepath.Join(folder, "dist/proxy/default")
+	require.NoError(t, os.MkdirAll(proxied, 0o750))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(proxied, "main.go"),
+		[]byte("// +build: main\npackage main\nimport github.com/goreleaser/goreleaser"),
+		0o666,
+	))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(proxied, "go.mod"),
+		[]byte("module foo\nrequire github.com/goreleaser/goreleaser v0.161.1"),
+		0o666,
+	))
+	cmd := exec.Command("go", "mod", "download")
+	cmd.Dir = proxied
+	require.NoError(t, cmd.Run())
+	config := config.Project{
+		GoMod: config.GoMod{
+			Proxy: true,
+		},
+		Builds: []config.Build{
+			{
+				Binary: "foo",
+				Hooks:  config.HookConfig{},
+				Main:   "github.com/goreleaser/goreleaser",
+				Dir:    proxied,
+				Targets: []string{
+					runtimeTarget,
+				},
+				GoBinary: "go",
+			},
+		},
+	}
+	ctx := context.New(config)
+
+	require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+		Target: runtimeTarget,
+	}))
+}
+
 func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 	folder := testlib.Mktmp(t)
-	require.NoError(t, ioutil.WriteFile(
+	require.NoError(t, os.WriteFile(
 		filepath.Join(folder, "foo.go"),
 		[]byte("package main\nfunc main() {println(0)}"),
 		0o644,
@@ -779,7 +820,7 @@ func TestBuildModTimestamp(t *testing.T) {
 
 func writeMainWithoutMainFunc(t *testing.T, folder string) {
 	t.Helper()
-	require.NoError(t, ioutil.WriteFile(
+	require.NoError(t, os.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nconst a = 2\nfunc notMain() {println(0)}"),
 		0o644,
@@ -788,7 +829,7 @@ func writeMainWithoutMainFunc(t *testing.T, folder string) {
 
 func writeGoodMain(t *testing.T, folder string) {
 	t.Helper()
-	require.NoError(t, ioutil.WriteFile(
+	require.NoError(t, os.WriteFile(
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nvar a = 1\nfunc main() {println(0)}"),
 		0o644,

@@ -3,7 +3,6 @@ package scoop
 import (
 	ctx "context"
 	"flag"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,7 +25,7 @@ func TestDescription(t *testing.T) {
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		TokenType: context.TokenTypeGitHub,
 		Config: config.Project{
 			ProjectName: "barr",
@@ -60,19 +59,19 @@ func TestDefault(t *testing.T) {
 }
 
 func Test_doRun(t *testing.T) {
-	var folder = testlib.Mktmp(t)
-	var file = filepath.Join(folder, "archive")
-	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+	folder := testlib.Mktmp(t)
+	file := filepath.Join(folder, "archive")
+	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
 	type errChecker func(*testing.T, error)
-	var shouldErr = func(msg string) errChecker {
+	shouldErr := func(msg string) errChecker {
 		return func(t *testing.T, err error) {
 			t.Helper()
 			require.Error(t, err)
 			require.EqualError(t, err, msg)
 		}
 	}
-	var shouldNotErr = func(t *testing.T, err error) {
+	shouldNotErr := func(t *testing.T, err error) {
 		t.Helper()
 		require.NoError(t, err)
 	}
@@ -469,7 +468,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
-			shouldErr("scoop section is not configured"),
+			shouldErr(pipe.ErrSkipDisabledPipe.Error()),
 		},
 		{
 			"no publish",
@@ -732,7 +731,7 @@ func Test_doRun(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var ctx = tt.args.ctx
+			ctx := tt.args.ctx
 			for _, a := range tt.artifacts {
 				ctx.Artifacts.Add(a)
 			}
@@ -744,9 +743,9 @@ func Test_doRun(t *testing.T) {
 }
 
 func Test_buildManifest(t *testing.T) {
-	var folder = t.TempDir()
-	var file = filepath.Join(folder, "archive")
-	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+	folder := t.TempDir()
+	file := filepath.Join(folder, "archive")
+	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
 	tests := []struct {
 		filename string
@@ -916,7 +915,7 @@ func Test_buildManifest(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.filename, func(t *testing.T) {
-			var ctx = tt.ctx
+			ctx := tt.ctx
 			err := Pipe{}.Default(ctx)
 			require.NoError(t, err)
 
@@ -928,6 +927,23 @@ func Test_buildManifest(t *testing.T) {
 					Name:   "foo_1.0.1_windows_amd64.tar.gz",
 					Goos:   "windows",
 					Goarch: "amd64",
+					Path:   file,
+					Extra: map[string]interface{}{
+						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+						"Builds": []*artifact.Artifact{
+							{
+								Name: "foo.exe",
+							},
+							{
+								Name: "bar.exe",
+							},
+						},
+					},
+				},
+				{
+					Name:   "foo_1.0.1_windows_arm.tar.gz",
+					Goos:   "windows",
+					Goarch: "arm",
 					Path:   file,
 					Extra: map[string]interface{}{
 						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
@@ -965,9 +981,9 @@ func Test_buildManifest(t *testing.T) {
 			require.NoError(t, err)
 
 			if *update {
-				require.NoError(t, ioutil.WriteFile(tt.filename, out.Bytes(), 0655))
+				require.NoError(t, os.WriteFile(tt.filename, out.Bytes(), 0o655))
 			}
-			bts, err := ioutil.ReadFile(tt.filename)
+			bts, err := os.ReadFile(tt.filename)
 			require.NoError(t, err)
 			require.Equal(t, string(bts), out.String())
 		})
@@ -975,10 +991,10 @@ func Test_buildManifest(t *testing.T) {
 }
 
 func TestWrapInDirectory(t *testing.T) {
-	var folder = t.TempDir()
-	var file = filepath.Join(folder, "archive")
-	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
-	var ctx = &context.Context{
+	folder := t.TempDir()
+	file := filepath.Join(folder, "archive")
+	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
+	ctx := &context.Context{
 		TokenType: context.TokenTypeGitLab,
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.1",
@@ -1044,11 +1060,11 @@ func TestWrapInDirectory(t *testing.T) {
 	out, err := doBuildManifest(mf)
 	require.NoError(t, err)
 
-	var golden = "testdata/test_buildmanifest_wrap.json.golden"
+	golden := "testdata/test_buildmanifest_wrap.json.golden"
 	if *update {
-		require.NoError(t, ioutil.WriteFile(golden, out.Bytes(), 0655))
+		require.NoError(t, os.WriteFile(golden, out.Bytes(), 0o655))
 	}
-	bts, err := ioutil.ReadFile(golden)
+	bts, err := os.ReadFile(golden)
 	require.NoError(t, err)
 	require.Equal(t, string(bts), out.String())
 }

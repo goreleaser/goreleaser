@@ -10,8 +10,12 @@ import (
 // errors.
 func ErrHandler(action Action) Action {
 	return func(ctx *context.Context) error {
-		var err = action(ctx)
+		err := action(ctx)
 		if err == nil {
+			return nil
+		}
+		if pipe.IsExpectedSkip(err) {
+			log.WithError(err).Debug("pipe skipped")
 			return nil
 		}
 		if pipe.IsSkip(err) {

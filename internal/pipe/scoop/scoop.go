@@ -64,7 +64,7 @@ func (Pipe) Default(ctx *context.Context) error {
 func doRun(ctx *context.Context, cl client.Client) error {
 	scoop := ctx.Config.Scoop
 	if scoop.Bucket.Name == "" {
-		return pipe.Skip("scoop section is not configured")
+		return pipe.ErrSkipDisabledPipe
 	}
 
 	if scoop.Bucket.Token != "" {
@@ -85,7 +85,7 @@ func doRun(ctx *context.Context, cl client.Client) error {
 		return pipe.Skip("archive format is binary")
 	}
 
-	var archives = ctx.Artifacts.Filter(
+	archives := ctx.Artifacts.Filter(
 		artifact.And(
 			artifact.ByGoos("windows"),
 			artifact.ByType(artifact.UploadableArchive),
@@ -95,7 +95,7 @@ func doRun(ctx *context.Context, cl client.Client) error {
 		return ErrNoWindows
 	}
 
-	var path = scoop.Name + ".json"
+	path := scoop.Name + ".json"
 
 	data, err := dataFor(ctx, cl, archives)
 	if err != nil {
@@ -170,7 +170,7 @@ func doBuildManifest(manifest Manifest) (bytes.Buffer, error) {
 }
 
 func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artifact) (Manifest, error) {
-	var manifest = Manifest{
+	manifest := Manifest{
 		Version:      ctx.Version,
 		Architecture: map[string]Resource{},
 		Homepage:     ctx.Config.Scoop.Homepage,
@@ -193,9 +193,18 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 	}
 
 	for _, artifact := range artifacts {
-		var arch = "64bit"
-		if artifact.Goarch == "386" {
+		if artifact.Goos != "windows" {
+			continue
+		}
+
+		var arch string
+		switch {
+		case artifact.Goarch == "386":
 			arch = "32bit"
+		case artifact.Goarch == "amd64":
+			arch = "64bit"
+		default:
+			continue
 		}
 
 		url, err := tmpl.New(ctx).
@@ -230,7 +239,7 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 func binaries(a *artifact.Artifact) []string {
 	// nolint: prealloc
 	var bins []string
-	var wrap = a.ExtraOr("WrappedIn", "").(string)
+	wrap := a.ExtraOr("WrappedIn", "").(string)
 	for _, b := range a.ExtraOr("Builds", []*artifact.Artifact{}).([]*artifact.Artifact) {
 		bins = append(bins, filepath.Join(wrap, b.Name))
 	}

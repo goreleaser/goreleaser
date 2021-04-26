@@ -2,7 +2,6 @@ package upload
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	h "net/http"
 	"net/http/httptest"
@@ -37,18 +36,14 @@ func teardown() {
 	server.Close()
 }
 
-func testMethod(t *testing.T, r *http.Request, want string) {
+func requireMethodPut(t *testing.T, r *http.Request) {
 	t.Helper()
-	if got := r.Method; got != want {
-		t.Errorf("Request method: %v, want %v", got, want)
-	}
+	require.Equal(t, http.MethodPut, r.Method)
 }
 
-func testHeader(t *testing.T, r *http.Request, header, want string) {
+func requireHeader(t *testing.T, r *http.Request, header, want string) {
 	t.Helper()
-	if got := r.Header.Get(header); got != want {
-		t.Errorf("Header.Get(%q) returned %q, want %q", header, got, want)
-	}
+	require.Equal(t, want, r.Header.Get(header))
 }
 
 // TODO: improve all tests bellow by checking wether the mocked handlers
@@ -58,53 +53,53 @@ func TestRunPipe_ModeBinary(t *testing.T) {
 	setup()
 	defer teardown()
 
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
+	require.NoError(t, os.WriteFile(binPath, d1, 0o666))
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodPut)
-		testHeader(t, r, "Content-Length", "9")
+		requireMethodPut(t, r)
+		requireHeader(t, r, "Content-Length", "9")
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
-		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+		requireHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
 		w.Header().Set("Location", "/production-repo-remote/mybin/linux/amd64/mybin")
 		w.WriteHeader(http.StatusCreated)
 	})
 	mux.HandleFunc("/example-repo-local/mybin/linux/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodPut)
-		testHeader(t, r, "Content-Length", "9")
+		requireMethodPut(t, r)
+		requireHeader(t, r, "Content-Length", "9")
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
-		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+		requireHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
 		w.Header().Set("Location", "/production-repo-remote/mybin/linux/amd64/mybin")
 		w.WriteHeader(http.StatusCreated)
 	})
 	mux.HandleFunc("/production-repo-remote/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodPut)
-		testHeader(t, r, "Content-Length", "9")
+		requireMethodPut(t, r)
+		requireHeader(t, r, "Content-Length", "9")
 		// Basic auth of user "productionuser" with secret "productionuser-apikey"
-		testHeader(t, r, "Authorization", "Basic cHJvZHVjdGlvbnVzZXI6cHJvZHVjdGlvbnVzZXItYXBpa2V5")
+		requireHeader(t, r, "Authorization", "Basic cHJvZHVjdGlvbnVzZXI6cHJvZHVjdGlvbnVzZXItYXBpa2V5")
 
 		w.Header().Set("Location", "/production-repo-remote/mybin/linux/amd64/mybin")
 		w.WriteHeader(http.StatusCreated)
 	})
 	mux.HandleFunc("/production-repo-remote/mybin/linux/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodPut)
-		testHeader(t, r, "Content-Length", "9")
+		requireMethodPut(t, r)
+		requireHeader(t, r, "Content-Length", "9")
 		// Basic auth of user "productionuser" with secret "productionuser-apikey"
-		testHeader(t, r, "Authorization", "Basic cHJvZHVjdGlvbnVzZXI6cHJvZHVjdGlvbnVzZXItYXBpa2V5")
+		requireHeader(t, r, "Authorization", "Basic cHJvZHVjdGlvbnVzZXI6cHJvZHVjdGlvbnVzZXItYXBpa2V5")
 
 		w.Header().Set("Location", "/production-repo-remote/mybin/linux/amd64/mybin")
 		w.WriteHeader(http.StatusCreated)
 	})
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Uploads: []config.Upload{
@@ -148,13 +143,15 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 	setup()
 	defer teardown()
 
-	var folder = t.TempDir()
+	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, tarfile.Close())
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
 	require.NoError(t, err)
+	require.NoError(t, debfile.Close())
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
 		Uploads: []config.Upload{
@@ -189,18 +186,18 @@ func TestRunPipe_ModeArchive(t *testing.T) {
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.tar.gz", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodPut)
+		requireMethodPut(t, r)
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
-		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+		requireHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
 		w.Header().Set("Location", "/example-repo-local/goreleaser/1.0.0/bin.tar.gz")
 		w.WriteHeader(http.StatusCreated)
 		uploads.Store("targz", true)
 	})
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.deb", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodPut)
+		requireMethodPut(t, r)
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
-		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+		requireHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
 		w.Header().Set("Location", "/example-repo-local/goreleaser/1.0.0/bin.deb")
 		w.WriteHeader(http.StatusCreated)
@@ -218,35 +215,35 @@ func TestRunPipe_ModeBinary_CustomArtifactName(t *testing.T) {
 	setup()
 	defer teardown()
 
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
+	require.NoError(t, os.WriteFile(binPath, d1, 0o666))
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin;deb.distribution=xenial", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodPut)
-		testHeader(t, r, "Content-Length", "9")
+		requireMethodPut(t, r)
+		requireHeader(t, r, "Content-Length", "9")
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
-		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+		requireHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
 		w.Header().Set("Location", "/production-repo-remote/mybin/linux/amd64/mybin;deb.distribution=xenial")
 		w.WriteHeader(http.StatusCreated)
 	})
 	mux.HandleFunc("/example-repo-local/mybin/linux/amd64/mybin;deb.distribution=xenial", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodPut)
-		testHeader(t, r, "Content-Length", "9")
+		requireMethodPut(t, r)
+		requireHeader(t, r, "Content-Length", "9")
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
-		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+		requireHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
 		w.Header().Set("Location", "/example-repo-local/mybin/linux/amd64/mybin;deb.distribution=xenial")
 		w.WriteHeader(http.StatusCreated)
 	})
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Uploads: []config.Upload{
@@ -283,13 +280,15 @@ func TestRunPipe_ModeArchive_CustomArtifactName(t *testing.T) {
 	setup()
 	defer teardown()
 
-	var folder = t.TempDir()
+	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, tarfile.Close())
 	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
 	require.NoError(t, err)
+	require.NoError(t, debfile.Close())
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
 		Uploads: []config.Upload{
@@ -325,18 +324,18 @@ func TestRunPipe_ModeArchive_CustomArtifactName(t *testing.T) {
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.tar.gz;deb.distribution=xenial", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodPut)
+		requireMethodPut(t, r)
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
-		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+		requireHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
 		w.Header().Set("Location", "/example-repo-local/goreleaser/1.0.0/bin.tar.gz;deb.distribution=xenial")
 		w.WriteHeader(http.StatusCreated)
 		uploads.Store("targz", true)
 	})
 	mux.HandleFunc("/example-repo-local/goreleaser/1.0.0/bin.deb;deb.distribution=xenial", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodPut)
+		requireMethodPut(t, r)
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
-		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+		requireHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
 		w.Header().Set("Location", "/example-repo-local/goreleaser/1.0.0/bin.deb;deb.distribution=xenial")
 		w.WriteHeader(http.StatusCreated)
@@ -351,11 +350,12 @@ func TestRunPipe_ModeArchive_CustomArtifactName(t *testing.T) {
 }
 
 func TestRunPipe_ArtifactoryDown(t *testing.T) {
-	var folder = t.TempDir()
+	folder := t.TempDir()
 	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
 	require.NoError(t, err)
+	require.NoError(t, tarfile.Close())
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "goreleaser",
 		Dist:        folder,
 		Uploads: []config.Upload{
@@ -383,11 +383,11 @@ func TestRunPipe_ArtifactoryDown(t *testing.T) {
 }
 
 func TestRunPipe_TargetTemplateError(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	binPath := filepath.Join(dist, "mybin", "mybin")
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Uploads: []config.Upload{
@@ -414,7 +414,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 		Goos:   "darwin",
 		Type:   artifact.UploadableBinary,
 	})
-	var err = Pipe{}.Publish(ctx)
+	err := Pipe{}.Publish(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), `upload: error while building the target url: template: tmpl:1: unexpected "/" in operand`)
 }
@@ -423,25 +423,25 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 	setup()
 	defer teardown()
 
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
+	require.NoError(t, os.WriteFile(binPath, d1, 0o666))
 
 	// Dummy http server
 	mux.HandleFunc("/example-repo-local/mybin/darwin/amd64/mybin", func(w http.ResponseWriter, r *http.Request) {
-		testMethod(t, r, http.MethodPut)
-		testHeader(t, r, "Content-Length", "9")
+		requireMethodPut(t, r)
+		requireHeader(t, r, "Content-Length", "9")
 		// Basic auth of user "deployuser" with secret "deployuser-secret"
-		testHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
+		requireHeader(t, r, "Authorization", "Basic ZGVwbG95dXNlcjpkZXBsb3l1c2VyLXNlY3JldA==")
 
 		w.WriteHeader(http.StatusUnauthorized)
 	})
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Uploads: []config.Upload{
@@ -468,13 +468,13 @@ func TestRunPipe_BadCredentials(t *testing.T) {
 		Type:   artifact.UploadableBinary,
 	})
 
-	var err = Pipe{}.Publish(ctx)
+	err := Pipe{}.Publish(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "Unauthorized")
 }
 
 func TestRunPipe_FileNotFound(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        "archivetest/dist",
 		Uploads: []config.Upload{
@@ -505,15 +505,15 @@ func TestRunPipe_FileNotFound(t *testing.T) {
 }
 
 func TestRunPipe_UnparsableTarget(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin", "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
 	d1 := []byte("hello\ngo\n")
-	require.NoError(t, ioutil.WriteFile(binPath, d1, 0666))
+	require.NoError(t, os.WriteFile(binPath, d1, 0o666))
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Uploads: []config.Upload{
@@ -544,7 +544,7 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 }
 
 func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Uploads: []config.Upload{
 			{
 				Name:     "production",
@@ -568,13 +568,13 @@ func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
 }
 
 func TestRunPipe_DirUpload(t *testing.T) {
-	var folder = t.TempDir()
-	var dist = filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0755))
-	var binPath = filepath.Join(dist, "mybin")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin")
 
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
 		Uploads: []config.Upload{
@@ -613,7 +613,7 @@ func TestNoPuts(t *testing.T) {
 }
 
 func TestPutsWithoutTarget(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Env: map[string]string{
 			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
 		},
@@ -632,7 +632,7 @@ func TestPutsWithoutTarget(t *testing.T) {
 }
 
 func TestPutsWithoutUsername(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Env: map[string]string{
 			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
 		},
@@ -676,7 +676,7 @@ func TestPutsWithoutSecret(t *testing.T) {
 }
 
 func TestPutsWithInvalidMode(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Env: map[string]string{
 			"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
 		},
@@ -696,7 +696,7 @@ func TestPutsWithInvalidMode(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Uploads: []config.Upload{
 				{
@@ -709,13 +709,13 @@ func TestDefault(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Uploads, 1)
-	var upload = ctx.Config.Uploads[0]
+	upload := ctx.Config.Uploads[0]
 	require.Equal(t, "archive", upload.Mode)
 	require.Equal(t, h.MethodPut, upload.Method)
 }
 
 func TestDefaultNoPuts(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Uploads: []config.Upload{},
 		},
@@ -725,7 +725,7 @@ func TestDefaultNoPuts(t *testing.T) {
 }
 
 func TestDefaultSet(t *testing.T) {
-	var ctx = &context.Context{
+	ctx := &context.Context{
 		Config: config.Project{
 			Uploads: []config.Upload{
 				{
@@ -737,7 +737,7 @@ func TestDefaultSet(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Len(t, ctx.Config.Uploads, 1)
-	var upload = ctx.Config.Uploads[0]
+	upload := ctx.Config.Uploads[0]
 	require.Equal(t, "custom", upload.Mode)
 	require.Equal(t, h.MethodPost, upload.Method)
 }
