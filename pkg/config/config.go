@@ -638,6 +638,13 @@ type GoMod struct {
 	GoBinary string   `yaml:",omitempty"`
 }
 
+type Twitter struct {
+	ConsumerKey    string `yaml:",omitempty"`
+	ConsumerSecret string `yaml:"omitempty"`
+	AccessToken    string `yaml:"omitempty"`
+	AccessSecret   string `yaml:"omitempty"`
+}
+
 // Load config file.
 func Load(file string) (config Project, err error) {
 	f, err := os.Open(file) // #nosec
