@@ -224,8 +224,15 @@ nfpms:
         scripts:
           preinstall: "scripts/preinstall-rpm.sh"
 
-    # Custon configuration applied only to the RPM packager.
+    # Custom configuration applied only to the RPM packager.
     rpm:
+      # RPM specific scripts.
+      scripts:
+        # The pretrans script runs before all RPM package transactions / stages.
+        pretrans: ./scripts/pretrans.sh
+        # The posttrans script runs after all RPM package transactions / stages.
+        posttrans: ./scripts/posttrans.sh
+
       # The package summary.
       # Defaults to the first line of the description.
       summary: Explicit Summary for Sample Package

@@ -387,6 +387,7 @@ func TestDefaultSet(t *testing.T) {
 	require.Equal(t, "/bin", ctx.Config.NFPMs[0].Bindir)
 	require.Equal(t, "foo", ctx.Config.NFPMs[0].FileNameTemplate)
 	require.Equal(t, []string{"foo"}, ctx.Config.NFPMs[0].Builds)
+	require.Equal(t, config.NFPMRPMScripts{}, ctx.Config.NFPMs[0].RPM.Scripts)
 }
 
 func TestOverrides(t *testing.T) {
@@ -560,6 +561,78 @@ func TestRPMSpecificConfig(t *testing.T) {
 		ctx.Env = map[string]string{
 			"NFPM_SOMEID_RPM_PASSPHRASE": "hunter2",
 		}
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+}
+
+func TestRPMSpecificScriptsConfig(t *testing.T) {
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
+	f, err := os.Create(binPath)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	ctx := context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:      "someid",
+				Builds:  []string{"default"},
+				Formats: []string{"rpm"},
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+					RPM: config.NFPMRPM{
+						Scripts: config.NFPMRPMScripts{
+							PreTrans:  "/does/not/exist_pretrans.sh",
+							PostTrans: "/does/not/exist_posttrans.sh",
+						},
+					},
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"ID": "default",
+				},
+			})
+		}
+	}
+
+	t.Run("PreTrans script file does not exist", func(t *testing.T) {
+		require.Contains(
+			t,
+			Pipe{}.Run(ctx).Error(),
+			`nfpm failed: open /does/not/exist_pretrans.sh: no such file or directory`,
+		)
+	})
+
+	t.Run("PostTrans script file does not exist", func(t *testing.T) {
+		ctx.Config.NFPMs[0].RPM.Scripts.PreTrans = "testdata/testfile.txt"
+
+		require.Contains(
+			t,
+			Pipe{}.Run(ctx).Error(),
+			`nfpm failed: open /does/not/exist_posttrans.sh: no such file or directory`,
+		)
+	})
+
+	t.Run("pretrans and posttrans scriptlets set", func(t *testing.T) {
+		ctx.Config.NFPMs[0].RPM.Scripts.PreTrans = "testdata/testfile.txt"
+		ctx.Config.NFPMs[0].RPM.Scripts.PostTrans = "testdata/testfile.txt"
+
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
 }
