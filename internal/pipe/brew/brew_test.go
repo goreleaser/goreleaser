@@ -10,6 +10,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -851,6 +852,16 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 	})
 	client := &DummyClient{NotImplemented: true}
 	require.Equal(t, ErrTokenTypeNotImplementedForBrew{TokenType: "gitea"}, doRun(ctx, ctx.Config.Brews[0], client))
+}
+
+func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
+	ctx := context.New(config.Project{})
+	ctx.SkipPublish = true
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	err := Pipe{}.Publish(ctx)
+	require.True(t, pipe.IsSkip(err))
+	require.EqualError(t, err, pipe.ErrSkipPublishEnabled.Error())
 }
 
 func TestDefault(t *testing.T) {
