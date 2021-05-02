@@ -48,6 +48,9 @@ func (Pipe) String() string {
 
 // Publish brew formula.
 func (Pipe) Publish(ctx *context.Context) error {
+	if ctx.SkipPublish {
+		return pipe.ErrSkipPublishEnabled
+	}
 	// we keep GitHub as default for now, in line with releases
 	if string(ctx.TokenType) == "" {
 		ctx.TokenType = context.TokenTypeGitHub
