@@ -113,8 +113,8 @@ github.com/ProtonMail/go-crypto v0.0.0-20210408094314-bf0c5240ed99 h1:mtecfqOeUJ
 github.com/ProtonMail/go-crypto v0.0.0-20210408094314-bf0c5240ed99/go.mod h1:HTM9X7e9oLwn7RiqLG0UVwVRJenLs3wN+tQ0NPAfwMQ=
 github.com/ProtonMail/go-mime v0.0.0-20190923161245-9b5a4261663a h1:W6RrgN/sTxg1msqzFFb+G80MFmpjMw61IU+slm+wln4=
 github.com/ProtonMail/go-mime v0.0.0-20190923161245-9b5a4261663a/go.mod h1:NYt+V3/4rEeDuaev/zw1zCq8uqVEuPHzDPo3OZrlGJ4=
-github.com/ProtonMail/gopenpgp/v2 v2.1.7 h1:6cDDCuHwC/DhRLsj0+w6e5taxtA48hpd1ZFKJWcaQGM=
-github.com/ProtonMail/gopenpgp/v2 v2.1.7/go.mod h1:mjMvRMlOlBhNuaa3z0xOmEgAkba/Mu1Z8uWwYj4/6Ws=
+github.com/ProtonMail/gopenpgp/v2 v2.1.8 h1:yK8uIOh6Epa6Q/wdEs9mmV8fJinzBurJ7vn4U3kbE/8=
+github.com/ProtonMail/gopenpgp/v2 v2.1.8/go.mod h1:mjMvRMlOlBhNuaa3z0xOmEgAkba/Mu1Z8uWwYj4/6Ws=
 github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7 h1:uSoVVbwJiQipAclBbw+8quDsfcvFjOpI5iCf4p/cqCs=
 github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7/go.mod h1:6zEj6s6u/ghQa61ZWa/C2Aw3RkjiTBOix7dkqa1VLIs=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
@@ -314,8 +314,8 @@ github.com/goreleaser/chglog v0.1.2 h1:tdzAb/ILeMnphzI9zQ7Nkq+T8R9qyXli8GydD8plF
 github.com/goreleaser/chglog v0.1.2/go.mod h1:tTZsFuSZK4epDXfjMkxzcGbrIOXprf0JFp47BjIr3B8=
 github.com/goreleaser/fileglob v1.2.0 h1:OErqbdzeg/eibfDGPHDQDN8jL5u1jNyxA5IQzNPLLoU=
 github.com/goreleaser/fileglob v1.2.0/go.mod h1:rFyb2pXaK3YdnYnSjn6lifw0h2Q6s8OfOsx6I6bXkKE=
-github.com/goreleaser/nfpm/v2 v2.5.0 h1:A6yzpfhzX1XqRFhDbVIM5IZzZ4MMP9M+L5ab2VMKCCk=
-github.com/goreleaser/nfpm/v2 v2.5.0/go.mod h1:WyD3Jqp3zKic9QiqEJ5Du+Qpo0LkV7lyIStP4/u5Xiw=
+github.com/goreleaser/nfpm/v2 v2.5.1 h1:xZpdwr/wgp2OmfxjqJcw5CeHHnrVvz75ZRzCpSXeSNo=
+github.com/goreleaser/nfpm/v2 v2.5.1/go.mod h1:Bq9OBKhvhTmdPh6lHUbVBKa3JCw61OgIFEau+vs2CO0=
 github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/grpc-ecosystem/go-grpc-middleware v1.0.0/go.mod h1:FiyG127CGDf3tlThmgyCl78X/SZQqEOJBCDaAfeWzPs=
