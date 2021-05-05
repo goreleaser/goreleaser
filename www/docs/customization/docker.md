@@ -142,7 +142,7 @@ This will build and public the following images:
 
 ## Keeping docker images updated for current major
 
-Some users might want to when version to push docker tags `:v1`, `:v1.6`,
+Some users might want to push docker tags `:v1`, `:v1.6`,
 `:v1.6.4` and `:latest` when `v1.6.4` (for example) is built. That can be
 accomplished by using multiple `image_templates`:
 
