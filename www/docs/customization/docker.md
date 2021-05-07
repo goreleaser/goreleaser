@@ -133,7 +133,7 @@ dockers:
     - "myuser/{{.ProjectName}}"
 ```
 
-This will build and public the following images:
+This will build and publish the following images:
 
 - `myuser/foo`
 
