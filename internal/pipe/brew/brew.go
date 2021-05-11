@@ -323,9 +323,14 @@ func split(s string) []string {
 	return strings
 }
 
+// formulaNameFor transforms the formula name into a form
+// that more resembles a valid Ruby class name
+// e.g. foo_bar@v6.0.0-rc is turned into FooBarATv6_0_0RC
+// The order of these replacements is important
 func formulaNameFor(name string) string {
 	name = strings.ReplaceAll(name, "-", " ")
 	name = strings.ReplaceAll(name, "_", " ")
+	name = strings.ReplaceAll(name, ".", "_")
 	name = strings.ReplaceAll(name, "@", "AT")
 	return strings.ReplaceAll(strings.Title(name), " ", "")
 }

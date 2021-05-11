@@ -31,6 +31,10 @@ func TestNameWithUnderline(t *testing.T) {
 	require.Equal(t, formulaNameFor("some_binary"), "SomeBinary")
 }
 
+func TestNameWithDots(t *testing.T) {
+	require.Equal(t, formulaNameFor("binaryv0.0.0"), "Binaryv0_0_0")
+}
+
 func TestNameWithAT(t *testing.T) {
 	require.Equal(t, formulaNameFor("some_binary@1"), "SomeBinaryAT1")
 }
