@@ -299,12 +299,14 @@ func (c *gitlabClient) Upload(
 	// projectFile.URL from upload: /uploads/<hash>/filename.txt
 	linkURL := gitlabBaseURL + "/" + projectID + projectFile.URL
 	name := artifact.Name
+	filename := "/" + file.Name()
 	releaseLink, _, err := c.client.ReleaseLinks.CreateReleaseLink(
 		projectID,
 		releaseID,
 		&gitlab.CreateReleaseLinkOptions{
-			Name: &name,
-			URL:  &linkURL,
+			Name:     &name,
+			URL:      &linkURL,
+			FilePath: &filename,
 		})
 	if err != nil {
 		return RetriableError{err}
