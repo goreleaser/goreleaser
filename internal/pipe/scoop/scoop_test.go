@@ -274,18 +274,12 @@ func Test_doRun(t *testing.T) {
 					Goos:   "windows",
 					Goarch: "amd64",
 					Path:   file,
-					Extra: map[string]interface{}{
-						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
-					},
 				},
 				{
 					Name:   "foo_1.0.1_windows_386.tar.gz",
 					Goos:   "windows",
 					Goarch: "386",
 					Path:   file,
-					Extra: map[string]interface{}{
-						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
-					},
 				},
 			},
 			shouldNotErr,
@@ -334,18 +328,12 @@ func Test_doRun(t *testing.T) {
 					Goos:   "windows",
 					Goarch: "amd64",
 					Path:   file,
-					Extra: map[string]interface{}{
-						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
-					},
 				},
 				{
 					Name:   "foo_1.0.1_windows_386.tar.gz",
 					Goos:   "windows",
 					Goarch: "386",
 					Path:   file,
-					Extra: map[string]interface{}{
-						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
-					},
 				},
 			},
 			shouldNotErr,
@@ -904,7 +892,7 @@ func Test_buildManifest(t *testing.T) {
 						},
 						Description:           "A run pipe test formula",
 						Homepage:              "https://gitlab.com/goreleaser",
-						URLTemplate:           "http://gitlab.mycompany.com/foo/bar/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
+						URLTemplate:           "http://gitlab.mycompany.com/foo/bar/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
 						CommitMessageTemplate: "chore(scoop): update {{ .ProjectName }} version {{ .Tag }}",
 						Persist:               []string{"data.cfg", "etc"},
 					},
@@ -929,7 +917,6 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "amd64",
 					Path:   file,
 					Extra: map[string]interface{}{
-						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
 						"Builds": []*artifact.Artifact{
 							{
 								Name: "foo.exe",
@@ -946,7 +933,6 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "arm",
 					Path:   file,
 					Extra: map[string]interface{}{
-						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
 						"Builds": []*artifact.Artifact{
 							{
 								Name: "foo.exe",
@@ -963,7 +949,6 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "386",
 					Path:   file,
 					Extra: map[string]interface{}{
-						"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
 						"Builds": []*artifact.Artifact{
 							{
 								Name: "foo.exe",
@@ -1026,7 +1011,7 @@ func TestWrapInDirectory(t *testing.T) {
 				},
 				Description:           "A run pipe test formula",
 				Homepage:              "https://gitlab.com/goreleaser",
-				URLTemplate:           "http://gitlab.mycompany.com/foo/bar/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
+				URLTemplate:           "http://gitlab.mycompany.com/foo/bar/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
 				CommitMessageTemplate: "chore(scoop): update {{ .ProjectName }} version {{ .Tag }}",
 				Persist:               []string{"data.cfg", "etc"},
 			},
@@ -1042,8 +1027,7 @@ func TestWrapInDirectory(t *testing.T) {
 			Goarch: "amd64",
 			Path:   file,
 			Extra: map[string]interface{}{
-				"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
-				"WrappedIn":          "foo_1.0.1_windows_amd64",
+				"WrappedIn": "foo_1.0.1_windows_amd64",
 				"Builds": []*artifact.Artifact{
 					{
 						Name: "foo.exe",

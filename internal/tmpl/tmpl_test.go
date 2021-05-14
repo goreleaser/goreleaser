@@ -47,7 +47,6 @@ func TestWithArtifact(t *testing.T) {
 		"shortcommit":                      "{{.ShortCommit}}",
 		"binary":                           "{{.Binary}}",
 		"proj":                             "{{.ProjectName}}",
-		"":                                 "{{.ArtifactUploadHash}}",
 		"github.com/goreleaser/goreleaser": "{{ .ModulePath }}",
 	} {
 		tmpl := tmpl
@@ -71,24 +70,6 @@ func TestWithArtifact(t *testing.T) {
 			require.Equal(t, expect, result)
 		})
 	}
-
-	t.Run("artifact with gitlab ArtifactUploadHash", func(t *testing.T) {
-		t.Parallel()
-		uploadHash := "820ead5d9d2266c728dce6d4d55b6460"
-		result, err := New(ctx).WithArtifact(
-			&artifact.Artifact{
-				Name:   "another-binary",
-				Goarch: "amd64",
-				Goos:   "linux",
-				Goarm:  "6",
-				Extra: map[string]interface{}{
-					"ArtifactUploadHash": uploadHash,
-				},
-			}, map[string]string{},
-		).Apply("{{ .ArtifactUploadHash }}")
-		require.NoError(t, err)
-		require.Equal(t, uploadHash, result)
-	})
 
 	t.Run("artifact without binary name", func(t *testing.T) {
 		t.Parallel()

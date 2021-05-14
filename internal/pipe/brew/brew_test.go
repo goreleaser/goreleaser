@@ -223,9 +223,8 @@ func TestRunPipe(t *testing.T) {
 				Goarch: "amd64",
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":                 "bar",
-					"Format":             "tar.gz",
-					"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+					"ID":     "bar",
+					"Format": "tar.gz",
 				},
 			})
 			path := filepath.Join(folder, "bin.tar.gz")
@@ -236,9 +235,8 @@ func TestRunPipe(t *testing.T) {
 				Goarch: "amd64",
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":                 "foo",
-					"Format":             "tar.gz",
-					"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+					"ID":     "foo",
+					"Format": "tar.gz",
 				},
 			})
 
@@ -301,9 +299,8 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":                 "foo",
-			"Format":             "tar.gz",
-			"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+			"ID":     "foo",
+			"Format": "tar.gz",
 		},
 	})
 
@@ -386,9 +383,8 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":                 "foo",
-			"Format":             "tar.gz",
-			"ArtifactUploadHash": "820ead5d9d2266c728dce6d4d55b6460",
+			"ID":     "foo",
+			"Format": "tar.gz",
 		},
 	})
 
