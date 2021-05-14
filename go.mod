@@ -9,7 +9,7 @@ require (
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
-	github.com/fatih/color v1.10.0
+	github.com/fatih/color v1.11.0
 	github.com/google/go-github/v35 v35.2.0
 	github.com/goreleaser/fileglob v1.2.0
 	github.com/goreleaser/nfpm/v2 v2.5.1
