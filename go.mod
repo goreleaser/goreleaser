@@ -9,7 +9,7 @@ require (
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
-	github.com/fatih/color v1.10.0
+	github.com/fatih/color v1.11.0
 	github.com/google/go-github/v35 v35.2.0
 	github.com/goreleaser/fileglob v1.2.0
 	github.com/goreleaser/nfpm/v2 v2.5.1
@@ -19,7 +19,7 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/stretchr/testify v1.7.0
 	github.com/ulikunitz/xz v0.5.10
-	github.com/xanzy/go-gitlab v0.49.0
+	github.com/xanzy/go-gitlab v0.50.0
 	gocloud.dev v0.22.0
 	golang.org/x/oauth2 v0.0.0-20201203001011-0b49973bad19
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
