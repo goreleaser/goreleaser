@@ -95,7 +95,7 @@ release:
     If you use GitLab subgroups, you need to specify it in the `owner` field, e.g. `mygroup/mysubgroup`.
 
 !!! warning
-    Only GitLab `v11.7+` are supported for releases.
+    Only GitLab `v12.9+` are supported for releases.
 
 You can also configure the `release` section to upload to a [Gitea](https://gitea.io) instance:
 
