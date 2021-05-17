@@ -294,7 +294,7 @@ func (c *gitlabClient) Upload(
 	// projectFile.URL from upload: /uploads/<hash>/filename.txt
 	linkURL := gitlabBaseURL + "/" + projectID + projectFile.URL
 	name := artifact.Name
-	filename := "/" + file.Name()
+	filename := "/" + name
 	releaseLink, _, err := c.client.ReleaseLinks.CreateReleaseLink(
 		projectID,
 		releaseID,
