@@ -49,7 +49,7 @@ brews:
 
     # Template for the url which is determined by the given Token (github or gitlab)
     # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}"
+    # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}"
     # Default for gitea is "https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
@@ -132,7 +132,7 @@ brews:
     install: |
       bin.install "program"
       ...
-      
+
     # Custom post_install script for brew.
     # Could be used to do any additional work after the "install" script
     # Default is empty.
@@ -178,7 +178,7 @@ class Program < Formula
   def install
     bin.install "program"
   end
-  
+
   def post_install
   	etc.install "app-config.conf"
   end

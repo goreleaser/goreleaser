@@ -2,11 +2,9 @@ package client
 
 import (
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -17,9 +15,6 @@ import (
 )
 
 const DefaultGitLabDownloadURL = "https://gitlab.com"
-
-// ErrExtractHashFromFileUploadURL indicates the file upload hash could not ne extracted from the url.
-var ErrExtractHashFromFileUploadURL = errors.New("could not extract hash from gitlab file upload url")
 
 type gitlabClient struct {
 	client *gitlab.Client
@@ -264,7 +259,7 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 
 func (c *gitlabClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
 	return fmt.Sprintf(
-		"%s/%s/%s/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}",
+		"%s/%s/%s/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
 		ctx.Config.GitLabURLs.Download,
 		ctx.Config.Release.GitLab.Owner,
 		ctx.Config.Release.GitLab.Name,
@@ -299,12 +294,14 @@ func (c *gitlabClient) Upload(
 	// projectFile.URL from upload: /uploads/<hash>/filename.txt
 	linkURL := gitlabBaseURL + "/" + projectID + projectFile.URL
 	name := artifact.Name
+	filename := "/" + name
 	releaseLink, _, err := c.client.ReleaseLinks.CreateReleaseLink(
 		projectID,
 		releaseID,
 		&gitlab.CreateReleaseLinkOptions{
-			Name: &name,
-			URL:  &linkURL,
+			Name:     &name,
+			URL:      &linkURL,
+			FilePath: &filename,
 		})
 	if err != nil {
 		return RetriableError{err}
@@ -312,41 +309,15 @@ func (c *gitlabClient) Upload(
 
 	log.WithFields(log.Fields{
 		"id":  releaseLink.ID,
-		"url": releaseLink.URL,
+		"url": releaseLink.DirectAssetURL,
 	}).Debug("created release link")
-
-	fileUploadHash, err := extractProjectFileHashFrom(projectFile.URL)
-	if err != nil {
-		return err
-	}
 
 	// for checksums.txt the field is nil, so we initialize it
 	if artifact.Extra == nil {
 		artifact.Extra = make(map[string]interface{})
 	}
-	// we set this hash to be able to download the file
-	// in following publish pipes like brew, scoop
-	artifact.Extra["ArtifactUploadHash"] = fileUploadHash
 
 	return nil
-}
-
-// extractProjectFileHashFrom extracts the hash from the
-// relative project file url of the format '/uploads/<hash>/filename.ext'.
-func extractProjectFileHashFrom(projectFileURL string) (string, error) {
-	log.WithField("projectFileURL", projectFileURL).Debug("extract file hash from")
-	splittedProjectFileURL := strings.Split(projectFileURL, "/")
-	if len(splittedProjectFileURL) != 4 {
-		log.WithField("projectFileURL", projectFileURL).Debug("could not extract file hash")
-		return "", ErrExtractHashFromFileUploadURL
-	}
-
-	fileHash := splittedProjectFileURL[2]
-	log.WithFields(log.Fields{
-		"projectFileURL": projectFileURL,
-		"fileHash":       fileHash,
-	}).Debug("extracted file hash")
-	return fileHash, nil
 }
 
 // getMilestoneByTitle returns a milestone by title.

@@ -55,9 +55,6 @@ const (
 	artifactName = "ArtifactName"
 	artifactPath = "ArtifactPath"
 
-	// gitlab only.
-	artifactUploadHash = "ArtifactUploadHash"
-
 	// build keys.
 	name   = "Name"
 	ext    = "Ext"
@@ -135,11 +132,6 @@ func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]st
 	t.fields[binary] = bin.(string)
 	t.fields[artifactName] = a.Name
 	t.fields[artifactPath] = a.Path
-	if val, ok := a.Extra["ArtifactUploadHash"]; ok {
-		t.fields[artifactUploadHash] = val
-	} else {
-		t.fields[artifactUploadHash] = ""
-	}
 	return t
 }
 

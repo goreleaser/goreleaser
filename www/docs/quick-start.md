@@ -104,9 +104,9 @@ Or, if you released to GitLab, check it out too!
 </a>
 
 !!! note
-    Releasing to a private-hosted GitLab CE will only work for version `v11.7+`,
-    because the release feature was introduced in this
-    [version](https://docs.gitlab.com/ee/user/project/releases/index.html).
+    Releasing to a private-hosted GitLab CE will only work for version `v12.9+`, due to dependencies
+    on [release](https://docs.gitlab.com/ee/user/project/releases/index.html) functionality
+    and [direct asset linking](https://docs.gitlab.com/ee/user/project/releases/index.html#permanent-links-to-release-assets).
 
 ## Dry run
 
