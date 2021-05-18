@@ -9,6 +9,8 @@ require (
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e
+	github.com/dghubble/go-twitter v0.0.0-20201011215211-4b180d0cc78d
+	github.com/dghubble/oauth1 v0.7.0
 	github.com/fatih/color v1.11.0
 	github.com/google/go-github/v35 v35.2.0
 	github.com/goreleaser/fileglob v1.2.0
