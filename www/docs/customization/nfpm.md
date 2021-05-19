@@ -216,7 +216,7 @@ nfpms:
       rpm:
         replacements:
           amd64: x86_64
-        name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Arch }}"
+        file_name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Arch }}"
         files:
           "tmp/man.gz": "/usr/share/man/man8/app.8.gz"
         config_files:
