@@ -192,8 +192,13 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		if err != nil {
 			return err
 		}
-		content.Source = src
-		contents = append(contents, content)
+		contents = append(contents, &files.Content{
+			Source:      src,
+			Destination: content.Destination,
+			Type:        content.Type,
+			Packager:    content.Packager,
+			FileInfo:    content.FileInfo,
+		})
 	}
 
 	// FPM meta package should not contain binaries at all
