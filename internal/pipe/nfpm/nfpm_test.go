@@ -130,7 +130,7 @@ func TestRunPipe(t *testing.T) {
 							Type:        "symlink",
 						},
 						{
-							Source:      "/etc/{{ .Os }}/nope.conf",
+							Source:      "./testdata/testfile-{{ .Arch }}.txt",
 							Destination: "/etc/nope3.conf",
 						},
 					},
@@ -166,6 +166,14 @@ func TestRunPipe(t *testing.T) {
 		require.Equal(t, pkg.Name, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
 		require.ElementsMatch(t, []string{
+			"./testdata/testfile.txt",
+			"./testdata/testfile.txt",
+			"./testdata/testfile.txt",
+			"/etc/nope.conf",
+			"./testdata/testfile-" + pkg.Goarch + ".txt",
+			binPath,
+		}, sources(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
+		require.ElementsMatch(t, []string{
 			"/usr/share/testfile.txt",
 			"/etc/nope.conf",
 			"/etc/nope-rpm.conf",
@@ -173,14 +181,6 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope3.conf",
 			"/usr/bin/mybin",
 		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
-		require.ElementsMatch(t, []string{
-			"./testdata/testfile.txt",
-			"./testdata/testfile.txt",
-			"./testdata/testfile.txt",
-			"/etc/nope.conf",
-			"/etc/" + pkg.Goos + "/nope.conf",
-			binPath,
-		}, sources(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 5, "should not modify the config file list")
 }
