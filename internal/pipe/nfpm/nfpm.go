@@ -174,19 +174,32 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	if err != nil {
 		return err
 	}
-	name, err := tmpl.New(ctx).
+	tmpl := tmpl.New(ctx).
 		WithArtifact(binaries[0], overridden.Replacements).
 		WithExtraFields(tmpl.Fields{
 			"Release":     fpm.Release,
 			"Epoch":       fpm.Epoch,
 			"PackageName": fpm.PackageName,
-		}).
-		Apply(overridden.FileNameTemplate)
+		})
+	name, err := tmpl.Apply(overridden.FileNameTemplate)
 	if err != nil {
 		return err
 	}
 
-	contents := append(files.Contents{}, overridden.Contents...)
+	contents := files.Contents{}
+	for _, content := range overridden.Contents {
+		src, err := tmpl.Apply(content.Source)
+		if err != nil {
+			return err
+		}
+		contents = append(contents, &files.Content{
+			Source:      src,
+			Destination: content.Destination,
+			Type:        content.Type,
+			Packager:    content.Packager,
+			FileInfo:    content.FileInfo,
+		})
+	}
 
 	// FPM meta package should not contain binaries at all
 	if !fpm.Meta {
