@@ -341,6 +341,14 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	return nil
 }
 
+func sources(contents files.Contents) []string {
+	result := make([]string, 0, len(contents))
+	for _, f := range contents {
+		result = append(result, f.Source)
+	}
+	return result
+}
+
 func destinations(contents files.Contents) []string {
 	result := make([]string, 0, len(contents))
 	for _, f := range contents {

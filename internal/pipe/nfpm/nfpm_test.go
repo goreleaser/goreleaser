@@ -129,6 +129,10 @@ func TestRunPipe(t *testing.T) {
 							Destination: "/etc/nope2.conf",
 							Type:        "symlink",
 						},
+						{
+							Source:      "/etc/{{ .Os }}/nope.conf",
+							Destination: "/etc/nope3.conf",
+						},
 					},
 					Replacements: map[string]string{
 						"linux": "Tux",
@@ -166,10 +170,19 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope.conf",
 			"/etc/nope-rpm.conf",
 			"/etc/nope2.conf",
+			"/etc/nope3.conf",
 			"/usr/bin/mybin",
 		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
+		require.ElementsMatch(t, []string{
+			"./testdata/testfile.txt",
+			"./testdata/testfile.txt",
+			"./testdata/testfile.txt",
+			"/etc/nope.conf",
+			"/etc/" + pkg.Goos + "/nope.conf",
+			binPath,
+		}, sources(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
 	}
-	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
+	require.Len(t, ctx.Config.NFPMs[0].Contents, 5, "should not modify the config file list")
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
@@ -199,6 +212,40 @@ func TestInvalidNameTemplate(t *testing.T) {
 		},
 	})
 	require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1: unexpected "}" in operand`)
+}
+
+func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
+	ctx := &context.Context{
+		Parallelism: runtime.NumCPU(),
+		Artifacts:   artifact.New(),
+		Config: config.Project{
+			NFPMs: []config.NFPM{
+				{
+					NFPMOverridables: config.NFPMOverridables{
+						PackageName: "foo",
+						Contents: []*files.Content{
+							{
+								Source:      "{{.asdsd}",
+								Destination: "testfile",
+							},
+						},
+					},
+					Formats: []string{"deb"},
+					Builds:  []string{"default"},
+				},
+			},
+		},
+	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			"ID": "default",
+		},
+	})
+	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: failed to apply template {{.asdsd}: template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestNoBuildsFound(t *testing.T) {
