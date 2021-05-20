@@ -245,7 +245,7 @@ func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
 			"ID": "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: failed to apply template {{.asdsd}: template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestNoBuildsFound(t *testing.T) {
@@ -948,4 +948,12 @@ func TestSkipSign(t *testing.T) {
 		ctx.SkipSign = true
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
+}
+
+func sources(contents files.Contents) []string {
+	result := make([]string, 0, len(contents))
+	for _, f := range contents {
+		result = append(result, f.Source)
+	}
+	return result
 }
