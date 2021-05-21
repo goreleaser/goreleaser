@@ -136,8 +136,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
 		},
 		{
 			desc: "sign all artifacts",
@@ -150,8 +150,50 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
+		},
+		{
+			desc: "sign archives",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "archive",
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig"},
+		},
+		{
+			desc: "sign packages",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "package",
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"package1.deb.sig"},
+			signatureNames: []string{"package1.deb.sig"},
+		},
+		{
+			desc: "sign binaries",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "binary",
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"artifact3.sig", "linux_amd64/artifact4.sig"},
+			signatureNames: []string{"artifact3_1.0.0_linux_amd64.sig", "artifact4_1.0.0_linux_amd64.sig"},
 		},
 		{
 			desc: "multiple sign configs",
@@ -195,8 +237,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "artifact5.tar.gz.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact5.tar.gz.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
 		},
 		{
 			desc: "sign only checksums",
@@ -263,8 +305,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
 		},
 		{
 			desc: "sign all artifacts with template",
@@ -288,8 +330,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
 		},
 		{
 			desc: "sign single with password from stdin",
@@ -316,8 +358,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
 			user:           passwordUser,
 		},
 		{
@@ -345,8 +387,8 @@ func TestSignArtifacts(t *testing.T) {
 					},
 				},
 			),
-			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig"},
-			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig"},
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
 			user:           passwordUser,
 		},
 		{
@@ -390,7 +432,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 	ctx.Config.Dist = tmpdir
 
 	// create some fake artifacts
-	artifacts := []string{"artifact1", "artifact2", "artifact3", "checksum", "checksum2"}
+	artifacts := []string{"artifact1", "artifact2", "artifact3", "checksum", "checksum2", "package1.deb"}
 	require.NoError(tb, os.Mkdir(filepath.Join(tmpdir, "linux_amd64"), os.ModePerm))
 	for _, f := range artifacts {
 		file := filepath.Join(tmpdir, f)
@@ -446,6 +488,14 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 		Name: "artifact5.tar.gz",
 		Path: filepath.Join(tmpdir, "artifact5.tar.gz"),
 		Type: artifact.UploadableSourceArchive,
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "package1.deb",
+		Path: filepath.Join(tmpdir, "package1.deb"),
+		Type: artifact.LinuxPackage,
+		Extra: map[string]interface{}{
+			"ID": "foo",
+		},
 	})
 
 	// configure the pipeline
