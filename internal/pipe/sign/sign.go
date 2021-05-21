@@ -81,13 +81,20 @@ func (Pipe) Run(ctx *context.Context) error {
 					artifact.ByType(artifact.Checksum),
 					artifact.ByType(artifact.LinuxPackage),
 				))
-				if len(cfg.IDs) > 0 {
-					filters = append(filters, artifact.ByIDs(cfg.IDs...))
-				}
+			case "archive":
+				filters = append(filters, artifact.ByType(artifact.UploadableArchive))
+			case "binary":
+				filters = append(filters, artifact.ByType(artifact.UploadableBinary))
+			case "package":
+				filters = append(filters, artifact.ByType(artifact.LinuxPackage))
 			case "none":
 				return pipe.ErrSkipSignEnabled
 			default:
 				return fmt.Errorf("invalid list of artifacts to sign: %s", cfg.Artifacts)
+			}
+
+			if len(cfg.IDs) > 0 {
+				filters = append(filters, artifact.ByIDs(cfg.IDs...))
 			}
 			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
 		})

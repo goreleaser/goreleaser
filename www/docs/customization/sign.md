@@ -55,10 +55,13 @@ signs:
 
     # which artifacts to sign
     #
-    #   checksum: only checksum file(s)
     #   all:      all artifacts
     #   none:     no signing
+    #   checksum: only checksum file(s)
     #   source:   source archive
+    #   package:  linux packages (deb, rpm, apk)
+    #   archive:  archives from archive pipe
+    #   binary:   binaries if archiving format is set to binary
     #
     # defaults to `none`
     artifacts: all
