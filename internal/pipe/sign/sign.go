@@ -115,14 +115,20 @@ func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact)
 
 func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*artifact.Artifact, error) {
 	env := ctx.Env.Copy()
+	templ := tmpl.New(ctx).WithEnv(env)
+
 	env["artifact"] = a.Path
-	env["signature"] = expand(cfg.Signature, env)
+
+	name, err := templ.Apply(expand(cfg.Signature, env))
+	if err != nil {
+		return nil, fmt.Errorf("sign failed: %s: invalid template: %w", a, err)
+	}
+	env["signature"] = name
 
 	// nolint:prealloc
 	var args []string
 	for _, a := range cfg.Args {
-		arg := expand(a, env)
-		arg, err := tmpl.New(ctx).WithEnv(env).Apply(arg)
+		arg, err := templ.Apply(expand(a, env))
 		if err != nil {
 			return nil, fmt.Errorf("sign failed: %s: invalid template: %w", a, err)
 		}
@@ -160,7 +166,10 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 	artifactPathBase, _ := filepath.Split(a.Path)
 
 	env["artifact"] = a.Name
-	name := expand(cfg.Signature, env)
+	name, err = templ.Apply(expand(cfg.Signature, env))
+	if err != nil {
+		return nil, fmt.Errorf("sign failed: %s: invalid template: %w", a, err)
+	}
 
 	sigFilename := filepath.Base(env["signature"])
 	return &artifact.Artifact{

@@ -26,6 +26,7 @@ var (
 const (
 	user         = "nopass"
 	passwordUser = "password"
+	fakeGPGKeyID = "23E7505E"
 )
 
 func TestMain(m *testing.M) {
@@ -199,6 +200,9 @@ func TestSignArtifacts(t *testing.T) {
 			desc: "multiple sign configs",
 			ctx: context.New(
 				config.Project{
+					Env: []string{
+						"GPG_KEY_ID=" + fakeGPGKeyID,
+					},
 					Signs: []config.Sign{
 						{
 							ID:        "s1",
@@ -206,23 +210,23 @@ func TestSignArtifacts(t *testing.T) {
 						},
 						{
 							ID:        "s2",
-							Artifacts: "checksum",
-							Signature: "${artifact}.sog",
+							Artifacts: "archive",
+							Signature: "${artifact}.{{ .Env.GPG_KEY_ID }}.sig",
 						},
 					},
 				},
 			),
 			signaturePaths: []string{
+				"artifact1." + fakeGPGKeyID + ".sig",
+				"artifact2." + fakeGPGKeyID + ".sig",
 				"checksum.sig",
 				"checksum2.sig",
-				"checksum.sog",
-				"checksum2.sog",
 			},
 			signatureNames: []string{
+				"artifact1." + fakeGPGKeyID + ".sig",
+				"artifact2." + fakeGPGKeyID + ".sig",
 				"checksum.sig",
 				"checksum2.sig",
-				"checksum.sog",
-				"checksum2.sog",
 			},
 		},
 		{
@@ -560,12 +564,13 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 
 func verifySignature(tb testing.TB, ctx *context.Context, sig string, user string) {
 	tb.Helper()
-	artifact := strings.Replace(sig, filepath.Ext(sig), "", 1)
+	artifact := strings.TrimSuffix(sig, filepath.Ext(sig))
+	artifact = strings.TrimSuffix(artifact, "."+fakeGPGKeyID)
 
 	// verify signature was made with key for usesr 'nopass'
 	cmd := exec.Command("gpg", "--homedir", keyring, "--verify", filepath.Join(ctx.Config.Dist, sig), filepath.Join(ctx.Config.Dist, artifact))
 	out, err := cmd.CombinedOutput()
-	require.NoError(tb, err)
+	require.NoError(tb, err, string(out))
 
 	// check if the signature matches the user we expect to do this properly we
 	// might need to have either separate keyrings or export the key from the
