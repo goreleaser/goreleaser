@@ -30,6 +30,12 @@ func TestCheckConfigInvalid(t *testing.T) {
 	require.EqualError(t, cmd.cmd.Execute(), "invalid config: found 2 builds with the ID 'a', please fix your config")
 }
 
+func TestCheckConfigInvalidQuiet(t *testing.T) {
+	cmd := newCheckCmd()
+	cmd.cmd.SetArgs([]string{"-f", "testdata/invalid.yml", "-q"})
+	require.Error(t, cmd.cmd.Execute())
+}
+
 func TestCheckConfigDeprecated(t *testing.T) {
 	cmd := newCheckCmd()
 	cmd.cmd.SetArgs([]string{"-f", "testdata/good.yml", "--deprecated"})

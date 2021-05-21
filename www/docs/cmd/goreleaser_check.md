@@ -11,6 +11,7 @@ goreleaser check [flags]
 ```
   -f, --config string   Configuration file to check
   -h, --help            help for check
+  -q, --quiet           Quiet mode: no output
 ```
 
 ## Options inherited from parent commands
