@@ -93,7 +93,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				return fmt.Errorf("invalid list of artifacts to sign: %s", cfg.Artifacts)
 			}
 
-			if cfg.Artifacts != "checksum" && len(cfg.IDs) > 0 {
+			if len(cfg.IDs) > 0 {
 				filters = append(filters, artifact.ByIDs(cfg.IDs...))
 			}
 			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
