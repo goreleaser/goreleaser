@@ -33,7 +33,7 @@ signs:
     # Defaults to "default".
     id: foo
 
-    # name of the signature file.
+    # name/template of the signature file.
     # '${artifact}' is the path to the artifact that should be signed.
     #
     # defaults to `${artifact}.sig`
