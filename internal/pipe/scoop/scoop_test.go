@@ -975,6 +975,60 @@ func Test_buildManifest(t *testing.T) {
 	}
 }
 
+func TestRunPipeScoopWithSkip(t *testing.T) {
+	folder := t.TempDir()
+	ctx := &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.0.1",
+		},
+		Version:   "1.0.1",
+		Artifacts: artifact.New(),
+		Config: config.Project{
+			Archives: []config.Archive{
+				{Format: "tar.gz"},
+			},
+			Builds: []config.Build{
+				{Binary: "test"},
+			},
+			Dist: folder,
+			ProjectName: "run-pipe",
+			Scoop: config.Scoop{
+				Bucket: config.RepoRef{
+					Owner: "test",
+					Name:  "test",
+				},
+				Description: "A run pipe test formula",
+				Homepage:    "https://github.com/goreleaser",
+				Name: "run-pipe",
+				SkipUpload: "true",
+			},
+		},
+	}
+	path := filepath.Join(folder, "bin.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "bin.tar.gz",
+		Path:   path,
+		Goos:   "windows",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID":     "foo",
+			"Format": "tar.gz",
+		},
+	})
+
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	cli := &DummyClient{}
+	require.EqualError(t, doRun(ctx, cli), `scoop.skip_upload is true`)
+
+	distFile := filepath.Join(folder, ctx.Config.Scoop.Name+".json")
+	_, err = os.Stat(distFile)
+	require.NoError(t, err, "file should exist: "+distFile)
+}
+
 func TestWrapInDirectory(t *testing.T) {
 	folder := t.TempDir()
 	file := filepath.Join(folder, "archive")
