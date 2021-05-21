@@ -62,7 +62,7 @@ func newCheckCmd() *checkCmd {
 	}
 
 	cmd.Flags().StringVarP(&root.config, "config", "f", "", "Configuration file to check")
-	cmd.Flags().BoolVarP(&root.quiet, "quiet", "q", false, "Hide output, useful for tests")
+	cmd.Flags().BoolVarP(&root.quiet, "quiet", "q", false, "Quiet mode: no output")
 	cmd.Flags().BoolVar(&root.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
 
