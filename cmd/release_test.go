@@ -67,13 +67,27 @@ func TestReleaseFlags(t *testing.T) {
 		header := "header.md"
 		footer := "footer.md"
 		ctx := setup(releaseOpts{
-			releaseNotes:  notes,
-			releaseHeader: header,
-			releaseFooter: footer,
+			releaseNotesFile:  notes,
+			releaseHeaderFile: header,
+			releaseFooterFile: footer,
 		})
-		require.Equal(t, notes, ctx.ReleaseNotes)
-		require.Equal(t, header, ctx.ReleaseHeader)
-		require.Equal(t, footer, ctx.ReleaseFooter)
+		require.Equal(t, notes, ctx.ReleaseNotesFile)
+		require.Equal(t, header, ctx.ReleaseHeaderFile)
+		require.Equal(t, footer, ctx.ReleaseFooterFile)
+	})
+
+	t.Run("templated notes", func(t *testing.T) {
+		notes := "foo.md"
+		header := "header.md"
+		footer := "footer.md"
+		ctx := setup(releaseOpts{
+			releaseNotesTmpl:  notes,
+			releaseHeaderTmpl: header,
+			releaseFooterTmpl: footer,
+		})
+		require.Equal(t, notes, ctx.ReleaseNotesTmpl)
+		require.Equal(t, header, ctx.ReleaseHeaderTmpl)
+		require.Equal(t, footer, ctx.ReleaseFooterTmpl)
 	})
 
 	t.Run("rm dist", func(t *testing.T) {

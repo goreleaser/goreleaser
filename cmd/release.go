@@ -19,18 +19,21 @@ type releaseCmd struct {
 }
 
 type releaseOpts struct {
-	config        string
-	releaseNotes  string
-	releaseHeader string
-	releaseFooter string
-	snapshot      bool
-	skipPublish   bool
-	skipSign      bool
-	skipValidate  bool
-	rmDist        bool
-	deprecated    bool
-	parallelism   int
-	timeout       time.Duration
+	config            string
+	releaseNotesFile  string
+	releaseNotesTmpl  string
+	releaseHeaderFile string
+	releaseHeaderTmpl string
+	releaseFooterFile string
+	releaseFooterTmpl string
+	snapshot          bool
+	skipPublish       bool
+	skipSign          bool
+	skipValidate      bool
+	rmDist            bool
+	deprecated        bool
+	parallelism       int
+	timeout           time.Duration
 }
 
 func newReleaseCmd() *releaseCmd {
@@ -63,9 +66,12 @@ func newReleaseCmd() *releaseCmd {
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
-	cmd.Flags().StringVar(&root.opts.releaseNotes, "release-notes", "", "Load custom release notes from a markdown file")
-	cmd.Flags().StringVar(&root.opts.releaseHeader, "release-header", "", "Load custom release notes header from a markdown file")
-	cmd.Flags().StringVar(&root.opts.releaseFooter, "release-footer", "", "Load custom release notes footer from a markdown file")
+	cmd.Flags().StringVar(&root.opts.releaseNotesFile, "release-notes", "", "Load custom release notes from a markdown file")
+	cmd.Flags().StringVar(&root.opts.releaseHeaderFile, "release-header", "", "Load custom release notes header from a markdown file")
+	cmd.Flags().StringVar(&root.opts.releaseFooterFile, "release-footer", "", "Load custom release notes footer from a markdown file")
+	cmd.Flags().StringVar(&root.opts.releaseNotesTmpl, "release-notes-tmpl", "", "Load custom release notes from a templated markdown file (overrides --release-notes)")
+	cmd.Flags().StringVar(&root.opts.releaseHeaderTmpl, "release-header-tmpl", "", "Load custom release notes header from a templated markdown file (overrides --release-header)")
+	cmd.Flags().StringVar(&root.opts.releaseFooterTmpl, "release-footer-tmpl", "", "Load custom release notes footer from a templated markdown file (overrides --release-footer)")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipSign, "skip-sign", false, "Skips signing the artifacts")
@@ -108,9 +114,12 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Con
 		ctx.Parallelism = options.parallelism
 	}
 	log.Debugf("parallelism: %v", ctx.Parallelism)
-	ctx.ReleaseNotes = options.releaseNotes
-	ctx.ReleaseHeader = options.releaseHeader
-	ctx.ReleaseFooter = options.releaseFooter
+	ctx.ReleaseNotesFile = options.releaseNotesFile
+	ctx.ReleaseNotesTmpl = options.releaseNotesTmpl
+	ctx.ReleaseHeaderFile = options.releaseHeaderFile
+	ctx.ReleaseHeaderTmpl = options.releaseHeaderTmpl
+	ctx.ReleaseFooterFile = options.releaseFooterFile
+	ctx.ReleaseFooterTmpl = options.releaseFooterTmpl
 	ctx.Snapshot = options.snapshot
 	ctx.SkipPublish = ctx.Snapshot || options.skipPublish
 	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
