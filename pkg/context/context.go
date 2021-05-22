@@ -73,8 +73,12 @@ type Context struct {
 	Date               time.Time
 	Artifacts          artifact.Artifacts
 	ReleaseNotes       string
-	ReleaseHeader      string
-	ReleaseFooter      string
+	ReleaseNotesFile   string
+	ReleaseNotesTmpl   string
+	ReleaseHeaderFile  string
+	ReleaseHeaderTmpl  string
+	ReleaseFooterFile  string
+	ReleaseFooterTmpl  string
 	Version            string
 	ModulePath         string
 	Snapshot           bool

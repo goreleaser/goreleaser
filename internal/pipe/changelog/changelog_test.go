@@ -18,14 +18,15 @@ func TestDescription(t *testing.T) {
 
 func TestChangelogProvidedViaFlag(t *testing.T) {
 	ctx := context.New(config.Project{})
-	ctx.ReleaseNotes = "testdata/changes.md"
+	ctx.ReleaseNotesFile = "testdata/changes.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "c0ff33 coffeee\n", ctx.ReleaseNotes)
 }
 
 func TestTemplatedChangelogProvidedViaFlag(t *testing.T) {
 	ctx := context.New(config.Project{})
-	ctx.ReleaseNotes = "testdata/changes-templated.md"
+	ctx.ReleaseNotesFile = "testdata/changes.md"
+	ctx.ReleaseNotesTmpl = "testdata/changes-templated.md"
 	ctx.Git.CurrentTag = "v0.0.1"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "c0ff33 coffeee v0.0.1\n", ctx.ReleaseNotes)
@@ -37,14 +38,14 @@ func TestChangelogProvidedViaFlagAndSkipEnabled(t *testing.T) {
 			Skip: true,
 		},
 	})
-	ctx.ReleaseNotes = "testdata/changes.md"
+	ctx.ReleaseNotesFile = "testdata/changes.md"
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, "c0ff33 coffeee\n", ctx.ReleaseNotes)
 }
 
 func TestChangelogProvidedViaFlagDoesntExist(t *testing.T) {
 	ctx := context.New(config.Project{})
-	ctx.ReleaseNotes = "testdata/changes.nope"
+	ctx.ReleaseNotesFile = "testdata/changes.nope"
 	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/changes.nope: no such file or directory")
 }
 
@@ -56,13 +57,13 @@ func TestChangelogSkip(t *testing.T) {
 
 func TestReleaseHeaderProvidedViaFlagDoesntExist(t *testing.T) {
 	ctx := context.New(config.Project{})
-	ctx.ReleaseHeader = "testdata/header.nope"
+	ctx.ReleaseHeaderFile = "testdata/header.nope"
 	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/header.nope: no such file or directory")
 }
 
 func TestReleaseFooterProvidedViaFlagDoesntExist(t *testing.T) {
 	ctx := context.New(config.Project{})
-	ctx.ReleaseFooter = "testdata/footer.nope"
+	ctx.ReleaseFooterFile = "testdata/footer.nope"
 	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/footer.nope: no such file or directory")
 }
 
@@ -341,7 +342,7 @@ func TestChangeLogWithReleaseHeader(t *testing.T) {
 	testlib.GitCheckoutBranch(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
-	ctx.ReleaseHeader = "testdata/release-header.md"
+	ctx.ReleaseHeaderFile = "testdata/release-header.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.Contains(t, ctx.ReleaseNotes, "test header")
@@ -366,7 +367,7 @@ func TestChangeLogWithTemplatedReleaseHeader(t *testing.T) {
 	testlib.GitCheckoutBranch(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
-	ctx.ReleaseHeader = "testdata/release-header-templated.md"
+	ctx.ReleaseHeaderTmpl = "testdata/release-header-templated.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.Contains(t, ctx.ReleaseNotes, "test header with tag v0.0.1")
@@ -391,7 +392,7 @@ func TestChangeLogWithReleaseFooter(t *testing.T) {
 	testlib.GitCheckoutBranch(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
-	ctx.ReleaseFooter = "testdata/release-footer.md"
+	ctx.ReleaseFooterFile = "testdata/release-footer.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.Contains(t, ctx.ReleaseNotes, "test footer")
@@ -417,7 +418,7 @@ func TestChangeLogWithTemplatedReleaseFooter(t *testing.T) {
 	testlib.GitCheckoutBranch(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
-	ctx.ReleaseFooter = "testdata/release-footer-templated.md"
+	ctx.ReleaseFooterTmpl = "testdata/release-footer-templated.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.Contains(t, ctx.ReleaseNotes, "test footer with tag v0.0.1")
