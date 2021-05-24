@@ -109,7 +109,7 @@ func doRun(ctx *context.Context, cl client.Client) error {
 	}
 
 	filename := filepath.Join(ctx.Config.Dist, path)
-	log.WithField("manifest", path).Info("writing")
+	log.WithField("manifest", filename).Info("writing")
 	if err := os.WriteFile(filename, content.Bytes(), 0o644); err != nil {
 		return fmt.Errorf("failed to write scoop manifest: %w", err)
 	}
