@@ -29,21 +29,12 @@ func (Pipe) String() string {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	// TODO: should probably have a different field for the filename and its
-	// contents.
-	if ctx.ReleaseNotes != "" {
-		notes, err := loadFromFile(ctx.ReleaseNotes)
-		if err != nil {
-			return err
-		}
-		notes, err = tmpl.New(ctx).Apply(notes)
-		if err != nil {
-			return err
-		}
-		log.WithField("file", ctx.ReleaseNotes).Info("loaded custom release notes")
-		log.WithField("file", ctx.ReleaseNotes).Debugf("custom release notes: \n%s", notes)
-		ctx.ReleaseNotes = notes
+	notes, err := loadContent(ctx, ctx.ReleaseNotesFile, ctx.ReleaseNotesTmpl)
+	if err != nil {
+		return err
 	}
+	ctx.ReleaseNotes = notes
+
 	if ctx.Config.Changelog.Skip {
 		return pipe.ErrSkipDisabledPipe
 	}
@@ -53,27 +44,15 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.ReleaseNotes != "" {
 		return nil
 	}
-	if ctx.ReleaseHeader != "" {
-		header, err := loadFromFile(ctx.ReleaseHeader)
-		if err != nil {
-			return err
-		}
-		header, err = tmpl.New(ctx).Apply(header)
-		if err != nil {
-			return err
-		}
-		ctx.ReleaseHeader = header
+
+	footer, err := loadContent(ctx, ctx.ReleaseFooterFile, ctx.ReleaseFooterTmpl)
+	if err != nil {
+		return err
 	}
-	if ctx.ReleaseFooter != "" {
-		footer, err := loadFromFile(ctx.ReleaseFooter)
-		if err != nil {
-			return err
-		}
-		footer, err = tmpl.New(ctx).Apply(footer)
-		if err != nil {
-			return err
-		}
-		ctx.ReleaseFooter = footer
+
+	header, err := loadContent(ctx, ctx.ReleaseHeaderFile, ctx.ReleaseHeaderTmpl)
+	if err != nil {
+		return err
 	}
 
 	if err := checkSortDirection(ctx.Config.Changelog.Sort); err != nil {
@@ -97,11 +76,11 @@ func (Pipe) Run(ctx *context.Context) error {
 		"## Changelog",
 		strings.Join(entries, changelogStringJoiner),
 	}
-	if len(ctx.ReleaseHeader) > 0 {
-		changelogElements = append([]string{ctx.ReleaseHeader}, changelogElements...)
+	if header != "" {
+		changelogElements = append([]string{header}, changelogElements...)
 	}
-	if len(ctx.ReleaseFooter) > 0 {
-		changelogElements = append(changelogElements, ctx.ReleaseFooter)
+	if footer != "" {
+		changelogElements = append(changelogElements, footer)
 	}
 
 	ctx.ReleaseNotes = strings.Join(changelogElements, "\n\n")
@@ -224,4 +203,22 @@ var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
 // isSHA1 te lets us know if the ref is a SHA1 or not.
 func isSHA1(ref string) bool {
 	return validSHA1.MatchString(ref)
+}
+
+func loadContent(ctx *context.Context, fileName, tmplName string) (string, error) {
+	if tmplName != "" {
+		log.Debugf("loading template %s", tmplName)
+		content, err := loadFromFile(tmplName)
+		if err != nil {
+			return "", err
+		}
+		return tmpl.New(ctx).Apply(content)
+	}
+
+	if fileName != "" {
+		log.Debugf("loading file %s", fileName)
+		return loadFromFile(fileName)
+	}
+
+	return "", nil
 }
