@@ -1,65 +1,43 @@
+// Package announce contains the announcing pipe.
 package announce
 
 import (
 	"fmt"
-	"github.com/apex/log"
-	"github.com/dghubble/go-twitter/twitter"
-	"github.com/dghubble/oauth1"
-	"github.com/goreleaser/goreleaser/internal/pipe"
-	"github.com/goreleaser/goreleaser/internal/tmpl"
+
+	"github.com/goreleaser/goreleaser/internal/middleware"
+	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Pipe that announces releases on social media platforms
+// Pipe that announces releases.
 type Pipe struct{}
 
-func (p Pipe) Run(ctx *context.Context) error {
-	if !ctx.Config.Twitter.Announce {
-		return pipe.ErrSkipPublishEnabled
-	}
-
-	config := oauth1.NewConfig(ctx.Config.Twitter.ConsumerKey, ctx.Config.Twitter.ConsumerSecret)
-	token := oauth1.NewToken(ctx.Config.Twitter.AccessToken, ctx.Config.Twitter.AccessSecret)
-	// http.Client will automatically authorize Requests
-	httpClient := config.Client(oauth1.NoContext, token)
-
-	// Twitter client
-	client := twitter.NewClient(httpClient)
-
-	msg := ctx.Config.Twitter.MessageTemplate
-
-	parsedMsg, err := tmpl.New(ctx).
-		Apply(msg)
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	log.WithField("message", parsedMsg).Info("sending tweet")
-
-	// Send a Tweet
-	_, _, err = client.Statuses.Update(parsedMsg, nil)
-
-	if err != nil {
-		log.WithError(err)
-		return err
-	}
-	return nil
-}
-
 func (Pipe) String() string {
-	return "twitter announcement"
+	return "announcing"
 }
 
-// Announcer should be implemented by pipes that want to announce a release.
+// Announcer should be implemented by pipes that want to announce releases.
 type Announcer interface {
 	fmt.Stringer
 
 	Announce(ctx *context.Context) error
 }
 
-// Default sets the pipe defaults.
-func (Pipe) Default(ctx *context.Context) error {
+// nolint: gochecknoglobals
+var announcers = []Announcer{
+	twitter.Pipe{}, // announce to twitter
+}
+
+// Run the pipe.
+func (Pipe) Run(ctx *context.Context) error {
+	for _, announcer := range announcers {
+		if err := middleware.Logging(
+			announcer.String(),
+			middleware.ErrHandler(announcer.Announce),
+			middleware.ExtraPadding,
+		)(ctx); err != nil {
+			return fmt.Errorf("%s: failed to announce release: %w", announcer.String(), err)
+		}
+	}
 	return nil
 }

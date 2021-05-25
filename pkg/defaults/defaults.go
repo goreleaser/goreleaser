@@ -22,6 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
+	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -53,5 +54,6 @@ var Defaulters = []Defaulter{
 	blob.Pipe{},
 	brew.Pipe{},
 	scoop.Pipe{},
+	twitter.Pipe{},
 	milestone.Pipe{},
 }

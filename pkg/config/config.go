@@ -618,7 +618,7 @@ type Project struct {
 	Before          Before           `yaml:",omitempty"`
 	Source          Source           `yaml:",omitempty"`
 	GoMod           GoMod            `yaml:"gomod,omitempty"`
-	Twitter         Twitter          `yaml:"twitter,omitempty"`
+	Announce        Announce         `yaml:"announce,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
@@ -639,12 +639,12 @@ type GoMod struct {
 	GoBinary string   `yaml:",omitempty"`
 }
 
+type Announce struct {
+	Twitter Twitter `yaml:"twitter,omitempty"`
+}
+
 type Twitter struct {
-	Announce        bool   `yaml:"announce,omitempty"`
-	ConsumerKey     string `yaml:"consumer_key,omitempty"`
-	ConsumerSecret  string `yaml:"consumer_secret,omitempty"`
-	AccessToken     string `yaml:"access_token,omitempty"`
-	AccessSecret    string `yaml:"access_secret,omitempty"`
+	Enabled         bool   `yaml:"enabled,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty"`
 }
 
