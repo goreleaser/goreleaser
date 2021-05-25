@@ -990,7 +990,7 @@ func TestRunPipeScoopWithSkip(t *testing.T) {
 			Builds: []config.Build{
 				{Binary: "test"},
 			},
-			Dist: folder,
+			Dist:        folder,
 			ProjectName: "run-pipe",
 			Scoop: config.Scoop{
 				Bucket: config.RepoRef{
@@ -999,8 +999,8 @@ func TestRunPipeScoopWithSkip(t *testing.T) {
 				},
 				Description: "A run pipe test formula",
 				Homepage:    "https://github.com/goreleaser",
-				Name: "run-pipe",
-				SkipUpload: "true",
+				Name:        "run-pipe",
+				SkipUpload:  "true",
 			},
 		},
 	}

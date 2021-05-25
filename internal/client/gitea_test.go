@@ -426,6 +426,6 @@ func TestGiteaReleaseURLTemplate(t *testing.T) {
 	urlTpl, err := client.ReleaseURLTemplate(ctx)
 	require.NoError(t, err)
 
-	expectedUrl := "https://gitea.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-	require.Equal(t, expectedUrl, urlTpl)
+	expectedURL := "https://gitea.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+	require.Equal(t, expectedURL, urlTpl)
 }

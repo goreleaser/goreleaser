@@ -20,7 +20,7 @@ func Notice(ctx *context.Context, property string) {
 	NoticeCustom(ctx, property, "`{{ .Property }}` should not be used anymore, check {{ .URL }} for more info")
 }
 
-// Notice warns the user about the deprecation of the given property.
+// NoticeCustom warns the user about the deprecation of the given property.
 func NoticeCustom(ctx *context.Context, property, tmpl string) {
 	ctx.Deprecated = true
 	cli.Default.Padding += 3
