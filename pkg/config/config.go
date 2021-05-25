@@ -203,6 +203,7 @@ type Build struct {
 	ModTimestamp string         `yaml:"mod_timestamp,omitempty"`
 	Skip         bool           `yaml:",omitempty"`
 	GoBinary     string         `yaml:",omitempty"`
+	OutputPath   string         `yaml:"output_path,omitempty"`
 }
 
 type HookConfig struct {

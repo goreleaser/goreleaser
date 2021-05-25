@@ -126,6 +126,12 @@ builds:
     # Useful for library projects.
     # Default is false
     skip: false
+
+    # If defined, the created binary of a (matrix) build is 
+    # saved to the specified directory. The directory is always a sub-directory 
+    # of the dist folder. If the binary attribute itself is a path,
+    # the binary is saved in the path underneath the path specified here.
+    output_path: "my-path/{{.Os}}/{{.Arch}}"
 ```
 
 !!! tip

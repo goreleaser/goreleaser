@@ -186,10 +186,17 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 
 	build.Binary = binary
 	name := build.Binary + ext
+	outputPath := fmt.Sprintf("%s_%s", build.ID, target)
+	if build.OutputPath != "" {
+		outputPath, err = tmpl.New(ctx).WithBuildOptions(buildOpts).Apply(build.OutputPath)
+		if err != nil {
+			return nil, err
+		}
+	}
 	path, err := filepath.Abs(
 		filepath.Join(
 			ctx.Config.Dist,
-			fmt.Sprintf("%s_%s", build.ID, target),
+			outputPath,
 			name,
 		),
 	)

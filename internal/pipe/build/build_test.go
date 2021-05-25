@@ -747,6 +747,24 @@ func TestBuildOptionsForTarget(t *testing.T) {
 				Arch:   "amd64",
 			},
 		},
+		{
+			name: "binary name with Os and Arch template variables and output directory",
+			build: config.Build{
+				ID:     "testid",
+				Binary: "testbinary_{{.Os}}_{{.Arch}}",
+				Targets: []string{
+					"linux_amd64",
+				},
+				OutputPath: "outputpath/{{.Os}}/{{.Arch}}",
+			},
+			expectedOpts: &api.Options{
+				Name:   "testbinary_linux_amd64",
+				Path:   filepath.Join(tmpDir, "outputpath", "linux", "amd64", "testbinary_linux_amd64"),
+				Target: "linux_amd64",
+				Os:     "linux",
+				Arch:   "amd64",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
