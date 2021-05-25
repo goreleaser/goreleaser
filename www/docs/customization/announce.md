@@ -27,7 +27,7 @@ announce:
 
     # Message template to use while publishing.
     # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .GitURL }}/releases/tag/{{ .Tag }}`
-    message_template:
+    message_template: 'Awesome project {{.Tag}} is out!'
 ```
 
 !!! tip
