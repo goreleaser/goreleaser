@@ -3,6 +3,7 @@ package twitter
 import (
 	"fmt"
 
+	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
@@ -11,7 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .GitURL }}/releases/{{ .Tag }}`
+const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .GitURL }}/releases/tag/{{ .Tag }}`
 
 type Pipe struct{}
 
@@ -46,6 +47,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 		return fmt.Errorf("announce: failed to announce to twitter: %w", err)
 	}
 
+	log.Infof("posting: '%s'", msg)
 	config := oauth1.NewConfig(cfg.ConsumerKey, cfg.ConsumerSecret)
 	token := oauth1.NewToken(cfg.AccessToken, cfg.AccessSecret)
 	client := twitter.NewClient(config.Client(oauth1.NoContext, token))

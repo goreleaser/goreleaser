@@ -71,6 +71,7 @@ nav:
   - ci/travis.md
 - Customization:
   - About: customization/index.md
+  - customization/announce.md
   - customization/archive.md
   - customization/artifactory.md
   - customization/blob.md

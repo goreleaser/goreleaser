@@ -1,4 +1,4 @@
-package annnounce
+package announce
 
 import (
 	"testing"
