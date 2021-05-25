@@ -42,7 +42,8 @@ func TestReleaseFlags(t *testing.T) {
 		})
 		require.True(t, ctx.Snapshot)
 		require.True(t, ctx.SkipPublish)
-		require.True(t, ctx.SkipPublish)
+		require.True(t, ctx.SkipValidate)
+		require.True(t, ctx.SkipAnnounce)
 	})
 
 	t.Run("skips", func(t *testing.T) {
@@ -53,7 +54,8 @@ func TestReleaseFlags(t *testing.T) {
 		})
 		require.True(t, ctx.SkipSign)
 		require.True(t, ctx.SkipPublish)
-		require.True(t, ctx.SkipPublish)
+		require.True(t, ctx.SkipValidate)
+		require.True(t, ctx.SkipAnnounce)
 	})
 
 	t.Run("parallelism", func(t *testing.T) {
