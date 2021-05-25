@@ -48,3 +48,15 @@ func TestAnnounceMissingEnv(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to twitter: env: environment variable "TWITTER_CONSUMER_KEY" should not be empty`)
 }
+
+func TestAnnounceSkipAnnounce(t *testing.T) {
+	ctx := context.New(config.Project{
+		Announce: config.Announce{
+			Twitter: config.Twitter{
+				Enabled: true,
+			},
+		},
+	})
+	ctx.SkipAnnounce = true
+	testlib.AssertSkipped(t, Pipe{}.Announce(ctx))
+}

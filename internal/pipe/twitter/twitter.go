@@ -33,6 +33,9 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Announce(ctx *context.Context) error {
+	if ctx.SkipAnnounce {
+		return pipe.ErrSkipAnnounceEnabled
+	}
 	if !ctx.Config.Announce.Twitter.Enabled {
 		return pipe.ErrSkipDisabledPipe
 	}
