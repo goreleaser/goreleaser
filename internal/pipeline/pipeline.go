@@ -4,6 +4,7 @@ package pipeline
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/internal/pipe/announce"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/semver"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
@@ -27,7 +28,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Piper defines a pipe, which can be part of a pipeline (a serie of pipes).
+// Piper defines a pipe, which can be part of a pipeline (a series of pipes).
 type Piper interface {
 	fmt.Stringer
 
@@ -63,4 +64,5 @@ var Pipeline = append(
 	sign.Pipe{},          // sign artifacts
 	docker.Pipe{},        // create and push docker images
 	publish.Pipe{},       // publishes artifacts
+	announce.Pipe{},      // announce releases
 )

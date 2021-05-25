@@ -618,6 +618,7 @@ type Project struct {
 	Before          Before           `yaml:",omitempty"`
 	Source          Source           `yaml:",omitempty"`
 	GoMod           GoMod            `yaml:"gomod,omitempty"`
+	Announce        Announce         `yaml:"announce,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`
@@ -636,6 +637,15 @@ type GoMod struct {
 	Proxy    bool     `yaml:",omitempty"`
 	Env      []string `yaml:",omitempty"`
 	GoBinary string   `yaml:",omitempty"`
+}
+
+type Announce struct {
+	Twitter Twitter `yaml:"twitter,omitempty"`
+}
+
+type Twitter struct {
+	Enabled         bool   `yaml:"enabled,omitempty"`
+	MessageTemplate string `yaml:"message_template,omitempty"`
 }
 
 // Load config file.
