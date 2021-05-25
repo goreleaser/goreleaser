@@ -19,10 +19,11 @@ goreleaser release [flags]
       --release-notes string         Load custom release notes from a markdown file
       --release-notes-tmpl string    Load custom release notes from a templated markdown file (overrides --release-notes)
       --rm-dist                      Remove the dist folder before building
+      --skip-announce                Skips announcing releases (implies --skip-validate)
       --skip-publish                 Skips publishing artifacts
       --skip-sign                    Skips signing the artifacts
       --skip-validate                Skips several sanity checks
-      --snapshot                     Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts
+      --snapshot                     Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip-publish, --skip-announce and --skip-validate)
       --timeout duration             Timeout to the entire release process (default 30m0s)
 ```
 

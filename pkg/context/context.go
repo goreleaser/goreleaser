@@ -84,6 +84,7 @@ type Context struct {
 	Snapshot           bool
 	SkipPostBuildHooks bool
 	SkipPublish        bool
+	SkipAnnounce       bool
 	SkipSign           bool
 	SkipValidate       bool
 	RmDist             bool
