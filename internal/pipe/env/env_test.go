@@ -33,6 +33,28 @@ func TestSetDefaultTokenFiles(t *testing.T) {
 		setDefaultTokenFiles(ctx)
 		require.Equal(t, cfg, ctx.Config.EnvFiles.GitHubToken)
 	})
+	t.Run("templates", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			ProjectName: "foobar",
+			Env: []string{
+				"FOO=FOO_{{ .Env.BAR }}",
+				"FOOBAR={{.ProjectName}}",
+			},
+		})
+		os.Setenv("BAR", "lebar")
+		os.Setenv("GITHUB_TOKEN", "fake")
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, ctx.Config.Env, []string{"FOO=FOO_lebar", "FOOBAR=foobar"})
+	})
+
+	t.Run("template error", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Env: []string{
+				"FOO={{ .Asss }",
+			},
+		})
+		require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
+	})
 }
 
 func TestValidGithubEnv(t *testing.T) {

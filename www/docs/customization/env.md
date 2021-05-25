@@ -21,3 +21,7 @@ builds:
 This way, both `go mod tidy` and the underlying `go build` will have
 `GO111MODULE` set to `on`.
 
+The root `env` section also accepts templates.
+
+!!! tip
+    Learn more about the [name template engine](/customization/templates/).
