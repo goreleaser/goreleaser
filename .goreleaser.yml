@@ -156,3 +156,7 @@ snapcrafts:
     publish: true
 release:
   discussion_category_name: "New Releases"
+announce:
+  twitter:
+    enabled: true
+    message_template: 'GoReleaser {{ .Tag }} was just released! Get it while its fresh: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'
