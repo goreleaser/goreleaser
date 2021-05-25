@@ -36,6 +36,9 @@ func TestSetDefaultTokenFiles(t *testing.T) {
 	t.Run("templates", func(t *testing.T) {
 		ctx := context.New(config.Project{
 			ProjectName: "foobar",
+			EnvFiles: config.EnvFiles{
+				GitHubToken: "foo",
+			},
 			Env: []string{
 				"FOO=FOO_{{ .Env.BAR }}",
 				"FOOBAR={{.ProjectName}}",
