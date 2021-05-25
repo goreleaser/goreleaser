@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	homedir "github.com/mitchellh/go-homedir"
 )
@@ -42,6 +43,15 @@ func setDefaultTokenFiles(ctx *context.Context) {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
+	templ := tmpl.New(ctx).WithEnvS(os.Environ())
+	for i := range ctx.Config.Env {
+		env, err := templ.Apply(ctx.Config.Env[i])
+		if err != nil {
+			return err
+		}
+		ctx.Config.Env[i] = env
+	}
+
 	setDefaultTokenFiles(ctx)
 	githubToken, githubTokenErr := loadEnv("GITHUB_TOKEN", ctx.Config.EnvFiles.GitHubToken)
 	gitlabToken, gitlabTokenErr := loadEnv("GITLAB_TOKEN", ctx.Config.EnvFiles.GitLabToken)
