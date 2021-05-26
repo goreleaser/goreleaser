@@ -13,18 +13,40 @@ The configuration is very simple, here is a complete example:
 before:
   # Templates for the commands to be ran.
   hooks:
-  - make clean
-  - go generate ./...
-  - go mod tidy
-  - touch {{ .Env.FILE_TO_TOUCH }}
+  - make clean # simple string
+  - cmd: go generate ./... # specify cmd
+  - cmd: go mod tidy
+    dir: ./submodule # specify command working directory
+  - cmd: touch {{ .Env.FILE_TO_TOUCH }}
+    env:
+      FILE_TO_TOUCH: 'something-{{ .ProjectName }}' # specify hook level environment variables
 ```
 
 If any of the hooks fails the build process is aborted.
 
-It is important to note that you can't have "complex" commands, like
-`bash -c "echo foo bar"` or `foo | bar` or anything like that. If you need
-to do things that are more complex than just calling a command with some
-attributes, wrap it in a shell script or into your `Makefile`.
+In the same sense, you can also add global `after` hooks:
+
+```yaml
+# .goreleaser.yml
+after:
+  # Templates for the commands to be ran.
+  hooks:
+  - make clean # simple string
+  - cmd: go generate ./... # specify cmd
+  - cmd: go mod tidy
+    dir: ./submodule # specify command working directory
+  - cmd: touch {{ .Env.FILE_TO_TOUCH }}
+    env:
+      FILE_TO_TOUCH: 'something-{{ .ProjectName }}' # specify hook level environment variables
+```
+
+!!! info
+    Global after hooks is a [GoReleaser Pro feature](/pro).
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
+
+## Complex commands
+
+If you need to do anything more complex, it is recommended to create a shell script and call it instead.
+You can also go crazy with `sh -c "my commands"`, but it gets ugly real fast.
