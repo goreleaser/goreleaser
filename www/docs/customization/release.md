@@ -39,7 +39,7 @@ release:
   prerelease: auto
 
   # You can change the name of the release.
-  # Default is `{{.Tag}}`
+  # Default is `{{.Tag}}` on OSS and `{{.PrefixedTag}}` on Pro.
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not upload any artifacts.
@@ -74,7 +74,7 @@ release:
     - bar
 
   # You can change the name of the release.
-  # Default is `{{.Tag}}`
+  # Default is `{{.Tag}}` on OSS and `{{.PrefixedTag}}` on Pro.
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not upload any artifacts.
@@ -115,7 +115,7 @@ release:
     - bar
 
   # You can change the name of the release.
-  # Default is `{{.Tag}}`
+  # Default is `{{.Tag}}` on OSS and `{{.PrefixedTag}}` on Pro.
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not upload any artifacts.

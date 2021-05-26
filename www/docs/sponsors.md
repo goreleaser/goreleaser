@@ -1,5 +1,5 @@
 ---
-title: Sponsoring the Project
+title: Sponsors
 ---
 
 Does you or your company use GoReleaser?
@@ -9,11 +9,11 @@ You can help keep the project bug-free and feature rich by sponsoring the projec
 
 GitHub Sponsors is a great way to contribute directly to the main maintainer, [caarlos0](https://github.com/caarlos0).
 
-This money usually goes to buying coffee, beer, better hardware and such.
+This money usually goes to buying coffee, beer, better hardware, and, hopefully, one day, paying the bills.
+
+<iframe src="https://github.com/sponsors/caarlos0/button" title="Sponsor caarlos0" height="35" width="116" style="border: 0;"></iframe>
 
 You can sponsor and see who's sponsoring Carlos [here](https://github.com/sponsors/caarlos0).
-
-<iframe src="https://github.com/sponsors/caarlos0/card" title="Sponsor caarlos0" height="225" width="600" style="border: 0;"></iframe>
 
 ## OpenCollective
 
@@ -65,3 +65,7 @@ Bellow you can see a list of the current sponsors and backers on OpenCollective:
 <a href="https://opencollective.com/goreleaser/backers/27/website" target="_blank"><img src="https://opencollective.com/goreleaser/backers/27/avatar"></a>
 <a href="https://opencollective.com/goreleaser/backers/28/website" target="_blank"><img src="https://opencollective.com/goreleaser/backers/28/avatar"></a>
 <a href="https://opencollective.com/goreleaser/backers/29/website" target="_blank"><img src="https://opencollective.com/goreleaser/backers/29/avatar"></a>
+
+---
+
+**✨✨ Thanks for your support! ✨✨**
