@@ -155,7 +155,7 @@ snapcrafts:
     confinement: classic
     publish: true
 release:
-  discussion_category_name: "New Releases"
+  discussion_category_name: Announcements
 announce:
   twitter:
     enabled: true
