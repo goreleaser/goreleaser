@@ -25,6 +25,12 @@ Once you buy it, feel free to reply the email with your suggestions.
 
 I don't have a plan for that yet, but please [email me](mailto:carlos@becker.software?subject=GoReleaser%20Enterprise%20Support) if you are interested.
 
+## Using GoReleaser Pro
+
+When you buy it on [gumroad](https://gum.co/goreleaser), you'll get a license key.
+
+You can then pass it to the `release` command either via the `--key` flag or the `GORELEASER_KEY` environment variable.
+
 ---
 
 **✨✨ Thanks for your support! ✨✨**
