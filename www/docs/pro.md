@@ -2,7 +2,7 @@
 
 GoReleaser Pro is now available with some unique features such as:
 
-- Hability to [include](/customization/includes/) config files (useful for common configurations);
+- Ability to [include](/customization/includes/) config files (useful for common configurations);
 - Improved global hooks and [global after hooks](/customization/hooks/);
 - [Monorepo support](/customization/monorepo)!
 
@@ -13,8 +13,8 @@ _or go to [https://gum.co/goreleaser](https://gum.co/goreleaser)_
 
 ## Roadmap
 
-The roadmap is as not public, but we do have a couple of ideas and your input is always welcome!
-Once you buy it, feel free to reply the email with your suggestions.
+The roadmap is not public (yet), but we do have a couple of ideas and your input is always welcome!
+Once you buy it, feel free to [email me](mailto:carlos@becker.software?subject=GoReleaser%20Feature%20Suggestion) with your suggestions.
 
 ## Pricing & Sponsors
 
