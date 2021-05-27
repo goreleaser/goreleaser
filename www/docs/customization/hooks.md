@@ -21,6 +21,12 @@ before:
 
 If any of the hooks fails the build process is aborted.
 
+## Complex commands
+
+If you need to do anything more complex, it is recommended to create a shell script and call it instead.
+You can also go crazy with `sh -c "my commands"`, but it gets ugly real fast.
+
+
 ## Pro Features
 
 With [GoReleaser Pro](/pro), things are a bit more flexible: you can specify the dir, enviroment variables and also global after hooks.
@@ -57,8 +63,3 @@ after:
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
-
-## Complex commands
-
-If you need to do anything more complex, it is recommended to create a shell script and call it instead.
-You can also go crazy with `sh -c "my commands"`, but it gets ugly real fast.
