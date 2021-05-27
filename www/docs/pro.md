@@ -4,7 +4,7 @@ GoReleaser Pro is now available with some unique features such as:
 
 - Hability to [include](/customization/includes/) config files (useful for common configurations);
 - Improved global hooks and [global after hooks](/customization/hooks/);
-- Monorepo support!
+- [Monorepo support](/customization/monorepo)!
 
 <script src="https://gumroad.com/js/gumroad.js"></script>
 <a class="gumroad-button" href="https://gumroad.com/l/CadfZ" target="_blank">Get GoReleaser Pro</a>
