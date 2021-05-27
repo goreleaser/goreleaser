@@ -130,7 +130,6 @@ func TestFormulaeSimple(t *testing.T) {
 	require.NoError(t, err)
 	assertDefaultTemplateData(t, formulae)
 	require.NotContains(t, formulae, "def caveats")
-	require.NotContains(t, formulae, "depends_on")
 	require.NotContains(t, formulae, "def plist;")
 }
 
