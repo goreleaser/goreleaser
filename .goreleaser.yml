@@ -110,6 +110,8 @@ brews:
       system "#{bin}/goreleaser -v"
     dependencies:
     - name: go
+      type: optional
+    - name: git
     install: |-
       bin.install "goreleaser"
       bash_completion.install "completions/goreleaser.bash" => "goreleaser"
