@@ -21,7 +21,7 @@ Once you buy it, feel free to [email me](mailto:carlos@becker.software?subject=G
 - The current pricing is "low" and is likely to increase as we keep adding more pro-only features;
 - If you sponsor either the project or its developers, you [can ask for a discount](mailto:carlos@becker.software?subject=GoReleaser%20Coupon%20Request)!
 
-## Enteprise support
+## Enterprise support
 
 I don't have a plan for that yet, but please [email me](mailto:carlos@becker.software?subject=GoReleaser%20Enterprise%20Support) if you are interested.
 
