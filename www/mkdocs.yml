@@ -24,6 +24,8 @@ theme:
         name: Switch to light mode
     - media: "(prefers-color-scheme: dark)"  # Dark mode
       scheme: slate
+      primary: light blue
+      accent: indigo
       toggle:
         icon: material/lightbulb
         name: Switch to dark mode
