@@ -1,7 +1,6 @@
 package brew
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,13 +9,12 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
-
-var update = flag.Bool("update", false, "update .golden files")
 
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
@@ -95,14 +93,7 @@ func TestFullFormulae(t *testing.T) {
 	}), data)
 	require.NoError(t, err)
 
-	golden := "testdata/test.rb.golden"
-	if *update {
-		err := os.WriteFile(golden, []byte(formulae), 0o655)
-		require.NoError(t, err)
-	}
-	bts, err := os.ReadFile(golden)
-	require.NoError(t, err)
-	require.Equal(t, string(bts), formulae)
+	golden.RequireEqualRb(t, []byte(formulae))
 }
 
 func TestFullFormulaeLinuxOnly(t *testing.T) {
@@ -115,14 +106,7 @@ func TestFullFormulaeLinuxOnly(t *testing.T) {
 	}), data)
 	require.NoError(t, err)
 
-	golden := "testdata/test_linux_only.rb.golden"
-	if *update {
-		err := os.WriteFile(golden, []byte(formulae), 0o655)
-		require.NoError(t, err)
-	}
-	bts, err := os.ReadFile(golden)
-	require.NoError(t, err)
-	require.Equal(t, string(bts), formulae)
+	golden.RequireEqualRb(t, []byte(formulae))
 }
 
 func TestFormulaeSimple(t *testing.T) {
@@ -246,17 +230,11 @@ func TestRunPipe(t *testing.T) {
 
 			require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
 			require.True(t, client.CreatedFile)
-			golden := fmt.Sprintf("testdata/%s.rb.golden", name)
-			if *update {
-				require.NoError(t, os.WriteFile(golden, []byte(client.Content), 0o655))
-			}
-			bts, err := os.ReadFile(golden)
-			require.NoError(t, err)
-			require.Equal(t, string(bts), client.Content)
+			golden.RequireEqualRb(t, []byte(client.Content))
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
-			require.Equal(t, string(bts), string(distBts))
+			require.Equal(t, client.Content, string(distBts))
 		})
 	}
 }
@@ -310,17 +288,10 @@ func TestRunPipeNameTemplate(t *testing.T) {
 
 	require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
 	require.True(t, client.CreatedFile)
-	golden := "testdata/foo_is_bar.rb.golden"
-	if *update {
-		require.NoError(t, os.WriteFile(golden, []byte(client.Content), 0o655))
-	}
-	bts, err := os.ReadFile(golden)
-	require.NoError(t, err)
-	require.Equal(t, string(bts), client.Content)
-
+	golden.RequireEqualRb(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
-	require.Equal(t, string(bts), string(distBts))
+	require.Equal(t, client.Content, string(distBts))
 }
 
 func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
@@ -514,17 +485,11 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 
 		require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
 		require.True(t, client.CreatedFile)
-		golden := fmt.Sprintf("testdata/%s.rb.golden", name)
-		if *update {
-			require.NoError(t, os.WriteFile(golden, []byte(client.Content), 0o655))
-		}
-		bts, err := os.ReadFile(golden)
-		require.NoError(t, err)
-		require.Equal(t, string(bts), client.Content)
+		golden.RequireEqualRb(t, []byte(client.Content))
 
 		distBts, err := os.ReadFile(distFile)
 		require.NoError(t, err)
-		require.Equal(t, string(bts), string(distBts))
+		require.Equal(t, client.Content, string(distBts))
 	}
 }
 

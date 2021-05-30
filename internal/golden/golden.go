@@ -17,6 +17,21 @@ func RequireEqual(tb testing.TB, out []byte) {
 	doRequireEqual(tb, out, "")
 }
 
+func RequireEqualTxt(tb testing.TB, out []byte) {
+	tb.Helper()
+	doRequireEqual(tb, out, ".txt")
+}
+
+func RequireEqualJson(tb testing.TB, out []byte) {
+	tb.Helper()
+	doRequireEqual(tb, out, ".json")
+}
+
+func RequireEqualRb(tb testing.TB, out []byte) {
+	tb.Helper()
+	doRequireEqual(tb, out, ".rb")
+}
+
 func RequireEqualYaml(tb testing.TB, out []byte) {
 	tb.Helper()
 	doRequireEqual(tb, out, ".yml")
