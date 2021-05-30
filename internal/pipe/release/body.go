@@ -8,9 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const bodyTemplateText = `{{- with .Header }}{{ . }}
-
-{{ end }}
+const bodyTemplateText = `{{ with .Header }}{{ . }}{{ "\n" }}{{ end }}
 {{- .ReleaseNotes }}
 
 {{- with .DockerImages }}
@@ -20,7 +18,7 @@ const bodyTemplateText = `{{- with .Header }}{{ . }}
 - ` + "`docker pull {{ . -}}`" + `
 {{- end -}}
 {{- end }}
-{{- with .Footer }}{{ . }}{{ end }}
+{{- with .Footer }}{{ "\n" }}{{ . }}{{ end }}
 `
 
 func describeBody(ctx *context.Context) (bytes.Buffer, error) {

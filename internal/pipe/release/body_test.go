@@ -89,7 +89,7 @@ func TestDescribeBodyWithHeaderAndFooter(t *testing.T) {
 	ctx := context.New(config.Project{
 		Release: config.Release{
 			Header: "## Yada yada yada\nsomething\n",
-			Footer: "---\nGet GoReleaser Pro at https://goreleaser.com/pro\n",
+			Footer: "\n---\n\nGet GoReleaser Pro at https://goreleaser.com/pro",
 		},
 	})
 	ctx.ReleaseNotes = changelog
