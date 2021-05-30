@@ -22,7 +22,7 @@ func RequireEqualTxt(tb testing.TB, out []byte) {
 	doRequireEqual(tb, out, ".txt")
 }
 
-func RequireEqualJson(tb testing.TB, out []byte) {
+func RequireEqualJSON(tb testing.TB, out []byte) {
 	tb.Helper()
 	doRequireEqual(tb, out, ".json")
 }

@@ -963,7 +963,7 @@ func Test_buildManifest(t *testing.T) {
 			out, err := doBuildManifest(mf)
 			require.NoError(t, err)
 
-			golden.RequireEqualJson(t, out.Bytes())
+			golden.RequireEqualJSON(t, out.Bytes())
 		})
 	}
 }
@@ -1090,7 +1090,7 @@ func TestWrapInDirectory(t *testing.T) {
 
 	out, err := doBuildManifest(mf)
 	require.NoError(t, err)
-	golden.RequireEqualJson(t, out.Bytes())
+	golden.RequireEqualJSON(t, out.Bytes())
 }
 
 type DummyClient struct {
