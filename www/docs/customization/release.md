@@ -38,6 +38,20 @@ release:
   # Default is false.
   prerelease: auto
 
+  # Header for the release body.
+  # Defaults to empty.
+  header: |
+    ## Some title
+
+    Welcome to this new release!
+
+  # Footer for the release body.
+  # Defaults to empty.
+  footer: |
+    ## Thanks!
+
+    Something to add to the end.
+
   # You can change the name of the release.
   # Default is `{{.Tag}}` on OSS and `{{.PrefixedTag}}` on Pro.
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"

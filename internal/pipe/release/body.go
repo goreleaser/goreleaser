@@ -8,7 +8,10 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const bodyTemplateText = `{{ .ReleaseNotes }}
+const bodyTemplateText = `{{- with .Header }}{{ . }}
+
+{{ end }}
+{{- .ReleaseNotes }}
 
 {{- with .DockerImages }}
 
@@ -17,6 +20,7 @@ const bodyTemplateText = `{{ .ReleaseNotes }}
 - ` + "`docker pull {{ . -}}`" + `
 {{- end -}}
 {{- end }}
+{{- with .Footer }}{{ . }}{{ end }}
 `
 
 func describeBody(ctx *context.Context) (bytes.Buffer, error) {
@@ -33,9 +37,13 @@ func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 	}
 	bodyTemplate := template.Must(template.New("release").Parse(bodyTemplateText))
 	err := bodyTemplate.Execute(&out, struct {
+		Header       string
+		Footer       string
 		ReleaseNotes string
 		DockerImages []string
 	}{
+		Header:       ctx.Config.Release.Header,
+		Footer:       ctx.Config.Release.Footer,
 		ReleaseNotes: ctx.ReleaseNotes,
 		DockerImages: dockers,
 	})

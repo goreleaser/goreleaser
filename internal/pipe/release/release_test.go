@@ -251,7 +251,7 @@ func TestRunPipeExtraFileNotFound(t *testing.T) {
 				Name:  "test",
 			},
 			ExtraFiles: []config.ExtraFile{
-				{Glob: "./testdata/release2.golden"},
+				{Glob: "./testdata/f1.txt"},
 				{Glob: "./nope"},
 			},
 		},
