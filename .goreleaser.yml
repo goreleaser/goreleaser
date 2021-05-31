@@ -158,6 +158,11 @@ snapcrafts:
     publish: true
 release:
   discussion_category_name: Announcements
+  footer: |
+    ---
+
+    __Check out [GoReleaser Pro](https://goreleaser.com/pro) as well!__
+
 announce:
   twitter:
     enabled: true

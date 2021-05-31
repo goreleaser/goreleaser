@@ -1,0 +1,13 @@
+## Yada yada yada
+something
+
+feature1: description
+feature2: other description
+
+## Docker images
+
+- `docker pull goreleaser/goreleaser:latest`
+
+---
+
+Get GoReleaser Pro at https://goreleaser.com/pro

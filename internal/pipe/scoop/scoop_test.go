@@ -2,21 +2,19 @@ package scoop
 
 import (
 	ctx "context"
-	"flag"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
-
-var update = flag.Bool("update", false, "update .golden files")
 
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
@@ -736,11 +734,11 @@ func Test_buildManifest(t *testing.T) {
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
 	tests := []struct {
-		filename string
-		ctx      *context.Context
+		desc string
+		ctx  *context.Context
 	}{
 		{
-			"testdata/test_buildmanifest.json.golden",
+			"common",
 			&context.Context{
 				Context:   ctx.Background(),
 				TokenType: context.TokenTypeGitHub,
@@ -777,7 +775,7 @@ func Test_buildManifest(t *testing.T) {
 			},
 		},
 		{
-			"testdata/test_buildmanifest_pre_post_install.json.golden",
+			"pre-post-install",
 			&context.Context{
 				Context:   ctx.Background(),
 				TokenType: context.TokenTypeGitHub,
@@ -816,7 +814,7 @@ func Test_buildManifest(t *testing.T) {
 			},
 		},
 		{
-			"testdata/test_buildmanifest_url_template.json.golden",
+			"url template",
 			&context.Context{
 				Context:   ctx.Background(),
 				TokenType: context.TokenTypeGitHub,
@@ -858,7 +856,7 @@ func Test_buildManifest(t *testing.T) {
 			},
 		},
 		{
-			"testdata/test_buildmanifest_gitlab_url_template.json.golden",
+			"gitlab url template",
 			&context.Context{
 				Context:   ctx.Background(),
 				TokenType: context.TokenTypeGitLab,
@@ -902,7 +900,7 @@ func Test_buildManifest(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.filename, func(t *testing.T) {
+		t.Run(tt.desc, func(t *testing.T) {
 			ctx := tt.ctx
 			err := Pipe{}.Default(ctx)
 			require.NoError(t, err)
@@ -965,12 +963,7 @@ func Test_buildManifest(t *testing.T) {
 			out, err := doBuildManifest(mf)
 			require.NoError(t, err)
 
-			if *update {
-				require.NoError(t, os.WriteFile(tt.filename, out.Bytes(), 0o655))
-			}
-			bts, err := os.ReadFile(tt.filename)
-			require.NoError(t, err)
-			require.Equal(t, string(bts), out.String())
+			golden.RequireEqualJSON(t, out.Bytes())
 		})
 	}
 }
@@ -1097,14 +1090,7 @@ func TestWrapInDirectory(t *testing.T) {
 
 	out, err := doBuildManifest(mf)
 	require.NoError(t, err)
-
-	golden := "testdata/test_buildmanifest_wrap.json.golden"
-	if *update {
-		require.NoError(t, os.WriteFile(golden, out.Bytes(), 0o655))
-	}
-	bts, err := os.ReadFile(golden)
-	require.NoError(t, err)
-	require.Equal(t, string(bts), out.String())
+	golden.RequireEqualJSON(t, out.Bytes())
 }
 
 type DummyClient struct {

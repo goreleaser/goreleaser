@@ -1,7 +1,6 @@
 package brew
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,13 +9,12 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
-
-var update = flag.Bool("update", false, "update .golden files")
 
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
@@ -95,14 +93,7 @@ func TestFullFormulae(t *testing.T) {
 	}), data)
 	require.NoError(t, err)
 
-	golden := "testdata/test.rb.golden"
-	if *update {
-		err := os.WriteFile(golden, []byte(formulae), 0o655)
-		require.NoError(t, err)
-	}
-	bts, err := os.ReadFile(golden)
-	require.NoError(t, err)
-	require.Equal(t, string(bts), formulae)
+	golden.RequireEqualRb(t, []byte(formulae))
 }
 
 func TestFullFormulaeLinuxOnly(t *testing.T) {
@@ -115,14 +106,7 @@ func TestFullFormulaeLinuxOnly(t *testing.T) {
 	}), data)
 	require.NoError(t, err)
 
-	golden := "testdata/test_linux_only.rb.golden"
-	if *update {
-		err := os.WriteFile(golden, []byte(formulae), 0o655)
-		require.NoError(t, err)
-	}
-	bts, err := os.ReadFile(golden)
-	require.NoError(t, err)
-	require.Equal(t, string(bts), formulae)
+	golden.RequireEqualRb(t, []byte(formulae))
 }
 
 func TestFormulaeSimple(t *testing.T) {
@@ -246,17 +230,11 @@ func TestRunPipe(t *testing.T) {
 
 			require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
 			require.True(t, client.CreatedFile)
-			golden := fmt.Sprintf("testdata/%s.rb.golden", name)
-			if *update {
-				require.NoError(t, os.WriteFile(golden, []byte(client.Content), 0o655))
-			}
-			bts, err := os.ReadFile(golden)
-			require.NoError(t, err)
-			require.Equal(t, string(bts), client.Content)
+			golden.RequireEqualRb(t, []byte(client.Content))
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
-			require.Equal(t, string(bts), string(distBts))
+			require.Equal(t, client.Content, string(distBts))
 		})
 	}
 }
@@ -310,17 +288,10 @@ func TestRunPipeNameTemplate(t *testing.T) {
 
 	require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
 	require.True(t, client.CreatedFile)
-	golden := "testdata/foo_is_bar.rb.golden"
-	if *update {
-		require.NoError(t, os.WriteFile(golden, []byte(client.Content), 0o655))
-	}
-	bts, err := os.ReadFile(golden)
-	require.NoError(t, err)
-	require.Equal(t, string(bts), client.Content)
-
+	golden.RequireEqualRb(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
-	require.Equal(t, string(bts), string(distBts))
+	require.Equal(t, client.Content, string(distBts))
 }
 
 func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
@@ -413,118 +384,114 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			ctx.Config.Brews[0].Goarm = "7"
 		},
 	} {
-		folder := t.TempDir()
-		ctx := &context.Context{
-			TokenType: context.TokenTypeGitHub,
-			Git: context.GitInfo{
-				CurrentTag: "v1.0.1",
-			},
-			Version:   "1.0.1",
-			Artifacts: artifact.New(),
-			Env: map[string]string{
-				"FOO": "foo_is_bar",
-			},
-			Config: config.Project{
-				Dist:        folder,
-				ProjectName: name,
-				Brews: []config.Homebrew{
-					{
-						Name:         name,
-						Description:  "A run pipe test formula and FOO={{ .Env.FOO }}",
-						Caveats:      "don't do this {{ .ProjectName }}",
-						Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
-						Plist:        `<xml>whatever</xml>`,
-						Dependencies: []config.HomebrewDependency{{Name: "zsh"}, {Name: "bash", Type: "recommended"}},
-						Conflicts:    []string{"gtk+", "qt"},
-						Install:      `bin.install "{{ .ProjectName }}"`,
-						Tap: config.RepoRef{
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := &context.Context{
+				TokenType: context.TokenTypeGitHub,
+				Git: context.GitInfo{
+					CurrentTag: "v1.0.1",
+				},
+				Version:   "1.0.1",
+				Artifacts: artifact.New(),
+				Env: map[string]string{
+					"FOO": "foo_is_bar",
+				},
+				Config: config.Project{
+					Dist:        folder,
+					ProjectName: name,
+					Brews: []config.Homebrew{
+						{
+							Name:         name,
+							Description:  "A run pipe test formula and FOO={{ .Env.FOO }}",
+							Caveats:      "don't do this {{ .ProjectName }}",
+							Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
+							Plist:        `<xml>whatever</xml>`,
+							Dependencies: []config.HomebrewDependency{{Name: "zsh"}, {Name: "bash", Type: "recommended"}},
+							Conflicts:    []string{"gtk+", "qt"},
+							Install:      `bin.install "{{ .ProjectName }}"`,
+							Tap: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Homepage: "https://github.com/goreleaser",
+						},
+					},
+					GitHubURLs: config.GitHubURLs{
+						Download: "https://github.com",
+					},
+					Release: config.Release{
+						GitHub: config.Repo{
 							Owner: "test",
 							Name:  "test",
 						},
-						Homepage: "https://github.com/goreleaser",
 					},
 				},
-				GitHubURLs: config.GitHubURLs{
-					Download: "https://github.com",
+			}
+			fn(ctx)
+			for _, a := range []struct {
+				name   string
+				goos   string
+				goarch string
+				goarm  string
+			}{
+				{
+					name:   "bin",
+					goos:   "darwin",
+					goarch: "amd64",
 				},
-				Release: config.Release{
-					GitHub: config.Repo{
-						Owner: "test",
-						Name:  "test",
+				{
+					name:   "arm64",
+					goos:   "linux",
+					goarch: "arm64",
+				},
+				{
+					name:   "armv5",
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "5",
+				},
+				{
+					name:   "armv6",
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "6",
+				},
+				{
+					name:   "armv7",
+					goos:   "linux",
+					goarch: "arm",
+					goarm:  "7",
+				},
+			} {
+				path := filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   fmt.Sprintf("%s.tar.gz", a.name),
+					Path:   path,
+					Goos:   a.goos,
+					Goarch: a.goarch,
+					Goarm:  a.goarm,
+					Type:   artifact.UploadableArchive,
+					Extra: map[string]interface{}{
+						"ID":     a.name,
+						"Format": "tar.gz",
 					},
-				},
-			},
-		}
-		fn(ctx)
-		for _, a := range []struct {
-			name   string
-			goos   string
-			goarch string
-			goarm  string
-		}{
-			{
-				name:   "bin",
-				goos:   "darwin",
-				goarch: "amd64",
-			},
-			{
-				name:   "arm64",
-				goos:   "linux",
-				goarch: "arm64",
-			},
-			{
-				name:   "armv5",
-				goos:   "linux",
-				goarch: "arm",
-				goarm:  "5",
-			},
-			{
-				name:   "armv6",
-				goos:   "linux",
-				goarch: "arm",
-				goarm:  "6",
-			},
-			{
-				name:   "armv7",
-				goos:   "linux",
-				goarch: "arm",
-				goarm:  "7",
-			},
-		} {
-			path := filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   fmt.Sprintf("%s.tar.gz", a.name),
-				Path:   path,
-				Goos:   a.goos,
-				Goarch: a.goarch,
-				Goarm:  a.goarm,
-				Type:   artifact.UploadableArchive,
-				Extra: map[string]interface{}{
-					"ID":     a.name,
-					"Format": "tar.gz",
-				},
-			})
-			f, err := os.Create(path)
+				})
+				f, err := os.Create(path)
+				require.NoError(t, err)
+				require.NoError(t, f.Close())
+			}
+
+			client := &DummyClient{}
+			distFile := filepath.Join(folder, name+".rb")
+
+			require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
+			require.True(t, client.CreatedFile)
+			golden.RequireEqualRb(t, []byte(client.Content))
+
+			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
-			require.NoError(t, f.Close())
-		}
-
-		client := &DummyClient{}
-		distFile := filepath.Join(folder, name+".rb")
-
-		require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
-		require.True(t, client.CreatedFile)
-		golden := fmt.Sprintf("testdata/%s.rb.golden", name)
-		if *update {
-			require.NoError(t, os.WriteFile(golden, []byte(client.Content), 0o655))
-		}
-		bts, err := os.ReadFile(golden)
-		require.NoError(t, err)
-		require.Equal(t, string(bts), client.Content)
-
-		distBts, err := os.ReadFile(distFile)
-		require.NoError(t, err)
-		require.Equal(t, string(bts), string(distBts))
+			require.Equal(t, client.Content, string(distBts))
+		})
 	}
 }
 
