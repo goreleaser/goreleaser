@@ -119,7 +119,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 	cmd = append(cmd, gcflags...)
 
-	tags, err := processFlag(ctx, artifact, env, strings.Join(build.Tags, " "))
+	tags, err := processFlag(ctx, artifact, env, strings.Join(build.Tags, ","))
 	if err != nil {
 		return err
 	}
