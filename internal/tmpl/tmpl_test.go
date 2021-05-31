@@ -140,6 +140,9 @@ func TestWithEnv(t *testing.T) {
 func TestFuncMap(t *testing.T) {
 	ctx := context.New(config.Project{
 		ProjectName: "proj",
+		Env: []string{
+			"FOO=bar",
+		},
 	})
 	wd, err := os.Getwd()
 	require.NoError(t, err)
@@ -154,6 +157,16 @@ func TestFuncMap(t *testing.T) {
 			Template: `{{ replace "v1.24" "v" "" }}`,
 			Name:     "replace",
 			Expected: "1.24",
+		},
+		{
+			Template: `{{ if index .Env "SOME_ENV"  }}{{ .Env.SOME_ENV }}{{ else }}default value{{ end }}`,
+			Name:     "default value",
+			Expected: "default value",
+		},
+		{
+			Template: `{{ if index .Env "FOO"  }}{{ .Env.FOO }}{{ else }}default value{{ end }}`,
+			Name:     "default value set",
+			Expected: "bar",
 		},
 		{
 			Template: `{{ time "2006-01-02" }}`,
