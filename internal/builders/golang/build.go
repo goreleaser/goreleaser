@@ -119,6 +119,12 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 	cmd = append(cmd, gcflags...)
 
+	tags, err := processFlag(ctx, artifact, env, strings.Join(build.Tags, ","))
+	if err != nil {
+		return err
+	}
+	cmd = append(cmd, "-tags="+tags)
+
 	// flag prefix is skipped because ldflags need to output a single string
 	ldflags, err := processFlags(ctx, artifact, env, build.Ldflags, "")
 	if err != nil {
@@ -157,13 +163,17 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 func processFlags(ctx *context.Context, a *artifact.Artifact, env, flags []string, flagPrefix string) ([]string, error) {
 	processed := make([]string, 0, len(flags))
 	for _, rawFlag := range flags {
-		flag, err := tmpl.New(ctx).WithEnvS(env).WithArtifact(a, map[string]string{}).Apply(rawFlag)
+		flag, err := processFlag(ctx, a, env, rawFlag)
 		if err != nil {
 			return nil, err
 		}
 		processed = append(processed, flagPrefix+flag)
 	}
 	return processed, nil
+}
+
+func processFlag(ctx *context.Context, a *artifact.Artifact, env []string, rawFlag string) (string, error) {
+	return tmpl.New(ctx).WithEnvS(env).WithArtifact(a, map[string]string{}).Apply(rawFlag)
 }
 
 func joinLdFlags(flags []string) string {
@@ -180,7 +190,7 @@ func run(ctx *context.Context, command, env []string, dir string) error {
 	log := log.WithField("env", env).WithField("cmd", command)
 	cmd.Env = env
 	cmd.Dir = dir
-	log.Debug("running")
+	log.Info("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
 		return errors.New(string(out))
