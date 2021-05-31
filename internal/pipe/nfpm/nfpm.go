@@ -192,9 +192,13 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		if err != nil {
 			return err
 		}
+		dst, err := tmpl.Apply(content.Destination)
+		if err != nil {
+			return err
+		}
 		contents = append(contents, &files.Content{
 			Source:      src,
-			Destination: content.Destination,
+			Destination: dst,
 			Type:        content.Type,
 			Packager:    content.Packager,
 			FileInfo:    content.FileInfo,

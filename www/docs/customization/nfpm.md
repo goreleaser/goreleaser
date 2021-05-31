@@ -148,9 +148,9 @@ nfpms:
         dst: /etc/bar.conf
         type: "config|noreplace"
 
-      # The src attribute also supports name templates
+      # The src and dst attributes also supports name templates
       - src: path/{{ .Os }}-{{ .Arch }}/bar.conf
-        dst: /etc/foo/bar.conf
+        dst: /etc/foo/bar-{{ .ProjectName }}.conf
 
       # These files are not actually present in the package, but the file names
       # are added to the package header. From the RPM directives documentation:
