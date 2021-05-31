@@ -193,6 +193,7 @@ type Build struct {
 	Dir          string         `yaml:",omitempty"`
 	Main         string         `yaml:",omitempty"`
 	Ldflags      StringArray    `yaml:",omitempty"`
+	Tags         FlagArray      `yaml:",omitempty"`
 	Flags        FlagArray      `yaml:",omitempty"`
 	Binary       string         `yaml:",omitempty"`
 	Hooks        HookConfig     `yaml:",omitempty"`

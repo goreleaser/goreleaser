@@ -172,6 +172,7 @@ func TestBuild(t *testing.T) {
 				Asmflags: []string{".=", "all="},
 				Gcflags:  []string{"all="},
 				Flags:    []string{"{{.Env.GO_FLAGS}}"},
+				Tags:     []string{"osusergo", "netgo", "static_build"},
 				GoBinary: "go",
 			},
 		},
