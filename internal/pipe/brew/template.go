@@ -25,8 +25,6 @@ type templateData struct {
 	LinuxArm64        downloadable
 	HasMacOSDownloads bool
 	HasLinuxDownloads bool
-	MacOSArches       []string
-	LinuxArches       []string
 }
 
 type downloadable struct {
@@ -73,8 +71,6 @@ class {{ .Name }} < Formula
       sha256 "{{ .MacOSArm64.SHA256 }}"
     end
     {{- end }}
-
-    depends_on arch: [{{ join .MacOSArches ", " }}]
   end
   {{- end }}
 
@@ -103,8 +99,6 @@ class {{ .Name }} < Formula
       sha256 "{{ .LinuxArm64.SHA256 }}"
     end
     {{- end }}
-
-    depends_on arch: [{{ join .LinuxArches ", " }}]
   end
   {{- end }}
 

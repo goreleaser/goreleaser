@@ -15,8 +15,6 @@ class CustomRequire < Formula
       url "https://dummyhost/download/v1.0.1/bin.tar.gz", :using => CustomDownloadStrategy
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     end
-
-    depends_on arch: [:x86_64]
   end
 
   depends_on "zsh" => :optional
