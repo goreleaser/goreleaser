@@ -186,7 +186,7 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
-	var makeCtx = func() *context.Context {
+	makeCtx := func() *context.Context {
 		ctx := &context.Context{
 			Version:     "1.2.3",
 			Parallelism: runtime.NumCPU(),
@@ -250,7 +250,6 @@ func TestInvalidNameTemplate(t *testing.T) {
 		}
 		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_TARGET>: map has no entry for key "NOPE_TARGET"`)
 	})
-
 }
 
 func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
