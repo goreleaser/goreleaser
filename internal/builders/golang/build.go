@@ -190,7 +190,7 @@ func run(ctx *context.Context, command, env []string, dir string) error {
 	log := log.WithField("env", env).WithField("cmd", command)
 	cmd.Env = env
 	cmd.Dir = dir
-	log.Info("running")
+	log.Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		log.WithError(err).Debug("failed")
 		return errors.New(string(out))
