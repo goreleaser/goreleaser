@@ -261,7 +261,6 @@ func TestInvalidNameTemplate(t *testing.T) {
 		ctx.Config.NFPMs[0].Homepage = "{{ .NOPE_HOMEPAGE }}"
 		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_HOMEPAGE>: map has no entry for key "NOPE_HOMEPAGE"`)
 	})
-
 }
 
 func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
