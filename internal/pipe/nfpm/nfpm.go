@@ -186,6 +186,16 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		return err
 	}
 
+	homepage, err := tmpl.Apply(fpm.Homepage)
+	if err != nil {
+		return err
+	}
+
+	description, err := tmpl.Apply(fpm.Description)
+	if err != nil {
+		return err
+	}
+
 	contents := files.Contents{}
 	for _, content := range overridden.Contents {
 		src, err := tmpl.Apply(content.Source)
@@ -233,9 +243,9 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		Prerelease:      fpm.Prerelease,
 		VersionMetadata: fpm.VersionMetadata,
 		Maintainer:      fpm.Maintainer,
-		Description:     fpm.Description,
+		Description:     description,
 		Vendor:          fpm.Vendor,
-		Homepage:        fpm.Homepage,
+		Homepage:        homepage,
 		License:         fpm.License,
 		Overridables: nfpm.Overridables{
 			Conflicts:    overridden.Conflicts,
