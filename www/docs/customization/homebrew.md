@@ -81,7 +81,7 @@ brews:
     # Default is empty.
     homepage: "https://example.com/"
 
-    # Your app's description.
+    # Template of your app's description.
     # Default is empty.
     description: "Software to create fast and easy drum rolls."
 
