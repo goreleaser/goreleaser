@@ -27,7 +27,7 @@ publishers:
 ### Environment
 
 Commands which are executed as custom publishers only inherit a subset of
-the system enviroment variables (unlike existing hooks) as a precaution to
+the system environment variables (unlike existing hooks) as a precaution to
 avoid leaking sensitive data accidentally and provide better control of the
 environment for each individual process where variable names may overlap
 unintentionally.
@@ -52,7 +52,7 @@ more explicit inheritance.
     - SECRET_TOKEN={{ .Env.SECRET_TOKEN }}
 ```
 
-The publisher explict environment variables take precedence over the
+The publisher explicit environment variables take precedence over the
 inherited set of variables as well.
 
 ### Variables

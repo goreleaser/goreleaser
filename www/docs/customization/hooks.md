@@ -29,7 +29,7 @@ You can also go crazy with `sh -c "my commands"`, but it gets ugly real fast.
 
 ## Pro Features
 
-With [GoReleaser Pro](/pro), things are a bit more flexible: you can specify the dir, enviroment variables and also global after hooks.
+With [GoReleaser Pro](/pro), things are a bit more flexible: you can specify the dir, environment variables and also global after hooks.
 
 ```yaml
 # .goreleaser.yml
