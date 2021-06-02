@@ -199,8 +199,26 @@ func buildFormula(ctx *context.Context, brew config.Homebrew, client client.Clie
 }
 
 func fixDataDownloads(data templateData) templateData {
-	data.HasMacOSDownloads = data.MacOSAmd64.DownloadURL != "" || data.MacOSArm64.DownloadURL != ""
-	data.HasLinuxDownloads = data.LinuxAmd64.DownloadURL != "" || data.LinuxArm64.DownloadURL != "" || data.LinuxArm.DownloadURL != ""
+	if data.MacOSAmd64.DownloadURL != "" {
+		data.HasMacOSDownloads = true
+		data.MacOSArches = append(data.MacOSArches, ":x86_64")
+	}
+	if data.MacOSArm64.DownloadURL != "" {
+		data.HasMacOSDownloads = true
+		data.MacOSArches = append(data.MacOSArches, ":aarch64")
+	}
+	if data.LinuxAmd64.DownloadURL != "" {
+		data.HasLinuxDownloads = true
+		data.LinuxArches = append(data.LinuxArches, ":x86_64")
+	}
+	if data.LinuxArm64.DownloadURL != "" {
+		data.HasLinuxDownloads = true
+		data.LinuxArches = append(data.LinuxArches, ":aarch64")
+	}
+	if data.LinuxArm.DownloadURL != "" {
+		data.HasLinuxDownloads = true
+		data.LinuxArches = append(data.LinuxArches, ":arm")
+	}
 	return data
 }
 
