@@ -1,7 +1,9 @@
+// Package exec can execute commands on the OS.
 package exec
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 
 	"github.com/apex/log"
@@ -15,6 +17,10 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+// Environment variables to pass through to exec
+var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP", "TEMP", "PATH"}
+
+// Execute the given publisher
 func Execute(ctx *context.Context, publishers []config.Publisher) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
@@ -59,7 +65,14 @@ func executeCommand(c *command) error {
 
 		// nolint: gosec
 	cmd := exec.CommandContext(c.Ctx, c.Args[0], c.Args[1:]...)
-	cmd.Env = c.Env
+	cmd.Env = []string{}
+	for _, key := range passthroughEnvVars {
+		if value := os.Getenv(key); value != "" {
+			cmd.Env = append(cmd.Env, key+"="+value)
+		}
+	}
+	cmd.Env = append(cmd.Env, c.Env...)
+
 	if c.Dir != "" {
 		cmd.Dir = c.Dir
 	}
@@ -68,7 +81,7 @@ func executeCommand(c *command) error {
 	cmd.Stderr = logext.NewErrWriter(entry)
 	cmd.Stdout = logext.NewWriter(entry)
 
-	log.WithField("cmd", cmd.Args).Info("publishing")
+	entry.Info("publishing")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("publishing: %s failed: %w",
 			c.Args[0], err)
