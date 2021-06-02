@@ -4,7 +4,7 @@
 {% if page and page.title and not page.is_homepage %}
 {% set title = config.site_name ~ " - " ~ page.title | striptags %}
 {% endif %}
-{% set image = config.site_url ~ 'static/card.png' %}
+{% set image = config.site_url ~ '/static/card.png' %}
 <meta property="og:type" content="website">
 <meta property="og:title" content="{{ title }}">
 <meta property="og:description" content="{{ config.site_description }}">
@@ -19,4 +19,7 @@
 <meta name="twitter:title" content="{{ title }}">
 <meta name="twitter:description" content="{{ config.site_description }}">
 <meta name="twitter:image" content="{{ image }}">
+{% endblock %}
+{% block analytics %}
+	<script async defer data-domain="goreleaser.com" src="https://plausible.io/js/plausible.js"></script>
 {% endblock %}

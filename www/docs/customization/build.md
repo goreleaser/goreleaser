@@ -55,8 +55,16 @@ builds:
     # Custom ldflags templates.
     # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
     ldflags:
-     - -s -w -X main.build={{.Version}}
-     - ./usemsan=-msan
+      - -s -w -X main.build={{.Version}}
+      - ./usemsan=-msan
+
+    # Custom build tags templates.
+    # Default is empty.
+    tags:
+      - osusergo
+      - netgo
+      - static_build
+      - feature
 
     # Custom environment variables to be set during the builds.
     # Default is empty.

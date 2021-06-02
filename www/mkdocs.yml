@@ -24,6 +24,8 @@ theme:
         name: Switch to light mode
     - media: "(prefers-color-scheme: dark)"  # Dark mode
       scheme: slate
+      primary: light blue
+      accent: indigo
       toggle:
         icon: material/lightbulb
         name: Switch to dark mode
@@ -83,7 +85,9 @@ nav:
   - customization/gomod.md
   - customization/homebrew.md
   - customization/hooks.md
+  - customization/includes.md
   - customization/milestone.md
+  - customization/monorepo.md
   - customization/nfpm.md
   - customization/project.md
   - customization/publishers.md
@@ -106,6 +110,7 @@ nav:
 - Cookbooks:
   - About: cookbooks/index.md
   - Blog Posts: cookbooks/blog-posts.md
+  - Add a new cookbook: cookbooks/contributing.md
   - cookbooks//build-go-modules.md
   - cookbooks/cgo-and-crosscompiling.md
   - cookbooks/debconf-templates.md
@@ -113,6 +118,7 @@ nav:
   - cookbooks/release-a-library.md
   - cookbooks/semantic-release.md
   - cookbooks/upload-to-bintray.md
+- pro.md
 - sponsors.md
 - contributing.md
 - links.md

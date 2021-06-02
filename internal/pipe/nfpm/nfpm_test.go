@@ -84,6 +84,10 @@ func TestRunPipe(t *testing.T) {
 	ctx := context.New(config.Project{
 		ProjectName: "mybin",
 		Dist:        dist,
+		Env: []string{
+			"PRO=pro",
+			"DESC=templates",
+		},
 		NFPMs: []config.NFPM{
 			{
 				ID:          "someid",
@@ -92,11 +96,11 @@ func TestRunPipe(t *testing.T) {
 				Formats:     []string{"deb", "rpm", "apk"},
 				Section:     "somesection",
 				Priority:    "standard",
-				Description: "Some description",
+				Description: "Some description with {{ .Env.DESC }}",
 				License:     "MIT",
 				Maintainer:  "me@me",
 				Vendor:      "asdf",
-				Homepage:    "https://goreleaser.github.io",
+				Homepage:    "https://goreleaser.com/{{ .Env.PRO }}",
 				NFPMOverridables: config.NFPMOverridables{
 					FileNameTemplate: defaultNameTemplate + "-{{ .Release }}-{{ .Epoch }}",
 					PackageName:      "foo",
@@ -131,7 +135,7 @@ func TestRunPipe(t *testing.T) {
 						},
 						{
 							Source:      "./testdata/testfile-{{ .Arch }}.txt",
-							Destination: "/etc/nope3.conf",
+							Destination: "/etc/nope3_{{ .ProjectName }}.conf",
 						},
 					},
 					Replacements: map[string]string{
@@ -178,7 +182,7 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope.conf",
 			"/etc/nope-rpm.conf",
 			"/etc/nope2.conf",
-			"/etc/nope3.conf",
+			"/etc/nope3_mybin.conf",
 			"/usr/bin/mybin",
 		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
 	}
@@ -186,32 +190,77 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
-	ctx := &context.Context{
-		Parallelism: runtime.NumCPU(),
-		Artifacts:   artifact.New(),
-		Config: config.Project{
-			NFPMs: []config.NFPM{
-				{
-					NFPMOverridables: config.NFPMOverridables{
-						PackageName:      "foo",
-						FileNameTemplate: "{{.Foo}",
+	makeCtx := func() *context.Context {
+		ctx := &context.Context{
+			Version:     "1.2.3",
+			Parallelism: runtime.NumCPU(),
+			Artifacts:   artifact.New(),
+			Config: config.Project{
+				NFPMs: []config.NFPM{
+					{
+						Formats: []string{"deb"},
+						Builds:  []string{"default"},
 					},
-					Formats: []string{"deb"},
-					Builds:  []string{"default"},
 				},
 			},
-		},
+		}
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name:   "mybin",
+			Goos:   "linux",
+			Goarch: "amd64",
+			Type:   artifact.Binary,
+			Extra: map[string]interface{}{
+				"ID": "default",
+			},
+		})
+		return ctx
 	}
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "mybin",
-		Goos:   "linux",
-		Goarch: "amd64",
-		Type:   artifact.Binary,
-		Extra: map[string]interface{}{
-			"ID": "default",
-		},
+
+	t.Run("filename_template", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.NFPMs[0].NFPMOverridables = config.NFPMOverridables{
+			FileNameTemplate: "{{.Foo}",
+		}
+		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1: unexpected "}" in operand`)
 	})
-	require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1: unexpected "}" in operand`)
+
+	t.Run("source", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.NFPMs[0].NFPMOverridables = config.NFPMOverridables{
+			Contents: files.Contents{
+				{
+					Source:      "{{ .NOPE_SOURCE }}",
+					Destination: "/foo",
+				},
+			},
+		}
+		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_SOURCE>: map has no entry for key "NOPE_SOURCE"`)
+	})
+
+	t.Run("target", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.NFPMs[0].NFPMOverridables = config.NFPMOverridables{
+			Contents: files.Contents{
+				{
+					Source:      "./testdata/testfile.txt",
+					Destination: "{{ .NOPE_TARGET }}",
+				},
+			},
+		}
+		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_TARGET>: map has no entry for key "NOPE_TARGET"`)
+	})
+
+	t.Run("description", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.NFPMs[0].Description = "{{ .NOPE_DESC }}"
+		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_DESC>: map has no entry for key "NOPE_DESC"`)
+	})
+
+	t.Run("homepage", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.NFPMs[0].Homepage = "{{ .NOPE_HOMEPAGE }}"
+		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_HOMEPAGE>: map has no entry for key "NOPE_HOMEPAGE"`)
+	})
 }
 
 func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {

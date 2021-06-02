@@ -17,12 +17,12 @@ func (t Writer) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-// Writer writes with log.Error.
+// ErrorWriter writes with log.Error.
 type ErrorWriter struct {
 	ctx *log.Entry
 }
 
-// NewWriter creates a new log writer.
+// NewErrWriter creates a new log writer.
 func NewErrWriter(ctx *log.Entry) ErrorWriter {
 	return ErrorWriter{ctx: ctx}
 }

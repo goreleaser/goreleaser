@@ -27,6 +27,6 @@ func TestGitLabReleaseURLTemplate(t *testing.T) {
 	urlTpl, err := client.ReleaseURLTemplate(ctx)
 	require.NoError(t, err)
 
-	expectedUrl := "https://gitlab.com/owner/name/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}"
-	require.Equal(t, expectedUrl, urlTpl)
+	expectedURL := "https://gitlab.com/owner/name/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}"
+	require.Equal(t, expectedURL, urlTpl)
 }

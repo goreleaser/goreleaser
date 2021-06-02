@@ -15,6 +15,7 @@ On fields that support templating, these fields are always available:
 | `.ProjectName`     | the project name                                                                                                             |
 | `.Version`         | the version being released (`v` prefix stripped),<br>or `{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}` in case of snapshot release |
 | `.Branch`          | the current git branch                                                                                                       |
+| `.PrefixedTag`     | the current git tag prefixed with the monorepo config tag prefix (if any)                                                    |
 | `.Tag`             | the current git tag                                                                                                          |
 | `.ShortCommit`     | the git commit short hash                                                                                                    |
 | `.FullCommit`      | the git commit full hash                                                                                                     |
@@ -89,3 +90,25 @@ GOVERSION_NR=$(go version | awk '{print $3;}') goreleaser
 !!! warning
     Note that those are hypothetical examples and the fields `foo_template` and
     `example_template` are not valid GoReleaser configurations.
+
+## Custom variables
+
+On [GoReleaser Pro](/pro) you can also declare custom variables.
+This feature is specially useful with [includes](/customization/includes), so you can have more generic config files.
+
+Usage is as simple as you would expect:
+
+```yaml
+# .goreleaser.yml
+variables:
+  description: my project description
+  somethingElse: yada yada yada
+```
+
+And then you can use those fields as `{{ .description }}`, for example.
+
+!!! warning
+    You won't be allowed to override GoReleaser "native" fields.
+
+!!! info
+    Custom variables is a [GoReleaser Pro feature](/pro).

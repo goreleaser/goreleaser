@@ -4,13 +4,14 @@ title: Environment Variables
 
 Global environment variables to be passed down to all hooks and builds.
 
-This is useful for `GO111MODULE`, for example. You can have your
-`.goreleaser.yml` file like the following:
+This is useful for `GO111MODULE`, for example. You can have your `.goreleaser.yml` file like the following:
 
 ```yaml
 # .goreleaser.yml
 env:
   - GO111MODULE=on
+  - FOO={{ .Env.FOOBAR }}
+  - ENV_WITH_DEFAULT={{ if index .Env "ENV_WITH_DEFAULT"  }}{{ .Env.ENV_WITH_DEFAULT }}{{ else }}default_value{{ end }}
 before:
   hooks:
     - go mod tidy

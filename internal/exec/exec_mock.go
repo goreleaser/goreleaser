@@ -36,6 +36,8 @@ func (m *MockData) UnmarshalJSON(b []byte) error {
 	return json.Unmarshal(b, (*t)(m))
 }
 
+// MarshalMockEnv mocks marshal.
+//
 // nolint: interfacer
 func MarshalMockEnv(data *MockData) string {
 	b, err := data.MarshalJSON()

@@ -78,8 +78,8 @@ func TestGitHubReleaseURLTemplate(t *testing.T) {
 	urlTpl, err := client.ReleaseURLTemplate(ctx)
 	require.NoError(t, err)
 
-	expectedUrl := "https://github.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-	require.Equal(t, expectedUrl, urlTpl)
+	expectedURL := "https://github.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+	require.Equal(t, expectedURL, urlTpl)
 }
 
 func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {

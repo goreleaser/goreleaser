@@ -193,6 +193,7 @@ type Build struct {
 	Dir          string         `yaml:",omitempty"`
 	Main         string         `yaml:",omitempty"`
 	Ldflags      StringArray    `yaml:",omitempty"`
+	Tags         FlagArray      `yaml:",omitempty"`
 	Flags        FlagArray      `yaml:",omitempty"`
 	Binary       string         `yaml:",omitempty"`
 	Hooks        HookConfig     `yaml:",omitempty"`
@@ -285,6 +286,8 @@ type Release struct {
 	IDs                    []string    `yaml:"ids,omitempty"`
 	ExtraFiles             []ExtraFile `yaml:"extra_files,omitempty"`
 	DiscussionCategoryName string      `yaml:"discussion_category_name,omitempty"`
+	Header                 string      `yaml:"header,omitempty"`
+	Footer                 string      `yaml:"footer,omitempty"`
 }
 
 // Milestone config used for VCS milestone.

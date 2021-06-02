@@ -1,17 +1,14 @@
 package release
 
 import (
-	"flag"
-	"os"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
-
-var update = flag.Bool("update", false, "update .golden files")
 
 func TestDescribeBody(t *testing.T) {
 	changelog := "feature1: description\nfeature2: other description"
@@ -30,13 +27,7 @@ func TestDescribeBody(t *testing.T) {
 	out, err := describeBody(ctx)
 	require.NoError(t, err)
 
-	golden := "testdata/release1.golden"
-	if *update {
-		_ = os.WriteFile(golden, out.Bytes(), 0o755)
-	}
-	bts, err := os.ReadFile(golden)
-	require.NoError(t, err)
-	require.Equal(t, string(bts), out.String())
+	golden.RequireEqual(t, out.Bytes())
 }
 
 func TestDescribeBodyWithDockerManifest(t *testing.T) {
@@ -69,13 +60,7 @@ func TestDescribeBodyWithDockerManifest(t *testing.T) {
 	out, err := describeBody(ctx)
 	require.NoError(t, err)
 
-	golden := "testdata/release3.golden"
-	if *update {
-		_ = os.WriteFile(golden, out.Bytes(), 0o755)
-	}
-	bts, err := os.ReadFile(golden)
-	require.NoError(t, err)
-	require.Equal(t, string(bts), out.String())
+	golden.RequireEqual(t, out.Bytes())
 }
 
 func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
@@ -86,14 +71,7 @@ func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
 	out, err := describeBody(ctx)
 	require.NoError(t, err)
 
-	golden := "testdata/release2.golden"
-	if *update {
-		_ = os.WriteFile(golden, out.Bytes(), 0o655)
-	}
-	bts, err := os.ReadFile(golden)
-	require.NoError(t, err)
-
-	require.Equal(t, string(bts), out.String())
+	golden.RequireEqual(t, out.Bytes())
 }
 
 func TestDontEscapeHTML(t *testing.T) {
@@ -104,4 +82,23 @@ func TestDontEscapeHTML(t *testing.T) {
 	out, err := describeBody(ctx)
 	require.NoError(t, err)
 	require.Contains(t, out.String(), changelog)
+}
+
+func TestDescribeBodyWithHeaderAndFooter(t *testing.T) {
+	changelog := "feature1: description\nfeature2: other description"
+	ctx := context.New(config.Project{
+		Release: config.Release{
+			Header: "## Yada yada yada\nsomething\n",
+			Footer: "\n---\n\nGet GoReleaser Pro at https://goreleaser.com/pro",
+		},
+	})
+	ctx.ReleaseNotes = changelog
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "goreleaser/goreleaser:latest",
+		Type: artifact.DockerImage,
+	})
+	out, err := describeBody(ctx)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, out.Bytes())
 }

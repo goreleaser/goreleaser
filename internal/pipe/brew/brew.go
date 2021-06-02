@@ -198,8 +198,21 @@ func buildFormula(ctx *context.Context, brew config.Homebrew, client client.Clie
 	return doBuildFormula(ctx, data)
 }
 
+func fixDataDownloads(data templateData) templateData {
+	data.HasMacOSDownloads = data.MacOSAmd64.DownloadURL != "" || data.MacOSArm64.DownloadURL != ""
+	data.HasLinuxDownloads = data.LinuxAmd64.DownloadURL != "" || data.LinuxArm64.DownloadURL != "" || data.LinuxArm.DownloadURL != ""
+	return data
+}
+
 func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
-	t, err := template.New(data.Name).Parse(formulaTemplate)
+	data = fixDataDownloads(data)
+
+	t, err := template.
+		New(data.Name).
+		Funcs(template.FuncMap{
+			"join": strings.Join,
+		}).
+		Parse(formulaTemplate)
 	if err != nil {
 		return "", err
 	}

@@ -213,6 +213,9 @@ func (c *giteaClient) CreateRelease(ctx *context.Context, body string) (string, 
 	}
 
 	if release != nil {
+		if release.Note != "" {
+			body = release.Note
+		}
 		release, err = c.updateRelease(ctx, title, body, release.ID)
 		if err != nil {
 			return "", err
