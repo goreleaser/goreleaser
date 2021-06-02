@@ -41,6 +41,39 @@ const formulaTemplate = `# typed: false
 {{ if .CustomRequire -}}
 require_relative "{{ .CustomRequire }}"
 {{ end -}}
+
+class SupportedArchRequirement < Requirement
+  fatal true
+
+  satisfy(build_env: false) { self.class.supported_arch? }
+
+  def message
+    "Your platform #{self.class.plat} is not supported by this tap. Supported arches: #{self.class.supported_arches.join ', '}."
+  end
+
+  MACOS_SUPPORTED_ARCHES = [{{ join .MacOSArches ", " }}]
+  LINUX_SUPPORTED_ARCHES = [{{ join .LinuxArches ", " }}]
+
+  def self.supported_arch?
+    self.supported_arches.include? self.plat
+  end
+
+  def self.supported_arches
+    return LINUX_SUPPORTED_ARCHES if OS.linux?
+    return MACOS_SUPPORTED_ARCHES if OS.mac?
+    []
+  end
+
+  def self.plat
+    case RUBY_PLATFORM
+    when /x86_64/ then :x86_64
+    when /arm/ then :arm
+    when /aarch64/ then :aarch64
+    else :dunno
+    end
+  end
+end
+
 class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
@@ -55,6 +88,7 @@ class {{ .Name }} < Formula
   {{- if and (not .HasMacOSDownloads) .HasLinuxDownloads }}
   depends_on :linux
   {{- end }}
+  depends_on SupportedArchRequirement
   {{- printf "\n" }}
 
   {{- if .HasMacOSDownloads }}
@@ -73,8 +107,6 @@ class {{ .Name }} < Formula
       sha256 "{{ .MacOSArm64.SHA256 }}"
     end
     {{- end }}
-
-    depends_on arch: [{{ join .MacOSArches ", " }}]
   end
   {{- end }}
 
@@ -103,8 +135,6 @@ class {{ .Name }} < Formula
       sha256 "{{ .LinuxArm64.SHA256 }}"
     end
     {{- end }}
-
-    depends_on arch: [{{ join .LinuxArches ", " }}]
   end
   {{- end }}
 
