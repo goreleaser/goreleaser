@@ -135,11 +135,21 @@ builds:
     # Default is false
     skip: false
 
-    # If defined, the created binary of a (matrix) build is 
-    # saved to the specified directory. The directory is always a sub-directory 
-    # of the dist folder. If the binary attribute itself is a path,
-    # the binary is saved in the path underneath the path specified here.
-    output_path: "my-path/{{.Os}}/{{.Arch}}"
+    # Overrides the target output directory in the dist folder.
+    #
+    # By default, GoRelaser will create your binaries inside `dist/${BuildID}_${BuildTarget}`.
+    # You are able to set subdirs within this root folder using the `binary` property.
+    #
+    # `dist_path` however, allows you to change that root path, but keeps it within `dist`.
+    #
+    # If you change it, you are responsible of keeping different builds from overriding each other.
+    #
+    # Templating here has 2 extra fields:
+    # - ID: the build id property
+    # - Target: the build target, e.g. `darwin_arm64`
+    #
+    # Defaults to `{{ .ID }}_{{ .Target }}`.
+    dist_path: "my-path/{{.Os}}/{{.Arch}}"
 ```
 
 !!! tip
