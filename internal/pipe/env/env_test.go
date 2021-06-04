@@ -39,12 +39,16 @@ func TestSetDefaultTokenFiles(t *testing.T) {
 			Env: []string{
 				"FOO=FOO_{{ .Env.BAR }}",
 				"FOOBAR={{.ProjectName}}",
+				"EMPTY_VAL=",
 			},
 		})
+		ctx.Env["FOOBAR"] = "old foobar"
 		os.Setenv("BAR", "lebar")
 		os.Setenv("GITHUB_TOKEN", "fake")
 		require.NoError(t, Pipe{}.Run(ctx))
-		require.Equal(t, ctx.Config.Env, []string{"FOO=FOO_lebar", "FOOBAR=foobar"})
+		require.Equal(t, "FOO_lebar", ctx.Env["FOO"])
+		require.Equal(t, "foobar", ctx.Env["FOOBAR"])
+		require.Equal(t, "", ctx.Env["EMPTY_VAL"])
 	})
 
 	t.Run("template error", func(t *testing.T) {
