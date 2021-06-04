@@ -399,6 +399,48 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
+		"image template with env": {
+			env: map[string]string{
+				"FOO": "test_run_pipe_template",
+			},
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/{{.Env.FOO}}:{{.Tag}}",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_run_pipe_template:v1.0.0",
+			},
+			assertImageLabels:   noLabels,
+			assertError:         shouldNotErr,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+		},
+		"image template uppercase": {
+			env: map[string]string{
+				"FOO": "test_run_pipe_template_UPPERCASE",
+			},
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/{{.Env.FOO}}:{{.Tag}}",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "testdata/Dockerfile",
+				},
+			},
+			expect:              []string{},
+			assertImageLabels:   noLabels,
+			assertError:         shouldErr(`goreleaser/test_run_pipe_template_UPPERCASE:v1.0.0" for "-t, --tag" flag: invalid reference format: repository name must be lowercase`),
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+		},
 		"empty image tag": {
 			dockers: []config.Docker{
 				{
