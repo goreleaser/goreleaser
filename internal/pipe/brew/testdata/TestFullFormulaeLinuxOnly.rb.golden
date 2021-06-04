@@ -12,7 +12,7 @@ class SupportedArchRequirement < Requirement
   end
 
   MACOS_SUPPORTED_ARCHES = []
-  LINUX_SUPPORTED_ARCHES = [:x86_64, :aarch64, :arm]
+  LINUX_SUPPORTED_ARCHES = [:aarch64, :arm, :x86_64]
 
   def self.supported_arch?
     self.supported_arches.include? self.plat

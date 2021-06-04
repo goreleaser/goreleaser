@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -228,6 +229,7 @@ func arches(urls map[string]string) []string {
 			ss = append(ss, k)
 		}
 	}
+	sort.Strings(ss)
 	return ss
 }
 
