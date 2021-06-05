@@ -96,7 +96,7 @@ jobs:
           TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
         run: |
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            ./goreleaser
+            ./goreleaser --auto-snapshot
           elif [[ $GITHUB_REF == refs/heads/master ]]; then
             ./goreleaser --snapshot
           fi

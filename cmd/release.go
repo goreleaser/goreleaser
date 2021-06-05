@@ -8,6 +8,7 @@ import (
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/middleware"
+	"github.com/goreleaser/goreleaser/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/spf13/cobra"
@@ -26,6 +27,7 @@ type releaseOpts struct {
 	releaseHeaderTmpl string
 	releaseFooterFile string
 	releaseFooterTmpl string
+	autoSnapshot      bool
 	snapshot          bool
 	skipPublish       bool
 	skipSign          bool
@@ -73,6 +75,7 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().StringVar(&root.opts.releaseNotesTmpl, "release-notes-tmpl", "", "Load custom release notes from a templated markdown file (overrides --release-notes)")
 	cmd.Flags().StringVar(&root.opts.releaseHeaderTmpl, "release-header-tmpl", "", "Load custom release notes header from a templated markdown file (overrides --release-header)")
 	cmd.Flags().StringVar(&root.opts.releaseFooterTmpl, "release-footer-tmpl", "", "Load custom release notes footer from a templated markdown file (overrides --release-footer)")
+	cmd.Flags().BoolVar(&root.opts.autoSnapshot, "auto-snapshot", false, "Automatically sets --snapshot if the repo is dirty")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip-publish, --skip-announce and --skip-validate)")
 	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipAnnounce, "skip-announce", false, "Skips announcing releases (implies --skip-validate)")
@@ -123,6 +126,10 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Con
 	ctx.ReleaseFooterFile = options.releaseFooterFile
 	ctx.ReleaseFooterTmpl = options.releaseFooterTmpl
 	ctx.Snapshot = options.snapshot
+	if options.autoSnapshot && git.CheckDirty() != nil {
+		log.Info("git repo is dirty and --auto-snapshot is set, implying --snapshot")
+		ctx.Snapshot = true
+	}
 	ctx.SkipPublish = ctx.Snapshot || options.skipPublish
 	ctx.SkipAnnounce = ctx.Snapshot || options.skipPublish || options.skipAnnounce
 	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
