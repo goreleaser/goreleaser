@@ -17,6 +17,7 @@ func TestDescribeBody(t *testing.T) {
 	for _, d := range []string{
 		"goreleaser/goreleaser:0.40.0",
 		"goreleaser/goreleaser:latest",
+		"goreleaser/goreleaser",
 		"goreleaser/godownloader:v0.1.0",
 	} {
 		ctx.Artifacts.Add(&artifact.Artifact{
@@ -94,7 +95,7 @@ func TestDescribeBodyWithHeaderAndFooter(t *testing.T) {
 	})
 	ctx.ReleaseNotes = changelog
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "goreleaser/goreleaser:latest",
+		Name: "goreleaser/goreleaser:v1.2.3",
 		Type: artifact.DockerImage,
 	})
 	out, err := describeBody(ctx)
