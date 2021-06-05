@@ -12,6 +12,7 @@ goreleaser release [flags]
       --auto-snapshot                Automatically sets --snapshot if the repo is dirty
   -f, --config string                Load configuration from file
   -h, --help                         help for release
+  -k, --key string                   GoReleaser Pro license key [$GORELEASER_KEY]
   -p, --parallelism int              Amount tasks to run concurrently (default: number of CPUs)
       --release-footer string        Load custom release notes footer from a markdown file
       --release-footer-tmpl string   Load custom release notes footer from a templated markdown file (overrides --release-footer)
