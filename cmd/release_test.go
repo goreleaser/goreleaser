@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -13,6 +14,27 @@ func TestRelease(t *testing.T) {
 	cmd := newReleaseCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2", "--deprecated"})
 	require.NoError(t, cmd.cmd.Execute())
+}
+
+func TestReleaseAutoSnapshot(t *testing.T) {
+	t.Run("clean", func(t *testing.T) {
+		setup(t)
+		cmd := newReleaseCmd()
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip-publish"})
+		require.NoError(t, cmd.cmd.Execute())
+		require.FileExists(t, "dist/fake_0.0.2_checksums.txt", "should not have run with --snapshot")
+	})
+
+	t.Run("dirty", func(t *testing.T) {
+		setup(t)
+		createFile(t, "foo", "force dirty tree")
+		cmd := newReleaseCmd()
+		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip-publish"})
+		require.NoError(t, cmd.cmd.Execute())
+		matches, err := filepath.Glob("./dist/fake_v0.0.2-SNAPSHOT-*_checksums.txt")
+		require.NoError(t, err)
+		require.Len(t, matches, 1, "should have implied --snapshot")
+	})
 }
 
 func TestReleaseInvalidConfig(t *testing.T) {

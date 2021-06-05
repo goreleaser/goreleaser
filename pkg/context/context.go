@@ -127,6 +127,7 @@ func Wrap(ctx ctx.Context, config config.Project) *Context {
 }
 
 func splitEnv(env []string) map[string]string {
+	// TODO: this might panic if there is no `=` sign
 	r := map[string]string{}
 	for _, e := range env {
 		p := strings.SplitN(e, "=", 2)
