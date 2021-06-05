@@ -94,9 +94,4 @@ jobs:
           TWITTER_CONSUMER_SECRET: ${{ secrets.TWITTER_CONSUMER_SECRET }}
           TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
           TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
-        run: |
-          if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            ./goreleaser
-          elif [[ $GITHUB_REF == refs/heads/master ]]; then
-            ./goreleaser --snapshot
-          fi
+        run: ./goreleaser --auto-snapshot
