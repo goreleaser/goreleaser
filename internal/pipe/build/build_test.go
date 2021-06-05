@@ -263,7 +263,6 @@ func TestDefaultEmptyBuild(t *testing.T) {
 	build := ctx.Config.Builds[0]
 	require.Equal(t, ctx.Config.ProjectName, build.ID)
 	require.Equal(t, ctx.Config.ProjectName, build.Binary)
-	require.Equal(t, "{{ .ID }}_{{ .Target }}", build.DistPath)
 	require.Equal(t, ".", build.Dir)
 	require.Equal(t, ".", build.Main)
 	require.Equal(t, []string{"linux", "darwin"}, build.Goos)
@@ -322,12 +321,11 @@ func TestDefaultPartialBuilds(t *testing.T) {
 					Main:   "./cmd/main.go",
 				},
 				{
-					ID:       "build2",
-					Binary:   "foo",
-					Dir:      "baz",
-					Ldflags:  []string{"-s -w"},
-					Goarch:   []string{"386"},
-					DistPath: "another_{{.Target}}",
+					ID:      "build2",
+					Binary:  "foo",
+					Dir:     "baz",
+					Ldflags: []string{"-s -w"},
+					Goarch:  []string{"386"},
 				},
 			},
 		},
@@ -343,7 +341,6 @@ func TestDefaultPartialBuilds(t *testing.T) {
 		require.Equal(t, []string{"6"}, build.Goarm)
 		require.Len(t, build.Ldflags, 1)
 		require.Equal(t, "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser", build.Ldflags[0])
-		require.Equal(t, "{{ .ID }}_{{ .Target }}", build.DistPath)
 	})
 	t.Run("build1", func(t *testing.T) {
 		build := ctx.Config.Builds[1]
@@ -355,7 +352,6 @@ func TestDefaultPartialBuilds(t *testing.T) {
 		require.Equal(t, []string{"6"}, build.Goarm)
 		require.Len(t, build.Ldflags, 1)
 		require.Equal(t, "-s -w", build.Ldflags[0])
-		require.Equal(t, "another_{{.Target}}", build.DistPath)
 	})
 }
 
@@ -757,31 +753,19 @@ func TestBuildOptionsForTarget(t *testing.T) {
 			name: "overriding dist path",
 			build: config.Build{
 				ID:     "testid",
-				Binary: "testbinary_{{.Os}}_{{.Arch}}",
+				Binary: "distpath/{{.Os}}/{{.Arch}}/testbinary_{{.Os}}_{{.Arch}}",
 				Targets: []string{
 					"linux_amd64",
 				},
-				DistPath: "distpath/{{.Os}}/{{.Arch}}",
+				NoUniqueDistDir: true,
 			},
 			expectedOpts: &api.Options{
-				Name:   "testbinary_linux_amd64",
+				Name:   "distpath/linux/amd64/testbinary_linux_amd64",
 				Path:   filepath.Join(tmpDir, "distpath", "linux", "amd64", "testbinary_linux_amd64"),
 				Target: "linux_amd64",
 				Os:     "linux",
 				Arch:   "amd64",
 			},
-		},
-		{
-			name: "overriding dist path with invalid template",
-			build: config.Build{
-				ID:     "testid",
-				Binary: "testbinary",
-				Targets: []string{
-					"linux_amd64",
-				},
-				DistPath: "distpath/{{.Os}}/{{.Arch}",
-			},
-			expectedErr: `template: tmpl:1: unexpected "}" in operand`,
 		},
 	}
 

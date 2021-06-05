@@ -78,9 +78,6 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 	if build.ID == "" {
 		build.ID = ctx.Config.ProjectName
 	}
-	if build.DistPath == "" {
-		build.DistPath = "{{ .ID }}_{{ .Target }}"
-	}
 	for k, v := range build.Env {
 		build.Env[k] = os.ExpandEnv(v)
 	}
@@ -189,18 +186,17 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 
 	build.Binary = binary
 	name := build.Binary + ext
-	distPath, err := tmpl.New(ctx).
-		WithBuildOptions(buildOpts).
-		WithExtraFields(tmpl.Fields{
-			"ID":     build.ID,
-			"Target": target,
-		}).
-		Apply(build.DistPath)
-	if err != nil {
-		return nil, err
+	dir := fmt.Sprintf("%s_%s", build.ID, target)
+	if build.NoUniqueDistDir {
+		dir = ""
 	}
-
-	path, err := filepath.Abs(filepath.Join(ctx.Config.Dist, distPath, name))
+	path, err := filepath.Abs(
+		filepath.Join(
+			ctx.Config.Dist,
+			dir,
+			name,
+		),
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -135,21 +135,14 @@ builds:
     # Default is false
     skip: false
 
-    # Overrides the target output directory in the dist folder.
+    # By default, GoRelaser will create your binaries inside `dist/${BuildID}_${BuildTarget}`, which is an unique directory per build target in the matrix.
+    # You are able to set subdirs within that folder using the `binary` property.
     #
-    # By default, GoRelaser will create your binaries inside `dist/${BuildID}_${BuildTarget}`.
-    # You are able to set subdirs within this root folder using the `binary` property.
+    # However, if for some reason you don't want that unique directory to be created, you can set this property.
+    # If you do, you are responsible of keeping different builds from overriding each other.
     #
-    # `dist_path` however, allows you to change that root path, but keeps it within `dist`.
-    #
-    # If you change it, you are responsible of keeping different builds from overriding each other.
-    #
-    # Templating here has 2 extra fields:
-    # - ID: the build id property
-    # - Target: the build target, e.g. `darwin_arm64`
-    #
-    # Defaults to `{{ .ID }}_{{ .Target }}`.
-    dist_path: "my-path/{{.Os}}/{{.Arch}}"
+    # Defaults to `false`.
+    no_unique_dist_dir: true
 ```
 
 !!! tip
