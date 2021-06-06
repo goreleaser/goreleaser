@@ -186,10 +186,14 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 
 	build.Binary = binary
 	name := build.Binary + ext
+	dir := fmt.Sprintf("%s_%s", build.ID, target)
+	if build.NoUniqueDistDir {
+		dir = ""
+	}
 	path, err := filepath.Abs(
 		filepath.Join(
 			ctx.Config.Dist,
-			fmt.Sprintf("%s_%s", build.ID, target),
+			dir,
 			name,
 		),
 	)
@@ -198,7 +202,7 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	}
 
 	log.WithField("binary", path).Info("building")
-	buildOpts.Name = name
+	buildOpts.Name = filepath.Base(name)
 	buildOpts.Path = path
 	return &buildOpts, nil
 }
