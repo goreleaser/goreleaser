@@ -100,3 +100,64 @@ jobs:
           elif [[ $GITHUB_REF == refs/heads/master ]]; then
             ./goreleaser --snapshot
           fi
+
+  build-win-installers:
+    name: Build installers
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: goreleaser
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        config:
+          - {
+              arch: x86_64, label: x64
+            }
+          - {
+              arch: i386, label: x86
+            }
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Get version name
+        id: get_version
+        uses: battila7/get-version-action@v2
+      -
+        name: Download executables
+        id: download_exe
+        shell: bash
+        run: |
+          hub release download "${GITHUB_REF#refs/tags/}" -i 'goreleaser_Windows_${{ matrix.config.arch }}.zip'
+          unzip -o *.zip && rm -v *.zip
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      -
+        name: Install GoMSI
+        run: choco install -y go-msi
+      -
+        name: Prepare PATH
+        shell: bash
+        run: |
+          echo "$WIX\\bin" >> $GITHUB_PATH
+          echo "C:\\Program Files\\go-msi" >> $GITHUB_PATH
+      -
+        name: Build MSI
+        shell: bash
+        id: build_msi
+        env:
+          ZIP_FILE: ${{ steps.download_exe.outputs.zip }}
+        run: |
+          mkdir -p build
+          msi="$(basename "$ZIP_FILE" ".zip").msi"
+          printf "::set-output name=msi::%s\n" "$msi"
+          go-msi make --msi "$PWD/$msi" --out "$PWD/build" --version ${{ steps.get_version.outputs.version }}
+          printf "::set-output name=msi::%s\n" *.msi
+      -
+        name: Upload MSI
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ steps.build_msi.outputs.msi }}
+          asset_name: goreleaser_Windows_${{ matrix.config.label }}_Setup.msi
+          tag: ${{ github.ref }}

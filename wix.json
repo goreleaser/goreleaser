@@ -1,0 +1,31 @@
+{
+    "product": "Goreleaser",
+    "company": "Goreleaser",
+    "license": "LICENSE.md",
+    "files": {
+        "guid": "d503a6bc-fc43-4a9d-8155-f9c85223ec1c",
+        "items": [
+            "goreleaser.exe"
+        ]
+    },
+    "env": {
+        "guid": "ad47448f-1a46-455c-ba91-f6a9a2e436ae",
+        "vars": [
+            {
+                "name": "PATH",
+                "value": "[INSTALLDIR]",
+                "permanent": "yes",
+                "system": "no",
+                "action": "set",
+                "part": "last"
+            }
+        ]
+    },
+    "shortcuts": {},
+    "choco": {
+        "description": "Deliver Go binaries as fast and easily as possible",
+        "project-url": "https://github.com/goreleaser/goreleaser",
+        "tags": "go docker homebrew golang package deb rpm apk travis release-automation snapcraft",
+        "license-url": "https://github.com/goreleaser/goreleaser/blob/master/LICENSE.md"
+    }
+}
