@@ -140,6 +140,7 @@ func TestRunFullPipe(t *testing.T) {
 	}
 	ctx := context.New(config)
 	ctx.Git.CurrentTag = "2.4.5"
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, ctx.Artifacts.List(), []*artifact.Artifact{{
 		Name: "testing",
@@ -712,6 +713,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 		name         string
 		build        config.Build
 		expectedOpts *api.Options
+		expectedErr  string
 	}{
 		{
 			name: "simple options for target",
@@ -747,6 +749,24 @@ func TestBuildOptionsForTarget(t *testing.T) {
 				Arch:   "amd64",
 			},
 		},
+		{
+			name: "overriding dist path",
+			build: config.Build{
+				ID:     "testid",
+				Binary: "distpath/{{.Os}}/{{.Arch}}/testbinary_{{.Os}}_{{.Arch}}",
+				Targets: []string{
+					"linux_amd64",
+				},
+				NoUniqueDistDir: true,
+			},
+			expectedOpts: &api.Options{
+				Name:   "testbinary_linux_amd64",
+				Path:   filepath.Join(tmpDir, "distpath", "linux", "amd64", "testbinary_linux_amd64"),
+				Target: "linux_amd64",
+				Os:     "linux",
+				Arch:   "amd64",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -755,9 +775,14 @@ func TestBuildOptionsForTarget(t *testing.T) {
 				Dist:   tmpDir,
 				Builds: []config.Build{tc.build},
 			})
-			opts, err := buildOptionsForTarget(ctx, tc.build, tc.build.Targets[0])
-			require.NoError(t, err)
-			require.Equal(t, tc.expectedOpts, opts)
+			require.NoError(t, Pipe{}.Default(ctx))
+			opts, err := buildOptionsForTarget(ctx, ctx.Config.Builds[0], ctx.Config.Builds[0].Targets[0])
+			if tc.expectedErr == "" {
+				require.NoError(t, err)
+				require.Equal(t, tc.expectedOpts, opts)
+			} else {
+				require.EqualError(t, err, tc.expectedErr)
+			}
 		})
 	}
 }
