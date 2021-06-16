@@ -24,5 +24,5 @@ jobs:
         name: htmltest
         uses: wjdp/htmltest-action@master
         with:
-          path: www
+          path: www/site
           config: www/htmltest.yml
