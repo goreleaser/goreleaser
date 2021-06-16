@@ -51,16 +51,13 @@ class SupportedArchRequirement < Requirement
     "Your platform #{self.class.plat} is not supported by this tap. Supported arches: #{self.class.supported_arches.join ', '}."
   end
 
-  MACOS_SUPPORTED_ARCHES = [{{ join .MacOSArches ", " }}]
-  LINUX_SUPPORTED_ARCHES = [{{ join .LinuxArches ", " }}]
-
   def self.supported_arch?
     self.supported_arches.include? self.plat
   end
 
   def self.supported_arches
-    return LINUX_SUPPORTED_ARCHES if OS.linux?
-    return MACOS_SUPPORTED_ARCHES if OS.mac?
+    return [{{ join .LinuxArches ", " }}] if OS.linux?
+    return [{{ join .MacOSArches ", " }}] if OS.mac?
     []
   end
 

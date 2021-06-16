@@ -11,16 +11,13 @@ class SupportedArchRequirement < Requirement
     "Your platform #{self.class.plat} is not supported by this tap. Supported arches: #{self.class.supported_arches.join ', '}."
   end
 
-  MACOS_SUPPORTED_ARCHES = [:x86_64]
-  LINUX_SUPPORTED_ARCHES = [:aarch64, :arm]
-
   def self.supported_arch?
     self.supported_arches.include? self.plat
   end
 
   def self.supported_arches
-    return LINUX_SUPPORTED_ARCHES if OS.linux?
-    return MACOS_SUPPORTED_ARCHES if OS.mac?
+    return [:aarch64, :arm] if OS.linux?
+    return [:x86_64] if OS.mac?
     []
   end
 
