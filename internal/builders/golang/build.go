@@ -148,21 +148,25 @@ func buildGoBuildLine(ctx *context.Context, build config.Build, options api.Opti
 	}
 	cmd = append(cmd, gcflags...)
 
-	tags, err := processFlag(ctx, artifact, env, strings.Join(build.Tags, ","))
-	if err != nil {
-		return cmd, err
+	// tags is not a repeatable flag
+	if len(build.Tags) > 0 {
+		tags, err := processFlags(ctx, artifact, env, build.Tags, "")
+		if err != nil {
+			return cmd, err
+		}
+		cmd = append(cmd, "-tags="+strings.Join(tags, ","))
 	}
-	cmd = append(cmd, "-tags="+tags)
 
-	// flag prefix is skipped because ldflags need to output a single string
-	ldflags, err := processFlags(ctx, artifact, env, build.Ldflags, "")
-	if err != nil {
-		return cmd, err
+	// ldflags is not a repeatable flag
+	if len(build.Ldflags) > 0 {
+		// flag prefix is skipped because ldflags need to output a single string
+		ldflags, err := processFlags(ctx, artifact, env, build.Ldflags, "")
+		if err != nil {
+			return cmd, err
+		}
+		// ldflags need to be single string in order to apply correctly
+		cmd = append(cmd, "-ldflags="+strings.Join(ldflags, " "))
 	}
-	// ldflags need to be single string in order to apply correctly
-	processedLdFlags := joinLdFlags(ldflags)
-
-	cmd = append(cmd, processedLdFlags)
 
 	cmd = append(cmd, "-o", options.Path, build.Main)
 	return cmd, nil
@@ -182,14 +186,6 @@ func processFlags(ctx *context.Context, a *artifact.Artifact, env, flags []strin
 
 func processFlag(ctx *context.Context, a *artifact.Artifact, env []string, rawFlag string) (string, error) {
 	return tmpl.New(ctx).WithEnvS(env).WithArtifact(a, map[string]string{}).Apply(rawFlag)
-}
-
-func joinLdFlags(flags []string) string {
-	ldflagString := strings.Builder{}
-	ldflagString.WriteString("-ldflags=")
-	ldflagString.WriteString(strings.Join(flags, " "))
-
-	return ldflagString.String()
 }
 
 func run(ctx *context.Context, command, env []string, dir string) error {

@@ -732,21 +732,6 @@ func TestProcessFlagsInvalid(t *testing.T) {
 	require.Nil(t, flags)
 }
 
-func TestJoinLdFlags(t *testing.T) {
-	tests := []struct {
-		input  []string
-		output string
-	}{
-		{[]string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser"}, "-ldflags=-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser"},
-		{[]string{"-s -w", "-X main.version={{.Version}}"}, "-ldflags=-s -w -X main.version={{.Version}}"},
-	}
-
-	for _, test := range tests {
-		joinedLdFlags := joinLdFlags(test.input)
-		require.Equal(t, joinedLdFlags, test.output)
-	}
-}
-
 func TestBuildModTimestamp(t *testing.T) {
 	// round to seconds since this will be a unix timestamp
 	modTime := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second).UTC()
@@ -813,6 +798,106 @@ func TestBuildModTimestamp(t *testing.T) {
 		require.NoError(t, err)
 		require.True(t, modTime.Equal(fi.ModTime()), "inconsistent mod times found when specifying ModTimestamp")
 	}
+}
+
+func TestBuildGoBuildLine(t *testing.T) {
+	t.Run("full", func(t *testing.T) {
+		config := config.Project{
+			Builds: []config.Build{
+				{
+					Main:     ".",
+					Asmflags: []string{"asmflag1", "asmflag2"},
+					Gcflags:  []string{"gcflag1", "gcflag2"},
+					Flags:    []string{"-flag1", "-flag2"},
+					Tags:     []string{"tag1", "tag2"},
+					Ldflags:  []string{"ldflag1", "ldflag2"},
+					GoBinary: "go",
+				},
+			},
+		}
+		ctx := context.New(config)
+
+		line, err := buildGoBuildLine(ctx, config.Builds[0], api.Options{
+			Path: "foo",
+		}, &artifact.Artifact{}, []string{})
+		require.NoError(t, err)
+		require.Equal(
+			t,
+			[]string{
+				"go", "build",
+				"-flag1", "-flag2",
+				"-asmflags=asmflag1", "-asmflags=asmflag2",
+				"-gcflags=gcflag1", "-gcflags=gcflag2",
+				"-tags=tag1,tag2",
+				"-ldflags=ldflag1 ldflag2",
+				"-o", "foo", ".",
+			},
+			line,
+		)
+	})
+
+	t.Run("simple", func(t *testing.T) {
+		config := config.Project{
+			Builds: []config.Build{
+				{
+					Main:     ".",
+					GoBinary: "go",
+				},
+			},
+		}
+		ctx := context.New(config)
+
+		line, err := buildGoBuildLine(ctx, config.Builds[0], api.Options{
+			Path: "foo",
+		}, &artifact.Artifact{}, []string{})
+		require.NoError(t, err)
+		require.Equal(t, strings.Fields("go build -o foo ."), line)
+	})
+
+	t.Run("ldflags1", func(t *testing.T) {
+		config := config.Project{
+			Builds: []config.Build{
+				{
+					Main:     ".",
+					Ldflags:  []string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.builtBy=goreleaser"},
+					GoBinary: "go",
+				},
+			},
+		}
+		ctx := context.New(config)
+		ctx.Version = "v1.2.3"
+		ctx.Git.Commit = "aaa"
+
+		line, err := buildGoBuildLine(ctx, config.Builds[0], api.Options{
+			Path: "foo",
+		}, &artifact.Artifact{}, []string{})
+		require.NoError(t, err)
+		require.Equal(t, []string{
+			"go", "build",
+			"-ldflags=-s -w -X main.version=v1.2.3 -X main.commit=aaa -X main.builtBy=goreleaser",
+			"-o", "foo", ".",
+		}, line)
+	})
+
+	t.Run("ldflags2", func(t *testing.T) {
+		config := config.Project{
+			Builds: []config.Build{
+				{
+					Main:     ".",
+					Ldflags:  []string{"-s -w", "-X main.version={{.Version}}"},
+					GoBinary: "go",
+				},
+			},
+		}
+		ctx := context.New(config)
+		ctx.Version = "v1.2.3"
+
+		line, err := buildGoBuildLine(ctx, config.Builds[0], api.Options{
+			Path: "foo",
+		}, &artifact.Artifact{}, []string{})
+		require.NoError(t, err)
+		require.Equal(t, []string{"go", "build", "-ldflags=-s -w -X main.version=v1.2.3", "-o", "foo", "."}, line)
+	})
 }
 
 //
