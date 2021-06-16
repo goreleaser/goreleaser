@@ -801,7 +801,8 @@ func TestBuildModTimestamp(t *testing.T) {
 }
 
 func TestBuildGoBuildLine(t *testing.T) {
-	testFunction := func(build config.Build) ([]string, error) {
+	requireEqualCmd := func(tb testing.TB, build config.Build, expected []string) {
+		tb.Helper()
 		config := config.Project{
 			Builds: []config.Build{build},
 		}
@@ -809,13 +810,13 @@ func TestBuildGoBuildLine(t *testing.T) {
 		ctx.Version = "v1.2.3"
 		ctx.Git.Commit = "aaa"
 
-		return buildGoBuildLine(ctx, config.Builds[0], api.Options{
-			Path: "foo",
-		}, &artifact.Artifact{}, []string{})
+		line, err := buildGoBuildLine(ctx, config.Builds[0], api.Options{Path: "foo"}, &artifact.Artifact{}, []string{})
+		require.NoError(t, err)
+		require.Equal(t, expected, line)
 	}
 
 	t.Run("full", func(t *testing.T) {
-		line, err := testFunction(config.Build{
+		requireEqualCmd(t, config.Build{
 			Main:     ".",
 			Asmflags: []string{"asmflag1", "asmflag2"},
 			Gcflags:  []string{"gcflag1", "gcflag2"},
@@ -823,9 +824,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 			Tags:     []string{"tag1", "tag2"},
 			Ldflags:  []string{"ldflag1", "ldflag2"},
 			GoBinary: "go",
-		})
-		require.NoError(t, err)
-		require.Equal(t, []string{
+		}, []string{
 			"go", "build",
 			"-flag1", "-flag2",
 			"-asmflags=asmflag1", "-asmflags=asmflag2",
@@ -833,40 +832,34 @@ func TestBuildGoBuildLine(t *testing.T) {
 			"-tags=tag1,tag2",
 			"-ldflags=ldflag1 ldflag2",
 			"-o", "foo", ".",
-		}, line)
+		})
 	})
 
 	t.Run("simple", func(t *testing.T) {
-		line, err := testFunction(config.Build{
+		requireEqualCmd(t, config.Build{
 			Main:     ".",
 			GoBinary: "go",
-		})
-		require.NoError(t, err)
-		require.Equal(t, strings.Fields("go build -o foo ."), line)
+		}, strings.Fields("go build -o foo ."))
 	})
 
 	t.Run("ldflags1", func(t *testing.T) {
-		line, err := testFunction(config.Build{
+		requireEqualCmd(t, config.Build{
 			Main:     ".",
 			Ldflags:  []string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.builtBy=goreleaser"},
 			GoBinary: "go",
-		})
-		require.NoError(t, err)
-		require.Equal(t, []string{
+		}, []string{
 			"go", "build",
 			"-ldflags=-s -w -X main.version=v1.2.3 -X main.commit=aaa -X main.builtBy=goreleaser",
 			"-o", "foo", ".",
-		}, line)
+		})
 	})
 
 	t.Run("ldflags2", func(t *testing.T) {
-		line, err := testFunction(config.Build{
+		requireEqualCmd(t, config.Build{
 			Main:     ".",
 			Ldflags:  []string{"-s -w", "-X main.version={{.Version}}"},
 			GoBinary: "go",
-		})
-		require.NoError(t, err)
-		require.Equal(t, []string{"go", "build", "-ldflags=-s -w -X main.version=v1.2.3", "-o", "foo", "."}, line)
+		}, []string{"go", "build", "-ldflags=-s -w -X main.version=v1.2.3", "-o", "foo", "."})
 	})
 }
 
