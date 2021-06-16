@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -49,7 +50,11 @@ func (Pipe) Run(ctx *context.Context) error {
 		if err != nil {
 			return err
 		}
-		ctx.Config.Env[i] = env
+		// XXX: this has no risk of panicking because it would already have
+		// panicked at `context.go`'s `splitEnv` method.
+		// Need to properly handle this at some point.
+		parts := strings.SplitN(env, "=", 2)
+		ctx.Env[parts[0]] = parts[1]
 	}
 
 	setDefaultTokenFiles(ctx)

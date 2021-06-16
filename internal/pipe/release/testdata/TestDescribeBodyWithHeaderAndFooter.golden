@@ -6,7 +6,7 @@ feature2: other description
 
 ## Docker images
 
-- `docker pull goreleaser/goreleaser:latest`
+- `docker pull goreleaser/goreleaser:v1.2.3`
 
 ---
 

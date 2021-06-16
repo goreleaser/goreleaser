@@ -2,6 +2,7 @@ package release
 
 import (
 	"bytes"
+	"strings"
 	"text/template"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -21,15 +22,25 @@ const bodyTemplateText = `{{ with .Header }}{{ . }}{{ "\n" }}{{ end }}
 {{- with .Footer }}{{ "\n" }}{{ . }}{{ end }}
 `
 
+func isLatest(img string) bool {
+	return strings.HasSuffix(img, ":latest") || !strings.Contains(img, ":")
+}
+
 func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 	var out bytes.Buffer
 	// nolint:prealloc
 	var dockers []string
 	for _, a := range ctx.Artifacts.Filter(artifact.ByType(artifact.DockerManifest)).List() {
+		if isLatest(a.Name) {
+			continue
+		}
 		dockers = append(dockers, a.Name)
 	}
 	if len(dockers) == 0 {
 		for _, a := range ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImage)).List() {
+			if isLatest(a.Name) {
+				continue
+			}
 			dockers = append(dockers, a.Name)
 		}
 	}
