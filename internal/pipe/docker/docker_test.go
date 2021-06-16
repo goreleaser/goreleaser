@@ -204,6 +204,7 @@ func TestRunPipe(t *testing.T) {
 			manifestAssertError: shouldNotErr,
 			assertImageLabels:   noLabels,
 			extraPrepare: func(t *testing.T, ctx *context.Context) {
+				t.Helper()
 				ctx.Semver.Prerelease = "beta"
 			},
 		},
