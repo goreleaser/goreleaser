@@ -518,6 +518,7 @@ type Docker struct {
 // DockerManifest config.
 type DockerManifest struct {
 	NameTemplate   string   `yaml:"name_template,omitempty"`
+	SkipPush       string   `yaml:"skip_push,omitempty"`
 	ImageTemplates []string `yaml:"image_templates,omitempty"`
 	CreateFlags    []string `yaml:"create_flags,omitempty"`
 	PushFlags      []string `yaml:"push_flags,omitempty"`

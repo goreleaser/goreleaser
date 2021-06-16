@@ -146,6 +146,96 @@ func TestRunPipe(t *testing.T) {
 			manifestAssertError: shouldNotErr,
 			assertImageLabels:   noLabels,
 		},
+		"manifest autoskip no prerelease": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{registry + "goreleaser/test_manifestskip:test-amd64"},
+					Goos:           "linux",
+					Goarch:         "amd64",
+					Dockerfile:     "testdata/Dockerfile",
+					SkipPush:       "auto",
+				},
+			},
+			manifests: []config.DockerManifest{
+				{
+					NameTemplate: registry + "goreleaser/test_manifestskip:test",
+					ImageTemplates: []string{
+						registry + "goreleaser/test_manifestskip:test-amd64",
+					},
+					CreateFlags: []string{"--insecure"},
+					PushFlags:   []string{"--insecure"},
+					SkipPush:    "auto",
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_manifestskip:test-amd64",
+			},
+			assertError:         shouldNotErr,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+			assertImageLabels:   noLabels,
+		},
+		"manifest autoskip prerelease": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{registry + "goreleaser/test_manifestskip-prerelease:test-amd64"},
+					Goos:           "linux",
+					Goarch:         "amd64",
+					Dockerfile:     "testdata/Dockerfile",
+					SkipPush:       "auto",
+				},
+			},
+			manifests: []config.DockerManifest{
+				{
+					NameTemplate: registry + "goreleaser/test_manifestskip-prerelease:test",
+					ImageTemplates: []string{
+						registry + "goreleaser/test_manifestskip-prerelease:test-amd64",
+					},
+					CreateFlags: []string{"--insecure"},
+					PushFlags:   []string{"--insecure"},
+					SkipPush:    "auto",
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_manifestskip-prerelease:test-amd64",
+			},
+			assertError:         testlib.AssertSkipped,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+			assertImageLabels:   noLabels,
+			extraPrepare: func(t *testing.T, ctx *context.Context) {
+				ctx.Semver.Prerelease = "beta"
+			},
+		},
+		"manifest skip": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{registry + "goreleaser/test_manifestskip-true:test-amd64"},
+					Goos:           "linux",
+					Goarch:         "amd64",
+					Dockerfile:     "testdata/Dockerfile",
+					SkipPush:       "true",
+				},
+			},
+			manifests: []config.DockerManifest{
+				{
+					NameTemplate: registry + "goreleaser/test_manifestskip-true:test",
+					ImageTemplates: []string{
+						registry + "goreleaser/test_manifestskip-true:test-amd64",
+					},
+					CreateFlags: []string{"--insecure"},
+					PushFlags:   []string{"--insecure"},
+					SkipPush:    "true",
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/test_manifestskip-true:test-amd64",
+			},
+			assertError:         testlib.AssertSkipped,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+			assertImageLabels:   noLabels,
+		},
 		"multiarch with previous existing manifest": {
 			dockers: []config.Docker{
 				{
