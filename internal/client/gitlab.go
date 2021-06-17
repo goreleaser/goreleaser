@@ -299,6 +299,7 @@ func (c *gitlabClient) Upload(
 		return err
 	}
 	projectID := gitlabName
+	// check if owner is empty
 	if ctx.Config.Release.GitLab.Owner != "" {
 		projectID = ctx.Config.Release.GitLab.Owner + "/" + projectID
 	}
