@@ -318,6 +318,7 @@ func (c *gitlabClient) Upload(
 		"url":  projectFile.URL,
 	}).Debug("uploaded file")
 
+	// search for project details based on projectID
 	projectDetails, _, err := c.client.Projects.GetProject(projectID, nil)
 	if err != nil {
 		return err
