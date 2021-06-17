@@ -153,7 +153,6 @@ func TestRunPipe(t *testing.T) {
 					Goos:           "linux",
 					Goarch:         "amd64",
 					Dockerfile:     "testdata/Dockerfile",
-					SkipPush:       "auto",
 				},
 			},
 			manifests: []config.DockerManifest{
@@ -182,7 +181,6 @@ func TestRunPipe(t *testing.T) {
 					Goos:           "linux",
 					Goarch:         "amd64",
 					Dockerfile:     "testdata/Dockerfile",
-					SkipPush:       "auto",
 				},
 			},
 			manifests: []config.DockerManifest{
@@ -199,9 +197,9 @@ func TestRunPipe(t *testing.T) {
 			expect: []string{
 				registry + "goreleaser/test_manifestskip-prerelease:test-amd64",
 			},
-			assertError:         testlib.AssertSkipped,
+			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldNotErr,
+			manifestAssertError: testlib.AssertSkipped,
 			assertImageLabels:   noLabels,
 			extraPrepare: func(t *testing.T, ctx *context.Context) {
 				t.Helper()
@@ -215,7 +213,6 @@ func TestRunPipe(t *testing.T) {
 					Goos:           "linux",
 					Goarch:         "amd64",
 					Dockerfile:     "testdata/Dockerfile",
-					SkipPush:       "true",
 				},
 			},
 			manifests: []config.DockerManifest{
@@ -232,9 +229,9 @@ func TestRunPipe(t *testing.T) {
 			expect: []string{
 				registry + "goreleaser/test_manifestskip-true:test-amd64",
 			},
-			assertError:         testlib.AssertSkipped,
+			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldNotErr,
+			manifestAssertError: testlib.AssertSkipped,
 			assertImageLabels:   noLabels,
 		},
 		"multiarch with previous existing manifest": {
