@@ -47,6 +47,16 @@ docker_manifests:
   # Defaults to empty.
   push_flags:
   - --insecure
+
+  # Skips the docker manifest.
+  # If you set this to 'false' or 'auto' on your source docker configs,
+  #  you'll probably want to do the same here.
+  #
+  # If set to 'auto', the manifest will not be created in case there is an
+  #  indicator of a prerelease in the tag, e.g. v1.0.0-rc1.
+  #
+  # Defaults to false.
+  skip_push: false
 ```
 
 !!! tip

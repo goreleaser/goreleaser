@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
-        name: Checkout
+        name: checkout
         uses: actions/checkout@v2
       -
         name: build
@@ -22,7 +22,7 @@ jobs:
           docker run --rm -v ${PWD}/www:/docs squidfunk/mkdocs-material build
       -
         name: htmltest
-        run: |
-          cd www
-          curl https://htmltest.wjdp.uk | bash
-          ./bin/htmltest -c htmltest.yml
+        uses: wjdp/htmltest-action@master
+        with:
+          path: www/site
+          config: www/htmltest.yml
