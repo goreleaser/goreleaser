@@ -294,6 +294,7 @@ func (c *gitlabClient) Upload(
 	artifact *artifact.Artifact,
 	file *os.File,
 ) error {
+	// create new template and apply name field
 	gitlabName, err := tmpl.New(ctx).Apply(ctx.Config.Release.GitLab.Name)
 	if err != nil {
 		return err
