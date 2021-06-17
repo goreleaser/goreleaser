@@ -70,9 +70,12 @@ dockers:
     - "myuser/myimage:v{{ .Major }}"
     - "gcr.io/myuser/myimage:latest"
 
-    # Skips the docker push. Could be useful if you also do draft releases.
+    # Skips the docker push.
+    # Could be useful if you also do draft releases.
+    #
     # If set to auto, the release will not be pushed to the docker repository
-    # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+    #  in case there is an indicator of a prerelease in the tag, e.g. v1.0.0-rc1.
+    #
     # Defaults to false.
     skip_push: false
 
