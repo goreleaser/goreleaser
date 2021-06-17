@@ -81,11 +81,6 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	cmd := []string{build.GoBinary, "build"}
-
-	env := append(ctx.Env.Strings(), build.Env...)
-	env = append(env, target.Env()...)
-
 	artifact := &artifact.Artifact{
 		Type:   artifact.Binary,
 		Path:   options.Path,
@@ -101,41 +96,14 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		},
 	}
 
-	flags, err := processFlags(ctx, artifact, env, build.Flags, "")
+	env := append(ctx.Env.Strings(), build.Env...)
+	env = append(env, target.Env()...)
+
+	cmd, err := buildGoBuildLine(ctx, build, options, artifact, env)
 	if err != nil {
 		return err
 	}
-	cmd = append(cmd, flags...)
 
-	asmflags, err := processFlags(ctx, artifact, env, build.Asmflags, "-asmflags=")
-	if err != nil {
-		return err
-	}
-	cmd = append(cmd, asmflags...)
-
-	gcflags, err := processFlags(ctx, artifact, env, build.Gcflags, "-gcflags=")
-	if err != nil {
-		return err
-	}
-	cmd = append(cmd, gcflags...)
-
-	tags, err := processFlag(ctx, artifact, env, strings.Join(build.Tags, ","))
-	if err != nil {
-		return err
-	}
-	cmd = append(cmd, "-tags="+tags)
-
-	// flag prefix is skipped because ldflags need to output a single string
-	ldflags, err := processFlags(ctx, artifact, env, build.Ldflags, "")
-	if err != nil {
-		return err
-	}
-	// ldflags need to be single string in order to apply correctly
-	processedLdFlags := joinLdFlags(ldflags)
-
-	cmd = append(cmd, processedLdFlags)
-
-	cmd = append(cmd, "-o", options.Path, build.Main)
 	if err := run(ctx, cmd, env, build.Dir); err != nil {
 		return fmt.Errorf("failed to build for %s: %w", options.Target, err)
 	}
@@ -160,6 +128,50 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
+func buildGoBuildLine(ctx *context.Context, build config.Build, options api.Options, artifact *artifact.Artifact, env []string) ([]string, error) {
+	cmd := []string{build.GoBinary, "build"}
+	flags, err := processFlags(ctx, artifact, env, build.Flags, "")
+	if err != nil {
+		return cmd, err
+	}
+	cmd = append(cmd, flags...)
+
+	asmflags, err := processFlags(ctx, artifact, env, build.Asmflags, "-asmflags=")
+	if err != nil {
+		return cmd, err
+	}
+	cmd = append(cmd, asmflags...)
+
+	gcflags, err := processFlags(ctx, artifact, env, build.Gcflags, "-gcflags=")
+	if err != nil {
+		return cmd, err
+	}
+	cmd = append(cmd, gcflags...)
+
+	// tags is not a repeatable flag
+	if len(build.Tags) > 0 {
+		tags, err := processFlags(ctx, artifact, env, build.Tags, "")
+		if err != nil {
+			return cmd, err
+		}
+		cmd = append(cmd, "-tags="+strings.Join(tags, ","))
+	}
+
+	// ldflags is not a repeatable flag
+	if len(build.Ldflags) > 0 {
+		// flag prefix is skipped because ldflags need to output a single string
+		ldflags, err := processFlags(ctx, artifact, env, build.Ldflags, "")
+		if err != nil {
+			return cmd, err
+		}
+		// ldflags need to be single string in order to apply correctly
+		cmd = append(cmd, "-ldflags="+strings.Join(ldflags, " "))
+	}
+
+	cmd = append(cmd, "-o", options.Path, build.Main)
+	return cmd, nil
+}
+
 func processFlags(ctx *context.Context, a *artifact.Artifact, env, flags []string, flagPrefix string) ([]string, error) {
 	processed := make([]string, 0, len(flags))
 	for _, rawFlag := range flags {
@@ -174,14 +186,6 @@ func processFlags(ctx *context.Context, a *artifact.Artifact, env, flags []strin
 
 func processFlag(ctx *context.Context, a *artifact.Artifact, env []string, rawFlag string) (string, error) {
 	return tmpl.New(ctx).WithEnvS(env).WithArtifact(a, map[string]string{}).Apply(rawFlag)
-}
-
-func joinLdFlags(flags []string) string {
-	ldflagString := strings.Builder{}
-	ldflagString.WriteString("-ldflags=")
-	ldflagString.WriteString(strings.Join(flags, " "))
-
-	return ldflagString.String()
 }
 
 func run(ctx *context.Context, command, env []string, dir string) error {
