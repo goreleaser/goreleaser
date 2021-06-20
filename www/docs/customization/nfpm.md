@@ -318,6 +318,13 @@ nfpms:
         type: origin
 
     apk:
+      # APK specific scripts.
+      scripts:
+        # The preupgrade script runs before APK upgrade.
+        preupgrade: ./scripts/preupgrade.sh
+        # The postupgrade script runs after APK.
+        postupgrade: ./scripts/postupgrade.sh
+
       # The package is signed if a key_file is set
       signature:
         # RSA private key in the PEM format. The passphrase is taken
