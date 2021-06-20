@@ -306,6 +306,10 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 					},
 					KeyName: overridden.APK.Signature.KeyName,
 				},
+				Scripts: nfpm.APKScripts{
+					PreUpgrade:  overridden.APK.Scripts.PreUpgrade,
+					PostUpgrade: overridden.APK.Scripts.PostUpgrade,
+				},
 			},
 		},
 	}

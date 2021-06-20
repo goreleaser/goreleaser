@@ -808,6 +808,90 @@ func TestAPKSpecificConfig(t *testing.T) {
 	})
 }
 
+func TestAPKSpecificScriptsConfig(t *testing.T) {
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
+	f, err := os.Create(binPath)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	scripts := config.NFPMAPKScripts{
+		PreUpgrade:  "/does/not/exist_preupgrade.sh",
+		PostUpgrade: "/does/not/exist_postupgrade.sh",
+	}
+	ctx := context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		NFPMs: []config.NFPM{
+			{
+				ID:         "someid",
+				Maintainer: "me@me",
+				Builds:     []string{"default"},
+				Formats:    []string{"apk"},
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+					Contents: []*files.Content{
+						{
+							Source:      "testdata/testfile.txt",
+							Destination: "/usr/share/testfile.txt",
+						},
+					},
+					APK: config.NFPMAPK{
+						Scripts: scripts,
+					},
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	for _, goos := range []string{"linux", "darwin"} {
+		for _, goarch := range []string{"amd64", "386"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"ID": "default",
+				},
+			})
+		}
+	}
+
+	t.Run("PreUpgrade script file does not exist", func(t *testing.T) {
+		ctx.Config.NFPMs[0].APK.Scripts = scripts
+		ctx.Config.NFPMs[0].APK.Scripts.PostUpgrade = "testdata/testfile.txt"
+
+		require.Contains(
+			t,
+			Pipe{}.Run(ctx).Error(),
+			`nfpm failed: stat /does/not/exist_preupgrade.sh: no such file or directory`,
+		)
+	})
+
+	t.Run("PostUpgrade script file does not exist", func(t *testing.T) {
+		ctx.Config.NFPMs[0].APK.Scripts = scripts
+		ctx.Config.NFPMs[0].APK.Scripts.PreUpgrade = "testdata/testfile.txt"
+
+		require.Contains(
+			t,
+			Pipe{}.Run(ctx).Error(),
+			`nfpm failed: stat /does/not/exist_postupgrade.sh: no such file or directory`,
+		)
+	})
+
+	t.Run("preupgrade and postupgrade scriptlets set", func(t *testing.T) {
+		ctx.Config.NFPMs[0].APK.Scripts.PreUpgrade = "testdata/testfile.txt"
+		ctx.Config.NFPMs[0].APK.Scripts.PostUpgrade = "testdata/testfile.txt"
+
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+}
+
 func TestSeveralNFPMsWithTheSameID(t *testing.T) {
 	ctx := &context.Context{
 		Config: config.Project{
