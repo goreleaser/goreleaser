@@ -38,12 +38,14 @@ furies:
 
     # IDs to filter by.
     # Defaults to empty, which means all packages created by all nfpm configurations get uploaded.
-    ids: [ 'nfpm1' ]
+    ids:
+      - packages
 
     # Formats to upload.
     # Available options are `deb` and `rpm`.
     # Defaults to `deb` and `rpm`.
-    formats: [ 'deb' ]
+    formats:
+      - deb
 ```
 
 !!! info
