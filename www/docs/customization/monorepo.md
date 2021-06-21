@@ -40,7 +40,7 @@ Then, the following is different from a "regular" run:
 The rest of the release process should work as usual.
 
 !!! info
-    Monorepo support is a [GoReleaser Pro feature](/pro).
+    Monorepo support is a [GoReleaser Pro feature](/pro/).
 
 !!! warning
     This feature is in beta and might change based on feedback.

@@ -4,7 +4,8 @@ GoReleaser Pro is now available with some unique features such as:
 
 - Ability to [include](/customization/includes/) config files (useful for common configurations);
 - Improved global hooks and [global after hooks](/customization/hooks/);
-- [Monorepo support](/customization/monorepo);
+- [Monorepo support](/customization/monorepo/);
+- [Easy apt and yum repositories with fury.io](/customization/fury/);
 - [Custom template variables](/customization/templates/#custom-variables) (goes well with [includes](/customization/includes/)).
 
 <script src="https://gumroad.com/js/gumroad.js"></script>

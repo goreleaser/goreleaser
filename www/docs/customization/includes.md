@@ -19,4 +19,4 @@ includes:
 ```
 
 !!! info
-    Includes is a [GoReleaser Pro feature](/pro).
+    Includes is a [GoReleaser Pro feature](/pro/).
