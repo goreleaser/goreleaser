@@ -1,5 +1,5 @@
 ---
-title: Fury
+title: Fury.io
 ---
 
 With [GoReleaser Pro](/pro) you can easily create deb and yum repositories on [fury.io][fury].
