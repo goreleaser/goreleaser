@@ -126,6 +126,7 @@ scoop:
   license: MIT
 nfpms:
   - file_name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    id: packages
     homepage:  https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible
     maintainer: Carlos Alexandro Becker <root@carlosbecker.com>
@@ -156,6 +157,13 @@ snapcrafts:
     grade: stable
     confinement: classic
     publish: true
+
+publishers:
+  - name: fury.io
+    ids:
+    - packages
+    cmd: ./scripts/fury-upload.sh {{ .ArtifactName }}
+
 release:
   discussion_category_name: Announcements
   footer: |

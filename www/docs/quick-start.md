@@ -36,12 +36,12 @@ accordingly.
 
 GoReleaser will build the binaries for your app for Windows, Linux and macOS,
 both amd64 and i386 architectures. You can customize that by changing the
-`builds` section. Check the [documentation](/customization/build) for more information.
+`builds` section. Check the [documentation](/customization/build/) for more information.
 
 After building the binaries, GoReleaser will create an archive for each OS/Arch
 pair into a separate file. You can customize several things by changing
 the `archive` section, including releasing only the binaries and not creating
-archives at all. Check the [documentation](/customization/archive) for more information.
+archives at all. Check the [documentation](/customization/archive/) for more information.
 
 You'll need to export either a `GITHUB_TOKEN` **or** `GITLAB_TOKEN` environment variable, which should
 contain a valid GitHub token with the `repo` scope or GitLab token with `api` scope.
@@ -68,7 +68,7 @@ git push origin v0.1.0
 ```
 
 !!! info
-    Check if your tag adheres to [semantic versioning](/limitations/semver).
+    Check if your tag adheres to [semantic versioning](/limitations/semver/).
 
 If you don't want to create a tag yet, you can also run GoReleaser without publishing
 based on the latest commit by using the `--snapshot` flag:

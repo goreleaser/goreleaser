@@ -82,6 +82,7 @@ nav:
   - customization/docker.md
   - customization/docker_manifest.md
   - customization/env.md
+  - customization/fury.md
   - customization/gomod.md
   - customization/homebrew.md
   - customization/hooks.md

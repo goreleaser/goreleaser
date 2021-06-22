@@ -389,6 +389,11 @@ type NFPMDeb struct {
 	Signature       NFPMDebSignature `yaml:"signature,omitempty"`
 }
 
+type NFPMAPKScripts struct {
+	PreUpgrade  string `yaml:"preupgrade,omitempty"`
+	PostUpgrade string `yaml:"postupgrade,omitempty"`
+}
+
 // NFPMAPKSignature contains config for signing apk packages created by nfpm.
 type NFPMAPKSignature struct {
 	// RSA private key in PEM format
@@ -400,6 +405,7 @@ type NFPMAPKSignature struct {
 
 // NFPMAPK is custom config only available on apk packages.
 type NFPMAPK struct {
+	Scripts   NFPMAPKScripts   `yaml:"scripts,omitempty"`
 	Signature NFPMAPKSignature `yaml:"signature,omitempty"`
 }
 

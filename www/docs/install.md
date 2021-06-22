@@ -1,6 +1,6 @@
 # Install
 
-There are two GoReleaser distributions: OSS and [Pro](/pro).
+There are two GoReleaser distributions: OSS and [Pro](/pro/).
 
 You can install the pre-compiled binary (in several different ways), use Docker or compile from source (when on OSS).
 
@@ -52,6 +52,51 @@ scoop install goreleaser
 ```sh
 scoop bucket add goreleaser https://github.com/goreleaser/scoop-bucket.git
 scoop install goreleaser-pro
+```
+
+### apt
+
+#### setup repository
+
+```sh
+echo 'deb [trusted=yes] https://apt.fury.io/goreleaser/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
+sudo apt update
+```
+
+#### oss
+
+```sh
+sudo apt install goreleaser
+```
+
+#### pro
+
+```sh
+sudo apt install goreleaser-pro
+```
+
+### yum
+
+#### setup repository
+
+```sh
+echo '[goreleaser]
+name=GoReleaser
+baseurl=https://yum.fury.io/goreleaser/
+enabled=1
+gpgcheck=0' | sudo tee /etc/yum.repos.d/goreleaser.repo
+```
+
+#### oss
+
+```sh
+sudo yum install goreleaser
+```
+
+#### pro
+
+```sh
+sudo yum install goreleaser-pro
 ```
 
 ### deb, rpm and apk packages
@@ -150,7 +195,7 @@ and iterate from that.
 Here you have two options:
 
 If you want to contribute to the project, please follow the
-steps on our [contributing guide](/contributing).
+steps on our [contributing guide](/contributing/).
 
 If you just want to build from source for whatever reason, follow these steps:
 
