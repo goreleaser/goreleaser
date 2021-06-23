@@ -29,6 +29,10 @@ release:
   draft: true
 
   # If set, will create a release discussion in the category specified.
+  #
+  # Warning: do not use categories in the 'Announcement' format.
+  #  Check https://github.com/goreleaser/goreleaser/issues/2304 for more info.
+  #
   # Default is empty.
   discussion_category_name: General
 
