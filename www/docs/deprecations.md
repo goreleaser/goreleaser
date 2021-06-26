@@ -15,6 +15,28 @@ goreleaser check
 
 ## Active deprecation notices
 
+<!--
+
+Template for new deprecations:
+
+### property
+
+> since yyyy-mm-dd
+
+Description.
+
+=== "Before"
+
+    ``` yaml
+    foo: bar
+    ```
+
+=== "After"
+    ``` yaml
+    foo: bar
+    ```
+
+-->
 
 ### docker.use_buildx
 
@@ -111,29 +133,6 @@ Change this:
       -
         ids: ['foo']
     ```
-
-<!--
-
-Template for new deprecations:
-
-### property
-
-> since yyyy-mm-dd
-
-Description.
-
-=== "Before"
-
-    ``` yaml
-    foo: bar
-    ```
-
-=== "After"
-    ``` yaml
-    foo: bar
-    ```
-
--->
 
 ## Expired deprecation notices
 
