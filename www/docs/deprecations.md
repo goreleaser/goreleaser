@@ -112,6 +112,33 @@ Change this:
         ids: ['foo']
     ```
 
+<!--
+
+Template for new deprecations:
+
+### property
+
+> since yyyy-mm-dd
+
+Description.
+
+=== "Before"
+
+    ``` yaml
+    foo: bar
+    ```
+
+=== "After"
+    ``` yaml
+    foo: bar
+    ```
+
+-->
+
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
 ### nfpms.files
 
 > since 2020-12-21 (v0.149.0)
@@ -267,33 +294,6 @@ Change this:
       -
         version_metadata: beta1
     ```
-
-<!--
-
-Template for new deprecations:
-
-### property
-
-> since yyyy-mm-dd
-
-Description.
-
-=== "Before"
-
-    ``` yaml
-    foo: bar
-    ```
-
-=== "After"
-    ``` yaml
-    foo: bar
-    ```
-
--->
-
-## Expired deprecation notices
-
-The following options were deprecated in the past and were already removed.
 
 ### brews.github
 
