@@ -61,6 +61,12 @@ func Test_doRun(t *testing.T) {
 	file := filepath.Join(folder, "archive")
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
+	type args struct {
+		ctx    *context.Context
+		client *DummyClient
+	}
+
+	type asserter func(*testing.T, args)
 	type errChecker func(*testing.T, error)
 	shouldErr := func(msg string) errChecker {
 		return func(t *testing.T, err error) {
@@ -69,19 +75,20 @@ func Test_doRun(t *testing.T) {
 			require.EqualError(t, err, msg)
 		}
 	}
+	noAssertions := func(t *testing.T, _ args) {
+		t.Helper()
+	}
 	shouldNotErr := func(t *testing.T, err error) {
 		t.Helper()
 		require.NoError(t, err)
 	}
-	type args struct {
-		ctx    *context.Context
-		client client.Client
-	}
+
 	tests := []struct {
 		name        string
 		args        args
 		artifacts   []*artifact.Artifact
 		assertError errChecker
+		assert      asserter
 	}{
 		{
 			"valid public github",
@@ -113,6 +120,7 @@ func Test_doRun(t *testing.T) {
 								Owner: "test",
 								Name:  "test",
 							},
+							Folder:      "scoops",
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						},
@@ -125,6 +133,10 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldNotErr,
+			func(t *testing.T, a args) {
+				t.Helper()
+				require.Equal(t, "scoops/run-pipe.json", a.client.Path)
+			},
 		},
 		{
 			"wrap in directory",
@@ -184,6 +196,7 @@ func Test_doRun(t *testing.T) {
 				},
 			},
 			shouldNotErr,
+			noAssertions,
 		},
 		{
 			"valid enterprise github",
@@ -228,6 +241,10 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldNotErr,
+			func(t *testing.T, a args) {
+				t.Helper()
+				require.Equal(t, "run-pipe.json", a.client.Path)
+			},
 		},
 		{
 			"valid public gitlab",
@@ -281,6 +298,7 @@ func Test_doRun(t *testing.T) {
 				},
 			},
 			shouldNotErr,
+			noAssertions,
 		},
 		{
 			"valid enterprise gitlab",
@@ -335,6 +353,7 @@ func Test_doRun(t *testing.T) {
 				},
 			},
 			shouldNotErr,
+			noAssertions,
 		},
 		{
 			"token type not implemented for pipe",
@@ -377,6 +396,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldErr(ErrTokenTypeNotImplementedForScoop.Error()),
+			noAssertions,
 		},
 		{
 			"no windows build",
@@ -420,6 +440,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_linux_386.tar.gz", Goos: "linux", Goarch: "386"},
 			},
 			shouldErr("scoop requires a windows build"),
+			noAssertions,
 		},
 		{
 			"no scoop",
@@ -455,6 +476,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
 			},
 			shouldErr(pipe.ErrSkipDisabledPipe.Error()),
+			noAssertions,
 		},
 		{
 			"no publish",
@@ -499,6 +521,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldErr(pipe.ErrSkipPublishEnabled.Error()),
+			noAssertions,
 		},
 		{
 			"is draft",
@@ -539,6 +562,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldErr("release is marked as draft"),
+			noAssertions,
 		},
 		{
 			"is prerelease and skip upload set to auto",
@@ -589,6 +613,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1-pre.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldErr("release is prerelease"),
+			noAssertions,
 		},
 		{
 			"skip upload set to true",
@@ -633,6 +658,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1-pre.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldErr("scoop.skip_upload is true"),
+			noAssertions,
 		},
 		{
 			"release is disabled",
@@ -673,6 +699,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldErr("release is disabled"),
+			noAssertions,
 		},
 		{
 			"no archive",
@@ -713,6 +740,7 @@ func Test_doRun(t *testing.T) {
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldErr("archive format is binary"),
+			noAssertions,
 		},
 	}
 	for _, tt := range tests {
@@ -724,6 +752,7 @@ func Test_doRun(t *testing.T) {
 			require.NoError(t, Pipe{}.Default(ctx))
 
 			tt.assertError(t, doRun(ctx, tt.args.client))
+			tt.assert(t, tt.args)
 		})
 	}
 }
@@ -1096,6 +1125,7 @@ func TestWrapInDirectory(t *testing.T) {
 type DummyClient struct {
 	CreatedFile    bool
 	Content        string
+	Path           string
 	NotImplemented bool
 }
 
@@ -1117,6 +1147,7 @@ func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) 
 func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
 	dc.CreatedFile = true
 	dc.Content = string(content)
+	dc.Path = path
 	return
 }
 

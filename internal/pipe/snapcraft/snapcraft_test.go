@@ -426,7 +426,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 			require.NoError(t, err)
 			require.NoError(t, f.Close())
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   name,
+				Name:   "subdir/" + name,
 				Path:   binPath,
 				Goarch: goarch,
 				Goos:   goos,

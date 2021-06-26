@@ -237,10 +237,10 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	if len(snap.Apps) == 0 {
 		name := snap.Name
 		if name == "" {
-			name = binaries[0].Name
+			name = filepath.Base(binaries[0].Name)
 		}
 		metadata.Apps[name] = AppMetadata{
-			Command: filepath.Base(binaries[0].Name),
+			Command: filepath.Base(filepath.Base(binaries[0].Name)),
 		}
 	}
 

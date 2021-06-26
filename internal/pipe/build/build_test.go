@@ -760,7 +760,7 @@ func TestBuildOptionsForTarget(t *testing.T) {
 				NoUniqueDistDir: true,
 			},
 			expectedOpts: &api.Options{
-				Name:   "testbinary_linux_amd64",
+				Name:   "distpath/linux/amd64/testbinary_linux_amd64",
 				Path:   filepath.Join(tmpDir, "distpath", "linux", "amd64", "testbinary_linux_amd64"),
 				Target: "linux_amd64",
 				Os:     "linux",
