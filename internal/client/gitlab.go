@@ -327,7 +327,6 @@ func (c *gitlabClient) Upload(
 	}
 
 	gitlabBaseURL := ctx.Config.GitLabURLs.Download
-	// projectFile.URL from upload: /uploads/<hash>/filename.txt
 	linkURL := gitlabBaseURL + "/" + projectDetails.PathWithNamespace + projectFile.URL
 	name := artifact.Name
 	filename := "/" + name
