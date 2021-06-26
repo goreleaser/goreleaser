@@ -24,6 +24,10 @@ scoop:
     # Optionally a token can be provided, if it differs from the token provided to GoReleaser
     token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
 
+  # Folder inside the repository to put the scoop.
+  # Default is the root folder.
+  folder: Scoops
+
   # Git author used to commit to the repository.
   # Defaults are shown.
   commit_author:

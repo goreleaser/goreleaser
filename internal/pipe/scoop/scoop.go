@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -97,7 +98,7 @@ func doRun(ctx *context.Context, cl client.Client) error {
 		return ErrNoWindows
 	}
 
-	path := scoop.Name + ".json"
+	filename := scoop.Name + ".json"
 
 	data, err := dataFor(ctx, cl, archives)
 	if err != nil {
@@ -108,9 +109,9 @@ func doRun(ctx *context.Context, cl client.Client) error {
 		return err
 	}
 
-	filename := filepath.Join(ctx.Config.Dist, path)
-	log.WithField("manifest", filename).Info("writing")
-	if err := os.WriteFile(filename, content.Bytes(), 0o644); err != nil {
+	distPath := filepath.Join(ctx.Config.Dist, filename)
+	log.WithField("manifest", distPath).Info("writing")
+	if err := os.WriteFile(distPath, content.Bytes(), 0o644); err != nil {
 		return fmt.Errorf("failed to write scoop manifest: %w", err)
 	}
 
@@ -142,7 +143,7 @@ func doRun(ctx *context.Context, cl client.Client) error {
 		scoop.CommitAuthor,
 		repo,
 		content.Bytes(),
-		path,
+		path.Join(scoop.Folder, filename),
 		commitMessage,
 	)
 }

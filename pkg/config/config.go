@@ -116,6 +116,7 @@ type Homebrew struct {
 type Scoop struct {
 	Name                  string       `yaml:",omitempty"`
 	Bucket                RepoRef      `yaml:",omitempty"`
+	Folder                string       `yaml:",omitempty"`
 	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty"`
 	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty"`
 	Homepage              string       `yaml:",omitempty"`
