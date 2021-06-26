@@ -18,9 +18,6 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// ErrNoDocker is shown when docker cannot be found in $PATH.
-var ErrNoDocker = errors.New("docker not present in $PATH")
-
 const (
 	dockerConfigExtra = "DockerConfig"
 
@@ -259,6 +256,7 @@ func link(src, dest string) error {
 }
 
 func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
+	log.WithField("image", image.Name).Info("pushing docker image")
 	docker := image.Extra[dockerConfigExtra].(config.Docker)
 	if err := newImager(docker).Push(ctx, image.Name); err != nil {
 		return err
