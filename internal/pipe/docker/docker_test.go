@@ -1142,15 +1142,34 @@ func TestDefault(t *testing.T) {
 					Builds:   []string{"foo"},
 					Binaries: []string{"aaa"},
 				},
+				{
+					Use: useBuildx,
+				},
 			},
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Len(t, ctx.Config.Dockers, 1)
+	require.Len(t, ctx.Config.Dockers, 2)
 	docker := ctx.Config.Dockers[0]
 	require.Equal(t, "linux", docker.Goos)
 	require.Equal(t, "amd64", docker.Goarch)
 	require.Equal(t, []string{"aa", "foo"}, docker.IDs)
+	require.Equal(t, useDocker, docker.Use)
+	docker = ctx.Config.Dockers[1]
+	require.Equal(t, useBuildx, docker.Use)
+}
+
+func TestDefaultInvalidUse(t *testing.T) {
+	ctx := &context.Context{
+		Config: config.Project{
+			Dockers: []config.Docker{
+				{
+					Use: "something",
+				},
+			},
+		},
+	}
+	require.EqualError(t, Pipe{}.Default(ctx), `docker: invalid use: something, valid options are [buildx docker]`)
 }
 
 func TestDefaultDockerfile(t *testing.T) {
