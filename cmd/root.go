@@ -28,7 +28,7 @@ func (cmd *rootCmd) Execute(args []string) {
 
 	if err := cmd.cmd.Execute(); err != nil {
 		code := 1
-		msg := "command failed, run it again with --debug to get more info"
+		msg := "command failed"
 		eerr := &exitError{}
 		if errors.As(err, &eerr) {
 			code = eerr.code
