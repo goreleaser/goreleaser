@@ -344,7 +344,7 @@ func TestRunPipe(t *testing.T) {
 			expect:              []string{registry + "goreleaser/test_multiarch_fail:latest-arm64v8"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldErr("failed to create docker manifest: localhost:5000/goreleaser/test_multiarch_fail:test"),
+			manifestAssertError: shouldErr("failed to create localhost:5000/goreleaser/test_multiarch_fail:test"),
 			assertImageLabels:   noLabels,
 		},
 		"multiarch manifest template error": {
@@ -525,7 +525,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			expect:              []string{},
 			assertImageLabels:   noLabels,
-			assertError:         shouldErr(`goreleaser/test_run_pipe_template_UPPERCASE:v1.0.0" for "-t, --tag" flag: invalid reference format: repository name must be lowercase`),
+			assertError:         shouldErr(`failed to build localhost:5000/goreleaser/test_run_pipe_template_UPPERCASE:v1.0.0`),
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
@@ -687,7 +687,7 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/one_img_error_with_skip_push:true",
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("failed to build docker image"),
+			assertError:       shouldErr("failed to build localhost:5000/goreleaser/one_img_error_with_skip_push:false"),
 		},
 		"valid_no_latest": {
 			dockers: []config.Docker{
@@ -745,7 +745,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("unknown flag: --bad-flag"),
+			assertError:       shouldErr("failed to build localhost:5000/goreleaser/test_build_args:latest"),
 		},
 		"bad_dockerfile": {
 			dockers: []config.Docker{
@@ -759,7 +759,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("pull access denied"),
+			assertError:       shouldErr("failed to build localhost:5000/goreleaser/bad_dockerfile:latest"),
 		},
 		"tag_template_error": {
 			dockers: []config.Docker{
@@ -860,7 +860,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			assertImageLabels:   noLabels,
 			assertError:         shouldNotErr,
-			pubAssertError:      shouldErr(`requested access to the resource is denied`),
+			pubAssertError:      shouldErr(`failed to push docker.io/nope:latest`),
 			manifestAssertError: shouldNotErr,
 		},
 		"dockerfile_doesnt_exist": {
@@ -1107,7 +1107,10 @@ func TestBuildCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			require.Equal(t, tt.expect, buildCommand(tt.buildx, images, tt.flags))
+			imager := dockerImager{
+				buildx: tt.buildx,
+			}
+			require.Equal(t, tt.expect, imager.buildCommand(images, tt.flags))
 		})
 	}
 }
@@ -1130,25 +1133,6 @@ func TestNoDockerWithoutImageName(t *testing.T) {
 	}))))
 }
 
-func TestDockerNotInPath(t *testing.T) {
-	path := os.Getenv("PATH")
-	defer func() {
-		require.NoError(t, os.Setenv("PATH", path))
-	}()
-	require.NoError(t, os.Setenv("PATH", ""))
-	ctx := &context.Context{
-		Version: "1.0.0",
-		Config: config.Project{
-			Dockers: []config.Docker{
-				{
-					ImageTemplates: []string{"a/b"},
-				},
-			},
-		},
-	}
-	require.EqualError(t, Pipe{}.Run(ctx), ErrNoDocker.Error())
-}
-
 func TestDefault(t *testing.T) {
 	ctx := &context.Context{
 		Config: config.Project{
@@ -1158,15 +1142,34 @@ func TestDefault(t *testing.T) {
 					Builds:   []string{"foo"},
 					Binaries: []string{"aaa"},
 				},
+				{
+					Use: useBuildx,
+				},
 			},
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Len(t, ctx.Config.Dockers, 1)
+	require.Len(t, ctx.Config.Dockers, 2)
 	docker := ctx.Config.Dockers[0]
 	require.Equal(t, "linux", docker.Goos)
 	require.Equal(t, "amd64", docker.Goarch)
 	require.Equal(t, []string{"aa", "foo"}, docker.IDs)
+	require.Equal(t, useDocker, docker.Use)
+	docker = ctx.Config.Dockers[1]
+	require.Equal(t, useBuildx, docker.Use)
+}
+
+func TestDefaultInvalidUse(t *testing.T) {
+	ctx := &context.Context{
+		Config: config.Project{
+			Dockers: []config.Docker{
+				{
+					Use: "something",
+				},
+			},
+		},
+	}
+	require.EqualError(t, Pipe{}.Default(ctx), `docker: invalid use: something, valid options are [buildx docker]`)
 }
 
 func TestDefaultDockerfile(t *testing.T) {

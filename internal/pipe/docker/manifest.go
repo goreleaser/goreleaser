@@ -1,8 +1,6 @@
 package docker
 
 import (
-	"fmt"
-	"os/exec"
 	"strings"
 
 	"github.com/apex/log"
@@ -34,21 +32,25 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			if strings.TrimSpace(manifest.SkipPush) == "true" {
 				return pipe.Skip("docker_manifest.skip_push is set")
 			}
+
 			if strings.TrimSpace(manifest.SkipPush) == "auto" && ctx.Semver.Prerelease != "" {
 				return pipe.Skip("prerelease detected with 'auto' push, skipping docker manifest")
 			}
+
 			name, err := manifestName(ctx, manifest)
 			if err != nil {
 				return err
 			}
-			if err := dockerManifestRm(ctx, name); err != nil {
-				return err
-			}
+
 			images, err := manifestImages(ctx, manifest)
 			if err != nil {
 				return err
 			}
-			if err := dockerManifestCreate(ctx, name, images, manifest.CreateFlags); err != nil {
+
+			manifester := newManifester(manifest)
+
+			log.WithField("manifest", manifest).WithField("images", images).Info("creating docker manifest")
+			if err := manifester.Create(ctx, name, images, manifest.CreateFlags); err != nil {
 				return err
 			}
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -56,7 +58,9 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 				Name: name,
 				Path: name,
 			})
-			return dockerManifestPush(ctx, name, manifest.PushFlags)
+
+			log.WithField("manifest", manifest).Info("pushing docker manifest")
+			return manifester.Push(ctx, name, manifest.PushFlags)
 		})
 	}
 	return g.Wait()
@@ -86,52 +90,4 @@ func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]str
 		return imgs, pipe.Skip("manifest has no images")
 	}
 	return imgs, nil
-}
-
-func dockerManifestRm(ctx *context.Context, manifest string) error {
-	log.WithField("manifest", manifest).Info("removing local docker manifest")
-	/* #nosec */
-	cmd := exec.CommandContext(ctx, "docker", "manifest", "rm", manifest)
-	log.WithField("cmd", cmd.Args).Debug("running")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		if strings.HasPrefix(string(out), "No such manifest: ") {
-			// ignore "no such manifest" error, is the state we want in the end...
-			return nil
-		}
-		return fmt.Errorf("failed to remove local docker manifest: %s: \n%s: %w", manifest, string(out), err)
-	}
-	log.Debugf("docker manifest rm output: \n%s", string(out))
-	return nil
-}
-
-func dockerManifestCreate(ctx *context.Context, manifest string, images, flags []string) error {
-	log.WithField("manifest", manifest).WithField("images", images).Info("creating docker manifest")
-	args := []string{"manifest", "create", manifest}
-	args = append(args, images...)
-	args = append(args, flags...)
-	/* #nosec */
-	cmd := exec.CommandContext(ctx, "docker", args...)
-	log.WithField("cmd", cmd.Args).Debug("running")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to create docker manifest: %s: \n%s: %w", manifest, string(out), err)
-	}
-	log.Debugf("docker manifest output: \n%s", string(out))
-	return nil
-}
-
-func dockerManifestPush(ctx *context.Context, manifest string, flags []string) error {
-	log.WithField("manifest", manifest).Info("pushing docker manifest")
-	args := []string{"manifest", "push", manifest}
-	args = append(args, flags...)
-	/* #nosec */
-	cmd := exec.CommandContext(ctx, "docker", args...)
-	log.WithField("cmd", cmd.Args).Debug("running")
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to push docker manifest: %s: \n%s: %w", manifest, string(out), err)
-	}
-	log.Debugf("docker manifest output: \n%s", string(out))
-	return nil
 }

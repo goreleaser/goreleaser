@@ -15,6 +15,30 @@ goreleaser check
 
 ## Active deprecation notices
 
+
+### docker.use_buildx
+
+> since 2021-06-26 (v0.172.0)
+
+`use_buildx` is deprecated in favor of the more generalist `use`, since now it also allow other options in the future:
+
+Change this:
+
+=== "Before"
+    ```yaml
+    dockers:
+      -
+        use_buildx: true
+    ```
+
+=== "After"
+    ```yaml
+    dockers:
+      -
+        use: buildx
+    ```
+
+
 ### Skipping SemVer Validations
 
 > since 2021-02-28 (v0.158.0)
