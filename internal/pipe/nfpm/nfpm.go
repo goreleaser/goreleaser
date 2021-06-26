@@ -220,7 +220,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		log := log.WithField("package", name+"."+format).WithField("arch", arch)
 		for _, binary := range binaries {
 			src := binary.Path
-			dst := filepath.Join(fpm.Bindir, binary.Name)
+			dst := filepath.Join(fpm.Bindir, filepath.Base(binary.Name))
 			log.WithField("src", src).WithField("dst", dst).Debug("adding binary to package")
 			contents = append(contents, &files.Content{
 				Source:      filepath.ToSlash(src),

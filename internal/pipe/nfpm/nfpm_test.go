@@ -150,7 +150,7 @@ func TestRunPipe(t *testing.T) {
 	for _, goos := range []string{"linux", "darwin"} {
 		for _, goarch := range []string{"amd64", "386"} {
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "mybin",
+				Name:   "subdir/mybin",
 				Path:   binPath,
 				Goarch: goarch,
 				Goos:   goos,
