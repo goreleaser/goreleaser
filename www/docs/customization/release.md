@@ -14,6 +14,9 @@ release:
   # Repo in which the release will be created.
   # Default is extracted from the origin remote URL or empty if its private hosted.
   # Note: it can only be one: either github, gitlab or gitea
+  # You can use Gitlab's internal project id by setting it directly or using an environment variable
+  # owner: ""
+  # name: "{{.Env.CI_PROJECT_ID}}"
   github:
     owner: user
     name: repo
