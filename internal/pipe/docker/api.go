@@ -30,6 +30,7 @@ func newImager(docker config.Docker) imager {
 	}
 }
 
+// nolint: unparam
 func runCommand(ctx context.Context, dir, binary string, args ...string) error {
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, binary, args...)
