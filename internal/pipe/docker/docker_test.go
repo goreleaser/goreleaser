@@ -1107,7 +1107,11 @@ func TestBuildCommand(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			require.Equal(t, tt.expect, buildCommand(tt.buildx, images, tt.flags))
+			imager := dockerImager{
+				binary: "docker",
+				buildx: tt.buildx,
+			}
+			require.Equal(t, tt.expect, imager.buildCommand(images, tt.flags))
 		})
 	}
 }

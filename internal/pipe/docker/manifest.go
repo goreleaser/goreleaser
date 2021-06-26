@@ -51,7 +51,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			if err := dockerManifestCreate(ctx, name, images, manifest.CreateFlags); err != nil {
 				return err
 			}
-			ctx.Artifacts.Add(&artifact.Artifact{
+			ctx.Artifacts.Add(&artifact.Artifact{\
 				Type: artifact.DockerManifest,
 				Name: name,
 				Path: name,

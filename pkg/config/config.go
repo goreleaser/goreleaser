@@ -507,6 +507,7 @@ type Checksum struct {
 
 // Docker image config.
 type Docker struct {
+	ID                 string   `yaml:"id,omitempty"`
 	Binaries           []string `yaml:",omitempty"` // deprecated: no need to use this anymore
 	Builds             []string `yaml:",omitempty"` // deprecated: use IDs instead
 	IDs                []string `yaml:"ids,omitempty"`
@@ -518,7 +519,8 @@ type Docker struct {
 	SkipPush           string   `yaml:"skip_push,omitempty"`
 	Files              []string `yaml:"extra_files,omitempty"`
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
-	Buildx             bool     `yaml:"use_buildx,omitempty"`
+	Buildx             bool     `yaml:"use_buildx,omitempty"` // deprecated: use Use instead
+	Use                string   `yaml:"use,omitempty"`
 }
 
 // DockerManifest config.
