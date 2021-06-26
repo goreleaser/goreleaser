@@ -82,11 +82,10 @@ dockers:
     # Path to the Dockerfile (from the project root).
     dockerfile: Dockerfile
 
-    # Whether to use `docker buildx build` instead of `docker build`.
-    # You probably want to set it to true when using flags like `--platform`.
-    # If true, will also add `--load` to the build flags.
-    # Defaults to false.
-    use_buildx: true
+    # Set the "backend" for the docker pipe.
+    # Valid options are: docker, buildx
+    # Defaults to docker.
+    use: docker
 
     # Template of the docker build flags.
     build_flag_templates:

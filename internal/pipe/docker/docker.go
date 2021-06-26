@@ -23,10 +23,9 @@ const (
 
 	useBuildx = "buildx"
 	useDocker = "docker"
-	usePodman = "podman"
 )
 
-var validDockerUses = []string{useBuildx, usePodman, useDocker}
+var validDockerUses = []string{useBuildx, useDocker}
 
 // Pipe for docker.
 type Pipe struct{}
