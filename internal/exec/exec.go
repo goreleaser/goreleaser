@@ -83,8 +83,7 @@ func executeCommand(c *command) error {
 
 	entry.Info("publishing")
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("publishing: %s failed: %w",
-			c.Args[0], err)
+		return fmt.Errorf("publishing: %s failed: %w", c.Args[0], err)
 	}
 
 	log.Debugf("command %s finished successfully", c.Args[0])
