@@ -16,7 +16,6 @@ import (
 	"github.com/imdario/mergo"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -52,62 +51,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.FileNameTemplate == "" {
 			fpm.FileNameTemplate = defaultNameTemplate
 		}
-		if len(fpm.Files) > 0 {
-			for src, dst := range fpm.Files {
-				fpm.Contents = append(fpm.Contents, &files.Content{
-					Source:      src,
-					Destination: dst,
-				})
-			}
-			deprecate.Notice(ctx, "nfpms.files")
-		}
-		if len(fpm.ConfigFiles) > 0 {
-			for src, dst := range fpm.ConfigFiles {
-				fpm.Contents = append(fpm.Contents, &files.Content{
-					Source:      src,
-					Destination: dst,
-					Type:        "config",
-				})
-			}
-			deprecate.Notice(ctx, "nfpms.config_files")
-		}
-		if len(fpm.Symlinks) > 0 {
-			for src, dst := range fpm.Symlinks {
-				fpm.Contents = append(fpm.Contents, &files.Content{
-					Source:      src,
-					Destination: dst,
-					Type:        "symlink",
-				})
-			}
-			deprecate.Notice(ctx, "nfpms.symlinks")
-		}
-		if len(fpm.RPM.GhostFiles) > 0 {
-			for _, dst := range fpm.RPM.GhostFiles {
-				fpm.Contents = append(fpm.Contents, &files.Content{
-					Destination: dst,
-					Type:        "ghost",
-					Packager:    "rpm",
-				})
-			}
-			deprecate.Notice(ctx, "nfpms.rpm.ghost_files")
-		}
-		if len(fpm.RPM.ConfigNoReplaceFiles) > 0 {
-			for src, dst := range fpm.RPM.ConfigNoReplaceFiles {
-				fpm.Contents = append(fpm.Contents, &files.Content{
-					Source:      src,
-					Destination: dst,
-					Type:        "config|noreplace",
-					Packager:    "rpm",
-				})
-			}
-			deprecate.Notice(ctx, "nfpms.rpm.config_noreplace_files")
-		}
-		if fpm.Deb.VersionMetadata != "" {
-			deprecate.Notice(ctx, "nfpms.deb.version_metadata")
-			fpm.VersionMetadata = fpm.Deb.VersionMetadata
-		}
-
-		if len(fpm.Builds) == 0 {
+		if len(fpm.Builds) == 0 { // TODO: change this to empty by default and deal with it in the filtering code
 			for _, b := range ctx.Config.Builds {
 				fpm.Builds = append(fpm.Builds, b.ID)
 			}

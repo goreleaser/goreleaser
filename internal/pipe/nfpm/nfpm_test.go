@@ -412,55 +412,6 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.NFPMs[0].PackageName)
 }
 
-func TestDefaultDeprecatedOptions(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			ProjectName: "foobar",
-			NFPMs: []config.NFPM{
-				{
-					NFPMOverridables: config.NFPMOverridables{
-						Files: map[string]string{
-							"testdata/testfile.txt": "/bin/foo",
-						},
-						ConfigFiles: map[string]string{
-							"testdata/testfile.txt": "/etc/foo.conf",
-						},
-						Symlinks: map[string]string{
-							"/etc/foo.conf": "/etc/foov2.conf",
-						},
-						RPM: config.NFPMRPM{
-							GhostFiles: []string{"/etc/ghost.conf"},
-							ConfigNoReplaceFiles: map[string]string{
-								"testdata/testfile.txt": "/etc/foo_keep.conf",
-							},
-						},
-						Deb: config.NFPMDeb{
-							VersionMetadata: "beta1",
-						},
-					},
-				},
-			},
-			Builds: []config.Build{
-				{ID: "foo"},
-				{ID: "bar"},
-			},
-		},
-	}
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "/usr/local/bin", ctx.Config.NFPMs[0].Bindir)
-	require.Equal(t, []string{"foo", "bar"}, ctx.Config.NFPMs[0].Builds)
-	require.ElementsMatch(t, []*files.Content{
-		{Source: "testdata/testfile.txt", Destination: "/bin/foo"},
-		{Source: "testdata/testfile.txt", Destination: "/etc/foo.conf", Type: "config"},
-		{Source: "/etc/foo.conf", Destination: "/etc/foov2.conf", Type: "symlink"},
-		{Destination: "/etc/ghost.conf", Type: "ghost", Packager: "rpm"},
-		{Source: "testdata/testfile.txt", Destination: "/etc/foo_keep.conf", Type: "config|noreplace", Packager: "rpm"},
-	}, ctx.Config.NFPMs[0].Contents)
-	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].FileNameTemplate)
-	require.Equal(t, ctx.Config.ProjectName, ctx.Config.NFPMs[0].PackageName)
-	require.Equal(t, "beta1", ctx.Config.NFPMs[0].VersionMetadata)
-}
-
 func TestDefaultSet(t *testing.T) {
 	ctx := &context.Context{
 		Config: config.Project{

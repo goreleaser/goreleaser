@@ -345,13 +345,11 @@ type NFPMRPMScripts struct {
 
 // NFPMRPM is custom configs that are only available on RPM packages.
 type NFPMRPM struct {
-	Summary              string            `yaml:"summary,omitempty"`
-	Group                string            `yaml:"group,omitempty"`
-	Compression          string            `yaml:"compression,omitempty"`
-	ConfigNoReplaceFiles map[string]string `yaml:"config_noreplace_files,omitempty"` // deprecated: use contents instead
-	GhostFiles           []string          `yaml:"ghost_files,omitempty"`            // deprecated: use contents instead
-	Signature            NFPMRPMSignature  `yaml:"signature,omitempty"`
-	Scripts              NFPMRPMScripts    `yaml:"scripts,omitempty"`
+	Summary     string           `yaml:"summary,omitempty"`
+	Group       string           `yaml:"group,omitempty"`
+	Compression string           `yaml:"compression,omitempty"`
+	Signature   NFPMRPMSignature `yaml:"signature,omitempty"`
+	Scripts     NFPMRPMScripts   `yaml:"scripts,omitempty"`
 }
 
 // NFPMDebScripts is scripts only available on deb packages.
@@ -383,11 +381,10 @@ type NFPMDebSignature struct {
 
 // NFPMDeb is custom configs that are only available on deb packages.
 type NFPMDeb struct {
-	Scripts         NFPMDebScripts   `yaml:"scripts,omitempty"`
-	Triggers        NFPMDebTriggers  `yaml:"triggers,omitempty"`
-	Breaks          []string         `yaml:"breaks,omitempty"`
-	VersionMetadata string           `yaml:"metadata,omitempty"` // Deprecated: Moved to Info
-	Signature       NFPMDebSignature `yaml:"signature,omitempty"`
+	Scripts   NFPMDebScripts   `yaml:"scripts,omitempty"`
+	Triggers  NFPMDebTriggers  `yaml:"triggers,omitempty"`
+	Breaks    []string         `yaml:"breaks,omitempty"`
+	Signature NFPMDebSignature `yaml:"signature,omitempty"`
 }
 
 type NFPMAPKScripts struct {
@@ -426,9 +423,6 @@ type NFPMOverridables struct {
 	Replaces         []string          `yaml:",omitempty"`
 	EmptyFolders     []string          `yaml:"empty_folders,omitempty"`
 	Contents         files.Contents    `yaml:"contents,omitempty"`
-	Files            map[string]string `yaml:",omitempty"`             // deprecated: use contents instead
-	ConfigFiles      map[string]string `yaml:"config_files,omitempty"` // deprecated: use contents instead
-	Symlinks         map[string]string `yaml:"symlinks,omitempty"`     // deprecated: use contents instead
 	Scripts          NFPMScripts       `yaml:"scripts,omitempty"`
 	RPM              NFPMRPM           `yaml:"rpm,omitempty"`
 	Deb              NFPMDeb           `yaml:"deb,omitempty"`
