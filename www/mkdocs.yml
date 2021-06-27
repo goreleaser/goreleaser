@@ -29,7 +29,6 @@ theme:
         name: Switch to dark mode
 
 plugins:
-  # disable temporarely because its freezing the page
   - search:
       prebuild_index: python
       lang:
