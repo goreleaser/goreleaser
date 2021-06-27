@@ -24,7 +24,6 @@ const (
 
 	useBuildx = "buildx"
 	useDocker = "docker"
-	usePodman = "podman"
 )
 
 // Pipe for docker.
