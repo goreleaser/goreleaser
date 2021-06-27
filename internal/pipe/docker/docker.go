@@ -150,14 +150,14 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 		return err
 	}
 
-	if err := os.Link(filepath.Join(ctx.Config.Monorepo.Dir, docker.Dockerfile), filepath.Join(tmp, "Dockerfile")); err != nil {
+	if err := os.Link(docker.Dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
 		return fmt.Errorf("failed to link dockerfile: %w", err)
 	}
 	for _, file := range docker.Files {
 		if err := os.MkdirAll(filepath.Join(tmp, filepath.Dir(file)), 0o755); err != nil {
 			return fmt.Errorf("failed to link extra file '%s': %w", file, err)
 		}
-		if err := link(filepath.Join(ctx.Config.Monorepo.Dir, file), filepath.Join(tmp, file)); err != nil {
+		if err := link(file, filepath.Join(tmp, file)); err != nil {
 			return fmt.Errorf("failed to link extra file '%s': %w", file, err)
 		}
 	}

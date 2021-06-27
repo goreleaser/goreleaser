@@ -1119,7 +1119,9 @@ func TestDefault(t *testing.T) {
 			},
 			DockerManifests: []config.DockerManifest{
 				{},
-				{},
+				{
+					Use: useDocker,
+				},
 			},
 		},
 	}
