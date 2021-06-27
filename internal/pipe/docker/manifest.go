@@ -49,7 +49,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 
 			manifester := newManifester(manifest)
 
-			log.WithField("manifest", manifest).WithField("images", images).Info("creating docker manifest")
+			log.WithField("manifest", name).WithField("images", images).Info("creating docker manifest")
 			if err := manifester.Create(ctx, name, images, manifest.CreateFlags); err != nil {
 				return err
 			}
@@ -59,7 +59,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 				Path: name,
 			})
 
-			log.WithField("manifest", manifest).Info("pushing docker manifest")
+			log.WithField("manifest", name).Info("pushing docker manifest")
 			return manifester.Push(ctx, name, manifest.PushFlags)
 		})
 	}
