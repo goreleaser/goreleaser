@@ -513,6 +513,7 @@ type Docker struct {
 	SkipPush           string   `yaml:"skip_push,omitempty"`
 	Files              []string `yaml:"extra_files,omitempty"`
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
+	PushFlags          []string `yaml:"push_flags,omitempty"`
 	Buildx             bool     `yaml:"use_buildx,omitempty"` // deprecated: use Use instead
 	Use                string   `yaml:"use,omitempty"`
 }
@@ -524,6 +525,7 @@ type DockerManifest struct {
 	ImageTemplates []string `yaml:"image_templates,omitempty"`
 	CreateFlags    []string `yaml:"create_flags,omitempty"`
 	PushFlags      []string `yaml:"push_flags,omitempty"`
+	Use            string   `yaml:"use,omitempty"`
 }
 
 // Filters config.

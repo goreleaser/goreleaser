@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/apex/log"
@@ -24,8 +25,6 @@ const (
 	useBuildx = "buildx"
 	useDocker = "docker"
 )
-
-var validDockerUses = []string{useBuildx, useDocker}
 
 // Pipe for docker.
 type Pipe struct{}
@@ -64,8 +63,8 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Use == "" {
 			docker.Use = useDocker
 		}
-		if !isValidUse(docker.Use) {
-			return fmt.Errorf("docker: invalid use: %s, valid options are %v", docker.Use, validDockerUses)
+		if err := validateImager(docker.Use); err != nil {
+			return err
 		}
 		for _, f := range docker.Files {
 			if f == "." || strings.HasPrefix(f, ctx.Config.Dist) {
@@ -76,13 +75,18 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func isValidUse(use string) bool {
-	for _, s := range validDockerUses {
+func validateImager(use string) error {
+	valid := make([]string, 0, len(imagers))
+	for k := range imagers {
+		valid = append(valid, k)
+	}
+	for _, s := range valid {
 		if s == use {
-			return true
+			return nil
 		}
 	}
-	return false
+	sort.Strings(valid)
+	return fmt.Errorf("docker: invalid use: %s, valid options are %v", use, valid)
 }
 
 // Run the pipe.
@@ -167,7 +171,7 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 		return err
 	}
 
-	if err := newImager(docker).Build(ctx, tmp, images, buildFlags); err != nil {
+	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags); err != nil {
 		return err
 	}
 
@@ -257,7 +261,7 @@ func link(src, dest string) error {
 func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	log.WithField("image", image.Name).Info("pushing docker image")
 	docker := image.Extra[dockerConfigExtra].(config.Docker)
-	if err := newImager(docker).Push(ctx, image.Name); err != nil {
+	if err := imagers[docker.Use].Push(ctx, image.Name, docker.PushFlags); err != nil {
 		return err
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{

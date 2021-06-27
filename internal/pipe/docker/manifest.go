@@ -1,6 +1,8 @@
 package docker
 
 import (
+	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/apex/log"
@@ -18,6 +20,20 @@ type ManifestPipe struct{}
 
 func (ManifestPipe) String() string {
 	return "docker manifests"
+}
+
+// Default sets the pipe defaults.
+func (ManifestPipe) Default(ctx *context.Context) error {
+	for i := range ctx.Config.DockerManifests {
+		manifest := &ctx.Config.DockerManifests[i]
+		if manifest.Use == "" {
+			manifest.Use = useDocker
+		}
+		if err := validateManifester(manifest.Use); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Publish the docker manifests.
@@ -47,7 +63,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 				return err
 			}
 
-			manifester := newManifester(manifest)
+			manifester := manifesters[manifest.Use]
 
 			log.WithField("manifest", name).WithField("images", images).Info("creating docker manifest")
 			if err := manifester.Create(ctx, name, images, manifest.CreateFlags); err != nil {
@@ -64,6 +80,20 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 		})
 	}
 	return g.Wait()
+}
+
+func validateManifester(use string) error {
+	valid := make([]string, 0, len(manifesters))
+	for k := range manifesters {
+		valid = append(valid, k)
+	}
+	for _, s := range valid {
+		if s == use {
+			return nil
+		}
+	}
+	sort.Strings(valid)
+	return fmt.Errorf("docker manifest: invalid use: %s, valid options are %v", use, valid)
 }
 
 func manifestName(ctx *context.Context, manifest config.DockerManifest) (string, error) {
