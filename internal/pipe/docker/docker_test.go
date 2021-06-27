@@ -271,11 +271,10 @@ func TestRunPipe(t *testing.T) {
 					fmt.Sprintf("docker push %sgoreleaser/dummy:v1", registry),
 					fmt.Sprintf("docker manifest create %sgoreleaser/test_multiarch:2test --amend %sgoreleaser/dummy:v1 --insecure", registry, registry),
 				} {
-					parts := strings.Fields(strings.TrimSpace(cmd))
-					ccmd := exec.CommandContext(ctx, parts[0], parts[1:]...)
-					t.Log("running", ccmd)
-					out, err := ccmd.CombinedOutput()
-					require.NoError(t, err, string(out))
+					t.Log("running", cmd)
+					parts := strings.Fields(cmd)
+					out, err := exec.CommandContext(ctx, parts[0], parts[1:]...).CombinedOutput()
+					require.NoError(t, err, cmd+": "+string(out))
 				}
 			},
 		},
