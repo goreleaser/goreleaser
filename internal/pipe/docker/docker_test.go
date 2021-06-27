@@ -112,37 +112,6 @@ func TestRunPipe(t *testing.T) {
 		manifestAssertError errChecker
 		extraPrepare        func(t *testing.T, ctx *context.Context)
 	}{
-		"monorepo": {
-			extraPrepare: func(t *testing.T, ctx *context.Context) {
-				t.Helper()
-				ctx.Config.Monorepo = config.Monorepo{
-					TagPrefix: "foo",
-					Dir:       "testdata", // pretend testdata is the foo tag prefix dir
-				}
-			},
-			dockers: []config.Docker{
-				{
-					ImageTemplates: []string{
-						registry + "goreleaser/test_run_pipe_monorepo:{{.Tag}}",
-						altRegistry + "goreleaser/test_run_pipe_monorepo:{{.Tag}}",
-					},
-					Goos:       "linux",
-					Goarch:     "amd64",
-					Dockerfile: "Dockerfile",
-					Files: []string{
-						"extra_file.txt",
-					},
-				},
-			},
-			expect: []string{
-				registry + "goreleaser/test_run_pipe_monorepo:v1.0.0",
-				altRegistry + "goreleaser/test_run_pipe_monorepo:v1.0.0",
-			},
-			assertImageLabels:   noLabels,
-			assertError:         shouldNotErr,
-			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldNotErr,
-		},
 		"multiarch": {
 			dockers: []config.Docker{
 				{
