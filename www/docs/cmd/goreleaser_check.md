@@ -22,5 +22,5 @@ goreleaser check [flags]
 
 ## See also
 
-* [goreleaser](/cmd/goreleaser)	 - Deliver Go binaries as fast and easily as possible
+* [goreleaser](/cmd/goreleaser/)	 - Deliver Go binaries as fast and easily as possible
 
