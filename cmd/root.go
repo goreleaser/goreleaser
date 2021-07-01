@@ -72,7 +72,6 @@ func newRootCmd(version string, exit func(int)) *rootCmd {
 		newReleaseCmd().cmd,
 		newCheckCmd().cmd,
 		newInitCmd().cmd,
-		newCompletionCmd().cmd,
 		newDocsCmd().cmd,
 	)
 
@@ -89,7 +88,7 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 	}
 
 	// allow help and the two __complete commands.
-	if len(args) > 0 && (args[0] == "help" ||
+	if len(args) > 0 && (args[0] == "help" || args[0] == "completion" ||
 		args[0] == cobra.ShellCompRequestCmd || args[0] == cobra.ShellCompNoDescRequestCmd) {
 		return false
 	}
