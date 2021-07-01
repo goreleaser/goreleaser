@@ -10,4 +10,8 @@ feature2: other description
 
 ---
 
+Get images at docker.io/foo/bar:v1.0
+
+---
+
 Get GoReleaser Pro at https://goreleaser.com/pro
