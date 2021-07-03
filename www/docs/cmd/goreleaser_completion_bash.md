@@ -41,5 +41,5 @@ goreleaser completion bash
 
 ## See also
 
-* [goreleaser completion](/cmd/goreleaser_completion)	 - generate the autocompletion script for the specified shell
+* [goreleaser completion](/cmd/goreleaser_completion/)	 - generate the autocompletion script for the specified shell
 
