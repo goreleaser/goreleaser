@@ -1,52 +1,13 @@
 # goreleaser completion
 
-Prints shell autocompletion scripts for GoReleaser
+generate the autocompletion script for the specified shell
 
 ## Synopsis
 
-Allows you to setup your shell to autocomple GoReleaser commands and flags.
 
-### Bash
+Generate the autocompletion script for goreleaser for the specified shell.
+See each sub-command's help for details on how to use the generated script.
 
-	$ source <(goreleaser completion bash)
-
-To load completions for each session, execute once:
-
-#### Linux
-
-	$ goreleaser completion bash > /etc/bash_completion.d/goreleaser
-
-#### MacOS
-
-	$ goreleaser completion bash > /usr/local/etc/bash_completion.d/goreleaser
-
-### ZSH
-
-If shell completion is not already enabled in your environment you will need to enable it.
-You can execute the following once:
-
-	$ echo "autoload -U compinit; compinit" >> ~/.zshrc
-
-To load completions for each session, execute once:
-
-	$ goreleaser completion zsh > "${fpath[1]}/_goreleaser"
-
-You will need to start a new shell for this setup to take effect.
-
-### Fish
-
-	$ goreleaser completion fish | source
-
-To load completions for each session, execute once:
-
-	$ goreleaser completion fish > ~/.config/fish/completions/goreleaser.fish
-
-**NOTE**: If you are using an official GoReleaser package, it should setup autocompletions for you out of the box.
-
-
-```
-goreleaser completion [bash|zsh|fish]
-```
 
 ## Options
 
@@ -63,4 +24,8 @@ goreleaser completion [bash|zsh|fish]
 ## See also
 
 * [goreleaser](/cmd/goreleaser/)	 - Deliver Go binaries as fast and easily as possible
+* [goreleaser completion bash](/cmd/goreleaser_completion_bash/)	 - generate the autocompletion script for bash
+* [goreleaser completion fish](/cmd/goreleaser_completion_fish/)	 - generate the autocompletion script for fish
+* [goreleaser completion powershell](/cmd/goreleaser_completion_powershell/)	 - generate the autocompletion script for powershell
+* [goreleaser completion zsh](/cmd/goreleaser_completion_zsh/)	 - generate the autocompletion script for zsh
 

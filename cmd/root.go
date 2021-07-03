@@ -52,8 +52,18 @@ func newRootCmd(version string, exit func(int)) *rootCmd {
 		exit: exit,
 	}
 	cmd := &cobra.Command{
-		Use:           "goreleaser",
-		Short:         "Deliver Go binaries as fast and easily as possible",
+		Use:   "goreleaser",
+		Short: "Deliver Go binaries as fast and easily as possible",
+		Long: `GoReleaser is a release automation tool for Go projects.
+Its goal is to simplify the build, release and publish steps while providing
+variant customization options for all steps.
+
+GoReleaser is built for CI tools, you only need to download and execute it
+in your build script. Of course, you can also install it locally if you wish.
+
+You can also customize your entire release process through a
+single .goreleaser.yml file.
+`,
 		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -72,7 +82,6 @@ func newRootCmd(version string, exit func(int)) *rootCmd {
 		newReleaseCmd().cmd,
 		newCheckCmd().cmd,
 		newInitCmd().cmd,
-		newCompletionCmd().cmd,
 		newDocsCmd().cmd,
 	)
 
@@ -89,7 +98,7 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 	}
 
 	// allow help and the two __complete commands.
-	if len(args) > 0 && (args[0] == "help" ||
+	if len(args) > 0 && (args[0] == "help" || args[0] == "completion" ||
 		args[0] == cobra.ShellCompRequestCmd || args[0] == cobra.ShellCompNoDescRequestCmd) {
 		return false
 	}
