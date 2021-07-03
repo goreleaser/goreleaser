@@ -25,7 +25,7 @@ func newDocsCmd() *docsCmd {
 			return doc.GenMarkdownTreeCustom(root.cmd.Root(), "www/docs/cmd", func(_ string) string {
 				return ""
 			}, func(s string) string {
-				return "/cmd/" + strings.TrimSuffix(s, ".md")
+				return "/cmd/" + strings.TrimSuffix(s, ".md") + "/"
 			})
 		},
 	}
