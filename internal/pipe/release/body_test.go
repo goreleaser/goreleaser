@@ -90,10 +90,11 @@ func TestDescribeBodyWithHeaderAndFooter(t *testing.T) {
 	ctx := context.New(config.Project{
 		Release: config.Release{
 			Header: "## Yada yada yada\nsomething\n",
-			Footer: "\n---\n\nGet GoReleaser Pro at https://goreleaser.com/pro",
+			Footer: "\n---\n\nGet images at docker.io/foo/bar:{{.Tag}}\n\n---\n\nGet GoReleaser Pro at https://goreleaser.com/pro",
 		},
 	})
 	ctx.ReleaseNotes = changelog
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0"}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "goreleaser/goreleaser:v1.2.3",
 		Type: artifact.DockerImage,

@@ -6,6 +6,7 @@ import (
 	"text/template"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -44,15 +45,25 @@ func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 			dockers = append(dockers, a.Name)
 		}
 	}
+
+	header, err := tmpl.New(ctx).Apply(ctx.Config.Release.Header)
+	if err != nil {
+		return out, err
+	}
+	footer, err := tmpl.New(ctx).Apply(ctx.Config.Release.Footer)
+	if err != nil {
+		return out, err
+	}
+
 	bodyTemplate := template.Must(template.New("release").Parse(bodyTemplateText))
-	err := bodyTemplate.Execute(&out, struct {
+	err = bodyTemplate.Execute(&out, struct {
 		Header       string
 		Footer       string
 		ReleaseNotes string
 		DockerImages []string
 	}{
-		Header:       ctx.Config.Release.Header,
-		Footer:       ctx.Config.Release.Footer,
+		Header:       header,
+		Footer:       footer,
 		ReleaseNotes: ctx.ReleaseNotes,
 		DockerImages: dockers,
 	})
