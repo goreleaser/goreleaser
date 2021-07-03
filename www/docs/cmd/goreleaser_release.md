@@ -13,6 +13,7 @@ goreleaser release [flags]
   -f, --config string                Load configuration from file
   -h, --help                         help for release
   -p, --parallelism int              Amount tasks to run concurrently (default: number of CPUs)
+  -k, --key string                   GoReleaser Pro license key [$GORELEASER_KEY]
       --release-footer string        Load custom release notes footer from a markdown file
       --release-footer-tmpl string   Load custom release notes footer from a templated markdown file (overrides --release-footer)
       --release-header string        Load custom release notes header from a markdown file
