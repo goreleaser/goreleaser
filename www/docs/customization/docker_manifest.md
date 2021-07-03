@@ -48,8 +48,8 @@ docker_manifests:
   push_flags:
   - --insecure
 
-  # Skips the docker manifest.
-  # If you set this to 'false' or 'auto' on your source docker configs,
+  # Skips the Docker manifest.
+  # If you set this to 'false' or 'auto' on your source Docker configs,
   #  you'll probably want to do the same here.
   #
   # If set to 'auto', the manifest will not be created in case there is an
@@ -57,6 +57,16 @@ docker_manifests:
   #
   # Defaults to false.
   skip_push: false
+
+  # Set the "backend" for the Docker manifest pipe.
+  # Valid options are: docker, podman
+  #
+  # Relevant notes:
+  # 1. podman is a GoReleaser Pro feature and is only available on Linux;
+  # 2. if you set podman here, the respective docker configs need to use podman too.
+  #
+  # Defaults to docker.
+  use: docker
 ```
 
 !!! tip
@@ -126,3 +136,23 @@ docker_manifests:
 
 That config will build the 2 Docker images defined, as well as the manifest,
 and push everything to Docker Hub.
+
+## Podman
+
+You can use [`podman`](https://podman.io) instead of `docker` by setting `use` to `podman` on your config:
+
+```yaml
+# .goreleaser.yml
+docker_manifests:
+- name_template: foo/bar:{{ .Version }}
+  image_templates:
+  - foo/bar:{{ .Version }}-amd64
+  - foo/bar:{{ .Version }}-arm64v8
+  use: podman
+```
+
+Note that GoReleaser will not install Podman for you, nor change any of its configuration.
+Also worth noticing that currently Podman only works on Linux machines.
+
+!!! info
+    The Podman backend is a [GoReleaser Pro feature](/pro/).

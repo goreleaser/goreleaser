@@ -13,7 +13,7 @@ addons:
     packages:
     - snapcraft
 
-# needed only if you use the docker pipe
+# needed only if you use the Docker pipe
 services:
 - docker
 
@@ -22,7 +22,7 @@ script:
   - curl -sfL https://git.io/goreleaser | sh -s -- check # check goreleaser config for deprecations
 
 after_success:
-# docker login is required if you want to push docker images.
+# Docker login is required if you want to push Docker images.
 # DOCKER_PASSWORD should be a secret in your .travis.yml configuration.
 - test -n "$TRAVIS_TAG" && docker login -u=myuser -p="$DOCKER_PASSWORD"
 # snapcraft login is required if you want to push snapcraft packages to the

@@ -34,7 +34,7 @@ Then, the following is different from a "regular" run:
 - Release name gets prefixed with `{{ .ProjectName }} ` if empty;
 - All build's `dir` setting get set to `monorepo.folder` if empty;
   - if yours is not, you might want to change that manually;
-- Extra files on the release, archives, docker builds, etc are prefixed with `monorepo.folder`;
+- Extra files on the release, archives, Docker builds, etc are prefixed with `monorepo.folder`;
 - On templates, `{{.PrefixedTag}}` will be `monorepo.prefix/tag` (aka the actual tag name), and `{{.Tag}}` has the prefix stripped;
 
 The rest of the release process should work as usual.
