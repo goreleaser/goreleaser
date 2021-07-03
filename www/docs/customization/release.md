@@ -45,19 +45,19 @@ release:
   # Default is false.
   prerelease: auto
 
-  # Header for the release body.
+  # Header template for the release body.
   # Defaults to empty.
   header: |
-    ## Some title
+    ## Some title ({{ .Date }})
 
     Welcome to this new release!
 
-  # Footer for the release body.
+  # Footer template for the release body.
   # Defaults to empty.
   footer: |
     ## Thanks!
 
-    Something to add to the end.
+    Those were the changes on {{ .Tag }}!
 
   # You can change the name of the release.
   # Default is `{{.Tag}}` on OSS and `{{.PrefixedTag}}` on Pro.
