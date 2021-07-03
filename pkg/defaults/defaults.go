@@ -50,6 +50,7 @@ var Defaulters = []Defaulter{
 	checksums.Pipe{},
 	sign.Pipe{},
 	docker.Pipe{},
+	docker.ManifestPipe{},
 	artifactory.Pipe{},
 	blob.Pipe{},
 	brew.Pipe{},
