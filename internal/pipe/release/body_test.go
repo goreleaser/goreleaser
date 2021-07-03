@@ -104,3 +104,23 @@ func TestDescribeBodyWithHeaderAndFooter(t *testing.T) {
 
 	golden.RequireEqual(t, out.Bytes())
 }
+
+func TestDescribeBodyWithInvalidHeaderTemplate(t *testing.T) {
+	ctx := context.New(config.Project{
+		Release: config.Release{
+			Header: "## {{ .Nop }\n",
+		},
+	})
+	_, err := describeBody(ctx)
+	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+}
+
+func TestDescribeBodyWithInvalidFooterTemplate(t *testing.T) {
+	ctx := context.New(config.Project{
+		Release: config.Release{
+			Footer: "{{ .Nops }",
+		},
+	})
+	_, err := describeBody(ctx)
+	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+}
