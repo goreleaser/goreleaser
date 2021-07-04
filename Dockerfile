@@ -16,3 +16,7 @@ RUN chmod +x /entrypoint.sh
 
 COPY goreleaser_*.apk /tmp/
 RUN apk add --allow-untrusted /tmp/goreleaser_*.apk
+
+RUN mkdir -p $HOME/.docker/cli-plugins/ && \
+    wget -O $HOME/.docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/v0.4.1/buildx-v0.4.1.linux-amd64 && \
+    chmod a+x $HOME/.docker/cli-plugins/docker-buildx 
