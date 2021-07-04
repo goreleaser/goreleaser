@@ -142,12 +142,14 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	if err != nil {
 		return fmt.Errorf("failed to create temporary dir: %w", err)
 	}
-	log.Debug("tempdir: " + tmp)
 
 	images, err := processImageTemplates(ctx, docker)
 	if err != nil {
 		return err
 	}
+
+	log := log.WithField("image", images[0])
+	log.Debug("tempdir: " + tmp)
 
 	if err := os.Link(docker.Dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
 		return fmt.Errorf("failed to link dockerfile: %w", err)
@@ -171,6 +173,7 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 		return err
 	}
 
+	log.Info("building docker image")
 	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags); err != nil {
 		return err
 	}
