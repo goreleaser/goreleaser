@@ -1,9 +1,10 @@
 package golang
 
 import (
-	"bytes"
 	"fmt"
 	"os/exec"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/apex/log"
@@ -43,12 +44,18 @@ func matrix(build config.Build) ([]string, error) {
 		if target.mips != "" && !contains(target.mips, validGomips) {
 			return result, fmt.Errorf("invalid gomips: %s", target.mips)
 		}
-		if target.os == "darwin" && target.arch == "arm64" && !isGo116(build) {
-			log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
-				"DEPRECATED: skipped darwin/arm64 build on Go < 1.16 for compatibility, check %s for more info.",
-				"https://goreleaser.com/deprecations/#builds-for-darwinarm64",
-			))
-			continue
+		if target.os == "darwin" && target.arch == "arm64" {
+			go116orLater, err := isGo116orLater(build)
+			if err != nil {
+				log.Error(err.Error())
+				continue
+			} else if !go116orLater {
+				log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
+					"DEPRECATED: skipped darwin/arm64 build on Go < 1.16 for compatibility, check %s for more info.",
+					"https://goreleaser.com/deprecations/#builds-for-darwinarm64",
+				))
+				continue
+			}
 		}
 		if !valid(target) {
 			log.WithField("target", target).Debug("skipped invalid build")
@@ -119,9 +126,33 @@ func ignored(build config.Build, target target) bool {
 	return false
 }
 
-func isGo116(build config.Build) bool {
-	bts, _ := exec.Command(build.GoBinary, "version").CombinedOutput()
-	return bytes.Contains(bts, []byte("go version go1.16"))
+// Regex matches output of 'go version', capturing the version digits
+var goVersionRE = regexp.MustCompile(`go version go(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:(?:beta|rc)\d+)? \w+/\w+`)
+
+func isGo116orLater(build config.Build) (bool, error) {
+	cmd := exec.Command(build.GoBinary, "version")
+	cmd.Dir = build.Dir // Set Dir to build directory in case of reletive path to GoBinary
+	bts, err := cmd.CombinedOutput()
+	if err != nil {
+		return false, fmt.Errorf("unable to determine version of go binary (%s): %w", build.GoBinary, err)
+	}
+	match := goVersionRE.FindSubmatch(bts)
+	if len(match) == 0 {
+		return false, fmt.Errorf("invalid version data from go binary: %q", bts)
+	}
+	for i, m := range match[1:] {
+		// Should always succeed, since this is using a regex to match on digits
+		part, _ := strconv.Atoi(string(m))
+		switch {
+		case i == 0 && part > 1:
+			return true, nil
+		case i == 0 && part < 1:
+			return false, nil
+		case i == 1 && part >= 16:
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func valid(target target) bool {

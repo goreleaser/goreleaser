@@ -2,6 +2,7 @@ package golang
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -142,6 +143,83 @@ func TestGoosGoarchCombos(t *testing.T) {
 	for _, p := range platforms {
 		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {
 			require.Equal(t, p.valid, valid(target{p.os, p.arch, "", ""}))
+		})
+	}
+}
+
+func Test_isGo116orLater(t *testing.T) {
+	tests := []struct {
+		name    string
+		build   config.Build
+		version string
+		want    bool
+		wantErr bool
+	}{
+		{
+			name:    "less than go1.16",
+			version: "go version go1.15.13 linux/amd64",
+			want:    false,
+		},
+		{
+			name:    "go1.16",
+			version: "go version go1.16 linux/amd64",
+			want:    true,
+		},
+		{
+			name:    "patch to go1.16",
+			version: "go version go1.16.5 linux/amd64",
+			want:    true,
+		},
+		{
+			name:    "greater than go1.16",
+			version: "go version go1.17 linux/amd64",
+			want:    true,
+		},
+		{
+			name:    "beta greater than go1.16",
+			version: "go version go1.17beta1 linux/amd64",
+			want:    true,
+		},
+		{
+			name:    "rc greater than go1.16",
+			version: "go version go1.17rc1 linux/amd64",
+			want:    true,
+		},
+		{
+			name:    "go2",
+			version: "go version go2 linux/amd64",
+			want:    true,
+		},
+		{
+			name:    "invalid version",
+			version: "go not a version",
+			want:    false,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f, err := os.CreateTemp("", "")
+			if err != nil {
+				t.Fatalf("unable to setup temp file for isGo116orLater: %v", err)
+			}
+			t.Cleanup(func() { os.Remove(f.Name()) })
+			fmt.Fprintf(f, "#!/bin/sh\necho %q\n", tt.version)
+			if err := f.Chmod(0o700); err != nil {
+				t.Fatalf("unable to setup temp file for isGo116orLater: %v", err)
+			}
+			if err := f.Close(); err != nil {
+				t.Fatalf("unable to setup temp file for isGo116orLater: %v", err)
+			}
+			tt.build.GoBinary = f.Name()
+			got, err := isGo116orLater(tt.build)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("isGo116orLater() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("isGo116orLater() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }
