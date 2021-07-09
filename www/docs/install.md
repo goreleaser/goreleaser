@@ -110,10 +110,10 @@ Download the `.deb`, `.rpm` or `.apk` from the [OSS][releases] or [Pro][pro-rele
 ### manually
 
 === "OSS"
-    Download the pre-compiled binaries from the [OSS][releases] releases pages and copy to the desired location.
+    Download the pre-compiled binaries from the [OSS releases page][releases] and copy them to the desired location.
 
 === "Pro"
-    Download the pre-compiled binaries from the [Pro][pro-releases] releases pages and copy to the desired location.
+    Download the pre-compiled binaries from the [Pro releases page][pro-releases] and copy them to the desired location.
 
 ## Running with Docker
 
