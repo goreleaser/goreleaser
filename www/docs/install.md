@@ -88,7 +88,13 @@ Here are the steps for each of them:
 
 ### deb, rpm and apk packages
 
-Download the `.deb`, `.rpm` or `.apk` from the [OSS][releases] or [Pro][pro-releases] releases pages and install them with the appropriate tools.
+
+=== "OSS"
+    Download the `.deb`, `.rpm` or `.apk` packages from the [OSS releases page][releases] and install them with the appropriate tools.
+
+=== "Pro"
+    Download the `.deb`, `.rpm` or `.apk` packages from the [Pro releases page][pro-releases] and install them with the appropriate tools.
+
 
 ### shell script
 
