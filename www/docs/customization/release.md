@@ -6,6 +6,8 @@ GoReleaser can create a GitHub/GitLab/Gitea release with the current tag, upload
 the artifacts and generate the changelog based on the new commits since the
 previous tag.
 
+## GitHub
+
 Let's see what can be customized in the `release` section for GitHub:
 
 ```yaml
@@ -77,6 +79,11 @@ release:
     - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
 ```
 
+!!! tip
+    [Learn how to setup an API token, GitHub enteprise and etc](/scm/github/).
+
+## GitLab
+
 Second, let's see what can be customized in the `release` section for GitLab.
 
 ```yaml
@@ -113,10 +120,15 @@ release:
 ```
 
 !!! tip
+    [Learn how to setup an API token, self-hosted GitLab and etc](/scm/gitlab/).
+
+!!! tip
     If you use GitLab subgroups, you need to specify it in the `owner` field, e.g. `mygroup/mysubgroup`.
 
 !!! warning
-    Only GitLab `v12.9+` are supported for releases.
+    Only GitLab `v12.9+` is supported for releases.
+
+## Gitea
 
 You can also configure the `release` section to upload to a [Gitea](https://gitea.io) instance:
 
@@ -160,6 +172,12 @@ To enable uploading `tar.gz` and `checksums.txt` files you need to add the follo
 ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|application/x-tgz|application/x-compressed-tar|text/plain
 ```
 
+!!! tip
+    [Learn how to setup an API token](/scm/gitea/).
+
+!!! tip
+    Learn more about the [name template engine](/customization/templates/).
+
 !!! warning
     Gitea versions earlier than 1.9.2 do not support uploading `checksums.txt`
     files because of a [bug](https://github.com/go-gitea/gitea/issues/7882)
@@ -167,9 +185,6 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 
 !!! warning
     `draft` and `prerelease` are only supported by GitHub and Gitea.
-
-!!! tip
-    Learn more about the [name template engine](/customization/templates/).
 
 ## Customize the changelog
 

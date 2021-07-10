@@ -1,6 +1,7 @@
 SOURCE_FILES?=./...
 TEST_PATTERN?=.
 TEST_OPTIONS?=
+DOCKER?=docker
 
 export PATH := ./bin:$(PATH)
 export GO111MODULE := on
@@ -44,7 +45,7 @@ imgs:
 .PHONY: imgs
 
 serve:
-	@docker run --rm -it -p 8000:8000 -v ${PWD}/www:/docs squidfunk/mkdocs-material
+	$(DOCKER) run --rm -it -p 8000:8000 -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material
 .PHONY: serve
 
 vercel:

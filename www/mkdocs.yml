@@ -48,10 +48,13 @@ nav:
 - intro.md
 - install.md
 - quick-start.md
-- environment.md
 - Limitations:
   - limitations/cgo.md
   - limitations/semver.md
+- SCM:
+  - scm/github.md
+  - scm/gitlab.md
+  - scm/gitea.md
 - Continuous Integration:
   - About: ci/index.md
   - ci/actions.md
@@ -72,6 +75,7 @@ nav:
   - customization/blob.md
   - customization/build.md
   - customization/checksum.md
+  - customization/dist.md
   - customization/docker.md
   - customization/docker_manifest.md
   - customization/env.md
@@ -111,7 +115,9 @@ nav:
   - cookbooks/publish-to-nexus.md
   - cookbooks/release-a-library.md
   - cookbooks/semantic-release.md
+  - cookbooks/set-a-custom-git-tag.md
   - cookbooks/upload-to-bintray.md
+  - cookbooks/using-main.version.md
 - pro.md
 - sponsors.md
 - contributing.md
