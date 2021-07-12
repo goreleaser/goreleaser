@@ -34,7 +34,7 @@ You can verify your `.goreleaser.yml` is valid by running the [check](/cmd/gorel
 goreleaser check
 ```
 
-You can also use GoReleaser to [build](cmd/goreleaser_build/) the binary only for a given GOOS/GOARCH, which is useful for local development:
+You can also use GoReleaser to [build](/cmd/goreleaser_build/) the binary only for a given GOOS/GOARCH, which is useful for local development:
 
 ```sh
 goreleaser build --single-target
