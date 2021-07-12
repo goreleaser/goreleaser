@@ -4,7 +4,7 @@ There are two GoReleaser distributions: OSS and [Pro](/pro/).
 
 You can install the pre-compiled binary (in several different ways), use Docker or compile from source (when on OSS).
 
-Here are the steps for each of them:
+Bellow you can find the steps for each of them.
 
 ## Install the pre-compiled binary
 
@@ -26,6 +26,10 @@ Here are the steps for each of them:
     ```sh
     brew install goreleaser
     ```
+
+!!! info
+    The [formula in homebrew-core](https://github.com/Homebrew/homebrew-core/blob/master/Formula/goreleaser.rb) might be slightly outdated.
+    Use our homebrew tap to always get the latest updates.
 
 ### snapcraft
 
