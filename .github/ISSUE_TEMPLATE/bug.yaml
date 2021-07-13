@@ -35,9 +35,9 @@ body:
     id: goreleaser-check
     attributes:
       label: GoReleaser Check
+      description: 'If I run `goreleaser check` it shows no errors'
       options:
         - label: goreleaser check shows no errors
-          description: 'If I run `goreleaser check` it shows no errors'
           required: true
   - type: checkboxes
     id: search
