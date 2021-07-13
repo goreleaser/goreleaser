@@ -23,11 +23,12 @@ body:
       description: Please share a public repository that reproduces the issue, or an example config file. Links to failing goreleaser runs and etc are also helpful.
     validations:
       required: true
-  - type: input
+  - type: textarea
     id: goreleaser-version
     attributes:
       label: goreleaser version
       description: '`goreleaser --version` output'
+      render: bash
     validations:
       required: true
   - type: checkboxes
