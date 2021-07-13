@@ -1,0 +1,42 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: [bug, triage]
+assignees:
+  - caarlos0
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please fill the form bellow.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us, what did you expect to happen?
+      value: "A bug happened!"
+    validations:
+      required: true
+  - type: textarea
+    id: reproducible
+    attributes:
+      label: How can we reproduce this?
+      description: Please share a public repository that reproduces the issue, or an example config file. Links to failing goreleaser runs and etc are also helpful.
+      value: "A bug happened!"
+    validations:
+      required: true
+  - type: checkboxes
+    id: search
+    attributes:
+      label: Search
+      options:
+        - label: I did search for other open and closed issues before opening this.
+          required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://example.com)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
