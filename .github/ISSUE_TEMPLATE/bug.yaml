@@ -14,7 +14,6 @@ body:
     attributes:
       label: What happened?
       description: Also tell us, what did you expect to happen?
-      value: "A bug happened!"
     validations:
       required: true
   - type: textarea
@@ -22,9 +21,23 @@ body:
     attributes:
       label: How can we reproduce this?
       description: Please share a public repository that reproduces the issue, or an example config file. Links to failing goreleaser runs and etc are also helpful.
-      value: "A bug happened!"
     validations:
       required: true
+  - type: input
+    id: goreleaser-version
+    attributes:
+      label: goreleaser version
+      description: '`goreleaser --version` output'
+    validations:
+      required: true
+  - type: checkboxes
+    id: goreleaser-check
+    attributes:
+      label: GoReleaser Check
+      options:
+        - label: goreleaser check shows no errors
+          description: 'If I run `goreleaser check` it shows no errors'
+          required: true
   - type: checkboxes
     id: search
     attributes:
@@ -40,3 +53,10 @@ body:
       options:
         - label: I agree to follow this project's Code of Conduct
           required: true
+  - type: textarea
+    id: ctx
+    attributes:
+      label: Additional context
+      description: Anything else you would like to add
+    validations:
+      required: false
