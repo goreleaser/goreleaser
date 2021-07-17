@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 
 	"github.com/apex/log"
-	"github.com/campoy/unique"
 	"github.com/goreleaser/fileglob"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -164,7 +164,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	a := NewEnhancedArchive(archive.New(archiveFile), wrap)
 	defer a.Close()
 
-	files, err := expandGlobs(template, arch.Files)
+	files, err := findFiles(template, arch.Files)
 	if err != nil {
 		return fmt.Errorf("archive: failed to find files to archive: %w", err)
 	}
@@ -238,24 +238,73 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 	return nil
 }
 
-// func findFiles(template *tmpl.Template, archive config.Archive) (result []string, err error) {
-// 	for _, glob := range archive.Files {
-// 		replaced, err := template.Apply(glob)
-// 		if err != nil {
-// 			return result, fmt.Errorf("failed to apply template %s: %w", glob, err)
-// 		}
-// 		files, err := fileglob.Glob(replaced)
-// 		if err != nil {
-// 			return result, fmt.Errorf("globbing failed for pattern %s: %w", glob, err)
-// 		}
-// 		result = append(result, files...)
-// 	}
-// 	// remove duplicates
-// 	unique.Slice(&result, func(i, j int) bool {
-// 		return strings.Compare(result[i], result[j]) < 0
-// 	})
-// 	return
-// }
+func findFiles(template *tmpl.Template, files []config.File) ([]config.File, error) {
+	var result []config.File
+	for _, f := range files {
+		replaced, err := template.Apply(f.Source)
+		if err != nil {
+			return result, fmt.Errorf("failed to apply template %s: %w", f.Source, err)
+		}
+		files, err := fileglob.Glob(replaced)
+		if err != nil {
+			return result, fmt.Errorf("globbing failed for pattern %s: %w", f.Destination, err)
+		}
+
+		if len(files) == 1 && !fileglob.ContainsMatchers(replaced) {
+			file := files[0]
+			dst := f.Destination
+			if dst == "" {
+				dst = file
+			}
+			result = append(result, config.File{
+				Source:      files[0],
+				Destination: dst,
+				Info:        f.Info,
+			})
+			continue
+		}
+
+		for _, file := range files {
+			result = append(result, config.File{
+				Source:      file,
+				Destination: destinationFor(f, file),
+				Info:        f.Info,
+			})
+		}
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Destination < result[j].Destination
+	})
+
+	var unique []config.File
+	exist := map[string]string{}
+	for _, f := range result {
+		if current := exist[f.Destination]; current != "" {
+			log.Warnf(
+				"file '%s' already exists in archive as '%s' - '%s' will be ignored",
+				f.Destination,
+				current,
+				f.Source,
+			)
+			continue
+		}
+		exist[f.Destination] = f.Source
+		unique = append(unique, f)
+	}
+
+	return unique, nil
+}
+
+func destinationFor(f config.File, path string) string {
+	if f.Destination == "" {
+		return path
+	}
+	if f.StripParent {
+		return filepath.Join(f.Destination, filepath.Base(path))
+	}
+	return filepath.Join(f.Destination, path)
+}
 
 func packageFormat(archive config.Archive, platform string) string {
 	for _, override := range archive.FormatOverrides {
@@ -296,7 +345,7 @@ func (d EnhancedArchive) Add(f config.File) error {
 	ff := config.File{
 		Source:      f.Source,
 		Destination: name,
-		FileInfo:    f.FileInfo,
+		Info:        f.Info,
 	}
 	return d.a.Add(ff)
 }
@@ -304,52 +353,4 @@ func (d EnhancedArchive) Add(f config.File) error {
 // Close closes the underlying archive.
 func (d EnhancedArchive) Close() error {
 	return d.a.Close()
-}
-
-// expandGlobs gathers all of the real files to be copied into the package.
-func expandGlobs(template *tmpl.Template, files []config.File) ([]config.File, error) {
-	var result []config.File
-	for _, f := range files {
-		replaced, err := template.Apply(f.Source)
-		if err != nil {
-			return result, fmt.Errorf("failed to apply template %s: %w", f.Source, err)
-		}
-		files, err := fileglob.Glob(replaced)
-		if err != nil {
-			return result, fmt.Errorf("globbing failed for pattern %s: %w", f.Destination, err)
-		}
-		if len(files) == 0 {
-			continue
-		}
-
-		dst := f.Destination
-		if dst == "" {
-			dst = files[0]
-		}
-
-		if len(files) == 1 {
-			result = append(result, config.File{
-				Source:      files[0],
-				Destination: dst,
-				FileInfo:    f.FileInfo,
-			})
-		}
-
-		for _, file := range files {
-			dst := dst
-			if f.Destination != "" {
-				dst = filepath.Join(f.Destination, filepath.Base(file))
-			}
-			result = append(result, config.File{
-				Source:      files[0],
-				Destination: dst,
-				FileInfo:    f.FileInfo,
-			})
-		}
-	}
-
-	unique.Slice(&result, func(i, j int) bool {
-		return strings.Compare(result[i].Destination, result[j].Destination) < 0
-	})
-	return result, nil
 }

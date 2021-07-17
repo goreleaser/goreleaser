@@ -53,11 +53,11 @@ func (a Archive) Add(f config.File) error {
 	header.Name = f.Destination
 	header.Method = zip.Deflate
 	header.Name = f.Destination
-	if !f.FileInfo.MTime.IsZero() {
-		header.Modified = f.FileInfo.MTime
+	if !f.Info.MTime.IsZero() {
+		header.Modified = f.Info.MTime
 	}
-	if f.FileInfo.Mode != 0 {
-		header.SetMode(f.FileInfo.Mode)
+	if f.Info.Mode != 0 {
+		header.SetMode(f.Info.Mode)
 	}
 	w, err := a.z.CreateHeader(header)
 	if err != nil {

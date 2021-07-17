@@ -51,19 +51,19 @@ func (a Archive) Add(f config.File) error {
 		return err
 	}
 	header.Name = f.Destination
-	if !f.FileInfo.MTime.IsZero() {
-		header.ModTime = f.FileInfo.MTime
+	if !f.Info.MTime.IsZero() {
+		header.ModTime = f.Info.MTime
 	}
-	if f.FileInfo.Mode != 0 {
-		header.Mode = int64(f.FileInfo.Mode)
+	if f.Info.Mode != 0 {
+		header.Mode = int64(f.Info.Mode)
 	}
-	if f.FileInfo.Owner != "" {
+	if f.Info.Owner != "" {
 		header.Uid = 0
-		header.Uname = f.FileInfo.Owner
+		header.Uname = f.Info.Owner
 	}
-	if f.FileInfo.Group != "" {
+	if f.Info.Group != "" {
 		header.Gid = 0
-		header.Gname = f.FileInfo.Group
+		header.Gname = f.Info.Group
 	}
 	if err = a.tw.WriteHeader(header); err != nil {
 		return err

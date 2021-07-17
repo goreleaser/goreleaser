@@ -33,7 +33,7 @@ files:
 - ./script.sh
 - src: ./foo
   dst: ./bar
-  file_info:
+  info:
     owner: carlos
     group: users
 `), &actual)
@@ -46,7 +46,7 @@ files:
 		{
 			Source:      "./foo",
 			Destination: "./bar",
-			FileInfo: FileInfo{
+			Info: FileInfo{
 				Owner: "carlos",
 				Group: "users",
 			},
@@ -64,12 +64,12 @@ func TestArchiveFiles_complex(t *testing.T) {
 files:
 - src: ./foo
   dst: ./bar
-  file_info:
+  info:
     owner: carlos
     group: users
 - src: ./foobar
   dst: ./barzaz
-  file_info:
+  info:
     owner: carlos
     group: users
     mode: 0644
@@ -81,7 +81,7 @@ files:
 		{
 			Source:      "./foo",
 			Destination: "./bar",
-			FileInfo: FileInfo{
+			Info: FileInfo{
 				Owner: "carlos",
 				Group: "users",
 			},
@@ -89,7 +89,7 @@ files:
 		{
 			Source:      "./foobar",
 			Destination: "./barzaz",
-			FileInfo: FileInfo{
+			Info: FileInfo{
 				Owner: "carlos",
 				Group: "users",
 				Mode:  0644,

@@ -62,7 +62,7 @@ func TestGzFileCustomMtime(t *testing.T) {
 	require.NoError(t, archive.Add(config.File{
 		Destination: "sub1/sub2/subfoo.txt",
 		Source:      "../testdata/sub1/sub2/subfoo.txt",
-		FileInfo: config.FileInfo{
+		Info: config.FileInfo{
 			MTime: now,
 		},
 	}))

@@ -267,7 +267,8 @@ type FormatOverride struct {
 type File struct {
 	Source      string   `yaml:"src,omitempty"`
 	Destination string   `yaml:"dst,omitempty"`
-	FileInfo    FileInfo `yaml:"file_info,omitempty"`
+	StripParent bool     `yaml:"strip_parent,omitempty"`
+	Info        FileInfo `yaml:"info,omitempty"`
 }
 
 // FileInfo is the file info of a file.

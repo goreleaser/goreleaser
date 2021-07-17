@@ -69,6 +69,19 @@ archives:
       - docs/*
       - design/*.png
       - templates/**/*
+      # a more complete example, check the globbing deep dive bellow
+      - src: '*.md'
+        dst: docs
+        # if src matches multiple files, strip their parent folders when adding to the archive.
+        # this only has effect when using glob.
+        strip_parent: true
+        # file info defaults to the file info of the actual file if not provided.
+        info:
+          owner: root
+          group: root
+          mode: 0644
+          # format is `time.RFC3339Nano`
+          mtime: 2008-01-02T15:04:05Z
 
     # Disables the binary count check.
     # Default: false
@@ -88,6 +101,38 @@ archives:
 !!! warning
     The `name_template` option will not reflect the filenames under the `dist` folder if `format` is `binary`.
     The template will be applied only where the binaries are uploaded (e.g. GitHub releases).
+
+## Deep diving into the globbing options
+
+We'll walk through what happens in each case using some examples.
+
+```yaml
+# ...
+files:
+
+# Adds `README.md` at the root of the archive:
+- README.md
+
+# Adds all `md` files to the root of the archive:
+- '*.md'
+
+# Adds all `md` files in the current folder to a `docs` folder in the archive:
+- src: '*.md'
+  dst: docs
+
+# Recursively adds all `go` files to a `source` folder in the archive.
+# in this case, cmd/myapp/main.go will be added as source/cmd/myapp/main.go
+- src: '**/*.go'
+  dst: source
+
+# Recursively adds all `go` files to a `source` folder in the archive, stripping their parent folder
+# in this case, cmd/myapp/main.go will be added as source/main.go
+# `strip_parent` only does anything if `src` is matches multiple files and `dst` is not empty.
+- src: '**/*.go'
+  dst: source
+  strip_parent: true
+# ...
+```
 
 ## Packaging only the binaries
 

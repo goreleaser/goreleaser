@@ -41,14 +41,14 @@ func (a Archive) Add(f config.File) error {
 	}
 	defer file.Close()
 	a.gw.Header.Name = f.Destination
-	if f.FileInfo.MTime.IsZero() {
+	if f.Info.MTime.IsZero() {
 		info, err := file.Stat()
 		if err != nil {
 			return err
 		}
 		a.gw.Header.ModTime = info.ModTime()
 	} else {
-		a.gw.Header.ModTime = f.FileInfo.MTime
+		a.gw.Header.ModTime = f.Info.MTime
 	}
 	_, err = io.Copy(a.gw, file)
 	return err
