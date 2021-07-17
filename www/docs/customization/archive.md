@@ -116,6 +116,9 @@ files:
 # Adds all `md` files to the root of the archive:
 - '*.md'
 
+# Adds all `md` files to the root of the archive:
+- src: '*.md'
+
 # Adds all `md` files in the current folder to a `docs` folder in the archive:
 - src: '*.md'
   dst: docs
@@ -127,12 +130,14 @@ files:
 
 # Recursively adds all `go` files to a `source` folder in the archive, stripping their parent folder
 # in this case, cmd/myapp/main.go will be added as source/main.go
-# `strip_parent` only does anything if `src` is matches multiple files and `dst` is not empty.
 - src: '**/*.go'
   dst: source
   strip_parent: true
 # ...
 ```
+
+!!! warning
+    `strip_parent` is only effective if `dst` is not empty.
 
 ## Packaging only the binaries
 

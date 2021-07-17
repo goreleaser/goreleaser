@@ -245,23 +245,10 @@ func findFiles(template *tmpl.Template, files []config.File) ([]config.File, err
 		if err != nil {
 			return result, fmt.Errorf("failed to apply template %s: %w", f.Source, err)
 		}
+
 		files, err := fileglob.Glob(replaced)
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %w", f.Destination, err)
-		}
-
-		if len(files) == 1 && !fileglob.ContainsMatchers(replaced) {
-			file := files[0]
-			dst := f.Destination
-			if dst == "" {
-				dst = file
-			}
-			result = append(result, config.File{
-				Source:      files[0],
-				Destination: dst,
-				Info:        f.Info,
-			})
-			continue
 		}
 
 		for _, file := range files {

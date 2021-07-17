@@ -1005,6 +1005,7 @@ func TestFindFiles(t *testing.T) {
 
 func TestArchive_globbing(t *testing.T) {
 	assertGlob := func(t *testing.T, files []config.File, expected []string) {
+		t.Helper()
 		bin, err := ioutil.TempFile(t.TempDir(), "binary")
 		require.NoError(t, err)
 		dist := t.TempDir()
@@ -1043,9 +1044,9 @@ func TestArchive_globbing(t *testing.T) {
 		assertGlob(t, []config.File{
 			{
 				Source:      "testdata/a/a.txt",
-				Destination: "foo/a.txt",
+				Destination: "foo/",
 			},
-		}, []string{"foo/a.txt"})
+		}, []string{"foo/testdata/a/a.txt"})
 	})
 
 	t.Run("glob src", func(t *testing.T) {
