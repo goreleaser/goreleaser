@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
 // Archive as gz.
@@ -29,24 +31,25 @@ func New(target io.Writer) Archive {
 }
 
 // Add file to the archive.
-func (a Archive) Add(name, path string) error {
+func (a Archive) Add(f config.File) error {
 	if a.gw.Header.Name != "" {
-		return fmt.Errorf("gzip: failed to add %s, only one file can be archived in gz format", name)
+		return fmt.Errorf("gzip: failed to add %s, only one file can be archived in gz format", f.Destination)
 	}
-	file, err := os.Open(path) // #nosec
+	file, err := os.Open(f.Source) // #nosec
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	info, err := file.Stat()
-	if err != nil {
-		return err
+	a.gw.Header.Name = f.Destination
+	if f.FileInfo.MTime.IsZero() {
+		info, err := file.Stat()
+		if err != nil {
+			return err
+		}
+		a.gw.Header.ModTime = info.ModTime()
+	} else {
+		a.gw.Header.ModTime = f.FileInfo.MTime
 	}
-	if info.IsDir() {
-		return nil
-	}
-	a.gw.Header.Name = name
-	a.gw.Header.ModTime = info.ModTime()
 	_, err = io.Copy(a.gw, file)
 	return err
 }

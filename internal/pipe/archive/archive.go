@@ -59,15 +59,15 @@ func (Pipe) Default(ctx *context.Context) error {
 			archive.ID = "default"
 		}
 		if len(archive.Files) == 0 {
-			archive.Files = []string{
-				"licence*",
-				"LICENCE*",
-				"license*",
-				"LICENSE*",
-				"readme*",
-				"README*",
-				"changelog*",
-				"CHANGELOG*",
+			archive.Files = []config.File{
+				{Source: "licence*"},
+				{Source: "LICENCE*"},
+				{Source: "license*"},
+				{Source: "LICENSE*"},
+				{Source: "readme*"},
+				{Source: "README*"},
+				{Source: "changelog*"},
+				{Source: "CHANGELOG*"},
 			}
 		}
 		if archive.NameTemplate == "" {
@@ -164,18 +164,22 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	a := NewEnhancedArchive(archive.New(archiveFile), wrap)
 	defer a.Close()
 
-	files, err := findFiles(template, arch)
+	files, err := expandGlobs(template, arch.Files)
 	if err != nil {
-		return fmt.Errorf("failed to find files to archive: %w", err)
+		return fmt.Errorf("archive: failed to find files to archive: %w", err)
 	}
 	for _, f := range files {
-		if err = a.Add(f, f); err != nil {
-			return fmt.Errorf("failed to add %s to the archive: %w", f, err)
+		if err = a.Add(f); err != nil {
+			// TODO: wrap archiver errors
+			return fmt.Errorf("archive: failed to add: %s -> %s to %s: %w", f.Source, f.Destination, archivePath, err)
 		}
 	}
 	for _, binary := range binaries {
-		if err := a.Add(binary.Name, binary.Path); err != nil {
-			return fmt.Errorf("failed to add %s -> %s to the archive: %w", binary.Path, binary.Name, err)
+		if err := a.Add(config.File{
+			Source:      binary.Path,
+			Destination: binary.Name,
+		}); err != nil {
+			return fmt.Errorf("archive: failed to add: %s -> %s to %s: %w", binary.Path, binary.Name, archivePath, err)
 		}
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -234,24 +238,24 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 	return nil
 }
 
-func findFiles(template *tmpl.Template, archive config.Archive) (result []string, err error) {
-	for _, glob := range archive.Files {
-		replaced, err := template.Apply(glob)
-		if err != nil {
-			return result, fmt.Errorf("failed to apply template %s: %w", glob, err)
-		}
-		files, err := fileglob.Glob(replaced)
-		if err != nil {
-			return result, fmt.Errorf("globbing failed for pattern %s: %w", glob, err)
-		}
-		result = append(result, files...)
-	}
-	// remove duplicates
-	unique.Slice(&result, func(i, j int) bool {
-		return strings.Compare(result[i], result[j]) < 0
-	})
-	return
-}
+// func findFiles(template *tmpl.Template, archive config.Archive) (result []string, err error) {
+// 	for _, glob := range archive.Files {
+// 		replaced, err := template.Apply(glob)
+// 		if err != nil {
+// 			return result, fmt.Errorf("failed to apply template %s: %w", glob, err)
+// 		}
+// 		files, err := fileglob.Glob(replaced)
+// 		if err != nil {
+// 			return result, fmt.Errorf("globbing failed for pattern %s: %w", glob, err)
+// 		}
+// 		result = append(result, files...)
+// 	}
+// 	// remove duplicates
+// 	unique.Slice(&result, func(i, j int) bool {
+// 		return strings.Compare(result[i], result[j]) < 0
+// 	})
+// 	return
+// }
 
 func packageFormat(archive config.Archive, platform string) string {
 	for _, override := range archive.FormatOverrides {
@@ -282,17 +286,70 @@ type EnhancedArchive struct {
 }
 
 // Add adds a file.
-func (d EnhancedArchive) Add(name, path string) error {
-	name = strings.ReplaceAll(filepath.Join(d.wrap, name), "\\", "/")
-	log.Debugf("adding file: %s as %s", path, name)
-	if _, ok := d.files[name]; ok {
-		return fmt.Errorf("file %s already exists in the archive", name)
+func (d EnhancedArchive) Add(f config.File) error {
+	name := strings.ReplaceAll(filepath.Join(d.wrap, f.Destination), "\\", "/")
+	log.Debugf("adding file: %s as %s", f.Source, name)
+	if _, ok := d.files[f.Destination]; ok {
+		return fmt.Errorf("file %s already exists in the archive", f.Destination)
 	}
-	d.files[name] = path
-	return d.a.Add(name, path)
+	d.files[f.Destination] = name
+	ff := config.File{
+		Source:      f.Source,
+		Destination: name,
+		FileInfo:    f.FileInfo,
+	}
+	return d.a.Add(ff)
 }
 
 // Close closes the underlying archive.
 func (d EnhancedArchive) Close() error {
 	return d.a.Close()
+}
+
+// expandGlobs gathers all of the real files to be copied into the package.
+func expandGlobs(template *tmpl.Template, files []config.File) ([]config.File, error) {
+	var result []config.File
+	for _, f := range files {
+		replaced, err := template.Apply(f.Source)
+		if err != nil {
+			return result, fmt.Errorf("failed to apply template %s: %w", f.Source, err)
+		}
+		files, err := fileglob.Glob(replaced)
+		if err != nil {
+			return result, fmt.Errorf("globbing failed for pattern %s: %w", f.Destination, err)
+		}
+		if len(files) == 0 {
+			continue
+		}
+
+		dst := f.Destination
+		if dst == "" {
+			dst = files[0]
+		}
+
+		if len(files) == 1 {
+			result = append(result, config.File{
+				Source:      files[0],
+				Destination: dst,
+				FileInfo:    f.FileInfo,
+			})
+		}
+
+		for _, file := range files {
+			dst := dst
+			if f.Destination != "" {
+				dst = filepath.Join(f.Destination, filepath.Base(file))
+			}
+			result = append(result, config.File{
+				Source:      files[0],
+				Destination: dst,
+				FileInfo:    f.FileInfo,
+			})
+		}
+	}
+
+	unique.Slice(&result, func(i, j int) bool {
+		return strings.Compare(result[i].Destination, result[j].Destination) < 0
+	})
+	return result, nil
 }

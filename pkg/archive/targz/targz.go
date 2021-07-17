@@ -7,6 +7,8 @@ import (
 	"compress/gzip"
 	"io"
 	"os"
+
+	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
 // Archive as tar.gz.
@@ -35,8 +37,8 @@ func New(target io.Writer) Archive {
 }
 
 // Add file to the archive.
-func (a Archive) Add(name, path string) error {
-	file, err := os.Open(path) // #nosec
+func (a Archive) Add(f config.File) error {
+	file, err := os.Open(f.Source) // #nosec
 	if err != nil {
 		return err
 	}
@@ -45,11 +47,25 @@ func (a Archive) Add(name, path string) error {
 	if err != nil {
 		return err
 	}
-	header, err := tar.FileInfoHeader(info, name)
+	header, err := tar.FileInfoHeader(info, f.Destination)
 	if err != nil {
 		return err
 	}
-	header.Name = name
+	header.Name = f.Destination
+	if !f.FileInfo.MTime.IsZero() {
+		header.ModTime = f.FileInfo.MTime
+	}
+	if f.FileInfo.Mode != 0 {
+		header.Mode = int64(f.FileInfo.Mode)
+	}
+	if f.FileInfo.Owner != "" {
+		header.Uid = 0
+		header.Uname = f.FileInfo.Owner
+	}
+	if f.FileInfo.Group != "" {
+		header.Gid = 0
+		header.Gname = f.FileInfo.Group
+	}
 	if err = a.tw.WriteHeader(header); err != nil {
 		return err
 	}

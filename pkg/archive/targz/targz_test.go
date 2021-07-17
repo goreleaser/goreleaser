@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,16 +20,40 @@ func TestTarGzFile(t *testing.T) {
 	archive := New(f)
 	defer archive.Close() // nolint: errcheck
 
-	require.Error(t, archive.Add("nope.txt", "../testdata/nope.txt"))
-	require.NoError(t, archive.Add("foo.txt", "../testdata/foo.txt"))
-	require.NoError(t, archive.Add("sub1", "../testdata/sub1"))
-	require.NoError(t, archive.Add("sub1/bar.txt", "../testdata/sub1/bar.txt"))
-	require.NoError(t, archive.Add("sub1/executable", "../testdata/sub1/executable"))
-	require.NoError(t, archive.Add("sub1/sub2", "../testdata/sub1/sub2"))
-	require.NoError(t, archive.Add("sub1/sub2/subfoo.txt", "../testdata/sub1/sub2/subfoo.txt"))
+	require.Error(t, archive.Add(config.File{
+		Source:      "../testdata/nope.txt",
+		Destination: "nope.txt",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/foo.txt",
+		Destination: "foo.txt",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/sub1",
+		Destination: "sub1",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/sub1/bar.txt",
+		Destination: "sub1/bar.txt",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/sub1/executable",
+		Destination: "sub1/executable",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/sub1/sub2",
+		Destination: "sub1/sub2",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/sub1/sub2/subfoo.txt",
+		Destination: "sub1/sub2/subfoo.txt",
+	}))
 
 	require.NoError(t, archive.Close())
-	require.Error(t, archive.Add("tar.go", "tar.go"))
+	require.Error(t, archive.Add(config.File{
+		Source:      "tar.go",
+		Destination: "tar.go",
+	}))
 	require.NoError(t, f.Close())
 
 	t.Log(f.Name())
@@ -68,3 +93,5 @@ func TestTarGzFile(t *testing.T) {
 		"sub1/sub2/subfoo.txt",
 	}, paths)
 }
+
+// TODO: test fileinfo stuff

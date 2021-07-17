@@ -60,9 +60,9 @@ func TestRunPipe(t *testing.T) {
 							ID:           "myid",
 							Builds:       []string{"default"},
 							NameTemplate: defaultNameTemplate,
-							Files: []string{
-								"README.{{.Os}}.*",
-								"./foo/**/*",
+							Files: []config.File{
+								{Source: "README.{{.Os}}.*"},
+								{Source: "./foo/**/*"},
 							},
 							FormatOverrides: []config.FormatOverride{
 								{
@@ -141,6 +141,8 @@ func TestRunPipe(t *testing.T) {
 			ctx.Git.CurrentTag = "v0.0.1"
 			ctx.Config.Archives[0].Format = format
 			require.NoError(t, Pipe{}.Run(ctx))
+
+			ctx.Parallelism = 1
 			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
 			for _, arch := range archives {
 				require.Equal(t, "myid", arch.Extra["ID"].(string), "all archives should have the archive ID set")
@@ -410,8 +412,8 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 					Builds:       []string{"default"},
 					NameTemplate: "foo",
 					Format:       "zip",
-					Files: []string{
-						"[x-]",
+					Files: []config.File{
+						{Source: "[x-]"},
 					},
 				},
 			},
@@ -429,7 +431,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 			"ID":     "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: globbing failed for pattern [x-]: compile glob pattern: unexpected end of input`)
+	require.EqualError(t, Pipe{}.Run(ctx), `archive: failed to find files to archive: globbing failed for pattern : compile glob pattern: unexpected end of input`)
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
@@ -483,8 +485,8 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 					Builds:       []string{"default"},
 					NameTemplate: "foo",
 					Format:       "zip",
-					Files: []string{
-						"{{.asdsd}",
+					Files: []config.File{
+						{Source: "{{.asdsd}"},
 					},
 				},
 			},
@@ -502,7 +504,7 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 			"ID":     "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: failed to apply template {{.asdsd}: template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, Pipe{}.Run(ctx), `archive: failed to find files to archive: failed to apply template {{.asdsd}: template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
@@ -564,8 +566,8 @@ func TestRunPipeWrap(t *testing.T) {
 					Replacements: map[string]string{
 						"darwin": "macOS",
 					},
-					Files: []string{
-						"README.*",
+					Files: []config.File{
+						{Source: "README.*"},
 					},
 				},
 			},
@@ -627,8 +629,8 @@ func TestDefaultSet(t *testing.T) {
 					Builds:       []string{"default"},
 					NameTemplate: "foo",
 					Format:       "zip",
-					Files: []string{
-						"foo",
+					Files: []config.File{
+						{Source: "foo"},
 					},
 				},
 			},
@@ -637,7 +639,7 @@ func TestDefaultSet(t *testing.T) {
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Archives[0].NameTemplate)
 	require.Equal(t, "zip", ctx.Config.Archives[0].Format)
-	require.Equal(t, "foo", ctx.Config.Archives[0].Files[0])
+	require.Equal(t, config.File{Source: "foo"}, ctx.Config.Archives[0].Files[0])
 }
 
 func TestDefaultFormatBinary(t *testing.T) {
@@ -700,8 +702,8 @@ func TestBinaryOverride(t *testing.T) {
 						{
 							Builds:       []string{"default"},
 							NameTemplate: defaultNameTemplate,
-							Files: []string{
-								"README.*",
+							Files: []config.File{
+								{Source: "README.*"},
 							},
 							FormatOverrides: []config.FormatOverride{
 								{
@@ -775,9 +777,9 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 				{
 					Builds:       []string{"default"},
 					NameTemplate: "same-filename",
-					Files: []string{
-						"README.*",
-						"./foo/**/*",
+					Files: []config.File{
+						{Source: "README.*"},
+						{Source: "./foo/**/*"},
 					},
 					Format: "tar.gz",
 				},
@@ -832,8 +834,14 @@ func TestDuplicateFilesInsideArchive(t *testing.T) {
 		require.NoError(t, a.Close())
 	})
 
-	require.NoError(t, a.Add("foo", ff.Name()))
-	require.EqualError(t, a.Add("foo", ff.Name()), "file foo already exists in the archive")
+	require.NoError(t, a.Add(config.File{
+		Source:      ff.Name(),
+		Destination: "foo",
+	}))
+	require.EqualError(t, a.Add(config.File{
+		Source:      ff.Name(),
+		Destination: "foo",
+	}), "file foo already exists in the archive")
 }
 
 func TestWrapInDirectory(t *testing.T) {
