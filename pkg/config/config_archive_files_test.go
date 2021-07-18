@@ -56,7 +56,7 @@ files:
 
 func TestArchiveFiles_complex(t *testing.T) {
 	var actual Archive
-	now := time.Now().Truncate(time.Second)
+	now := time.Now().UTC().Truncate(time.Second)
 
 	// 2021-07-17T15:14:10.264931-03:00
 
