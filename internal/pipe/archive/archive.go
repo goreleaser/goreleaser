@@ -245,7 +245,7 @@ func findFiles(template *tmpl.Template, files []config.File) ([]config.File, err
 
 		files, err := fileglob.Glob(replaced)
 		if err != nil {
-			return result, fmt.Errorf("globbing failed for pattern %s: %w", f.Destination, err)
+			return result, fmt.Errorf("globbing failed for pattern %s: %w", f.Source, err)
 		}
 
 		for _, file := range files {
