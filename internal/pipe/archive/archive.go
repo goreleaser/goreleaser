@@ -60,8 +60,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if len(archive.Files) == 0 {
 			archive.Files = []config.File{
-				{Source: "licence*"},
-				{Source: "LICENCE*"},
 				{Source: "license*"},
 				{Source: "LICENSE*"},
 				{Source: "readme*"},

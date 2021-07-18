@@ -60,8 +60,8 @@ archives:
         format: zip
 
     # Additional files/template/globs you want to add to the archive.
-    # Defaults are any files matching `LICENCE*`, `LICENSE*`,
-    # `README*` and `CHANGELOG*` (case-insensitive).
+    # Defaults are any files matching `LICENSE*`, `README*`, `CHANGELOG*`,
+    #  `license*`, `readme*` and `changelog*`.
     files:
       - LICENSE.txt
       - README_{{.Os}}.md
@@ -72,10 +72,12 @@ archives:
       # a more complete example, check the globbing deep dive bellow
       - src: '*.md'
         dst: docs
-        # if src matches multiple files, strip their parent folders when adding to the archive.
-        # this only has effect when using glob.
+        # Strip parent folders when adding files to the archive.
+        # Default: false
         strip_parent: true
-        # file info defaults to the file info of the actual file if not provided.
+        # File info.
+        # Not all fields are supported by all formats available formats.
+        # Defaults to the file info of the actual file if not provided.
         info:
           owner: root
           group: root
@@ -124,12 +126,12 @@ files:
   dst: docs
 
 # Recursively adds all `go` files to a `source` folder in the archive.
-# in this case, cmd/myapp/main.go will be added as source/cmd/myapp/main.go
+# in this case, `cmd/myapp/main.go` will be added as `source/cmd/myapp/main.go`
 - src: '**/*.go'
   dst: source
 
-# Recursively adds all `go` files to a `source` folder in the archive, stripping their parent folder
-# in this case, cmd/myapp/main.go will be added as source/main.go
+# Recursively adds all `go` files to a `source` folder in the archive, stripping their parent folder.
+# In this case, `cmd/myapp/main.go` will be added as `source/main.go`:
 - src: '**/*.go'
   dst: source
   strip_parent: true
