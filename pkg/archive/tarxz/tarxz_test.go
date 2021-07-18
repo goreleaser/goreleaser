@@ -116,7 +116,6 @@ func TestTarXzFileInfo(t *testing.T) {
 	require.NoError(t, archive.Close())
 	require.NoError(t, f.Close())
 
-	t.Log(f.Name())
 	f, err = os.Open(f.Name())
 	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck

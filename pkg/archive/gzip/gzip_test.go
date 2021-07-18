@@ -81,8 +81,6 @@ func TestGzFileCustomMtime(t *testing.T) {
 	require.NoError(t, err)
 	defer gzf.Close() // nolint: errcheck
 
-	t.Log(gzf.Header.ModTime, now)
-
 	require.Equal(t, "sub1/sub2/subfoo.txt", gzf.Name)
 	require.Equal(t, now, gzf.Header.ModTime)
 }
