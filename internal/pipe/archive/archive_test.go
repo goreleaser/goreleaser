@@ -143,8 +143,6 @@ func TestRunPipe(t *testing.T) {
 			ctx.Git.CurrentTag = "v0.0.1"
 			ctx.Config.Archives[0].Format = format
 			require.NoError(t, Pipe{}.Run(ctx))
-
-			ctx.Parallelism = 1
 			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
 			for _, arch := range archives {
 				require.Equal(t, "myid", arch.Extra["ID"].(string), "all archives should have the archive ID set")

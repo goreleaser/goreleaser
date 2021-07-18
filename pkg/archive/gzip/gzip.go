@@ -40,12 +40,15 @@ func (a Archive) Add(f config.File) error {
 		return err
 	}
 	defer file.Close()
+	info, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	if info.IsDir() {
+		return nil
+	}
 	a.gw.Header.Name = f.Destination
 	if f.Info.MTime.IsZero() {
-		info, err := file.Stat()
-		if err != nil {
-			return err
-		}
 		a.gw.Header.ModTime = info.ModTime()
 	} else {
 		a.gw.Header.ModTime = f.Info.MTime

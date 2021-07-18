@@ -166,12 +166,11 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 
 	files, err := findFiles(template, arch.Files)
 	if err != nil {
-		return fmt.Errorf("archive: failed to find files to archive: %w", err)
+		return fmt.Errorf("failed to find files to archive: %w", err)
 	}
 	for _, f := range files {
 		if err = a.Add(f); err != nil {
-			// TODO: wrap archiver errors
-			return fmt.Errorf("archive: failed to add: %s -> %s to %s: %w", f.Source, f.Destination, archivePath, err)
+			return fmt.Errorf("failed to add: '%s' -> '%s': %w", f.Source, f.Destination, err)
 		}
 	}
 	for _, binary := range binaries {
@@ -179,7 +178,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 			Source:      binary.Path,
 			Destination: binary.Name,
 		}); err != nil {
-			return fmt.Errorf("archive: failed to add: %s -> %s to %s: %w", binary.Path, binary.Name, archivePath, err)
+			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, binary.Name, err)
 		}
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -264,9 +263,14 @@ func findFiles(template *tmpl.Template, files []config.File) ([]config.File, err
 		return result[i].Destination < result[j].Destination
 	})
 
-	var unique []config.File
+	return unique(result), nil
+}
+
+// remove duplicates
+func unique(in []config.File) []config.File {
+	var result []config.File
 	exist := map[string]string{}
-	for _, f := range result {
+	for _, f := range in {
 		if current := exist[f.Destination]; current != "" {
 			log.Warnf(
 				"file '%s' already exists in archive as '%s' - '%s' will be ignored",
@@ -277,10 +281,10 @@ func findFiles(template *tmpl.Template, files []config.File) ([]config.File, err
 			continue
 		}
 		exist[f.Destination] = f.Source
-		unique = append(unique, f)
+		result = append(result, f)
 	}
 
-	return unique, nil
+	return result
 }
 
 func destinationFor(f config.File, path string) string {
