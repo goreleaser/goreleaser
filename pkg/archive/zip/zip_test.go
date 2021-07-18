@@ -119,7 +119,7 @@ func TestZipFileInfo(t *testing.T) {
 	require.Len(t, r.File, 1)
 	for _, next := range r.File {
 		require.Equal(t, "nope.txt", next.Name)
-		require.Equal(t, now, next.ModTime)
+		require.Equal(t, now.Unix(), next.Modified.Unix())
 		require.Equal(t, fs.FileMode(0755), next.FileInfo().Mode())
 	}
 }

@@ -431,7 +431,7 @@ func TestRunPipeInvalidGlob(t *testing.T) {
 			"ID":     "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `archive: failed to find files to archive: globbing failed for pattern : compile glob pattern: unexpected end of input`)
+	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: globbing failed for pattern : compile glob pattern: unexpected end of input`)
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
@@ -504,7 +504,7 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 			"ID":     "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `archive: failed to find files to archive: failed to apply template {{.asdsd}: template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: failed to apply template {{.asdsd}: template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {
