@@ -2,9 +2,11 @@ package zip
 
 import (
 	"archive/zip"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/require"
@@ -80,4 +82,44 @@ func TestZipFile(t *testing.T) {
 		"sub1/executable",
 		"sub1/sub2/subfoo.txt",
 	}, paths)
+}
+
+func TestZipFileInfo(t *testing.T) {
+	now := time.Now().Truncate(time.Second)
+	f, err := os.Create(filepath.Join(t.TempDir(), "test.zip"))
+	require.NoError(t, err)
+	defer f.Close() // nolint: errcheck
+	archive := New(f)
+	defer archive.Close() // nolint: errcheck
+
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/foo.txt",
+		Destination: "nope.txt",
+		Info: config.FileInfo{
+			Mode:  0755,
+			Owner: "carlos",
+			Group: "root",
+			MTime: now,
+		},
+	}))
+
+	require.NoError(t, archive.Close())
+	require.NoError(t, f.Close())
+
+	f, err = os.Open(f.Name())
+	require.NoError(t, err)
+	defer f.Close() // nolint: errcheck
+
+	info, err := f.Stat()
+	require.NoError(t, err)
+
+	r, err := zip.NewReader(f, info.Size())
+	require.NoError(t, err)
+
+	require.Len(t, r.File, 1)
+	for _, next := range r.File {
+		require.Equal(t, "nope.txt", next.Name)
+		require.Equal(t, now, next.ModTime)
+		require.Equal(t, fs.FileMode(0755), next.FileInfo().Mode())
+	}
 }
