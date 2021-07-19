@@ -40,7 +40,7 @@ func newInitCmd() *initCmd {
 				return err
 			}
 			defer gitignore.Close()
-			if _, err := gitignore.WriteString("dist/\n"); err != nil {
+			if _, err := gitignore.WriteString("\ndist/\n"); err != nil {
 				return err
 			}
 

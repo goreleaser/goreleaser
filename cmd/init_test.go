@@ -32,7 +32,7 @@ func TestInitGitIgnoreExists(t *testing.T) {
 
 	bts, err := os.ReadFile(".gitignore")
 	require.NoError(t, err)
-	require.Equal(t, "mybinary\ndist/\n", string(bts))
+	require.Equal(t, "mybinary\n\ndist/\n", string(bts))
 }
 
 func TestInitFileExists(t *testing.T) {
