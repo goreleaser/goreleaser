@@ -114,7 +114,7 @@ Bellow you can find the steps for each of them.
 
 === "OSS"
     ```sh
-    go install github.com/goreleaser/goreleaser
+    go install github.com/goreleaser/goreleaser@latest
     ```
 
 ### manually
