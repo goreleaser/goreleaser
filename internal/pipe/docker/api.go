@@ -52,5 +52,6 @@ func runCommand(ctx context.Context, dir, binary string, args ...string) ([]byte
 	cmd.Stdout = io.MultiWriter(logext.NewWriter(log), &b)
 
 	log.Debug("running")
-	return b.Bytes(), cmd.Run()
+	err := cmd.Run()
+	return b.Bytes(), err
 }

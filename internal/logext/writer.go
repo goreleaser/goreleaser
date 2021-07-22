@@ -3,7 +3,7 @@ package logext
 import (
 	"bytes"
 	"io"
-	"os"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
@@ -22,8 +22,10 @@ func NewWriter(ctx *log.Entry) io.Writer {
 	return io.Discard
 }
 
-func (t infoWriter) Write(p []byte) (n int, err error) {
-	t.ctx.Info(toString(p))
+func (w infoWriter) Write(p []byte) (n int, err error) {
+	for _, line := range strings.Split(toString(p), "\n") {
+		w.ctx.Info(line)
+	}
 	return len(p), nil
 }
 
@@ -41,12 +43,14 @@ func NewErrWriter(ctx *log.Entry) io.Writer {
 }
 
 func (w errorWriter) Write(p []byte) (n int, err error) {
-	w.ctx.Error(toString(p))
+	for _, line := range strings.Split(toString(p), "\n") {
+		w.ctx.Error(line)
+	}
 	return len(p), nil
 }
 
 func newLogger(ctx *log.Entry) *log.Entry {
-	handler := cli.New(os.Stderr)
+	handler := cli.New(cli.Default.Writer)
 	handler.Padding = cli.Default.Padding + 3
 	fields := log.Fields(map[string]interface{}{})
 	log := &log.Logger{
