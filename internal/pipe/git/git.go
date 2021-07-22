@@ -32,6 +32,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 	ctx.Git = info
+	if !ctx.Snapshot {
+		log.Infof("releasing %s, commit %s", info.CurrentTag, info.Commit)
+	}
 	ctx.Version = strings.TrimPrefix(ctx.Git.CurrentTag, "v")
 	return validate(ctx)
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -26,10 +25,6 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Run(ctx *context.Context) error {
-	if !ctx.Snapshot {
-		log.Infof("releasing %s, commit %s", ctx.Git.CurrentTag, ctx.Git.Commit)
-		return pipe.ErrSkipDisabledPipe
-	}
 	name, err := tmpl.New(ctx).Apply(ctx.Config.Snapshot.NameTemplate)
 	if err != nil {
 		return fmt.Errorf("failed to generate snapshot name: %w", err)
