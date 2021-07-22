@@ -12,3 +12,9 @@ func TestWriter(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 7, l)
 }
+
+func TestErrorWriter(t *testing.T) {
+	l, err := NewErrWriter(log.WithField("foo", "bar")).Write([]byte("foo bar"))
+	require.NoError(t, err)
+	require.Equal(t, 7, l)
+}

@@ -1,11 +1,14 @@
 package docker
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"os/exec"
 	"sync"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/logext"
 )
 
 var (
@@ -44,8 +47,10 @@ func runCommand(ctx context.Context, dir, binary string, args ...string) ([]byte
 	cmd := exec.CommandContext(ctx, binary, args...)
 	cmd.Dir = dir
 	log := log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir)
+	var b bytes.Buffer
+	cmd.Stderr = io.MultiWriter(logext.NewErrWriter(log), &b)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(log), &b)
+
 	log.Debug("running")
-	out, err := cmd.CombinedOutput()
-	log.Debug(string(out))
-	return out, err
+	return b.Bytes(), cmd.Run()
 }
