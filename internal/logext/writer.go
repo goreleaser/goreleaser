@@ -48,11 +48,15 @@ func (w errorWriter) Write(p []byte) (n int, err error) {
 func newLogger(ctx *log.Entry) *log.Entry {
 	handler := cli.New(os.Stderr)
 	handler.Padding = cli.Default.Padding + 3
+	fields := log.Fields(map[string]interface{}{})
 	log := &log.Logger{
 		Handler: handler,
 		Level:   logLevel(),
 	}
-	return log.WithFields(ctx.Fields)
+	for k, v := range ctx.Fields {
+		fields[k] = v
+	}
+	return log.WithFields(fields)
 }
 
 func isDebug() bool {
