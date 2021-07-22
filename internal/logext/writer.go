@@ -1,9 +1,12 @@
 package logext
 
 import (
+	"bytes"
 	"io"
+	"os"
 
 	"github.com/apex/log"
+	"github.com/apex/log/handlers/cli"
 )
 
 // a io.Writer writes with log.Info.
@@ -14,13 +17,13 @@ type infoWriter struct {
 // NewWriter creates a new log writer.
 func NewWriter(ctx *log.Entry) io.Writer {
 	if isDebug() {
-		return infoWriter{ctx: ctx}
+		return infoWriter{ctx: newLogger(ctx)}
 	}
 	return io.Discard
 }
 
 func (t infoWriter) Write(p []byte) (n int, err error) {
-	t.ctx.Info(string(p))
+	t.ctx.Info(toString(p))
 	return len(p), nil
 }
 
@@ -32,17 +35,37 @@ type errorWriter struct {
 // NewErrWriter creates a new log writer.
 func NewErrWriter(ctx *log.Entry) io.Writer {
 	if isDebug() {
-		return errorWriter{ctx: ctx}
+		return errorWriter{ctx: newLogger(ctx)}
 	}
 	return io.Discard
 }
 
 func (w errorWriter) Write(p []byte) (n int, err error) {
-	w.ctx.Error(string(p))
+	w.ctx.Error(toString(p))
 	return len(p), nil
 }
 
+func newLogger(ctx *log.Entry) *log.Entry {
+	handler := cli.New(os.Stderr)
+	handler.Padding = cli.Default.Padding + 3
+	log := &log.Logger{
+		Handler: handler,
+		Level:   logLevel(),
+	}
+	return log.WithFields(ctx.Fields)
+}
+
 func isDebug() bool {
-	logger, ok := log.Log.(*log.Logger)
-	return ok && logger.Level == log.DebugLevel
+	return logLevel() == log.DebugLevel
+}
+
+func logLevel() log.Level {
+	if logger, ok := log.Log.(*log.Logger); ok {
+		return logger.Level
+	}
+	return log.InfoLevel
+}
+
+func toString(b []byte) string {
+	return string(bytes.TrimSuffix(b, []byte("\n")))
 }
