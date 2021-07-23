@@ -9,6 +9,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/caarlos0/go-shellwords"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -40,8 +41,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		cmd := exec.Command(args[0], args[1:]...)
 		cmd.Env = ctx.Env.Strings()
 		var b bytes.Buffer
-		cmd.Stderr = io.MultiWriter(logext.NewErrWriter(log), &b)
-		cmd.Stdout = io.MultiWriter(logext.NewWriter(log), &b)
+		w := gio.Safe(&b)
+		cmd.Stderr = io.MultiWriter(logext.NewErrWriter(log), w)
+		cmd.Stdout = io.MultiWriter(logext.NewWriter(log), w)
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("hook failed: %s: %w; output: %s", step, err, b.String())
 		}

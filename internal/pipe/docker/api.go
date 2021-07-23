@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
 )
 
@@ -46,10 +47,12 @@ func runCommand(ctx context.Context, dir, binary string, args ...string) ([]byte
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, binary, args...)
 	cmd.Dir = dir
-	log := log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir)
+
 	var b bytes.Buffer
-	cmd.Stderr = io.MultiWriter(logext.NewErrWriter(log), &b)
-	cmd.Stdout = io.MultiWriter(logext.NewWriter(log), &b)
+	log := log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir)
+	w := gio.Safe(&b)
+	cmd.Stderr = io.MultiWriter(logext.NewErrWriter(log), w)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(log), w)
 
 	log.Debug("running")
 	err := cmd.Run()

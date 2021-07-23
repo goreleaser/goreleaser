@@ -13,6 +13,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/caarlos0/go-shellwords"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -231,8 +232,9 @@ func run(ctx *context.Context, dir string, command, env []string) error {
 	entry := log.WithField("cmd", command)
 	cmd.Env = env
 	var b bytes.Buffer
-	cmd.Stderr = io.MultiWriter(logext.NewErrWriter(entry), &b)
-	cmd.Stdout = io.MultiWriter(logext.NewWriter(entry), &b)
+	w := gio.Safe(&b)
+	cmd.Stderr = io.MultiWriter(logext.NewErrWriter(entry), w)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(entry), w)
 	if dir != "" {
 		cmd.Dir = dir
 	}
