@@ -60,12 +60,27 @@ snapcrafts:
     # store.
     description: This is the best drum roll application out there. Install it and awe!
 
+    # Channels in store where snap will be pushed.
+    # Default depends on grade:
+    # * `stable` = ["edge", "beta", "candidate", "stable"]
+    # * `devel` = ["edge", "beta"]
+    # More info about channels here:
+    # https://snapcraft.io/docs/reference/channels
+    channel_templates:
+      - edge
+      - beta
+      - candidate
+      - stable
+      - {{ .Major }}.{{ .Minor }}/edge
+      - {{ .Major }}.{{ .Minor }}/beta
+      - {{ .Major }}.{{ .Minor }}/candidate
+      - {{ .Major }}.{{ .Minor }}/stable
+
     # A guardrail to prevent you from releasing a snap to all your users before
     # it is ready.
     # `devel` will let you release only to the `edge` and `beta` channels in the
     # store. `stable` will let you release also to the `candidate` and `stable`
-    # channels. More info about channels here:
-    # https://snapcraft.io/docs/reference/channels
+    # channels.
     grade: stable
 
     # Snaps can be setup to follow three different confinement policies:
