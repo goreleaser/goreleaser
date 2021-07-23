@@ -9,58 +9,51 @@ import (
 	"github.com/apex/log/handlers/cli"
 )
 
-// a io.Writer writes with log.Info.
-type infoWriter struct {
-	ctx *log.Entry
-}
+// Output type of the log output.
+type Output int
+
+const (
+	// Info usually is used with stdout.
+	Info Output = iota
+
+	// Error usually is used with stderr.
+	Error
+)
 
 // NewWriter creates a new log writer.
-func NewWriter(ctx *log.Entry) io.Writer {
+func NewWriter(fields log.Fields, out Output) io.Writer {
 	if isDebug() {
-		return infoWriter{ctx: newLogger(ctx)}
+		return logWriter{
+			ctx: newLogger(fields),
+			out: out,
+		}
 	}
 	return io.Discard
 }
 
-func (w infoWriter) Write(p []byte) (n int, err error) {
-	for _, line := range strings.Split(toString(p), "\n") {
-		w.ctx.Info(line)
-	}
-	return len(p), nil
-}
-
-// a io.Writer tha writes with log.Error.
-type errorWriter struct {
+type logWriter struct {
 	ctx *log.Entry
+	out Output
 }
 
-// NewErrWriter creates a new log writer.
-func NewErrWriter(ctx *log.Entry) io.Writer {
-	if isDebug() {
-		return errorWriter{ctx: newLogger(ctx)}
-	}
-	return io.Discard
-}
-
-func (w errorWriter) Write(p []byte) (n int, err error) {
+func (w logWriter) Write(p []byte) (int, error) {
 	for _, line := range strings.Split(toString(p), "\n") {
-		w.ctx.Error(line)
+		switch w.out {
+		case Info:
+			w.ctx.Info(line)
+		case Error:
+			w.ctx.Error(line)
+		}
 	}
 	return len(p), nil
 }
 
-func newLogger(ctx *log.Entry) *log.Entry {
+func newLogger(fields log.Fields) *log.Entry {
 	handler := cli.New(cli.Default.Writer)
 	handler.Padding = cli.Default.Padding + 3
-	fields := log.Fields(map[string]interface{}{})
-	log := &log.Logger{
-		Handler: handler,
-		Level:   logLevel(),
-	}
-	for k, v := range ctx.Fields {
-		fields[k] = v
-	}
-	return log.WithFields(fields)
+	logger := log.WithFields(fields)
+	logger.Logger.Handler = handler
+	return logger
 }
 
 func isDebug() bool {

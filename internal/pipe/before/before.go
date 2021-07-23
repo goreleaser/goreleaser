@@ -36,14 +36,17 @@ func (Pipe) Run(ctx *context.Context) error {
 		if err != nil {
 			return err
 		}
-		log := log.WithField("hook", step)
-		log.Info("running")
+
 		cmd := exec.Command(args[0], args[1:]...)
 		cmd.Env = ctx.Env.Strings()
+
 		var b bytes.Buffer
 		w := gio.Safe(&b)
-		cmd.Stderr = io.MultiWriter(logext.NewErrWriter(log), w)
-		cmd.Stdout = io.MultiWriter(logext.NewWriter(log), w)
+		fields := log.Fields{"hook": step}
+		cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
+		cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
+
+		log.WithFields(fields).Info("running")
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("hook failed: %s: %w; output: %s", step, err, b.String())
 		}

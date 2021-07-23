@@ -146,17 +146,19 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 		stdin = f
 	}
 
+	fields := log.Fields{"cmd": cfg.Cmd}
+
 	// The GoASTScanner flags this as a security risk.
 	// However, this works as intended. The nosec annotation
 	// tells the scanner to ignore this.
 	// #nosec
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
-	cmd.Stderr = logext.NewWriter(log.WithField("cmd", cfg.Cmd))
-	cmd.Stdout = cmd.Stderr
+	cmd.Stderr = logext.NewWriter(fields, logext.Error)
+	cmd.Stdout = logext.NewWriter(fields, logext.Info)
 	if stdin != nil {
 		cmd.Stdin = stdin
 	}
-	log.WithField("cmd", cmd.Args).Info("signing")
+	log.WithFields(fields).Info("signing")
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("sign: %s failed", cfg.Cmd)
 	}

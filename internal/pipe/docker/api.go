@@ -44,17 +44,21 @@ type manifester interface {
 
 // nolint: unparam
 func runCommand(ctx context.Context, dir, binary string, args ...string) ([]byte, error) {
+	fields := log.Fields{
+		"cmd": append([]string{binary}, args[0]),
+		"cwd": dir,
+	}
+
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, binary, args...)
 	cmd.Dir = dir
 
 	var b bytes.Buffer
-	log := log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir)
 	w := gio.Safe(&b)
-	cmd.Stderr = io.MultiWriter(logext.NewErrWriter(log), w)
-	cmd.Stdout = io.MultiWriter(logext.NewWriter(log), w)
+	cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
 
-	log.Debug("running")
+	log.WithFields(fields).Debug("running")
 	err := cmd.Run()
 	return b.Bytes(), err
 }
