@@ -18,7 +18,9 @@ func TestSafe(t *testing.T) {
 	wg.Add(chars)
 	for i := 0; i < chars; i++ {
 		go func() {
-			w.Write([]byte("a"))
+			s, err := w.Write([]byte("a"))
+			require.Equal(t, 1, s)
+			require.NoError(t, err)
 			wg.Done()
 		}()
 	}
