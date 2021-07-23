@@ -77,16 +77,16 @@ func executeCommand(c *command) error {
 		cmd.Dir = c.Dir
 	}
 
-	entry := log.WithField("cmd", c.Args[0])
-	cmd.Stderr = logext.NewErrWriter(entry)
-	cmd.Stdout = logext.NewWriter(entry)
+	fields := log.Fields{"cmd": c.Args[0]}
+	cmd.Stderr = logext.NewWriter(fields, logext.Error)
+	cmd.Stdout = logext.NewWriter(fields, logext.Info)
 
-	entry.Info("publishing")
+	log.WithFields(fields).Info("publishing")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("publishing: %s failed: %w", c.Args[0], err)
 	}
 
-	log.Debugf("command %s finished successfully", c.Args[0])
+	log.WithFields(fields).Debugf("command %s finished successfully", c.Args[0])
 	return nil
 }
 
