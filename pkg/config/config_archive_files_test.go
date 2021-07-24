@@ -92,7 +92,7 @@ files:
 			Info: FileInfo{
 				Owner: "carlos",
 				Group: "users",
-				Mode:  0644,
+				Mode:  0o644,
 				MTime: now,
 			},
 		},

@@ -919,7 +919,7 @@ func TestFindFiles(t *testing.T) {
 				Info: config.FileInfo{
 					Owner: "carlos",
 					Group: "users",
-					Mode:  0755,
+					Mode:  0o755,
 					MTime: now,
 				},
 			},
@@ -933,7 +933,7 @@ func TestFindFiles(t *testing.T) {
 				Info: config.FileInfo{
 					Owner: "carlos",
 					Group: "users",
-					Mode:  0755,
+					Mode:  0o755,
 					MTime: now,
 				},
 			},
@@ -943,7 +943,7 @@ func TestFindFiles(t *testing.T) {
 				Info: config.FileInfo{
 					Owner: "carlos",
 					Group: "users",
-					Mode:  0755,
+					Mode:  0o755,
 					MTime: now,
 				},
 			},
@@ -953,7 +953,7 @@ func TestFindFiles(t *testing.T) {
 				Info: config.FileInfo{
 					Owner: "carlos",
 					Group: "users",
-					Mode:  0755,
+					Mode:  0o755,
 					MTime: now,
 				},
 			},
@@ -969,7 +969,7 @@ func TestFindFiles(t *testing.T) {
 				Info: config.FileInfo{
 					Owner: "carlos",
 					Group: "users",
-					Mode:  0755,
+					Mode:  0o755,
 					MTime: now,
 				},
 			},
@@ -983,7 +983,7 @@ func TestFindFiles(t *testing.T) {
 				Info: config.FileInfo{
 					Owner: "carlos",
 					Group: "users",
-					Mode:  0755,
+					Mode:  0o755,
 					MTime: now,
 				},
 			},
@@ -993,7 +993,7 @@ func TestFindFiles(t *testing.T) {
 				Info: config.FileInfo{
 					Owner: "carlos",
 					Group: "users",
-					Mode:  0755,
+					Mode:  0o755,
 					MTime: now,
 				},
 			},

@@ -96,7 +96,7 @@ func TestZipFileInfo(t *testing.T) {
 		Source:      "../testdata/foo.txt",
 		Destination: "nope.txt",
 		Info: config.FileInfo{
-			Mode:  0755,
+			Mode:  0o755,
 			Owner: "carlos",
 			Group: "root",
 			MTime: now,
@@ -120,6 +120,6 @@ func TestZipFileInfo(t *testing.T) {
 	for _, next := range r.File {
 		require.Equal(t, "nope.txt", next.Name)
 		require.Equal(t, now.Unix(), next.Modified.Unix())
-		require.Equal(t, fs.FileMode(0755), next.FileInfo().Mode())
+		require.Equal(t, fs.FileMode(0o755), next.FileInfo().Mode())
 	}
 }
