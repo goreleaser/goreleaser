@@ -1,13 +1,21 @@
 package before
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
+
+func TestMain(m *testing.M) {
+	log.SetLevel(log.DebugLevel)
+	defer log.SetLevel(log.InfoLevel)
+	os.Exit(m.Run())
+}
 
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())

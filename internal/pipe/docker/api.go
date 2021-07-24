@@ -1,11 +1,15 @@
 package docker
 
 import (
+	"bytes"
 	"context"
+	"io"
 	"os/exec"
 	"sync"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/gio"
+	"github.com/goreleaser/goreleaser/internal/logext"
 )
 
 var (
@@ -40,12 +44,21 @@ type manifester interface {
 
 // nolint: unparam
 func runCommand(ctx context.Context, dir, binary string, args ...string) ([]byte, error) {
+	fields := log.Fields{
+		"cmd": append([]string{binary}, args[0]),
+		"cwd": dir,
+	}
+
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, binary, args...)
 	cmd.Dir = dir
-	log := log.WithField("cmd", cmd.Args).WithField("cwd", cmd.Dir)
-	log.Debug("running")
-	out, err := cmd.CombinedOutput()
-	log.Debug(string(out))
-	return out, err
+
+	var b bytes.Buffer
+	w := gio.Safe(&b)
+	cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
+
+	log.WithFields(fields).Debug("running")
+	err := cmd.Run()
+	return b.Bytes(), err
 }

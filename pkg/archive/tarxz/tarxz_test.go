@@ -106,7 +106,7 @@ func TestTarXzFileInfo(t *testing.T) {
 		Source:      "../testdata/foo.txt",
 		Destination: "nope.txt",
 		Info: config.FileInfo{
-			Mode:  0755,
+			Mode:  0o755,
 			Owner: "carlos",
 			Group: "root",
 			MTime: now,
@@ -135,7 +135,7 @@ func TestTarXzFileInfo(t *testing.T) {
 		found++
 		require.Equal(t, "nope.txt", next.Name)
 		require.Equal(t, now, next.ModTime)
-		require.Equal(t, fs.FileMode(0755), next.FileInfo().Mode())
+		require.Equal(t, fs.FileMode(0o755), next.FileInfo().Mode())
 		require.Equal(t, "carlos", next.Uname)
 		require.Equal(t, 0, next.Uid)
 		require.Equal(t, "root", next.Gname)
