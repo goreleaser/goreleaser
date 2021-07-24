@@ -824,7 +824,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`failed to link dockerfile`),
+			assertError:       shouldErr(`failed to copy dockerfile`),
 		},
 		"extra_file_doesnt_exist": {
 			dockers: []config.Docker{
@@ -839,7 +839,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`failed to link extra file 'testdata/nope.txt'`),
+			assertError:       shouldErr(`failed to copy extra file 'testdata/nope.txt'`),
 		},
 		"binary doesnt exist": {
 			dockers: []config.Docker{
@@ -852,7 +852,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`wont-exist: no such file or directory`),
+			assertError:       shouldErr(`failed to copy wont-exist`),
 			extraPrepare: func(t *testing.T, ctx *context.Context) {
 				t.Helper()
 				ctx.Artifacts.Add(&artifact.Artifact{

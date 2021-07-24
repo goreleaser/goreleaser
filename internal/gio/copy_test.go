@@ -1,7 +1,6 @@
 package gio
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -50,8 +49,6 @@ func TestCopyFile(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, src.Close())
 	dst := filepath.Join(dir, "dst")
-	fmt.Println("src:", src.Name())
-	fmt.Println("dst:", dst)
 	require.NoError(t, os.WriteFile(src.Name(), []byte("foo"), 0o644))
 	require.NoError(t, Copy(src.Name(), dst))
 	requireEqualFiles(t, src.Name(), dst)

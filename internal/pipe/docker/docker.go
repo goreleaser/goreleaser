@@ -153,19 +153,19 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	log.Debug("tempdir: " + tmp)
 
 	if err := gio.Copy(docker.Dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
-		return fmt.Errorf("failed to link dockerfile: %w", err)
+		return fmt.Errorf("failed to copy dockerfile: %w", err)
 	}
 	for _, file := range docker.Files {
 		if err := os.MkdirAll(filepath.Join(tmp, filepath.Dir(file)), 0o755); err != nil {
-			return fmt.Errorf("failed to link extra file '%s': %w", file, err)
+			return fmt.Errorf("failed to copy extra file '%s': %w", file, err)
 		}
 		if err := gio.Copy(file, filepath.Join(tmp, file)); err != nil {
-			return fmt.Errorf("failed to link extra file '%s': %w", file, err)
+			return fmt.Errorf("failed to copy extra file '%s': %w", file, err)
 		}
 	}
 	for _, art := range artifacts {
 		if err := gio.Copy(art.Path, filepath.Join(tmp, filepath.Base(art.Path))); err != nil {
-			return fmt.Errorf("failed to link artifact: %w", err)
+			return fmt.Errorf("failed to copy artifact: %w", err)
 		}
 	}
 

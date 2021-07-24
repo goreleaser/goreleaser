@@ -20,7 +20,7 @@ func Copy(src, dst string) error {
 func CopyWithMode(src, dst string, mode os.FileMode) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return fmt.Errorf("failed to copy %s to %s", src, dst)
+			return fmt.Errorf("failed to copy %s to %s: %w", src, dst, err)
 		}
 		// We have the following:
 		// - src = "a/b"
