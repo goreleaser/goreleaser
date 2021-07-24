@@ -4,6 +4,7 @@ package snapshot
 import (
 	"fmt"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -36,5 +37,6 @@ func (Pipe) Run(ctx *context.Context) error {
 		return fmt.Errorf("empty snapshot name")
 	}
 	ctx.Version = name
+	log.WithField("version", ctx.Version).Infof("building snapshot...")
 	return nil
 }
