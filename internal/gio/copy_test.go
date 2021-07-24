@@ -95,4 +95,3 @@ func requireNotEqualFiles(tb testing.TB, a, b string) {
 	require.NoError(tb, err)
 	require.False(tb, eq, "%s == %s", a, b)
 }
-
