@@ -854,7 +854,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`/wont-exist: no such file or directory`),
+			assertError:       shouldErr(`wont-exist: no such file or directory`),
 			extraPrepare: func(t *testing.T, ctx *context.Context) {
 				t.Helper()
 				ctx.Artifacts.Add(&artifact.Artifact{
