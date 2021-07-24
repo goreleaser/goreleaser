@@ -208,7 +208,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		if err := os.MkdirAll(destinationDir, 0o755); err != nil {
 			return fmt.Errorf("failed to create directory '%s': %w", destinationDir, err)
 		}
-		if err := copyDir(file.Source, filepath.Join(primeDir, file.Destination), os.FileMode(file.Mode)); err != nil {
+		if err := gio.CopyWithMode(file.Source, filepath.Join(primeDir, file.Destination), os.FileMode(file.Mode)); err != nil {
 			return fmt.Errorf("failed to link extra file '%s': %w", file.Source, err)
 		}
 	}
@@ -268,7 +268,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 			WithField("dst", destBinaryPath).
 			Debug("copying")
 
-		if err = gio.CopyFile(binary.Path, destBinaryPath, 0o555); err != nil {
+		if err = gio.CopyWithMode(binary.Path, destBinaryPath, 0o555); err != nil {
 			return fmt.Errorf("failed to copy binary: %w", err)
 		}
 	}
@@ -301,7 +301,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 				WithField("dst", destCompleterPath).
 				Debug("copy")
 
-			if err := gio.CopyFile(config.Completer, destCompleterPath, 0o644); err != nil {
+			if err := gio.CopyWithMode(config.Completer, destCompleterPath, 0o644); err != nil {
 				return fmt.Errorf("failed to copy completer: %w", err)
 			}
 
@@ -368,32 +368,6 @@ func push(ctx *context.Context, snap *artifact.Artifact) error {
 	snap.Type = artifact.Snapcraft
 	ctx.Artifacts.Add(snap)
 	return nil
-}
-
-// walks the src, recreating dirs and copying files.
-func copyDir(src, dest string, mode os.FileMode) error {
-	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		// We have the following:
-		// - src = "a/b"
-		// - dest = "dist/linuxamd64/b"
-		// - path = "a/b/c.txt"
-		// So we join "a/b" with "c.txt" and use it as the destination.
-		dst := filepath.Join(dest, strings.Replace(path, src, "", 1))
-		log.WithFields(log.Fields{
-			"src": path,
-			"dst": dst,
-		}).Debug("extra file")
-		if info.IsDir() {
-			return os.MkdirAll(dst, info.Mode())
-		}
-		if err := gio.CopyFile(path, dst, mode); err != nil {
-			return fmt.Errorf("fail copy file '%s': %w", path, err)
-		}
-		return nil
-	})
 }
 
 func processChannelsTemplates(ctx *context.Context, snap config.Snapcraft) ([]string, error) {

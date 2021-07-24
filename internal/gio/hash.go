@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// EqualFiles returns true if both files sha256sums and their modes are equal.
 func EqualFiles(a, b string) (bool, error) {
 	am, as, err := sha256sum(a)
 	if err != nil {

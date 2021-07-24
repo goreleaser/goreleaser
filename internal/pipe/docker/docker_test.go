@@ -3,7 +3,6 @@ package docker
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,7 +11,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -1303,49 +1301,4 @@ func Test_processImageTemplates(t *testing.T) {
 		"gcr.io/image:v1.0.0-123",
 		"gcr.io/image:v1.0",
 	}, images)
-}
-
-func TestCopyFile(t *testing.T) {
-	dir := t.TempDir()
-	src, err := ioutil.TempFile(dir, "src")
-	require.NoError(t, err)
-	require.NoError(t, src.Close())
-	dst := filepath.Join(dir, "dst")
-	fmt.Println("src:", src.Name())
-	fmt.Println("dst:", dst)
-	require.NoError(t, os.WriteFile(src.Name(), []byte("foo"), 0o644))
-	require.NoError(t, copyDir(src.Name(), dst))
-	requireEqualFiles(t, src.Name(), dst)
-}
-
-func TestCopyDirectory(t *testing.T) {
-	srcDir := t.TempDir()
-	dstDir := t.TempDir()
-	const testFile = "test"
-	require.NoError(t, os.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
-	require.NoError(t, copyDir(srcDir, dstDir))
-	requireEqualFiles(t, filepath.Join(srcDir, testFile), filepath.Join(dstDir, testFile))
-}
-
-func TestCopyTwoLevelDirectory(t *testing.T) {
-	srcDir := t.TempDir()
-	dstDir := t.TempDir()
-	srcLevel2 := filepath.Join(srcDir, "level2")
-	const testFile = "test"
-
-	require.NoError(t, os.Mkdir(srcLevel2, 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
-	require.NoError(t, os.WriteFile(filepath.Join(srcLevel2, testFile), []byte("foo"), 0o644))
-
-	require.NoError(t, copyDir(srcDir, dstDir))
-
-	requireEqualFiles(t, filepath.Join(srcDir, testFile), filepath.Join(dstDir, testFile))
-	requireEqualFiles(t, filepath.Join(srcLevel2, testFile), filepath.Join(dstDir, "level2", testFile))
-}
-
-func requireEqualFiles(tb testing.TB, a, b string) {
-	tb.Helper()
-	eq, err := gio.EqualFiles(a, b)
-	require.NoError(tb, err)
-	require.True(tb, eq, "%s != %s", a, b)
 }
