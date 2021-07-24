@@ -3,12 +3,10 @@ package docker
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"testing"
 
 	"github.com/apex/log"
@@ -826,7 +824,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`failed to link dockerfile`),
+			assertError:       shouldErr(`failed to copy dockerfile`),
 		},
 		"extra_file_doesnt_exist": {
 			dockers: []config.Docker{
@@ -841,7 +839,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`failed to link extra file 'testdata/nope.txt'`),
+			assertError:       shouldErr(`failed to copy extra file 'testdata/nope.txt'`),
 		},
 		"binary doesnt exist": {
 			dockers: []config.Docker{
@@ -854,7 +852,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`/wont-exist: no such file or directory`),
+			assertError:       shouldErr(`failed to copy wont-exist`),
 			extraPrepare: func(t *testing.T, ctx *context.Context) {
 				t.Helper()
 				ctx.Artifacts.Add(&artifact.Artifact{
@@ -1303,51 +1301,4 @@ func Test_processImageTemplates(t *testing.T) {
 		"gcr.io/image:v1.0.0-123",
 		"gcr.io/image:v1.0",
 	}, images)
-}
-
-func TestLinkFile(t *testing.T) {
-	dir := t.TempDir()
-	src, err := ioutil.TempFile(dir, "src")
-	require.NoError(t, err)
-	require.NoError(t, src.Close())
-	dst := filepath.Join(dir, "dst")
-	fmt.Println("src:", src.Name())
-	fmt.Println("dst:", dst)
-	require.NoError(t, os.WriteFile(src.Name(), []byte("foo"), 0o644))
-	require.NoError(t, link(src.Name(), dst))
-	require.Equal(t, inode(src.Name()), inode(dst))
-}
-
-func TestLinkDirectory(t *testing.T) {
-	srcDir := t.TempDir()
-	dstDir := t.TempDir()
-	const testFile = "test"
-	require.NoError(t, os.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
-	require.NoError(t, link(srcDir, dstDir))
-	require.Equal(t, inode(filepath.Join(srcDir, testFile)), inode(filepath.Join(dstDir, testFile)))
-}
-
-func TestLinkTwoLevelDirectory(t *testing.T) {
-	srcDir := t.TempDir()
-	dstDir := t.TempDir()
-	srcLevel2 := filepath.Join(srcDir, "level2")
-	const testFile = "test"
-
-	require.NoError(t, os.Mkdir(srcLevel2, 0o755))
-	require.NoError(t, os.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
-	require.NoError(t, os.WriteFile(filepath.Join(srcLevel2, testFile), []byte("foo"), 0o644))
-
-	require.NoError(t, link(srcDir, dstDir))
-
-	require.Equal(t, inode(filepath.Join(srcDir, testFile)), inode(filepath.Join(dstDir, testFile)))
-	require.Equal(t, inode(filepath.Join(srcLevel2, testFile)), inode(filepath.Join(dstDir, "level2", testFile)))
-}
-
-func inode(file string) uint64 {
-	fileInfo, err := os.Stat(file)
-	if err != nil {
-		return 0
-	}
-	stat := fileInfo.Sys().(*syscall.Stat_t)
-	return stat.Ino
 }
