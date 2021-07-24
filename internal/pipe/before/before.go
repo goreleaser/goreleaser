@@ -2,12 +2,15 @@
 package before
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os/exec"
 
 	"github.com/apex/log"
 	"github.com/caarlos0/go-shellwords"
-	"github.com/fatih/color"
+	"github.com/goreleaser/goreleaser/internal/gio"
+	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -33,13 +36,19 @@ func (Pipe) Run(ctx *context.Context) error {
 		if err != nil {
 			return err
 		}
-		log.Infof("running %s", color.CyanString(step))
+
 		cmd := exec.Command(args[0], args[1:]...)
 		cmd.Env = ctx.Env.Strings()
-		out, err := cmd.CombinedOutput()
-		log.WithField("cmd", step).Debug(string(out))
-		if err != nil {
-			return fmt.Errorf("hook failed: %s: %w; output: %s", step, err, string(out))
+
+		var b bytes.Buffer
+		w := gio.Safe(&b)
+		fields := log.Fields{"hook": step}
+		cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
+		cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
+
+		log.WithFields(fields).Info("running")
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("hook failed: %s: %w; output: %s", step, err, b.String())
 		}
 	}
 	return nil
