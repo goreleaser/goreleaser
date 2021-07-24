@@ -38,5 +38,5 @@ func buildVersion(version, commit, date, builtBy string) string {
 	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Sum != "" {
 		result = fmt.Sprintf("%s\nmodule version: %s, checksum: %s", result, info.Main.Version, info.Main.Sum)
 	}
-	return result
+	return result + "\n\nhttps://goreleaser.com"
 }
