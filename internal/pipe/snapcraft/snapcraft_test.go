@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -355,19 +356,8 @@ func TestExtraFile(t *testing.T) {
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 
-	srcFile, err := os.Stat("testdata/extra-file.txt")
-	require.NoError(t, err)
-	destFile, err := os.Stat(filepath.Join(dist, "foo_amd64", "prime", "a", "b", "c", "extra-file.txt"))
-	require.NoError(t, err)
-	require.Equal(t, srcFile.Size(), destFile.Size())
-	require.Equal(t, destFile.Mode(), os.FileMode(0o755))
-
-	srcFile, err = os.Stat("testdata/extra-file-2.txt")
-	require.NoError(t, err)
-	destFileWithDefaults, err := os.Stat(filepath.Join(dist, "foo_amd64", "prime", "testdata", "extra-file-2.txt"))
-	require.NoError(t, err)
-	require.Equal(t, destFileWithDefaults.Mode(), os.FileMode(0o644))
-	require.Equal(t, srcFile.Size(), destFileWithDefaults.Size())
+	requireEqualFiles(t, "testdata/extra-file.txt", filepath.Join(dist, "foo_amd64", "prime", "a", "b", "c", "extra-file.txt"))
+	requireEqualFiles(t, "testdata/extra-file-2.txt", filepath.Join(dist, "foo_amd64", "prime", "testdata", "extra-file-2.txt"))
 }
 
 func TestDefault(t *testing.T) {
@@ -546,4 +536,11 @@ func Test_isValidArch(t *testing.T) {
 			require.Equal(t, tt.want, isValidArch(tt.arch))
 		})
 	}
+}
+
+func requireEqualFiles(tb testing.TB, a, b string) {
+	tb.Helper()
+	eq, err := gio.EqualFiles(a, b)
+	require.NoError(tb, err)
+	require.True(tb, eq, "%s != %s", a, b)
 }

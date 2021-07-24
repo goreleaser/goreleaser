@@ -12,6 +12,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -151,19 +152,19 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	log := log.WithField("image", images[0])
 	log.Debug("tempdir: " + tmp)
 
-	if err := os.Link(docker.Dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
+	if err := gio.CopyFileWithSrcMode(docker.Dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
 		return fmt.Errorf("failed to link dockerfile: %w", err)
 	}
 	for _, file := range docker.Files {
 		if err := os.MkdirAll(filepath.Join(tmp, filepath.Dir(file)), 0o755); err != nil {
 			return fmt.Errorf("failed to link extra file '%s': %w", file, err)
 		}
-		if err := link(file, filepath.Join(tmp, file)); err != nil {
+		if err := copyDir(file, filepath.Join(tmp, file)); err != nil {
 			return fmt.Errorf("failed to link extra file '%s': %w", file, err)
 		}
 	}
 	for _, art := range artifacts {
-		if err := os.Link(art.Path, filepath.Join(tmp, filepath.Base(art.Path))); err != nil {
+		if err := gio.CopyFileWithSrcMode(art.Path, filepath.Join(tmp, filepath.Base(art.Path))); err != nil {
 			return fmt.Errorf("failed to link artifact: %w", err)
 		}
 	}
@@ -238,8 +239,9 @@ func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]st
 	return buildFlags, nil
 }
 
-// walks the src, recreating dirs and hard-linking files.
-func link(src, dest string) error {
+// walks the src, recreating dirs and copying files.
+// TODO: this is very similar to the the same function in the snapcraft package.
+func copyDir(src, dest string) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -257,7 +259,7 @@ func link(src, dest string) error {
 		if info.IsDir() {
 			return os.MkdirAll(dst, info.Mode())
 		}
-		return os.Link(path, dst)
+		return gio.CopyFileWithSrcMode(path, dst)
 	})
 }
 

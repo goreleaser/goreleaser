@@ -6,6 +6,15 @@ import (
 	"os"
 )
 
+// CopyFileWithSrcMode copies src into dst with src's file mode.
+func CopyFileWithSrcMode(src, dst string) error {
+	st, err := os.Stat(src)
+	if err != nil {
+		return fmt.Errorf("failed to stat %s: %w", src, err)
+	}
+	return CopyFile(src, dst, st.Mode())
+}
+
 // CopyFile copies src into dst with the given mode.
 func CopyFile(src, dst string, mode os.FileMode) error {
 	original, err := os.Open(src)

@@ -8,11 +8,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"testing"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -1305,7 +1305,7 @@ func Test_processImageTemplates(t *testing.T) {
 	}, images)
 }
 
-func TestLinkFile(t *testing.T) {
+func TestCopyFile(t *testing.T) {
 	dir := t.TempDir()
 	src, err := ioutil.TempFile(dir, "src")
 	require.NoError(t, err)
@@ -1314,20 +1314,20 @@ func TestLinkFile(t *testing.T) {
 	fmt.Println("src:", src.Name())
 	fmt.Println("dst:", dst)
 	require.NoError(t, os.WriteFile(src.Name(), []byte("foo"), 0o644))
-	require.NoError(t, link(src.Name(), dst))
-	require.Equal(t, inode(src.Name()), inode(dst))
+	require.NoError(t, copyDir(src.Name(), dst))
+	requireEqualFiles(t, src.Name(), dst)
 }
 
-func TestLinkDirectory(t *testing.T) {
+func TestCopyDirectory(t *testing.T) {
 	srcDir := t.TempDir()
 	dstDir := t.TempDir()
 	const testFile = "test"
 	require.NoError(t, os.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
-	require.NoError(t, link(srcDir, dstDir))
-	require.Equal(t, inode(filepath.Join(srcDir, testFile)), inode(filepath.Join(dstDir, testFile)))
+	require.NoError(t, copyDir(srcDir, dstDir))
+	requireEqualFiles(t, filepath.Join(srcDir, testFile), filepath.Join(dstDir, testFile))
 }
 
-func TestLinkTwoLevelDirectory(t *testing.T) {
+func TestCopyTwoLevelDirectory(t *testing.T) {
 	srcDir := t.TempDir()
 	dstDir := t.TempDir()
 	srcLevel2 := filepath.Join(srcDir, "level2")
@@ -1337,17 +1337,15 @@ func TestLinkTwoLevelDirectory(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(srcDir, testFile), []byte("foo"), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(srcLevel2, testFile), []byte("foo"), 0o644))
 
-	require.NoError(t, link(srcDir, dstDir))
+	require.NoError(t, copyDir(srcDir, dstDir))
 
-	require.Equal(t, inode(filepath.Join(srcDir, testFile)), inode(filepath.Join(dstDir, testFile)))
-	require.Equal(t, inode(filepath.Join(srcLevel2, testFile)), inode(filepath.Join(dstDir, "level2", testFile)))
+	requireEqualFiles(t, filepath.Join(srcDir, testFile), filepath.Join(dstDir, testFile))
+	requireEqualFiles(t, filepath.Join(srcLevel2, testFile), filepath.Join(dstDir, "level2", testFile))
 }
 
-func inode(file string) uint64 {
-	fileInfo, err := os.Stat(file)
-	if err != nil {
-		return 0
-	}
-	stat := fileInfo.Sys().(*syscall.Stat_t)
-	return stat.Ino
+func requireEqualFiles(tb testing.TB, a, b string) {
+	tb.Helper()
+	eq, err := gio.EqualFiles(a, b)
+	require.NoError(tb, err)
+	require.True(tb, eq, "%s != %s", a, b)
 }
