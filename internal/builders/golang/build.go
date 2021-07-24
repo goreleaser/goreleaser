@@ -1,7 +1,6 @@
 package golang
 
 import (
-	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -196,8 +195,7 @@ func run(ctx *context.Context, command, env []string, dir string) error {
 	cmd.Dir = dir
 	log.Debug("running")
 	if out, err := cmd.CombinedOutput(); err != nil {
-		log.WithError(err).Debug("failed")
-		return errors.New(string(out))
+		return fmt.Errorf("%w: %s", err, string(out))
 	}
 	return nil
 }
