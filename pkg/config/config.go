@@ -503,18 +503,19 @@ type Snapcraft struct {
 	Replacements map[string]string `yaml:",omitempty"`
 	Publish      bool              `yaml:",omitempty"`
 
-	ID          string                             `yaml:",omitempty"`
-	Builds      []string                           `yaml:",omitempty"`
-	Name        string                             `yaml:",omitempty"`
-	Summary     string                             `yaml:",omitempty"`
-	Description string                             `yaml:",omitempty"`
-	Base        string                             `yaml:",omitempty"`
-	License     string                             `yaml:",omitempty"`
-	Grade       string                             `yaml:",omitempty"`
-	Confinement string                             `yaml:",omitempty"`
-	Layout      map[string]SnapcraftLayoutMetadata `yaml:",omitempty"`
-	Apps        map[string]SnapcraftAppMetadata    `yaml:",omitempty"`
-	Plugs       map[string]interface{}             `yaml:",omitempty"`
+	ID               string                             `yaml:",omitempty"`
+	Builds           []string                           `yaml:",omitempty"`
+	Name             string                             `yaml:",omitempty"`
+	Summary          string                             `yaml:",omitempty"`
+	Description      string                             `yaml:",omitempty"`
+	Base             string                             `yaml:",omitempty"`
+	License          string                             `yaml:",omitempty"`
+	Grade            string                             `yaml:",omitempty"`
+	ChannelTemplates []string                           `yaml:"channel_templates,omitempty"`
+	Confinement      string                             `yaml:",omitempty"`
+	Layout           map[string]SnapcraftLayoutMetadata `yaml:",omitempty"`
+	Apps             map[string]SnapcraftAppMetadata    `yaml:",omitempty"`
+	Plugs            map[string]interface{}             `yaml:",omitempty"`
 
 	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty"`
 }
