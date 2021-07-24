@@ -164,7 +164,7 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 	}
 	log.WithFields(fields).Info("signing")
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("sign: %s failed: %w: %s", cfg.Cmd,err, b.String())
+		return nil, fmt.Errorf("sign: %s failed: %w: %s", cfg.Cmd, err, b.String())
 	}
 
 	artifactPathBase, _ := filepath.Split(a.Path)

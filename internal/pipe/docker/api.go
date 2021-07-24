@@ -61,7 +61,7 @@ func runCommand(ctx context.Context, dir, binary string, args ...string) error {
 
 	log.WithFields(fields).Debug("running")
 	if err := cmd.Run(); err != nil {
-		return  fmt.Errorf("%w: %s", err, b.String())
+		return fmt.Errorf("%w: %s", err, b.String())
 	}
-	return  nil
+	return nil
 }
