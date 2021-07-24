@@ -4,7 +4,6 @@ package snapcraft
 import (
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,6 +13,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -208,7 +208,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		if err := os.MkdirAll(destinationDir, 0o755); err != nil {
 			return fmt.Errorf("failed to create directory '%s': %w", destinationDir, err)
 		}
-		if err := link(file.Source, filepath.Join(primeDir, file.Destination), os.FileMode(file.Mode)); err != nil {
+		if err := copyDir(file.Source, filepath.Join(primeDir, file.Destination), os.FileMode(file.Mode)); err != nil {
 			return fmt.Errorf("failed to link extra file '%s': %w", file.Source, err)
 		}
 	}
@@ -266,10 +266,10 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
 		log.WithField("src", binary.Path).
 			WithField("dst", destBinaryPath).
-			Debug("linking")
+			Debug("copying")
 
-		if err = copyFile(binary.Path, destBinaryPath, 0o555); err != nil {
-			return fmt.Errorf("failed to link binary: %w", err)
+		if err = gio.CopyFile(binary.Path, destBinaryPath, 0o555); err != nil {
+			return fmt.Errorf("failed to copy binary: %w", err)
 		}
 	}
 
@@ -301,7 +301,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 				WithField("dst", destCompleterPath).
 				Debug("copy")
 
-			if err := copyFile(config.Completer, destCompleterPath, 0o644); err != nil {
+			if err := gio.CopyFile(config.Completer, destCompleterPath, 0o644); err != nil {
 				return fmt.Errorf("failed to copy completer: %w", err)
 			}
 
@@ -371,7 +371,7 @@ func push(ctx *context.Context, snap *artifact.Artifact) error {
 }
 
 // walks the src, recreating dirs and copying files.
-func link(src, dest string, mode os.FileMode) error {
+func copyDir(src, dest string, mode os.FileMode) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -389,33 +389,11 @@ func link(src, dest string, mode os.FileMode) error {
 		if info.IsDir() {
 			return os.MkdirAll(dst, info.Mode())
 		}
-		if err := copyFile(path, dst, mode); err != nil {
+		if err := gio.CopyFile(path, dst, mode); err != nil {
 			return fmt.Errorf("fail copy file '%s': %w", path, err)
 		}
 		return nil
 	})
-}
-
-func copyFile(src, dst string, mode os.FileMode) error {
-	// Open original file
-	original, err := os.Open(src)
-	if err != nil {
-		return fmt.Errorf("fail to open '%s': %w", src, err)
-	}
-	defer original.Close()
-
-	// Create new file
-	new, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
-	if err != nil {
-		return fmt.Errorf("fail to open '%s': %w", dst, err)
-	}
-	defer new.Close()
-
-	// This will copy
-	if _, err := io.Copy(new, original); err != nil {
-		return fmt.Errorf("fail to copy: %w", err)
-	}
-	return nil
 }
 
 func processChannelsTemplates(ctx *context.Context, snap config.Snapcraft) ([]string, error) {
@@ -431,10 +409,6 @@ func processChannelsTemplates(ctx *context.Context, snap config.Snapcraft) ([]st
 		}
 
 		channels = append(channels, channel)
-	}
-
-	if len(channels) == 0 {
-		return channels, errors.New("no image templates found")
 	}
 
 	return channels, nil
