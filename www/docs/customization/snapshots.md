@@ -16,8 +16,8 @@ snapshot:
   # Note that some pipes require this to be semantic version compliant (nfpm,
   # for example).
   #
-  # Default is `{{ incpatch .Tag }}`.
-  name_template: 1.2.3-SNAPSHOT-{{.Commit}}
+  # Default is `{{ .Tag }}-SNAPSHOT-{{.ShortCommit}}`.
+  name_template: '{{ incpatch .Tag }}-devel'
 ```
 
 ## How it works

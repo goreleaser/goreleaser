@@ -20,7 +20,7 @@ func TestDefault(t *testing.T) {
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "{{ incpatch .Tag }}", ctx.Config.Snapshot.NameTemplate)
+	require.Equal(t, "{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}", ctx.Config.Snapshot.NameTemplate)
 }
 
 func TestDefaultSet(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -19,12 +20,15 @@ func (Pipe) String() string {
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Snapshot.NameTemplate == "" {
-		ctx.Config.Snapshot.NameTemplate = "{{ incpatch .Tag }}"
+		ctx.Config.Snapshot.NameTemplate = "{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}"
 	}
 	return nil
 }
 
 func (Pipe) Run(ctx *context.Context) error {
+	if !ctx.Snapshot {
+		return pipe.ErrSkipDisabledPipe
+	}
 	name, err := tmpl.New(ctx).Apply(ctx.Config.Snapshot.NameTemplate)
 	if err != nil {
 		return fmt.Errorf("failed to generate snapshot name: %w", err)
