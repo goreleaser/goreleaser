@@ -4,6 +4,8 @@ before:
   hooks:
     - go mod tidy
     - ./scripts/completions.sh
+snapshot:
+  name_template: '{{ incpatch .Tag }}-next'
 gomod:
   proxy: true
 builds:
