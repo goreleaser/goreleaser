@@ -22,8 +22,7 @@ func TestEqualFilesModeChanged(t *testing.T) {
 	tmp := t.TempDir()
 	a := "testdata/somefile.txt"
 	b := tmp + "/somefile.txt"
-	require.NoError(t, Copy(a, b))
-	require.NoError(t, os.Chmod(b, 0o755))
+	require.NoError(t, CopyWithMode(a, b, 0o755))
 	requireNotEqualFiles(t, a, b)
 }
 
