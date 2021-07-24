@@ -37,6 +37,6 @@ func (Pipe) Run(ctx *context.Context) error {
 		return fmt.Errorf("empty snapshot name")
 	}
 	ctx.Version = name
-	log.Infof("creating snapshot %s", ctx.Version)
+	log.WithField("version", ctx.Version).Infof("building snapshot...")
 	return nil
 }
