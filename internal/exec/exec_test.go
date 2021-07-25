@@ -241,7 +241,7 @@ func TestExecute(t *testing.T) {
 							AnyOf: []MockCall{
 								{
 									ExpectedArgs: []string{"a.deb"},
-									ExpectedEnv: osEnv(),
+									ExpectedEnv:  osEnv(),
 									Stderr:       "test error",
 									ExitCode:     1,
 								},

@@ -1,7 +1,7 @@
 #!/bin/bash
-FILES=$(git diff --staged --diff-filter=AM --no-renames --name-only)
+FILES=$(git diff --cached --name-only --diff-filter=ACMR)
 
-gofumpt -s -l -w $FILES
+gofumpt -s -l -w .
 golangci-lint run --new --fix
 
 git add $FILES

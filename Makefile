@@ -9,7 +9,7 @@ export GOPROXY = https://proxy.golang.org,direct
 
 # Setup pre-commit hooks
 dev:
-	ln -sf ./scripts/pre-commit.sh .git/hooks/pre-commit
+	cp -f scripts/pre-commit.sh .git/hooks/pre-commit
 .PHONY: dev
 
 # Install dependencies

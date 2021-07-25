@@ -514,7 +514,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 
 	// run the pipeline
 	if expectedErrMsg != "" {
-		err:=Pipe{}.Run(ctx)
+		err := Pipe{}.Run(ctx)
 		require.Error(tb, err)
 		require.Contains(tb, err.Error(), expectedErrMsg)
 		return
