@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"syscall"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -52,25 +52,28 @@ func TestRunPipe(t *testing.T) {
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
 			{
-				NameTemplate: "foo_{{.Arch}}",
-				Summary:      "test summary",
-				Description:  "test description",
-				Publish:      true,
-				Builds:       []string{"foo"},
+				NameTemplate:     "foo_{{.Arch}}",
+				Summary:          "test summary",
+				Description:      "test description",
+				Publish:          true,
+				Builds:           []string{"foo"},
+				ChannelTemplates: []string{"stable"},
 			},
 			{
-				NameTemplate: "foo_and_bar_{{.Arch}}",
-				Summary:      "test summary",
-				Description:  "test description",
-				Publish:      true,
-				Builds:       []string{"foo", "bar"},
+				NameTemplate:     "foo_and_bar_{{.Arch}}",
+				Summary:          "test summary",
+				Description:      "test description",
+				Publish:          true,
+				Builds:           []string{"foo", "bar"},
+				ChannelTemplates: []string{"stable"},
 			},
 			{
-				NameTemplate: "bar_{{.Arch}}",
-				Summary:      "test summary",
-				Description:  "test description",
-				Publish:      true,
-				Builds:       []string{"bar"},
+				NameTemplate:     "bar_{{.Arch}}",
+				Summary:          "test summary",
+				Description:      "test description",
+				Publish:          true,
+				Builds:           []string{"bar"},
+				ChannelTemplates: []string{"stable"},
 			},
 		},
 	})
@@ -92,10 +95,11 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
 			{
-				NameTemplate: "foo_{{.Arch}",
-				Summary:      "test summary",
-				Description:  "test description",
-				Builds:       []string{"foo"},
+				NameTemplate:     "foo_{{.Arch}",
+				Summary:          "test summary",
+				Description:      "test description",
+				Builds:           []string{"foo"},
+				ChannelTemplates: []string{"stable"},
 			},
 		},
 	})
@@ -114,13 +118,14 @@ func TestRunPipeWithName(t *testing.T) {
 		Dist:        dist,
 		Snapcrafts: []config.Snapcraft{
 			{
-				NameTemplate: "foo_{{.Arch}}",
-				Name:         "testsnapname",
-				Base:         "core18",
-				License:      "MIT",
-				Summary:      "test summary",
-				Description:  "test description",
-				Builds:       []string{"foo"},
+				NameTemplate:     "foo_{{.Arch}}",
+				Name:             "testsnapname",
+				Base:             "core18",
+				License:          "MIT",
+				Summary:          "test summary",
+				Description:      "test description",
+				Builds:           []string{"foo"},
+				ChannelTemplates: []string{"stable"},
 			},
 		},
 	})
@@ -168,7 +173,8 @@ func TestRunPipeMetadata(t *testing.T) {
 						"read": []string{"$HOME/test"},
 					},
 				},
-				Builds: []string{"foo"},
+				Builds:           []string{"foo"},
+				ChannelTemplates: []string{"stable"},
 			},
 		},
 	})
@@ -227,7 +233,8 @@ func TestRunNoArguments(t *testing.T) {
 						Args:   "",
 					},
 				},
-				Builds: []string{"foo"},
+				Builds:           []string{"foo"},
+				ChannelTemplates: []string{"stable"},
 			},
 		},
 	})
@@ -262,7 +269,8 @@ func TestCompleter(t *testing.T) {
 						Completer: "testdata/foo-completer.bash",
 					},
 				},
-				Builds: []string{"foo", "bar"},
+				Builds:           []string{"foo", "bar"},
+				ChannelTemplates: []string{"stable"},
 			},
 		},
 	})
@@ -299,7 +307,8 @@ func TestCommand(t *testing.T) {
 						Command: "foo",
 					},
 				},
-				Builds: []string{"foo"},
+				Builds:           []string{"foo"},
+				ChannelTemplates: []string{"stable"},
 			},
 		},
 	})
@@ -337,7 +346,8 @@ func TestExtraFile(t *testing.T) {
 						Source: "testdata/extra-file-2.txt",
 					},
 				},
-				Builds: []string{"foo"},
+				Builds:           []string{"foo"},
+				ChannelTemplates: []string{"stable"},
 			},
 		},
 	})
@@ -346,19 +356,8 @@ func TestExtraFile(t *testing.T) {
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 
-	srcFile, err := os.Stat("testdata/extra-file.txt")
-	require.NoError(t, err)
-	destFile, err := os.Stat(filepath.Join(dist, "foo_amd64", "prime", "a", "b", "c", "extra-file.txt"))
-	require.NoError(t, err)
-	require.Equal(t, inode(srcFile), inode(destFile))
-	require.Equal(t, destFile.Mode(), os.FileMode(0o755))
-
-	srcFile, err = os.Stat("testdata/extra-file-2.txt")
-	require.NoError(t, err)
-	destFileWithDefaults, err := os.Stat(filepath.Join(dist, "foo_amd64", "prime", "testdata", "extra-file-2.txt"))
-	require.NoError(t, err)
-	require.Equal(t, destFileWithDefaults.Mode(), os.FileMode(0o644))
-	require.Equal(t, inode(srcFile), inode(destFileWithDefaults))
+	requireEqualFiles(t, "testdata/extra-file.txt", filepath.Join(dist, "foo_amd64", "prime", "a", "b", "c", "extra-file.txt"))
+	requireEqualFiles(t, "testdata/extra-file-2.txt", filepath.Join(dist, "foo_amd64", "prime", "testdata", "extra-file-2.txt"))
 }
 
 func TestDefault(t *testing.T) {
@@ -385,6 +384,9 @@ func TestPublish(t *testing.T) {
 		Goarch: "amd64",
 		Goos:   "linux",
 		Type:   artifact.PublishableSnapcraft,
+		Extra: map[string]interface{}{
+			releasesExtra: []string{"stable", "candidate"},
+		},
 	})
 	err := Pipe{}.Publish(ctx)
 	require.Contains(t, err.Error(), "failed to push nope.snap package")
@@ -399,6 +401,9 @@ func TestPublishSkip(t *testing.T) {
 		Goarch: "amd64",
 		Goos:   "linux",
 		Type:   artifact.PublishableSnapcraft,
+		Extra: map[string]interface{}{
+			releasesExtra: []string{"stable"},
+		},
 	})
 	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 }
@@ -407,12 +412,69 @@ func TestDefaultSet(t *testing.T) {
 	ctx := context.New(config.Project{
 		Snapcrafts: []config.Snapcraft{
 			{
+				ID:           "devel",
 				NameTemplate: "foo",
+				Grade:        "devel",
+			},
+			{
+				ID:           "stable",
+				NameTemplate: "bar",
+				Grade:        "stable",
 			},
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Snapcrafts[0].NameTemplate)
+	require.Equal(t, []string{"edge", "beta"}, ctx.Config.Snapcrafts[0].ChannelTemplates)
+	require.Equal(t, []string{"edge", "beta", "candidate", "stable"}, ctx.Config.Snapcrafts[1].ChannelTemplates)
+}
+
+func Test_processChannelsTemplates(t *testing.T) {
+	ctx := &context.Context{
+		Config: config.Project{
+			Builds: []config.Build{
+				{
+					ID: "default",
+				},
+			},
+			Snapcrafts: []config.Snapcraft{
+				{
+					Name: "mybin",
+					ChannelTemplates: []string{
+						"{{.Major}}.{{.Minor}}/stable",
+						"stable",
+					},
+				},
+			},
+		},
+	}
+
+	ctx.SkipPublish = true
+	ctx.Env = map[string]string{
+		"FOO": "123",
+	}
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{
+		CurrentTag: "v1.0.0",
+		Commit:     "a1b2c3d4",
+	}
+	ctx.Semver = context.Semver{
+		Major: 1,
+		Minor: 0,
+		Patch: 0,
+	}
+
+	require.NoError(t, Pipe{}.Default(ctx))
+
+	snap := ctx.Config.Snapcrafts[0]
+	require.Equal(t, "mybin", snap.Name)
+
+	channels, err := processChannelsTemplates(ctx, snap)
+	require.NoError(t, err)
+	require.Equal(t, []string{
+		"1.0/stable",
+		"stable",
+	}, channels)
 }
 
 func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
@@ -476,7 +538,9 @@ func Test_isValidArch(t *testing.T) {
 	}
 }
 
-func inode(info os.FileInfo) uint64 {
-	stat := info.Sys().(*syscall.Stat_t)
-	return stat.Ino
+func requireEqualFiles(tb testing.TB, a, b string) {
+	tb.Helper()
+	eq, err := gio.EqualFiles(a, b)
+	require.NoError(tb, err)
+	require.True(tb, eq, "%s != %s", a, b)
 }

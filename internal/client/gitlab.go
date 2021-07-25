@@ -208,11 +208,11 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 	name := title
 	tagName := ctx.Git.CurrentTag
 	release, resp, err := c.client.Releases.GetRelease(projectID, tagName)
-	if err != nil && (resp == nil || resp.StatusCode != 403) {
+	if err != nil && (resp != nil && resp.StatusCode != 403 && resp.StatusCode != 404) {
 		return "", err
 	}
 
-	if resp.StatusCode == 403 {
+	if resp.StatusCode == 403 || resp.StatusCode == 404 {
 		log.WithFields(log.Fields{
 			"err": err.Error(),
 		}).Debug("get release")

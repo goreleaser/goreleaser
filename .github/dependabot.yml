@@ -16,3 +16,11 @@ updates:
     labels:
       - "dependencies"
       - "automerge"
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "08:00"
+    labels:
+      - "dependencies"
+      - "automerge"

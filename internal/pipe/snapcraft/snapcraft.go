@@ -13,6 +13,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -21,6 +22,8 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
+
+const releasesExtra = "releases"
 
 // ErrNoSnapcraft is shown when snapcraft cannot be found in $PATH.
 var ErrNoSnapcraft = errors.New("snapcraft not present in $PATH")
@@ -79,6 +82,14 @@ func (Pipe) Default(ctx *context.Context) error {
 		snap := &ctx.Config.Snapcrafts[i]
 		if snap.NameTemplate == "" {
 			snap.NameTemplate = defaultNameTemplate
+		}
+		if len(snap.ChannelTemplates) == 0 {
+			switch snap.Grade {
+			case "devel":
+				snap.ChannelTemplates = []string{"edge", "beta"}
+			default:
+				snap.ChannelTemplates = []string{"edge", "beta", "candidate", "stable"}
+			}
 		}
 		if len(snap.Builds) == 0 {
 			for _, b := range ctx.Config.Builds {
@@ -172,6 +183,11 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		return err
 	}
 
+	channels, err := processChannelsTemplates(ctx, snap)
+	if err != nil {
+		return err
+	}
+
 	// prime is the directory that then will be compressed to make the .snap package.
 	folderDir := filepath.Join(ctx.Config.Dist, folder)
 	primeDir := filepath.Join(folderDir, "prime")
@@ -188,10 +204,11 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		if file.Mode == 0 {
 			file.Mode = 0o644
 		}
-		if err := os.MkdirAll(filepath.Join(primeDir, filepath.Dir(file.Destination)), 0o755); err != nil {
-			return fmt.Errorf("failed to link extra file '%s': %w", file.Source, err)
+		destinationDir := filepath.Join(primeDir, filepath.Dir(file.Destination))
+		if err := os.MkdirAll(destinationDir, 0o755); err != nil {
+			return fmt.Errorf("failed to create directory '%s': %w", destinationDir, err)
 		}
-		if err := link(file.Source, filepath.Join(primeDir, file.Destination), os.FileMode(file.Mode)); err != nil {
+		if err := gio.CopyWithMode(file.Source, filepath.Join(primeDir, file.Destination), os.FileMode(file.Mode)); err != nil {
 			return fmt.Errorf("failed to link extra file '%s': %w", file.Source, err)
 		}
 	}
@@ -249,13 +266,10 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		destBinaryPath := filepath.Join(primeDir, filepath.Base(binary.Path))
 		log.WithField("src", binary.Path).
 			WithField("dst", destBinaryPath).
-			Debug("linking")
+			Debug("copying")
 
-		if err = os.Link(binary.Path, destBinaryPath); err != nil {
-			return fmt.Errorf("failed to link binary: %w", err)
-		}
-		if err := os.Chmod(destBinaryPath, 0o555); err != nil {
-			return fmt.Errorf("failed to change binary permissions: %w", err)
+		if err = gio.CopyWithMode(binary.Path, destBinaryPath, 0o555); err != nil {
+			return fmt.Errorf("failed to copy binary: %w", err)
 		}
 	}
 
@@ -285,13 +299,12 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 			}
 			log.WithField("src", config.Completer).
 				WithField("dst", destCompleterPath).
-				Debug("linking")
-			if err := os.Link(config.Completer, destCompleterPath); err != nil {
-				return fmt.Errorf("failed to link completer: %w", err)
+				Debug("copy")
+
+			if err := gio.CopyWithMode(config.Completer, destCompleterPath, 0o644); err != nil {
+				return fmt.Errorf("failed to copy completer: %w", err)
 			}
-			if err := os.Chmod(destCompleterPath, 0o644); err != nil {
-				return fmt.Errorf("failed to change completer permissions: %w", err)
-			}
+
 			appMetadata.Completer = config.Completer
 		}
 
@@ -326,6 +339,9 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		Goos:   binaries[0].Goos,
 		Goarch: binaries[0].Goarch,
 		Goarm:  binaries[0].Goarm,
+		Extra: map[string]interface{}{
+			releasesExtra: channels,
+		},
 	})
 	return nil
 }
@@ -338,10 +354,10 @@ const (
 
 func push(ctx *context.Context, snap *artifact.Artifact) error {
 	log := log.WithField("snap", snap.Name)
-	log.Info("pushing snap")
-	// TODO: customize --release based on snap.Grade?
+	releases := snap.Extra[releasesExtra].([]string)
 	/* #nosec */
-	cmd := exec.CommandContext(ctx, "snapcraft", "upload", "--release=stable", snap.Path)
+	cmd := exec.CommandContext(ctx, "snapcraft", "upload", "--release="+strings.Join(releases, ","), snap.Path)
+	log.WithField("args", cmd.Args).Info("pushing snap")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		if strings.Contains(string(out), reviewWaitMsg) || strings.Contains(string(out), humanReviewMsg) || strings.Contains(string(out), needsReviewMsg) {
 			log.Warn(reviewWaitMsg)
@@ -354,28 +370,20 @@ func push(ctx *context.Context, snap *artifact.Artifact) error {
 	return nil
 }
 
-// walks the src, recreating dirs and hard-linking files.
-func link(src, dest string, mode os.FileMode) error {
-	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+func processChannelsTemplates(ctx *context.Context, snap config.Snapcraft) ([]string, error) {
+	// nolint:prealloc
+	var channels []string
+	for _, channeltemplate := range snap.ChannelTemplates {
+		channel, err := tmpl.New(ctx).Apply(channeltemplate)
 		if err != nil {
-			return err
+			return nil, fmt.Errorf("failed to execute channel template '%s': %w", err, err)
 		}
-		// We have the following:
-		// - src = "a/b"
-		// - dest = "dist/linuxamd64/b"
-		// - path = "a/b/c.txt"
-		// So we join "a/b" with "c.txt" and use it as the destination.
-		dst := filepath.Join(dest, strings.Replace(path, src, "", 1))
-		log.WithFields(log.Fields{
-			"src": path,
-			"dst": dst,
-		}).Debug("extra file")
-		if info.IsDir() {
-			return os.MkdirAll(dst, info.Mode())
+		if channel == "" {
+			continue
 		}
-		if err := os.Link(path, dst); err != nil {
-			return err
-		}
-		return os.Chmod(dst, mode)
-	})
+
+		channels = append(channels, channel)
+	}
+
+	return channels, nil
 }

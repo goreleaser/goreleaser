@@ -21,10 +21,11 @@ generate() {
 	done
 
 	if test "$last_page" -eq "1"; then
-		cp -f "$tmp/1.json" "$file"
+		jq --compact-output 'map({tag_name: .tag_name})' "$tmp"/1.json >"$file"
 	else
-		jq '[inputs] | add' "$tmp"/*.json >"$file"
+		jq --compact-output '[inputs] | add | map({tag_name: .tag_name})' "$tmp"/*.json >"$file"
 	fi
+	du -hs "$file"
 }
 
 generate "https://api.github.com/repos/goreleaser/goreleaser/releases" "www/docs/static/releases.json"
