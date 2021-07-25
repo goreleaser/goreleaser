@@ -7,6 +7,11 @@ export PATH := ./bin:$(PATH)
 export GO111MODULE := on
 export GOPROXY = https://proxy.golang.org,direct
 
+# Setup pre-commit hooks
+dev:
+	ln -sf ./scripts/pre-commit.sh .git/hooks/pre-commit
+.PHONY: dev
+
 # Install dependencies
 setup:
 	go mod tidy
