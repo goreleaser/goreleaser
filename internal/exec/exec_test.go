@@ -251,7 +251,7 @@ func TestExecute(t *testing.T) {
 				},
 			},
 			// stderr is sent to output via logger
-			fmt.Errorf(`publishing: %s failed: exit status 1`, MockCmd),
+			fmt.Errorf(`publishing: %s failed: exit status 1: test error`, MockCmd),
 		},
 	}
 

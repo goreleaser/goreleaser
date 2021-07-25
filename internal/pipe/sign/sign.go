@@ -1,6 +1,7 @@
 package sign
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -153,14 +155,16 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 	// tells the scanner to ignore this.
 	// #nosec
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
-	cmd.Stderr = logext.NewWriter(fields, logext.Error)
-	cmd.Stdout = logext.NewWriter(fields, logext.Info)
+	var b bytes.Buffer
+	w := gio.Safe(&b)
+	cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
 	if stdin != nil {
 		cmd.Stdin = stdin
 	}
 	log.WithFields(fields).Info("signing")
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("sign: %s failed", cfg.Cmd)
+		return nil, fmt.Errorf("sign: %s failed: %w: %s", cfg.Cmd, err, b.String())
 	}
 
 	artifactPathBase, _ := filepath.Split(a.Path)

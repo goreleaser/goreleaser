@@ -2,13 +2,16 @@
 package exec
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 
 	"github.com/apex/log"
 	"github.com/caarlos0/go-shellwords"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -78,12 +81,14 @@ func executeCommand(c *command) error {
 	}
 
 	fields := log.Fields{"cmd": c.Args[0]}
-	cmd.Stderr = logext.NewWriter(fields, logext.Error)
-	cmd.Stdout = logext.NewWriter(fields, logext.Info)
+	var b bytes.Buffer
+	w := gio.Safe(&b)
+	cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
 
 	log.WithFields(fields).Info("publishing")
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("publishing: %s failed: %w", c.Args[0], err)
+		return fmt.Errorf("publishing: %s failed: %w: %s", c.Args[0], err, b.String())
 	}
 
 	log.WithFields(fields).Debugf("command %s finished successfully", c.Args[0])

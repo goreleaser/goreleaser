@@ -3,6 +3,7 @@ package docker
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"os/exec"
 	"sync"
@@ -43,7 +44,7 @@ type manifester interface {
 }
 
 // nolint: unparam
-func runCommand(ctx context.Context, dir, binary string, args ...string) ([]byte, error) {
+func runCommand(ctx context.Context, dir, binary string, args ...string) error {
 	fields := log.Fields{
 		"cmd": append([]string{binary}, args[0]),
 		"cwd": dir,
@@ -59,6 +60,8 @@ func runCommand(ctx context.Context, dir, binary string, args ...string) ([]byte
 	cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
 
 	log.WithFields(fields).Debug("running")
-	err := cmd.Run()
-	return b.Bytes(), err
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%w: %s", err, b.String())
+	}
+	return nil
 }

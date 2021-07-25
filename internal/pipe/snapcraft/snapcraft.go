@@ -327,7 +327,7 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, "snapcraft", "pack", primeDir, "--output", snapFile)
 	if out, err = cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("failed to generate snap package: %s", string(out))
+		return fmt.Errorf("failed to generate snap package: %w: %s", err, string(out))
 	}
 	if !snap.Publish {
 		return nil
@@ -362,7 +362,7 @@ func push(ctx *context.Context, snap *artifact.Artifact) error {
 		if strings.Contains(string(out), reviewWaitMsg) || strings.Contains(string(out), humanReviewMsg) || strings.Contains(string(out), needsReviewMsg) {
 			log.Warn(reviewWaitMsg)
 		} else {
-			return fmt.Errorf("failed to push %s package: %s", snap.Path, string(out))
+			return fmt.Errorf("failed to push %s package: %w: %s", snap.Path, err, string(out))
 		}
 	}
 	snap.Type = artifact.Snapcraft
