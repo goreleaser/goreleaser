@@ -18,10 +18,7 @@ files:
 `), &actual)
 	require.NoError(t, err)
 	require.Equal(t, []File{
-		{
-			Source:      "./script.sh",
-			Destination: "./script.sh",
-		},
+		{Source: "./script.sh"},
 	}, actual.Files)
 }
 
@@ -39,10 +36,7 @@ files:
 `), &actual)
 	require.NoError(t, err)
 	require.Equal(t, []File{
-		{
-			Source:      "./script.sh",
-			Destination: "./script.sh",
-		},
+		{Source: "./script.sh"},
 		{
 			Source:      "./foo",
 			Destination: "./bar",

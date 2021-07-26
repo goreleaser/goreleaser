@@ -286,10 +286,7 @@ type fileAlias File
 func (f *File) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var str string
 	if err := unmarshal(&str); err == nil {
-		*f = File{
-			Source:      str,
-			Destination: str,
-		}
+		*f = File{Source: str}
 		return nil
 	}
 
