@@ -54,19 +54,20 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 				return err
 			}
 
-			return executeCommand(c)
+			return executeCommand(c, artifact)
 		})
 	}
 
 	return g.Wait()
 }
 
-func executeCommand(c *command) error {
+func executeCommand(c *command, artifact *artifact.Artifact) error {
 	log.WithField("args", c.Args).
 		WithField("env", c.Env).
+		WithField("artifact", artifact.Name).
 		Debug("executing command")
 
-		// nolint: gosec
+	// nolint: gosec
 	cmd := exec.CommandContext(c.Ctx, c.Args[0], c.Args[1:]...)
 	cmd.Env = []string{}
 	for _, key := range passthroughEnvVars {
@@ -80,7 +81,10 @@ func executeCommand(c *command) error {
 		cmd.Dir = c.Dir
 	}
 
-	fields := log.Fields{"cmd": c.Args[0]}
+	fields := log.Fields{
+		"cmd":      c.Args[0],
+		"artifact": artifact.Name,
+	}
 	var b bytes.Buffer
 	w := gio.Safe(&b)
 	cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
