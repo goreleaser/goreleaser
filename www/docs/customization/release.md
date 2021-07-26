@@ -15,10 +15,6 @@ Let's see what can be customized in the `release` section for GitHub:
 release:
   # Repo in which the release will be created.
   # Default is extracted from the origin remote URL or empty if its private hosted.
-  # Valid options are either github, gitlab or gitea
-  #
-  # You can also use Gitlab's internal project id by setting it in the name
-  #  field and leaving the owner field empty.
   github:
     owner: user
     name: repo
@@ -89,8 +85,9 @@ Second, let's see what can be customized in the `release` section for GitLab.
 ```yaml
 # .goreleaser.yml
 release:
-  # Same as for github
-  # Note: it can only be one: either github, gitlab or gitea
+  # Default is extracted from the origin remote URL or empty if its private hosted.
+  # You can also use Gitlab's internal project id by setting it in the name
+  #  field and leaving the owner field empty.
   gitlab:
     owner: user
     name: repo
@@ -135,8 +132,7 @@ You can also configure the `release` section to upload to a [Gitea](https://gite
 ```yaml
 # .goreleaser.yml
 release:
-  # Same as for github and gitlab
-  # Note: it can only be one: either github, gitlab or gitea
+  # Default is empty.
   gitea:
     owner: user
     name: repo
