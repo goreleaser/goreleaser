@@ -49,8 +49,12 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 				return pipe.Skip("docker_manifest.skip_push is set")
 			}
 
-			if strings.TrimSpace(manifest.SkipPush) == "auto" && ctx.Semver.Prerelease != "" {
-				return pipe.Skip("prerelease detected with 'auto' push, skipping docker manifest")
+			if strings.TrimSpace(manifest.SkipPush) == "prerelease" && ctx.Semver.Prerelease != "" {
+				return pipe.Skip("prerelease detected with 'prerelease' push, skipping docker manifest")
+			}
+
+			if strings.TrimSpace(manifest.SkipPush) == "stable" && ctx.Semver.Prerelease == "" {
+				return pipe.Skip("stable release detected with 'stable' push, skipping docker manifest")
 			}
 
 			name, err := manifestName(ctx, manifest)

@@ -185,8 +185,11 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
-	if strings.TrimSpace(docker.SkipPush) == "auto" && ctx.Semver.Prerelease != "" {
-		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish")
+	if strings.TrimSpace(docker.SkipPush) == "prerelease" && ctx.Semver.Prerelease != "" {
+		return pipe.Skip("prerelease detected with 'prerelase' push, skipping docker publish")
+	}
+	if strings.TrimSpace(docker.SkipPush) == "stable" && ctx.Semver.Prerelease == "" {
+		return pipe.Skip("stable release detected with 'stable' push, skipping docker publish")
 	}
 	for _, img := range images {
 		ctx.Artifacts.Add(&artifact.Artifact{
