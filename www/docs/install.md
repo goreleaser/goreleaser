@@ -56,14 +56,14 @@ Bellow you can find the steps for each of them.
 
 === "OSS"
     ```sh
-    echo 'deb [trusted=yes] https://apt.fury.io/goreleaser/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
+    echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
     sudo apt update
     sudo apt install goreleaser
     ```
 
 === "Pro"
     ```sh
-    echo 'deb [trusted=yes] https://apt.fury.io/goreleaser/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
+    echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
     sudo apt update
     sudo apt install goreleaser-pro
     ```
@@ -74,7 +74,7 @@ Bellow you can find the steps for each of them.
     ```sh
     echo '[goreleaser]
     name=GoReleaser
-    baseurl=https://yum.fury.io/goreleaser/
+    baseurl=https://repo.goreleaser.com/yum/
     enabled=1
     gpgcheck=0' | sudo tee /etc/yum.repos.d/goreleaser.repo
     sudo yum install goreleaser
@@ -84,7 +84,7 @@ Bellow you can find the steps for each of them.
     ```sh
     echo '[goreleaser]
     name=GoReleaser
-    baseurl=https://yum.fury.io/goreleaser/
+    baseurl=https://repo.goreleaser.com/yum/
     enabled=1
     gpgcheck=0' | sudo tee /etc/yum.repos.d/goreleaser.repo
     sudo yum install goreleaser-pro
