@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -67,6 +68,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	if err != nil {
 		return err
 	}
+	folder = strings.TrimPrefix(folder, "/")
 
 	bucketURL, err := urlFor(ctx, conf)
 	if err != nil {
