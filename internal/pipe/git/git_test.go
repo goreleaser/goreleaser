@@ -233,10 +233,7 @@ func TestTagFromCI(t *testing.T) {
 		envs     map[string]string
 		expected string
 	}{
-		// It is not possible to concisely figure out the tag if a commit has more than one tags. Git always
-		// returns the tags in lexicographical order (ASC), which implies that we expect v0.0.1 here.
-		// More details: https://github.com/goreleaser/goreleaser/issues/1163
-		{expected: "v0.0.1"},
+		{expected: "v0.0.2"},
 		{
 			envs:     map[string]string{"GORELEASER_CURRENT_TAG": "v0.0.2"},
 			expected: "v0.0.2",
