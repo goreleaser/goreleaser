@@ -177,7 +177,7 @@ func getTag() (string, error) {
 			return os.Getenv("GORELEASER_CURRENT_TAG"), nil
 		},
 		func() (string, error) {
-			return git.Clean(git.Run("tag", "--points-at", "HEAD", "--sort", "-version:creatordate"))
+			return git.Clean(git.Run("tag", "--points-at", "HEAD", "--sort", "-version:refname"))
 		},
 		func() (string, error) {
 			return git.Clean(git.Run("describe", "--tags", "--abbrev=0"))
