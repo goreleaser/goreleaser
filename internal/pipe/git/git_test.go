@@ -232,7 +232,7 @@ func TestTagFromCI(t *testing.T) {
 	for _, tc := range []struct {
 		envs     map[string]string
 		expected string
-	} {
+	}{
 		{expected: "v0.0.2"},
 		{
 			envs:     map[string]string{"GORELEASER_CURRENT_TAG": "v0.0.2"},
