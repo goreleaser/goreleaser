@@ -1072,8 +1072,7 @@ func TestRunPipeScoopWithSkipPublish(t *testing.T) {
 	require.EqualError(t, doRun(ctx, cli), pipe.ErrSkipPublishEnabled.Error())
 
 	distFile := filepath.Join(folder, ctx.Config.Scoop.Name+".json")
-	_, err = os.Stat(distFile)
-	require.NoError(t, err, "file should exist: "+distFile)
+	require.FileExists(t, distFile)
 }
 
 func TestWrapInDirectory(t *testing.T) {
