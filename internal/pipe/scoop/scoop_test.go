@@ -997,8 +997,7 @@ func Test_buildManifest(t *testing.T) {
 	}
 }
 
-func TestRunPipeScoopWithSkip(t *testing.T) {
-	folder := t.TempDir()
+func getScoopPipeSkipCtx(folder string) (*context.Context, string) {
 	ctx := &context.Context{
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.1",
@@ -1022,11 +1021,12 @@ func TestRunPipeScoopWithSkip(t *testing.T) {
 				Description: "A run pipe test formula",
 				Homepage:    "https://github.com/goreleaser",
 				Name:        "run-pipe",
-				SkipUpload:  "true",
 			},
 		},
 	}
+
 	path := filepath.Join(folder, "bin.tar.gz")
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin.tar.gz",
 		Path:   path,
@@ -1039,6 +1039,14 @@ func TestRunPipeScoopWithSkip(t *testing.T) {
 		},
 	})
 
+	return ctx, path
+}
+
+func TestRunPipeScoopWithSkipUpload(t *testing.T) {
+	folder := t.TempDir()
+	ctx, path := getScoopPipeSkipCtx(folder)
+	ctx.Config.Scoop.SkipUpload = "true"
+
 	f, err := os.Create(path)
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
@@ -1049,6 +1057,22 @@ func TestRunPipeScoopWithSkip(t *testing.T) {
 	distFile := filepath.Join(folder, ctx.Config.Scoop.Name+".json")
 	_, err = os.Stat(distFile)
 	require.NoError(t, err, "file should exist: "+distFile)
+}
+
+func TestRunPipeScoopWithSkipPublish(t *testing.T) {
+	folder := t.TempDir()
+	ctx, path := getScoopPipeSkipCtx(folder)
+	ctx.SkipPublish = true
+
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
+	cli := &DummyClient{}
+	require.EqualError(t, doRun(ctx, cli), pipe.ErrSkipPublishEnabled.Error())
+
+	distFile := filepath.Join(folder, ctx.Config.Scoop.Name+".json")
+	require.FileExists(t, distFile)
 }
 
 func TestWrapInDirectory(t *testing.T) {

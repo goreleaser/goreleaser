@@ -34,10 +34,6 @@ func (Pipe) String() string {
 
 // Publish scoop manifest.
 func (Pipe) Publish(ctx *context.Context) error {
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
-
 	client, err := client.New(ctx)
 	if err != nil {
 		return err
