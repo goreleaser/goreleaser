@@ -18,7 +18,7 @@ project_name: subproj1
 
 monorepo:
   tag_prefix: subproject1/
-  folder: subproj1
+  dir: subproj1
 ```
 
 Then, you can release with (from the project's root directory):
@@ -30,11 +30,11 @@ goreleaser release --rm-dist -f ./subproj1/.goreleaser.yml
 Then, the following is different from a "regular" run:
 
 - GoReleaser will then look if current commit has a tag prefixed with `subproject1`, and also the previous tag with the same prefix;
-- Changelog will include only commits that contain changes to files within the `subproj1` folder;
+- Changelog will include only commits that contain changes to files within the `subproj1` directory;
 - Release name gets prefixed with `{{ .ProjectName }} ` if empty;
-- All build's `dir` setting get set to `monorepo.folder` if empty;
+- All build's `dir` setting get set to `monorepo.dir` if empty;
   - if yours is not, you might want to change that manually;
-- Extra files on the release, archives, Docker builds, etc are prefixed with `monorepo.folder`;
+- Extra files on the release, archives, Docker builds, etc are prefixed with `monorepo.dir`;
 - On templates, `{{.PrefixedTag}}` will be `monorepo.prefix/tag` (aka the actual tag name), and `{{.Tag}}` has the prefix stripped;
 
 The rest of the release process should work as usual.
