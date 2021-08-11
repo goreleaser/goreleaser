@@ -170,6 +170,8 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 		return newDetailedErrProxy(err, string(out))
 	}
 
+	build.UnproxiedMain = build.Main
+	build.UnproxiedDir = build.Dir
 	build.Main = mainPackage
 	build.Dir = dir
 	return nil

@@ -207,6 +207,8 @@ type Build struct {
 	Skip            bool           `yaml:",omitempty"`
 	GoBinary        string         `yaml:",omitempty"`
 	NoUniqueDistDir bool           `yaml:"no_unique_dist_dir,omitempty"`
+	UnproxiedMain   string         `yaml:"-"` // used by gomod.proxy
+	UnproxiedDir    string         `yaml:"-"` // used by gomod.proxy
 }
 
 type HookConfig struct {

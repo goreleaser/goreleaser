@@ -508,41 +508,59 @@ func TestRunInvalidFlags(t *testing.T) {
 }
 
 func TestRunPipeWithoutMainFunc(t *testing.T) {
-	folder := testlib.Mktmp(t)
-	writeMainWithoutMainFunc(t, folder)
-	config := config.Project{
-		Builds: []config.Build{
-			{
-				Binary: "no-main",
-				Hooks:  config.HookConfig{},
-				Targets: []string{
-					runtimeTarget,
+	newCtx := func(t *testing.T) *context.Context {
+		folder := testlib.Mktmp(t)
+		writeMainWithoutMainFunc(t, folder)
+		config := config.Project{
+			Builds: []config.Build{
+				{
+					Binary: "no-main",
+					Hooks:  config.HookConfig{},
+					Targets: []string{
+						runtimeTarget,
+					},
 				},
 			},
-		},
+		}
+		ctx := context.New(config)
+		ctx.Git.CurrentTag = "5.6.7"
+		return ctx
 	}
-	ctx := context.New(config)
-	ctx.Git.CurrentTag = "5.6.7"
 	t.Run("empty", func(t *testing.T) {
+		ctx := newCtx(t)
 		ctx.Config.Builds[0].Main = ""
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}), `build for no-main does not contain a main function`)
 	})
 	t.Run("not main.go", func(t *testing.T) {
+		ctx := newCtx(t)
 		ctx.Config.Builds[0].Main = "foo.go"
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}), `couldn't find main file: stat foo.go: no such file or directory`)
 	})
 	t.Run("glob", func(t *testing.T) {
+		ctx := newCtx(t)
 		ctx.Config.Builds[0].Main = "."
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}), `build for no-main does not contain a main function`)
 	})
 	t.Run("fixed main.go", func(t *testing.T) {
+		ctx := newCtx(t)
 		ctx.Config.Builds[0].Main = "main.go"
+		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+			Target: runtimeTarget,
+		}), `build for no-main does not contain a main function`)
+	})
+	t.Run("using gomod.proxy", func(t *testing.T) {
+		ctx := newCtx(t)
+		ctx.Config.GoMod.Proxy = true
+		ctx.Config.Builds[0].Dir = "dist/proxy/test"
+		ctx.Config.Builds[0].Main = "github.com/caarlos0/test"
+		ctx.Config.Builds[0].UnproxiedDir = ""
+		ctx.Config.Builds[0].UnproxiedMain = "."
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}), `build for no-main does not contain a main function`)

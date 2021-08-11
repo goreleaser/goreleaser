@@ -70,10 +70,8 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 // Build builds a golang build.
 func (*Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
-	if !ctx.Config.GoMod.Proxy {
-		if err := checkMain(build); err != nil {
-			return err
-		}
+	if err := checkMain(build); err != nil {
+		return err
 	}
 	target, err := newBuildTarget(options.Target)
 	if err != nil {
@@ -233,11 +231,19 @@ func (b buildTarget) Env() []string {
 
 func checkMain(build config.Build) error {
 	main := build.Main
+	if build.UnproxiedMain != "" {
+		main = build.UnproxiedMain
+	}
+	dir := build.Dir
+	if build.UnproxiedDir != "" {
+		dir = build.UnproxiedDir
+	}
+
 	if main == "" {
 		main = "."
 	}
-	if build.Dir != "" {
-		main = filepath.Join(build.Dir, main)
+	if dir != "" {
+		main = filepath.Join(dir, main)
 	}
 	stat, ferr := os.Stat(main)
 	if ferr != nil {
