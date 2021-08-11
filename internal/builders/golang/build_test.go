@@ -509,6 +509,7 @@ func TestRunInvalidFlags(t *testing.T) {
 
 func TestRunPipeWithoutMainFunc(t *testing.T) {
 	newCtx := func(t *testing.T) *context.Context {
+		t.Helper()
 		folder := testlib.Mktmp(t)
 		writeMainWithoutMainFunc(t, folder)
 		config := config.Project{
@@ -559,7 +560,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.GoMod.Proxy = true
 		ctx.Config.Builds[0].Dir = "dist/proxy/test"
 		ctx.Config.Builds[0].Main = "github.com/caarlos0/test"
-		ctx.Config.Builds[0].UnproxiedDir = ""
+		ctx.Config.Builds[0].UnproxiedDir = "."
 		ctx.Config.Builds[0].UnproxiedMain = "."
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
