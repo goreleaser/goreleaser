@@ -570,6 +570,9 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 
 func TestRunPipeWithProxiedRepo(t *testing.T) {
 	folder := testlib.Mktmp(t)
+	out, err := exec.Command("git", "clone", "https://github.com/goreleaser/goreleaser", "-b", "v0.161.1", "--depth=1", ".").CombinedOutput()
+	require.NoError(t, err, string(out))
+
 	proxied := filepath.Join(folder, "dist/proxy/default")
 	require.NoError(t, os.MkdirAll(proxied, 0o750))
 	require.NoError(t, os.WriteFile(
@@ -586,6 +589,7 @@ import _ "github.com/goreleaser/goreleaser"
 		[]byte("module foo\nrequire github.com/goreleaser/goreleaser v0.161.1"),
 		0o666,
 	))
+
 	cmd := exec.Command("go", "mod", "tidy")
 	cmd.Dir = proxied
 	require.NoError(t, cmd.Run())
@@ -596,9 +600,11 @@ import _ "github.com/goreleaser/goreleaser"
 		},
 		Builds: []config.Build{
 			{
-				Binary: "foo",
-				Main:   "github.com/goreleaser/goreleaser",
-				Dir:    proxied,
+				Binary:        "foo",
+				Main:          "github.com/goreleaser/goreleaser",
+				Dir:           proxied,
+				UnproxiedMain: ".",
+				UnproxiedDir:  ".",
 				Targets: []string{
 					runtimeTarget,
 				},
