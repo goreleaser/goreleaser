@@ -70,6 +70,7 @@ func TestGoModProxy(t *testing.T) {
 					Goos:   []string{runtime.GOOS},
 					Goarch: []string{runtime.GOARCH},
 					Main:   ".",
+					Dir:    ".",
 				},
 			},
 		})
@@ -83,7 +84,9 @@ func TestGoModProxy(t *testing.T) {
 		requireGoMod(t, mod, ctx.Git.CurrentTag)
 		requireMainGo(t, mod)
 		require.Equal(t, mod, ctx.Config.Builds[0].Main)
+		require.Equal(t, ".", ctx.Config.Builds[0].UnproxiedMain)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
+		require.Equal(t, ".", ctx.Config.Builds[0].UnproxiedDir)
 		require.Equal(t, mod, ctx.ModulePath)
 	})
 
