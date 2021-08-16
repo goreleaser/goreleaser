@@ -48,13 +48,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Dockerfile == "" {
 			docker.Dockerfile = "Dockerfile"
 		}
-		if len(docker.Binaries) > 0 {
-			deprecate.Notice(ctx, "docker.binaries")
-		}
-		if len(docker.Builds) > 0 {
-			deprecate.Notice(ctx, "docker.builds")
-			docker.IDs = append(docker.IDs, docker.Builds...)
-		}
 		if docker.Buildx {
 			deprecate.Notice(ctx, "docker.use_buildx")
 			if docker.Use == "" {

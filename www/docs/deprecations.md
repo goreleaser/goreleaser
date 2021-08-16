@@ -89,9 +89,14 @@ ignore:
 
 If you try to use new versions of GoReleaser with Go 1.15, it will warn about it until this deprecation warning expires.
 
+
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
 ### docker.builds
 
-> since 2021-01-07 (v0.154.0)
+> since 2021-01-07 (v0.154.0), removed 2021-08-13 (v0.175.0)
 
 `builds` is deprecated in favor of `ids`, since now it also allows to copy nfpm packages:
 
@@ -113,7 +118,7 @@ Change this:
 
 ### docker.binaries
 
-> since 2021-01-07 (v0.154.0)
+> since 2021-01-07 (v0.154.0), removed 2021-08-13 (v0.175.0)
 
 `binaries` is deprecated and now does nothing.
 If you want to filter something out, use the `ids` property.
@@ -134,13 +139,9 @@ Change this:
         ids: ['foo']
     ```
 
-## Expired deprecation notices
-
-The following options were deprecated in the past and were already removed.
-
 ### nfpms.files
 
-> since 2020-12-21 (v0.149.0)
+> since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
 
 `files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
 
@@ -165,7 +166,7 @@ Change this:
 
 ### nfpms.config_files
 
-> since 2020-12-21 (v0.149.0)
+> since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
 
 `config_files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
 
@@ -191,7 +192,7 @@ Change this:
 
 ### nfpms.symlinks
 
-> since 2020-12-21 (v0.149.0)
+> since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
 
 `symlinks` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
 
@@ -217,7 +218,7 @@ Change this:
 
 ### nfpms.rpm.ghost_files
 
-> since 2020-12-21 (v0.149.0)
+> since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
 
 `rpm.ghost_files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
 
@@ -244,7 +245,7 @@ Change this:
 
 ### nfpms.rpm.config_noreplace_files
 
-> since 2020-12-21 (v0.149.0)
+> since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
 
 `rpm.config_noreplace_files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
 
@@ -273,7 +274,7 @@ Change this:
 
 ### nfpms.deb.version_metadata
 
-> since 2020-12-21 (v0.149.0)
+> since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
 
 `deb.version_metadata` is deprecated in favor of `version_metadata` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
 
