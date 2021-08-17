@@ -23,7 +23,7 @@ steps:
   BuildMyApp:
     title: Compiling go code
     stage: build
-    image: 'golang:1.16'
+    image: 'golang:1.17'
     commands:
       - go build
   ReleaseMyApp:

@@ -62,7 +62,7 @@ func goModInit(tb testing.TB) {
 	tb.Helper()
 	createFile(tb, "go.mod", `module foo
 
-go 1.16
+go 1.17
 `)
 }
 
