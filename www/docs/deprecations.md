@@ -38,6 +38,25 @@ Description.
 
 -->
 
+### builds for windows/arm64
+
+> since 2021-08-16 (v0.175.0)
+
+Since Go 1.17, `windows/arm64` is a valid target.
+
+Prior to v0.175.0, GoReleaser would just ignore this target.
+Since in Go 1.17 it is now a valid target, GoReleaser will build it if the Go version being used is 1.17 or later.
+
+If you want to make sure it is ignored in the future, you need to add this to your build config:
+
+```yaml
+ignore:
+- goos: windows
+  goarch: arm64
+```
+
+If you try to use new versions of GoReleaser with Go 1.16 or older, it will warn about it until this deprecation warning expires, after that your build will likely fail.
+
 ### docker.use_buildx
 
 > since 2021-06-26 (v0.172.0)
@@ -76,8 +95,8 @@ Because of that, once this deprecation expires, GoReleaser will hard fail on non
 
 Since Go 1.16, `darwin/arm64` is macOS on Apple Silicon instead of `iOS`.
 
-Prior to v0.156.0, GoReleaser would just ignore this target, but since in Go 1.16 it is a valid target, GoReleaser will
-now build it if the Go version being used is 1.16.
+Prior to v0.156.0, GoReleaser would just ignore this target.
+Since in Go 1.16 and later it is a valid target, GoReleaser will now build it if the Go version being used is 1.16 or later.
 
 If you want to make sure it is ignored in the future, you need to add this to your build config:
 
@@ -87,8 +106,7 @@ ignore:
   goarch: arm64
 ```
 
-If you try to use new versions of GoReleaser with Go 1.15, it will warn about it until this deprecation warning expires.
-
+If you try to use new versions of GoReleaser with Go 1.15 or older, it will warn about it until this deprecation warning expires, after that your build will likely fail.
 
 ## Expired deprecation notices
 
