@@ -1,9 +1,9 @@
 package golang
 
 import (
-	"bytes"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	"github.com/apex/log"
@@ -25,7 +25,7 @@ func (t target) String() string {
 	return fmt.Sprintf("%s_%s", t.os, t.arch)
 }
 
-func matrix(build config.Build) ([]string, error) {
+func matrix(build config.Build, version []byte) ([]string, error) {
 	// nolint:prealloc
 	var targets []target
 	// nolint:prealloc
@@ -43,10 +43,17 @@ func matrix(build config.Build) ([]string, error) {
 		if target.mips != "" && !contains(target.mips, validGomips) {
 			return result, fmt.Errorf("invalid gomips: %s", target.mips)
 		}
-		if target.os == "darwin" && target.arch == "arm64" && !isGo116(build) {
+		if target.os == "darwin" && target.arch == "arm64" && !go116re.Match(version) {
 			log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
 				"DEPRECATED: skipped darwin/arm64 build on Go < 1.16 for compatibility, check %s for more info.",
 				"https://goreleaser.com/deprecations/#builds-for-darwinarm64",
+			))
+			continue
+		}
+		if target.os == "windows" && target.arch == "arm64" && !go117re.Match(version) {
+			log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
+				"DEPRECATED: skipped windows/arm64 build on Go < 1.17 for compatibility, check %s for more info.",
+				"https://goreleaser.com/deprecations/#builds-for-windowsarm64",
 			))
 			continue
 		}
@@ -119,9 +126,14 @@ func ignored(build config.Build, target target) bool {
 	return false
 }
 
-func isGo116(build config.Build) bool {
+var (
+	go116re = regexp.MustCompile(`go version go1.1[6-9]`)
+	go117re = regexp.MustCompile(`go version go1.1[7-9]`)
+)
+
+func goVersion(build config.Build) []byte {
 	bts, _ := exec.Command(build.GoBinary, "version").CombinedOutput()
-	return bytes.Contains(bts, []byte("go version go1.16"))
+	return bts
 }
 
 func valid(target target) bool {
@@ -179,6 +191,7 @@ var (
 		"plan9arm",
 		"solarisamd64",
 		"windowsarm",
+		"windowsarm64",
 		"windows386",
 		"windowsamd64",
 	}
