@@ -201,11 +201,11 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"windows", "386", true},
 		{"windows", "amd64", true},
 		{"windows", "arm", true},
+		{"windows", "arm64", true},
 		{"js", "wasm", true},
 		// invalid targets
 		{"darwin", "386", false},
 		{"darwin", "arm", false},
-		{"windows", "arm64", false},
 		{"windows", "riscv64", false},
 	}
 	for _, p := range platforms {
