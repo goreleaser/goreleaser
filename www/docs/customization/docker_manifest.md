@@ -28,6 +28,9 @@ options available:
 docker_manifests:
   # You can have multiple Docker manifests.
 -
+  # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
+  id: myimg
+
   # Name template for the manifest.
   # Defaults to empty.
   name_template: foo/bar:{{ .Version }}

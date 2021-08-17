@@ -541,6 +541,7 @@ type Checksum struct {
 
 // Docker image config.
 type Docker struct {
+	ID                 string   `yaml:"id,omitempty"`
 	IDs                []string `yaml:"ids,omitempty"`
 	Goos               string   `yaml:",omitempty"`
 	Goarch             string   `yaml:",omitempty"`
@@ -557,6 +558,7 @@ type Docker struct {
 
 // DockerManifest config.
 type DockerManifest struct {
+	ID             string   `yaml:"id,omitempty"`
 	NameTemplate   string   `yaml:"name_template,omitempty"`
 	SkipPush       string   `yaml:"skip_push,omitempty"`
 	ImageTemplates []string `yaml:"image_templates,omitempty"`
