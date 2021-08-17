@@ -127,6 +127,43 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
 
+func TestMinioUploadRootFolder(t *testing.T) {
+	listen := randomListen(t)
+	folder := t.TempDir()
+	tgzpath := filepath.Join(folder, "bin.tar.gz")
+	debpath := filepath.Join(folder, "bin.deb")
+	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
+	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
+	ctx := context.New(config.Project{
+		Dist:        folder,
+		ProjectName: "testupload",
+		Blobs: []config.Blob{
+			{
+				Provider: "s3",
+				Bucket:   "test",
+				Folder:   "/",
+				Endpoint: "http://" + listen,
+			},
+		},
+	})
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: "bin.tar.gz",
+		Path: tgzpath,
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.LinuxPackage,
+		Name: "bin.deb",
+		Path: debpath,
+	})
+	name := "root_folder"
+	start(t, name, listen)
+	prepareEnv()
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Publish(ctx))
+}
+
 func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 	listen := randomListen(t)
 	folder := t.TempDir()
