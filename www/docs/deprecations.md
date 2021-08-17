@@ -38,6 +38,24 @@ Description.
 
 -->
 
+### builds for darwin/arm64
+
+> since 2021-08-16 (v0.175.0)
+
+Since Go 1.16, `windows/arm64` is a valid target.
+
+Prior to v0.175.0, GoReleaser would just ignore this target, but since in Go 1.17 it is a valid target, GoReleaser will now build it if the Go version being used is 1.17 or later..
+
+If you want to make sure it is ignored in the future, you need to add this to your build config:
+
+```yaml
+ignore:
+- goos: windows
+  goarch: arm64
+```
+
+If you try to use new versions of GoReleaser with Go 1.15, it will warn about it until this deprecation warning expires.
+
 ### docker.use_buildx
 
 > since 2021-06-26 (v0.172.0)
