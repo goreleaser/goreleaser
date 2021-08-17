@@ -30,6 +30,15 @@ checksum:
   # Disable the generation/upload of the checksum file.
   # Default is false.
   disable: true
+
+  # You can add extra pre-existing files to the checksums file.
+  # The filename on the checksums file will be the last part of the path (base). If
+  # another file with the same name exists, the latest one found will be used.
+  # Defaults to empty.
+  extra_files:
+    - glob: ./path/to/file.txt
+    - glob: ./glob/**/to/**/file/**/*
+    - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
 ```
 
 !!! tip
