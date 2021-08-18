@@ -35,7 +35,6 @@ func TestExecute(t *testing.T) {
 		ext string
 		typ artifact.Type
 	}{
-		{"docker", "---", artifact.DockerImage},
 		{"debpkg", "deb", artifact.LinuxPackage},
 		{"binary", "bin", artifact.Binary},
 		{"archive", "tar", artifact.UploadableArchive},
@@ -56,6 +55,25 @@ func TestExecute(t *testing.T) {
 			},
 		})
 	}
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "foo/bar:amd64",
+		Goos:   "linux",
+		Goarch: "amd64",
+		Path:   "foo/bar:amd64",
+		Type:   artifact.DockerImage,
+		Extra: map[string]interface{}{
+			"ID": "img",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "foo/bar",
+		Path: "foo/bar",
+		Type: artifact.DockerManifest,
+		Extra: map[string]interface{}{
+			"ID": "mnf",
+		},
+	})
 
 	osEnv := func(ignores ...string) []string {
 		var result []string
@@ -108,6 +126,8 @@ func TestExecute(t *testing.T) {
 								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
 							},
 						}),
 					},
@@ -129,6 +149,8 @@ func TestExecute(t *testing.T) {
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.sum"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
 							},
 						}),
 					},
@@ -150,6 +172,27 @@ func TestExecute(t *testing.T) {
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.sig"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
+							},
+						}),
+					},
+				},
+			},
+			nil,
+		},
+		{
+			"docker",
+			[]config.Publisher{
+				{
+					Name: "test",
+					IDs:  []string{"img", "mnf"},
+					Cmd:  MockCmd + " {{ .ArtifactName }}",
+					Env: []string{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
+								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
 							},
 						}),
 					},

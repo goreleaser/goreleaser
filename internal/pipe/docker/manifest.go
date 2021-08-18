@@ -7,6 +7,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -24,8 +25,12 @@ func (ManifestPipe) String() string {
 
 // Default sets the pipe defaults.
 func (ManifestPipe) Default(ctx *context.Context) error {
+	ids := ids.New("docker_manifests")
 	for i := range ctx.Config.DockerManifests {
 		manifest := &ctx.Config.DockerManifests[i]
+		if manifest.ID != "" {
+			ids.Inc(manifest.ID)
+		}
 		if manifest.Use == "" {
 			manifest.Use = useDocker
 		}
@@ -33,7 +38,7 @@ func (ManifestPipe) Default(ctx *context.Context) error {
 			return err
 		}
 	}
-	return nil
+	return ids.Validate()
 }
 
 // Publish the docker manifests.
@@ -69,11 +74,16 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			if err := manifester.Create(ctx, name, images, manifest.CreateFlags); err != nil {
 				return err
 			}
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Type: artifact.DockerManifest,
-				Name: name,
-				Path: name,
-			})
+			art := &artifact.Artifact{
+				Type:  artifact.DockerManifest,
+				Name:  name,
+				Path:  name,
+				Extra: map[string]interface{}{},
+			}
+			if manifest.ID != "" {
+				art.Extra["ID"] = manifest.ID
+			}
+			ctx.Artifacts.Add(art)
 
 			log.WithField("manifest", name).Info("pushing docker manifest")
 			return manifester.Push(ctx, name, manifest.PushFlags)

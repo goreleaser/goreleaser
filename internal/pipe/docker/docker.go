@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/gio"
+	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -36,9 +37,13 @@ func (Pipe) String() string {
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
+	ids := ids.New("dockers")
 	for i := range ctx.Config.Dockers {
 		docker := &ctx.Config.Dockers[i]
 
+		if docker.ID != "" {
+			ids.Inc(docker.ID)
+		}
 		if docker.Goos == "" {
 			docker.Goos = "linux"
 		}
@@ -66,7 +71,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			}
 		}
 	}
-	return nil
+	return ids.Validate()
 }
 
 func validateImager(use string) error {
@@ -238,13 +243,18 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	if err := imagers[docker.Use].Push(ctx, image.Name, docker.PushFlags); err != nil {
 		return err
 	}
-	ctx.Artifacts.Add(&artifact.Artifact{
+	art := &artifact.Artifact{
 		Type:   artifact.DockerImage,
 		Name:   image.Name,
 		Path:   image.Path,
 		Goarch: image.Goarch,
 		Goos:   image.Goos,
 		Goarm:  image.Goarm,
-	})
+		Extra:  map[string]interface{}{},
+	}
+	if docker.ID != "" {
+		art.Extra["ID"] = docker.ID
+	}
+	ctx.Artifacts.Add(art)
 	return nil
 }

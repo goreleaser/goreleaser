@@ -1136,6 +1136,27 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, useDocker, ctx.Config.DockerManifests[1].Use)
 }
 
+func TestDefaultDuplicateID(t *testing.T) {
+	ctx := &context.Context{
+		Config: config.Project{
+			Dockers: []config.Docker{
+				{ID: "foo"},
+				{ /* empty */ },
+				{ID: "bar"},
+				{ID: "foo"},
+			},
+			DockerManifests: []config.DockerManifest{
+				{ID: "bar"},
+				{ /* empty */ },
+				{ID: "bar"},
+				{ID: "foo"},
+			},
+		},
+	}
+	require.EqualError(t, Pipe{}.Default(ctx), "found 2 dockers with the ID 'foo', please fix your config")
+	require.EqualError(t, ManifestPipe{}.Default(ctx), "found 2 docker_manifests with the ID 'bar', please fix your config")
+}
+
 func TestDefaultInvalidUse(t *testing.T) {
 	ctx := &context.Context{
 		Config: config.Project{

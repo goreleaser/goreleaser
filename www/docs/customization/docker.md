@@ -48,6 +48,9 @@ Of course, you can customize a lot of things:
 dockers:
   # You can have multiple Docker images.
   -
+    # ID of the image, needed if you want to filter by it later on (e.g. on custom publishers).
+    id: myimg
+
     # GOOS of the built binaries/packages that should be used.
     goos: linux
 

@@ -105,6 +105,8 @@ func filterArtifacts(artifacts artifact.Artifacts, publisher config.Publisher) [
 		artifact.ByType(artifact.UploadableFile),
 		artifact.ByType(artifact.LinuxPackage),
 		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.DockerImage),
+		artifact.ByType(artifact.DockerManifest),
 	}
 
 	if publisher.Checksum {
