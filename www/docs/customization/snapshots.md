@@ -17,7 +17,7 @@ snapshot:
   # for example).
   #
   # Default is `{{ .Tag }}-SNAPSHOT-{{.ShortCommit}}`.
-  name_template: '{{ incpatch .Tag }}-devel'
+  name_template: '{{ incpatch .Version }}-devel'
 ```
 
 ## How it works
