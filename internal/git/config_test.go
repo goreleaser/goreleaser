@@ -18,6 +18,7 @@ func TestRepoName(t *testing.T) {
 }
 
 func TestExtractRepoFromURL(t *testing.T) {
+	// valid urls
 	for _, url := range []string{
 		"git@github.com:goreleaser/goreleaser.git",
 		"git@custom:goreleaser/goreleaser.git",
@@ -27,8 +28,21 @@ func TestExtractRepoFromURL(t *testing.T) {
 		"https://github.enterprise.com/crazy/url/goreleaser/goreleaser.git",
 	} {
 		t.Run(url, func(t *testing.T) {
-			repo := git.ExtractRepoFromURL(url)
+			repo, err := git.ExtractRepoFromURL(url)
+			require.NoError(t, err)
 			require.Equal(t, "goreleaser/goreleaser", repo.String())
+		})
+	}
+
+	// invalid urls
+	for _, url := range []string{
+		"git@gist.github.com:someid.git",
+		"https://gist.github.com/someid.git",
+	} {
+		t.Run(url, func(t *testing.T) {
+			repo, err := git.ExtractRepoFromURL(url)
+			require.EqualError(t, err, "unsupported repository URL: "+url)
+			require.Equal(t, "", repo.String())
 		})
 	}
 }
