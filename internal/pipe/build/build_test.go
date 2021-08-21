@@ -331,15 +331,17 @@ func TestDefaultPartialBuilds(t *testing.T) {
 		},
 	}
 	// Create any 'Dir' paths necessary for builds.
-	cwd, _ := os.Getwd()
-	t.Cleanup(func() { os.Chdir(cwd) })
-	os.Chdir(t.TempDir())
+	cwd, err := os.Getwd()
+	require.NoError(t, err)
+	t.Cleanup(func() { require.NoError(t, os.Chdir(cwd)) })
+	require.NoError(t, os.Chdir(t.TempDir()))
 	for _, b := range ctx.Config.Builds {
 		if b.Dir != "" {
-			os.Mkdir(b.Dir, 0o755)
+			require.NoError(t, os.Mkdir(b.Dir, 0o755))
 		}
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
+
 	t.Run("build0", func(t *testing.T) {
 		build := ctx.Config.Builds[0]
 		require.Equal(t, "bar", build.Binary)
