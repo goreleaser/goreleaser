@@ -91,7 +91,7 @@ func TestWithDefaults(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			if testcase.build.GoBinary != "" && testcase.build.GoBinary != "go" {
-				helperCreateGoVersionExe(t, testcase.build.GoBinary, "go1.17")
+				createFakeGoBinaryWithVersion(t, testcase.build.GoBinary, "go1.17")
 			}
 			config := config.Project{
 				Builds: []config.Build{
@@ -108,27 +108,28 @@ func TestWithDefaults(t *testing.T) {
 	}
 }
 
-// helperCreateGoVersionExe creates a temporary executable with the given 'name', which will output
-// a 'go version' string with the given 'version'. The temporary directory created by this function
-// will be placed in the PATH variable for the duration of (and cleaned up at the end of) the
+// createFakeGoBinaryWithVersion creates a temporary executable with the
+// given name, which will output a go version string with the given version.
+//  The temporary directory created by this function will be placed in the PATH
+// variable for the duration of (and cleaned up at the end of) the
 // current test run.
-func helperCreateGoVersionExe(t *testing.T, name, version string) {
-	t.Helper()
-	d := t.TempDir()
-	f, err := os.Create(filepath.Join(d, name))
-	if err != nil {
-		t.Fatalf("unable to create temporary GoBinary file for testing: %v", err)
-	}
-	fmt.Fprintf(f, "#!/bin/sh\necho \"go version %s %s/%s\"\n", version, runtime.GOOS, runtime.GOARCH)
-	if err := f.Chmod(0o0755); err != nil {
-		t.Fatalf("unable to create temporary GoBinary file for testing: %v", err)
-	}
-	if err := f.Close(); err != nil {
-		t.Fatalf("unable to create temporary GoBinary file for testing: %v", err)
-	}
+func createFakeGoBinaryWithVersion(tb testing.TB, name, version string) {
+	tb.Helper()
+	d := tb.TempDir()
+
+	require.NoError(tb, os.WriteFile(
+		filepath.Join(d, name),
+		[]byte(fmt.Sprintf("#!/bin/sh\necho %s", version)),
+		0o755,
+	))
+
 	currentPath := os.Getenv("PATH")
-	t.Cleanup(func() { os.Setenv("PATH", currentPath) })
-	os.Setenv("PATH", fmt.Sprintf("%s%c%s", d, os.PathListSeparator, currentPath))
+	tb.Cleanup(func() {
+		require.NoError(tb, os.Setenv("PATH", currentPath))
+	})
+
+	path := fmt.Sprintf("%s%c%s", d, os.PathListSeparator, currentPath)
+	require.NoError(tb, os.Setenv("PATH", path))
 }
 
 func TestInvalidTargets(t *testing.T) {

@@ -31,7 +31,7 @@ func TestReleaseAutoSnapshot(t *testing.T) {
 		cmd := newReleaseCmd()
 		cmd.cmd.SetArgs([]string{"--auto-snapshot", "--skip-publish"})
 		require.NoError(t, cmd.cmd.Execute())
-		matches, err := filepath.Glob("./dist/fake_v0.0.2-SNAPSHOT-*_checksums.txt")
+		matches, err := filepath.Glob("./dist/fake_0.0.2-SNAPSHOT-*_checksums.txt")
 		require.NoError(t, err)
 		require.Len(t, matches, 1, "should have implied --snapshot")
 	})
