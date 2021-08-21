@@ -131,9 +131,14 @@ var (
 	go117re = regexp.MustCompile(`go version go1.1[7-9]`)
 )
 
-func goVersion(build config.Build) []byte {
-	bts, _ := exec.Command(build.GoBinary, "version").CombinedOutput()
-	return bts
+func goVersion(build config.Build) ([]byte, error) {
+	cmd := exec.Command(build.GoBinary, "version")
+	cmd.Dir = build.Dir // Set Dir to build directory in case of reletive path to GoBinary
+	bts, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("unable to determine version of go binary (%s): %w", build.GoBinary, err)
+	}
+	return bts, nil
 }
 
 func valid(target target) bool {

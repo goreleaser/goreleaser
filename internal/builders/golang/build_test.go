@@ -90,6 +90,9 @@ func TestWithDefaults(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
+			if testcase.build.GoBinary != "" && testcase.build.GoBinary != "go" {
+				helperCreateGoVersionExe(t, testcase.build.GoBinary, "go1.17")
+			}
 			config := config.Project{
 				Builds: []config.Build{
 					testcase.build,
@@ -103,6 +106,29 @@ func TestWithDefaults(t *testing.T) {
 			require.EqualValues(t, testcase.goBinary, build.GoBinary)
 		})
 	}
+}
+
+// helperCreateGoVersionExe creates a temporary executable with the given 'name', which will output
+// a 'go version' string with the given 'version'. The temporary directory created by this function
+// will be placed in the PATH variable for the duration of (and cleaned up at the end of) the
+// current test run.
+func helperCreateGoVersionExe(t *testing.T, name, version string) {
+	t.Helper()
+	d := t.TempDir()
+	f, err := os.Create(filepath.Join(d, name))
+	if err != nil {
+		t.Fatalf("unable to create temporary GoBinary file for testing: %v", err)
+	}
+	fmt.Fprintf(f, "#!/bin/sh\necho \"go version %s %s/%s\"\n", version, runtime.GOOS, runtime.GOARCH)
+	if err := f.Chmod(0o0755); err != nil {
+		t.Fatalf("unable to create temporary GoBinary file for testing: %v", err)
+	}
+	if err := f.Close(); err != nil {
+		t.Fatalf("unable to create temporary GoBinary file for testing: %v", err)
+	}
+	currentPath := os.Getenv("PATH")
+	t.Cleanup(func() { os.Setenv("PATH", currentPath) })
+	os.Setenv("PATH", fmt.Sprintf("%s%c%s", d, os.PathListSeparator, currentPath))
 }
 
 func TestInvalidTargets(t *testing.T) {

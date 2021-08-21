@@ -29,7 +29,7 @@ archives:
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ incpatch .Tag }}-next"
+  name_template: "{{ incpatch .Version }}-next"
 changelog:
   sort: asc
   filters:
