@@ -8,6 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/semver"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
+	"github.com/goreleaser/goreleaser/internal/pipe/version"
 
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/before"
@@ -41,6 +42,7 @@ type Piper interface {
 var BuildPipeline = []Piper{
 	env.Pipe{},             // load and validate environment variables
 	git.Pipe{},             // get and validate git repo state
+	version.Pipe{},         // override the git-extracted version
 	semver.Pipe{},          // parse current tag to a semver
 	before.Pipe{},          // run global hooks before build
 	defaults.Pipe{},        // load default configs

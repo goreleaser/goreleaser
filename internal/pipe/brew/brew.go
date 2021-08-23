@@ -182,7 +182,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 		WithField("repo", repo.String()).
 		Info("pushing")
 
-	msg := fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
+	msg := fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Version)
 	return cl.CreateFile(ctx, brew.CommitAuthor, repo, []byte(content), gpath, msg)
 }
 

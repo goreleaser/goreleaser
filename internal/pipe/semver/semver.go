@@ -19,13 +19,13 @@ func (Pipe) String() string {
 
 // Run executes the hooks.
 func (Pipe) Run(ctx *context.Context) error {
-	sv, err := semver.NewVersion(ctx.Git.CurrentTag)
+	sv, err := semver.NewVersion(ctx.Version)
 	if err != nil {
 		if ctx.Snapshot || ctx.SkipValidate {
 			deprecate.NoticeCustom(
 				ctx,
 				"skipping-semver-validations",
-				fmt.Sprintf("'%s' is not SemVer-compatible and may cause other issues in the pipeline, check {{ .URL }} for more info", ctx.Git.CurrentTag),
+				fmt.Sprintf("'%s' is not SemVer-compatible and may cause other issues in the pipeline, check {{ .URL }} for more info", ctx.Version),
 			)
 		}
 		if ctx.Snapshot {

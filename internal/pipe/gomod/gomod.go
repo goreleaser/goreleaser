@@ -130,7 +130,7 @@ func proxyBuild(ctx *context.Context, build *config.Build) error {
 		"BuildID": build.ID,
 	})
 
-	log.Infof("proxying %s@%s to build %s", ctx.ModulePath, ctx.Git.CurrentTag, mainPackage)
+	log.Infof("proxying %s@%s to build %s", ctx.ModulePath, ctx.Version, mainPackage)
 
 	mod, err := template.Apply(goModTpl)
 	if err != nil {
