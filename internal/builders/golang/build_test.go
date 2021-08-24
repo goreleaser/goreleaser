@@ -90,6 +90,9 @@ func TestWithDefaults(t *testing.T) {
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
+			if testcase.build.GoBinary != "" && testcase.build.GoBinary != "go" {
+				createFakeGoBinaryWithVersion(t, testcase.build.GoBinary, "go1.17")
+			}
 			config := config.Project{
 				Builds: []config.Build{
 					testcase.build,
@@ -103,6 +106,30 @@ func TestWithDefaults(t *testing.T) {
 			require.EqualValues(t, testcase.goBinary, build.GoBinary)
 		})
 	}
+}
+
+// createFakeGoBinaryWithVersion creates a temporary executable with the
+// given name, which will output a go version string with the given version.
+//  The temporary directory created by this function will be placed in the PATH
+// variable for the duration of (and cleaned up at the end of) the
+// current test run.
+func createFakeGoBinaryWithVersion(tb testing.TB, name, version string) {
+	tb.Helper()
+	d := tb.TempDir()
+
+	require.NoError(tb, os.WriteFile(
+		filepath.Join(d, name),
+		[]byte(fmt.Sprintf("#!/bin/sh\necho %s", version)),
+		0o755,
+	))
+
+	currentPath := os.Getenv("PATH")
+	tb.Cleanup(func() {
+		require.NoError(tb, os.Setenv("PATH", currentPath))
+	})
+
+	path := fmt.Sprintf("%s%c%s", d, os.PathListSeparator, currentPath)
+	require.NoError(tb, os.Setenv("PATH", path))
 }
 
 func TestInvalidTargets(t *testing.T) {

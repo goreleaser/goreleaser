@@ -78,6 +78,7 @@ nav:
   - customization/dist.md
   - customization/docker.md
   - customization/docker_manifest.md
+  - customization/docker_sign.md
   - customization/env.md
   - customization/fury.md
   - customization/gomod.md

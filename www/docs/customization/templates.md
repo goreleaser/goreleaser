@@ -13,7 +13,7 @@ On fields that support templating, these fields are always available:
 | Key                 | Description                                                                                                                  |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------|
 | `.ProjectName`      | the project name                                                                                                             |
-| `.Version`          | the version being released (`v` prefix stripped),<br>or `{{ .Tag }}-SNAPSHOT-{{ .ShortCommit }}` in case of snapshot release |
+| `.Version`          | the version being released (`v` prefix stripped),<br>or what is configured in `snapshot.name_template` in case of a snapshot release (defaults to `{{ .Version }}-SNAPSHOT-{{.ShortCommit}}`) |
 | `.Branch`           | the current git branch                                                                                                       |
 | `.PrefixedTag`      | the current git tag prefixed with the monorepo config tag prefix (if any)                                                    |
 | `.Tag`              | the current git tag                                                                                                          |
