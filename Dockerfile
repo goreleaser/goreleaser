@@ -1,13 +1,13 @@
 FROM golang:1.17.0-alpine
 
 RUN apk add --no-cache bash \
-                       curl \
-                       docker-cli \
-                       docker-cli-buildx \
-                       git \
-                       mercurial \
-                       make \
-                       build-base
+	curl \
+	docker-cli \
+	docker-cli-buildx \
+	git \
+	mercurial \
+	make \
+	build-base
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD [ "-h" ]

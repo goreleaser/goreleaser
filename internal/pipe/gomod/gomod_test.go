@@ -225,12 +225,12 @@ func requireGoMod(tb testing.TB, module, version string) {
 
 	mod, err := os.ReadFile("dist/proxy/foo/go.mod")
 	require.NoError(tb, err)
-	require.Equal(tb, fmt.Sprintf(`module foo
+	require.Contains(tb, string(mod), fmt.Sprintf(`module foo
 
-go 1.16
+go 1.17
 
 require %s %s
-`, module, version), string(mod))
+`, module, version))
 }
 
 func requireMainGo(tb testing.TB, module string) {
