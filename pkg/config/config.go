@@ -662,6 +662,7 @@ type Project struct {
 	Changelog       Changelog        `yaml:",omitempty"`
 	Dist            string           `yaml:",omitempty"`
 	Signs           []Sign           `yaml:",omitempty"`
+	DockerSigns     []Sign           `yaml:"docker_signs,omitempty"`
 	EnvFiles        EnvFiles         `yaml:"env_files,omitempty"`
 	Before          Before           `yaml:",omitempty"`
 	Source          Source           `yaml:",omitempty"`
