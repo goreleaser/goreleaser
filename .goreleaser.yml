@@ -160,6 +160,16 @@ snapcrafts:
     confinement: classic
     publish: true
 
+signs:
+- cmd: cosign
+  stdin: '{{ .Env.COSIGN_PWD }}'
+  args: ["sign-blob", "-key=cosign.key", "-output=${signature}", "${artifact}"]
+  artifacts: checksum
+
+docker_signs:
+- artifacts: manifests
+  stdin: '{{ .Env.COSIGN_PWD }}'
+
 publishers:
   - name: fury.io
     ids:
