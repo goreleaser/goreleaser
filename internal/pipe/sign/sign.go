@@ -155,7 +155,7 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 		stdin = f
 	}
 
-	fields := log.Fields{"cmd": cfg.Cmd}
+	fields := log.Fields{"cmd": cfg.Cmd, "artifact": a.Name}
 
 	// The GoASTScanner flags this as a security risk.
 	// However, this works as intended. The nosec annotation
