@@ -45,6 +45,10 @@ func (DockerPipe) Run(ctx *context.Context) error {
 		return pipe.ErrSkipSignEnabled
 	}
 
+	if ctx.SkipPublish {
+		return pipe.ErrSkipSignEnabled
+	}
+
 	g := semerrgroup.New(ctx.Parallelism)
 	for i := range ctx.Config.DockerSigns {
 		cfg := ctx.Config.DockerSigns[i]

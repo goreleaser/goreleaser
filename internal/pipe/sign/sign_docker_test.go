@@ -44,6 +44,13 @@ func TestDockerSignSkipped(t *testing.T) {
 	require.EqualError(t, err, "artifact signing is disabled")
 }
 
+func TestDockerSignSkipPublish(t *testing.T) {
+	ctx := context.New(config.Project{})
+	ctx.SkipPublish = true
+	err := DockerPipe{}.Run(ctx)
+	require.EqualError(t, err, "artifact signing is disabled")
+}
+
 func TestDockerSignInvalidArtifacts(t *testing.T) {
 	ctx := context.New(config.Project{})
 	ctx.Config.DockerSigns = []config.Sign{
