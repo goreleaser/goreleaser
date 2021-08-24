@@ -20,4 +20,4 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           skip-go-installation: true
-          args: --out-format=github-actions --timeout=5m
+          args: --timeout=5m
