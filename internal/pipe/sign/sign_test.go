@@ -24,9 +24,10 @@ var (
 )
 
 const (
-	user         = "nopass"
-	passwordUser = "password"
-	fakeGPGKeyID = "23E7505E"
+	user             = "nopass"
+	passwordUser     = "password"
+	passwordUserTmpl = "{{ .Env.GPG_PASSWORD }}"
+	fakeGPGKeyID     = "23E7505E"
 )
 
 func TestMain(m *testing.M) {
@@ -87,6 +88,7 @@ func TestSignInvalidArtifacts(t *testing.T) {
 
 func TestSignArtifacts(t *testing.T) {
 	stdin := passwordUser
+	tmplStdin := passwordUserTmpl
 	tests := []struct {
 		desc           string
 		ctx            *context.Context
@@ -358,6 +360,36 @@ func TestSignArtifacts(t *testing.T) {
 								"${artifact}",
 							},
 							Stdin: &stdin,
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
+			signatureNames: []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
+			user:           passwordUser,
+		},
+		{
+			desc: "sign single with password from templated stdin",
+			ctx: context.New(
+				config.Project{
+					Env: []string{"GPG_PASSWORD=" + stdin},
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Args: []string{
+								"-u",
+								passwordUser,
+								"--batch",
+								"--pinentry-mode",
+								"loopback",
+								"--passphrase-fd",
+								"0",
+								"--output",
+								"${signature}",
+								"--detach-sign",
+								"${artifact}",
+							},
+							Stdin: &tmplStdin,
 						},
 					},
 				},

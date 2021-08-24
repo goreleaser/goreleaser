@@ -137,7 +137,11 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 
 	var stdin io.Reader
 	if cfg.Stdin != nil {
-		stdin = strings.NewReader(*cfg.Stdin)
+		s, err := tmpl.New(ctx).WithEnv(env).Apply(expand(*cfg.Stdin, env))
+		if err != nil {
+			return nil, err
+		}
+		stdin = strings.NewReader(s)
 	} else if cfg.StdinFile != "" {
 		f, err := os.Open(cfg.StdinFile)
 		if err != nil {

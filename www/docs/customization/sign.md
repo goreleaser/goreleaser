@@ -73,12 +73,12 @@ signs:
       - foo
       - bar
 
-    # Stdin data to be given to the signature command as stdin.
-    # defaults to empty
-    stdin: password
+    # Stdin data template to be given to the signature command as stdin.
+    # Defaults to empty
+    stdin: '{{ .Env.GPG_PASSWORD }}'
 
     # StdinFile file to be given to the signature command as stdin.
-    # defaults to empty
+    # Defaults to empty
     stdin_file: ./.password
 ```
 
@@ -128,6 +128,7 @@ builds:
   hooks:
     post: gon gon.hcl
 ```
+
 **`gon.hcl`:**
 ```hcl
 # The path follows a pattern
