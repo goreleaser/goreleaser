@@ -40,7 +40,7 @@ signs:
     # - '${artifact}': the path to the artifact that will be signed
     # - '${artifactID}': the ID of the artifact that will be signed
     #
-    # Defaults to empty.
+    # Defaults to `${artifact}.sig`.
     signature: "${artifact}_sig"
 
     # Path to the signature command
