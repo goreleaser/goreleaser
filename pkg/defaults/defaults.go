@@ -49,6 +49,7 @@ var Defaulters = []Defaulter{
 	snapcraft.Pipe{},
 	checksums.Pipe{},
 	sign.Pipe{},
+	sign.DockerPipe{},
 	docker.Pipe{},
 	docker.ManifestPipe{},
 	artifactory.Pipe{},

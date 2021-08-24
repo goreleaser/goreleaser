@@ -8,7 +8,7 @@ signing key.
 
 GoReleaser provides means to sign both executables and archives.
 
-## Archives
+## Usage
 
 Signing works in combination with checksum files and it is generally sufficient
 to sign the checksum files only.
@@ -30,30 +30,34 @@ To customize the signing pipeline you can use the following options:
 signs:
   -
     # ID of the sign config, must be unique.
+    #
     # Defaults to "default".
     id: foo
 
-    # name/template of the signature file.
-    # '${artifact}' is the path to the artifact that should be signed.
+    # Name/template of the signature file.
     #
-    # defaults to `${artifact}.sig`
+    # Available environment variables:
+    # - '${artifact}': the path to the artifact that will be signed
+    # - '${artifactID}': the ID of the artifact that will be signed
+    #
+    # Defaults to `${artifact}.sig`.
     signature: "${artifact}_sig"
 
-    # path to the signature command
+    # Path to the signature command
     #
-    # defaults to `gpg`
+    # Defaults to `gpg`
     cmd: gpg2
 
-    # command line templateable arguments for the command
+    # Command line templateable arguments for the command
     #
     # to sign with a specific key use
     # args: ["-u", "<key id, fingerprint, email, ...>", "--output", "${signature}", "--detach-sign", "${artifact}"]
     #
-    # defaults to `["--output", "${signature}", "--detach-sign", "${artifact}"]`
+    # Defaults to `["--output", "${signature}", "--detach-sign", "${artifact}"]`
     args: ["--output", "${signature}", "${artifact}", "{{ .ProjectName }}"]
 
 
-    # which artifacts to sign
+    # Which artifacts to sign
     #
     #   all:      all artifacts
     #   none:     no signing
@@ -63,52 +67,61 @@ signs:
     #   archive:  archives from archive pipe
     #   binary:   binaries if archiving format is set to binary
     #
-    # defaults to `none`
+    # Defaults to `none`
     artifacts: all
 
     # IDs of the artifacts to sign.
-    # Defaults to all.
+    #
     # If `artifacts` is checksum or source, this fields has no effect.
+    #
+    # Defaults to empty (which implies no filtering).
     ids:
       - foo
       - bar
 
     # Stdin data template to be given to the signature command as stdin.
+    #
     # Defaults to empty
     stdin: '{{ .Env.GPG_PASSWORD }}'
 
     # StdinFile file to be given to the signature command as stdin.
+    #
     # Defaults to empty
     stdin_file: ./.password
 ```
 
-### Limitations
+## Signing with cosign
 
-You can sign with any command that outputs a file.
-If what you want to use does not do it, you can always hack by setting the
-command to `sh -c`. For example:
+You can sign you artifacts with [cosign][] as well.
+
+Assuming you have a `cosign.key` in the repository root and a `COSIGN_PWD` environment variable set, a simple usage example would look like this:
 
 ```yaml
 # .goreleaser.yml
 signs:
-- cmd: sh
-  args:
-  - '-c'
-  - 'echo "${artifact} is signed and I can prove it" | tee ${signature}'
+- cmd: cosign
+  stdin: '{{ .Env.COSIGN_PWD }}'
+  args: ["sign-blob", "-key=cosign.key", "-output=${signature}", "${artifact}"]
   artifacts: all
 ```
 
-And it will work just fine. Just make sure to always use the `${signature}`
-template variable as the result file name and `${artifact}` as the origin file.
+Your users can then verify the signature with:
+
+```sh
+cosign verify-blob -key cosign.pub -signature file.tar.gz.sig file.tar.gz
+```
 
 
-## Executables
+## Signing executables
 
 Executables can be signed after build using post hooks.
 
-For example you can use [gon][] to create notarized MacOS apps:
+### With gon
+
+For example, you can use [gon][] to create notarized MacOS apps:
 
 ```yaml
+# .goreleaser.yml
 builds:
 - binary: foo
   id: foo
@@ -129,8 +142,11 @@ builds:
     post: gon gon.hcl
 ```
 
-**`gon.hcl`:**
-```hcl
+and:
+
+```terraform
+# gon.hcl
+#
 # The path follows a pattern
 # ./dist/BUILD-ID_TARGET/BINARY-NAME
 source = ["./dist/foo-macos_darwin_amd64/foo"]
@@ -156,4 +172,55 @@ as `extra_files` in the `release` section to make sure they also get uploaded.
 
 You can also check [this issue](https://github.com/goreleaser/goreleaser/issues/1227) for more details.
 
+
+### With cosign
+
+You can also use [cosign][] to sign the binaries directly,
+but you'll need to manually add the `.sig` files to the release and/or archive:
+
+```yaml
+# .goreleaser.yml
+builds:
+- hooks:
+    post:
+      - sh -c "echo $COSIGN_PWD | cosign sign-blob -key cosign.key {{ .Path }} > dist/{{ .ProjectName }}_{{ .Version }}_{{ .Target }}.sig"
+
+# add to the release directly:
+release:
+  extra_files:
+  - glob: dist/*.sig
+
+# or just to the archives:
+archives:
+- files:
+  - dist/*.sig
+```
+
+While this works, I would recommend using the signing pipe directly.
+
+## Signing Docker images and manifests
+
+Please refer to [Docker Images Signing](/customization/docker_sign/).
+
+## Limitations
+
+You can sign with any command that either outputs a file or modify the file being signed.
+
+If you want to sign with something that writes to `STDOUT` instead of a file,
+you can wrap the command inside a `sh -c` execution, for instance:
+
+```yaml
+# .goreleaser.yml
+signs:
+- cmd: sh
+  args:
+  - '-c'
+  - 'echo "${artifact} is signed and I can prove it" | tee ${signature}'
+  artifacts: all
+```
+
+And it will work just fine. Just make sure to always use the `${signature}`
+template variable as the result file name and `${artifact}` as the origin file.
+
 [gon]: https://github.com/mitchellh/gon
+[cosign]: https://github.com/sigstore/cosign

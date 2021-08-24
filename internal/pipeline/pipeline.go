@@ -64,5 +64,6 @@ var Pipeline = append(
 	sign.Pipe{},          // sign artifacts
 	docker.Pipe{},        // create and push docker images
 	publish.Pipe{},       // publishes artifacts
+	sign.DockerPipe{},    // sign docker images and manifests
 	announce.Pipe{},      // announce releases
 )

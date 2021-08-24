@@ -21,7 +21,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Pipe for artifact signing.
+// Pipe that signs common artifacts.
 type Pipe struct{}
 
 func (Pipe) String() string {
@@ -110,7 +110,9 @@ func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact)
 		if err != nil {
 			return err
 		}
-		ctx.Artifacts.Add(artifact)
+		if artifact != nil {
+			ctx.Artifacts.Add(artifact)
+		}
 	}
 	return nil
 }
@@ -118,6 +120,7 @@ func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact)
 func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*artifact.Artifact, error) {
 	env := ctx.Env.Copy()
 	env["artifact"] = a.Path
+	env["artifactID"] = a.ExtraOr("ID", "").(string)
 
 	name, err := tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Signature, env))
 	if err != nil {
@@ -152,7 +155,7 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 		stdin = f
 	}
 
-	fields := log.Fields{"cmd": cfg.Cmd}
+	fields := log.Fields{"cmd": cfg.Cmd, "artifact": a.Name}
 
 	// The GoASTScanner flags this as a security risk.
 	// However, this works as intended. The nosec annotation
@@ -171,7 +174,9 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 		return nil, fmt.Errorf("sign: %s failed: %w: %s", cfg.Cmd, err, b.String())
 	}
 
-	artifactPathBase, _ := filepath.Split(a.Path)
+	if cfg.Signature == "" {
+		return nil, nil
+	}
 
 	env["artifact"] = a.Name
 	name, err = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Signature, env))
@@ -179,6 +184,7 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 		return nil, fmt.Errorf("sign failed: %s: invalid template: %w", a, err)
 	}
 
+	artifactPathBase, _ := filepath.Split(a.Path)
 	sigFilename := filepath.Base(env["signature"])
 	return &artifact.Artifact{
 		Type: artifact.Signature,
