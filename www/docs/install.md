@@ -129,13 +129,13 @@ Bellow you can find the steps for each of them.
 
 All artifacts are checksummed and the checksum file is signed with [cosign][].
 
-You can verify it using [our public key](https://goreleaser.com/goreleaser.pub).
+You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
 
 === "OSS"
     1. Download the files you want, the `goreleaser_checksums.txt` and `goreleaser_checksums.txt.sig` files from the [releases][releases] page.
     1. Get our public key:
       ```sh
-      wget https://goreleaser.com/goreleaser.pub
+      wget https://goreleaser.com/static/goreleaser.pub
       ```
     1. Verify the signature:
       ```sh
@@ -146,14 +146,14 @@ You can verify it using [our public key](https://goreleaser.com/goreleaser.pub).
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
       ```sh
-      sha256sum --ignore-missing -c goreleaser-pro_checksums.txt
+      sha256sum --ignore-missing -c goreleaser_checksums.txt
       ```
 
 === "Pro"
     1. Download the files you want, the `goreleaser-pro_checksums.txt` and `goreleaser-pro_checksums.txt.sig` files from the [releases][pro-releases] page.
     1. Get our public key:
       ```sh
-      wget https://goreleaser.com/goreleaser.pub
+      wget https://goreleaser.com/static/goreleaser.pub
       ```
     1. Verify the signature:
       ```sh
@@ -171,18 +171,18 @@ You can verify it using [our public key](https://goreleaser.com/goreleaser.pub).
 
 Our Docker image is signed with [cosign][].
 
-You can verify it using [our public key](https://goreleaser.com/goreleaser.pub).
+You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
 
 === "OSS"
     ```sh
-    wget https://goreleaser.com/goreleaser.pub
+    wget https://goreleaser.com/static/goreleaser.pub
     cosign verify -key goreleaser.pub goreleaser/goreleaser
     cosign verify -key goreleaser.pub ghcr.io/goreleaser/goreleaser
     ```
 
 === "Pro"
     ```sh
-    wget https://goreleaser.com/goreleaser.pub
+    wget https://goreleaser.com/static/goreleaser.pub
     cosign verify -key goreleaser.pub goreleaser/goreleaser-pro
     cosign verify -key goreleaser.pub ghcr.io/goreleaser/goreleaser-pro
     ```
