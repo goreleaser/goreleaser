@@ -1,13 +1,17 @@
 env:
   - GO111MODULE=on
+
 before:
   hooks:
     - go mod tidy
     - ./scripts/completions.sh
+
 snapshot:
   name_template: '{{ incpatch .Version }}-next'
+
 gomod:
   proxy: true
+
 builds:
 - env:
     - CGO_ENABLED=0
@@ -25,8 +29,10 @@ builds:
     - -trimpath
   ldflags:
     - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
+
 checksum:
-  name_template: '{{ .ProjectName }}_checksums.txt'
+  name_template: 'checksums.txt'
+
 changelog:
   sort: asc
   filters:
@@ -36,6 +42,7 @@ changelog:
     - Merge pull request
     - Merge branch
     - go mod tidy
+
 dockers:
 - image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
@@ -68,6 +75,7 @@ dockers:
   goarch: arm64
   extra_files:
   - scripts/entrypoint.sh
+
 docker_manifests:
 - name_template: 'goreleaser/goreleaser:{{ .Tag }}'
   image_templates:
@@ -85,6 +93,7 @@ docker_manifests:
   image_templates:
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
   - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
+
 archives:
   - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     replacements:
@@ -100,6 +109,7 @@ archives:
       - README.md
       - LICENSE.md
       - completions/*
+
 brews:
   - tap:
       owner: goreleaser
@@ -119,6 +129,7 @@ brews:
       bash_completion.install "completions/goreleaser.bash" => "goreleaser"
       zsh_completion.install "completions/goreleaser.zsh" => "_goreleaser"
       fish_completion.install "completions/goreleaser.fish"
+
 scoop:
   bucket:
     owner: goreleaser
@@ -126,6 +137,7 @@ scoop:
   homepage:  https://goreleaser.com
   description: Deliver Go binaries as fast and easily as possible
   license: MIT
+
 nfpms:
   - file_name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     id: packages
@@ -149,6 +161,7 @@ nfpms:
     - git
     recommends:
     - golang
+
 snapcrafts:
   - name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     summary: Deliver Go binaries as fast and easily as possible
