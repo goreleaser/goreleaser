@@ -88,6 +88,36 @@ func TestWithDefaults(t *testing.T) {
 			},
 			goBinary: "go",
 		},
+		"empty with custom dir": {
+			build: config.Build{
+				ID:     "foo2",
+				Binary: "foo",
+				Dir:    "./testdata",
+			},
+			targets: []string{
+				"linux_amd64",
+				"linux_386",
+				"linux_arm64",
+				"darwin_amd64",
+				"darwin_arm64",
+			},
+			goBinary: "go",
+		},
+		"empty with custom dir that doest exist": {
+			build: config.Build{
+				ID:     "foo2",
+				Binary: "foo",
+				Dir:    "./nope",
+			},
+			targets: []string{
+				"linux_amd64",
+				"linux_386",
+				"linux_arm64",
+				"darwin_amd64",
+				"darwin_arm64",
+			},
+			goBinary: "go",
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			if testcase.build.GoBinary != "" && testcase.build.GoBinary != "go" {
