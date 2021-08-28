@@ -39,7 +39,7 @@ func (a Archive) Add(f config.File) error {
 		return err
 	}
 	defer file.Close()
-	info, err := file.Stat()
+	info, err := os.Lstat(f.Source) // #nosec
 	if err != nil {
 		return err
 	}
