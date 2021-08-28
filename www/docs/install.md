@@ -132,7 +132,7 @@ All artifacts are checksummed and the checksum file is signed with [cosign][].
 You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
 
 === "OSS"
-    1. Download the files you want, the `goreleaser_checksums.txt` and `goreleaser_checksums.txt.sig` files from the [releases][releases] page.
+    1. Download the files you want, the `checksums.txt` and `checksums.txt.sig` files from the [releases][releases] page.
     1. Get our public key:
       ```sh
       wget https://goreleaser.com/static/goreleaser.pub
@@ -141,16 +141,16 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
       ```sh
       cosign verify-blob \
         -key goreleaser.pub \
-        -signature goreleaser_checksums.txt.sig \
-        goreleaser_checksums.txt
+        -signature checksums.txt.sig \
+        checksums.txt
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
       ```sh
-      sha256sum --ignore-missing -c goreleaser_checksums.txt
+      sha256sum --ignore-missing -c checksums.txt
       ```
 
 === "Pro"
-    1. Download the files you want, the `goreleaser-pro_checksums.txt` and `goreleaser-pro_checksums.txt.sig` files from the [releases][pro-releases] page.
+    1. Download the files you want, the `checksums.txt` and `checksums.txt.sig` files from the [releases][pro-releases] page.
     1. Get our public key:
       ```sh
       wget https://goreleaser.com/static/goreleaser.pub
@@ -159,12 +159,12 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
       ```sh
       cosign verify-blob \
         -key goreleaser.pub \
-        -signature goreleaser-pro_checksums.txt.sig \
-        goreleaser-pro_checksums.txt
+        -signature checksums.txt.sig \
+        checksums.txt
       ```
     1. If the signature is ok, you can then verify the SHA256 sums match with the downloaded binary:
       ```sh
-      sha256sum --ignore-missing -c goreleaser-pro_checksums.txt
+      sha256sum --ignore-missing -c checksums.txt
       ```
 
 ## Verifying docker images
