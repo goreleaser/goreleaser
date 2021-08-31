@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/goreleaser/goreleaser/internal/pipe/reddit"
-
 	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
 	"github.com/goreleaser/goreleaser/pkg/context"
