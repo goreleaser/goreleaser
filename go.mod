@@ -7,7 +7,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/apex/log v1.9.0
 	github.com/caarlos0/ctrlc v1.0.0
-	github.com/caarlos0/env/v6 v6.6.2
+	github.com/caarlos0/env/v6 v6.7.0
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/dghubble/go-twitter v0.0.0-20210609183100-2fdbf421508e
 	github.com/dghubble/oauth1 v0.7.0
