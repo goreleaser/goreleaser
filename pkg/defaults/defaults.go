@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/goreleaser/goreleaser/internal/pipe/reddit"
-
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
