@@ -52,11 +52,9 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Scoop.CommitAuthor.Email == "" {
 		ctx.Config.Scoop.CommitAuthor.Email = "goreleaser@carlosbecker.com"
 	}
-
 	if ctx.Config.Scoop.CommitMessageTemplate == "" {
 		ctx.Config.Scoop.CommitMessageTemplate = "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
 	}
-
 	return nil
 }
 
@@ -127,8 +125,7 @@ func doRun(ctx *context.Context, cl client.Client) error {
 		return pipe.Skip("release is disabled")
 	}
 
-	commitMessage, err := tmpl.New(ctx).
-		Apply(scoop.CommitMessageTemplate)
+	commitMessage, err := tmpl.New(ctx).Apply(scoop.CommitMessageTemplate)
 	if err != nil {
 		return err
 	}

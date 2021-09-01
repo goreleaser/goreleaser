@@ -127,43 +127,65 @@ func TestSplit(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
-	for name, fn := range map[string]func(ctx *context.Context){
-		"default": func(ctx *context.Context) {
-			ctx.TokenType = context.TokenTypeGitHub
-			ctx.Config.Brews[0].Tap.Owner = "test"
-			ctx.Config.Brews[0].Tap.Name = "test"
-			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+	type testcase struct {
+		prepare       func(ctx *context.Context)
+		expectedError string
+	}
+	for name, tt := range map[string]testcase{
+		"default": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+			},
 		},
-		"custom_download_strategy": func(ctx *context.Context) {
-			ctx.TokenType = context.TokenTypeGitHub
-			ctx.Config.Brews[0].Tap.Owner = "test"
-			ctx.Config.Brews[0].Tap.Name = "test"
-			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+		"custom_download_strategy": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 
-			ctx.Config.Brews[0].DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
+				ctx.Config.Brews[0].DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
+			},
 		},
-		"custom_require": func(ctx *context.Context) {
-			ctx.TokenType = context.TokenTypeGitHub
-			ctx.Config.Brews[0].Tap.Owner = "test"
-			ctx.Config.Brews[0].Tap.Name = "test"
-			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+		"custom_require": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 
-			ctx.Config.Brews[0].DownloadStrategy = "CustomDownloadStrategy"
-			ctx.Config.Brews[0].CustomRequire = "custom_download_strategy"
+				ctx.Config.Brews[0].DownloadStrategy = "CustomDownloadStrategy"
+				ctx.Config.Brews[0].CustomRequire = "custom_download_strategy"
+			},
 		},
-		"custom_block": func(ctx *context.Context) {
-			ctx.TokenType = context.TokenTypeGitHub
-			ctx.Config.Brews[0].Tap.Owner = "test"
-			ctx.Config.Brews[0].Tap.Name = "test"
-			ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+		"custom_block": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 
-			ctx.Config.Brews[0].CustomBlock = `head "https://github.com/caarlos0/test.git"`
+				ctx.Config.Brews[0].CustomBlock = `head "https://github.com/caarlos0/test.git"`
+			},
 		},
-		"default_gitlab": func(ctx *context.Context) {
-			ctx.TokenType = context.TokenTypeGitLab
-			ctx.Config.Brews[0].Tap.Owner = "test"
-			ctx.Config.Brews[0].Tap.Name = "test"
-			ctx.Config.Brews[0].Homepage = "https://gitlab.com/goreleaser"
+		"default_gitlab": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitLab
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Homepage = "https://gitlab.com/goreleaser"
+			},
+		},
+		"invalid_commit_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].CommitMessageTemplate = "{{ .Asdsa }"
+			},
+			expectedError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -197,7 +219,7 @@ func TestRunPipe(t *testing.T) {
 					},
 				},
 			}
-			fn(ctx)
+			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:   "bar_bin.tar.gz",
 				Path:   "doesnt matter",
@@ -227,6 +249,11 @@ func TestRunPipe(t *testing.T) {
 			require.NoError(t, f.Close())
 			client := &DummyClient{}
 			distFile := filepath.Join(folder, name+".rb")
+
+			if tt.expectedError != "" {
+				require.EqualError(t, doRun(ctx, ctx.Config.Brews[0], client), tt.expectedError)
+				return
+			}
 
 			require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
 			require.True(t, client.CreatedFile)
@@ -855,6 +882,7 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Brews[0].Name)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
+	require.NotEmpty(t, ctx.Config.Brews[0].CommitMessageTemplate)
 	require.Equal(t, `bin.install "myproject"`, ctx.Config.Brews[0].Install)
 }
 
