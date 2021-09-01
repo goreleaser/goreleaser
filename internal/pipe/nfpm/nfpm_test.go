@@ -189,7 +189,7 @@ func TestRunPipe(t *testing.T) {
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 5, "should not modify the config file list")
 }
 
-func TestInvalidNameTemplate(t *testing.T) {
+func TestInvalidTemplate(t *testing.T) {
 	makeCtx := func() *context.Context {
 		ctx := &context.Context{
 			Version:     "1.2.3",
@@ -260,6 +260,24 @@ func TestInvalidNameTemplate(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Homepage = "{{ .NOPE_HOMEPAGE }}"
 		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_HOMEPAGE>: map has no entry for key "NOPE_HOMEPAGE"`)
+	})
+
+	t.Run("deb key file", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.NFPMs[0].Deb.Signature.KeyFile = "{{ .NOPE_KEY_FILE }}"
+		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_KEY_FILE>: map has no entry for key "NOPE_KEY_FILE"`)
+	})
+
+	t.Run("rpm key file", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.NFPMs[0].RPM.Signature.KeyFile = "{{ .NOPE_KEY_FILE }}"
+		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_KEY_FILE>: map has no entry for key "NOPE_KEY_FILE"`)
+	})
+
+	t.Run("apk key file", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.NFPMs[0].APK.Signature.KeyFile = "{{ .NOPE_KEY_FILE }}"
+		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_KEY_FILE>: map has no entry for key "NOPE_KEY_FILE"`)
 	})
 }
 

@@ -270,13 +270,14 @@ nfpms:
 
       # The package is signed if a key_file is set
       signature:
-        # PGP secret key (can also be ASCII-armored). The passphrase is taken
-        # from the environment variable $NFPM_ID_RPM_PASSPHRASE with a fallback
-        # to $NFPM_ID_PASSPHRASE, where ID is the id of the current nfpm config.
+        # Template to the PGP secret key file path (can also be ASCII-armored).
+        # The passphrase is taken from the environment variable
+        # `$NFPM_ID_RPM_PASSPHRASE` with a fallback to `$NFPM_ID_PASSPHRASE`,
+        # where ID is the id of the current nfpm config.
         # The id will be transformed to uppercase.
         # E.g. If your nfpm id is 'default' then the rpm-specific passphrase
-        # should be set as $NFPM_DEFAULT_RPM_PASSPHRASE
-        key_file: key.gpg
+        # should be set as `$NFPM_DEFAULT_RPM_PASSPHRASE`
+        key_file: '{{ .Env.GPG_KEY_PATH }}'
 
     # Custom configuration applied only to the Deb packager.
     deb:
@@ -306,13 +307,15 @@ nfpms:
 
       # The package is signed if a key_file is set
       signature:
-        # PGP secret key (can also be ASCII-armored). The passphrase is taken
-        # from the environment variable $NFPM_ID_DEB_PASSPHRASE with a fallback
-        # to $NFPM_ID_PASSPHRASE, where ID is the id of the current nfpm config.
+        # Template to the PGP secret key file path (can also be ASCII-armored).
+        # The passphrase is taken from the environment variable
+        # `$NFPM_ID_DEB_PASSPHRASE` with a fallback to `$NFPM_ID_PASSPHRASE`,
+        # where ID is the id of the current nfpm config.
         # The id will be transformed to uppercase.
         # E.g. If your nfpm id is 'default' then the deb-specific passphrase
-        # should be set as $NFPM_DEFAULT_DEB_PASSPHRASE
-        key_file: key.gpg
+        # should be set as `$NFPM_DEFAULT_DEB_PASSPHRASE`
+        key_file: '{{ .Env.GPG_KEY_PATH }}'
+
         # The type describes the signers role, possible values are "origin",
         # "maint" and "archive". If unset, the type defaults to "origin".
         type: origin
@@ -327,13 +330,16 @@ nfpms:
 
       # The package is signed if a key_file is set
       signature:
-        # RSA private key in the PEM format. The passphrase is taken
-        # from the environment variable $NFPM_ID_APK_PASSPHRASE with a fallback
-        # to $NFPM_ID_PASSPHRASE, where ID is the id of the current nfpm config.
+        # Template to the PGP secret key file path (can also be ASCII-armored).
+        # The passphrase is taken from the environment variable
+        # `$NFPM_ID_APK_PASSPHRASE` with a fallback to `$NFPM_ID_PASSPHRASE`,
+        # where ID is the id of the current nfpm config.
         # The id will be transformed to uppercase.
-        # E.g. If your nfpm id is 'default' then the deb-specific passphrase
-        # should be set as $NFPM_DEFAULT_APK_PASSPHRASE
-        key_file: key.gpg
+        # E.g. If your nfpm id is 'default' then the apk-specific passphrase
+        # should be set as `$NFPM_DEFAULT_APK_PASSPHRASE`
+        key_file: '{{ .Env.GPG_KEY_PATH }}'
+
+
         # The name of the signing key. When verifying a package, the signature
         # is matched to the public key store in /etc/apk/keys/<key_name>.rsa.pub.
         # If unset, it defaults to the maintainer email address.
