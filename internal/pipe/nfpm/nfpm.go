@@ -140,6 +140,21 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		return err
 	}
 
+	debKeyFile, err := tmpl.Apply(overridden.Deb.Signature.KeyFile)
+	if err != nil {
+		return err
+	}
+
+	rpmKeyFile, err := tmpl.Apply(overridden.RPM.Signature.KeyFile)
+	if err != nil {
+		return err
+	}
+
+	apkKeyFile, err := tmpl.Apply(overridden.APK.Signature.KeyFile)
+	if err != nil {
+		return err
+	}
+
 	contents := files.Contents{}
 	for _, content := range overridden.Contents {
 		src, err := tmpl.Apply(content.Source)
@@ -221,7 +236,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 				Breaks: overridden.Deb.Breaks,
 				Signature: nfpm.DebSignature{
 					PackageSignature: nfpm.PackageSignature{
-						KeyFile:       overridden.Deb.Signature.KeyFile,
+						KeyFile:       debKeyFile,
 						KeyPassphrase: getPassphraseFromEnv(ctx, "DEB", fpm.ID),
 					},
 					Type: overridden.Deb.Signature.Type,
@@ -233,7 +248,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 				Compression: overridden.RPM.Compression,
 				Signature: nfpm.RPMSignature{
 					PackageSignature: nfpm.PackageSignature{
-						KeyFile:       overridden.RPM.Signature.KeyFile,
+						KeyFile:       rpmKeyFile,
 						KeyPassphrase: getPassphraseFromEnv(ctx, "RPM", fpm.ID),
 					},
 				},
@@ -245,7 +260,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 			APK: nfpm.APK{
 				Signature: nfpm.APKSignature{
 					PackageSignature: nfpm.PackageSignature{
-						KeyFile:       overridden.APK.Signature.KeyFile,
+						KeyFile:       apkKeyFile,
 						KeyPassphrase: getPassphraseFromEnv(ctx, "APK", fpm.ID),
 					},
 					KeyName: overridden.APK.Signature.KeyName,
