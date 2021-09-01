@@ -90,27 +90,28 @@ func (r Repo) String() string {
 
 // Homebrew contains the brew section.
 type Homebrew struct {
-	Name             string               `yaml:",omitempty"`
-	Tap              RepoRef              `yaml:",omitempty"`
-	CommitAuthor     CommitAuthor         `yaml:"commit_author,omitempty"`
-	Folder           string               `yaml:",omitempty"`
-	Caveats          string               `yaml:",omitempty"`
-	Plist            string               `yaml:",omitempty"`
-	Install          string               `yaml:",omitempty"`
-	PostInstall      string               `yaml:"post_install,omitempty"`
-	Dependencies     []HomebrewDependency `yaml:",omitempty"`
-	Test             string               `yaml:",omitempty"`
-	Conflicts        []string             `yaml:",omitempty"`
-	Description      string               `yaml:",omitempty"`
-	Homepage         string               `yaml:",omitempty"`
-	License          string               `yaml:",omitempty"`
-	SkipUpload       string               `yaml:"skip_upload,omitempty"`
-	DownloadStrategy string               `yaml:"download_strategy,omitempty"`
-	URLTemplate      string               `yaml:"url_template,omitempty"`
-	CustomRequire    string               `yaml:"custom_require,omitempty"`
-	CustomBlock      string               `yaml:"custom_block,omitempty"`
-	IDs              []string             `yaml:"ids,omitempty"`
-	Goarm            string               `yaml:"goarm,omitempty"`
+	Name                  string               `yaml:",omitempty"`
+	Tap                   RepoRef              `yaml:",omitempty"`
+	CommitAuthor          CommitAuthor         `yaml:"commit_author,omitempty"`
+	CommitMessageTemplate string               `yaml:"commit_msg_template,omitempty"`
+	Folder                string               `yaml:",omitempty"`
+	Caveats               string               `yaml:",omitempty"`
+	Plist                 string               `yaml:",omitempty"`
+	Install               string               `yaml:",omitempty"`
+	PostInstall           string               `yaml:"post_install,omitempty"`
+	Dependencies          []HomebrewDependency `yaml:",omitempty"`
+	Test                  string               `yaml:",omitempty"`
+	Conflicts             []string             `yaml:",omitempty"`
+	Description           string               `yaml:",omitempty"`
+	Homepage              string               `yaml:",omitempty"`
+	License               string               `yaml:",omitempty"`
+	SkipUpload            string               `yaml:"skip_upload,omitempty"`
+	DownloadStrategy      string               `yaml:"download_strategy,omitempty"`
+	URLTemplate           string               `yaml:"url_template,omitempty"`
+	CustomRequire         string               `yaml:"custom_require,omitempty"`
+	CustomBlock           string               `yaml:"custom_block,omitempty"`
+	IDs                   []string             `yaml:"ids,omitempty"`
+	Goarm                 string               `yaml:"goarm,omitempty"`
 }
 
 // Scoop contains the scoop.sh section.

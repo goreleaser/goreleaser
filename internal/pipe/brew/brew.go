@@ -92,6 +92,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if brew.CommitAuthor.Email == "" {
 			brew.CommitAuthor.Email = "goreleaser@carlosbecker.com"
 		}
+		if brew.CommitMessageTemplate == "" {
+			brew.CommitMessageTemplate = "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+		}
 		if brew.Name == "" {
 			brew.Name = ctx.Config.ProjectName
 		}
@@ -182,7 +185,10 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 		WithField("repo", repo.String()).
 		Info("pushing")
 
-	msg := fmt.Sprintf("Brew formula update for %s version %s", ctx.Config.ProjectName, ctx.Git.CurrentTag)
+	msg, err := tmpl.New(ctx).Apply(brew.CommitMessageTemplate)
+	if err != nil {
+		return err
+	}
 	return cl.CreateFile(ctx, brew.CommitAuthor, repo, []byte(content), gpath, msg)
 }
 

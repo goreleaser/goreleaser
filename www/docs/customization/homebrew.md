@@ -69,6 +69,9 @@ brews:
       name: goreleaserbot
       email: goreleaser@carlosbecker.com
 
+    # The project name and current git tag are used in the format string.
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+
     # Folder inside the repository to put the formula.
     # Default is the root folder.
     folder: Formula
