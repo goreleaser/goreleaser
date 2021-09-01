@@ -2,7 +2,7 @@
 title: Announce
 ---
 
-GoReleaser can also announce new releases, currently, to Twitter and Slack only.
+GoReleaser can also announce new releases, currently, to Twitter, Reddit and Slack only.
 
 It runs at the very end of the pipeline.
 
