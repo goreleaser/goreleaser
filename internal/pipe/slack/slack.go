@@ -2,13 +2,13 @@ package slack
 
 import (
 	"fmt"
-	"github.com/slack-go/slack"
 
 	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/slack-go/slack"
 )
 
 const (
