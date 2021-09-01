@@ -690,11 +690,21 @@ type GoMod struct {
 
 type Announce struct {
 	Twitter Twitter `yaml:"twitter,omitempty"`
+	Reddit  Reddit  `yaml:"reddit,omitempty"`
 }
 
 type Twitter struct {
 	Enabled         bool   `yaml:"enabled,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty"`
+}
+
+type Reddit struct {
+	Enabled       bool   `yaml:"enabled,omitempty"`
+	ApplicationID string `yaml:"application_id,omitempty"`
+	Username      string `yaml:"username,omitempty"`
+	TitleTemplate string `yaml:"title_template,omitempty"`
+	URLTemplate   string `yaml:"url_template,omitempty"`
+	Sub           string `yaml:"sub,omitempty"`
 }
 
 // Load config file.

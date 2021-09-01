@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/project"
+	"github.com/goreleaser/goreleaser/internal/pipe/reddit"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
@@ -57,5 +58,6 @@ var Defaulters = []Defaulter{
 	brew.Pipe{},
 	scoop.Pipe{},
 	twitter.Pipe{},
+	reddit.Pipe{},
 	milestone.Pipe{},
 }
