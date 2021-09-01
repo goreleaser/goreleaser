@@ -2,7 +2,7 @@
 title: Announce
 ---
 
-GoReleaser can also announce new releases, currently, to Twitter only.
+GoReleaser can also announce new releases, currently, to Twitter and Slack only.
 
 It runs at the very end of the pipeline.
 
@@ -28,6 +28,39 @@ announce:
     # Message template to use while publishing.
     # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .GitURL }}/releases/tag/{{ .Tag }}`
     message_template: 'Awesome project {{.Tag}} is out!'
+```
+
+## Slack
+
+For it to work, you'll need to [create a new Incoming Webhook](https://api.slack.com/messaging/webhooks), and set some environment variables on your pipeline:
+
+- `SLACK_WEBHOOK`
+
+Then, you can add something like the following to your `.goreleaser.yml` config:
+
+```yaml
+# .goreleaser.yml
+announce:
+  slack:
+    # Wether its enabled or not.
+    # Defaults to false.
+    enabled: true
+
+    # Message template to use while publishing.
+    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .GitURL }}/releases/tag/{{ .Tag }}`
+    message_template: 'Awesome project {{.Tag}} is out!'
+
+    # The name of the channel that the user selected as a destination for webhook messages.
+    channel: '#channel'
+
+    # Set your Webhook's user name.
+    username: ''
+
+    # Emoji to use as the icon for this message. Overrides icon_url.
+    icon_emoji: ''
+
+    # URL to an image to use as the icon for this message.
+    icon_url: ''
 ```
 
 !!! tip
