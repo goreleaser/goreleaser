@@ -43,7 +43,7 @@ func (a Archive) Add(f config.File) error {
 		return err
 	}
 	defer file.Close()
-	info, err := file.Stat()
+	info, err := os.Lstat(f.Source) // #nosec
 	if err != nil {
 		return err
 	}
@@ -65,6 +65,13 @@ func (a Archive) Add(f config.File) error {
 	if f.Info.Group != "" {
 		header.Gid = 0
 		header.Gname = f.Info.Group
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		target, err := os.Readlink(f.Source)
+		if err != nil {
+			return err
+		}
+		header.Linkname = target
 	}
 	if err = a.tw.WriteHeader(header); err != nil {
 		return err

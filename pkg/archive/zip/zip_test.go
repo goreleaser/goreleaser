@@ -48,6 +48,14 @@ func TestZipFile(t *testing.T) {
 		Source:      "../testdata/sub1/sub2/subfoo.txt",
 		Destination: "sub1/sub2/subfoo.txt",
 	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/regular.txt",
+		Destination: "regular.txt",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/link.txt",
+		Destination: "link.txt",
+	}))
 
 	require.NoError(t, archive.Close())
 	require.Error(t, archive.Add(config.File{
@@ -75,12 +83,17 @@ func TestZipFile(t *testing.T) {
 			ex := zf.Mode() | 0o111
 			require.Equal(t, zf.Mode().String(), ex.String())
 		}
+		if zf.Name == "link.txt" {
+			require.True(t, zf.FileInfo().Mode()&os.ModeSymlink != 0)
+		}
 	}
 	require.Equal(t, []string{
 		"foo.txt",
 		"sub1/bar.txt",
 		"sub1/executable",
 		"sub1/sub2/subfoo.txt",
+		"regular.txt",
+		"link.txt",
 	}, paths)
 }
 

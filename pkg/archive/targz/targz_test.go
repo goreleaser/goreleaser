@@ -50,6 +50,14 @@ func TestTarGzFile(t *testing.T) {
 		Source:      "../testdata/sub1/sub2/subfoo.txt",
 		Destination: "sub1/sub2/subfoo.txt",
 	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/regular.txt",
+		Destination: "regular.txt",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/link.txt",
+		Destination: "link.txt",
+	}))
 
 	require.NoError(t, archive.Close())
 	require.Error(t, archive.Add(config.File{
@@ -84,6 +92,9 @@ func TestTarGzFile(t *testing.T) {
 			ex := next.FileInfo().Mode() | 0o111
 			require.Equal(t, next.FileInfo().Mode().String(), ex.String())
 		}
+		if next.Name == "link.txt" {
+			require.Equal(t, next.Linkname, "regular.txt")
+		}
 	}
 	require.Equal(t, []string{
 		"foo.txt",
@@ -92,6 +103,8 @@ func TestTarGzFile(t *testing.T) {
 		"sub1/executable",
 		"sub1/sub2",
 		"sub1/sub2/subfoo.txt",
+		"regular.txt",
+		"link.txt",
 	}, paths)
 }
 
