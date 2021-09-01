@@ -9,22 +9,21 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
-// Archive as tar.xz.
+// Archive as tar.
 type Archive struct {
 	tw *tar.Writer
+}
+
+// New tar archive.
+func New(target io.Writer) Archive {
+	return Archive{
+		tw: tar.NewWriter(target),
+	}
 }
 
 // Close all closeables.
 func (a Archive) Close() error {
 	return a.tw.Close()
-}
-
-// New tar.xz archive.
-func New(target io.Writer) Archive {
-	tw := tar.NewWriter(target)
-	return Archive{
-		tw: tw,
-	}
 }
 
 // Add file to the archive.

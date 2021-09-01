@@ -16,14 +16,6 @@ type Archive struct {
 	tw  *tar.Archive
 }
 
-// Close all closeables.
-func (a Archive) Close() error {
-	if err := a.tw.Close(); err != nil {
-		return err
-	}
-	return a.xzw.Close()
-}
-
 // New tar.xz archive.
 func New(target io.Writer) Archive {
 	xzw, _ := xz.WriterConfig{DictCap: 16 * 1024 * 1024}.NewWriter(target)
@@ -32,6 +24,14 @@ func New(target io.Writer) Archive {
 		xzw: xzw,
 		tw:  &tw,
 	}
+}
+
+// Close all closeables.
+func (a Archive) Close() error {
+	if err := a.tw.Close(); err != nil {
+		return err
+	}
+	return a.xzw.Close()
 }
 
 // Add file to the archive.

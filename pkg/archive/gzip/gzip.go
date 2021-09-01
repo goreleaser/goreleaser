@@ -16,11 +16,6 @@ type Archive struct {
 	gw *gzip.Writer
 }
 
-// Close all closeables.
-func (a Archive) Close() error {
-	return a.gw.Close()
-}
-
 // New gz archive.
 func New(target io.Writer) Archive {
 	// the error will be nil since the compression level is valid
@@ -28,6 +23,11 @@ func New(target io.Writer) Archive {
 	return Archive{
 		gw: gw,
 	}
+}
+
+// Close all closeables.
+func (a Archive) Close() error {
+	return a.gw.Close()
 }
 
 // Add file to the archive.
