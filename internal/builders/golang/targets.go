@@ -2,6 +2,7 @@ package golang
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -133,7 +134,11 @@ var (
 
 func goVersion(build config.Build) ([]byte, error) {
 	cmd := exec.Command(build.GoBinary, "version")
-	cmd.Dir = build.Dir // Set Dir to build directory in case of reletive path to GoBinary
+	// If the build.Dir is acessible, set the cmd dir to it in case
+	// of reletive path to GoBinary
+	if _, err := os.Stat(build.Dir); err == nil {
+		cmd.Dir = build.Dir
+	}
 	bts, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("unable to determine version of go binary (%s): %w", build.GoBinary, err)
