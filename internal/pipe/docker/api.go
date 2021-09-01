@@ -59,7 +59,7 @@ func runCommand(ctx context.Context, dir, binary string, args ...string) error {
 	cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
 	cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
 
-	log.WithFields(fields).Debug("running")
+	log.WithFields(fields).WithField("args", args[1:]).Debug("running")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("%w: %s", err, b.String())
 	}
