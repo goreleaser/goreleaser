@@ -15,7 +15,7 @@ func TestArchive(t *testing.T) {
 	require.NoError(t, empty.Close())
 	require.NoError(t, os.Mkdir(folder+"/folder-inside", 0o755))
 
-	for _, format := range []string{"tar.gz", "zip", "gz", "tar.xz", "willbeatargzanyway"} {
+	for _, format := range []string{"tar.gz", "zip", "gz", "tar.xz", "tar", "willbeatargzanyway"} {
 		format := format
 		t.Run(format, func(t *testing.T) {
 			file, err := os.Create(folder + "/folder." + format)

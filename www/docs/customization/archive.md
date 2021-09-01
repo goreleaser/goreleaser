@@ -20,7 +20,7 @@ archives:
     builds:
     - default
 
-    # Archive format. Valid options are `tar.gz`, `tar.xz`, `gz`, `zip` and `binary`.
+    # Archive format. Valid options are `tar.gz`, `tar.xz`, `tar`, `gz`, `zip` and `binary`.
     # If format is `binary`, no archives are created and the binaries are instead
     # uploaded directly.
     # Default is `tar.gz`.

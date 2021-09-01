@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/goreleaser/goreleaser/pkg/archive/gzip"
+	"github.com/goreleaser/goreleaser/pkg/archive/tar"
 	"github.com/goreleaser/goreleaser/pkg/archive/targz"
 	"github.com/goreleaser/goreleaser/pkg/archive/tarxz"
 	"github.com/goreleaser/goreleaser/pkg/archive/zip"
@@ -31,6 +32,9 @@ func New(file *os.File) Archive {
 	}
 	if strings.HasSuffix(file.Name(), ".zip") {
 		return zip.New(file)
+	}
+	if strings.HasSuffix(file.Name(), ".tar") {
+		return tar.New(file)
 	}
 	return targz.New(file)
 }
