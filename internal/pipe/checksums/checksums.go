@@ -62,9 +62,6 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	}
 
 	for name, path := range extraFiles {
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			return fmt.Errorf("failed to checksum %s: %w", name, err)
-		}
 		artifactList = append(artifactList, &artifact.Artifact{
 			Name: name,
 			Path: path,
