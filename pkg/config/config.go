@@ -534,10 +534,11 @@ type Snapshot struct {
 
 // Checksum config.
 type Checksum struct {
-	NameTemplate string   `yaml:"name_template,omitempty"`
-	Algorithm    string   `yaml:"algorithm,omitempty"`
-	IDs          []string `yaml:"ids,omitempty"`
-	Disable      bool     `yaml:"disable,omitempty"`
+	NameTemplate string      `yaml:"name_template,omitempty"`
+	Algorithm    string      `yaml:"algorithm,omitempty"`
+	IDs          []string    `yaml:"ids,omitempty"`
+	Disable      bool        `yaml:"disable,omitempty"`
+	ExtraFiles   []ExtraFile `yaml:"extra_files,omitempty"`
 }
 
 // Docker image config.

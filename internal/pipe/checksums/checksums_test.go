@@ -238,4 +238,84 @@ func TestDefaultSet(t *testing.T) {
 	require.Equal(t, "checksums.txt", ctx.Config.Checksum.NameTemplate)
 }
 
+func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
+	const binary = "binary"
+	const checksums = "checksums.txt"
+	const extraFileFooRelPath = "./testdata/foo.txt"
+	const extraFileBarRelPath = "./testdata/**/bar.txt"
+	const extraFileFoo = "foo.txt"
+	const extraFileBar = "bar.txt"
+
+	tests := map[string]struct {
+		extraFiles []config.ExtraFile
+		want       []string
+	}{
+		"default": {
+			extraFiles: nil,
+			want: []string{
+				binary,
+			},
+		},
+		"one extra file": {
+			extraFiles: []config.ExtraFile{
+				{Glob: extraFileFooRelPath},
+			},
+			want: []string{
+				extraFileFoo,
+			},
+		},
+		"multiple extra files": {
+			extraFiles: []config.ExtraFile{
+				{Glob: extraFileFooRelPath},
+				{Glob: extraFileBarRelPath},
+			},
+			want: []string{
+				extraFileFoo,
+				extraFileBar,
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			file := filepath.Join(folder, binary)
+			require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
+			ctx := context.New(
+				config.Project{
+					Dist:        folder,
+					ProjectName: binary,
+					Checksum: config.Checksum{
+						Algorithm:    "sha256",
+						NameTemplate: "checksums.txt",
+						ExtraFiles:   tt.extraFiles,
+					},
+				},
+			)
+
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name: binary,
+				Path: file,
+				Type: artifact.UploadableBinary,
+				Extra: map[string]interface{}{
+					"ID": "id-1",
+				},
+			})
+
+			require.NoError(t, Pipe{}.Run(ctx))
+
+			bts, err := os.ReadFile(filepath.Join(folder, checksums))
+
+			require.NoError(t, err)
+			for _, want := range tt.want {
+				if tt.extraFiles == nil {
+					require.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  "+want)
+				} else {
+					require.Contains(t, string(bts), "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  "+want)
+				}
+			}
+		})
+	}
+}
+
 // TODO: add tests for LinuxPackage and UploadableSourceArchive

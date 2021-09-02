@@ -11,6 +11,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -53,6 +54,22 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	artifactList := ctx.Artifacts.Filter(filter).List()
 	if len(artifactList) == 0 {
 		return nil
+	}
+
+	extraFiles, err := extrafiles.Find(ctx.Config.Checksum.ExtraFiles)
+	if err != nil {
+		return err
+	}
+
+	for name, path := range extraFiles {
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			return fmt.Errorf("failed to checksum %s: %w", name, err)
+		}
+		artifactList = append(artifactList, &artifact.Artifact{
+			Name: name,
+			Path: path,
+			Type: artifact.UploadableFile,
+		})
 	}
 
 	g := semerrgroup.New(ctx.Parallelism)
