@@ -318,4 +318,28 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 	}
 }
 
+func TestExtraFilesNoMatch(t *testing.T) {
+	dir := t.TempDir()
+	ctx := context.New(
+		config.Project{
+			Dist:        dir,
+			ProjectName: "fake",
+			Checksum: config.Checksum{
+				Algorithm:    "sha256",
+				NameTemplate: "checksums.txt",
+				ExtraFiles:   []config.ExtraFile{{Glob: "./nope/nope.txt"}},
+			},
+		},
+	)
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: "fake",
+		Path: "fake-path",
+		Type: artifact.UploadableBinary,
+	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.EqualError(t, Pipe{}.Run(ctx), `globbing failed for pattern ./nope/nope.txt: matching "./nope/nope.txt": file does not exist`)
+}
+
 // TODO: add tests for LinuxPackage and UploadableSourceArchive
