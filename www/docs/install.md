@@ -162,7 +162,7 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
         -signature checksums.txt.sig \
         checksums.txt
       ```
-    1. If the signature is ok, you can then verify the SHA256 sums match with the downloaded binary:
+    1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
       ```sh
       sha256sum --ignore-missing -c checksums.txt
       ```
@@ -174,17 +174,33 @@ Our Docker image is signed with [cosign][].
 You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
 
 === "OSS"
-    ```sh
-    wget https://goreleaser.com/static/goreleaser.pub
-    cosign verify -key goreleaser.pub goreleaser/goreleaser
-    cosign verify -key goreleaser.pub ghcr.io/goreleaser/goreleaser
+    1. Get our public key:
+      ```sh
+      wget https://goreleaser.com/static/goreleaser.pub
+      ```
+    1. Verify the signatures:
+      ```sh
+      cosign verify \
+        -key goreleaser.pub \
+        goreleaser/goreleaser
+      cosign verify \
+        -key goreleaser.pub \
+        ghcr.io/goreleaser/goreleaser
     ```
 
 === "Pro"
-    ```sh
-    wget https://goreleaser.com/static/goreleaser.pub
-    cosign verify -key goreleaser.pub goreleaser/goreleaser-pro
-    cosign verify -key goreleaser.pub ghcr.io/goreleaser/goreleaser-pro
+    1. Get our public key:
+      ```sh
+      wget https://goreleaser.com/static/goreleaser.pub
+      ```
+    1. Verify the signatures:
+      ```sh
+      cosign verify \
+        -key goreleaser.pub \
+        goreleaser/goreleaser-pro
+      cosign verify \
+        -key goreleaser.pub \
+        ghcr.io/goreleaser/goreleaser-pro
     ```
 
 ## Running with Docker
