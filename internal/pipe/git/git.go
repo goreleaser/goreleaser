@@ -2,6 +2,7 @@ package git
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 	"strconv"
@@ -82,10 +83,20 @@ func getGitInfo() (context.GitInfo, error) {
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get commit date: %w", err)
 	}
-	url, err := getURL()
+	gitURL, err := getURL()
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get remote URL: %w", err)
 	}
+
+	if strings.HasPrefix(gitURL, "https://") {
+		u, err := url.Parse(gitURL)
+		if err != nil {
+			return context.GitInfo{}, fmt.Errorf("couldn't parse remote URL: %w", err)
+		}
+		u.User = nil
+		gitURL = u.String()
+	}
+
 	tag, err := getTag()
 	if err != nil {
 		return context.GitInfo{
@@ -94,7 +105,7 @@ func getGitInfo() (context.GitInfo, error) {
 			FullCommit:  full,
 			ShortCommit: short,
 			CommitDate:  date,
-			URL:         url,
+			URL:         gitURL,
 			CurrentTag:  "v0.0.0",
 		}, ErrNoTag
 	}
@@ -105,7 +116,7 @@ func getGitInfo() (context.GitInfo, error) {
 		FullCommit:  full,
 		ShortCommit: short,
 		CommitDate:  date,
-		URL:         url,
+		URL:         gitURL,
 	}, nil
 }
 
