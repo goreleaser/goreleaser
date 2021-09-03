@@ -46,7 +46,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - uses: sigstore/cosign-installer@main
+      - uses: sigstore/cosign-installer@v1.1.0
       -
         name: Make Setup
         run: |
