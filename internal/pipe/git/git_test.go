@@ -115,6 +115,28 @@ func TestDirty(t *testing.T) {
 	})
 }
 
+func TestRemoteURLContainsWithUsernameAndToken(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "https://gitlab-ci-token:SyYhsAghYFTvMoxw7GAg@gitlab.private.com/platform/base/poc/kink.git/releases/tag/v0.1.4")
+	testlib.GitAdd(t)
+	testlib.GitCommit(t, "commit2")
+	testlib.GitTag(t, "v0.0.1")
+	ctx := context.New(config.Project{})
+	require.NoError(t, Pipe{}.Run(ctx))
+}
+
+func TestRemoteURLContainsWithUsernameAndTokenWithInvalidURL(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "https://gitlab-ci-token:SyYhsAghYFTvMoxw7GAggitlab.com/platform/base/poc/kink.git/releases/tag/v0.1.4")
+	testlib.GitAdd(t)
+	testlib.GitCommit(t, "commit2")
+	testlib.GitTag(t, "v0.0.1")
+	ctx := context.New(config.Project{})
+	require.Error(t, Pipe{}.Run(ctx))
+}
+
 func TestShallowClone(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	require.NoError(
