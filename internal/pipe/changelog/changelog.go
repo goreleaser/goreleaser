@@ -121,6 +121,28 @@ func buildChangelog(ctx *context.Context) ([]string, error) {
 	entries := strings.Split(log, "\n")
 	entries = entries[0 : len(entries)-1]
 	entries, err = filterEntries(ctx, entries)
+
+	for index, entry := range entries {
+		splitEntry := strings.Split(entry, " ")
+		lastElement := splitEntry[len(splitEntry)-1]
+		if strings.HasPrefix(lastElement, "(#") &&
+			strings.HasSuffix(lastElement, ")") {
+			commitHash := strings.Split(entry, " ")[0]
+			authorName, err := gitAuthorName(commitHash)
+			if err != nil {
+				return entries, err
+			}
+			splittedAuthorName := strings.Split(authorName, "\n")
+			splittedAuthorName = splittedAuthorName[0 : len(splittedAuthorName)-1]
+			authorName = splittedAuthorName[0]
+			if err != nil {
+				return entries, err
+			}
+			entries[index] = fmt.Sprintf("%s - Thanks to %s !", entry, authorName)
+		}
+
+	}
+
 	if err != nil {
 		return entries, err
 	}
@@ -178,6 +200,12 @@ func getChangelog(tag string) (string, error) {
 		return gitLog(prev, tag)
 	}
 	return gitLog(fmt.Sprintf("tags/%s..tags/%s", prev, tag))
+}
+
+func gitAuthorName(commitHash string) (string, error) {
+	args := []string{"show", "-s", "--format=%an"}
+	args = append(args, commitHash)
+	return git.Run(args...)
 }
 
 func gitLog(refs ...string) (string, error) {
