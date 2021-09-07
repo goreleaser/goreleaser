@@ -279,6 +279,12 @@ func TestInvalidTemplate(t *testing.T) {
 		ctx.Config.NFPMs[0].APK.Signature.KeyFile = "{{ .NOPE_KEY_FILE }}"
 		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_KEY_FILE>: map has no entry for key "NOPE_KEY_FILE"`)
 	})
+
+	t.Run("bindir", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.NFPMs[0].Bindir = "/usr/local/{{ .NOPE }}"
+		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:14: executing "tmpl" at <.NOPE>: map has no entry for key "NOPE"`)
+	})
 }
 
 func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
