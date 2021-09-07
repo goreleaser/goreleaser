@@ -35,7 +35,12 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 		}),
 	}
 	if ctx.Config.GitLabURLs.API != "" {
-		options = append(options, gitlab.WithBaseURL(ctx.Config.GitLabURLs.API))
+		apiURL, err := tmpl.New(ctx).Apply(ctx.Config.GitLabURLs.API)
+		if err != nil {
+			return nil, fmt.Errorf("templating GitLab API URL: %w", err)
+		}
+
+		options = append(options, gitlab.WithBaseURL(apiURL))
 	}
 	client, err := gitlab.NewClient(token, options...)
 	if err != nil {
@@ -270,17 +275,22 @@ func (c *gitlabClient) ReleaseURLTemplate(ctx *context.Context) (string, error) 
 	if err != nil {
 		return "", err
 	}
+	downloadURL, err := tmpl.New(ctx).Apply(ctx.Config.GitLabURLs.Download)
+	if err != nil {
+		return "", err
+	}
+
 	if ctx.Config.Release.GitLab.Owner != "" {
 		urlTemplate = fmt.Sprintf(
 			"%s/%s/%s/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
-			ctx.Config.GitLabURLs.Download,
+			downloadURL,
 			ctx.Config.Release.GitLab.Owner,
 			gitlabName,
 		)
 	} else {
 		urlTemplate = fmt.Sprintf(
 			"%s/%s/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}",
-			ctx.Config.GitLabURLs.Download,
+			downloadURL,
 			gitlabName,
 		)
 	}
@@ -326,7 +336,11 @@ func (c *gitlabClient) Upload(
 		return err
 	}
 
-	gitlabBaseURL := ctx.Config.GitLabURLs.Download
+	gitlabBaseURL, err := tmpl.New(ctx).Apply(ctx.Config.GitLabURLs.Download)
+	if err != nil {
+		return fmt.Errorf("templating GitLab Download URL: %w", err)
+	}
+
 	linkURL := gitlabBaseURL + "/" + projectDetails.PathWithNamespace + projectFile.URL
 	name := artifact.Name
 	filename := "/" + name

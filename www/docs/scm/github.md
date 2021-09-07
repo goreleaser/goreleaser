@@ -18,7 +18,9 @@ env_files:
 
 ## GitHub Enterprise
 
-You can use GoReleaser with GitHub Enterprise by providing its URLs in the `.goreleaser.yml` configuration file:
+You can use GoReleaser with GitHub Enterprise by providing its URLs in the
+`.goreleaser.yml` configuration file. This takes a normal string or a template
+value.
 
 ```yaml
 # .goreleaser.yml

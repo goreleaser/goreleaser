@@ -19,7 +19,7 @@ env_files:
 ## URLs
 
 You can use GoReleaser with Gitea by providing its URLs in
-the `.goreleaser.yml` configuration file:
+the `.goreleaser.yml` configuration file. This takes a normal string or a template value.
 
 ```yaml
 # .goreleaser.yml
