@@ -90,7 +90,8 @@ nfpms:
     replaces:
       - fish
 
-    # Override default /usr/local/bin destination for binaries
+    # Template to the path that the binaries should be installed.
+    # Defaults to `/usr/local/bin`.
     bindir: /usr/bin
 
     # Version Epoch.
