@@ -37,6 +37,5 @@ func (i buildPackImager) buildCommand(images, flags []string) []string {
 		flags = append(flags, "--builder=gcr.io/buildpacks/builder:v1")
 	}
 
-	base = append(base, flags...)
-	return base
+	return append(base, flags...)
 }
