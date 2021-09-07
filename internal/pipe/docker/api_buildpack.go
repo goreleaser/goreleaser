@@ -10,10 +10,7 @@ type buildPackImager struct {
 }
 
 func (i buildPackImager) Push(ctx context.Context, image string, flags []string) error {
-	if err := runCommand(ctx, ".", "docker", "push", image); err != nil {
-		return fmt.Errorf("failed to push %s: %w", image, err)
-	}
-	return nil
+	return dockerImager{}.Push(ctx, image, flags)
 }
 
 func (i buildPackImager) Build(ctx context.Context, root string, images, flags []string) error {
