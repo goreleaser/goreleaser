@@ -133,14 +133,10 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
 
 === "OSS"
     1. Download the files you want, the `checksums.txt` and `checksums.txt.sig` files from the [releases][releases] page.
-    1. Get our public key:
-      ```sh
-      wget https://goreleaser.com/static/goreleaser.pub
-      ```
     1. Verify the signature:
       ```sh
       cosign verify-blob \
-        -key goreleaser.pub \
+        -key https://goreleaser.com/static/goreleaser.pub \
         -signature checksums.txt.sig \
         checksums.txt
       ```
@@ -151,14 +147,10 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
 
 === "Pro"
     1. Download the files you want, the `checksums.txt` and `checksums.txt.sig` files from the [releases][pro-releases] page.
-    1. Get our public key:
-      ```sh
-      wget https://goreleaser.com/static/goreleaser.pub
-      ```
     1. Verify the signature:
       ```sh
       cosign verify-blob \
-        -key goreleaser.pub \
+        -key https://goreleaser.com/static/goreleaser.pub \
         -signature checksums.txt.sig \
         checksums.txt
       ```
@@ -174,32 +166,24 @@ Our Docker image is signed with [cosign][].
 You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
 
 === "OSS"
-    1. Get our public key:
-      ```sh
-      wget https://goreleaser.com/static/goreleaser.pub
-      ```
     1. Verify the signatures:
       ```sh
       cosign verify \
-        -key goreleaser.pub \
+        -key https://goreleaser.com/static/goreleaser.pub \
         goreleaser/goreleaser
       cosign verify \
-        -key goreleaser.pub \
+        -key https://goreleaser.com/static/goreleaser.pub \
         ghcr.io/goreleaser/goreleaser
     ```
 
 === "Pro"
-    1. Get our public key:
-      ```sh
-      wget https://goreleaser.com/static/goreleaser.pub
-      ```
     1. Verify the signatures:
       ```sh
       cosign verify \
-        -key goreleaser.pub \
+        -key https://goreleaser.com/static/goreleaser.pub \
         goreleaser/goreleaser-pro
       cosign verify \
-        -key goreleaser.pub \
+        -key https://goreleaser.com/static/goreleaser.pub \
         ghcr.io/goreleaser/goreleaser-pro
     ```
 
