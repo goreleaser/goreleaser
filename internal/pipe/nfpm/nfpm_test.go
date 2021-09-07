@@ -279,6 +279,12 @@ func TestInvalidTemplate(t *testing.T) {
 		ctx.Config.NFPMs[0].APK.Signature.KeyFile = "{{ .NOPE_KEY_FILE }}"
 		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_KEY_FILE>: map has no entry for key "NOPE_KEY_FILE"`)
 	})
+
+	t.Run("bindir", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.NFPMs[0].Bindir = "/usr/local/{{ .NOPE }}"
+		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:14: executing "tmpl" at <.NOPE>: map has no entry for key "NOPE"`)
+	})
 }
 
 func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
@@ -1050,6 +1056,71 @@ func TestSkipSign(t *testing.T) {
 		ctx.SkipSign = true
 		require.NoError(t, Pipe{}.Run(ctx))
 	})
+}
+
+func TestBinDirTemplating(t *testing.T) {
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+	binPath := filepath.Join(dist, "mybin", "mybin")
+	f, err := os.Create(binPath)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	ctx := context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Env: []string{
+			"PRO=pro",
+			"DESC=templates",
+		},
+		NFPMs: []config.NFPM{
+			{
+				ID: "someid",
+				// Bindir should pass through the template engine
+				Bindir:      "/usr/lib/{{ .Env.PRO }}/nagios/plugins",
+				Builds:      []string{"default"},
+				Formats:     []string{"rpm"},
+				Section:     "somesection",
+				Priority:    "standard",
+				Description: "Some description with {{ .Env.DESC }}",
+				License:     "MIT",
+				Maintainer:  "me@me",
+				Vendor:      "asdf",
+				Homepage:    "https://goreleaser.com/{{ .Env.PRO }}",
+				NFPMOverridables: config.NFPMOverridables{
+					PackageName: "foo",
+				},
+			},
+		},
+	})
+	ctx.Version = "1.0.0"
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+	for _, goos := range []string{"linux"} {
+		for _, goarch := range []string{"amd64", "386"} {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "subdir/mybin",
+				Path:   binPath,
+				Goarch: goarch,
+				Goos:   goos,
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"ID": "default",
+				},
+			})
+		}
+	}
+	require.NoError(t, Pipe{}.Run(ctx))
+	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
+
+	for _, pkg := range packages {
+		format := pkg.ExtraOr("Format", "").(string)
+		require.NotEmpty(t, format)
+		// the final binary should contain the evaluated bindir (after template eval)
+		require.ElementsMatch(t, []string{
+			"/usr/lib/pro/nagios/plugins/mybin",
+		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
+	}
 }
 
 func sources(contents files.Contents) []string {
