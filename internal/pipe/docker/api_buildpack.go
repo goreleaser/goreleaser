@@ -6,8 +6,7 @@ import (
 	"strings"
 )
 
-type buildPackImager struct {
-}
+type buildPackImager struct{}
 
 func (i buildPackImager) Push(ctx context.Context, image string, flags []string) error {
 	return dockerImager{}.Push(ctx, image, flags)
