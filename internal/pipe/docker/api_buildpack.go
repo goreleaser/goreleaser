@@ -13,7 +13,7 @@ func (i buildPackImager) Push(ctx context.Context, image string, flags []string)
 }
 
 func (i buildPackImager) Build(ctx context.Context, root string, images, flags []string) error {
-	if err := runCommand(ctx, root, "pack", i.buildCommand(images, flags)...); err != nil {
+	if err := runCommand(ctx, "", "pack", i.buildCommand(images, flags)...); err != nil {
 		return fmt.Errorf("failed to build %s: %w", images[0], err)
 	}
 	return nil
