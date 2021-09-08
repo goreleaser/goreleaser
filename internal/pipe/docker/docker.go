@@ -26,7 +26,7 @@ const (
 
 	useBuildx    = "buildx"
 	useDocker    = "docker"
-	useBuildPack = "buildpack"
+	useBuildPack = "buildpacks"
 )
 
 // Pipe for docker.

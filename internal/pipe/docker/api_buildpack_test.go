@@ -1,13 +1,16 @@
 package docker
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
 
 func TestBuildCommandForBuildPack(t *testing.T) {
 	images := []string{"goreleaser/test_build_flag", "goreleaser/test_multiple_tags"}
 	tests := []struct {
 		name   string
 		flags  []string
-		buildx bool
 		expect []string
 	}{
 		{
@@ -27,13 +30,11 @@ func TestBuildCommandForBuildPack(t *testing.T) {
 		},
 		{
 			name:   "builder with --builder flag",
-			buildx: true,
 			flags:  []string{"--builder=heroku/buildpacks:20"},
 			expect: []string{"build", images[0], "-t", images[1], "--builder=heroku/buildpacks:20"},
 		},
 		{
 			name:   "builder with -B flag",
-			buildx: true,
 			flags:  []string{"-B=heroku/buildpacks:18"},
 			expect: []string{"build", images[0], "-t", images[1], "-B=heroku/buildpacks:18"},
 		},

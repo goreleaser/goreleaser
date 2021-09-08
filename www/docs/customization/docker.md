@@ -86,7 +86,7 @@ dockers:
     dockerfile: Dockerfile
 
     # Set the "backend" for the Docker pipe.
-    # Valid options are: docker, buildx, podman
+    # Valid options are: docker, buildx, podman, buildpacks
     # podman is a GoReleaser Pro feature and is only available on Linux.
     # Defaults to docker.
     use: docker
@@ -255,3 +255,16 @@ Also worth noticing that currently Podman only works on Linux machines.
 
 !!! info
     The Podman backend is a [GoReleaser Pro feature](/pro/).
+
+## Buildpacks
+
+You can use [`buildpacks`](https://buildpacks.io) instead of `docker` by setting `use` to `buildpacks` on your config:
+
+```yaml
+# .goreleaser.yml
+dockers:
+  -
+    image_templates:
+    - "myuser/myimage"
+    use: buildpacks
+```
