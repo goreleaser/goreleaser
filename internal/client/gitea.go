@@ -21,7 +21,12 @@ type giteaClient struct {
 	client *gitea.Client
 }
 
-func getInstanceURL(apiURL string) (string, error) {
+func getInstanceURL(ctx *context.Context) (string, error) {
+	apiURL, err := tmpl.New(ctx).Apply(ctx.Config.GiteaURLs.API)
+	if err != nil {
+		return "", fmt.Errorf("templating Gitea API URL: %w", err)
+	}
+
 	u, err := url.Parse(apiURL)
 	if err != nil {
 		return "", err
@@ -36,7 +41,7 @@ func getInstanceURL(apiURL string) (string, error) {
 
 // NewGitea returns a gitea client implementation.
 func NewGitea(ctx *context.Context, token string) (Client, error) {
-	instanceURL, err := getInstanceURL(ctx.Config.GiteaURLs.API)
+	instanceURL, err := getInstanceURL(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -231,9 +236,14 @@ func (c *giteaClient) CreateRelease(ctx *context.Context, body string) (string, 
 }
 
 func (c *giteaClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
+	downloadURL, err := tmpl.New(ctx).Apply(ctx.Config.GiteaURLs.Download)
+	if err != nil {
+		return "", fmt.Errorf("templating Gitea download URL: %w", err)
+	}
+
 	return fmt.Sprintf(
 		"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
-		ctx.Config.GiteaURLs.Download,
+		downloadURL,
 		ctx.Config.Release.Gitea.Owner,
 		ctx.Config.Release.Gitea.Name,
 	), nil

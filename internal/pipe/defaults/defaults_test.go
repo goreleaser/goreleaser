@@ -114,3 +114,53 @@ func TestFillPartial(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "https://gitea.com", ctx.Config.GiteaURLs.Download)
 }
+
+func TestGiteaTemplateDownloadURL(t *testing.T) {
+	tests := []struct {
+		name    string
+		apiURL  string
+		wantErr bool
+	}{
+		{
+			name:   "string_url",
+			apiURL: "https://gitea.com/api/v1",
+		},
+		{
+			name:   "download_url_template",
+			apiURL: "{{ .Env.GORELEASER_TEST_GITEA_URLS_API }}",
+		},
+		{
+			name:    "download_url_template_invalid_value",
+			apiURL:  "{{ .Env.GORELEASER_NOT_EXISTS }}",
+			wantErr: true,
+		},
+		{
+			name:    "download_url_template_invalid",
+			apiURL:  "{{.dddddddddd",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		ctx := &context.Context{
+			TokenType: context.TokenTypeGitea,
+			Env: context.Env{
+				"GORELEASER_TEST_GITEA_URLS_API": "https://gitea.com/api/v1",
+			},
+			Config: config.Project{
+				GiteaURLs: config.GiteaURLs{
+					API: tt.apiURL,
+				},
+			},
+		}
+
+		err := Pipe{}.Run(ctx)
+		if tt.wantErr {
+			require.Error(t, err)
+			return
+		}
+
+		require.NoError(t, err)
+		require.Equal(t, "https://gitea.com", ctx.Config.GiteaURLs.Download)
+	}
+}

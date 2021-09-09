@@ -1,7 +1,9 @@
 package client
 
 import (
+	"fmt"
 	"testing"
+	"text/template"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -11,15 +13,21 @@ import (
 
 func TestNewGitHubClient(t *testing.T) {
 	t.Run("good urls", func(t *testing.T) {
+		githubURL := "https://github.mycompany.com"
 		ctx := context.New(config.Project{
 			GitHubURLs: config.GitHubURLs{
-				API:    "https://github.mycompany.com/api",
-				Upload: "https://github.mycompany.com/upload",
+				API:    githubURL + "/api",
+				Upload: githubURL + "/upload",
 			},
 		})
-		_, err := NewGitHub(ctx, ctx.Token)
 
+		client, err := NewGitHub(ctx, ctx.Token)
 		require.NoError(t, err)
+
+		githubClient, ok := client.(*githubClient)
+		require.True(t, ok)
+		require.Equal(t, githubURL+"/api", githubClient.client.BaseURL.String())
+		require.Equal(t, githubURL+"/upload", githubClient.client.UploadURL.String())
 	})
 
 	t.Run("bad api url", func(t *testing.T) {
@@ -45,6 +53,62 @@ func TestNewGitHubClient(t *testing.T) {
 
 		require.EqualError(t, err, `parse "not a url:4994": first path segment in URL cannot contain colon`)
 	})
+
+	t.Run("template", func(t *testing.T) {
+		githubURL := "https://github.mycompany.com"
+		ctx := context.New(config.Project{
+			Env: []string{
+				fmt.Sprintf("GORELEASER_TEST_GITHUB_URLS_API=%s/api", githubURL),
+				fmt.Sprintf("GORELEASER_TEST_GITHUB_URLS_UPLOAD=%s/upload", githubURL),
+			},
+			GitHubURLs: config.GitHubURLs{
+				API:    "{{ .Env.GORELEASER_TEST_GITHUB_URLS_API }}",
+				Upload: "{{ .Env.GORELEASER_TEST_GITHUB_URLS_UPLOAD }}",
+			},
+		})
+
+		client, err := NewGitHub(ctx, ctx.Token)
+		require.NoError(t, err)
+
+		githubClient, ok := client.(*githubClient)
+		require.True(t, ok)
+		require.Equal(t, githubURL+"/api", githubClient.client.BaseURL.String())
+		require.Equal(t, githubURL+"/upload", githubClient.client.UploadURL.String())
+	})
+
+	t.Run("template invalid api", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API: "{{ .Env.GORELEASER_NOT_EXISTS }}",
+			},
+		})
+
+		_, err := NewGitHub(ctx, ctx.Token)
+		require.ErrorAs(t, err, &template.ExecError{})
+	})
+
+	t.Run("template invalid upload", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API:    "https://github.mycompany.com/api",
+				Upload: "{{ .Env.GORELEASER_NOT_EXISTS }}",
+			},
+		})
+
+		_, err := NewGitHub(ctx, ctx.Token)
+		require.ErrorAs(t, err, &template.ExecError{})
+	})
+
+	t.Run("template invalid", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			GitHubURLs: config.GitHubURLs{
+				API: "{{.dddddddddd",
+			},
+		})
+
+		_, err := NewGitHub(ctx, ctx.Token)
+		require.Error(t, err)
+	})
 }
 
 func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
@@ -60,26 +124,63 @@ func TestGitHubUploadReleaseIDNotInt(t *testing.T) {
 }
 
 func TestGitHubReleaseURLTemplate(t *testing.T) {
-	ctx := context.New(config.Project{
-		GitHubURLs: config.GitHubURLs{
-			// default URL would otherwise be set via pipe/defaults
-			Download: DefaultGitHubDownloadURL,
+	tests := []struct {
+		name            string
+		downloadURL     string
+		wantDownloadURL string
+		wantErr         bool
+	}{
+		{
+			name:            "default_download_url",
+			downloadURL:     DefaultGitHubDownloadURL,
+			wantDownloadURL: "https://github.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
 		},
-		Release: config.Release{
-			GitHub: config.Repo{
-				Owner: "owner",
-				Name:  "name",
-			},
+		{
+			name:            "download_url_template",
+			downloadURL:     "{{ .Env.GORELEASER_TEST_GITHUB_URLS_DOWNLOAD }}",
+			wantDownloadURL: "https://github.mycompany.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
 		},
-	})
-	client, err := NewGitHub(ctx, ctx.Token)
-	require.NoError(t, err)
+		{
+			name:        "download_url_template_invalid_value",
+			downloadURL: "{{ .Env.GORELEASER_NOT_EXISTS }}",
+			wantErr:     true,
+		},
+		{
+			name:        "download_url_template_invalid",
+			downloadURL: "{{.dddddddddd",
+			wantErr:     true,
+		},
+	}
 
-	urlTpl, err := client.ReleaseURLTemplate(ctx)
-	require.NoError(t, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Env: []string{
+					"GORELEASER_TEST_GITHUB_URLS_DOWNLOAD=https://github.mycompany.com",
+				},
+				GitHubURLs: config.GitHubURLs{
+					Download: tt.downloadURL,
+				},
+				Release: config.Release{
+					GitHub: config.Repo{
+						Owner: "owner",
+						Name:  "name",
+					},
+				},
+			})
+			client, err := NewGitHub(ctx, ctx.Token)
+			require.NoError(t, err)
 
-	expectedURL := "https://github.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-	require.Equal(t, expectedURL, urlTpl)
+			urlTpl, err := client.ReleaseURLTemplate(ctx)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tt.wantDownloadURL, urlTpl)
+		})
+	}
 }
 
 func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {

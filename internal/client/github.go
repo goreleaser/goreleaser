@@ -40,18 +40,11 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	}
 	base.(*http.Transport).Proxy = http.ProxyFromEnvironment
 	httpClient.Transport.(*oauth2.Transport).Base = base
+
 	client := github.NewClient(httpClient)
-	if ctx.Config.GitHubURLs.API != "" {
-		api, err := url.Parse(ctx.Config.GitHubURLs.API)
-		if err != nil {
-			return &githubClient{}, err
-		}
-		upload, err := url.Parse(ctx.Config.GitHubURLs.Upload)
-		if err != nil {
-			return &githubClient{}, err
-		}
-		client.BaseURL = api
-		client.UploadURL = upload
+	err := overrideGitHubClientAPI(ctx, client)
+	if err != nil {
+		return &githubClient{}, err
 	}
 
 	return &githubClient{client: client}, nil
@@ -181,9 +174,14 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 }
 
 func (c *githubClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
+	downloadURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.Download)
+	if err != nil {
+		return "", fmt.Errorf("templating GitHub download URL: %w", err)
+	}
+
 	return fmt.Sprintf(
 		"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
-		ctx.Config.GitHubURLs.Download,
+		downloadURL,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
 	), nil
@@ -250,4 +248,33 @@ func (c *githubClient) getMilestoneByTitle(ctx *context.Context, repo Repo, titl
 	}
 
 	return nil, nil
+}
+
+func overrideGitHubClientAPI(ctx *context.Context, client *github.Client) error {
+	if ctx.Config.GitHubURLs.API == "" {
+		return nil
+	}
+
+	apiURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.API)
+	if err != nil {
+		return fmt.Errorf("templating GitHub API URL: %w", err)
+	}
+	api, err := url.Parse(apiURL)
+	if err != nil {
+		return err
+	}
+
+	uploadURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.Upload)
+	if err != nil {
+		return fmt.Errorf("templating GitHub upload URL: %w", err)
+	}
+	upload, err := url.Parse(uploadURL)
+	if err != nil {
+		return err
+	}
+
+	client.BaseURL = api
+	client.UploadURL = upload
+
+	return nil
 }

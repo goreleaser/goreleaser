@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"text/template"
 
 	"code.gitea.io/sdk/gitea"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -23,30 +24,95 @@ type GetInstanceURLSuite struct {
 func (s *GetInstanceURLSuite) TestWithScheme() {
 	t := s.T()
 	rootURL := "https://gitea.com"
-	result, err := getInstanceURL(rootURL + "/api/v1")
+	ctx := context.New(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: rootURL + "/api/v1",
+		},
+	})
+
+	result, err := getInstanceURL(ctx)
 	require.NoError(t, err)
 	require.Equal(t, rootURL, result)
 }
 
 func (s *GetInstanceURLSuite) TestParseError() {
 	t := s.T()
-	host := "://wrong.gitea.com"
-	result, err := getInstanceURL(host)
+	ctx := context.New(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: "://wrong.gitea.com",
+		},
+	})
+
+	result, err := getInstanceURL(ctx)
 	require.Error(t, err)
 	require.Empty(t, result)
 }
 
 func (s *GetInstanceURLSuite) TestNoScheme() {
 	t := s.T()
-	host := "gitea.com"
-	result, err := getInstanceURL(host)
+	ctx := context.New(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: "gitea.com",
+		},
+	})
+
+	result, err := getInstanceURL(ctx)
 	require.Error(t, err)
 	require.Empty(t, result)
 }
 
 func (s *GetInstanceURLSuite) TestEmpty() {
 	t := s.T()
-	result, err := getInstanceURL("")
+	ctx := context.New(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: "",
+		},
+	})
+
+	result, err := getInstanceURL(ctx)
+	require.Error(t, err)
+	require.Empty(t, result)
+}
+
+func (s *GetInstanceURLSuite) TestTemplate() {
+	t := s.T()
+	rootURL := "https://gitea.mycompany.com"
+	ctx := context.New(config.Project{
+		Env: []string{
+			fmt.Sprintf("GORELEASER_TEST_GITAEA_URLS_API=%s", rootURL),
+		},
+		GiteaURLs: config.GiteaURLs{
+			API: "{{ .Env.GORELEASER_TEST_GITAEA_URLS_API }}",
+		},
+	})
+
+	result, err := getInstanceURL(ctx)
+	require.NoError(t, err)
+	require.Equal(t, rootURL, result)
+}
+
+func (s *GetInstanceURLSuite) TestTemplateMissingValue() {
+	t := s.T()
+	ctx := context.New(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: "{{ .Env.GORELEASER_NOT_EXISTS }}",
+		},
+	})
+
+	result, err := getInstanceURL(ctx)
+	require.ErrorAs(t, err, &template.ExecError{})
+	require.Empty(t, result)
+}
+
+func (s *GetInstanceURLSuite) TestTemplateInvalid() {
+	t := s.T()
+	ctx := context.New(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: "{{.dddddddddd",
+		},
+	})
+
+	result, err := getInstanceURL(ctx)
 	require.Error(t, err)
 	require.Empty(t, result)
 }
@@ -408,24 +474,62 @@ func TestGiteaUploadSuite(t *testing.T) {
 }
 
 func TestGiteaReleaseURLTemplate(t *testing.T) {
-	ctx := context.New(config.Project{
-		GiteaURLs: config.GiteaURLs{
-			API:      "https://gitea.com/api/v1",
-			Download: "https://gitea.com",
+	tests := []struct {
+		name            string
+		downloadURL     string
+		wantDownloadURL string
+		wantErr         bool
+	}{
+		{
+			name:            "string_url",
+			downloadURL:     "https://gitea.com",
+			wantDownloadURL: "https://gitea.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
 		},
-		Release: config.Release{
-			Gitea: config.Repo{
-				Owner: "owner",
-				Name:  "name",
-			},
+		{
+			name:            "download_url_template",
+			downloadURL:     "{{ .Env.GORELEASER_TEST_GITEA_URLS_DOWNLOAD }}",
+			wantDownloadURL: "https://gitea.mycompany.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
 		},
-	})
-	client, err := NewGitea(ctx, ctx.Token)
-	require.NoError(t, err)
+		{
+			name:        "download_url_template_invalid_value",
+			downloadURL: "{{ .Env.GORELEASER_NOT_EXISTS }}",
+			wantErr:     true,
+		},
+		{
+			name:        "download_url_template_invalid",
+			downloadURL: "{{.dddddddddd",
+			wantErr:     true,
+		},
+	}
 
-	urlTpl, err := client.ReleaseURLTemplate(ctx)
-	require.NoError(t, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Env: []string{
+					"GORELEASER_TEST_GITEA_URLS_DOWNLOAD=https://gitea.mycompany.com",
+				},
+				GiteaURLs: config.GiteaURLs{
+					API:      "https://gitea.com/api/v1",
+					Download: tt.downloadURL,
+				},
+				Release: config.Release{
+					Gitea: config.Repo{
+						Owner: "owner",
+						Name:  "name",
+					},
+				},
+			})
+			client, err := NewGitea(ctx, ctx.Token)
+			require.NoError(t, err)
 
-	expectedURL := "https://gitea.com/owner/name/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-	require.Equal(t, expectedURL, urlTpl)
+			urlTpl, err := client.ReleaseURLTemplate(ctx)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			require.Equal(t, tt.wantDownloadURL, urlTpl)
+		})
+	}
 }

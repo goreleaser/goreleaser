@@ -18,8 +18,8 @@ env_files:
 
 ## GitLab Enterprise or private hosted
 
-You can use GoReleaser with GitLab Enterprise by providing its URLs in
-the `.goreleaser.yml` configuration file:
+You can use GoReleaser with GitLab Enterprise by providing its URLs in the
+`.goreleaser.yml` configuration file. This takes a normal string or a template value.
 
 ```yaml
 # .goreleaser.yml
