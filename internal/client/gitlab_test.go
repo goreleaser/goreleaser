@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"text/template"
@@ -226,4 +227,99 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
+}
+
+func TestGitLabCreateReleaseUknownHost(t *testing.T) {
+	ctx := context.New(config.Project{
+		Release: config.Release{
+			GitLab: config.Repo{
+				Owner: "owner",
+				Name:  "name",
+			},
+		},
+		GitLabURLs: config.GitLabURLs{
+			API: "http://goreleaser-notexists",
+		},
+	})
+	client, err := NewGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	_, err = client.CreateRelease(ctx, "body")
+	require.Error(t, err)
+}
+
+func TestGitLabCreateReleaseReleaseNotExists(t *testing.T) {
+	notExistsStatusCodes := []int{http.StatusNotFound, http.StatusForbidden}
+
+	for _, tt := range notExistsStatusCodes {
+		t.Run(strconv.Itoa(tt), func(t *testing.T) {
+			totalRequests := 0
+			createdRelease := false
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				defer r.Body.Close()
+				totalRequests++
+
+				if !strings.Contains(r.URL.Path, "releases") {
+					w.WriteHeader(http.StatusOK)
+					fmt.Fprint(w, "{}")
+					return
+				}
+
+				// Check if release exists
+				if r.Method == http.MethodGet {
+					w.WriteHeader(tt)
+					fmt.Fprint(w, "{}")
+					return
+				}
+
+				// Create release if it doens't exists
+				if r.Method == http.MethodPost {
+					createdRelease = true
+					w.WriteHeader(http.StatusOK)
+					fmt.Fprint(w, "{}")
+					return
+				}
+
+				require.FailNow(t, "should not reach here")
+			}))
+			defer srv.Close()
+
+			ctx := context.New(config.Project{
+				GitLabURLs: config.GitLabURLs{
+					API: srv.URL,
+				},
+			})
+			client, err := NewGitLab(ctx, "test-token")
+			require.NoError(t, err)
+
+			_, err = client.CreateRelease(ctx, "body")
+			require.NoError(t, err)
+			require.True(t, createdRelease)
+			require.Equal(t, 3, totalRequests)
+		})
+	}
+}
+
+func TestGitLabCreateReleaseUnkownHTTPError(t *testing.T) {
+	totalRequests := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		totalRequests++
+		defer r.Body.Close()
+
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		fmt.Fprint(w, "{}")
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := NewGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	_, err = client.CreateRelease(ctx, "body")
+	require.Error(t, err)
+	require.Equal(t, 2, totalRequests)
 }
