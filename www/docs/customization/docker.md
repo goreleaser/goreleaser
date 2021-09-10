@@ -269,7 +269,8 @@ dockers:
     use: buildpacks
 ```
 
-Also, you can use a custom buildpack on `build_flag_templates` if you want. By default `gcr.io/buildpacks/builder:v1` will be use.
+Also, you can use a custom buildpack on `build_flag_templates` if you want. 
+By default, `gcr.io/buildpacks/builder:v1` will be used.
 
 ```yaml
 # .goreleaser.yml
