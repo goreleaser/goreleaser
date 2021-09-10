@@ -38,7 +38,7 @@ func ExtractRepoFromURL(rawurl string) (config.Repo, error) {
 		return config.Repo{}, err
 	}
 
-	// split the parsed url path by /, the last two parts should be the owner and name
+	// split the parsed url path by /, the last parts should be the owner and name
 	ss := strings.Split(strings.TrimPrefix(u.Path, "/"), "/")
 
 	// if less than 2 parts, its likely not a valid repository
@@ -46,7 +46,7 @@ func ExtractRepoFromURL(rawurl string) (config.Repo, error) {
 		return config.Repo{}, fmt.Errorf("unsupported repository URL: %s", rawurl)
 	}
 	return config.Repo{
-		Owner: ss[len(ss)-2],
+		Owner: strings.Join(ss[:len(ss)-1], "/"),
 		Name:  ss[len(ss)-1],
 	}, nil
 }
