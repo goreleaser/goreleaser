@@ -268,3 +268,16 @@ dockers:
     - "myuser/myimage"
     use: buildpacks
 ```
+
+Also, you can use a custom buildpack on `build_flag_templates` if you want. By default `gcr.io/buildpacks/builder:v1` will be use.
+
+```yaml
+# .goreleaser.yml
+dockers:
+  -
+    image_templates:
+    - "myuser/myimage"
+    use: buildpacks
+    build_flag_templates:
+    - "--builder=heroku/buildpacks:20"
+```
