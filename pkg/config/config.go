@@ -694,6 +694,7 @@ type Announce struct {
 	Twitter Twitter `yaml:"twitter,omitempty"`
 	Reddit  Reddit  `yaml:"reddit,omitempty"`
 	Slack   Slack   `yaml:"slack,omitempty"`
+	Discord Discord `yaml:"discord,omitempty"`
 }
 
 type Twitter struct {
@@ -716,6 +717,14 @@ type Slack struct {
 	Channel         string `yaml:"channel,omitempty"`
 	Username        string `yaml:"username,omitempty"`
 	IconEmoji       string `yaml:"icon_emoji,omitempty"`
+	IconURL         string `yaml:"icon_url,omitempty"`
+}
+
+type Discord struct {
+	Enabled         bool   `yaml:"enabled,omitempty"`
+	MessageTemplate string `yaml:"message_template,omitempty"`
+	Author          string `yaml:"author,omitempty"`
+	Color           string `yaml:"color,omitempty"`
 	IconURL         string `yaml:"icon_url,omitempty"`
 }
 

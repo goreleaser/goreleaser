@@ -4,6 +4,7 @@ package defaults
 
 import (
 	"fmt"
+	"github.com/goreleaser/goreleaser/internal/pipe/discord"
 
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
@@ -61,5 +62,6 @@ var Defaulters = []Defaulter{
 	twitter.Pipe{},
 	reddit.Pipe{},
 	slack.Pipe{},
+	discord.Pipe{},
 	milestone.Pipe{},
 }
