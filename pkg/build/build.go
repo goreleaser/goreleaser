@@ -14,21 +14,28 @@ var (
 	lock     sync.Mutex
 )
 
-// Register registers a builder to a given lang.
-func Register(lang string, builder Builder) {
+// Register registers a builder to a given name.
+func Register(name string, builder Builder) {
 	lock.Lock()
-	builders[lang] = builder
+	builders[name] = builder
 	lock.Unlock()
 }
 
-// For gets the previously registered builder for the given lang.
-func For(lang string) Builder {
-	return builders[lang]
+// For gets the previously registered builder for the given name.
+func For(name string) Builder {
+	return builders[name]
 }
 
 // Options to be passed down to a builder.
 type Options struct {
-	Name, Path, Ext, Target, Os, Arch string
+	Name   string
+	Path   string
+	Ext    string
+	Target string
+	Goos   string
+	Goarch string
+	Goarm  string
+	Gomips string
 }
 
 // Builder defines a builder.

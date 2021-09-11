@@ -252,10 +252,27 @@ func TestBuild(t *testing.T) {
 		// injecting some delay here to force inconsistent mod times on bins
 		time.Sleep(2 * time.Second)
 
+		parts := strings.Split(target, "_")
+		goos := parts[0]
+		goarch := parts[1]
+		goarm := ""
+		gomips := ""
+		if len(parts) > 2 {
+			if strings.Contains(goarch, "arm") {
+				goarm = parts[2]
+			}
+			if strings.Contains(goarch, "mips") {
+				gomips = parts[2]
+			}
+		}
 		err := Default.Build(ctx, build, api.Options{
 			Target: target,
 			Name:   bin + ext,
 			Path:   filepath.Join(folder, "dist", target, bin+ext),
+			Goos:   goos,
+			Goarch: goarch,
+			Goarm:  goarm,
+			Gomips: gomips,
 			Ext:    ext,
 		})
 		require.NoError(t, err)
@@ -449,31 +466,6 @@ func TestBuildFailed(t *testing.T) {
 	})
 	assertContainsError(t, err, `flag provided but not defined: -flag-that-dont-exists-to-force-failure`)
 	require.Empty(t, ctx.Artifacts.List())
-}
-
-func TestBuildInvalidTarget(t *testing.T) {
-	folder := testlib.Mktmp(t)
-	writeGoodMain(t, folder)
-	target := "linux"
-	config := config.Project{
-		Builds: []config.Build{
-			{
-				ID:      "foo",
-				Binary:  "foo",
-				Targets: []string{target},
-			},
-		},
-	}
-	ctx := context.New(config)
-	ctx.Git.CurrentTag = "5.6.7"
-	build := ctx.Config.Builds[0]
-	err := Default.Build(ctx, build, api.Options{
-		Target: target,
-		Name:   build.Binary,
-		Path:   filepath.Join(folder, "dist", target, build.Binary),
-	})
-	require.EqualError(t, err, "linux is not a valid build target")
-	require.Len(t, ctx.Artifacts.List(), 0)
 }
 
 func TestRunInvalidAsmflags(t *testing.T) {

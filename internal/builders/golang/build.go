@@ -14,6 +14,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/builders/buildtarget"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -59,11 +60,7 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 		if len(build.Gomips) == 0 {
 			build.Gomips = []string{"hardfloat"}
 		}
-		version, err := goVersion(build)
-		if err != nil {
-			return build, err
-		}
-		targets, err := matrix(build, version)
+		targets, err := buildtarget.Matrix(build)
 		build.Targets = targets
 		if err != nil {
 			return build, err
@@ -77,19 +74,15 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	if err := checkMain(build); err != nil {
 		return err
 	}
-	target, err := newBuildTarget(options.Target)
-	if err != nil {
-		return err
-	}
 
 	artifact := &artifact.Artifact{
 		Type:   artifact.Binary,
 		Path:   options.Path,
 		Name:   options.Name,
-		Goos:   target.os,
-		Goarch: target.arch,
-		Goarm:  target.arm,
-		Gomips: target.mips,
+		Goos:   options.Goos,
+		Goarch: options.Goarch,
+		Goarm:  options.Goarm,
+		Gomips: options.Gomips,
 		Extra: map[string]interface{}{
 			"Binary": strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
 			"Ext":    options.Ext,
@@ -98,7 +91,14 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 
 	env := append(ctx.Env.Strings(), build.Env...)
-	env = append(env, target.Env()...)
+	env = append(
+		env,
+		"GOOS="+options.Goos,
+		"GOARCH="+options.Goarch,
+		"GOARM="+options.Goarm,
+		"GOMIPS="+options.Gomips,
+		"GOMIPS64="+options.Gomips,
+	)
 
 	cmd, err := buildGoBuildLine(ctx, build, options, artifact, env)
 	if err != nil {
@@ -200,37 +200,6 @@ func run(ctx *context.Context, command, env []string, dir string) error {
 		return fmt.Errorf("%w: %s", err, string(out))
 	}
 	return nil
-}
-
-type buildTarget struct {
-	os, arch, arm, mips string
-}
-
-func newBuildTarget(s string) (buildTarget, error) {
-	t := buildTarget{}
-	parts := strings.Split(s, "_")
-	if len(parts) < 2 {
-		return t, fmt.Errorf("%s is not a valid build target", s)
-	}
-	t.os = parts[0]
-	t.arch = parts[1]
-	if strings.HasPrefix(t.arch, "arm") && len(parts) == 3 {
-		t.arm = parts[2]
-	}
-	if strings.HasPrefix(t.arch, "mips") && len(parts) == 3 {
-		t.mips = parts[2]
-	}
-	return t, nil
-}
-
-func (b buildTarget) Env() []string {
-	return []string{
-		"GOOS=" + b.os,
-		"GOARCH=" + b.arch,
-		"GOARM=" + b.arm,
-		"GOMIPS=" + b.mips,
-		"GOMIPS64=" + b.mips,
-	}
 }
 
 func checkMain(build config.Build) error {

@@ -1,4 +1,4 @@
-package golang
+package buildtarget
 
 import (
 	"fmt"
@@ -24,6 +24,14 @@ func (t target) String() string {
 		return fmt.Sprintf("%s_%s_%s", t.os, t.arch, t.mips)
 	}
 	return fmt.Sprintf("%s_%s", t.os, t.arch)
+}
+
+func Matrix(build config.Build) ([]string, error) {
+	version, err := goVersion(build)
+	if err != nil {
+		return nil, err
+	}
+	return matrix(build, version)
 }
 
 func matrix(build config.Build, version []byte) ([]string, error) {
