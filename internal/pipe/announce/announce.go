@@ -3,9 +3,9 @@ package announce
 
 import (
 	"fmt"
-	"github.com/goreleaser/goreleaser/internal/pipe/discord"
 
 	"github.com/goreleaser/goreleaser/internal/middleware"
+	"github.com/goreleaser/goreleaser/internal/pipe/discord"
 	"github.com/goreleaser/goreleaser/internal/pipe/reddit"
 	"github.com/goreleaser/goreleaser/internal/pipe/slack"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
@@ -28,10 +28,11 @@ type Announcer interface {
 
 // nolint: gochecknoglobals
 var announcers = []Announcer{
-	twitter.Pipe{}, // announce to twitter
-	reddit.Pipe{},  // announce to reddit
-	slack.Pipe{},   // announce to slack
-	discord.Pipe{}, // announce to discord
+	// XXX: keep asc sorting
+	discord.Pipe{},
+	reddit.Pipe{},
+	slack.Pipe{},
+	twitter.Pipe{},
 }
 
 // Run the pipe.

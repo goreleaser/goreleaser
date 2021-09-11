@@ -4,7 +4,6 @@ package defaults
 
 import (
 	"fmt"
-	"github.com/goreleaser/goreleaser/internal/pipe/discord"
 
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
@@ -12,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
+	"github.com/goreleaser/goreleaser/internal/pipe/discord"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
@@ -59,9 +59,9 @@ var Defaulters = []Defaulter{
 	blob.Pipe{},
 	brew.Pipe{},
 	scoop.Pipe{},
-	twitter.Pipe{},
+	discord.Pipe{},
 	reddit.Pipe{},
 	slack.Pipe{},
-	discord.Pipe{},
+	twitter.Pipe{},
 	milestone.Pipe{},
 }
