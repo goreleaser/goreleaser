@@ -146,8 +146,10 @@ func buildOptsToFields(opts build.Options) Fields {
 		ext:    opts.Ext,
 		name:   opts.Name,
 		path:   opts.Path,
-		osKey:  opts.Os,
-		arch:   opts.Arch,
+		osKey:  opts.Goos,
+		arch:   opts.Goarch,
+		arm:    opts.Goarm,
+		mips:   opts.Gomips,
 	}
 }
 

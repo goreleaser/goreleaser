@@ -201,7 +201,7 @@ type Build struct {
 	Binary          string         `yaml:",omitempty"`
 	Hooks           HookConfig     `yaml:",omitempty"`
 	Env             []string       `yaml:",omitempty"`
-	Lang            string         `yaml:",omitempty"`
+	Builder         string         `yaml:",omitempty"`
 	Asmflags        StringArray    `yaml:",omitempty"`
 	Gcflags         StringArray    `yaml:",omitempty"`
 	ModTimestamp    string         `yaml:"mod_timestamp,omitempty"`

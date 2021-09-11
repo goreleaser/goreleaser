@@ -2,7 +2,6 @@ package build
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -69,10 +68,10 @@ func TestBuild(t *testing.T) {
 		Dist: folder,
 		Builds: []config.Build{
 			{
-				Lang:   "fake",
-				Binary: "testing.v{{.Version}}",
-				Flags:  []string{"-n"},
-				Env:    []string{"BLAH=1"},
+				Builder: "fake",
+				Binary:  "testing.v{{.Version}}",
+				Flags:   []string{"-n"},
+				Env:     []string{"BLAH=1"},
 			},
 		},
 	}
@@ -97,11 +96,11 @@ func TestRunPipe(t *testing.T) {
 		Dist: folder,
 		Builds: []config.Build{
 			{
-				Lang:    "fake",
+				Builder: "fake",
 				Binary:  "testing",
 				Flags:   []string{"-v"},
 				Ldflags: []string{"-X main.test=testing"},
-				Targets: []string{"whatever"},
+				Targets: []string{"linux_amd64"},
 			},
 		},
 	}
@@ -121,7 +120,7 @@ func TestRunFullPipe(t *testing.T) {
 		Builds: []config.Build{
 			{
 				ID:      "build1",
-				Lang:    "fake",
+				Builder: "fake",
 				Binary:  "testing",
 				Flags:   []string{"-v"},
 				Ldflags: []string{"-X main.test=testing"},
@@ -133,7 +132,7 @@ func TestRunFullPipe(t *testing.T) {
 						{Cmd: "touch " + post},
 					},
 				},
-				Targets: []string{"whatever"},
+				Targets: []string{"linux_amd64"},
 			},
 		},
 		Dist: folder,
@@ -147,7 +146,7 @@ func TestRunFullPipe(t *testing.T) {
 	}})
 	require.FileExists(t, post)
 	require.FileExists(t, pre)
-	require.FileExists(t, filepath.Join(folder, "build1_whatever", "testing"))
+	require.FileExists(t, filepath.Join(folder, "build1_linux_amd64", "testing"))
 }
 
 func TestRunFullPipeFail(t *testing.T) {
@@ -158,7 +157,7 @@ func TestRunFullPipeFail(t *testing.T) {
 		Dist: folder,
 		Builds: []config.Build{
 			{
-				Lang:    "fakeFail",
+				Builder: "fakeFail",
 				Binary:  "testing",
 				Flags:   []string{"-v"},
 				Ldflags: []string{"-X main.test=testing"},
@@ -170,7 +169,7 @@ func TestRunFullPipeFail(t *testing.T) {
 						{Cmd: "touch " + post},
 					},
 				},
-				Targets: []string{"whatever"},
+				Targets: []string{"linux_amd64"},
 			},
 		},
 	}
@@ -187,10 +186,10 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		Dist: folder,
 		Builds: []config.Build{
 			{
-				Lang:    "fake",
+				Builder: "fake",
 				Binary:  "hooks",
 				Hooks:   config.HookConfig{},
-				Targets: []string{"whatever"},
+				Targets: []string{"linux_amd64"},
 			},
 		},
 	}
@@ -223,7 +222,7 @@ func TestDefaultFail(t *testing.T) {
 		Dist: folder,
 		Builds: []config.Build{
 			{
-				Lang: "fakeFailDefault",
+				Builder: "fakeFailDefault",
 			},
 		},
 	}
@@ -387,7 +386,7 @@ func TestDefaultFailSingleBuild(t *testing.T) {
 	config := config.Project{
 		Dist: folder,
 		SingleBuild: config.Build{
-			Lang: "fakeFailDefault",
+			Builder: "fakeFailDefault",
 		},
 	}
 	ctx := context.New(config)
@@ -450,197 +449,13 @@ func TestTemplate(t *testing.T) {
 	require.Contains(t, binary, `-X "main.foo=123"`)
 }
 
-func TestRunHookEnvs(t *testing.T) {
-	tmp := testlib.Mktmp(t)
-
-	build := config.Build{
-		Env: []string{
-			fmt.Sprintf("FOO=%s/foo", tmp),
-			fmt.Sprintf("BAR=%s/bar", tmp),
-		},
-	}
-
-	opts := api.Options{
-		Name:   "binary-name",
-		Path:   "./binary-name",
-		Target: "darwin_amd64",
-	}
-
-	simpleHook := func(cmd string) config.BuildHooks {
-		return []config.BuildHook{{Cmd: cmd}}
-	}
-
-	t.Run("valid cmd template with ctx env", func(t *testing.T) {
-		err := runHook(context.New(config.Project{
-			Builds: []config.Build{
-				build,
-			},
-			Env: []string{
-				fmt.Sprintf("CTXFOO=%s/foo", tmp),
-			},
-		}), opts, []string{}, simpleHook("touch {{ .Env.CTXFOO }}"))
-		require.NoError(t, err)
-		require.FileExists(t, filepath.Join(tmp, "foo"))
-	})
-
-	t.Run("valid cmd template with build env", func(t *testing.T) {
-		err := runHook(context.New(config.Project{
-			Builds: []config.Build{
-				build,
-			},
-		}), opts, build.Env, simpleHook("touch {{ .Env.FOO }}"))
-		require.NoError(t, err)
-		require.FileExists(t, filepath.Join(tmp, "foo"))
-	})
-
-	t.Run("valid cmd template with hook env", func(t *testing.T) {
-		err := runHook(context.New(config.Project{
-			Builds: []config.Build{
-				build,
-			},
-		}), opts, []string{}, []config.BuildHook{{
-			Cmd: "touch {{ .Env.HOOK_ONLY_FOO }}",
-			Env: []string{
-				fmt.Sprintf("HOOK_ONLY_FOO=%s/hook_only", tmp),
-			},
-		}})
-		require.NoError(t, err)
-		require.FileExists(t, filepath.Join(tmp, "hook_only"))
-	})
-
-	t.Run("valid cmd template with ctx and build env", func(t *testing.T) {
-		err := runHook(context.New(config.Project{
-			Builds: []config.Build{
-				build,
-			},
-			Env: []string{
-				fmt.Sprintf("OVER_FOO=%s/ctx_over_build", tmp),
-			},
-		}), opts, []string{
-			fmt.Sprintf("OVER_FOO=%s/build_over_ctx", tmp),
-		}, simpleHook("touch {{ .Env.OVER_FOO }}"))
-		require.NoError(t, err)
-
-		require.FileExists(t, filepath.Join(tmp, "build_over_ctx"))
-		require.NoFileExists(t, filepath.Join(tmp, "ctx_over_build"))
-	})
-
-	t.Run("valid cmd template with ctx and hook env", func(t *testing.T) {
-		err := runHook(context.New(config.Project{
-			Builds: []config.Build{
-				build,
-			},
-			Env: []string{
-				fmt.Sprintf("CTX_OR_HOOK_FOO=%s/ctx_over_hook", tmp),
-			},
-		}), opts, []string{}, []config.BuildHook{{
-			Cmd: "touch {{ .Env.CTX_OR_HOOK_FOO }}",
-			Env: []string{
-				fmt.Sprintf("CTX_OR_HOOK_FOO=%s/hook_over_ctx", tmp),
-			},
-		}})
-		require.NoError(t, err)
-		require.FileExists(t, filepath.Join(tmp, "hook_over_ctx"))
-		require.NoFileExists(t, filepath.Join(tmp, "ctx_over_hook"))
-	})
-
-	t.Run("valid cmd template with build and hook env", func(t *testing.T) {
-		err := runHook(context.New(config.Project{
-			Builds: []config.Build{
-				build,
-			},
-		}), opts, []string{
-			fmt.Sprintf("BUILD_OR_HOOK_FOO=%s/build_over_hook", tmp),
-		}, []config.BuildHook{{
-			Cmd: "touch {{ .Env.BUILD_OR_HOOK_FOO }}",
-			Env: []string{
-				fmt.Sprintf("BUILD_OR_HOOK_FOO=%s/hook_over_build", tmp),
-			},
-		}})
-		require.NoError(t, err)
-		require.FileExists(t, filepath.Join(tmp, "hook_over_build"))
-		require.NoFileExists(t, filepath.Join(tmp, "build_over_hook"))
-	})
-
-	t.Run("valid cmd template with ctx, build and hook env", func(t *testing.T) {
-		err := runHook(context.New(config.Project{
-			Builds: []config.Build{
-				build,
-			},
-			Env: []string{
-				fmt.Sprintf("CTX_OR_BUILD_OR_HOOK_FOO=%s/ctx_wins", tmp),
-			},
-		}), opts, []string{
-			fmt.Sprintf("CTX_OR_BUILD_OR_HOOK_FOO=%s/build_wins", tmp),
-		}, []config.BuildHook{{
-			Cmd: "touch {{ .Env.CTX_OR_BUILD_OR_HOOK_FOO }}",
-			Env: []string{
-				fmt.Sprintf("CTX_OR_BUILD_OR_HOOK_FOO=%s/hook_wins", tmp),
-			},
-		}})
-		require.NoError(t, err)
-		require.FileExists(t, filepath.Join(tmp, "hook_wins"))
-		require.NoFileExists(t, filepath.Join(tmp, "ctx_wins"))
-		require.NoFileExists(t, filepath.Join(tmp, "build_wins"))
-	})
-
-	t.Run("invalid cmd template", func(t *testing.T) {
-		err := runHook(context.New(config.Project{
-			Builds: []config.Build{
-				build,
-			},
-		}), opts, build.Env, simpleHook("touch {{ .Env.FOOss }}"))
-		require.EqualError(t, err, `template: tmpl:1:13: executing "tmpl" at <.Env.FOOss>: map has no entry for key "FOOss"`)
-	})
-
-	t.Run("invalid dir template", func(t *testing.T) {
-		err := runHook(context.New(config.Project{
-			Builds: []config.Build{
-				build,
-			},
-		}), opts, build.Env, []config.BuildHook{{
-			Cmd: "echo something",
-			Dir: "{{ .Env.INVALID_ENV }}",
-		}})
-		require.EqualError(t, err, `template: tmpl:1:7: executing "tmpl" at <.Env.INVALID_ENV>: map has no entry for key "INVALID_ENV"`)
-	})
-
-	t.Run("invalid hook env template", func(t *testing.T) {
-		err := runHook(context.New(config.Project{
-			Builds: []config.Build{
-				build,
-			},
-		}), opts, build.Env, []config.BuildHook{{
-			Cmd: "echo something",
-			Env: []string{
-				"TEST={{ .Env.MISSING_ENV }}",
-			},
-		}})
-		require.EqualError(t, err, `template: tmpl:1:12: executing "tmpl" at <.Env.MISSING_ENV>: map has no entry for key "MISSING_ENV"`)
-	})
-
-	t.Run("build env inside shell", func(t *testing.T) {
-		shell := `#!/bin/sh -e
-touch "$BAR"`
-		err := os.WriteFile(filepath.Join(tmp, "test.sh"), []byte(shell), 0o750)
-		require.NoError(t, err)
-		err = runHook(context.New(config.Project{
-			Builds: []config.Build{
-				build,
-			},
-		}), opts, build.Env, simpleHook("sh test.sh"))
-		require.NoError(t, err)
-		require.FileExists(t, filepath.Join(tmp, "bar"))
-	})
-}
-
 func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
 	tmpDir := testlib.Mktmp(t)
 	build := config.Build{
-		Lang:   "fake",
-		Goarch: []string{"amd64"},
-		Goos:   []string{"linux"},
-		Binary: "testing-goos-goarch.v{{.Version}}",
+		Builder: "fake",
+		Goarch:  []string{"amd64"},
+		Goos:    []string{"linux"},
+		Binary:  "testing-goos-goarch.v{{.Version}}",
 		Targets: []string{
 			"linux_amd64",
 		},
@@ -669,8 +484,8 @@ func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 	tmpDir := testlib.Mktmp(t)
 
 	build := config.Build{
-		Lang:   "fake",
-		Binary: "testing.v{{.Version}}",
+		Builder: "fake",
+		Binary:  "testing.v{{.Version}}",
 		Targets: []string{
 			"linux_amd64",
 			"darwin_amd64",
@@ -702,8 +517,8 @@ func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 
 func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
 	build := config.Build{
-		Lang:   "fake",
-		Binary: "testing.v{{.XYZ}}",
+		Builder: "fake",
+		Binary:  "testing.v{{.XYZ}}",
 		Targets: []string{
 			"linux_amd64",
 		},
@@ -739,8 +554,8 @@ func TestBuildOptionsForTarget(t *testing.T) {
 				Name:   "testbinary",
 				Path:   filepath.Join(tmpDir, "testid_linux_amd64", "testbinary"),
 				Target: "linux_amd64",
-				Os:     "linux",
-				Arch:   "amd64",
+				Goos:   "linux",
+				Goarch: "amd64",
 			},
 		},
 		{
@@ -756,8 +571,8 @@ func TestBuildOptionsForTarget(t *testing.T) {
 				Name:   "testbinary_linux_amd64",
 				Path:   filepath.Join(tmpDir, "testid_linux_amd64", "testbinary_linux_amd64"),
 				Target: "linux_amd64",
-				Os:     "linux",
-				Arch:   "amd64",
+				Goos:   "linux",
+				Goarch: "amd64",
 			},
 		},
 		{
@@ -774,8 +589,44 @@ func TestBuildOptionsForTarget(t *testing.T) {
 				Name:   "distpath/linux/amd64/testbinary_linux_amd64",
 				Path:   filepath.Join(tmpDir, "distpath", "linux", "amd64", "testbinary_linux_amd64"),
 				Target: "linux_amd64",
-				Os:     "linux",
-				Arch:   "amd64",
+				Goos:   "linux",
+				Goarch: "amd64",
+			},
+		},
+		{
+			name: "with goarm",
+			build: config.Build{
+				ID:     "testid",
+				Binary: "testbinary",
+				Targets: []string{
+					"linux_arm_6",
+				},
+			},
+			expectedOpts: &api.Options{
+				Name:   "testbinary",
+				Path:   filepath.Join(tmpDir, "testid_linux_arm_6", "testbinary"),
+				Target: "linux_arm_6",
+				Goos:   "linux",
+				Goarch: "arm",
+				Goarm:  "6",
+			},
+		},
+		{
+			name: "with gomips",
+			build: config.Build{
+				ID:     "testid",
+				Binary: "testbinary",
+				Targets: []string{
+					"linux_mips_softfloat",
+				},
+			},
+			expectedOpts: &api.Options{
+				Name:   "testbinary",
+				Path:   filepath.Join(tmpDir, "testid_linux_mips_softfloat", "testbinary"),
+				Target: "linux_mips_softfloat",
+				Goos:   "linux",
+				Goarch: "mips",
+				Gomips: "softfloat",
 			},
 		},
 	}
@@ -798,45 +649,21 @@ func TestBuildOptionsForTarget(t *testing.T) {
 	}
 }
 
-func TestHookComplex(t *testing.T) {
-	tmp := testlib.Mktmp(t)
-
-	require.NoError(t, runHook(context.New(config.Project{}), api.Options{}, []string{}, config.BuildHooks{
-		{
-			Cmd: `bash -c "touch foo"`,
-		},
-		{
-			Cmd: `bash -c "touch \"bar\""`,
-		},
-	}))
-
-	require.FileExists(t, filepath.Join(tmp, "foo"))
-	require.FileExists(t, filepath.Join(tmp, "bar"))
-}
-
-func TestHookInvalidShelCommand(t *testing.T) {
-	require.Error(t, runHook(context.New(config.Project{}), api.Options{}, []string{}, config.BuildHooks{
-		{
-			Cmd: `bash -c "echo \"unterminated command\"`,
-		},
-	}))
-}
-
 func TestRunHookFailWithLogs(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	config := config.Project{
 		Dist: folder,
 		Builds: []config.Build{
 			{
-				Lang:   "fakeFail",
-				Binary: "testing",
-				Flags:  []string{"-v"},
+				Builder: "fakeFail",
+				Binary:  "testing",
+				Flags:   []string{"-v"},
 				Hooks: config.HookConfig{
 					Pre: []config.BuildHook{
 						{Cmd: "sh -c 'echo foo; exit 1'"},
 					},
 				},
-				Targets: []string{"whatever"},
+				Targets: []string{"linux_amd64"},
 			},
 		},
 	}

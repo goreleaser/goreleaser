@@ -70,8 +70,8 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, error) {
-	if build.Lang == "" {
-		build.Lang = "go"
+	if build.Builder == "" {
+		build.Builder = "go"
 	}
 	if build.Binary == "" {
 		build.Binary = ctx.Config.ProjectName
@@ -82,7 +82,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 	for k, v := range build.Env {
 		build.Env[k] = os.ExpandEnv(v)
 	}
-	return builders.For(build.Lang).WithDefaults(build)
+	return builders.For(build.Builder).WithDefaults(build)
 }
 
 func runPipeOnBuild(ctx *context.Context, build config.Build) error {
@@ -160,24 +160,35 @@ func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hoo
 }
 
 func doBuild(ctx *context.Context, build config.Build, opts builders.Options) error {
-	return builders.For(build.Lang).Build(ctx, build, opts)
+	return builders.For(build.Builder).Build(ctx, build, opts)
 }
 
 func buildOptionsForTarget(ctx *context.Context, build config.Build, target string) (*builders.Options, error) {
 	ext := extFor(target, build.Flags)
-	var goos string
-	var goarch string
+	parts := strings.Split(target, "_")
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("%s is not a valid build target", target)
+	}
 
-	if strings.Contains(target, "_") {
-		goos = strings.Split(target, "_")[0]
-		goarch = strings.Split(target, "_")[1]
+	goos := parts[0]
+	goarch := parts[1]
+
+	var gomips string
+	var goarm string
+	if strings.HasPrefix(goarch, "arm") && len(parts) > 2 {
+		goarm = parts[2]
+	}
+	if strings.HasPrefix(goarch, "mips") && len(parts) > 2 {
+		gomips = parts[2]
 	}
 
 	buildOpts := builders.Options{
 		Target: target,
 		Ext:    ext,
-		Os:     goos,
-		Arch:   goarch,
+		Goos:   goos,
+		Goarch: goarch,
+		Goarm:  goarm,
+		Gomips: gomips,
 	}
 
 	binary, err := tmpl.New(ctx).WithBuildOptions(buildOpts).Apply(build.Binary)
@@ -201,10 +212,10 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	if err != nil {
 		return nil, err
 	}
-
-	log.WithField("binary", path).Info("building")
-	buildOpts.Name = name
 	buildOpts.Path = path
+
+	log.WithField("binary", buildOpts.Path).Info("building")
+	buildOpts.Name = name
 	return &buildOpts, nil
 }
 
