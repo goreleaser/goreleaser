@@ -321,6 +321,7 @@ To make your releases, checksums, and signatures reproducible, you will need to 
 Since GoReleaser Pro v0.179.0, it is possible to import pre-built binaries into the GoReleaser lifecycle.
 
 Reasons you might want to do that include:
+
 - You want to build your binaries in different machines due to CGO
 - You want to build using a pre-existing `Makefile` or other tool
 - You want to speed up the build by running several builds in parallel in different machines
