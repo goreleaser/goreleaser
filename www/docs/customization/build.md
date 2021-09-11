@@ -342,6 +342,7 @@ builds:
 ```
 
 This example config will import into your release pipeline the following binaries:
+
 - `output/mybin_linux_amd64`
 - `output/mybin_linux_arm64`
 - `output/mybin_darwin_amd64`
