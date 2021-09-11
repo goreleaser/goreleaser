@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
+	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/upload"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -41,6 +42,7 @@ var publishers = []Publisher{
 	artifactory.Pipe{},
 	docker.Pipe{},
 	docker.ManifestPipe{},
+	sign.DockerPipe{},
 	snapcraft.Pipe{},
 	// This should be one of the last steps
 	release.Pipe{},

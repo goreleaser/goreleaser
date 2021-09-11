@@ -39,8 +39,8 @@ func (DockerPipe) Default(ctx *context.Context) error {
 	return ids.Validate()
 }
 
-// Run executes the Pipe.
-func (DockerPipe) Run(ctx *context.Context) error {
+// Publish signs and pushes the docker images signatures.
+func (DockerPipe) Publish(ctx *context.Context) error {
 	if ctx.SkipSign {
 		return pipe.ErrSkipSignEnabled
 	}

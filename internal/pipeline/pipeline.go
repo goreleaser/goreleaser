@@ -5,10 +5,6 @@ import (
 	"fmt"
 
 	"github.com/goreleaser/goreleaser/internal/pipe/announce"
-	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
-	"github.com/goreleaser/goreleaser/internal/pipe/semver"
-	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
-
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/before"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
@@ -20,11 +16,14 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/effectiveconfig"
 	"github.com/goreleaser/goreleaser/internal/pipe/env"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
+	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
+	"github.com/goreleaser/goreleaser/internal/pipe/semver"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapshot"
+	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -64,6 +63,5 @@ var Pipeline = append(
 	sign.Pipe{},          // sign artifacts
 	docker.Pipe{},        // create and push docker images
 	publish.Pipe{},       // publishes artifacts
-	sign.DockerPipe{},    // sign docker images and manifests
 	announce.Pipe{},      // announce releases
 )
