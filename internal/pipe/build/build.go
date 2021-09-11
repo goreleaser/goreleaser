@@ -175,10 +175,10 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 
 	var gomips string
 	var goarm string
-	if strings.HasPrefix(goarch, "arm") && len(parts) == 3 {
+	if strings.HasPrefix(goarch, "arm") && len(parts) > 2 {
 		goarm = parts[2]
 	}
-	if strings.HasPrefix(goarch, "mips") && len(parts) == 3 {
+	if strings.HasPrefix(goarch, "mips") && len(parts) > 2 {
 		gomips = parts[2]
 	}
 
