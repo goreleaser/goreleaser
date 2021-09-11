@@ -318,12 +318,14 @@ To make your releases, checksums, and signatures reproducible, you will need to 
 
 ## Import pre-built binaries
 
-You may want to build your binaries in different machines due to CGO.
-Maybe you want to build them with your pre-existing `Makefile`.
+Since GoReleaser Pro v0.179.0, it is possible to import pre-built binaries into the GoReleaser lifecycle.
 
-Well, since GoReleaser Pro v0.179.0, you can import those binaries into the release process!
+Reasons you might want to do that include:
+- You want to build your binaries in different machines due to CGO
+- You want to build using a pre-existing `Makefile` or other tool
+- You want to speed up the build by running several builds in parallel in different machines
 
-Example usage:
+In any case, its pretty easy to do that now:
 
 ```yaml
 # .goreleaser.yml
@@ -348,13 +350,14 @@ This example config will import into your release pipeline the following binarie
 The other steps of the pipeline will act as if those were built by GoReleaser itself.
 There is no difference in how the binaries are handled.
 
-A cool tip here, specially when using CGO, is that you can have one
-`.goreleaser.yml` file just for the builds, build each in its own machine with
-[`goreleaser build --single-target`](/cmd/goreleaser_build/) and have a
-second `.goreleaser.yml` file that imports those binaries and release them.
-
-This tip can also be used to speed up the build process if you run all the
-builds in different machines in parallel.
+!!! tip
+    A cool tip here, specially when using CGO, is that you can have one
+    `.goreleaser.yml` file just for the builds, build each in its own machine
+    with [`goreleaser build --single-target`](/cmd/goreleaser_build/) and
+    have a second `.goreleaser.yml` file that imports those binaries
+    and release them.
+    This tip can also be used to speed up the build process if you run all the
+    builds in different machines in parallel.
 
 !!! warning
     GoReleaser will try to stat the final path, if any error happens while
