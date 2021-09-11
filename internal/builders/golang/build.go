@@ -60,7 +60,7 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 		if len(build.Gomips) == 0 {
 			build.Gomips = []string{"hardfloat"}
 		}
-		targets, err := buildtarget.Matrix(build)
+		targets, err := buildtarget.List(build)
 		build.Targets = targets
 		if err != nil {
 			return build, err

@@ -155,6 +155,40 @@ func TestAllBuildTargets(t *testing.T) {
 			"js_wasm",
 		}, result)
 	})
+
+	t.Run("invalid goos", func(t *testing.T) {
+		_, err := matrix(config.Build{
+			Goos:   []string{"invalid"},
+			Goarch: []string{"amd64"},
+		}, []byte("go version go1.17.0"))
+		require.EqualError(t, err, "invalid goos: invalid")
+	})
+
+	t.Run("invalid goarch", func(t *testing.T) {
+		_, err := matrix(config.Build{
+			Goos:   []string{"linux"},
+			Goarch: []string{"invalid"},
+		}, []byte("go version go1.17.0"))
+		require.EqualError(t, err, "invalid goarch: invalid")
+	})
+
+	t.Run("invalid goarm", func(t *testing.T) {
+		_, err := matrix(config.Build{
+			Goos:   []string{"linux"},
+			Goarch: []string{"arm"},
+			Goarm:  []string{"invalid"},
+		}, []byte("go version go1.17.0"))
+		require.EqualError(t, err, "invalid goarm: invalid")
+	})
+
+	t.Run("invalid gomips", func(t *testing.T) {
+		_, err := matrix(config.Build{
+			Goos:   []string{"linux"},
+			Goarch: []string{"mips"},
+			Gomips: []string{"invalid"},
+		}, []byte("go version go1.17.0"))
+		require.EqualError(t, err, "invalid gomips: invalid")
+	})
 }
 
 func TestGoosGoarchCombos(t *testing.T) {
@@ -213,4 +247,36 @@ func TestGoosGoarchCombos(t *testing.T) {
 			require.Equal(t, p.valid, valid(target{p.os, p.arch, "", ""}))
 		})
 	}
+}
+
+func TestList(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		targets, err := List(config.Build{
+			Goos:     []string{"linux"},
+			Goarch:   []string{"amd64"},
+			GoBinary: "go",
+		})
+		require.NoError(t, err)
+		require.Equal(t, []string{"linux_amd64"}, targets)
+	})
+
+	t.Run("success with dir", func(t *testing.T) {
+		targets, err := List(config.Build{
+			Goos:     []string{"linux"},
+			Goarch:   []string{"amd64"},
+			GoBinary: "go",
+			Dir:      "./testdata",
+		})
+		require.NoError(t, err)
+		require.Equal(t, []string{"linux_amd64"}, targets)
+	})
+
+	t.Run("fail", func(t *testing.T) {
+		_, err := List(config.Build{
+			Goos:     []string{"linux"},
+			Goarch:   []string{"amd64"},
+			GoBinary: "nope",
+		})
+		require.EqualError(t, err, `unable to determine version of go binary (nope): exec: "nope": executable file not found in $PATH`)
+	})
 }
