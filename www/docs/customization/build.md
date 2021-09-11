@@ -330,14 +330,23 @@ In any case, its pretty easy to do that now:
 ```yaml
 # .goreleaser.yml
 builds:
-- id: prebuilt
+-
+  # Set the builder to prebuilt
   builder: prebuilt
+
+  # When builder is `prebuilt` there are no defaults for goos, goarch,
+  # goarm, gomips and targets.
   goos:
   - linux
   - darwin
   goarch:
   - amd64
   - arm64
+
+  # Path must be the template path to the binaries.
+  # GoReleaser removes the `dist` folder before running, so you will likely
+  # want to put the binaries elsewhere.
+  # This field is required when using the `prebuilt` builder.
   path: output/mybin_{{ .Os }}_{{ .Arch }}
 ```
 
