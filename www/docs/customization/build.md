@@ -111,6 +111,14 @@ builds:
       - goarm: mips64
         gomips: hardfloat
 
+    # Optionally override the matrix generation and specify only the final list of targets.
+    # Format is `{goos}_{goarch}` with optionally a suffix with `_{goarm}` or `_{gomips}`.
+    # This overrides `goos`, `goarch`, `goarm`, `gomips` and `ignores`.
+    targets:
+      - linux_amd64
+      - darwin_arm64
+      - linux_arm_6
+
     # Set a specific go binary to use when building. It is safe to ignore
     # this option in most cases.
     # Default is "go"
@@ -143,6 +151,12 @@ builds:
     #
     # Defaults to `false`.
     no_unique_dist_dir: true
+
+    # Builder allows you to use a different build implementation.
+    # This is a GoReleaser Pro feature.
+    # Valid options are: `go` and `prebuilt`.
+    # Defaults to `go`.
+    builder: prebuilt
 ```
 
 !!! tip
@@ -194,6 +208,7 @@ You can do that by using `{{ .Env.VARIABLE_NAME }}` in the template, for
 example:
 
 ```yaml
+# .goreleaser.yml
 builds:
   - ldflags:
    - -s -w -X "main.goversion={{.Env.GOVERSION}}"
@@ -215,6 +230,7 @@ In addition to simple declarations as shown above _multiple_ hooks can be declar
 to help retaining reusability of config between different build environments.
 
 ```yaml
+# .goreleaser.yml
 builds:
   -
     id: "with-hooks"
@@ -233,6 +249,7 @@ builds:
 Each hook can also have its own work directory and environment variables:
 
 ```yaml
+# .goreleaser.yml
 builds:
   -
     id: "with-hooks"
@@ -275,6 +292,7 @@ Environment variables are inherited and overridden in the following order:
  by adding a [hook][] doing that on your `.goreleaser.yml` file:
 
  ```yaml
+ # .goreleaser.yml
  before:
    hooks:
    - go mod tidy
@@ -297,3 +315,55 @@ To make your releases, checksums, and signatures reproducible, you will need to 
 * Modify `mod_timestamp`: by default this is empty string, set to `{{.CommitTimestamp}}` or a constant value instead.
 * If you do not run your builds from a consistent directory structure, pass `-trimpath` to `flags`.
 * Remove uses of the `time` template function. This function returns a new value on every call and is not deterministic.
+
+## Import pre-built binaries
+
+You may want to build your binaries in different machines due to CGO.
+Maybe you want to build them with your pre-existing `Makefile`.
+
+Well, since GoReleaser Pro v0.179.0, you can import those binaries into the release process!
+
+Example usage:
+
+```yaml
+# .goreleaser.yml
+builds:
+- id: prebuilt
+  builder: prebuilt
+  goos:
+  - linux
+  - darwin
+  goarch:
+  - amd64
+  - arm64
+  path: output/mybin_{{ .Os }}_{{ .Arch }}
+```
+
+This example config will import into your release pipeline the following binaries:
+- `output/mybin_linux_amd64`
+- `output/mybin_linux_arm64`
+- `output/mybin_darwin_amd64`
+- `output/mybin_darwin_arm64`
+
+The other steps of the pipeline will act as if those were built by GoReleaser itself.
+There is no difference in how the binaries are handled.
+
+A cool tip here, specially when using CGO, is that you can have one
+`.goreleaser.yml` file just for the builds, build each in its own machine with
+[`goreleaser build --single-target`](/cmd/goreleaser_build/) and have a
+second `.goreleaser.yml` file that imports those binaries and release them.
+
+This tip can also be used to speed up the build process if you run all the
+builds in different machines in parallel.
+
+!!! warning
+    GoReleaser will try to stat the final path, if any error happens while
+    doing that (e.g. file does not exist or permission issues),
+    GoReleaser will fail.
+
+!!! warning
+    When using the `prebuilt` binary, there are no defaults for `goos` et al,
+    so you need to either provide those or the final `targets` matrix.
+
+!!! info
+    The `prebuilt` builder is a [GoReleaser Pro feature](/pro/).

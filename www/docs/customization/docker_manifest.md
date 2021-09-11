@@ -155,7 +155,6 @@ docker_manifests:
 ```
 
 Note that GoReleaser will not install Podman for you, nor change any of its configuration.
-Also worth noticing that currently Podman only works on Linux machines.
 
 !!! info
     The Podman backend is a [GoReleaser Pro feature](/pro/).

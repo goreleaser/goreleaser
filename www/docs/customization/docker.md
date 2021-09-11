@@ -251,7 +251,6 @@ dockers:
 ```
 
 Note that GoReleaser will not install Podman for you, nor change any of its configuration.
-Also worth noticing that currently Podman only works on Linux machines.
 
 !!! info
     The Podman backend is a [GoReleaser Pro feature](/pro/).
@@ -269,7 +268,7 @@ dockers:
     use: buildpacks
 ```
 
-Also, you can use a custom buildpack on `build_flag_templates` if you want. 
+Also, you can use a custom buildpack on `build_flag_templates` if you want.
 By default, `gcr.io/buildpacks/builder:v1` will be used.
 
 ```yaml
