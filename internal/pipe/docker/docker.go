@@ -24,8 +24,9 @@ import (
 const (
 	dockerConfigExtra = "DockerConfig"
 
-	useBuildx = "buildx"
-	useDocker = "docker"
+	useBuildx    = "buildx"
+	useDocker    = "docker"
+	useBuildPack = "buildpacks"
 )
 
 // Pipe for docker.
