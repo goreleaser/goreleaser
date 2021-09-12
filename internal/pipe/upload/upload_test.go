@@ -543,30 +543,6 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	require.EqualError(t, Pipe{}.Publish(ctx), `upload: upload failed: parse "://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin": missing protocol scheme`)
 }
 
-func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
-	ctx := context.New(config.Project{
-		Uploads: []config.Upload{
-			{
-				Name:     "production",
-				Mode:     "binary",
-				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-				Username: "deployuser",
-			},
-		},
-		Archives: []config.Archive{
-			{},
-		},
-	})
-	ctx.Env = map[string]string{
-		"UPLOAD_PRODUCTION_SECRET": "deployuser-secret",
-	}
-	ctx.SkipPublish = true
-
-	err := Pipe{}.Publish(ctx)
-	require.True(t, pipe.IsSkip(err))
-	require.EqualError(t, err, pipe.ErrSkipPublishEnabled.Error())
-}
-
 func TestRunPipe_DirUpload(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -609,7 +585,7 @@ func TestDescription(t *testing.T) {
 }
 
 func TestNoPuts(t *testing.T) {
-	require.True(t, pipe.IsSkip(Pipe{}.Publish(context.New(config.Project{}))))
+	require.True(t, Pipe{}.Skip(context.New(config.Project{})))
 }
 
 func TestPutsWithoutTarget(t *testing.T) {

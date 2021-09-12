@@ -14,9 +14,8 @@ import (
 type Pipe struct{}
 
 // String returns the description of the pipe.
-func (Pipe) String() string {
-	return "http upload"
-}
+func (Pipe) String() string                 { return "http upload" }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Uploads) == 0 }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
@@ -25,10 +24,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Publish artifacts.
 func (Pipe) Publish(ctx *context.Context) error {
-	if len(ctx.Config.Uploads) == 0 {
-		return pipe.ErrSkipDisabledPipe
-	}
-
 	// Check requirements for every instance we have configured.
 	// If not fulfilled, we can skip this pipeline
 	for _, instance := range ctx.Config.Uploads {
