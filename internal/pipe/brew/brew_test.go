@@ -922,3 +922,18 @@ func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.Comm
 func (dc *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error) {
 	return
 }
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Brews: []config.Homebrew{
+				{},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
+}

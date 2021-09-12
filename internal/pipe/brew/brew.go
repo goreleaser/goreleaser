@@ -42,9 +42,8 @@ func (e ErrTokenTypeNotImplementedForBrew) Error() string {
 // Pipe for brew deployment.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "homebrew tap formula"
-}
+func (Pipe) String() string                 { return "homebrew tap formula" }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Brews) == 0 }
 
 // Publish brew formula.
 func (Pipe) Publish(ctx *context.Context) error {
@@ -171,6 +170,8 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
 		return pipe.Skip("brew.skip_upload is set")
 	}
+
+	// TODO(caarlos0): maybe split this into Run and Publish?
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
 	}
