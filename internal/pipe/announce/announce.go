@@ -4,12 +4,11 @@ package announce
 import (
 	"fmt"
 
-	"github.com/goreleaser/goreleaser/internal/pipe/teams"
-
 	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/internal/pipe/discord"
 	"github.com/goreleaser/goreleaser/internal/pipe/reddit"
 	"github.com/goreleaser/goreleaser/internal/pipe/slack"
+	"github.com/goreleaser/goreleaser/internal/pipe/teams"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -34,8 +33,8 @@ var announcers = []Announcer{
 	discord.Pipe{},
 	reddit.Pipe{},
 	slack.Pipe{},
-	twitter.Pipe{},
 	teams.Pipe{},
+	twitter.Pipe{},
 }
 
 // Run the pipe.
