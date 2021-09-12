@@ -107,7 +107,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	if brew.Tap.Name == "" {
-		return pipe.ErrSkipDisabledPipe
+		return pipe.Skip("brew tap name is not set")
 	}
 
 	if brew.Tap.Token != "" {

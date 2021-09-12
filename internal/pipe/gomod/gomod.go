@@ -27,9 +27,7 @@ const (
 // Pipe for env.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "loading go mod information"
-}
+func (Pipe) String() string { return "loading go mod information" }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
@@ -53,7 +51,8 @@ func (Pipe) Run(ctx *context.Context) error {
 	ctx.ModulePath = result
 
 	if !ctx.Config.GoMod.Proxy {
-		return pipe.ErrSkipDisabledPipe
+		// TODO: check this on Skip?
+		return pipe.Skip("proxying not enabled")
 	}
 
 	if ctx.Snapshot {

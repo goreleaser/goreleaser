@@ -22,12 +22,6 @@ func TestError(t *testing.T) {
 		})(nil))
 	})
 
-	t.Run("pipe expected skipped", func(t *testing.T) {
-		require.NoError(t, Handle(func(ctx *context.Context) error {
-			return pipe.ErrSkipDisabledPipe
-		})(nil))
-	})
-
 	t.Run("some err", func(t *testing.T) {
 		require.Error(t, Handle(func(ctx *context.Context) error {
 			return fmt.Errorf("pipe errored")

@@ -15,10 +15,6 @@ func Handle(action middleware.Action) middleware.Action {
 		if err == nil {
 			return nil
 		}
-		if pipe.IsExpectedSkip(err) {
-			log.WithError(err).Debug("pipe skipped")
-			return nil
-		}
 		if pipe.IsSkip(err) {
 			log.WithError(err).Warn("pipe skipped")
 			return nil
