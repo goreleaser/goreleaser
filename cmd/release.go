@@ -7,7 +7,9 @@ import (
 	"github.com/apex/log"
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
-	"github.com/goreleaser/goreleaser/internal/middleware"
+	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
+	"github.com/goreleaser/goreleaser/internal/middleware/logging"
+	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -101,10 +103,13 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 	setupReleaseContext(ctx, options)
 	return ctx, ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipeline.Pipeline {
-			if err := middleware.Logging(
-				pipe.String(),
-				middleware.ErrHandler(pipe.Run),
-				middleware.DefaultInitialPadding,
+			if err := skip.Maybe(
+				pipe,
+				logging.Log(
+					pipe.String(),
+					errhandler.Handle(pipe.Run),
+					logging.DefaultInitialPadding,
+				),
 			)(ctx); err != nil {
 				return err
 			}
