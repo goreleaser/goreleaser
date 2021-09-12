@@ -578,7 +578,7 @@ type Filters struct {
 type Changelog struct {
 	Filters Filters `yaml:",omitempty"`
 	Sort    string  `yaml:",omitempty"`
-	Skip    bool    `yaml:",omitempty"`
+	Skip    bool    `yaml:",omitempty"` // TODO(caarlos0): rename to Disable to match other pipes
 }
 
 // EnvFiles holds paths to files that contains environment variables
