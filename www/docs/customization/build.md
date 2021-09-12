@@ -344,11 +344,13 @@ builds:
   - amd64
   - arm64
 
-  # Path must be the template path to the binaries.
-  # GoReleaser removes the `dist` folder before running, so you will likely
-  # want to put the binaries elsewhere.
-  # This field is required when using the `prebuilt` builder.
-  path: output/mybin_{{ .Os }}_{{ .Arch }}
+  # prebuilt specific options
+  prebuilt:
+    # Path must be the template path to the binaries.
+    # GoReleaser removes the `dist` folder before running, so you will likely
+    # want to put the binaries elsewhere.
+    # This field is required when using the `prebuilt` builder.
+    path: output/mybin_{{ .Os }}_{{ .Arch }}
 ```
 
 This example config will import into your release pipeline the following binaries:
