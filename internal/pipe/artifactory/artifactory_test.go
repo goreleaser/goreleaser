@@ -634,12 +634,6 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
-func TestNoArtifactories(t *testing.T) {
-	ctx := context.New(config.Project{})
-	require.NoError(t, Pipe{}.Default(ctx))
-	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
-}
-
 func TestArtifactoriesWithoutTarget(t *testing.T) {
 	ctx := &context.Context{
 		Env: map[string]string{
@@ -771,4 +765,17 @@ func TestDefaultSet(t *testing.T) {
 	artifactory := ctx.Config.Artifactories[0]
 	require.Equal(t, "custom", artifactory.Mode)
 	require.Equal(t, "foo", artifactory.ChecksumHeader)
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Artifactories: []config.Upload{{}},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }
