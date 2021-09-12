@@ -75,7 +75,7 @@ func TestInvalidNameTemplate(t *testing.T) {
 }
 
 func TestDisabled(t *testing.T) {
-	testlib.AssertSkipped(t, Pipe{}.Run(context.New(config.Project{})))
+	require.True(t, Pipe{}.Skip(context.New(config.Project{})))
 }
 
 func TestString(t *testing.T) {
