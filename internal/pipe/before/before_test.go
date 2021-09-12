@@ -91,3 +91,18 @@ func TestInvalidTemplate(t *testing.T) {
 		},
 	)), `template: tmpl:1: unexpected "}" in operand`)
 }
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Before: config.Before{
+				Hooks: []string{""},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
+}
