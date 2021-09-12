@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -14,9 +13,8 @@ import (
 type Pipe struct{}
 
 // String returns the description of the pipe.
-func (Pipe) String() string {
-	return "blobs"
-}
+func (Pipe) String() string                 { return "blobs" }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Blobs) == 0 }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
@@ -35,10 +33,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Publish to specified blob bucket url.
 func (Pipe) Publish(ctx *context.Context) error {
-	if len(ctx.Config.Blobs) == 0 {
-		return pipe.ErrSkipDisabledPipe
-	}
-
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, conf := range ctx.Config.Blobs {
 		conf := conf
