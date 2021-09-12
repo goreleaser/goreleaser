@@ -584,10 +584,6 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
-func TestNoPuts(t *testing.T) {
-	require.True(t, Pipe{}.Skip(context.New(config.Project{})))
-}
-
 func TestPutsWithoutTarget(t *testing.T) {
 	ctx := &context.Context{
 		Env: map[string]string{
@@ -716,4 +712,19 @@ func TestDefaultSet(t *testing.T) {
 	upload := ctx.Config.Uploads[0]
 	require.Equal(t, "custom", upload.Mode)
 	require.Equal(t, h.MethodPost, upload.Method)
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Uploads: []config.Upload{
+				{},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }

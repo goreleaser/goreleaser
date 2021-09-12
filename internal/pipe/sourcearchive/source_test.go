@@ -78,6 +78,17 @@ func TestDisabled(t *testing.T) {
 	require.True(t, Pipe{}.Skip(context.New(config.Project{})))
 }
 
-func TestString(t *testing.T) {
-	require.NotEmpty(t, Pipe{}.String())
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Source: config.Source{
+				Enabled: true,
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }
