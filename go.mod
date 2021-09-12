@@ -46,6 +46,7 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
+	github.com/DisgoOrg/disgohook v1.4.3
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
@@ -114,7 +115,6 @@ require (
 
 require (
 	cloud.google.com/go/kms v0.1.0 // indirect
-	github.com/DisgoOrg/disgohook v1.4.3 // indirect
 	github.com/DisgoOrg/log v1.1.0 // indirect
 	github.com/DisgoOrg/restclient v1.2.7 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.9.0 // indirect
