@@ -41,7 +41,9 @@ func TestDefaultWithRepoRemote(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:githubowner/githubrepo.git")
 
-	ctx := context.New(config.Project{})
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
 	ctx.TokenType = context.TokenTypeGitHub
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "githubrepo", ctx.Config.Milestones[0].Repo.Name)
@@ -65,7 +67,9 @@ func TestDefaultWithNameTemplate(t *testing.T) {
 func TestDefaultWithoutGitRepo(t *testing.T) {
 	testlib.Mktmp(t)
 	ctx := &context.Context{
-		Config: config.Project{},
+		Config: config.Project{
+			Milestones: []config.Milestone{{}},
+		},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
 	require.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
@@ -75,7 +79,9 @@ func TestDefaultWithoutGitRepo(t *testing.T) {
 func TestDefaultWithoutGitRepoOrigin(t *testing.T) {
 	testlib.Mktmp(t)
 	ctx := &context.Context{
-		Config: config.Project{},
+		Config: config.Project{
+			Milestones: []config.Milestone{{}},
+		},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
 	testlib.GitInit(t)
@@ -86,7 +92,9 @@ func TestDefaultWithoutGitRepoOrigin(t *testing.T) {
 func TestDefaultWithoutGitRepoSnapshot(t *testing.T) {
 	testlib.Mktmp(t)
 	ctx := &context.Context{
-		Config: config.Project{},
+		Config: config.Project{
+			Milestones: []config.Milestone{{}},
+		},
 	}
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Snapshot = true
@@ -97,7 +105,7 @@ func TestDefaultWithoutGitRepoSnapshot(t *testing.T) {
 func TestDefaultWithoutNameTemplate(t *testing.T) {
 	ctx := &context.Context{
 		Config: config.Project{
-			Milestones: []config.Milestone{},
+			Milestones: []config.Milestone{{}},
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -183,6 +191,21 @@ func TestPublishCloseFailOnError(t *testing.T) {
 	}
 	require.Error(t, doPublish(ctx, client))
 	require.Equal(t, "", client.ClosedMilestone)
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Milestones: []config.Milestone{
+				{},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }
 
 type DummyClient struct {
