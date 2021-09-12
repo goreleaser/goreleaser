@@ -28,9 +28,8 @@ var ErrTokenTypeNotImplementedForScoop = errors.New("token type not implemented 
 // Pipe for build.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "scoop manifests"
-}
+func (Pipe) String() string                 { return "scoop manifests" }
+func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Scoop.Bucket.Name == "" }
 
 // Publish scoop manifest.
 func (Pipe) Publish(ctx *context.Context) error {
@@ -60,9 +59,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, cl client.Client) error {
 	scoop := ctx.Config.Scoop
-	if scoop.Bucket.Name == "" {
-		return pipe.ErrSkipDisabledPipe
-	}
 
 	if scoop.Bucket.Token != "" {
 		token, err := tmpl.New(ctx).ApplySingleEnvOnly(scoop.Bucket.Token)

@@ -443,42 +443,6 @@ func Test_doRun(t *testing.T) {
 			noAssertions,
 		},
 		{
-			"no scoop",
-			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitHub,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
-					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
-						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "tar.gz"},
-						},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
-					},
-				},
-				&DummyClient{},
-			},
-			[]*artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64"},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386"},
-			},
-			shouldErr(pipe.ErrSkipDisabledPipe.Error()),
-			noAssertions,
-		},
-		{
 			"no publish",
 			args{
 				&context.Context{
@@ -1144,6 +1108,23 @@ func TestWrapInDirectory(t *testing.T) {
 	out, err := doBuildManifest(mf)
 	require.NoError(t, err)
 	golden.RequireEqualJSON(t, out.Bytes())
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Scoop: config.Scoop{
+				Bucket: config.RepoRef{
+					Name: "a",
+				},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }
 
 type DummyClient struct {
