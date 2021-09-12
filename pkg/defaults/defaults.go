@@ -5,6 +5,8 @@ package defaults
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/internal/pipe/teams"
+
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
@@ -60,6 +62,7 @@ var Defaulters = []Defaulter{
 	brew.Pipe{},
 	scoop.Pipe{},
 	discord.Pipe{},
+	teams.Pipe{},
 	reddit.Pipe{},
 	slack.Pipe{},
 	twitter.Pipe{},
