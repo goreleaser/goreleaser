@@ -11,7 +11,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/git"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -23,9 +22,8 @@ var ErrMultipleReleases = errors.New("multiple releases are defined. Only one is
 // Pipe for github release.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "github/gitlab/gitea releases"
-}
+func (Pipe) String() string                 { return "github/gitlab/gitea releases" }
+func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Release.Disable }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
@@ -101,9 +99,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Publish the release.
 func (Pipe) Publish(ctx *context.Context) error {
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
 	c, err := client.New(ctx)
 	if err != nil {
 		return err
@@ -112,9 +107,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func doPublish(ctx *context.Context, client client.Client) error {
-	if ctx.Config.Release.Disable {
-		return pipe.ErrSkipDisabledPipe
-	}
 	log.WithField("tag", ctx.Git.CurrentTag).
 		WithField("repo", ctx.Config.Release.GitHub.String()).
 		Info("creating or updating release")
