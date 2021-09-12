@@ -32,9 +32,8 @@ const (
 // Pipe for docker.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "docker images"
-}
+func (Pipe) String() string                 { return "docker images" }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Dockers) == 0 }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
@@ -89,19 +88,8 @@ func validateImager(use string) error {
 	return fmt.Errorf("docker: invalid use: %s, valid options are %v", use, valid)
 }
 
-// Run the pipe.
-func (Pipe) Run(ctx *context.Context) error {
-	if len(ctx.Config.Dockers) == 0 || len(ctx.Config.Dockers[0].ImageTemplates) == 0 {
-		return pipe.ErrSkipDisabledPipe
-	}
-	return doRun(ctx)
-}
-
 // Publish the docker images.
 func (Pipe) Publish(ctx *context.Context) error {
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
 	images := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableDockerImage)).List()
 	for _, image := range images {
 		if err := dockerPush(ctx, image); err != nil {
@@ -111,7 +99,8 @@ func (Pipe) Publish(ctx *context.Context) error {
 	return nil
 }
 
-func doRun(ctx *context.Context) error {
+// Run the pipe.
+func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
 	for _, docker := range ctx.Config.Dockers {
 		docker := docker
@@ -146,6 +135,10 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	images, err := processImageTemplates(ctx, docker)
 	if err != nil {
 		return err
+	}
+
+	if len(images) == 0 {
+		return pipe.Skip("no image templates found")
 	}
 
 	log := log.WithField("image", images[0])

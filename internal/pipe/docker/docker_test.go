@@ -1295,7 +1295,7 @@ func Test_processImageTemplates(t *testing.T) {
 			},
 		},
 	}
-	ctx.SkipPublish = true
+
 	ctx.Env = map[string]string{
 		"FOO": "123",
 	}
@@ -1323,4 +1323,32 @@ func Test_processImageTemplates(t *testing.T) {
 		"gcr.io/image:v1.0.0-123",
 		"gcr.io/image:v1.0",
 	}, images)
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("image", func(t *testing.T) {
+		t.Run("skip", func(t *testing.T) {
+			require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		})
+
+		t.Run("dont skip", func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Dockers: []config.Docker{{}},
+			})
+			require.False(t, Pipe{}.Skip(ctx))
+		})
+	})
+
+	t.Run("manifest", func(t *testing.T) {
+		t.Run("skip", func(t *testing.T) {
+			require.True(t, ManifestPipe{}.Skip(context.New(config.Project{})))
+		})
+
+		t.Run("dont skip", func(t *testing.T) {
+			ctx := context.New(config.Project{
+				DockerManifests: []config.DockerManifest{{}},
+			})
+			require.False(t, ManifestPipe{}.Skip(ctx))
+		})
+	})
 }
