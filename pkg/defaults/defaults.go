@@ -25,6 +25,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
+	"github.com/goreleaser/goreleaser/internal/pipe/teams"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -62,6 +63,7 @@ var Defaulters = []Defaulter{
 	discord.Pipe{},
 	reddit.Pipe{},
 	slack.Pipe{},
+	teams.Pipe{},
 	twitter.Pipe{},
 	milestone.Pipe{},
 }

@@ -5,6 +5,7 @@ IgnoreURLs:
 - https://gitlab.com/profile/personal_access_tokens
 - https://twitter.com/goreleaser
 - support.discord.com
+- microsoft.com
 IgnoreDirs:
 - overrides
 IgnoreDirectoryMissingTrailingSlash: true
