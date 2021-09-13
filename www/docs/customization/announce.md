@@ -2,9 +2,9 @@
 title: Announce
 ---
 
-GoReleaser can also announce new releases, currently, to Twitter, Reddit, Slack, Discourse and Teams only.
+GoReleaser can also announce new releases to Twitter, Reddit, Slack, Discourse and Microsoft Teams.
 
-It runs at the very end of the pipeline.
+It runs at the very end of the pipeline and can be skipped with the `--skip-announce` flag of the [`release`](/cmd/goreleaser_release/) command.
 
 ## Twitter
 
