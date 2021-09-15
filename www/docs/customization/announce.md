@@ -4,11 +4,13 @@ title: Announce
 
 GoReleaser can also announce new releases to Twitter, Reddit, Slack, Discourse and Microsoft Teams.
 
-It runs at the very end of the pipeline and can be skipped with the `--skip-announce` flag of the [`release`](/cmd/goreleaser_release/) command.
+It runs at the very end of the pipeline and can be skipped with the `--skip-announce` flag of
+the [`release`](/cmd/goreleaser_release/) command.
 
 ## Twitter
 
-For it to work, you'll need to [create a new Twitter app](https://developer.twitter.com/en/portal/apps/new), and set some environment variables on your pipeline:
+For it to work, you'll need to [create a new Twitter app](https://developer.twitter.com/en/portal/apps/new), and set
+some environment variables on your pipeline:
 
 - `TWITTER_CONSUMER_KEY`
 - `TWITTER_CONSUMER_SECRET`
@@ -32,7 +34,9 @@ announce:
 
 ## Teams
 
-To use [Teams](https://www.microsoft.com/de-de/microsoft-teams/group-chat-software), you need to [create a Webhook](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook), and set following environment variable on your pipeline:
+To use [Teams](https://www.microsoft.com/de-de/microsoft-teams/group-chat-software), you need
+to [create a Webhook](https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook)
+, and set following environment variable on your pipeline:
 
 - `TEAMS_WEBHOOK`
 
@@ -65,7 +69,9 @@ announce:
 
 ## Discord
 
-To use [Discord](https://discord.com/), you need to [create a Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks), and set following environment variables on your pipeline:
+To use [Discord](https://discord.com/), you need
+to [create a Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks), and set following
+environment variables on your pipeline:
 
 - `DISCORD_WEBHOOK_ID`
 - `DISCORD_WEBHOOK_TOKEN`
@@ -97,10 +103,10 @@ announce:
     icon_url: ''
 ```
 
-
 ## Slack
 
-For it to work, you'll need to [create a new Incoming Webhook](https://api.slack.com/messaging/webhooks), and set some environment variables on your pipeline:
+For it to work, you'll need to [create a new Incoming Webhook](https://api.slack.com/messaging/webhooks), and set some
+environment variables on your pipeline:
 
 - `SLACK_WEBHOOK`
 
@@ -131,12 +137,12 @@ announce:
     icon_url: ''
 ```
 
-!!! tip
-    Learn more about the [name template engine](/customization/templates/).
+!!! tip Learn more about the [name template engine](/customization/templates/).
 
 ## Reddit
 
-For it to work, you'll need to [create a new Reddit app](https://www.reddit.com/prefs/apps), and set some environment variables on your pipeline:
+For it to work, you'll need to [create a new Reddit app](https://www.reddit.com/prefs/apps), and set some environment
+variables on your pipeline:
 
 - `REDDIT_SECRET`
 - `REDDIT_PASSWORD`
@@ -164,4 +170,46 @@ announce:
     # Title template to use while publishing.
     # Defaults to `{{ .ProjectName }} {{ .Tag }} is out!`
     title_template: ''GoReleaser {{ .Tag }} was just released!''
+```
+
+## SMTP
+
+For it to work, you'll need to set some environment variables on your pipeline:
+
+- `SMTP_PASSWORD`
+
+Then, you can add something like the following to your `.goreleaser.yml` config:
+
+```yaml
+# .goreleaser.yml
+announce:
+  smtp:
+    # Wether its enabled or not.
+    # Defaults to false.
+    enabled: true
+
+    # SMTP Host
+    host: "smtp.gmail.com"
+
+    # SMTP Port
+    port: 587
+
+    # Sender of the email
+    from: ""
+
+    # Receivers of the email
+    to:
+      - ""
+      - ""
+
+    # Owner of the email
+    username: ""
+
+    # Body template to use within the email.
+    # Defaults to `You can view details from: {{ .GitURL }}/releases/tag/{{ .Tag }}`
+    body_template: 'https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'
+
+    # Subject template to use within the email subject.
+    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out!`
+    subject_template: ''GoReleaser {{ .Tag }} was just released!''
 ```
