@@ -476,7 +476,7 @@ func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
 	}
 	ctx.TokenType = context.TokenTypeGitHub
 	testlib.GitInit(t)
-	require.EqualError(t, Pipe{}.Default(ctx), "repository doesn't have an `origin` remote")
+	require.EqualError(t, Pipe{}.Default(ctx), "no remote configured to list refs from")
 	require.Empty(t, ctx.Config.Release.GitHub.String())
 }
 
