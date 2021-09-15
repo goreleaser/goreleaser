@@ -62,7 +62,7 @@ docker_signs:
 
     # Stdin data template to be given to the signature command as stdin.
     # Defaults to empty
-    stdin: '{{ .Env.GPG_PASSWORD }}'
+    stdin: '{{ .Env.COSIGN_PWD }}'
 
     # StdinFile file to be given to the signature command as stdin.
     # Defaults to empty
