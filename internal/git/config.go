@@ -14,9 +14,9 @@ func ExtractRepoFromConfig() (result config.Repo, err error) {
 	if !IsRepo() {
 		return result, errors.New("current folder is not a git repository")
 	}
-	out, err := Run("config", "--get", "remote.origin.url")
+	out, err := Run("ls-remote", "--get-url")
 	if err != nil {
-		return result, fmt.Errorf("repository doesn't have an `origin` remote")
+		return result, fmt.Errorf("no remote configured to list refs from")
 	}
 	return ExtractRepoFromURL(out)
 }

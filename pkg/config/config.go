@@ -696,6 +696,7 @@ type Announce struct {
 	Slack   Slack   `yaml:"slack,omitempty"`
 	Discord Discord `yaml:"discord,omitempty"`
 	Teams   Teams   `yaml:"teams,omitempty"`
+	SMTP    SMTP    `yaml:"smtp,omitempty"`
 }
 
 type Twitter struct {
@@ -735,6 +736,18 @@ type Teams struct {
 	MessageTemplate string `yaml:"message_template,omitempty"`
 	Color           string `yaml:"color,omitempty"`
 	IconURL         string `yaml:"icon_url,omitempty"`
+}
+
+type SMTP struct {
+	Enabled            bool     `yaml:"enabled,omitempty"`
+	Host               string   `yaml:"host,omitempty"`
+	Port               int      `yaml:"port,omitempty"`
+	Username           string   `yaml:"username,omitempty"`
+	From               string   `yaml:"from,omitempty"`
+	To                 []string `yaml:"to,omitempty"`
+	SubjectTemplate    string   `yaml:"subject_template,omitempty"`
+	BodyTemplate       string   `yaml:"body_template,omitempty"`
+	InsecureSkipVerify bool     `yaml:"insecure_skip_verify,omitempty"`
 }
 
 // Load config file.

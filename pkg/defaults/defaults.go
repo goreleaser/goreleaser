@@ -22,6 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/slack"
+	"github.com/goreleaser/goreleaser/internal/pipe/smtp"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
@@ -65,5 +66,6 @@ var Defaulters = []Defaulter{
 	slack.Pipe{},
 	teams.Pipe{},
 	twitter.Pipe{},
+	smtp.Pipe{},
 	milestone.Pipe{},
 }

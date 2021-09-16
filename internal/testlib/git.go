@@ -27,6 +27,14 @@ func GitRemoteAdd(tb testing.TB, url string) {
 	require.Empty(tb, out)
 }
 
+// GitRemoteAddWithName adds the given url as remote with given name.
+func GitRemoteAddWithName(tb testing.TB, remote, url string) {
+	tb.Helper()
+	out, err := fakeGit("remote", "add", remote, url)
+	require.NoError(tb, err)
+	require.Empty(tb, out)
+}
+
 // GitCommit creates a git commits.
 func GitCommit(tb testing.TB, msg string) {
 	tb.Helper()

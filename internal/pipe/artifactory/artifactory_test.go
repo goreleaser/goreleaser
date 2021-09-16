@@ -45,7 +45,7 @@ func requireHeader(t *testing.T, r *http.Request, header, want string) {
 	require.Equal(t, want, r.Header.Get(header))
 }
 
-// TODO: improve all tests bellow by checking wether the mocked handlers
+// TODO: improve all tests below by checking wether the mocked handlers
 // were called or not.
 
 func TestRunPipe_ModeBinary(t *testing.T) {
