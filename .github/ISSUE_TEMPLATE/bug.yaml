@@ -8,7 +8,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report! Please fill the form bellow.
+        Thanks for taking the time to fill out this bug report! Please fill the form below.
   - type: textarea
     id: what-happened
     attributes:
