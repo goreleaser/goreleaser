@@ -17,11 +17,8 @@ const (
 
 type Pipe struct{}
 
-func (Pipe) String() string { return "slack" }
-
-func (Pipe) Skip(ctx *context.Context) bool {
-	return !ctx.Config.Announce.Slack.Enabled
-}
+func (Pipe) String() string                 { return "slack" }
+func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Slack.Enabled }
 
 type Config struct {
 	Webhook string `env:"SLACK_WEBHOOK,notEmpty"`

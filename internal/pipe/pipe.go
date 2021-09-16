@@ -32,8 +32,7 @@ func IsSkip(err error) bool {
 
 // ErrSkip occurs when a pipe is skipped for some reason.
 type ErrSkip struct {
-	reason   string
-	expected bool
+	reason string
 }
 
 // Error implements the error interface. returns the reason the pipe was skipped.

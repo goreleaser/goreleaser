@@ -10,7 +10,7 @@ import (
 
 func TestSkip(t *testing.T) {
 	fakeErr := fmt.Errorf("fake error")
-	action := func(ctx *context.Context) error {
+	action := func(_ *context.Context) error {
 		return fakeErr
 	}
 
@@ -31,6 +31,6 @@ type skipper struct {
 	skip bool
 }
 
-func (s skipper) Skip(ctx *context.Context) bool {
+func (s skipper) Skip(_ *context.Context) bool {
 	return s.skip
 }

@@ -20,10 +20,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const (
-	brewConfigExtra = "BrewConfig"
-	filenameExtra   = "Filename"
-)
+const brewConfigExtra = "BrewConfig"
 
 // ErrNoArchivesFound happens when 0 archives are found.
 var ErrNoArchivesFound = errors.New("no linux/macos archives found")
@@ -168,7 +165,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
-	return cl.CreateFile(ctx, brew.CommitAuthor, repo, []byte(content), gpath, msg)
+	return cl.CreateFile(ctx, brew.CommitAuthor, repo, content, gpath, msg)
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
