@@ -1176,10 +1176,6 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
-func TestNoDockers(t *testing.T) {
-	require.True(t, pipe.IsSkip(Pipe{}.Run(context.New(config.Project{}))))
-}
-
 func TestNoDockerWithoutImageName(t *testing.T) {
 	require.True(t, pipe.IsSkip(Pipe{}.Run(context.New(config.Project{
 		Dockers: []config.Docker{
