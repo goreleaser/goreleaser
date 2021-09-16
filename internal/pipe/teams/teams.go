@@ -6,7 +6,6 @@ import (
 	"github.com/apex/log"
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
 	"github.com/caarlos0/env/v6"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -20,7 +19,8 @@ const (
 
 type Pipe struct{}
 
-func (Pipe) String() string { return "teams" }
+func (Pipe) String() string                 { return "teams" }
+func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Teams.Enabled }
 
 type Config struct {
 	Webhook string `env:"TEAMS_WEBHOOK,notEmpty"`
@@ -43,13 +43,6 @@ func (p Pipe) Default(ctx *context.Context) error {
 }
 
 func (p Pipe) Announce(ctx *context.Context) error {
-	if ctx.SkipAnnounce {
-		return pipe.ErrSkipAnnounceEnabled
-	}
-	if !ctx.Config.Announce.Teams.Enabled {
-		return pipe.ErrSkipDisabledPipe
-	}
-
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Teams.TitleTemplate)
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to teams: %w", err)
