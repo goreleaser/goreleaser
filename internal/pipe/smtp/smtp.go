@@ -6,7 +6,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	gomail "gopkg.in/mail.v2"
@@ -19,7 +18,8 @@ const (
 
 type Pipe struct{}
 
-func (Pipe) String() string { return "reddit" }
+func (Pipe) String() string                 { return "smtp" }
+func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.SMTP.Enabled }
 
 type Config struct {
 	Host     string `env:"SMTP_HOST,notEmpty"`
@@ -41,13 +41,6 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Announce(ctx *context.Context) error {
-	if ctx.SkipAnnounce {
-		return pipe.ErrSkipAnnounceEnabled
-	}
-	if !ctx.Config.Announce.SMTP.Enabled {
-		return pipe.ErrSkipDisabledPipe
-	}
-
 	subject, err := tmpl.New(ctx).Apply(ctx.Config.Announce.SMTP.SubjectTemplate)
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to SMTP: %w", err)
