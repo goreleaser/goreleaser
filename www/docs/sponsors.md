@@ -23,7 +23,7 @@ This ultimately is used to buy/renew domains, keep servers up (although right no
 
 You can start sponsoring at the [OpenCollective website](https://opencollective.com/goreleaser).
 
-Bellow you can see a list of the current sponsors and backers on OpenCollective:
+Below you can see a list of the current sponsors and backers on OpenCollective:
 
 ### Sponsors
 

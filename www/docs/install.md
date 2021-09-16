@@ -4,7 +4,7 @@ There are two GoReleaser distributions: OSS and [Pro](/pro/).
 
 You can install the pre-compiled binary (in several different ways), use Docker or compile from source (when on OSS).
 
-Bellow you can find the steps for each of them.
+Below you can find the steps for each of them.
 
 ## Install the pre-compiled binary
 
@@ -190,7 +190,7 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
 ## Running with Docker
 
 You can also use it within a Docker container.
-To do that, you'll need to execute something more-or-less like the examples bellow.
+To do that, you'll need to execute something more-or-less like the examples below.
 
 === "OSS"
     Registries:
