@@ -767,6 +767,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		ctx.Semver.Prerelease = "beta1"
 		assertNoPublish(t)
 	})
+	// TODO: skip when ctx.Config.Release.Draft=true ?
 }
 
 func TestRunEmptyTokenType(t *testing.T) {

@@ -112,7 +112,7 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 	// even if one of them skips, we run them all, and then show return the skips all at once.
 	// this is needed so we actually create the `dist/foo.rb` file, which is useful for debugging.
 	skips := pipe.SkipMemento{}
-	for _, formula := range ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBrewTap)).List() {
+	for _, formula := range ctx.Artifacts.Filter(artifact.ByType(artifact.BrewTap)).List() {
 		err := doPublish(ctx, formula, cli)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
@@ -220,7 +220,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: filename,
 		Path: path,
-		Type: artifact.UploadableBrewTap,
+		Type: artifact.BrewTap,
 		Extra: map[string]interface{}{
 			brewConfigExtra: brew,
 		},

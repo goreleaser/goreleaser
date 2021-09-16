@@ -48,8 +48,10 @@ const (
 	Signature
 	// UploadableSourceArchive is the archive with the current commit source code.
 	UploadableSourceArchive
-	// UploadableBrewTap is an uploadable homebrew tap recipe.
-	UploadableBrewTap
+	// BrewTap is an uploadable homebrew tap recipe file.
+	BrewTap
+	// ScoopManifest is an uploadable scoop manifest file.
+	ScoopManifest
 )
 
 func (t Type) String() string {
@@ -74,8 +76,10 @@ func (t Type) String() string {
 		return "Signature"
 	case UploadableSourceArchive:
 		return "Source"
-	case UploadableBrewTap:
+	case BrewTap:
 		return "Brew Tap"
+	case ScoopManifest:
+		return "Scoop Manifest"
 	default:
 		return "unknown"
 	}
