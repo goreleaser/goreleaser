@@ -123,17 +123,11 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 
 	manifest := manifests[0]
 	scoop := manifest.Extra[scoopConfigExtra].(config.Scoop)
-	if scoop.Bucket.Token != "" {
-		token, err := tmpl.New(ctx).ApplySingleEnvOnly(scoop.Bucket.Token)
-		if err != nil {
-			return err
-		}
-		log.Debug("using custom token to publish scoop manifest")
-		c, err := client.NewWithToken(ctx, token)
-		if err != nil {
-			return err
-		}
-		cl = c
+
+	var err error
+	cl, err = client.NewIfToken(ctx, cl, scoop.Bucket.Token)
+	if err != nil {
+		return err
 	}
 
 	if strings.TrimSpace(scoop.SkipUpload) == "true" {

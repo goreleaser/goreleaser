@@ -134,8 +134,8 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid algorithm: %s", algorithm)
 	}
-	_, err = io.Copy(h, file)
-	if err != nil {
+
+	if _, err := io.Copy(h, file); err != nil {
 		return "", fmt.Errorf("failed to checksum: %w", err)
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil

@@ -838,7 +838,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 		},
 	})
 	client := &DummyClient{NotImplemented: true}
-	require.Equal(t, ErrTokenTypeNotImplementedForBrew{TokenType: "gitea"}, runAll(ctx, client))
+	require.EqualError(t, runAll(ctx, client), `token type "gitea" not implemented for brew pipe`)
 }
 
 func TestDefault(t *testing.T) {

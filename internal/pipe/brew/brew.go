@@ -35,10 +35,7 @@ type ErrTokenTypeNotImplementedForBrew struct {
 }
 
 func (e ErrTokenTypeNotImplementedForBrew) Error() string {
-	if e.TokenType != "" {
-		return fmt.Sprintf("token type %q not implemented for brew pipe", e.TokenType)
-	}
-	return "token type not implemented for brew pipe"
+	return fmt.Sprintf("token type %q not implemented for brew pipe", e.TokenType)
 }
 
 // Pipe for brew deployment.
@@ -127,17 +124,10 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 
 func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Client) error {
 	brew := formula.Extra[brewConfigExtra].(config.Homebrew)
-	if brew.Tap.Token != "" {
-		token, err := tmpl.New(ctx).ApplySingleEnvOnly(brew.Tap.Token)
-		if err != nil {
-			return err
-		}
-		log.Debug("using custom token to publish homebrew formula")
-		c, err := client.NewWithToken(ctx, token)
-		if err != nil {
-			return err
-		}
-		cl = c
+	var err error
+	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
+	if err != nil {
+		return err
 	}
 
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
