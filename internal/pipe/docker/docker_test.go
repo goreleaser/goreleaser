@@ -1177,13 +1177,13 @@ func TestDescription(t *testing.T) {
 }
 
 func TestNoDockerWithoutImageName(t *testing.T) {
-	require.True(t, pipe.IsSkip(Pipe{}.Run(context.New(config.Project{
+	testlib.AssertSkipped(t, Pipe{}.Run(context.New(config.Project{
 		Dockers: []config.Docker{
 			{
 				Goos: "linux",
 			},
 		},
-	}))))
+	})))
 }
 
 func TestDefault(t *testing.T) {

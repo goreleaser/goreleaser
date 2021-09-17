@@ -1,7 +1,6 @@
 package docker
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -211,10 +210,6 @@ func processImageTemplates(ctx *context.Context, docker config.Docker) ([]string
 		}
 
 		images = append(images, image)
-	}
-
-	if len(images) == 0 {
-		return images, errors.New("no image templates found")
 	}
 
 	return images, nil
