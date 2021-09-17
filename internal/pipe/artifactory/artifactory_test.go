@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -568,31 +568,6 @@ func TestRunPipe_UnparsableTarget(t *testing.T) {
 	require.EqualError(t, Pipe{}.Publish(ctx), `artifactory: upload failed: parse "://artifacts.company.com/example-repo-local/mybin/darwin/amd64/mybin": missing protocol scheme`)
 }
 
-func TestRunPipe_SkipWhenPublishFalse(t *testing.T) {
-	ctx := context.New(config.Project{
-		Artifactories: []config.Upload{
-			{
-				Name:     "production",
-				Mode:     "binary",
-				Target:   "http://artifacts.company.com/example-repo-local/{{ .ProjectName }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}",
-				Username: "deployuser",
-			},
-		},
-		Archives: []config.Archive{
-			{},
-		},
-	})
-	ctx.Env = map[string]string{
-		"ARTIFACTORY_PRODUCTION_SECRET": "deployuser-secret",
-	}
-	ctx.SkipPublish = true
-
-	require.NoError(t, Pipe{}.Default(ctx))
-	err := Pipe{}.Publish(ctx)
-	require.True(t, pipe.IsSkip(err))
-	require.EqualError(t, err, pipe.ErrSkipPublishEnabled.Error())
-}
-
 func TestRunPipe_DirUpload(t *testing.T) {
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
@@ -650,7 +625,7 @@ func TestArtifactoriesWithoutTarget(t *testing.T) {
 	}
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
+	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 }
 
 func TestArtifactoriesWithoutUsername(t *testing.T) {
@@ -669,7 +644,7 @@ func TestArtifactoriesWithoutUsername(t *testing.T) {
 	}
 
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
+	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 }
 
 func TestArtifactoriesWithoutName(t *testing.T) {
@@ -682,7 +657,7 @@ func TestArtifactoriesWithoutName(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
+	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 }
 
 func TestArtifactoriesWithoutSecret(t *testing.T) {
@@ -696,7 +671,7 @@ func TestArtifactoriesWithoutSecret(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.True(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
+	testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 }
 
 func TestArtifactoriesWithInvalidMode(t *testing.T) {

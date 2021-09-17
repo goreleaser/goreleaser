@@ -486,15 +486,6 @@ func TestUpload(t *testing.T) {
 			checks(),
 		},
 		{
-			"skip-publishing", true, true, true, true,
-			func(s *httptest.Server) (*context.Context, config.Upload) {
-				c := *ctx
-				c.SkipPublish = true
-				return &c, config.Upload{}
-			},
-			checks(),
-		},
-		{
 			"checksumheader", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
