@@ -132,6 +132,11 @@ func TestNewWithToken(t *testing.T) {
 		ctx := &context.Context{
 			TokenType: context.TokenTypeGitea,
 			Env:       map[string]string{"TK": "token"},
+			Config: config.Project{
+				GiteaURLs: config.GiteaURLs{
+					API: "https://gitea.com/api/v1",
+				},
+			},
 		}
 
 		cli, err := newWithToken(ctx, "{{ .Env.TK }}")
