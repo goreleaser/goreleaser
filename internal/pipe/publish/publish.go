@@ -4,7 +4,9 @@ package publish
 import (
 	"fmt"
 
-	"github.com/goreleaser/goreleaser/internal/middleware"
+	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
+	"github.com/goreleaser/goreleaser/internal/middleware/logging"
+	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
@@ -18,13 +20,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/upload"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
-
-// Pipe that publishes artifacts.
-type Pipe struct{}
-
-func (Pipe) String() string {
-	return "publishing"
-}
 
 // Publisher should be implemented by pipes that want to publish artifacts.
 type Publisher interface {
@@ -52,13 +47,21 @@ var publishers = []Publisher{
 	milestone.Pipe{},
 }
 
-// Run the pipe.
+// Pipe that publishes artifacts.
+type Pipe struct{}
+
+func (Pipe) String() string                 { return "publishing" }
+func (Pipe) Skip(ctx *context.Context) bool { return ctx.SkipPublish }
+
 func (Pipe) Run(ctx *context.Context) error {
 	for _, publisher := range publishers {
-		if err := middleware.Logging(
-			publisher.String(),
-			middleware.ErrHandler(publisher.Publish),
-			middleware.ExtraPadding,
+		if err := skip.Maybe(
+			publisher,
+			logging.Log(
+				publisher.String(),
+				errhandler.Handle(publisher.Publish),
+				logging.ExtraPadding,
+			),
 		)(ctx); err != nil {
 			return fmt.Errorf("%s: failed to publish artifacts: %w", publisher.String(), err)
 		}

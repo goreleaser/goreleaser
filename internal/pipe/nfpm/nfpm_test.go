@@ -1123,6 +1123,21 @@ func TestBinDirTemplating(t *testing.T) {
 	}
 }
 
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			NFPMs: []config.NFPM{
+				{},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
+}
+
 func sources(contents files.Contents) []string {
 	result := make([]string, 0, len(contents))
 	for _, f := range contents {

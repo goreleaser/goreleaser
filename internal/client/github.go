@@ -29,6 +29,7 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
+
 	httpClient := oauth2.NewClient(ctx, ts)
 	base := httpClient.Transport.(*oauth2.Transport).Base
 	if base == nil || reflect.ValueOf(base).IsNil() {

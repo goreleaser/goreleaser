@@ -9,7 +9,9 @@ import (
 	"github.com/apex/log"
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
-	"github.com/goreleaser/goreleaser/internal/middleware"
+	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
+	"github.com/goreleaser/goreleaser/internal/middleware/logging"
+	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -97,10 +99,13 @@ func buildProject(options buildOpts) (*context.Context, error) {
 	}
 	return ctx, ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipeline.BuildPipeline {
-			if err := middleware.Logging(
-				pipe.String(),
-				middleware.ErrHandler(pipe.Run),
-				middleware.DefaultInitialPadding,
+			if err := skip.Maybe(
+				pipe,
+				logging.Log(
+					pipe.String(),
+					errhandler.Handle(pipe.Run),
+					logging.DefaultInitialPadding,
+				),
 			)(ctx); err != nil {
 				return err
 			}

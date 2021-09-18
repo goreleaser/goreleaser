@@ -8,6 +8,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -55,7 +56,7 @@ func New(ctx *context.Context) (Client, error) {
 	return nil, nil
 }
 
-func NewWithToken(ctx *context.Context, token string) (Client, error) {
+func newWithToken(ctx *context.Context, token string) (Client, error) {
 	if ctx.TokenType == context.TokenTypeGitHub {
 		return NewGitHub(ctx, token)
 	}
@@ -66,6 +67,18 @@ func NewWithToken(ctx *context.Context, token string) (Client, error) {
 		return NewGitea(ctx, token)
 	}
 	return nil, nil
+}
+
+func NewIfToken(ctx *context.Context, cli Client, token string) (Client, error) {
+	if token == "" {
+		return cli, nil
+	}
+	token, err := tmpl.New(ctx).ApplySingleEnvOnly(token)
+	if err != nil {
+		return nil, err
+	}
+	log.Debug("using custom token")
+	return newWithToken(ctx, token)
 }
 
 // ErrNoMilestoneFound is an error when no milestone is found.

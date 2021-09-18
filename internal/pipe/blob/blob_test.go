@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -17,16 +16,10 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
-func TestNoBlob(t *testing.T) {
-	testlib.AssertSkipped(t, Pipe{}.Publish(context.New(config.Project{})))
-}
-
 func TestDefaultsNoConfig(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
 	ctx := context.New(config.Project{
-		Blobs: []config.Blob{
-			{},
-		},
+		Blobs: []config.Blob{{}},
 	})
 	require.EqualError(t, Pipe{}.Default(ctx), errorString)
 }
@@ -303,6 +296,19 @@ func TestURL(t *testing.T) {
 		})
 		require.NoError(t, err)
 		require.Equal(t, "gs://foo", url)
+	})
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Blobs: []config.Blob{{}},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
 

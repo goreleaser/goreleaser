@@ -126,10 +126,10 @@ func TestSplit(t *testing.T) {
 	require.Equal(t, []string{}, parts)
 }
 
-func TestRunPipe(t *testing.T) {
+func TestFullPipe(t *testing.T) {
 	type testcase struct {
-		prepare       func(ctx *context.Context)
-		expectedError string
+		prepare              func(ctx *context.Context)
+		expectedPublishError string
 	}
 	for name, tt := range map[string]testcase{
 		"default": {
@@ -185,7 +185,7 @@ func TestRunPipe(t *testing.T) {
 				ctx.Config.Brews[0].Tap.Name = "test"
 				ctx.Config.Brews[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
-			expectedError: `template: tmpl:1: unexpected "}" in operand`,
+			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -250,12 +250,13 @@ func TestRunPipe(t *testing.T) {
 			client := &DummyClient{}
 			distFile := filepath.Join(folder, name+".rb")
 
-			if tt.expectedError != "" {
-				require.EqualError(t, doRun(ctx, ctx.Config.Brews[0], client), tt.expectedError)
+			require.NoError(t, runAll(ctx, client))
+			if tt.expectedPublishError != "" {
+				require.EqualError(t, publishAll(ctx, client), tt.expectedPublishError)
 				return
 			}
 
-			require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
+			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
 			golden.RequireEqualRb(t, []byte(client.Content))
 
@@ -313,7 +314,8 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	client := &DummyClient{}
 	distFile := filepath.Join(folder, "foo_is_bar.rb")
 
-	require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	golden.RequireEqualRb(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
@@ -389,6 +391,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	require.NoError(t, f.Close())
 
 	cli := &DummyClient{}
+	require.NoError(t, runAll(ctx, cli))
 	require.EqualError(t, publishAll(ctx, cli), `brew.skip_upload is set`)
 	require.True(t, cli.CreatedFile)
 
@@ -511,7 +514,8 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			client := &DummyClient{}
 			distFile := filepath.Join(folder, name+".rb")
 
-			require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
+			require.NoError(t, runAll(ctx, client))
+			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
 			golden.RequireEqualRb(t, []byte(client.Content))
 
@@ -537,7 +541,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 		},
 	}
 	client := &DummyClient{}
-	require.Equal(t, ErrNoArchivesFound, doRun(ctx, ctx.Config.Brews[0], client))
+	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)
 }
 
@@ -681,20 +685,11 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 			})
 		}
 		client := &DummyClient{}
-		require.Equal(t, test.expectedError, doRun(ctx, ctx.Config.Brews[0], client))
+		require.Equal(t, test.expectedError, runAll(ctx, client))
 		require.False(t, client.CreatedFile)
 		// clean the artifacts for the next run
 		ctx.Artifacts = artifact.New()
 	}
-}
-
-func TestRunPipeBrewNotSetup(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
-	client := &DummyClient{}
-	testlib.AssertSkipped(t, doRun(ctx, config.Homebrew{}, client))
-	require.False(t, client.CreatedFile)
 }
 
 func TestRunPipeBinaryRelease(t *testing.T) {
@@ -718,7 +713,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Type:   artifact.Binary,
 	})
 	client := &DummyClient{}
-	require.Equal(t, ErrNoArchivesFound, doRun(ctx, ctx.Config.Brews[0], client))
+	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)
 }
 
@@ -758,21 +753,21 @@ func TestRunPipeNoUpload(t *testing.T) {
 
 	assertNoPublish := func(t *testing.T) {
 		t.Helper()
-		testlib.AssertSkipped(t, doRun(ctx, ctx.Config.Brews[0], client))
+		require.NoError(t, runAll(ctx, client))
+		testlib.AssertSkipped(t, publishAll(ctx, client))
 		require.False(t, client.CreatedFile)
 	}
-	t.Run("skip upload", func(t *testing.T) {
-		ctx.Config.Release.Draft = false
+	t.Run("skip upload true", func(t *testing.T) {
 		ctx.Config.Brews[0].SkipUpload = "true"
-		ctx.SkipPublish = false
+		ctx.Semver.Prerelease = ""
 		assertNoPublish(t)
 	})
-	t.Run("skip publish", func(t *testing.T) {
-		ctx.Config.Release.Draft = false
-		ctx.Config.Brews[0].SkipUpload = "false"
-		ctx.SkipPublish = true
+	t.Run("skip upload auto", func(t *testing.T) {
+		ctx.Config.Brews[0].SkipUpload = "auto"
+		ctx.Semver.Prerelease = "beta1"
 		assertNoPublish(t)
 	})
+	// TODO: skip when ctx.Config.Release.Draft=true ?
 }
 
 func TestRunEmptyTokenType(t *testing.T) {
@@ -807,7 +802,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		},
 	})
 	client := &DummyClient{}
-	require.NoError(t, doRun(ctx, ctx.Config.Brews[0], client))
+	require.NoError(t, runAll(ctx, client))
 }
 
 func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
@@ -843,7 +838,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 		},
 	})
 	client := &DummyClient{NotImplemented: true}
-	require.Equal(t, ErrTokenTypeNotImplementedForBrew{TokenType: "gitea"}, doRun(ctx, ctx.Config.Brews[0], client))
+	require.EqualError(t, runAll(ctx, client), `token type "gitea" not implemented for brew pipe`)
 }
 
 func TestDefault(t *testing.T) {
@@ -921,4 +916,28 @@ func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.Comm
 
 func (dc *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error) {
 	return
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Brews: []config.Homebrew{
+				{},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
+}
+
+func TestRunSkipNoName(t *testing.T) {
+	ctx := context.New(config.Project{
+		Brews: []config.Homebrew{{}},
+	})
+
+	client := &DummyClient{}
+	testlib.AssertSkipped(t, runAll(ctx, client))
 }

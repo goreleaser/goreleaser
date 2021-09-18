@@ -8,7 +8,6 @@ import (
 	"github.com/DisgoOrg/disgohook/api"
 	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -22,7 +21,8 @@ const (
 
 type Pipe struct{}
 
-func (Pipe) String() string { return "discord" }
+func (Pipe) String() string                 { return "discord" }
+func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Discord.Enabled }
 
 type Config struct {
 	WebhookID    string `env:"DISCORD_WEBHOOK_ID,notEmpty"`
@@ -46,13 +46,6 @@ func (p Pipe) Default(ctx *context.Context) error {
 }
 
 func (p Pipe) Announce(ctx *context.Context) error {
-	if ctx.SkipAnnounce {
-		return pipe.ErrSkipAnnounceEnabled
-	}
-	if !ctx.Config.Announce.Discord.Enabled {
-		return pipe.ErrSkipDisabledPipe
-	}
-
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Discord.MessageTemplate)
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to discord: %w", err)

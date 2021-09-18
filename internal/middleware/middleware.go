@@ -1,3 +1,4 @@
+// Package middleware define middlewares for Actions.
 package middleware
 
 import "github.com/goreleaser/goreleaser/pkg/context"

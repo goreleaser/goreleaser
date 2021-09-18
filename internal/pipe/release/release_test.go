@@ -314,18 +314,6 @@ func TestRunPipeUploadRetry(t *testing.T) {
 	require.True(t, client.UploadedFile)
 }
 
-func TestPipeDisabled(t *testing.T) {
-	ctx := context.New(config.Project{
-		Release: config.Release{
-			Disable: true,
-		},
-	})
-	client := &DummyClient{}
-	testlib.AssertSkipped(t, doPublish(ctx, client))
-	require.False(t, client.CreatedRelease)
-	require.False(t, client.UploadedFile)
-}
-
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
@@ -519,6 +507,21 @@ func TestDefaultMultipleReleasesDefined(t *testing.T) {
 		},
 	})
 	require.EqualError(t, Pipe{}.Default(ctx), ErrMultipleReleases.Error())
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Release: config.Release{
+				Disable: true,
+			},
+		})
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		require.False(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
 }
 
 type DummyClient struct {

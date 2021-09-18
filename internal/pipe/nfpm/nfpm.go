@@ -30,9 +30,8 @@ const defaultNameTemplate = "{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arc
 // Pipe for nfpm packaging.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "linux packages"
-}
+func (Pipe) String() string                 { return "linux packages" }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.NFPMs) == 0 }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {

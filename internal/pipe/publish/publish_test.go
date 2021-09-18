@@ -21,3 +21,15 @@ func TestPublish(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 }
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		ctx.SkipPublish = true
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		require.False(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -13,9 +12,8 @@ import (
 // Pipe for checksums.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "snapshotting"
-}
+func (Pipe) String() string                 { return "snapshotting" }
+func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Snapshot }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
@@ -26,9 +24,6 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Run(ctx *context.Context) error {
-	if !ctx.Snapshot {
-		return pipe.ErrSkipDisabledPipe
-	}
 	name, err := tmpl.New(ctx).Apply(ctx.Config.Snapshot.NameTemplate)
 	if err != nil {
 		return fmt.Errorf("failed to generate snapshot name: %w", err)

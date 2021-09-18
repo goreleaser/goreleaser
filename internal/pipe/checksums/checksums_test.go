@@ -7,8 +7,6 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/pipe"
-	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -101,21 +99,6 @@ func TestPipe(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestPipeSkipTrue(t *testing.T) {
-	folder := t.TempDir()
-	ctx := context.New(
-		config.Project{
-			Dist: folder,
-			Checksum: config.Checksum{
-				Disable: true,
-			},
-		},
-	)
-	err := Pipe{}.Run(ctx)
-	testlib.AssertSkipped(t, err)
-	require.EqualError(t, err, pipe.ErrSkipDisabledPipe.Error())
 }
 
 func TestPipeFileNotExist(t *testing.T) {
@@ -340,6 +323,21 @@ func TestExtraFilesNoMatch(t *testing.T) {
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, Pipe{}.Run(ctx), `globbing failed for pattern ./nope/nope.txt: matching "./nope/nope.txt": file does not exist`)
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Checksum: config.Checksum{
+				Disable: true,
+			},
+		})
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		require.False(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
 }
 
 // TODO: add tests for LinuxPackage and UploadableSourceArchive

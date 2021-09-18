@@ -538,6 +538,21 @@ func Test_isValidArch(t *testing.T) {
 	}
 }
 
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Snapcrafts: []config.Snapcraft{
+				{},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
+}
+
 func requireEqualFiles(tb testing.TB, a, b string) {
 	tb.Helper()
 	eq, err := gio.EqualFiles(a, b)
