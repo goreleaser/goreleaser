@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
+	"github.com/goreleaser/goreleaser/internal/pipe/discord"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
@@ -21,9 +22,11 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/slack"
+	"github.com/goreleaser/goreleaser/internal/pipe/smtp"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
+	"github.com/goreleaser/goreleaser/internal/pipe/teams"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -58,8 +61,11 @@ var Defaulters = []Defaulter{
 	blob.Pipe{},
 	brew.Pipe{},
 	scoop.Pipe{},
-	twitter.Pipe{},
+	discord.Pipe{},
 	reddit.Pipe{},
 	slack.Pipe{},
+	teams.Pipe{},
+	twitter.Pipe{},
+	smtp.Pipe{},
 	milestone.Pipe{},
 }

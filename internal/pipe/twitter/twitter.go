@@ -7,7 +7,6 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -16,7 +15,8 @@ const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it o
 
 type Pipe struct{}
 
-func (Pipe) String() string { return "twitter" }
+func (Pipe) String() string                 { return "twitter" }
+func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Twitter.Enabled }
 
 type Config struct {
 	ConsumerKey    string `env:"TWITTER_CONSUMER_KEY,notEmpty"`
@@ -33,13 +33,6 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Announce(ctx *context.Context) error {
-	if ctx.SkipAnnounce {
-		return pipe.ErrSkipAnnounceEnabled
-	}
-	if !ctx.Config.Announce.Twitter.Enabled {
-		return pipe.ErrSkipDisabledPipe
-	}
-
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Twitter.MessageTemplate)
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to twitter: %w", err)

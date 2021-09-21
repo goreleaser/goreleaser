@@ -7,7 +7,7 @@ A [verifiable build][vgo] is one that records enough information to be precise a
 All dependencies are loaded via `proxy.golang.org`, and verified against the checksum database `sum.golang.org`.
 A GoReleaser-created verifiable build will include module information in the resulting binary, which can be printed using `go version -m mybinary`.
 
-Configuration options available are described bellow.
+Configuration options available are described below.
 
 ```yaml
 # goreleaser.yml

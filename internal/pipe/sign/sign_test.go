@@ -70,13 +70,6 @@ func TestSignDisabled(t *testing.T) {
 	require.EqualError(t, err, "artifact signing is disabled")
 }
 
-func TestSignSkipped(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.SkipSign = true
-	err := Pipe{}.Run(ctx)
-	require.EqualError(t, err, "artifact signing is disabled")
-}
-
 func TestSignInvalidArtifacts(t *testing.T) {
 	ctx := context.New(config.Project{})
 	ctx.Config.Signs = []config.Sign{
@@ -629,4 +622,25 @@ func TestSeveralSignsWithTheSameID(t *testing.T) {
 		},
 	}
 	require.EqualError(t, Pipe{}.Default(ctx), "found 2 signs with the ID 'a', please fix your config")
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("skip sign", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		ctx.SkipSign = true
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Signs: []config.Sign{
+				{},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }

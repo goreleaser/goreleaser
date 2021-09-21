@@ -48,6 +48,10 @@ const (
 	Signature
 	// UploadableSourceArchive is the archive with the current commit source code.
 	UploadableSourceArchive
+	// BrewTap is an uploadable homebrew tap recipe file.
+	BrewTap
+	// ScoopManifest is an uploadable scoop manifest file.
+	ScoopManifest
 )
 
 func (t Type) String() string {
@@ -72,6 +76,10 @@ func (t Type) String() string {
 		return "Signature"
 	case UploadableSourceArchive:
 		return "Source"
+	case BrewTap:
+		return "Brew Tap"
+	case ScoopManifest:
+		return "Scoop Manifest"
 	default:
 		return "unknown"
 	}
@@ -126,8 +134,8 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid algorithm: %s", algorithm)
 	}
-	_, err = io.Copy(h, file)
-	if err != nil {
+
+	if _, err := io.Copy(h, file); err != nil {
 		return "", fmt.Errorf("failed to checksum: %w", err)
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil

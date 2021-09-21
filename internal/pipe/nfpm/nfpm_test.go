@@ -183,7 +183,7 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope-rpm.conf",
 			"/etc/nope2.conf",
 			"/etc/nope3_mybin.conf",
-			"/usr/bin/mybin",
+			"/usr/bin/subdir/mybin",
 		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 5, "should not modify the config file list")
@@ -1118,9 +1118,24 @@ func TestBinDirTemplating(t *testing.T) {
 		require.NotEmpty(t, format)
 		// the final binary should contain the evaluated bindir (after template eval)
 		require.ElementsMatch(t, []string{
-			"/usr/lib/pro/nagios/plugins/mybin",
+			"/usr/lib/pro/nagios/plugins/subdir/mybin",
 		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
 	}
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			NFPMs: []config.NFPM{
+				{},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }
 
 func sources(contents files.Contents) []string {

@@ -23,7 +23,7 @@ import (
 	_ "gocloud.dev/blob/gcsblob"
 	_ "gocloud.dev/blob/s3blob"
 
-	// import the secrets packages we want to be able to open:.
+	// import the secrets packages we want to be able to be used.
 	_ "gocloud.dev/secrets/awskms"
 	_ "gocloud.dev/secrets/azurekeyvault"
 	_ "gocloud.dev/secrets/gcpkms"
@@ -87,7 +87,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
 	}
 
-	up := newUploader(ctx)
+	up := &productionUploader{}
 	if err := up.Open(ctx, bucketURL); err != nil {
 		return handleError(err, bucketURL)
 	}
@@ -160,13 +160,6 @@ func handleError(err error, url string) error {
 	}
 }
 
-func newUploader(ctx *context.Context) uploader {
-	if ctx.SkipPublish {
-		return &skipUploader{}
-	}
-	return &productionUploader{}
-}
-
 func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -192,18 +185,6 @@ type uploader interface {
 	io.Closer
 	Open(ctx *context.Context, url string) error
 	Upload(ctx *context.Context, path string, data []byte) error
-}
-
-// skipUploader is used when --skip-upload is set and will just log
-// things without really doing anything.
-type skipUploader struct{}
-
-func (u *skipUploader) Close() error                            { return nil }
-func (u *skipUploader) Open(_ *context.Context, _ string) error { return nil }
-
-func (u *skipUploader) Upload(_ *context.Context, path string, _ []byte) error {
-	log.WithField("path", path).Warn("upload skipped because skip-publish is set")
-	return nil
 }
 
 // productionUploader actually do upload to.

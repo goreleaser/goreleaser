@@ -26,6 +26,12 @@ jobs:
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       -
+        name: Set up Pack CLI for Buildpacks
+        run: |
+          sudo add-apt-repository ppa:cncf-buildpacks/pack-cli
+          sudo apt-get update
+          sudo apt-get --no-install-suggests --no-install-recommends install pack-cli
+      -
         name: Set up Snapcraft
         # FIXME: the mkdirs are a hack for https://github.com/goreleaser/goreleaser/issues/1715
         run: |
@@ -46,7 +52,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - uses: sigstore/cosign-installer@v1.1.0
+      - uses: sigstore/cosign-installer@v1.2.0
       -
         name: Make Setup
         run: |

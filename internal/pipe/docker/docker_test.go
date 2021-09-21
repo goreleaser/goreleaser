@@ -929,7 +929,7 @@ func TestRunPipe(t *testing.T) {
 
 	for name, docker := range table {
 		for imager := range imagers {
-			if imager == useBuildPack { // buildpack tests are different
+			if imager == useBuildPacks { // buildpack tests are different
 				continue
 			}
 			t.Run(name+" on "+imager, func(t *testing.T) {
@@ -1046,6 +1046,92 @@ func TestRunPipe(t *testing.T) {
 	}
 }
 
+func TestRunPipeWhileUsingBuildpacks(t *testing.T) {
+	type errChecker func(*testing.T, error)
+	shouldNotErr := func(t *testing.T, err error) {
+		t.Helper()
+		require.NoError(t, err)
+	}
+
+	table := map[string]struct {
+		dockers             []config.Docker
+		manifests           []config.DockerManifest
+		env                 map[string]string
+		expect              []string
+		assertError         errChecker
+		pubAssertError      errChecker
+		manifestAssertError errChecker
+	}{
+		"golang": {
+			dockers: []config.Docker{
+				{
+					Use:            useBuildPacks,
+					ImageTemplates: []string{registry + "goreleaser/buildpacks:{{ .Tag }}"},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/buildpacks:v1.0.0",
+			},
+			assertError:         shouldNotErr,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+		},
+	}
+
+	killAndRm(t)
+	start(t)
+	defer killAndRm(t)
+
+	for name, docker := range table {
+		t.Run(name+" on "+useBuildPacks, func(t *testing.T) {
+			folder := t.TempDir()
+			wd := filepath.Join(folder, "wd")
+			dist := filepath.Join(wd, "dist")
+			require.NoError(t, os.Mkdir(wd, 0o755))
+			require.NoError(t, os.Mkdir(dist, 0o755))
+			require.NoError(t, os.Chdir(wd))
+			require.NoError(t, os.WriteFile(filepath.Join(wd, "go.mod"), []byte("module test-mod\n\ngo 1.17"), 0o600))
+			require.NoError(t, os.WriteFile(filepath.Join(wd, "main.go"), []byte("package main\n\nfunc main(){}"), 0o600))
+
+			ctx := context.New(config.Project{
+				ProjectName: "mybin",
+				Dist:        dist,
+				Dockers:     docker.dockers,
+			})
+			ctx.Parallelism = 1
+			ctx.Env = docker.env
+			ctx.Version = "1.0.0"
+			ctx.Git = context.GitInfo{
+				CurrentTag: "v1.0.0",
+				Commit:     "a1b2c3d4",
+			}
+			ctx.Semver = context.Semver{
+				Major: 1,
+				Minor: 0,
+				Patch: 0,
+			}
+
+			rmi := func(img string) error {
+				return exec.Command("docker", "rmi", "--force", img).Run()
+			}
+
+			err := Pipe{}.Run(ctx)
+			docker.assertError(t, err)
+			if err == nil {
+				docker.pubAssertError(t, Pipe{}.Publish(ctx))
+				docker.manifestAssertError(t, ManifestPipe{}.Publish(ctx))
+			}
+
+			// this might should not fail as the image should have been created when
+			// the step ran
+			for _, img := range docker.expect {
+				t.Log("removing docker image", img)
+				require.NoError(t, rmi(img), "could not delete image %s", img)
+			}
+		})
+	}
+}
+
 func TestBuildCommand(t *testing.T) {
 	images := []string{"goreleaser/test_build_flag", "goreleaser/test_multiple_tags"}
 	tests := []struct {
@@ -1090,18 +1176,14 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
-func TestNoDockers(t *testing.T) {
-	require.True(t, pipe.IsSkip(Pipe{}.Run(context.New(config.Project{}))))
-}
-
 func TestNoDockerWithoutImageName(t *testing.T) {
-	require.True(t, pipe.IsSkip(Pipe{}.Run(context.New(config.Project{
+	testlib.AssertSkipped(t, Pipe{}.Run(context.New(config.Project{
 		Dockers: []config.Docker{
 			{
 				Goos: "linux",
 			},
 		},
-	}))))
+	})))
 }
 
 func TestDefault(t *testing.T) {
@@ -1295,7 +1377,7 @@ func Test_processImageTemplates(t *testing.T) {
 			},
 		},
 	}
-	ctx.SkipPublish = true
+
 	ctx.Env = map[string]string{
 		"FOO": "123",
 	}
@@ -1323,4 +1405,32 @@ func Test_processImageTemplates(t *testing.T) {
 		"gcr.io/image:v1.0.0-123",
 		"gcr.io/image:v1.0",
 	}, images)
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("image", func(t *testing.T) {
+		t.Run("skip", func(t *testing.T) {
+			require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+		})
+
+		t.Run("dont skip", func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Dockers: []config.Docker{{}},
+			})
+			require.False(t, Pipe{}.Skip(ctx))
+		})
+	})
+
+	t.Run("manifest", func(t *testing.T) {
+		t.Run("skip", func(t *testing.T) {
+			require.True(t, ManifestPipe{}.Skip(context.New(config.Project{})))
+		})
+
+		t.Run("dont skip", func(t *testing.T) {
+			ctx := context.New(config.Project{
+				DockerManifests: []config.DockerManifest{{}},
+			})
+			require.False(t, ManifestPipe{}.Skip(ctx))
+		})
+	})
 }

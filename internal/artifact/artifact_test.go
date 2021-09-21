@@ -306,6 +306,8 @@ func TestTypeToString(t *testing.T) {
 		Checksum,
 		Signature,
 		UploadableSourceArchive,
+		BrewTap,
+		ScoopManifest,
 	} {
 		t.Run(a.String(), func(t *testing.T) {
 			require.NotEqual(t, "unknown", a.String())

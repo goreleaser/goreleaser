@@ -17,6 +17,19 @@ func TestRepoName(t *testing.T) {
 	require.Equal(t, "goreleaser/goreleaser", repo.String())
 }
 
+func TestRepoNameWithDifferentRemote(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAddWithName(t, "upstream", "https://github.com/goreleaser/goreleaser.git")
+	_, err := git.Run("pull", "upstream", "master")
+	require.NoError(t, err)
+	_, err = git.Run("branch", "--set-upstream-to", "upstream/master")
+	require.NoError(t, err)
+	repo, err := git.ExtractRepoFromConfig()
+	require.NoError(t, err)
+	require.Equal(t, "goreleaser/goreleaser", repo.String())
+}
+
 func TestExtractRepoFromURL(t *testing.T) {
 	// valid urls
 	for _, url := range []string{

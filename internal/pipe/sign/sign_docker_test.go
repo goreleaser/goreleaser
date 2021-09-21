@@ -33,21 +33,7 @@ func TestDockerSignDisabled(t *testing.T) {
 	ctx.Config.DockerSigns = []config.Sign{
 		{Artifacts: "none"},
 	}
-	err := DockerPipe{}.Run(ctx)
-	require.EqualError(t, err, "artifact signing is disabled")
-}
-
-func TestDockerSignSkipped(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.SkipSign = true
-	err := DockerPipe{}.Run(ctx)
-	require.EqualError(t, err, "artifact signing is disabled")
-}
-
-func TestDockerSignSkipPublish(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.SkipPublish = true
-	err := DockerPipe{}.Run(ctx)
+	err := DockerPipe{}.Publish(ctx)
 	require.EqualError(t, err, "artifact signing is disabled")
 }
 
@@ -56,7 +42,7 @@ func TestDockerSignInvalidArtifacts(t *testing.T) {
 	ctx.Config.DockerSigns = []config.Sign{
 		{Artifacts: "foo"},
 	}
-	err := DockerPipe{}.Run(ctx)
+	err := DockerPipe{}.Publish(ctx)
 	require.EqualError(t, err, "invalid list of artifacts to sign: foo")
 }
 
@@ -178,7 +164,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 			})
 
 			require.NoError(t, DockerPipe{}.Default(ctx))
-			require.NoError(t, DockerPipe{}.Run(ctx))
+			require.NoError(t, DockerPipe{}.Publish(ctx))
 			var sigs []string
 			for _, sig := range ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List() {
 				sigs = append(sigs, sig.Name)
@@ -186,4 +172,25 @@ func TestDockerSignArtifacts(t *testing.T) {
 			require.Equal(t, cfg.Expected, sigs)
 		})
 	}
+}
+
+func TestDockerSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, DockerPipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("skip sign", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		ctx.SkipSign = true
+		require.True(t, DockerPipe{}.Skip(ctx))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			DockerSigns: []config.Sign{
+				{},
+			},
+		})
+		require.False(t, DockerPipe{}.Skip(ctx))
+	})
 }

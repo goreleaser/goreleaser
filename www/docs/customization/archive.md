@@ -69,7 +69,7 @@ archives:
       - docs/*
       - design/*.png
       - templates/**/*
-      # a more complete example, check the globbing deep dive bellow
+      # a more complete example, check the globbing deep dive below
       - src: '*.md'
         dst: docs
         # Strip parent folders when adding files to the archive.

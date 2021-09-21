@@ -32,27 +32,10 @@ func TestTemplatedChangelogProvidedViaFlag(t *testing.T) {
 	require.Equal(t, "c0ff33 coffeee v0.0.1\n", ctx.ReleaseNotes)
 }
 
-func TestChangelogProvidedViaFlagAndSkipEnabled(t *testing.T) {
-	ctx := context.New(config.Project{
-		Changelog: config.Changelog{
-			Skip: true,
-		},
-	})
-	ctx.ReleaseNotesFile = "testdata/changes.md"
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
-	require.Equal(t, "c0ff33 coffeee\n", ctx.ReleaseNotes)
-}
-
 func TestChangelogProvidedViaFlagDoesntExist(t *testing.T) {
 	ctx := context.New(config.Project{})
 	ctx.ReleaseNotesFile = "testdata/changes.nope"
 	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/changes.nope: no such file or directory")
-}
-
-func TestChangelogSkip(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.Config.Changelog.Skip = true
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
 func TestReleaseHeaderProvidedViaFlagDoesntExist(t *testing.T) {
@@ -65,12 +48,6 @@ func TestReleaseFooterProvidedViaFlagDoesntExist(t *testing.T) {
 	ctx := context.New(config.Project{})
 	ctx.ReleaseFooterFile = "testdata/footer.nope"
 	require.EqualError(t, Pipe{}.Run(ctx), "open testdata/footer.nope: no such file or directory")
-}
-
-func TestSnapshot(t *testing.T) {
-	ctx := context.New(config.Project{})
-	ctx.Snapshot = true
-	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
 func TestChangelog(t *testing.T) {
@@ -447,4 +424,26 @@ func TestChangeLogWithoutReleaseFooter(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.Equal(t, rune(ctx.ReleaseNotes[len(ctx.ReleaseNotes)-1]), '\n')
+}
+
+func TestSkip(t *testing.T) {
+	t.Run("skip on snapshot", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		ctx.Snapshot = true
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+
+	t.Run("skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Changelog: config.Changelog{
+				Skip: true,
+			},
+		})
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }

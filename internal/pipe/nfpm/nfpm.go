@@ -30,9 +30,8 @@ const defaultNameTemplate = "{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arc
 // Pipe for nfpm packaging.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "linux packages"
-}
+func (Pipe) String() string                 { return "linux packages" }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.NFPMs) == 0 }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
@@ -184,7 +183,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		log := log.WithField("package", name+"."+format).WithField("arch", arch)
 		for _, binary := range binaries {
 			src := binary.Path
-			dst := filepath.Join(binDir, filepath.Base(binary.Name))
+			dst := filepath.Join(binDir, binary.Name)
 			log.WithField("src", src).WithField("dst", dst).Debug("adding binary to package")
 			contents = append(contents, &files.Content{
 				Source:      filepath.ToSlash(src),

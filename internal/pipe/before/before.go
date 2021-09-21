@@ -18,10 +18,8 @@ import (
 // Pipe is a global hook pipe.
 type Pipe struct{}
 
-// String is the name of this pipe.
-func (Pipe) String() string {
-	return "running before hooks"
-}
+func (Pipe) String() string                 { return "running before hooks" }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Before.Hooks) == 0 }
 
 // Run executes the hooks.
 func (Pipe) Run(ctx *context.Context) error {

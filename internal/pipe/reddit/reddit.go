@@ -5,7 +5,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/vartanbeno/go-reddit/v2/reddit"
@@ -18,7 +17,8 @@ const (
 
 type Pipe struct{}
 
-func (Pipe) String() string { return "reddit" }
+func (Pipe) String() string                 { return "reddit" }
+func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Reddit.Enabled }
 
 type Config struct {
 	Secret   string `env:"REDDIT_SECRET,notEmpty"`
@@ -38,13 +38,6 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Announce(ctx *context.Context) error {
-	if ctx.SkipAnnounce {
-		return pipe.ErrSkipAnnounceEnabled
-	}
-	if !ctx.Config.Announce.Reddit.Enabled {
-		return pipe.ErrSkipDisabledPipe
-	}
-
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Reddit.TitleTemplate)
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to reddit: %w", err)

@@ -20,6 +20,8 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+const brewConfigExtra = "BrewConfig"
+
 // ErrNoArchivesFound happens when 0 archives are found.
 var ErrNoArchivesFound = errors.New("no linux/macos archives found")
 
@@ -33,51 +35,15 @@ type ErrTokenTypeNotImplementedForBrew struct {
 }
 
 func (e ErrTokenTypeNotImplementedForBrew) Error() string {
-	if e.TokenType != "" {
-		return fmt.Sprintf("token type %q not implemented for brew pipe", e.TokenType)
-	}
-	return "token type not implemented for brew pipe"
+	return fmt.Sprintf("token type %q not implemented for brew pipe", e.TokenType)
 }
 
 // Pipe for brew deployment.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "homebrew tap formula"
-}
+func (Pipe) String() string                 { return "homebrew tap formula" }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Brews) == 0 }
 
-// Publish brew formula.
-func (Pipe) Publish(ctx *context.Context) error {
-	// we keep GitHub as default for now, in line with releases
-	if string(ctx.TokenType) == "" {
-		ctx.TokenType = context.TokenTypeGitHub
-	}
-
-	cli, err := client.New(ctx)
-	if err != nil {
-		return err
-	}
-	return publishAll(ctx, cli)
-}
-
-func publishAll(ctx *context.Context, cli client.Client) error {
-	// even if one of them skips, we run them all, and then show return the skips all at once.
-	// this is needed so we actually create the `dist/foo.rb` file, which is useful for debugging.
-	skips := pipe.SkipMemento{}
-	for _, brew := range ctx.Config.Brews {
-		err := doRun(ctx, brew, cli)
-		if err != nil && pipe.IsSkip(err) {
-			skips.Remember(err)
-			continue
-		}
-		if err != nil {
-			return err
-		}
-	}
-	return skips.Evaluate()
-}
-
-// Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Brews {
 		brew := &ctx.Config.Brews[i]
@@ -106,22 +72,95 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
-func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
-	if brew.Tap.Name == "" {
-		return pipe.ErrSkipDisabledPipe
+func (Pipe) Run(ctx *context.Context) error {
+	cli, err := client.New(ctx)
+	if err != nil {
+		return err
 	}
 
-	if brew.Tap.Token != "" {
-		token, err := tmpl.New(ctx).ApplySingleEnvOnly(brew.Tap.Token)
+	return runAll(ctx, cli)
+}
+
+// Publish brew formula.
+func (Pipe) Publish(ctx *context.Context) error {
+	// we keep GitHub as default for now, in line with releases
+	if string(ctx.TokenType) == "" {
+		ctx.TokenType = context.TokenTypeGitHub
+	}
+
+	cli, err := client.New(ctx)
+	if err != nil {
+		return err
+	}
+	return publishAll(ctx, cli)
+}
+
+func runAll(ctx *context.Context, cli client.Client) error {
+	for _, brew := range ctx.Config.Brews {
+		err := doRun(ctx, brew, cli)
 		if err != nil {
 			return err
 		}
-		log.Debug("using custom token to publish homebrew formula")
-		c, err := client.NewWithToken(ctx, token)
+	}
+	return nil
+}
+
+func publishAll(ctx *context.Context, cli client.Client) error {
+	// even if one of them skips, we run them all, and then show return the skips all at once.
+	// this is needed so we actually create the `dist/foo.rb` file, which is useful for debugging.
+	skips := pipe.SkipMemento{}
+	for _, formula := range ctx.Artifacts.Filter(artifact.ByType(artifact.BrewTap)).List() {
+		err := doPublish(ctx, formula, cli)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
 		if err != nil {
 			return err
 		}
-		cl = c
+	}
+	return skips.Evaluate()
+}
+
+func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Client) error {
+	brew := formula.Extra[brewConfigExtra].(config.Homebrew)
+	var err error
+	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
+	if err != nil {
+		return err
+	}
+
+	if strings.TrimSpace(brew.SkipUpload) == "true" {
+		return pipe.Skip("brew.skip_upload is set")
+	}
+
+	if strings.TrimSpace(brew.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
+		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
+	}
+
+	repo := client.RepoFromRef(brew.Tap)
+
+	gpath := buildFormulaPath(brew.Folder, formula.Name)
+	log.WithField("formula", gpath).
+		WithField("repo", repo.String()).
+		Info("pushing")
+
+	msg, err := tmpl.New(ctx).Apply(brew.CommitMessageTemplate)
+	if err != nil {
+		return err
+	}
+
+	content, err := os.ReadFile(formula.Path)
+	if err != nil {
+		return err
+	}
+
+	return cl.CreateFile(ctx, brew.CommitAuthor, repo, content, gpath, msg)
+}
+
+func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
+	if brew.Tap.Name == "" {
+		return pipe.Skip("brew tap name is not set")
 	}
 
 	// TODO: properly cover this with tests
@@ -168,28 +207,16 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 		return fmt.Errorf("failed to write brew formula: %w", err)
 	}
 
-	if strings.TrimSpace(brew.SkipUpload) == "true" {
-		return pipe.Skip("brew.skip_upload is set")
-	}
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
-	if strings.TrimSpace(brew.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
-		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
-	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: filename,
+		Path: path,
+		Type: artifact.BrewTap,
+		Extra: map[string]interface{}{
+			brewConfigExtra: brew,
+		},
+	})
 
-	repo := client.RepoFromRef(brew.Tap)
-
-	gpath := buildFormulaPath(brew.Folder, filename)
-	log.WithField("formula", gpath).
-		WithField("repo", repo.String()).
-		Info("pushing")
-
-	msg, err := tmpl.New(ctx).Apply(brew.CommitMessageTemplate)
-	if err != nil {
-		return err
-	}
-	return cl.CreateFile(ctx, brew.CommitAuthor, repo, []byte(content), gpath, msg)
+	return nil
 }
 
 func buildFormulaPath(folder, filename string) string {

@@ -12,7 +12,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/git"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -23,9 +22,8 @@ var ErrInvalidSortDirection = errors.New("invalid sort direction")
 // Pipe for checksums.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "generating changelog"
-}
+func (Pipe) String() string                 { return "generating changelog" }
+func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Changelog.Skip || ctx.Snapshot }
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
@@ -35,12 +33,6 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	ctx.ReleaseNotes = notes
 
-	if ctx.Config.Changelog.Skip {
-		return pipe.ErrSkipDisabledPipe
-	}
-	if ctx.Snapshot {
-		return pipe.Skip("not available for snapshots")
-	}
 	if ctx.ReleaseNotes != "" {
 		return nil
 	}

@@ -24,9 +24,8 @@ import (
 // Pipe that signs common artifacts.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "signing artifacts"
-}
+func (Pipe) String() string                 { return "signing artifacts" }
+func (Pipe) Skip(ctx *context.Context) bool { return ctx.SkipSign || len(ctx.Config.Signs) == 0 }
 
 // Default sets the Pipes defaults.
 func (Pipe) Default(ctx *context.Context) error {
@@ -55,10 +54,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run executes the Pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	if ctx.SkipSign {
-		return pipe.ErrSkipSignEnabled
-	}
-
 	g := semerrgroup.New(ctx.Parallelism)
 	for i := range ctx.Config.Signs {
 		cfg := ctx.Config.Signs[i]
@@ -89,7 +84,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				filters = append(filters, artifact.ByType(artifact.UploadableBinary))
 			case "package":
 				filters = append(filters, artifact.ByType(artifact.LinuxPackage))
-			case "none":
+			case "none": // TODO(caarlos0): this is not very useful, lets remove it.
 				return pipe.ErrSkipSignEnabled
 			default:
 				return fmt.Errorf("invalid list of artifacts to sign: %s", cfg.Artifacts)

@@ -29,7 +29,7 @@ cover: test
 
 # gofmt and goimports all go files
 fmt:
-	gofumpt -w .
+	gofumpt -w -l -s .
 .PHONY: fmt
 
 # Run all the tests and code checks
@@ -55,7 +55,7 @@ serve:
 
 vercel:
 	yum install -y jq
-	pip install mkdocs-material mkdocs-minify-plugin
+	pip install mkdocs-material mkdocs-minify-plugin lunr
 	./scripts/get-releases.sh
 	(cd www && mkdocs build)
 

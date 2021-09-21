@@ -1,4 +1,6 @@
-package golang
+// Package buildtarget can generate a list of targets based on a matrix of
+// goos, goarch, goarm, gomips and go version.
+package buildtarget
 
 import (
 	"fmt"
@@ -24,6 +26,15 @@ func (t target) String() string {
 		return fmt.Sprintf("%s_%s_%s", t.os, t.arch, t.mips)
 	}
 	return fmt.Sprintf("%s_%s", t.os, t.arch)
+}
+
+// List compiles the list of targets for the given builds.
+func List(build config.Build) ([]string, error) {
+	version, err := goVersion(build)
+	if err != nil {
+		return nil, err
+	}
+	return matrix(build, version)
 }
 
 func matrix(build config.Build, version []byte) ([]string, error) {

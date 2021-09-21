@@ -5,7 +5,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/slack-go/slack"
@@ -18,7 +17,8 @@ const (
 
 type Pipe struct{}
 
-func (Pipe) String() string { return "slack" }
+func (Pipe) String() string                 { return "slack" }
+func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Slack.Enabled }
 
 type Config struct {
 	Webhook string `env:"SLACK_WEBHOOK,notEmpty"`
@@ -35,13 +35,6 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 func (Pipe) Announce(ctx *context.Context) error {
-	if ctx.SkipAnnounce {
-		return pipe.ErrSkipAnnounceEnabled
-	}
-	if !ctx.Config.Announce.Slack.Enabled {
-		return pipe.ErrSkipDisabledPipe
-	}
-
 	msg, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Slack.MessageTemplate)
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to slack: %w", err)

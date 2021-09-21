@@ -3,7 +3,6 @@ package twitter
 import (
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -19,17 +18,10 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, ctx.Config.Announce.Twitter.MessageTemplate, defaultMessageTemplate)
 }
 
-func TestAnnounceDisabled(t *testing.T) {
-	ctx := context.New(config.Project{})
-	require.NoError(t, Pipe{}.Default(ctx))
-	testlib.AssertSkipped(t, Pipe{}.Announce(ctx))
-}
-
 func TestAnnounceInvalidTemplate(t *testing.T) {
 	ctx := context.New(config.Project{
 		Announce: config.Announce{
 			Twitter: config.Twitter{
-				Enabled:         true,
 				MessageTemplate: "{{ .Foo }",
 			},
 		},
@@ -40,23 +32,26 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 func TestAnnounceMissingEnv(t *testing.T) {
 	ctx := context.New(config.Project{
 		Announce: config.Announce{
-			Twitter: config.Twitter{
-				Enabled: true,
-			},
+			Twitter: config.Twitter{},
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to twitter: env: environment variable "TWITTER_CONSUMER_KEY" should not be empty`)
 }
 
-func TestAnnounceSkipAnnounce(t *testing.T) {
-	ctx := context.New(config.Project{
-		Announce: config.Announce{
-			Twitter: config.Twitter{
-				Enabled: true,
-			},
-		},
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
 	})
-	ctx.SkipAnnounce = true
-	testlib.AssertSkipped(t, Pipe{}.Announce(ctx))
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Announce: config.Announce{
+				Twitter: config.Twitter{
+					Enabled: true,
+				},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }

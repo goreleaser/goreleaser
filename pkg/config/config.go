@@ -201,7 +201,7 @@ type Build struct {
 	Binary          string         `yaml:",omitempty"`
 	Hooks           HookConfig     `yaml:",omitempty"`
 	Env             []string       `yaml:",omitempty"`
-	Lang            string         `yaml:",omitempty"`
+	Builder         string         `yaml:",omitempty"`
 	Asmflags        StringArray    `yaml:",omitempty"`
 	Gcflags         StringArray    `yaml:",omitempty"`
 	ModTimestamp    string         `yaml:"mod_timestamp,omitempty"`
@@ -578,7 +578,7 @@ type Filters struct {
 type Changelog struct {
 	Filters Filters `yaml:",omitempty"`
 	Sort    string  `yaml:",omitempty"`
-	Skip    bool    `yaml:",omitempty"`
+	Skip    bool    `yaml:",omitempty"` // TODO(caarlos0): rename to Disable to match other pipes
 }
 
 // EnvFiles holds paths to files that contains environment variables
@@ -694,6 +694,9 @@ type Announce struct {
 	Twitter Twitter `yaml:"twitter,omitempty"`
 	Reddit  Reddit  `yaml:"reddit,omitempty"`
 	Slack   Slack   `yaml:"slack,omitempty"`
+	Discord Discord `yaml:"discord,omitempty"`
+	Teams   Teams   `yaml:"teams,omitempty"`
+	SMTP    SMTP    `yaml:"smtp,omitempty"`
 }
 
 type Twitter struct {
@@ -717,6 +720,34 @@ type Slack struct {
 	Username        string `yaml:"username,omitempty"`
 	IconEmoji       string `yaml:"icon_emoji,omitempty"`
 	IconURL         string `yaml:"icon_url,omitempty"`
+}
+
+type Discord struct {
+	Enabled         bool   `yaml:"enabled,omitempty"`
+	MessageTemplate string `yaml:"message_template,omitempty"`
+	Author          string `yaml:"author,omitempty"`
+	Color           string `yaml:"color,omitempty"`
+	IconURL         string `yaml:"icon_url,omitempty"`
+}
+
+type Teams struct {
+	Enabled         bool   `yaml:"enabled,omitempty"`
+	TitleTemplate   string `yaml:"title_template,omitempty"`
+	MessageTemplate string `yaml:"message_template,omitempty"`
+	Color           string `yaml:"color,omitempty"`
+	IconURL         string `yaml:"icon_url,omitempty"`
+}
+
+type SMTP struct {
+	Enabled            bool     `yaml:"enabled,omitempty"`
+	Host               string   `yaml:"host,omitempty"`
+	Port               int      `yaml:"port,omitempty"`
+	Username           string   `yaml:"username,omitempty"`
+	From               string   `yaml:"from,omitempty"`
+	To                 []string `yaml:"to,omitempty"`
+	SubjectTemplate    string   `yaml:"subject_template,omitempty"`
+	BodyTemplate       string   `yaml:"body_template,omitempty"`
+	InsecureSkipVerify bool     `yaml:"insecure_skip_verify,omitempty"`
 }
 
 // Load config file.

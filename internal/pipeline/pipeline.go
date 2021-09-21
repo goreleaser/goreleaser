@@ -5,12 +5,9 @@ import (
 	"fmt"
 
 	"github.com/goreleaser/goreleaser/internal/pipe/announce"
-	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
-	"github.com/goreleaser/goreleaser/internal/pipe/semver"
-	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
-
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/before"
+	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/changelog"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
@@ -20,11 +17,15 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/effectiveconfig"
 	"github.com/goreleaser/goreleaser/internal/pipe/env"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
+	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
+	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
+	"github.com/goreleaser/goreleaser/internal/pipe/semver"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapshot"
+	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -60,10 +61,11 @@ var Pipeline = append(
 	sourcearchive.Pipe{}, // archive the source code using git-archive
 	nfpm.Pipe{},          // archive via fpm (deb, rpm) using "native" go impl
 	snapcraft.Pipe{},     // archive via snapcraft (snap)
+	brew.Pipe{},          // create brew tap
+	scoop.Pipe{},         // create scoop buckets
 	checksums.Pipe{},     // checksums of the files
 	sign.Pipe{},          // sign artifacts
 	docker.Pipe{},        // create and push docker images
 	publish.Pipe{},       // publishes artifacts
-	sign.DockerPipe{},    // sign docker images and manifests
 	announce.Pipe{},      // announce releases
 )

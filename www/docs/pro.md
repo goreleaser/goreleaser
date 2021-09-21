@@ -2,7 +2,8 @@
 
 GoReleaser Pro is now available with some unique features such as:
 
-- Build [Docker images](/customization/docker/#podman) and [manifests](/customization/docker_manifest/#podman) with [Podman](https://podman.io);
+- Import pre-built binaries with the [`prebuilt` builder](/customization/build/#import-pre-built-binaries)
+- Rootless build [Docker images](/customization/docker/#podman) and [manifests](/customization/docker_manifest/#podman) with [Podman](https://podman.io);
 - [Easy apt and yum repositories with fury.io](/customization/fury/);
 - Ability to [include](/customization/includes/) config files (useful for common configurations);
 - Improved global hooks and [global after hooks](/customization/hooks/);
