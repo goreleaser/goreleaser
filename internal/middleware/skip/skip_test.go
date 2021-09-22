@@ -31,6 +31,8 @@ type skipper struct {
 	skip bool
 }
 
+func (s skipper) String() string { return "blah" }
+
 func (s skipper) Skip(_ *context.Context) bool {
 	return s.skip
 }
