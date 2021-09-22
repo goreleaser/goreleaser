@@ -45,7 +45,7 @@ snapcrafts:
     # Default is project name.
     name: drumroll
 
-    # Wether to publish the snap to the snapcraft store.
+    # Whether to publish the snap to the snapcraft store.
     # Remember you need to `snapcraft login` first.
     # Defaults to false.
     publish: true

@@ -23,7 +23,7 @@ Then, you can add something like the following to your `.goreleaser.yml` config:
 # .goreleaser.yml
 announce:
   twitter:
-    # Wether its enabled or not.
+    # Whether its enabled or not.
     # Defaults to false.
     enabled: true
 
@@ -46,7 +46,7 @@ After this, you can add following section to your `.goreleaser.yml` config:
 # .goreleaser.yml
 announce:
   teams:
-    # Wether its enabled or not.
+    # Whether its enabled or not.
     # Defaults to false.
     enabled: true
 
@@ -82,7 +82,7 @@ After this, you can add following section to your `.goreleaser.yml` config:
 # .goreleaser.yml
 announce:
   discord:
-    # Wether its enabled or not.
+    # Whether its enabled or not.
     # Defaults to false.
     enabled: true
 
@@ -116,7 +116,7 @@ Then, you can add something like the following to your `.goreleaser.yml` config:
 # .goreleaser.yml
 announce:
   slack:
-    # Wether its enabled or not.
+    # Whether its enabled or not.
     # Defaults to false.
     enabled: true
 
@@ -153,7 +153,7 @@ Then, you can add something like the following to your `.goreleaser.yml` config:
 # .goreleaser.yml
 announce:
   reddit:
-    # Wether its enabled or not.
+    # Whether its enabled or not.
     # Defaults to false.
     enabled: true
 
@@ -184,7 +184,7 @@ Then, you can add something like the following to your `.goreleaser.yml` config:
 # .goreleaser.yml
 announce:
   smtp:
-    # Wether its enabled or not.
+    # Whether its enabled or not.
     # Defaults to false.
     enabled: true
 
