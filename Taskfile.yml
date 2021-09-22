@@ -1,0 +1,35 @@
+version: '3'
+
+tasks:
+  dev:
+    cmds:
+      - cp -f scripts/pre-commit.sh .git/hooks/pre-commit
+
+  setup:
+    cmds:
+      - go mod tidy
+
+  fmt:
+    cmds:
+      - gofumpt -w -s -l .
+
+  test:
+    vars:
+      TEST_OPTIONS: ''
+      TEST_PATTERN: '.'
+      SOURCE_FILES: './...'
+    env:
+      LC_ALL: C
+    cmds:
+      - 'go test {{.TEST_OPTIONS}} -failfast -race -coverpkg={{.SOURCE_FILES}} -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -timeout=5m -run {{.TEST_PATTERN}}'
+
+  cover:
+    deps: [test]
+    cmds:
+      - go tool cover -html=coverage.txt
+
+  serve:
+    vars:
+      DOCKER: docker
+    cmds:
+      - '{{.DOCKER}} run --rm -it -p 8000:8000 -v $PWD/www:/docs docker.io/squidfunk/mkdocs-material'

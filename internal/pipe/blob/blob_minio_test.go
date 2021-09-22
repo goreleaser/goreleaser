@@ -23,9 +23,8 @@ import (
 )
 
 const (
-	minioUser  = "minio"
-	minioPwd   = "miniostorage"
-	testBucket = "test"
+	minioUser = "minio"
+	minioPwd  = "miniostorage"
 )
 
 func TestMinioUpload(t *testing.T) {
@@ -45,7 +44,7 @@ func TestMinioUpload(t *testing.T) {
 		Blobs: []config.Blob{
 			{
 				Provider: "s3",
-				Bucket:   testBucket,
+				Bucket:   "test",
 				Region:   "us-east",
 				Endpoint: "http://" + listen,
 				IDs:      []string{"foo", "bar"},
@@ -147,7 +146,7 @@ func TestMinioUploadRootFolder(t *testing.T) {
 		Blobs: []config.Blob{
 			{
 				Provider: "s3",
-				Bucket:   testBucket,
+				Bucket:   "test",
 				Folder:   "/",
 				Endpoint: "http://" + listen,
 			},
@@ -223,11 +222,6 @@ func prepareEnv() {
 
 func start(tb testing.TB, name, listen string) {
 	tb.Helper()
-	tb.Cleanup(func() {
-		if out, err := exec.Command("docker", "stop", name).CombinedOutput(); err != nil {
-			tb.Fatalf("failed to stop minio: %s", string(out))
-		}
-	})
 
 	if out, err := exec.Command(
 		"docker", "run", "-d", "--rm",
@@ -256,17 +250,27 @@ func start(tb testing.TB, name, listen string) {
 		tb.Log("waiting for minio to be healthy")
 	}
 
+	mc(tb, name, "mc mb local/test")
+
+	tb.Cleanup(func() {
+		mc(tb, name, "mc rb --force local/test")
+		if out, err := exec.Command("docker", "stop", name).CombinedOutput(); err != nil {
+			tb.Fatalf("failed to stop minio: %s", string(out))
+		}
+	})
+}
+
+func mc(tb testing.TB, name, cmd string) {
+	tb.Helper()
+
 	if out, err := exec.Command(
 		"docker", "run", "--rm",
 		"--link", name,
 		"--entrypoint", "sh",
 		"minio/mc",
 		"-c", fmt.Sprintf(
-			"mc config host add local http://%s:9000 %s %s; mc mb local/%s",
-			name,
-			minioUser,
-			minioPwd,
-			testBucket,
+			"mc config host add local http://%s:9000 %s %s; %s",
+			name, minioUser, minioPwd, cmd,
 		),
 	).CombinedOutput(); err != nil {
 		tb.Fatalf("failed to create test bucket: %s", string(out))
