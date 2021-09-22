@@ -5,6 +5,7 @@ package blob
 // the test setup and teardown
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"os"
@@ -19,6 +20,12 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 	"gocloud.dev/blob"
+)
+
+const (
+	minioUser  = "minio"
+	minioPwd   = "miniostorage"
+	testBucket = "test"
 )
 
 func TestMinioUpload(t *testing.T) {
@@ -38,7 +45,7 @@ func TestMinioUpload(t *testing.T) {
 		Blobs: []config.Blob{
 			{
 				Provider: "s3",
-				Bucket:   "test",
+				Bucket:   testBucket,
 				Region:   "us-east",
 				Endpoint: "http://" + listen,
 				IDs:      []string{"foo", "bar"},
@@ -140,7 +147,7 @@ func TestMinioUploadRootFolder(t *testing.T) {
 		Blobs: []config.Blob{
 			{
 				Provider: "s3",
-				Bucket:   "test",
+				Bucket:   testBucket,
 				Folder:   "/",
 				Endpoint: "http://" + listen,
 			},
@@ -209,36 +216,30 @@ func randomListen(t *testing.T) string {
 }
 
 func prepareEnv() {
-	os.Setenv("AWS_ACCESS_KEY_ID", "minio")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", "miniostorage")
+	os.Setenv("AWS_ACCESS_KEY_ID", minioUser)
+	os.Setenv("AWS_SECRET_ACCESS_KEY", minioPwd)
 	os.Setenv("AWS_REGION", "us-east-1")
 }
 
 func start(tb testing.TB, name, listen string) {
 	tb.Helper()
-	wd, err := os.Getwd()
-	require.NoError(tb, err)
-
-	removeTestData()
-
 	tb.Cleanup(func() {
 		if out, err := exec.Command("docker", "stop", name).CombinedOutput(); err != nil {
 			tb.Fatalf("failed to stop minio: %s", string(out))
 		}
-		removeTestData()
 	})
 
 	if out, err := exec.Command(
 		"docker", "run", "-d", "--rm",
-		"-v", filepath.Join(wd, "testdata/data")+":/data",
+		"-v", tb.TempDir()+":/data",
 		"--name", name,
 		"-p", listen+":9000",
-		"-e", "MINIO_ACCESS_KEY=minio",
-		"-e", "MINIO_SECRET_KEY=miniostorage",
+		"-e", "MINIO_ROOT_USER="+minioUser,
+		"-e", "MINIO_ROOT_PASSWORD="+minioPwd,
 		"--health-interval", "1s",
 		"--health-cmd=curl --silent --fail http://localhost:9000/minio/health/ready || exit 1",
 		"minio/minio",
-		"server", "/data",
+		"server", "/data", "--console-address", ":9001",
 	).CombinedOutput(); err != nil {
 		tb.Fatalf("failed to start minio: %s", string(out))
 	}
@@ -254,10 +255,22 @@ func start(tb testing.TB, name, listen string) {
 		}
 		tb.Log("waiting for minio to be healthy")
 	}
-}
 
-func removeTestData() {
-	_ = os.RemoveAll("./testdata/data/test/testupload") // dont care if it fails
+	if out, err := exec.Command(
+		"docker", "run", "--rm",
+		"--link", name,
+		"--entrypoint", "sh",
+		"minio/mc",
+		"-c", fmt.Sprintf(
+			"mc config host add local http://%s:9000 %s %s; mc mb local/%s",
+			name,
+			minioUser,
+			minioPwd,
+			testBucket,
+		),
+	).CombinedOutput(); err != nil {
+		tb.Fatalf("failed to create test bucket: %s", string(out))
+	}
 }
 
 func getFiles(t *testing.T, ctx *context.Context, cfg config.Blob) []string {
