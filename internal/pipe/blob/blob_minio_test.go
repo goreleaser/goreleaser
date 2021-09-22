@@ -223,9 +223,20 @@ func prepareEnv() {
 func start(tb testing.TB, name, listen string) {
 	tb.Helper()
 
+	data := filepath.Join(os.TempDir(), name)
+	tb.Cleanup(func() {
+		mc(tb, name, "mc rb --force local/test")
+		if out, err := exec.Command("docker", "stop", name).CombinedOutput(); err != nil {
+			tb.Fatalf("failed to stop minio: %s", string(out))
+		}
+		if err := os.RemoveAll(data); err != nil {
+			tb.Logf("failed to remove %s", data)
+		}
+	})
+
 	if out, err := exec.Command(
 		"docker", "run", "-d", "--rm",
-		"-v", tb.TempDir()+":/data",
+		"-v", data+":/data",
 		"--name", name,
 		"-p", listen+":9000",
 		"-e", "MINIO_ROOT_USER="+minioUser,
@@ -251,13 +262,6 @@ func start(tb testing.TB, name, listen string) {
 	}
 
 	mc(tb, name, "mc mb local/test")
-
-	tb.Cleanup(func() {
-		mc(tb, name, "mc rb --force local/test")
-		if out, err := exec.Command("docker", "stop", name).CombinedOutput(); err != nil {
-			tb.Fatalf("failed to stop minio: %s", string(out))
-		}
-	})
 }
 
 func mc(tb testing.TB, name, cmd string) {
