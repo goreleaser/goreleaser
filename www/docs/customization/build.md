@@ -319,7 +319,7 @@ To make your releases, checksums, and signatures reproducible, you will need to 
 ## Import pre-built binaries
 
 !!! success "GoReleaser Pro"
-    The prebuilt buidler is a [GoReleaser Pro feature](/pro/).
+    The prebuilt builder is a [GoReleaser Pro feature](/pro/).
 
 Since GoReleaser Pro v0.179.0, it is possible to import pre-built binaries into the GoReleaser lifecycle.
 
