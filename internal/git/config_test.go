@@ -35,15 +35,25 @@ func TestExtractRepoFromURL(t *testing.T) {
 	for _, url := range []string{
 		"git@github.com:goreleaser/goreleaser.git",
 		"git@custom:goreleaser/goreleaser.git",
-		"git@custom:crazy/url/goreleaser/goreleaser.git",
 		"https://github.com/goreleaser/goreleaser.git",
 		"https://github.enterprise.com/goreleaser/goreleaser.git",
-		"https://github.enterprise.com/crazy/url/goreleaser/goreleaser.git",
 	} {
 		t.Run(url, func(t *testing.T) {
 			repo, err := git.ExtractRepoFromURL(url)
 			require.NoError(t, err)
 			require.Equal(t, "goreleaser/goreleaser", repo.String())
+		})
+	}
+
+	// nested urls
+	for _, url := range []string{
+		"git@custom:group/nested/goreleaser/goreleaser.git",
+		"https://gitlab.mycompany.com/group/nested/goreleaser/goreleaser.git",
+	} {
+		t.Run(url, func(t *testing.T) {
+			repo, err := git.ExtractRepoFromURL(url)
+			require.NoError(t, err)
+			require.Equal(t, "group/nested/goreleaser/goreleaser", repo.String())
 		})
 	}
 
