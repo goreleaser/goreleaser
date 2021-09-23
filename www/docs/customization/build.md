@@ -318,6 +318,9 @@ To make your releases, checksums, and signatures reproducible, you will need to 
 
 ## Import pre-built binaries
 
+!!! success "GoReleaser Pro"
+    The prebuilt buidler is a [GoReleaser Pro feature](/pro/).
+
 Since GoReleaser Pro v0.179.0, it is possible to import pre-built binaries into the GoReleaser lifecycle.
 
 Reasons you might want to do that include:
@@ -380,6 +383,3 @@ There is no difference in how the binaries are handled.
 !!! warning
     When using the `prebuilt` binary, there are no defaults for `goos` et al,
     so you need to either provide those or the final `targets` matrix.
-
-!!! info
-    The `prebuilt` builder is a [GoReleaser Pro feature](/pro/).
