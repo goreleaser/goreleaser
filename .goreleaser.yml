@@ -201,4 +201,8 @@ release:
 announce:
   twitter:
     enabled: true
-    message_template: 'GoReleaser {{ .Tag }} was just released! Get it while its fresh: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'
+    message_template: 'GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'
+
+  discord:
+    enabled: true
+    message_template: 'GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'

@@ -103,6 +103,8 @@ jobs:
           TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
           COSIGN_PWD: ${{ secrets.COSIGN_PWD }}
           FURY_TOKEN: ${{ secrets.FURY_TOKEN }}
+          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
         run: |
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
             ./goreleaser
