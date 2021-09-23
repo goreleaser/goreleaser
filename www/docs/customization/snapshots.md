@@ -22,15 +22,20 @@ snapshot:
 
 ## How it works
 
-When you run GoReleaser with `--snapshot`, it will set the `Version` template
-variable to the evaluation of `snapshot.name_template`.
+When you run GoReleaser with `--snapshot`, it will set the `Version` template variable to the evaluation of `snapshot.name_template`.
+This means that if you use `{{ .Version }}` on your name templates, you'll get the snapshot version.
 
-This means that if you use `{{ .Version }}` on your name templates, you'll
-get the snapshot version.
+You can also check if its a snapshot build inside a template with:
+
+```
+{{ if .IsSnapshot }}something{{ else }}something else{{ end }}
+```
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
 
-Note that the idea behind GoReleaser's snapshots if mostly for local builds
-or to validate your build on the CI pipeline. Artifacts shouldn't be uploaded
-anywhere, and will only be generated to the `dist` folder.
+Note that the idea behind GoReleaser's snapshots is for local builds or to validate your build on the CI pipeline.
+Artifacts wont't be uploaded and will only be generated into the `dist` folder.
+
+!!! info "Maybe you are looking for something else?"
+    If just want to build the binaries, and no packages at all, check the [`goreleaser build` command](/cmd/goreleaser_build/);

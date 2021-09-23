@@ -2,6 +2,9 @@
 title: Monorepo
 ---
 
+!!! success "GoReleaser Pro"
+    The monorepo support is a [GoReleaser Pro feature](/pro/).
+
 If you want to use GoReleaser within a monorepo and use tag prefixes to mark "which tags belong to which sub project", GoReleaser got you covered.
 
 ## Premise
@@ -38,9 +41,6 @@ Then, the following is different from a "regular" run:
 - On templates, `{{.PrefixedTag}}` will be `monorepo.prefix/tag` (aka the actual tag name), and `{{.Tag}}` has the prefix stripped;
 
 The rest of the release process should work as usual.
-
-!!! info
-    Monorepo support is a [GoReleaser Pro feature](/pro/).
 
 !!! warning
     This feature is in beta and might change based on feedback.

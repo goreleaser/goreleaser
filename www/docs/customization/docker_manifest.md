@@ -142,6 +142,9 @@ and push everything to Docker Hub.
 
 ## Podman
 
+!!! success "GoReleaser Pro"
+    The podman backend is a [GoReleaser Pro feature](/pro/).
+
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use` to `podman` on your config:
 
 ```yaml
@@ -155,6 +158,3 @@ docker_manifests:
 ```
 
 Note that GoReleaser will not install Podman for you, nor change any of its configuration.
-
-!!! info
-    The Podman backend is a [GoReleaser Pro feature](/pro/).
