@@ -7,9 +7,9 @@ Some release cycles may need run something before or after everything else.
 GoReleaser allows this with the global hooks feature.
 
 === "OSS"
-    The `before` section allows for global hooks which will be executed before the build is started.
+    The `before` section allows for global hooks that will be executed before the release is started.
 
-    The configuration is very simple, here is a complete example:
+    The configuration is straightforward, here is an example will all possible options:
 
     ```yaml
     # .goreleaser.yml
@@ -24,9 +24,12 @@ GoReleaser allows this with the global hooks feature.
 
 === "PRO"
     !!! success "GoReleaser Pro"
-        Global after hooks and the additional options in before hooks are [GoReleaser Pro features](/pro/).
+        Global after hooks and the additional options in before hooks (`dir` and `env`) are [GoReleaser Pro features](/pro/).
 
-    With [GoReleaser Pro](/pro/), things are a bit more flexible: you can specify the dir, environment variables and also global after hooks:
+    The `before` section allows for global hooks that will be executed before the release is started.
+    Likewise, the `after` section allows for global hooks that will be executed before the release is started.
+
+    The configuration is straightforward, here is an example will all possible options:
 
     ```yaml
     # .goreleaser.yml
@@ -55,8 +58,7 @@ GoReleaser allows this with the global hooks feature.
     ```
 
 
-
-If any of the hooks fails the release process is aborted.
+Note that if any of the hooks fails the release process is aborted.
 
 ## Complex commands
 
