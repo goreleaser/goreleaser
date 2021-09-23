@@ -88,6 +88,7 @@ nav:
   - customization/milestone.md
   - customization/monorepo.md
   - customization/nfpm.md
+  - customization/nightly.md
   - customization/project.md
   - customization/publishers.md
   - customization/release.md
@@ -131,3 +132,5 @@ markdown_extensions:
       permalink: true
   - pymdownx.tabbed
   - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true

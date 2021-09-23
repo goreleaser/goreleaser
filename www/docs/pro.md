@@ -2,13 +2,13 @@
 
 GoReleaser Pro is now available with some unique features such as:
 
-- Import pre-built binaries with the [`prebuilt` builder](/customization/build/#import-pre-built-binaries)
-- Rootless build [Docker images](/customization/docker/#podman) and [manifests](/customization/docker_manifest/#podman) with [Podman](https://podman.io);
-- [Easy apt and yum repositories with fury.io](/customization/fury/);
-- Ability to [include](/customization/includes/) config files (useful for common configurations);
-- Improved global hooks and [global after hooks](/customization/hooks/);
-- [Monorepo support](/customization/monorepo/);
-- [Custom template variables](/customization/templates/#custom-variables) (goes well with [includes](/customization/includes/)).
+- [x] Import pre-built binaries with the [`prebuilt` builder](/customization/build/#import-pre-built-binaries);
+- [x] Rootless build [Docker images](/customization/docker/#podman) and [manifests](/customization/docker_manifest/#podman) with [Podman](https://podman.io);
+- [x] Easily create `apt` and `yum` repositories with the [fury.io integration](/customization/fury/);
+- [x] Reuse configuration files with the [include keyword](/customization/includes/);
+- [x] Run commands after the release with [global after hooks](/customization/hooks/);
+- [x] Use GoReleaser within your [monorepo](/customization/monorepo/);
+- [x] Create [ustom template variables](/customization/templates/#custom-variables) (goes well with [includes](/customization/includes/)).
 
 <script src="https://gumroad.com/js/gumroad.js"></script>
 <a class="gumroad-button" href="https://gumroad.com/l/CadfZ" target="_blank">Get GoReleaser Pro</a>
