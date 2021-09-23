@@ -22,7 +22,7 @@ GoReleaser allows this with the global hooks feature.
       - touch {{ .Env.FILE_TO_TOUCH }}
     ```
 
-=== "PRO"
+=== "Pro"
     !!! success "GoReleaser Pro"
         Global after hooks and the additional options in before hooks (`dir` and `env`) are [GoReleaser Pro features](/pro/).
 

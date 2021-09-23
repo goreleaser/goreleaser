@@ -166,25 +166,25 @@ Our Docker image is signed with [cosign][].
 You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
 
 === "OSS"
-    1. Verify the signatures:
-      ```sh
-      cosign verify \
-        -key https://goreleaser.com/static/goreleaser.pub \
-        goreleaser/goreleaser
-      cosign verify \
-        -key https://goreleaser.com/static/goreleaser.pub \
-        ghcr.io/goreleaser/goreleaser
+    Verify the signatures:
+    ```sh
+    cosign verify \
+      -key https://goreleaser.com/static/goreleaser.pub \
+      goreleaser/goreleaser
+    cosign verify \
+      -key https://goreleaser.com/static/goreleaser.pub \
+      ghcr.io/goreleaser/goreleaser
     ```
 
 === "Pro"
-    1. Verify the signatures:
-      ```sh
-      cosign verify \
-        -key https://goreleaser.com/static/goreleaser.pub \
-        goreleaser/goreleaser-pro
-      cosign verify \
-        -key https://goreleaser.com/static/goreleaser.pub \
-        ghcr.io/goreleaser/goreleaser-pro
+    Verify the signatures:
+    ```sh
+    cosign verify \
+      -key https://goreleaser.com/static/goreleaser.pub \
+      goreleaser/goreleaser-pro
+    cosign verify \
+      -key https://goreleaser.com/static/goreleaser.pub \
+      ghcr.io/goreleaser/goreleaser-pro
     ```
 
 ## Running with Docker

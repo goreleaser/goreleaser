@@ -88,7 +88,6 @@ nav:
   - customization/milestone.md
   - customization/monorepo.md
   - customization/nfpm.md
-  - customization/nightly.md
   - customization/project.md
   - customization/publishers.md
   - customization/release.md
