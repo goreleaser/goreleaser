@@ -48,6 +48,7 @@ var BuildPipeline = []Piper{
 	snapshot.Pipe{},        // snapshot version handling
 	dist.Pipe{},            // ensure ./dist is clean
 	gomod.Pipe{},           // setup gomod-related stuff
+	gomod.ProxyPipe{},      // proxy gomod if needed
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
 	changelog.Pipe{},       // builds the release changelog
 	build.Pipe{},           // build
