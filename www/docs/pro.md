@@ -8,7 +8,7 @@ GoReleaser Pro is now available with some unique features such as:
 - [x] Reuse configuration files with the [include keyword](/customization/includes/);
 - [x] Run commands after the release with [global after hooks](/customization/hooks/);
 - [x] Use GoReleaser within your [monorepo](/customization/monorepo/);
-- [x] Create [ustom template variables](/customization/templates/#custom-variables) (goes well with [includes](/customization/includes/)).
+- [x] Create [custom template variables](/customization/templates/#custom-variables) (goes well with [includes](/customization/includes/)).
 
 <script src="https://gumroad.com/js/gumroad.js"></script>
 <a class="gumroad-button" href="https://gumroad.com/l/CadfZ" target="_blank">Get GoReleaser Pro</a>
