@@ -194,9 +194,11 @@ publishers:
 release:
   discussion_category_name: Announcements
   footer: |
-    ---
+    ## What to do next?
 
-    __Check out [GoReleaser Pro](https://goreleaser.com/pro) as well!__
+    - Check out the [GoReleaser Pro](https://goreleaser.com/pro) distribution;
+    - Join our [Discord server](https://discord.gg/RGEBtg8vQ6);
+    - Read the [documentation](https://goreleaser.com/intro/).
 
 announce:
   twitter:
