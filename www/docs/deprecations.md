@@ -79,16 +79,6 @@ Change this:
         use: buildx
     ```
 
-
-### Skipping SemVer Validations
-
-> since 2021-02-28 (v0.158.0)
-
-GoReleaser skips SemVer validations when run with `--skip-validations` or `--snapshot`.
-This causes other problems later, such as [invalid Linux packages](https://github.com/goreleaser/goreleaser/issues/2081).
-Because of that, once this deprecation expires, GoReleaser will hard fail on non-semver versions, as stated on our
-[limitations page](https://goreleaser.com/limitations/semver/).
-
 ### builds for darwin/arm64
 
 > since 2021-02-17 (v0.157.0)
@@ -111,6 +101,14 @@ If you try to use new versions of GoReleaser with Go 1.15 or older, it will warn
 ## Expired deprecation notices
 
 The following options were deprecated in the past and were already removed.
+
+### Skipping SemVer Validations
+
+> since 2021-02-28 (v0.158.0), removed 2021-09-22 (v0.180.0)
+
+GoReleaser skips SemVer validations when run with `--skip-validation` or `--snapshot`.
+This causes other problems later, such as [invalid Linux packages](https://github.com/goreleaser/goreleaser/issues/2081).
+Because of that, once this deprecation expires, GoReleaser will hard fail on non-semver versions, as stated on our [limitations page](https://goreleaser.com/limitations/semver/).
 
 ### docker.builds
 

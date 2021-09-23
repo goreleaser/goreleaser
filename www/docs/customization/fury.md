@@ -6,7 +6,7 @@ title: Fury.io
     The fury.io publisher is a [GoReleaser Pro feature](/pro/).
     You might be able to reproduce some of its behavior on GoReleaser OSS using [custom publishers](/customization/publishers/).
 
-With [GoReleaser Pro](/pro) you can easily create deb and yum repositories on [fury.io][fury].
+You can easily create `deb` and `yum` repositories on [fury.io][fury] using GoReleaser.
 
 ## Usage
 
