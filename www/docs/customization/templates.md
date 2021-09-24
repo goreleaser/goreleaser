@@ -10,32 +10,33 @@ support templating.
 
 On fields that support templating, these fields are always available:
 
-| Key                 | Description                                                                                                                  |
-|---------------------|------------------------------------------------------------------------------------------------------------------------------|
-| `.ProjectName`      | the project name                                                                                                             |
-| `.Version`          | the version being released (`v` prefix stripped),<br>or what is configured in `snapshot.name_template` in case of a snapshot release (defaults to `{{ .Version }}-SNAPSHOT-{{.ShortCommit}}`) |
-| `.Branch`           | the current git branch                                                                                                       |
-| `.PrefixedTag`      | the current git tag prefixed with the monorepo config tag prefix (if any)                                                    |
-| `.Tag`              | the current git tag                                                                                                          |
-| `.ShortCommit`      | the git commit short hash                                                                                                    |
-| `.FullCommit`       | the git commit full hash                                                                                                     |
-| `.Commit`           | the git commit hash (deprecated)                                                                                             |
-| `.CommitDate`       | the UTC commit date in RFC 3339 format                                                                                       |
-| `.CommitTimestamp`  | the UTC commit date in Unix format                                                                                           |
-| `.GitURL`           | the git remote url                                                                                                           |
-| `.Major`            | the major part of the version (assuming `Tag` is a valid semver, else `0`)                                                   |
-| `.Minor`            | the minor part of the version (assuming `Tag` is a valid semver, else `0`)                                                   |
-| `.Patch`            | the patch part of the version (assuming `Tag` is a valid semver, else `0`)                                                   |
-| `.Prerelease`       | the prerelease part of the version, e.g. `beta` (assuming `Tag` is a valid semver)                                           |
-| `.RawVersion`       | Major.Minor.Patch (assuming `Tag` is a valid semver, else `0.0.0`)                                                           |
-| `.IsSnapshot`       | `true` if a snapshot is being released, `false` otherwise                                                                    |
-| `.Env`              | a map with system's environment variables                                                                                    |
-| `.Date`             | current UTC date in RFC 3339 format                                                                                          |
-| `.Timestamp`        | current UTC time in Unix format                                                                                              |
-| `.ModulePath`       | the go module path, as reported by `go list -m`                                                                              |
-| `incpatch "v1.2.4"` | increments the patch of the given version; will panic if not a semantic version                                              |
-| `incminor "v1.2.4"` | increments the minor of the given version; will panic if not a semantic version                                              |
-| `incmajor "v1.2.4"` | increments the major of the given version; will panic if not a semantic version                                              |
+| Key                 | Description                                                                                            |
+|---------------------|--------------------------------------------------------------------------------------------------------|
+| `.ProjectName`      | the project name                                                                                       |
+| `.Version`          | the version being released (`v` prefix stripped) - might be changed in `snapshot` and `nightly` builds |
+| `.Branch`           | the current git branch                                                                                 |
+| `.PrefixedTag`      | the current git tag prefixed with the monorepo config tag prefix (if any)                              |
+| `.Tag`              | the current git tag                                                                                    |
+| `.ShortCommit`      | the git commit short hash                                                                              |
+| `.FullCommit`       | the git commit full hash                                                                               |
+| `.Commit`           | the git commit hash (deprecated)                                                                       |
+| `.CommitDate`       | the UTC commit date in RFC 3339 format                                                                 |
+| `.CommitTimestamp`  | the UTC commit date in Unix format                                                                     |
+| `.GitURL`           | the git remote url                                                                                     |
+| `.Major`            | the major part of the version (assuming `Tag` is a valid semver, else `0`)                             |
+| `.Minor`            | the minor part of the version (assuming `Tag` is a valid semver, else `0`)                             |
+| `.Patch`            | the patch part of the version (assuming `Tag` is a valid semver, else `0`)                             |
+| `.Prerelease`       | the prerelease part of the version, e.g. `beta` (assuming `Tag` is a valid semver)                     |
+| `.RawVersion`       | Major.Minor.Patch (assuming `Tag` is a valid semver, else `0.0.0`)                                     |
+| `.IsSnapshot`       | `true` if `--snapshot` is set, `false` otherwise                                                       |
+| `.IsNightly`        | `true` if `--nightly` is set, `false` otherwise                                                        |
+| `.Env`              | a map with system's environment variables                                                              |
+| `.Date`             | current UTC date in RFC 3339 format                                                                    |
+| `.Timestamp`        | current UTC time in Unix format                                                                        |
+| `.ModulePath`       | the go module path, as reported by `go list -m`                                                        |
+| `incpatch "v1.2.4"` | increments the patch of the given version; will panic if not a semantic version                        |
+| `incminor "v1.2.4"` | increments the minor of the given version; will panic if not a semantic version                        |
+| `incmajor "v1.2.4"` | increments the major of the given version; will panic if not a semantic version                        |
 
 On fields that are related to a single artifact (e.g., the binary name), you
 may have some extra fields:

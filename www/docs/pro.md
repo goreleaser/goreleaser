@@ -2,6 +2,7 @@
 
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some additional features:
 
+- [x] Continuously release [nightly builds](/customization/nightly/);
 - [x] Import pre-built binaries with the [`prebuilt` builder](/customization/build/#import-pre-built-binaries);
 - [x] Rootless build [Docker images](/customization/docker/#podman) and [manifests](/customization/docker_manifest/#podman) with [Podman](https://podman.io);
 - [x] Easily create `apt` and `yum` repositories with the [fury.io integration](/customization/fury/);
