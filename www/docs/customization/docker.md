@@ -2,8 +2,8 @@
 title: Docker
 ---
 
-Since [v0.31.0](https://github.com/goreleaser/goreleaser/releases/tag/v0.31.0),
-GoReleaser supports building and pushing Docker images.
+GoReleaser can build and push Docker images.
+Let's see how it works.
 
 ## How it works
 
