@@ -8,6 +8,7 @@ IgnoreURLs:
 - microsoft.com
 - https://github.com/goreleaser/goreleaser/edit/
 - https://discord.com/
+- https://gofi.sh
 IgnoreDirs:
 - overrides
 IgnoreDirectoryMissingTrailingSlash: true

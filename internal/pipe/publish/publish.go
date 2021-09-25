@@ -4,6 +4,8 @@ package publish
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
+
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
@@ -43,6 +45,7 @@ var publishers = []Publisher{
 	release.Pipe{},
 	// brew and scoop use the release URL, so, they should be last
 	brew.Pipe{},
+	gofish.Pipe{},
 	scoop.Pipe{},
 	milestone.Pipe{},
 }
