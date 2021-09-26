@@ -4,8 +4,10 @@ package tmpl
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -67,6 +69,8 @@ const (
 func New(ctx *context.Context) *Template {
 	sv := ctx.Semver
 	rawVersionV := fmt.Sprintf("%d.%d.%d", sv.Major, sv.Minor, sv.Patch)
+	// call applySourceDateEpoch for respecting the SOURCE_DATE_EPOCH env variable
+	buildDate := applySourceDateEpoch()
 
 	return &Template{
 		fields: Fields{
@@ -83,8 +87,8 @@ func New(ctx *context.Context) *Template {
 			commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
 			gitURL:          ctx.Git.URL,
 			env:             ctx.Env,
-			date:            ctx.Date.UTC().Format(time.RFC3339),
-			timestamp:       ctx.Date.UTC().Unix(),
+			date:            buildDate.UTC().Format(time.RFC3339),
+			timestamp:       buildDate.UTC().Unix(),
 			major:           ctx.Semver.Major,
 			minor:           ctx.Semver.Minor,
 			patch:           ctx.Semver.Patch,
@@ -242,4 +246,23 @@ func prefix(v string) string {
 		return "v"
 	}
 	return ""
+}
+
+// applySourceDateEpoch() is a little helper function that examines the
+// SOURCE_DATE_EPOCH environment variable. This is necessary for supporting
+// reproducible builds: https://reproducible-builds.org/docs/source-date-epoch/
+func applySourceDateEpoch() time.Time {
+	sourceDateEpoch := os.Getenv("SOURCE_DATE_EPOCH")
+	var buildDate time.Time
+	if sourceDateEpoch == "" {
+		buildDate = time.Now()
+		return buildDate
+	}
+	sde, err := strconv.ParseInt(sourceDateEpoch, 10, 64)
+	if err != nil {
+		buildDate = time.Now()
+		return buildDate
+	}
+	buildDate = time.Unix(sde, 0)
+	return buildDate
 }
