@@ -12,7 +12,7 @@ func TestClientEmpty(t *testing.T) {
 	ctx := &context.Context{}
 	client, err := New(ctx)
 	require.Nil(t, client)
-	require.NoError(t, err)
+	require.EqualError(t, err, `invalid client token type: ""`)
 }
 
 func TestClientNewGitea(t *testing.T) {
@@ -153,7 +153,7 @@ func TestNewWithToken(t *testing.T) {
 		}
 
 		cli, err := newWithToken(ctx, "{{ .Env.TK }}")
-		require.NoError(t, err)
+		require.EqualError(t, err, `invalid client token type: "nope"`)
 		require.Nil(t, cli)
 	})
 }
