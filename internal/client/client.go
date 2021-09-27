@@ -43,20 +43,11 @@ type Client interface {
 
 // New creates a new client depending on the token type.
 func New(ctx *context.Context) (Client, error) {
-	log.WithField("type", ctx.TokenType).Debug("token type")
-	if ctx.TokenType == context.TokenTypeGitHub {
-		return NewGitHub(ctx, ctx.Token)
-	}
-	if ctx.TokenType == context.TokenTypeGitLab {
-		return NewGitLab(ctx, ctx.Token)
-	}
-	if ctx.TokenType == context.TokenTypeGitea {
-		return NewGitea(ctx, ctx.Token)
-	}
-	return nil, nil
+	return newWithToken(ctx, ctx.Token)
 }
 
 func newWithToken(ctx *context.Context, token string) (Client, error) {
+	log.WithField("type", ctx.TokenType).Debug("token type")
 	if ctx.TokenType == context.TokenTypeGitHub {
 		return NewGitHub(ctx, token)
 	}
@@ -66,7 +57,7 @@ func newWithToken(ctx *context.Context, token string) (Client, error) {
 	if ctx.TokenType == context.TokenTypeGitea {
 		return NewGitea(ctx, token)
 	}
-	return nil, nil
+	return nil, fmt.Errorf("invalid client token type: %q", ctx.TokenType)
 }
 
 func NewIfToken(ctx *context.Context, cli Client, token string) (Client, error) {

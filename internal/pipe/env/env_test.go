@@ -59,6 +59,12 @@ func TestSetDefaultTokenFiles(t *testing.T) {
 		})
 		require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
 	})
+
+	t.Run("no token", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		require.NoError(t, Pipe{}.Run(ctx))
+		require.Equal(t, ctx.TokenType, context.TokenTypeGitHub)
+	})
 }
 
 func TestValidGithubEnv(t *testing.T) {

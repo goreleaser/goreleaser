@@ -83,12 +83,6 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 
-	if githubToken != "" {
-		log.Debug("token type: github")
-		ctx.TokenType = context.TokenTypeGitHub
-		ctx.Token = githubToken
-	}
-
 	if gitlabToken != "" {
 		log.Debug("token type: gitlab")
 		ctx.TokenType = context.TokenTypeGitLab
@@ -99,6 +93,15 @@ func (Pipe) Run(ctx *context.Context) error {
 		log.Debug("token type: gitea")
 		ctx.TokenType = context.TokenTypeGitea
 		ctx.Token = giteaToken
+	}
+
+	if githubToken != "" {
+		log.Debug("token type: github")
+		ctx.Token = githubToken
+	}
+
+	if ctx.TokenType == "" {
+		ctx.TokenType = context.TokenTypeGitHub
 	}
 
 	return nil

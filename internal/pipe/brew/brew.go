@@ -83,11 +83,6 @@ func (Pipe) Run(ctx *context.Context) error {
 
 // Publish brew formula.
 func (Pipe) Publish(ctx *context.Context) error {
-	// we keep GitHub as default for now, in line with releases
-	if string(ctx.TokenType) == "" {
-		ctx.TokenType = context.TokenTypeGitHub
-	}
-
 	cli, err := client.New(ctx)
 	if err != nil {
 		return err
