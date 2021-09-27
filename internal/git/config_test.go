@@ -37,6 +37,7 @@ func TestExtractRepoFromURL(t *testing.T) {
 		"git@custom:goreleaser/goreleaser.git",
 		"https://github.com/goreleaser/goreleaser.git",
 		"https://github.enterprise.com/goreleaser/goreleaser.git",
+		"https://gitlab-ci-token:SOME_TOKEN@gitlab.yourcompany.com/goreleaser/goreleaser.git",
 	} {
 		t.Run(url, func(t *testing.T) {
 			repo, err := git.ExtractRepoFromURL(url)
