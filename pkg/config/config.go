@@ -691,6 +691,7 @@ type GoMod struct {
 }
 
 type Announce struct {
+	Skip    string  `yaml:"skip,omitempty"`
 	Twitter Twitter `yaml:"twitter,omitempty"`
 	Reddit  Reddit  `yaml:"reddit,omitempty"`
 	Slack   Slack   `yaml:"slack,omitempty"`
