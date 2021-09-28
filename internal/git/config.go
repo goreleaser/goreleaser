@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
@@ -18,6 +19,7 @@ func ExtractRepoFromConfig() (result config.Repo, err error) {
 	if err != nil {
 		return result, fmt.Errorf("no remote configured to list refs from")
 	}
+	log.Debugf("got raw git url: %q", out)
 	return ExtractRepoFromURL(out)
 }
 
