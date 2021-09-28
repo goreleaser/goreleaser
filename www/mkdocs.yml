@@ -69,36 +69,48 @@ nav:
   - ci/travis.md
 - Customization:
   - About: customization/index.md
-  - customization/announce.md
-  - customization/archive.md
-  - customization/artifactory.md
-  - customization/blob.md
-  - customization/build.md
-  - customization/checksum.md
-  - customization/dist.md
-  - customization/docker.md
-  - customization/docker_manifest.md
-  - customization/docker_sign.md
-  - customization/env.md
-  - customization/fury.md
-  - customization/gomod.md
-  - customization/homebrew.md
-  - customization/hooks.md
-  - customization/includes.md
-  - customization/milestone.md
-  - customization/monorepo.md
-  - customization/nfpm.md
-  - customization/nightly.md
-  - customization/project.md
-  - customization/publishers.md
-  - customization/release.md
-  - customization/scoop.md
-  - customization/sign.md
-  - customization/snapcraft.md
-  - customization/snapshots.md
-  - customization/source.md
-  - customization/templates.md
-  - customization/upload.md
+  - Basics:
+    - customization/includes.md
+    - customization/templates.md
+    - customization/env.md
+    - customization/hooks.md
+    - customization/dist.md
+    - customization/project.md
+  - Build:
+    - customization/build.md
+    - customization/gomod.md
+    - customization/monorepo.md
+  - Packaging and Archiving:
+    - customization/archive.md
+    - customization/nfpm.md
+    - customization/checksum.md
+    - customization/snapcraft.md
+    - customization/docker.md
+    - customization/docker_manifest.md
+  - Signing:
+    - Checksums and artifacts: customization/sign.md
+    - Docker Images and Manifests: customization/docker_sign.md
+  - Publish:
+    - customization/blob.md
+    - customization/fury.md
+    - customization/homebrew.md
+    - customization/scoop.md
+    - customization/release.md
+    - customization/artifactory.md
+    - customization/publishers.md
+    - customization/upload.md
+    - customization/source.md
+    - customization/milestone.md
+    - customization/snapshots.md
+    - customization/nightly.md
+  - Announce:
+      - About: customization/announce/index.md
+      - customization/announce/discord.md
+      - customization/announce/reddit.md
+      - customization/announce/slack.md
+      - customization/announce/smtp.md
+      - customization/announce/teams.md
+      - customization/announce/twitter.md
 - Command Line Usage:
     - goreleaser: cmd/goreleaser.md
     - goreleaser init: cmd/goreleaser_init.md

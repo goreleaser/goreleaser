@@ -1,5 +1,5 @@
 ---
-title: Fury.io
+title: Fury.io (apt and rpm repositories)
 ---
 
 !!! success "GoReleaser Pro"
