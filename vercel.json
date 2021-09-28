@@ -1,8 +1,7 @@
 {
-	"rewrites": [
-		{
-			"source": "/:path*",
-			"destination": "/does-this-even-work"
-		}
-	]
+	"trailingSlash": true,
+	"github": {
+		"silent": true,
+		"autoJobCancelation": true
+	}
 }
