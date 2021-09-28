@@ -30,7 +30,17 @@ func ExtractRepoFromURL(rawurl string) (config.Repo, error) {
 	// on HTTP and HTTPS URLs it will remove the http(s): prefix,
 	// which is ok. On SSH URLs the whole user@server will be removed,
 	// which is required.
-	s = s[strings.LastIndex(s, ":")+1:]
+
+	// If the url contains more than 1 ':' character, assume we are doing an
+	// http URL with a username/password in it, and normalize the URL.
+	// Gitlab-CI uses this type of URL
+	if strings.Count(s, ":") == 1 {
+		s = s[strings.LastIndex(s, ":")+1:]
+	} else {
+		// Handle Gitlab-ci funky URLs in the form of:
+		// "https://gitlab-ci-token:SOME_TOKEN@gitlab.yourcompany.com/yourgroup/yourproject.git"
+		s = "//" + s[strings.LastIndex(s, "@")+1:]
+	}
 
 	// now we can parse it with net/url
 	u, err := url.Parse(s)
