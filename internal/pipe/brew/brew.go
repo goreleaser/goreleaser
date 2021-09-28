@@ -313,7 +313,8 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 			Arch:             artifact.Goarch,
 			DownloadStrategy: cfg.DownloadStrategy,
 		}
-		counts[pkg.OS+pkg.Arch] += 1
+
+		counts[pkg.OS+pkg.Arch]++
 
 		switch pkg.OS {
 		case "darwin":
