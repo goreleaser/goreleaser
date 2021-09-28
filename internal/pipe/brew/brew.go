@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -226,15 +227,7 @@ func buildFormula(ctx *context.Context, brew config.Homebrew, client client.Clie
 	return doBuildFormula(ctx, data)
 }
 
-func fixDataDownloads(data templateData) templateData {
-	data.HasMacOSDownloads = data.MacOSAmd64.DownloadURL != "" || data.MacOSArm64.DownloadURL != ""
-	data.HasLinuxDownloads = data.LinuxAmd64.DownloadURL != "" || data.LinuxArm64.DownloadURL != "" || data.LinuxArm.DownloadURL != ""
-	return data
-}
-
 func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
-	data = fixDataDownloads(data)
-
 	t, err := template.
 		New(data.Name).
 		Funcs(template.FuncMap{
@@ -274,21 +267,20 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
-		Name:             formulaNameFor(cfg.Name),
-		Desc:             cfg.Description,
-		Homepage:         cfg.Homepage,
-		Version:          ctx.Version,
-		License:          cfg.License,
-		Caveats:          split(cfg.Caveats),
-		Dependencies:     cfg.Dependencies,
-		Conflicts:        cfg.Conflicts,
-		Plist:            cfg.Plist,
-		Install:          split(cfg.Install),
-		PostInstall:      cfg.PostInstall,
-		Tests:            split(cfg.Test),
-		DownloadStrategy: cfg.DownloadStrategy,
-		CustomRequire:    cfg.CustomRequire,
-		CustomBlock:      split(cfg.CustomBlock),
+		Name:          formulaNameFor(cfg.Name),
+		Desc:          cfg.Description,
+		Homepage:      cfg.Homepage,
+		Version:       ctx.Version,
+		License:       cfg.License,
+		Caveats:       split(cfg.Caveats),
+		Dependencies:  cfg.Dependencies,
+		Conflicts:     cfg.Conflicts,
+		Plist:         cfg.Plist,
+		Install:       split(cfg.Install),
+		PostInstall:   cfg.PostInstall,
+		Tests:         split(cfg.Test),
+		CustomRequire: cfg.CustomRequire,
+		CustomBlock:   split(cfg.CustomBlock),
 	}
 
 	for _, artifact := range artifacts {
@@ -311,45 +303,41 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		if err != nil {
 			return result, err
 		}
-		down := downloadable{
-			DownloadURL: url,
-			SHA256:      sum,
+
+		pkg := releasePackage{
+			DownloadURL:      url,
+			SHA256:           sum,
+			OS:               artifact.Goos,
+			Arch:             artifact.Goarch,
+			DownloadStrategy: cfg.DownloadStrategy,
 		}
-		// TODO: refactor
-		if artifact.Goos == "darwin" { // nolint: nestif
-			switch artifact.Goarch {
-			case "amd64":
-				if result.MacOSAmd64.DownloadURL != "" {
+
+		switch pkg.OS {
+		case "darwin":
+			for _, v := range result.MacOSPackages {
+				if v.Arch == artifact.Goarch {
 					return result, ErrMultipleArchivesSameOS
 				}
-				result.MacOSAmd64 = down
-			case "arm64":
-				if result.MacOSArm64.DownloadURL != "" {
-					return result, ErrMultipleArchivesSameOS
-				}
-				result.MacOSArm64 = down
 			}
-		} else if artifact.Goos == "linux" {
-			switch artifact.Goarch {
-			case "amd64":
-				if result.LinuxAmd64.DownloadURL != "" {
+			result.MacOSPackages = append(result.MacOSPackages, pkg)
+		case "linux":
+			for _, v := range result.LinuxPackages {
+				if v.Arch == artifact.Goarch {
 					return result, ErrMultipleArchivesSameOS
 				}
-				result.LinuxAmd64 = down
-			case "arm":
-				if result.LinuxArm.DownloadURL != "" {
-					return result, ErrMultipleArchivesSameOS
-				}
-				result.LinuxArm = down
-			case "arm64":
-				if result.LinuxArm64.DownloadURL != "" {
-					return result, ErrMultipleArchivesSameOS
-				}
-				result.LinuxArm64 = down
 			}
+			result.LinuxPackages = append(result.LinuxPackages, pkg)
 		}
 	}
 
+	sort.Slice(result.LinuxPackages, func(i, j int) bool {
+		return result.LinuxPackages[i].OS > result.LinuxPackages[j].OS &&
+			result.LinuxPackages[i].Arch > result.LinuxPackages[j].Arch
+	})
+	sort.Slice(result.MacOSPackages, func(i, j int) bool {
+		return result.MacOSPackages[i].OS > result.MacOSPackages[j].OS &&
+			result.MacOSPackages[i].Arch > result.MacOSPackages[j].Arch
+	})
 	return result, nil
 }
 
