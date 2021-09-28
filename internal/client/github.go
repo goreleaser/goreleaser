@@ -100,7 +100,7 @@ func (c *githubClient) CreateFile(
 		path,
 		&github.RepositoryContentGetOptions{},
 	)
-	if err != nil && res.StatusCode != 404 {
+	if err != nil && (res == nil || res.StatusCode != 404) {
 		return err
 	}
 
