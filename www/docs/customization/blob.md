@@ -1,5 +1,5 @@
 ---
-title: Blobs
+title: Blobs (s3, gcs, azblob)
 ---
 
 The `blobs` allows you to upload artifacts to Amazon S3, Azure Blob and

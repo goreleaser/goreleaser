@@ -70,35 +70,37 @@ nav:
 - Customization:
   - About: customization/index.md
   - Basics:
-    - customization/env.md
-    - customization/build.md
-    - customization/archive.md
-    - customization/checksum.md
-    - customization/gomod.md
-    - customization/hooks.md
     - customization/includes.md
-    - customization/monorepo.md
+    - customization/templates.md
+    - customization/env.md
+    - customization/hooks.md
     - customization/dist.md
     - customization/project.md
-    - customization/sign.md
-  - Docker:
-    - Docker Images: customization/docker.md
-    - Docker Manifests: customization/docker_manifest.md
-    - Docker Signing: customization/docker_sign.md
-  - Linux Packaging:
+  - Build:
+    - customization/build.md
+    - customization/gomod.md
+    - customization/monorepo.md
+  - Packaging and Archiving:
+    - customization/archive.md
     - customization/nfpm.md
+    - customization/checksum.md
     - customization/snapcraft.md
+    - customization/docker.md
+    - customization/docker_manifest.md
+  - Signing:
+    - Checksums and artifacts: customization/sign.md
+    - Docker Images and Manifests: customization/docker_sign.md
   - Publish:
-    - customization/artifactory.md
     - customization/blob.md
     - customization/fury.md
     - customization/homebrew.md
-    - customization/milestone.md
-    - customization/publishers.md
-    - customization/release.md
     - customization/scoop.md
-    - customization/source.md
+    - customization/release.md
+    - customization/artifactory.md
+    - customization/publishers.md
     - customization/upload.md
+    - customization/source.md
+    - customization/milestone.md
     - customization/snapshots.md
     - customization/nightly.md
   - Announce:
@@ -109,7 +111,6 @@ nav:
       - customization/announce/smtp.md
       - customization/announce/teams.md
       - customization/announce/twitter.md
-  - customization/templates.md
 - Command Line Usage:
     - goreleaser: cmd/goreleaser.md
     - goreleaser init: cmd/goreleaser_init.md

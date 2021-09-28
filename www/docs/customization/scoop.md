@@ -1,5 +1,5 @@
 ---
-title: Scoop
+title: Scoop Manifests
 ---
 
 After releasing to GitHub or GitLab, GoReleaser can generate and publish a

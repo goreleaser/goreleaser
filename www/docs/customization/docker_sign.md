@@ -1,5 +1,5 @@
 ---
-title: Docker Image Signing
+title: Signing Docker Images and Manifests
 ---
 
 Signing Docker Images and Manifests is also possible with GoReleaser.
