@@ -88,6 +88,21 @@ func (r Repo) String() string {
 	return r.Owner + "/" + r.Name
 }
 
+// GoFish contains the gofish section.
+type GoFish struct {
+	Name                  string       `yaml:",omitempty"`
+	Rig                   RepoRef      `yaml:",omitempty"`
+	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty"`
+	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty"`
+	Description           string       `yaml:",omitempty"`
+	Homepage              string       `yaml:",omitempty"`
+	License               string       `yaml:",omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty"`
+	URLTemplate           string       `yaml:"url_template,omitempty"`
+	IDs                   []string     `yaml:"ids,omitempty"`
+	Goarm                 string       `yaml:"goarm,omitempty"`
+}
+
 // Homebrew contains the brew section.
 type Homebrew struct {
 	Name                  string               `yaml:",omitempty"`
@@ -648,6 +663,7 @@ type Project struct {
 	Release         Release          `yaml:",omitempty"`
 	Milestones      []Milestone      `yaml:",omitempty"`
 	Brews           []Homebrew       `yaml:",omitempty"`
+	Rigs            []GoFish         `yaml:",omitempty"`
 	Scoop           Scoop            `yaml:",omitempty"`
 	Builds          []Build          `yaml:",omitempty"`
 	Archives        []Archive        `yaml:",omitempty"`

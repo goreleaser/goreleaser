@@ -1,0 +1,25 @@
+local name = "default"
+local version = "1.0.1"
+
+food = {
+    name = name,
+    description = "A run pipe test formula and FOO=foo_is_bar",
+    license = "",
+    homepage = "https://github.com/goreleaser",
+    version = version,
+    packages = {
+		{
+            os = "darwin",
+            arch = "amd64",
+            url = "https://dummyhost/download/v1.0.1/bin.tar.gz",
+            sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            resources = {
+                {
+                    path = name,
+                    installpath = "bin/" .. name,
+                    executable = true
+                }
+            }
+        },
+    }
+}
