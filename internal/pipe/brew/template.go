@@ -57,18 +57,14 @@ class {{ .Name }} < Formula
   {{- range $element := .MacOSPackages }}
     {{- if eq $element.Arch "amd64" }}
     if Hardware::CPU.intel?
-      url "{{ $element.DownloadURL }}"
-      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-      sha256 "{{ $element.SHA256 }}"
-    end
     {{- end }}
     {{- if eq $element.Arch "arm64" }}
     if Hardware::CPU.arm?
+    {{- end}}
       url "{{ $element.DownloadURL }}"
       {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
       sha256 "{{ $element.SHA256 }}"
     end
-    {{- end }}
   {{- end }}
   end
   {{- end }}
@@ -80,25 +76,17 @@ class {{ .Name }} < Formula
   {{- range $element := .LinuxPackages }}
     {{- if eq $element.Arch "amd64" }}
     if Hardware::CPU.intel?
-      url "{{ $element.DownloadURL }}"
-      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-      sha256 "{{ $element.SHA256 }}"
-    end
     {{- end }}
     {{- if eq $element.Arch "arm" }}
     if Hardware::CPU.arm? && !Hardware::CPU.is_64_bit?
-      url "{{ $element.DownloadURL }}"
-      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-      sha256 "{{ $element.SHA256 }}"
-    end
     {{- end }}
     {{- if eq $element.Arch "arm64" }}
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
+    {{- end }}
       url "{{ $element.DownloadURL }}"
       {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
       sha256 "{{ $element.SHA256 }}"
     end
-    {{- end }}
   {{- end }}
   end
   {{- end }}
