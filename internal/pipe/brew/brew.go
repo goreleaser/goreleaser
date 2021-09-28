@@ -284,7 +284,6 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 	}
 
 	counts := map[string]int{}
-
 	for _, artifact := range artifacts {
 		sum, err := artifact.Checksum("sha256")
 		if err != nil {
@@ -301,6 +300,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 			}
 			cfg.URLTemplate = url
 		}
+
 		url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(cfg.URLTemplate)
 		if err != nil {
 			return result, err
@@ -329,15 +329,13 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		}
 	}
 
-	sort.Slice(result.LinuxPackages, func(i, j int) bool {
-		return result.LinuxPackages[i].OS > result.LinuxPackages[j].OS &&
-			result.LinuxPackages[i].Arch > result.LinuxPackages[j].Arch
-	})
-	sort.Slice(result.MacOSPackages, func(i, j int) bool {
-		return result.MacOSPackages[i].OS > result.MacOSPackages[j].OS &&
-			result.MacOSPackages[i].Arch > result.MacOSPackages[j].Arch
-	})
+	sort.Slice(result.LinuxPackages, lessFnFor(result.LinuxPackages))
+	sort.Slice(result.MacOSPackages, lessFnFor(result.MacOSPackages))
 	return result, nil
+}
+
+func lessFnFor(list []releasePackage) func(i, j int) bool {
+	return func(i, j int) bool { return list[i].OS > list[j].OS && list[i].Arch > list[j].Arch }
 }
 
 func split(s string) []string {
