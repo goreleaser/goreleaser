@@ -6,6 +6,7 @@ IgnoreURLs:
 - https://twitter.com/goreleaser
 - support.discord.com
 - microsoft.com
+- https://github.com/goreleaser/goreleaser/edit/
 IgnoreDirs:
 - overrides
 IgnoreDirectoryMissingTrailingSlash: true
