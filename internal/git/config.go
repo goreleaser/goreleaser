@@ -19,7 +19,7 @@ func ExtractRepoFromConfig() (result config.Repo, err error) {
 	if err != nil {
 		return result, fmt.Errorf("no remote configured to list refs from")
 	}
-	log.WithField("rawurl", string(out)).Debugf("got git url")
+	log.WithField("rawurl", out).Debugf("got git url")
 	return ExtractRepoFromURL(out)
 }
 
