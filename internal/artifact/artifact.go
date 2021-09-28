@@ -50,6 +50,8 @@ const (
 	UploadableSourceArchive
 	// BrewTap is an uploadable homebrew tap recipe file.
 	BrewTap
+	// GoFishRig is an uploadable Rigs rig food file.
+	GoFishRig
 	// ScoopManifest is an uploadable scoop manifest file.
 	ScoopManifest
 )
@@ -78,6 +80,8 @@ func (t Type) String() string {
 		return "Source"
 	case BrewTap:
 		return "Brew Tap"
+	case GoFishRig:
+		return "GoFish Rig"
 	case ScoopManifest:
 		return "Scoop Manifest"
 	default:

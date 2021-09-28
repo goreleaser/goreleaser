@@ -94,6 +94,7 @@ nav:
     - customization/blob.md
     - customization/fury.md
     - customization/homebrew.md
+    - customization/gofish.md
     - customization/scoop.md
     - customization/release.md
     - customization/artifactory.md
