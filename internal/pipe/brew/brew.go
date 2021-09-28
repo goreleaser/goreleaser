@@ -283,6 +283,8 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		CustomBlock:   split(cfg.CustomBlock),
 	}
 
+	counts := map[string]int{}
+
 	for _, artifact := range artifacts {
 		sum, err := artifact.Checksum("sha256")
 		if err != nil {
@@ -311,22 +313,19 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 			Arch:             artifact.Goarch,
 			DownloadStrategy: cfg.DownloadStrategy,
 		}
+		counts[pkg.OS+pkg.Arch] += 1
 
 		switch pkg.OS {
 		case "darwin":
-			for _, v := range result.MacOSPackages {
-				if v.Arch == artifact.Goarch {
-					return result, ErrMultipleArchivesSameOS
-				}
-			}
 			result.MacOSPackages = append(result.MacOSPackages, pkg)
 		case "linux":
-			for _, v := range result.LinuxPackages {
-				if v.Arch == artifact.Goarch {
-					return result, ErrMultipleArchivesSameOS
-				}
-			}
 			result.LinuxPackages = append(result.LinuxPackages, pkg)
+		}
+	}
+
+	for _, v := range counts {
+		if v > 1 {
+			return result, ErrMultipleArchivesSameOS
 		}
 	}
 
