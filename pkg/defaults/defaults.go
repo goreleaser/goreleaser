@@ -15,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
 	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
+	"github.com/goreleaser/goreleaser/internal/pipe/mattermost"
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/project"
@@ -69,5 +70,6 @@ var Defaulters = []Defaulter{
 	teams.Pipe{},
 	twitter.Pipe{},
 	smtp.Pipe{},
+	mattermost.Pipe{},
 	milestone.Pipe{},
 }

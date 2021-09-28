@@ -707,12 +707,13 @@ type GoMod struct {
 }
 
 type Announce struct {
-	Twitter Twitter `yaml:"twitter,omitempty"`
-	Reddit  Reddit  `yaml:"reddit,omitempty"`
-	Slack   Slack   `yaml:"slack,omitempty"`
-	Discord Discord `yaml:"discord,omitempty"`
-	Teams   Teams   `yaml:"teams,omitempty"`
-	SMTP    SMTP    `yaml:"smtp,omitempty"`
+	Twitter    Twitter    `yaml:"twitter,omitempty"`
+	Reddit     Reddit     `yaml:"reddit,omitempty"`
+	Slack      Slack      `yaml:"slack,omitempty"`
+	Discord    Discord    `yaml:"discord,omitempty"`
+	Teams      Teams      `yaml:"teams,omitempty"`
+	SMTP       SMTP       `yaml:"smtp,omitempty"`
+	Mattermost Mattermost `yaml:"mattermost,omitempty"`
 }
 
 type Twitter struct {
@@ -751,6 +752,17 @@ type Teams struct {
 	TitleTemplate   string `yaml:"title_template,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty"`
 	Color           string `yaml:"color,omitempty"`
+	IconURL         string `yaml:"icon_url,omitempty"`
+}
+
+type Mattermost struct {
+	Enabled         bool   `yaml:"enabled,omitempty"`
+	MessageTemplate string `yaml:"message_template,omitempty"`
+	TitleTemplate   string `yaml:"title_template,omitempty"`
+	Color           string `yaml:"color,omitempty"`
+	Channel         string `yaml:"channel,omitempty"`
+	Username        string `yaml:"username,omitempty"`
+	IconEmoji       string `yaml:"icon_emoji,omitempty"`
 	IconURL         string `yaml:"icon_url,omitempty"`
 }
 
