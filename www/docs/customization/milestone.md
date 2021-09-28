@@ -1,5 +1,5 @@
 ---
-title: Milestone
+title: Closing Milestones
 ---
 
 GoReleaser can close repository milestones after successfully

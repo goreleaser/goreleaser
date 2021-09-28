@@ -1,5 +1,5 @@
 ---
-title: Checksum
+title: Checksums
 ---
 
 GoReleaser generates a `project_1.0.0_checksums.txt` file and uploads it with the

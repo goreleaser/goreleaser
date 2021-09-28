@@ -1,12 +1,10 @@
 ---
-title: Docker Manifest
+title: Docker Manifests
 ---
 
-Since [v0.148.0](https://github.com/goreleaser/goreleaser/releases/tag/v0.148.0),
-GoReleaser supports building and pushing Docker multi-platform images through
-the `docker manifest` tool.
+GoReleaser can also create and push Docker multi-platform images using the `docker manifest` tool.
 
-For it to work, it [has to be enabled in the client configurations](https://github.com/docker/cli/blob/master/experimental/README.md).
+For it to work, it needs to be enabled in the [client's configuration](https://github.com/docker/cli/blob/master/experimental/README.md).
 
 Please make sure `docker manifest` works before opening issues.
 

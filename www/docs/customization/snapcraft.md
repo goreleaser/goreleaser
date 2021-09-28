@@ -1,5 +1,5 @@
 ---
-title: Snapcraft
+title: Snapcraft Packages (snaps)
 ---
 
 GoReleaser can also generate `snap` packages.

@@ -1,5 +1,5 @@
 ---
-title: Homebrew
+title: Homebrew Taps
 ---
 
 After releasing to GitHub or GitLab, GoReleaser can generate and publish
