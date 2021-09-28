@@ -1,8 +1,8 @@
 {
 	"rewrites": [
 		{
-			"source": "/:path",
-			"destination": "/:path/"
+			"source": "/:path*",
+			"destination": "/does-this-even-work"
 		}
 	]
 }
