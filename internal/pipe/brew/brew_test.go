@@ -1,6 +1,7 @@
 package brew
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -919,6 +920,10 @@ type DummyClient struct {
 
 func (dc *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
 	return nil
+}
+
+func (dc *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) (string, error) {
+	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
 }
 
 func (dc *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {

@@ -49,6 +49,21 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 	return &gitlabClient{client: client}, nil
 }
 
+// GetDefaultBranch get the default branch
+func (c *gitlabClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
+	projectID := repo.Owner + "/" + repo.Name
+	p, res, err := c.client.Projects.GetProject(projectID, nil)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"projectID":  projectID,
+			"statusCode": res.StatusCode,
+			"err":        err.Error(),
+		}).Warn("error checking for default branch")
+		return "", err
+	}
+	return p.DefaultBranch, nil
+}
+
 // CloseMilestone closes a given milestone.
 func (c *gitlabClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
 	milestone, err := c.getMilestoneByTitle(repo, title)
