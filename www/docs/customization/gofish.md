@@ -13,9 +13,9 @@ and the
 for more details.
 
 !!! warning
-  If you have multiple 32-bit arm versions in each `build` section, and
-  you do not specify any `ids` in the rigs section, it will default to all
-  artifacts and GoReleaser will fail.
+    If you have multiple 32-bit arm versions in each `build` section, and
+    you do not specify any `ids` in the rigs section, it will default to all
+    artifacts and GoReleaser will fail.
 
 ```yaml
 # .goreleaser.yml
@@ -84,7 +84,7 @@ rigs:
 ```
 
 !!! tip
-  Learn more about the [name template engine](/customization/templates/).
+    Learn more about the [name template engine](/customization/templates/).
 
 By defining the `rigs` section, GoReleaser will take care of publishing the
 GoFish rig.
