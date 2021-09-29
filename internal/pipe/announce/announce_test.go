@@ -35,7 +35,37 @@ func TestSkip(t *testing.T) {
 		require.True(t, Pipe{}.Skip(ctx))
 	})
 
+	t.Run("skip on patches", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Announce: config.Announce{
+				Skip: "{{gt .Patch 0}}",
+			},
+		})
+		ctx.Semver.Patch = 1
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+
+	t.Run("skip on invalid template", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Announce: config.Announce{
+				Skip: "{{if eq .Patch 123}",
+			},
+		})
+		ctx.Semver.Patch = 1
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+
 	t.Run("dont skip", func(t *testing.T) {
 		require.False(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip based on template", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Announce: config.Announce{
+				Skip: "{{gt .Patch 0}}",
+			},
+		})
+		ctx.Semver.Patch = 0
+		require.False(t, Pipe{}.Skip(ctx))
 	})
 }

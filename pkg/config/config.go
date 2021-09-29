@@ -88,6 +88,21 @@ func (r Repo) String() string {
 	return r.Owner + "/" + r.Name
 }
 
+// GoFish contains the gofish section.
+type GoFish struct {
+	Name                  string       `yaml:",omitempty"`
+	Rig                   RepoRef      `yaml:",omitempty"`
+	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty"`
+	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty"`
+	Description           string       `yaml:",omitempty"`
+	Homepage              string       `yaml:",omitempty"`
+	License               string       `yaml:",omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty"`
+	URLTemplate           string       `yaml:"url_template,omitempty"`
+	IDs                   []string     `yaml:"ids,omitempty"`
+	Goarm                 string       `yaml:"goarm,omitempty"`
+}
+
 // Homebrew contains the brew section.
 type Homebrew struct {
 	Name                  string               `yaml:",omitempty"`
@@ -648,6 +663,7 @@ type Project struct {
 	Release         Release          `yaml:",omitempty"`
 	Milestones      []Milestone      `yaml:",omitempty"`
 	Brews           []Homebrew       `yaml:",omitempty"`
+	Rigs            []GoFish         `yaml:",omitempty"`
 	Scoop           Scoop            `yaml:",omitempty"`
 	Builds          []Build          `yaml:",omitempty"`
 	Archives        []Archive        `yaml:",omitempty"`
@@ -691,12 +707,14 @@ type GoMod struct {
 }
 
 type Announce struct {
-	Twitter Twitter `yaml:"twitter,omitempty"`
-	Reddit  Reddit  `yaml:"reddit,omitempty"`
-	Slack   Slack   `yaml:"slack,omitempty"`
-	Discord Discord `yaml:"discord,omitempty"`
-	Teams   Teams   `yaml:"teams,omitempty"`
-	SMTP    SMTP    `yaml:"smtp,omitempty"`
+	Skip       string     `yaml:"skip,omitempty"`
+	Twitter    Twitter    `yaml:"twitter,omitempty"`
+	Reddit     Reddit     `yaml:"reddit,omitempty"`
+	Slack      Slack      `yaml:"slack,omitempty"`
+	Discord    Discord    `yaml:"discord,omitempty"`
+	Teams      Teams      `yaml:"teams,omitempty"`
+	SMTP       SMTP       `yaml:"smtp,omitempty"`
+	Mattermost Mattermost `yaml:"mattermost,omitempty"`
 }
 
 type Twitter struct {
@@ -735,6 +753,17 @@ type Teams struct {
 	TitleTemplate   string `yaml:"title_template,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty"`
 	Color           string `yaml:"color,omitempty"`
+	IconURL         string `yaml:"icon_url,omitempty"`
+}
+
+type Mattermost struct {
+	Enabled         bool   `yaml:"enabled,omitempty"`
+	MessageTemplate string `yaml:"message_template,omitempty"`
+	TitleTemplate   string `yaml:"title_template,omitempty"`
+	Color           string `yaml:"color,omitempty"`
+	Channel         string `yaml:"channel,omitempty"`
+	Username        string `yaml:"username,omitempty"`
+	IconEmoji       string `yaml:"icon_emoji,omitempty"`
 	IconURL         string `yaml:"icon_url,omitempty"`
 }
 

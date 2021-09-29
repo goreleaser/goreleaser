@@ -1,4 +1,4 @@
-package brew
+package gofish
 
 import (
 	"fmt"
@@ -20,135 +20,110 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
-func TestNameWithDash(t *testing.T) {
-	require.Equal(t, formulaNameFor("some-binary"), "SomeBinary")
-}
-
-func TestNameWithUnderline(t *testing.T) {
-	require.Equal(t, formulaNameFor("some_binary"), "SomeBinary")
-}
-
-func TestNameWithDots(t *testing.T) {
-	require.Equal(t, formulaNameFor("binaryv0.0.0"), "Binaryv0_0_0")
-}
-
-func TestNameWithAT(t *testing.T) {
-	require.Equal(t, formulaNameFor("some_binary@1"), "SomeBinaryAT1")
-}
-
-func TestSimpleName(t *testing.T) {
-	require.Equal(t, formulaNameFor("binary"), "Binary")
-}
-
-var defaultTemplateData = templateData{
-	Desc:     "Some desc",
-	Homepage: "https://google.com",
-	LinuxPackages: []releasePackage{
-		{
-			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
-			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-			OS:          "linux",
-			Arch:        "amd64",
+func createTemplateData() templateData {
+	return templateData{
+		Desc:     "Some desc",
+		Homepage: "https://google.com",
+		ReleasePackages: []releasePackage{
+			{
+				Arch:        "amd64",
+				OS:          "darwin",
+				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
+				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
+			},
+			{
+				Arch:        "arm64",
+				OS:          "darwin",
+				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
+				SHA256:      "1633f61598ab0791e213135923624eb342196b349490sadasdsadsadasdasdsd",
+			},
+			{
+				Arch:        "amd64",
+				OS:          "linux",
+				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
+				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+			},
+			{
+				Arch:        "arm",
+				OS:          "linux",
+				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
+				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+			},
+			{
+				Arch:        "arm64",
+				OS:          "linux",
+				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
+				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+			},
+			{
+				Arch:        "amd64",
+				OS:          "windows",
+				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_windows_amd64.zip",
+				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+			},
 		},
-		{
-			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
-			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-			OS:          "linux",
-			Arch:        "arm",
-		},
-		{
-			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
-			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-			OS:          "linux",
-			Arch:        "arm64",
-		},
-	},
-	MacOSPackages: []releasePackage{
-		{
-			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
-			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
-			OS:          "darwin",
-			Arch:        "amd64",
-		},
-		{
-			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
-			SHA256:      "1633f61598ab0791e213135923624eb342196b349490sadasdsadsadasdasdsd",
-			OS:          "darwin",
-			Arch:        "arm64",
-		},
-	},
-	Name:    "Test",
-	Version: "0.1.3",
-	Caveats: []string{},
+		Name:    "Test",
+		Version: "0.1.3",
+	}
 }
 
-func assertDefaultTemplateData(t *testing.T, formulae string) {
+func assertDefaultTemplateData(t *testing.T, food string) {
 	t.Helper()
-	require.Contains(t, formulae, "class Test < Formula")
-	require.Contains(t, formulae, `homepage "https://google.com"`)
-	require.Contains(t, formulae, `url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`)
-	require.Contains(t, formulae, `sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`)
-	require.Contains(t, formulae, `version "0.1.3"`)
+	require.Contains(t, food, "food =")
+	require.Contains(t, food, `homepage = "https://google.com"`)
+	require.Contains(t, food, `url = "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`)
+	require.Contains(t, food, `sha256 = "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`)
+	require.Contains(t, food, `local version = "0.1.3"`)
 }
 
-func TestFullFormulae(t *testing.T) {
-	data := defaultTemplateData
+func TestFullFood(t *testing.T) {
+	data := createTemplateData()
 	data.License = "MIT"
-	data.Caveats = []string{"Here are some caveats"}
-	data.Dependencies = []config.HomebrewDependency{{Name: "gtk+"}}
-	data.Conflicts = []string{"svn"}
-	data.Plist = "it works"
-	data.PostInstall = `system "touch", "/tmp/foo"`
-	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
-	data.Install = []string{"custom install script", "another install script"}
-	data.Tests = []string{`system "#{bin}/{{.ProjectName}} -version"`}
-	formulae, err := doBuildFormula(context.New(config.Project{
+	food, err := doBuildFood(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
 	require.NoError(t, err)
 
-	golden.RequireEqualRb(t, []byte(formulae))
+	golden.RequireEqualLua(t, []byte(food))
 }
 
-func TestFullFormulaeLinuxOnly(t *testing.T) {
-	data := defaultTemplateData
-	data.MacOSPackages = []releasePackage{}
-	data.Install = []string{`bin.install "test"`}
-	formulae, err := doBuildFormula(context.New(config.Project{
+func TestFullFoodLinuxOnly(t *testing.T) {
+	data := createTemplateData()
+	for i, v := range data.ReleasePackages {
+		if v.OS != "linux" {
+			data.ReleasePackages[i] = releasePackage{}
+		}
+	}
+
+	formulae, err := doBuildFood(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
 	require.NoError(t, err)
 
-	golden.RequireEqualRb(t, []byte(formulae))
+	golden.RequireEqualLua(t, []byte(formulae))
 }
 
-func TestFullFormulaeMacOSOnly(t *testing.T) {
-	data := defaultTemplateData
-	data.LinuxPackages = []releasePackage{}
-	data.Install = []string{`bin.install "test"`}
-	formulae, err := doBuildFormula(context.New(config.Project{
+func TestFullFoodWindowsOnly(t *testing.T) {
+	data := createTemplateData()
+	for i, v := range data.ReleasePackages {
+		if v.OS != "windows" {
+			data.ReleasePackages[i] = releasePackage{}
+		}
+	}
+	formulae, err := doBuildFood(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
 	require.NoError(t, err)
 
-	golden.RequireEqualRb(t, []byte(formulae))
+	golden.RequireEqualLua(t, []byte(formulae))
 }
 
 func TestFormulaeSimple(t *testing.T) {
-	formulae, err := doBuildFormula(context.New(config.Project{}), defaultTemplateData)
+	formulae, err := doBuildFood(context.New(config.Project{}), createTemplateData())
 	require.NoError(t, err)
 	assertDefaultTemplateData(t, formulae)
 	require.NotContains(t, formulae, "def caveats")
 	require.NotContains(t, formulae, "def plist;")
-}
-
-func TestSplit(t *testing.T) {
-	parts := split("system \"true\"\nsystem \"#{bin}/foo -h\"")
-	require.Equal(t, []string{"system \"true\"", "system \"#{bin}/foo -h\""}, parts)
-	parts = split("")
-	require.Equal(t, []string{}, parts)
-	parts = split("\n  ")
-	require.Equal(t, []string{}, parts)
 }
 
 func TestFullPipe(t *testing.T) {
@@ -160,55 +135,24 @@ func TestFullPipe(t *testing.T) {
 		"default": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
-				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
-			},
-		},
-		"custom_download_strategy": {
-			prepare: func(ctx *context.Context) {
-				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
-				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
-
-				ctx.Config.Brews[0].DownloadStrategy = "GitHubPrivateRepositoryReleaseDownloadStrategy"
-			},
-		},
-		"custom_require": {
-			prepare: func(ctx *context.Context) {
-				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
-				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
-
-				ctx.Config.Brews[0].DownloadStrategy = "CustomDownloadStrategy"
-				ctx.Config.Brews[0].CustomRequire = "custom_download_strategy"
-			},
-		},
-		"custom_block": {
-			prepare: func(ctx *context.Context) {
-				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
-				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
-
-				ctx.Config.Brews[0].CustomBlock = `head "https://github.com/caarlos0/test.git"`
+				ctx.Config.Rigs[0].Rig.Owner = "test"
+				ctx.Config.Rigs[0].Rig.Name = "test"
+				ctx.Config.Rigs[0].Homepage = "https://github.com/goreleaser"
 			},
 		},
 		"default_gitlab": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitLab
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
-				ctx.Config.Brews[0].Homepage = "https://gitlab.com/goreleaser"
+				ctx.Config.Rigs[0].Rig.Owner = "test"
+				ctx.Config.Rigs[0].Rig.Name = "test"
+				ctx.Config.Rigs[0].Homepage = "https://gitlab.com/goreleaser"
 			},
 		},
 		"invalid_commit_template": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.Brews[0].Tap.Owner = "test"
-				ctx.Config.Brews[0].Tap.Name = "test"
-				ctx.Config.Brews[0].CommitMessageTemplate = "{{ .Asdsa }"
+				ctx.Config.Rigs[0].Rig.Owner = "test"
+				ctx.Config.Rigs[0].Rig.Name = "test"
+				ctx.Config.Rigs[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
@@ -227,19 +171,13 @@ func TestFullPipe(t *testing.T) {
 				Config: config.Project{
 					Dist:        folder,
 					ProjectName: name,
-					Brews: []config.Homebrew{
+					Rigs: []config.GoFish{
 						{
 							Name: name,
 							IDs: []string{
 								"foo",
 							},
-							Description:  "A run pipe test formula and FOO={{ .Env.FOO }}",
-							Caveats:      "don't do this {{ .ProjectName }}",
-							Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
-							Plist:        `<xml>whatever</xml>`,
-							Dependencies: []config.HomebrewDependency{{Name: "zsh", Type: "optional"}, {Name: "bash"}},
-							Conflicts:    []string{"gtk+", "qt"},
-							Install:      `bin.install "{{ .ProjectName }}"`,
+							Description: "A run pipe test formula and FOO={{ .Env.FOO }}",
 						},
 					},
 				},
@@ -273,7 +211,7 @@ func TestFullPipe(t *testing.T) {
 			require.NoError(t, err)
 			require.NoError(t, f.Close())
 			client := &DummyClient{}
-			distFile := filepath.Join(folder, name+".rb")
+			distFile := filepath.Join(folder, name+".lua")
 
 			require.NoError(t, runAll(ctx, client))
 			if tt.expectedPublishError != "" {
@@ -283,7 +221,7 @@ func TestFullPipe(t *testing.T) {
 
 			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
-			golden.RequireEqualRb(t, []byte(client.Content))
+			golden.RequireEqualLua(t, []byte(client.Content))
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -306,10 +244,10 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		Config: config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
-			Brews: []config.Homebrew{
+			Rigs: []config.GoFish{
 				{
 					Name: "foo_{{ .Env.FOO_BAR }}",
-					Tap: config.RepoRef{
+					Rig: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -337,18 +275,18 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	client := &DummyClient{}
-	distFile := filepath.Join(folder, "foo_is_bar.rb")
+	distFile := filepath.Join(folder, "foo_is_bar.lua")
 
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	golden.RequireEqualRb(t, []byte(client.Content))
+	golden.RequireEqualLua(t, []byte(client.Content))
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
 }
 
-func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
+func TestRunPipeMultipleGoFishWithSkip(t *testing.T) {
 	folder := t.TempDir()
 	ctx := &context.Context{
 		Git: context.GitInfo{
@@ -362,10 +300,10 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 		Config: config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
-			Brews: []config.Homebrew{
+			Rigs: []config.GoFish{
 				{
 					Name: "foo",
-					Tap: config.RepoRef{
+					Rig: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -376,7 +314,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 				},
 				{
 					Name: "bar",
-					Tap: config.RepoRef{
+					Rig: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -386,7 +324,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 				},
 				{
 					Name: "foobar",
-					Tap: config.RepoRef{
+					Rig: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
 					},
@@ -417,11 +355,11 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 
 	cli := &DummyClient{}
 	require.NoError(t, runAll(ctx, cli))
-	require.EqualError(t, publishAll(ctx, cli), `brew.skip_upload is set`)
+	require.EqualError(t, publishAll(ctx, cli), `rig.skip_upload is set`)
 	require.True(t, cli.CreatedFile)
 
-	for _, brew := range ctx.Config.Brews {
-		distFile := filepath.Join(folder, brew.Name+".rb")
+	for _, food := range ctx.Config.Rigs {
+		distFile := filepath.Join(folder, food.Name+".lua")
 		_, err := os.Stat(distFile)
 		require.NoError(t, err, "file should exist: "+distFile)
 	}
@@ -430,13 +368,13 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 func TestRunPipeForMultipleArmVersions(t *testing.T) {
 	for name, fn := range map[string]func(ctx *context.Context){
 		"multiple_armv5": func(ctx *context.Context) {
-			ctx.Config.Brews[0].Goarm = "5"
+			ctx.Config.Rigs[0].Goarm = "5"
 		},
 		"multiple_armv6": func(ctx *context.Context) {
-			ctx.Config.Brews[0].Goarm = "6"
+			ctx.Config.Rigs[0].Goarm = "6"
 		},
 		"multiple_armv7": func(ctx *context.Context) {
-			ctx.Config.Brews[0].Goarm = "7"
+			ctx.Config.Rigs[0].Goarm = "7"
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -454,17 +392,11 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 				Config: config.Project{
 					Dist:        folder,
 					ProjectName: name,
-					Brews: []config.Homebrew{
+					Rigs: []config.GoFish{
 						{
-							Name:         name,
-							Description:  "A run pipe test formula and FOO={{ .Env.FOO }}",
-							Caveats:      "don't do this {{ .ProjectName }}",
-							Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
-							Plist:        `<xml>whatever</xml>`,
-							Dependencies: []config.HomebrewDependency{{Name: "zsh"}, {Name: "bash", Type: "recommended"}},
-							Conflicts:    []string{"gtk+", "qt"},
-							Install:      `bin.install "{{ .ProjectName }}"`,
-							Tap: config.RepoRef{
+							Name:        name,
+							Description: "A run pipe test formula and FOO={{ .Env.FOO }}",
+							Rig: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
@@ -537,12 +469,12 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			}
 
 			client := &DummyClient{}
-			distFile := filepath.Join(folder, name+".rb")
+			distFile := filepath.Join(folder, name+".lua")
 
 			require.NoError(t, runAll(ctx, client))
 			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
-			golden.RequireEqualRb(t, []byte(client.Content))
+			golden.RequireEqualLua(t, []byte(client.Content))
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -555,9 +487,9 @@ func TestRunPipeNoBuilds(t *testing.T) {
 	ctx := &context.Context{
 		TokenType: context.TokenTypeGitHub,
 		Config: config.Project{
-			Brews: []config.Homebrew{
+			Rigs: []config.GoFish{
 				{
-					Tap: config.RepoRef{
+					Rig: config.RepoRef{
 						Owner: "test",
 						Name:  "test",
 					},
@@ -573,9 +505,9 @@ func TestRunPipeNoBuilds(t *testing.T) {
 func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 	ctx := context.New(
 		config.Project{
-			Brews: []config.Homebrew{
+			Rigs: []config.GoFish{
 				{
-					Tap: config.RepoRef{
+					Rig: config.RepoRef{
 						Owner: "test",
 						Name:  "test",
 					},
@@ -720,9 +652,9 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 func TestRunPipeBinaryRelease(t *testing.T) {
 	ctx := context.New(
 		config.Project{
-			Brews: []config.Homebrew{
+			Rigs: []config.GoFish{
 				{
-					Tap: config.RepoRef{
+					Rig: config.RepoRef{
 						Owner: "test",
 						Name:  "test",
 					},
@@ -748,9 +680,9 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
-		Brews: []config.Homebrew{
+		Rigs: []config.GoFish{
 			{
-				Tap: config.RepoRef{
+				Rig: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -783,16 +715,15 @@ func TestRunPipeNoUpload(t *testing.T) {
 		require.False(t, client.CreatedFile)
 	}
 	t.Run("skip upload true", func(t *testing.T) {
-		ctx.Config.Brews[0].SkipUpload = "true"
+		ctx.Config.Rigs[0].SkipUpload = "true"
 		ctx.Semver.Prerelease = ""
 		assertNoPublish(t)
 	})
 	t.Run("skip upload auto", func(t *testing.T) {
-		ctx.Config.Brews[0].SkipUpload = "auto"
+		ctx.Config.Rigs[0].SkipUpload = "auto"
 		ctx.Semver.Prerelease = "beta1"
 		assertNoPublish(t)
 	})
-	// TODO: skip when ctx.Config.Release.Draft=true ?
 }
 
 func TestRunEmptyTokenType(t *testing.T) {
@@ -801,9 +732,9 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
-		Brews: []config.Homebrew{
+		Rigs: []config.GoFish{
 			{
-				Tap: config.RepoRef{
+				Rig: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -830,15 +761,15 @@ func TestRunEmptyTokenType(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 }
 
-func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
+func TestRunTokenTypeNotImplementedForGoFish(t *testing.T) {
 	folder := t.TempDir()
 	ctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
-		Brews: []config.Homebrew{
+		Rigs: []config.GoFish{
 			{
-				Tap: config.RepoRef{
+				Rig: config.RepoRef{
 					Owner: "test",
 					Name:  "test",
 				},
@@ -863,7 +794,7 @@ func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
 		},
 	})
 	client := &DummyClient{NotImplemented: true}
-	require.EqualError(t, runAll(ctx, client), `token type "gitea" not implemented for brew pipe`)
+	require.EqualError(t, runAll(ctx, client), `token type "gitea" not implemented for gofish pipe`)
 }
 
 func TestDefault(t *testing.T) {
@@ -873,7 +804,7 @@ func TestDefault(t *testing.T) {
 		TokenType: context.TokenTypeGitHub,
 		Config: config.Project{
 			ProjectName: "myproject",
-			Brews: []config.Homebrew{
+			Rigs: []config.GoFish{
 				{},
 			},
 			Builds: []config.Build{
@@ -899,16 +830,15 @@ func TestDefault(t *testing.T) {
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Brews[0].Name)
-	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
-	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
-	require.NotEmpty(t, ctx.Config.Brews[0].CommitMessageTemplate)
-	require.Equal(t, `bin.install "myproject"`, ctx.Config.Brews[0].Install)
+	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Rigs[0].Name)
+	require.NotEmpty(t, ctx.Config.Rigs[0].CommitAuthor.Name)
+	require.NotEmpty(t, ctx.Config.Rigs[0].CommitAuthor.Email)
+	require.NotEmpty(t, ctx.Config.Rigs[0].CommitMessageTemplate)
 }
 
 func TestGHFolder(t *testing.T) {
-	require.Equal(t, "bar.rb", buildFormulaPath("", "bar.rb"))
-	require.Equal(t, "fooo/bar.rb", buildFormulaPath("fooo", "bar.rb"))
+	require.Equal(t, "bar.lua", buildFoodPath("", "bar.lua"))
+	require.Equal(t, "fooo/bar.lua", buildFoodPath("fooo", "bar.lua"))
 }
 
 type DummyClient struct {
@@ -950,7 +880,7 @@ func TestSkip(t *testing.T) {
 
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := context.New(config.Project{
-			Brews: []config.Homebrew{
+			Rigs: []config.GoFish{
 				{},
 			},
 		})
@@ -960,7 +890,7 @@ func TestSkip(t *testing.T) {
 
 func TestRunSkipNoName(t *testing.T) {
 	ctx := context.New(config.Project{
-		Brews: []config.Homebrew{{}},
+		Rigs: []config.GoFish{{}},
 	})
 
 	client := &DummyClient{}

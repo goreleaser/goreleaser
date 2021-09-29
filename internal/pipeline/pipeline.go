@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/effectiveconfig"
 	"github.com/goreleaser/goreleaser/internal/pipe/env"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
+	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
@@ -63,6 +64,7 @@ var Pipeline = append(
 	nfpm.Pipe{},          // archive via fpm (deb, rpm) using "native" go impl
 	snapcraft.Pipe{},     // archive via snapcraft (snap)
 	brew.Pipe{},          // create brew tap
+	gofish.Pipe{},        // create gofish rig
 	scoop.Pipe{},         // create scoop buckets
 	checksums.Pipe{},     // checksums of the files
 	sign.Pipe{},          // sign artifacts

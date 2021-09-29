@@ -2,12 +2,13 @@ IgnoreURLs:
 - www.google-analytics.com
 - fonts.gstatic.com
 - opencollective.com
-- https://gitlab.com/profile/personal_access_tokens
+- https://gitlab.com/-/profile/personal_access_tokens
 - https://twitter.com/goreleaser
 - support.discord.com
 - microsoft.com
 - https://github.com/goreleaser/goreleaser/edit/
 - https://discord.com/
+- https://gofi.sh
 IgnoreDirs:
 - overrides
 IgnoreDirectoryMissingTrailingSlash: true
