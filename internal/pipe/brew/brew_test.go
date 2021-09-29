@@ -43,25 +43,39 @@ func TestSimpleName(t *testing.T) {
 var defaultTemplateData = templateData{
 	Desc:     "Some desc",
 	Homepage: "https://google.com",
-	MacOSAmd64: downloadable{
-		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
-		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
+	LinuxPackages: []releasePackage{
+		{
+			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
+			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+			OS:          "linux",
+			Arch:        "amd64",
+		},
+		{
+			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
+			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+			OS:          "linux",
+			Arch:        "arm",
+		},
+		{
+			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
+			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+			OS:          "linux",
+			Arch:        "arm64",
+		},
 	},
-	MacOSArm64: downloadable{
-		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
-		SHA256:      "1633f61598ab0791e213135923624eb342196b349490sadasdsadsadasdasdsd",
-	},
-	LinuxAmd64: downloadable{
-		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
-		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-	},
-	LinuxArm: downloadable{
-		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
-		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-	},
-	LinuxArm64: downloadable{
-		DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
-		SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+	MacOSPackages: []releasePackage{
+		{
+			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
+			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
+			OS:          "darwin",
+			Arch:        "amd64",
+		},
+		{
+			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
+			SHA256:      "1633f61598ab0791e213135923624eb342196b349490sadasdsadsadasdasdsd",
+			OS:          "darwin",
+			Arch:        "arm64",
+		},
 	},
 	Name:    "Test",
 	Version: "0.1.3",
@@ -98,8 +112,19 @@ func TestFullFormulae(t *testing.T) {
 
 func TestFullFormulaeLinuxOnly(t *testing.T) {
 	data := defaultTemplateData
-	data.MacOSAmd64 = downloadable{}
-	data.MacOSArm64 = downloadable{}
+	data.MacOSPackages = []releasePackage{}
+	data.Install = []string{`bin.install "test"`}
+	formulae, err := doBuildFormula(context.New(config.Project{
+		ProjectName: "foo",
+	}), data)
+	require.NoError(t, err)
+
+	golden.RequireEqualRb(t, []byte(formulae))
+}
+
+func TestFullFormulaeMacOSOnly(t *testing.T) {
+	data := defaultTemplateData
+	data.LinuxPackages = []releasePackage{}
 	data.Install = []string{`bin.install "test"`}
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",

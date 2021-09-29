@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -226,15 +227,7 @@ func buildFormula(ctx *context.Context, brew config.Homebrew, client client.Clie
 	return doBuildFormula(ctx, data)
 }
 
-func fixDataDownloads(data templateData) templateData {
-	data.HasMacOSDownloads = data.MacOSAmd64.DownloadURL != "" || data.MacOSArm64.DownloadURL != ""
-	data.HasLinuxDownloads = data.LinuxAmd64.DownloadURL != "" || data.LinuxArm64.DownloadURL != "" || data.LinuxArm.DownloadURL != ""
-	return data
-}
-
 func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
-	data = fixDataDownloads(data)
-
 	t, err := template.
 		New(data.Name).
 		Funcs(template.FuncMap{
@@ -274,23 +267,23 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
-		Name:             formulaNameFor(cfg.Name),
-		Desc:             cfg.Description,
-		Homepage:         cfg.Homepage,
-		Version:          ctx.Version,
-		License:          cfg.License,
-		Caveats:          split(cfg.Caveats),
-		Dependencies:     cfg.Dependencies,
-		Conflicts:        cfg.Conflicts,
-		Plist:            cfg.Plist,
-		Install:          split(cfg.Install),
-		PostInstall:      cfg.PostInstall,
-		Tests:            split(cfg.Test),
-		DownloadStrategy: cfg.DownloadStrategy,
-		CustomRequire:    cfg.CustomRequire,
-		CustomBlock:      split(cfg.CustomBlock),
+		Name:          formulaNameFor(cfg.Name),
+		Desc:          cfg.Description,
+		Homepage:      cfg.Homepage,
+		Version:       ctx.Version,
+		License:       cfg.License,
+		Caveats:       split(cfg.Caveats),
+		Dependencies:  cfg.Dependencies,
+		Conflicts:     cfg.Conflicts,
+		Plist:         cfg.Plist,
+		Install:       split(cfg.Install),
+		PostInstall:   cfg.PostInstall,
+		Tests:         split(cfg.Test),
+		CustomRequire: cfg.CustomRequire,
+		CustomBlock:   split(cfg.CustomBlock),
 	}
 
+	counts := map[string]int{}
 	for _, artifact := range artifacts {
 		sum, err := artifact.Checksum("sha256")
 		if err != nil {
@@ -307,50 +300,43 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 			}
 			cfg.URLTemplate = url
 		}
+
 		url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(cfg.URLTemplate)
 		if err != nil {
 			return result, err
 		}
-		down := downloadable{
-			DownloadURL: url,
-			SHA256:      sum,
+
+		pkg := releasePackage{
+			DownloadURL:      url,
+			SHA256:           sum,
+			OS:               artifact.Goos,
+			Arch:             artifact.Goarch,
+			DownloadStrategy: cfg.DownloadStrategy,
 		}
-		// TODO: refactor
-		if artifact.Goos == "darwin" { // nolint: nestif
-			switch artifact.Goarch {
-			case "amd64":
-				if result.MacOSAmd64.DownloadURL != "" {
-					return result, ErrMultipleArchivesSameOS
-				}
-				result.MacOSAmd64 = down
-			case "arm64":
-				if result.MacOSArm64.DownloadURL != "" {
-					return result, ErrMultipleArchivesSameOS
-				}
-				result.MacOSArm64 = down
-			}
-		} else if artifact.Goos == "linux" {
-			switch artifact.Goarch {
-			case "amd64":
-				if result.LinuxAmd64.DownloadURL != "" {
-					return result, ErrMultipleArchivesSameOS
-				}
-				result.LinuxAmd64 = down
-			case "arm":
-				if result.LinuxArm.DownloadURL != "" {
-					return result, ErrMultipleArchivesSameOS
-				}
-				result.LinuxArm = down
-			case "arm64":
-				if result.LinuxArm64.DownloadURL != "" {
-					return result, ErrMultipleArchivesSameOS
-				}
-				result.LinuxArm64 = down
-			}
+
+		counts[pkg.OS+pkg.Arch]++
+
+		switch pkg.OS {
+		case "darwin":
+			result.MacOSPackages = append(result.MacOSPackages, pkg)
+		case "linux":
+			result.LinuxPackages = append(result.LinuxPackages, pkg)
 		}
 	}
 
+	for _, v := range counts {
+		if v > 1 {
+			return result, ErrMultipleArchivesSameOS
+		}
+	}
+
+	sort.Slice(result.LinuxPackages, lessFnFor(result.LinuxPackages))
+	sort.Slice(result.MacOSPackages, lessFnFor(result.MacOSPackages))
 	return result, nil
+}
+
+func lessFnFor(list []releasePackage) func(i, j int) bool {
+	return func(i, j int) bool { return list[i].OS > list[j].OS && list[i].Arch > list[j].Arch }
 }
 
 func split(s string) []string {
