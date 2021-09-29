@@ -4,6 +4,7 @@ package announce
 import (
 	"fmt"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
@@ -14,6 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/smtp"
 	"github.com/goreleaser/goreleaser/internal/pipe/teams"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -39,8 +41,23 @@ var announcers = []Announcer{
 // Pipe that announces releases.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "announcing" }
-func (Pipe) Skip(ctx *context.Context) bool { return ctx.SkipAnnounce }
+func (Pipe) String() string { return "announcing" }
+
+func (Pipe) Skip(ctx *context.Context) bool {
+	if ctx.SkipAnnounce {
+		return true
+	}
+	if ctx.Config.Announce.Skip == "" {
+		return false
+	}
+	skip, err := tmpl.New(ctx).Apply(ctx.Config.Announce.Skip)
+	if err != nil {
+		log.Error("invalid announce.skip template, will skip the announcing step")
+		return true
+	}
+	log.Debugf("announce.skip evaluated from %q to %q", ctx.Config.Announce.Skip, skip)
+	return skip == "true"
+}
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
