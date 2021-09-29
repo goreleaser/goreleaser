@@ -37,7 +37,7 @@ type Client interface {
 	CloseMilestone(ctx *context.Context, repo Repo, title string) (err error)
 	CreateRelease(ctx *context.Context, body string) (releaseID string, err error)
 	ReleaseURLTemplate(ctx *context.Context) (string, error)
-	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, message string) (err error)
+	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, message string, branch string) (err error)
 	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error)
 	GetDefaultBranch(ctx *context.Context, repo Repo) (string, error)
 }

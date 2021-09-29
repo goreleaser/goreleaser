@@ -318,7 +318,7 @@ func (s *GiteaupdateReleaseSuite) TestGiteaCreateFile() {
 	content := []byte("hello world")
 	path := "file.txt"
 	message := "add hello world"
-	err := s.client.CreateFile(s.ctx, author, repo, content, path, message)
+	err := s.client.CreateFile(s.ctx, author, repo, content, path, message, "")
 	require.Nil(t, err)
 }
 

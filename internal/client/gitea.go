@@ -95,6 +95,7 @@ func (c *giteaClient) CreateFile(
 	content []byte,
 	path,
 	message string,
+	branch string,
 ) error {
 	// use default branch
 	branchName := ""

@@ -868,7 +868,7 @@ func (dc *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) 
 	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
 }
 
-func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
+func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string, branch string) (err error) {
 	dc.CreatedFile = true
 	dc.Content = string(content)
 	return
