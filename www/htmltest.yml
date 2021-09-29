@@ -9,6 +9,7 @@ IgnoreURLs:
 - https://github.com/goreleaser/goreleaser/edit/
 - https://discord.com/
 - https://gofi.sh
+- https://docs.mattermost.com
 IgnoreDirs:
 - overrides
 IgnoreDirectoryMissingTrailingSlash: true
