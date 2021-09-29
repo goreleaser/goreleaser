@@ -938,7 +938,7 @@ func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) 
 	return "https://dummyhost/download/{{ .Tag }}/{{ .ArtifactName }}", nil
 }
 
-func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
+func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string, branch string) (err error) {
 	dc.CreatedFile = true
 	dc.Content = string(content)
 	return

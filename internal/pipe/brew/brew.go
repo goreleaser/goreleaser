@@ -151,7 +151,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
-	return cl.CreateFile(ctx, brew.CommitAuthor, repo, content, gpath, msg)
+	return cl.CreateFile(ctx, brew.CommitAuthor, repo, content, gpath, msg, "")
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {

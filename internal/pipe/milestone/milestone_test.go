@@ -235,7 +235,7 @@ func (c *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) (
 	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
 }
 
-func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) error {
+func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string, branch string) error {
 	return nil
 }
 

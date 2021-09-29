@@ -551,7 +551,7 @@ func (c *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
 	return "", nil
 }
 
-func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
+func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string, branch string) (err error) {
 	return
 }
 

@@ -51,7 +51,7 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 
 // GetDefaultBranch get the default branch
 func (c *gitlabClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
-	projectID := repo.Owner + "/" + repo.Name
+	projectID := repo.String()
 	p, res, err := c.client.Projects.GetProject(projectID, nil)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -103,27 +103,27 @@ func (c *gitlabClient) CreateFile(
 	content []byte, // the content of the formula.rb
 	path, // the path to the formula.rb
 	message string, // the commit msg
+	branch string,
 ) error {
 	fileName := path
-	// we assume having the formula in the master branch only
-	projectID := repo.Owner + "/" + repo.Name
+	projectID := repo.String()
 
 	// Use the project default branch if we can get it...otherwise, just use
 	// 'master'
-	p, res, err := c.client.Projects.GetProject(projectID, nil)
-	var ref, branch string
+	var ref string
+	dBranch, err := c.GetDefaultBranch(ctx, repo)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"fileName":   fileName,
-			"projectID":  projectID,
-			"statusCode": res.StatusCode,
-			"err":        err.Error(),
-		}).Warn("error checking for default branch, defaulting to 'master'")
+			"fileName":        fileName,
+			"projectID":       repo.String(),
+			"requestedBranch": branch,
+			"err":             err.Error(),
+		}).Warn("error checking for default branch")
 		ref = "master"
 		branch = "master"
 	} else {
-		ref = p.DefaultBranch
-		branch = p.DefaultBranch
+		ref = dBranch
+		branch = dBranch
 	}
 	opts := &gitlab.GetFileOptions{Ref: &ref}
 	castedContent := string(content)
@@ -135,7 +135,7 @@ func (c *gitlabClient) CreateFile(
 		"branch": branch,
 	}).Debug("projectID at brew")
 
-	_, res, err = c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
+	_, res, err := c.client.RepositoryFiles.GetFile(repo.String(), fileName, opts)
 	if err != nil && (res == nil || res.StatusCode != 404) {
 		log.WithFields(log.Fields{
 			"fileName":   fileName,

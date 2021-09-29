@@ -89,6 +89,7 @@ func (c *githubClient) CreateFile(
 	content []byte,
 	path,
 	message string,
+	branch string,
 ) error {
 	options := &github.RepositoryContentFileOptions{
 		Committer: &github.CommitAuthor{
