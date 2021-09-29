@@ -2,7 +2,6 @@
 package client
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
@@ -88,19 +87,4 @@ type RetriableError struct {
 
 func (e RetriableError) Error() string {
 	return e.Err.Error()
-}
-
-// NotImplementedError happens when trying to use something a client does not
-// implement.
-type NotImplementedError struct {
-	TokenType context.TokenType
-}
-
-func (e NotImplementedError) Error() string {
-	return fmt.Sprintf("not implemented for %s", e.TokenType)
-}
-
-// IsNotImplementedErr returns true if given error is a NotImplementedError.
-func IsNotImplementedErr(err error) bool {
-	return errors.As(err, &NotImplementedError{})
 }

@@ -361,50 +361,6 @@ func Test_doRun(t *testing.T) {
 			noAssertions,
 		},
 		{
-			"token type not implemented for pipe",
-			args{
-				&context.Context{
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
-					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
-						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "tar.gz"},
-						},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
-						Scoop: config.Scoop{
-							Bucket: config.RepoRef{
-								Owner: "test",
-								Name:  "test",
-							},
-							Description: "A run pipe test formula",
-							Homepage:    "https://github.com/goreleaser",
-						},
-					},
-				},
-				&DummyClient{NotImplemented: true},
-			},
-			[]*artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
-			},
-			shouldErr(ErrTokenTypeNotImplementedForScoop.Error()),
-			shouldNotErr,
-			noAssertions,
-		},
-		{
 			"no windows build",
 			args{
 				&context.Context{
@@ -1081,10 +1037,9 @@ func TestSkip(t *testing.T) {
 }
 
 type DummyClient struct {
-	CreatedFile    bool
-	Content        string
-	Path           string
-	NotImplemented bool
+	CreatedFile bool
+	Content     string
+	Path        string
 }
 
 func (dc *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
@@ -1096,9 +1051,6 @@ func (dc *DummyClient) CreateRelease(ctx *context.Context, body string) (release
 }
 
 func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
-	if dc.NotImplemented {
-		return "", client.NotImplementedError{}
-	}
 	return "", nil
 }
 
