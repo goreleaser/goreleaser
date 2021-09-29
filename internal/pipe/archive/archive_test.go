@@ -145,7 +145,8 @@ func TestRunPipe(t *testing.T) {
 			require.NoError(t, Pipe{}.Run(ctx))
 			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
 			for _, arch := range archives {
-				require.Equal(t, "myid", arch.Extra["ID"].(string), "all archives should have the archive ID set")
+				require.Equal(t, "myid", arch.Extra["ID"].(string), "all archives must have the archive ID set")
+				require.NotEmpty(t, arch.ExtraOr("Binaries", []string{}).([]string), "all archives must have the binary names they contain set")
 			}
 			require.Len(t, archives, 5)
 			// TODO: should verify the artifact fields here too
