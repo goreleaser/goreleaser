@@ -91,18 +91,36 @@ func (c *gitlabClient) CreateFile(
 ) error {
 	fileName := path
 	// we assume having the formula in the master branch only
-	ref := "master"
-	branch := "master"
-	opts := &gitlab.GetFileOptions{Ref: &ref}
-	castedContent := string(content)
 	projectID := repo.Owner + "/" + repo.Name
 
+	// Use the project default branch if we can get it...otherwise, just use
+	// 'master'
+	p, res, err := c.client.Projects.GetProject(projectID, nil)
+	var ref, branch string
+	if err != nil {
+		log.WithFields(log.Fields{
+			"fileName":   fileName,
+			"projectID":  projectID,
+			"statusCode": res.StatusCode,
+			"err":        err.Error(),
+		}).Warn("error checking for default branch, defaulting to 'master'")
+		ref = "master"
+		branch = "master"
+	} else {
+		ref = p.DefaultBranch
+		branch = p.DefaultBranch
+	}
+	opts := &gitlab.GetFileOptions{Ref: &ref}
+	castedContent := string(content)
+
 	log.WithFields(log.Fields{
-		"owner": repo.Owner,
-		"name":  repo.Name,
+		"owner":  repo.Owner,
+		"name":   repo.Name,
+		"ref":    ref,
+		"branch": branch,
 	}).Debug("projectID at brew")
 
-	_, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
+	_, res, err = c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
 	if err != nil && (res == nil || res.StatusCode != 404) {
 		log.WithFields(log.Fields{
 			"fileName":   fileName,
