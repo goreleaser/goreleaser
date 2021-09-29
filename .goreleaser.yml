@@ -130,6 +130,14 @@ brews:
       zsh_completion.install "completions/goreleaser.zsh" => "_goreleaser"
       fish_completion.install "completions/goreleaser.fish"
 
+rigs:
+  - rig:
+      owner: goreleaser
+      name: fish-food
+    homepage:  https://goreleaser.com
+    description: Deliver Go binaries as fast and easily as possible
+    license: MIT
+
 scoop:
   bucket:
     owner: goreleaser
