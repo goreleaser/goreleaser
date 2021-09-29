@@ -3,33 +3,30 @@ package brew
 import "github.com/goreleaser/goreleaser/pkg/config"
 
 type templateData struct {
-	Name              string
-	Desc              string
-	Homepage          string
-	Version           string
-	License           string
-	Caveats           []string
-	Plist             string
-	DownloadStrategy  string
-	Install           []string
-	PostInstall       string
-	Dependencies      []config.HomebrewDependency
-	Conflicts         []string
-	Tests             []string
-	CustomRequire     string
-	CustomBlock       []string
-	MacOSAmd64        downloadable
-	MacOSArm64        downloadable
-	LinuxAmd64        downloadable
-	LinuxArm          downloadable
-	LinuxArm64        downloadable
-	HasMacOSDownloads bool
-	HasLinuxDownloads bool
+	Name          string
+	Desc          string
+	Homepage      string
+	Version       string
+	License       string
+	Caveats       []string
+	Plist         string
+	Install       []string
+	PostInstall   string
+	Dependencies  []config.HomebrewDependency
+	Conflicts     []string
+	Tests         []string
+	CustomRequire string
+	CustomBlock   []string
+	LinuxPackages []releasePackage
+	MacOSPackages []releasePackage
 }
 
-type downloadable struct {
-	DownloadURL string
-	SHA256      string
+type releasePackage struct {
+	DownloadURL      string
+	SHA256           string
+	OS               string
+	Arch             string
+	DownloadStrategy string
 }
 
 const formulaTemplate = `# typed: false
@@ -47,58 +44,50 @@ class {{ .Name }} < Formula
   license "{{ .License }}"
   {{ end -}}
   bottle :unneeded
-  {{- if and (not .HasLinuxDownloads) .HasMacOSDownloads }}
+  {{- if and (not .LinuxPackages) .MacOSPackages }}
   depends_on :macos
   {{- end }}
-  {{- if and (not .HasMacOSDownloads) .HasLinuxDownloads }}
+  {{- if and (not .MacOSPackages) .LinuxPackages }}
   depends_on :linux
   {{- end }}
   {{- printf "\n" }}
 
-  {{- if .HasMacOSDownloads }}
+  {{- if .MacOSPackages }}
   on_macos do
-    {{- if .MacOSAmd64.DownloadURL }}
+  {{- range $element := .MacOSPackages }}
+    {{- if eq $element.Arch "amd64" }}
     if Hardware::CPU.intel?
-      url "{{ .MacOSAmd64.DownloadURL }}"
-      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-      sha256 "{{ .MacOSAmd64.SHA256 }}"
-    end
     {{- end }}
-    {{- if .MacOSArm64.DownloadURL }}
+    {{- if eq $element.Arch "arm64" }}
     if Hardware::CPU.arm?
-      url "{{ .MacOSArm64.DownloadURL }}"
+    {{- end}}
+      url "{{ $element.DownloadURL }}"
       {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-      sha256 "{{ .MacOSArm64.SHA256 }}"
+      sha256 "{{ $element.SHA256 }}"
     end
-    {{- end }}
+  {{- end }}
   end
   {{- end }}
 
-  {{- if and .HasMacOSDownloads .HasLinuxDownloads }}{{ printf "\n" }}{{ end }}
+  {{- if and .MacOSPackages .LinuxPackages }}{{ printf "\n" }}{{ end }}
 
-  {{- if .HasLinuxDownloads }}
+  {{- if .LinuxPackages }}
   on_linux do
-    {{- if .LinuxAmd64.DownloadURL }}
+  {{- range $element := .LinuxPackages }}
+    {{- if eq $element.Arch "amd64" }}
     if Hardware::CPU.intel?
-      url "{{ .LinuxAmd64.DownloadURL }}"
-      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-      sha256 "{{ .LinuxAmd64.SHA256 }}"
-    end
     {{- end }}
-    {{- if .LinuxArm.DownloadURL }}
+    {{- if eq $element.Arch "arm" }}
     if Hardware::CPU.arm? && !Hardware::CPU.is_64_bit?
-      url "{{ .LinuxArm.DownloadURL }}"
-      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-      sha256 "{{ .LinuxArm.SHA256 }}"
-    end
     {{- end }}
-    {{- if .LinuxArm64.DownloadURL }}
+    {{- if eq $element.Arch "arm64" }}
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "{{ .LinuxArm64.DownloadURL }}"
-      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
-      sha256 "{{ .LinuxArm64.SHA256 }}"
-    end
     {{- end }}
+      url "{{ $element.DownloadURL }}"
+      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+      sha256 "{{ $element.SHA256 }}"
+    end
+  {{- end }}
   end
   {{- end }}
 

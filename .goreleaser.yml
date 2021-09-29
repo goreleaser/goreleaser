@@ -192,7 +192,6 @@ publishers:
     cmd: ./scripts/fury-upload.sh {{ .ArtifactName }}
 
 release:
-  discussion_category_name: Announcements
   footer: |
     ## What to do next?
 

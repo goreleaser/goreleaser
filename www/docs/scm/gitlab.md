@@ -3,7 +3,7 @@
 ## API Token
 
 GoReleaser requires an API token with the `api` scope selected to deploy the artifacts to GitLab.
-You can create one [here](https://gitlab.com/profile/personal_access_tokens).
+You can create one [here](https://gitlab.com/-/profile/personal_access_tokens).
 
 This token should be added to the environment variables as `GITLAB_TOKEN`.
 

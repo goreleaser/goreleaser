@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
@@ -18,6 +19,7 @@ func ExtractRepoFromConfig() (result config.Repo, err error) {
 	if err != nil {
 		return result, fmt.Errorf("no remote configured to list refs from")
 	}
+	log.WithField("rawurl", out).Debugf("got git url")
 	return ExtractRepoFromURL(out)
 }
 
@@ -55,8 +57,10 @@ func ExtractRepoFromURL(rawurl string) (config.Repo, error) {
 	if len(ss) < 2 {
 		return config.Repo{}, fmt.Errorf("unsupported repository URL: %s", rawurl)
 	}
-	return config.Repo{
+	repo := config.Repo{
 		Owner: strings.Join(ss[:len(ss)-1], "/"),
 		Name:  ss[len(ss)-1],
-	}, nil
+	}
+	log.WithField("owner", repo.Owner).WithField("name", repo.Name).Debugf("parsed url")
+	return repo, nil
 }
