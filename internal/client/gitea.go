@@ -3,6 +3,7 @@ package client
 import (
 	"crypto/tls"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -79,6 +80,10 @@ func (c *giteaClient) CloseMilestone(ctx *context.Context, repo Repo, title stri
 		return ErrNoMilestoneFound{Title: title}
 	}
 	return err
+}
+
+func (c *giteaClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
+	return "", errors.New("Gitea DefaultBranch not yet implemented")
 }
 
 // CreateFile creates a file in the repository at a given path

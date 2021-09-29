@@ -39,6 +39,7 @@ type Client interface {
 	ReleaseURLTemplate(ctx *context.Context) (string, error)
 	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, message string) (err error)
 	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error)
+	GetDefaultBranch(ctx *context.Context, repo Repo) (string, error)
 }
 
 // New creates a new client depending on the token type.

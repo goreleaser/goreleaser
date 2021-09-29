@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -49,6 +50,11 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	}
 
 	return &githubClient{client: client}, nil
+}
+
+// GetDefaultBranch returns the default branch of a github repo
+func (c *githubClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
+	return "", errors.New("Github DefaultBranch not yet implemented")
 }
 
 // CloseMilestone closes a given milestone.
