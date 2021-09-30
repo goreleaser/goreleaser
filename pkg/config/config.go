@@ -47,9 +47,10 @@ type Repo struct {
 // also require separate authentication
 // e.g. Homebrew Tap, Scoop bucket.
 type RepoRef struct {
-	Owner string `yaml:",omitempty"`
-	Name  string `yaml:",omitempty"`
-	Token string `yaml:",omitempty"`
+	Owner  string `yaml:",omitempty"`
+	Name   string `yaml:",omitempty"`
+	Token  string `yaml:",omitempty"`
+	Branch string `yaml:",omitempty"`
 }
 
 // HomebrewDependency represents Homebrew dependency.

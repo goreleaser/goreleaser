@@ -161,7 +161,6 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 		content,
 		path.Join(scoop.Folder, manifest.Name),
 		commitMessage,
-		"",
 	)
 }
 

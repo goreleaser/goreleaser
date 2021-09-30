@@ -294,7 +294,7 @@ func doPublish(ctx *context.Context, food *artifact.Artifact, cl client.Client) 
 		return err
 	}
 
-	return cl.CreateFile(ctx, rig.CommitAuthor, repo, content, gpath, msg, "")
+	return cl.CreateFile(ctx, rig.CommitAuthor, repo, content, gpath, msg)
 }
 
 func buildFoodPath(folder, filename string) string {

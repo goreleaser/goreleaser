@@ -918,6 +918,10 @@ type DummyClient struct {
 	NotImplemented bool
 }
 
+func (dc *DummyClient) CreateBranch(ctx *context.Context, repo client.Repo) (created bool, err error) {
+	return false, errors.New("CreateBranch not yet implemented in DummyClient")
+}
+
 func (dc *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
 	return nil
 }
@@ -938,7 +942,7 @@ func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) 
 	return "https://dummyhost/download/{{ .Tag }}/{{ .ArtifactName }}", nil
 }
 
-func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string, branch string) (err error) {
+func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
 	dc.CreatedFile = true
 	dc.Content = string(content)
 	return

@@ -848,6 +848,10 @@ type DummyClient struct {
 	NotImplemented bool
 }
 
+func (dc *DummyClient) CreateBranch(ctx *context.Context, repo client.Repo) (created bool, err error) {
+	return false, errors.New("CreateBranch not yet implemented in DummyClient")
+}
+
 func (dc *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
 	return nil
 }
@@ -868,7 +872,7 @@ func (dc *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) 
 	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
 }
 
-func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string, branch string) (err error) {
+func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
 	dc.CreatedFile = true
 	dc.Content = string(content)
 	return

@@ -551,12 +551,16 @@ func (c *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
 	return "", nil
 }
 
-func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string, branch string) (err error) {
+func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
 	return
 }
 
 func (dc *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) (string, error) {
 	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
+}
+
+func (c *DummyClient) CreateBranch(ctx *context.Context, repo client.Repo) (created bool, err error) {
+	return false, errors.New("CreateBranch not yet implemented in DummyClient")
 }
 
 func (c *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) error {

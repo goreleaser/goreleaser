@@ -94,6 +94,43 @@ func (c *gitlabClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 	return err
 }
 
+// CreateBranch Create the given branch if it doesn't exist. If it does exist, return with no errors
+// Return values should say if anything was created, along with any errors
+func (c *gitlabClient) CreateBranch(ctx *context.Context, repo Repo) (created bool, err error) {
+	// Ensure branch exists
+	projectID := repo.String()
+	_, res, err := c.client.Branches.GetBranch(projectID, repo.Branch, nil)
+	if res.StatusCode == 404 {
+		// Make branch here
+		ref := "HEAD"
+		o := gitlab.CreateBranchOptions{
+			Branch: &repo.Branch,
+			Ref:    &ref,
+		}
+		_, res, err := c.client.Branches.CreateBranch(projectID, &o)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"projectID":       projectID,
+				"requestedBranch": repo.Branch,
+				"err":             err.Error(),
+				"result":          res.StatusCode,
+			}).Warn("could not create branch")
+			return false, err
+		}
+		log.WithFields(log.Fields{
+			"projectID":       projectID,
+			"requestedBranch": repo.Branch,
+		}).Debugf("created branch %v based on HEAD", repo.Branch)
+		return true, nil
+	} else if err != nil {
+		// Not a 404, but got an error
+		return false, err
+	}
+
+	// Branch exists and all is cool
+	return false, nil
+}
+
 // CreateFile gets a file in the repository at a given path
 // and updates if it exists or creates it for later pipes in the pipeline.
 func (c *gitlabClient) CreateFile(
@@ -103,28 +140,49 @@ func (c *gitlabClient) CreateFile(
 	content []byte, // the content of the formula.rb
 	path, // the path to the formula.rb
 	message string, // the commit msg
-	branch string,
 ) error {
 	fileName := path
 	projectID := repo.String()
 
 	// Use the project default branch if we can get it...otherwise, just use
 	// 'master'
+	var branch string
 	var ref string
-	dBranch, err := c.GetDefaultBranch(ctx, repo)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"fileName":        fileName,
-			"projectID":       repo.String(),
-			"requestedBranch": branch,
-			"err":             err.Error(),
-		}).Warn("error checking for default branch")
-		ref = "master"
-		branch = "master"
+	var err error
+	// Use the branch if given one
+	if repo.Branch != "" {
+		created, err := c.CreateBranch(ctx, repo)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"projectID": projectID,
+				"branch":    repo.Branch,
+			}).Fatal("Issue creating branch")
+		}
+		if created {
+			log.WithFields(log.Fields{
+				"projectID": projectID,
+				"branch":    repo.Branch,
+			}).Info("created branch")
+		}
+		branch = repo.Branch
+
 	} else {
-		ref = dBranch
-		branch = dBranch
+		// Try to get the default branch from the Git provider
+		branch, err = c.GetDefaultBranch(ctx, repo)
+		if err != nil {
+			// Fall back to 'master' 😭
+			log.WithFields(log.Fields{
+				"fileName":        fileName,
+				"projectID":       repo.String(),
+				"requestedBranch": branch,
+				"err":             err.Error(),
+			}).Warn("error checking for default branch, using master")
+			ref = "master"
+			branch = "master"
+		}
 	}
+	// Not sure what the difference is here...should we just use branch instead?
+	ref = branch
 	opts := &gitlab.GetFileOptions{Ref: &ref}
 	castedContent := string(content)
 

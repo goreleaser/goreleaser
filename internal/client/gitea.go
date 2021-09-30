@@ -86,6 +86,10 @@ func (c *giteaClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string,
 	return "", errors.New("Gitea DefaultBranch not yet implemented")
 }
 
+func (c *giteaClient) CreateBranch(ctx *context.Context, repo Repo) (created bool, err error) {
+	return false, errors.New("CreateBranch not yet implemented in Gitea")
+}
+
 // CreateFile creates a file in the repository at a given path
 // or updates the file if it exists.
 func (c *giteaClient) CreateFile(
@@ -95,7 +99,6 @@ func (c *giteaClient) CreateFile(
 	content []byte,
 	path,
 	message string,
-	branch string,
 ) error {
 	// use default branch
 	branchName := ""
