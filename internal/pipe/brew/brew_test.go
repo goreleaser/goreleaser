@@ -154,6 +154,7 @@ func TestSplit(t *testing.T) {
 func TestFullPipe(t *testing.T) {
 	type testcase struct {
 		prepare              func(ctx *context.Context)
+		expectedRunError     string
 		expectedPublishError string
 	}
 	for name, tt := range map[string]testcase{
@@ -211,6 +212,30 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Brews[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"valid_tap_templates": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Env = map[string]string{
+					"FOO": "templated",
+				}
+				ctx.Config.Brews[0].Tap.Owner = "{{.Env.FOO}}"
+				ctx.Config.Brews[0].Tap.Name = "{{.Env.FOO}}"
+			},
+		},
+		"invalid_tap_name_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "{{ .Asdsa }"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"invalid_tap_owner_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Brews[0].Tap.Owner = "{{ .Asdsa }"
+				ctx.Config.Brews[0].Tap.Name = "test"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -275,7 +300,12 @@ func TestFullPipe(t *testing.T) {
 			client := &DummyClient{}
 			distFile := filepath.Join(folder, name+".rb")
 
-			require.NoError(t, runAll(ctx, client))
+			if tt.expectedRunError == "" {
+				require.NoError(t, runAll(ctx, client))
+			} else {
+				require.EqualError(t, runAll(ctx, client), tt.expectedRunError)
+				return
+			}
 			if tt.expectedPublishError != "" {
 				require.EqualError(t, publishAll(ctx, client), tt.expectedPublishError)
 				return

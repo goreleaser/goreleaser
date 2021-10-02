@@ -188,6 +188,12 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	}
 	brew.Tap.Owner = tapOwner
 
+	tapName, err := tmpl.New(ctx).Apply(brew.Tap.Name)
+	if err != nil {
+		return err
+	}
+	brew.Tap.Name = tapName
+
 	content, err := buildFormula(ctx, brew, cl, archives)
 	if err != nil {
 		return err
