@@ -54,6 +54,7 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 // GetDefaultBranch returns the default branch of a github repo
 func (c *githubClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
 	p, res, err := c.client.Repositories.Get(ctx, repo.Owner, repo.Name)
+	log.Warnf("RES: %+v", err)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"projectID":  repo.String(),
@@ -105,14 +106,13 @@ func (c *githubClient) CreateFile(
 	} else {
 		branch, err = c.GetDefaultBranch(ctx, repo)
 		if err != nil {
-			// Fall back to 'master' 😭
+			// Fall back to sdk default
 			log.WithFields(log.Fields{
 				"fileName":        path,
 				"projectID":       repo.String(),
 				"requestedBranch": branch,
 				"err":             err.Error(),
 			}).Warn("error checking for default branch, using master")
-			branch = "master"
 		}
 	}
 	options := &github.RepositoryContentFileOptions{

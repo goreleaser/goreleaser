@@ -2,6 +2,8 @@ package client
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"text/template"
 
@@ -195,4 +197,61 @@ func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
 	str, err := client.CreateRelease(ctx, "")
 	require.Empty(t, str)
 	require.EqualError(t, err, `template: tmpl:1: unclosed action`)
+}
+
+func TestGithubGetDefaultBranch(t *testing.T) {
+	totalRequests := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		totalRequests++
+		defer r.Body.Close()
+
+		// Assume the request to create a branch was good
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "{}")
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := NewGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	_, err = client.GetDefaultBranch(ctx, repo)
+	require.NoError(t, err)
+	require.Equal(t, 1, totalRequests)
+}
+
+func TestGithubGetDefaultBranchErr(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		// Assume the request to create a branch was good
+		w.WriteHeader(http.StatusNotImplemented)
+		fmt.Fprint(w, "{}")
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := NewGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	_, err = client.GetDefaultBranch(ctx, repo)
+	require.Error(t, err)
 }
