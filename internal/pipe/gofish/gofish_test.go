@@ -811,10 +811,6 @@ type DummyClient struct {
 	Content     string
 }
 
-func (dc *DummyClient) CreateBranch(ctx *context.Context, repo client.Repo) (created bool, err error) {
-	return false, errors.New("CreateBranch not yet implemented in DummyClient")
-}
-
 func (dc *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
 	return nil
 }

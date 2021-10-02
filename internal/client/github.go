@@ -82,10 +82,6 @@ func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title str
 	return err
 }
 
-func (c *githubClient) CreateBranch(ctx *context.Context, repo Repo) (created bool, err error) {
-	return false, errors.New("CreateBranch not yet implemented in Github")
-}
-
 func (c *githubClient) CreateFile(
 	ctx *context.Context,
 	commitAuthor config.CommitAuthor,
