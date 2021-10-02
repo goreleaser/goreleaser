@@ -54,7 +54,6 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 // GetDefaultBranch returns the default branch of a github repo
 func (c *githubClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
 	p, res, err := c.client.Repositories.Get(ctx, repo.Owner, repo.Name)
-	log.Warnf("RES: %+v", err)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"projectID":  repo.String(),
