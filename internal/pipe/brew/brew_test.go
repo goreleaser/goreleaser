@@ -155,6 +155,7 @@ func TestSplit(t *testing.T) {
 func TestFullPipe(t *testing.T) {
 	type testcase struct {
 		prepare              func(ctx *context.Context)
+		expectedRunError     string
 		expectedPublishError string
 	}
 	for name, tt := range map[string]testcase{
@@ -212,6 +213,30 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Brews[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"valid_tap_templates": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Env = map[string]string{
+					"FOO": "templated",
+				}
+				ctx.Config.Brews[0].Tap.Owner = "{{.Env.FOO}}"
+				ctx.Config.Brews[0].Tap.Name = "{{.Env.FOO}}"
+			},
+		},
+		"invalid_tap_name_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "{{ .Asdsa }"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"invalid_tap_owner_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Brews[0].Tap.Owner = "{{ .Asdsa }"
+				ctx.Config.Brews[0].Tap.Name = "test"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -276,7 +301,12 @@ func TestFullPipe(t *testing.T) {
 			client := &DummyClient{}
 			distFile := filepath.Join(folder, name+".rb")
 
-			require.NoError(t, runAll(ctx, client))
+			if tt.expectedRunError == "" {
+				require.NoError(t, runAll(ctx, client))
+			} else {
+				require.EqualError(t, runAll(ctx, client), tt.expectedRunError)
+				return
+			}
 			if tt.expectedPublishError != "" {
 				require.EqualError(t, publishAll(ctx, client), tt.expectedPublishError)
 				return
@@ -831,42 +861,6 @@ func TestRunEmptyTokenType(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 }
 
-func TestRunTokenTypeNotImplementedForBrew(t *testing.T) {
-	folder := t.TempDir()
-	ctx := context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "foo",
-		Release:     config.Release{},
-		Brews: []config.Homebrew{
-			{
-				Tap: config.RepoRef{
-					Owner: "test",
-					Name:  "test",
-				},
-			},
-		},
-	})
-	ctx.TokenType = context.TokenTypeGitea
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
-	path := filepath.Join(folder, "whatever.tar.gz")
-	f, err := os.Create(path)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
-		},
-	})
-	client := &DummyClient{NotImplemented: true}
-	require.EqualError(t, runAll(ctx, client), `token type "gitea" not implemented for brew pipe`)
-}
-
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 
@@ -913,9 +907,8 @@ func TestGHFolder(t *testing.T) {
 }
 
 type DummyClient struct {
-	CreatedFile    bool
-	Content        string
-	NotImplemented bool
+	CreatedFile bool
+	Content     string
 }
 
 func (dc *DummyClient) CreateBranch(ctx *context.Context, repo client.Repo) (created bool, err error) {
@@ -935,10 +928,6 @@ func (dc *DummyClient) CreateRelease(ctx *context.Context, body string) (release
 }
 
 func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
-	if dc.NotImplemented {
-		return "", client.NotImplementedError{}
-	}
-
 	return "https://dummyhost/download/{{ .Tag }}/{{ .ArtifactName }}", nil
 }
 

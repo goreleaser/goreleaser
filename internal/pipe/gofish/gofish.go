@@ -28,15 +28,6 @@ var ErrNoArchivesFound = errors.New("no linux/macos/windows archives found")
 
 var ErrMultipleArchivesSameOS = errors.New("one rig can handle only archive of an OS/Arch combination. Consider using ids in the gofish section")
 
-// ErrTokenTypeNotImplementedForGoFish indicates that a new token type was not implemented for this pipe.
-type ErrTokenTypeNotImplementedForGoFish struct {
-	TokenType context.TokenType
-}
-
-func (e ErrTokenTypeNotImplementedForGoFish) Error() string {
-	return fmt.Sprintf("token type %q not implemented for gofish pipe", e.TokenType)
-}
-
 // Pipe for goFish deployment.
 type Pipe struct{}
 
@@ -207,9 +198,6 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 		if cfg.URLTemplate == "" {
 			url, err := cl.ReleaseURLTemplate(ctx)
 			if err != nil {
-				if client.IsNotImplementedErr(err) {
-					return result, ErrTokenTypeNotImplementedForGoFish{ctx.TokenType}
-				}
 				return result, err
 			}
 			cfg.URLTemplate = url
@@ -245,8 +233,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func publishAll(ctx *context.Context, cli client.Client) error {
-	// even if one of them skips, we run them all, and then show return the skips all at once.
-	// this is needed so we actually create the `dist/foo.lua` file, which is useful for debugging.
 	skips := pipe.SkipMemento{}
 	for _, rig := range ctx.Artifacts.Filter(artifact.ByType(artifact.GoFishRig)).List() {
 		err := doPublish(ctx, rig, cli)

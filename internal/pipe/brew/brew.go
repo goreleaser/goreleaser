@@ -30,15 +30,6 @@ var ErrNoArchivesFound = errors.New("no linux/macos archives found")
 // for linux or windows.
 var ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
 
-// ErrTokenTypeNotImplementedForBrew indicates that a new token type was not implemented for this pipe.
-type ErrTokenTypeNotImplementedForBrew struct {
-	TokenType context.TokenType
-}
-
-func (e ErrTokenTypeNotImplementedForBrew) Error() string {
-	return fmt.Sprintf("token type %q not implemented for brew pipe", e.TokenType)
-}
-
 // Pipe for brew deployment.
 type Pipe struct{}
 
@@ -191,6 +182,18 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	}
 	brew.Name = name
 
+	tapOwner, err := tmpl.New(ctx).Apply(brew.Tap.Owner)
+	if err != nil {
+		return err
+	}
+	brew.Tap.Owner = tapOwner
+
+	tapName, err := tmpl.New(ctx).Apply(brew.Tap.Name)
+	if err != nil {
+		return err
+	}
+	brew.Tap.Name = tapName
+
 	content, err := buildFormula(ctx, brew, cl, archives)
 	if err != nil {
 		return err
@@ -293,9 +296,6 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		if cfg.URLTemplate == "" {
 			url, err := cl.ReleaseURLTemplate(ctx)
 			if err != nil {
-				if client.IsNotImplementedErr(err) {
-					return result, ErrTokenTypeNotImplementedForBrew{ctx.TokenType}
-				}
 				return result, err
 			}
 			cfg.URLTemplate = url
