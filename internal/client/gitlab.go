@@ -109,8 +109,7 @@ func (c *gitlabClient) CreateFile(
 
 	// Use the project default branch if we can get it...otherwise, just use
 	// 'master'
-	var branch string
-	var ref string
+	var branch, ref string
 	var err error
 	// Use the branch if given one
 	if repo.Branch != "" {
@@ -130,7 +129,6 @@ func (c *gitlabClient) CreateFile(
 			branch = "master"
 		}
 	}
-	// Not sure what the difference is here...should we just use branch instead?
 	ref = branch
 	opts := &gitlab.GetFileOptions{Ref: &ref}
 	castedContent := string(content)
