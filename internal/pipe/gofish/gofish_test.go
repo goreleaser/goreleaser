@@ -761,42 +761,6 @@ func TestRunEmptyTokenType(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 }
 
-func TestRunTokenTypeNotImplementedForGoFish(t *testing.T) {
-	folder := t.TempDir()
-	ctx := context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "foo",
-		Release:     config.Release{},
-		Rigs: []config.GoFish{
-			{
-				Rig: config.RepoRef{
-					Owner: "test",
-					Name:  "test",
-				},
-			},
-		},
-	})
-	ctx.TokenType = context.TokenTypeGitea
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
-	path := filepath.Join(folder, "whatever.tar.gz")
-	f, err := os.Create(path)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
-		},
-	})
-	client := &DummyClient{NotImplemented: true}
-	require.EqualError(t, runAll(ctx, client), `token type "gitea" not implemented for gofish pipe`)
-}
-
 func TestDefault(t *testing.T) {
 	testlib.Mktmp(t)
 
@@ -842,9 +806,8 @@ func TestGHFolder(t *testing.T) {
 }
 
 type DummyClient struct {
-	CreatedFile    bool
-	Content        string
-	NotImplemented bool
+	CreatedFile bool
+	Content     string
 }
 
 func (dc *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
@@ -856,10 +819,6 @@ func (dc *DummyClient) CreateRelease(ctx *context.Context, body string) (release
 }
 
 func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
-	if dc.NotImplemented {
-		return "", client.NotImplementedError{}
-	}
-
 	return "https://dummyhost/download/{{ .Tag }}/{{ .ArtifactName }}", nil
 }
 
