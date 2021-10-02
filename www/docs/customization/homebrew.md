@@ -40,7 +40,6 @@ brews:
     # same kind. We will probably unify this in the next major version like it is done with scoop.
 
     # GitHub/GitLab repository to push the formula to
-    # Gitea is not supported yet, but the support coming
     tap:
       owner: repo-owner
       name: homebrew-tap
