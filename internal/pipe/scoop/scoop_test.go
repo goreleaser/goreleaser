@@ -2,7 +2,6 @@ package scoop
 
 import (
 	ctx "context"
-	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -63,7 +62,7 @@ func Test_doRun(t *testing.T) {
 
 	type args struct {
 		ctx    *context.Context
-		client *DummyClient
+		client *client.Mock
 	}
 
 	type asserter func(*testing.T, args)
@@ -127,7 +126,7 @@ func Test_doRun(t *testing.T) {
 						},
 					},
 				},
-				&DummyClient{},
+				client.NewMock(),
 			},
 			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
@@ -175,7 +174,7 @@ func Test_doRun(t *testing.T) {
 						},
 					},
 				},
-				&DummyClient{},
+				client.NewMock(),
 			},
 			[]*artifact.Artifact{
 				{
@@ -237,7 +236,7 @@ func Test_doRun(t *testing.T) {
 						},
 					},
 				},
-				&DummyClient{},
+				client.NewMock(),
 			},
 			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
@@ -285,7 +284,7 @@ func Test_doRun(t *testing.T) {
 						},
 					},
 				},
-				&DummyClient{},
+				client.NewMock(),
 			},
 			[]*artifact.Artifact{
 				{
@@ -341,7 +340,7 @@ func Test_doRun(t *testing.T) {
 						},
 					},
 				},
-				&DummyClient{},
+				client.NewMock(),
 			},
 			[]*artifact.Artifact{
 				{
@@ -396,7 +395,7 @@ func Test_doRun(t *testing.T) {
 						},
 					},
 				},
-				&DummyClient{},
+				client.NewMock(),
 			},
 			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_linux_amd64.tar.gz", Goos: "linux", Goarch: "amd64"},
@@ -438,7 +437,7 @@ func Test_doRun(t *testing.T) {
 						},
 					},
 				},
-				&DummyClient{},
+				client.NewMock(),
 			},
 			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
@@ -490,7 +489,7 @@ func Test_doRun(t *testing.T) {
 						},
 					},
 				},
-				&DummyClient{},
+				client.NewMock(),
 			},
 			[]*artifact.Artifact{
 				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
@@ -536,7 +535,7 @@ func Test_doRun(t *testing.T) {
 						},
 					},
 				},
-				&DummyClient{},
+				client.NewMock(),
 			},
 			[]*artifact.Artifact{
 				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
@@ -578,7 +577,7 @@ func Test_doRun(t *testing.T) {
 						},
 					},
 				},
-				&DummyClient{},
+				client.NewMock(),
 			},
 			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
@@ -620,7 +619,7 @@ func Test_doRun(t *testing.T) {
 						},
 					},
 				},
-				&DummyClient{},
+				client.NewMock(),
 			},
 			[]*artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
@@ -940,7 +939,7 @@ func TestRunPipeScoopWithSkipUpload(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 
-	cli := &DummyClient{}
+	cli := client.NewMock()
 	require.NoError(t, doRun(ctx, cli))
 	require.EqualError(t, doPublish(ctx, cli), `scoop.skip_upload is true`)
 
@@ -1035,37 +1034,4 @@ func TestSkip(t *testing.T) {
 		})
 		require.False(t, Pipe{}.Skip(ctx))
 	})
-}
-
-type DummyClient struct {
-	CreatedFile bool
-	Content     string
-	Path        string
-}
-
-func (dc *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
-	return nil
-}
-
-func (dc *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
-	return
-}
-
-func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
-	return "", nil
-}
-
-func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
-	dc.CreatedFile = true
-	dc.Content = string(content)
-	dc.Path = path
-	return
-}
-
-func (dc *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) (string, error) {
-	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
-}
-
-func (dc *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error) {
-	return
 }
