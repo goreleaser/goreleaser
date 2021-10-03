@@ -171,11 +171,11 @@ func getChangelog(ctx *context.Context, tag string) (string, error) {
 }
 
 func doGetChangelog(ctx *context.Context, prev, tag string) (string, error) {
-	chg, err := getChangeloger(ctx)
+	l, err := getChangeloger(ctx)
 	if err != nil {
 		return "", err
 	}
-	return chg.Log(ctx, prev, tag)
+	return l.Log(ctx, prev, tag)
 }
 
 func getChangeloger(ctx *context.Context) (changeloger, error) {
@@ -189,9 +189,7 @@ func getChangeloger(ctx *context.Context) (changeloger, error) {
 		if err != nil {
 			return nil, err
 		}
-		return &scmChangeloger{
-			client: client,
-		}, nil
+		return &scmChangeloger{client: client}, nil
 	default:
 		return nil, fmt.Errorf("invalid changelog.impl: %q", ctx.Config.Changelog.Impl)
 	}

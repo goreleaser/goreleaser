@@ -25,6 +25,12 @@ type githubClient struct {
 	client *github.Client
 }
 
+// NewUnauthenticatedGitHub returns a github client that is not authenticated.
+// Used in tests only.
+func NewUnauthenticatedGitHub() Client {
+	return &githubClient{client: github.NewClient(nil)}
+}
+
 // NewGitHub returns a github client implementation.
 func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	ts := oauth2.StaticTokenSource(

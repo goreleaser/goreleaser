@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -435,9 +436,9 @@ func TestGetChangelogGitHub(t *testing.T) {
 			Impl: "github",
 		},
 	})
-	ctx.Token = os.Getenv("GITHUB_TOKEN")
-	ctx.TokenType = context.TokenTypeGitHub
-	log, err := doGetChangelog(ctx, "v0.180.1", "v0.180.2")
+
+	l := scmChangeloger{client: client.NewUnauthenticatedGitHub()}
+	log, err := l.Log(ctx, "v0.180.1", "v0.180.2")
 	require.NoError(t, err)
 	require.Equal(t, "- c90f1085f255d0af0b055160bfff5ee40f47af79: fix: do not skip any defaults (#2521) (@caarlos0)", log)
 }
