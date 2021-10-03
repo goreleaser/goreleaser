@@ -1,13 +1,9 @@
 package release
 
 import (
-	"errors"
-	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -91,7 +87,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 			"Format": "tar.gz",
 		},
 	})
-	client := &DummyClient{}
+	client := &client.Mock{}
 	require.NoError(t, doPublish(ctx, client))
 	require.True(t, client.CreatedRelease)
 	require.True(t, client.UploadedFile)
@@ -164,7 +160,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 			"ID": "bar",
 		},
 	})
-	client := &DummyClient{}
+	client := &client.Mock{}
 	require.NoError(t, doPublish(ctx, client))
 	require.True(t, client.CreatedRelease)
 	require.True(t, client.UploadedFile)
@@ -186,7 +182,7 @@ func TestRunPipeReleaseCreationFailed(t *testing.T) {
 	}
 	ctx := context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	client := &DummyClient{
+	client := &client.Mock{
 		FailToCreateRelease: true,
 	}
 	require.Error(t, doPublish(ctx, client))
@@ -210,7 +206,7 @@ func TestRunPipeWithFileThatDontExist(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: "/nope/nope/nope",
 	})
-	client := &DummyClient{}
+	client := &client.Mock{}
 	require.Error(t, doPublish(ctx, client))
 	require.True(t, client.CreatedRelease)
 	require.False(t, client.UploadedFile)
@@ -235,7 +231,7 @@ func TestRunPipeUploadFailure(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
-	client := &DummyClient{
+	client := &client.Mock{
 		FailToUpload: true,
 	}
 	require.EqualError(t, doPublish(ctx, client), "failed to upload bin.tar.gz after 1 tries: upload failed")
@@ -258,7 +254,7 @@ func TestRunPipeExtraFileNotFound(t *testing.T) {
 	}
 	ctx := context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	client := &DummyClient{}
+	client := &client.Mock{}
 	require.EqualError(t, doPublish(ctx, client), "globbing failed for pattern ./nope: matching \"./nope\": file does not exist")
 	require.True(t, client.CreatedRelease)
 	require.False(t, client.UploadedFile)
@@ -279,7 +275,7 @@ func TestRunPipeExtraOverride(t *testing.T) {
 	}
 	ctx := context.New(config)
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	client := &DummyClient{}
+	client := &client.Mock{}
 	require.NoError(t, doPublish(ctx, client))
 	require.True(t, client.CreatedRelease)
 	require.True(t, client.UploadedFile)
@@ -306,7 +302,7 @@ func TestRunPipeUploadRetry(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 	})
-	client := &DummyClient{
+	client := &client.Mock{
 		FailFirstUpload: true,
 	}
 	require.NoError(t, doPublish(ctx, client))
@@ -522,63 +518,4 @@ func TestSkip(t *testing.T) {
 	t.Run("dont skip", func(t *testing.T) {
 		require.False(t, Pipe{}.Skip(context.New(config.Project{})))
 	})
-}
-
-type DummyClient struct {
-	FailToCreateRelease bool
-	FailToUpload        bool
-	CreatedRelease      bool
-	UploadedFile        bool
-	UploadedFileNames   []string
-	UploadedFilePaths   map[string]string
-	FailFirstUpload     bool
-	Lock                sync.Mutex
-}
-
-func (c *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
-	return nil
-}
-
-func (c *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
-	if c.FailToCreateRelease {
-		return "", errors.New("release failed")
-	}
-	c.CreatedRelease = true
-	return
-}
-
-func (c *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
-	return "", nil
-}
-
-func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
-	return
-}
-
-func (c *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) (string, error) {
-	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
-}
-
-func (c *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) error {
-	c.Lock.Lock()
-	defer c.Lock.Unlock()
-	if c.UploadedFilePaths == nil {
-		c.UploadedFilePaths = map[string]string{}
-	}
-	// ensure file is read to better mimic real behavior
-	_, err := io.ReadAll(file)
-	if err != nil {
-		return fmt.Errorf("unexpected error: %w", err)
-	}
-	if c.FailToUpload {
-		return errors.New("upload failed")
-	}
-	if c.FailFirstUpload {
-		c.FailFirstUpload = false
-		return client.RetriableError{Err: errors.New("upload failed, should retry")}
-	}
-	c.UploadedFile = true
-	c.UploadedFileNames = append(c.UploadedFileNames, artifact.Name)
-	c.UploadedFilePaths[artifact.Name] = artifact.Path
-	return nil
 }

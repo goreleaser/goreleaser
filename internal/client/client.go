@@ -49,16 +49,18 @@ func New(ctx *context.Context) (Client, error) {
 
 func newWithToken(ctx *context.Context, token string) (Client, error) {
 	log.WithField("type", ctx.TokenType).Debug("token type")
-	if ctx.TokenType == context.TokenTypeGitHub {
+	switch ctx.TokenType {
+	case context.TokenTypeGitHub:
 		return NewGitHub(ctx, token)
-	}
-	if ctx.TokenType == context.TokenTypeGitLab {
+	case context.TokenTypeGitLab:
 		return NewGitLab(ctx, token)
-	}
-	if ctx.TokenType == context.TokenTypeGitea {
+	case context.TokenTypeGitea:
 		return NewGitea(ctx, token)
+	case context.TokenTypeMock:
+		return NewMock(), nil
+	default:
+		return nil, fmt.Errorf("invalid client token type: %q", ctx.TokenType)
 	}
-	return nil, fmt.Errorf("invalid client token type: %q", ctx.TokenType)
 }
 
 func NewIfToken(ctx *context.Context, cli Client, token string) (Client, error) {

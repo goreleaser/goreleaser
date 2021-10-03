@@ -1,7 +1,6 @@
 package brew
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -298,7 +297,7 @@ func TestFullPipe(t *testing.T) {
 			f, err := os.Create(path)
 			require.NoError(t, err)
 			require.NoError(t, f.Close())
-			client := &DummyClient{}
+			client := client.NewMock()
 			distFile := filepath.Join(folder, name+".rb")
 
 			if tt.expectedRunError == "" {
@@ -367,7 +366,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	f, err := os.Create(path)
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
-	client := &DummyClient{}
+	client := client.NewMock()
 	distFile := filepath.Join(folder, "foo_is_bar.rb")
 
 	require.NoError(t, runAll(ctx, client))
@@ -446,7 +445,7 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 
-	cli := &DummyClient{}
+	cli := client.NewMock()
 	require.NoError(t, runAll(ctx, cli))
 	require.EqualError(t, publishAll(ctx, cli), `brew.skip_upload is set`)
 	require.True(t, cli.CreatedFile)
@@ -567,7 +566,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 				require.NoError(t, f.Close())
 			}
 
-			client := &DummyClient{}
+			client := client.NewMock()
 			distFile := filepath.Join(folder, name+".rb")
 
 			require.NoError(t, runAll(ctx, client))
@@ -596,7 +595,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 			},
 		},
 	}
-	client := &DummyClient{}
+	client := client.NewMock()
 	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)
 }
@@ -740,7 +739,7 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 				},
 			})
 		}
-		client := &DummyClient{}
+		client := client.NewMock()
 		require.Equal(t, test.expectedError, runAll(ctx, client))
 		require.False(t, client.CreatedFile)
 		// clean the artifacts for the next run
@@ -768,7 +767,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.Binary,
 	})
-	client := &DummyClient{}
+	client := client.NewMock()
 	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)
 }
@@ -805,7 +804,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 			"Format": "tar.gz",
 		},
 	})
-	client := &DummyClient{}
+	client := client.NewMock()
 
 	assertNoPublish := func(t *testing.T) {
 		t.Helper()
@@ -857,7 +856,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 			"Format": "tar.gz",
 		},
 	})
-	client := &DummyClient{}
+	client := client.NewMock()
 	require.NoError(t, runAll(ctx, client))
 }
 
@@ -906,37 +905,6 @@ func TestGHFolder(t *testing.T) {
 	require.Equal(t, "fooo/bar.rb", buildFormulaPath("fooo", "bar.rb"))
 }
 
-type DummyClient struct {
-	CreatedFile bool
-	Content     string
-}
-
-func (dc *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
-	return nil
-}
-
-func (dc *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) (string, error) {
-	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
-}
-
-func (dc *DummyClient) CreateRelease(ctx *context.Context, body string) (releaseID string, err error) {
-	return
-}
-
-func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
-	return "https://dummyhost/download/{{ .Tag }}/{{ .ArtifactName }}", nil
-}
-
-func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {
-	dc.CreatedFile = true
-	dc.Content = string(content)
-	return
-}
-
-func (dc *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error) {
-	return
-}
-
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
 		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
@@ -957,6 +925,6 @@ func TestRunSkipNoName(t *testing.T) {
 		Brews: []config.Homebrew{{}},
 	})
 
-	client := &DummyClient{}
+	client := client.NewMock()
 	testlib.AssertSkipped(t, runAll(ctx, client))
 }
