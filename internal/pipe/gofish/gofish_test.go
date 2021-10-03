@@ -1,6 +1,7 @@
 package gofish
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -820,6 +821,10 @@ func (dc *DummyClient) CreateRelease(ctx *context.Context, body string) (release
 
 func (dc *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
 	return "https://dummyhost/download/{{ .Tag }}/{{ .ArtifactName }}", nil
+}
+
+func (dc *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) (string, error) {
+	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
 }
 
 func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) (err error) {

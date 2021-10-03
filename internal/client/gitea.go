@@ -81,6 +81,20 @@ func (c *giteaClient) CloseMilestone(ctx *context.Context, repo Repo, title stri
 	return err
 }
 
+func (c *giteaClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
+	projectID := repo.String()
+	p, res, err := c.client.GetRepo(repo.Owner, repo.Name)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"projectID":  projectID,
+			"statusCode": res.StatusCode,
+			"err":        err.Error(),
+		}).Warn("error checking for default branch")
+		return "", err
+	}
+	return p.DefaultBranch, nil
+}
+
 // CreateFile creates a file in the repository at a given path
 // or updates the file if it exists.
 func (c *giteaClient) CreateFile(
@@ -92,11 +106,27 @@ func (c *giteaClient) CreateFile(
 	message string,
 ) error {
 	// use default branch
-	branchName := ""
+	var branch string
+	var err error
+	if repo.Branch != "" {
+		branch = repo.Branch
+	} else {
+		branch, err = c.GetDefaultBranch(ctx, repo)
+		if err != nil {
+			// Fall back to 'master' 😭
+			log.WithFields(log.Fields{
+				"fileName":        path,
+				"projectID":       repo.String(),
+				"requestedBranch": branch,
+				"err":             err.Error(),
+			}).Warn("error checking for default branch, using master")
+		}
+
+	}
 
 	fileOptions := gitea.FileOptions{
 		Message:    message,
-		BranchName: branchName,
+		BranchName: branch,
 		Author: gitea.Identity{
 			Name:  commitAuthor.Name,
 			Email: commitAuthor.Email,
@@ -107,7 +137,7 @@ func (c *giteaClient) CreateFile(
 		},
 	}
 
-	currentFile, resp, err := c.client.GetContents(repo.Owner, repo.Name, branchName, path)
+	currentFile, resp, err := c.client.GetContents(repo.Owner, repo.Name, branch, path)
 	// file not exist, create it
 	if err != nil {
 		if resp == nil || resp.StatusCode != http.StatusNotFound {

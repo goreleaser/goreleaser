@@ -323,3 +323,60 @@ func TestGitLabCreateReleaseUnkownHTTPError(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, 2, totalRequests)
 }
+
+func TestGitlabGetDefaultBranch(t *testing.T) {
+	totalRequests := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		totalRequests++
+		defer r.Body.Close()
+
+		// Assume the request to create a branch was good
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, "{}")
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := NewGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	_, err = client.GetDefaultBranch(ctx, repo)
+	require.NoError(t, err)
+	require.Equal(t, 2, totalRequests)
+}
+
+func TestGitlabGetDefaultBranchErr(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		// Assume the request to create a branch was good
+		w.WriteHeader(http.StatusNotImplemented)
+		fmt.Fprint(w, "{}")
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := NewGitLab(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	_, err = client.GetDefaultBranch(ctx, repo)
+	require.Error(t, err)
+}

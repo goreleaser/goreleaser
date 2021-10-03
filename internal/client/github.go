@@ -51,6 +51,20 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	return &githubClient{client: client}, nil
 }
 
+// GetDefaultBranch returns the default branch of a github repo
+func (c *githubClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
+	p, res, err := c.client.Repositories.Get(ctx, repo.Owner, repo.Name)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"projectID":  repo.String(),
+			"statusCode": res.StatusCode,
+			"err":        err.Error(),
+		}).Warn("error checking for default branch")
+		return "", err
+	}
+	return p.GetDefaultBranch(), nil
+}
+
 // CloseMilestone closes a given milestone.
 func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
 	milestone, err := c.getMilestoneByTitle(ctx, repo, title)
@@ -84,6 +98,22 @@ func (c *githubClient) CreateFile(
 	path,
 	message string,
 ) error {
+	var branch string
+	var err error
+	if repo.Branch != "" {
+		branch = repo.Branch
+	} else {
+		branch, err = c.GetDefaultBranch(ctx, repo)
+		if err != nil {
+			// Fall back to sdk default
+			log.WithFields(log.Fields{
+				"fileName":        path,
+				"projectID":       repo.String(),
+				"requestedBranch": branch,
+				"err":             err.Error(),
+			}).Warn("error checking for default branch, using master")
+		}
+	}
 	options := &github.RepositoryContentFileOptions{
 		Committer: &github.CommitAuthor{
 			Name:  github.String(commitAuthor.Name),
@@ -91,6 +121,12 @@ func (c *githubClient) CreateFile(
 		},
 		Content: content,
 		Message: github.String(message),
+	}
+
+	// Set the branch if we got it above...otherwise, just default to
+	// whatever the SDK does auto-magically
+	if branch != "" {
+		options.Branch = &branch
 	}
 
 	file, _, res, err := c.client.Repositories.GetContents(

@@ -555,6 +555,10 @@ func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.Commi
 	return
 }
 
+func (c *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) (string, error) {
+	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
+}
+
 func (c *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) error {
 	c.Lock.Lock()
 	defer c.Lock.Unlock()

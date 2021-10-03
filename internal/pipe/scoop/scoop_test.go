@@ -2,6 +2,7 @@ package scoop
 
 import (
 	ctx "context"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -1059,6 +1060,10 @@ func (dc *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.Comm
 	dc.Content = string(content)
 	dc.Path = path
 	return
+}
+
+func (dc *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) (string, error) {
+	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
 }
 
 func (dc *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error) {

@@ -40,10 +40,12 @@ brews:
     # same kind. We will probably unify this in the next major version like it is done with scoop.
 
     # GitHub/GitLab repository to push the formula to
-    # Gitea is not supported yet, but the support coming
     tap:
       owner: repo-owner
       name: homebrew-tap
+      # Optionally a branch can be provided. If the branch does not exist, it
+      # will be created. If no branch is listed, the default branch will be used
+      branch: main
       # Optionally a token can be provided, if it differs from the token provided to GoReleaser
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
 

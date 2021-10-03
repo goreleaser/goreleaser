@@ -3,6 +3,8 @@ package client
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
@@ -308,9 +310,11 @@ func (s *GiteaupdateReleaseSuite) TestError() {
 func (s *GiteaupdateReleaseSuite) TestGiteaCreateFile() {
 	t := s.T()
 	fileEndpoint := fmt.Sprintf("%s/api/v1/repos/%s/%s/contents/%s", s.url, s.owner, s.repoName, "file.txt")
+	projectEndpoint := fmt.Sprintf("%s/api/v1/repos/%s/%s", s.url, s.owner, s.repoName)
 
 	httpmock.RegisterResponder("GET", fmt.Sprintf("%s/api/v1/version", s.url), httpmock.NewStringResponder(200, "{\"version\":\"1.12.0\"}"))
 	httpmock.RegisterResponder("GET", fileEndpoint, httpmock.NewStringResponder(404, ""))
+	httpmock.RegisterResponder("GET", projectEndpoint, httpmock.NewStringResponder(200, ""))
 	httpmock.RegisterResponder("POST", fileEndpoint, httpmock.NewStringResponder(201, "{\n  \"content\": {\n    \"name\": \"test.file\",\n    \"path\": \"test.file\",\n    \"sha\": \"3b18e512dba79e4c8300dd08aeb37f8e728b8dad\",\n    \"type\": \"file\",\n    \"size\": 12,\n    \"encoding\": \"base64\",\n    \"content\": \"aGVsbG8gd29ybGQK\"\n  }\n}"))
 
 	author := config.CommitAuthor{Name: s.owner}
@@ -532,4 +536,68 @@ func TestGiteaReleaseURLTemplate(t *testing.T) {
 			require.Equal(t, tt.wantDownloadURL, urlTpl)
 		})
 	}
+}
+
+func TestGiteaGetDefaultBranch(t *testing.T) {
+	totalRequests := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		totalRequests++
+		defer r.Body.Close()
+
+		if strings.HasSuffix(r.URL.Path, "api/v1/version") {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{\"version\":\"1.12.0\"}")
+		} else {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := NewGitea(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	_, err = client.GetDefaultBranch(ctx, repo)
+	require.NoError(t, err)
+	require.Equal(t, 2, totalRequests)
+}
+
+func TestGiteaGetDefaultBranchErr(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if strings.HasSuffix(r.URL.Path, "api/v1/version") {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{\"version\":\"1.12.0\"}")
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, "{}")
+		}
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := NewGitea(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	_, err = client.GetDefaultBranch(ctx, repo)
+	require.Error(t, err)
 }

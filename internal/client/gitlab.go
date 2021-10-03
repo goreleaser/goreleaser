@@ -49,6 +49,21 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 	return &gitlabClient{client: client}, nil
 }
 
+// GetDefaultBranch get the default branch
+func (c *gitlabClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
+	projectID := repo.String()
+	p, res, err := c.client.Projects.GetProject(projectID, nil)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"projectID":  projectID,
+			"statusCode": res.StatusCode,
+			"err":        err.Error(),
+		}).Warn("error checking for default branch")
+		return "", err
+	}
+	return p.DefaultBranch, nil
+}
+
 // CloseMilestone closes a given milestone.
 func (c *gitlabClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
 	milestone, err := c.getMilestoneByTitle(repo, title)
@@ -90,19 +105,42 @@ func (c *gitlabClient) CreateFile(
 	message string, // the commit msg
 ) error {
 	fileName := path
-	// we assume having the formula in the master branch only
-	ref := "master"
-	branch := "master"
+	projectID := repo.String()
+
+	// Use the project default branch if we can get it...otherwise, just use
+	// 'master'
+	var branch, ref string
+	var err error
+	// Use the branch if given one
+	if repo.Branch != "" {
+		branch = repo.Branch
+	} else {
+		// Try to get the default branch from the Git provider
+		branch, err = c.GetDefaultBranch(ctx, repo)
+		if err != nil {
+			// Fall back to 'master' 😭
+			log.WithFields(log.Fields{
+				"fileName":        fileName,
+				"projectID":       repo.String(),
+				"requestedBranch": branch,
+				"err":             err.Error(),
+			}).Warn("error checking for default branch, using master")
+			ref = "master"
+			branch = "master"
+		}
+	}
+	ref = branch
 	opts := &gitlab.GetFileOptions{Ref: &ref}
 	castedContent := string(content)
-	projectID := repo.Owner + "/" + repo.Name
 
 	log.WithFields(log.Fields{
-		"owner": repo.Owner,
-		"name":  repo.Name,
+		"owner":  repo.Owner,
+		"name":   repo.Name,
+		"ref":    ref,
+		"branch": branch,
 	}).Debug("projectID at brew")
 
-	_, res, err := c.client.RepositoryFiles.GetFile(projectID, fileName, opts)
+	_, res, err := c.client.RepositoryFiles.GetFile(repo.String(), fileName, opts)
 	if err != nil && (res == nil || res.StatusCode != 404) {
 		log.WithFields(log.Fields{
 			"fileName":   fileName,
