@@ -582,3 +582,7 @@ func (c *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *a
 	c.UploadedFilePaths[artifact.Name] = artifact.Path
 	return nil
 }
+
+func (c *DummyClient) Changelog(ctx *context.Context, repo client.Repo, prev, current string) (string, error) {
+	return "", errors.New("not implemented")
+}

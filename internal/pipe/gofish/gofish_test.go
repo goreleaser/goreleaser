@@ -811,6 +811,10 @@ type DummyClient struct {
 	Content     string
 }
 
+func (dc *DummyClient) Changelog(ctx *context.Context, repo client.Repo, prev, current string) (string, error) {
+	return "", errors.New("not implemented")
+}
+
 func (dc *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
 	return nil
 }

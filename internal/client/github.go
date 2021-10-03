@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/google/go-github/v35/github"
@@ -49,6 +50,19 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	}
 
 	return &githubClient{client: client}, nil
+}
+
+func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	result, _, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current)
+	if err != nil {
+		return "", err
+	}
+	var log []string
+	for _, commit := range result.Commits {
+		firstLine := strings.Split(commit.Commit.GetMessage(), "\n")[0]
+		log = append(log, fmt.Sprintf("- %s: %s (@%s)", commit.GetSHA(), firstLine, commit.GetAuthor().GetLogin()))
+	}
+	return strings.Join(log, "\n"), nil
 }
 
 // GetDefaultBranch returns the default branch of a github repo

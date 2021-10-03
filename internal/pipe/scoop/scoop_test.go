@@ -1069,3 +1069,7 @@ func (dc *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) 
 func (dc *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error) {
 	return
 }
+
+func (dc *DummyClient) Changelog(ctx *context.Context, repo client.Repo, prev, current string) (string, error) {
+	return "", errors.New("not implemented")
+}

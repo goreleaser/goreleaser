@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"text/template"
 
@@ -12,6 +13,18 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
+
+func TestChangelog(t *testing.T) {
+	ctx := context.New(config.Project{})
+	client, err := NewGitHub(ctx, os.Getenv("GITHUB_TOKEN"))
+	require.NoError(t, err)
+	log, err := client.(*githubClient).Changelog(ctx, Repo{
+		Owner: "goreleaser",
+		Name:  "goreleaser",
+	}, "v0.180.2", "v0.180.3")
+	require.NoError(t, err)
+	fmt.Println(log)
+}
 
 func TestNewGitHubClient(t *testing.T) {
 	t.Run("good urls", func(t *testing.T) {

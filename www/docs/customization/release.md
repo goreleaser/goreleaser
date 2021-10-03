@@ -182,34 +182,6 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 !!! warning
     `draft` and `prerelease` are only supported by GitHub and Gitea.
 
-## Customize the changelog
-
-You can customize how the changelog is generated using the
-`changelog` section in the config file:
-
-```yaml
-# .goreleaser.yml
-changelog:
-  # Set it to true if you wish to skip the changelog generation.
-  # This may result in an empty release notes on GitHub/GitLab/Gitea.
-  skip: true
-
-  # Sorts the changelog by the commit's messages.
-  # Could either be asc, desc or empty
-  # Default is empty
-  sort: asc
-
-  filters:
-
-    # Commit messages matching the regexp listed here will be removed from
-    # the changelog
-    # Default is empty
-    exclude:
-      - '^docs:'
-      - typo
-      - (?i)foo
-```
-
 ### Define Previous Tag
 
 GoReleaser uses `git describe` to get the previous tag used for generating the Changelog.

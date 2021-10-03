@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -106,7 +107,7 @@ func checkSortDirection(mode string) error {
 }
 
 func buildChangelog(ctx *context.Context) ([]string, error) {
-	log, err := getChangelog(ctx.Git.CurrentTag)
+	log, err := getChangelog(ctx, ctx.Git.CurrentTag)
 	if err != nil {
 		return nil, err
 	}
@@ -161,21 +162,30 @@ func extractCommitInfo(line string) string {
 	return strings.Join(strings.Split(line, " ")[1:], " ")
 }
 
-func getChangelog(tag string) (string, error) {
+func getChangelog(ctx *context.Context, tag string) (string, error) {
 	prev, err := previous(tag)
 	if err != nil {
 		return "", err
 	}
-	if isSHA1(prev) {
-		return gitLog(prev, tag)
-	}
-	return gitLog(fmt.Sprintf("tags/%s..tags/%s", prev, tag))
-}
 
-func gitLog(refs ...string) (string, error) {
-	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
-	args = append(args, refs...)
-	return git.Run(args...)
+	var chg changeloger
+	switch ctx.Config.Changelog.Impl {
+	case "git":
+	case "":
+		chg = gitChangeloger{}
+	case "github":
+		client, err := client.New(ctx)
+		if err != nil {
+			return "", err
+		}
+		chg = &scmChangeloger{
+			client: client,
+		}
+	default:
+		return "", fmt.Errorf("invalid changelog.impl: %q", ctx.Config.Changelog.Impl)
+	}
+
+	return chg.Log(ctx, prev, tag)
 }
 
 func previous(tag string) (result string, err error) {
@@ -213,4 +223,35 @@ func loadContent(ctx *context.Context, fileName, tmplName string) (string, error
 	}
 
 	return "", nil
+}
+
+type changeloger interface {
+	Log(ctx *context.Context, prev, current string) (string, error)
+}
+
+type gitChangeloger struct{}
+
+func (gitChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
+	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
+	if isSHA1(prev) {
+		args = append(args, prev, current)
+	} else {
+		args = append(args, fmt.Sprintf("tags/%s..tags/%s", prev, current))
+	}
+	return git.Run(args...)
+}
+
+type scmChangeloger struct {
+	client client.Client
+}
+
+func (c *scmChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
+	repo, err := git.ExtractRepoFromConfig()
+	if err != nil {
+		return "", err
+	}
+	return c.client.Changelog(ctx, client.Repo{
+		Owner: repo.Owner,
+		Name:  repo.Name,
+	}, prev, current)
 }
