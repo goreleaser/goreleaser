@@ -16,6 +16,17 @@ import (
 )
 
 func TestNewGitHubClient(t *testing.T) {
+	t.Run("unauthenticated", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		repo := Repo{
+			Owner: "goreleaser",
+			Name:  "goreleaser",
+		}
+		b, err := NewUnauthenticatedGitHub().GetDefaultBranch(ctx, repo)
+		require.NoError(t, err)
+		require.Equal(t, "master", b)
+	})
+
 	t.Run("good urls", func(t *testing.T) {
 		githubURL := "https://github.mycompany.com"
 		ctx := context.New(config.Project{
@@ -209,7 +220,7 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 
 		// Assume the request to create a branch was good
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, "{}")
+		fmt.Fprint(w, `{"default_branch": "main"}`)
 	}))
 	defer srv.Close()
 
@@ -218,6 +229,7 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 			API: srv.URL + "/",
 		},
 	})
+
 	client, err := NewGitHub(ctx, "test-token")
 	require.NoError(t, err)
 	repo := Repo{
@@ -226,8 +238,9 @@ func TestGithubGetDefaultBranch(t *testing.T) {
 		Branch: "somebranch",
 	}
 
-	_, err = client.GetDefaultBranch(ctx, repo)
+	b, err := client.GetDefaultBranch(ctx, repo)
 	require.NoError(t, err)
+	require.Equal(t, "main", b)
 	require.Equal(t, 1, totalRequests)
 }
 
