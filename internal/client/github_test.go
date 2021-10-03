@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -13,18 +14,6 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
 )
-
-func TestChangelog(t *testing.T) {
-	ctx := context.New(config.Project{})
-	client, err := NewGitHub(ctx, os.Getenv("GITHUB_TOKEN"))
-	require.NoError(t, err)
-	log, err := client.(*githubClient).Changelog(ctx, Repo{
-		Owner: "goreleaser",
-		Name:  "goreleaser",
-	}, "v0.180.2", "v0.180.3")
-	require.NoError(t, err)
-	fmt.Println(log)
-}
 
 func TestNewGitHubClient(t *testing.T) {
 	t.Run("good urls", func(t *testing.T) {
@@ -267,4 +256,36 @@ func TestGithubGetDefaultBranchErr(t *testing.T) {
 
 	_, err = client.GetDefaultBranch(ctx, repo)
 	require.Error(t, err)
+}
+
+func TestChangelog(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/compare/v1.0.0...v1.1.0" {
+			r, err := os.Open("testdata/github/compare.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		}
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := NewGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	log, err := client.Changelog(ctx, repo, "v1.0.0", "v1.1.0")
+	require.NoError(t, err)
+	require.Equal(t, "- 6dcb09b5b57875f334f61aebed695e2e4193db5e: Fix all the bugs (@octocat)", log)
 }

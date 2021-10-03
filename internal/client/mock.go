@@ -31,7 +31,7 @@ type Mock struct {
 }
 
 func (c *Mock) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
-	return "", errors.New("not implemented")
+	return "", ErrNotImplemented
 }
 
 func (c *Mock) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
@@ -39,7 +39,7 @@ func (c *Mock) CloseMilestone(ctx *context.Context, repo Repo, title string) err
 }
 
 func (c *Mock) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
-	return "", errors.New("not implemented")
+	return "", ErrNotImplemented
 }
 
 func (c *Mock) CreateRelease(ctx *context.Context, body string) (string, error) {

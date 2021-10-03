@@ -50,7 +50,7 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 }
 
 func (c *gitlabClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
-	return "", fmt.Errorf("not implemented")
+	return "", ErrNotImplemented
 }
 
 // GetDefaultBranch get the default branch

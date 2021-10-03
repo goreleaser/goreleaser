@@ -67,7 +67,7 @@ func NewGitea(ctx *context.Context, token string) (Client, error) {
 }
 
 func (c *giteaClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
-	return "", fmt.Errorf("not implemented")
+	return "", ErrNotImplemented
 }
 
 // CloseMilestone closes a given milestone.

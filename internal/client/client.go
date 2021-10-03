@@ -12,6 +12,9 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+// ErrNotImplemented is returned when a client does not implement certain feature.
+var ErrNotImplemented = fmt.Errorf("not implemented")
+
 // Info of the repository.
 type Info struct {
 	Description string

@@ -601,3 +601,30 @@ func TestGiteaGetDefaultBranchErr(t *testing.T) {
 	_, err = client.GetDefaultBranch(ctx, repo)
 	require.Error(t, err)
 }
+
+func TestGiteaChangelog(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+		if strings.HasSuffix(r.URL.Path, "api/v1/version") {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprint(w, "{\"version\":\"1.12.0\"}")
+		}
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := NewGitea(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	_, err = client.Changelog(ctx, repo, "v1.0.0", "v1.1.0")
+	require.EqualError(t, err, ErrNotImplemented.Error())
+}
