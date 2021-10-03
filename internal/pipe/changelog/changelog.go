@@ -167,25 +167,34 @@ func getChangelog(ctx *context.Context, tag string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	return doGetChangelog(ctx, prev, tag)
+}
 
-	var chg changeloger
+func doGetChangelog(ctx *context.Context, prev, tag string) (string, error) {
+	chg, err := getChangeloger(ctx)
+	if err != nil {
+		return "", err
+	}
+	return chg.Log(ctx, prev, tag)
+}
+
+func getChangeloger(ctx *context.Context) (changeloger, error) {
 	switch ctx.Config.Changelog.Impl {
 	case "git":
+		fallthrough
 	case "":
-		chg = gitChangeloger{}
+		return gitChangeloger{}, nil
 	case "github":
 		client, err := client.New(ctx)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
-		chg = &scmChangeloger{
+		return &scmChangeloger{
 			client: client,
-		}
+		}, nil
 	default:
-		return "", fmt.Errorf("invalid changelog.impl: %q", ctx.Config.Changelog.Impl)
+		return nil, fmt.Errorf("invalid changelog.impl: %q", ctx.Config.Changelog.Impl)
 	}
-
-	return chg.Log(ctx, prev, tag)
 }
 
 func previous(tag string) (result string, err error) {
@@ -198,13 +207,6 @@ func previous(tag string) (result string, err error) {
 		result, err = git.Clean(git.Run("rev-list", "--max-parents=0", "HEAD"))
 	}
 	return
-}
-
-var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
-
-// isSHA1 te lets us know if the ref is a SHA1 or not.
-func isSHA1(ref string) bool {
-	return validSHA1.MatchString(ref)
 }
 
 func loadContent(ctx *context.Context, fileName, tmplName string) (string, error) {
@@ -231,9 +233,11 @@ type changeloger interface {
 
 type gitChangeloger struct{}
 
-func (gitChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
+var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
+
+func (g gitChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
 	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
-	if isSHA1(prev) {
+	if validSHA1.MatchString(prev) {
 		args = append(args, prev, current)
 	} else {
 		args = append(args, fmt.Sprintf("tags/%s..tags/%s", prev, current))
