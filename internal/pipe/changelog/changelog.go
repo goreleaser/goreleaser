@@ -179,7 +179,7 @@ func doGetChangelog(ctx *context.Context, prev, tag string) (string, error) {
 }
 
 func getChangeloger(ctx *context.Context) (changeloger, error) {
-	switch ctx.Config.Changelog.Impl {
+	switch ctx.Config.Changelog.Use {
 	case "git":
 		fallthrough
 	case "":
@@ -191,7 +191,7 @@ func getChangeloger(ctx *context.Context) (changeloger, error) {
 		}
 		return &scmChangeloger{client: client}, nil
 	default:
-		return nil, fmt.Errorf("invalid changelog.impl: %q", ctx.Config.Changelog.Impl)
+		return nil, fmt.Errorf("invalid changelog.use: %q", ctx.Config.Changelog.Use)
 	}
 }
 

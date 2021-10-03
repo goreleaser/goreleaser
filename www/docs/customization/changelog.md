@@ -9,10 +9,14 @@ changelog:
   # This may result in an empty release notes on GitHub/GitLab/Gitea.
   skip: true
 
-  # Implementation to use to generate the changelog.
-  # Valid options are `git` and `github`.
+  # Changelog generation implementation to use.
+  #
+  # Valid options are:
+  # - `git`: uses `git log`;
+  # - `github`: uses the compare GitHub API, appending the author login to the changelog.
+  #
   # Defaults to `git`.
-  impl: github
+  use: github
 
   # Sorts the changelog by the commit's messages.
   # Could either be asc, desc or empty

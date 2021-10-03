@@ -106,7 +106,7 @@ func TestChangelogPreviousTagEnv(t *testing.T) {
 	ctx := context.New(config.Project{
 		Dist: folder,
 		Changelog: config.Changelog{
-			Impl:    "git",
+			Use:     "git",
 			Filters: config.Filters{},
 		},
 	})
@@ -433,7 +433,7 @@ func TestChangeLogWithoutReleaseFooter(t *testing.T) {
 func TestGetChangelogGitHub(t *testing.T) {
 	ctx := context.New(config.Project{
 		Changelog: config.Changelog{
-			Impl: "github",
+			Use: "github",
 		},
 	})
 
@@ -453,7 +453,7 @@ func TestGetChangeloger(t *testing.T) {
 	t.Run("git", func(t *testing.T) {
 		c, err := getChangeloger(context.New(config.Project{
 			Changelog: config.Changelog{
-				Impl: "git",
+				Use: "git",
 			},
 		}))
 		require.NoError(t, err)
@@ -463,7 +463,7 @@ func TestGetChangeloger(t *testing.T) {
 	t.Run("gituhb", func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Changelog: config.Changelog{
-				Impl: "github",
+				Use: "github",
 			},
 		})
 		ctx.TokenType = context.TokenTypeGitHub
@@ -475,10 +475,10 @@ func TestGetChangeloger(t *testing.T) {
 	t.Run("invalid", func(t *testing.T) {
 		c, err := getChangeloger(context.New(config.Project{
 			Changelog: config.Changelog{
-				Impl: "nope",
+				Use: "nope",
 			},
 		}))
-		require.EqualError(t, err, `invalid changelog.impl: "nope"`)
+		require.EqualError(t, err, `invalid changelog.use: "nope"`)
 		require.Nil(t, c)
 	})
 }
