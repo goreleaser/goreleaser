@@ -14,7 +14,6 @@ func TestDescription(t *testing.T) {
 }
 
 func TestErrors(t *testing.T) {
-	t.Parallel()
 	for k, v := range map[string]string{
 		"NoSuchBucket":                 "provided bucket does not exist: someurl: NoSuchBucket",
 		"ContainerNotFound":            "provided bucket does not exist: someurl: ContainerNotFound",
@@ -28,7 +27,6 @@ func TestErrors(t *testing.T) {
 		"other":                        "failed to write to bucket: other",
 	} {
 		t.Run(k, func(t *testing.T) {
-			t.Parallel()
 			require.EqualError(t, handleError(fmt.Errorf(k), "someurl"), v)
 		})
 	}

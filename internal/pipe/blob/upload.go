@@ -222,7 +222,7 @@ func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
 	return nil
 }
 
-func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte) (err error) {
+func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte) error {
 	log.WithField("path", filepath).Info("uploading")
 
 	opts := &blob.WriterOptions{
@@ -238,5 +238,5 @@ func (u *productionUploader) Upload(ctx *context.Context, filepath string, data 
 		}
 	}()
 	_, err = w.Write(data)
-	return
+	return err
 }
