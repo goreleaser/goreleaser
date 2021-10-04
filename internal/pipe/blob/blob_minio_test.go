@@ -106,7 +106,6 @@ func TestMinioUpload(t *testing.T) {
 	})
 
 	setupBucket(t, name)
-
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
@@ -149,8 +148,8 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 		Name: "bin.deb",
 		Path: debpath,
 	})
+
 	setupBucket(t, name)
-	prepareEnv()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
@@ -187,7 +186,6 @@ func TestMinioUploadRootFolder(t *testing.T) {
 	})
 
 	setupBucket(t, name)
-
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
@@ -220,12 +218,6 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 		Name: "bin.deb",
 		Path: debpath,
 	})
-
-	// name := "invalid_bucket_id"
-	// mc(t, name, "mc mb local/"+name)
-	// t.Cleanup(func() {
-	// 	mc(t, name, "mc rb --force local/"+name)
-	// })
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Error(t, Pipe{}.Publish(ctx))
