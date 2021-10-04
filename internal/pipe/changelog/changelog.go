@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -106,7 +107,7 @@ func checkSortDirection(mode string) error {
 }
 
 func buildChangelog(ctx *context.Context) ([]string, error) {
-	log, err := getChangelog(ctx.Git.CurrentTag)
+	log, err := getChangelog(ctx, ctx.Git.CurrentTag)
 	if err != nil {
 		return nil, err
 	}
@@ -161,21 +162,37 @@ func extractCommitInfo(line string) string {
 	return strings.Join(strings.Split(line, " ")[1:], " ")
 }
 
-func getChangelog(tag string) (string, error) {
+func getChangelog(ctx *context.Context, tag string) (string, error) {
 	prev, err := previous(tag)
 	if err != nil {
 		return "", err
 	}
-	if isSHA1(prev) {
-		return gitLog(prev, tag)
-	}
-	return gitLog(fmt.Sprintf("tags/%s..tags/%s", prev, tag))
+	return doGetChangelog(ctx, prev, tag)
 }
 
-func gitLog(refs ...string) (string, error) {
-	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
-	args = append(args, refs...)
-	return git.Run(args...)
+func doGetChangelog(ctx *context.Context, prev, tag string) (string, error) {
+	l, err := getChangeloger(ctx)
+	if err != nil {
+		return "", err
+	}
+	return l.Log(ctx, prev, tag)
+}
+
+func getChangeloger(ctx *context.Context) (changeloger, error) {
+	switch ctx.Config.Changelog.Use {
+	case "git":
+		fallthrough
+	case "":
+		return gitChangeloger{}, nil
+	case "github":
+		client, err := client.New(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return &scmChangeloger{client: client}, nil
+	default:
+		return nil, fmt.Errorf("invalid changelog.use: %q", ctx.Config.Changelog.Use)
+	}
 }
 
 func previous(tag string) (result string, err error) {
@@ -188,13 +205,6 @@ func previous(tag string) (result string, err error) {
 		result, err = git.Clean(git.Run("rev-list", "--max-parents=0", "HEAD"))
 	}
 	return
-}
-
-var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
-
-// isSHA1 te lets us know if the ref is a SHA1 or not.
-func isSHA1(ref string) bool {
-	return validSHA1.MatchString(ref)
 }
 
 func loadContent(ctx *context.Context, fileName, tmplName string) (string, error) {
@@ -213,4 +223,37 @@ func loadContent(ctx *context.Context, fileName, tmplName string) (string, error
 	}
 
 	return "", nil
+}
+
+type changeloger interface {
+	Log(ctx *context.Context, prev, current string) (string, error)
+}
+
+type gitChangeloger struct{}
+
+var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
+
+func (g gitChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
+	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
+	if validSHA1.MatchString(prev) {
+		args = append(args, prev, current)
+	} else {
+		args = append(args, fmt.Sprintf("tags/%s..tags/%s", prev, current))
+	}
+	return git.Run(args...)
+}
+
+type scmChangeloger struct {
+	client client.Client
+}
+
+func (c *scmChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
+	repo, err := git.ExtractRepoFromConfig()
+	if err != nil {
+		return "", err
+	}
+	return c.client.Changelog(ctx, client.Repo{
+		Owner: repo.Owner,
+		Name:  repo.Name,
+	}, prev, current)
 }

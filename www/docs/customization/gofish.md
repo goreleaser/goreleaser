@@ -44,6 +44,9 @@ rigs:
     rig:
       owner: repo-owner
       name: gofish-rig
+      # Optionally a branch can be provided. If the branch does not exist, it
+      # will be created. If no branch is listed, the default branch will be used
+      branch: main
       # Optionally a token can be provided, if it differs from the token provided to GoReleaser
       token: "{{ .Env.GOFISH_RIG_GITHUB_TOKEN }}"
 

@@ -96,6 +96,7 @@ nav:
     - customization/homebrew.md
     - customization/gofish.md
     - customization/scoop.md
+    - customization/changelog.md
     - customization/release.md
     - customization/artifactory.md
     - customization/publishers.md
@@ -112,6 +113,7 @@ nav:
       - customization/announce/smtp.md
       - customization/announce/teams.md
       - customization/announce/twitter.md
+      - customization/announce/mattermost.md
 - Command Line Usage:
     - goreleaser: cmd/goreleaser.md
     - goreleaser init: cmd/goreleaser_init.md

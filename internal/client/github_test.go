@@ -2,6 +2,10 @@ package client
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"testing"
 	"text/template"
 
@@ -12,6 +16,17 @@ import (
 )
 
 func TestNewGitHubClient(t *testing.T) {
+	t.Run("unauthenticated", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		repo := Repo{
+			Owner: "goreleaser",
+			Name:  "goreleaser",
+		}
+		b, err := NewUnauthenticatedGitHub().GetDefaultBranch(ctx, repo)
+		require.NoError(t, err)
+		require.Equal(t, "master", b)
+	})
+
 	t.Run("good urls", func(t *testing.T) {
 		githubURL := "https://github.mycompany.com"
 		ctx := context.New(config.Project{
@@ -195,4 +210,95 @@ func TestGitHubCreateReleaseWrongNameTemplate(t *testing.T) {
 	str, err := client.CreateRelease(ctx, "")
 	require.Empty(t, str)
 	require.EqualError(t, err, `template: tmpl:1: unclosed action`)
+}
+
+func TestGithubGetDefaultBranch(t *testing.T) {
+	totalRequests := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		totalRequests++
+		defer r.Body.Close()
+
+		// Assume the request to create a branch was good
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, `{"default_branch": "main"}`)
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+
+	client, err := NewGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	b, err := client.GetDefaultBranch(ctx, repo)
+	require.NoError(t, err)
+	require.Equal(t, "main", b)
+	require.Equal(t, 1, totalRequests)
+}
+
+func TestGithubGetDefaultBranchErr(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		// Assume the request to create a branch was good
+		w.WriteHeader(http.StatusNotImplemented)
+		fmt.Fprint(w, "{}")
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := NewGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	_, err = client.GetDefaultBranch(ctx, repo)
+	require.Error(t, err)
+}
+
+func TestChangelog(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/compare/v1.0.0...v1.1.0" {
+			r, err := os.Open("testdata/github/compare.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		}
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := NewGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	log, err := client.Changelog(ctx, repo, "v1.0.0", "v1.1.0")
+	require.NoError(t, err)
+	require.Equal(t, "- 6dcb09b5b57875f334f61aebed695e2e4193db5e: Fix all the bugs (@octocat)", log)
 }

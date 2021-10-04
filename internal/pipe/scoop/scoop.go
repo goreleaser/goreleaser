@@ -23,9 +23,6 @@ import (
 // ErrNoWindows when there is no build for windows (goos doesn't contain windows).
 var ErrNoWindows = errors.New("scoop requires a windows build")
 
-// ErrTokenTypeNotImplementedForScoop indicates that a new token type was not implemented for this pipe.
-var ErrTokenTypeNotImplementedForScoop = errors.New("token type not implemented for scoop pipe")
-
 const scoopConfigExtra = "ScoopConfig"
 
 // Pipe that builds and publishes scoop manifests.
@@ -209,9 +206,6 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 	if ctx.Config.Scoop.URLTemplate == "" {
 		url, err := cl.ReleaseURLTemplate(ctx)
 		if err != nil {
-			if client.IsNotImplementedErr(err) {
-				return manifest, ErrTokenTypeNotImplementedForScoop
-			}
 			return manifest, err
 		}
 		ctx.Config.Scoop.URLTemplate = url

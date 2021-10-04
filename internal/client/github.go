@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/google/go-github/v35/github"
@@ -22,6 +23,12 @@ const DefaultGitHubDownloadURL = "https://github.com"
 
 type githubClient struct {
 	client *github.Client
+}
+
+// NewUnauthenticatedGitHub returns a github client that is not authenticated.
+// Used in tests only.
+func NewUnauthenticatedGitHub() Client {
+	return &githubClient{client: github.NewClient(nil)}
 }
 
 // NewGitHub returns a github client implementation.
@@ -49,6 +56,37 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	}
 
 	return &githubClient{client: client}, nil
+}
+
+func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	result, _, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current)
+	if err != nil {
+		return "", err
+	}
+	var log []string
+	for _, commit := range result.Commits {
+		log = append(log, fmt.Sprintf(
+			"- %s: %s (@%s)",
+			commit.GetSHA(),
+			strings.Split(commit.Commit.GetMessage(), "\n")[0],
+			commit.GetAuthor().GetLogin(),
+		))
+	}
+	return strings.Join(log, "\n"), nil
+}
+
+// GetDefaultBranch returns the default branch of a github repo
+func (c *githubClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
+	p, res, err := c.client.Repositories.Get(ctx, repo.Owner, repo.Name)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"projectID":  repo.String(),
+			"statusCode": res.StatusCode,
+			"err":        err.Error(),
+		}).Warn("error checking for default branch")
+		return "", err
+	}
+	return p.GetDefaultBranch(), nil
 }
 
 // CloseMilestone closes a given milestone.
@@ -84,6 +122,22 @@ func (c *githubClient) CreateFile(
 	path,
 	message string,
 ) error {
+	var branch string
+	var err error
+	if repo.Branch != "" {
+		branch = repo.Branch
+	} else {
+		branch, err = c.GetDefaultBranch(ctx, repo)
+		if err != nil {
+			// Fall back to sdk default
+			log.WithFields(log.Fields{
+				"fileName":        path,
+				"projectID":       repo.String(),
+				"requestedBranch": branch,
+				"err":             err.Error(),
+			}).Warn("error checking for default branch, using master")
+		}
+	}
 	options := &github.RepositoryContentFileOptions{
 		Committer: &github.CommitAuthor{
 			Name:  github.String(commitAuthor.Name),
@@ -91,6 +145,12 @@ func (c *githubClient) CreateFile(
 		},
 		Content: content,
 		Message: github.String(message),
+	}
+
+	// Set the branch if we got it above...otherwise, just default to
+	// whatever the SDK does auto-magically
+	if branch != "" {
+		options.Branch = &branch
 	}
 
 	file, _, res, err := c.client.Repositories.GetContents(

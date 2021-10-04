@@ -18,8 +18,9 @@ workflows:
 jobs:
   release:
     docker:
-      - image: circleci/golang:1.17
+      - image: cimg/go:1.17
     steps:
       - checkout
       - run: curl -sL https://git.io/goreleaser | bash
+      - run: goreleaser
 ```

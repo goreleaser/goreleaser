@@ -231,10 +231,18 @@ func (c *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
 	return "", nil
 }
 
+func (c *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) (string, error) {
+	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
+}
+
 func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) error {
 	return nil
 }
 
 func (c *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) error {
 	return nil
+}
+
+func (c *DummyClient) Changelog(ctx *context.Context, repo client.Repo, prev, current string) (string, error) {
+	return "", errors.New("not implemented")
 }

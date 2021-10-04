@@ -47,9 +47,10 @@ type Repo struct {
 // also require separate authentication
 // e.g. Homebrew Tap, Scoop bucket.
 type RepoRef struct {
-	Owner string `yaml:",omitempty"`
-	Name  string `yaml:",omitempty"`
-	Token string `yaml:",omitempty"`
+	Owner  string `yaml:",omitempty"`
+	Name   string `yaml:",omitempty"`
+	Token  string `yaml:",omitempty"`
+	Branch string `yaml:",omitempty"`
 }
 
 // HomebrewDependency represents Homebrew dependency.
@@ -594,6 +595,7 @@ type Changelog struct {
 	Filters Filters `yaml:",omitempty"`
 	Sort    string  `yaml:",omitempty"`
 	Skip    bool    `yaml:",omitempty"` // TODO(caarlos0): rename to Disable to match other pipes
+	Use     string  `yaml:",omitempty"`
 }
 
 // EnvFiles holds paths to files that contains environment variables
