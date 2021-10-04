@@ -72,6 +72,11 @@ func TestMinioUpload(t *testing.T) {
 				Region:   "us-east",
 				Endpoint: "http://" + listen,
 				IDs:      []string{"foo", "bar"},
+				ExtraFiles: []config.ExtraFile{
+					{
+						Glob: "./testdata/*.golden",
+					},
+				},
 			},
 		},
 	})
@@ -115,6 +120,7 @@ func TestMinioUpload(t *testing.T) {
 		"testupload/v1.0.0/bin.tar.gz",
 		"testupload/v1.0.0/checksum.txt",
 		"testupload/v1.0.0/source.tar.gz",
+		"testupload/v1.0.0/file.golden",
 	})
 }
 
