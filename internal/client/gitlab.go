@@ -49,6 +49,10 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 	return &gitlabClient{client: client}, nil
 }
 
+func (c *gitlabClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	return "", ErrNotImplemented
+}
+
 // GetDefaultBranch get the default branch
 func (c *gitlabClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
 	projectID := repo.String()

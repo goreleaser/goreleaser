@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/google/go-github/v35/github"
@@ -22,6 +23,12 @@ const DefaultGitHubDownloadURL = "https://github.com"
 
 type githubClient struct {
 	client *github.Client
+}
+
+// NewUnauthenticatedGitHub returns a github client that is not authenticated.
+// Used in tests only.
+func NewUnauthenticatedGitHub() Client {
+	return &githubClient{client: github.NewClient(nil)}
 }
 
 // NewGitHub returns a github client implementation.
@@ -49,6 +56,23 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	}
 
 	return &githubClient{client: client}, nil
+}
+
+func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	result, _, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current)
+	if err != nil {
+		return "", err
+	}
+	var log []string
+	for _, commit := range result.Commits {
+		log = append(log, fmt.Sprintf(
+			"- %s: %s (@%s)",
+			commit.GetSHA(),
+			strings.Split(commit.Commit.GetMessage(), "\n")[0],
+			commit.GetAuthor().GetLogin(),
+		))
+	}
+	return strings.Join(log, "\n"), nil
 }
 
 // GetDefaultBranch returns the default branch of a github repo

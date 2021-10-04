@@ -96,6 +96,7 @@ nav:
     - customization/homebrew.md
     - customization/gofish.md
     - customization/scoop.md
+    - customization/changelog.md
     - customization/release.md
     - customization/artifactory.md
     - customization/publishers.md

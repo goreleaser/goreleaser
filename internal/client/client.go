@@ -12,6 +12,9 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+// ErrNotImplemented is returned when a client does not implement certain feature.
+var ErrNotImplemented = fmt.Errorf("not implemented")
+
 // Info of the repository.
 type Info struct {
 	Description string
@@ -40,6 +43,7 @@ type Client interface {
 	CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo Repo, content []byte, path, message string) (err error)
 	Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) (err error)
 	GetDefaultBranch(ctx *context.Context, repo Repo) (string, error)
+	Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error)
 }
 
 // New creates a new client depending on the token type.
@@ -56,8 +60,6 @@ func newWithToken(ctx *context.Context, token string) (Client, error) {
 		return NewGitLab(ctx, token)
 	case context.TokenTypeGitea:
 		return NewGitea(ctx, token)
-	case context.TokenTypeMock:
-		return NewMock(), nil
 	default:
 		return nil, fmt.Errorf("invalid client token type: %q", ctx.TokenType)
 	}
