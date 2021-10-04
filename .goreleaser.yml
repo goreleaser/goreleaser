@@ -206,6 +206,7 @@ release:
 
     - Check out the [GoReleaser Pro](https://goreleaser.com/pro) distribution;
     - Join our [Discord server](https://discord.gg/RGEBtg8vQ6);
+    - Follow us on [Twitter](https://twitter.com/goreleaser);
     - Read the [documentation](https://goreleaser.com/intro/).
 
 announce:
