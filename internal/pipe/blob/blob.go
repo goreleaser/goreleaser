@@ -3,7 +3,6 @@ package blob
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -41,14 +40,4 @@ func (Pipe) Publish(ctx *context.Context) error {
 		})
 	}
 	return g.Wait()
-}
-
-// errorContains check if error contains specific string.
-func errorContains(err error, subs ...string) bool {
-	for _, sub := range subs {
-		if strings.Contains(err.Error(), sub) {
-			return true
-		}
-	}
-	return false
 }

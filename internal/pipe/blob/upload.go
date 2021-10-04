@@ -139,6 +139,16 @@ func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, u
 	return err
 }
 
+// errorContains check if error contains specific string.
+func errorContains(err error, subs ...string) bool {
+	for _, sub := range subs {
+		if strings.Contains(err.Error(), sub) {
+			return true
+		}
+	}
+	return false
+}
+
 func handleError(err error, url string) error {
 	switch {
 	case errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound"):
@@ -212,7 +222,7 @@ func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
 	return nil
 }
 
-func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte) (err error) {
+func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte) error {
 	log.WithField("path", filepath).Info("uploading")
 
 	opts := &blob.WriterOptions{
@@ -228,5 +238,5 @@ func (u *productionUploader) Upload(ctx *context.Context, filepath string, data 
 		}
 	}()
 	_, err = w.Write(data)
-	return
+	return err
 }

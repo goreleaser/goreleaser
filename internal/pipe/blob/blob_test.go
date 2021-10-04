@@ -1,12 +1,9 @@
 package blob
 
 import (
-	"os"
-	"path/filepath"
-	"strings"
+	"fmt"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -14,6 +11,25 @@ import (
 
 func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
+}
+
+func TestErrors(t *testing.T) {
+	for k, v := range map[string]string{
+		"NoSuchBucket":                 "provided bucket does not exist: someurl: NoSuchBucket",
+		"ContainerNotFound":            "provided bucket does not exist: someurl: ContainerNotFound",
+		"notFound":                     "provided bucket does not exist: someurl: notFound",
+		"NoCredentialProviders":        "check credentials and access to bucket: someurl: NoCredentialProviders",
+		"InvalidAccessKeyId":           "aws access key id you provided does not exist in our records: InvalidAccessKeyId",
+		"AuthenticationFailed":         "azure storage key you provided is not valid: AuthenticationFailed",
+		"invalid_grant":                "google app credentials you provided is not valid: invalid_grant",
+		"no such host":                 "azure storage account you provided is not valid: no such host",
+		"ServiceCode=ResourceNotFound": "missing azure storage key for provided bucket someurl: ServiceCode=ResourceNotFound",
+		"other":                        "failed to write to bucket: other",
+	} {
+		t.Run(k, func(t *testing.T) {
+			require.EqualError(t, handleError(fmt.Errorf(k), "someurl"), v)
+		})
+	}
 }
 
 func TestDefaultsNoConfig(t *testing.T) {
@@ -98,150 +114,6 @@ func TestDefaultsWithProvider(t *testing.T) {
 	require.Nil(t, Pipe{}.Default(ctx))
 }
 
-func TestPipe_Publish(t *testing.T) {
-	pipePublish(t, []config.ExtraFile{})
-}
-
-func TestPipe_PublishExtraFiles(t *testing.T) {
-	extra := []config.ExtraFile{
-		{
-			Glob: "./testdata/file.golden",
-		},
-	}
-	pipePublish(t, extra)
-}
-
-func pipePublish(t *testing.T, extra []config.ExtraFile) {
-	t.Helper()
-	gcloudCredentials, _ := filepath.Abs("./testdata/credentials.json")
-
-	folder := t.TempDir()
-	tgzpath := filepath.Join(folder, "bin.tar.gz")
-	debpath := filepath.Join(folder, "bin.deb")
-	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
-	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
-
-	// Azure Blob Context
-	azblobctx := context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "testupload",
-		Blobs: []config.Blob{
-			{
-				Bucket:     "foo",
-				Provider:   "azblob",
-				ExtraFiles: extra,
-			},
-		},
-	})
-
-	azblobctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	azblobctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.UploadableArchive,
-		Name: "bin.tar.gz",
-		Path: tgzpath,
-	})
-	azblobctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.LinuxPackage,
-		Name: "bin.deb",
-		Path: debpath,
-	})
-
-	// Google Cloud Storage Context
-	gsctx := context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "testupload",
-		Blobs: []config.Blob{
-			{
-				Bucket:     "foo",
-				Provider:   "gs",
-				ExtraFiles: extra,
-			},
-		},
-	})
-
-	gsctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-
-	gsctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.UploadableArchive,
-		Name: "bin.tar.gz",
-		Path: tgzpath,
-	})
-	gsctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.LinuxPackage,
-		Name: "bin.deb",
-		Path: debpath,
-	})
-
-	// AWS S3 Context
-	s3ctx := context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "testupload",
-		Blobs: []config.Blob{
-			{
-				Bucket:     "foo",
-				Provider:   "s3",
-				ExtraFiles: extra,
-			},
-		},
-	})
-	s3ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	s3ctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.UploadableArchive,
-		Name: "bin.tar.gz",
-		Path: tgzpath,
-	})
-	s3ctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.LinuxPackage,
-		Name: "bin.deb",
-		Path: debpath,
-	})
-
-	type args struct {
-		ctx *context.Context
-	}
-	tests := []struct {
-		name          string
-		args          args
-		env           map[string]string
-		wantErr       bool
-		wantErrString string
-	}{
-		{
-			name:          "Azure Blob Bucket Test Publish",
-			args:          args{azblobctx},
-			env:           map[string]string{"AZURE_STORAGE_ACCOUNT": "hjsdhjsdhs", "AZURE_STORAGE_KEY": "eHCSajxLvl94l36gIMlzZ/oW2O0rYYK+cVn5jNT2"},
-			wantErr:       false,
-			wantErrString: "azure storage account you provided is not valid",
-		},
-		{
-			name:          "Google Cloud Storage Bucket Test Publish",
-			args:          args{gsctx},
-			env:           map[string]string{"GOOGLE_APPLICATION_CREDENTIALS": gcloudCredentials},
-			wantErr:       false,
-			wantErrString: "google app credentials you provided is not valid",
-		},
-		{
-			name:          "AWS S3 Bucket Test Publish",
-			args:          args{s3ctx},
-			env:           map[string]string{"AWS_ACCESS_KEY": "WPXKJC7CZQCFPKY5727N", "AWS_SECRET_KEY": "eHCSajxLvl94l36gIMlzZ/oW2O0rYYK+cVn5jNT2", "AWS_REGION": "us-east-1"},
-			wantErr:       false,
-			wantErrString: "aws access key id you provided does not exist in our records",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			p := Pipe{}
-			setEnv(tt.env)
-			defer unsetEnv(tt.env)
-			if err := p.Publish(tt.args.ctx); (err != nil) != tt.wantErr {
-				if !strings.HasPrefix(err.Error(), tt.wantErrString) {
-					t.Errorf("Pipe.Publish() error = %v, wantErr %v", err, tt.wantErrString)
-				}
-			}
-		})
-	}
-}
-
 func TestURL(t *testing.T) {
 	t.Run("s3 with opts", func(t *testing.T) {
 		url, err := urlFor(context.New(config.Project{}), config.Blob{
@@ -310,16 +182,4 @@ func TestSkip(t *testing.T) {
 		})
 		require.False(t, Pipe{}.Skip(ctx))
 	})
-}
-
-func setEnv(env map[string]string) {
-	for k, v := range env {
-		os.Setenv(k, v)
-	}
-}
-
-func unsetEnv(env map[string]string) {
-	for k := range env {
-		os.Unsetenv(k)
-	}
 }
