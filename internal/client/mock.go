@@ -30,12 +30,16 @@ type Mock struct {
 	Lock                sync.Mutex
 }
 
+func (c *Mock) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	return "", ErrNotImplemented
+}
+
 func (c *Mock) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
 	return nil
 }
 
 func (c *Mock) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
-	return "", errors.New("Mock does not yet implement GetDefaultBranch")
+	return "", ErrNotImplemented
 }
 
 func (c *Mock) CreateRelease(ctx *context.Context, body string) (string, error) {

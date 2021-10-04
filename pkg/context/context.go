@@ -59,8 +59,6 @@ const (
 	TokenTypeGitLab TokenType = "gitlab"
 	// TokenTypeGitea defines gitea as type of the token.
 	TokenTypeGitea TokenType = "gitea"
-	// TokenTypeMock is a mock token type used in tests.
-	TokenTypeMock = "mock"
 )
 
 // Context carries along some data through the pipes.
