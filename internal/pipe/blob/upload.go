@@ -139,6 +139,16 @@ func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, u
 	return err
 }
 
+// errorContains check if error contains specific string.
+func errorContains(err error, subs ...string) bool {
+	for _, sub := range subs {
+		if strings.Contains(err.Error(), sub) {
+			return true
+		}
+	}
+	return false
+}
+
 func handleError(err error, url string) error {
 	switch {
 	case errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound"):
