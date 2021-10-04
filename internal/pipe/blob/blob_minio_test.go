@@ -43,7 +43,10 @@ func TestMain(m *testing.M) {
 	prepareEnv()
 
 	code := m.Run()
-	cleanup()
+	if err := cleanup(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	os.Exit(code)
 }
 
