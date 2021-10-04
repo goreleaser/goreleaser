@@ -277,13 +277,13 @@ func start(listen string) (func() error, error) {
 
 func setupBucket(tb testing.TB, name string) {
 	tb.Helper()
-	mc(tb, name, "mc mb local/"+name)
+	mc(tb, "mc mb local/"+name)
 	tb.Cleanup(func() {
-		mc(tb, name, "mc rb --force local/"+name)
+		mc(tb, "mc rb --force local/"+name)
 	})
 }
 
-func mc(tb testing.TB, name, cmd string) {
+func mc(tb testing.TB, cmd string) {
 	tb.Helper()
 
 	if out, err := exec.Command(
