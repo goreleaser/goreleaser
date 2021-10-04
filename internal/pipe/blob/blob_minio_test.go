@@ -20,8 +20,9 @@ import (
 )
 
 const (
-	minioUser = "minio"
-	minioPwd  = "miniostorage"
+	minioUser     = "minio"
+	minioPwd      = "miniostorage"
+	containerName = "goreleaserTestMinio"
 )
 
 var listen string
@@ -230,10 +231,10 @@ func prepareEnv() {
 }
 
 func start(listen string) (func() error, error) {
-	data := filepath.Join(os.TempDir(), "minio")
+	data := filepath.Join(os.TempDir(), containerName)
 
 	fn := func() error {
-		if out, err := exec.Command("docker", "stop", "minio").CombinedOutput(); err != nil {
+		if out, err := exec.Command("docker", "stop", containerName).CombinedOutput(); err != nil {
 			return fmt.Errorf("failed to stop minio: %s: %w", out, err)
 		}
 		if err := os.RemoveAll(data); err != nil {
@@ -243,12 +244,12 @@ func start(listen string) (func() error, error) {
 	}
 
 	// stop container if it is running (likely from previous test)
-	_, _ = exec.Command("docker", "stop", "minio").CombinedOutput()
+	_, _ = exec.Command("docker", "stop", containerName).CombinedOutput()
 
 	if out, err := exec.Command(
 		"docker", "run", "-d", "--rm",
 		"-v", data+":/data",
-		"--name", "minio",
+		"--name", containerName,
 		"-p", listen+":9000",
 		"-e", "MINIO_ROOT_USER="+minioUser,
 		"-e", "MINIO_ROOT_PASSWORD="+minioPwd,
@@ -261,7 +262,7 @@ func start(listen string) (func() error, error) {
 	}
 
 	for range time.Tick(time.Second) {
-		out, err := exec.Command("docker", "inspect", "--format='{{json .State.Health}}'", "minio").CombinedOutput()
+		out, err := exec.Command("docker", "inspect", "--format='{{json .State.Health}}'", containerName).CombinedOutput()
 		if err != nil {
 			return fn, fmt.Errorf("failed to check minio status: %s: %w", string(out), err)
 		}
@@ -288,12 +289,12 @@ func mc(tb testing.TB, cmd string) {
 
 	if out, err := exec.Command(
 		"docker", "run", "--rm",
-		"--link", "minio",
+		"--link", containerName,
 		"--entrypoint", "sh",
 		"minio/mc",
 		"-c", fmt.Sprintf(
 			"mc config host add local http://%s:9000 %s %s; %s",
-			"minio", minioUser, minioPwd, cmd,
+			containerName, minioUser, minioPwd, cmd,
 		),
 	).CombinedOutput(); err != nil {
 		tb.Fatalf("failed to create test bucket: %s", string(out))
