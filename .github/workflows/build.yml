@@ -20,6 +20,9 @@ jobs:
         with:
           fetch-depth: 0
       -
+        name: Set up Task
+        uses: arduino/setup-task@v1
+      -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       -
@@ -54,13 +57,13 @@ jobs:
             ${{ runner.os }}-go-
       - uses: sigstore/cosign-installer@v1.2.0
       -
-        name: Make Setup
+        name: Setup
         run: |
-          make setup
+          task setup
       -
-        name: Make CI
+        name: CI
         run: |
-          make ci
+          task ci
       -
         name: Upload coverage
         uses: codecov/codecov-action@v2

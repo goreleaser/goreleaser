@@ -9,7 +9,7 @@ conduct](/CODE_OF_CONDUCT.md).
 
 Prerequisites:
 
-- `make`
+- [Task](https://taskfile.dev/#/installation)
 - [Go 1.17+](https://golang.org/doc/install)
 - [snapcraft](https://snapcraft.io/)
 - [Docker](https://www.docker.com/)
@@ -24,13 +24,13 @@ git clone git@github.com:goreleaser/goreleaser.git
 `cd` into the directory and install the dependencies:
 
 ```sh
-make setup
+task setup
 ```
 
 A good way of making sure everything is all right is running the test suite:
 
 ```sh
-make test
+task test
 ```
 
 ## Test your change
@@ -38,13 +38,13 @@ make test
 You can create a branch for your changes and try to build from the source as you go:
 
 ```sh
-make build
+task build
 ```
 
 When you are satisfied with the changes, we suggest you run:
 
 ```sh
-make ci
+task ci
 ```
 
 ## Create a commit
