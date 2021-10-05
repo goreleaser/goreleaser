@@ -437,7 +437,13 @@ func TestGetChangelogGitHub(t *testing.T) {
 		},
 	})
 
-	l := scmChangeloger{client: client.NewUnauthenticatedGitHub()}
+	l := scmChangeloger{
+		client: client.NewUnauthenticatedGitHub(),
+		repo: client.Repo{
+			Owner: "goreleaser",
+			Name:  "goreleaser",
+		},
+	}
 	log, err := l.Log(ctx, "v0.180.1", "v0.180.2")
 	require.NoError(t, err)
 	require.Equal(t, "- c90f1085f255d0af0b055160bfff5ee40f47af79: fix: do not skip any defaults (#2521) (@caarlos0)", log)

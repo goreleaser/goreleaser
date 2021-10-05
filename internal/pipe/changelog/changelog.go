@@ -185,14 +185,28 @@ func getChangeloger(ctx *context.Context) (changeloger, error) {
 	case "":
 		return gitChangeloger{}, nil
 	case "github":
-		client, err := client.New(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return &scmChangeloger{client: client}, nil
+		return newGitHubChangeloger(ctx)
 	default:
 		return nil, fmt.Errorf("invalid changelog.use: %q", ctx.Config.Changelog.Use)
 	}
+}
+
+func newGitHubChangeloger(ctx *context.Context) (changeloger, error) {
+	cli, err := client.New(ctx)
+	if err != nil {
+		return nil, err
+	}
+	repo, err := git.ExtractRepoFromConfig()
+	if err != nil {
+		return nil, err
+	}
+	return &scmChangeloger{
+		client: cli,
+		repo: client.Repo{
+			Owner: repo.Owner,
+			Name:  repo.Name,
+		},
+	}, nil
 }
 
 func previous(tag string) (result string, err error) {
@@ -245,15 +259,9 @@ func (g gitChangeloger) Log(ctx *context.Context, prev, current string) (string,
 
 type scmChangeloger struct {
 	client client.Client
+	repo   client.Repo
 }
 
 func (c *scmChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
-	repo, err := git.ExtractRepoFromConfig()
-	if err != nil {
-		return "", err
-	}
-	return c.client.Changelog(ctx, client.Repo{
-		Owner: repo.Owner,
-		Name:  repo.Name,
-	}, prev, current)
+	return c.client.Changelog(ctx, c.repo, prev, current)
 }
