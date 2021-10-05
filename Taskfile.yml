@@ -11,7 +11,7 @@ vars:
 
 tasks:
   dev:
-    desc: Setup pre-commit
+    desc: Setup git hooks
     cmds:
       - cp -f scripts/pre-commit.sh .git/hooks/pre-commit
 
@@ -37,12 +37,12 @@ tasks:
       - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m
 
   cover:
-    desc: Run all the tests and opens the coverage report
+    desc: Open the cover tool
     cmds:
       - go tool cover -html=coverage.txt
 
   fmt:
-    desc: gofmt and goimports all go files
+    desc: gofumpt all code
     cmds:
       - gofumpt -w -l -s .
 
@@ -50,7 +50,7 @@ tasks:
     desc: Run all the tests and code checks
     deps: [build test]
 
-  imgs:
+  docs:imgs:
     desc: Download and resize images
     cmds:
       - wget -O www/docs/static/logo.png https://github.com/goreleaser/artwork/raw/master/goreleaserfundo.png
@@ -64,16 +64,8 @@ tasks:
     cmds:
       - '{{.DOCKER}} run --rm -it -p 8000:8000 -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material'
 
-  docs:build:
-    desc: Build documentation
+  docs:vercel:build:
+    desc: Build documentation for deploying to Vercel
     cmds:
-      - yum install -y jq
-      - pip install mkdocs-material mkdocs-minify-plugin lunr
-      - ./scripts/get-releases.sh
-      - (cd www && mkdocs build)
-
-  todo:
-    desc: Show to-do items per file
-    silent: true
-    cmds:
-      - grep --exclude-dir=vendor --exclude-dir=node_modules --exclude=Makefile --text --color -nRo -E ' TODO:.*|SkipNow' .
+      - scripts/vercel/install.sh
+      - scripts/vercel/build.sh
