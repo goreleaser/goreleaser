@@ -1,0 +1,79 @@
+# https://taskfile.dev
+
+version: '3'
+
+env:
+  GO111MODULE: on
+  GOPROXY: https://proxy.golang.org,direct
+
+vars:
+  DOCKER: '{{default "docker" .DOCKER}}'
+
+tasks:
+  dev:
+    desc: Setup pre-commit
+    cmds:
+      - cp -f scripts/pre-commit.sh .git/hooks/pre-commit
+
+  setup:
+    desc: Install dependencies
+    cmds:
+      - go mod tidy
+
+  build:
+    desc: Build the binary
+    cmds:
+      - go build
+
+  test:
+    desc: Run tests
+    env:
+      LC_ALL: C
+    vars:
+      TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
+      SOURCE_FILES: '{{default "./..." .TEST_OPTIONS}}'
+      TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
+    cmds:
+      - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m
+
+  cover:
+    desc: Run all the tests and opens the coverage report
+    cmds:
+      - go tool cover -html=coverage.txt
+
+  fmt:
+    desc: gofmt and goimports all go files
+    cmds:
+      - gofumpt -w -l -s .
+
+  ci:
+    desc: Run all the tests and code checks
+    deps: [build test]
+
+  imgs:
+    desc: Download and resize images
+    cmds:
+      - wget -O www/docs/static/logo.png https://github.com/goreleaser/artwork/raw/master/goreleaserfundo.png
+      - wget -O www/docs/static/card.png "https://og.caarlos0.dev/**GoReleaser**%20%7C%20Deliver%20Go%20binaries%20as%20fast%20and%20easily%20as%20possible.png?theme=light&md=1&fontSize=80px&images=https://github.com/goreleaser.png"
+      - wget -O www/docs/static/avatar.png https://github.com/goreleaser.png
+      - convert www/docs/static/avatar.png -define icon:auto-resize=64,48,32,16 docs/static/favicon.ico
+      - convert www/docs/static/avatar.png -resize x120 www/docs/static/apple-touch-icon.png
+
+  docs:serve:
+    desc: Start documentation server
+    cmds:
+      - '{{.DOCKER}} run --rm -it -p 8000:8000 -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material'
+
+  docs:build:
+    desc: Build documentation
+    cmds:
+      - yum install -y jq
+      - pip install mkdocs-material mkdocs-minify-plugin lunr
+      - ./scripts/get-releases.sh
+      - (cd www && mkdocs build)
+
+  todo:
+    desc: Show to-do items per file
+    silent: true
+    cmds:
+      - grep --exclude-dir=vendor --exclude-dir=node_modules --exclude=Makefile --text --color -nRo -E ' TODO:.*|SkipNow' .
