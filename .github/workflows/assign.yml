@@ -13,6 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Assign Project and Milestone
     steps:
-    - uses: srggrs/assign-one-project-github-action@1.3.0
+    - uses: srggrs/assign-one-project-github-action@1.3.1
       with:
         project: 'https://github.com/orgs/goreleaser/projects/3'
