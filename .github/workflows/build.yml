@@ -55,15 +55,12 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - uses: sigstore/cosign-installer@v1.2.0
       -
-        name: Setup
-        run: |
-          task setup
+        name: Setup Sigstore
+        uses: sigstore/cosign-installer@v1.2.0
       -
-        name: CI
-        run: |
-          task ci
+        name: build and test
+        run: task ci
       -
         name: Upload coverage
         uses: codecov/codecov-action@v2
@@ -71,8 +68,7 @@ jobs:
           file: ./coverage.txt
       -
         name: Check
-        run: |
-          ./goreleaser check
+        run: ./goreleaser check
       -
         name: Diff
         run: git diff

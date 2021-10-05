@@ -47,8 +47,11 @@ tasks:
       - gofumpt -w -l -s .
 
   ci:
-    desc: Run all the tests and code checks
-    deps: [build test]
+    desc: Run all CI steps
+    deps:
+    - setup
+    - build
+    - test
 
   docs:imgs:
     desc: Download and resize images
