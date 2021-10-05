@@ -17,17 +17,19 @@ func NewMock() *Mock {
 }
 
 type Mock struct {
-	CreatedFile         bool
-	Content             string
-	Path                string
-	FailToCreateRelease bool
-	FailToUpload        bool
-	CreatedRelease      bool
-	UploadedFile        bool
-	UploadedFileNames   []string
-	UploadedFilePaths   map[string]string
-	FailFirstUpload     bool
-	Lock                sync.Mutex
+	CreatedFile          bool
+	Content              string
+	Path                 string
+	FailToCreateRelease  bool
+	FailToUpload         bool
+	CreatedRelease       bool
+	UploadedFile         bool
+	UploadedFileNames    []string
+	UploadedFilePaths    map[string]string
+	FailFirstUpload      bool
+	Lock                 sync.Mutex
+	ClosedMilestone      string
+	FailToCloseMilestone bool
 }
 
 func (c *Mock) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
@@ -35,6 +37,12 @@ func (c *Mock) Changelog(ctx *context.Context, repo Repo, prev, current string) 
 }
 
 func (c *Mock) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
+	if c.FailToCloseMilestone {
+		return errors.New("milestone failed")
+	}
+
+	c.ClosedMilestone = title
+
 	return nil
 }
 

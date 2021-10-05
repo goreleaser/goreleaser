@@ -1,11 +1,8 @@
 package milestone
 
 import (
-	"errors"
-	"os"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -124,7 +121,7 @@ func TestPublishCloseDisabled(t *testing.T) {
 			},
 		},
 	})
-	client := &DummyClient{}
+	client := client.NewMock()
 	testlib.AssertSkipped(t, doPublish(ctx, client))
 	require.Equal(t, "", client.ClosedMilestone)
 }
@@ -143,7 +140,7 @@ func TestPublishCloseEnabled(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v1.0.0"
-	client := &DummyClient{}
+	client := client.NewMock()
 	require.NoError(t, doPublish(ctx, client))
 	require.Equal(t, "v1.0.0", client.ClosedMilestone)
 }
@@ -163,7 +160,7 @@ func TestPublishCloseError(t *testing.T) {
 	}
 	ctx := context.New(config)
 	ctx.Git.CurrentTag = "v1.0.0"
-	client := &DummyClient{
+	client := &client.Mock{
 		FailToCloseMilestone: true,
 	}
 	require.NoError(t, doPublish(ctx, client))
@@ -186,7 +183,7 @@ func TestPublishCloseFailOnError(t *testing.T) {
 	}
 	ctx := context.New(config)
 	ctx.Git.CurrentTag = "v1.0.0"
-	client := &DummyClient{
+	client := &client.Mock{
 		FailToCloseMilestone: true,
 	}
 	require.Error(t, doPublish(ctx, client))
@@ -206,43 +203,4 @@ func TestSkip(t *testing.T) {
 		})
 		require.False(t, Pipe{}.Skip(ctx))
 	})
-}
-
-type DummyClient struct {
-	ClosedMilestone      string
-	FailToCloseMilestone bool
-}
-
-func (c *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
-	if c.FailToCloseMilestone {
-		return errors.New("milestone failed")
-	}
-
-	c.ClosedMilestone = title
-
-	return nil
-}
-
-func (c *DummyClient) CreateRelease(ctx *context.Context, body string) (string, error) {
-	return "", nil
-}
-
-func (c *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
-	return "", nil
-}
-
-func (c *DummyClient) GetDefaultBranch(ctx *context.Context, repo client.Repo) (string, error) {
-	return "", errors.New("DummyClient does not yet implement GetDefaultBranch")
-}
-
-func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) error {
-	return nil
-}
-
-func (c *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) error {
-	return nil
-}
-
-func (c *DummyClient) Changelog(ctx *context.Context, repo client.Repo, prev, current string) (string, error) {
-	return "", errors.New("not implemented")
 }
