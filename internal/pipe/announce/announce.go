@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/slack"
 	"github.com/goreleaser/goreleaser/internal/pipe/smtp"
 	"github.com/goreleaser/goreleaser/internal/pipe/teams"
+	"github.com/goreleaser/goreleaser/internal/pipe/telegram"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -36,6 +37,7 @@ var announcers = []Announcer{
 	smtp.Pipe{},
 	teams.Pipe{},
 	twitter.Pipe{},
+	telegram.Pipe{},
 }
 
 // Pipe that announces releases.
