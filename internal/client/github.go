@@ -66,7 +66,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 	var log []string
 	for _, commit := range result.Commits {
 		log = append(log, fmt.Sprintf(
-			"- %s: %s (@%s)",
+			"%s: %s (@%s)",
 			commit.GetSHA(),
 			strings.Split(commit.Commit.GetMessage(), "\n")[0],
 			commit.GetAuthor().GetLogin(),
