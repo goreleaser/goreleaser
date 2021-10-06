@@ -17,8 +17,8 @@ announce:
     # Defaults to false.
     enabled: true
 
-		# Integer representation of your channel
-		chat_id: 123456
+    # Integer representation of your channel
+    chat_id: 123456
 
     # Message template to use while publishing.
     # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .GitURL }}/releases/tag/{{ .Tag }}`
