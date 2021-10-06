@@ -52,10 +52,15 @@ tasks:
 
   ci:
     desc: Run all CI steps
-    deps:
-    - setup
-    - build
-    - test
+    cmds:
+      - task: setup
+      - task: build
+      - task: test
+
+  default:
+    desc: Runs the default tasks
+    cmds:
+      - task: ci
 
   docs:imgs:
     desc: Download and resize images
