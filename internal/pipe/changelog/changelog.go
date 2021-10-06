@@ -112,7 +112,9 @@ func buildChangelog(ctx *context.Context) ([]string, error) {
 		return nil, err
 	}
 	entries := strings.Split(log, "\n")
-	entries = entries[0 : len(entries)-1]
+	if lastLine := entries[len(entries)-1]; strings.TrimSpace(lastLine) == "" {
+		entries = entries[0 : len(entries)-1]
+	}
 	entries, err = filterEntries(ctx, entries)
 	if err != nil {
 		return entries, err
