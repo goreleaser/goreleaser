@@ -22,6 +22,10 @@ tasks:
 
   build:
     desc: Build the binary
+    sources:
+      - ./**/*.go
+    generates:
+      - ./goreleaser
     cmds:
       - go build
 
@@ -72,3 +76,23 @@ tasks:
     cmds:
       - scripts/vercel/install.sh
       - scripts/vercel/build.sh
+
+  release:
+    desc: Create a new tag
+    vars:
+      NEXT:
+        sh: svu n
+    cmds:
+      - git tag {{.NEXT}}
+      - echo {{.NEXT}}
+      - git push origin --tags
+
+  goreleaser:
+    desc: Run GoReleaser either in snapshot or release mode
+    deps:
+      - build
+    vars:
+      SNAPSHOT:
+        sh: 'if [[ $GITHUB_REF != refs/tags/v* ]]; then echo "--snapshot"; fi'
+    cmds:
+      - ./goreleaser release --rm-dist {{.SNAPSHOT}}

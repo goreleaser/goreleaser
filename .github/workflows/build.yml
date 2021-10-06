@@ -90,10 +90,10 @@ jobs:
       -
         name: Snapcraft Login
         if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          snapcraft login --with <(echo "${{ secrets.SNAPCRAFT_LOGIN }}")
+        run: snapcraft login --with <(echo "${{ secrets.SNAPCRAFT_LOGIN }}")
       -
         name: GoReleaser
+        if: startsWith(github.ref, 'refs/tags/v') ||  github.ref == 'refs/heads/master'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           TWITTER_CONSUMER_KEY: ${{ secrets.TWITTER_CONSUMER_KEY }}
@@ -104,9 +104,4 @@ jobs:
           FURY_TOKEN: ${{ secrets.FURY_TOKEN }}
           DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
           DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-        run: |
-          if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            ./goreleaser
-          elif [[ $GITHUB_REF == refs/heads/master ]]; then
-            ./goreleaser --snapshot
-          fi
+        run: task goreleaser
