@@ -5,6 +5,8 @@ some environment variables on your pipeline:
 
 - `TELEGRAM_TOKEN`
 
+Also you need to know your channel's chat ID to talk with.
+
 Then, you can add something like the following to your `.goreleaser.yml` config:
 
 ```yaml
@@ -14,6 +16,9 @@ announce:
     # Whether its enabled or not.
     # Defaults to false.
     enabled: true
+
+		# Integer representation of your channel
+		chat_id: 123456
 
     # Message template to use while publishing.
     # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .GitURL }}/releases/tag/{{ .Tag }}`
