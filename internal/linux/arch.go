@@ -20,7 +20,7 @@ func Arch(key string) string {
 	case "arm6": // GOARCH + GOARM
 		return "armhf"
 	case "arm7": // GOARCH + GOARM
-		return "armhf"
+		return "armv7l"
 	case "mips64le":
 		return "mips64el"
 	case "mipsle":
