@@ -18,9 +18,7 @@ func (Pipe) String() string                 { return "telegram" }
 func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Telegram.Enabled }
 
 type Config struct {
-	ConsumerToken   string `env:"TELEGRAM_TOKEN,notEmpty"`
-	WebHookUrl      string `env:"WEB_HOOK_URL,notEmpty"`
-	CertificateFile string `env:"CERT_FILE,notEmpty"`
+	ConsumerToken string `env:"TELEGRAM_TOKEN,notEmpty"`
 }
 
 func (Pipe) Default(ctx *context.Context) error {
@@ -43,15 +41,10 @@ func (Pipe) Announce(ctx *context.Context) error {
 
 	log.Infof("posting: '%s'", msg)
 	bot, err := tgbotapi.NewBotAPI(cfg.ConsumerToken)
-
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to telegram: %w", err)
 	}
-
-	wc := tgbotapi.NewWebhookWithCert(cfg.WebHookUrl, cfg.CertificateFile)
-	_, err = bot.SetWebhook(wc)
-	if err != nil {
-		return fmt.Errorf("announce: failed to announce to telegram: %w", err)
-	}
+	tm := tgbotapi.NewMessage(ctx.Config.Announce.Telegram.ChatID, msg)
+	bot.Send(tm)
 	return nil
 }

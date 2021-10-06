@@ -785,6 +785,7 @@ type SMTP struct {
 type Telegram struct {
 	Enabled         bool   `yaml:"enabled,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty"`
+	ChatID          int64  `yaml:"chat_id,omitempty"`
 }
 
 // Load config file.
