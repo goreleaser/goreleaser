@@ -114,6 +114,7 @@ nav:
       - customization/announce/teams.md
       - customization/announce/twitter.md
       - customization/announce/mattermost.md
+      - customization/announce/telegram.md
 - Command Line Usage:
     - goreleaser: cmd/goreleaser.md
     - goreleaser init: cmd/goreleaser_init.md
