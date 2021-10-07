@@ -44,7 +44,12 @@ func (Pipe) Announce(ctx *context.Context) error {
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to telegram: %w", err)
 	}
+
 	tm := tgbotapi.NewMessage(ctx.Config.Announce.Telegram.ChatID, msg)
-	bot.Send(tm)
+	response, err := bot.Send(tm)
+	if err != nil {
+		return fmt.Errorf("announce: failed to announce to telegram: %w", err)
+	}
+	log.Infof("response: %s", response.Text)
 	return nil
 }
