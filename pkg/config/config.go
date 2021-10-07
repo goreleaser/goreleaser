@@ -717,6 +717,7 @@ type Announce struct {
 	Teams      Teams      `yaml:"teams,omitempty"`
 	SMTP       SMTP       `yaml:"smtp,omitempty"`
 	Mattermost Mattermost `yaml:"mattermost,omitempty"`
+	Telegram   Telegram   `yaml:"telegram,omitempty"`
 }
 
 type Twitter struct {
@@ -779,6 +780,12 @@ type SMTP struct {
 	SubjectTemplate    string   `yaml:"subject_template,omitempty"`
 	BodyTemplate       string   `yaml:"body_template,omitempty"`
 	InsecureSkipVerify bool     `yaml:"insecure_skip_verify,omitempty"`
+}
+
+type Telegram struct {
+	Enabled         bool   `yaml:"enabled,omitempty"`
+	MessageTemplate string `yaml:"message_template,omitempty"`
+	ChatID          int64  `yaml:"chat_id,omitempty"`
 }
 
 // Load config file.
