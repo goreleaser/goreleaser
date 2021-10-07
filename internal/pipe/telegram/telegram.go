@@ -5,7 +5,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	api "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -40,16 +40,16 @@ func (Pipe) Announce(ctx *context.Context) error {
 	}
 
 	log.Infof("posting: '%s'", msg)
-	bot, err := tgbotapi.NewBotAPI(cfg.ConsumerToken)
+	bot, err := api.NewBotAPI(cfg.ConsumerToken)
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to telegram: %w", err)
 	}
 
-	tm := tgbotapi.NewMessage(ctx.Config.Announce.Telegram.ChatID, msg)
-	response, err := bot.Send(tm)
+	tm := api.NewMessage(ctx.Config.Announce.Telegram.ChatID, msg)
+	_, err = bot.Send(tm)
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to telegram: %w", err)
 	}
-	log.Infof("response: %s", response.Text)
+	log.Debug("message sent")
 	return nil
 }
