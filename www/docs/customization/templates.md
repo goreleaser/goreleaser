@@ -28,6 +28,7 @@ On fields that support templating, these fields are always available:
 | `.Patch`            | the patch part of the version (assuming `Tag` is a valid semver, else `0`)                             |
 | `.Prerelease`       | the prerelease part of the version, e.g. `beta` (assuming `Tag` is a valid semver)                     |
 | `.RawVersion`       | Major.Minor.Patch (assuming `Tag` is a valid semver, else `0.0.0`)                                     |
+| `.ReleaseNotes`     | the generated release notes, available after the changelog step has been executed                      |
 | `.IsSnapshot`       | `true` if `--snapshot` is set, `false` otherwise                                                       |
 | `.IsNightly`        | `true` if `--nightly` is set, `false` otherwise                                                        |
 | `.Env`              | a map with system's environment variables                                                              |
