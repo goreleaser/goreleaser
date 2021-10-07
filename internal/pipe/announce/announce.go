@@ -36,8 +36,8 @@ var announcers = []Announcer{
 	slack.Pipe{},
 	smtp.Pipe{},
 	teams.Pipe{},
-	twitter.Pipe{},
 	telegram.Pipe{},
+	twitter.Pipe{},
 }
 
 // Pipe that announces releases.
