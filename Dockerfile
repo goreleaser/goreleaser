@@ -1,4 +1,4 @@
-FROM golang:1.17.1-alpine
+FROM golang:1.17.2-alpine
 
 RUN apk add --no-cache bash \
 	curl \
