@@ -870,26 +870,6 @@ func TestDefault(t *testing.T) {
 			Brews: []config.Homebrew{
 				{},
 			},
-			Builds: []config.Build{
-				{
-					Binary: "foo",
-					Goos:   []string{"linux", "darwin"},
-					Goarch: []string{"386", "amd64"},
-				},
-				{
-					Binary: "bar",
-					Goos:   []string{"linux", "darwin"},
-					Goarch: []string{"386", "amd64"},
-					Ignore: []config.IgnoredBuild{
-						{Goos: "darwin", Goarch: "amd64"},
-					},
-				},
-				{
-					Binary: "foobar",
-					Goos:   []string{"linux"},
-					Goarch: []string{"amd64"},
-				},
-			},
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -897,7 +877,6 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitMessageTemplate)
-	require.Equal(t, `bin.install "myproject"`, ctx.Config.Brews[0].Install)
 }
 
 func TestGHFolder(t *testing.T) {
@@ -927,4 +906,47 @@ func TestRunSkipNoName(t *testing.T) {
 
 	client := client.NewMock()
 	testlib.AssertSkipped(t, runAll(ctx, client))
+}
+
+func TestInstalls(t *testing.T) {
+	t.Run("provided", func(t *testing.T) {
+		require.Equal(t, []string{
+			`bin.install "foo"`,
+			`bin.install "bar"`,
+		}, installs(
+			config.Homebrew{Install: "bin.install \"foo\"\nbin.install \"bar\""},
+			[]*artifact.Artifact{},
+		))
+	})
+
+	t.Run("from artifacts", func(t *testing.T) {
+		require.Equal(t, []string{
+			`bin.install "foo"`,
+			`bin.install "bar"`,
+		}, installs(
+			config.Homebrew{},
+			[]*artifact.Artifact{
+				{
+					Extra: map[string]interface{}{
+						"Binaries": []string{"foo", "bar"},
+					},
+				},
+				{
+					Extra: map[string]interface{}{
+						"Binaries": []string{"foo"},
+					},
+				},
+				{
+					Extra: map[string]interface{}{
+						"Binaries": []string{"bar"},
+					},
+				},
+				{
+					Extra: map[string]interface{}{
+						"Binaries": []string{"bar", "foo"},
+					},
+				},
+			},
+		))
+	})
 }
