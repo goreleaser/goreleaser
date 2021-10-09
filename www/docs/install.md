@@ -31,6 +31,20 @@ Below you can find the steps for each of them.
     The [formula in homebrew-core](https://github.com/Homebrew/homebrew-core/blob/master/Formula/goreleaser.rb) might be slightly outdated.
     Use our homebrew tap to always get the latest updates.
 
+### gofish
+
+=== "OSS"
+    ```sh
+    gofish rig add https://github.com/goreleaser/fish-food
+    gofish install github.com/goreleaser/fish-food/goreleaser
+    ```
+
+=== "Pro"
+    ```sh
+    gofish rig add https://github.com/goreleaser/fish-food
+    gofish install github.com/goreleaser/fish-food/goreleaser-pro
+    ```
+
 ### snapcraft
 
 === "OSS"
