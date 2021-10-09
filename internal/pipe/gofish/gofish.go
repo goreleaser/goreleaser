@@ -211,6 +211,7 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 			SHA256:      sum,
 			OS:          artifact.Goos,
 			Arch:        artifact.Goarch,
+			Binaries:    artifact.ExtraOr("Binaries", []string{}).([]string),
 		}
 		for _, v := range result.ReleasePackages {
 			if v.OS == artifact.Goos && v.Arch == artifact.Goarch {

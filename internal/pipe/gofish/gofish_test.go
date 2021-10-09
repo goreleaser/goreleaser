@@ -30,36 +30,42 @@ func createTemplateData() templateData {
 				OS:          "darwin",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
+				Binaries:    []string{"bin1", "bin2", "bin3"},
 			},
 			{
 				Arch:        "arm64",
 				OS:          "darwin",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b349490sadasdsadsadasdasdsd",
+				Binaries:    []string{"bin1", "bin2", "bin3"},
 			},
 			{
 				Arch:        "amd64",
 				OS:          "linux",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+				Binaries:    []string{"bin1", "bin2", "bin3"},
 			},
 			{
 				Arch:        "arm",
 				OS:          "linux",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+				Binaries:    []string{"bin1", "bin2", "bin3"},
 			},
 			{
 				Arch:        "arm64",
 				OS:          "linux",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+				Binaries:    []string{"bin1", "bin2", "bin3"},
 			},
 			{
 				Arch:        "amd64",
 				OS:          "windows",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_windows_amd64.zip",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+				Binaries:    []string{"bin1", "bin2", "bin3"},
 			},
 		},
 		Name:    "Test",
@@ -202,8 +208,9 @@ func TestFullPipe(t *testing.T) {
 				Goarch: "amd64",
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":     "foo",
-					"Format": "tar.gz",
+					"ID":       "foo",
+					"Format":   "tar.gz",
+					"Binaries": []string{"name"},
 				},
 			})
 
@@ -266,8 +273,9 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
+			"ID":       "foo",
+			"Format":   "tar.gz",
+			"Binaries": []string{"foo"},
 		},
 	})
 
@@ -344,8 +352,9 @@ func TestRunPipeMultipleGoFishWithSkip(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
+			"ID":       "foo",
+			"Format":   "tar.gz",
+			"Binaries": []string{"foo"},
 		},
 	})
 
@@ -459,8 +468,9 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 					Goarm:  a.goarm,
 					Type:   artifact.UploadableArchive,
 					Extra: map[string]interface{}{
-						"ID":     a.name,
-						"Format": "tar.gz",
+						"ID":       a.name,
+						"Format":   "tar.gz",
+						"Binaries": []string{"foo"},
 					},
 				})
 				f, err := os.Create(path)
@@ -636,8 +646,9 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 				Goarch: ttt.goarch,
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":     fmt.Sprintf("foo%d", idx),
-					"Format": "tar.gz",
+					"ID":       fmt.Sprintf("foo%d", idx),
+					"Format":   "tar.gz",
+					"Binaries": []string{"foo"},
 				},
 			})
 		}
@@ -702,8 +713,9 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
+			"ID":       "foo",
+			"Format":   "tar.gz",
+			"Binaries": []string{"foo"},
 		},
 	})
 	client := client.NewMock()
