@@ -65,6 +65,7 @@ require (
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.1.0 // indirect
 	github.com/go-git/go-git/v5 v5.3.0 // indirect
+	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -129,7 +130,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.4.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.7.0 // indirect
 	github.com/aws/smithy-go v1.8.0 // indirect
-	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.0.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
