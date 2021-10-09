@@ -40,10 +40,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Brews {
 		brew := &ctx.Config.Brews[i]
 
-		if brew.Install == "" {
-			brew.Install = fmt.Sprintf(`bin.install "%s"`, ctx.Config.ProjectName)
-			log.Warnf("optimistically guessing `brew[%d].install` to be `%s`", i, brew.Install)
-		}
 		if brew.CommitAuthor.Name == "" {
 			brew.CommitAuthor.Name = "goreleaserbot"
 		}
@@ -268,6 +264,24 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	return out.String(), nil
 }
 
+func installs(cfg config.Homebrew, artifacts []*artifact.Artifact) []string {
+	if cfg.Install != "" {
+		return split(cfg.Install)
+	}
+	install := []string{}
+	bins := map[string]bool{}
+	for _, a := range artifacts {
+		for _, bin := range a.ExtraOr("Binaries", []string{}).([]string) {
+			if !bins[bin] {
+				install = append(install, fmt.Sprintf("bin.install %q", bin))
+			}
+			bins[bin] = true
+		}
+	}
+	log.Warnf("guessing install to be `%s`", strings.Join(install, " "))
+	return install
+}
+
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
 		Name:          formulaNameFor(cfg.Name),
@@ -279,7 +293,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		Dependencies:  cfg.Dependencies,
 		Conflicts:     cfg.Conflicts,
 		Plist:         cfg.Plist,
-		Install:       split(cfg.Install),
+		Install:       installs(cfg, artifacts),
 		PostInstall:   cfg.PostInstall,
 		Tests:         split(cfg.Test),
 		CustomRequire: cfg.CustomRequire,

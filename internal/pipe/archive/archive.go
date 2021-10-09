@@ -171,6 +171,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 			return fmt.Errorf("failed to add: '%s' -> '%s': %w", f.Source, f.Destination, err)
 		}
 	}
+	bins := []string{}
 	for _, binary := range binaries {
 		if err := a.Add(config.File{
 			Source:      binary.Path,
@@ -178,6 +179,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		}); err != nil {
 			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, binary.Name, err)
 		}
+		bins = append(bins, binary.Name)
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.UploadableArchive,
@@ -192,6 +194,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 			"ID":        arch.ID,
 			"Format":    arch.Format,
 			"WrappedIn": wrap,
+			"Binaries":  bins,
 		},
 	})
 	return nil
@@ -226,9 +229,10 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Goarm:  binary.Goarm,
 			Gomips: binary.Gomips,
 			Extra: map[string]interface{}{
-				"Builds": []*artifact.Artifact{binary},
-				"ID":     archive.ID,
-				"Format": archive.Format,
+				"Builds":   []*artifact.Artifact{binary},
+				"ID":       archive.ID,
+				"Format":   archive.Format,
+				"Binaries": []string{binary.Name},
 			},
 		})
 	}
