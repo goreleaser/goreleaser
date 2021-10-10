@@ -190,6 +190,12 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	}
 	brew.Tap.Name = tapName
 
+	skipUpload, err := tmpl.New(ctx).Apply(brew.SkipUpload)
+	if err != nil {
+		return err
+	}
+	brew.SkipUpload = skipUpload
+
 	content, err := buildFormula(ctx, brew, cl, archives)
 	if err != nil {
 		return err
