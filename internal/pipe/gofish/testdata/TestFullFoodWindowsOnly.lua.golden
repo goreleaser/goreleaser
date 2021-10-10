@@ -8,15 +8,23 @@ food = {
     homepage = "https://google.com",
     version = version,
     packages = {
-		{
+        {
             os = "windows",
             arch = "amd64",
             url = "https://github.com/caarlos0/test/releases/download/v0.1.3/test_windows_amd64.zip",
             sha256 = "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
             resources = {
                 {
-                    path = name .. ".exe",
-                    installpath = "bin\\" .. name .. ".exe"
+                    path = "bin1.exe",
+                    installpath = "bin\\bin1.exe",
+                }
+                {
+                    path = "bin2.exe",
+                    installpath = "bin\\bin2.exe",
+                }
+                {
+                    path = "bin3.exe",
+                    installpath = "bin\\bin3.exe",
                 }
             }
         },
