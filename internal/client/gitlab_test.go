@@ -398,6 +398,13 @@ func TestGitlabGetDefaultBranchErr(t *testing.T) {
 
 func TestGitlabChangelog(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/compare") {
+			r, err := os.Open("testdata/gitlab/compare.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		}
 		defer r.Body.Close()
 	}))
 	defer srv.Close()
@@ -415,6 +422,7 @@ func TestGitlabChangelog(t *testing.T) {
 		Branch: "somebranch",
 	}
 
-	_, err = client.Changelog(ctx, repo, "v1.0.0", "v1.1.0")
-	require.EqualError(t, err, ErrNotImplemented.Error())
+	log, err := client.Changelog(ctx, repo, "v1.0.0", "v1.1.0")
+	require.NoError(t, err)
+	require.Equal(t, "6dcb09b5: Fix all the bugs (Joey User <joey@user.edu>)", log)
 }
