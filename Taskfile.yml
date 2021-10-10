@@ -89,6 +89,7 @@ tasks:
   docs:build:
     desc: Build docs
     cmds:
+      - task: docs:generate
       - docker run --rm -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material build
 
   docs:vercel:build:
