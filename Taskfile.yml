@@ -86,6 +86,11 @@ tasks:
       - task: docs:generate
       - '{{.DOCKER}} run --rm -it -p 8000:8000 -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material'
 
+  docs:build:
+    desc: Build docs
+    cmds:
+      - docker run --rm -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material build
+
   docs:vercel:build:
     desc: Build documentation for deploying to Vercel
     cmds:
