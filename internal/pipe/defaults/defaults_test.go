@@ -94,7 +94,6 @@ func TestFillPartial(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Len(t, ctx.Config.Archives[0].Files, 1)
-	require.Equal(t, `bin.install "test"`, ctx.Config.Brews[0].Install)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Goos)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Goarch)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)
