@@ -317,7 +317,8 @@ func (f *File) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-type FatBinary struct {
+// UniversalBinary setups macos universal binaries.
+type UniversalBinary struct {
 	ID           string `yaml:"id,omitempty"`
 	NameTemplate string `yaml:"name_template,omitempty"`
 	Replace      bool   `yaml:"replace_plain_binaries,omitempty"`
@@ -695,7 +696,7 @@ type Project struct {
 	GoMod           GoMod            `yaml:"gomod,omitempty"`
 	Announce        Announce         `yaml:"announce,omitempty"`
 
-	MacOSFatBinaries []FatBinary `yaml:"macos_fat_binaries,omitempty"`
+	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

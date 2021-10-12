@@ -16,7 +16,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
 	"github.com/goreleaser/goreleaser/internal/pipe/effectiveconfig"
 	"github.com/goreleaser/goreleaser/internal/pipe/env"
-	"github.com/goreleaser/goreleaser/internal/pipe/fatbinary"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
@@ -28,6 +27,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
+	"github.com/goreleaser/goreleaser/internal/pipe/universalbinary"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -54,7 +54,7 @@ var BuildPipeline = []Piper{
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
 	changelog.Pipe{},       // builds the release changelog
 	build.Pipe{},           // build
-	fatbinary.Pipe{},       // fat binary handling
+	universalbinary.Pipe{}, // universal binary handling
 }
 
 // Pipeline contains all pipe implementations in order.

@@ -13,7 +13,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/internal/pipe/discord"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
-	"github.com/goreleaser/goreleaser/internal/pipe/fatbinary"
 	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/mattermost"
@@ -32,6 +31,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/teams"
 	"github.com/goreleaser/goreleaser/internal/pipe/telegram"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
+	"github.com/goreleaser/goreleaser/internal/pipe/universalbinary"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -52,7 +52,7 @@ var Defaulters = []Defaulter{
 	project.Pipe{},
 	gomod.Pipe{},
 	build.Pipe{},
-	fatbinary.Pipe{},
+	universalbinary.Pipe{},
 	sourcearchive.Pipe{},
 	archive.Pipe{},
 	nfpm.Pipe{},

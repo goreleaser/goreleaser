@@ -117,7 +117,7 @@ func TestRemove(t *testing.T) {
 			Type:   Binary,
 		},
 		{
-			Name:   "fat",
+			Name:   "universal",
 			Goos:   "darwin",
 			Goarch: "all",
 			Type:   FatBinary,

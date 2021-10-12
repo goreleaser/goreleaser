@@ -237,7 +237,7 @@ func TestFullPipe(t *testing.T) {
 	}
 }
 
-func TestRunPipeFatBinary(t *testing.T) {
+func TestRunPipeUniversalBinary(t *testing.T) {
 	folder := t.TempDir()
 	ctx := &context.Context{
 		Git: context.GitInfo{
@@ -247,16 +247,16 @@ func TestRunPipeFatBinary(t *testing.T) {
 		Artifacts: artifact.New(),
 		Config: config.Project{
 			Dist:        folder,
-			ProjectName: "fatbin",
+			ProjectName: "unibin",
 			Rigs: []config.GoFish{
 				{
-					Name: "fatbin",
+					Name: "unibin",
 					Rig: config.RepoRef{
-						Owner: "fatbin",
+						Owner: "unibin",
 						Name:  "bar",
 					},
 					IDs: []string{
-						"fatbin",
+						"unibin",
 					},
 				},
 			},
@@ -264,15 +264,15 @@ func TestRunPipeFatBinary(t *testing.T) {
 	}
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "fatbin.tar.gz",
+		Name:   "unibin.tar.gz",
 		Path:   path,
 		Goos:   "darwin",
 		Goarch: "all",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":       "fatbin",
+			"ID":       "unibin",
 			"Format":   "tar.gz",
-			"Binaries": []string{"fatbin"},
+			"Binaries": []string{"unibin"},
 		},
 	})
 
@@ -280,7 +280,7 @@ func TestRunPipeFatBinary(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	client := client.NewMock()
-	distFile := filepath.Join(folder, "fatbin.lua")
+	distFile := filepath.Join(folder, "unibin.lua")
 
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))

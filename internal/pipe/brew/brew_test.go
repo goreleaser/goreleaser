@@ -979,7 +979,7 @@ func TestInstalls(t *testing.T) {
 	})
 }
 
-func TestRunPipeFatBinary(t *testing.T) {
+func TestRunPipeUniversalBinary(t *testing.T) {
 	folder := t.TempDir()
 	ctx := &context.Context{
 		Git: context.GitInfo{
@@ -989,18 +989,18 @@ func TestRunPipeFatBinary(t *testing.T) {
 		Artifacts: artifact.New(),
 		Config: config.Project{
 			Dist:        folder,
-			ProjectName: "fatbin",
+			ProjectName: "unibin",
 			Brews: []config.Homebrew{
 				{
-					Name: "fatbin",
+					Name: "unibin",
 					Tap: config.RepoRef{
-						Owner: "fatbin",
+						Owner: "unibin",
 						Name:  "bar",
 					},
 					IDs: []string{
-						"fatbin",
+						"unibin",
 					},
-					Install: `bin.install "fatbin"`,
+					Install: `bin.install "unibin"`,
 				},
 			},
 		},
@@ -1013,7 +1013,7 @@ func TestRunPipeFatBinary(t *testing.T) {
 		Goarch: "all",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":     "fatbin",
+			"ID":     "unibin",
 			"Format": "tar.gz",
 		},
 	})
@@ -1022,7 +1022,7 @@ func TestRunPipeFatBinary(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	client := client.NewMock()
-	distFile := filepath.Join(folder, "fatbin.rb")
+	distFile := filepath.Join(folder, "unibin.rb")
 
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))

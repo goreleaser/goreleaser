@@ -76,7 +76,7 @@ func TestRunPipe(t *testing.T) {
 					},
 				},
 			)
-			darwinFatBinary := &artifact.Artifact{
+			darwinUniversalBinary := &artifact.Artifact{
 				Goos:   "darwin",
 				Goarch: "all",
 				Name:   "bin/mybin",
@@ -146,7 +146,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			}
 			ctx.Artifacts.Add(darwinBuild)
-			ctx.Artifacts.Add(darwinFatBinary)
+			ctx.Artifacts.Add(darwinUniversalBinary)
 			ctx.Artifacts.Add(linux386Build)
 			ctx.Artifacts.Add(linuxArmBuild)
 			ctx.Artifacts.Add(linuxMipsBuild)
@@ -362,11 +362,11 @@ func TestRunPipeBinary(t *testing.T) {
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "darwin",
 		Goarch: "all",
-		Name:   "myfatbin",
+		Name:   "myunibin",
 		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
-			"Binary": "myfatbin",
+			"Binary": "myunibin",
 			"ID":     "default",
 		},
 	})
@@ -389,13 +389,13 @@ func TestRunPipeBinary(t *testing.T) {
 		artifact.ByGoos("darwin"),
 		artifact.ByGoarch("amd64"),
 	)).List()[0]
-	darwinFat := binaries.Filter(artifact.And(
+	darwinUniversal := binaries.Filter(artifact.And(
 		artifact.ByGoos("darwin"),
 		artifact.ByGoarch("all"),
 	)).List()[0]
 	windows := binaries.Filter(artifact.ByGoos("windows")).List()[0]
 	require.Equal(t, "mybin_0.0.1_darwin_amd64", darwinThin.Name)
-	require.Equal(t, "myfatbin_0.0.1_darwin_all", darwinFat.Name)
+	require.Equal(t, "myunibin_0.0.1_darwin_all", darwinUniversal.Name)
 	require.Equal(t, "mybin_0.0.1_windows_amd64.exe", windows.Name)
 }
 

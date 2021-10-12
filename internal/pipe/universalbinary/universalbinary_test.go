@@ -1,4 +1,4 @@
-package fatbinary
+package universalbinary
 
 import (
 	"debug/macho"
@@ -23,61 +23,61 @@ func TestDefault(t *testing.T) {
 		ctx := &context.Context{
 			Config: config.Project{
 				ProjectName: "proj",
-				MacOSFatBinaries: []config.FatBinary{
+				UniversalBinaries: []config.UniversalBinary{
 					{},
 				},
 			},
 		}
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, config.FatBinary{
+		require.Equal(t, config.UniversalBinary{
 			ID:           "proj",
 			NameTemplate: "{{ .ProjectName }}",
-		}, ctx.Config.MacOSFatBinaries[0])
+		}, ctx.Config.UniversalBinaries[0])
 	})
 
 	t.Run("given id", func(t *testing.T) {
 		ctx := &context.Context{
 			Config: config.Project{
 				ProjectName: "proj",
-				MacOSFatBinaries: []config.FatBinary{
+				UniversalBinaries: []config.UniversalBinary{
 					{ID: "foo"},
 				},
 			},
 		}
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, config.FatBinary{
+		require.Equal(t, config.UniversalBinary{
 			ID:           "foo",
 			NameTemplate: "{{ .ProjectName }}",
-		}, ctx.Config.MacOSFatBinaries[0])
+		}, ctx.Config.UniversalBinaries[0])
 	})
 
 	t.Run("given name", func(t *testing.T) {
 		ctx := &context.Context{
 			Config: config.Project{
 				ProjectName: "proj",
-				MacOSFatBinaries: []config.FatBinary{
+				UniversalBinaries: []config.UniversalBinary{
 					{NameTemplate: "foo"},
 				},
 			},
 		}
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, config.FatBinary{
+		require.Equal(t, config.UniversalBinary{
 			ID:           "proj",
 			NameTemplate: "foo",
-		}, ctx.Config.MacOSFatBinaries[0])
+		}, ctx.Config.UniversalBinaries[0])
 	})
 
 	t.Run("duplicated ids", func(t *testing.T) {
 		ctx := &context.Context{
 			Config: config.Project{
 				ProjectName: "proj",
-				MacOSFatBinaries: []config.FatBinary{
+				UniversalBinaries: []config.UniversalBinary{
 					{ID: "foo"},
 					{ID: "foo"},
 				},
 			},
 		}
-		require.EqualError(t, Pipe{}.Default(ctx), `found 2 macos_fatbins with the ID 'foo', please fix your config`)
+		require.EqualError(t, Pipe{}.Default(ctx), `found 2 universal_binaries with the ID 'foo', please fix your config`)
 	})
 }
 
@@ -88,7 +88,7 @@ func TestSkip(t *testing.T) {
 
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := context.New(config.Project{
-			MacOSFatBinaries: []config.FatBinary{{}},
+			UniversalBinaries: []config.UniversalBinary{{}},
 		})
 		require.False(t, Pipe{}.Skip(ctx))
 	})
@@ -105,7 +105,7 @@ func TestRun(t *testing.T) {
 
 	ctx1 := context.New(config.Project{
 		Dist: dist,
-		MacOSFatBinaries: []config.FatBinary{
+		UniversalBinaries: []config.UniversalBinary{
 			{
 				ID:           "foo",
 				NameTemplate: "foo",
@@ -116,7 +116,7 @@ func TestRun(t *testing.T) {
 
 	ctx2 := context.New(config.Project{
 		Dist: dist,
-		MacOSFatBinaries: []config.FatBinary{
+		UniversalBinaries: []config.UniversalBinary{
 			{
 				ID:           "foo",
 				NameTemplate: "foo",
@@ -126,7 +126,7 @@ func TestRun(t *testing.T) {
 
 	ctx3 := context.New(config.Project{
 		Dist: dist,
-		MacOSFatBinaries: []config.FatBinary{
+		UniversalBinaries: []config.UniversalBinary{
 			{
 				ID:           "notfoo",
 				NameTemplate: "notfoo",
@@ -136,7 +136,7 @@ func TestRun(t *testing.T) {
 
 	ctx4 := context.New(config.Project{
 		Dist: dist,
-		MacOSFatBinaries: []config.FatBinary{
+		UniversalBinaries: []config.UniversalBinary{
 			{
 				ID:           "foo",
 				NameTemplate: "foo",
@@ -183,20 +183,20 @@ func TestRun(t *testing.T) {
 	t.Run("replacing", func(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx1))
 		require.Len(t, ctx1.Artifacts.Filter(artifact.ByType(artifact.Binary)).List(), 0)
-		require.Len(t, ctx1.Artifacts.Filter(artifact.ByType(artifact.FatBinary)).List(), 1)
-		checkFatBinary(t, ctx1.Artifacts.Filter(artifact.ByType(artifact.FatBinary)).List()[0])
+		require.Len(t, ctx1.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List(), 1)
+		checkUniversalBinary(t, ctx1.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()[0])
 	})
 
 	t.Run("keeping", func(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx2))
 		require.Len(t, ctx2.Artifacts.Filter(artifact.ByType(artifact.Binary)).List(), 2)
-		require.Len(t, ctx2.Artifacts.Filter(artifact.ByType(artifact.FatBinary)).List(), 1)
-		checkFatBinary(t, ctx2.Artifacts.Filter(artifact.ByType(artifact.FatBinary)).List()[0])
+		require.Len(t, ctx2.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List(), 1)
+		checkUniversalBinary(t, ctx2.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()[0])
 	})
 
 	t.Run("bad template", func(t *testing.T) {
 		require.EqualError(t, Pipe{}.Run(context.New(config.Project{
-			MacOSFatBinaries: []config.FatBinary{
+			UniversalBinaries: []config.UniversalBinary{
 				{
 					NameTemplate: "{{.Name}",
 				},
@@ -213,10 +213,10 @@ func TestRun(t *testing.T) {
 	})
 }
 
-func checkFatBinary(tb testing.TB, fatbin *artifact.Artifact) {
+func checkUniversalBinary(tb testing.TB, unibin *artifact.Artifact) {
 	tb.Helper()
 
-	f, err := macho.OpenFat(fatbin.Path)
+	f, err := macho.OpenFat(unibin.Path)
 	require.NoError(tb, err)
 	require.Len(tb, f.Arches, 2)
 }

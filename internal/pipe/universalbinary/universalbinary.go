@@ -1,4 +1,5 @@
-package fatbinary
+// Package universalbinary can join multiple darwin binaries into a single universal binary.
+package universalbinary
 
 import (
 	"debug/macho"
@@ -17,24 +18,24 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Pipe for macos fat binaries.
+// Pipe for macos universal binaries.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "macos fat binaries" }
-func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.MacOSFatBinaries) == 0 }
+func (Pipe) String() string                 { return "universal binaries" }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.UniversalBinaries) == 0 }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	ids := ids.New("macos_fatbins")
-	for i := range ctx.Config.MacOSFatBinaries {
-		fatbin := &ctx.Config.MacOSFatBinaries[i]
-		if fatbin.ID == "" {
-			fatbin.ID = ctx.Config.ProjectName
+	ids := ids.New("universal_binaries")
+	for i := range ctx.Config.UniversalBinaries {
+		unibin := &ctx.Config.UniversalBinaries[i]
+		if unibin.ID == "" {
+			unibin.ID = ctx.Config.ProjectName
 		}
-		if fatbin.NameTemplate == "" {
-			fatbin.NameTemplate = "{{ .ProjectName }}"
+		if unibin.NameTemplate == "" {
+			unibin.NameTemplate = "{{ .ProjectName }}"
 		}
-		ids.Inc(fatbin.ID)
+		ids.Inc(unibin.ID)
 	}
 	return ids.Validate()
 }
@@ -42,16 +43,16 @@ func (Pipe) Default(ctx *context.Context) error {
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
-	for _, fatbin := range ctx.Config.MacOSFatBinaries {
-		fatbin := fatbin
+	for _, unibin := range ctx.Config.UniversalBinaries {
+		unibin := unibin
 		g.Go(func() error {
-			if err := makeFatBinary(ctx, fatbin); err != nil {
+			if err := makeUniversalBinary(ctx, unibin); err != nil {
 				return err
 			}
-			if !fatbin.Replace {
+			if !unibin.Replace {
 				return nil
 			}
-			return ctx.Artifacts.Remove(filterFor(fatbin))
+			return ctx.Artifacts.Remove(filterFor(unibin))
 		})
 	}
 	return g.Wait()
@@ -72,8 +73,8 @@ const (
 )
 
 // heavily based on https://github.com/randall77/makefat
-func makeFatBinary(ctx *context.Context, fatbin config.FatBinary) error {
-	name, err := tmpl.New(ctx).Apply(fatbin.NameTemplate)
+func makeUniversalBinary(ctx *context.Context, unibin config.UniversalBinary) error {
+	name, err := tmpl.New(ctx).Apply(unibin.NameTemplate)
 	if err != nil {
 		return err
 	}
@@ -83,12 +84,12 @@ func makeFatBinary(ctx *context.Context, fatbin config.FatBinary) error {
 		return err
 	}
 
-	binaries := ctx.Artifacts.Filter(filterFor(fatbin)).List()
+	binaries := ctx.Artifacts.Filter(filterFor(unibin)).List()
 	if len(binaries) == 0 {
-		return pipe.Skip(fmt.Sprintf("no darwin binaries found with id %q", fatbin.ID))
+		return pipe.Skip(fmt.Sprintf("no darwin binaries found with id %q", unibin.ID))
 	}
 
-	log.WithField("fatbinary", path).Infof("creating from %d binaries", len(binaries))
+	log.WithField("binary", path).Infof("creating from %d binaries", len(binaries))
 
 	var inputs []input
 	offset := int64(align)
@@ -157,7 +158,7 @@ func makeFatBinary(ctx *context.Context, fatbin config.FatBinary) error {
 	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Type:   artifact.FatBinary,
+		Type:   artifact.UniversalBinary,
 		Name:   name,
 		Path:   path,
 		Goos:   "darwin",
@@ -168,10 +169,10 @@ func makeFatBinary(ctx *context.Context, fatbin config.FatBinary) error {
 	return nil
 }
 
-func filterFor(fatbin config.FatBinary) artifact.Filter {
+func filterFor(unibin config.UniversalBinary) artifact.Filter {
 	return artifact.And(
 		artifact.ByType(artifact.Binary),
 		artifact.ByGoos("darwin"),
-		artifact.ByIDs(fatbin.ID),
+		artifact.ByIDs(unibin.ID),
 	)
 }
