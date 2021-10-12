@@ -91,7 +91,10 @@ func (Pipe) Run(ctx *context.Context) error {
 		archive := archive
 		artifacts := ctx.Artifacts.Filter(
 			artifact.And(
-				artifact.ByType(artifact.Binary),
+				artifact.Or(
+					artifact.ByType(artifact.Binary),
+					artifact.ByType(artifact.FatBinary),
+				),
 				artifact.ByIDs(archive.Builds...),
 			),
 		).GroupByPlatform()
