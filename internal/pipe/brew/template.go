@@ -55,6 +55,11 @@ class {{ .Name }} < Formula
   {{- if .MacOSPackages }}
   on_macos do
   {{- range $element := .MacOSPackages }}
+    {{- if eq $element.Arch "all" }}
+    url "{{ $element.DownloadURL }}"
+    {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+    sha256 "{{ $element.SHA256 }}"
+    {{- else }}
     {{- if eq $element.Arch "amd64" }}
     if Hardware::CPU.intel?
     {{- end }}
@@ -65,6 +70,7 @@ class {{ .Name }} < Formula
       {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
       sha256 "{{ $element.SHA256 }}"
     end
+    {{- end }}
   {{- end }}
   end
   {{- end }}

@@ -156,6 +156,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 		artifact.Or(
 			artifact.ByGoarch("amd64"),
 			artifact.ByGoarch("arm64"),
+			artifact.ByGoarch("all"),
 			artifact.And(
 				artifact.ByGoarch("arm"),
 				artifact.ByGoarm(brew.Goarm),

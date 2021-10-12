@@ -950,3 +950,57 @@ func TestInstalls(t *testing.T) {
 		))
 	})
 }
+
+func TestRunPipeFatBinary(t *testing.T) {
+	folder := t.TempDir()
+	ctx := &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.0.1",
+		},
+		Version:   "1.0.1",
+		Artifacts: artifact.New(),
+		Config: config.Project{
+			Dist:        folder,
+			ProjectName: "fatbin",
+			Brews: []config.Homebrew{
+				{
+					Name: "fatbin",
+					Tap: config.RepoRef{
+						Owner: "fatbin",
+						Name:  "bar",
+					},
+					IDs: []string{
+						"fatbin",
+					},
+					Install: `bin.install "fatbin"`,
+				},
+			},
+		},
+	}
+	path := filepath.Join(folder, "bin.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "bin.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "all",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID":     "fatbin",
+			"Format": "tar.gz",
+		},
+	})
+
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	client := client.NewMock()
+	distFile := filepath.Join(folder, "fatbin.rb")
+
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, publishAll(ctx, client))
+	require.True(t, client.CreatedFile)
+	golden.RequireEqualRb(t, []byte(client.Content))
+	distBts, err := os.ReadFile(distFile)
+	require.NoError(t, err)
+	require.Equal(t, client.Content, string(distBts))
+}
