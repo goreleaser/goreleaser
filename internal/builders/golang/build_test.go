@@ -615,6 +615,29 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 			Target: runtimeTarget,
 		}), `build for no-main does not contain a main function`)
 	})
+	t.Run("using gomod.proxy and template", func(t *testing.T) {
+		ctx := newCtx(t)
+		ctx.Config.GoMod.Proxy = true
+		ctx.Env["Main"] = "."
+		ctx.Config.Builds[0].Dir = "dist/proxy/test"
+		ctx.Config.Builds[0].Main = "github.com/caarlos0/test"
+		ctx.Config.Builds[0].UnproxiedDir = "."
+		ctx.Config.Builds[0].UnproxiedMain = "{{ .Env.Main }}"
+		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+			Target: runtimeTarget,
+		}), `build for no-main does not contain a main function`)
+	})
+	t.Run("using gomod.proxy and invalid template", func(t *testing.T) {
+		ctx := newCtx(t)
+		ctx.Config.GoMod.Proxy = true
+		ctx.Config.Builds[0].Dir = "dist/proxy/test"
+		ctx.Config.Builds[0].Main = "github.com/caarlos0/test"
+		ctx.Config.Builds[0].UnproxiedDir = "."
+		ctx.Config.Builds[0].UnproxiedMain = "{{ .Env.NOPE }}"
+		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+			Target: runtimeTarget,
+		}), `template: tmpl:1:7: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`)
+	})
 }
 
 func TestRunPipeWithProxiedRepo(t *testing.T) {
@@ -707,6 +730,19 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 		require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}))
+	})
+	t.Run("with template", func(t *testing.T) {
+		ctx.Config.Builds[0].Main = "{{ .Env.Main }}"
+		ctx.Env["Main"] = "."
+		require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+			Target: runtimeTarget,
+		}))
+	})
+	t.Run("with invalid template", func(t *testing.T) {
+		ctx.Config.Builds[0].Main = "{{ .Env.NOPE }}"
+		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+			Target: runtimeTarget,
+		}), `template: tmpl:1:7: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`)
 	})
 }
 
