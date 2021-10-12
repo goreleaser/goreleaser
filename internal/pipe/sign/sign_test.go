@@ -504,6 +504,12 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 		Name: "checksum2",
 		Path: filepath.Join(tmpdir, "checksum2"),
 		Type: artifact.Checksum,
+		Extra: map[string]interface{}{
+			"Refresh": func() error {
+				file := filepath.Join(tmpdir, "checksum2")
+				return os.WriteFile(file, []byte("foo"), 0o644)
+			},
+		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: "artifact4_1.0.0_linux_amd64",

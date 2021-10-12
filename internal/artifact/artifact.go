@@ -147,6 +147,20 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
+var noop = func() error { return nil }
+
+// Refresh executes
+func (a Artifact) Refresh() error {
+	fn, ok := a.ExtraOr("Refresh", noop).(func() error)
+	if !ok {
+		return nil
+	}
+	if err := fn(); err != nil {
+		return fmt.Errorf("failed to refresh %q: %w", a.Name, err)
+	}
+	return nil
+}
+
 // Artifacts is a list of artifacts.
 type Artifacts struct {
 	items []*Artifact

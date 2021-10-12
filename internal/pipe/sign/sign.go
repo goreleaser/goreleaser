@@ -101,6 +101,9 @@ func (Pipe) Run(ctx *context.Context) error {
 
 func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact) error {
 	for _, a := range artifacts {
+		if err := a.Refresh(); err != nil {
+			return err
+		}
 		artifact, err := signone(ctx, cfg, a)
 		if err != nil {
 			return err

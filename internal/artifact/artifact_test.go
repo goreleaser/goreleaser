@@ -383,3 +383,52 @@ func TestPaths(t *testing.T) {
 	}
 	require.ElementsMatch(t, paths, artifacts.Paths())
 }
+
+func TestRefresher(t *testing.T) {
+	artifacts := New()
+	path := filepath.Join(t.TempDir(), "f")
+	artifacts.Add(&Artifact{
+		Name: "f",
+		Path: path,
+		Extra: map[string]interface{}{
+			"ID": "ok",
+			"Refresh": func() error {
+				return os.WriteFile(path, []byte("hello"), 0o765)
+			},
+		},
+	})
+	artifacts.Add(&Artifact{
+		Name: "invalid",
+		Extra: map[string]interface{}{
+			"ID": "ok",
+			"Refresh": func() {
+				t.Fatalf("should not have been called")
+			},
+		},
+	})
+	artifacts.Add(&Artifact{
+		Name: "no refresh",
+		Extra: map[string]interface{}{
+			"ID": "ok",
+		},
+	})
+	artifacts.Add(&Artifact{
+		Name: "fail",
+		Extra: map[string]interface{}{
+			"ID": "nok",
+			"Refresh": func() error {
+				return fmt.Errorf("fake err")
+			},
+		},
+	})
+
+	for _, item := range artifacts.Filter(ByIDs("ok")).List() {
+		require.NoError(t, item.Refresh())
+	}
+	for _, item := range artifacts.Filter(ByIDs("nok")).List() {
+		require.EqualError(t, item.Refresh(), `failed to refresh "fail": fake err`)
+	}
+	bts, err := os.ReadFile(path)
+	require.NoError(t, err)
+	require.Equal(t, "hello", string(bts))
+}
