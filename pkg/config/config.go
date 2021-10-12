@@ -317,6 +317,12 @@ func (f *File) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+type FatBinary struct {
+	ID           string `yaml:"id,omitempty"`
+	NameTemplate string `yaml:"name_template,omitempty"`
+	Replace      bool   `yaml:"replace_plain_binaries,omitempty"`
+}
+
 // Archive config used for the archive.
 type Archive struct {
 	ID                        string            `yaml:",omitempty"`
@@ -688,6 +694,8 @@ type Project struct {
 	Source          Source           `yaml:",omitempty"`
 	GoMod           GoMod            `yaml:"gomod,omitempty"`
 	Announce        Announce         `yaml:"announce,omitempty"`
+
+	MacOSFatBinaries []FatBinary `yaml:"macos_fat_binaries,omitempty"`
 
 	// this is a hack ¯\_(ツ)_/¯
 	SingleBuild Build `yaml:"build,omitempty"`

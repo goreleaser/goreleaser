@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
 	"github.com/goreleaser/goreleaser/internal/pipe/discord"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
+	"github.com/goreleaser/goreleaser/internal/pipe/fatbinary"
 	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/mattermost"
@@ -51,6 +52,7 @@ var Defaulters = []Defaulter{
 	project.Pipe{},
 	gomod.Pipe{},
 	build.Pipe{},
+	fatbinary.Pipe{},
 	sourcearchive.Pipe{},
 	archive.Pipe{},
 	nfpm.Pipe{},
