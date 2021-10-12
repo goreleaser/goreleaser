@@ -237,6 +237,14 @@ func TestFullPipe(t *testing.T) {
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
+		"invalid_tap_skip_upload_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Brews[0].SkipUpload = "{{ .Asdsa }"
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "test"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
@@ -387,7 +395,8 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 		Version:   "1.0.1",
 		Artifacts: artifact.New(),
 		Env: map[string]string{
-			"FOO_BAR": "is_bar",
+			"FOO_BAR":     "is_bar",
+			"SKIP_UPLOAD": "true",
 		},
 		Config: config.Project{
 			Dist:        folder,
@@ -424,6 +433,17 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 						"foo",
 					},
 					SkipUpload: "true",
+				},
+				{
+					Name: "baz",
+					Tap: config.RepoRef{
+						Owner: "foo",
+						Name:  "bar",
+					},
+					IDs: []string{
+						"foo",
+					},
+					SkipUpload: "{{ .Env.SKIP_UPLOAD }}",
 				},
 			},
 		},
@@ -787,6 +807,9 @@ func TestRunPipeNoUpload(t *testing.T) {
 			},
 		},
 	})
+	ctx.Env = map[string]string{
+		"SKIP_UPLOAD": "true",
+	}
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	path := filepath.Join(folder, "whatever.tar.gz")
@@ -814,6 +837,11 @@ func TestRunPipeNoUpload(t *testing.T) {
 	}
 	t.Run("skip upload true", func(t *testing.T) {
 		ctx.Config.Brews[0].SkipUpload = "true"
+		ctx.Semver.Prerelease = ""
+		assertNoPublish(t)
+	})
+	t.Run("skip upload true set by template", func(t *testing.T) {
+		ctx.Config.Brews[0].SkipUpload = "{{.Env.SKIP_UPLOAD}}"
 		ctx.Semver.Prerelease = ""
 		assertNoPublish(t)
 	})
