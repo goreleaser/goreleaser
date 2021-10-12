@@ -35,11 +35,22 @@ func CopyWithMode(src, dst string, mode os.FileMode) error {
 		if info.IsDir() {
 			return os.MkdirAll(dst, info.Mode())
 		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			return copySymlink(path, dst)
+		}
 		if mode != 0 {
 			return copyFile(path, dst, mode)
 		}
 		return copyFile(path, dst, info.Mode())
 	})
+}
+
+func copySymlink(src, dst string) error {
+	src, err := os.Readlink(src)
+	if err != nil {
+		return err
+	}
+	return os.Symlink(src, dst)
 }
 
 func copyFile(src, dst string, mode os.FileMode) error {
