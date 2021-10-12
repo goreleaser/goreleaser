@@ -145,7 +145,7 @@ func TestRun(t *testing.T) {
 	})
 
 	for arch, path := range paths {
-		cmd := exec.Command("go", "build", "-trimpath", "-ldflags=-s -w", "-o", path, src)
+		cmd := exec.Command("go", "build", "-o", path, src)
 		cmd.Env = append(os.Environ(), "GOOS=darwin", "GOARCH="+arch)
 		out, err := cmd.CombinedOutput()
 		t.Log(string(out))
@@ -219,8 +219,4 @@ func checkFatBinary(tb testing.TB, fatbin *artifact.Artifact) {
 	f, err := macho.OpenFat(fatbin.Path)
 	require.NoError(tb, err)
 	require.Len(tb, f.Arches, 2)
-
-	check, err := fatbin.Checksum("sha256")
-	require.NoError(tb, err)
-	require.Equal(tb, "53692e6fbb45ce90c6da6a178fad501829e9f14d82c62435c3a3c7ed8a04e0bb", check)
 }
