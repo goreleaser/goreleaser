@@ -27,6 +27,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
+	"github.com/goreleaser/goreleaser/internal/pipe/universalbinary"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -53,6 +54,7 @@ var BuildPipeline = []Piper{
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
 	changelog.Pipe{},       // builds the release changelog
 	build.Pipe{},           // build
+	universalbinary.Pipe{}, // universal binary handling
 }
 
 // Pipeline contains all pipe implementations in order.

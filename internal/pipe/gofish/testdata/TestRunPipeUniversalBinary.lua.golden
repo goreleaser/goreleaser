@@ -1,0 +1,38 @@
+local name = "unibin"
+local version = "1.0.1"
+
+food = {
+    name = name,
+    description = "",
+    license = "",
+    homepage = "",
+    version = version,
+    packages = {
+        {
+            os = "darwin",
+            arch = "amd64",
+            url = "https://dummyhost/download/v1.0.1/unibin.tar.gz",
+            sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            resources = {
+                {
+                    path = "unibin",
+                    installpath = "bin/unibin",
+                    executable = true
+                }
+            }
+        },
+        {
+            os = "darwin",
+            arch = "arm64",
+            url = "https://dummyhost/download/v1.0.1/unibin.tar.gz",
+            sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            resources = {
+                {
+                    path = "unibin",
+                    installpath = "bin/unibin",
+                    executable = true
+                }
+            }
+        },
+    }
+}

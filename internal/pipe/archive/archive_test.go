@@ -40,7 +40,7 @@ func TestRunPipe(t *testing.T) {
 		t.Run("Archive format "+format, func(t *testing.T) {
 			dist := filepath.Join(folder, format+"_dist")
 			require.NoError(t, os.Mkdir(dist, 0o755))
-			for _, arch := range []string{"darwinamd64", "linux386", "linuxarm7", "linuxmipssoftfloat"} {
+			for _, arch := range []string{"darwinamd64", "darwinall", "linux386", "linuxarm7", "linuxmipssoftfloat"} {
 				createFakeBinary(t, dist, arch, "bin/mybin")
 			}
 			createFakeBinary(t, dist, "windowsamd64", "bin/mybin.exe")
@@ -76,6 +76,17 @@ func TestRunPipe(t *testing.T) {
 					},
 				},
 			)
+			darwinUniversalBinary := &artifact.Artifact{
+				Goos:   "darwin",
+				Goarch: "all",
+				Name:   "bin/mybin",
+				Path:   filepath.Join(dist, "darwinall", "bin", "mybin"),
+				Type:   artifact.Binary,
+				Extra: map[string]interface{}{
+					"Binary": "bin/mybin",
+					"ID":     "default",
+				},
+			}
 			darwinBuild := &artifact.Artifact{
 				Goos:   "darwin",
 				Goarch: "amd64",
@@ -135,6 +146,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			}
 			ctx.Artifacts.Add(darwinBuild)
+			ctx.Artifacts.Add(darwinUniversalBinary)
 			ctx.Artifacts.Add(linux386Build)
 			ctx.Artifacts.Add(linuxArmBuild)
 			ctx.Artifacts.Add(linuxMipsBuild)
@@ -148,13 +160,14 @@ func TestRunPipe(t *testing.T) {
 				require.Equal(t, "myid", arch.Extra["ID"].(string), "all archives must have the archive ID set")
 				require.NotEmpty(t, arch.ExtraOr("Binaries", []string{}).([]string), "all archives must have the binary names they contain set")
 			}
-			require.Len(t, archives, 5)
+			require.Len(t, archives, 6)
 			// TODO: should verify the artifact fields here too
 
 			if format == "tar.gz" {
 				// Check archive contents
 				for name, os := range map[string]string{
 					"foobar_0.0.1_darwin_amd64.tar.gz":         "darwin",
+					"foobar_0.0.1_darwin_all.tar.gz":           "darwin",
 					"foobar_0.0.1_linux_386.tar.gz":            "linux",
 					"foobar_0.0.1_linux_armv7.tar.gz":          "linux",
 					"foobar_0.0.1_linux_mips_softfloat.tar.gz": "linux",
@@ -347,6 +360,17 @@ func TestRunPipeBinary(t *testing.T) {
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
+		Goos:   "darwin",
+		Goarch: "all",
+		Name:   "myunibin",
+		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			"Binary": "myunibin",
+			"ID":     "default",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Goos:   "windows",
 		Goarch: "amd64",
 		Name:   "mybin.exe",
@@ -360,11 +384,19 @@ func TestRunPipeBinary(t *testing.T) {
 	})
 	require.NoError(t, Pipe{}.Run(ctx))
 	binaries := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
-	darwin := binaries.Filter(artifact.ByGoos("darwin")).List()[0]
+	require.Len(t, binaries.List(), 3)
+	darwinThin := binaries.Filter(artifact.And(
+		artifact.ByGoos("darwin"),
+		artifact.ByGoarch("amd64"),
+	)).List()[0]
+	darwinUniversal := binaries.Filter(artifact.And(
+		artifact.ByGoos("darwin"),
+		artifact.ByGoarch("all"),
+	)).List()[0]
 	windows := binaries.Filter(artifact.ByGoos("windows")).List()[0]
-	require.Equal(t, "mybin_0.0.1_darwin_amd64", darwin.Name)
+	require.Equal(t, "mybin_0.0.1_darwin_amd64", darwinThin.Name)
+	require.Equal(t, "myunibin_0.0.1_darwin_all", darwinUniversal.Name)
 	require.Equal(t, "mybin_0.0.1_windows_amd64.exe", windows.Name)
-	require.Len(t, binaries.List(), 2)
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {

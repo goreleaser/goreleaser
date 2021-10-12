@@ -237,6 +237,60 @@ func TestFullPipe(t *testing.T) {
 	}
 }
 
+func TestRunPipeUniversalBinary(t *testing.T) {
+	folder := t.TempDir()
+	ctx := &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.0.1",
+		},
+		Version:   "1.0.1",
+		Artifacts: artifact.New(),
+		Config: config.Project{
+			Dist:        folder,
+			ProjectName: "unibin",
+			Rigs: []config.GoFish{
+				{
+					Name: "unibin",
+					Rig: config.RepoRef{
+						Owner: "unibin",
+						Name:  "bar",
+					},
+					IDs: []string{
+						"unibin",
+					},
+				},
+			},
+		},
+	}
+	path := filepath.Join(folder, "bin.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "unibin.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "all",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			"ID":       "unibin",
+			"Format":   "tar.gz",
+			"Binaries": []string{"unibin"},
+		},
+	})
+
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	client := client.NewMock()
+	distFile := filepath.Join(folder, "unibin.lua")
+
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, publishAll(ctx, client))
+	require.True(t, client.CreatedFile)
+	golden.RequireEqualLua(t, []byte(client.Content))
+	distBts, err := os.ReadFile(distFile)
+	require.NoError(t, err)
+	require.Equal(t, client.Content, string(distBts))
+}
+
 func TestRunPipeNameTemplate(t *testing.T) {
 	folder := t.TempDir()
 	ctx := &context.Context{

@@ -91,6 +91,7 @@ func doRun(ctx *context.Context, goFish config.GoFish, cl client.Client) error {
 		artifact.Or(
 			artifact.ByGoarch("amd64"),
 			artifact.ByGoarch("arm64"),
+			artifact.ByGoarch("all"),
 			artifact.And(
 				artifact.ByGoarch("arm"),
 				artifact.ByGoarm(goFish.Goarm),
@@ -206,19 +207,27 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 		if err != nil {
 			return result, err
 		}
-		releasePackage := releasePackage{
-			DownloadURL: url,
-			SHA256:      sum,
-			OS:          artifact.Goos,
-			Arch:        artifact.Goarch,
-			Binaries:    artifact.ExtraOr("Binaries", []string{}).([]string),
+
+		goarch := []string{artifact.Goarch}
+		if artifact.Goarch == "all" {
+			goarch = []string{"amd64", "arm64"}
 		}
-		for _, v := range result.ReleasePackages {
-			if v.OS == artifact.Goos && v.Arch == artifact.Goarch {
-				return result, ErrMultipleArchivesSameOS
+
+		for _, arch := range goarch {
+			releasePackage := releasePackage{
+				DownloadURL: url,
+				SHA256:      sum,
+				OS:          artifact.Goos,
+				Arch:        arch,
+				Binaries:    artifact.ExtraOr("Binaries", []string{}).([]string),
 			}
+			for _, v := range result.ReleasePackages {
+				if v.OS == artifact.Goos && v.Arch == artifact.Goarch {
+					return result, ErrMultipleArchivesSameOS
+				}
+			}
+			result.ReleasePackages = append(result.ReleasePackages, releasePackage)
 		}
-		result.ReleasePackages = append(result.ReleasePackages, releasePackage)
 	}
 
 	return result, nil

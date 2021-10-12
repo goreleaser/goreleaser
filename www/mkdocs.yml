@@ -80,6 +80,7 @@ nav:
     - customization/build.md
     - customization/gomod.md
     - customization/monorepo.md
+    - customization/universalbinaries.md
   - Packaging and Archiving:
     - customization/archive.md
     - customization/nfpm.md
