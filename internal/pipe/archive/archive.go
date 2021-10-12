@@ -93,7 +93,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			artifact.And(
 				artifact.Or(
 					artifact.ByType(artifact.Binary),
-					artifact.ByType(artifact.FatBinary),
+					artifact.ByType(artifact.UniversalBinary),
 				),
 				artifact.ByIDs(archive.Builds...),
 			),

@@ -33,7 +33,7 @@ builds:
   ldflags:
     - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
 
-macos_universal_binaries:
+universal_binaries:
 - replace_plain_binaries: true
 
 checksum:

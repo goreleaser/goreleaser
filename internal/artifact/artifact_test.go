@@ -120,7 +120,7 @@ func TestRemove(t *testing.T) {
 			Name:   "universal",
 			Goos:   "darwin",
 			Goarch: "all",
-			Type:   FatBinary,
+			Type:   UniversalBinary,
 		},
 		{
 			Name:   "bar",
@@ -149,7 +149,7 @@ func TestRemove(t *testing.T) {
 		require.NoError(t, artifacts.Remove(
 			Or(
 				ByType(Checksum),
-				ByType(FatBinary),
+				ByType(UniversalBinary),
 				And(
 					ByGoos("linux"),
 					ByGoarch("arm"),
@@ -350,7 +350,7 @@ func TestTypeToString(t *testing.T) {
 		UploadableBinary,
 		UploadableFile,
 		Binary,
-		FatBinary,
+		UniversalBinary,
 		LinuxPackage,
 		PublishableSnapcraft,
 		Snapcraft,
