@@ -12,16 +12,20 @@ Here's how to use it:
 universal_binaries:
 -
   # ID of the source build
+  #
   # Defaults to the project name.
   id: foo
 
   # Universal binary name template.
+  #
   # Defaults to '{{ .ProjectName }}'
   name_template: '{{.ProjectName}}_{{.Version}}'
 
-  # Wrther or not to remove the previous "thin" binaries from the artifact list.
+  # Whether to remove the previous single-arch binaries from the artifact list.
+  # If left as false, your end release might have both several macOS archives: amd64, arm64 and all.
+  #
   # Defaults to false.
-  replace_plain_binaries: true
+  replace: true
 ```
 
 !!! tip
@@ -32,7 +36,7 @@ The minimal configuration for most setups would look like this:
 ```yaml
 # .goreleaser.yml
 universal_binaries:
-- replace_plain_binaries: true
+- replace: true
 ```
 
 That config will join your default build macOS binaries into an Universal Binary,

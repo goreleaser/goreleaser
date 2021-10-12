@@ -321,7 +321,7 @@ func (f *File) UnmarshalYAML(unmarshal func(interface{}) error) error {
 type UniversalBinary struct {
 	ID           string `yaml:"id,omitempty"`
 	NameTemplate string `yaml:"name_template,omitempty"`
-	Replace      bool   `yaml:"replace_plain_binaries,omitempty"`
+	Replace      bool   `yaml:",omitempty"`
 }
 
 // Archive config used for the archive.
