@@ -42,7 +42,7 @@ food = {
                     {{- if ne $element.OS "windows"}}
                     executable = true
                     {{- end }}
-                }
+                },
                 {{- end }}
             }
         },

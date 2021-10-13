@@ -18,7 +18,7 @@ food = {
                     path = "foo",
                     installpath = "bin/foo",
                     executable = true
-                }
+                },
             }
         },
         {
@@ -31,7 +31,7 @@ food = {
                     path = "foo",
                     installpath = "bin/foo",
                     executable = true
-                }
+                },
             }
         },
         {
@@ -44,7 +44,7 @@ food = {
                     path = "foo",
                     installpath = "bin/foo",
                     executable = true
-                }
+                },
             }
         },
     }
