@@ -17,6 +17,9 @@ jobs:
       - uses: arduino/setup-task@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
       - run: task docs:build
       - uses: wjdp/htmltest-action@master
         with:
