@@ -7,7 +7,9 @@ updates:
       time: "08:00"
     labels:
       - "dependencies"
-      - "automerge"
+    commit-message:
+      prefix: "feat"
+      include: "scope"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -15,7 +17,9 @@ updates:
       time: "08:00"
     labels:
       - "dependencies"
-      - "automerge"
+    commit-message:
+      prefix: "feat"
+      include: "scope"
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
@@ -23,4 +27,6 @@ updates:
       time: "08:00"
     labels:
       - "dependencies"
-      - "automerge"
+    commit-message:
+      prefix: "feat"
+      include: "scope"

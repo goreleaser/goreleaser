@@ -46,6 +46,7 @@ changelog:
     exclude:
     - '^docs:'
     - '^test:'
+    - '^chore'
     - Merge pull request
     - Merge branch
     - go mod tidy
