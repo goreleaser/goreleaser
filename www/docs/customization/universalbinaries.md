@@ -1,8 +1,8 @@
 ---
-title: MacOS Universal Binaries
+title: macOS Universal Binaries
 ---
 
-GoReleaser can create _MacOS Universal Binaries_ - also known as _Fat Binaries_.
+GoReleaser can create _macOS Universal Binaries_ - also known as _Fat Binaries_.
 Those binaries are in a special format that contains both `arm64` and `amd64` executables in a single file.
 
 Here's how to use it:
