@@ -37,8 +37,8 @@ food = {
             resources = {
                 {{- range $binary := $element.Binaries }}
                 {
-                    path = {{if ne $element.OS "windows"}}"{{ $binary }}"{{else}}"{{ $binary }}.exe"{{end}},
-                    installpath = {{if ne $element.OS "windows"}}"bin/{{ $binary }}"{{else}}"bin\\{{ $binary }}.exe"{{end}},
+                    path = "{{ $binary }}",
+                    installpath = {{if ne $element.OS "windows"}}"bin/{{ $binary }}"{{else}}"bin\\{{ $binary }}"{{end}},
                     {{- if ne $element.OS "windows"}}
                     executable = true
                     {{- end }}

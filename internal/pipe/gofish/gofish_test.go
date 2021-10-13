@@ -65,7 +65,7 @@ func createTemplateData() templateData {
 				OS:          "windows",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_windows_amd64.zip",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-				Binaries:    []string{"bin1", "bin2", "bin3"},
+				Binaries:    []string{"bin1.exe", "bin2.exe", "bin3.exe"},
 			},
 		},
 		Name:    "Test",
