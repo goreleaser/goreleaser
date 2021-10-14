@@ -97,7 +97,10 @@ func doRun(ctx *context.Context, goFish config.GoFish, cl client.Client) error {
 				artifact.ByGoarm(goFish.Goarm),
 			),
 		),
-		artifact.ByType(artifact.UploadableArchive),
+		artifact.Or(
+			artifact.ByType(artifact.UploadableArchive),
+			artifact.ByType(artifact.UploadableBinary),
+		),
 	}
 	if len(goFish.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(goFish.IDs...))

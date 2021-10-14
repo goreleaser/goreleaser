@@ -715,10 +715,19 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 }
 
 func TestRunPipeBinaryRelease(t *testing.T) {
-	ctx := context.New(
-		config.Project{
+	folder := t.TempDir()
+	ctx := &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.2.1",
+		},
+		Version:   "1.2.1",
+		Artifacts: artifact.New(),
+		Config: config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
 			Rigs: []config.GoFish{
 				{
+					Name: "foo",
 					Rig: config.RepoRef{
 						Owner: "test",
 						Name:  "test",
@@ -726,17 +735,32 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 				},
 			},
 		},
-	)
+	}
+
+	path := filepath.Join(folder, "dist/foo_darwin_all/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   "doesnt mather",
+		Name:   "foo_macos",
+		Path:   path,
 		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.Binary,
+		Goarch: "all",
+		Type:   artifact.UploadableBinary,
+		Extra: map[string]interface{}{
+			"ID":       "foo",
+			"Format":   "binary",
+			"Binaries": []string{"foo_macos"},
+		},
 	})
+
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
 	client := client.NewMock()
-	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
-	require.False(t, client.CreatedFile)
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, publishAll(ctx, client))
+	require.True(t, client.CreatedFile)
+	golden.RequireEqualRb(t, []byte(client.Content))
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
