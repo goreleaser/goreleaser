@@ -12,7 +12,7 @@ require (
 	github.com/dghubble/go-twitter v0.0.0-20210609183100-2fdbf421508e
 	github.com/dghubble/oauth1 v0.7.0
 	github.com/fatih/color v1.12.0
-	github.com/google/go-github/v35 v35.3.0
+	github.com/google/go-github/v39 v39.2.0
 	github.com/goreleaser/fileglob v1.2.0
 	github.com/goreleaser/nfpm/v2 v2.6.0
 	github.com/imdario/mergo v0.3.12
@@ -70,7 +70,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
-	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/rpmpack v0.0.0-20210410105602-e20c988a6f5a // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/google/wire v0.5.0 // indirect
