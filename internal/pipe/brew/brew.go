@@ -152,7 +152,6 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 			artifact.ByGoos("darwin"),
 			artifact.ByGoos("linux"),
 		),
-		artifact.ByFormats("zip", "tar.gz"),
 		artifact.Or(
 			artifact.ByGoarch("amd64"),
 			artifact.ByGoarch("arm64"),
@@ -162,7 +161,13 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 				artifact.ByGoarm(brew.Goarm),
 			),
 		),
-		artifact.ByType(artifact.UploadableArchive),
+		artifact.Or(
+			artifact.And(
+				artifact.ByFormats("zip", "tar.gz"),
+				artifact.ByType(artifact.UploadableArchive),
+			),
+			artifact.ByType(artifact.UploadableBinary),
+		),
 	}
 	if len(brew.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(brew.IDs...))
