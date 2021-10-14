@@ -140,9 +140,9 @@ func TestRunPipe(t *testing.T) {
 				Path:   filepath.Join(dist, "windowsamd64", "bin", "mybin.exe"),
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"Binary":    "mybin",
-					"Extension": ".exe",
-					"ID":        "default",
+					"Binary": "mybin",
+					"Ext":    ".exe",
+					"ID":     "default",
 				},
 			}
 			ctx.Artifacts.Add(darwinBuild)
@@ -157,8 +157,12 @@ func TestRunPipe(t *testing.T) {
 			require.NoError(t, Pipe{}.Run(ctx))
 			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
 			for _, arch := range archives {
-				require.Equal(t, "myid", arch.Extra["ID"].(string), "all archives must have the archive ID set")
-				require.NotEmpty(t, arch.ExtraOr("Binaries", []string{}).([]string), "all archives must have the binary names they contain set")
+				expectBin := "bin/mybin"
+				if arch.Goos == "windows" {
+					expectBin += ".exe"
+				}
+				require.Equal(t, "myid", arch.Extra["ID"].(string))
+				require.Equal(t, []string{expectBin}, arch.ExtraOr("Binaries", []string{}).([]string))
 			}
 			require.Len(t, archives, 6)
 			// TODO: should verify the artifact fields here too
@@ -395,8 +399,11 @@ func TestRunPipeBinary(t *testing.T) {
 	)).List()[0]
 	windows := binaries.Filter(artifact.ByGoos("windows")).List()[0]
 	require.Equal(t, "mybin_0.0.1_darwin_amd64", darwinThin.Name)
+	require.Equal(t, darwinThin.ExtraOr("Binaries", []string{}), []string{"mybin_0.0.1_darwin_amd64"})
 	require.Equal(t, "myunibin_0.0.1_darwin_all", darwinUniversal.Name)
+	require.Equal(t, darwinUniversal.ExtraOr("Binaries", []string{}), []string{"myunibin_0.0.1_darwin_all"})
 	require.Equal(t, "mybin_0.0.1_windows_amd64.exe", windows.Name)
+	require.Equal(t, windows.ExtraOr("Binaries", []string{}), []string{"mybin_0.0.1_windows_amd64.exe"})
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {
@@ -420,9 +427,9 @@ func TestRunPipeDistRemoved(t *testing.T) {
 		Path:   filepath.Join("/tmp/path/to/nope", "windowsamd64", "mybin.exe"),
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
-			"Binary":    "mybin",
-			"Extension": ".exe",
-			"ID":        "default",
+			"Binary": "mybin",
+			"Ext":    ".exe",
+			"ID":     "default",
 		},
 	})
 	// not checking on error msg because it may change depending on OS/version
@@ -786,6 +793,7 @@ func TestBinaryOverride(t *testing.T) {
 			windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
 			require.Equal(t, "foobar_0.0.1_windows_amd64.exe", windows.Name)
 			require.Empty(t, windows.ExtraOr("WrappedIn", ""))
+			require.Equal(t, windows.ExtraOr("Binaries", []string{}), []string{"foobar_0.0.1_windows_amd64.exe"})
 		})
 	}
 }
@@ -837,9 +845,9 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 		Path:   filepath.Join(dist, "windowsamd64", "mybin.exe"),
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
-			"Binary":    "mybin",
-			"Extension": ".exe",
-			"ID":        "default",
+			"Binary": "mybin",
+			"Ext":    ".exe",
+			"ID":     "default",
 		},
 	})
 	ctx.Version = "0.0.1"

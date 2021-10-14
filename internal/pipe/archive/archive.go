@@ -239,7 +239,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 				"Builds":   []*artifact.Artifact{binary},
 				"ID":       archive.ID,
 				"Format":   archive.Format,
-				"Binaries": []string{binary.Name},
+				"Binaries": []string{finalName},
 			},
 		})
 	}
