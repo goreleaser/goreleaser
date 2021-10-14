@@ -421,7 +421,7 @@ func TestRunPipeDistRemoved(t *testing.T) {
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
 			artifact.ExtraBinary: "mybin",
-			"Extension":          ".exe",
+			artifact.ExtraExt:    ".exe",
 			artifact.ExtraID:     "default",
 		},
 	})
@@ -838,7 +838,7 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
 			artifact.ExtraBinary: "mybin",
-			"Extension":          ".exe",
+			artifact.ExtraExt:    ".exe",
 			artifact.ExtraID:     "default",
 		},
 	})
