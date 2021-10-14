@@ -216,16 +216,20 @@ func wrapFolder(a config.Archive) string {
 
 func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
 	for _, binary := range binaries {
-		log.WithField("binary", binary.Name).Info("skip archiving")
 		name, err := tmpl.New(ctx).
 			WithArtifact(binary, archive.Replacements).
 			Apply(archive.NameTemplate)
 		if err != nil {
 			return err
 		}
+		finalName := name + binary.ExtraOr("Ext", "").(string)
+		log.
+			WithField("binary", binary.Name).
+			WithField("name", finalName).
+			Info("skip archiving")
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Type:   artifact.UploadableBinary,
-			Name:   name + binary.ExtraOr("Ext", "").(string),
+			Name:   finalName,
 			Path:   binary.Path,
 			Goos:   binary.Goos,
 			Goarch: binary.Goarch,
