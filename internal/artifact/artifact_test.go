@@ -271,25 +271,25 @@ func TestByIDs(t *testing.T) {
 		{
 			Name: "foo",
 			Extra: map[string]interface{}{
-				"ID": "foo",
+				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "bar",
 			Extra: map[string]interface{}{
-				"ID": "bar",
+				ExtraID: "bar",
 			},
 		},
 		{
 			Name: "foobar",
 			Extra: map[string]interface{}{
-				"ID": "foo",
+				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "check",
 			Extra: map[string]interface{}{
-				"ID": "check",
+				ExtraID: "check",
 			},
 		},
 		{
@@ -312,25 +312,25 @@ func TestByFormats(t *testing.T) {
 		{
 			Name: "foo",
 			Extra: map[string]interface{}{
-				"Format": "zip",
+				ExtraFormat: "zip",
 			},
 		},
 		{
 			Name: "bar",
 			Extra: map[string]interface{}{
-				"Format": "tar.gz",
+				ExtraFormat: "tar.gz",
 			},
 		},
 		{
 			Name: "foobar",
 			Extra: map[string]interface{}{
-				"Format": "zip",
+				ExtraFormat: "zip",
 			},
 		},
 		{
 			Name: "bin",
 			Extra: map[string]interface{}{
-				"Format": "binary",
+				ExtraFormat: "binary",
 			},
 		},
 	}

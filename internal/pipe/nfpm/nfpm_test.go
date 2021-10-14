@@ -64,7 +64,7 @@ func TestRunPipeInvalidFormat(t *testing.T) {
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": "foo",
+					artifact.ExtraID: "foo",
 				},
 			})
 		}
@@ -156,7 +156,7 @@ func TestRunPipe(t *testing.T) {
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": "default",
+					artifact.ExtraID: "default",
 				},
 			})
 		}
@@ -165,10 +165,10 @@ func TestRunPipe(t *testing.T) {
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
 	require.Len(t, packages, 6)
 	for _, pkg := range packages {
-		format := pkg.ExtraOr("Format", "").(string)
+		format := pkg.ExtraOr(artifact.ExtraFormat, "").(string)
 		require.NotEmpty(t, format)
 		require.Equal(t, pkg.Name, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
-		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
+		require.Equal(t, pkg.ExtraOr(artifact.ExtraID, ""), "someid")
 		require.ElementsMatch(t, []string{
 			"./testdata/testfile.txt",
 			"./testdata/testfile.txt",
@@ -210,7 +210,7 @@ func TestInvalidTemplate(t *testing.T) {
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"ID": "default",
+				artifact.ExtraID: "default",
 			},
 		})
 		return ctx
@@ -315,7 +315,7 @@ func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
-			"ID": "default",
+			artifact.ExtraID: "default",
 		},
 	})
 	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
@@ -340,7 +340,7 @@ func TestNoBuildsFound(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
-			"ID": "default",
+			artifact.ExtraID: "default",
 		},
 	})
 	require.EqualError(t, Pipe{}.Run(ctx), `no linux binaries found for builds [nope]`)
@@ -381,7 +381,7 @@ func TestCreateFileDoesntExist(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
-			"ID": "default",
+			artifact.ExtraID: "default",
 		},
 	})
 	require.Contains(t, Pipe{}.Run(ctx).Error(), `dist/mybin/mybin": file does not exist`)
@@ -410,7 +410,7 @@ func TestInvalidConfig(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.Binary,
 		Extra: map[string]interface{}{
-			"ID": "default",
+			artifact.ExtraID: "default",
 		},
 	})
 	require.Contains(t, Pipe{}.Run(ctx).Error(), `invalid nfpm config: package name must be provided`)
@@ -533,7 +533,7 @@ func TestDebSpecificConfig(t *testing.T) {
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": "default",
+					artifact.ExtraID: "default",
 				},
 			})
 		}
@@ -607,7 +607,7 @@ func TestRPMSpecificConfig(t *testing.T) {
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": "default",
+					artifact.ExtraID: "default",
 				},
 			})
 		}
@@ -676,7 +676,7 @@ func TestRPMSpecificScriptsConfig(t *testing.T) {
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": "default",
+					artifact.ExtraID: "default",
 				},
 			})
 		}
@@ -754,7 +754,7 @@ func TestAPKSpecificConfig(t *testing.T) {
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": "default",
+					artifact.ExtraID: "default",
 				},
 			})
 		}
@@ -831,7 +831,7 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": "default",
+					artifact.ExtraID: "default",
 				},
 			})
 		}
@@ -955,7 +955,7 @@ func TestMeta(t *testing.T) {
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": "default",
+					artifact.ExtraID: "default",
 				},
 			})
 		}
@@ -964,10 +964,10 @@ func TestMeta(t *testing.T) {
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
 	require.Len(t, packages, 4)
 	for _, pkg := range packages {
-		format := pkg.ExtraOr("Format", "").(string)
+		format := pkg.ExtraOr(artifact.ExtraFormat, "").(string)
 		require.NotEmpty(t, format)
 		require.Equal(t, pkg.Name, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
-		require.Equal(t, pkg.ExtraOr("ID", ""), "someid")
+		require.Equal(t, pkg.ExtraOr(artifact.ExtraID, ""), "someid")
 		require.ElementsMatch(t, []string{
 			"/usr/share/testfile.txt",
 			"/etc/nope.conf",
@@ -1034,7 +1034,7 @@ func TestSkipSign(t *testing.T) {
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": "default",
+					artifact.ExtraID: "default",
 				},
 			})
 		}
@@ -1105,7 +1105,7 @@ func TestBinDirTemplating(t *testing.T) {
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": "default",
+					artifact.ExtraID: "default",
 				},
 			})
 		}
@@ -1114,7 +1114,7 @@ func TestBinDirTemplating(t *testing.T) {
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
 
 	for _, pkg := range packages {
-		format := pkg.ExtraOr("Format", "").(string)
+		format := pkg.ExtraOr(artifact.ExtraFormat, "").(string)
 		require.NotEmpty(t, format)
 		// the final binary should contain the evaluated bindir (after template eval)
 		require.ElementsMatch(t, []string{

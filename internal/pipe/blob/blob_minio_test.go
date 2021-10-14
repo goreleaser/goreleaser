@@ -91,7 +91,7 @@ func TestMinioUpload(t *testing.T) {
 		Name: "source.tar.gz",
 		Path: srcpath,
 		Extra: map[string]interface{}{
-			"Format": "tar.gz",
+			artifact.ExtraFormat: "tar.gz",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -99,7 +99,7 @@ func TestMinioUpload(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tgzpath,
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -107,7 +107,7 @@ func TestMinioUpload(t *testing.T) {
 		Name: "bin.deb",
 		Path: debpath,
 		Extra: map[string]interface{}{
-			"ID": "bar",
+			artifact.ExtraID: "bar",
 		},
 	})
 

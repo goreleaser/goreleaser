@@ -45,7 +45,7 @@ func TestArchive(t *testing.T) {
 				Name: "foo-1.0.0." + format,
 				Path: "dist/foo-1.0.0." + format,
 				Extra: map[string]interface{}{
-					"Format": format,
+					artifact.ExtraFormat: format,
 				},
 			}, *artifacts[0])
 			stat, err := os.Stat(filepath.Join(tmp, "dist", "foo-1.0.0."+format))

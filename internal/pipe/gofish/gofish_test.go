@@ -196,8 +196,8 @@ func TestFullPipe(t *testing.T) {
 				Goarch: "amd64",
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":     "bar",
-					"Format": "tar.gz",
+					artifact.ExtraID:     "bar",
+					artifact.ExtraFormat: "tar.gz",
 				},
 			})
 			path := filepath.Join(folder, "bin.tar.gz")
@@ -208,9 +208,9 @@ func TestFullPipe(t *testing.T) {
 				Goarch: "amd64",
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":       "foo",
-					"Format":   "tar.gz",
-					"Binaries": []string{"name"},
+					artifact.ExtraID:       "foo",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"name"},
 				},
 			})
 
@@ -270,9 +270,9 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 		Goarch: "all",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":       "unibin",
-			"Format":   "tar.gz",
-			"Binaries": []string{"unibin"},
+			artifact.ExtraID:       "unibin",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"unibin"},
 		},
 	})
 
@@ -327,9 +327,9 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":       "foo",
-			"Format":   "tar.gz",
-			"Binaries": []string{"foo"},
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 
@@ -406,9 +406,9 @@ func TestRunPipeMultipleGoFishWithSkip(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":       "foo",
-			"Format":   "tar.gz",
-			"Binaries": []string{"foo"},
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 
@@ -522,9 +522,9 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 					Goarm:  a.goarm,
 					Type:   artifact.UploadableArchive,
 					Extra: map[string]interface{}{
-						"ID":       a.name,
-						"Format":   "tar.gz",
-						"Binaries": []string{"foo"},
+						artifact.ExtraID:       a.name,
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{"foo"},
 					},
 				})
 				f, err := os.Create(path)
@@ -700,9 +700,9 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 				Goarch: ttt.goarch,
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":       fmt.Sprintf("foo%d", idx),
-					"Format":   "tar.gz",
-					"Binaries": []string{"foo"},
+					artifact.ExtraID:       fmt.Sprintf("foo%d", idx),
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"foo"},
 				},
 			})
 		}
@@ -767,9 +767,9 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":       "foo",
-			"Format":   "tar.gz",
-			"Binaries": []string{"foo"},
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 	client := client.NewMock()
@@ -819,8 +819,8 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "tar.gz",
 		},
 	})
 	client := client.NewMock()

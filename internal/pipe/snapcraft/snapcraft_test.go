@@ -494,7 +494,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": name,
+					artifact.ExtraID: name,
 				},
 			})
 		}

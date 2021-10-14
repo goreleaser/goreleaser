@@ -91,6 +91,16 @@ func (t Type) String() string {
 	}
 }
 
+const (
+	ExtraID        = "ID"
+	ExtraBinary    = "Binary"
+	ExtraExt       = "Ext"
+	ExtraBuilds    = "Builds"
+	ExtraFormat    = "Format"
+	ExtraWrappedIn = "WrappedIn"
+	ExtraBinaries  = "Binaries"
+)
+
 // Artifact represents an artifact and its relevant info.
 type Artifact struct {
 	Name   string
@@ -252,7 +262,7 @@ func ByFormats(formats ...string) Filter {
 	for _, format := range formats {
 		format := format
 		filters = append(filters, func(a *Artifact) bool {
-			return a.ExtraOr("Format", "") == format
+			return a.ExtraOr(ExtraFormat, "") == format
 		})
 	}
 	return Or(filters...)
@@ -267,7 +277,7 @@ func ByIDs(ids ...string) Filter {
 			// checksum and source archive are always for all artifacts, so return always true.
 			return a.Type == Checksum ||
 				a.Type == UploadableSourceArchive ||
-				a.ExtraOr("ID", "") == id
+				a.ExtraOr(ExtraID, "") == id
 		})
 	}
 	return Or(filters...)

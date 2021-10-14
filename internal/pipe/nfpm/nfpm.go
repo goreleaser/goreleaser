@@ -313,10 +313,10 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		Goarch: binaries[0].Goarch,
 		Goarm:  binaries[0].Goarm,
 		Extra: map[string]interface{}{
-			"Builds": binaries,
-			"ID":     fpm.ID,
-			"Format": format,
-			"Files":  contents,
+			artifact.ExtraBuilds: binaries,
+			artifact.ExtraID:     fpm.ID,
+			artifact.ExtraFormat: format,
+			"Files":              contents,
 		},
 	})
 	return nil

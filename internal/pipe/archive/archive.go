@@ -193,11 +193,11 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		Goarm:  binaries[0].Goarm,
 		Gomips: binaries[0].Gomips,
 		Extra: map[string]interface{}{
-			"Builds":    binaries,
-			"ID":        arch.ID,
-			"Format":    arch.Format,
-			"WrappedIn": wrap,
-			"Binaries":  bins,
+			artifact.ExtraBuilds:    binaries,
+			artifact.ExtraID:        arch.ID,
+			artifact.ExtraFormat:    arch.Format,
+			artifact.ExtraWrappedIn: wrap,
+			artifact.ExtraBinaries:  bins,
 		},
 	})
 	return nil
@@ -222,7 +222,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		if err != nil {
 			return err
 		}
-		finalName := name + binary.ExtraOr("Ext", "").(string)
+		finalName := name + binary.ExtraOr(artifact.ExtraExt, "").(string)
 		log.
 			WithField("binary", binary.Name).
 			WithField("name", finalName).
@@ -236,10 +236,10 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Goarm:  binary.Goarm,
 			Gomips: binary.Gomips,
 			Extra: map[string]interface{}{
-				"Builds":   []*artifact.Artifact{binary},
-				"ID":       archive.ID,
-				"Format":   archive.Format,
-				"Binaries": []string{binary.Name},
+				artifact.ExtraBuilds:   []*artifact.Artifact{binary},
+				artifact.ExtraID:       archive.ID,
+				artifact.ExtraFormat:   archive.Format,
+				artifact.ExtraBinaries: []string{binary.Name},
 			},
 		})
 	}

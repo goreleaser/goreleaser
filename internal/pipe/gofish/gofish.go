@@ -190,8 +190,8 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 		License:  cfg.License,
 	}
 
-	for _, artifact := range artifacts {
-		sum, err := artifact.Checksum("sha256")
+	for _, art := range artifacts {
+		sum, err := art.Checksum("sha256")
 		if err != nil {
 			return result, err
 		}
@@ -203,13 +203,13 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 			}
 			cfg.URLTemplate = url
 		}
-		url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(cfg.URLTemplate)
+		url, err := tmpl.New(ctx).WithArtifact(art, map[string]string{}).Apply(cfg.URLTemplate)
 		if err != nil {
 			return result, err
 		}
 
-		goarch := []string{artifact.Goarch}
-		if artifact.Goarch == "all" {
+		goarch := []string{art.Goarch}
+		if art.Goarch == "all" {
 			goarch = []string{"amd64", "arm64"}
 		}
 
@@ -217,12 +217,12 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 			releasePackage := releasePackage{
 				DownloadURL: url,
 				SHA256:      sum,
-				OS:          artifact.Goos,
+				OS:          art.Goos,
 				Arch:        arch,
-				Binaries:    artifact.ExtraOr("Binaries", []string{}).([]string),
+				Binaries:    art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string),
 			}
 			for _, v := range result.ReleasePackages {
-				if v.OS == artifact.Goos && v.Arch == artifact.Goarch {
+				if v.OS == art.Goos && v.Arch == art.Goarch {
 					return result, ErrMultipleArchivesSameOS
 				}
 			}
