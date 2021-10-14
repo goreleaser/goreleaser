@@ -38,6 +38,14 @@ Description.
 
 -->
 
+### godownloader
+
+> since 2021-10-13
+
+GoDownloader, the install script generator, wasn't been updated for a long time and is now officially deprecated.
+The website and all install scripts will be taken out in 6 months.
+You can still use any of the other install methods.
+
 ### builds for windows/arm64
 
 > since 2021-08-16 (v0.175.0)
