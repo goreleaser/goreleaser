@@ -549,7 +549,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 
 	// ensure all artifacts have an ID
 	for _, arti := range ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List() {
-		require.NotEmptyf(tb, arti.ExtraOr(artifact.ExtraID, ""), ".Extra.ID on %s", arti.Path)
+		require.NotEmptyf(tb, arti.ID(), ".Extra.ID on %s", arti.Path)
 	}
 
 	// verify that only the artifacts and the signatures are in the dist dir

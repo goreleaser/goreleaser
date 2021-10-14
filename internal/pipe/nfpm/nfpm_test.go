@@ -165,10 +165,10 @@ func TestRunPipe(t *testing.T) {
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
 	require.Len(t, packages, 6)
 	for _, pkg := range packages {
-		format := pkg.ExtraOr(artifact.ExtraFormat, "").(string)
+		format := pkg.Format()
 		require.NotEmpty(t, format)
 		require.Equal(t, pkg.Name, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
-		require.Equal(t, pkg.ExtraOr(artifact.ExtraID, ""), "someid")
+		require.Equal(t, pkg.ID(), "someid")
 		require.ElementsMatch(t, []string{
 			"./testdata/testfile.txt",
 			"./testdata/testfile.txt",
@@ -964,10 +964,10 @@ func TestMeta(t *testing.T) {
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
 	require.Len(t, packages, 4)
 	for _, pkg := range packages {
-		format := pkg.ExtraOr(artifact.ExtraFormat, "").(string)
+		format := pkg.Format()
 		require.NotEmpty(t, format)
 		require.Equal(t, pkg.Name, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
-		require.Equal(t, pkg.ExtraOr(artifact.ExtraID, ""), "someid")
+		require.Equal(t, pkg.ID(), "someid")
 		require.ElementsMatch(t, []string{
 			"/usr/share/testfile.txt",
 			"/etc/nope.conf",
@@ -1114,7 +1114,7 @@ func TestBinDirTemplating(t *testing.T) {
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
 
 	for _, pkg := range packages {
-		format := pkg.ExtraOr(artifact.ExtraFormat, "").(string)
+		format := pkg.Format()
 		require.NotEmpty(t, format)
 		// the final binary should contain the evaluated bindir (after template eval)
 		require.ElementsMatch(t, []string{

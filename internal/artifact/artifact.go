@@ -157,6 +157,16 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
+// ID returns the artifact ID if it exists, empty otherwise.
+func (a Artifact) ID() string {
+	return a.ExtraOr(ExtraID, "").(string)
+}
+
+// Format returns the artifact Format if it exists, empty otherwise.
+func (a Artifact) Format() string {
+	return a.ExtraOr(ExtraFormat, "").(string)
+}
+
 // Artifacts is a list of artifacts.
 type Artifacts struct {
 	items []*Artifact
@@ -262,7 +272,7 @@ func ByFormats(formats ...string) Filter {
 	for _, format := range formats {
 		format := format
 		filters = append(filters, func(a *Artifact) bool {
-			return a.ExtraOr(ExtraFormat, "") == format
+			return a.Format() == format
 		})
 	}
 	return Or(filters...)
@@ -277,7 +287,7 @@ func ByIDs(ids ...string) Filter {
 			// checksum and source archive are always for all artifacts, so return always true.
 			return a.Type == Checksum ||
 				a.Type == UploadableSourceArchive ||
-				a.ExtraOr(ExtraID, "") == id
+				a.ID() == id
 		})
 	}
 	return Or(filters...)

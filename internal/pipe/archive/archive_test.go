@@ -157,7 +157,7 @@ func TestRunPipe(t *testing.T) {
 			require.NoError(t, Pipe{}.Run(ctx))
 			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
 			for _, arch := range archives {
-				require.Equal(t, "myid", arch.Extra[artifact.ExtraID].(string), "all archives must have the archive ID set")
+				require.Equal(t, "myid", arch.ID(), "all archives must have the archive ID set")
 				require.NotEmpty(t, arch.ExtraOr(artifact.ExtraBinaries, []string{}).([]string), "all archives must have the binary names they contain set")
 			}
 			require.Len(t, archives, 6)
@@ -779,7 +779,7 @@ func TestBinaryOverride(t *testing.T) {
 			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive))
 			darwin := archives.Filter(artifact.ByGoos("darwin")).List()[0]
 			require.Equal(t, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
-			require.Equal(t, format, darwin.ExtraOr(artifact.ExtraFormat, ""))
+			require.Equal(t, format, darwin.Format())
 			require.Empty(t, darwin.ExtraOr(artifact.ExtraWrappedIn, ""))
 
 			archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
