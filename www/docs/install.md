@@ -113,17 +113,6 @@ Below you can find the steps for each of them.
 === "Pro"
     Download the `.deb`, `.rpm` or `.apk` packages from the [Pro releases page][pro-releases] and install them with the appropriate tools.
 
-
-### shell script
-
-=== "OSS"
-    ```sh
-    curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
-    ```
-
-
-<!-- TODO: write a new shell script and store it within the website -->
-
 ### go install
 
 === "OSS"
