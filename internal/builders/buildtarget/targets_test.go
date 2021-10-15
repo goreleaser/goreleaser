@@ -278,7 +278,7 @@ func TestList(t *testing.T) {
 			GoBinary: "go",
 			Dir:      "targets.go",
 		})
-		require.EqualError(t, err, "invalid builds.main property, it should be a directory")
+		require.EqualError(t, err, "invalid builds.dir property, it should be a directory: targets.go")
 	})
 
 	t.Run("fail", func(t *testing.T) {
