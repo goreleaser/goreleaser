@@ -214,8 +214,11 @@ func TestBuild(t *testing.T) {
 	config := config.Project{
 		Builds: []config.Build{
 			{
-				ID:     "foo",
-				Env:    []string{"GO111MODULE=off"},
+				ID: "foo",
+				Env: []string{
+					"GO111MODULE=off",
+					`TEST_T={{ if eq .Os "windows" }}w{{ else if eq .Os "darwin" }}d{{ else if eq .Os "linux" }}l{{ end }}`,
+				},
 				Binary: "bin/foo-{{ .Version }}",
 				Targets: []string{
 					"linux_amd64",
@@ -285,9 +288,10 @@ func TestBuild(t *testing.T) {
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				"Ext":      "",
+				"Binary":   "foo-v5.6.7",
+				"ID":       "foo",
+				"testEnvs": []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -298,9 +302,10 @@ func TestBuild(t *testing.T) {
 			Gomips: "softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				"Ext":      "",
+				"Binary":   "foo-v5.6.7",
+				"ID":       "foo",
+				"testEnvs": []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -311,9 +316,10 @@ func TestBuild(t *testing.T) {
 			Gomips: "softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				"Ext":      "",
+				"Binary":   "foo-v5.6.7",
+				"ID":       "foo",
+				"testEnvs": []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -323,9 +329,10 @@ func TestBuild(t *testing.T) {
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				"Ext":      "",
+				"Binary":   "foo-v5.6.7",
+				"ID":       "foo",
+				"testEnvs": []string{"TEST_T=d"},
 			},
 		},
 		{
@@ -336,9 +343,10 @@ func TestBuild(t *testing.T) {
 			Goarm:  "6",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				"Ext":      "",
+				"Binary":   "foo-v5.6.7",
+				"ID":       "foo",
+				"testEnvs": []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -348,9 +356,10 @@ func TestBuild(t *testing.T) {
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    ".exe",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				"Ext":      ".exe",
+				"Binary":   "foo-v5.6.7",
+				"ID":       "foo",
+				"testEnvs": []string{"TEST_T=w"},
 			},
 		},
 		{
@@ -360,9 +369,10 @@ func TestBuild(t *testing.T) {
 			Goarch: "wasm",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    ".wasm",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				"Ext":      ".wasm",
+				"Binary":   "foo-v5.6.7",
+				"ID":       "foo",
+				"testEnvs": []string{"TEST_T="},
 			},
 		},
 	})

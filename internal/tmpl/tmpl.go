@@ -102,6 +102,9 @@ func (t *Template) WithEnvS(envs []string) *Template {
 	result := map[string]string{}
 	for _, env := range envs {
 		parts := strings.SplitN(env, "=", 2)
+		if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+			continue
+		}
 		result[parts[0]] = parts[1]
 	}
 	return t.WithEnv(result)

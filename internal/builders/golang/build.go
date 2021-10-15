@@ -90,7 +90,23 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		},
 	}
 
-	env := append(ctx.Env.Strings(), build.Env...)
+	env := []string{}
+	testEnvs := []string{}
+	env = append(env, ctx.Env.Strings()...)
+	for _, e := range build.Env {
+		ee, err := tmpl.New(ctx).WithEnvS(env).WithArtifact(artifact, map[string]string{}).Apply(e)
+		if err != nil {
+			return err
+		}
+		log.Debugf("env %q evaluated to %q", e, ee)
+		if ee != "" {
+			env = append(env, ee)
+		}
+		if strings.HasPrefix(e, "TEST_") {
+			testEnvs = append(testEnvs, ee)
+		}
+	}
+
 	env = append(
 		env,
 		"GOOS="+options.Goos,
@@ -99,6 +115,10 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		"GOMIPS="+options.Gomips,
 		"GOMIPS64="+options.Gomips,
 	)
+
+	if len(testEnvs) > 0 {
+		artifact.Extra["testEnvs"] = testEnvs
+	}
 
 	cmd, err := buildGoBuildLine(ctx, build, options, artifact, env)
 	if err != nil {
