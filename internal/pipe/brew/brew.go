@@ -278,7 +278,7 @@ func installs(cfg config.Homebrew, artifacts []*artifact.Artifact) []string {
 	install := []string{}
 	bins := map[string]bool{}
 	for _, a := range artifacts {
-		for _, bin := range a.ExtraOr("Binaries", []string{}).([]string) {
+		for _, bin := range a.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
 			if !bins[bin] {
 				install = append(install, fmt.Sprintf("bin.install %q", bin))
 			}

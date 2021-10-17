@@ -25,7 +25,10 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const defaultNameTemplate = "{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+const (
+	defaultNameTemplate = "{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+	extraFiles          = "Files"
+)
 
 // Pipe for nfpm packaging.
 type Pipe struct{}
@@ -313,10 +316,10 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		Goarch: binaries[0].Goarch,
 		Goarm:  binaries[0].Goarm,
 		Extra: map[string]interface{}{
-			"Builds": binaries,
-			"ID":     fpm.ID,
-			"Format": format,
-			"Files":  contents,
+			artifact.ExtraBuilds: binaries,
+			artifact.ExtraID:     fpm.ID,
+			artifact.ExtraFormat: format,
+			extraFiles:           contents,
 		},
 	})
 	return nil

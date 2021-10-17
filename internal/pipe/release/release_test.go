@@ -52,7 +52,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -60,7 +60,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Name: "bin.deb",
 		Path: debfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -68,7 +68,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Name: "filtered.tar.gz",
 		Path: filteredtarfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "bar",
+			artifact.ExtraID: "bar",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -76,7 +76,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Name: "filtered.deb",
 		Path: filtereddebfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "bar",
+			artifact.ExtraID: "bar",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -84,7 +84,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Name: "source.tar.gz",
 		Path: srcfile.Name(),
 		Extra: map[string]interface{}{
-			"Format": "tar.gz",
+			artifact.ExtraFormat: "tar.gz",
 		},
 	})
 	client := &client.Mock{}
@@ -133,7 +133,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -141,7 +141,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		Name: "bin.deb",
 		Path: debfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -149,7 +149,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		Name: "filtered.tar.gz",
 		Path: filteredtarfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "bar",
+			artifact.ExtraID: "bar",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -157,7 +157,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		Name: "filtered.deb",
 		Path: filtereddebfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "bar",
+			artifact.ExtraID: "bar",
 		},
 	})
 	client := &client.Mock{}

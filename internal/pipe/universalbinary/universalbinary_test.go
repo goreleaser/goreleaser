@@ -162,8 +162,8 @@ func TestRun(t *testing.T) {
 			Goarch: arch,
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Binary": "fake",
-				"ID":     "foo",
+				artifact.ExtraBinary: "fake",
+				artifact.ExtraID:     "foo",
 			},
 		}
 		ctx1.Artifacts.Add(&art)
@@ -175,8 +175,8 @@ func TestRun(t *testing.T) {
 			Goarch: arch,
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Binary": "fake",
-				"ID":     "foo",
+				artifact.ExtraBinary: "fake",
+				artifact.ExtraID:     "foo",
 			},
 		})
 	}
