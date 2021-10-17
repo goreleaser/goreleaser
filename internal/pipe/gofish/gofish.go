@@ -222,7 +222,21 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 				SHA256:      sum,
 				OS:          art.Goos,
 				Arch:        arch,
-				Binaries:    art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string),
+				Binaries:    []binary{},
+			}
+			switch art.Type {
+			case artifact.UploadableArchive:
+				for _, bin := range art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
+					releasePackage.Binaries = append(releasePackage.Binaries, binary{
+						Name:   bin,
+						Target: bin,
+					})
+				}
+			case artifact.UploadableBinary:
+				releasePackage.Binaries = append(releasePackage.Binaries, binary{
+					Name:   art.Name,
+					Target: art.ExtraOr(artifact.ExtraBinary, art.Name).(string),
+				})
 			}
 			for _, v := range result.ReleasePackages {
 				if v.OS == art.Goos && v.Arch == art.Goarch {

@@ -16,7 +16,7 @@ food = {
             resources = {
                 {
                     path = "foo_macos",
-                    installpath = "bin/foo_macos",
+                    installpath = "bin/foo",
                     executable = true
                 },
             }
@@ -29,7 +29,7 @@ food = {
             resources = {
                 {
                     path = "foo_macos",
-                    installpath = "bin/foo_macos",
+                    installpath = "bin/foo",
                     executable = true
                 },
             }
