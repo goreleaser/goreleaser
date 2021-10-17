@@ -280,29 +280,31 @@ func installs(cfg config.Homebrew, artifacts []*artifact.Artifact) []string {
 	if cfg.Install != "" {
 		return split(cfg.Install)
 	}
-	install := []string{}
-	bins := map[string]bool{}
+	install := map[string]bool{}
 	for _, a := range artifacts {
 		switch a.Type {
 		case artifact.UploadableBinary:
 			name := a.Name
-			target := a.ExtraOr(artifact.ExtraBinary, a.Name).(string)
-			if !bins[target] {
-				install = append(install, fmt.Sprintf("bin.install %q => %q", name, target))
-			}
-			bins[target] = true
-		// TODO
+			bin := a.ExtraOr(artifact.ExtraBinary, a.Name).(string)
+			install[fmt.Sprintf("bin.install %q => %q", name, bin)] = true
 		case artifact.UploadableArchive:
 			for _, bin := range a.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
-				if !bins[bin] {
-					install = append(install, fmt.Sprintf("bin.install %q", bin))
-				}
-				bins[bin] = true
+				install[fmt.Sprintf("bin.install %q", bin)] = true
 			}
 		}
 	}
-	log.Warnf("guessing install to be `%s`", strings.Join(install, " "))
-	return install
+
+	result := keys(install)
+	log.Warnf("guessing install to be %q", strings.Join(result, ", "))
+	return result
+}
+
+func keys(m map[string]bool) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {

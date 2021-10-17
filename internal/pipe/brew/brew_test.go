@@ -971,7 +971,7 @@ func TestInstalls(t *testing.T) {
 		))
 	})
 
-	t.Run("from artifacts", func(t *testing.T) {
+	t.Run("from archives", func(t *testing.T) {
 		require.Equal(t, []string{
 			`bin.install "foo"`,
 			`bin.install "bar"`,
@@ -979,23 +979,44 @@ func TestInstalls(t *testing.T) {
 			config.Homebrew{},
 			[]*artifact.Artifact{
 				{
+					Type: artifact.UploadableArchive,
 					Extra: map[string]interface{}{
 						artifact.ExtraBinaries: []string{"foo", "bar"},
 					},
 				},
 				{
+					Type: artifact.UploadableArchive,
 					Extra: map[string]interface{}{
 						artifact.ExtraBinaries: []string{"foo"},
 					},
 				},
 				{
+					Type: artifact.UploadableArchive,
 					Extra: map[string]interface{}{
 						artifact.ExtraBinaries: []string{"bar"},
 					},
 				},
 				{
+					Type: artifact.UploadableArchive,
 					Extra: map[string]interface{}{
 						artifact.ExtraBinaries: []string{"bar", "foo"},
+					},
+				},
+			},
+		))
+	})
+
+	t.Run("from binary", func(t *testing.T) {
+		require.Equal(t, []string{
+			`bin.install "foo_macos" => "foo"`,
+		}, installs(
+			config.Homebrew{},
+			[]*artifact.Artifact{
+				{
+					Name: "foo_macos",
+					Type: artifact.UploadableBinary,
+					Extra: map[string]interface{}{
+						artifact.ExtraBinary: "foo",
 					},
 				},
 			},
