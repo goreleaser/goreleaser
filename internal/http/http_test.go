@@ -259,7 +259,7 @@ func TestUpload(t *testing.T) {
 			Path:   file,
 			Type:   a.typ,
 			Extra: map[string]interface{}{
-				"ID": "foo",
+				artifact.ExtraID: "foo",
 			},
 		})
 	}

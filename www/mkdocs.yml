@@ -58,6 +58,7 @@ nav:
 - Continuous Integration:
   - About: ci/index.md
   - ci/actions.md
+  - ci/azurepipelines.md
   - ci/circle.md
   - ci/cirrus.md
   - ci/cloudbuild.md

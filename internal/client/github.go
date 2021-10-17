@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/google/go-github/v35/github"
+	"github.com/google/go-github/v39/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -59,19 +59,29 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 }
 
 func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
-	result, _, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current)
-	if err != nil {
-		return "", err
-	}
 	var log []string
-	for _, commit := range result.Commits {
-		log = append(log, fmt.Sprintf(
-			"%s: %s (@%s)",
-			commit.GetSHA(),
-			strings.Split(commit.Commit.GetMessage(), "\n")[0],
-			commit.GetAuthor().GetLogin(),
-		))
+
+	opts := &github.ListOptions{PerPage: 100}
+	for {
+		result, resp, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current, opts)
+		if err != nil {
+			return "", err
+		}
+		for _, commit := range result.Commits {
+			log = append(log, fmt.Sprintf(
+				"%s: %s (@%s)",
+				commit.GetSHA(),
+				strings.Split(commit.Commit.GetMessage(), "\n")[0],
+				commit.GetAuthor().GetLogin(),
+			))
+		}
+		if resp.NextPage == 0 {
+			break
+		}
+
+		opts.Page = resp.NextPage
 	}
+
 	return strings.Join(log, "\n"), nil
 }
 

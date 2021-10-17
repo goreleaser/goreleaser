@@ -97,7 +97,10 @@ func doRun(ctx *context.Context, goFish config.GoFish, cl client.Client) error {
 				artifact.ByGoarm(goFish.Goarm),
 			),
 		),
-		artifact.ByType(artifact.UploadableArchive),
+		artifact.Or(
+			artifact.ByType(artifact.UploadableArchive),
+			artifact.ByType(artifact.UploadableBinary),
+		),
 	}
 	if len(goFish.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(goFish.IDs...))
@@ -190,8 +193,8 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 		License:  cfg.License,
 	}
 
-	for _, artifact := range artifacts {
-		sum, err := artifact.Checksum("sha256")
+	for _, art := range artifacts {
+		sum, err := art.Checksum("sha256")
 		if err != nil {
 			return result, err
 		}
@@ -203,13 +206,13 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 			}
 			cfg.URLTemplate = url
 		}
-		url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(cfg.URLTemplate)
+		url, err := tmpl.New(ctx).WithArtifact(art, map[string]string{}).Apply(cfg.URLTemplate)
 		if err != nil {
 			return result, err
 		}
 
-		goarch := []string{artifact.Goarch}
-		if artifact.Goarch == "all" {
+		goarch := []string{art.Goarch}
+		if art.Goarch == "all" {
 			goarch = []string{"amd64", "arm64"}
 		}
 
@@ -217,12 +220,26 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 			releasePackage := releasePackage{
 				DownloadURL: url,
 				SHA256:      sum,
-				OS:          artifact.Goos,
+				OS:          art.Goos,
 				Arch:        arch,
-				Binaries:    artifact.ExtraOr("Binaries", []string{}).([]string),
+				Binaries:    []binary{},
+			}
+			switch art.Type {
+			case artifact.UploadableArchive:
+				for _, bin := range art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
+					releasePackage.Binaries = append(releasePackage.Binaries, binary{
+						Name:   bin,
+						Target: bin,
+					})
+				}
+			case artifact.UploadableBinary:
+				releasePackage.Binaries = append(releasePackage.Binaries, binary{
+					Name:   art.Name,
+					Target: art.ExtraOr(artifact.ExtraBinary, art.Name).(string),
+				})
 			}
 			for _, v := range result.ReleasePackages {
-				if v.OS == artifact.Goos && v.Arch == artifact.Goarch {
+				if v.OS == art.Goos && v.Arch == art.Goarch {
 					return result, ErrMultipleArchivesSameOS
 				}
 			}

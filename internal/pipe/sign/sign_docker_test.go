@@ -143,7 +143,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 				Path: img1,
 				Type: artifact.DockerImage,
 				Extra: map[string]interface{}{
-					"ID": "img1",
+					artifact.ExtraID: "img1",
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -151,7 +151,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 				Path: img2,
 				Type: artifact.DockerImage,
 				Extra: map[string]interface{}{
-					"ID": "img2",
+					artifact.ExtraID: "img2",
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -159,7 +159,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 				Path: man1,
 				Type: artifact.DockerManifest,
 				Extra: map[string]interface{}{
-					"ID": "man1",
+					artifact.ExtraID: "man1",
 				},
 			})
 

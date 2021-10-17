@@ -862,7 +862,7 @@ func TestRunPipe(t *testing.T) {
 					Goos:   "linux",
 					Type:   artifact.Binary,
 					Extra: map[string]interface{}{
-						"ID": "nope",
+						artifact.ExtraID: "nope",
 					},
 				})
 			},
@@ -980,7 +980,7 @@ func TestRunPipe(t *testing.T) {
 								Goos:   os,
 								Type:   artifact.Binary,
 								Extra: map[string]interface{}{
-									"ID": bin,
+									artifact.ExtraID: bin,
 								},
 							})
 						}
@@ -995,7 +995,7 @@ func TestRunPipe(t *testing.T) {
 						Goos:   "linux",
 						Type:   artifact.LinuxPackage,
 						Extra: map[string]interface{}{
-							"ID": "mybin",
+							artifact.ExtraID: "mybin",
 						},
 					})
 				}
