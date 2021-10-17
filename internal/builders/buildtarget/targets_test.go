@@ -271,6 +271,16 @@ func TestList(t *testing.T) {
 		require.Equal(t, []string{"linux_amd64"}, targets)
 	})
 
+	t.Run("error with dir", func(t *testing.T) {
+		_, err := List(config.Build{
+			Goos:     []string{"linux"},
+			Goarch:   []string{"amd64"},
+			GoBinary: "go",
+			Dir:      "targets.go",
+		})
+		require.EqualError(t, err, "invalid builds.dir property, it should be a directory: targets.go")
+	})
+
 	t.Run("fail", func(t *testing.T) {
 		_, err := List(config.Build{
 			Goos:     []string{"linux"},
