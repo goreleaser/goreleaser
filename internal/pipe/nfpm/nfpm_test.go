@@ -176,7 +176,7 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope.conf",
 			"./testdata/testfile-" + pkg.Goarch + ".txt",
 			binPath,
-		}, sources(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
+		}, sources(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
 		require.ElementsMatch(t, []string{
 			"/usr/share/testfile.txt",
 			"/etc/nope.conf",
@@ -184,7 +184,7 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope2.conf",
 			"/etc/nope3_mybin.conf",
 			"/usr/bin/subdir/mybin",
-		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
+		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 5, "should not modify the config file list")
 }
@@ -972,7 +972,7 @@ func TestMeta(t *testing.T) {
 			"/usr/share/testfile.txt",
 			"/etc/nope.conf",
 			"/etc/nope-rpm.conf",
-		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
+		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
 	}
 
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 3, "should not modify the config file list")
@@ -1119,7 +1119,7 @@ func TestBinDirTemplating(t *testing.T) {
 		// the final binary should contain the evaluated bindir (after template eval)
 		require.ElementsMatch(t, []string{
 			"/usr/lib/pro/nagios/plugins/subdir/mybin",
-		}, destinations(pkg.ExtraOr("Files", files.Contents{}).(files.Contents)))
+		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
 	}
 }
 
