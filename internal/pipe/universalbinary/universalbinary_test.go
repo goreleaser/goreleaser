@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -161,8 +162,8 @@ func TestRun(t *testing.T) {
 			Goarch: arch,
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Binary": "fake",
-				"ID":     "foo",
+				artifact.ExtraBinary: "fake",
+				artifact.ExtraID:     "foo",
 			},
 		}
 		ctx1.Artifacts.Add(&art)
@@ -174,8 +175,8 @@ func TestRun(t *testing.T) {
 			Goarch: arch,
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Binary": "fake",
-				"ID":     "foo",
+				artifact.ExtraBinary: "fake",
+				artifact.ExtraID:     "foo",
 			},
 		})
 	}
@@ -216,6 +217,7 @@ func TestRun(t *testing.T) {
 func checkUniversalBinary(tb testing.TB, unibin *artifact.Artifact) {
 	tb.Helper()
 
+	require.True(tb, strings.HasSuffix(unibin.Path, "foo_darwin_all/foo"))
 	f, err := macho.OpenFat(unibin.Path)
 	require.NoError(tb, err)
 	require.Len(tb, f.Arches, 2)

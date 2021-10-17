@@ -258,8 +258,8 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 func binaries(a *artifact.Artifact) []string {
 	// nolint: prealloc
 	var bins []string
-	wrap := a.ExtraOr("WrappedIn", "").(string)
-	for _, b := range a.ExtraOr("Builds", []*artifact.Artifact{}).([]*artifact.Artifact) {
+	wrap := a.ExtraOr(artifact.ExtraWrappedIn, "").(string)
+	for _, b := range a.ExtraOr(artifact.ExtraBuilds, []*artifact.Artifact{}).([]*artifact.Artifact) {
 		bins = append(bins, filepath.Join(wrap, b.Name))
 	}
 	return bins
