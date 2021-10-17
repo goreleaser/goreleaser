@@ -798,9 +798,9 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Goarch: "all",
 		Type:   artifact.UploadableBinary,
 		Extra: map[string]interface{}{
-			"ID":       "foo",
-			"Format":   "binary",
-			"Binaries": []string{"foo_macos"},
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
 		},
 	})
 

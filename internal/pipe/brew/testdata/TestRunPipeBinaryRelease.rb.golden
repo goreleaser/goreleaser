@@ -15,6 +15,6 @@ class Foo < Formula
   end
 
   def install
-    bin.install "foo_macos"
+    bin.install "foo_macos" => "foo"
   end
 end

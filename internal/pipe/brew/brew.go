@@ -283,11 +283,22 @@ func installs(cfg config.Homebrew, artifacts []*artifact.Artifact) []string {
 	install := []string{}
 	bins := map[string]bool{}
 	for _, a := range artifacts {
-		for _, bin := range a.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
-			if !bins[bin] {
-				install = append(install, fmt.Sprintf("bin.install %q", bin))
+		switch a.Type {
+		case artifact.UploadableBinary:
+			name := a.Name
+			target := a.ExtraOr(artifact.ExtraBinary, a.Name).(string)
+			if !bins[target] {
+				install = append(install, fmt.Sprintf("bin.install %q => %q", name, target))
 			}
-			bins[bin] = true
+			bins[target] = true
+		// TODO
+		case artifact.UploadableArchive:
+			for _, bin := range a.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
+				if !bins[bin] {
+					install = append(install, fmt.Sprintf("bin.install %q", bin))
+				}
+				bins[bin] = true
+			}
 		}
 	}
 	log.Warnf("guessing install to be `%s`", strings.Join(install, " "))
