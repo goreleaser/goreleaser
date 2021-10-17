@@ -152,7 +152,6 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 			artifact.ByGoos("darwin"),
 			artifact.ByGoos("linux"),
 		),
-		artifact.ByFormats("zip", "tar.gz"),
 		artifact.Or(
 			artifact.ByGoarch("amd64"),
 			artifact.ByGoarch("arm64"),
@@ -162,7 +161,13 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 				artifact.ByGoarm(brew.Goarm),
 			),
 		),
-		artifact.ByType(artifact.UploadableArchive),
+		artifact.Or(
+			artifact.And(
+				artifact.ByFormats("zip", "tar.gz"),
+				artifact.ByType(artifact.UploadableArchive),
+			),
+			artifact.ByType(artifact.UploadableBinary),
+		),
 	}
 	if len(brew.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(brew.IDs...))
@@ -275,18 +280,31 @@ func installs(cfg config.Homebrew, artifacts []*artifact.Artifact) []string {
 	if cfg.Install != "" {
 		return split(cfg.Install)
 	}
-	install := []string{}
-	bins := map[string]bool{}
+	install := map[string]bool{}
 	for _, a := range artifacts {
-		for _, bin := range a.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
-			if !bins[bin] {
-				install = append(install, fmt.Sprintf("bin.install %q", bin))
+		switch a.Type {
+		case artifact.UploadableBinary:
+			name := a.Name
+			bin := a.ExtraOr(artifact.ExtraBinary, a.Name).(string)
+			install[fmt.Sprintf("bin.install %q => %q", name, bin)] = true
+		case artifact.UploadableArchive:
+			for _, bin := range a.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
+				install[fmt.Sprintf("bin.install %q", bin)] = true
 			}
-			bins[bin] = true
 		}
 	}
-	log.Warnf("guessing install to be `%s`", strings.Join(install, " "))
-	return install
+
+	result := keys(install)
+	log.Warnf("guessing install to be %q", strings.Join(result, ", "))
+	return result
+}
+
+func keys(m map[string]bool) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
