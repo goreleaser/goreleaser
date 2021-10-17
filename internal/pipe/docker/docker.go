@@ -244,7 +244,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		Extra:  map[string]interface{}{},
 	}
 	if docker.ID != "" {
-		art.Extra["ID"] = docker.ID
+		art.Extra[artifact.ExtraID] = docker.ID
 	}
 	ctx.Artifacts.Add(art)
 	return nil

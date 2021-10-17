@@ -38,7 +38,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		Name: filename,
 		Path: path,
 		Extra: map[string]interface{}{
-			"Format": ctx.Config.Source.Format,
+			artifact.ExtraFormat: ctx.Config.Source.Format,
 		},
 	})
 	return err

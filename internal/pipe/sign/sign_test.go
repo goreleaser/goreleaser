@@ -476,7 +476,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 		Path: filepath.Join(tmpdir, "artifact1"),
 		Type: artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -484,7 +484,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 		Path: filepath.Join(tmpdir, "artifact2"),
 		Type: artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID": "foo3",
+			artifact.ExtraID: "foo3",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -492,7 +492,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 		Path: filepath.Join(tmpdir, "artifact3"),
 		Type: artifact.UploadableBinary,
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -510,7 +510,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 		Path: filepath.Join(tmpdir, "linux_amd64", "artifact4"),
 		Type: artifact.UploadableBinary,
 		Extra: map[string]interface{}{
-			"ID": "foo3",
+			artifact.ExtraID: "foo3",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -523,7 +523,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 		Path: filepath.Join(tmpdir, "package1.deb"),
 		Type: artifact.LinuxPackage,
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 
@@ -549,7 +549,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 
 	// ensure all artifacts have an ID
 	for _, arti := range ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List() {
-		require.NotEmptyf(tb, arti.ExtraOr("ID", ""), ".Extra.ID on %s", arti.Path)
+		require.NotEmptyf(tb, arti.ID(), ".Extra.ID on %s", arti.Path)
 	}
 
 	// verify that only the artifacts and the signatures are in the dist dir
