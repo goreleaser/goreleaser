@@ -163,7 +163,7 @@ func TestRunPipe(t *testing.T) {
 				}
 				require.Equal(t, "myid", arch.ID(), "all archives must have the archive ID set")
 				require.Equal(t, []string{expectBin}, arch.ExtraOr(artifact.ExtraBinaries, []string{}).([]string))
-				require.Equal(t, []string{expectBin}, arch.ExtraOr(artifact.ExtraBinariesClean, []string{}).([]string))
+				require.Equal(t, "", arch.ExtraOr(artifact.ExtraBinary, "").(string))
 			}
 			require.Len(t, archives, 6)
 			// TODO: should verify the artifact fields here too
@@ -401,13 +401,13 @@ func TestRunPipeBinary(t *testing.T) {
 	windows := binaries.Filter(artifact.ByGoos("windows")).List()[0]
 	require.Equal(t, "mybin_0.0.1_darwin_amd64", darwinThin.Name)
 	require.Equal(t, []string{"mybin_0.0.1_darwin_amd64"}, darwinThin.ExtraOr(artifact.ExtraBinaries, []string{}))
-	require.Equal(t, []string{"mybin"}, darwinThin.ExtraOr(artifact.ExtraBinariesClean, []string{}))
+	require.Equal(t, "mybin", darwinThin.ExtraOr(artifact.ExtraBinary, ""))
 	require.Equal(t, "myunibin_0.0.1_darwin_all", darwinUniversal.Name)
 	require.Equal(t, []string{"myunibin_0.0.1_darwin_all"}, darwinUniversal.ExtraOr(artifact.ExtraBinaries, []string{}))
-	require.Equal(t, []string{"myunibin"}, darwinUniversal.ExtraOr(artifact.ExtraBinariesClean, []string{}))
+	require.Equal(t, "myunibin", darwinUniversal.ExtraOr(artifact.ExtraBinary, ""))
 	require.Equal(t, "mybin_0.0.1_windows_amd64.exe", windows.Name)
 	require.Equal(t, []string{"mybin_0.0.1_windows_amd64.exe"}, windows.ExtraOr(artifact.ExtraBinaries, []string{}))
-	require.Equal(t, []string{"mybin.exe"}, windows.ExtraOr(artifact.ExtraBinariesClean, []string{}))
+	require.Equal(t, "mybin.exe", windows.ExtraOr(artifact.ExtraBinary, ""))
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {

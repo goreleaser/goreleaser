@@ -92,14 +92,13 @@ func (t Type) String() string {
 }
 
 const (
-	ExtraID            = "ID"
-	ExtraBinary        = "Binary"
-	ExtraExt           = "Ext"
-	ExtraBuilds        = "Builds"
-	ExtraFormat        = "Format"
-	ExtraWrappedIn     = "WrappedIn"
-	ExtraBinaries      = "Binaries"
-	ExtraBinariesClean = "BinariesClean"
+	ExtraID        = "ID"
+	ExtraBinary    = "Binary"
+	ExtraExt       = "Ext"
+	ExtraBuilds    = "Builds"
+	ExtraFormat    = "Format"
+	ExtraWrappedIn = "WrappedIn"
+	ExtraBinaries  = "Binaries"
 )
 
 // Artifact represents an artifact and its relevant info.

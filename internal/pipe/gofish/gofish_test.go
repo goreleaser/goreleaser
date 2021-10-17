@@ -21,6 +21,13 @@ func TestDescription(t *testing.T) {
 }
 
 func createTemplateData() templateData {
+	binaries := func(ext string) []binary {
+		return []binary{
+			{Name: "bin1" + ext, Target: "bin1" + ext},
+			{Name: "bin2" + ext, Target: "bin2" + ext},
+			{Name: "bin3" + ext, Target: "bin3" + ext},
+		}
+	}
 	return templateData{
 		Desc:     "Some desc",
 		Homepage: "https://google.com",
@@ -30,42 +37,42 @@ func createTemplateData() templateData {
 				OS:          "darwin",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
-				Binaries:    []string{"bin1", "bin2", "bin3"},
+				Binaries:    binaries(""),
 			},
 			{
 				Arch:        "arm64",
 				OS:          "darwin",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b349490sadasdsadsadasdasdsd",
-				Binaries:    []string{"bin1", "bin2", "bin3"},
+				Binaries:    binaries(""),
 			},
 			{
 				Arch:        "amd64",
 				OS:          "linux",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-				Binaries:    []string{"bin1", "bin2", "bin3"},
+				Binaries:    binaries(""),
 			},
 			{
 				Arch:        "arm",
 				OS:          "linux",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-				Binaries:    []string{"bin1", "bin2", "bin3"},
+				Binaries:    binaries(""),
 			},
 			{
 				Arch:        "arm64",
 				OS:          "linux",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-				Binaries:    []string{"bin1", "bin2", "bin3"},
+				Binaries:    binaries(""),
 			},
 			{
 				Arch:        "amd64",
 				OS:          "windows",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_windows_amd64.zip",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-				Binaries:    []string{"bin1.exe", "bin2.exe", "bin3.exe"},
+				Binaries:    binaries(".exe"),
 			},
 		},
 		Name:    "Test",
@@ -715,10 +722,19 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 }
 
 func TestRunPipeBinaryRelease(t *testing.T) {
-	ctx := context.New(
-		config.Project{
+	folder := t.TempDir()
+	ctx := &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.2.1",
+		},
+		Version:   "1.2.1",
+		Artifacts: artifact.New(),
+		Config: config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
 			Rigs: []config.GoFish{
 				{
+					Name: "foo",
 					Rig: config.RepoRef{
 						Owner: "test",
 						Name:  "test",
@@ -726,17 +742,32 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 				},
 			},
 		},
-	)
+	}
+
+	path := filepath.Join(folder, "dist/foo_darwin_all/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   "doesnt mather",
+		Name:   "foo_macos",
+		Path:   path,
 		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.Binary,
+		Goarch: "all",
+		Type:   artifact.UploadableBinary,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
+		},
 	})
+
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
 	client := client.NewMock()
-	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
-	require.False(t, client.CreatedFile)
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, publishAll(ctx, client))
+	require.True(t, client.CreatedFile)
+	golden.RequireEqualRb(t, []byte(client.Content))
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
