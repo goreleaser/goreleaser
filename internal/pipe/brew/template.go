@@ -65,7 +65,7 @@ class {{ .Name }} < Formula
       {{ . -}}
       {{- end }}
     end
-	{{- else }}
+    {{- else }}
     {{- if eq $element.Arch "amd64" }}
     if Hardware::CPU.intel?
     {{- end }}
