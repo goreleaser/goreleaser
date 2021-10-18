@@ -13,6 +13,10 @@ class DefaultGitlab < Formula
     if Hardware::CPU.intel?
       url "https://dummyhost/download/v1.0.1/bin.tar.gz"
       sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
+      def install
+        bin.install "default_gitlab"
+      end
     end
   end
 
@@ -21,10 +25,6 @@ class DefaultGitlab < Formula
 
   conflicts_with "gtk+"
   conflicts_with "qt"
-
-  def install
-    bin.install "default_gitlab"
-  end
 
   def caveats; <<~EOS
     don't do this default_gitlab

@@ -12,9 +12,9 @@ class Foo < Formula
   on_macos do
     url "https://dummyhost/download/v1.2.1/foo_macos"
     sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-  end
 
-  def install
-    bin.install "foo_macos" => "foo"
+    def install
+      bin.install "foo_macos" => "foo"
+    end
   end
 end

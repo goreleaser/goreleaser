@@ -49,18 +49,21 @@ var defaultTemplateData = templateData{
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 			OS:          "linux",
 			Arch:        "amd64",
+			Install:     []string{`bin.install "test"`},
 		},
 		{
 			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 			OS:          "linux",
 			Arch:        "arm",
+			Install:     []string{`bin.install "test"`},
 		},
 		{
 			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 			OS:          "linux",
 			Arch:        "arm64",
+			Install:     []string{`bin.install "test"`},
 		},
 	},
 	MacOSPackages: []releasePackage{
@@ -69,12 +72,14 @@ var defaultTemplateData = templateData{
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
 			OS:          "darwin",
 			Arch:        "amd64",
+			Install:     []string{`bin.install "test"`},
 		},
 		{
 			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
 			SHA256:      "1633f61598ab0791e213135923624eb342196b349490sadasdsadsadasdasdsd",
 			OS:          "darwin",
 			Arch:        "arm64",
+			Install:     []string{`bin.install "test"`},
 		},
 	},
 	Name:    "Test",
@@ -100,7 +105,6 @@ func TestFullFormulae(t *testing.T) {
 	data.Plist = "it works"
 	data.PostInstall = `system "touch", "/tmp/foo"`
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
-	data.Install = []string{"custom install script", "another install script"}
 	data.Tests = []string{`system "#{bin}/{{.ProjectName}} -version"`}
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",
@@ -113,7 +117,6 @@ func TestFullFormulae(t *testing.T) {
 func TestFullFormulaeLinuxOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.MacOSPackages = []releasePackage{}
-	data.Install = []string{`bin.install "test"`}
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
@@ -125,7 +128,6 @@ func TestFullFormulaeLinuxOnly(t *testing.T) {
 func TestFullFormulaeMacOSOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.LinuxPackages = []releasePackage{}
-	data.Install = []string{`bin.install "test"`}
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
@@ -967,40 +969,20 @@ func TestInstalls(t *testing.T) {
 			`bin.install "bar"`,
 		}, installs(
 			config.Homebrew{Install: "bin.install \"foo\"\nbin.install \"bar\""},
-			[]*artifact.Artifact{},
+			&artifact.Artifact{},
 		))
 	})
 
 	t.Run("from archives", func(t *testing.T) {
 		require.Equal(t, []string{
-			`bin.install "foo"`,
 			`bin.install "bar"`,
+			`bin.install "foo"`,
 		}, installs(
 			config.Homebrew{},
-			[]*artifact.Artifact{
-				{
-					Type: artifact.UploadableArchive,
-					Extra: map[string]interface{}{
-						artifact.ExtraBinaries: []string{"foo", "bar"},
-					},
-				},
-				{
-					Type: artifact.UploadableArchive,
-					Extra: map[string]interface{}{
-						artifact.ExtraBinaries: []string{"foo"},
-					},
-				},
-				{
-					Type: artifact.UploadableArchive,
-					Extra: map[string]interface{}{
-						artifact.ExtraBinaries: []string{"bar"},
-					},
-				},
-				{
-					Type: artifact.UploadableArchive,
-					Extra: map[string]interface{}{
-						artifact.ExtraBinaries: []string{"bar", "foo"},
-					},
+			&artifact.Artifact{
+				Type: artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					artifact.ExtraBinaries: []string{"foo", "bar"},
 				},
 			},
 		))
@@ -1011,13 +993,11 @@ func TestInstalls(t *testing.T) {
 			`bin.install "foo_macos" => "foo"`,
 		}, installs(
 			config.Homebrew{},
-			[]*artifact.Artifact{
-				{
-					Name: "foo_macos",
-					Type: artifact.UploadableBinary,
-					Extra: map[string]interface{}{
-						artifact.ExtraBinary: "foo",
-					},
+			&artifact.Artifact{
+				Name: "foo_macos",
+				Type: artifact.UploadableBinary,
+				Extra: map[string]interface{}{
+					artifact.ExtraBinary: "foo",
 				},
 			},
 		))
@@ -1058,8 +1038,9 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 		Goarch: "all",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			artifact.ExtraID:     "unibin",
-			artifact.ExtraFormat: "tar.gz",
+			artifact.ExtraID:       "unibin",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"unibin"},
 		},
 	})
 
