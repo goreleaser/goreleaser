@@ -76,7 +76,7 @@ class {{ .Name }} < Formula
       {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
       sha256 "{{ $element.SHA256 }}"
 
-	  def install
+      def install
         {{- range $index, $element := .Install }}
         {{ . -}}
         {{- end }}
