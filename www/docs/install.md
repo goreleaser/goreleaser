@@ -199,7 +199,7 @@ To do that, you'll need to execute something more-or-less like the examples belo
     Registries:
 
     - [`goreleaser/goreleaser`](https://hub.docker.com/r/goreleaser/goreleaser)
-    - [`ghcr.io/goreleaser/goreleaser`](https://github.com/orgs/goreleaser/packages/container/package/goreleaser)
+    - [`ghcr.io/goreleaser/goreleaser`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser)
 
     Example usage:
 
@@ -219,7 +219,7 @@ To do that, you'll need to execute something more-or-less like the examples belo
     Registries:
 
     - [`goreleaser/goreleaser-pro`](https://hub.docker.com/r/goreleaser/goreleaser-pro)
-    - [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/orgs/goreleaser/packages/container/package/goreleaser-pro)
+    - [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser-pro)
 
     Example usage:
 
