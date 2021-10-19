@@ -6,7 +6,6 @@ class Unibin < Formula
   desc ""
   homepage ""
   version "1.0.1"
-  bottle :unneeded
   depends_on :macos
 
   on_macos do

@@ -7,7 +7,6 @@ class CustomRequire < Formula
   desc "A run pipe test formula and FOO=foo_is_bar"
   homepage "https://github.com/goreleaser"
   version "1.0.1"
-  bottle :unneeded
   depends_on :macos
 
   on_macos do

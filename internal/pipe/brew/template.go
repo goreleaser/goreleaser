@@ -43,7 +43,6 @@ class {{ .Name }} < Formula
   {{ if .License -}}
   license "{{ .License }}"
   {{ end -}}
-  bottle :unneeded
   {{- if and (not .LinuxPackages) .MacOSPackages }}
   depends_on :macos
   {{- end }}
