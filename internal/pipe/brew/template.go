@@ -40,10 +40,9 @@ class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
-  {{ if .License -}}
+  {{- if .License }}
   license "{{ .License }}"
-  {{ end -}}
-  bottle :unneeded
+  {{- end }}
   {{- if and (not .LinuxPackages) .MacOSPackages }}
   depends_on :macos
   {{- end }}

@@ -6,7 +6,6 @@ class Foo < Formula
   desc ""
   homepage ""
   version "1.2.1"
-  bottle :unneeded
   depends_on :macos
 
   on_macos do
