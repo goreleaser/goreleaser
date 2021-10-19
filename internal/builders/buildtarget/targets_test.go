@@ -83,8 +83,6 @@ func TestAllBuildTargets(t *testing.T) {
 			"openbsd_arm64",
 			"windows_386",
 			"windows_amd64",
-			"windows_arm_6",
-			"windows_arm_7",
 			"js_wasm",
 		}, result)
 	})
@@ -116,8 +114,6 @@ func TestAllBuildTargets(t *testing.T) {
 			"openbsd_arm64",
 			"windows_386",
 			"windows_amd64",
-			"windows_arm_6",
-			"windows_arm_7",
 			"js_wasm",
 		}, result)
 	})
@@ -149,8 +145,6 @@ func TestAllBuildTargets(t *testing.T) {
 			"openbsd_arm64",
 			"windows_386",
 			"windows_amd64",
-			"windows_arm_6",
-			"windows_arm_7",
 			"windows_arm64",
 			"js_wasm",
 		}, result)
@@ -234,13 +228,13 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"solaris", "amd64", true},
 		{"windows", "386", true},
 		{"windows", "amd64", true},
-		{"windows", "arm", true},
 		{"windows", "arm64", true},
 		{"js", "wasm", true},
 		// invalid targets
 		{"darwin", "386", false},
 		{"darwin", "arm", false},
 		{"windows", "riscv64", false},
+		{"windows", "arm", false},
 	}
 	for _, p := range platforms {
 		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {

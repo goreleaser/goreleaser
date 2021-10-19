@@ -211,7 +211,6 @@ var (
 		"plan9amd64",
 		"plan9arm",
 		"solarisamd64",
-		"windowsarm",
 		"windowsarm64",
 		"windows386",
 		"windowsamd64",
