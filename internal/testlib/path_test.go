@@ -15,7 +15,17 @@ func TestCheckPath(t *testing.T) {
 		})
 	}
 
+	setupEnv := func(tb testing.TB, value string) {
+		previous := os.Getenv("CI")
+		require.NoError(tb, os.Setenv("CI", value))
+		tb.Cleanup(func() {
+			require.NoError(tb, os.Setenv("CI", previous))
+		})
+	}
+
 	t.Run("local", func(t *testing.T) {
+		setupEnv(t, "false")
+
 		t.Run("in path", func(t *testing.T) {
 			requireSkipped(t, false)
 			CheckPath(t, "echo")
@@ -28,10 +38,7 @@ func TestCheckPath(t *testing.T) {
 	})
 
 	t.Run("CI", func(t *testing.T) {
-		require.NoError(t, os.Setenv("CI", "true"))
-		t.Cleanup(func() {
-			require.NoError(t, os.Unsetenv("CI"))
-		})
+		setupEnv(t, "true")
 
 		t.Run("in path on CI", func(t *testing.T) {
 			requireSkipped(t, false)
