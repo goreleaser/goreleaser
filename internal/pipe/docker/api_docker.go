@@ -51,7 +51,6 @@ func (i dockerImager) Push(ctx context.Context, image string, flags []string) er
 }
 
 func (i dockerImager) Build(ctx context.Context, envs map[string]string, root string, images, flags []string) error {
-	fmt.Println(envs["KO_DOCKER_REPO"])
 	if err := runCommand(ctx, root, "docker", i.buildCommand(images, flags)...); err != nil {
 		return fmt.Errorf("failed to build %s: %w", images[0], err)
 	}
