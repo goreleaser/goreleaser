@@ -168,7 +168,13 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	}
 
 	log.Info("building docker image")
-	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags); err != nil {
+	envs := map[string]string{}
+	for _, env := range ctx.Config.Env {
+		parts := strings.SplitN(env, "=", 2)
+		envs[parts[0]] = parts[1]
+	}
+
+	if err := imagers[docker.Use].Build(ctx, envs, tmp, images, buildFlags); err != nil {
 		return err
 	}
 
