@@ -3,11 +3,12 @@
 package config
 
 import (
-	"github.com/alecthomas/jsonschema"
 	"io"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/alecthomas/jsonschema"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/nfpm/v2/files"
@@ -88,9 +89,10 @@ func (a HomebrewDependency) JSONSchemaType() *jsonschema.Type {
 	}
 	schema := reflector.Reflect(&homebrewDependency{})
 	return &jsonschema.Type{
-		OneOf: []*jsonschema.Type{{
-			Type: "string",
-		},
+		OneOf: []*jsonschema.Type{
+			{
+				Type: "string",
+			},
 			schema.Type,
 		},
 	}
@@ -301,9 +303,10 @@ func (bhc BuildHooks) JSONSchemaType() *jsonschema.Type {
 	}
 	schema := reflector.Reflect(&t{})
 	return &jsonschema.Type{
-		OneOf: []*jsonschema.Type{{
-			Type: "string",
-		},
+		OneOf: []*jsonschema.Type{
+			{
+				Type: "string",
+			},
 			schema.Type,
 		},
 	}
@@ -339,9 +342,10 @@ func (bh BuildHook) JSONSchemaType() *jsonschema.Type {
 	}
 	schema := reflector.Reflect(&t{})
 	return &jsonschema.Type{
-		OneOf: []*jsonschema.Type{{
-			Type: "string",
-		},
+		OneOf: []*jsonschema.Type{
+			{
+				Type: "string",
+			},
 			schema.Type,
 		},
 	}
@@ -398,9 +402,10 @@ func (f File) JSONSchemaType() *jsonschema.Type {
 	// generated schema with JSONSchemaType here. So we need to include it directly in the schema of File.
 	schema.Properties.Set("info", reflector.Reflect(&FileInfo{}).Type)
 	return &jsonschema.Type{
-		OneOf: []*jsonschema.Type{{
-			Type: "string",
-		},
+		OneOf: []*jsonschema.Type{
+			{
+				Type: "string",
+			},
 			schema.Type,
 		},
 	}

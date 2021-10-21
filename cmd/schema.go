@@ -3,11 +3,12 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/alecthomas/jsonschema"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/spf13/cobra"
-	"os"
-	"path/filepath"
 )
 
 type schemaCmd struct {

@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestGenerateSchema(t *testing.T) {
