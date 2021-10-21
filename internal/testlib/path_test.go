@@ -16,6 +16,7 @@ func TestCheckPath(t *testing.T) {
 	}
 
 	setupEnv := func(tb testing.TB, value string) {
+		tb.Helper()
 		previous := os.Getenv("CI")
 		require.NoError(tb, os.Setenv("CI", value))
 		tb.Cleanup(func() {
