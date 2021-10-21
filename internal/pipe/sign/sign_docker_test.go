@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -47,6 +48,7 @@ func TestDockerSignInvalidArtifacts(t *testing.T) {
 }
 
 func TestDockerSignArtifacts(t *testing.T) {
+	testlib.CheckPath(t, "cosign")
 	key := "testdata/cosign/cosign.key"
 	cmd := "sh"
 	args := []string{"-c", "echo ${artifact} > ${signature} && cosign sign -key=" + key + " -upload=false ${artifact} > ${signature}"}
