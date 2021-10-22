@@ -60,6 +60,17 @@ func TestEqualFilesDontExist(t *testing.T) {
 	require.Error(t, Copy(b, c))
 }
 
+func TestCopyErrors(t *testing.T) {
+	a := "testdata/nope.txt"
+	b := "testdata/also-nope.txt"
+
+	err := copySymlink(a, b)
+	require.Error(t, err)
+
+	err = copyFile(a, b, 0o755)
+	require.Error(t, err)
+}
+
 func TestCopyFile(t *testing.T) {
 	dir := t.TempDir()
 	src, err := ioutil.TempFile(dir, "src")

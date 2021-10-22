@@ -157,3 +157,8 @@ func TestNewWithToken(t *testing.T) {
 		require.Nil(t, cli)
 	})
 }
+
+func TestClientBlanks(t *testing.T) {
+	repo := Repo{}
+	require.Equal(t, "", repo.String())
+}
