@@ -5,7 +5,7 @@ go 1.17
 require (
 	code.gitea.io/sdk/gitea v0.15.0
 	github.com/Masterminds/semver/v3 v3.1.1
-	github.com/alecthomas/jsonschema v0.0.0-20210526225647-edb03dcab7bc
+	github.com/alecthomas/jsonschema v0.0.0-20211022214203-8b29eab41725
 	github.com/apex/log v1.9.0
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/caarlos0/env/v6 v6.7.0

@@ -193,22 +193,43 @@
 						"type": "string"
 					},
 					"ldflags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						]
 					},
 					"tags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						]
 					},
 					"flags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						]
 					},
 					"binary": {
 						"type": "string"
@@ -227,16 +248,30 @@
 						"type": "string"
 					},
 					"asmflags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						]
 					},
 					"gcflags": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						]
 					},
 					"mod_timestamp": {
 						"type": "string"
@@ -253,32 +288,6 @@
 				},
 				"additionalProperties": false,
 				"type": "object"
-			},
-			"BuildHook": {
-				"oneOf": [
-					{
-						"type": "string"
-					},
-					{
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"properties": {
-							"dir": {
-								"type": "string"
-							},
-							"cmd": {
-								"type": "string"
-							},
-							"env": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						},
-						"additionalProperties": false,
-						"type": "object"
-					}
-				]
 			},
 			"Changelog": {
 				"properties": {
@@ -808,17 +817,30 @@
 			"HookConfig": {
 				"properties": {
 					"pre": {
-						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/BuildHook"
-						},
-						"type": "array"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"$schema": "http://json-schema.org/draft-04/schema#",
+								"properties": {},
+								"additionalProperties": false,
+								"type": "object"
+							}
+						]
 					},
 					"post": {
-						"items": {
-							"$ref": "#/definitions/BuildHook"
-						},
-						"type": "array"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"$schema": "http://json-schema.org/draft-04/schema#",
+								"properties": {},
+								"additionalProperties": false,
+								"type": "object"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
