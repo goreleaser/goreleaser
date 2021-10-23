@@ -12,7 +12,6 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -499,7 +498,6 @@ func TestGitlabCreateFile(t *testing.T) {
 
 func TestCloseMileston(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Warn(r.URL.Path)
 		if strings.HasSuffix(r.URL.Path, "projects/someone/something/milestones") {
 			r, err := os.Open("testdata/gitlab/milestones.json")
 			require.NoError(t, err)
