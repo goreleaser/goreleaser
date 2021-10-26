@@ -123,15 +123,15 @@ func doRun(ctx *context.Context, goFish config.GoFish, cl client.Client) error {
 	}
 
 	filename := goFish.Name + ".lua"
-	path := filepath.Join(ctx.Config.Dist, filename)
-	log.WithField("food", path).Info("writing")
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint: gosec
+	luaPath := filepath.Join(ctx.Config.Dist, filename)
+	log.WithField("food", luaPath).Info("writing")
+	if err := os.WriteFile(luaPath, []byte(content), 0o644); err != nil { //nolint: gosec
 		return fmt.Errorf("failed to write gofish food: %w", err)
 	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: filename,
-		Path: path,
+		Path: luaPath,
 		Type: artifact.GoFishRig,
 		Extra: map[string]interface{}{
 			goFishConfigExtra: goFish,
@@ -237,11 +237,6 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 					Name:   art.Name,
 					Target: art.ExtraOr(artifact.ExtraBinary, art.Name).(string),
 				})
-			}
-			for _, v := range result.ReleasePackages {
-				if v.OS == art.Goos && v.Arch == art.Goarch {
-					return result, ErrMultipleArchivesSameOS
-				}
 			}
 			result.ReleasePackages = append(result.ReleasePackages, releasePackage)
 		}
