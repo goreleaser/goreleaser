@@ -4,3 +4,5 @@
 *.png binary
 *.jpg binary
 *.ico binary
+
+www/docs/static/schema.json linguist-generated=true
