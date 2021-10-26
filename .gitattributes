@@ -1,4 +1,4 @@
-*		text eol=lf
+* text eol=lf
 
 # Denote all files that are truly binary and should not be modified.
 *.png binary
@@ -6,3 +6,4 @@
 *.ico binary
 
 www/docs/static/schema.json linguist-generated=true
+www/docs/static/schema-pro.json linguist-generated=true
