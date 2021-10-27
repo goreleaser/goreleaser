@@ -18,6 +18,8 @@ universal_binaries:
 
   # Universal binary name template.
   #
+  # You will want to change this if you have multiple builds!
+  #
   # Defaults to '{{ .ProjectName }}'
   name_template: '{{.ProjectName}}_{{.Version}}'
 
@@ -44,3 +46,16 @@ removing the single-arch binaries from the artifact list.
 
 From there, the `Arch` template variable for this file will be `all`.
 You can use the Go template engine to remove it if you'd like.
+
+!!! warning
+    You'll want to change `name_template` for each `id` you add in universal binaries, otherwise they'll have the same name.
+
+    Example:
+
+    ```yaml
+    universal_binaries:
+    - id: foo
+      name_template: bin1
+    - id: bar
+      name_template: bin2
+    ```
