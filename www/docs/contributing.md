@@ -1,6 +1,6 @@
 # Contributing
 
-By participating to this project, you agree to abide our [code of conduct](/CODE_OF_CONDUCT.md).
+By participating to this project, you agree to abide our [code of conduct](https://github.com/goreleaser/goreleaser/blob/master/CODE_OF_CONDUCT.md).
 
 ## Setup your machine
 
