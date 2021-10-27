@@ -132,6 +132,8 @@ brews:
     - name: go
       type: optional
     - name: git
+    conflicts:
+    - goreleaser-pro
     install: |-
       bin.install "goreleaser"
       bash_completion.install "completions/goreleaser.bash" => "goreleaser"
