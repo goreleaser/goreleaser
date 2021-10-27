@@ -91,6 +91,7 @@ func loadFromFile(file string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	log.WithField("file", file).Debugf("read %d bytes", len(bts))
 	return string(bts), nil
 }
 
