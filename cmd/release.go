@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"regexp"
 	"runtime"
 	"time"
 
@@ -12,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/spf13/cobra"
 )
@@ -29,6 +32,7 @@ type releaseOpts struct {
 	releaseHeaderTmpl string
 	releaseFooterFile string
 	releaseFooterTmpl string
+	onlyBuild         string
 	autoSnapshot      bool
 	snapshot          bool
 	skipPublish       bool
@@ -77,6 +81,7 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().StringVar(&root.opts.releaseNotesTmpl, "release-notes-tmpl", "", "Load custom release notes from a templated markdown file (overrides --release-notes)")
 	cmd.Flags().StringVar(&root.opts.releaseHeaderTmpl, "release-header-tmpl", "", "Load custom release notes header from a templated markdown file (overrides --release-header)")
 	cmd.Flags().StringVar(&root.opts.releaseFooterTmpl, "release-footer-tmpl", "", "Load custom release notes footer from a templated markdown file (overrides --release-footer)")
+	cmd.Flags().StringVar(&root.opts.onlyBuild, "only-build", "", "Only release the build IDs that match the regular expression")
 	cmd.Flags().BoolVar(&root.opts.autoSnapshot, "auto-snapshot", false, "Automatically sets --snapshot if the repo is dirty")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip-publish, --skip-announce and --skip-validate)")
 	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts")
@@ -95,6 +100,10 @@ func newReleaseCmd() *releaseCmd {
 
 func releaseProject(options releaseOpts) (*context.Context, error) {
 	cfg, err := loadConfig(options.config)
+	if err != nil {
+		return nil, err
+	}
+	err = onlyBuild(&cfg, options.onlyBuild)
 	if err != nil {
 		return nil, err
 	}
@@ -144,4 +153,26 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Con
 	// test only
 	ctx.Deprecated = options.deprecated
 	return ctx
+}
+
+func onlyBuild(cfg *config.Project, onlyBuild string) error {
+	if onlyBuild == "" {
+		return nil
+	}
+
+	onlyBuildRe, err := regexp.Compile(onlyBuild)
+	if err != nil {
+		return fmt.Errorf("parsing only-build regular expression failed: %s", err)
+	}
+
+	onlyBuildIDs := make([]config.Build, 0, len(cfg.Builds))
+	for _, build := range cfg.Builds {
+		if onlyBuildRe.MatchString(build.ID) {
+			onlyBuildIDs = append(onlyBuildIDs, build)
+		}
+	}
+
+	cfg.Builds = onlyBuildIDs
+
+	return nil
 }

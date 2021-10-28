@@ -24,7 +24,7 @@ import (
 const brewConfigExtra = "BrewConfig"
 
 // ErrNoArchivesFound happens when 0 archives are found.
-var ErrNoArchivesFound = errors.New("no linux/macos archives found")
+var ErrNoArchivesFound = pipe.Skip("no linux/macos archives found")
 
 // ErrMultipleArchivesSameOS happens when the config yields multiple archives
 // for linux or windows.

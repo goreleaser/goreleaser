@@ -24,7 +24,7 @@ const goFishConfigExtra = "GoFishConfig"
 
 const foodFolder = "Food"
 
-var ErrNoArchivesFound = errors.New("no linux/macos/windows archives found")
+var ErrNoArchivesFound = pipe.Skip("no linux/macos/windows archives found")
 
 var ErrMultipleArchivesSameOS = errors.New("one rig can handle only archive of an OS/Arch combination. Consider using ids in the gofish section")
 
