@@ -12,12 +12,12 @@ GoReleaser also has a [jsonschema][] file which you can use to have better edito
 
 === "OSS"
     ```sh
-    https://goreleaser.com/schema.json
+    https://goreleaser.com/static/schema.json
     ```
 
 === "Pro"
     ```sh
-    https://goreleaser.com/schema-pro.json
+    https://goreleaser.com/static/schema-pro.json
     ```
 
 You can also generate it for your specific version using the [`goreleaser jsonschema`][schema] command.
