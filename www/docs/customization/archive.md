@@ -1,5 +1,5 @@
 ---
-title: Archive
+title: Archives
 ---
 
 The binaries built will be archived together with the `README` and `LICENSE` files into a

@@ -66,10 +66,13 @@ tasks:
     desc: Generate docs
     cmds:
       - cp -rf CONTRIBUTING.md www/docs/contributing.md
+      - cp -rf USERS.md www/docs/users.md
     sources:
       - CONTRIBUTING.md
+      - USERS.md
     generates:
       - www/docs/contributing.md
+      - www/docs/users.md
 
   docs:imgs:
     desc: Download and resize images
