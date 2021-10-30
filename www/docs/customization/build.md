@@ -65,9 +65,22 @@ builds:
       - feature
 
     # Custom environment variables to be set during the builds.
+    # This field is templateable.
+    # Envs with empty keys or values are ignored.
+    #
     # Default is empty.
     env:
+      # simple envs:
       - CGO_ENABLED=0
+      # complex, templated envs:
+      - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64"}}CC=o64-clang{{- end }}
+          {{- if eq .Arch "arm64"}}CC=aarch64-apple-darwin20.2-clang{{- end }}
+        {{- end }}
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "amd64" }}CC=x86_64-w64-mingw32-gcc{{- end }}
+        {{- end }}
 
     # GOOS list to build for.
     # For more info refer to: https://golang.org/doc/install/source#environment
@@ -381,3 +394,80 @@ There is no difference in how the binaries are handled.
 !!! warning
     When using the `prebuilt` binary, there are no defaults for `goos` et al,
     so you need to either provide those or the final `targets` matrix.
+
+
+## Complex templated environment variables
+
+Builds environment variables are templateable.
+
+You can leverage that to have a single build configuration with different environment variables for each platform, for example.
+
+A common example of this is the variables `CC` and `CCX`.
+
+Here are two different examples:
+
+### Using multiple envs
+
+This example creates once `CC_` and `CCX_` variable for each platform, and then set `CC` and `CCX` to the right one:
+
+```yaml
+# .goreleaser.yml
+builds:
+- id: mybin
+  binary: mybin
+  main: .
+  goos:
+    - linux
+    - darwin
+    - windows
+  goarch:
+    - amd64
+    - arm64
+  env:
+    - CGO_ENABLED=0
+    - CC_darwin_amd64=o64-clang
+    - CCX_darwin_amd64=o64-clang+
+    - CC_darwin_arm64=aarch64-apple-darwin20.2-clang
+    - CCX_darwin_arm64=aarch64-apple-darwin20.2-clang++
+    - CC_windows_amd64=x86_64-w64-mingw32-gc
+    - CCX_windows_amd64=x86_64-w64-mingw32-g++
+    - 'CC={{ index .Env (print "CC_" .Os "_" .Arch) }}'
+    - 'CCX={{ index .Env (print "CCX_" .Os "_" .Arch) }}'
+```
+
+### Using `if` statements
+
+This example uses `if` statements to set `CC` and `CCX`:
+
+```yaml
+# .goreleaser.yml
+builds:
+- id: mybin
+  binary: mybin
+  main: .
+  goos:
+    - linux
+    - darwin
+    - windows
+  goarch:
+    - amd64
+    - arm64
+  env:
+    - CGO_ENABLED=0
+    - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64"}}CC=o64-clang{{- end }}
+          {{- if eq .Arch "arm64"}}CC=aarch64-apple-darwin20.2-clang{{- end }}
+        {{- end }}
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "amd64" }}CC=x86_64-w64-mingw32-gcc{{- end }}
+        {{- end }}
+    - >-
+        {{- if eq .Os "darwin" }}
+          {{- if eq .Arch "amd64"}}CXX=o64-clang+{{- end }}
+          {{- if eq .Arch "arm64"}}CXX=aarch64-apple-darwin20.2-clang++{{- end }}
+        {{- end }}
+        {{- if eq .Os "windows" }}
+          {{- if eq .Arch "amd64" }}CXX=x86_64-w64-mingw32-g++{{- end }}
+        {{- end }}
+```
