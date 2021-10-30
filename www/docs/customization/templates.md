@@ -1,6 +1,4 @@
----
-title: Name Templates
----
+# Name Templates
 
 Several fields in GoReleaser's config file support templating.
 

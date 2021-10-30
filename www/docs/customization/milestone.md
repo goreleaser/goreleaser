@@ -1,6 +1,4 @@
----
-title: Closing Milestones
----
+# Closing Milestones
 
 GoReleaser can close repository milestones after successfully
 publishing all artifacts.

@@ -1,6 +1,4 @@
----
-title: Release
----
+# Release
 
 GoReleaser can create a GitHub/GitLab/Gitea release with the current tag, upload all
 the artifacts and generate the changelog based on the new commits since the

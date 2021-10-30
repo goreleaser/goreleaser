@@ -1,6 +1,4 @@
----
-title: Global Hooks
----
+# Global Hooks
 
 Some release cycles may need run something before or after everything else.
 

@@ -1,6 +1,4 @@
----
-title: Sponsors
----
+# Sponsors
 
 Does you or your company use GoReleaser?
 You can help keep the project bug-free and feature rich by sponsoring the project and the maintainers.

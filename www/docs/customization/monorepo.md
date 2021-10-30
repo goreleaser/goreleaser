@@ -1,6 +1,4 @@
----
-title: Monorepo
----
+# Monorepo
 
 !!! success "GoReleaser Pro"
     The monorepo support is a [GoReleaser Pro feature](/pro/).

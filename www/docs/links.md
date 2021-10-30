@@ -1,6 +1,4 @@
----
-title: Links
----
+# Links
 
 - Follow the progress on the [GitHub repository](https://github.com/goreleaser/goreleaser)
 - Follow [@goreleaser](https://twitter.com/goreleaser) on Twitter for updates
