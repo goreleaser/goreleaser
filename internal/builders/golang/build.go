@@ -117,7 +117,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	)
 
 	if len(testEnvs) > 0 {
-		artifact.Extra["tenv"] = testEnvs
+		artifact.Extra["testEnvs"] = testEnvs
 	}
 
 	cmd, err := buildGoBuildLine(ctx, build, options, artifact, env)

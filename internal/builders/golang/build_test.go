@@ -291,7 +291,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    "",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
-				"tenv":               []string{"TEST_T=l"},
+				"testEnvs":           []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -305,7 +305,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    "",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
-				"tenv":               []string{"TEST_T=l"},
+				"testEnvs":           []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -319,7 +319,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    "",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
-				"tenv":               []string{"TEST_T=l"},
+				"testEnvs":           []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -332,7 +332,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    "",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
-				"tenv":               []string{"TEST_T=d"},
+				"testEnvs":           []string{"TEST_T=d"},
 			},
 		},
 		{
@@ -346,7 +346,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    "",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
-				"tenv":               []string{"TEST_T=l"},
+				"testEnvs":           []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -359,7 +359,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    ".exe",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
-				"tenv":               []string{"TEST_T=w"},
+				"testEnvs":           []string{"TEST_T=w"},
 			},
 		},
 		{
@@ -372,7 +372,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    ".wasm",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
-				"tenv":               []string{"TEST_T="},
+				"testEnvs":           []string{"TEST_T="},
 			},
 		},
 	})
@@ -394,6 +394,35 @@ func TestBuild(t *testing.T) {
 		}
 		modTimes[modTime] = true
 	}
+}
+
+func TestBuildInvalidEnv(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	writeGoodMain(t, folder)
+	config := config.Project{
+		Builds: []config.Build{
+			{
+				ID:     "foo",
+				Env:    []string{"GO111MODULE={{ .Nope }}"},
+				Dir:    ".",
+				Binary: "foo",
+				Targets: []string{
+					runtimeTarget,
+				},
+				GoBinary: "go",
+			},
+		},
+	}
+	ctx := context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
+	build := ctx.Config.Builds[0]
+	err := Default.Build(ctx, build, api.Options{
+		Target: runtimeTarget,
+		Name:   build.Binary,
+		Path:   filepath.Join(folder, "dist", runtimeTarget, build.Binary),
+		Ext:    "",
+	})
+	require.EqualError(t, err, `template: tmpl:1:15: executing "tmpl" at <.Nope>: map has no entry for key "Nope"`)
 }
 
 func TestBuildCodeInSubdir(t *testing.T) {
