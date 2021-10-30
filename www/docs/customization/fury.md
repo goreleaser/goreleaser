@@ -50,4 +50,4 @@ furies:
       - deb
 ```
 
-[fury]: https://fury.io/
+[fury]: https://gemfury.com
