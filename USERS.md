@@ -5,6 +5,7 @@ you are using GoReleaser.
 
 Currently, the following organizations are using GoReleaser:
 
+1. [Numary](https://numary.com)
 1. [Schwarz IT](https://jobs.schwarz/)
 1. [TOTVS Labs](https://totvslabs.com)
 
