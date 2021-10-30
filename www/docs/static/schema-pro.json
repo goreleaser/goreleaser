@@ -6,17 +6,19 @@
 			"After": {
 				"properties": {
 					"after": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"$schema": "http://json-schema.org/draft-04/schema#",
-								"properties": {},
-								"additionalProperties": false,
-								"type": "object"
-							}
-						]
+						"items": {
+							"oneOf": [
+								{
+									"type": "string"
+								},
+								{
+									"$schema": "http://json-schema.org/draft-04/schema#",
+									"properties": {},
+									"additionalProperties": false,
+									"type": "object"
+								}
+							]
+						}
 					}
 				},
 				"additionalProperties": false,
@@ -115,17 +117,19 @@
 			"Before": {
 				"properties": {
 					"hooks": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"$schema": "http://json-schema.org/draft-04/schema#",
-								"properties": {},
-								"additionalProperties": false,
-								"type": "object"
-							}
-						]
+						"items": {
+							"oneOf": [
+								{
+									"type": "string"
+								},
+								{
+									"$schema": "http://json-schema.org/draft-04/schema#",
+									"properties": {},
+									"additionalProperties": false,
+									"type": "object"
+								}
+							]
+						}
 					}
 				},
 				"additionalProperties": false,
@@ -322,30 +326,34 @@
 			"BuildHookConfig": {
 				"properties": {
 					"Pre": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"$schema": "http://json-schema.org/draft-04/schema#",
-								"properties": {},
-								"additionalProperties": false,
-								"type": "object"
-							}
-						]
+						"items": {
+							"oneOf": [
+								{
+									"type": "string"
+								},
+								{
+									"$schema": "http://json-schema.org/draft-04/schema#",
+									"properties": {},
+									"additionalProperties": false,
+									"type": "object"
+								}
+							]
+						}
 					},
 					"Post": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"$schema": "http://json-schema.org/draft-04/schema#",
-								"properties": {},
-								"additionalProperties": false,
-								"type": "object"
-							}
-						]
+						"items": {
+							"oneOf": [
+								{
+									"type": "string"
+								},
+								{
+									"$schema": "http://json-schema.org/draft-04/schema#",
+									"properties": {},
+									"additionalProperties": false,
+									"type": "object"
+								}
+							]
+						}
 					}
 				},
 				"additionalProperties": false,
