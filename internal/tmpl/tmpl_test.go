@@ -69,7 +69,7 @@ func TestWithArtifact(t *testing.T) {
 					Goarm:  "6",
 					Gomips: "softfloat",
 					Extra: map[string]interface{}{
-						"Binary": "binary",
+						artifact.ExtraBinary: "binary",
 					},
 				},
 				map[string]string{"linux": "Linux"},

@@ -288,10 +288,10 @@ func TestBuild(t *testing.T) {
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
-				"tenv":   []string{"TEST_T=l"},
+				artifact.ExtraExt:    "",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
+				"tenv":               []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -302,10 +302,10 @@ func TestBuild(t *testing.T) {
 			Gomips: "softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
-				"tenv":   []string{"TEST_T=l"},
+				artifact.ExtraExt:    "",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
+				"tenv":               []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -316,10 +316,10 @@ func TestBuild(t *testing.T) {
 			Gomips: "softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
-				"tenv":   []string{"TEST_T=l"},
+				artifact.ExtraExt:    "",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
+				"tenv":               []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -329,10 +329,10 @@ func TestBuild(t *testing.T) {
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
-				"tenv":   []string{"TEST_T=d"},
+				artifact.ExtraExt:    "",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
+				"tenv":               []string{"TEST_T=d"},
 			},
 		},
 		{
@@ -343,10 +343,10 @@ func TestBuild(t *testing.T) {
 			Goarm:  "6",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
-				"tenv":   []string{"TEST_T=l"},
+				artifact.ExtraExt:    "",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
+				"tenv":               []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -356,10 +356,10 @@ func TestBuild(t *testing.T) {
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    ".exe",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
-				"tenv":   []string{"TEST_T=w"},
+				artifact.ExtraExt:    ".exe",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
+				"tenv":               []string{"TEST_T=w"},
 			},
 		},
 		{
@@ -369,10 +369,10 @@ func TestBuild(t *testing.T) {
 			Goarch: "wasm",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    ".wasm",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
-				"tenv":   []string{"TEST_T="},
+				artifact.ExtraExt:    ".wasm",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
+				"tenv":               []string{"TEST_T="},
 			},
 		},
 	})
@@ -776,7 +776,7 @@ func TestProcessFlags(t *testing.T) {
 		Goarch: "amd64",
 		Goarm:  "7",
 		Extra: map[string]interface{}{
-			"Binary": "binary",
+			artifact.ExtraBinary: "binary",
 		},
 	}
 

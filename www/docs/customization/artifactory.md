@@ -1,6 +1,4 @@
----
-title: Artifactory
----
+# Artifactory
 
 Publish your artifacts to an Artifactory instance.
 

@@ -10,6 +10,7 @@ IgnoreURLs:
 - https://discord.com/
 - https://gofi.sh
 - https://docs.mattermost.com
+- https://github.com/goreleaser/goreleaser/pkgs
 IgnoreDirs:
 - overrides
 IgnoreDirectoryMissingTrailingSlash: true

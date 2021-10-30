@@ -1,6 +1,4 @@
----
-title: CGO
----
+# CGO
 
 If you need to cross-compile with CGO enabled, our Docker image is not
 supported and your config will not look that "clean", unfortunately.

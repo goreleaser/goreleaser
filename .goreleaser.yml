@@ -20,13 +20,13 @@ builds:
     - darwin
     - windows
   goarch:
-    - 386
+    - "386"
     - amd64
     - arm
     - arm64
   goarm:
-    - 6
-    - 7
+    - "6"
+    - "7"
   mod_timestamp: '{{ .CommitTimestamp }}'
   flags:
     - -trimpath
@@ -132,6 +132,8 @@ brews:
     - name: go
       type: optional
     - name: git
+    conflicts:
+    - goreleaser-pro
     install: |-
       bin.install "goreleaser"
       bash_completion.install "completions/goreleaser.bash" => "goreleaser"

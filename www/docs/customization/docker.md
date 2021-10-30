@@ -1,6 +1,4 @@
----
-title: Docker Images
----
+# Docker Images
 
 GoReleaser can build and push Docker images.
 Let's see how it works.

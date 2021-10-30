@@ -1,6 +1,4 @@
----
-title: Source Archive
----
+# Source Archive
 
 You may add the current tag source archive to the release as well. This is particularly
 useful if you want to sign it, for example.

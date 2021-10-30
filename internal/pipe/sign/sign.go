@@ -115,7 +115,7 @@ func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact)
 func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*artifact.Artifact, error) {
 	env := ctx.Env.Copy()
 	env["artifact"] = a.Path
-	env["artifactID"] = a.ExtraOr("ID", "").(string)
+	env["artifactID"] = a.ID()
 
 	name, err := tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Signature, env))
 	if err != nil {
@@ -186,7 +186,7 @@ func signone(ctx *context.Context, cfg config.Sign, a *artifact.Artifact) (*arti
 		Name: name,
 		Path: filepath.Join(artifactPathBase, sigFilename),
 		Extra: map[string]interface{}{
-			"ID": cfg.ID,
+			artifact.ExtraID: cfg.ID,
 		},
 	}, nil
 }

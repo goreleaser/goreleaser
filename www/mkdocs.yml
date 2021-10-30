@@ -27,12 +27,13 @@ theme:
       toggle:
         icon: material/lightbulb
         name: Switch to dark mode
+  features:
+    - search.suggest
+    - search.highlight
+    - search.share
 
 plugins:
-  - search:
-      prebuild_index: python
-      lang:
-      - en
+  - search
   - minify:
       minify_html: true
 
@@ -124,6 +125,7 @@ nav:
     - goreleaser build: cmd/goreleaser_build.md
     - goreleaser release: cmd/goreleaser_release.md
     - goreleaser completion: cmd/goreleaser_completion.md
+    - goreleaser jsonschema: cmd/goreleaser_jsonschema.md
 - deprecations.md
 - Cookbooks:
   - About: cookbooks/index.md
@@ -139,6 +141,7 @@ nav:
   - cookbooks/using-main.version.md
 - pro.md
 - sponsors.md
+- users.md
 - contributing.md
 - links.md
 

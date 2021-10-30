@@ -84,9 +84,9 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		Goarm:  options.Goarm,
 		Gomips: options.Gomips,
 		Extra: map[string]interface{}{
-			"Binary": strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
-			"Ext":    options.Ext,
-			"ID":     build.ID,
+			artifact.ExtraBinary: strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
+			artifact.ExtraExt:    options.Ext,
+			artifact.ExtraID:     build.ID,
 		},
 	}
 

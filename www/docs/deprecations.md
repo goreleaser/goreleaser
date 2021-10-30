@@ -1,6 +1,4 @@
----
-title: Deprecation notices
----
+# Deprecation notices
 
 This page is used to list deprecation notices across GoReleaser.
 

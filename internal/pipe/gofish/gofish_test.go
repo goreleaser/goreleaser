@@ -2,7 +2,6 @@ package gofish
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -21,6 +20,13 @@ func TestDescription(t *testing.T) {
 }
 
 func createTemplateData() templateData {
+	binaries := func(ext string) []binary {
+		return []binary{
+			{Name: "bin1" + ext, Target: "bin1" + ext},
+			{Name: "bin2" + ext, Target: "bin2" + ext},
+			{Name: "bin3" + ext, Target: "bin3" + ext},
+		}
+	}
 	return templateData{
 		Desc:     "Some desc",
 		Homepage: "https://google.com",
@@ -30,42 +36,42 @@ func createTemplateData() templateData {
 				OS:          "darwin",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
-				Binaries:    []string{"bin1", "bin2", "bin3"},
+				Binaries:    binaries(""),
 			},
 			{
 				Arch:        "arm64",
 				OS:          "darwin",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b349490sadasdsadsadasdasdsd",
-				Binaries:    []string{"bin1", "bin2", "bin3"},
+				Binaries:    binaries(""),
 			},
 			{
 				Arch:        "amd64",
 				OS:          "linux",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-				Binaries:    []string{"bin1", "bin2", "bin3"},
+				Binaries:    binaries(""),
 			},
 			{
 				Arch:        "arm",
 				OS:          "linux",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-				Binaries:    []string{"bin1", "bin2", "bin3"},
+				Binaries:    binaries(""),
 			},
 			{
 				Arch:        "arm64",
 				OS:          "linux",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-				Binaries:    []string{"bin1", "bin2", "bin3"},
+				Binaries:    binaries(""),
 			},
 			{
 				Arch:        "amd64",
 				OS:          "windows",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_windows_amd64.zip",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-				Binaries:    []string{"bin1.exe", "bin2.exe", "bin3.exe"},
+				Binaries:    binaries(".exe"),
 			},
 		},
 		Name:    "Test",
@@ -196,8 +202,8 @@ func TestFullPipe(t *testing.T) {
 				Goarch: "amd64",
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":     "bar",
-					"Format": "tar.gz",
+					artifact.ExtraID:     "bar",
+					artifact.ExtraFormat: "tar.gz",
 				},
 			})
 			path := filepath.Join(folder, "bin.tar.gz")
@@ -208,9 +214,9 @@ func TestFullPipe(t *testing.T) {
 				Goarch: "amd64",
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":       "foo",
-					"Format":   "tar.gz",
-					"Binaries": []string{"name"},
+					artifact.ExtraID:       "foo",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"name"},
 				},
 			})
 
@@ -270,9 +276,9 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 		Goarch: "all",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":       "unibin",
-			"Format":   "tar.gz",
-			"Binaries": []string{"unibin"},
+			artifact.ExtraID:       "unibin",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"unibin"},
 		},
 	})
 
@@ -327,9 +333,9 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":       "foo",
-			"Format":   "tar.gz",
-			"Binaries": []string{"foo"},
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 
@@ -406,9 +412,9 @@ func TestRunPipeMultipleGoFishWithSkip(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":       "foo",
-			"Format":   "tar.gz",
-			"Binaries": []string{"foo"},
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 
@@ -522,9 +528,9 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 					Goarm:  a.goarm,
 					Type:   artifact.UploadableArchive,
 					Extra: map[string]interface{}{
-						"ID":       a.name,
-						"Format":   "tar.gz",
-						"Binaries": []string{"foo"},
+						artifact.ExtraID:       a.name,
+						artifact.ExtraFormat:   "tar.gz",
+						artifact.ExtraBinaries: []string{"foo"},
 					},
 				})
 				f, err := os.Create(path)
@@ -566,159 +572,20 @@ func TestRunPipeNoBuilds(t *testing.T) {
 	require.False(t, client.CreatedFile)
 }
 
-func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
-	ctx := context.New(
-		config.Project{
-			Rigs: []config.GoFish{
-				{
-					Rig: config.RepoRef{
-						Owner: "test",
-						Name:  "test",
-					},
-				},
-			},
-		},
-	)
-
-	ctx.TokenType = context.TokenTypeGitHub
-	f, err := ioutil.TempFile(t.TempDir(), "")
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, f.Close())
-	})
-
-	tests := []struct {
-		expectedError error
-		osarchs       []struct {
-			goos   string
-			goarch string
-			goarm  string
-		}
-	}{
-		{
-			expectedError: ErrMultipleArchivesSameOS,
-			osarchs: []struct {
-				goos   string
-				goarch string
-				goarm  string
-			}{
-				{
-					goos:   "darwin",
-					goarch: "amd64",
-				},
-				{
-					goos:   "darwin",
-					goarch: "amd64",
-				},
-			},
-		},
-		{
-			expectedError: ErrMultipleArchivesSameOS,
-			osarchs: []struct {
-				goos   string
-				goarch string
-				goarm  string
-			}{
-				{
-					goos:   "linux",
-					goarch: "amd64",
-				},
-				{
-					goos:   "linux",
-					goarch: "amd64",
-				},
-			},
-		},
-		{
-			expectedError: ErrMultipleArchivesSameOS,
-			osarchs: []struct {
-				goos   string
-				goarch string
-				goarm  string
-			}{
-				{
-					goos:   "linux",
-					goarch: "arm64",
-				},
-				{
-					goos:   "linux",
-					goarch: "arm64",
-				},
-			},
-		},
-		{
-			expectedError: ErrMultipleArchivesSameOS,
-			osarchs: []struct {
-				goos   string
-				goarch string
-				goarm  string
-			}{
-				{
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "6",
-				},
-				{
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "6",
-				},
-			},
-		},
-		{
-			expectedError: ErrMultipleArchivesSameOS,
-			osarchs: []struct {
-				goos   string
-				goarch string
-				goarm  string
-			}{
-				{
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "5",
-				},
-				{
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "6",
-				},
-				{
-					goos:   "linux",
-					goarch: "arm",
-					goarm:  "7",
-				},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		for idx, ttt := range test.osarchs {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   fmt.Sprintf("bin%d", idx),
-				Path:   f.Name(),
-				Goos:   ttt.goos,
-				Goarch: ttt.goarch,
-				Type:   artifact.UploadableArchive,
-				Extra: map[string]interface{}{
-					"ID":       fmt.Sprintf("foo%d", idx),
-					"Format":   "tar.gz",
-					"Binaries": []string{"foo"},
-				},
-			})
-		}
-		client := client.NewMock()
-		require.Equal(t, test.expectedError, runAll(ctx, client))
-		require.False(t, client.CreatedFile)
-		// clean the artifacts for the next run
-		ctx.Artifacts = artifact.New()
-	}
-}
-
 func TestRunPipeBinaryRelease(t *testing.T) {
-	ctx := context.New(
-		config.Project{
+	folder := t.TempDir()
+	ctx := &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.2.1",
+		},
+		Version:   "1.2.1",
+		Artifacts: artifact.New(),
+		Config: config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
 			Rigs: []config.GoFish{
 				{
+					Name: "foo",
 					Rig: config.RepoRef{
 						Owner: "test",
 						Name:  "test",
@@ -726,17 +593,32 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 				},
 			},
 		},
-	)
+	}
+
+	path := filepath.Join(folder, "dist/foo_darwin_all/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   "doesnt mather",
+		Name:   "foo_macos",
+		Path:   path,
 		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.Binary,
+		Goarch: "all",
+		Type:   artifact.UploadableBinary,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
+		},
 	})
+
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
 	client := client.NewMock()
-	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
-	require.False(t, client.CreatedFile)
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, publishAll(ctx, client))
+	require.True(t, client.CreatedFile)
+	golden.RequireEqualRb(t, []byte(client.Content))
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
@@ -767,9 +649,9 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":       "foo",
-			"Format":   "tar.gz",
-			"Binaries": []string{"foo"},
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 	client := client.NewMock()
@@ -819,8 +701,8 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "tar.gz",
 		},
 	})
 	client := client.NewMock()

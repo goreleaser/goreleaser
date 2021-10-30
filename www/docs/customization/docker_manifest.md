@@ -1,6 +1,4 @@
----
-title: Docker Manifests
----
+# Docker Manifests
 
 GoReleaser can also create and push Docker multi-platform images using the `docker manifest` tool.
 

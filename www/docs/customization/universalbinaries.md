@@ -1,6 +1,4 @@
----
-title: macOS Universal Binaries
----
+# macOS Universal Binaries
 
 GoReleaser can create _macOS Universal Binaries_ - also known as _Fat Binaries_.
 Those binaries are in a special format that contains both `arm64` and `amd64` executables in a single file.
@@ -17,6 +15,8 @@ universal_binaries:
   id: foo
 
   # Universal binary name template.
+  #
+  # You will want to change this if you have multiple builds!
   #
   # Defaults to '{{ .ProjectName }}'
   name_template: '{{.ProjectName}}_{{.Version}}'
@@ -44,3 +44,16 @@ removing the single-arch binaries from the artifact list.
 
 From there, the `Arch` template variable for this file will be `all`.
 You can use the Go template engine to remove it if you'd like.
+
+!!! warning
+    You'll want to change `name_template` for each `id` you add in universal binaries, otherwise they'll have the same name.
+
+    Example:
+
+    ```yaml
+    universal_binaries:
+    - id: foo
+      name_template: bin1
+    - id: bar
+      name_template: bin2
+    ```

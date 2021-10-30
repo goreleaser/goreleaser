@@ -1,6 +1,4 @@
----
-title: Fury.io (apt and rpm repositories)
----
+# Fury.io (apt and rpm repositories)
 
 !!! success "GoReleaser Pro"
     The fury.io publisher is a [GoReleaser Pro feature](/pro/).
@@ -52,4 +50,4 @@ furies:
       - deb
 ```
 
-[fury]: https://fury.io/
+[fury]: https://gemfury.com

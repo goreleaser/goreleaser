@@ -1,6 +1,4 @@
----
-title: GitHub Actions
----
+# GitHub Actions
 
 GoReleaser can also be used within our official [GoReleaser Action][goreleaser-action]
 through [GitHub Actions][actions].

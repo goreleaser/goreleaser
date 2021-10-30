@@ -1,6 +1,4 @@
----
-title: Go Modules
----
+# Go Modules
 
 GoReleaser has support for creating verifiable builds.
 A [verifiable build][vgo] is one that records enough information to be precise about exactly how to repeat it.
