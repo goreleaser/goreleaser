@@ -44,6 +44,14 @@ type Repo struct {
 	Name  string `yaml:"name,omitempty"`
 }
 
+// String of the repo, e.g. owner/name.
+func (r Repo) String() string {
+	if r.Owner == "" && r.Name == "" {
+		return ""
+	}
+	return r.Owner + "/" + r.Name
+}
+
 // RepoRef represents any kind of repo which may differ
 // from the one we are building from and may therefore
 // also require separate authentication
@@ -96,14 +104,6 @@ func (a HomebrewDependency) JSONSchemaType() *jsonschema.Type {
 			schema.Type,
 		},
 	}
-}
-
-// String of the repo, e.g. owner/name.
-func (r Repo) String() string {
-	if r.Owner == "" && r.Name == "" {
-		return ""
-	}
-	return r.Owner + "/" + r.Name
 }
 
 // GoFish contains the gofish section.
@@ -170,8 +170,8 @@ type CommitAuthor struct {
 	Email string `yaml:"email,omitempty"`
 }
 
-// Hooks define actions to run before and/or after something.
-type Hooks struct {
+// BuildHooks define actions to run before and/or after something.
+type BuildHooks struct { // renamed on pro
 	Pre  string `yaml:"pre,omitempty"`
 	Post string `yaml:"post,omitempty"`
 }
@@ -245,89 +245,91 @@ func (a FlagArray) JSONSchemaType() *jsonschema.Type {
 
 // Build contains the build configuration section.
 type Build struct {
-	ID              string         `yaml:"id,omitempty"`
-	Goos            []string       `yaml:"goos,omitempty"`
-	Goarch          []string       `yaml:"goarch,omitempty"`
-	Goarm           []string       `yaml:"goarm,omitempty"`
-	Gomips          []string       `yaml:"gomips,omitempty"`
-	Targets         []string       `yaml:"targets,omitempty"`
-	Ignore          []IgnoredBuild `yaml:"ignore,omitempty"`
-	Dir             string         `yaml:"dir,omitempty"`
-	Main            string         `yaml:"main,omitempty"`
-	Ldflags         StringArray    `yaml:"ldflags,omitempty"`
-	Tags            FlagArray      `yaml:"tags,omitempty"`
-	Flags           FlagArray      `yaml:"flags,omitempty"`
-	Binary          string         `yaml:"binary,omitempty"`
-	Hooks           HookConfig     `yaml:"hooks,omitempty"`
-	Env             []string       `yaml:"env,omitempty"`
-	Builder         string         `yaml:"builder,omitempty"`
-	Asmflags        StringArray    `yaml:"asmflags,omitempty"`
-	Gcflags         StringArray    `yaml:"gcflags,omitempty"`
-	ModTimestamp    string         `yaml:"mod_timestamp,omitempty"`
-	Skip            bool           `yaml:"skip,omitempty"`
-	GoBinary        string         `yaml:"gobinary,omitempty"`
-	NoUniqueDistDir bool           `yaml:"no_unique_dist_dir,omitempty"`
-	UnproxiedMain   string         `yaml:"-"` // used by gomod.proxy
-	UnproxiedDir    string         `yaml:"-"` // used by gomod.proxy
+	ID              string          `yaml:"id,omitempty"`
+	Goos            []string        `yaml:"goos,omitempty"`
+	Goarch          []string        `yaml:"goarch,omitempty"`
+	Goarm           []string        `yaml:"goarm,omitempty"`
+	Gomips          []string        `yaml:"gomips,omitempty"`
+	Targets         []string        `yaml:"targets,omitempty"`
+	Ignore          []IgnoredBuild  `yaml:"ignore,omitempty"`
+	Dir             string          `yaml:"dir,omitempty"`
+	Main            string          `yaml:"main,omitempty"`
+	Ldflags         StringArray     `yaml:"ldflags,omitempty"`
+	Tags            FlagArray       `yaml:"tags,omitempty"`
+	Flags           FlagArray       `yaml:"flags,omitempty"`
+	Binary          string          `yaml:"binary,omitempty"`
+	Hooks           BuildHookConfig `yaml:"hooks,omitempty"`
+	Env             []string        `yaml:"env,omitempty"`
+	Builder         string          `yaml:"builder,omitempty"`
+	Asmflags        StringArray     `yaml:"asmflags,omitempty"`
+	Gcflags         StringArray     `yaml:"gcflags,omitempty"`
+	ModTimestamp    string          `yaml:"mod_timestamp,omitempty"`
+	Skip            bool            `yaml:"skip,omitempty"`
+	GoBinary        string          `yaml:"gobinary,omitempty"`
+	NoUniqueDistDir bool            `yaml:"no_unique_dist_dir,omitempty"`
+	UnproxiedMain   string          `yaml:"-"` // used by gomod.proxy
+	UnproxiedDir    string          `yaml:"-"` // used by gomod.proxy
 }
 
-type HookConfig struct {
-	Pre  BuildHooks `yaml:"pre,omitempty"`
-	Post BuildHooks `yaml:"post,omitempty"`
+type BuildHookConfig struct {
+	Pre  Hooks `yaml:",omitempty"`
+	Post Hooks `yaml:",omitempty"`
 }
 
-type BuildHooks []BuildHook
+type Hooks []Hook
 
 // UnmarshalYAML is a custom unmarshaler that allows simplified declaration of single command.
-func (bhc *BuildHooks) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (bhc *Hooks) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var singleCmd string
 	err := unmarshal(&singleCmd)
 	if err == nil {
-		*bhc = []BuildHook{{Cmd: singleCmd}}
+		*bhc = []Hook{{Cmd: singleCmd}}
 		return nil
 	}
 
-	type t BuildHooks
+	type t Hooks
 	var hooks t
 	if err := unmarshal(&hooks); err != nil {
 		return err
 	}
-	*bhc = (BuildHooks)(hooks)
+	*bhc = (Hooks)(hooks)
 	return nil
 }
 
-func (bhc BuildHooks) JSONSchemaType() *jsonschema.Type {
-	type t BuildHooks
+func (bhc Hooks) JSONSchemaType() *jsonschema.Type {
+	type t Hooks
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
 	}
 	schema := reflector.Reflect(&t{})
 	return &jsonschema.Type{
-		OneOf: []*jsonschema.Type{
-			{
-				Type: "string",
+		Items: &jsonschema.Type{
+			OneOf: []*jsonschema.Type{
+				{
+					Type: "string",
+				},
+				schema.Type,
 			},
-			schema.Type,
 		},
 	}
 }
 
-type BuildHook struct {
+type Hook struct {
 	Dir string   `yaml:"dir,omitempty"`
 	Cmd string   `yaml:"cmd,omitempty"`
 	Env []string `yaml:"env,omitempty"`
 }
 
 // UnmarshalYAML is a custom unmarshaler that allows simplified declarations of commands as strings.
-func (bh *BuildHook) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (bh *Hook) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var cmd string
 	if err := unmarshal(&cmd); err != nil {
-		type t BuildHook
+		type t Hook
 		var hook t
 		if err := unmarshal(&hook); err != nil {
 			return err
 		}
-		*bh = (BuildHook)(hook)
+		*bh = (Hook)(hook)
 		return nil
 	}
 
@@ -335,8 +337,8 @@ func (bh *BuildHook) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (bh BuildHook) JSONSchemaType() *jsonschema.Type {
-	type t BuildHook
+func (bh Hook) JSONSchemaType() *jsonschema.Type {
+	type t Hook
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
 	}

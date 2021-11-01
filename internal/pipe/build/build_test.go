@@ -124,11 +124,11 @@ func TestRunFullPipe(t *testing.T) {
 				Binary:  "testing",
 				Flags:   []string{"-v"},
 				Ldflags: []string{"-X main.test=testing"},
-				Hooks: config.HookConfig{
-					Pre: []config.BuildHook{
+				Hooks: config.BuildHookConfig{
+					Pre: []config.Hook{
 						{Cmd: "touch " + pre},
 					},
-					Post: []config.BuildHook{
+					Post: []config.Hook{
 						{Cmd: "touch " + post},
 					},
 				},
@@ -161,11 +161,11 @@ func TestRunFullPipeFail(t *testing.T) {
 				Binary:  "testing",
 				Flags:   []string{"-v"},
 				Ldflags: []string{"-X main.test=testing"},
-				Hooks: config.HookConfig{
-					Pre: []config.BuildHook{
+				Hooks: config.BuildHookConfig{
+					Pre: []config.Hook{
 						{Cmd: "touch " + pre},
 					},
-					Post: []config.BuildHook{
+					Post: []config.Hook{
 						{Cmd: "touch " + post},
 					},
 				},
@@ -188,7 +188,7 @@ func TestRunPipeFailingHooks(t *testing.T) {
 			{
 				Builder: "fake",
 				Binary:  "hooks",
-				Hooks:   config.HookConfig{},
+				Hooks:   config.BuildHookConfig{},
 				Targets: []string{"linux_amd64"},
 			},
 		},
@@ -196,15 +196,15 @@ func TestRunPipeFailingHooks(t *testing.T) {
 	t.Run("pre-hook", func(t *testing.T) {
 		ctx := context.New(cfg)
 		ctx.Git.CurrentTag = "2.3.4"
-		ctx.Config.Builds[0].Hooks.Pre = []config.BuildHook{{Cmd: "exit 1"}}
-		ctx.Config.Builds[0].Hooks.Post = []config.BuildHook{{Cmd: "echo post"}}
+		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
+		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "echo post"}}
 		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: "": exec: "exit": executable file not found in $PATH`)
 	})
 	t.Run("post-hook", func(t *testing.T) {
 		ctx := context.New(cfg)
 		ctx.Git.CurrentTag = "2.3.4"
-		ctx.Config.Builds[0].Hooks.Pre = []config.BuildHook{{Cmd: "echo pre"}}
-		ctx.Config.Builds[0].Hooks.Post = []config.BuildHook{{Cmd: "exit 1"}}
+		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
+		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		require.EqualError(t, Pipe{}.Run(ctx), `post hook failed: "": exec: "exit": executable file not found in $PATH`)
 	})
 }
@@ -459,11 +459,11 @@ func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
 		Targets: []string{
 			"linux_amd64",
 		},
-		Hooks: config.HookConfig{
-			Pre: []config.BuildHook{
+		Hooks: config.BuildHookConfig{
+			Pre: []config.Hook{
 				{Cmd: "touch pre-hook-{{.Arch}}-{{.Os}}", Dir: tmpDir},
 			},
-			Post: config.BuildHooks{
+			Post: config.Hooks{
 				{Cmd: "touch post-hook-{{.Arch}}-{{.Os}}", Dir: tmpDir},
 			},
 		},
@@ -491,11 +491,11 @@ func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 			"darwin_amd64",
 			"windows_amd64",
 		},
-		Hooks: config.HookConfig{
-			Pre: []config.BuildHook{
+		Hooks: config.BuildHookConfig{
+			Pre: []config.Hook{
 				{Cmd: "touch pre-hook-{{.Target}}", Dir: tmpDir},
 			},
-			Post: config.BuildHooks{
+			Post: config.Hooks{
 				{Cmd: "touch post-hook-{{.Target}}", Dir: tmpDir},
 			},
 		},
@@ -658,8 +658,8 @@ func TestRunHookFailWithLogs(t *testing.T) {
 				Builder: "fakeFail",
 				Binary:  "testing",
 				Flags:   []string{"-v"},
-				Hooks: config.HookConfig{
-					Pre: []config.BuildHook{
+				Hooks: config.BuildHookConfig{
+					Pre: []config.Hook{
 						{Cmd: "sh -c 'echo foo; exit 1'"},
 					},
 				},
