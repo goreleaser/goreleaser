@@ -565,7 +565,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 			Builds: []config.Build{
 				{
 					Binary: "no-main",
-					Hooks:  config.HookConfig{},
+					Hooks:  config.BuildHookConfig{},
 					Targets: []string{
 						runtimeTarget,
 					},
@@ -680,7 +680,7 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 			{
 				Env:    []string{"GO111MODULE=off"},
 				Binary: "foo",
-				Hooks:  config.HookConfig{},
+				Hooks:  config.BuildHookConfig{},
 				Targets: []string{
 					runtimeTarget,
 				},

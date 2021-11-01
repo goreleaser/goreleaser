@@ -114,7 +114,7 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 	return g.Wait()
 }
 
-func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hooks config.BuildHooks) error {
+func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hooks config.Hooks) error {
 	if len(hooks) == 0 {
 		return nil
 	}
