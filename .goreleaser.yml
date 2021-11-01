@@ -32,6 +32,12 @@ builds:
     - -trimpath
   ldflags:
     - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
+  hooks:
+    post:
+      - cmd: "cyclonedx-gomod app -licenses -json -output {{.Env.artifact}}.bom.json"
+        custom_artifact:
+          path: "{{.Env.artifact}}.bom.json"
+          name: goreleaser.bom.json
 
 universal_binaries:
 - replace: true

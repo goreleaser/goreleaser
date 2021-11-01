@@ -89,7 +89,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for i, archive := range ctx.Config.Archives {
 		archive := archive
-		artifacts := ctx.Artifacts.Filter(
+		binaries := ctx.Artifacts.Filter(
 			artifact.And(
 				artifact.Or(
 					artifact.ByType(artifact.Binary),
@@ -98,17 +98,23 @@ func (Pipe) Run(ctx *context.Context) error {
 				artifact.ByIDs(archive.Builds...),
 			),
 		).GroupByPlatform()
-		if err := checkArtifacts(artifacts); err != nil && !archive.AllowDifferentBinaryCount {
+		customs := ctx.Artifacts.Filter(
+			artifact.And(
+				artifact.ByType(artifact.Custom),
+				artifact.ByIDs(archive.Builds...),
+			),
+		).GroupByPlatform()
+		if err := checkArtifacts(binaries); err != nil && !archive.AllowDifferentBinaryCount {
 			return fmt.Errorf("invalid archive: %d: %w", i, ErrArchiveDifferentBinaryCount)
 		}
-		for group, artifacts := range artifacts {
+		for group, artifacts := range binaries {
 			log.Debugf("group %s has %d binaries", group, len(artifacts))
 			artifacts := artifacts
 			g.Go(func() error {
 				if packageFormat(archive, artifacts[0].Goos) == "binary" {
 					return skip(ctx, archive, artifacts)
 				}
-				return create(ctx, archive, artifacts)
+				return create(ctx, archive, artifacts, customs[group])
 			})
 		}
 	}
@@ -126,7 +132,7 @@ func checkArtifacts(artifacts map[string][]*artifact.Artifact) error {
 	return ErrArchiveDifferentBinaryCount
 }
 
-func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {
+func create(ctx *context.Context, arch config.Archive, binaries, customs []*artifact.Artifact) error {
 	format := packageFormat(arch, binaries[0].Goos)
 	folder, err := tmpl.New(ctx).
 		WithArtifact(binaries[0], arch.Replacements).
@@ -183,6 +189,14 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, binary.Name, err)
 		}
 		bins = append(bins, binary.Name)
+	}
+	for _, custom := range customs {
+		if err := a.Add(config.File{
+			Source:      custom.Path,
+			Destination: custom.Name,
+		}); err != nil {
+			return fmt.Errorf("failed to add: '%s' -> '%s': %w", custom.Path, custom.Name, err)
+		}
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.UploadableArchive,

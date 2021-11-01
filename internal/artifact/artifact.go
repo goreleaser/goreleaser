@@ -56,6 +56,8 @@ const (
 	GoFishRig
 	// ScoopManifest is an uploadable scoop manifest file.
 	ScoopManifest
+	// Custom file.
+	Custom
 )
 
 func (t Type) String() string {
@@ -86,6 +88,8 @@ func (t Type) String() string {
 		return "GoFish Rig"
 	case ScoopManifest:
 		return "Scoop Manifest"
+	case Custom:
+		return "Custom file"
 	default:
 		return "unknown"
 	}

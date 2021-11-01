@@ -13,6 +13,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/caarlos0/go-shellwords"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/logext"
@@ -102,10 +103,11 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 			if err := doBuild(ctx, build, *opts); err != nil {
 				return err
 			}
-			if !ctx.SkipPostBuildHooks {
-				if err := runHook(ctx, *opts, build.Env, build.Hooks.Post); err != nil {
-					return fmt.Errorf("post hook failed: %w", err)
-				}
+			if ctx.SkipPostBuildHooks {
+				return nil
+			}
+			if err := runHook(ctx, *opts, build.Env, build.Hooks.Post); err != nil {
+				return fmt.Errorf("post hook failed: %w", err)
 			}
 			return nil
 		})
@@ -124,6 +126,15 @@ func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hoo
 
 		env = append(env, ctx.Env.Strings()...)
 		env = append(env, buildEnv...)
+		env = append(env, "artifact="+opts.Path)
+		env = append(
+			env,
+			"GOOS="+opts.Goos,
+			"GOARCH="+opts.Goarch,
+			"GOARM="+opts.Goarm,
+			"GOMIPS="+opts.Gomips,
+			"GOMIPS64="+opts.Gomips,
+		)
 
 		for _, rawEnv := range hook.Env {
 			e, err := tmpl.New(ctx).WithBuildOptions(opts).Apply(rawEnv)
@@ -154,6 +165,29 @@ func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hoo
 		if err := run(ctx, dir, cmd, env); err != nil {
 			return err
 		}
+
+		if hook.CustomArtifact.Path != "" {
+			name, err := tmpl.New(ctx).WithBuildOptions(opts).WithEnvS(env).Apply(hook.CustomArtifact.Name)
+			if err != nil {
+				return err
+			}
+			path, err := tmpl.New(ctx).WithBuildOptions(opts).WithEnvS(env).Apply(hook.CustomArtifact.Path)
+			if err != nil {
+				return err
+			}
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   name,
+				Path:   path,
+				Type:   artifact.Custom,
+				Goos:   opts.Goos,
+				Goarch: opts.Goarch,
+				Goarm:  opts.Goarm,
+				Gomips: opts.Gomips,
+				Extra: map[string]interface{}{
+					artifact.ExtraID: opts.ID,
+				},
+			})
+		}
 	}
 
 	return nil
@@ -183,6 +217,7 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	}
 
 	buildOpts := builders.Options{
+		ID:     build.ID,
 		Target: target,
 		Ext:    ext,
 		Goos:   goos,

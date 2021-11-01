@@ -28,6 +28,7 @@ func For(name string) Builder {
 
 // Options to be passed down to a builder.
 type Options struct {
+	ID     string
 	Name   string
 	Path   string
 	Ext    string

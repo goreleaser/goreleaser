@@ -312,10 +312,17 @@ func (bhc BuildHooks) JSONSchemaType() *jsonschema.Type {
 	}
 }
 
+type CustomArtifact struct {
+	Path string `yaml:"path,omitempty"`
+	Name string `yaml:"name,omitempty"`
+}
+
 type BuildHook struct {
 	Dir string   `yaml:"dir,omitempty"`
 	Cmd string   `yaml:"cmd,omitempty"`
 	Env []string `yaml:"env,omitempty"`
+
+	CustomArtifact CustomArtifact `yaml:"custom_artifact,omitempty"`
 }
 
 // UnmarshalYAML is a custom unmarshaler that allows simplified declarations of commands as strings.
