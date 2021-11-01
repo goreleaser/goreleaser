@@ -18,6 +18,11 @@ source:
   # Any format git-archive supports, this supports too.
   # Defaults to `tar.gz`
   format: 'tar'
+
+  # Prefix template.
+  # String to prepend to each filename in the archive.
+  # Defaults to empty
+  prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
 ```
 
 !!! tip

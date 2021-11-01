@@ -28,8 +28,9 @@ func TestArchive(t *testing.T) {
 				ProjectName: "foo",
 				Dist:        "dist",
 				Source: config.Source{
-					Format:  format,
-					Enabled: true,
+					Format:         format,
+					Enabled:        true,
+					PrefixTemplate: "{{ .ProjectName }}-{{ .Version }}/",
 				},
 			})
 			ctx.Git.FullCommit = "HEAD"
