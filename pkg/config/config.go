@@ -756,9 +756,10 @@ type Publisher struct {
 
 // Source configuration.
 type Source struct {
-	NameTemplate string `yaml:"name_template,omitempty"`
-	Format       string `yaml:"format,omitempty"`
-	Enabled      bool   `yaml:"enabled,omitempty"`
+	NameTemplate   string `yaml:"name_template,omitempty"`
+	Format         string `yaml:"format,omitempty"`
+	Enabled        bool   `yaml:"enabled,omitempty"`
+	PrefixTemplate string `yaml:"prefix_template,omitempty"`
 }
 
 // Project includes all project configuration.
