@@ -32,7 +32,7 @@ announce:
     username: ""
 
     # Body template to use within the email.
-    # Defaults to `You can view details from: {{ .GitURL }}/releases/tag/{{ .Tag }}`
+    # Defaults to `You can view details from: {{ trimsuffix .GitURL ".git" }}/releases/tag/{{ .Tag }}`
     body_template: 'https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'
 
     # Subject template to use within the email subject.

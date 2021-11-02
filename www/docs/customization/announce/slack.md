@@ -16,7 +16,7 @@ announce:
     enabled: true
 
     # Message template to use while publishing.
-    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .GitURL }}/releases/tag/{{ .Tag }}`
+    # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ trimsuffix .GitURL ".git" }}/releases/tag/{{ .Tag }}`
     message_template: 'Awesome project {{.Tag}} is out!'
 
     # The name of the channel that the user selected as a destination for webhook messages.
