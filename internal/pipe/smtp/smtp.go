@@ -13,7 +13,7 @@ import (
 
 const (
 	defaultSubjectTemplate = `{{ .ProjectName }} {{ .Tag }} is out!`
-	defaultBodyTemplate    = `You can view details from: {{ .GitURL }}/releases/tag/{{ .Tag }}`
+	defaultBodyTemplate    = `You can view details from: {{ trimsuffix .GitURL ".git" }}/releases/tag/{{ .Tag }}`
 )
 
 type Pipe struct{}

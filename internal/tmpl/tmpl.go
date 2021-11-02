@@ -169,6 +169,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"toupper":    strings.ToUpper,
 			"trim":       strings.TrimSpace,
 			"trimprefix": strings.TrimPrefix,
+			"trimsuffix": strings.TrimSuffix,
 			"dir":        filepath.Dir,
 			"abs":        filepath.Abs,
 			"incmajor":   incMajor,
