@@ -18,7 +18,7 @@ import (
 const (
 	defaultColor           = "#2D313E"
 	defaultUsername        = `GoReleaser`
-	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .GitURL }}/releases/tag/{{ .Tag }}`
+	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ trimsuffix .GitURL ".git" }}/releases/tag/{{ .Tag }}`
 	defaultMessageTitle    = `{{ .ProjectName }} {{ .Tag }} is out!`
 )
 
