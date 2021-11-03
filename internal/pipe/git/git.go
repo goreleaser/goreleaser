@@ -55,7 +55,7 @@ func getInfo(ctx *context.Context) (context.GitInfo, error) {
 	if !git.IsRepo() {
 		return context.GitInfo{}, ErrNotRepository
 	}
-	info, err := getGitInfo()
+	info, err := getGitInfo(ctx)
 	if err != nil && ctx.Snapshot {
 		log.WithError(err).Warn("ignoring errors because this is a snapshot")
 		if info.Commit == "" {
@@ -66,7 +66,7 @@ func getInfo(ctx *context.Context) (context.GitInfo, error) {
 	return info, err
 }
 
-func getGitInfo() (context.GitInfo, error) {
+func getGitInfo(ctx *context.Context) (context.GitInfo, error) {
 	branch, err := getBranch()
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get current branch: %w", err)
@@ -88,6 +88,18 @@ func getGitInfo() (context.GitInfo, error) {
 		return context.GitInfo{}, fmt.Errorf("couldn't get remote URL: %w", err)
 	}
 
+	var tagErr error
+	tag, err := getTag()
+	if err != nil {
+		tagErr = err
+		tag = "v0.0.0"
+	}
+
+	releaseURL, err := getReleaseURL(ctx.TokenType, gitURL, tag)
+	if err != nil {
+		return context.GitInfo{}, fmt.Errorf("couldn't get release URL: %w", err)
+	}
+
 	if strings.HasPrefix(gitURL, "https://") {
 		u, err := url.Parse(gitURL)
 		if err != nil {
@@ -97,8 +109,7 @@ func getGitInfo() (context.GitInfo, error) {
 		gitURL = u.String()
 	}
 
-	tag, err := getTag()
-	if err != nil {
+	if tagErr != nil {
 		return context.GitInfo{
 			Branch:      branch,
 			Commit:      full,
@@ -106,7 +117,8 @@ func getGitInfo() (context.GitInfo, error) {
 			ShortCommit: short,
 			CommitDate:  date,
 			URL:         gitURL,
-			CurrentTag:  "v0.0.0",
+			ReleaseURL:  releaseURL,
+			CurrentTag:  tag,
 		}, ErrNoTag
 	}
 	return context.GitInfo{
@@ -117,6 +129,7 @@ func getGitInfo() (context.GitInfo, error) {
 		ShortCommit: short,
 		CommitDate:  date,
 		URL:         gitURL,
+		ReleaseURL:  releaseURL,
 	}, nil
 }
 
@@ -205,4 +218,17 @@ func getTag() (string, error) {
 
 func getURL() (string, error) {
 	return git.Clean(git.Run("ls-remote", "--get-url"))
+}
+
+func getReleaseURL(tokenType context.TokenType, url, tag string) (string, error) {
+	switch tokenType {
+	case context.TokenTypeGitHub:
+		return fmt.Sprintf("%s/releases/tag/%s", url, tag), nil
+	case context.TokenTypeGitLab:
+		return fmt.Sprintf("%s/-/releases/%s", url, tag), nil
+	case context.TokenTypeGitea:
+		return fmt.Sprintf("%s/releases/tag/%s", url, tag), nil
+	default:
+		return "", fmt.Errorf("invalid client token type: %q", tokenType)
+	}
 }

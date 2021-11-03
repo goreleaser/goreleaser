@@ -18,7 +18,7 @@ import (
 const (
 	defaultColor           = "#2D313E"
 	defaultUsername        = `GoReleaser`
-	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ trimsuffix .GitURL ".git" }}/releases/tag/{{ .Tag }}`
+	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 	defaultMessageTitle    = `{{ .ProjectName }} {{ .Tag }} is out!`
 )
 
@@ -35,6 +35,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Mattermost.MessageTemplate == "" {
 		ctx.Config.Announce.Mattermost.MessageTemplate = defaultMessageTemplate
 	}
+
 	if ctx.Config.Announce.Mattermost.TitleTemplate == "" {
 		ctx.Config.Announce.Mattermost.TitleTemplate = defaultMessageTitle
 	}

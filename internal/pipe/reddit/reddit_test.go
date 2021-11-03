@@ -14,6 +14,7 @@ func TestStringer(t *testing.T) {
 
 func TestDefault(t *testing.T) {
 	ctx := context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitHub
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ctx.Config.Announce.Reddit.TitleTemplate, defaultTitleTemplate)
 }
