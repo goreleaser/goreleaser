@@ -1,0 +1,25 @@
+name: generate
+
+on:
+  push:
+    branches:
+      - 'master'
+    paths:
+      - '.github/workflows/generate.yml'
+      - CONTRIBUTING.md
+      - USERS.md
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      - uses: arduino/setup-task@v1
+      - run: task docs:generate
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "docs: update"
+          branch: master
