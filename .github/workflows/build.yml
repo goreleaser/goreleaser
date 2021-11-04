@@ -61,7 +61,7 @@ jobs:
             ${{ runner.os }}-go-
       -
         name: Setup Sigstore
-        uses: sigstore/cosign-installer@v1.2.1
+        uses: sigstore/cosign-installer@v1.3.0
       -
         name: build and test
         run: task ci
