@@ -210,6 +210,8 @@ publishers:
     cmd: ./scripts/fury-upload.sh {{ .ArtifactName }}
 
 release:
+  extra_files:
+    - glob: ./cosign.pub
   footer: |
     ## What to do next?
 
