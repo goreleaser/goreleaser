@@ -14,7 +14,7 @@ func TestArch(t *testing.T) {
 		"linuxarm64":             "arm64",
 		"linuxarm5":              "armel",
 		"linuxarm6":              "armhf",
-		"linuxarm7":              "armv7l",
+		"linuxarm7":              "armhf",
 		"linuxppc64":             "ppc64",
 		"linuxppc64le":           "ppc64le",
 		"linuxwhat":              "what",
