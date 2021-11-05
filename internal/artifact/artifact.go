@@ -42,6 +42,8 @@ const (
 	PublishableDockerImage
 	// DockerImage is a published Docker image.
 	DockerImage
+	// UnpublishableDockerImage is an unpublishable Docker image (output from docker build, but will not be pushed).
+	UnpublishableDockerImage
 	// DockerManifest is a published Docker manifest.
 	DockerManifest
 	// Checksum is a checksums file.
@@ -56,6 +58,8 @@ const (
 	GoFishRig
 	// ScoopManifest is an uploadable scoop manifest file.
 	ScoopManifest
+	// SBOM is a Software Bill of Materials file.
+	SBOM
 )
 
 func (t Type) String() string {

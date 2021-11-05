@@ -4,6 +4,8 @@ package pipeline
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/internal/pipe/sbom"
+
 	"github.com/goreleaser/goreleaser/internal/pipe/announce"
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/before"
@@ -71,6 +73,7 @@ var Pipeline = append(
 	checksums.Pipe{},     // checksums of the files
 	sign.Pipe{},          // sign artifacts
 	docker.Pipe{},        // create and push docker images
+	sbom.Pipe{},          // create SBOMs of artifacts
 	publish.Pipe{},       // publishes artifacts
 	announce.Pipe{},      // announce releases
 )

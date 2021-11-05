@@ -5,6 +5,8 @@ package defaults
 import (
 	"fmt"
 
+	"github.com/goreleaser/goreleaser/internal/pipe/sbom"
+
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
@@ -60,6 +62,7 @@ var Defaulters = []Defaulter{
 	checksums.Pipe{},
 	sign.Pipe{},
 	sign.DockerPipe{},
+	sbom.Pipe{},
 	docker.Pipe{},
 	docker.ManifestPipe{},
 	artifactory.Pipe{},

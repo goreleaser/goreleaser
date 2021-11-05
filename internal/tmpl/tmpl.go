@@ -27,6 +27,7 @@ type Fields map[string]interface{}
 const (
 	// general keys.
 	projectName     = "ProjectName"
+	dist            = "Dist"
 	version         = "Version"
 	rawVersion      = "RawVersion"
 	tag             = "Tag"
@@ -72,6 +73,7 @@ func New(ctx *context.Context) *Template {
 	return &Template{
 		fields: Fields{
 			projectName:     ctx.Config.ProjectName,
+			dist:            ctx.Config.Dist,
 			modulePath:      ctx.ModulePath,
 			version:         ctx.Version,
 			rawVersion:      rawVersionV,

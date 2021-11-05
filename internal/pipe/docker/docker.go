@@ -172,6 +172,41 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 		return err
 	}
 
+	skipErr := skipValidation(ctx, docker)
+	for _, img := range images {
+		if skipErr != nil {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Type:   artifact.UnpublishableDockerImage,
+				Name:   img,
+				Path:   img,
+				Goarch: docker.Goarch,
+				Goos:   docker.Goos,
+				Goarm:  docker.Goarm,
+				Extra: map[string]interface{}{
+					dockerConfigExtra: docker,
+					artifact.ExtraID:  docker.ID,
+				},
+			})
+		} else {
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Type:   artifact.PublishableDockerImage,
+				Name:   img,
+				Path:   img,
+				Goarch: docker.Goarch,
+				Goos:   docker.Goos,
+				Goarm:  docker.Goarm,
+				Extra: map[string]interface{}{
+					dockerConfigExtra: docker,
+					artifact.ExtraID:  docker.ID,
+				},
+			})
+		}
+
+	}
+	return skipErr
+}
+
+func skipValidation(ctx *context.Context, docker config.Docker) error {
 	if strings.TrimSpace(docker.SkipPush) == "true" {
 		return pipe.Skip("docker.skip_push is set")
 	}
@@ -180,19 +215,6 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	}
 	if strings.TrimSpace(docker.SkipPush) == "auto" && ctx.Semver.Prerelease != "" {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish")
-	}
-	for _, img := range images {
-		ctx.Artifacts.Add(&artifact.Artifact{
-			Type:   artifact.PublishableDockerImage,
-			Name:   img,
-			Path:   img,
-			Goarch: docker.Goarch,
-			Goos:   docker.Goos,
-			Goarm:  docker.Goarm,
-			Extra: map[string]interface{}{
-				dockerConfigExtra: docker,
-			},
-		})
 	}
 	return nil
 }
