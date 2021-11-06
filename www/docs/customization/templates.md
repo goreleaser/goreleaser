@@ -26,7 +26,7 @@ On fields that support templating, these fields are always available:
 | `.Patch`            | the patch part of the version[^2]                                                                      |
 | `.ReleaseURL`       | the current release download url[^3]                                                                   |
 | `.Prerelease`       | the prerelease part of the version, e.g. `beta`[^2]                                                    |
-| `.RawVersion`       | Composed of Major.Minor.Patch [^2]                                                                     |
+| `.RawVersion`       | composed of `{Major}.{Minor}.{Patch}` [^2]                                                                     |
 | `.ReleaseNotes`     | the generated release notes, available after the changelog step has been executed                      |
 | `.IsSnapshot`       | `true` if `--snapshot` is set, `false` otherwise                                                       |
 | `.IsNightly`        | `true` if `--nightly` is set, `false` otherwise                                                        |
@@ -52,9 +52,9 @@ may have some extra fields:
 | `.Arch`         | `GOARCH`[^5]                          |
 | `.Arm`          | `GOARM`[^5]                           |
 | `.Mips`         | `GOMIPS`[^5]                          |
-| `.Binary`       | Binary name                           |
-| `.ArtifactName` | Archive name                          |
-| `.ArtifactPath` | Absolute path to artifact             |
+| `.Binary`       | binary name                           |
+| `.ArtifactName` | archive name                          |
+| `.ArtifactPath` | absolute path to artifact             |
 
 [^5]: Might have been replaced by `archives.replacements`.
 
@@ -62,9 +62,9 @@ On the NFPM name template field, you can use those extra fields as well:
 
 | Key            | Description                                                |
 |----------------|------------------------------------------------------------|
-| `.Release`     | Release from the nfpm config                               |
-| `.Epoch`       | Epoch from the nfpm config                                 |
-| `.PackageName` | Package the name. Same as `ProjectName` if not overridden. |
+| `.Release`     | release from the nfpm config                               |
+| `.Epoch`       | epoch from the nfpm config                                 |
+| `.PackageName` | package the name. Same as `ProjectName` if not overridden. |
 
 On all fields, you have these available functions:
 
