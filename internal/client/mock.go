@@ -12,8 +12,10 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-var _ Client = &Mock{}
-var _ GitHubClient = &Mock{}
+var (
+	_ Client       = &Mock{}
+	_ GitHubClient = &Mock{}
+)
 
 func NewMock() *Mock {
 	return &Mock{}
