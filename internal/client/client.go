@@ -46,6 +46,7 @@ type Client interface {
 	Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error)
 }
 
+// GitHubClient is the client with GitHub-only features.
 type GitHubClient interface {
 	Client
 	GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error)
