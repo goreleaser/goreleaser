@@ -11,9 +11,8 @@ import (
 )
 
 const (
-	defaultTitleTemplate     = `{{ .ProjectName }} {{ .Tag }} is out!`
-	defaultGitHubURLTemplate = `{{ trimsuffix .GitURL ".git" }}/releases/tag/{{ .Tag }}`
-	defaultGitLabURLTemplate = `{{ trimsuffix .GitURL ".git" }}/-/releases/{{ .Tag }}`
+	defaultTitleTemplate = `{{ .ProjectName }} {{ .Tag }} is out!`
+	defaultURLTemplate   = `{{ .ReleaseURL }}`
 )
 
 type Pipe struct{}
@@ -31,15 +30,8 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Announce.Reddit.TitleTemplate = defaultTitleTemplate
 	}
 
-	switch ctx.TokenType {
-	case context.TokenTypeGitHub:
-		ctx.Config.Announce.Reddit.URLTemplate = defaultGitHubURLTemplate
-	case context.TokenTypeGitLab:
-		ctx.Config.Announce.Reddit.URLTemplate = defaultGitLabURLTemplate
-	case context.TokenTypeGitea:
-		ctx.Config.Announce.Reddit.URLTemplate = defaultGitHubURLTemplate
-	default:
-		return fmt.Errorf("invalid client token type: %q", ctx.TokenType)
+	if ctx.Config.Announce.Reddit.URLTemplate == "" {
+ 		ctx.Config.Announce.Reddit.URLTemplate = defaultURLTemplate
 	}
 
 	return nil
