@@ -32,7 +32,7 @@ func NewUnauthenticatedGitHub() Client {
 }
 
 // NewGitHub returns a github client implementation.
-func NewGitHub(ctx *context.Context, token string) (Client, error) {
+func NewGitHub(ctx *context.Context, token string) (GitHubClient, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
@@ -56,6 +56,14 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	}
 
 	return &githubClient{client: client}, nil
+}
+
+func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	notes, _, err := c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, &github.GenerateNotesOptions{
+		TagName:         current,
+		PreviousTagName: github.String(prev),
+	})
+	return notes.Body, err
 }
 
 func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
