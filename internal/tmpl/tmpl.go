@@ -85,7 +85,7 @@ func New(ctx *context.Context) *Template {
 			commitDate:      ctx.Git.CommitDate.UTC().Format(time.RFC3339),
 			commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
 			gitURL:          ctx.Git.URL,
-			releaseURL:      ctx.Git.ReleaseURL,
+			releaseURL:      ctx.ReleaseURL,
 			env:             ctx.Env,
 			date:            ctx.Date.UTC().Format(time.RFC3339),
 			timestamp:       ctx.Date.UTC().Unix(),

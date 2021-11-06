@@ -23,7 +23,7 @@ announce:
     username: ""
 
     # URL template to use while publishing.
-    # Defaults to `{{ trimsuffix .GitURL ".git" }}/releases/tag/{{ .Tag }}`
+    # Defaults to `{{ .ReleaseURL }}`
     url_template: 'https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'
 
     # Title template to use while publishing.

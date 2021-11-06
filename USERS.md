@@ -6,6 +6,7 @@ you are using GoReleaser.
 Currently, the following organizations are using GoReleaser:
 
 1. [Charm](https://charm.sh)
+1. [Compose Generator](https://www.compose-generator.com)
 1. [Hugo](https://gohugo.io/)
 1. [IRON Security](https://iron.security)
 1. [Ministry of Justice (UK)](https://mojdigital.blog.gov.uk/)

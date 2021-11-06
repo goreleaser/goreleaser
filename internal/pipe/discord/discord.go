@@ -16,7 +16,7 @@ const (
 	defaultAuthor          = `GoReleaser`
 	defaultColor           = "3888754"
 	defaultIcon            = "https://goreleaser.com/static/avatar.png"
-	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ trimsuffix .GitURL ".git" }}/releases/tag/{{ .Tag }}`
+	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 )
 
 type Pipe struct{}
