@@ -341,15 +341,51 @@ func TestDefaultWithGitea(t *testing.T) {
 
 	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitea
+	ctx.Config.GiteaURLs.Download = "https://git.honk.com"
+	ctx.Git.CurrentTag = "v1.0.0"
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "gitearepo", ctx.Config.Release.Gitea.Name)
 	require.Equal(t, "giteaowner", ctx.Config.Release.Gitea.Owner)
+	require.Equal(t, "https://git.honk.com/giteaowner/gitearepo/releases/tag/v1.0.0", ctx.ReleaseURL)
 }
 
-func TestDefaultPreReleaseAuto(t *testing.T) {
+func TestDefaultPreRelease(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
+
+	t.Run("prerelease", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Release: config.Release{
+				Prerelease: "true",
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitHub
+		ctx.Semver = context.Semver{
+			Major: 1,
+			Minor: 0,
+			Patch: 0,
+		}
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.True(t, ctx.PreRelease)
+	})
+
+	t.Run("release", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Release: config.Release{
+				Prerelease: "false",
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitHub
+		ctx.Semver = context.Semver{
+			Major:      1,
+			Minor:      0,
+			Patch:      0,
+			Prerelease: "rc1",
+		}
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.False(t, ctx.PreRelease)
+	})
 
 	t.Run("auto-release", func(t *testing.T) {
 		ctx := context.New(config.Project{
