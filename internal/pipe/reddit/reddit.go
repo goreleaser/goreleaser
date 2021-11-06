@@ -31,7 +31,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 
 	if ctx.Config.Announce.Reddit.URLTemplate == "" {
- 		ctx.Config.Announce.Reddit.URLTemplate = defaultURLTemplate
+		ctx.Config.Announce.Reddit.URLTemplate = defaultURLTemplate
 	}
 
 	return nil
