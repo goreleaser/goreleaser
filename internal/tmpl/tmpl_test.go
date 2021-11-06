@@ -156,6 +156,7 @@ func TestFuncMap(t *testing.T) {
 	require.NoError(t, err)
 
 	ctx.Git.URL = "https://github.com/foo/bar.git"
+	ctx.ReleaseURL = "https://github.com/foo/bar/releases/tag/v1.0.0"
 	ctx.Git.CurrentTag = "v1.2.4"
 	for _, tc := range []struct {
 		Template string
@@ -203,6 +204,11 @@ func TestFuncMap(t *testing.T) {
 			Template: `{{ trimsuffix .GitURL ".git" }}`,
 			Name:     "trimsuffix",
 			Expected: "https://github.com/foo/bar",
+		},
+		{
+			Template: `{{ .ReleaseURL }}`,
+			Name:     "trimsuffix",
+			Expected: "https://github.com/foo/bar/releases/tag/v1.0.0",
 		},
 		{
 			Template: `{{ toupper "test" }}`,

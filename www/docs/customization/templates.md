@@ -36,25 +36,27 @@ On fields that support templating, these fields are always available:
 | `incpatch "v1.2.4"` | increments the patch of the given version[^3]                                                          |
 | `incminor "v1.2.4"` | increments the minor of the given version[^3]                                                          |
 | `incmajor "v1.2.4"` | increments the major of the given version[^3]                                                          |
+| `.ReleaseURL`       | the current release download url[^4]                                                                   |
 
 [^1]: The `v` prefix is stripped and it might be changed in `snapshot` and `nightly` builds.
 [^2]: Assuming `Tag` is a valid a SemVer, otherwise empty/zeroed.
 [^3]: Will panic if not a semantic version.
+[^4]: Composed from the current SCM's download URL and current tag. For instance, on GitHub, it'll be `https://github.com/{owner}/{repo}/releases/tag/{tag}`.
 
 On fields that are related to a single artifact (e.g., the binary name), you
 may have some extra fields:
 
 | Key             | Description                           |
 |-----------------|---------------------------------------|
-| `.Os`           | `GOOS`[^4]                            |
-| `.Arch`         | `GOARCH`[^4]                          |
-| `.Arm`          | `GOARM`[^4]                           |
-| `.Mips`         | `GOMIPS`[^4]                          |
+| `.Os`           | `GOOS`[^5]                            |
+| `.Arch`         | `GOARCH`[^5]                          |
+| `.Arm`          | `GOARM`[^5]                           |
+| `.Mips`         | `GOMIPS`[^5]                          |
 | `.Binary`       | binary name                           |
 | `.ArtifactName` | archive name                          |
 | `.ArtifactPath` | absolute path to artifact             |
 
-[^4]: Might have been replaced by `archives.replacements`.
+[^5]: Might have been replaced by `archives.replacements`.
 
 On the NFPM name template field, you can use those extra fields as well:
 

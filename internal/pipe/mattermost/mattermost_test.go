@@ -89,7 +89,7 @@ func TestPostWebhook(t *testing.T) {
 	})
 
 	ctx.Git.CurrentTag = "v1.0.0"
-	ctx.Git.ReleaseURL = "https://github.com/honk/honk/releases/tag/v1.0.0"
+	ctx.ReleaseURL = "https://github.com/honk/honk/releases/tag/v1.0.0"
 	ctx.Git.URL = "https://github.com/honk/honk"
 
 	os.Setenv("MATTERMOST_WEBHOOK", ts.URL)

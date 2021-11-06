@@ -25,7 +25,6 @@ type GitInfo struct {
 	FullCommit  string
 	CommitDate  time.Time
 	URL         string
-	ReleaseURL  string
 }
 
 // Env is the environment variables.
@@ -73,6 +72,7 @@ type Context struct {
 	Git                GitInfo
 	Date               time.Time
 	Artifacts          artifact.Artifacts
+	ReleaseURL         string
 	ReleaseNotes       string
 	ReleaseNotesFile   string
 	ReleaseNotesTmpl   string

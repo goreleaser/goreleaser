@@ -317,9 +317,12 @@ func TestDefault(t *testing.T) {
 
 	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
+	ctx.Config.GitHubURLs.Download = "https://github.com"
+	ctx.Git.CurrentTag = "v1.0.0"
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
+	require.Equal(t, "https://github.com/goreleaser/goreleaser/releases/tag/v1.0.0", ctx.ReleaseURL)
 }
 
 func TestDefaultWithGitlab(t *testing.T) {
@@ -329,9 +332,12 @@ func TestDefaultWithGitlab(t *testing.T) {
 
 	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitLab
+	ctx.Config.GitLabURLs.Download = "https://gitlab.com"
+	ctx.Git.CurrentTag = "v1.0.0"
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "gitlabrepo", ctx.Config.Release.GitLab.Name)
 	require.Equal(t, "gitlabowner", ctx.Config.Release.GitLab.Owner)
+	require.Equal(t, "https://gitlab.com/gitlabowner/gitlabrepo/-/releases/v1.0.0", ctx.ReleaseURL)
 }
 
 func TestDefaultWithGitea(t *testing.T) {
