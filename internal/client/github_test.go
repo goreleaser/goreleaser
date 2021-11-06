@@ -302,3 +302,35 @@ func TestChangelog(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "6dcb09b5b57875f334f61aebed695e2e4193db5e: Fix all the bugs (@octocat)", log)
 }
+
+func TestReleaseNotes(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		if r.URL.Path == "/repos/someone/something/releases/generate-notes" {
+			r, err := os.Open("testdata/github/releasenotes.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		}
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			API: srv.URL + "/",
+		},
+	})
+	client, err := NewGitHub(ctx, "test-token")
+	require.NoError(t, err)
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	log, err := client.GenerateReleaseNotes(ctx, repo, "v1.0.0", "v1.1.0")
+	require.NoError(t, err)
+	require.Equal(t, "**Full Changelog**: https://github.com/someone/something/compare/v1.0.0...v1.1.0", log)
+}

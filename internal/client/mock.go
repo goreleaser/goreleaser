@@ -12,6 +12,9 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+var _ Client = &Mock{}
+var _ GitHubClient = &Mock{}
+
 func NewMock() *Mock {
 	return &Mock{}
 }
@@ -30,9 +33,21 @@ type Mock struct {
 	Lock                 sync.Mutex
 	ClosedMilestone      string
 	FailToCloseMilestone bool
+	Changes              string
+	ReleaseNotes         string
 }
 
 func (c *Mock) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	if c.Changes != "" {
+		return c.Changes, nil
+	}
+	return "", ErrNotImplemented
+}
+
+func (c *Mock) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	if c.ReleaseNotes != "" {
+		return c.ReleaseNotes, nil
+	}
 	return "", ErrNotImplemented
 }
 

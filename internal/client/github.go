@@ -27,7 +27,7 @@ type githubClient struct {
 
 // NewUnauthenticatedGitHub returns a github client that is not authenticated.
 // Used in tests only.
-func NewUnauthenticatedGitHub() Client {
+func NewUnauthenticatedGitHub() GitHubClient {
 	return &githubClient{client: github.NewClient(nil)}
 }
 
@@ -63,6 +63,9 @@ func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, pre
 		TagName:         current,
 		PreviousTagName: github.String(prev),
 	})
+	if err != nil {
+		return "", err
+	}
 	return notes.Body, err
 }
 
