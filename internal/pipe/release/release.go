@@ -22,7 +22,7 @@ var ErrMultipleReleases = errors.New("multiple releases are defined. Only one is
 // Pipe for github release.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "github/gitlab/gitea releases" }
+func (Pipe) String() string                 { return "scm releases" }
 func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Release.Disable }
 
 // Default sets the pipe defaults.
@@ -45,41 +45,32 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Release.NameTemplate = "{{.Tag}}"
 	}
 
-	// nolint: exhaustive
 	switch ctx.TokenType {
 	case context.TokenTypeGitLab:
-		{
-			if ctx.Config.Release.GitLab.Name == "" {
-				repo, err := git.ExtractRepoFromConfig()
-				if err != nil {
-					return err
-				}
-				ctx.Config.Release.GitLab = repo
+		if ctx.Config.Release.GitLab.Name == "" {
+			repo, err := git.ExtractRepoFromConfig()
+			if err != nil {
+				return err
 			}
-
-			return nil
+			ctx.Config.Release.GitLab = repo
 		}
 	case context.TokenTypeGitea:
-		{
-			if ctx.Config.Release.Gitea.Name == "" {
-				repo, err := git.ExtractRepoFromConfig()
-				if err != nil {
-					return err
-				}
-				ctx.Config.Release.Gitea = repo
+		if ctx.Config.Release.Gitea.Name == "" {
+			repo, err := git.ExtractRepoFromConfig()
+			if err != nil {
+				return err
 			}
-
-			return nil
+			ctx.Config.Release.Gitea = repo
 		}
-	}
-
-	// We keep github as default for now
-	if ctx.Config.Release.GitHub.Name == "" {
-		repo, err := git.ExtractRepoFromConfig()
-		if err != nil && !ctx.Snapshot {
-			return err
+	default:
+		// We keep github as default for now
+		if ctx.Config.Release.GitHub.Name == "" {
+			repo, err := git.ExtractRepoFromConfig()
+			if err != nil && !ctx.Snapshot {
+				return err
+			}
+			ctx.Config.Release.GitHub = repo
 		}
-		ctx.Config.Release.GitHub = repo
 	}
 
 	// Check if we have to check the git tag for an indicator to mark as pre release
