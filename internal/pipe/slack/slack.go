@@ -12,7 +12,7 @@ import (
 
 const (
 	defaultUsername        = `GoReleaser`
-	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ trimsuffix .GitURL ".git" }}/releases/tag/{{ .Tag }}`
+	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 )
 
 type Pipe struct{}

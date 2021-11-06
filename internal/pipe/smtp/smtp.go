@@ -13,7 +13,7 @@ import (
 
 const (
 	defaultSubjectTemplate = `{{ .ProjectName }} {{ .Tag }} is out!`
-	defaultBodyTemplate    = `You can view details from: {{ trimsuffix .GitURL ".git" }}/releases/tag/{{ .Tag }}`
+	defaultBodyTemplate    = `You can view details from: {{ .ReleaseURL }}`
 )
 
 type Pipe struct{}
@@ -29,12 +29,12 @@ type Config struct {
 }
 
 func (Pipe) Default(ctx *context.Context) error {
-	if ctx.Config.Announce.SMTP.SubjectTemplate == "" {
-		ctx.Config.Announce.SMTP.SubjectTemplate = defaultSubjectTemplate
-	}
-
 	if ctx.Config.Announce.SMTP.BodyTemplate == "" {
 		ctx.Config.Announce.SMTP.BodyTemplate = defaultBodyTemplate
+	}
+
+	if ctx.Config.Announce.SMTP.SubjectTemplate == "" {
+		ctx.Config.Announce.SMTP.SubjectTemplate = defaultSubjectTemplate
 	}
 
 	return nil

@@ -12,7 +12,7 @@ import (
 
 const (
 	defaultTitleTemplate = `{{ .ProjectName }} {{ .Tag }} is out!`
-	defaultURLTemplate   = `{{ trimsuffix .GitURL ".git" }}/releases/tag/{{ .Tag }}`
+	defaultURLTemplate   = `{{ .ReleaseURL }}`
 )
 
 type Pipe struct{}
@@ -31,7 +31,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	}
 
 	if ctx.Config.Announce.Reddit.URLTemplate == "" {
-		ctx.Config.Announce.Reddit.URLTemplate = defaultURLTemplate
+ 		ctx.Config.Announce.Reddit.URLTemplate = defaultURLTemplate
 	}
 
 	return nil

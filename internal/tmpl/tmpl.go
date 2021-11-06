@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
+
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -37,6 +38,7 @@ const (
 	commitDate      = "CommitDate"
 	commitTimestamp = "CommitTimestamp"
 	gitURL          = "GitURL"
+	releaseURL      = "ReleaseURL"
 	major           = "Major"
 	minor           = "Minor"
 	patch           = "Patch"
@@ -83,6 +85,7 @@ func New(ctx *context.Context) *Template {
 			commitDate:      ctx.Git.CommitDate.UTC().Format(time.RFC3339),
 			commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
 			gitURL:          ctx.Git.URL,
+			releaseURL:      ctx.Git.ReleaseURL,
 			env:             ctx.Env,
 			date:            ctx.Date.UTC().Format(time.RFC3339),
 			timestamp:       ctx.Date.UTC().Unix(),
