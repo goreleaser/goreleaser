@@ -24,7 +24,6 @@ On fields that support templating, these fields are always available:
 | `.Major`            | the major part of the version[^2]                                                                      |
 | `.Minor`            | the minor part of the version[^2]                                                                      |
 | `.Patch`            | the patch part of the version[^2]                                                                      |
-| `.ReleaseURL`       | the current release download url[^3]                                                                   |
 | `.Prerelease`       | the prerelease part of the version, e.g. `beta`[^2]                                                    |
 | `.RawVersion`       | composed of `{Major}.{Minor}.{Patch}` [^2]                                                             |
 | `.ReleaseNotes`     | the generated release notes, available after the changelog step has been executed                      |
@@ -34,14 +33,15 @@ On fields that support templating, these fields are always available:
 | `.Date`             | current UTC date in RFC 3339 format                                                                    |
 | `.Timestamp`        | current UTC time in Unix format                                                                        |
 | `.ModulePath`       | the go module path, as reported by `go list -m`                                                        |
-| `incpatch "v1.2.4"` | increments the patch of the given version[^4]                                                          |
-| `incminor "v1.2.4"` | increments the minor of the given version[^4]                                                          |
-| `incmajor "v1.2.4"` | increments the major of the given version[^4]                                                          |
+| `incpatch "v1.2.4"` | increments the patch of the given version[^3]                                                          |
+| `incminor "v1.2.4"` | increments the minor of the given version[^3]                                                          |
+| `incmajor "v1.2.4"` | increments the major of the given version[^3]                                                          |
+| `.ReleaseURL`       | the current release download url[^4]                                                                   |
 
 [^1]: The `v` prefix is stripped and it might be changed in `snapshot` and `nightly` builds.
 [^2]: Assuming `Tag` is a valid a SemVer, otherwise empty/zeroed.
-[^3]: Composed from the current SCM's download URL and current tag. For instance, on GitHub, it'll be `https://github.com/{owner}/{repo}/releases/tag/{tag}`.
-[^4]: Will panic if not a semantic version.
+[^3]: Will panic if not a semantic version.
+[^4]: Composed from the current SCM's download URL and current tag. For instance, on GitHub, it'll be `https://github.com/{owner}/{repo}/releases/tag/{tag}`.
 
 On fields that are related to a single artifact (e.g., the binary name), you
 may have some extra fields:
