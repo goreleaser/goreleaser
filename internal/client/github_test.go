@@ -16,17 +16,6 @@ import (
 )
 
 func TestNewGitHubClient(t *testing.T) {
-	t.Run("unauthenticated", func(t *testing.T) {
-		ctx := context.New(config.Project{})
-		repo := Repo{
-			Owner: "goreleaser",
-			Name:  "goreleaser",
-		}
-		b, err := NewUnauthenticatedGitHub().GetDefaultBranch(ctx, repo)
-		require.NoError(t, err)
-		require.Equal(t, "master", b)
-	})
-
 	t.Run("good urls", func(t *testing.T) {
 		githubURL := "https://github.mycompany.com"
 		ctx := context.New(config.Project{
