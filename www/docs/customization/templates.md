@@ -8,35 +8,35 @@ support templating.
 
 On fields that support templating, these fields are always available:
 
-| Key                 | Description                                                                        |
-|---------------------|------------------------------------------------------------------------------------|
-| `.ProjectName`      | the project name                                                                   |
-| `.Version`          | the version being released[^1]                                                     |
-| `.Branch`           | the current git branch                                                             |
-| `.PrefixedTag`      | the current git tag prefixed with the monorepo config tag prefix (if any)          |
-| `.Tag`              | the current git tag                                                                |
-| `.ShortCommit`      | the git commit short hash                                                          |
-| `.FullCommit`       | the git commit full hash                                                           |
-| `.Commit`           | the git commit hash (deprecated)                                                   |
-| `.CommitDate`       | the UTC commit date in RFC 3339 format                                             |
-| `.CommitTimestamp`  | the UTC commit date in Unix format                                                 |
-| `.GitURL`           | the git remote url                                                                 |
-| `.Major`            | the major part of the version[^2]                                                  |
-| `.Minor`            | the minor part of the version[^2]                                                  |
-| `.Patch`            | the patch part of the version[^2]                                                  |
-| `.ReleaseURL`       | the current release download url[^3]                                               |
-| `.Prerelease`       | the prerelease part of the version, e.g. `beta`[^2]                                |
-| `.RawVersion`       | Composed of Major.Minor.Patch [^2]                                                 |
-| `.ReleaseNotes`     | the generated release notes, available after the changelog step has been executed  |
-| `.IsSnapshot`       | `true` if `--snapshot` is set, `false` otherwise                                   |
-| `.IsNightly`        | `true` if `--nightly` is set, `false` otherwise                                    |
-| `.Env`              | a map with system's environment variables                                          |
-| `.Date`             | current UTC date in RFC 3339 format                                                |
-| `.Timestamp`        | current UTC time in Unix format                                                    |
-| `.ModulePath`       | the go module path, as reported by `go list -m`                                    |
-| `incpatch "v1.2.4"` | increments the patch of the given version[^4]                                      |
-| `incminor "v1.2.4"` | increments the minor of the given version[^4]                                      |
-| `incmajor "v1.2.4"` | increments the major of the given version[^4]                                      |
+| Key                 | Description                                                                                            |
+|---------------------|--------------------------------------------------------------------------------------------------------|
+| `.ProjectName`      | the project name                                                                                       |
+| `.Version`          | the version being released[^1]                                                                         |
+| `.Branch`           | the current git branch                                                                                 |
+| `.PrefixedTag`      | the current git tag prefixed with the monorepo config tag prefix (if any)                              |
+| `.Tag`              | the current git tag                                                                                    |
+| `.ShortCommit`      | the git commit short hash                                                                              |
+| `.FullCommit`       | the git commit full hash                                                                               |
+| `.Commit`           | the git commit hash (deprecated)                                                                       |
+| `.CommitDate`       | the UTC commit date in RFC 3339 format                                                                 |
+| `.CommitTimestamp`  | the UTC commit date in Unix format                                                                     |
+| `.GitURL`           | the git remote url                                                                                     |
+| `.Major`            | the major part of the version[^2]                                                                      |
+| `.Minor`            | the minor part of the version[^2]                                                                      |
+| `.Patch`            | the patch part of the version[^2]                                                                      |
+| `.ReleaseURL`       | the current release download url[^3]                                                                   |
+| `.Prerelease`       | the prerelease part of the version, e.g. `beta`[^2]                                                    |
+| `.RawVersion`       | Composed of Major.Minor.Patch [^2]                                                                     |
+| `.ReleaseNotes`     | the generated release notes, available after the changelog step has been executed                      |
+| `.IsSnapshot`       | `true` if `--snapshot` is set, `false` otherwise                                                       |
+| `.IsNightly`        | `true` if `--nightly` is set, `false` otherwise                                                        |
+| `.Env`              | a map with system's environment variables                                                              |
+| `.Date`             | current UTC date in RFC 3339 format                                                                    |
+| `.Timestamp`        | current UTC time in Unix format                                                                        |
+| `.ModulePath`       | the go module path, as reported by `go list -m`                                                        |
+| `incpatch "v1.2.4"` | increments the patch of the given version[^4]                                                          |
+| `incminor "v1.2.4"` | increments the minor of the given version[^4]                                                          |
+| `incmajor "v1.2.4"` | increments the major of the given version[^4]                                                          |
 
 [^1]: The `v` prefix is stripped and it might be changed in `snapshot` and `nightly` builds.
 [^2]: Assuming `Tag` is a valid a SemVer, otherwise empty/zeroed.
@@ -46,15 +46,15 @@ On fields that support templating, these fields are always available:
 On fields that are related to a single artifact (e.g., the binary name), you
 may have some extra fields:
 
-| Key             | Description               |
-|-----------------|---------------------------|
-| `.Os`           | `GOOS`[^5]                |
-| `.Arch`         | `GOARCH`[^5]              |
-| `.Arm`          | `GOARM`[^5]               |
-| `.Mips`         | `GOMIPS`[^5]              |
-| `.Binary`       | Binary name               |
-| `.ArtifactName` | Archive name              |
-| `.ArtifactPath` | Absolute path to artifact |
+| Key             | Description                           |
+|-----------------|---------------------------------------|
+| `.Os`           | `GOOS`[^5]                            |
+| `.Arch`         | `GOARCH`[^5]                          |
+| `.Arm`          | `GOARM`[^5]                           |
+| `.Mips`         | `GOMIPS`[^5]                          |
+| `.Binary`       | Binary name                           |
+| `.ArtifactName` | Archive name                          |
+| `.ArtifactPath` | Absolute path to artifact             |
 
 [^5]: Might have been replaced by `archives.replacements`.
 
@@ -76,7 +76,7 @@ On all fields, you have these available functions:
 | `toupper "v1.2"`        | makes input string uppercase. See [ToUpper](https://golang.org/pkg/strings/#ToUpper)                                           |
 | `trim " v1.2  "`        | removes all leading and trailing white space. See [TrimSpace](https://golang.org/pkg/strings/#TrimSpace)                       |
 | `trimprefix "v1.2" "v"` | removes provided leading prefix string, if present. See [TrimPrefix](https://golang.org/pkg/strings/#TrimPrefix)               |
-| `trimsuffix "1.2v" "v"` | removes provided trailing suffix string, if present. See [TrimSuffix](https://pkg.go.dev/strings#TrimSuffix)               |
+| `trimsuffix "1.2v" "v"` | removes provided trailing suffix string, if present. See [TrimSuffix](https://pkg.go.dev/strings#TrimSuffix)                   |
 | `dir .Path`             | returns all but the last element of path, typically the path's directory. See [Dir](https://golang.org/pkg/path/filepath/#Dir) |
 | `abs .ArtifactPath`     | returns an absolute representation of path. See [Abs](https://golang.org/pkg/path/filepath/#Abs)                               |
 
