@@ -188,33 +188,15 @@ func getChangeloger(ctx *context.Context) (changeloger, error) {
 	case "":
 		return gitChangeloger{}, nil
 	case "github":
-		return newGitHubChangeloger(ctx)
+		fallthrough
 	case "gitlab":
-		return newGitLabChangeloger(ctx)
+		return newSCMChangeloger(ctx)
 	default:
 		return nil, fmt.Errorf("invalid changelog.use: %q", ctx.Config.Changelog.Use)
 	}
 }
 
-func newGitHubChangeloger(ctx *context.Context) (changeloger, error) {
-	cli, err := client.New(ctx)
-	if err != nil {
-		return nil, err
-	}
-	repo, err := git.ExtractRepoFromConfig()
-	if err != nil {
-		return nil, err
-	}
-	return &scmChangeloger{
-		client: cli,
-		repo: client.Repo{
-			Owner: repo.Owner,
-			Name:  repo.Name,
-		},
-	}, nil
-}
-
-func newGitLabChangeloger(ctx *context.Context) (changeloger, error) {
+func newSCMChangeloger(ctx *context.Context) (changeloger, error) {
 	cli, err := client.New(ctx)
 	if err != nil {
 		return nil, err
