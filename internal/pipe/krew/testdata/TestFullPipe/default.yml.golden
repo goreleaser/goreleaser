@@ -13,4 +13,4 @@ spec:
         os: darwin
         arch: amd64
   homepage: https://github.com/goreleaser
-  description: A run pipe test krew plugin and FOO={{ .Env.FOO }}
+  description: A run pipe test krew plugin and FOO=foo_is_bar

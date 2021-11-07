@@ -123,6 +123,7 @@ func TestPluginSimple(t *testing.T) {
 func TestFullPipe(t *testing.T) {
 	type testcase struct {
 		prepare              func(ctx *context.Context)
+		expectedRunError     string
 		expectedPublishError string
 	}
 	for name, tt := range map[string]testcase{
@@ -149,6 +150,22 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Krews[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"invalid desc": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Krews[0].Index.Owner = "test"
+				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Description = "{{ .Asdsa }"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"invalid short desc": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Krews[0].Index.Owner = "test"
+				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].ShortDescription = "{{ .Asdsa }"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -208,13 +225,20 @@ func TestFullPipe(t *testing.T) {
 			client := client.NewMock()
 			distFile := filepath.Join(folder, name+".yml")
 
-			require.NoError(t, runAll(ctx, client))
+			err = runAll(ctx, client)
+			if tt.expectedRunError != "" {
+				require.EqualError(t, err, tt.expectedRunError)
+				return
+			}
+			require.NoError(t, err)
+
+			err = publishAll(ctx, client)
 			if tt.expectedPublishError != "" {
-				require.EqualError(t, publishAll(ctx, client), tt.expectedPublishError)
+				require.EqualError(t, err, tt.expectedPublishError)
 				return
 			}
 
-			require.NoError(t, publishAll(ctx, client))
+			require.NoError(t, err)
 			require.True(t, client.CreatedFile)
 			golden.RequireEqualYaml(t, []byte(client.Content))
 

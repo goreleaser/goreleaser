@@ -154,6 +154,16 @@ func doBuildPlugin(ctx *context.Context, data Plugin) (string, error) {
 }
 
 func dataFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifacts []*artifact.Artifact) (Plugin, error) {
+	desc, err := tmpl.New(ctx).Apply(cfg.Description)
+	if err != nil {
+		return Plugin{}, err
+	}
+
+	shortDesc, err := tmpl.New(ctx).Apply(cfg.ShortDescription)
+	if err != nil {
+		return Plugin{}, err
+	}
+
 	result := Plugin{
 		APIVersion: apiVersion,
 		Kind:       kind,
@@ -163,8 +173,8 @@ func dataFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifacts 
 		Spec: Spec{
 			Homepage:         cfg.Homepage,
 			Version:          ctx.Version,
-			ShortDescription: cfg.ShortDescription,
-			Description:      cfg.Description,
+			ShortDescription: shortDesc,
+			Description:      desc,
 			Caveats:          cfg.Caveats,
 		},
 	}
