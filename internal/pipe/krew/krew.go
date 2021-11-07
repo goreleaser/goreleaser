@@ -203,7 +203,12 @@ func dataFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifacts 
 		}
 
 		for _, arch := range goarch {
-			platform := Platform{
+			bins := art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string)
+			if len(bins) != 1 {
+				return result, fmt.Errorf("krew: only one binary per archive allowed, got %d on %q", len(bins), art.Name)
+			}
+			result.Spec.Platforms = append(result.Spec.Platforms, Platform{
+				Bin:    bins[0],
 				URI:    url,
 				Sha256: sum,
 				Selector: Selector{
@@ -212,12 +217,7 @@ func dataFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifacts 
 						Arch: arch,
 					},
 				},
-			}
-			for _, bin := range art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
-				platform.Bin = bin
-				break
-			}
-			result.Spec.Platforms = append(result.Spec.Platforms, platform)
+			})
 		}
 	}
 

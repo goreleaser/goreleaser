@@ -658,12 +658,49 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"bin"},
 		},
 	})
 	client := client.NewMock()
 	require.NoError(t, runAll(ctx, client))
+}
+
+func TestRunMultipleBinaries(t *testing.T) {
+	folder := t.TempDir()
+	ctx := context.New(config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		Release:     config.Release{},
+		Krews: []config.Krew{
+			{
+				Index: config.RepoRef{
+					Owner: "test",
+					Name:  "test",
+				},
+			},
+		},
+	})
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
+	path := filepath.Join(folder, "whatever.tar.gz")
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "bin.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"bin1", "bin2"},
+		},
+	})
+	client := client.NewMock()
+	require.EqualError(t, runAll(ctx, client), `krew: only one binary per archive allowed, got 2 on "bin.tar.gz"`)
 }
 
 func TestDefault(t *testing.T) {
