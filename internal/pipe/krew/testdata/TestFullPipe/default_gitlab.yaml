@@ -14,4 +14,4 @@ spec:
         arch: amd64
   shortDescription: short desc honk
   homepage: https://gitlab.com/goreleaser
-  description: A run pipe test krew plugin and FOO=foo_is_bar
+  description: A run pipe test krew manifest and FOO=foo_is_bar

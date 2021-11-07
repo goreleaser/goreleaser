@@ -22,8 +22,8 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
-func createTemplateData() Plugin {
-	return Plugin{
+func createTemplateData() Manifest {
+	return Manifest{
 		APIVersion: apiVersion,
 		Kind:       kind,
 		Metadata: Metadata{
@@ -107,23 +107,23 @@ func createTemplateData() Plugin {
 	}
 }
 
-func TestFullPlugin(t *testing.T) {
+func TestFullManifest(t *testing.T) {
 	data := createTemplateData()
-	data.Metadata.Name = pluginName(t)
-	plugin, err := doBuildPlugin(data)
+	data.Metadata.Name = manifestName(t)
+	manifest, err := doBuildManifest(data)
 	require.NoError(t, err)
 
-	golden.RequireEqualNakedYaml(t, []byte(plugin))
-	requireValidPlugin(t)
+	golden.RequireEqualNakedYaml(t, []byte(manifest))
+	requireValidManifest(t)
 }
 
-func TestPluginSimple(t *testing.T) {
+func TestSimple(t *testing.T) {
 	data := createTemplateData()
-	data.Metadata.Name = pluginName(t)
-	plugin, err := doBuildPlugin(data)
+	data.Metadata.Name = manifestName(t)
+	manifest, err := doBuildManifest(data)
 	require.NoError(t, err)
-	golden.RequireEqualNakedYaml(t, []byte(plugin))
-	requireValidPlugin(t)
+	golden.RequireEqualNakedYaml(t, []byte(manifest))
+	requireValidManifest(t)
 }
 
 func TestFullPipe(t *testing.T) {
@@ -195,7 +195,7 @@ func TestFullPipe(t *testing.T) {
 							IDs: []string{
 								"foo",
 							},
-							Description:      "A run pipe test krew plugin and FOO={{ .Env.FOO }}",
+							Description:      "A run pipe test krew manifest and FOO={{ .Env.FOO }}",
 							ShortDescription: "short desc {{.Env.BAR}}",
 						},
 					},
@@ -249,7 +249,7 @@ func TestFullPipe(t *testing.T) {
 			require.NoError(t, err)
 			require.True(t, client.CreatedFile)
 			golden.RequireEqualNakedYaml(t, []byte(client.Content))
-			requireValidPlugin(t)
+			requireValidManifest(t)
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -271,7 +271,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 			ProjectName: "unibin",
 			Krews: []config.Krew{
 				{
-					Name:             pluginName(t),
+					Name:             manifestName(t),
 					Description:      "Some desc",
 					ShortDescription: "Short desc",
 					Index: config.RepoRef{
@@ -303,13 +303,13 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	client := client.NewMock()
-	distFile := filepath.Join(folder, pluginName(t)+".yaml")
+	distFile := filepath.Join(folder, manifestName(t)+".yaml")
 
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	golden.RequireEqualNakedYaml(t, []byte(client.Content))
-	requireValidPlugin(t)
+	requireValidManifest(t)
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
@@ -369,13 +369,13 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
 	golden.RequireEqualNakedYaml(t, []byte(client.Content))
-	requireValidPlugin(t)
+	requireValidManifest(t)
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
 }
 
-func TestRunPipeMultipleKrewPluginsWithSkip(t *testing.T) {
+func TestRunPipeMultipleKrewWithSkip(t *testing.T) {
 	folder := t.TempDir()
 	ctx := &context.Context{
 		Git: context.GitInfo{
@@ -454,8 +454,8 @@ func TestRunPipeMultipleKrewPluginsWithSkip(t *testing.T) {
 	require.EqualError(t, publishAll(ctx, cli), `krews.skip_upload is set`)
 	require.True(t, cli.CreatedFile)
 
-	for _, plugin := range ctx.Config.Krews {
-		distFile := filepath.Join(folder, plugin.Name+".yaml")
+	for _, manifest := range ctx.Config.Krews {
+		distFile := filepath.Join(folder, manifest.Name+".yaml")
 		_, err := os.Stat(distFile)
 		require.NoError(t, err, "file should exist: "+distFile)
 	}
@@ -492,7 +492,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 						{
 							Name:             name,
 							ShortDescription: "Short desc",
-							Description:      "A run pipe test krew plugin and FOO={{ .Env.FOO }}",
+							Description:      "A run pipe test krew manifest and FOO={{ .Env.FOO }}",
 							Index: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
@@ -573,7 +573,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
 			golden.RequireEqualNakedYaml(t, []byte(client.Content))
-			requireValidPlugin(t)
+			requireValidManifest(t)
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -588,7 +588,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 		Config: config.Project{
 			Krews: []config.Krew{
 				{
-					Name:             pluginName(t),
+					Name:             manifestName(t),
 					Description:      "Some desc",
 					ShortDescription: "Short desc",
 					Index: config.RepoRef{
@@ -612,7 +612,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Release:     config.Release{},
 		Krews: []config.Krew{
 			{
-				Name:             pluginName(t),
+				Name:             manifestName(t),
 				Description:      "Some desc",
 				ShortDescription: "Short desc",
 				Index: config.RepoRef{
@@ -668,7 +668,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Release:     config.Release{},
 		Krews: []config.Krew{
 			{
-				Name:             pluginName(t),
+				Name:             manifestName(t),
 				Description:      "Some desc",
 				ShortDescription: "Short desc",
 				Index: config.RepoRef{
@@ -707,7 +707,7 @@ func TestRunMultipleBinaries(t *testing.T) {
 		Release:     config.Release{},
 		Krews: []config.Krew{
 			{
-				Name:             pluginName(t),
+				Name:             manifestName(t),
 				Description:      "Some desc",
 				ShortDescription: "Short desc",
 				Index: config.RepoRef{
@@ -758,8 +758,8 @@ func TestDefault(t *testing.T) {
 }
 
 func TestGHFolder(t *testing.T) {
-	require.Equal(t, "bar.yaml", buildPluginPath("", "bar.yaml"))
-	require.Equal(t, "fooo/bar.yaml", buildPluginPath("fooo", "bar.yaml"))
+	require.Equal(t, "bar.yaml", buildManifestPath("", "bar.yaml"))
+	require.Equal(t, "fooo/bar.yaml", buildManifestPath("fooo", "bar.yaml"))
 }
 
 func TestSkip(t *testing.T) {
@@ -786,12 +786,12 @@ func TestRunSkipNoName(t *testing.T) {
 	testlib.AssertSkipped(t, runAll(ctx, client))
 }
 
-func pluginName(tb testing.TB) string {
+func manifestName(tb testing.TB) string {
 	tb.Helper()
 	return path.Base(tb.Name())
 }
 
-func requireValidPlugin(t *testing.T) {
+func requireValidManifest(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		// needs to be the one on https://github.com/kubernetes-sigs/krew/pull/736
 		testlib.CheckPath(t, "validate-krew-manifest")

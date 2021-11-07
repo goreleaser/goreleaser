@@ -1,7 +1,7 @@
 apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
-  name: TestFullPlugin
+  name: TestSimple
 spec:
   version: v0.1.3
   platforms:

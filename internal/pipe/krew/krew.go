@@ -20,14 +20,14 @@ import (
 
 const (
 	krewConfigExtra = "KrewConfig"
-	pluginsFolder   = "plugins"
+	manifestsFolder = "plugins"
 	kind            = "Plugin"
 	apiVersion      = "krew.googlecontainertools.github.com/v1alpha2"
 )
 
 var ErrNoArchivesFound = errors.New("no archives found")
 
-// Pipe for krew plugin deployment.
+// Pipe for krew manifest deployment.
 type Pipe struct{}
 
 func (Pipe) String() string                 { return "krew" }
@@ -44,7 +44,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			krew.CommitAuthor.Email = "goreleaser@carlosbecker.com"
 		}
 		if krew.CommitMessageTemplate == "" {
-			krew.CommitMessageTemplate = "Krew plugin update for {{ .ProjectName }} version {{ .Tag }}"
+			krew.CommitMessageTemplate = "Krew manifest update for {{ .ProjectName }} version {{ .Tag }}"
 		}
 		if krew.ShortDescription == "" && krew.Description != "" {
 			krew.ShortDescription = strings.Split(krew.Description, "\n")[0]
@@ -78,10 +78,10 @@ func runAll(ctx *context.Context, cli client.Client) error {
 
 func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
 	if krew.Index.Name == "" {
-		return pipe.Skip("krew plugin name is not set")
+		return pipe.Skip("krew manifest name is not set")
 	}
 	if krew.ShortDescription == "" {
-		return pipe.Skip("krew plugin short description is not set")
+		return pipe.Skip("krew manifest short description is not set")
 	}
 
 	filters := []artifact.Filter{
@@ -116,22 +116,22 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
 	}
 	krew.Name = name
 
-	content, err := buildPlugin(ctx, krew, cl, archives)
+	content, err := buildmanifest(ctx, krew, cl, archives)
 	if err != nil {
 		return err
 	}
 
 	filename := krew.Name + ".yaml"
 	yamlPath := filepath.Join(ctx.Config.Dist, filename)
-	log.WithField("plugin", yamlPath).Info("writing")
+	log.WithField("manifest", yamlPath).Info("writing")
 	if err := os.WriteFile(yamlPath, []byte(content), 0o644); err != nil { //nolint: gosec
-		return fmt.Errorf("failed to write krew plugin: %w", err)
+		return fmt.Errorf("failed to write krew manifest: %w", err)
 	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: filename,
 		Path: yamlPath,
-		Type: artifact.KrewPlugin,
+		Type: artifact.KrewManifest,
 		Extra: map[string]interface{}{
 			krewConfigExtra: krew,
 		},
@@ -140,15 +140,15 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
 	return nil
 }
 
-func buildPlugin(ctx *context.Context, krew config.Krew, client client.Client, artifacts []*artifact.Artifact) (string, error) {
-	data, err := dataFor(ctx, krew, client, artifacts)
+func buildmanifest(ctx *context.Context, krew config.Krew, client client.Client, artifacts []*artifact.Artifact) (string, error) {
+	data, err := manifestFor(ctx, krew, client, artifacts)
 	if err != nil {
 		return "", err
 	}
-	return doBuildPlugin(data)
+	return doBuildManifest(data)
 }
 
-func doBuildPlugin(data Plugin) (string, error) {
+func doBuildManifest(data Manifest) (string, error) {
 	out, err := yaml.Marshal(data)
 	if err != nil {
 		return "", fmt.Errorf("krew: failed to marshal yaml: %w", err)
@@ -156,18 +156,18 @@ func doBuildPlugin(data Plugin) (string, error) {
 	return string(out), nil
 }
 
-func dataFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifacts []*artifact.Artifact) (Plugin, error) {
+func manifestFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifacts []*artifact.Artifact) (Manifest, error) {
 	desc, err := tmpl.New(ctx).Apply(cfg.Description)
 	if err != nil {
-		return Plugin{}, err
+		return Manifest{}, err
 	}
 
 	shortDesc, err := tmpl.New(ctx).Apply(cfg.ShortDescription)
 	if err != nil {
-		return Plugin{}, err
+		return Manifest{}, err
 	}
 
-	result := Plugin{
+	result := Manifest{
 		APIVersion: apiVersion,
 		Kind:       kind,
 		Metadata: Metadata{
@@ -227,7 +227,7 @@ func dataFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifacts 
 	return result, nil
 }
 
-// Publish krew plugin.
+// Publish krew manifest.
 func (Pipe) Publish(ctx *context.Context) error {
 	cli, err := client.New(ctx)
 	if err != nil {
@@ -238,8 +238,8 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 func publishAll(ctx *context.Context, cli client.Client) error {
 	skips := pipe.SkipMemento{}
-	for _, plugin := range ctx.Artifacts.Filter(artifact.ByType(artifact.KrewPlugin)).List() {
-		err := doPublish(ctx, plugin, cli)
+	for _, manifest := range ctx.Artifacts.Filter(artifact.ByType(artifact.KrewManifest)).List() {
+		err := doPublish(ctx, manifest, cli)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
 			continue
@@ -251,8 +251,8 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 	return skips.Evaluate()
 }
 
-func doPublish(ctx *context.Context, plugin *artifact.Artifact, cl client.Client) error {
-	cfg := plugin.Extra[krewConfigExtra].(config.Krew)
+func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Client) error {
+	cfg := manifest.Extra[krewConfigExtra].(config.Krew)
 	var err error
 	cl, err = client.NewIfToken(ctx, cl, cfg.Index.Token)
 	if err != nil {
@@ -269,8 +269,8 @@ func doPublish(ctx *context.Context, plugin *artifact.Artifact, cl client.Client
 
 	repo := client.RepoFromRef(cfg.Index)
 
-	gpath := buildPluginPath(pluginsFolder, plugin.Name)
-	log.WithField("plugin", gpath).
+	gpath := buildManifestPath(manifestsFolder, manifest.Name)
+	log.WithField("manifest", gpath).
 		WithField("repo", repo.String()).
 		Info("pushing")
 
@@ -279,7 +279,7 @@ func doPublish(ctx *context.Context, plugin *artifact.Artifact, cl client.Client
 		return err
 	}
 
-	content, err := os.ReadFile(plugin.Path)
+	content, err := os.ReadFile(manifest.Path)
 	if err != nil {
 		return err
 	}
@@ -287,11 +287,11 @@ func doPublish(ctx *context.Context, plugin *artifact.Artifact, cl client.Client
 	return cl.CreateFile(ctx, cfg.CommitAuthor, repo, content, gpath, msg)
 }
 
-func buildPluginPath(folder, filename string) string {
+func buildManifestPath(folder, filename string) string {
 	return path.Join(folder, filename)
 }
 
-type Plugin struct {
+type Manifest struct {
 	APIVersion string   `yaml:"apiVersion,omitempty"`
 	Kind       string   `yaml:"kind,omitempty"`
 	Metadata   Metadata `yaml:"metadata,omitempty"`
