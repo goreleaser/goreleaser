@@ -20,13 +20,12 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const goFishConfigExtra = "GoFishConfig"
-
-const foodFolder = "Food"
+const (
+	goFishConfigExtra = "GoFishConfig"
+	foodFolder        = "Food"
+)
 
 var ErrNoArchivesFound = errors.New("no linux/macos/windows archives found")
-
-var ErrMultipleArchivesSameOS = errors.New("one rig can handle only archive of an OS/Arch combination. Consider using ids in the gofish section")
 
 // Pipe for goFish deployment.
 type Pipe struct{}
