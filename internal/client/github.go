@@ -25,14 +25,8 @@ type githubClient struct {
 	client *github.Client
 }
 
-// NewUnauthenticatedGitHub returns a github client that is not authenticated.
-// Used in tests only.
-func NewUnauthenticatedGitHub() Client {
-	return &githubClient{client: github.NewClient(nil)}
-}
-
 // NewGitHub returns a github client implementation.
-func NewGitHub(ctx *context.Context, token string) (Client, error) {
+func NewGitHub(ctx *context.Context, token string) (GitHubClient, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
@@ -56,6 +50,17 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	}
 
 	return &githubClient{client: client}, nil
+}
+
+func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	notes, _, err := c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, &github.GenerateNotesOptions{
+		TagName:         current,
+		PreviousTagName: github.String(prev),
+	})
+	if err != nil {
+		return "", err
+	}
+	return notes.Body, err
 }
 
 func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
