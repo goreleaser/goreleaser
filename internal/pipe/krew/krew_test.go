@@ -178,6 +178,7 @@ func TestFullPipe(t *testing.T) {
 				Artifacts: artifact.New(),
 				Env: map[string]string{
 					"FOO": "foo_is_bar",
+					"BAR": "honk",
 				},
 				Config: config.Project{
 					Dist:        folder,
@@ -188,7 +189,8 @@ func TestFullPipe(t *testing.T) {
 							IDs: []string{
 								"foo",
 							},
-							Description: "A run pipe test krew plugin and FOO={{ .Env.FOO }}",
+							Description:      "A run pipe test krew plugin and FOO={{ .Env.FOO }}",
+							ShortDescription: "short desc {{.Env.BAR}}",
 						},
 					},
 				},

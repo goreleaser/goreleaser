@@ -12,5 +12,6 @@ spec:
       matchLabels:
         os: darwin
         arch: amd64
+  shortDescription: short desc honk
   homepage: https://gitlab.com/goreleaser
   description: A run pipe test krew plugin and FOO=foo_is_bar
