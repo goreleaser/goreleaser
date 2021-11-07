@@ -54,6 +54,8 @@ const (
 	BrewTap
 	// GoFishRig is an uploadable Rigs rig food file.
 	GoFishRig
+	// KrewPlugin is a krew plugin file.
+	KrewPlugin
 	// ScoopManifest is an uploadable scoop manifest file.
 	ScoopManifest
 )

@@ -1,0 +1,29 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: Test
+spec:
+  version: 0.1.3
+  platforms:
+  - {}
+  - {}
+  - {}
+  - {}
+  - {}
+  - uri: https://github.com/caarlos0/test/releases/download/v0.1.3/test_windows_amd64.zip
+    sha256: 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67
+    files:
+    - from: bin1.exe
+      to: bin1.exe
+    - from: bin2.exe
+      to: bin2.exe
+    - from: bin3.exe
+      to: bin3.exe
+    selector:
+      matchLabels:
+        os: windows
+        arch: amd64
+  shortDescription: Short desc
+  homepage: https://google.com
+  caveats: some caveat
+  description: Some desc
