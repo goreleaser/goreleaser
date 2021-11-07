@@ -15,6 +15,7 @@ changelog:
   # - `git`: uses `git log`;
   # - `github`: uses the compare GitHub API, appending the author login to the changelog.
   # - `gitlab`: uses the compare GitLab API, appending the author name and email to the changelog.
+  # - `github-native`: uses the GitHub release notes generation API.
   #
   # Defaults to `git`.
   use: github

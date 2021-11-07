@@ -437,8 +437,11 @@ func TestGetChangelogGitHub(t *testing.T) {
 		},
 	})
 
+	expected := "c90f1085f255d0af0b055160bfff5ee40f47af79: fix: do not skip any defaults (#2521) (@caarlos0)"
+	mock := client.NewMock()
+	mock.Changes = expected
 	l := scmChangeloger{
-		client: client.NewUnauthenticatedGitHub(),
+		client: mock,
 		repo: client.Repo{
 			Owner: "goreleaser",
 			Name:  "goreleaser",
@@ -446,7 +449,29 @@ func TestGetChangelogGitHub(t *testing.T) {
 	}
 	log, err := l.Log(ctx, "v0.180.1", "v0.180.2")
 	require.NoError(t, err)
-	require.Equal(t, "c90f1085f255d0af0b055160bfff5ee40f47af79: fix: do not skip any defaults (#2521) (@caarlos0)", log)
+	require.Equal(t, expected, log)
+}
+
+func TestGetChangelogGitHubNative(t *testing.T) {
+	ctx := context.New(config.Project{
+		Changelog: config.Changelog{
+			Use: "github-native",
+		},
+	})
+
+	expected := "**Full Changelog**: https://github.com/gorelease/goreleaser/compare/v0.180.1...v0.180.2"
+	mock := client.NewMock()
+	mock.ReleaseNotes = expected
+	l := githubNativeChangeloger{
+		client: mock,
+		repo: client.Repo{
+			Owner: "goreleaser",
+			Name:  "goreleaser",
+		},
+	}
+	log, err := l.Log(ctx, "v0.180.1", "v0.180.2")
+	require.NoError(t, err)
+	require.Equal(t, expected, log)
 }
 
 func TestGetChangeloger(t *testing.T) {
@@ -476,6 +501,18 @@ func TestGetChangeloger(t *testing.T) {
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, c, &scmChangeloger{})
+	})
+
+	t.Run("github-native", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Changelog: config.Changelog{
+				Use: "github-native",
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitHub
+		c, err := getChangeloger(ctx)
+		require.NoError(t, err)
+		require.IsType(t, c, &githubNativeChangeloger{})
 	})
 
 	t.Run("gitlab", func(t *testing.T) {

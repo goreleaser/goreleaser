@@ -46,6 +46,12 @@ type Client interface {
 	Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error)
 }
 
+// GitHubClient is the client with GitHub-only features.
+type GitHubClient interface {
+	Client
+	GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error)
+}
+
 // New creates a new client depending on the token type.
 func New(ctx *context.Context) (Client, error) {
 	return newWithToken(ctx, ctx.Token)

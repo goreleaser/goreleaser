@@ -57,6 +57,10 @@
 						"$schema": "http://json-schema.org/draft-04/schema#",
 						"$ref": "#/definitions/Mattermost"
 					},
+					"linkedin": {
+						"$schema": "http://json-schema.org/draft-04/schema#",
+						"$ref": "#/definitions/LinkedIn"
+					},
 					"telegram": {
 						"$schema": "http://json-schema.org/draft-04/schema#",
 						"$ref": "#/definitions/Telegram"
@@ -972,6 +976,18 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"LinkedIn": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"message_template": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Mattermost": {
 				"properties": {
 					"enabled": {
@@ -1470,13 +1486,6 @@
 			},
 			"Project": {
 				"properties": {
-					"includes": {
-						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Include"
-						},
-						"type": "array"
-					},
 					"project_name": {
 						"type": "string"
 					},
@@ -1651,14 +1660,6 @@
 						"$schema": "http://json-schema.org/draft-04/schema#",
 						"$ref": "#/definitions/Announce"
 					},
-					"variables": {
-						"patternProperties": {
-							".*": {
-								"additionalProperties": true
-							}
-						},
-						"type": "object"
-					},
 					"universal_binaries": {
 						"items": {
 							"$schema": "http://json-schema.org/draft-04/schema#",
@@ -1680,6 +1681,21 @@
 					"gitea_urls": {
 						"$schema": "http://json-schema.org/draft-04/schema#",
 						"$ref": "#/definitions/GiteaURLs"
+					},
+					"includes": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/Include"
+						},
+						"type": "array"
+					},
+					"variables": {
+						"patternProperties": {
+							".*": {
+								"additionalProperties": true
+							}
+						},
+						"type": "object"
 					}
 				},
 				"additionalProperties": false,
@@ -2149,6 +2165,9 @@
 					},
 					"enabled": {
 						"type": "boolean"
+					},
+					"prefix_template": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
