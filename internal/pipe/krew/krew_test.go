@@ -792,6 +792,7 @@ func manifestName(tb testing.TB) string {
 }
 
 func requireValidManifest(t *testing.T) {
+	t.Helper()
 	t.Run("valid", func(t *testing.T) {
 		// needs to be the one on https://github.com/kubernetes-sigs/krew/pull/736
 		testlib.CheckPath(t, "validate-krew-manifest")
