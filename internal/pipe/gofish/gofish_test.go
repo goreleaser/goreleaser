@@ -107,12 +107,12 @@ func TestFullFoodLinuxOnly(t *testing.T) {
 		}
 	}
 
-	formulae, err := doBuildFood(context.New(config.Project{
+	food, err := doBuildFood(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
 	require.NoError(t, err)
 
-	golden.RequireEqualLua(t, []byte(formulae))
+	golden.RequireEqualLua(t, []byte(food))
 }
 
 func TestFullFoodWindowsOnly(t *testing.T) {
@@ -122,20 +122,18 @@ func TestFullFoodWindowsOnly(t *testing.T) {
 			data.ReleasePackages[i] = releasePackage{}
 		}
 	}
-	formulae, err := doBuildFood(context.New(config.Project{
+	food, err := doBuildFood(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
 	require.NoError(t, err)
 
-	golden.RequireEqualLua(t, []byte(formulae))
+	golden.RequireEqualLua(t, []byte(food))
 }
 
-func TestFormulaeSimple(t *testing.T) {
-	formulae, err := doBuildFood(context.New(config.Project{}), createTemplateData())
+func TestFoodSimple(t *testing.T) {
+	food, err := doBuildFood(context.New(config.Project{}), createTemplateData())
 	require.NoError(t, err)
-	assertDefaultTemplateData(t, formulae)
-	require.NotContains(t, formulae, "def caveats")
-	require.NotContains(t, formulae, "def plist;")
+	assertDefaultTemplateData(t, food)
 }
 
 func TestFullPipe(t *testing.T) {
@@ -189,7 +187,7 @@ func TestFullPipe(t *testing.T) {
 							IDs: []string{
 								"foo",
 							},
-							Description: "A run pipe test formula and FOO={{ .Env.FOO }}",
+							Description: "A run pipe test fish food and FOO={{ .Env.FOO }}",
 						},
 					},
 				},
@@ -464,7 +462,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 					Rigs: []config.GoFish{
 						{
 							Name:        name,
-							Description: "A run pipe test formula and FOO={{ .Env.FOO }}",
+							Description: "A run pipe test fish food and FOO={{ .Env.FOO }}",
 							Rig: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
@@ -718,26 +716,6 @@ func TestDefault(t *testing.T) {
 			ProjectName: "myproject",
 			Rigs: []config.GoFish{
 				{},
-			},
-			Builds: []config.Build{
-				{
-					Binary: "foo",
-					Goos:   []string{"linux", "darwin"},
-					Goarch: []string{"386", "amd64"},
-				},
-				{
-					Binary: "bar",
-					Goos:   []string{"linux", "darwin"},
-					Goarch: []string{"386", "amd64"},
-					Ignore: []config.IgnoredBuild{
-						{Goos: "darwin", Goarch: "amd64"},
-					},
-				},
-				{
-					Binary: "foobar",
-					Goos:   []string{"linux"},
-					Goarch: []string{"amd64"},
-				},
 			},
 		},
 	}

@@ -3,7 +3,7 @@ local version = "1.0.1"
 
 food = {
     name = name,
-    description = "A run pipe test formula and FOO=foo_is_bar",
+    description = "A run pipe test fish food and FOO=foo_is_bar",
     license = "",
     homepage = "https://github.com/goreleaser",
     version = version,
