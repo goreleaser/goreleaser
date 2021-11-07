@@ -31,6 +31,20 @@ Below you can find the steps for each of them.
     The [formula in homebrew-core](https://github.com/Homebrew/homebrew-core/blob/master/Formula/goreleaser.rb) might be slightly outdated.
     Use our homebrew tap to always get the latest updates.
 
+### gofish
+
+=== "OSS"
+    ```sh
+    gofish rig add https://github.com/goreleaser/fish-food
+    gofish install github.com/goreleaser/fish-food/goreleaser
+    ```
+
+=== "Pro"
+    ```sh
+    gofish rig add https://github.com/goreleaser/fish-food
+    gofish install github.com/goreleaser/fish-food/goreleaser-pro
+    ```
+
 ### snapcraft
 
 === "OSS"
@@ -98,17 +112,6 @@ Below you can find the steps for each of them.
 
 === "Pro"
     Download the `.deb`, `.rpm` or `.apk` packages from the [Pro releases page][pro-releases] and install them with the appropriate tools.
-
-
-### shell script
-
-=== "OSS"
-    ```sh
-    curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
-    ```
-
-
-<!-- TODO: write a new shell script and store it within the website -->
 
 ### go install
 
@@ -196,7 +199,7 @@ To do that, you'll need to execute something more-or-less like the examples belo
     Registries:
 
     - [`goreleaser/goreleaser`](https://hub.docker.com/r/goreleaser/goreleaser)
-    - [`ghcr.io/goreleaser/goreleaser`](https://github.com/orgs/goreleaser/packages/container/package/goreleaser)
+    - [`ghcr.io/goreleaser/goreleaser`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser)
 
     Example usage:
 
@@ -216,7 +219,7 @@ To do that, you'll need to execute something more-or-less like the examples belo
     Registries:
 
     - [`goreleaser/goreleaser-pro`](https://hub.docker.com/r/goreleaser/goreleaser-pro)
-    - [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/orgs/goreleaser/packages/container/package/goreleaser-pro)
+    - [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser-pro)
 
     Example usage:
 

@@ -32,6 +32,7 @@ func TestWithArtifact(t *testing.T) {
 	ctx.Git.Commit = "commit"
 	ctx.Git.FullCommit = "fullcommit"
 	ctx.Git.ShortCommit = "shortcommit"
+	ctx.ReleaseNotes = "test release notes"
 	for expect, tmpl := range map[string]string{
 		"bar":                              "{{.Env.FOO}}",
 		"Linux":                            "{{.Os}}",
@@ -54,6 +55,7 @@ func TestWithArtifact(t *testing.T) {
 		"1.3.0":                            "{{.Version | incminor }}",
 		"v1.2.4":                           "{{.Tag | incpatch }}",
 		"1.2.4":                            "{{.Version | incpatch }}",
+		"test release notes":               "{{ .ReleaseNotes }}",
 	} {
 		tmpl := tmpl
 		expect := expect
@@ -67,7 +69,7 @@ func TestWithArtifact(t *testing.T) {
 					Goarm:  "6",
 					Gomips: "softfloat",
 					Extra: map[string]interface{}{
-						"Binary": "binary",
+						artifact.ExtraBinary: "binary",
 					},
 				},
 				map[string]string{"linux": "Linux"},
@@ -153,6 +155,8 @@ func TestFuncMap(t *testing.T) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
+	ctx.Git.URL = "https://github.com/foo/bar.git"
+	ctx.ReleaseURL = "https://github.com/foo/bar/releases/tag/v1.0.0"
 	ctx.Git.CurrentTag = "v1.2.4"
 	for _, tc := range []struct {
 		Template string
@@ -195,6 +199,16 @@ func TestFuncMap(t *testing.T) {
 			Template: `{{ trimprefix "v1.2.4" "v" }}`,
 			Name:     "trimprefix",
 			Expected: "1.2.4",
+		},
+		{
+			Template: `{{ trimsuffix .GitURL ".git" }}`,
+			Name:     "trimsuffix",
+			Expected: "https://github.com/foo/bar",
+		},
+		{
+			Template: `{{ .ReleaseURL }}`,
+			Name:     "trimsuffix",
+			Expected: "https://github.com/foo/bar/releases/tag/v1.0.0",
 		},
 		{
 			Template: `{{ toupper "test" }}`,

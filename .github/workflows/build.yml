@@ -22,6 +22,8 @@ jobs:
       -
         name: Set up Task
         uses: arduino/setup-task@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -59,7 +61,7 @@ jobs:
             ${{ runner.os }}-go-
       -
         name: Setup Sigstore
-        uses: sigstore/cosign-installer@v1.2.0
+        uses: sigstore/cosign-installer@v1.3.0
       -
         name: build and test
         run: task ci

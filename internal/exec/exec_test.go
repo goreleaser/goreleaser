@@ -51,7 +51,7 @@ func TestExecute(t *testing.T) {
 			Path:   file,
 			Type:   a.typ,
 			Extra: map[string]interface{}{
-				"ID": a.id,
+				artifact.ExtraID: a.id,
 			},
 		})
 	}
@@ -63,7 +63,7 @@ func TestExecute(t *testing.T) {
 		Path:   "foo/bar:amd64",
 		Type:   artifact.DockerImage,
 		Extra: map[string]interface{}{
-			"ID": "img",
+			artifact.ExtraID: "img",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -71,7 +71,7 @@ func TestExecute(t *testing.T) {
 		Path: "foo/bar",
 		Type: artifact.DockerManifest,
 		Extra: map[string]interface{}{
-			"ID": "mnf",
+			artifact.ExtraID: "mnf",
 		},
 	})
 

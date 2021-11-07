@@ -8,18 +8,18 @@ import (
 )
 
 func TestBuildHook_justString(t *testing.T) {
-	var actual HookConfig
+	var actual BuildHookConfig
 
 	err := yaml.UnmarshalStrict([]byte(`pre: ./script.sh`), &actual)
 	require.NoError(t, err)
-	require.Equal(t, BuildHook{
+	require.Equal(t, Hook{
 		Cmd: "./script.sh",
 		Env: nil,
 	}, actual.Pre[0])
 }
 
 func TestBuildHook_stringCmds(t *testing.T) {
-	var actual HookConfig
+	var actual BuildHookConfig
 
 	err := yaml.UnmarshalStrict([]byte(`pre:
  - ./script.sh
@@ -27,7 +27,7 @@ func TestBuildHook_stringCmds(t *testing.T) {
 `), &actual)
 	require.NoError(t, err)
 
-	require.Equal(t, BuildHooks{
+	require.Equal(t, Hooks{
 		{
 			Cmd: "./script.sh",
 			Env: nil,
@@ -40,7 +40,7 @@ func TestBuildHook_stringCmds(t *testing.T) {
 }
 
 func TestBuildHook_complex(t *testing.T) {
-	var actual HookConfig
+	var actual BuildHookConfig
 
 	err := yaml.UnmarshalStrict([]byte(`pre:
  - cmd: ./script.sh
@@ -48,7 +48,7 @@ func TestBuildHook_complex(t *testing.T) {
     - TEST=value
 `), &actual)
 	require.NoError(t, err)
-	require.Equal(t, BuildHook{
+	require.Equal(t, Hook{
 		Cmd: "./script.sh",
 		Env: []string{"TEST=value"},
 	}, actual.Pre[0])

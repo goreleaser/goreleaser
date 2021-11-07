@@ -49,18 +49,21 @@ var defaultTemplateData = templateData{
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 			OS:          "linux",
 			Arch:        "amd64",
+			Install:     []string{`bin.install "test"`},
 		},
 		{
 			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 			OS:          "linux",
 			Arch:        "arm",
+			Install:     []string{`bin.install "test"`},
 		},
 		{
 			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
 			OS:          "linux",
 			Arch:        "arm64",
+			Install:     []string{`bin.install "test"`},
 		},
 	},
 	MacOSPackages: []releasePackage{
@@ -69,12 +72,14 @@ var defaultTemplateData = templateData{
 			SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
 			OS:          "darwin",
 			Arch:        "amd64",
+			Install:     []string{`bin.install "test"`},
 		},
 		{
 			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
 			SHA256:      "1633f61598ab0791e213135923624eb342196b349490sadasdsadsadasdasdsd",
 			OS:          "darwin",
 			Arch:        "arm64",
+			Install:     []string{`bin.install "test"`},
 		},
 	},
 	Name:    "Test",
@@ -100,7 +105,6 @@ func TestFullFormulae(t *testing.T) {
 	data.Plist = "it works"
 	data.PostInstall = `system "touch", "/tmp/foo"`
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
-	data.Install = []string{"custom install script", "another install script"}
 	data.Tests = []string{`system "#{bin}/{{.ProjectName}} -version"`}
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",
@@ -113,7 +117,6 @@ func TestFullFormulae(t *testing.T) {
 func TestFullFormulaeLinuxOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.MacOSPackages = []releasePackage{}
-	data.Install = []string{`bin.install "test"`}
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
@@ -125,7 +128,6 @@ func TestFullFormulaeLinuxOnly(t *testing.T) {
 func TestFullFormulaeMacOSOnly(t *testing.T) {
 	data := defaultTemplateData
 	data.LinuxPackages = []releasePackage{}
-	data.Install = []string{`bin.install "test"`}
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
@@ -237,6 +239,14 @@ func TestFullPipe(t *testing.T) {
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
+		"invalid_tap_skip_upload_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Brews[0].SkipUpload = "{{ .Asdsa }"
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "test"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
@@ -277,8 +287,8 @@ func TestFullPipe(t *testing.T) {
 				Goarch: "amd64",
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":     "bar",
-					"Format": "tar.gz",
+					artifact.ExtraID:     "bar",
+					artifact.ExtraFormat: "tar.gz",
 				},
 			})
 			path := filepath.Join(folder, "bin.tar.gz")
@@ -289,8 +299,8 @@ func TestFullPipe(t *testing.T) {
 				Goarch: "amd64",
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":     "foo",
-					"Format": "tar.gz",
+					artifact.ExtraID:     "foo",
+					artifact.ExtraFormat: "tar.gz",
 				},
 			})
 
@@ -358,8 +368,8 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "tar.gz",
 		},
 	})
 
@@ -387,7 +397,8 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 		Version:   "1.0.1",
 		Artifacts: artifact.New(),
 		Env: map[string]string{
-			"FOO_BAR": "is_bar",
+			"FOO_BAR":     "is_bar",
+			"SKIP_UPLOAD": "true",
 		},
 		Config: config.Project{
 			Dist:        folder,
@@ -425,6 +436,17 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 					},
 					SkipUpload: "true",
 				},
+				{
+					Name: "baz",
+					Tap: config.RepoRef{
+						Owner: "foo",
+						Name:  "bar",
+					},
+					IDs: []string{
+						"foo",
+					},
+					SkipUpload: "{{ .Env.SKIP_UPLOAD }}",
+				},
 			},
 		},
 	}
@@ -436,8 +458,8 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "tar.gz",
 		},
 	})
 
@@ -557,8 +579,8 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 					Goarm:  a.goarm,
 					Type:   artifact.UploadableArchive,
 					Extra: map[string]interface{}{
-						"ID":     a.name,
-						"Format": "tar.gz",
+						artifact.ExtraID:     a.name,
+						artifact.ExtraFormat: "tar.gz",
 					},
 				})
 				f, err := os.Create(path)
@@ -734,8 +756,8 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 				Goarch: ttt.goarch,
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID":     fmt.Sprintf("foo%d", idx),
-					"Format": "tar.gz",
+					artifact.ExtraID:     fmt.Sprintf("foo%d", idx),
+					artifact.ExtraFormat: "tar.gz",
 				},
 			})
 		}
@@ -748,28 +770,52 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 }
 
 func TestRunPipeBinaryRelease(t *testing.T) {
-	ctx := context.New(
-		config.Project{
+	folder := t.TempDir()
+	ctx := &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.2.1",
+		},
+		Version:   "1.2.1",
+		Artifacts: artifact.New(),
+		Config: config.Project{
+			Dist:        folder,
+			ProjectName: "foo",
 			Brews: []config.Homebrew{
 				{
+					Name: "foo",
 					Tap: config.RepoRef{
-						Owner: "test",
-						Name:  "test",
+						Owner: "foo",
+						Name:  "bar",
 					},
 				},
 			},
 		},
-	)
+	}
+
+	path := filepath.Join(folder, "dist/foo_darwin_all/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   "doesnt mather",
+		Name:   "foo_macos",
+		Path:   path,
 		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.Binary,
+		Goarch: "all",
+		Type:   artifact.UploadableBinary,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
+		},
 	})
+
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+
 	client := client.NewMock()
-	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
-	require.False(t, client.CreatedFile)
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, publishAll(ctx, client))
+	require.True(t, client.CreatedFile)
+	golden.RequireEqualRb(t, []byte(client.Content))
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
@@ -787,6 +833,9 @@ func TestRunPipeNoUpload(t *testing.T) {
 			},
 		},
 	})
+	ctx.Env = map[string]string{
+		"SKIP_UPLOAD": "true",
+	}
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
 	path := filepath.Join(folder, "whatever.tar.gz")
@@ -800,8 +849,8 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "tar.gz",
 		},
 	})
 	client := client.NewMock()
@@ -814,6 +863,11 @@ func TestRunPipeNoUpload(t *testing.T) {
 	}
 	t.Run("skip upload true", func(t *testing.T) {
 		ctx.Config.Brews[0].SkipUpload = "true"
+		ctx.Semver.Prerelease = ""
+		assertNoPublish(t)
+	})
+	t.Run("skip upload true set by template", func(t *testing.T) {
+		ctx.Config.Brews[0].SkipUpload = "{{.Env.SKIP_UPLOAD}}"
 		ctx.Semver.Prerelease = ""
 		assertNoPublish(t)
 	})
@@ -852,8 +906,8 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "tar.gz",
 		},
 	})
 	client := client.NewMock()
@@ -870,26 +924,6 @@ func TestDefault(t *testing.T) {
 			Brews: []config.Homebrew{
 				{},
 			},
-			Builds: []config.Build{
-				{
-					Binary: "foo",
-					Goos:   []string{"linux", "darwin"},
-					Goarch: []string{"386", "amd64"},
-				},
-				{
-					Binary: "bar",
-					Goos:   []string{"linux", "darwin"},
-					Goarch: []string{"386", "amd64"},
-					Ignore: []config.IgnoredBuild{
-						{Goos: "darwin", Goarch: "amd64"},
-					},
-				},
-				{
-					Binary: "foobar",
-					Goos:   []string{"linux"},
-					Goarch: []string{"amd64"},
-				},
-			},
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -897,7 +931,6 @@ func TestDefault(t *testing.T) {
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Name)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitAuthor.Email)
 	require.NotEmpty(t, ctx.Config.Brews[0].CommitMessageTemplate)
-	require.Equal(t, `bin.install "myproject"`, ctx.Config.Brews[0].Install)
 }
 
 func TestGHFolder(t *testing.T) {
@@ -927,4 +960,101 @@ func TestRunSkipNoName(t *testing.T) {
 
 	client := client.NewMock()
 	testlib.AssertSkipped(t, runAll(ctx, client))
+}
+
+func TestInstalls(t *testing.T) {
+	t.Run("provided", func(t *testing.T) {
+		require.Equal(t, []string{
+			`bin.install "foo"`,
+			`bin.install "bar"`,
+		}, installs(
+			config.Homebrew{Install: "bin.install \"foo\"\nbin.install \"bar\""},
+			&artifact.Artifact{},
+		))
+	})
+
+	t.Run("from archives", func(t *testing.T) {
+		require.Equal(t, []string{
+			`bin.install "bar"`,
+			`bin.install "foo"`,
+		}, installs(
+			config.Homebrew{},
+			&artifact.Artifact{
+				Type: artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					artifact.ExtraBinaries: []string{"foo", "bar"},
+				},
+			},
+		))
+	})
+
+	t.Run("from binary", func(t *testing.T) {
+		require.Equal(t, []string{
+			`bin.install "foo_macos" => "foo"`,
+		}, installs(
+			config.Homebrew{},
+			&artifact.Artifact{
+				Name: "foo_macos",
+				Type: artifact.UploadableBinary,
+				Extra: map[string]interface{}{
+					artifact.ExtraBinary: "foo",
+				},
+			},
+		))
+	})
+}
+
+func TestRunPipeUniversalBinary(t *testing.T) {
+	folder := t.TempDir()
+	ctx := &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.0.1",
+		},
+		Version:   "1.0.1",
+		Artifacts: artifact.New(),
+		Config: config.Project{
+			Dist:        folder,
+			ProjectName: "unibin",
+			Brews: []config.Homebrew{
+				{
+					Name: "unibin",
+					Tap: config.RepoRef{
+						Owner: "unibin",
+						Name:  "bar",
+					},
+					IDs: []string{
+						"unibin",
+					},
+					Install: `bin.install "unibin"`,
+				},
+			},
+		},
+	}
+	path := filepath.Join(folder, "bin.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "bin.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "all",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:       "unibin",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"unibin"},
+		},
+	})
+
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	client := client.NewMock()
+	distFile := filepath.Join(folder, "unibin.rb")
+
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, publishAll(ctx, client))
+	require.True(t, client.CreatedFile)
+	golden.RequireEqualRb(t, []byte(client.Content))
+	distBts, err := os.ReadFile(distFile)
+	require.NoError(t, err)
+	require.Equal(t, client.Content, string(distBts))
 }

@@ -67,7 +67,7 @@ func TestPipe(t *testing.T) {
 				Path: file,
 				Type: artifact.UploadableBinary,
 				Extra: map[string]interface{}{
-					"ID": "id-1",
+					artifact.ExtraID: "id-1",
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -75,7 +75,7 @@ func TestPipe(t *testing.T) {
 				Path: file,
 				Type: artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID": "id-2",
+					artifact.ExtraID: "id-2",
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -83,7 +83,7 @@ func TestPipe(t *testing.T) {
 				Path: file,
 				Type: artifact.LinuxPackage,
 				Extra: map[string]interface{}{
-					"ID": "id-3",
+					artifact.ExtraID: "id-3",
 				},
 			})
 			require.NoError(t, Pipe{}.Run(ctx))
@@ -281,7 +281,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 				Path: file,
 				Type: artifact.UploadableBinary,
 				Extra: map[string]interface{}{
-					"ID": "id-1",
+					artifact.ExtraID: "id-1",
 				},
 			})
 

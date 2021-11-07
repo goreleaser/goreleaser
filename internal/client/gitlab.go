@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -50,7 +51,26 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 }
 
 func (c *gitlabClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
-	return "", ErrNotImplemented
+	cmpOpts := &gitlab.CompareOptions{
+		From: &prev,
+		To:   &current,
+	}
+	result, _, err := c.client.Repositories.Compare(repo.String(), cmpOpts)
+	var log []string
+	if err != nil {
+		return "", err
+	}
+
+	for _, commit := range result.Commits {
+		log = append(log, fmt.Sprintf(
+			"%s: %s (%s <%s>)",
+			commit.ShortID,
+			strings.Split(commit.Message, "\n")[0],
+			commit.AuthorName,
+			commit.AuthorEmail,
+		))
+	}
+	return strings.Join(log, "\n"), nil
 }
 
 // GetDefaultBranch get the default branch

@@ -27,12 +27,13 @@ theme:
       toggle:
         icon: material/lightbulb
         name: Switch to dark mode
+  features:
+    - search.suggest
+    - search.highlight
+    - search.share
 
 plugins:
-  - search:
-      prebuild_index: python
-      lang:
-      - en
+  - search
   - minify:
       minify_html: true
 
@@ -58,6 +59,7 @@ nav:
 - Continuous Integration:
   - About: ci/index.md
   - ci/actions.md
+  - ci/azurepipelines.md
   - ci/circle.md
   - ci/cirrus.md
   - ci/cloudbuild.md
@@ -80,6 +82,7 @@ nav:
     - customization/build.md
     - customization/gomod.md
     - customization/monorepo.md
+    - customization/universalbinaries.md
   - Packaging and Archiving:
     - customization/archive.md
     - customization/nfpm.md
@@ -115,6 +118,7 @@ nav:
       - customization/announce/twitter.md
       - customization/announce/mattermost.md
       - customization/announce/linkedin.md
+      - customization/announce/telegram.md
 - Command Line Usage:
     - goreleaser: cmd/goreleaser.md
     - goreleaser init: cmd/goreleaser_init.md
@@ -122,6 +126,7 @@ nav:
     - goreleaser build: cmd/goreleaser_build.md
     - goreleaser release: cmd/goreleaser_release.md
     - goreleaser completion: cmd/goreleaser_completion.md
+    - goreleaser jsonschema: cmd/goreleaser_jsonschema.md
 - deprecations.md
 - Cookbooks:
   - About: cookbooks/index.md
@@ -137,6 +142,7 @@ nav:
   - cookbooks/using-main.version.md
 - pro.md
 - sponsors.md
+- users.md
 - contributing.md
 - links.md
 
@@ -150,3 +156,4 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.tasklist:
       custom_checkbox: true
+  - footnotes

@@ -10,7 +10,6 @@ type templateData struct {
 	License       string
 	Caveats       []string
 	Plist         string
-	Install       []string
 	PostInstall   string
 	Dependencies  []config.HomebrewDependency
 	Conflicts     []string
@@ -27,6 +26,7 @@ type releasePackage struct {
 	OS               string
 	Arch             string
 	DownloadStrategy string
+	Install          []string
 }
 
 const formulaTemplate = `# typed: false
@@ -40,10 +40,9 @@ class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
   version "{{ .Version }}"
-  {{ if .License -}}
+  {{- if .License }}
   license "{{ .License }}"
-  {{ end -}}
-  bottle :unneeded
+  {{- end }}
   {{- if and (not .LinuxPackages) .MacOSPackages }}
   depends_on :macos
   {{- end }}
@@ -55,6 +54,17 @@ class {{ .Name }} < Formula
   {{- if .MacOSPackages }}
   on_macos do
   {{- range $element := .MacOSPackages }}
+    {{- if eq $element.Arch "all" }}
+    url "{{ $element.DownloadURL }}"
+    {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+    sha256 "{{ $element.SHA256 }}"
+
+    def install
+      {{- range $index, $element := .Install }}
+      {{ . -}}
+      {{- end }}
+    end
+    {{- else }}
     {{- if eq $element.Arch "amd64" }}
     if Hardware::CPU.intel?
     {{- end }}
@@ -64,7 +74,14 @@ class {{ .Name }} < Formula
       url "{{ $element.DownloadURL }}"
       {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
       sha256 "{{ $element.SHA256 }}"
+
+      def install
+        {{- range $index, $element := .Install }}
+        {{ . -}}
+        {{- end }}
+      end
     end
+    {{- end }}
   {{- end }}
   end
   {{- end }}
@@ -86,6 +103,12 @@ class {{ .Name }} < Formula
       url "{{ $element.DownloadURL }}"
       {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
       sha256 "{{ $element.SHA256 }}"
+
+      def install
+        {{- range $index, $element := .Install }}
+        {{ . -}}
+        {{- end }}
+      end
     end
   {{- end }}
   end
@@ -109,12 +132,6 @@ class {{ .Name }} < Formula
   conflicts_with "{{ . }}"
   {{- end }}
   {{- end }}
-
-  def install
-    {{- range $index, $element := .Install }}
-    {{ . -}}
-    {{- end }}
-  end
 
   {{- with .PostInstall }}
 

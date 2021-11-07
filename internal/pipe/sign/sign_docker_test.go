@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -47,6 +48,7 @@ func TestDockerSignInvalidArtifacts(t *testing.T) {
 }
 
 func TestDockerSignArtifacts(t *testing.T) {
+	testlib.CheckPath(t, "cosign")
 	key := "testdata/cosign/cosign.key"
 	cmd := "sh"
 	args := []string{"-c", "echo ${artifact} > ${signature} && cosign sign -key=" + key + " -upload=false ${artifact} > ${signature}"}
@@ -143,7 +145,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 				Path: img1,
 				Type: artifact.DockerImage,
 				Extra: map[string]interface{}{
-					"ID": "img1",
+					artifact.ExtraID: "img1",
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -151,7 +153,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 				Path: img2,
 				Type: artifact.DockerImage,
 				Extra: map[string]interface{}{
-					"ID": "img2",
+					artifact.ExtraID: "img2",
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -159,7 +161,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 				Path: man1,
 				Type: artifact.DockerManifest,
 				Extra: map[string]interface{}{
-					"ID": "man1",
+					artifact.ExtraID: "man1",
 				},
 			})
 

@@ -29,8 +29,10 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
 	"github.com/goreleaser/goreleaser/internal/pipe/teams"
+	"github.com/goreleaser/goreleaser/internal/pipe/telegram"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
 	"github.com/goreleaser/goreleaser/internal/pipe/linkedin"
+	"github.com/goreleaser/goreleaser/internal/pipe/universalbinary"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -51,6 +53,7 @@ var Defaulters = []Defaulter{
 	project.Pipe{},
 	gomod.Pipe{},
 	build.Pipe{},
+	universalbinary.Pipe{},
 	sourcearchive.Pipe{},
 	archive.Pipe{},
 	nfpm.Pipe{},
@@ -74,4 +77,5 @@ var Defaulters = []Defaulter{
 	mattermost.Pipe{},
 	milestone.Pipe{},
 	linkedin.Pipe{},
+	telegram.Pipe{},
 }

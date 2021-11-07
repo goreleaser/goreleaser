@@ -832,7 +832,7 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "amd64",
 					Path:   file,
 					Extra: map[string]interface{}{
-						"Builds": []*artifact.Artifact{
+						artifact.ExtraBuilds: []*artifact.Artifact{
 							{
 								Name: "foo.exe",
 							},
@@ -848,7 +848,7 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "arm",
 					Path:   file,
 					Extra: map[string]interface{}{
-						"Builds": []*artifact.Artifact{
+						artifact.ExtraBuilds: []*artifact.Artifact{
 							{
 								Name: "foo.exe",
 							},
@@ -864,7 +864,7 @@ func Test_buildManifest(t *testing.T) {
 					Goarch: "386",
 					Path:   file,
 					Extra: map[string]interface{}{
-						"Builds": []*artifact.Artifact{
+						artifact.ExtraBuilds: []*artifact.Artifact{
 							{
 								Name: "foo.exe",
 							},
@@ -922,8 +922,8 @@ func getScoopPipeSkipCtx(folder string) (*context.Context, string) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID":     "foo",
-			"Format": "tar.gz",
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "tar.gz",
 		},
 	})
 
@@ -1000,8 +1000,8 @@ func TestWrapInDirectory(t *testing.T) {
 			Goarch: "amd64",
 			Path:   file,
 			Extra: map[string]interface{}{
-				"WrappedIn": "foo_1.0.1_windows_amd64",
-				"Builds": []*artifact.Artifact{
+				artifact.ExtraWrappedIn: "foo_1.0.1_windows_amd64",
+				artifact.ExtraBuilds: []*artifact.Artifact{
 					{
 						Name: "foo.exe",
 					},

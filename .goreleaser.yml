@@ -20,18 +20,21 @@ builds:
     - darwin
     - windows
   goarch:
-    - 386
+    - "386"
     - amd64
     - arm
     - arm64
   goarm:
-    - 6
-    - 7
+    - "6"
+    - "7"
   mod_timestamp: '{{ .CommitTimestamp }}'
   flags:
     - -trimpath
   ldflags:
     - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
+
+universal_binaries:
+- replace: true
 
 checksum:
   name_template: 'checksums.txt'
@@ -43,6 +46,7 @@ changelog:
     exclude:
     - '^docs:'
     - '^test:'
+    - '^chore'
     - Merge pull request
     - Merge branch
     - go mod tidy
@@ -128,6 +132,8 @@ brews:
     - name: go
       type: optional
     - name: git
+    conflicts:
+    - goreleaser-pro
     install: |-
       bin.install "goreleaser"
       bash_completion.install "completions/goreleaser.bash" => "goreleaser"
@@ -204,6 +210,8 @@ publishers:
     cmd: ./scripts/fury-upload.sh {{ .ArtifactName }}
 
 release:
+  extra_files:
+    - glob: ./cosign.pub
   footer: |
     ## What to do next?
 

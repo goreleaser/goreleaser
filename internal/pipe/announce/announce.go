@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/slack"
 	"github.com/goreleaser/goreleaser/internal/pipe/smtp"
 	"github.com/goreleaser/goreleaser/internal/pipe/teams"
+	"github.com/goreleaser/goreleaser/internal/pipe/telegram"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
 	"github.com/goreleaser/goreleaser/internal/pipe/linkedin"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -37,6 +38,7 @@ var announcers = []Announcer{
 	slack.Pipe{},
 	smtp.Pipe{},
 	teams.Pipe{},
+	telegram.Pipe{},
 	twitter.Pipe{},
 }
 

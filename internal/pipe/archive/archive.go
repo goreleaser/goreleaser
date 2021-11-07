@@ -91,7 +91,10 @@ func (Pipe) Run(ctx *context.Context) error {
 		archive := archive
 		artifacts := ctx.Artifacts.Filter(
 			artifact.And(
-				artifact.ByType(artifact.Binary),
+				artifact.Or(
+					artifact.ByType(artifact.Binary),
+					artifact.ByType(artifact.UniversalBinary),
+				),
 				artifact.ByIDs(archive.Builds...),
 			),
 		).GroupByPlatform()
@@ -171,6 +174,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 			return fmt.Errorf("failed to add: '%s' -> '%s': %w", f.Source, f.Destination, err)
 		}
 	}
+	bins := []string{}
 	for _, binary := range binaries {
 		if err := a.Add(config.File{
 			Source:      binary.Path,
@@ -178,6 +182,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		}); err != nil {
 			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, binary.Name, err)
 		}
+		bins = append(bins, binary.Name)
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.UploadableArchive,
@@ -188,10 +193,11 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		Goarm:  binaries[0].Goarm,
 		Gomips: binaries[0].Gomips,
 		Extra: map[string]interface{}{
-			"Builds":    binaries,
-			"ID":        arch.ID,
-			"Format":    arch.Format,
-			"WrappedIn": wrap,
+			artifact.ExtraBuilds:    binaries,
+			artifact.ExtraID:        arch.ID,
+			artifact.ExtraFormat:    arch.Format,
+			artifact.ExtraWrappedIn: wrap,
+			artifact.ExtraBinaries:  bins,
 		},
 	})
 	return nil
@@ -210,25 +216,29 @@ func wrapFolder(a config.Archive) string {
 
 func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
 	for _, binary := range binaries {
-		log.WithField("binary", binary.Name).Info("skip archiving")
 		name, err := tmpl.New(ctx).
 			WithArtifact(binary, archive.Replacements).
 			Apply(archive.NameTemplate)
 		if err != nil {
 			return err
 		}
+		finalName := name + binary.ExtraOr(artifact.ExtraExt, "").(string)
+		log.WithField("binary", binary.Name).
+			WithField("name", finalName).
+			Info("skip archiving")
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Type:   artifact.UploadableBinary,
-			Name:   name + binary.ExtraOr("Ext", "").(string),
+			Name:   finalName,
 			Path:   binary.Path,
 			Goos:   binary.Goos,
 			Goarch: binary.Goarch,
 			Goarm:  binary.Goarm,
 			Gomips: binary.Gomips,
 			Extra: map[string]interface{}{
-				"Builds": []*artifact.Artifact{binary},
-				"ID":     archive.ID,
-				"Format": archive.Format,
+				artifact.ExtraBuilds: []*artifact.Artifact{binary},
+				artifact.ExtraID:     archive.ID,
+				artifact.ExtraFormat: archive.Format,
+				artifact.ExtraBinary: binary.Name,
 			},
 		})
 	}

@@ -91,6 +91,7 @@ func loadFromFile(file string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	log.WithField("file", file).Debugf("read %d bytes", len(bts))
 	return string(bts), nil
 }
 
@@ -187,13 +188,15 @@ func getChangeloger(ctx *context.Context) (changeloger, error) {
 	case "":
 		return gitChangeloger{}, nil
 	case "github":
-		return newGitHubChangeloger(ctx)
+		fallthrough
+	case "gitlab":
+		return newSCMChangeloger(ctx)
 	default:
 		return nil, fmt.Errorf("invalid changelog.use: %q", ctx.Config.Changelog.Use)
 	}
 }
 
-func newGitHubChangeloger(ctx *context.Context) (changeloger, error) {
+func newSCMChangeloger(ctx *context.Context) (changeloger, error) {
 	cli, err := client.New(ctx)
 	if err != nil {
 		return nil, err

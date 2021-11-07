@@ -108,6 +108,59 @@ func TestFilter(t *testing.T) {
 	).List(), 2)
 }
 
+func TestRemove(t *testing.T) {
+	data := []*Artifact{
+		{
+			Name:   "foo",
+			Goos:   "linux",
+			Goarch: "arm",
+			Type:   Binary,
+		},
+		{
+			Name:   "universal",
+			Goos:   "darwin",
+			Goarch: "all",
+			Type:   UniversalBinary,
+		},
+		{
+			Name:   "bar",
+			Goarch: "amd64",
+		},
+		{
+			Name: "checks",
+			Type: Checksum,
+		},
+	}
+
+	t.Run("null filter", func(t *testing.T) {
+		artifacts := New()
+		for _, a := range data {
+			artifacts.Add(a)
+		}
+		require.NoError(t, artifacts.Remove(nil))
+		require.Len(t, artifacts.List(), len(data))
+	})
+
+	t.Run("removing", func(t *testing.T) {
+		artifacts := New()
+		for _, a := range data {
+			artifacts.Add(a)
+		}
+		require.NoError(t, artifacts.Remove(
+			Or(
+				ByType(Checksum),
+				ByType(UniversalBinary),
+				And(
+					ByGoos("linux"),
+					ByGoarch("arm"),
+				),
+			),
+		))
+
+		require.Len(t, artifacts.List(), 1)
+	})
+}
+
 func TestGroupByPlatform(t *testing.T) {
 	data := []*Artifact{
 		{
@@ -218,25 +271,25 @@ func TestByIDs(t *testing.T) {
 		{
 			Name: "foo",
 			Extra: map[string]interface{}{
-				"ID": "foo",
+				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "bar",
 			Extra: map[string]interface{}{
-				"ID": "bar",
+				ExtraID: "bar",
 			},
 		},
 		{
 			Name: "foobar",
 			Extra: map[string]interface{}{
-				"ID": "foo",
+				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "check",
 			Extra: map[string]interface{}{
-				"ID": "check",
+				ExtraID: "check",
 			},
 		},
 		{
@@ -259,25 +312,25 @@ func TestByFormats(t *testing.T) {
 		{
 			Name: "foo",
 			Extra: map[string]interface{}{
-				"Format": "zip",
+				ExtraFormat: "zip",
 			},
 		},
 		{
 			Name: "bar",
 			Extra: map[string]interface{}{
-				"Format": "tar.gz",
+				ExtraFormat: "tar.gz",
 			},
 		},
 		{
 			Name: "foobar",
 			Extra: map[string]interface{}{
-				"Format": "zip",
+				ExtraFormat: "zip",
 			},
 		},
 		{
 			Name: "bin",
 			Extra: map[string]interface{}{
-				"Format": "binary",
+				ExtraFormat: "binary",
 			},
 		},
 	}
@@ -297,6 +350,7 @@ func TestTypeToString(t *testing.T) {
 		UploadableBinary,
 		UploadableFile,
 		Binary,
+		UniversalBinary,
 		LinuxPackage,
 		PublishableSnapcraft,
 		Snapcraft,

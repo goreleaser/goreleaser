@@ -1,6 +1,4 @@
----
-title: Homebrew Taps
----
+# Homebrew Taps
 
 After releasing to GitHub or GitLab, GoReleaser can generate and publish
 a _homebrew-tap_ recipe into a repository that you have access to.

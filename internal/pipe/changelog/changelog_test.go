@@ -466,13 +466,25 @@ func TestGetChangeloger(t *testing.T) {
 		require.IsType(t, c, gitChangeloger{})
 	})
 
-	t.Run("gituhb", func(t *testing.T) {
+	t.Run("github", func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Changelog: config.Changelog{
 				Use: "github",
 			},
 		})
 		ctx.TokenType = context.TokenTypeGitHub
+		c, err := getChangeloger(ctx)
+		require.NoError(t, err)
+		require.IsType(t, c, &scmChangeloger{})
+	})
+
+	t.Run("gitlab", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Changelog: config.Changelog{
+				Use: "gitlab",
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitLab
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, c, &scmChangeloger{})

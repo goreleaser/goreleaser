@@ -1,6 +1,4 @@
----
-title: GoFish
----
+# GoFish
 
 After releasing to GitHub or GitLab, GoReleaser can generate and publish
 a _Fish Food_ Cookbook into a repository that you have access to.

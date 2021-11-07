@@ -1,6 +1,4 @@
----
-title: Custom Publishers
----
+# Custom Publishers
 
 GoReleaser supports publishing artifacts by executing a custom publisher.
 

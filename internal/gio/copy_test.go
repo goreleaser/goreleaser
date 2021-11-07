@@ -17,6 +17,23 @@ func TestCopy(t *testing.T) {
 	requireEqualFiles(t, a, b)
 }
 
+func TestCopySymlink(t *testing.T) {
+	tmp := t.TempDir()
+	a := "testdata/somefile.txt"
+	b := tmp + "/somefile.txt"
+	c := tmp + "/somefile2.txt"
+	require.NoError(t, os.Symlink(a, b))
+	require.NoError(t, Copy(b, c))
+
+	fi, err := os.Lstat(c)
+	require.NoError(t, err)
+	require.True(t, fi.Mode()&os.ModeSymlink != 0)
+
+	l, err := os.Readlink(c)
+	require.NoError(t, err)
+	require.Equal(t, a, l)
+}
+
 func TestEqualFilesModeChanged(t *testing.T) {
 	tmp := t.TempDir()
 	a := "testdata/somefile.txt"
@@ -41,6 +58,17 @@ func TestEqualFilesDontExist(t *testing.T) {
 	require.Error(t, Copy(a, b))
 	require.Error(t, CopyWithMode(a, b, 0o644))
 	require.Error(t, Copy(b, c))
+}
+
+func TestCopyErrors(t *testing.T) {
+	a := "testdata/nope.txt"
+	b := "testdata/also-nope.txt"
+
+	err := copySymlink(a, b)
+	require.Error(t, err)
+
+	err = copyFile(a, b, 0o755)
+	require.Error(t, err)
 }
 
 func TestCopyFile(t *testing.T) {

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
+
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -37,6 +38,7 @@ const (
 	commitDate      = "CommitDate"
 	commitTimestamp = "CommitTimestamp"
 	gitURL          = "GitURL"
+	releaseURL      = "ReleaseURL"
 	major           = "Major"
 	minor           = "Minor"
 	patch           = "Patch"
@@ -46,6 +48,7 @@ const (
 	date            = "Date"
 	timestamp       = "Timestamp"
 	modulePath      = "ModulePath"
+	releaseNotes    = "ReleaseNotes"
 
 	// artifact-only keys.
 	osKey        = "Os"
@@ -82,6 +85,7 @@ func New(ctx *context.Context) *Template {
 			commitDate:      ctx.Git.CommitDate.UTC().Format(time.RFC3339),
 			commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
 			gitURL:          ctx.Git.URL,
+			releaseURL:      ctx.ReleaseURL,
 			env:             ctx.Env,
 			date:            ctx.Date.UTC().Format(time.RFC3339),
 			timestamp:       ctx.Date.UTC().Unix(),
@@ -90,6 +94,7 @@ func New(ctx *context.Context) *Template {
 			patch:           ctx.Semver.Patch,
 			prerelease:      ctx.Semver.Prerelease,
 			isSnapshot:      ctx.Snapshot,
+			releaseNotes:    ctx.ReleaseNotes,
 		},
 	}
 }
@@ -167,6 +172,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"toupper":    strings.ToUpper,
 			"trim":       strings.TrimSpace,
 			"trimprefix": strings.TrimPrefix,
+			"trimsuffix": strings.TrimSuffix,
 			"dir":        filepath.Dir,
 			"abs":        filepath.Abs,
 			"incmajor":   incMajor,

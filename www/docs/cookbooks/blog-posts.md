@@ -1,6 +1,4 @@
----
-title: Blog Posts
----
+# Blog Posts
 
 Tutorials made by the community.
 

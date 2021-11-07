@@ -147,7 +147,10 @@ func goVersion(build config.Build) ([]byte, error) {
 	cmd := exec.Command(build.GoBinary, "version")
 	// If the build.Dir is acessible, set the cmd dir to it in case
 	// of reletive path to GoBinary
-	if _, err := os.Stat(build.Dir); err == nil {
+	if fileInfo, err := os.Stat(build.Dir); err == nil {
+		if !fileInfo.IsDir() {
+			return nil, fmt.Errorf("invalid builds.dir property, it should be a directory: %s", build.Dir)
+		}
 		cmd.Dir = build.Dir
 	}
 	bts, err := cmd.CombinedOutput()

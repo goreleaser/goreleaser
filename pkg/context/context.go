@@ -72,6 +72,7 @@ type Context struct {
 	Git                GitInfo
 	Date               time.Time
 	Artifacts          artifact.Artifacts
+	ReleaseURL         string
 	ReleaseNotes       string
 	ReleaseNotesFile   string
 	ReleaseNotesTmpl   string

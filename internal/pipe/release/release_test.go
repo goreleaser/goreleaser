@@ -52,7 +52,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -60,7 +60,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Name: "bin.deb",
 		Path: debfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -68,7 +68,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Name: "filtered.tar.gz",
 		Path: filteredtarfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "bar",
+			artifact.ExtraID: "bar",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -76,7 +76,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Name: "filtered.deb",
 		Path: filtereddebfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "bar",
+			artifact.ExtraID: "bar",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -84,7 +84,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 		Name: "source.tar.gz",
 		Path: srcfile.Name(),
 		Extra: map[string]interface{}{
-			"Format": "tar.gz",
+			artifact.ExtraFormat: "tar.gz",
 		},
 	})
 	client := &client.Mock{}
@@ -133,7 +133,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tarfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -141,7 +141,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		Name: "bin.deb",
 		Path: debfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -149,7 +149,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		Name: "filtered.tar.gz",
 		Path: filteredtarfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "bar",
+			artifact.ExtraID: "bar",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -157,7 +157,7 @@ func TestRunPipeWithIDsThenFilters(t *testing.T) {
 		Name: "filtered.deb",
 		Path: filtereddebfile.Name(),
 		Extra: map[string]interface{}{
-			"ID": "bar",
+			artifact.ExtraID: "bar",
 		},
 	})
 	client := &client.Mock{}
@@ -317,9 +317,12 @@ func TestDefault(t *testing.T) {
 
 	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
+	ctx.Config.GitHubURLs.Download = "https://github.com"
+	ctx.Git.CurrentTag = "v1.0.0"
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Name)
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
+	require.Equal(t, "https://github.com/goreleaser/goreleaser/releases/tag/v1.0.0", ctx.ReleaseURL)
 }
 
 func TestDefaultWithGitlab(t *testing.T) {
@@ -329,9 +332,12 @@ func TestDefaultWithGitlab(t *testing.T) {
 
 	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitLab
+	ctx.Config.GitLabURLs.Download = "https://gitlab.com"
+	ctx.Git.CurrentTag = "v1.0.0"
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "gitlabrepo", ctx.Config.Release.GitLab.Name)
 	require.Equal(t, "gitlabowner", ctx.Config.Release.GitLab.Owner)
+	require.Equal(t, "https://gitlab.com/gitlabowner/gitlabrepo/-/releases/v1.0.0", ctx.ReleaseURL)
 }
 
 func TestDefaultWithGitea(t *testing.T) {
@@ -341,15 +347,51 @@ func TestDefaultWithGitea(t *testing.T) {
 
 	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitea
+	ctx.Config.GiteaURLs.Download = "https://git.honk.com"
+	ctx.Git.CurrentTag = "v1.0.0"
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "gitearepo", ctx.Config.Release.Gitea.Name)
 	require.Equal(t, "giteaowner", ctx.Config.Release.Gitea.Owner)
+	require.Equal(t, "https://git.honk.com/giteaowner/gitearepo/releases/tag/v1.0.0", ctx.ReleaseURL)
 }
 
-func TestDefaultPreReleaseAuto(t *testing.T) {
+func TestDefaultPreRelease(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
+
+	t.Run("prerelease", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Release: config.Release{
+				Prerelease: "true",
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitHub
+		ctx.Semver = context.Semver{
+			Major: 1,
+			Minor: 0,
+			Patch: 0,
+		}
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.True(t, ctx.PreRelease)
+	})
+
+	t.Run("release", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Release: config.Release{
+				Prerelease: "false",
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitHub
+		ctx.Semver = context.Semver{
+			Major:      1,
+			Minor:      0,
+			Patch:      0,
+			Prerelease: "rc1",
+		}
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.False(t, ctx.PreRelease)
+	})
 
 	t.Run("auto-release", func(t *testing.T) {
 		ctx := context.New(config.Project{

@@ -40,10 +40,6 @@ func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Brews {
 		brew := &ctx.Config.Brews[i]
 
-		if brew.Install == "" {
-			brew.Install = fmt.Sprintf(`bin.install "%s"`, ctx.Config.ProjectName)
-			log.Warnf("optimistically guessing `brew[%d].install` to be `%s`", i, brew.Install)
-		}
 		if brew.CommitAuthor.Name == "" {
 			brew.CommitAuthor.Name = "goreleaserbot"
 		}
@@ -156,16 +152,22 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 			artifact.ByGoos("darwin"),
 			artifact.ByGoos("linux"),
 		),
-		artifact.ByFormats("zip", "tar.gz"),
 		artifact.Or(
 			artifact.ByGoarch("amd64"),
 			artifact.ByGoarch("arm64"),
+			artifact.ByGoarch("all"),
 			artifact.And(
 				artifact.ByGoarch("arm"),
 				artifact.ByGoarm(brew.Goarm),
 			),
 		),
-		artifact.ByType(artifact.UploadableArchive),
+		artifact.Or(
+			artifact.And(
+				artifact.ByFormats("zip", "tar.gz"),
+				artifact.ByType(artifact.UploadableArchive),
+			),
+			artifact.ByType(artifact.UploadableBinary),
+		),
 	}
 	if len(brew.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(brew.IDs...))
@@ -193,6 +195,12 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 		return err
 	}
 	brew.Tap.Name = tapName
+
+	skipUpload, err := tmpl.New(ctx).Apply(brew.SkipUpload)
+	if err != nil {
+		return err
+	}
+	brew.SkipUpload = skipUpload
 
 	content, err := buildFormula(ctx, brew, cl, archives)
 	if err != nil {
@@ -268,6 +276,37 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	return out.String(), nil
 }
 
+func installs(cfg config.Homebrew, art *artifact.Artifact) []string {
+	if cfg.Install != "" {
+		return split(cfg.Install)
+	}
+
+	install := map[string]bool{}
+	switch art.Type {
+	case artifact.UploadableBinary:
+		name := art.Name
+		bin := art.ExtraOr(artifact.ExtraBinary, art.Name).(string)
+		install[fmt.Sprintf("bin.install %q => %q", name, bin)] = true
+	case artifact.UploadableArchive:
+		for _, bin := range art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
+			install[fmt.Sprintf("bin.install %q", bin)] = true
+		}
+	}
+
+	result := keys(install)
+	sort.Strings(result)
+	log.Warnf("guessing install to be %q", strings.Join(result, ", "))
+	return result
+}
+
+func keys(m map[string]bool) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
 		Name:          formulaNameFor(cfg.Name),
@@ -279,7 +318,6 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		Dependencies:  cfg.Dependencies,
 		Conflicts:     cfg.Conflicts,
 		Plist:         cfg.Plist,
-		Install:       split(cfg.Install),
 		PostInstall:   cfg.PostInstall,
 		Tests:         split(cfg.Test),
 		CustomRequire: cfg.CustomRequire,
@@ -287,8 +325,8 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 	}
 
 	counts := map[string]int{}
-	for _, artifact := range artifacts {
-		sum, err := artifact.Checksum("sha256")
+	for _, art := range artifacts {
+		sum, err := art.Checksum("sha256")
 		if err != nil {
 			return result, err
 		}
@@ -301,7 +339,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 			cfg.URLTemplate = url
 		}
 
-		url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(cfg.URLTemplate)
+		url, err := tmpl.New(ctx).WithArtifact(art, map[string]string{}).Apply(cfg.URLTemplate)
 		if err != nil {
 			return result, err
 		}
@@ -309,9 +347,10 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		pkg := releasePackage{
 			DownloadURL:      url,
 			SHA256:           sum,
-			OS:               artifact.Goos,
-			Arch:             artifact.Goarch,
+			OS:               art.Goos,
+			Arch:             art.Goarch,
 			DownloadStrategy: cfg.DownloadStrategy,
+			Install:          installs(cfg, art),
 		}
 
 		counts[pkg.OS+pkg.Arch]++
