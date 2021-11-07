@@ -1,9 +1,9 @@
 apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
-  name: multiple_armv7
+  name: multiple_armv5
 spec:
-  version: 1.0.1
+  version: v1.0.1
   platforms:
   - bin: foo
     uri: https://dummyhost/download/v1.0.1/bin.tar.gz
@@ -20,11 +20,12 @@ spec:
         os: linux
         arch: arm64
   - bin: foo
-    uri: https://dummyhost/download/v1.0.1/armv7.tar.gz
+    uri: https://dummyhost/download/v1.0.1/armv5.tar.gz
     sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     selector:
       matchLabels:
         os: linux
         arch: arm
+  shortDescription: Short desc
   homepage: https://github.com/goreleaser
   description: A run pipe test krew plugin and FOO=foo_is_bar

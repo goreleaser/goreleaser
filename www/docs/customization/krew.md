@@ -1,16 +1,10 @@
 # Krew
 
-After releasing to GitHub or GitLab, GoReleaser can generate and publish
-a _Krew Plugin_ into a repository that you have access to.
+After releasing to GitHub or GitLab, GoReleaser can generate and publish a _Krew Plugin_ into a repository that you have access to.
 
 Check their [website](https://krew.sigs.k8s.io) for more information.
 
-The `krews` section specifies how the plugins should be created.
-
-!!! warning
-    If you have multiple 32-bit arm versions in each `build` section, and
-    you do not specify any `ids` in the rigs section, it will default to all
-    artifacts and GoReleaser will fail.
+The `krews` section specifies how the plugins should be created:
 
 ```yaml
 # .goreleaser.yml
@@ -87,3 +81,9 @@ krews:
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
+
+## Limitations
+
+- Only one binary per archive is allowed;
+- Binary releases (when `archives.format` is set to `binary`) are not allowed;
+- Only one `GOARM` build is allowed;

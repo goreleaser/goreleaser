@@ -46,11 +46,11 @@ func (Pipe) Default(ctx *context.Context) error {
 		if krew.CommitMessageTemplate == "" {
 			krew.CommitMessageTemplate = "Krew plugin update for {{ .ProjectName }} version {{ .Tag }}"
 		}
+		if krew.ShortDescription == "" && krew.Description != "" {
+			krew.ShortDescription = strings.Split(krew.Description, "\n")[0]
+		}
 		if krew.Name == "" {
 			krew.Name = ctx.Config.ProjectName
-		}
-		if krew.Goarm == "" {
-			krew.Goarm = "6"
 		}
 	}
 
@@ -79,6 +79,9 @@ func runAll(ctx *context.Context, cli client.Client) error {
 func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
 	if krew.Index.Name == "" {
 		return pipe.Skip("krew plugin name is not set")
+	}
+	if krew.ShortDescription == "" {
+		return pipe.Skip("krew plugin short description is not set")
 	}
 
 	filters := []artifact.Filter{
@@ -118,7 +121,7 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
 		return err
 	}
 
-	filename := krew.Name + ".yml"
+	filename := krew.Name + ".yaml"
 	yamlPath := filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("plugin", yamlPath).Info("writing")
 	if err := os.WriteFile(yamlPath, []byte(content), 0o644); err != nil { //nolint: gosec
@@ -172,7 +175,7 @@ func dataFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifacts 
 		},
 		Spec: Spec{
 			Homepage:         cfg.Homepage,
-			Version:          ctx.Version,
+			Version:          "v" + ctx.Version,
 			ShortDescription: shortDesc,
 			Description:      desc,
 			Caveats:          cfg.Caveats,

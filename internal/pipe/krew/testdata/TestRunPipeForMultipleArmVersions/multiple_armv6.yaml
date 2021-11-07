@@ -3,7 +3,7 @@ kind: Plugin
 metadata:
   name: multiple_armv6
 spec:
-  version: 1.0.1
+  version: v1.0.1
   platforms:
   - bin: foo
     uri: https://dummyhost/download/v1.0.1/bin.tar.gz
@@ -26,5 +26,6 @@ spec:
       matchLabels:
         os: linux
         arch: arm
+  shortDescription: Short desc
   homepage: https://github.com/goreleaser
   description: A run pipe test krew plugin and FOO=foo_is_bar
