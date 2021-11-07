@@ -289,11 +289,6 @@ type Metadata struct {
 	Name string `yaml:"name,omitempty"`
 }
 
-type File struct {
-	From string `yaml:"from,omitempty"`
-	To   string `yaml:"to,omitempty"`
-}
-
 type MatchLabels struct {
 	Os   string `yaml:"os,omitempty"`
 	Arch string `yaml:"arch,omitempty"`
@@ -307,7 +302,6 @@ type Platform struct {
 	Bin      string   `yaml:"bin,omitempty"`
 	URI      string   `yaml:"uri,omitempty"`
 	Sha256   string   `yaml:"sha256,omitempty"`
-	Files    []File   `yaml:"files,omitempty"`
 	Selector Selector `yaml:"selector,omitempty"`
 }
 
