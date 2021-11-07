@@ -793,6 +793,7 @@ func pluginName(tb testing.TB) string {
 
 func requireValidPlugin(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
+		// needs to be the one on https://github.com/kubernetes-sigs/krew/pull/736
 		testlib.CheckPath(t, "validate-krew-manifest")
 		out, err := exec.Command(
 			"validate-krew-manifest",
