@@ -111,14 +111,14 @@ nav:
   - Announce:
       - About: customization/announce/index.md
       - customization/announce/discord.md
+      - customization/announce/linkedin.md
+      - customization/announce/mattermost.md
       - customization/announce/reddit.md
       - customization/announce/slack.md
       - customization/announce/smtp.md
       - customization/announce/teams.md
-      - customization/announce/twitter.md
-      - customization/announce/mattermost.md
-      - customization/announce/linkedin.md
       - customization/announce/telegram.md
+      - customization/announce/twitter.md
 - Command Line Usage:
     - goreleaser: cmd/goreleaser.md
     - goreleaser init: cmd/goreleaser_init.md
