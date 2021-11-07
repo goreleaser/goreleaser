@@ -1,6 +1,6 @@
-# Krew
+# Krew Plugin Manifests
 
-After releasing to GitHub or GitLab, GoReleaser can generate and publish a _Krew Plugin_ into a repository that you have access to.
+After releasing to GitHub or GitLab, GoReleaser can generate and publish a _Krew Plugin Manifest_ into a repository that you have access to.
 
 Check their [website](https://krew.sigs.k8s.io) for more information.
 

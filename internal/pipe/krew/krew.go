@@ -131,7 +131,7 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: filename,
 		Path: yamlPath,
-		Type: artifact.KrewManifest,
+		Type: artifact.KrewPluginManifest,
 		Extra: map[string]interface{}{
 			krewConfigExtra: krew,
 		},
@@ -238,7 +238,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 func publishAll(ctx *context.Context, cli client.Client) error {
 	skips := pipe.SkipMemento{}
-	for _, manifest := range ctx.Artifacts.Filter(artifact.ByType(artifact.KrewManifest)).List() {
+	for _, manifest := range ctx.Artifacts.Filter(artifact.ByType(artifact.KrewPluginManifest)).List() {
 		err := doPublish(ctx, manifest, cli)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)

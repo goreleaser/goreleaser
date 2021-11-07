@@ -362,7 +362,7 @@ func TestTypeToString(t *testing.T) {
 		UploadableSourceArchive,
 		BrewTap,
 		GoFishRig,
-		KrewManifest,
+		KrewPluginManifest,
 		ScoopManifest,
 	} {
 		t.Run(a.String(), func(t *testing.T) {
