@@ -15,7 +15,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
-	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -134,7 +133,7 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 			artifact.ByIDs(snap.Builds...),
 		),
 	).GroupByPlatform() {
-		arch := linux.Arch(platform)
+		arch := linuxArch(platform)
 		if !isValidArch(arch) {
 			log.WithField("arch", arch).Warn("ignored unsupported arch")
 			continue
@@ -385,4 +384,26 @@ func processChannelsTemplates(ctx *context.Context, snap config.Snapcraft) ([]st
 	}
 
 	return channels, nil
+}
+
+var archToSnap = map[string]string{
+	"386":     "i386",
+	"arm":     "armhf",
+	"arm6":    "armhf",
+	"arm7":    "armhf",
+	"ppc64le": "ppc64el",
+}
+
+func linuxArch(key string) string {
+	// XXX: list of all linux arches: `go tool dist list | grep linux`
+	arch := strings.TrimPrefix(key, "linux")
+	for _, suffix := range []string{"hardfloat", "softfloat"} {
+		arch = strings.TrimSuffix(arch, suffix)
+	}
+
+	if got, ok := archToSnap[arch]; ok {
+		return got
+	}
+
+	return arch
 }

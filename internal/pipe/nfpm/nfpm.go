@@ -17,7 +17,6 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
-	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -88,12 +87,11 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 	}
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, format := range fpm.Formats {
-		for platform, artifacts := range linuxBinaries {
+		for _, artifacts := range linuxBinaries {
 			format := format
-			arch := linux.Arch(platform)
 			artifacts := artifacts
 			g.Go(func() error {
-				return create(ctx, fpm, format, arch, artifacts)
+				return create(ctx, fpm, format, artifacts)
 			})
 		}
 	}
@@ -115,7 +113,9 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 	return &overridden, nil
 }
 
-func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries []*artifact.Artifact) error {
+func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*artifact.Artifact) error {
+	arch := binaries[0].Goarch + binaries[0].Goarm
+
 	overridden, err := mergeOverrides(fpm, format)
 	if err != nil {
 		return err
