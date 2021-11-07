@@ -86,6 +86,8 @@ func (t Type) String() string {
 		return "Brew Tap"
 	case GoFishRig:
 		return "GoFish Rig"
+	case KrewPlugin:
+		return "Krew Plugin"
 	case ScoopManifest:
 		return "Scoop Manifest"
 	default:
