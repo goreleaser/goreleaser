@@ -18,13 +18,14 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const krewConfigExtra = "KrewConfig"
-
-const pluginsFolder = "plugins"
+const (
+	krewConfigExtra = "KrewConfig"
+	pluginsFolder   = "plugins"
+	kind            = "Plugin"
+	apiVersion      = "krew.googlecontainertools.github.com/v1alpha2"
+)
 
 var ErrNoArchivesFound = errors.New("no archives found")
-
-var ErrMultipleArchivesSameOS = errors.New("one krew plugin can handle only archive of an OS/Arch combination. Consider using ids in the krew section")
 
 // Pipe for krew plugin deployment.
 type Pipe struct{}
@@ -276,11 +277,6 @@ func doPublish(ctx *context.Context, plugin *artifact.Artifact, cl client.Client
 func buildPluginPath(folder, filename string) string {
 	return path.Join(folder, filename)
 }
-
-const (
-	kind       = "Plugin"
-	apiVersion = "krew.googlecontainertools.github.com/v1alpha2"
-)
 
 type Plugin struct {
 	APIVersion string   `yaml:"apiVersion,omitempty"`

@@ -23,12 +23,14 @@ import (
 
 const brewConfigExtra = "BrewConfig"
 
-// ErrNoArchivesFound happens when 0 archives are found.
-var ErrNoArchivesFound = errors.New("no linux/macos archives found")
+var (
+	// ErrNoArchivesFound happens when 0 archives are found.
+	ErrNoArchivesFound = errors.New("no linux/macos archives found")
 
-// ErrMultipleArchivesSameOS happens when the config yields multiple archives
-// for linux or windows.
-var ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
+	// ErrMultipleArchivesSameOS happens when the config yields multiple archives
+	// for linux or windows.
+	ErrMultipleArchivesSameOS = errors.New("one tap can handle only archive of an OS/Arch combination. Consider using ids in the brew section")
+)
 
 // Pipe for brew deployment.
 type Pipe struct{}
