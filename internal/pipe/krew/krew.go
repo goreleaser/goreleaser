@@ -142,10 +142,10 @@ func buildPlugin(ctx *context.Context, krew config.Krew, client client.Client, a
 	if err != nil {
 		return "", err
 	}
-	return doBuildPlugin(ctx, data)
+	return doBuildPlugin(data)
 }
 
-func doBuildPlugin(ctx *context.Context, data Plugin) (string, error) {
+func doBuildPlugin(data Plugin) (string, error) {
 	out, err := yaml.Marshal(data)
 	if err != nil {
 		return "", fmt.Errorf("krew: failed to marshal yaml: %w", err)

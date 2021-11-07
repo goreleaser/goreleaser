@@ -106,16 +106,14 @@ func createTemplateData() Plugin {
 
 func TestFullPlugin(t *testing.T) {
 	data := createTemplateData()
-	plugin, err := doBuildPlugin(context.New(config.Project{
-		ProjectName: "foo",
-	}), data)
+	plugin, err := doBuildPlugin(data)
 	require.NoError(t, err)
 
 	golden.RequireEqualYaml(t, []byte(plugin))
 }
 
 func TestPluginSimple(t *testing.T) {
-	plugin, err := doBuildPlugin(context.New(config.Project{}), createTemplateData())
+	plugin, err := doBuildPlugin(createTemplateData())
 	require.NoError(t, err)
 	golden.RequireEqualYaml(t, []byte(plugin))
 }
