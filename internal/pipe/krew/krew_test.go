@@ -20,13 +20,6 @@ func TestDescription(t *testing.T) {
 }
 
 func createTemplateData() Plugin {
-	binaries := func(ext string) []File {
-		return []File{
-			{From: "bin1" + ext, To: "bin1" + ext},
-			{From: "bin2" + ext, To: "bin2" + ext},
-			{From: "bin3" + ext, To: "bin3" + ext},
-		}
-	}
 	return Plugin{
 		APIVersion: apiVersion,
 		Kind:       kind,
@@ -49,7 +42,7 @@ func createTemplateData() Plugin {
 					},
 					URI:    "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz",
 					Sha256: "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68",
-					Files:  binaries(""),
+					Bin:    "test",
 				},
 				{
 					Selector: Selector{
@@ -60,7 +53,7 @@ func createTemplateData() Plugin {
 					},
 					URI:    "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
 					Sha256: "1633f61598ab0791e213135923624eb342196b349490sadasdsadsadasdasdsd",
-					Files:  binaries(""),
+					Bin:    "test",
 				},
 				{
 					Selector: Selector{
@@ -71,7 +64,7 @@ func createTemplateData() Plugin {
 					},
 					URI:    "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
 					Sha256: "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-					Files:  binaries(""),
+					Bin:    "test",
 				},
 				{
 					Selector: Selector{
@@ -82,7 +75,7 @@ func createTemplateData() Plugin {
 					},
 					URI:    "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm6.tar.gz",
 					Sha256: "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-					Files:  binaries(""),
+					Bin:    "test",
 				},
 				{
 					Selector: Selector{
@@ -93,7 +86,7 @@ func createTemplateData() Plugin {
 					},
 					URI:    "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Arm64.tar.gz",
 					Sha256: "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-					Files:  binaries(""),
+					Bin:    "test",
 				},
 				{
 					Selector: Selector{
@@ -104,7 +97,7 @@ func createTemplateData() Plugin {
 					},
 					URI:    "https://github.com/caarlos0/test/releases/download/v0.1.3/test_windows_amd64.zip",
 					Sha256: "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
-					Files:  binaries(".exe"),
+					Bin:    "test.exe",
 				},
 			},
 		},
@@ -113,37 +106,6 @@ func createTemplateData() Plugin {
 
 func TestFullPlugin(t *testing.T) {
 	data := createTemplateData()
-	plugin, err := doBuildPlugin(context.New(config.Project{
-		ProjectName: "foo",
-	}), data)
-	require.NoError(t, err)
-
-	golden.RequireEqualYaml(t, []byte(plugin))
-}
-
-func TestFullPluginLinuxOnly(t *testing.T) {
-	data := createTemplateData()
-	for i, v := range data.Spec.Platforms {
-		if v.Selector.MatchLabels.Os != "linux" {
-			data.Spec.Platforms[i] = Platform{}
-		}
-	}
-
-	plugin, err := doBuildPlugin(context.New(config.Project{
-		ProjectName: "foo",
-	}), data)
-	require.NoError(t, err)
-
-	golden.RequireEqualYaml(t, []byte(plugin))
-}
-
-func TestFullPluginWindowsOnly(t *testing.T) {
-	data := createTemplateData()
-	for i, v := range data.Spec.Platforms {
-		if v.Selector.MatchLabels.Os != "windows" {
-			data.Spec.Platforms[i] = Platform{}
-		}
-	}
 	plugin, err := doBuildPlugin(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
