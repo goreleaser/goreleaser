@@ -31,6 +31,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/teams"
 	"github.com/goreleaser/goreleaser/internal/pipe/telegram"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
+	"github.com/goreleaser/goreleaser/internal/pipe/linkedin"
 	"github.com/goreleaser/goreleaser/internal/pipe/universalbinary"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -75,5 +76,6 @@ var Defaulters = []Defaulter{
 	smtp.Pipe{},
 	mattermost.Pipe{},
 	milestone.Pipe{},
+	linkedin.Pipe{},
 	telegram.Pipe{},
 }

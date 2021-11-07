@@ -823,6 +823,7 @@ type Announce struct {
 	Teams      Teams      `yaml:"teams,omitempty"`
 	SMTP       SMTP       `yaml:"smtp,omitempty"`
 	Mattermost Mattermost `yaml:"mattermost,omitempty"`
+	LinkedIn   LinkedIn   `yaml:"linkedin,omitempty"`
 	Telegram   Telegram   `yaml:"telegram,omitempty"`
 }
 
@@ -886,6 +887,11 @@ type SMTP struct {
 	SubjectTemplate    string   `yaml:"subject_template,omitempty"`
 	BodyTemplate       string   `yaml:"body_template,omitempty"`
 	InsecureSkipVerify bool     `yaml:"insecure_skip_verify,omitempty"`
+}
+
+type LinkedIn struct {
+	Enabled         bool   `yaml:"enabled,omitempty"`
+	MessageTemplate string `yaml:"message_template,omitempty"`
 }
 
 type Telegram struct {
