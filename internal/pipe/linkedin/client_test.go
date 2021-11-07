@@ -4,22 +4,22 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateLinkedInClient(t *testing.T) {
 	tests := []struct {
 		name    string
-		cfg     OAuthClientConfig
+		cfg     oauthClientConfig
 		wantErr error
 	}{
 		{
 			"non-empty context and access token",
-			OAuthClientConfig{
+			oauthClientConfig{
 				Context:     context.New(config.Project{}),
 				AccessToken: "foo",
 			},
@@ -27,7 +27,7 @@ func TestCreateLinkedInClient(t *testing.T) {
 		},
 		{
 			"empty context",
-			OAuthClientConfig{
+			oauthClientConfig{
 				Context:     nil,
 				AccessToken: "foo",
 			},
@@ -35,7 +35,7 @@ func TestCreateLinkedInClient(t *testing.T) {
 		},
 		{
 			"empty access token",
-			OAuthClientConfig{
+			oauthClientConfig{
 				Context:     context.New(config.Project{}),
 				AccessToken: "",
 			},
@@ -44,11 +44,11 @@ func TestCreateLinkedInClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := CreateLinkedInClient(tt.cfg)
-
-			if !reflect.DeepEqual(err, tt.wantErr) {
-				t.Errorf("CreateLinkedInClient() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			_, err := createLinkedInClient(tt.cfg)
+			if tt.wantErr != nil {
+				require.EqualError(t, err, tt.wantErr.Error())
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}
@@ -65,7 +65,7 @@ func TestClient_Share(t *testing.T) {
 	}))
 	defer server.Close()
 
-	c, err := CreateLinkedInClient(OAuthClientConfig{
+	c, err := createLinkedInClient(oauthClientConfig{
 		Context:     context.New(config.Project{}),
 		AccessToken: "foo",
 	})
@@ -81,8 +81,5 @@ func TestClient_Share(t *testing.T) {
 	}
 
 	wantLink := "https://www.linkedin.com/feed/update/123456789"
-
-	if link != wantLink {
-		t.Fatalf("link got: %s want: %s", link, wantLink)
-	}
+	require.Equal(t, wantLink, link)
 }

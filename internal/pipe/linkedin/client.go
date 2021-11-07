@@ -11,7 +11,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type oAuthClientConfig struct {
+type oauthClientConfig struct {
 	Context     *context.Context
 	AccessToken string
 }
@@ -30,7 +30,7 @@ type postShareRequest struct {
 	Owner string        `json:"owner"`
 }
 
-func createLinkedInClient(cfg oAuthClientConfig) (client, error) {
+func createLinkedInClient(cfg oauthClientConfig) (client, error) {
 	if cfg.Context == nil {
 		return client{}, fmt.Errorf("context is nil")
 	}

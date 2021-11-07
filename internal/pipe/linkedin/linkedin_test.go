@@ -3,7 +3,6 @@ package linkedin
 import (
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -22,7 +21,7 @@ func TestDefault(t *testing.T) {
 func TestAnnounceDisabled(t *testing.T) {
 	ctx := context.New(config.Project{})
 	require.NoError(t, Pipe{}.Default(ctx))
-	testlib.AssertSkipped(t, Pipe{}.Announce(ctx))
+	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to linkedin: env: environment variable "LINKEDIN_ACCESS_TOKEN" should not be empty`)
 }
 
 func TestAnnounceInvalidTemplate(t *testing.T) {
@@ -34,7 +33,7 @@ func TestAnnounceInvalidTemplate(t *testing.T) {
 			},
 		},
 	})
-	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to linkedin: template: tmpl:1: unexpected "}" in operand`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to linkedin: template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestAnnounceMissingEnv(t *testing.T) {
@@ -46,19 +45,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to linkedin: env: environment variable "LINKEDIN_ACCESS_TOKEN" should not be empty`)
-}
-
-func TestAnnounceSkipAnnounce(t *testing.T) {
-	ctx := context.New(config.Project{
-		Announce: config.Announce{
-			LinkedIn: config.LinkedIn{
-				Enabled: true,
-			},
-		},
-	})
-	ctx.SkipAnnounce = true
-	testlib.AssertSkipped(t, Pipe{}.Announce(ctx))
+	require.EqualError(t, Pipe{}.Announce(ctx), `failed to announce to linkedin: env: environment variable "LINKEDIN_ACCESS_TOKEN" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {
@@ -69,7 +56,7 @@ func TestSkip(t *testing.T) {
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Announce: config.Announce{
-				Reddit: config.Reddit{
+				LinkedIn: config.LinkedIn{
 					Enabled: true,
 				},
 			},
