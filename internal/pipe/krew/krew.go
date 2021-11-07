@@ -1,3 +1,5 @@
+// Package krew implements Piper and Publisher, providing krew plugin manifest
+// creation and upload to a repository (aka krew plugin index).
 package krew
 
 import (
