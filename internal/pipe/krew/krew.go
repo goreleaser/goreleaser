@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/apex/log"
@@ -225,6 +226,10 @@ func manifestFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifa
 			})
 		}
 	}
+
+	sort.Slice(result.Spec.Platforms, func(i, j int) bool {
+		return result.Spec.Platforms[i].URI > result.Spec.Platforms[j].URI
+	})
 
 	return result, nil
 }
