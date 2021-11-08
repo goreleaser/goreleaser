@@ -60,6 +60,7 @@ signs:
     #   package:  linux packages (deb, rpm, apk)
     #   archive:  archives from archive pipe
     #   binary:   binaries if archiving format is set to binary
+    #   sbom:     any Software Bill of Materials generated for other artifacts
     #
     # Defaults to `none`
     artifacts: all
