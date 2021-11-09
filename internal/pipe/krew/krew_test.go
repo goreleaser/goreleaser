@@ -838,7 +838,7 @@ func requireValidManifest(t *testing.T) {
 		testlib.CheckPath(t, "validate-krew-manifest")
 		out, err := exec.Command(
 			"validate-krew-manifest",
-			"-install=false",
+			"-skip-install",
 			"-manifest=testdata/"+strings.TrimSuffix(t.Name(), "/valid")+".yaml",
 		).CombinedOutput()
 		require.NoError(t, err, string(out))
