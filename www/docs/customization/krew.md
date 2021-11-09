@@ -59,14 +59,20 @@ krews:
     homepage: "https://example.com/"
 
     # Template of your app's description.
+    # The usual guideline for this is to wrap the line at 80 chars.
+    #
     # Default is empty.
     description: "Software to create fast and easy drum rolls."
 
     # Template of your app's short description.
+    # The usual guideline for this is to be at most 50 chars long.
+    #
     # Default is empty.
     short_description: "Software to create fast and easy drum rolls."
 
     # Caveats for the user of your binary.
+    # The usual guideline for this is to wrap the line at 80 chars.
+    #
     # Default is empty.
     caveats: "How to use this binary"
 
