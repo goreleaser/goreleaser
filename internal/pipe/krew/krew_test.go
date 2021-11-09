@@ -173,6 +173,48 @@ func TestFullPipe(t *testing.T) {
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
+		"invalid homepage": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Krews[0].Index.Owner = "test"
+				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Homepage = "{{ .Asdsa }"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"invalid name": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Krews[0].Index.Owner = "test"
+				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Name = "{{ .Asdsa }"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"invalid caveats": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Krews[0].Index.Owner = "test"
+				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Caveats = "{{ .Asdsa }"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"no short desc": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Krews[0].Index.Owner = "test"
+				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Description = "lalala"
+				ctx.Config.Krews[0].ShortDescription = ""
+			},
+			expectedRunError: `krew: manifest short description is not set`,
+		},
+		"no desc": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Krews[0].Index.Owner = "test"
+				ctx.Config.Krews[0].Index.Name = "test"
+				ctx.Config.Krews[0].Description = ""
+				ctx.Config.Krews[0].ShortDescription = "lalala"
+			},
+			expectedRunError: `krew: manifest description is not set`,
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
@@ -191,10 +233,8 @@ func TestFullPipe(t *testing.T) {
 					ProjectName: name,
 					Krews: []config.Krew{
 						{
-							Name: name,
-							IDs: []string{
-								"foo",
-							},
+							Name:             name,
+							IDs:              []string{"foo"},
 							Description:      "A run pipe test krew manifest and FOO={{ .Env.FOO }}",
 							ShortDescription: "short desc {{.Env.BAR}}",
 						},

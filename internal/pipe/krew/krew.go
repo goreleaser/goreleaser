@@ -49,9 +49,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		if krew.CommitMessageTemplate == "" {
 			krew.CommitMessageTemplate = "Krew manifest update for {{ .ProjectName }} version {{ .Tag }}"
 		}
-		if krew.ShortDescription == "" && krew.Description != "" {
-			krew.ShortDescription = strings.Split(krew.Description, "\n")[0]
-		}
 		if krew.Name == "" {
 			krew.Name = ctx.Config.ProjectName
 		}
@@ -80,11 +77,14 @@ func runAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
-	if krew.Index.Name == "" {
-		return pipe.Skip("krew manifest name is not set")
+	if krew.Name == "" {
+		return pipe.Skip("krew: manifest name is not set")
+	}
+	if krew.Description == "" {
+		return fmt.Errorf("krew: manifest description is not set")
 	}
 	if krew.ShortDescription == "" {
-		return pipe.Skip("krew manifest short description is not set")
+		return fmt.Errorf("krew: manifest short description is not set")
 	}
 
 	filters := []artifact.Filter{
@@ -113,11 +113,10 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
 		return ErrNoArchivesFound
 	}
 
-	name, err := tmpl.New(ctx).Apply(krew.Name)
+	krew, err := templateFields(ctx, krew)
 	if err != nil {
 		return err
 	}
-	krew.Name = name
 
 	content, err := buildmanifest(ctx, krew, cl, archives)
 	if err != nil {
@@ -143,6 +142,36 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
 	return nil
 }
 
+func templateFields(ctx *context.Context, krew config.Krew) (config.Krew, error) {
+	t := tmpl.New(ctx)
+	var err error
+	krew.Name, err = t.Apply(krew.Name)
+	if err != nil {
+		return config.Krew{}, err
+	}
+
+	krew.Homepage, err = t.Apply(krew.Homepage)
+	if err != nil {
+		return config.Krew{}, err
+	}
+
+	krew.Description, err = t.Apply(krew.Description)
+	if err != nil {
+		return config.Krew{}, err
+	}
+
+	krew.Caveats, err = t.Apply(krew.Caveats)
+	if err != nil {
+		return config.Krew{}, err
+	}
+
+	krew.ShortDescription, err = t.Apply(krew.ShortDescription)
+	if err != nil {
+		return config.Krew{}, err
+	}
+	return krew, nil
+}
+
 func buildmanifest(ctx *context.Context, krew config.Krew, client client.Client, artifacts []*artifact.Artifact) (string, error) {
 	data, err := manifestFor(ctx, krew, client, artifacts)
 	if err != nil {
@@ -160,16 +189,6 @@ func doBuildManifest(data Manifest) (string, error) {
 }
 
 func manifestFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifacts []*artifact.Artifact) (Manifest, error) {
-	desc, err := tmpl.New(ctx).Apply(cfg.Description)
-	if err != nil {
-		return Manifest{}, err
-	}
-
-	shortDesc, err := tmpl.New(ctx).Apply(cfg.ShortDescription)
-	if err != nil {
-		return Manifest{}, err
-	}
-
 	result := Manifest{
 		APIVersion: apiVersion,
 		Kind:       kind,
@@ -179,8 +198,8 @@ func manifestFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifa
 		Spec: Spec{
 			Homepage:         cfg.Homepage,
 			Version:          "v" + ctx.Version,
-			ShortDescription: shortDesc,
-			Description:      desc,
+			ShortDescription: cfg.ShortDescription,
+			Description:      cfg.Description,
 			Caveats:          cfg.Caveats,
 		},
 	}
