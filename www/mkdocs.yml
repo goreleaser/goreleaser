@@ -94,17 +94,18 @@ nav:
     - Checksums and artifacts: customization/sign.md
     - Docker Images and Manifests: customization/docker_sign.md
   - Publish:
+    - customization/release.md
     - customization/blob.md
     - customization/fury.md
     - customization/homebrew.md
     - customization/gofish.md
+    - customization/krew.md
     - customization/scoop.md
     - customization/changelog.md
-    - customization/release.md
-    - customization/artifactory.md
-    - customization/publishers.md
     - customization/upload.md
     - customization/source.md
+    - customization/publishers.md
+    - customization/artifactory.md
     - customization/milestone.md
     - customization/snapshots.md
     - customization/nightly.md

@@ -147,6 +147,22 @@ type Homebrew struct {
 	Goarm                 string               `yaml:"goarm,omitempty"`
 }
 
+// Krew contains the krew section.
+type Krew struct {
+	IDs                   []string     `yaml:"ids,omitempty"`
+	Name                  string       `yaml:"name,omitempty"`
+	Index                 RepoRef      `yaml:"index,omitempty"`
+	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty"`
+	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty"`
+	Caveats               string       `yaml:"caveats,omitempty"`
+	ShortDescription      string       `yaml:"short_description,omitempty"`
+	Description           string       `yaml:"description,omitempty"`
+	Homepage              string       `yaml:"homepage,omitempty"`
+	URLTemplate           string       `yaml:"url_template,omitempty"`
+	Goarm                 string       `yaml:"goarm,omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty"`
+}
+
 // Scoop contains the scoop.sh section.
 type Scoop struct {
 	Name                  string       `yaml:"name,omitempty"`
@@ -770,6 +786,7 @@ type Project struct {
 	Milestones      []Milestone      `yaml:"milestones,omitempty"`
 	Brews           []Homebrew       `yaml:"brews,omitempty"`
 	Rigs            []GoFish         `yaml:"rigs,omitempty"`
+	Krews           []Krew           `yaml:"krews,omitempty"`
 	Scoop           Scoop            `yaml:"scoop,omitempty"`
 	Builds          []Build          `yaml:"builds,omitempty"`
 	Archives        []Archive        `yaml:"archives,omitempty"`

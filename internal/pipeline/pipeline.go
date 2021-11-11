@@ -19,6 +19,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
+	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
@@ -67,6 +68,7 @@ var Pipeline = append(
 	snapcraft.Pipe{},     // archive via snapcraft (snap)
 	brew.Pipe{},          // create brew tap
 	gofish.Pipe{},        // create gofish rig
+	krew.Pipe{},          // krew plugins
 	scoop.Pipe{},         // create scoop buckets
 	checksums.Pipe{},     // checksums of the files
 	sign.Pipe{},          // sign artifacts

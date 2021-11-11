@@ -10,11 +10,6 @@ and the
 [formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md)
 for more details.
 
-!!! warning
-    If you have multiple 32-bit arm versions in each `build` section, and
-    you do not specify any `ids` in the brew section, it will default to all
-    artifacts and GoReleaser will fail.
-
 ```yaml
 # .goreleaser.yml
 brews:
@@ -201,3 +196,7 @@ from one software to another.
 
 Our suggestion is to create a `my-app-head.rb` file on your tap following
 [homebrew's documentation](https://docs.brew.sh/Formula-Cookbook#unstable-versions-head).
+
+## Limitations
+
+- Only one `GOARM` build is allowed;
