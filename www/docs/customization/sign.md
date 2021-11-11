@@ -34,10 +34,6 @@ signs:
 
     # Name/template of the signature file.
     #
-    # Available environment variables:
-    # - '${artifact}': the path to the artifact that will be signed
-    # - '${artifactID}': the ID of the artifact that will be signed
-    #
     # Defaults to `${artifact}.sig`.
     signature: "${artifact}_sig"
 
@@ -86,7 +82,32 @@ signs:
     #
     # Defaults to empty
     stdin_file: ./.password
+
+    # Sets a certificate that your signing command should write to.
+    # You can later use `${certificate}` or `.Env.certificate` in the `args` section.
+    # This is particularly useful for keyless signing (for instance, with cosign).
+    # Note that this should be a name, not a path.
+    #
+    # Defaults to empty.
+    certificate: '{{ trimsuffix .Env.artifactName ".tar.gz" }}.pem'
+
+    # List of environment variables that will be passed to the signing command as well as the templates.
+    #
+    # Defaults to empty
+    env:
+    - FOO=bar
+    - HONK=honkhonk
 ```
+
+### Available variable names
+
+These environment variables might be available in the fields that are templateable:
+
+- `${artifactName}`: the name of the artifact
+- `${artifact}`: the path to the artifact that will be signed
+- `${artifactID}`: the ID of the artifact that will be signed
+- `${certificate}`: the certificate filename, if provided
+- `${signature}`: the signature filename
 
 ## Signing with cosign
 
@@ -109,6 +130,7 @@ Your users can then verify the signature with:
 cosign verify-blob -key cosign.pub -signature file.tar.gz.sig file.tar.gz
 ```
 
+<!-- TODO: keyless signing with cosign example -->
 
 ## Signing executables
 

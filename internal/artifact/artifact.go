@@ -48,6 +48,8 @@ const (
 	Checksum
 	// Signature is a signature file.
 	Signature
+	// Certificate is a signing certificate file
+	Certificate
 	// UploadableSourceArchive is the archive with the current commit source code.
 	UploadableSourceArchive
 	// BrewTap is an uploadable homebrew tap recipe file.

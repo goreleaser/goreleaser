@@ -359,6 +359,7 @@ func TestTypeToString(t *testing.T) {
 		DockerManifest,
 		Checksum,
 		Signature,
+		Certificate,
 		UploadableSourceArchive,
 		BrewTap,
 		GoFishRig,

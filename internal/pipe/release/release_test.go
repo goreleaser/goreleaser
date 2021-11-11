@@ -18,23 +18,24 @@ func TestPipeDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
+func createTmpFile(tb testing.TB, folder, path string) string {
+	tb.Helper()
+	f, err := os.Create(filepath.Join(folder, path))
+	require.NoError(tb, err)
+	require.NoError(tb, f.Close())
+	return f.Name()
+}
+
 func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	folder := t.TempDir()
-	tarfile, err := os.Create(filepath.Join(folder, "bin.tar.gz"))
-	require.NoError(t, err)
-	require.NoError(t, tarfile.Close())
-	srcfile, err := os.Create(filepath.Join(folder, "source.tar.gz"))
-	require.NoError(t, err)
-	require.NoError(t, srcfile.Close())
-	debfile, err := os.Create(filepath.Join(folder, "bin.deb"))
-	require.NoError(t, err)
-	require.NoError(t, debfile.Close())
-	filteredtarfile, err := os.Create(filepath.Join(folder, "filtered.tar.gz"))
-	require.NoError(t, err)
-	require.NoError(t, filteredtarfile.Close())
-	filtereddebfile, err := os.Create(filepath.Join(folder, "filtered.deb"))
-	require.NoError(t, err)
-	require.NoError(t, filtereddebfile.Close())
+	tarfile := createTmpFile(t, folder, "bin.tar.gz")
+	srcfile := createTmpFile(t, folder, "source.tar.gz")
+	debfile := createTmpFile(t, folder, "bin.deb")
+	checksumfile := createTmpFile(t, folder, "checksum")
+	checksumsigfile := createTmpFile(t, folder, "checksum.sig")
+	checksumpemfile := createTmpFile(t, folder, "checksum.pem")
+	filteredtarfile := createTmpFile(t, folder, "filtered.tar.gz")
+	filtereddebfile := createTmpFile(t, folder, "filtered.deb")
 
 	config := config.Project{
 		Dist: folder,
@@ -50,7 +51,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "bin.tar.gz",
-		Path: tarfile.Name(),
+		Path: tarfile,
 		Extra: map[string]interface{}{
 			artifact.ExtraID: "foo",
 		},
@@ -58,7 +59,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "bin.deb",
-		Path: debfile.Name(),
+		Path: debfile,
 		Extra: map[string]interface{}{
 			artifact.ExtraID: "foo",
 		},
@@ -66,7 +67,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableArchive,
 		Name: "filtered.tar.gz",
-		Path: filteredtarfile.Name(),
+		Path: filteredtarfile,
 		Extra: map[string]interface{}{
 			artifact.ExtraID: "bar",
 		},
@@ -74,7 +75,7 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.LinuxPackage,
 		Name: "filtered.deb",
-		Path: filtereddebfile.Name(),
+		Path: filtereddebfile,
 		Extra: map[string]interface{}{
 			artifact.ExtraID: "bar",
 		},
@@ -82,9 +83,34 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableSourceArchive,
 		Name: "source.tar.gz",
-		Path: srcfile.Name(),
+		Path: srcfile,
 		Extra: map[string]interface{}{
 			artifact.ExtraFormat: "tar.gz",
+		},
+	})
+
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.Checksum,
+		Name: "checksum",
+		Path: checksumfile,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "bar",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.Signature,
+		Name: "checksum.sig",
+		Path: checksumsigfile,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "bar",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.Certificate,
+		Name: "checksum.pem",
+		Path: checksumpemfile,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "bar",
 		},
 	})
 	client := &client.Mock{}
@@ -96,6 +122,9 @@ func TestRunPipeWithoutIDsThenDoesNotFilter(t *testing.T) {
 	require.Contains(t, client.UploadedFileNames, "bin.tar.gz")
 	require.Contains(t, client.UploadedFileNames, "filtered.deb")
 	require.Contains(t, client.UploadedFileNames, "filtered.tar.gz")
+	require.Contains(t, client.UploadedFileNames, "checksum")
+	require.Contains(t, client.UploadedFileNames, "checksum.pem")
+	require.Contains(t, client.UploadedFileNames, "checksum.sig")
 }
 
 func TestRunPipeWithIDsThenFilters(t *testing.T) {
