@@ -80,6 +80,8 @@ func (t Type) String() string {
 		return "Checksum"
 	case Signature:
 		return "Signature"
+	case Certificate:
+		return "Certificate"
 	case UploadableSourceArchive:
 		return "Source"
 	case BrewTap:
