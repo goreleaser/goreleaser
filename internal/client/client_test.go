@@ -1,6 +1,7 @@
 package client
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -57,6 +58,18 @@ func TestClientNewGitLab(t *testing.T) {
 	require.NoError(t, err)
 	_, ok := client.(*gitlabClient)
 	require.True(t, ok)
+}
+
+func TestCheckBodyMaxLength(t *testing.T) {
+	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	b := make([]rune, maxReleaseBodyLength)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	ctx := context.New(config.Project{})
+	ctx.ReleaseNotes = string(b)
+	out := truncateReleaseBody(string(b))
+	require.Len(t, out, maxReleaseBodyLength)
 }
 
 func TestNewIfToken(t *testing.T) {
