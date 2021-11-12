@@ -250,7 +250,7 @@ If you need more things, you are encouraged to keep your own image. You can
 always use GoReleaser's [own Dockerfile][dockerfile] as an example though
 and iterate from that.
 
-[dockerfile]: https://github.com/goreleaser/goreleaser/blob/master/Dockerfile
+[dockerfile]: https://github.com/goreleaser/goreleaser/blob/main/Dockerfile
 [releases]: https://github.com/goreleaser/goreleaser/releases
 [pro-releases]: https://github.com/goreleaser/goreleaser-pro/releases
 [cosign]: https://github.com/sigstore/cosign
