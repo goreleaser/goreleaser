@@ -49,6 +49,7 @@ nav:
 - intro.md
 - install.md
 - quick-start.md
+- how-it-works.md
 - Limitations:
   - limitations/cgo.md
   - limitations/semver.md
