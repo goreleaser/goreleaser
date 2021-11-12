@@ -30,3 +30,9 @@ func TestNewWithTimeout(t *testing.T) {
 	<-ctx.Done()
 	require.EqualError(t, ctx.Err(), `context canceled`)
 }
+
+func TestToEnv(t *testing.T) {
+	require.Equal(t, Env{"FOO": "BAR"}, ToEnv([]string{"=nope", "FOO=BAR"}))
+	require.Equal(t, Env{"FOO": "BAR"}, ToEnv([]string{"nope", "FOO=BAR"}))
+	require.Equal(t, Env{"FOO": "BAR", "nope": ""}, ToEnv([]string{"nope=", "FOO=BAR"}))
+}

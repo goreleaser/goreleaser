@@ -48,6 +48,8 @@ const (
 	Checksum
 	// Signature is a signature file.
 	Signature
+	// Certificate is a signing certificate file
+	Certificate
 	// UploadableSourceArchive is the archive with the current commit source code.
 	UploadableSourceArchive
 	// BrewTap is an uploadable homebrew tap recipe file.
@@ -80,6 +82,8 @@ func (t Type) String() string {
 		return "Checksum"
 	case Signature:
 		return "Signature"
+	case Certificate:
+		return "Certificate"
 	case UploadableSourceArchive:
 		return "Source"
 	case BrewTap:

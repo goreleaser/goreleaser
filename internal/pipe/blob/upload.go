@@ -81,6 +81,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		artifact.ByType(artifact.UploadableSourceArchive),
 		artifact.ByType(artifact.Checksum),
 		artifact.ByType(artifact.Signature),
+		artifact.ByType(artifact.Certificate),
 		artifact.ByType(artifact.LinuxPackage),
 	)
 	if len(conf.IDs) > 0 {

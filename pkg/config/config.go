@@ -605,14 +605,16 @@ type NFPMOverridables struct {
 
 // Sign config.
 type Sign struct {
-	ID        string   `yaml:"id,omitempty"`
-	Cmd       string   `yaml:"cmd,omitempty"`
-	Args      []string `yaml:"args,omitempty"`
-	Signature string   `yaml:"signature,omitempty"`
-	Artifacts string   `yaml:"artifacts,omitempty"`
-	IDs       []string `yaml:"ids,omitempty"`
-	Stdin     *string  `yaml:"stdin,omitempty"`
-	StdinFile string   `yaml:"stdin_file,omitempty"`
+	ID          string   `yaml:"id,omitempty"`
+	Cmd         string   `yaml:"cmd,omitempty"`
+	Args        []string `yaml:"args,omitempty"`
+	Signature   string   `yaml:"signature,omitempty"`
+	Artifacts   string   `yaml:"artifacts,omitempty"`
+	IDs         []string `yaml:"ids,omitempty"`
+	Stdin       *string  `yaml:"stdin,omitempty"`
+	StdinFile   string   `yaml:"stdin_file,omitempty"`
+	Env         []string `yaml:"env,omitempty"`
+	Certificate string   `yaml:"certificate,omitempty"`
 }
 
 // SnapcraftAppMetadata for the binaries that will be in the snap package.
