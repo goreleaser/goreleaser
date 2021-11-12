@@ -207,6 +207,9 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		return "", err
 	}
 
+	// Truncate the release notes if it's too long (github doesn't allow more than 125000 characters)
+	body = truncateReleaseBody(body)
+
 	data := &github.RepositoryRelease{
 		Name:       github.String(title),
 		TagName:    github.String(ctx.Git.CurrentTag),
