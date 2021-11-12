@@ -120,55 +120,51 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	if err != nil {
 		return err
 	}
-	tmpl := tmpl.New(ctx).
+	t := tmpl.New(ctx).
 		WithArtifact(binaries[0], overridden.Replacements).
 		WithExtraFields(tmpl.Fields{
 			"Release":     fpm.Release,
 			"Epoch":       fpm.Epoch,
 			"PackageName": fpm.PackageName,
 		})
-	name, err := tmpl.Apply(overridden.FileNameTemplate)
+
+	binDir, err := t.Apply(fpm.Bindir)
 	if err != nil {
 		return err
 	}
 
-	binDir, err := tmpl.Apply(fpm.Bindir)
+	homepage, err := t.Apply(fpm.Homepage)
 	if err != nil {
 		return err
 	}
 
-	homepage, err := tmpl.Apply(fpm.Homepage)
+	description, err := t.Apply(fpm.Description)
 	if err != nil {
 		return err
 	}
 
-	description, err := tmpl.Apply(fpm.Description)
+	debKeyFile, err := t.Apply(overridden.Deb.Signature.KeyFile)
 	if err != nil {
 		return err
 	}
 
-	debKeyFile, err := tmpl.Apply(overridden.Deb.Signature.KeyFile)
+	rpmKeyFile, err := t.Apply(overridden.RPM.Signature.KeyFile)
 	if err != nil {
 		return err
 	}
 
-	rpmKeyFile, err := tmpl.Apply(overridden.RPM.Signature.KeyFile)
-	if err != nil {
-		return err
-	}
-
-	apkKeyFile, err := tmpl.Apply(overridden.APK.Signature.KeyFile)
+	apkKeyFile, err := t.Apply(overridden.APK.Signature.KeyFile)
 	if err != nil {
 		return err
 	}
 
 	contents := files.Contents{}
 	for _, content := range overridden.Contents {
-		src, err := tmpl.Apply(content.Source)
+		src, err := t.Apply(content.Source)
 		if err != nil {
 			return err
 		}
-		dst, err := tmpl.Apply(content.Destination)
+		dst, err := t.Apply(content.Destination)
 		if err != nil {
 			return err
 		}
@@ -181,9 +177,10 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		})
 	}
 
+	log := log.WithField("package", fpm.PackageName).WithField("format", format).WithField("arch", arch)
+
 	// FPM meta package should not contain binaries at all
 	if !fpm.Meta {
-		log := log.WithField("package", name+"."+format).WithField("arch", arch)
 		for _, binary := range binaries {
 			src := binary.Path
 			dst := filepath.Join(binDir, binary.Name)
@@ -295,14 +292,25 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		return err
 	}
 
-	path := filepath.Join(ctx.Config.Dist, name+"."+format)
+	info = nfpm.WithDefaults(info)
+	name, err := t.WithExtraFields(tmpl.Fields{
+		"ConventionalFileName": packager.ConventionalFileName(info),
+	}).Apply(overridden.FileNameTemplate)
+	if err != nil {
+		return err
+	}
+	if !strings.HasSuffix(name, "."+format) {
+		name = name + "." + format
+	}
+
+	path := filepath.Join(ctx.Config.Dist, name)
 	log.WithField("file", path).Info("creating")
 	w, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 	defer w.Close()
-	if err := packager.Package(nfpm.WithDefaults(info), w); err != nil {
+	if err := packager.Package(info, w); err != nil {
 		return fmt.Errorf("nfpm failed: %w", err)
 	}
 	if err := w.Close(); err != nil {
@@ -310,7 +318,7 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.LinuxPackage,
-		Name:   name + "." + format,
+		Name:   name,
 		Path:   path,
 		Goos:   binaries[0].Goos,
 		Goarch: binaries[0].Goarch,
