@@ -6,6 +6,8 @@ Those fields are often suffixed with `_template`, but sometimes they may not
 be. The documentation of each section should be explicit about which fields
 support templating.
 
+## Common Fields
+
 On fields that support templating, these fields are always available:
 
 | Key                 | Description                                                                                            |
@@ -43,6 +45,8 @@ On fields that support templating, these fields are always available:
 [^3]: Will panic if not a semantic version.
 [^4]: Composed from the current SCM's download URL and current tag. For instance, on GitHub, it'll be `https://github.com/{owner}/{repo}/releases/tag/{tag}`.
 
+## Single-artifact extra fields
+
 On fields that are related to a single artifact (e.g., the binary name), you
 may have some extra fields:
 
@@ -58,13 +62,18 @@ may have some extra fields:
 
 [^5]: Might have been replaced by `archives.replacements`.
 
-On the NFPM name template field, you can use those extra fields as well:
+## nFPM extra fields
+
+On the nFPM name template field, you can use those extra fields as well:
 
 | Key            | Description                                                |
 |----------------|------------------------------------------------------------|
 | `.Release`     | release from the nfpm config                               |
 | `.Epoch`       | epoch from the nfpm config                                 |
 | `.PackageName` | package the name. Same as `ProjectName` if not overridden. |
+| `.ConventionalFileName` | conventional package file name as provided by nFPM |
+
+## Functions
 
 On all fields, you have these available functions:
 
