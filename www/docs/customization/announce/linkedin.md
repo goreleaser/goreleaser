@@ -4,7 +4,8 @@ For it to work, you'll need to set some environment variables on your pipeline:
 
 - `LINKEDIN_ACCESS_TOKEN`
 
-**P.S:** _We currently don't support posting in groups._
+!!! warning
+    We currently don't support posting in groups.
 
 Then, you can add something like the following to your `.goreleaser.yml` config:
 
