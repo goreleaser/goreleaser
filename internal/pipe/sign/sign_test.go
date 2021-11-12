@@ -314,6 +314,21 @@ func TestSignArtifacts(t *testing.T) {
 			signatureNames: []string{"artifact5.tar.gz.sig"},
 		},
 		{
+			desc: "sign only source filter by id",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "source",
+							IDs:       []string{"should-not-be-used"},
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"artifact5.tar.gz.sig"},
+			signatureNames: []string{"artifact5.tar.gz.sig"},
+		},
+		{
 			desc: "sign all artifacts with env",
 			ctx: context.New(
 				config.Project{
