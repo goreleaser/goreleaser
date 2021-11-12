@@ -61,7 +61,7 @@ jobs:
             ${{ runner.os }}-go-
       -
         name: Setup Sigstore
-        uses: sigstore/cosign-installer@v1.3.0
+        uses: sigstore/cosign-installer@v1.3.1
       - # TODO: replace this once https://github.com/kubernetes-sigs/krew/pull/736 is merged
         name: Install validate-krew-manifest
         run: go install github.com/caarlos0/krew/cmd/validate-krew-manifest@fork
