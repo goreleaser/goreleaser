@@ -34,3 +34,6 @@ changelog:
       - typo
       - (?i)foo
 ```
+
+!!! warning
+    Note that using the `github-native` changelog does not support `sort` and `filter`.
