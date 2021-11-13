@@ -11,11 +11,13 @@ import (
 	"github.com/goreleaser/nfpm/v2"
 	_ "github.com/goreleaser/nfpm/v2/apk" // blank import to register the format
 	_ "github.com/goreleaser/nfpm/v2/deb" // blank import to register the format
+	"github.com/goreleaser/nfpm/v2/deprecation"
 	"github.com/goreleaser/nfpm/v2/files"
 	_ "github.com/goreleaser/nfpm/v2/rpm" // blank import to register the format
 	"github.com/imdario/mergo"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -59,6 +61,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		ids.Inc(fpm.ID)
 	}
+	deprecation.Noticer = deprecate.NewWriter(ctx)
 	return ids.Validate()
 }
 

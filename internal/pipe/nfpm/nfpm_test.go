@@ -245,7 +245,7 @@ func TestRunPipeConventionalNameTemplate(t *testing.T) {
 		require.NotEmpty(t, format)
 		require.Contains(t, []string{
 			"foo_1.0.0_amd64.deb",
-			"foo_1.0.0_i386.apk",
+			"foo_1.0.0_x86.apk",
 			"foo_1.0.0_i386.deb",
 			"foo_1.0.0_x86_64.apk",
 			"foo-1.0.0.i386.rpm",

@@ -4,6 +4,7 @@ package deprecate
 
 import (
 	"bytes"
+	"io"
 	"strings"
 	"text/template"
 
@@ -14,6 +15,21 @@ import (
 )
 
 const baseURL = "https://goreleaser.com/deprecations#"
+
+// NewWriter return a io.Writer that notices deprecations.
+func NewWriter(ctx *context.Context) io.Writer {
+	return &writer{ctx}
+}
+
+type writer struct {
+	ctx *context.Context
+}
+
+func (w *writer) Write(p []byte) (n int, err error) {
+	w.ctx.Deprecated = true
+	log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf("DEPRECATED: " + strings.TrimSuffix(string(p), "\n")))
+	return len(p), nil
+}
 
 // Notice warns the user about the deprecation of the given property.
 func Notice(ctx *context.Context, property string) {
