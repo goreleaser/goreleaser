@@ -3,7 +3,7 @@ name: docs
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
     paths:
       - '.github/workflows/htmltest.yml'
       - 'www/*'

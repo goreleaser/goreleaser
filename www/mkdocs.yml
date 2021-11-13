@@ -4,7 +4,7 @@ site_description: Deliver Go binaries as fast and easily as possible
 copyright: Made with ❤️ by GoReleaser contributors.
 repo_name: goreleaser/goreleaser
 repo_url: https://github.com/goreleaser/goreleaser
-edit_uri: edit/master/www/docs/
+edit_uri: edit/main/www/docs/
 
 theme:
   name: material
@@ -49,6 +49,7 @@ nav:
 - intro.md
 - install.md
 - quick-start.md
+- how-it-works.md
 - Limitations:
   - limitations/cgo.md
   - limitations/semver.md
@@ -94,17 +95,18 @@ nav:
     - Checksums and artifacts: customization/sign.md
     - Docker Images and Manifests: customization/docker_sign.md
   - Publish:
+    - customization/release.md
     - customization/blob.md
     - customization/fury.md
     - customization/homebrew.md
     - customization/gofish.md
+    - customization/krew.md
     - customization/scoop.md
     - customization/changelog.md
-    - customization/release.md
-    - customization/artifactory.md
-    - customization/publishers.md
     - customization/upload.md
     - customization/source.md
+    - customization/publishers.md
+    - customization/artifactory.md
     - customization/milestone.md
     - customization/snapshots.md
     - customization/nightly.md

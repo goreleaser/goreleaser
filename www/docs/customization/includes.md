@@ -13,7 +13,7 @@ includes:
   - from_file:
       path: ./config/goreleaser.yml
   - from_url:
-      url: https://raw.githubusercontent.com/goreleaser/goreleaser/master/.goreleaser.yml
+      url: https://raw.githubusercontent.com/goreleaser/goreleaser/main/.goreleaser.yml
   - from_url:
       url: caarlos0/goreleaserfiles/main/packages.yml # the https://raw.githubusercontent.com/ prefix may be ommited
   - from_url:

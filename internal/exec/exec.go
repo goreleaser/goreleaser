@@ -114,7 +114,7 @@ func filterArtifacts(artifacts artifact.Artifacts, publisher config.Publisher) [
 	}
 
 	if publisher.Signature {
-		filters = append(filters, artifact.ByType(artifact.Signature))
+		filters = append(filters, artifact.ByType(artifact.Signature), artifact.ByType(artifact.Certificate))
 	}
 
 	filter := artifact.Or(filters...)

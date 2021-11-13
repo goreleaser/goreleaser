@@ -48,12 +48,16 @@ const (
 	Checksum
 	// Signature is a signature file.
 	Signature
+	// Certificate is a signing certificate file
+	Certificate
 	// UploadableSourceArchive is the archive with the current commit source code.
 	UploadableSourceArchive
 	// BrewTap is an uploadable homebrew tap recipe file.
 	BrewTap
 	// GoFishRig is an uploadable Rigs rig food file.
 	GoFishRig
+	// KrewPluginManifest is a krew plugin manifest file.
+	KrewPluginManifest
 	// ScoopManifest is an uploadable scoop manifest file.
 	ScoopManifest
 )
@@ -78,12 +82,16 @@ func (t Type) String() string {
 		return "Checksum"
 	case Signature:
 		return "Signature"
+	case Certificate:
+		return "Certificate"
 	case UploadableSourceArchive:
 		return "Source"
 	case BrewTap:
 		return "Brew Tap"
 	case GoFishRig:
 		return "GoFish Rig"
+	case KrewPluginManifest:
+		return "Krew Plugin Manifest"
 	case ScoopManifest:
 		return "Scoop Manifest"
 	default:

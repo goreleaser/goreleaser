@@ -10,11 +10,6 @@ and the
 [Fish food cookbook](https://gofi.sh/#cookbook)
 for more details.
 
-!!! warning
-    If you have multiple 32-bit arm versions in each `build` section, and
-    you do not specify any `ids` in the rigs section, it will default to all
-    artifacts and GoReleaser will fail.
-
 ```yaml
 # .goreleaser.yml
 rigs:
@@ -119,3 +114,7 @@ food = {
   }
 }
 ```
+
+## Limitations
+
+- Only one `GOARM` build is allowed;

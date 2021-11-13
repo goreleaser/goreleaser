@@ -129,6 +129,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 				},
 			},
 		},
+		// TODO: keyless test?
 	} {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.New(config.Project{})
