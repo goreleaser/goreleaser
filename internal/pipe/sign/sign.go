@@ -117,7 +117,13 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	env["artifactName"] = art.Name
 	env["artifact"] = art.Path
 	env["artifactID"] = art.ID()
-	for k, v := range context.ToEnv(cfg.Env) {
+
+	tmplEnv, err := templateEnvS(ctx, cfg.Env)
+	if err != nil {
+		return nil, fmt.Errorf("sign failed: %s: %w", art.Name, err)
+	}
+
+	for k, v := range context.ToEnv(tmplEnv) {
 		env[k] = v
 	}
 
@@ -174,7 +180,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	if stdin != nil {
 		cmd.Stdin = stdin
 	}
-	cmd.Env = append(env.Strings(), cfg.Env...)
+	cmd.Env = env.Strings()
 	log.WithFields(fields).Info("signing")
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("sign: %s failed: %w: %s", cfg.Cmd, err, b.String())
@@ -221,4 +227,16 @@ func expand(s string, env map[string]string) string {
 	return os.Expand(s, func(key string) string {
 		return env[key]
 	})
+}
+
+func templateEnvS(ctx *context.Context, s []string) ([]string, error) {
+	var out []string
+	for _, s := range s {
+		ts, err := tmpl.New(ctx).WithEnvS(out).Apply(s)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, ts)
+	}
+	return out, nil
 }

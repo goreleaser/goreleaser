@@ -155,6 +155,21 @@ func TestSignArtifacts(t *testing.T) {
 			),
 		},
 		{
+			desc:           "invalid env template",
+			expectedErrMsg: `sign failed: artifact1: template: tmpl:1:5: executing "tmpl" at <.blah>: map has no entry for key "blah"`,
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Cmd:       "exit",
+							Env:       []string{"A={{ .blah }}"},
+						},
+					},
+				},
+			),
+		},
+		{
 			desc: "sign single",
 			ctx: context.New(
 				config.Project{
@@ -509,7 +524,7 @@ func TestSignArtifacts(t *testing.T) {
 				config.Project{
 					Signs: []config.Sign{
 						{
-							Env:         []string{"HONK=honk"},
+							Env:         []string{"NOT_HONK=honk", "HONK={{ .Env.NOT_HONK }}"},
 							Certificate: `{{ trimsuffix (trimsuffix .Env.artifactName ".tar.gz") ".deb" }}_${HONK}.pem`,
 							Artifacts:   "all",
 						},
