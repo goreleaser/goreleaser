@@ -194,6 +194,13 @@ nfpms:
           owner: notRoot
           group: notRoot
 
+      # Using the type 'dir', empty directories can be created. When building RPMs, however, this
+      # type has another important purpose: Claiming ownership of that folder. This is important
+      # because when upgrading or removing an RPM package, only the directories for which it has
+      # claimed ownership are removed. However, you should not claim ownership of a folder that
+      # is created by the distro or a dependency of your package.
+      # A directory in the build environment can optionally be provided in the 'src' field in
+      # order copy mtime and mode from that directory without having to specifiy it manually.
       - dst: /some/dir
         type: dir
         file_info:
