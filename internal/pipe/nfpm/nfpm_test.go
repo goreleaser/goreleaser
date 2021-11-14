@@ -123,6 +123,10 @@ func TestRunPipe(t *testing.T) {
 							Type:        "config",
 						},
 						{
+							Destination: "/etc/mydir",
+							Type:        "dir",
+						},
+						{
 							Source:      "./testdata/testfile.txt",
 							Destination: "/etc/nope-rpm.conf",
 							Type:        "config",
@@ -179,6 +183,7 @@ func TestRunPipe(t *testing.T) {
 		}, sources(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
 		require.ElementsMatch(t, []string{
 			"/usr/share/testfile.txt",
+			"/etc/mydir",
 			"/etc/nope.conf",
 			"/etc/nope-rpm.conf",
 			"/etc/nope2.conf",
@@ -186,7 +191,7 @@ func TestRunPipe(t *testing.T) {
 			"/usr/bin/subdir/mybin",
 		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
 	}
-	require.Len(t, ctx.Config.NFPMs[0].Contents, 5, "should not modify the config file list")
+	require.Len(t, ctx.Config.NFPMs[0].Contents, 6, "should not modify the config file list")
 }
 
 func TestRunPipeConventionalNameTemplate(t *testing.T) {
@@ -1212,6 +1217,9 @@ func TestSkip(t *testing.T) {
 func sources(contents files.Contents) []string {
 	result := make([]string, 0, len(contents))
 	for _, f := range contents {
+		if f.Source == "" {
+			continue
+		}
 		result = append(result, f.Source)
 	}
 	return result

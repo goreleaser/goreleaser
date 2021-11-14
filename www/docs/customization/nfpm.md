@@ -194,6 +194,11 @@ nfpms:
           owner: notRoot
           group: notRoot
 
+      - dst: /some/dir
+        type: dir
+        file_info:
+          mode: 0700
+
     # Scripts to execute during the installation of the package.
     # Keys are the possible targets during the installation process
     # Values are the paths to the scripts which will be executed
