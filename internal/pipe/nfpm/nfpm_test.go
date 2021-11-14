@@ -478,7 +478,7 @@ func TestInvalidConfig(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "v1.2.3"
+	ctx.Version = "1.2.3"
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "mybin",
 		Path:   filepath.Join(dist, "mybin", "mybin"),

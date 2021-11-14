@@ -236,8 +236,8 @@ func TestBuild(t *testing.T) {
 	}
 	ctx := context.New(config)
 	ctx.Env["GO_FLAGS"] = "-v"
-	ctx.Git.CurrentTag = "5.6.7"
-	ctx.Version = "v" + ctx.Git.CurrentTag
+	ctx.Git.CurrentTag = "v5.6.7"
+	ctx.Version = ctx.Git.CurrentTag
 	build := ctx.Config.Builds[0]
 	for _, target := range build.Targets {
 		var ext string
@@ -842,8 +842,8 @@ func TestBuildModTimestamp(t *testing.T) {
 	}
 	ctx := context.New(config)
 	ctx.Env["GO_FLAGS"] = "-v"
-	ctx.Git.CurrentTag = "5.6.7"
-	ctx.Version = "v" + ctx.Git.CurrentTag
+	ctx.Git.CurrentTag = "v5.6.7"
+	ctx.Version = ctx.Git.CurrentTag
 	build := ctx.Config.Builds[0]
 	for _, target := range build.Targets {
 		var ext string
@@ -885,7 +885,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 			Builds: []config.Build{build},
 		}
 		ctx := context.New(config)
-		ctx.Version = "v1.2.3"
+		ctx.Version = "1.2.3"
 		ctx.Git.Commit = "aaa"
 
 		line, err := buildGoBuildLine(ctx, config.Builds[0], api.Options{Path: "foo"}, &artifact.Artifact{}, []string{})
@@ -927,7 +927,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 			GoBinary: "go",
 		}, []string{
 			"go", "build",
-			"-ldflags=-s -w -X main.version=v1.2.3 -X main.commit=aaa -X main.builtBy=goreleaser",
+			"-ldflags=-s -w -X main.version=1.2.3 -X main.commit=aaa -X main.builtBy=goreleaser",
 			"-o", "foo", ".",
 		})
 	})
@@ -937,7 +937,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 			Main:     ".",
 			Ldflags:  []string{"-s -w", "-X main.version={{.Version}}"},
 			GoBinary: "go",
-		}, []string{"go", "build", "-ldflags=-s -w -X main.version=v1.2.3", "-o", "foo", "."})
+		}, []string{"go", "build", "-ldflags=-s -w -X main.version=1.2.3", "-o", "foo", "."})
 	})
 }
 
