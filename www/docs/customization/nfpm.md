@@ -120,12 +120,6 @@ nfpms:
     # Defaults to false.
     meta: true
 
-    # Empty folders that should be created and managed by the packager
-    # implementation.
-    # Default is empty.
-    empty_folders:
-      - /var/log/foobar
-
     # Contents to add to the package.
     # GoReleaser will automatically add the binaries.
     contents:
@@ -228,8 +222,6 @@ nfpms:
           - tig
         replaces:
           - bash
-        empty_folders:
-          - /var/log/bar
       rpm:
         replacements:
           amd64: x86_64

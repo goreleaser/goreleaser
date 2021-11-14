@@ -9,97 +9,99 @@ on:
   pull_request:
 
 jobs:
+  goreleaser-check-pkgs:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_CLI_EXPERIMENTAL: "enabled"
+    needs:
+      - goreleaser
+    if: github.ref == 'refs/heads/main'
+    strategy:
+      matrix:
+        format: [ deb, rpm, apk ]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: arduino/setup-task@v1
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/setup-qemu-action@v1
+      - uses: actions/cache@v2
+        with:
+          path: ./dist
+          key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}-${{ hashFiles('**/go.sum') }}
+      - run: task goreleaser:test:${{ matrix.format }}
   goreleaser:
     runs-on: ubuntu-latest
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      -
-        name: Set up Task
-        uses: arduino/setup-task@v1
+      - uses: arduino/setup-task@v1
         with:
+          version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      -
-        name: Set up Pack CLI for Buildpacks
+      - uses: docker/setup-qemu-action@v1
+      - uses: docker/setup-buildx-action@v1
+      - name: setup-buildpacks
         run: |
           sudo add-apt-repository ppa:cncf-buildpacks/pack-cli
           sudo apt-get update
           sudo apt-get --no-install-suggests --no-install-recommends install pack-cli
-      -
-        name: Set up Snapcraft
+      - name: setup-snapcraft
         # FIXME: the mkdirs are a hack for https://github.com/goreleaser/goreleaser/issues/1715
         run: |
           sudo apt-get update
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
           mkdir -p $HOME/.cache/snapcraft/download
           mkdir -p $HOME/.cache/snapcraft/stage-packages
-      -
-        name: Set up Go
-        uses: actions/setup-go@v2
+      - uses: actions/setup-go@v2
         with:
           go-version: '1.17'
-      -
-        name: Cache Go mod and build
-        uses: actions/cache@v2
+      - uses: actions/cache@v2
         with:
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
+            ./dist
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      -
-        name: Setup Sigstore
-        uses: sigstore/cosign-installer@v1.3.1
-      - # TODO: replace this once https://github.com/kubernetes-sigs/krew/pull/736 is merged
-        name: Install validate-krew-manifest
+      - uses: actions/cache@v2
+        with:
+          path: ./dist
+          key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}-${{ hashFiles('**/go.sum') }}
+      - uses: sigstore/cosign-installer@v1.3.1
+      - name: setup-validate-krew-manifest
+        # TODO: replace this once https://github.com/kubernetes-sigs/krew/pull/736 is merged
         run: go install github.com/caarlos0/krew/cmd/validate-krew-manifest@fork
-      -
-        name: build and test
-        run: task ci
-      -
-        name: Upload coverage
-        uses: codecov/codecov-action@v2
+      - run: task ci
+      - uses: codecov/codecov-action@v2
         with:
           file: ./coverage.txt
-      -
-        name: Check
-        run: ./goreleaser check
-      -
-        name: Diff
-        run: git diff
-      -
-        name: Login to Docker Hub
+      - run: ./goreleaser check
+      - run: git diff
+      - name: dockerhub-login
         if: startsWith(github.ref, 'refs/tags/v')
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      -
-        name: Login to GitHub Container Registry
+      - name: ghcr-login
         if: startsWith(github.ref, 'refs/tags/v')
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      -
-        name: Snapcraft Login
+      - name: snapcraft-login
         if: startsWith(github.ref, 'refs/tags/v')
         run: snapcraft login --with <(echo "${{ secrets.SNAPCRAFT_LOGIN }}")
-      -
-        name: GoReleaser
+      - name: goreleaser-release
         if: startsWith(github.ref, 'refs/tags/v') ||  github.ref == 'refs/heads/main'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}

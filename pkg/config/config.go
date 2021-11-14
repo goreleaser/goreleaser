@@ -595,7 +595,7 @@ type NFPMOverridables struct {
 	Suggests         []string          `yaml:"suggests,omitempty"`
 	Conflicts        []string          `yaml:"conflicts,omitempty"`
 	Replaces         []string          `yaml:"replaces,omitempty"`
-	EmptyFolders     []string          `yaml:"empty_folders,omitempty"`
+	EmptyFolders     []string          `yaml:"empty_folders,omitempty"` // deprecated
 	Contents         files.Contents    `yaml:"contents,omitempty"`
 	Scripts          NFPMScripts       `yaml:"scripts,omitempty"`
 	RPM              NFPMRPM           `yaml:"rpm,omitempty"`
