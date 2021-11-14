@@ -8,21 +8,22 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/nfpm/v2"
-	_ "github.com/goreleaser/nfpm/v2/apk" // blank import to register the format
-	_ "github.com/goreleaser/nfpm/v2/deb" // blank import to register the format
-	"github.com/goreleaser/nfpm/v2/files"
-	_ "github.com/goreleaser/nfpm/v2/rpm" // blank import to register the format
-	"github.com/imdario/mergo"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
-	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/nfpm/v2"
+	"github.com/goreleaser/nfpm/v2/deprecation"
+	"github.com/goreleaser/nfpm/v2/files"
+	"github.com/imdario/mergo"
+
+	_ "github.com/goreleaser/nfpm/v2/apk" // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/deb" // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/rpm" // blank import to register the format
 )
 
 const (
@@ -60,6 +61,8 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		ids.Inc(fpm.ID)
 	}
+
+	deprecation.Noticer = deprecate.NewWriter(ctx)
 	return ids.Validate()
 }
 
@@ -88,12 +91,11 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 	}
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, format := range fpm.Formats {
-		for platform, artifacts := range linuxBinaries {
+		for _, artifacts := range linuxBinaries {
 			format := format
-			arch := linux.Arch(platform)
 			artifacts := artifacts
 			g.Go(func() error {
-				return create(ctx, fpm, format, arch, artifacts)
+				return create(ctx, fpm, format, artifacts)
 			})
 		}
 	}
@@ -115,7 +117,9 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 	return &overridden, nil
 }
 
-func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries []*artifact.Artifact) error {
+func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*artifact.Artifact) error {
+	arch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips
+
 	overridden, err := mergeOverrides(fpm, format)
 	if err != nil {
 		return err
