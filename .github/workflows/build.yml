@@ -30,7 +30,10 @@ jobs:
       - uses: docker/setup-qemu-action@v1
       - uses: actions/cache@v2
         with:
-          path: ./dist
+          path: |
+            ./dist/*.deb
+            ./dist/*.rpm
+            ./dist/*.apk
           key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}-${{ hashFiles('**/go.sum') }}
       - run: task goreleaser:test:${{ matrix.format }}
   goreleaser:
@@ -67,13 +70,15 @@ jobs:
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
-            ./dist
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
       - uses: actions/cache@v2
         with:
-          path: ./dist
+          path: |
+            ./dist/*.deb
+            ./dist/*.rpm
+            ./dist/*.apk
           key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}-${{ hashFiles('**/go.sum') }}
       - uses: sigstore/cosign-installer@v1.3.1
       - name: setup-validate-krew-manifest

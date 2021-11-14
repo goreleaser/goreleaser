@@ -92,7 +92,7 @@ tasks:
     desc: Start documentation server
     cmds:
       - task: docs:generate
-      - '{{.DOCKER}} run --rm -it -p 8000:8000 -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material'
+      - '{{.DOCKER}} run --rm -p 8000:8000 -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material'
 
   docs:build:
     desc: Build docs
@@ -119,29 +119,29 @@ tasks:
   goreleaser:test:rpm:
     desc: Tests rpm packages
     cmds:
-      # no fedora nor centos with armv6 - docker run --platform linux/arm/6 --rm -v "$PWD/dist":/tmp/ -it centos:centos7 sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.arm6l.rpm && goreleaser --version'
-      - docker run --platform linux/386 --rm -v $PWD/dist:/tmp/ -it centos:centos7 sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.i386.rpm && goreleaser --version'
-      - docker run --platform linux/amd64 --rm -v "$PWD/dist":/tmp/ -it fedora sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.x86_64.rpm && goreleaser --version'
-      - docker run --platform linux/arm64 --rm -v "$PWD/dist":/tmp/ -it fedora sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.aarch64.rpm && goreleaser --version'
-      - docker run --platform linux/arm/6 --rm -v "$PWD/dist":/tmp/ -it fedora sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.armv6hl.rpm && goreleaser --version'
-      - docker run --platform linux/arm/7 --rm -v "$PWD/dist":/tmp/ -it fedora sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.armv7hl.rpm && goreleaser --version'
+      # no fedora nor centos with armv6 - docker run --platform linux/arm/6 --rm -v "$PWD/dist":/tmp/ centos:centos7 sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.arm6l.rpm && goreleaser --version'
+      - docker run --platform linux/386 --rm -v $PWD/dist:/tmp/ centos:centos7 sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.i386.rpm && goreleaser --version'
+      - docker run --platform linux/amd64 --rm -v "$PWD/dist":/tmp/ fedora sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.x86_64.rpm && goreleaser --version'
+      - docker run --platform linux/arm64 --rm -v "$PWD/dist":/tmp/ fedora sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.aarch64.rpm && goreleaser --version'
+      - docker run --platform linux/arm/6 --rm -v "$PWD/dist":/tmp/ fedora sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.armv6hl.rpm && goreleaser --version'
+      - docker run --platform linux/arm/7 --rm -v "$PWD/dist":/tmp/ fedora sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.armv7hl.rpm && goreleaser --version'
 
   goreleaser:test:deb:
     desc: Tests rpm packages
     cmds:
-      - docker run --platform linux/amd64 --rm -v "$PWD/dist":/tmp/ -it ubuntu bash -c 'dpkg --ignore-depends=git -i /tmp/goreleaser*_amd64.deb && goreleaser --version'
-      - docker run --platform linux/arm64 --rm -v "$PWD/dist":/tmp/ -it ubuntu bash -c 'dpkg --ignore-depends=git -i /tmp/goreleaser*_arm64.deb && goreleaser --version'
-      - docker run --platform linux/arm/6 --rm -v "$PWD/dist":/tmp/ -it debian bash -c 'dpkg --ignore-depends=git -i /tmp/goreleaser*_armel.deb && goreleaser --version'
-      - docker run --platform linux/arm/7 --rm -v "$PWD/dist":/tmp/ -it ubuntu bash -c 'dpkg --ignore-depends=git -i /tmp/goreleaser*_armhf.deb && goreleaser --version'
+      - docker run --platform linux/amd64 --rm -v "$PWD/dist":/tmp/ ubuntu bash -c 'dpkg --ignore-depends=git -i /tmp/goreleaser*_amd64.deb && goreleaser --version'
+      - docker run --platform linux/arm64 --rm -v "$PWD/dist":/tmp/ ubuntu bash -c 'dpkg --ignore-depends=git -i /tmp/goreleaser*_arm64.deb && goreleaser --version'
+      - docker run --platform linux/arm/6 --rm -v "$PWD/dist":/tmp/ debian bash -c 'dpkg --ignore-depends=git -i /tmp/goreleaser*_armel.deb && goreleaser --version'
+      - docker run --platform linux/arm/7 --rm -v "$PWD/dist":/tmp/ ubuntu bash -c 'dpkg --ignore-depends=git -i /tmp/goreleaser*_armhf.deb && goreleaser --version'
 
   goreleaser:test:apk:
     desc: Tests rpm packages
     cmds:
-      - docker run --platform linux/386 --rm -v "$PWD/dist":/tmp/ -it alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_x86.apk && goreleaser --version'
-      - docker run --platform linux/amd64 --rm -v "$PWD/dist":/tmp/ -it alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_x86_64.apk && goreleaser --version'
-      - docker run --platform linux/arm64 --rm -v "$PWD/dist":/tmp/ -it alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_aarch64.apk && goreleaser --version'
-      - docker run --platform linux/arm/6 --rm -v "$PWD/dist":/tmp/ -it alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_armhf.apk && goreleaser --version'
-      - docker run --platform linux/arm/7 --rm -v "$PWD/dist":/tmp/ -it alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_armv7.apk && goreleaser --version'
+      - docker run --platform linux/386 --rm -v "$PWD/dist":/tmp/ alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_x86.apk && goreleaser --version'
+      - docker run --platform linux/amd64 --rm -v "$PWD/dist":/tmp/ alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_x86_64.apk && goreleaser --version'
+      - docker run --platform linux/arm64 --rm -v "$PWD/dist":/tmp/ alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_aarch64.apk && goreleaser --version'
+      - docker run --platform linux/arm/6 --rm -v "$PWD/dist":/tmp/ alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_armhf.apk && goreleaser --version'
+      - docker run --platform linux/arm/7 --rm -v "$PWD/dist":/tmp/ alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_armv7.apk && goreleaser --version'
 
   goreleaser:test:
     desc: Runs a local release and test some stuff
