@@ -42,3 +42,19 @@ func TestNoticeCustom(t *testing.T) {
 
 	golden.RequireEqualTxt(t, w.Bytes())
 }
+
+func TestWriter(t *testing.T) {
+	var w bytes.Buffer
+
+	color.NoColor = true
+	log.SetHandler(cli.New(&w))
+
+	log.Info("first")
+	ctx := context.New(config.Project{})
+	ww := NewWriter(ctx)
+	_, err := ww.Write([]byte("foo bar\n"))
+	require.NoError(t, err)
+	require.True(t, ctx.Deprecated)
+
+	golden.RequireEqualTxt(t, w.Bytes())
+}
