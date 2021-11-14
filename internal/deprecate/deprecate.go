@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"io"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/apex/log"
@@ -18,15 +19,18 @@ const baseURL = "https://goreleaser.com/deprecations#"
 
 // NewWriter return a io.Writer that notices deprecations.
 func NewWriter(ctx *context.Context) io.Writer {
-	return &writer{ctx}
+	return &writer{ctx: ctx}
 }
 
 type writer struct {
-	ctx *context.Context
+	ctx  *context.Context
+	once sync.Once
 }
 
 func (w *writer) Write(p []byte) (n int, err error) {
-	w.ctx.Deprecated = true
+	w.once.Do(func() {
+		w.ctx.Deprecated = true
+	})
 	log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf("DEPRECATED: " + strings.TrimSuffix(string(p), "\n")))
 	return len(p), nil
 }

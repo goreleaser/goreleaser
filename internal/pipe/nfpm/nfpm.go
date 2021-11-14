@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -31,8 +30,6 @@ const (
 	defaultNameTemplate = "{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 	extraFiles          = "Files"
 )
-
-var setNoticer sync.Once
 
 // Pipe for nfpm packaging.
 type Pipe struct{}
@@ -65,9 +62,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		ids.Inc(fpm.ID)
 	}
 
-	setNoticer.Do(func() {
-		deprecation.Noticer = deprecate.NewWriter(ctx)
-	})
+	deprecation.Noticer = deprecate.NewWriter(ctx)
 	return ids.Validate()
 }
 
