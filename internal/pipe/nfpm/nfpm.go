@@ -6,16 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/nfpm/v2"
-	_ "github.com/goreleaser/nfpm/v2/apk" // blank import to register the format
-	_ "github.com/goreleaser/nfpm/v2/deb" // blank import to register the format
-	"github.com/goreleaser/nfpm/v2/deprecation"
-	"github.com/goreleaser/nfpm/v2/files"
-	_ "github.com/goreleaser/nfpm/v2/rpm" // blank import to register the format
-	"github.com/imdario/mergo"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
@@ -24,12 +17,22 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/nfpm/v2"
+	"github.com/goreleaser/nfpm/v2/deprecation"
+	"github.com/goreleaser/nfpm/v2/files"
+	"github.com/imdario/mergo"
+
+	_ "github.com/goreleaser/nfpm/v2/apk" // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/deb" // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/rpm" // blank import to register the format
 )
 
 const (
 	defaultNameTemplate = "{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
 	extraFiles          = "Files"
 )
+
+var setNoticer sync.Once
 
 // Pipe for nfpm packaging.
 type Pipe struct{}
@@ -61,7 +64,10 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		ids.Inc(fpm.ID)
 	}
-	deprecation.Noticer = deprecate.NewWriter(ctx)
+
+	setNoticer.Do(func() {
+		deprecation.Noticer = deprecate.NewWriter(ctx)
+	})
 	return ids.Validate()
 }
 
