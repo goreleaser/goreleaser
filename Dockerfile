@@ -17,4 +17,4 @@ COPY scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 COPY goreleaser_*.apk /tmp/
-RUN apk add --allow-untrusted /tmp/goreleaser_*.apk
+RUN apk add --no-cache --allow-untrusted /tmp/goreleaser_*.apk
