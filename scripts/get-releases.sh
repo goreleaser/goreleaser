@@ -17,13 +17,13 @@ generate() {
 
 	for i in $(seq 1 "$last_page"); do
 		echo "page: $i"
-		curl -H "Authorization: Bearer $GITHUB_TOKEN" -sSf "$url?page=$i" >"$tmp/$i.json"
+		curl -H "Authorization: Bearer $GITHUB_TOKEN" -sSf "$url?page=$i" | jq 'map({tag_name: .tag_name})' >"$tmp/$i.json"
 	done
 
 	if test "$last_page" -eq "1"; then
-		jq --compact-output 'map({tag_name: .tag_name})' "$tmp"/1.json >"$file"
+		cp -f "$tmp"/1.json "$file"
 	else
-		jq --compact-output '[inputs] | add | map({tag_name: .tag_name})' "$tmp"/*.json >"$file"
+		jq --compact-output -s 'add' "$tmp"/*.json >"$file"
 	fi
 	du -hs "$file"
 }
