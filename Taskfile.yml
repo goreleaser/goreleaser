@@ -67,6 +67,15 @@ tasks:
     cmds:
       - task: ci
 
+  schema:generate:
+    desc: Generate JSONSchema
+    cmds:
+      - go run . schema -o ./www/docs/static/schema.json
+    sources:
+      - pkg/config/config.go
+    generates:
+      - ./www/docs/static/schema.json
+
   docs:generate:
     desc: Generate docs
     cmds:
