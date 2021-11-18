@@ -36,6 +36,10 @@
 						"$schema": "http://json-schema.org/draft-04/schema#",
 						"$ref": "#/definitions/Mattermost"
 					},
+					"linkedin": {
+						"$schema": "http://json-schema.org/draft-04/schema#",
+						"$ref": "#/definitions/LinkedIn"
+					},
 					"telegram": {
 						"$schema": "http://json-schema.org/draft-04/schema#",
 						"$ref": "#/definitions/Telegram"
@@ -236,7 +240,7 @@
 					},
 					"hooks": {
 						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/HookConfig"
+						"$ref": "#/definitions/BuildHookConfig"
 					},
 					"env": {
 						"items": {
@@ -284,6 +288,42 @@
 					},
 					"no_unique_dist_dir": {
 						"type": "boolean"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"BuildHookConfig": {
+				"properties": {
+					"Pre": {
+						"items": {
+							"oneOf": [
+								{
+									"type": "string"
+								},
+								{
+									"$schema": "http://json-schema.org/draft-04/schema#",
+									"properties": {},
+									"additionalProperties": false,
+									"type": "object"
+								}
+							]
+						}
+					},
+					"Post": {
+						"items": {
+							"oneOf": [
+								{
+									"type": "string"
+								},
+								{
+									"$schema": "http://json-schema.org/draft-04/schema#",
+									"properties": {},
+									"additionalProperties": false,
+									"type": "object"
+								}
+							]
+						}
 					}
 				},
 				"additionalProperties": false,
@@ -814,38 +854,6 @@
 					}
 				]
 			},
-			"HookConfig": {
-				"properties": {
-					"pre": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"$schema": "http://json-schema.org/draft-04/schema#",
-								"properties": {},
-								"additionalProperties": false,
-								"type": "object"
-							}
-						]
-					},
-					"post": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"$schema": "http://json-schema.org/draft-04/schema#",
-								"properties": {},
-								"additionalProperties": false,
-								"type": "object"
-							}
-						]
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
 			"IgnoredBuild": {
 				"required": [
 					"Goos",
@@ -864,6 +872,63 @@
 						"type": "string"
 					},
 					"Gomips": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Krew": {
+				"properties": {
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"name": {
+						"type": "string"
+					},
+					"index": {
+						"$ref": "#/definitions/RepoRef"
+					},
+					"commit_author": {
+						"$ref": "#/definitions/CommitAuthor"
+					},
+					"commit_msg_template": {
+						"type": "string"
+					},
+					"caveats": {
+						"type": "string"
+					},
+					"short_description": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"url_template": {
+						"type": "string"
+					},
+					"goarm": {
+						"type": "string"
+					},
+					"skip_upload": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"LinkedIn": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"message_template": {
 						"type": "string"
 					}
 				},
@@ -1372,6 +1437,13 @@
 						},
 						"type": "array"
 					},
+					"krews": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/Krew"
+						},
+						"type": "array"
+					},
 					"scoop": {
 						"$schema": "http://json-schema.org/draft-04/schema#",
 						"$ref": "#/definitions/Scoop"
@@ -1783,6 +1855,9 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"certificate": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1989,6 +2064,9 @@
 					},
 					"enabled": {
 						"type": "boolean"
+					},
+					"prefix_template": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
