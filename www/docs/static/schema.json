@@ -1777,6 +1777,12 @@
 					},
 					"stdin_file": {
 						"type": "string"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
