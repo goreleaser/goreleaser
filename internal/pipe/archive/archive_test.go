@@ -6,7 +6,6 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -861,13 +860,13 @@ func TestRunPipeSameArchiveFilename(t *testing.T) {
 func TestDuplicateFilesInsideArchive(t *testing.T) {
 	folder := t.TempDir()
 
-	f, err := ioutil.TempFile(folder, "")
+	f, err := os.CreateTemp(folder, "")
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, f.Close())
 	})
 
-	ff, err := ioutil.TempFile(folder, "")
+	ff, err := os.CreateTemp(folder, "")
 	require.NoError(t, err)
 	require.NoError(t, ff.Close())
 
@@ -1046,7 +1045,7 @@ func TestFindFiles(t *testing.T) {
 func TestArchive_globbing(t *testing.T) {
 	assertGlob := func(t *testing.T, files []config.File, expected []string) {
 		t.Helper()
-		bin, err := ioutil.TempFile(t.TempDir(), "binary")
+		bin, err := os.CreateTemp(t.TempDir(), "binary")
 		require.NoError(t, err)
 		dist := t.TempDir()
 		ctx := context.New(config.Project{

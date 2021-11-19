@@ -2,7 +2,6 @@ package brew
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -637,7 +636,7 @@ func TestRunPipeMultipleArchivesSameOsBuild(t *testing.T) {
 	)
 
 	ctx.TokenType = context.TokenTypeGitHub
-	f, err := ioutil.TempFile(t.TempDir(), "")
+	f, err := os.CreateTemp(t.TempDir(), "")
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		require.NoError(t, f.Close())

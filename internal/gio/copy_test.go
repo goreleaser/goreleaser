@@ -1,7 +1,6 @@
 package gio
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -73,7 +72,7 @@ func TestCopyErrors(t *testing.T) {
 
 func TestCopyFile(t *testing.T) {
 	dir := t.TempDir()
-	src, err := ioutil.TempFile(dir, "src")
+	src, err := os.CreateTemp(dir, "src")
 	require.NoError(t, err)
 	require.NoError(t, src.Close())
 	dst := filepath.Join(dir, "dst")

@@ -1,7 +1,6 @@
 package nfpm
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -1055,7 +1054,7 @@ func TestMeta(t *testing.T) {
 }
 
 func TestSkipSign(t *testing.T) {
-	folder, err := ioutil.TempDir("", "archivetest")
+	folder, err := os.MkdirTemp("", "archivetest")
 	require.NoError(t, err)
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
