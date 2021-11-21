@@ -1,7 +1,6 @@
 # Closing Milestones
 
-GoReleaser can close repository milestones after successfully
-publishing all artifacts.
+GoReleaser can close repository milestones after successfully publishing all artifacts.
 
 Let's see what can be customized in the `milestones` section:
 
@@ -20,7 +19,7 @@ milestones:
     # Default is false
     close: true
 
-    # Fail release on errors, such as missing milestone on close
+    # Fail release on errors, such as missing milestone.
     # Default is false
     fail_on_error: true
 

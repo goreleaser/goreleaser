@@ -209,6 +209,9 @@ publishers:
     - 'FURY_TOKEN={{ .Env.FURY_TOKEN }}'
     cmd: ./scripts/fury-upload.sh {{ .ArtifactName }}
 
+milestones:
+  - close: true
+
 release:
   extra_files:
     - glob: ./cosign.pub
