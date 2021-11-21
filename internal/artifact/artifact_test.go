@@ -2,7 +2,6 @@ package artifact
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -245,7 +244,7 @@ func TestChecksumFileDoesntExist(t *testing.T) {
 }
 
 func TestInvalidAlgorithm(t *testing.T) {
-	f, err := ioutil.TempFile(t.TempDir(), "")
+	f, err := os.CreateTemp(t.TempDir(), "")
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	artifact := Artifact{

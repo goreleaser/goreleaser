@@ -1,7 +1,6 @@
 package checksums
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -123,7 +122,7 @@ func TestPipeFileNotExist(t *testing.T) {
 }
 
 func TestPipeInvalidNameTemplate(t *testing.T) {
-	binFile, err := ioutil.TempFile(t.TempDir(), "goreleasertest-bin")
+	binFile, err := os.CreateTemp(t.TempDir(), "goreleasertest-bin")
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, binFile.Close()) })
 	_, err = binFile.WriteString("fake artifact")
@@ -160,7 +159,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 
 func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 	folder := t.TempDir()
-	binFile, err := ioutil.TempFile(folder, "goreleasertest-bin")
+	binFile, err := os.CreateTemp(folder, "goreleasertest-bin")
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, binFile.Close()) })
 	_, err = binFile.WriteString("fake artifact")

@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -46,7 +46,7 @@ func TestLoadBadReader(t *testing.T) {
 }
 
 func TestFile(t *testing.T) {
-	f, err := ioutil.TempFile(t.TempDir(), "config")
+	f, err := os.CreateTemp(t.TempDir(), "config")
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	_, err = Load(filepath.Join(f.Name()))
