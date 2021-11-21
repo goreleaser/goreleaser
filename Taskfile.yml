@@ -53,7 +53,7 @@ tasks:
   lint:
     desc: Lint the code with golangci-lint
     cmds:
-      - golangci-lint run .
+      - golangci-lint run ./...
 
   ci:
     desc: Run all CI steps

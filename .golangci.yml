@@ -7,3 +7,9 @@ linters:
     - unparam
     - wastedassign
     - revive
+    - forbidigo
+
+linters-settings:
+  forbidigo:
+    forbid:
+      - 'ioutil\.*'
