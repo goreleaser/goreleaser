@@ -71,6 +71,22 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 // Build builds a golang build.
 func (*Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
+	tpl := tmpl.New(ctx)
+	if build.Main != "" {
+		m, err := tpl.Apply(build.Main)
+		if err != nil {
+			return err
+		}
+		build.Main = m
+	}
+	if build.UnproxiedMain != "" {
+		m, err := tpl.Apply(build.UnproxiedMain)
+		if err != nil {
+			return err
+		}
+		build.UnproxiedMain = m
+	}
+
 	if err := checkMain(build); err != nil {
 		return err
 	}
