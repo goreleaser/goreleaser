@@ -53,6 +53,8 @@ blobs:
       - glob: ./path/to/file.txt
       - glob: ./glob/**/to/**/file/**/*
       - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
+      - glob: ./single_file.txt
+        name_template: file.txt # note that this only works if glob matches 1 file only
   -
     provider: gs
     bucket: goreleaser-bucket
