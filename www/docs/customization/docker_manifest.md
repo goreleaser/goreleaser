@@ -14,6 +14,11 @@ instead of the Docker images names.
     Please note that this is a beta feature, and it may change or be removed
     at any time.
 
+!!! warning
+    Notice that the images used in the manifest **need to be pushed** for this to work.
+    This is a limitation of how `docker manifest create` works.
+    For more info, check [this issue](https://github.com/goreleaser/goreleaser/issues/2606).
+
 ## Customization
 
 You can create several manifests in a single GoReleaser run, here are all the
