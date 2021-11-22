@@ -51,7 +51,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return nil
 	}
 
-	extraFiles, err := extrafiles.Find(ctx.Config.Checksum.ExtraFiles)
+	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Checksum.ExtraFiles)
 	if err != nil {
 		return err
 	}

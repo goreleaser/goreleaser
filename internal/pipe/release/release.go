@@ -131,7 +131,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	extraFiles, err := extrafiles.Find(ctx.Config.Release.ExtraFiles)
+	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Release.ExtraFiles)
 	if err != nil {
 		return err
 	}
