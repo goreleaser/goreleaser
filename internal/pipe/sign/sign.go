@@ -191,14 +191,8 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 
 	// re-execute template results, using artifact name as artifact so they eval to the actual needed file name.
 	env["artifact"] = art.Name
-	name, err = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Signature, env))
-	if err != nil {
-		return nil, fmt.Errorf("sign failed: %s: invalid template: %w", art.Name, err)
-	}
-	cert, err = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Certificate, env))
-	if err != nil {
-		return nil, fmt.Errorf("sign failed: %s: invalid template: %w", art.Name, err)
-	}
+	name, _ = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Signature, env))   // could never error as it passed the previous check
+	cert, _ = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Certificate, env)) // could never error as it passed the previous check
 
 	result := []*artifact.Artifact{
 		{
