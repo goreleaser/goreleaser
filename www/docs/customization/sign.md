@@ -89,7 +89,7 @@ signs:
     # Note that this should be a name, not a path.
     #
     # Defaults to empty.
-    certificate: '{{ trimsuffix .Env.artifactName ".tar.gz" }}.pem'
+    certificate: '{{ trimsuffix .Env.artifact ".tar.gz" }}.pem'
 
     # List of environment variables that will be passed to the signing command as well as the templates.
     #
@@ -103,11 +103,13 @@ signs:
 
 These environment variables might be available in the fields that are templateable:
 
-- `${artifactName}`: the name of the artifact
 - `${artifact}`: the path to the artifact that will be signed
 - `${artifactID}`: the ID of the artifact that will be signed
 - `${certificate}`: the certificate filename, if provided
 - `${signature}`: the signature filename
+- `${artifactName}`: the name of the artifact [^1]
+
+[^1]: notice that the name won't have the `dist` prefix, so if you are using it to build filepaths, be sure to prefix them properly. Prefer using `${artifact}` instead.
 
 ## Signing with cosign
 

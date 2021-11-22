@@ -81,11 +81,13 @@ docker_signs:
 
 These environment variables might be available in the fields that are templateable:
 
-- `${artifactName}`: the name of the artifact
-- `${artifact}`: the path to the artifact that will be signed
+- `${artifact}`: the path to the artifact that will be signed [^1]
 - `${artifactID}`: the ID of the artifact that will be signed
 - `${certificate}`: the certificate filename, if provided
-- `${signature}`: the signature filename, if provided
+- `${artifactName}`: the name of the artifact [^1]
+
+[^1]: notice that the this might contain `/` characters, which depending on how you use it migth evaluate to actual paths within the filesystem. Use with care.
+
 
 ## Common usage example
 
