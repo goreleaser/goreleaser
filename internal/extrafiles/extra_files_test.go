@@ -38,7 +38,7 @@ func TestBadTemplate(t *testing.T) {
 func TestShouldGetSpecificFile(t *testing.T) {
 	globs := []config.ExtraFile{
 		{},                        // empty glob, will be ignored
-		{Glob: "./testdata/sub3"}, // will get a file1.golden as well, but will be overriden
+		{Glob: "./testdata/sub3"}, // will get a file1.golden as well, but will be overridden
 		{Glob: "./testdata/file1.golden"},
 	}
 
