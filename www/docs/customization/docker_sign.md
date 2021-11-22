@@ -19,12 +19,6 @@ docker_signs:
     # Defaults to "default".
     id: foo
 
-    # Name/template of the signature file.
-    # Note that with cosign you don't need to use this.
-    #
-    # Defaults to empty.
-    signature: "${artifact}_sig"
-
     # Path to the signature command
     #
     # Defaults to `cosign`
@@ -61,14 +55,6 @@ docker_signs:
     # Defaults to empty
     stdin_file: ./.password
 
-    # Sets a certificate name that your signing command should write to.
-    # You can later use `${certificate}` or `.Env.certificate` in the `args` section.
-    # This is particularly useful for keyless signing (for instance, with cosign).
-    # Note that this should be a name, not a path.
-    #
-    # Defaults to empty.
-    certificate: '{{ trimsuffix .Env.artifactName ".tar.gz" }}.pem'
-
     # List of environment variables that will be passed to the signing command as well as the templates.
     #
     # Defaults to empty
@@ -84,7 +70,6 @@ These environment variables might be available in the fields that are templateab
 - `${artifact}`: the path to the artifact that will be signed [^1]
 - `${artifactID}`: the ID of the artifact that will be signed
 - `${certificate}`: the certificate filename, if provided
-- `${artifactName}`: the name of the artifact [^1]
 
 [^1]: notice that the this might contain `/` characters, which depending on how you use it migth evaluate to actual paths within the filesystem. Use with care.
 

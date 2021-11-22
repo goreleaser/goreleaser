@@ -539,7 +539,7 @@ func TestSignArtifacts(t *testing.T) {
 					Signs: []config.Sign{
 						{
 							Env:         []string{"NOT_HONK=honk", "HONK={{ .Env.NOT_HONK }}"},
-							Certificate: `{{ trimsuffix (trimsuffix .Env.artifactName ".tar.gz") ".deb" }}_${HONK}.pem`,
+							Certificate: `{{ trimsuffix (trimsuffix .Env.artifact ".tar.gz") ".deb" }}_${HONK}.pem`,
 							Artifacts:   "all",
 						},
 					},
