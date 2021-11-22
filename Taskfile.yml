@@ -125,35 +125,101 @@ tasks:
       - echo {{.NEXT}}
       - git push origin --tags
 
+  goreleaser:test:pkg:
+    desc: Test a package
+    cmds:
+      - docker run --platform linux/{{.Platform}} --rm --workdir /tmp -v $PWD/dist:/tmp {{.Image}} sh -c '{{.Cmd}} && goreleaser --version'
+
   goreleaser:test:rpm:
     desc: Tests rpm packages
+    vars:
+      rpm: 'rpm --nodeps -ivh'
     cmds:
-      # no fedora nor centos with armv6 - docker run --platform linux/arm/6 --rm -v "$PWD/dist":/tmp/ centos:centos7 sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.arm6l.rpm && goreleaser --version'
-      - docker run --platform linux/386 --rm -v $PWD/dist:/tmp/ centos:centos7 sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.i386.rpm && goreleaser --version'
-      - docker run --platform linux/amd64 --rm -v "$PWD/dist":/tmp/ fedora sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.x86_64.rpm && goreleaser --version'
-      - docker run --platform linux/arm64 --rm -v "$PWD/dist":/tmp/ fedora sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.aarch64.rpm && goreleaser --version'
-      - docker run --platform linux/arm/6 --rm -v "$PWD/dist":/tmp/ fedora sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.armv6hl.rpm && goreleaser --version'
-      - docker run --platform linux/arm/7 --rm -v "$PWD/dist":/tmp/ fedora sh -c 'rpm --nodeps -ivh /tmp/goreleaser-*.armv7hl.rpm && goreleaser --version'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: '386'
+          Image: centos:centos7
+          Cmd: '{{.rpm}} goreleaser-*.i386.rpm'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'amd64'
+          Image: fedora
+          Cmd: '{{.rpm}} goreleaser-*.x86_64.rpm'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm64'
+          Image: fedora
+          Cmd: '{{.rpm}} goreleaser-*.aarch64.rpm'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm/6'
+          Image: fedora
+          Cmd: '{{.rpm}} goreleaser-*.armv6hl.rpm'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm/7'
+          Image: fedora
+          Cmd: '{{.rpm}} goreleaser-*.armv7hl.rpm'
 
   goreleaser:test:deb:
     desc: Tests rpm packages
+    vars:
+      dpkg: 'dpkg --ignore-depends=git -i'
     cmds:
-      - docker run --platform linux/amd64 --rm -v "$PWD/dist":/tmp/ ubuntu bash -c 'dpkg --ignore-depends=git -i /tmp/goreleaser*_amd64.deb && goreleaser --version'
-      - docker run --platform linux/arm64 --rm -v "$PWD/dist":/tmp/ ubuntu bash -c 'dpkg --ignore-depends=git -i /tmp/goreleaser*_arm64.deb && goreleaser --version'
-      - docker run --platform linux/arm/6 --rm -v "$PWD/dist":/tmp/ debian bash -c 'dpkg --ignore-depends=git -i /tmp/goreleaser*_armel.deb && goreleaser --version'
-      - docker run --platform linux/arm/7 --rm -v "$PWD/dist":/tmp/ ubuntu bash -c 'dpkg --ignore-depends=git -i /tmp/goreleaser*_armhf.deb && goreleaser --version'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'amd64'
+          Image: ubuntu
+          Cmd: '{{.dpkg}} goreleaser*_amd64.deb'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm64'
+          Image: ubuntu
+          Cmd: '{{.dpkg}} goreleaser*_arm64.deb'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm/6'
+          Image: debian
+          Cmd: '{{.dpkg}} goreleaser*_armel.deb'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm/7'
+          Image: ubuntu
+          Cmd: '{{.dpkg}} goreleaser*_armhf.deb'
 
   goreleaser:test:apk:
     desc: Tests rpm packages
+    vars:
+      apk: 'apk add --allow-untrusted -U'
     cmds:
-      - docker run --platform linux/386 --rm -v "$PWD/dist":/tmp/ alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_x86.apk && goreleaser --version'
-      - docker run --platform linux/amd64 --rm -v "$PWD/dist":/tmp/ alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_x86_64.apk && goreleaser --version'
-      - docker run --platform linux/arm64 --rm -v "$PWD/dist":/tmp/ alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_aarch64.apk && goreleaser --version'
-      - docker run --platform linux/arm/6 --rm -v "$PWD/dist":/tmp/ alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_armhf.apk && goreleaser --version'
-      - docker run --platform linux/arm/7 --rm -v "$PWD/dist":/tmp/ alpine ash -c 'apk add --allow-untrusted -U /tmp/goreleaser*_armv7.apk && goreleaser --version'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: '386'
+          Image: alpine
+          Cmd: '{{.apk}} goreleaser*_x86.apk'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'amd64'
+          Image: alpine
+          Cmd: '{{.apk}} goreleaser*_x86_64.apk'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm64'
+          Image: alpine
+          Cmd: '{{.apk}} goreleaser*_aarch64.apk'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm/6'
+          Image: alpine
+          Cmd: '{{.apk}} goreleaser*_armhf.apk'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm/7'
+          Image: alpine
+          Cmd: '{{.apk}} goreleaser*_armv7.apk'
 
   goreleaser:test:
-    desc: Runs a local release and test some stuff
+    desc: Test built linux packages
     cmds:
       - task: goreleaser:test:apk
       - task: goreleaser:test:deb

@@ -135,7 +135,11 @@ All artifacts are checksummed and the checksum file is signed with [cosign][].
 You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
 
 === "OSS"
-    1. Download the files you want, the `checksums.txt` and `checksums.txt.sig` files from the [releases][releases] page.
+    1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][releases] page:
+      ```sh
+      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt
+      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sig
+      ```
     1. Verify the signature:
       ```sh
       cosign verify-blob \
@@ -149,7 +153,11 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
       ```
 
 === "Pro"
-    1. Download the files you want, the `checksums.txt` and `checksums.txt.sig` files from the [releases][pro-releases] page.
+    1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][pro-releases] page:
+      ```sh
+      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt
+      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.sig
+      ```
     1. Verify the signature:
       ```sh
       cosign verify-blob \
@@ -174,9 +182,6 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
     cosign verify \
       -key https://goreleaser.com/static/goreleaser.pub \
       goreleaser/goreleaser
-    cosign verify \
-      -key https://goreleaser.com/static/goreleaser.pub \
-      ghcr.io/goreleaser/goreleaser
     ```
 
 === "Pro"
@@ -185,9 +190,6 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
     cosign verify \
       -key https://goreleaser.com/static/goreleaser.pub \
       goreleaser/goreleaser-pro
-    cosign verify \
-      -key https://goreleaser.com/static/goreleaser.pub \
-      ghcr.io/goreleaser/goreleaser-pro
     ```
 
 ## Running with Docker
