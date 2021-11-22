@@ -182,9 +182,6 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
     cosign verify \
       -key https://goreleaser.com/static/goreleaser.pub \
       goreleaser/goreleaser
-    cosign verify \
-      -key https://goreleaser.com/static/goreleaser.pub \
-      ghcr.io/goreleaser/goreleaser
     ```
 
 === "Pro"
@@ -193,9 +190,6 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
     cosign verify \
       -key https://goreleaser.com/static/goreleaser.pub \
       goreleaser/goreleaser-pro
-    cosign verify \
-      -key https://goreleaser.com/static/goreleaser.pub \
-      ghcr.io/goreleaser/goreleaser-pro
     ```
 
 ## Running with Docker
