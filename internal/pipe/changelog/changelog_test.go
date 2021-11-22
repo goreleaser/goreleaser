@@ -78,6 +78,7 @@ func TestChangelog(t *testing.T) {
 			},
 		},
 	})
+	ctx.Git.PreviousTag = "v0.0.1"
 	ctx.Git.CurrentTag = "v0.0.2"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
@@ -92,32 +93,6 @@ func TestChangelog(t *testing.T) {
 	bts, err := os.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
 	require.NoError(t, err)
 	require.NotEmpty(t, string(bts))
-}
-
-func TestChangelogPreviousTagEnv(t *testing.T) {
-	folder := testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitCommit(t, "first")
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCommit(t, "second")
-	testlib.GitTag(t, "v0.0.2")
-	testlib.GitCommit(t, "third")
-	testlib.GitTag(t, "v0.0.3")
-	ctx := context.New(config.Project{
-		Dist: folder,
-		Changelog: config.Changelog{
-			Use:     "git",
-			Filters: config.Filters{},
-		},
-	})
-	ctx.Git.CurrentTag = "v0.0.3"
-	require.NoError(t, os.Setenv("GORELEASER_PREVIOUS_TAG", "v0.0.1"))
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.NoError(t, os.Setenv("GORELEASER_PREVIOUS_TAG", ""))
-	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	require.NotContains(t, ctx.ReleaseNotes, "first")
-	require.Contains(t, ctx.ReleaseNotes, "second")
-	require.Contains(t, ctx.ReleaseNotes, "third")
 }
 
 func TestChangelogForGitlab(t *testing.T) {
@@ -149,6 +124,7 @@ func TestChangelogForGitlab(t *testing.T) {
 	})
 	ctx.TokenType = context.TokenTypeGitLab
 	ctx.Git.CurrentTag = "v0.0.2"
+	ctx.Git.PreviousTag = "v0.0.1"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.NotContains(t, ctx.ReleaseNotes, "first")
@@ -176,6 +152,7 @@ func TestChangelogSort(t *testing.T) {
 	ctx := context.New(config.Project{
 		Changelog: config.Changelog{},
 	})
+	ctx.Git.PreviousTag = "v0.9.9"
 	ctx.Git.CurrentTag = "v1.0.0"
 
 	for _, cfg := range []struct {
@@ -245,6 +222,7 @@ func TestChangelogOfFirstRelease(t *testing.T) {
 	testlib.GitTag(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Git.PreviousTag = "v0.0.1"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	for _, msg := range msgs {

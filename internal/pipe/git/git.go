@@ -109,9 +109,14 @@ func getGitInfo() (context.GitInfo, error) {
 			CurrentTag:  "v0.0.0",
 		}, ErrNoTag
 	}
+
+	// if we dont get a previous tag, its fine
+	previous, _ := getPreviousTag(tag)
+
 	return context.GitInfo{
 		Branch:      branch,
 		CurrentTag:  tag,
+		PreviousTag: previous,
 		Commit:      full,
 		FullCommit:  full,
 		ShortCommit: short,
@@ -196,6 +201,29 @@ func getTag() (string, error) {
 	} {
 		tag, err = fn()
 		if tag != "" || err != nil {
+			return tag, err
+		}
+	}
+
+	return tag, err
+}
+
+func getPreviousTag(current string) (string, error) {
+	var tag string
+	var err error
+	for _, fn := range []func() (string, error){
+		func() (string, error) {
+			return os.Getenv("GORELEASER_PREVIOUS_TAG"), nil
+		},
+		func() (string, error) {
+			return git.Clean(git.Run("describe", "--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", current)))
+		},
+		func() (string, error) {
+			return git.Clean(git.Run("rev-list", "--max-parents=0", "HEAD"))
+		},
+	} {
+		tag, err = fn()
+		if tag != "" {
 			return tag, err
 		}
 	}

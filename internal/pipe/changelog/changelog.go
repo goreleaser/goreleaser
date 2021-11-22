@@ -108,7 +108,7 @@ func checkSortDirection(mode string) error {
 }
 
 func buildChangelog(ctx *context.Context) ([]string, error) {
-	log, err := getChangelog(ctx, ctx.Git.CurrentTag)
+	log, err := doGetChangelog(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -165,20 +165,12 @@ func extractCommitInfo(line string) string {
 	return strings.Join(strings.Split(line, " ")[1:], " ")
 }
 
-func getChangelog(ctx *context.Context, tag string) (string, error) {
-	prev, err := previous(tag)
-	if err != nil {
-		return "", err
-	}
-	return doGetChangelog(ctx, prev, tag)
-}
-
-func doGetChangelog(ctx *context.Context, prev, tag string) (string, error) {
+func doGetChangelog(ctx *context.Context) (string, error) {
 	l, err := getChangeloger(ctx)
 	if err != nil {
 		return "", err
 	}
-	return l.Log(ctx, prev, tag)
+	return l.Log(ctx, ctx.Git.PreviousTag, ctx.Git.CurrentTag)
 }
 
 func getChangeloger(ctx *context.Context) (changeloger, error) {
@@ -232,18 +224,6 @@ func newSCMChangeloger(ctx *context.Context) (changeloger, error) {
 			Name:  repo.Name,
 		},
 	}, nil
-}
-
-func previous(tag string) (result string, err error) {
-	if tag := os.Getenv("GORELEASER_PREVIOUS_TAG"); tag != "" {
-		return tag, nil
-	}
-
-	result, err = git.Clean(git.Run("describe", "--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", tag)))
-	if err != nil {
-		result, err = git.Clean(git.Run("rev-list", "--max-parents=0", "HEAD"))
-	}
-	return
 }
 
 func loadContent(ctx *context.Context, fileName, tmplName string) (string, error) {
