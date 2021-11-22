@@ -6,6 +6,7 @@ Here's a running list of some organizations using GoReleaser:
 
 1. [Charm](https://charm.sh)
 1. [Compose Generator](https://www.compose-generator.com)
+1. [Fleet for osquery](https://fleetdm.com)
 1. [Helm](https://helm.sh)
 1. [Hugo](https://gohugo.io/)
 1. [IRON Security](https://iron.security)
