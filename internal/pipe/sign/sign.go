@@ -137,6 +137,9 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	if err != nil {
 		return nil, fmt.Errorf("sign failed: %s: %w", art.Name, err)
 	}
+	if cert != "" && filepath.Dir(cert) == "." {
+		cert = filepath.Join(ctx.Config.Dist, cert)
+	}
 	env["certificate"] = cert
 
 	// nolint:prealloc
@@ -210,10 +213,11 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	}
 
 	if cert != "" {
+		certFilename := filepath.Base(cert)
 		result = append(result, &artifact.Artifact{
 			Type: artifact.Certificate,
-			Name: cert,
-			Path: filepath.Join(artifactPathBase, cert),
+			Name: certFilename,
+			Path: cert,
 			Extra: map[string]interface{}{
 				artifact.ExtraID: cfg.ID,
 			},

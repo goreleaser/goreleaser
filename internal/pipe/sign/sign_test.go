@@ -522,7 +522,7 @@ func TestSignArtifacts(t *testing.T) {
 				config.Project{
 					Signs: []config.Sign{
 						{
-							Certificate: "${artifactName}.pem",
+							Certificate: "${artifact}.pem",
 							Artifacts:   "checksum",
 						},
 					},
@@ -669,6 +669,7 @@ func testSign(tb testing.TB, ctx *context.Context, certificateNames, signaturePa
 	certNames := []string{}
 	for _, cert := range certificates {
 		certNames = append(certNames, cert.Name)
+		require.True(tb, strings.HasPrefix(cert.Path, ctx.Config.Dist))
 	}
 	sort.Strings(certificateNames)
 	sort.Strings(certNames)
