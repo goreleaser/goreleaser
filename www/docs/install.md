@@ -135,16 +135,15 @@ All artifacts are checksummed and the checksum file is signed with [cosign][].
 You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
 
 === "OSS"
-    1. Download the files you want, the `checksums.txt`, `checksums.txt.sig` and `cosign.pub` files from the [releases][releases] page:
+    1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][releases] page:
       ```sh
       wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt
       wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sig
-      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/cosign.pub
       ```
     1. Verify the signature:
       ```sh
       cosign verify-blob \
-        -key cosign.pub \
+        -key https://goreleaser.com/static/goreleaser.pub \
         -signature checksums.txt.sig \
         checksums.txt
       ```
@@ -154,16 +153,15 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
       ```
 
 === "Pro"
-    1. Download the files you want, the `checksums.txt`, `checksums.txt.sig` and `cosign.pub` files from the [releases][pro-releases] page:
+    1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][pro-releases] page:
       ```sh
       wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt
       wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.sig
-      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/cosign.pub
       ```
     1. Verify the signature:
       ```sh
       cosign verify-blob \
-        -key cosign.pub \
+        -key https://goreleaser.com/static/goreleaser.pub \
         -signature checksums.txt.sig \
         checksums.txt
       ```
