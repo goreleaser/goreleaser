@@ -737,7 +737,7 @@ type Blob struct {
 	Bucket     string      `yaml:"bucket,omitempty"`
 	Provider   string      `yaml:"provider,omitempty"`
 	Region     string      `yaml:"region,omitempty"`
-	DisableSSL bool        `yaml:"disableSSL,omitempty"`
+	DisableSSL bool        `yaml:"disableSSL,omitempty"` // nolint:tagliatelle // TODO(caarlos0): rename to disable_ssl
 	Folder     string      `yaml:"folder,omitempty"`
 	KMSKey     string      `yaml:"kmskey,omitempty"`
 	IDs        []string    `yaml:"ids,omitempty"`

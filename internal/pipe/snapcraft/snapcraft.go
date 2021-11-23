@@ -1,4 +1,6 @@
 // Package snapcraft implements the Pipe interface providing Snapcraft bindings.
+//
+// nolint:tagliatelle
 package snapcraft
 
 import (
