@@ -2130,6 +2130,9 @@
 					},
 					"replace": {
 						"type": "boolean"
+					},
+					"hooks": {
+						"$ref": "#/definitions/BuildHookConfig"
 					}
 				},
 				"additionalProperties": false,
