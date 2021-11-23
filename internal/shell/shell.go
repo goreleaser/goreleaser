@@ -13,6 +13,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+// Run a shell command with given arguments and envs
 func Run(ctx *context.Context, dir string, command, env []string) error {
 	fields := log.Fields{
 		"cmd": command,

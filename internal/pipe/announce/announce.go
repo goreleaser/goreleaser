@@ -24,7 +24,6 @@ import (
 // Announcer should be implemented by pipes that want to announce releases.
 type Announcer interface {
 	fmt.Stringer
-
 	Announce(ctx *context.Context) error
 }
 

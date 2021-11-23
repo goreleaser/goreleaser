@@ -239,7 +239,6 @@ func TestRun(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx5))
 		require.FileExists(t, pre)
 		require.FileExists(t, post)
-
 	})
 
 	t.Run("failing pre-hook", func(t *testing.T) {
@@ -254,7 +253,6 @@ func TestRun(t *testing.T) {
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		require.EqualError(t, Pipe{}.Run(ctx), `post hook failed: "": exec: "exit": executable file not found in $PATH`)
 	})
-
 }
 
 func checkUniversalBinary(tb testing.TB, unibin *artifact.Artifact) {
