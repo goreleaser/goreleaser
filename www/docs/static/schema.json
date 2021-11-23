@@ -295,7 +295,7 @@
 			},
 			"BuildHookConfig": {
 				"properties": {
-					"Pre": {
+					"pre": {
 						"items": {
 							"oneOf": [
 								{
@@ -310,7 +310,7 @@
 							]
 						}
 					},
-					"Post": {
+					"post": {
 						"items": {
 							"oneOf": [
 								{
@@ -1957,7 +1957,7 @@
 						},
 						"type": "object"
 					},
-					"Plugs": {
+					"plugs": {
 						"patternProperties": {
 							".*": {
 								"additionalProperties": true
