@@ -9,10 +9,12 @@ import (
 	"path/filepath"
 
 	"github.com/apex/log"
+	"github.com/caarlos0/go-shellwords"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/shell"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -46,8 +48,14 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, unibin := range ctx.Config.UniversalBinaries {
 		unibin := unibin
 		g.Go(func() error {
+			if err := runHook(ctx, unibin.Hooks.Pre); err != nil {
+				return fmt.Errorf("pre hook failed: %w", err)
+			}
 			if err := makeUniversalBinary(ctx, unibin); err != nil {
 				return err
+			}
+			if err := runHook(ctx, unibin.Hooks.Post); err != nil {
+				return fmt.Errorf("post hook failed: %w", err)
 			}
 			if !unibin.Replace {
 				return nil
@@ -56,6 +64,47 @@ func (Pipe) Run(ctx *context.Context) error {
 		})
 	}
 	return g.Wait()
+}
+
+func runHook(ctx *context.Context, hooks config.Hooks) error {
+	if len(hooks) == 0 {
+		return nil
+	}
+
+	for _, hook := range hooks {
+		var envs []string
+		envs = append(envs, ctx.Env.Strings()...)
+
+		for _, rawEnv := range hook.Env {
+			env, err := tmpl.New(ctx).Apply(rawEnv)
+			if err != nil {
+				return err
+			}
+
+			envs = append(envs, env)
+		}
+
+		dir, err := tmpl.New(ctx).Apply(hook.Dir)
+		if err != nil {
+			return err
+		}
+
+		sh, err := tmpl.New(ctx).WithEnvS(envs).Apply(hook.Cmd)
+		if err != nil {
+			return err
+		}
+
+		log.WithField("hook", sh).Info("running hook")
+		cmd, err := shellwords.Parse(sh)
+		if err != nil {
+			return err
+		}
+
+		if err := shell.Run(ctx, dir, cmd, envs); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type input struct {
