@@ -288,8 +288,8 @@ type Build struct {
 }
 
 type BuildHookConfig struct {
-	Pre  Hooks `yaml:",omitempty"`
-	Post Hooks `yaml:",omitempty"`
+	Pre  Hooks `yaml:"pre,omitempty"`
+	Post Hooks `yaml:"post,omitempty"`
 }
 
 type Hooks []Hook
@@ -652,7 +652,7 @@ type Snapcraft struct {
 	Confinement      string                             `yaml:"confinement,omitempty"`
 	Layout           map[string]SnapcraftLayoutMetadata `yaml:"layout,omitempty"`
 	Apps             map[string]SnapcraftAppMetadata    `yaml:"apps,omitempty"`
-	Plugs            map[string]interface{}             `yaml:",omitempty"`
+	Plugs            map[string]interface{}             `yaml:"plugs,omitempty"`
 
 	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty"`
 }
