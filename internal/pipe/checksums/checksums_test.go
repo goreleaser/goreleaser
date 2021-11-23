@@ -230,6 +230,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 
 	tests := map[string]struct {
 		extraFiles []config.ExtraFile
+		ids        []string
 		want       []string
 	}{
 		"default": {
@@ -256,6 +257,15 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 				extraFileBar,
 			},
 		},
+		"one extra file with no builds": {
+			extraFiles: []config.ExtraFile{
+				{Glob: extraFileFooRelPath},
+			},
+			ids: []string{"yada yada yada"},
+			want: []string{
+				extraFileFoo,
+			},
+		},
 	}
 
 	for name, tt := range tests {
@@ -271,6 +281,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 						Algorithm:    "sha256",
 						NameTemplate: "checksums.txt",
 						ExtraFiles:   tt.extraFiles,
+						IDs:          tt.ids,
 					},
 				},
 			)
