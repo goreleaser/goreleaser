@@ -107,9 +107,6 @@ These environment variables might be available in the fields that are templateab
 - `${artifactID}`: the ID of the artifact that will be signed
 - `${certificate}`: the certificate filename, if provided
 - `${signature}`: the signature filename
-- `${artifactName}`: the name of the artifact [^1]
-
-[^1]: notice that the name won't have the `dist` prefix, so if you are using it to build filepaths, be sure to prefix them properly. Prefer using `${artifact}` instead.
 
 ## Signing with cosign
 

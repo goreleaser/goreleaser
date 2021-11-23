@@ -288,8 +288,8 @@ type Build struct {
 }
 
 type BuildHookConfig struct {
-	Pre  Hooks `yaml:",omitempty"`
-	Post Hooks `yaml:",omitempty"`
+	Pre  Hooks `yaml:"pre,omitempty"`
+	Post Hooks `yaml:"post,omitempty"`
 }
 
 type Hooks []Hook
@@ -652,7 +652,7 @@ type Snapcraft struct {
 	Confinement      string                             `yaml:"confinement,omitempty"`
 	Layout           map[string]SnapcraftLayoutMetadata `yaml:"layout,omitempty"`
 	Apps             map[string]SnapcraftAppMetadata    `yaml:"apps,omitempty"`
-	Plugs            map[string]interface{}             `yaml:",omitempty"`
+	Plugs            map[string]interface{}             `yaml:"plugs,omitempty"`
 
 	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty"`
 }
@@ -737,7 +737,7 @@ type Blob struct {
 	Bucket     string      `yaml:"bucket,omitempty"`
 	Provider   string      `yaml:"provider,omitempty"`
 	Region     string      `yaml:"region,omitempty"`
-	DisableSSL bool        `yaml:"disableSSL,omitempty"`
+	DisableSSL bool        `yaml:"disableSSL,omitempty"` // nolint:tagliatelle // TODO(caarlos0): rename to disable_ssl
 	Folder     string      `yaml:"folder,omitempty"`
 	KMSKey     string      `yaml:"kmskey,omitempty"`
 	IDs        []string    `yaml:"ids,omitempty"`
