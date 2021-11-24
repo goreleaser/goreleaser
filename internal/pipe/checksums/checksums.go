@@ -47,9 +47,6 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	}
 
 	artifactList := ctx.Artifacts.Filter(filter).List()
-	if len(artifactList) == 0 {
-		return nil
-	}
 
 	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Checksum.ExtraFiles)
 	if err != nil {
@@ -62,6 +59,10 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 			Path: path,
 			Type: artifact.UploadableFile,
 		})
+	}
+
+	if len(artifactList) == 0 {
+		return nil
 	}
 
 	g := semerrgroup.New(ctx.Parallelism)

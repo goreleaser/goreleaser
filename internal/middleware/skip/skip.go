@@ -13,7 +13,6 @@ import (
 type Skipper interface {
 	// Skip returns true if the Piper should be skipped.
 	Skip(ctx *context.Context) bool
-
 	fmt.Stringer
 }
 

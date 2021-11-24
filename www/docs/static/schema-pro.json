@@ -329,7 +329,7 @@
 			},
 			"BuildHookConfig": {
 				"properties": {
-					"Pre": {
+					"pre": {
 						"items": {
 							"oneOf": [
 								{
@@ -344,7 +344,7 @@
 							]
 						}
 					},
-					"Post": {
+					"post": {
 						"items": {
 							"oneOf": [
 								{
@@ -1522,7 +1522,7 @@
 			},
 			"PreBuiltOptions": {
 				"properties": {
-					"Path": {
+					"path": {
 						"type": "string"
 					}
 				},
@@ -2119,7 +2119,7 @@
 						},
 						"type": "object"
 					},
-					"Plugs": {
+					"plugs": {
 						"patternProperties": {
 							".*": {
 								"additionalProperties": true
