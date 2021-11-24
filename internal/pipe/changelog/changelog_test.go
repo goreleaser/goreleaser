@@ -3,6 +3,7 @@ package changelog
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -88,6 +89,13 @@ func TestChangelog(t *testing.T) {
 	require.NotContains(t, ctx.ReleaseNotes, "ignored")
 	require.NotContains(t, ctx.ReleaseNotes, "cArs")
 	require.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
+
+	for _, line := range strings.Split(ctx.ReleaseNotes, "\n")[1:] {
+		if line == "" {
+			continue
+		}
+		require.Truef(t, strings.HasPrefix(line, "* "), "%q: changelog commit must be a list item", line)
+	}
 
 	bts, err := os.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
 	require.NoError(t, err)
@@ -608,4 +616,25 @@ func TestGroup(t *testing.T) {
 	require.Contains(t, ctx.ReleaseNotes, "### Bug Fixes")
 	require.NotContains(t, ctx.ReleaseNotes, "### Catch nothing")
 	require.Contains(t, ctx.ReleaseNotes, "### Others")
+}
+
+func TestGroupBadRegex(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "first")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitTag(t, "v0.0.2")
+	ctx := context.New(config.Project{
+		Dist: folder,
+		Changelog: config.Changelog{
+			Groups: []config.ChangeLogGroup{
+				{
+					Title:  "Something",
+					Regexp: "^.*feat[(\\w", // unterminated regex
+				},
+			},
+		},
+	})
+	ctx.Git.CurrentTag = "v0.0.2"
+	require.EqualError(t, Pipe{}.Run(ctx), `failed to group into "Something": error parsing regexp: missing closing ]: `+"`"+`[(\w`+"`")
 }
