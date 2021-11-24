@@ -123,8 +123,8 @@ func TestChangelogForGitlab(t *testing.T) {
 		},
 	})
 	ctx.TokenType = context.TokenTypeGitLab
-	ctx.Git.CurrentTag = "v0.0.2"
 	ctx.Git.PreviousTag = "v0.0.1"
+	ctx.Git.CurrentTag = "v0.0.2"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.NotContains(t, ctx.ReleaseNotes, "first")
@@ -222,7 +222,6 @@ func TestChangelogOfFirstRelease(t *testing.T) {
 	testlib.GitTag(t, "v0.0.1")
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v0.0.1"
-	ctx.Git.PreviousTag = "v0.0.1"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	for _, msg := range msgs {
@@ -246,6 +245,7 @@ func TestChangelogFilterInvalidRegex(t *testing.T) {
 			},
 		},
 	})
+	ctx.Git.PreviousTag = "v0.0.3"
 	ctx.Git.CurrentTag = "v0.0.4"
 	require.EqualError(t, Pipe{}.Run(ctx), "error parsing regexp: invalid or unsupported Perl syntax: `(?ia`")
 }

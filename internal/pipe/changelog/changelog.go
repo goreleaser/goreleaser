@@ -156,7 +156,7 @@ func checkSortDirection(mode string) error {
 }
 
 func buildChangelog(ctx *context.Context) ([]string, error) {
-	log, err := doGetChangelog(ctx)
+	log, err := getChangelog(ctx, ctx.Git.CurrentTag)
 	if err != nil {
 		return nil, err
 	}
@@ -213,12 +213,25 @@ func extractCommitInfo(line string) string {
 	return strings.Join(strings.Split(line, " ")[1:], " ")
 }
 
-func doGetChangelog(ctx *context.Context) (string, error) {
+func getChangelog(ctx *context.Context, tag string) (string, error) {
+	prev := ctx.Git.PreviousTag
+	if prev == "" {
+		// get first commit
+		result, err := git.Clean(git.Run("rev-list", "--max-parents=0", "HEAD"))
+		if err != nil {
+			return "", err
+		}
+		prev = result
+	}
+	return doGetChangelog(ctx, prev, tag)
+}
+
+func doGetChangelog(ctx *context.Context, prev, tag string) (string, error) {
 	l, err := getChangeloger(ctx)
 	if err != nil {
 		return "", err
 	}
-	return l.Log(ctx, ctx.Git.PreviousTag, ctx.Git.CurrentTag)
+	return l.Log(ctx, prev, tag)
 }
 
 func getChangeloger(ctx *context.Context) (changeloger, error) {
