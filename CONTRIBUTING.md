@@ -52,6 +52,12 @@ When you are satisfied with the changes, we suggest you run:
 task ci
 ```
 
+Before you commit the changes, we also suggest you run:
+
+```sh
+task fmt
+```
+
 ## Create a commit
 
 Commit messages should be well formatted, and to make that "standardized", we
