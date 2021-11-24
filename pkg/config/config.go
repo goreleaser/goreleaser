@@ -288,8 +288,8 @@ type Build struct {
 }
 
 type BuildHookConfig struct {
-	Pre  Hooks `yaml:",omitempty"`
-	Post Hooks `yaml:",omitempty"`
+	Pre  Hooks `yaml:"pre,omitempty"`
+	Post Hooks `yaml:"post,omitempty"`
 }
 
 type Hooks []Hook
@@ -431,9 +431,10 @@ func (f File) JSONSchemaType() *jsonschema.Type {
 
 // UniversalBinary setups macos universal binaries.
 type UniversalBinary struct {
-	ID           string `yaml:"id,omitempty"`
-	NameTemplate string `yaml:"name_template,omitempty"`
-	Replace      bool   `yaml:"replace,omitempty"`
+	ID           string          `yaml:"id,omitempty"`
+	NameTemplate string          `yaml:"name_template,omitempty"`
+	Replace      bool            `yaml:"replace,omitempty"`
+	Hooks        BuildHookConfig `yaml:"hooks,omitempty"`
 }
 
 // Archive config used for the archive.
@@ -475,7 +476,8 @@ type Milestone struct {
 
 // ExtraFile on a release.
 type ExtraFile struct {
-	Glob string `yaml:"glob,omitempty"`
+	Glob         string `yaml:"glob,omitempty"`
+	NameTemplate string `yaml:"name_template,omitempty"`
 }
 
 // NFPM config.
@@ -652,7 +654,7 @@ type Snapcraft struct {
 	Confinement      string                             `yaml:"confinement,omitempty"`
 	Layout           map[string]SnapcraftLayoutMetadata `yaml:"layout,omitempty"`
 	Apps             map[string]SnapcraftAppMetadata    `yaml:"apps,omitempty"`
-	Plugs            map[string]interface{}             `yaml:",omitempty"`
+	Plugs            map[string]interface{}             `yaml:"plugs,omitempty"`
 
 	Files []SnapcraftExtraFiles `yaml:"extra_files,omitempty"`
 }
@@ -713,10 +715,18 @@ type Filters struct {
 
 // Changelog Config.
 type Changelog struct {
-	Filters Filters `yaml:"filters,omitempty"`
-	Sort    string  `yaml:"sort,omitempty"`
-	Skip    bool    `yaml:"skip,omitempty"` // TODO(caarlos0): rename to Disable to match other pipes
-	Use     string  `yaml:"use,omitempty"`
+	Filters Filters          `yaml:"filters,omitempty"`
+	Sort    string           `yaml:"sort,omitempty"`
+	Skip    bool             `yaml:"skip,omitempty"` // TODO(caarlos0): rename to Disable to match other pipes
+	Use     string           `yaml:"use,omitempty"`
+	Groups  []ChangeLogGroup `yaml:"groups,omitempty"`
+}
+
+// ChangeLogGroup holds the grouping criteria for the changelog.
+type ChangeLogGroup struct {
+	Title  string `yaml:"title,omitempty"`
+	Regexp string `yaml:"regexp,omitempty"`
+	Order  int    `yaml:"order,omitempty"`
 }
 
 // EnvFiles holds paths to files that contains environment variables
@@ -737,7 +747,7 @@ type Blob struct {
 	Bucket     string      `yaml:"bucket,omitempty"`
 	Provider   string      `yaml:"provider,omitempty"`
 	Region     string      `yaml:"region,omitempty"`
-	DisableSSL bool        `yaml:"disableSSL,omitempty"`
+	DisableSSL bool        `yaml:"disableSSL,omitempty"` // nolint:tagliatelle // TODO(caarlos0): rename to disable_ssl
 	Folder     string      `yaml:"folder,omitempty"`
 	KMSKey     string      `yaml:"kmskey,omitempty"`
 	IDs        []string    `yaml:"ids,omitempty"`

@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/apex/log"
@@ -114,7 +113,7 @@ func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact)
 
 func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*artifact.Artifact, error) {
 	env := ctx.Env.Copy()
-	env["artifactName"] = art.Name
+	env["artifactName"] = art.Name // shouldn't be used
 	env["artifact"] = art.Path
 	env["artifactID"] = art.ID()
 
@@ -190,19 +189,16 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		return nil, nil
 	}
 
+	// re-execute template results, using artifact name as artifact so they eval to the actual needed file name.
 	env["artifact"] = art.Name
-	name, err = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Signature, env))
-	if err != nil {
-		return nil, fmt.Errorf("sign failed: %s: invalid template: %w", art.Name, err)
-	}
+	name, _ = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Signature, env))   // could never error as it passed the previous check
+	cert, _ = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Certificate, env)) // could never error as it passed the previous check
 
-	artifactPathBase, _ := filepath.Split(art.Path)
-	sigFilename := filepath.Base(env["signature"])
 	result := []*artifact.Artifact{
 		{
 			Type: artifact.Signature,
 			Name: name,
-			Path: filepath.Join(artifactPathBase, sigFilename),
+			Path: env["signature"],
 			Extra: map[string]interface{}{
 				artifact.ExtraID: cfg.ID,
 			},
@@ -213,7 +209,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		result = append(result, &artifact.Artifact{
 			Type: artifact.Certificate,
 			Name: cert,
-			Path: filepath.Join(artifactPathBase, cert),
+			Path: env["certificate"],
 			Extra: map[string]interface{}{
 				artifact.ExtraID: cfg.ID,
 			},

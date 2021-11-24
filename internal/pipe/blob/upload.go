@@ -108,7 +108,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		})
 	}
 
-	files, err := extrafiles.Find(conf.ExtraFiles)
+	files, err := extrafiles.Find(ctx, conf.ExtraFiles)
 	if err != nil {
 		return err
 	}

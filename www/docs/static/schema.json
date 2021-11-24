@@ -295,7 +295,7 @@
 			},
 			"BuildHookConfig": {
 				"properties": {
-					"Pre": {
+					"pre": {
 						"items": {
 							"oneOf": [
 								{
@@ -310,7 +310,7 @@
 							]
 						}
 					},
-					"Post": {
+					"post": {
 						"items": {
 							"oneOf": [
 								{
@@ -324,6 +324,21 @@
 								}
 							]
 						}
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ChangeLogGroup": {
+				"properties": {
+					"title": {
+						"type": "string"
+					},
+					"regexp": {
+						"type": "string"
+					},
+					"order": {
+						"type": "integer"
 					}
 				},
 				"additionalProperties": false,
@@ -343,6 +358,13 @@
 					},
 					"use": {
 						"type": "string"
+					},
+					"groups": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/ChangeLogGroup"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -566,6 +588,9 @@
 			"ExtraFile": {
 				"properties": {
 					"glob": {
+						"type": "string"
+					},
+					"name_template": {
 						"type": "string"
 					}
 				},
@@ -1957,7 +1982,7 @@
 						},
 						"type": "object"
 					},
-					"Plugs": {
+					"plugs": {
 						"patternProperties": {
 							".*": {
 								"additionalProperties": true
@@ -2130,6 +2155,9 @@
 					},
 					"replace": {
 						"type": "boolean"
+					},
+					"hooks": {
+						"$ref": "#/definitions/BuildHookConfig"
 					}
 				},
 				"additionalProperties": false,

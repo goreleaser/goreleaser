@@ -48,7 +48,7 @@ tasks:
   fmt:
     desc: gofumpt all code
     cmds:
-      - gofumpt -w -l -s .
+      - gofumpt -w -l .
 
   lint:
     desc: Lint the code with golangci-lint
