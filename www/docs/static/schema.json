@@ -329,6 +329,21 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"ChangeLogGroup": {
+				"properties": {
+					"title": {
+						"type": "string"
+					},
+					"regexp": {
+						"type": "string"
+					},
+					"order": {
+						"type": "integer"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Changelog": {
 				"properties": {
 					"filters": {
@@ -343,6 +358,13 @@
 					},
 					"use": {
 						"type": "string"
+					},
+					"groups": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/ChangeLogGroup"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
