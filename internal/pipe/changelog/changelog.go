@@ -214,9 +214,14 @@ func extractCommitInfo(line string) string {
 }
 
 func getChangelog(ctx *context.Context, tag string) (string, error) {
-	prev, err := previous(tag)
-	if err != nil {
-		return "", err
+	prev := ctx.Git.PreviousTag
+	if prev == "" {
+		// get first commit
+		result, err := git.Clean(git.Run("rev-list", "--max-parents=0", "HEAD"))
+		if err != nil {
+			return "", err
+		}
+		prev = result
 	}
 	return doGetChangelog(ctx, prev, tag)
 }
@@ -280,18 +285,6 @@ func newSCMChangeloger(ctx *context.Context) (changeloger, error) {
 			Name:  repo.Name,
 		},
 	}, nil
-}
-
-func previous(tag string) (result string, err error) {
-	if tag := os.Getenv("GORELEASER_PREVIOUS_TAG"); tag != "" {
-		return tag, nil
-	}
-
-	result, err = git.Clean(git.Run("describe", "--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", tag)))
-	if err != nil {
-		result, err = git.Clean(git.Run("rev-list", "--max-parents=0", "HEAD"))
-	}
-	return
 }
 
 func loadContent(ctx *context.Context, fileName, tmplName string) (string, error) {

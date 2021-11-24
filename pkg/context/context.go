@@ -20,6 +20,7 @@ import (
 type GitInfo struct {
 	Branch      string
 	CurrentTag  string
+	PreviousTag string
 	Commit      string
 	ShortCommit string
 	FullCommit  string

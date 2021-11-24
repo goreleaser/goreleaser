@@ -201,6 +201,7 @@ func TestSnapshotNoTags(t *testing.T) {
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
+	require.Empty(t, ctx.Git.PreviousTag)
 }
 
 func TestSnapshotNoCommits(t *testing.T) {
@@ -277,6 +278,57 @@ func TestTagFromCI(t *testing.T) {
 	}
 }
 
+func TestNoPreviousTag(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.1")
+	ctx := &context.Context{
+		Config: config.Project{},
+	}
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
+	require.Empty(t, ctx.Git.PreviousTag, "should be empty")
+}
+
+func TestPreviousTagFromCI(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCommit(t, "commit2")
+	testlib.GitTag(t, "v0.0.2")
+
+	for _, tc := range []struct {
+		envs     map[string]string
+		expected string
+	}{
+		{expected: "v0.0.1"},
+		{
+			envs:     map[string]string{"GORELEASER_PREVIOUS_TAG": "v0.0.2"},
+			expected: "v0.0.2",
+		},
+	} {
+		t.Run(tc.expected, func(t *testing.T) {
+			for name, value := range tc.envs {
+				require.NoError(t, os.Setenv(name, value))
+			}
+
+			ctx := &context.Context{
+				Config: config.Project{},
+			}
+			require.NoError(t, Pipe{}.Run(ctx))
+			require.Equal(t, tc.expected, ctx.Git.PreviousTag)
+
+			for name := range tc.envs {
+				require.NoError(t, os.Setenv(name, ""))
+			}
+		})
+	}
+}
+
 func TestCommitDate(t *testing.T) {
 	// round to seconds since this is expressed in a Unix timestamp
 	commitDate := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second)
@@ -291,5 +343,6 @@ func TestCommitDate(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
+	require.Empty(t, ctx.Git.PreviousTag)
 	require.True(t, commitDate.Equal(ctx.Git.CommitDate), "commit date does not match expected")
 }

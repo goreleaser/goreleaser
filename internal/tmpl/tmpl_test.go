@@ -22,6 +22,7 @@ func TestWithArtifact(t *testing.T) {
 		"FOO": "bar",
 	}
 	ctx.Version = "1.2.3"
+	ctx.Git.PreviousTag = "v1.2.2"
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Semver = context.Semver{
 		Major: 1,
@@ -56,6 +57,7 @@ func TestWithArtifact(t *testing.T) {
 		"v1.2.4":                           "{{.Tag | incpatch }}",
 		"1.2.4":                            "{{.Version | incpatch }}",
 		"test release notes":               "{{ .ReleaseNotes }}",
+		"v1.2.2":                           "{{ .PreviousTag }}",
 	} {
 		tmpl := tmpl
 		expect := expect

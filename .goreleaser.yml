@@ -48,6 +48,7 @@ changelog:
     - '^test:'
     - '^chore'
     - Merge pull request
+    - Merge remote-tracking branch
     - Merge branch
     - go mod tidy
   groups:
@@ -59,7 +60,6 @@ changelog:
       order: 10
     - title: Other work
       order: 999
-
 
 dockers:
 - image_templates:
@@ -226,6 +226,8 @@ release:
   extra_files:
     - glob: ./cosign.pub
   footer: |
+    **Full Changelog**: https://github.com/goreleaser/goreleaser/{{ .PreviousTag }}...{{ .Tag }}
+
     ## What to do next?
 
     - Check out the [GoReleaser Pro](https://goreleaser.com/pro) distribution;

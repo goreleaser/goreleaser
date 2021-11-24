@@ -109,9 +109,17 @@ func getGitInfo() (context.GitInfo, error) {
 			CurrentTag:  "v0.0.0",
 		}, ErrNoTag
 	}
+
+	previous, err := getPreviousTag(tag)
+	if err != nil {
+		// shouldn't error, will only affect templates
+		log.Warnf("couldn't find any tags before %q", tag)
+	}
+
 	return context.GitInfo{
 		Branch:      branch,
 		CurrentTag:  tag,
+		PreviousTag: previous,
 		Commit:      full,
 		FullCommit:  full,
 		ShortCommit: short,
@@ -201,6 +209,14 @@ func getTag() (string, error) {
 	}
 
 	return tag, err
+}
+
+func getPreviousTag(current string) (string, error) {
+	if tag := os.Getenv("GORELEASER_PREVIOUS_TAG"); tag != "" {
+		return tag, nil
+	}
+
+	return git.Clean(git.Run("describe", "--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", current)))
 }
 
 func getURL() (string, error) {
