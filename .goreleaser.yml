@@ -48,6 +48,7 @@ changelog:
     - '^test:'
     - '^chore'
     - Merge pull request
+    - Merge remote-tracking branch
     - Merge branch
     - go mod tidy
   groups:
