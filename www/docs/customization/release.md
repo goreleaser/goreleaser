@@ -66,7 +66,7 @@ release:
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
-  # This globs can also include templates.
+  # These globs can also include templates.
   #
   # Defaults to empty.
   extra_files:
@@ -111,7 +111,7 @@ release:
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
-  # This globs can also include templates.
+  # These globs can also include templates.
   #
   # Defaults to empty.
   extra_files:
@@ -160,7 +160,7 @@ release:
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
-  # This globs can also include templates.
+  # These globs can also include templates.
   #
   # Defaults to empty.
   extra_files:
