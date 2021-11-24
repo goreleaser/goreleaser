@@ -17,12 +17,13 @@ func Find(ctx *context.Context, files []config.ExtraFile) (map[string]string, er
 	t := tmpl.New(ctx)
 	result := map[string]string{}
 	for _, extra := range files {
-		if extra.Glob == "" {
-			continue
-		}
 		glob, err := t.Apply(extra.Glob)
 		if err != nil {
 			return result, fmt.Errorf("failed to apply template to glob %q: %w", extra.Glob, err)
+		}
+		if glob == "" {
+			log.Warn("ignoring empty glob")
+			continue
 		}
 		files, err := fileglob.Glob(glob)
 		if err != nil {
