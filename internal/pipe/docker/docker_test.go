@@ -66,7 +66,6 @@ func killAndRm(t *testing.T) {
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
 func TestRunPipe(t *testing.T) {
-	testlib.CheckPath(t, "docker")
 	type errChecker func(*testing.T, error)
 	shouldErr := func(msg string) errChecker {
 		return func(t *testing.T, err error) {
@@ -1048,8 +1047,6 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeWhileUsingBuildpacks(t *testing.T) {
-	testlib.CheckPath(t, "packs")
-
 	type errChecker func(*testing.T, error)
 	shouldNotErr := func(t *testing.T, err error) {
 		t.Helper()
@@ -1101,8 +1098,9 @@ func TestRunPipeWhileUsingBuildpacks(t *testing.T) {
 				Dist:        dist,
 				Dockers:     docker.dockers,
 			})
+
 			ctx.Parallelism = 1
-			ctx.Env = docker.env
+			// ctx.Env = docker.env
 			ctx.Version = "1.0.0"
 			ctx.Git = context.GitInfo{
 				CurrentTag: "v1.0.0",
