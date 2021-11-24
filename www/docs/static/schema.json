@@ -567,6 +567,9 @@
 				"properties": {
 					"glob": {
 						"type": "string"
+					},
+					"name_template": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
