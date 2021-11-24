@@ -17,6 +17,7 @@ On fields that support templating, these fields are always available:
 | `.Branch`           | the current git branch                                                                                 |
 | `.PrefixedTag`      | the current git tag prefixed with the monorepo config tag prefix (if any)                              |
 | `.Tag`              | the current git tag                                                                                    |
+| `.PreviousTag`      | the previous git tag, or empty if no previous tags                                                     |
 | `.ShortCommit`      | the git commit short hash                                                                              |
 | `.FullCommit`       | the git commit full hash                                                                               |
 | `.Commit`           | the git commit hash (deprecated)                                                                       |

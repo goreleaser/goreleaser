@@ -289,7 +289,7 @@ func TestNoPreviousTag(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
-	require.NotEmpty(t, ctx.Git.PreviousTag, "should be a commit sha256")
+	require.Empty(t, ctx.Git.PreviousTag, "should be empty")
 }
 
 func TestPreviousTagFromCI(t *testing.T) {
@@ -343,6 +343,6 @@ func TestCommitDate(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
-	require.NotEmpty(t, ctx.Git.PreviousTag)
+	require.Empty(t, ctx.Git.PreviousTag)
 	require.True(t, commitDate.Equal(ctx.Git.CommitDate), "commit date does not match expected")
 }
