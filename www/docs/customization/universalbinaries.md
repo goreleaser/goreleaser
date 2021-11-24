@@ -26,13 +26,22 @@ universal_binaries:
   #
   # Defaults to false.
   replace: true
+
+  # Hooks can be used to customize the final binary,
+  # for example, to run generators.
+  # Those fields allow templates.
+  # Default is both hooks empty.
+  hooks:
+    pre: rice embed-go
+    post: ./script.sh {{ .Path }}
 ```
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
 
-The minimal configuration for most setups would look like this:
+For more info about hooks, see the [build section](/customization/build/#build-hooks).
 
+The minimal configuration for most setups would look like this:
 ```yaml
 # .goreleaser.yml
 universal_binaries:
