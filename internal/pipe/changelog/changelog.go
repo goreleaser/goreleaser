@@ -20,6 +20,8 @@ import (
 // ErrInvalidSortDirection happens when the sort order is invalid.
 var ErrInvalidSortDirection = errors.New("invalid sort direction")
 
+const li = "* "
+
 // Pipe for checksums.
 type Pipe struct{}
 
@@ -76,20 +78,24 @@ func (Pipe) Run(ctx *context.Context) error {
 		sort.Slice(groups, func(i, j int) bool { return groups[i].Order < groups[j].Order })
 		for _, group := range groups {
 			items := make([]string, 0)
-			if len(group.Regexp) > 0 {
+			if group.Regexp == "" {
+				// If no regexp is provided, we purge all strikethrough entries and add remaining entries to the list
+				items = getAllNonEmpty(entries)
+				// clear array
+				entries = nil
+			} else {
+				regex, err := regexp.Compile(group.Regexp)
+				if err != nil {
+					return fmt.Errorf("failed to group into %q: %w", group.Title, err)
+				}
 				for i, entry := range entries {
-					match := checkEntryType(group.Regexp, entry)
+					match := regex.MatchString(entry)
 					if match {
-						items = append(items, entry)
+						items = append(items, li+entry)
 						// Striking out the matched entry
 						entries[i] = ""
 					}
 				}
-			} else {
-				// If no regexp is provided, we purge all strikethrough entries and add remaining entries to the list
-				items = deleteEmptyElement(entries)
-				// clear array
-				entries = nil
 			}
 			if len(items) > 0 {
 				changelogElements = append(changelogElements, fmt.Sprintf("### %s", group.Title))
@@ -98,7 +104,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 	} else {
 		log.Debug("not grouping entries")
-		changelogElements = append(changelogElements, strings.Join(entries, changelogStringJoiner))
+		changelogElements = append(changelogElements, strings.Join(getAllNonEmpty(entries), changelogStringJoiner))
 	}
 
 	if header != "" {
@@ -118,20 +124,14 @@ func (Pipe) Run(ctx *context.Context) error {
 	return os.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint: gosec
 }
 
-func deleteEmptyElement(s []string) []string {
+func getAllNonEmpty(ss []string) []string {
 	var r []string
-	for _, str := range s {
-		if str != "" {
-			r = append(r, str)
+	for _, s := range ss {
+		if s != "" {
+			r = append(r, li+s)
 		}
 	}
 	return r
-}
-
-func checkEntryType(expr, entry string) bool {
-	regex, _ := regexp.Compile(expr)
-	match := regex.Match([]byte(entry))
-	return match
 }
 
 func loadFromFile(file string) (string, error) {
