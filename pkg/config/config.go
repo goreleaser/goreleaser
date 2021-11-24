@@ -476,7 +476,8 @@ type Milestone struct {
 
 // ExtraFile on a release.
 type ExtraFile struct {
-	Glob string `yaml:"glob,omitempty"`
+	Glob         string `yaml:"glob,omitempty"`
+	NameTemplate string `yaml:"name_template,omitempty"`
 }
 
 // NFPM config.
