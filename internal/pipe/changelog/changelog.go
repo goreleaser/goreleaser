@@ -67,8 +67,40 @@ func (Pipe) Run(ctx *context.Context) error {
 
 	changelogElements := []string{
 		"## Changelog",
-		strings.Join(entries, changelogStringJoiner),
 	}
+
+	if len(ctx.Config.Changelog.Groups) > 0 {
+		log.Debug("grouping entries")
+		groups := ctx.Config.Changelog.Groups
+
+		sort.Slice(groups, func(i, j int) bool { return groups[i].Order < groups[j].Order })
+		for _, group := range groups {
+			items := make([]string, 0)
+			if len(group.Regexp) > 0 {
+				for i, entry := range entries {
+					match := checkEntryType(group.Regexp, entry)
+					if match {
+						items = append(items, entry)
+						// Striking out the matched entry
+						entries[i] = ""
+					}
+				}
+			} else {
+				// If no regexp is provided, we purge all strikethrough entries and add remaining entries to the list
+				items = deleteEmptyElement(entries)
+				// clear array
+				entries = nil
+			}
+			if len(items) > 0 {
+				changelogElements = append(changelogElements, fmt.Sprintf("### %s", group.Title))
+				changelogElements = append(changelogElements, strings.Join(items, changelogStringJoiner))
+			}
+		}
+	} else {
+		log.Debug("not grouping entries")
+		changelogElements = append(changelogElements, strings.Join(entries, changelogStringJoiner))
+	}
+
 	if header != "" {
 		changelogElements = append([]string{header}, changelogElements...)
 	}
@@ -84,6 +116,22 @@ func (Pipe) Run(ctx *context.Context) error {
 	path := filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
 	return os.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint: gosec
+}
+
+func deleteEmptyElement(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
+}
+
+func checkEntryType(expr, entry string) bool {
+	regex, _ := regexp.Compile(expr)
+	match := regex.Match([]byte(entry))
+	return match
 }
 
 func loadFromFile(file string) (string, error) {
@@ -272,7 +320,7 @@ type gitChangeloger struct{}
 
 var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
 
-func (g gitChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
+func (g gitChangeloger) Log(_ *context.Context, prev, current string) (string, error) {
 	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
 	if validSHA1.MatchString(prev) {
 		args = append(args, prev, current)

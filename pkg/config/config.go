@@ -715,10 +715,18 @@ type Filters struct {
 
 // Changelog Config.
 type Changelog struct {
-	Filters Filters `yaml:"filters,omitempty"`
-	Sort    string  `yaml:"sort,omitempty"`
-	Skip    bool    `yaml:"skip,omitempty"` // TODO(caarlos0): rename to Disable to match other pipes
-	Use     string  `yaml:"use,omitempty"`
+	Filters Filters          `yaml:"filters,omitempty"`
+	Sort    string           `yaml:"sort,omitempty"`
+	Skip    bool             `yaml:"skip,omitempty"` // TODO(caarlos0): rename to Disable to match other pipes
+	Use     string           `yaml:"use,omitempty"`
+	Groups  []ChangeLogGroup `yaml:"groups,omitempty"`
+}
+
+// ChangeLogGroup holds the grouping criteria for the changelog.
+type ChangeLogGroup struct {
+	Title  string `yaml:"title,omitempty"`
+	Regexp string `yaml:"regexp,omitempty"`
+	Order  int    `yaml:"order,omitempty"`
 }
 
 // EnvFiles holds paths to files that contains environment variables

@@ -559,3 +559,47 @@ func TestSkip(t *testing.T) {
 		require.False(t, Pipe{}.Skip(ctx))
 	})
 }
+
+func TestGroup(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "first")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCommit(t, "added feature 1")
+	testlib.GitCommit(t, "fixed bug 2")
+	testlib.GitCommit(t, "ignored: whatever")
+	testlib.GitCommit(t, "fix: whatever")
+	testlib.GitCommit(t, "docs: whatever")
+	testlib.GitCommit(t, "chore: something about cArs we dont need")
+	testlib.GitCommit(t, "feat: added that thing")
+	testlib.GitCommit(t, "bug: Merge pull request #999 from goreleaser/some-branch")
+	testlib.GitCommit(t, "this is not a Merge pull request")
+	testlib.GitTag(t, "v0.0.2")
+	ctx := context.New(config.Project{
+		Dist: folder,
+		Changelog: config.Changelog{
+			Groups: []config.ChangeLogGroup{
+				{
+					Title:  "Features",
+					Regexp: "^.*feat[(\\w)]*:+.*$",
+					Order:  0,
+				},
+				{
+					Title:  "Bug Fixes",
+					Regexp: "^.*bug[(\\w)]*:+.*$",
+					Order:  1,
+				},
+				{
+					Title: "Others",
+					Order: 999,
+				},
+			},
+		},
+	})
+	ctx.Git.CurrentTag = "v0.0.2"
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.Contains(t, ctx.ReleaseNotes, "### Features")
+	require.Contains(t, ctx.ReleaseNotes, "### Bug Fixes")
+	require.Contains(t, ctx.ReleaseNotes, "### Others")
+}
