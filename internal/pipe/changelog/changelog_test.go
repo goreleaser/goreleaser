@@ -590,6 +590,11 @@ func TestGroup(t *testing.T) {
 					Order:  1,
 				},
 				{
+					Title:  "Catch nothing",
+					Regexp: "yada yada yada honk the planet",
+					Order:  10,
+				},
+				{
 					Title: "Others",
 					Order: 999,
 				},
@@ -601,5 +606,6 @@ func TestGroup(t *testing.T) {
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
 	require.Contains(t, ctx.ReleaseNotes, "### Features")
 	require.Contains(t, ctx.ReleaseNotes, "### Bug Fixes")
+	require.NotContains(t, ctx.ReleaseNotes, "### Catch nothing")
 	require.Contains(t, ctx.ReleaseNotes, "### Others")
 }
