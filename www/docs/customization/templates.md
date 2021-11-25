@@ -24,6 +24,7 @@ On fields that support templating, these fields are always available:
 | `.CommitDate`       | the UTC commit date in RFC 3339 format                                                                 |
 | `.CommitTimestamp`  | the UTC commit date in Unix format                                                                     |
 | `.GitURL`           | the git remote url                                                                                     |
+| `.Summary`          | the git summary (git describe --dirty --always --tags) Format: `TAG-N-COMMIT` (eg 1.0.0-10-g34f56g3)   |
 | `.Major`            | the major part of the version[^2]                                                                      |
 | `.Minor`            | the minor part of the version[^2]                                                                      |
 | `.Patch`            | the patch part of the version[^2]                                                                      |
