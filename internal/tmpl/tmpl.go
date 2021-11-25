@@ -39,6 +39,7 @@ const (
 	commitDate      = "CommitDate"
 	commitTimestamp = "CommitTimestamp"
 	gitURL          = "GitURL"
+	summary         = "Summary"
 	releaseURL      = "ReleaseURL"
 	major           = "Major"
 	minor           = "Minor"
@@ -87,6 +88,7 @@ func New(ctx *context.Context) *Template {
 			commitDate:      ctx.Git.CommitDate.UTC().Format(time.RFC3339),
 			commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
 			gitURL:          ctx.Git.URL,
+			summary:         ctx.Git.Summary,
 			releaseURL:      ctx.ReleaseURL,
 			env:             ctx.Env,
 			date:            ctx.Date.UTC().Format(time.RFC3339),

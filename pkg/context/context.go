@@ -26,6 +26,7 @@ type GitInfo struct {
 	FullCommit  string
 	CommitDate  time.Time
 	URL         string
+	Summary     string
 }
 
 // Env is the environment variables.

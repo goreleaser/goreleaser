@@ -45,6 +45,7 @@ var fakeInfo = context.GitInfo{
 	Commit:      "none",
 	ShortCommit: "none",
 	FullCommit:  "none",
+	Summary:     "none",
 }
 
 func getInfo(ctx *context.Context) (context.GitInfo, error) {
@@ -83,6 +84,10 @@ func getGitInfo() (context.GitInfo, error) {
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get commit date: %w", err)
 	}
+	summary, err := getSummary()
+	if err != nil {
+		return context.GitInfo{}, fmt.Errorf("couldn't get summary: %w", err)
+	}
 	gitURL, err := getURL()
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get remote URL: %w", err)
@@ -107,6 +112,7 @@ func getGitInfo() (context.GitInfo, error) {
 			CommitDate:  date,
 			URL:         gitURL,
 			CurrentTag:  "v0.0.0",
+			Summary:     summary,
 		}, ErrNoTag
 	}
 
@@ -125,6 +131,7 @@ func getGitInfo() (context.GitInfo, error) {
 		ShortCommit: short,
 		CommitDate:  date,
 		URL:         gitURL,
+		Summary:     summary,
 	}, nil
 }
 
@@ -186,6 +193,10 @@ func getShortCommit() (string, error) {
 
 func getFullCommit() (string, error) {
 	return git.Clean(git.Run("show", "--format='%H'", "HEAD", "--quiet"))
+}
+
+func getSummary() (string, error) {
+	return git.Clean(git.Run("describe", "--always", "--dirty", "--tags"))
 }
 
 func getTag() (string, error) {
