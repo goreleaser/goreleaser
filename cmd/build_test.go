@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -38,6 +39,62 @@ func TestBuildBrokenProject(t *testing.T) {
 	cmd := newBuildCmd()
 	cmd.cmd.SetArgs([]string{"--snapshot", "--timeout=1m", "--parallelism=2"})
 	require.EqualError(t, cmd.cmd.Execute(), "failed to parse dir: .: main.go:1:1: expected 'package', found not")
+}
+
+func TestSetupPipeline(t *testing.T) {
+	t.Run("regular", func(t *testing.T) {
+		require.Equal(t, pipeline.BuildPipeline, setupPipeline(context.New(config.Project{}), buildOpts{}))
+	})
+
+	t.Run("single-target", func(t *testing.T) {
+		require.Equal(t, pipeline.BuildPipeline, setupPipeline(context.New(config.Project{}), buildOpts{
+			singleTarget: true,
+		}))
+	})
+
+	t.Run("single-target and id", func(t *testing.T) {
+		require.Equal(t, pipeline.BuildPipeline, setupPipeline(context.New(config.Project{}), buildOpts{
+			singleTarget: true,
+			id:           "foo",
+		}))
+	})
+
+	t.Run("single-target and single build on config", func(t *testing.T) {
+		require.Equal(t, pipeline.BuildPipeline, setupPipeline(context.New(config.Project{
+			Builds: []config.Build{{}},
+		}), buildOpts{
+			singleTarget: true,
+		}))
+	})
+
+	t.Run("single-target, id and output", func(t *testing.T) {
+		require.Equal(
+			t,
+			append(pipeline.BuildPipeline, withOutputPipe{"foobar"}),
+			setupPipeline(
+				context.New(config.Project{}), buildOpts{
+					singleTarget: true,
+					id:           "foo",
+					output:       "foobar",
+				},
+			),
+		)
+	})
+
+	t.Run("single-target, single build on config and output", func(t *testing.T) {
+		require.Equal(
+			t,
+			append(pipeline.BuildPipeline, withOutputPipe{"zaz"}),
+			setupPipeline(
+				context.New(config.Project{
+					Builds: []config.Build{{}},
+				}), buildOpts{
+					singleTarget: true,
+					output:       "zaz",
+				},
+			),
+		)
+	})
 }
 
 func TestBuildFlags(t *testing.T) {

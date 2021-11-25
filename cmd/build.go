@@ -9,6 +9,8 @@ import (
 	"github.com/apex/log"
 	"github.com/caarlos0/ctrlc"
 	"github.com/fatih/color"
+	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
@@ -34,6 +36,7 @@ type buildOpts struct {
 	parallelism   int
 	timeout       time.Duration
 	singleTarget  bool
+	output        string
 }
 
 func newBuildCmd() *buildCmd {
@@ -81,6 +84,7 @@ Finally, it allows you to generate a local build for your current machine only u
 	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH")
 	cmd.Flags().StringVar(&root.opts.id, "id", "", "Builds only the specified build id")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
+	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Path to the binary, defaults to the distribution folder according to configs. Only taked into account when using --single-target and a single id (either with --id or if config only has one build)")
 	_ = cmd.Flags().MarkHidden("deprecated")
 
 	root.cmd = cmd
@@ -98,7 +102,7 @@ func buildProject(options buildOpts) (*context.Context, error) {
 		return nil, err
 	}
 	return ctx, ctrlc.Default.Run(ctx, func() error {
-		for _, pipe := range pipeline.BuildPipeline {
+		for _, pipe := range setupPipeline(ctx, options) {
 			if err := skip.Maybe(
 				pipe,
 				logging.Log(
@@ -112,6 +116,13 @@ func buildProject(options buildOpts) (*context.Context, error) {
 		}
 		return nil
 	})
+}
+
+func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {
+	if options.singleTarget && options.output != "" && (options.id != "" || len(ctx.Config.Builds) == 1) {
+		return append(pipeline.BuildPipeline, withOutputPipe{options.output})
+	}
+	return pipeline.BuildPipeline
 }
 
 func setupBuildContext(ctx *context.Context, options buildOpts) error {
@@ -181,4 +192,18 @@ func setupBuildID(ctx *context.Context, id string) error {
 
 	ctx.Config.Builds = keep
 	return nil
+}
+
+// withOutputPipe copies the binary from dist to the specified output path.
+type withOutputPipe struct {
+	output string
+}
+
+func (w withOutputPipe) String() string {
+	return fmt.Sprintf("copying binary to %q", w.output)
+}
+
+func (w withOutputPipe) Run(ctx *context.Context) error {
+	path := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()[0].Path
+	return gio.Copy(path, w.output)
 }
