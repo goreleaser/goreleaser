@@ -310,8 +310,8 @@ func (c *gitlabClient) CreateRelease(ctx *context.Context, body string) (release
 		log.WithField("name", release.Name).Info("release created")
 	} else {
 		desc := body
-		if release != nil && release.DescriptionHTML != "" {
-			desc = release.DescriptionHTML
+		if release != nil {
+			desc = getReleaseNotes(release.DescriptionHTML, body, ctx.Config.Release.ReleaseNotesMode)
 		}
 
 		release, _, err = c.client.Releases.UpdateRelease(projectID, tagName, &gitlab.UpdateReleaseOptions{
