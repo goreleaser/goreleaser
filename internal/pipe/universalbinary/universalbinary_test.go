@@ -247,11 +247,51 @@ func TestRun(t *testing.T) {
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{{Cmd: "echo post"}}
 		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: "": exec: "exit": executable file not found in $PATH`)
 	})
+
 	t.Run("failing post-hook", func(t *testing.T) {
 		ctx := ctx5
 		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
 		require.EqualError(t, Pipe{}.Run(ctx), `post hook failed: "": exec: "exit": executable file not found in $PATH`)
+	})
+
+	t.Run("hook with env tmpl", func(t *testing.T) {
+		ctx := ctx5
+		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{
+			Cmd: "echo {{.Env.FOO}}",
+			Env: []string{"FOO=foo-{{.Tag}}"},
+		}}
+		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("hook with bad env tmpl", func(t *testing.T) {
+		ctx := ctx5
+		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{
+			Cmd: "echo blah",
+			Env: []string{"FOO=foo-{{.Tag}"},
+		}}
+		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
+		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: template: tmpl:1: unexpected "}" in operand`)
+	})
+
+	t.Run("hook with bad dir tmpl", func(t *testing.T) {
+		ctx := ctx5
+		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{
+			Cmd: "echo blah",
+			Dir: "{{.Tag}",
+		}}
+		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
+		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: template: tmpl:1: unexpected "}" in operand`)
+	})
+
+	t.Run("hook with bad cmd tmpl", func(t *testing.T) {
+		ctx := ctx5
+		ctx.Config.UniversalBinaries[0].Hooks.Pre = []config.Hook{{
+			Cmd: "echo blah-{{.Tag }",
+		}}
+		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
+		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: template: tmpl:1: unexpected "}" in operand`)
 	})
 }
 
