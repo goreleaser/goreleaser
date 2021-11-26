@@ -226,7 +226,7 @@ release:
   extra_files:
     - glob: ./cosign.pub
   footer: |
-    **Full Changelog**: https://github.com/goreleaser/goreleaser/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ .Tag }}
 
     ## What to do next?
 
