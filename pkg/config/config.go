@@ -450,6 +450,15 @@ type Archive struct {
 	AllowDifferentBinaryCount bool              `yaml:"allow_different_binary_count,omitempty"`
 }
 
+type ReleaseNotesMode string
+
+const (
+	ReleaseNotesModeKeepExisting ReleaseNotesMode = "keep-existing"
+	ReleaseNotesModeAppend       ReleaseNotesMode = "append"
+	ReleaseNotesModeReplace      ReleaseNotesMode = "replace"
+	ReleaseNotesModePrepend      ReleaseNotesMode = "prepend"
+)
+
 // Release config used for the GitHub/GitLab release.
 type Release struct {
 	GitHub                 Repo        `yaml:"github,omitempty"`
@@ -464,6 +473,8 @@ type Release struct {
 	DiscussionCategoryName string      `yaml:"discussion_category_name,omitempty"`
 	Header                 string      `yaml:"header,omitempty"`
 	Footer                 string      `yaml:"footer,omitempty"`
+
+	ReleaseNotesMode ReleaseNotesMode `yaml:"mode,omitempty" jsonschema:"title=enum=keep-existing,enum=append,enum=prepend,enum=replace,default=keep-existing"`
 }
 
 // Milestone config used for VCS milestone.

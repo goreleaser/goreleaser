@@ -41,6 +41,17 @@ release:
   # Default is false.
   prerelease: auto
 
+  # What to do with the release notes in case there the release already exists.
+  #
+  # Valid options are:
+  # - `keep-existing`: keep the existing notes
+  # - `append`: append the current release notes to the existing notes
+  # - `prepend`: prepend the current release notes to the existing notes
+  # - `replace`: replace existing notes
+  #
+  # Default is `keep-existing`.
+  mode: append
+
   # Header template for the release body.
   # Defaults to empty.
   header: |
@@ -82,7 +93,7 @@ release:
 
 ## GitLab
 
-Second, let's see what can be customized in the `release` section for GitLab.
+Let's see what can be customized in the `release` section for GitLab.
 
 ```yaml
 # .goreleaser.yml
@@ -107,6 +118,17 @@ release:
   # You can disable this pipe in order to not upload any artifacts.
   # Defaults to false.
   disable: true
+
+  # What to do with the release notes in case there the release already exists.
+  #
+  # Valid options are:
+  # - `keep-existing`: keep the existing notes
+  # - `append`: append the current release notes to the existing notes
+  # - `prepend`: prepend the current release notes to the existing notes
+  # - `replace`: replace existing notes
+  #
+  # Default is `keep-existing`.
+  mode: append
 
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
@@ -156,6 +178,17 @@ release:
   # You can disable this pipe in order to not upload any artifacts.
   # Defaults to false.
   disable: true
+
+  # What to do with the release notes in case there the release already exists.
+  #
+  # Valid options are:
+  # - `keep-existing`: keep the existing notes
+  # - `append`: append the current release notes to the existing notes
+  # - `prepend`: prepend the current release notes to the existing notes
+  # - `replace`: replace existing notes
+  #
+  # Default is `keep-existing`.
+  mode: append
 
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).

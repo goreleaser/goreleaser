@@ -1718,6 +1718,15 @@
 					},
 					"footer": {
 						"type": "string"
+					},
+					"mode": {
+						"enum": [
+							"append",
+							"prepend",
+							"replace"
+						],
+						"type": "string",
+						"default": "keep-existing"
 					}
 				},
 				"additionalProperties": false,
