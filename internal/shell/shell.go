@@ -39,7 +39,7 @@ func RunWithOutput(dir string, command, env []string, stdout, stderr *bytes.Buff
 
 	log.WithFields(fields).Debug("running")
 	if err := cmd.Run(); err != nil {
-		log.WithFields(fields).WithError(err).Debug("failed start")
+		log.WithFields(fields).WithError(err).Debug("failed")
 		return fmt.Errorf("%q: %w", stdout.String(), err)
 	}
 
