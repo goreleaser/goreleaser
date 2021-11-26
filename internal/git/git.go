@@ -4,10 +4,10 @@ package git
 import (
 	"bytes"
 	"errors"
-	"os/exec"
 	"strings"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/shell"
 )
 
 // IsRepo returns true if current folder is a git repository.
@@ -19,28 +19,24 @@ func IsRepo() bool {
 // RunEnv runs a git command with the specified env vars and returns its output or errors.
 func RunEnv(env map[string]string, args ...string) (string, error) {
 	// TODO: use exex.CommandContext here and refactor.
-	extraArgs := []string{
-		"-c", "log.showSignature=false",
+	baseCmd := []string{
+		"git", "-c", "log.showSignature=false",
 	}
-	args = append(extraArgs, args...)
+	cmd := append(baseCmd, args...)
 	/* #nosec */
-	cmd := exec.Command("git", args...)
 
+	envs := []string{}
 	if env != nil {
-		cmd.Env = []string{}
 		for k, v := range env {
-			cmd.Env = append(cmd.Env, k+"="+v)
+			envs = append(envs, k+"="+v)
 		}
 	}
 
-	stdout := bytes.Buffer{}
-	stderr := bytes.Buffer{}
-
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
 
 	log.WithField("args", args).Debug("running git")
-	err := cmd.Run()
+	err := shell.RunWithOutput("", cmd, envs, stdout, stderr)
 
 	log.WithField("stdout", stdout.String()).
 		WithField("stderr", stderr.String()).
