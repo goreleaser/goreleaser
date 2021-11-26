@@ -474,7 +474,7 @@ type Release struct {
 	Header                 string      `yaml:"header,omitempty"`
 	Footer                 string      `yaml:"footer,omitempty"`
 
-	ReleaseNotesMode ReleaseNotesMode `yaml:"release_notes_mode,omitempty"`
+	ReleaseNotesMode ReleaseNotesMode `yaml:"mode,omitempty"`
 }
 
 // Milestone config used for VCS milestone.

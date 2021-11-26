@@ -50,7 +50,7 @@ release:
   # - `replace`: replace existing notes
   #
   # Default is `keep-existing`.
-  release_notes_mode: append
+  mode: append
 
   # Header template for the release body.
   # Defaults to empty.
@@ -128,7 +128,7 @@ release:
   # - `replace`: replace existing notes
   #
   # Default is `keep-existing`.
-  release_notes_mode: append
+  mode: append
 
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
@@ -188,7 +188,7 @@ release:
   # - `replace`: replace existing notes
   #
   # Default is `keep-existing`.
-  release_notes_mode: append
+  mode: append
 
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
