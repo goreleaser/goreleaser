@@ -363,6 +363,21 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"ChangeLogGroup": {
+				"properties": {
+					"title": {
+						"type": "string"
+					},
+					"regexp": {
+						"type": "string"
+					},
+					"order": {
+						"type": "integer"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"Changelog": {
 				"properties": {
 					"filters": {
@@ -377,6 +392,13 @@
 					},
 					"use": {
 						"type": "string"
+					},
+					"groups": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/ChangeLogGroup"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -600,6 +622,9 @@
 			"ExtraFile": {
 				"properties": {
 					"glob": {
+						"type": "string"
+					},
+					"name_template": {
 						"type": "string"
 					}
 				},
@@ -1855,6 +1880,15 @@
 					},
 					"footer": {
 						"type": "string"
+					},
+					"mode": {
+						"enum": [
+							"append",
+							"prepend",
+							"replace"
+						],
+						"type": "string",
+						"default": "keep-existing"
 					}
 				},
 				"additionalProperties": false,
@@ -2292,6 +2326,9 @@
 					},
 					"replace": {
 						"type": "boolean"
+					},
+					"hooks": {
+						"$ref": "#/definitions/BuildHookConfig"
 					}
 				},
 				"additionalProperties": false,
