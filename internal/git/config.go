@@ -38,10 +38,6 @@ func ExtractRepoFromURL(rawurl string) (config.Repo, error) {
 	// Gitlab-CI uses this type of URL
 	if strings.Count(s, ":") == 1 {
 		s = s[strings.LastIndex(s, ":")+1:]
-	} else {
-		// Handle Gitlab-ci funky URLs in the form of:
-		// "https://gitlab-ci-token:SOME_TOKEN@gitlab.yourcompany.com/yourgroup/yourproject.git"
-		s = "//" + s[strings.LastIndex(s, "@")+1:]
 	}
 
 	// now we can parse it with net/url
