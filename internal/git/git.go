@@ -16,8 +16,8 @@ func IsRepo() bool {
 	return err == nil && strings.TrimSpace(out) == "true"
 }
 
-// RunEnv runs a git command with the specified env vars and returns its output or errors.
-func RunEnv(env map[string]string, args ...string) (string, error) {
+// Run runs a git command and returns its output or errors.
+func Run(args ...string) (string, error) {
 	// TODO: use exex.CommandContext here and refactor.
 	baseCmd := []string{
 		"git", "-c", "log.showSignature=false",
@@ -47,11 +47,6 @@ func RunEnv(env map[string]string, args ...string) (string, error) {
 	}
 
 	return stdout.String(), nil
-}
-
-// Run runs a git command and returns its output or errors.
-func Run(args ...string) (string, error) {
-	return RunEnv(nil, args...)
 }
 
 // Clean the output.

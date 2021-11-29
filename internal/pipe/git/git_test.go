@@ -5,7 +5,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -334,22 +333,4 @@ func TestPreviousTagFromCI(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestCommitDate(t *testing.T) {
-	// round to seconds since this is expressed in a Unix timestamp
-	commitDate := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second)
-
-	testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	testlib.GitCommitWithDate(t, "commit1", commitDate)
-	testlib.GitTag(t, "v0.0.1")
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
-	require.Empty(t, ctx.Git.PreviousTag)
-	require.True(t, commitDate.Equal(ctx.Git.CommitDate), "commit date does not match expected")
 }
