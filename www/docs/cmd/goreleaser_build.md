@@ -4,11 +4,20 @@ Builds the current project
 
 ## Synopsis
 
-The build command allows you to execute only a subset of the pipeline, i.e. only the build step with its dependencies.
+The `goreleaser build` command is analogous to the
+`go build` command, in the sense it only builds binaries.
 
-It allows you to quickly check if your GoReleaser build configurations are doing what you expect.
+Its itented usage is, for example, within Makefiles to avoid setting up
+ldflags and etc in several places. That way, the GoReleaser config becomes the
+source of truth for how the binaries should be built.
 
-Finally, it allows you to generate a local build for your current machine only using the `--single-target` option, and specific build IDs using the `--id` option.
+It also allows you to generate a local build for your current machine only using
+the `--single-target` option, and specific build IDs using the
+`--id` option in case you have more than one.
+
+When using `--single-target`, the `GOOS` and
+`GOARCH` environment variables are used to determine the target,
+defaulting to the current's machine target if not set.
 
 
 ```
