@@ -581,7 +581,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].Main = ""
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
-		}), `build for no-main does not contain a main function`)
+		}), errNoMain{"no-main"}.Error())
 	})
 	t.Run("not main.go", func(t *testing.T) {
 		ctx := newCtx(t)
@@ -595,14 +595,14 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
-		}), `build for no-main does not contain a main function`)
+		}), errNoMain{"no-main"}.Error())
 	})
 	t.Run("fixed main.go", func(t *testing.T) {
 		ctx := newCtx(t)
 		ctx.Config.Builds[0].Main = "main.go"
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
-		}), `build for no-main does not contain a main function`)
+		}), errNoMain{"no-main"}.Error())
 	})
 	t.Run("using gomod.proxy", func(t *testing.T) {
 		ctx := newCtx(t)
@@ -613,7 +613,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].UnproxiedMain = "."
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
-		}), `build for no-main does not contain a main function`)
+		}), errNoMain{"no-main"}.Error())
 	})
 	t.Run("using gomod.proxy and template", func(t *testing.T) {
 		ctx := newCtx(t)
@@ -625,7 +625,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].UnproxiedMain = "{{ .Env.Main }}"
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
-		}), `build for no-main does not contain a main function`)
+		}), errNoMain{"no-main"}.Error())
 	})
 	t.Run("using gomod.proxy and invalid template", func(t *testing.T) {
 		ctx := newCtx(t)

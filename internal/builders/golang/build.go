@@ -250,7 +250,7 @@ func checkMain(build config.Build) error {
 				}
 			}
 		}
-		return fmt.Errorf("build for %s does not contain a main function", build.Binary)
+		return errNoMain{build.Binary}
 	}
 	file, err := parser.ParseFile(token.NewFileSet(), main, nil, 0)
 	if err != nil {
@@ -259,7 +259,15 @@ func checkMain(build config.Build) error {
 	if hasMain(file) {
 		return nil
 	}
-	return fmt.Errorf("build for %s does not contain a main function", build.Binary)
+	return errNoMain{build.Binary}
+}
+
+type errNoMain struct {
+	bin string
+}
+
+func (e errNoMain) Error() string {
+	return fmt.Sprintf("build for %s does not contain a main function\nLearn more at https://goreleaser.com/errors/no-main\n", e.bin)
 }
 
 func hasMain(file *ast.File) bool {
