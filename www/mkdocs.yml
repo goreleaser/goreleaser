@@ -158,7 +158,8 @@ markdown_extensions:
   - meta
   - toc:
       permalink: true
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.superfences
   - pymdownx.tasklist:
       custom_checkbox: true
