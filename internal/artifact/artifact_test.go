@@ -367,10 +367,16 @@ func TestTypeToString(t *testing.T) {
 	} {
 		t.Run(a.String(), func(t *testing.T) {
 			require.NotEqual(t, "unknown", a.String())
+			bts, err := a.MarshalJSON()
+			require.NoError(t, err)
+			require.Equal(t, []byte(`"`+a.String()+`"`), bts)
 		})
 	}
 	t.Run("unknown", func(t *testing.T) {
 		require.Equal(t, "unknown", Type(9999).String())
+		bts, err := Type(9999).MarshalJSON()
+		require.NoError(t, err)
+		require.Equal(t, []byte(`"unknown"`), bts)
 	})
 }
 
