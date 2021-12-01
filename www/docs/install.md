@@ -142,7 +142,9 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
       ```
     1. Verify the signature:
       ```sh
-      COSIGN_EXPERIMENTAL=1 cosign verify-blob --signature checksums.txt.sig checksums.txt
+      COSIGN_EXPERIMENTAL=1 cosign verify-blob \
+        --signature checksums.txt.sig \
+        checksums.txt
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
       ```sh
@@ -157,12 +159,23 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
       ```
     1. Verify the signature:
       ```sh
-      COSIGN_EXPERIMENTAL=1 cosign verify-blob --signature checksums.txt.sig checksums.txt
+      COSIGN_EXPERIMENTAL=1 cosign verify-blob \
+        --signature checksums.txt.sig \
+        checksums.txt
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
       ```sh
       sha256sum --ignore-missing -c checksums.txt
       ```
+
+!!! tip
+    In air-gaped environments you can also download the `checksums.pem` file with:
+    ```sh
+    COSIGN_EXPERIMENTAL=1 cosign verify-blob \
+      --cert checksums.pem \
+      --signature checksums.txt.sig \
+      checksums.txt
+    ```
 
 ## Verifying docker images
 
