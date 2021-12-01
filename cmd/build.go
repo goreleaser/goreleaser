@@ -107,7 +107,7 @@ func buildProject(options buildOpts) (*context.Context, error) {
 		return nil, err
 	}
 	return ctx, ctrlc.Default.Run(ctx, func() error {
-		for _, pipe := range pipeline.BuildPipeline {
+		for _, pipe := range pipeline.BuildCmdPipeline {
 			if err := skip.Maybe(
 				pipe,
 				logging.Log(

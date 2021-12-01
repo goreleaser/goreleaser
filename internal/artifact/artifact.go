@@ -99,6 +99,10 @@ func (t Type) String() string {
 	}
 }
 
+func (t Type) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%q", t)), nil
+}
+
 const (
 	ExtraID        = "ID"
 	ExtraBinary    = "Binary"
@@ -111,14 +115,14 @@ const (
 
 // Artifact represents an artifact and its relevant info.
 type Artifact struct {
-	Name   string
-	Path   string
-	Goos   string
-	Goarch string
-	Goarm  string
-	Gomips string
-	Type   Type
-	Extra  map[string]interface{}
+	Name   string                 `json:"name,omitempty"`
+	Path   string                 `json:"path,omitempty"`
+	Goos   string                 `json:"goos,omitempty"`
+	Goarch string                 `json:"goarch,omitempty"`
+	Goarm  string                 `json:"goarm,omitempty"`
+	Gomips string                 `json:"gomips,omitempty"`
+	Type   Type                   `json:"type,omitempty"`
+	Extra  map[string]interface{} `json:"extra,omitempty"`
 }
 
 // ExtraOr returns the Extra field with the given key or the or value specified

@@ -1,0 +1,1 @@
+[{"name":"foo","path":"foo.txt","goos":"darwin","goarch":"amd64","goarm":"7","type":"Binary","extra":{"foo":"bar"}}]
