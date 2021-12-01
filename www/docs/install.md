@@ -175,13 +175,13 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
 === "OSS"
     Verify the signatures:
     ```sh
-    cosign verify goreleaser/goreleaser
+    COSIGN_EXPERIMENTAL=1 cosign verify goreleaser/goreleaser
     ```
 
 === "Pro"
     Verify the signatures:
     ```sh
-    cosign verify goreleaser/goreleaser-pro
+    COSIGN_EXPERIMENTAL=1 cosign verify goreleaser/goreleaser-pro
     ```
 
 ## Running with Docker
