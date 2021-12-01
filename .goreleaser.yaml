@@ -203,13 +203,25 @@ snapcrafts:
 
 signs:
 - cmd: cosign
-  stdin: '{{ .Env.COSIGN_PWD }}'
-  args: ["sign-blob", "-key=cosign.key", "-output=${signature}", "${artifact}"]
-  artifacts: checksum
+  env:
+    - COSIGN_EXPERIMENTAL=1
+  certificate: '{{ trimsuffix .Env.artifact ".txt" }}.pem'
+  args:
+    - sign-blob
+    - '--oidc-issuer={{if index .Env "CI"}}https://token.actions.githubusercontent.com{{else}}https://oauth2.sigstore.dev/auth{{end}}'
+    - '--output-certificate=${certificate}'
+    - '--output-signature=${signature}'
+    - '${artifact}'
 
 docker_signs:
-- artifacts: manifests
-  stdin: '{{ .Env.COSIGN_PWD }}'
+  - cmd: cosign
+    env:
+    - COSIGN_EXPERIMENTAL=1
+    artifacts: manifests
+    args:
+    - 'sign'
+    - '--oidc-issuer={{if index .Env "CI"}}https://token.actions.githubusercontent.com{{else}}https://oauth2.sigstore.dev/auth{{end}}'
+    - '${artifact}'
 
 publishers:
   - name: fury.io
@@ -223,17 +235,15 @@ milestones:
   - close: true
 
 release:
-  extra_files:
-    - glob: ./cosign.pub
   footer: |
     **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ .Tag }}
 
     ## What to do next?
 
-    - Check out the [GoReleaser Pro](https://goreleaser.com/pro) distribution;
-    - Join our [Discord server](https://discord.gg/RGEBtg8vQ6);
-    - Follow us on [Twitter](https://twitter.com/goreleaser);
-    - Read the [documentation](https://goreleaser.com/intro/).
+    - Read the [documentation](https://goreleaser.com/intro/)
+    - Check out the [GoReleaser Pro](https://goreleaser.com/pro) distribution
+    - Join our [Discord server](https://discord.gg/RGEBtg8vQ6)
+    - Follow us on [Twitter](https://twitter.com/goreleaser)
 
 announce:
   skip: "{{gt .Patch 0}}"

@@ -135,17 +135,15 @@ All artifacts are checksummed and the checksum file is signed with [cosign][].
 You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
 
 === "OSS"
-    1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][releases] page:
+    1. Download the files you want, and both the `checksums.txt`, `checksums.txt.sig` and `checksums.pem` files from the [releases][releases] page:
       ```sh
       wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt
       wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sig
+      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.pem
       ```
     1. Verify the signature:
       ```sh
-      cosign verify-blob \
-        -key https://goreleaser.com/static/goreleaser.pub \
-        -signature checksums.txt.sig \
-        checksums.txt
+      COSIGN_EXPERIMENTAL=1 cosign verify-blob --cert checksums.pem --signature checksums.txt.sig checksums.txt
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
       ```sh
@@ -153,17 +151,15 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
       ```
 
 === "Pro"
-    1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][pro-releases] page:
+    1. Download the files you want, and both the `checksums.txt`, `checksums.txt.sig` and `checksums.pem` files from the [releases][pro-releases] page:
       ```sh
       wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt
       wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.sig
+      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.pem
       ```
     1. Verify the signature:
       ```sh
-      cosign verify-blob \
-        -key https://goreleaser.com/static/goreleaser.pub \
-        -signature checksums.txt.sig \
-        checksums.txt
+      COSIGN_EXPERIMENTAL=1 cosign verify-blob --cert checksums.pem --signature checksums.txt.sig checksums.txt
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
       ```sh
@@ -179,17 +175,13 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
 === "OSS"
     Verify the signatures:
     ```sh
-    cosign verify \
-      -key https://goreleaser.com/static/goreleaser.pub \
-      goreleaser/goreleaser
+    cosign verify goreleaser/goreleaser
     ```
 
 === "Pro"
     Verify the signatures:
     ```sh
-    cosign verify \
-      -key https://goreleaser.com/static/goreleaser.pub \
-      goreleaser/goreleaser-pro
+    cosign verify goreleaser/goreleaser-pro
     ```
 
 ## Running with Docker
