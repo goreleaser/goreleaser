@@ -162,7 +162,7 @@ tasks:
           Cmd: '{{.rpm}} goreleaser-*.armv7hl.rpm'
 
   goreleaser:test:deb:
-    desc: Tests rpm packages
+    desc: Tests deb packages
     vars:
       dpkg: 'dpkg --ignore-depends=git -i'
     cmds:
@@ -188,7 +188,7 @@ tasks:
           Cmd: '{{.dpkg}} goreleaser*_armhf.deb'
 
   goreleaser:test:apk:
-    desc: Tests rpm packages
+    desc: Tests apk packages
     vars:
       apk: 'apk add --allow-untrusted -U'
     cmds:
