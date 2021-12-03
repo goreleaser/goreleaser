@@ -26,8 +26,8 @@ docker_signs:
 
     # Command line templateable arguments for the command
     #
-    # defaults to `["sign", "-key=cosign.key", "${artifact}"]`
-    args: ["sign", "-key=cosign.key", "-upload=false", "${artifact}"]
+    # defaults to `["sign", "--key=cosign.key", "${artifact}"]`
+    args: ["sign", "--key=cosign.key", "--upload=false", "${artifact}"]
 
 
     # Which artifacts to sign
@@ -90,5 +90,5 @@ docker_signs:
 Later on you (and anyone else) can verify the image with:
 
 ```sh
-cosign verify -key cosign.pub your/image
+cosign verify --key cosign.pub your/image
 ```
