@@ -3,6 +3,7 @@
 package checksums
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -41,7 +42,10 @@ func (Pipe) Run(ctx *context.Context) error {
 		return err
 	}
 	filepath := filepath.Join(ctx.Config.Dist, filename)
-	if err := refresh(ctx, filename, filepath); err != nil {
+	if err := refresh(ctx, filepath); err != nil {
+		if errors.Is(err, errNoArtifacts) {
+			return nil
+		}
 		return err
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -51,14 +55,14 @@ func (Pipe) Run(ctx *context.Context) error {
 		Extra: map[string]interface{}{
 			artifact.ExtraRefresh: func() error {
 				log.WithField("file", filename).Info("refreshing checksums")
-				return refresh(ctx, filename, filepath)
+				return refresh(ctx, filepath)
 			},
 		},
 	})
 	return nil
 }
 
-func refresh(ctx *context.Context, filename, filepath string) error {
+func refresh(ctx *context.Context, filepath string) error {
 	filter := artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
@@ -85,7 +89,7 @@ func refresh(ctx *context.Context, filename, filepath string) error {
 	}
 
 	if len(artifactList) == 0 {
-		return nil
+		return errNoArtifacts
 	}
 
 	g := semerrgroup.New(ctx.Parallelism)
@@ -132,3 +136,5 @@ func checksums(algorithm string, artifact *artifact.Artifact) (string, error) {
 	}
 	return fmt.Sprintf("%v  %v\n", sha, artifact.Name), nil
 }
+
+var errNoArtifacts = errors.New("there are no artifacts to sign")

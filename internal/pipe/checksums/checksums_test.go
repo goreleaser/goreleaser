@@ -91,6 +91,7 @@ func TestPipe(t *testing.T) {
 			var artifacts []string
 			for _, a := range ctx.Artifacts.List() {
 				artifacts = append(artifacts, a.Name)
+				require.NoError(t, a.Refresh(), "refresh should not fail and yield same results as nothing changed")
 			}
 			require.Contains(t, artifacts, checksums, binary)
 			bts, err := os.ReadFile(filepath.Join(folder, checksums))
@@ -98,6 +99,40 @@ func TestPipe(t *testing.T) {
 			require.Contains(t, tt.want, string(bts))
 		})
 	}
+}
+
+func TestRefreshModifying(t *testing.T) {
+	const binary = "binary"
+	folder := t.TempDir()
+	file := filepath.Join(folder, binary)
+	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
+	ctx := context.New(
+		config.Project{
+			Dist:        folder,
+			ProjectName: binary,
+			Checksum: config.Checksum{
+				NameTemplate: "{{ .ProjectName }}_{{ .Env.FOO }}_checksums.txt",
+				Algorithm:    "sha256",
+			},
+		},
+	)
+	ctx.Git.CurrentTag = "1.2.3"
+	ctx.Env = map[string]string{"FOO": "bar"}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: binary,
+		Path: file,
+		Type: artifact.UploadableBinary,
+	})
+	require.NoError(t, Pipe{}.Run(ctx))
+	checks := ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum)).List()
+	require.Len(t, checks, 1)
+	previous, err := os.ReadFile(checks[0].Path)
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(file, []byte("some other string"), 0o644))
+	require.NoError(t, checks[0].Refresh())
+	current, err := os.ReadFile(checks[0].Path)
+	require.NoError(t, err)
+	require.NotEqual(t, string(previous), string(current))
 }
 
 func TestPipeFileNotExist(t *testing.T) {
@@ -192,7 +227,7 @@ func TestPipeWhenNoArtifacts(t *testing.T) {
 		Artifacts: artifact.New(),
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Len(t, ctx.Artifacts.List(), 1)
+	require.Len(t, ctx.Artifacts.List(), 0)
 }
 
 func TestDefault(t *testing.T) {
