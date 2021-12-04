@@ -170,7 +170,7 @@ All artifacts are checksummed and the checksum file is signed with [cosign][].
 
 ### docker images
 
-Our Docker image is signed with [cosign][].
+Our Docker images are signed with [cosign][].
 
 Verify the signatures:
 
