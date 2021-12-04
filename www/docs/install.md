@@ -128,11 +128,11 @@ Below you can find the steps for each of them.
 === "Pro"
     Download the pre-compiled binaries from the [Pro releases page][pro-releases] and copy them to the desired location.
 
-## Verifying the binaries
+## Verifying the artifacts
+
+### binaries
 
 All artifacts are checksummed and the checksum file is signed with [cosign][].
-
-You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
 
 === "OSS"
     1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][releases] page:
@@ -168,16 +168,7 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
       sha256sum --ignore-missing -c checksums.txt
       ```
 
-!!! tip
-    In air-gaped environments you can also download the `checksums.pem` file with:
-    ```sh
-    COSIGN_EXPERIMENTAL=1 cosign verify-blob \
-      --cert checksums.pem \
-      --signature checksums.txt.sig \
-      checksums.txt
-    ```
-
-## Verifying docker images
+### docker images
 
 Our Docker image is signed with [cosign][].
 
