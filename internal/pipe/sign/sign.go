@@ -174,8 +174,8 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
-	cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
+	cmd.Stderr = io.MultiWriter(logext.NewConditionalWriter(fields, logext.Error, cfg.AlwaysOutput || logext.IsDebug()), w)
+	cmd.Stdout = io.MultiWriter(logext.NewConditionalWriter(fields, logext.Info, cfg.AlwaysOutput || logext.IsDebug()), w)
 	if stdin != nil {
 		cmd.Stdin = stdin
 	}

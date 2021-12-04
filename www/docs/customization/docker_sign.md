@@ -61,6 +61,12 @@ docker_signs:
     env:
     - FOO=bar
     - HONK=honkhonk
+
+    # By default, the stdout and stderr of the signing cmd are discarded.
+    # If you want them to be shown, set this to true.
+    #
+    # Defaults to false
+    always_output: true
 ```
 
 ### Available variable names
