@@ -131,6 +131,7 @@ nav:
     - goreleaser jsonschema: cmd/goreleaser_jsonschema.md
 - Common errors:
   - errors/dirty.md
+  - errors/multiple-tokens.md
   - errors/no-main.md
 - deprecations.md
 - Cookbooks:
