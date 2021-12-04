@@ -172,16 +172,14 @@ All artifacts are checksummed and the checksum file is signed with [cosign][].
 
 Our Docker image is signed with [cosign][].
 
-You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
+Verify the signatures:
 
 === "OSS"
-    Verify the signatures:
     ```sh
     COSIGN_EXPERIMENTAL=1 cosign verify goreleaser/goreleaser
     ```
 
 === "Pro"
-    Verify the signatures:
     ```sh
     COSIGN_EXPERIMENTAL=1 cosign verify goreleaser/goreleaser-pro
     ```
