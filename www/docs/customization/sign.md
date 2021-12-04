@@ -119,7 +119,7 @@ Assuming you have a `cosign.key` in the repository root and a `COSIGN_PWD` envir
 signs:
 - cmd: cosign
   stdin: '{{ .Env.COSIGN_PWD }}'
-  args: ["sign-blob", "-key=cosign.key", "-output=${signature}", "${artifact}"]
+  args: ["sign-blob", "--key=cosign.key", "--output=${signature}", "${artifact}"]
   artifacts: all
 ```
 
@@ -202,7 +202,7 @@ but you'll need to manually add the `.sig` files to the release and/or archive:
 builds:
 - hooks:
     post:
-      - sh -c "echo $COSIGN_PWD | cosign sign-blob -key cosign.key {{ .Path }} > dist/{{ .ProjectName }}_{{ .Version }}_{{ .Target }}.sig"
+      - sh -c "COSIGN_PASSWORD=$COSIGN_PWD cosign sign-blob --key cosign.key --output dist/{{ .ProjectName }}_{{ .Version }}_{{ .Target }}.sig {{ .Path }}"
 
 # add to the release directly:
 release:
