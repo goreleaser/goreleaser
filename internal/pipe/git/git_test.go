@@ -37,6 +37,22 @@ func TestSingleCommit(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
+	require.Equal(t, "commit1", ctx.Git.Subject)
+}
+
+func TestAnnotatedTags(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitAnnotatedTag(t, "v0.0.1", "first version")
+	ctx := &context.Context{
+		Config: config.Project{},
+	}
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
+	require.Equal(t, "first version", ctx.Git.Subject)
+	require.Equal(t, "v0.0.1", ctx.Git.Summary)
 }
 
 func TestBranch(t *testing.T) {
