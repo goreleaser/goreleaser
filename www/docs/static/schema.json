@@ -880,23 +880,17 @@
 				]
 			},
 			"IgnoredBuild": {
-				"required": [
-					"Goos",
-					"Goarch",
-					"Goarm",
-					"Gomips"
-				],
 				"properties": {
-					"Goos": {
+					"goos": {
 						"type": "string"
 					},
-					"Goarch": {
+					"goarch": {
 						"type": "string"
 					},
-					"Goarm": {
+					"goarm": {
 						"type": "string"
 					},
-					"Gomips": {
+					"gomips": {
 						"type": "string"
 					}
 				},
