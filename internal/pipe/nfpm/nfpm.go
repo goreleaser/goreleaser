@@ -8,24 +8,28 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/nfpm/v2"
-	_ "github.com/goreleaser/nfpm/v2/apk" // blank import to register the format
-	_ "github.com/goreleaser/nfpm/v2/deb" // blank import to register the format
-	"github.com/goreleaser/nfpm/v2/files"
-	_ "github.com/goreleaser/nfpm/v2/rpm" // blank import to register the format
-	"github.com/imdario/mergo"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
-	"github.com/goreleaser/goreleaser/internal/linux"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/nfpm/v2"
+	"github.com/goreleaser/nfpm/v2/deprecation"
+	"github.com/goreleaser/nfpm/v2/files"
+	"github.com/imdario/mergo"
+
+	_ "github.com/goreleaser/nfpm/v2/apk" // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/deb" // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/rpm" // blank import to register the format
 )
 
-const defaultNameTemplate = "{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+const (
+	defaultNameTemplate = "{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+	extraFiles          = "Files"
+)
 
 // Pipe for nfpm packaging.
 type Pipe struct{}
@@ -57,6 +61,8 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		ids.Inc(fpm.ID)
 	}
+
+	deprecation.Noticer = deprecate.NewWriter(ctx)
 	return ids.Validate()
 }
 
@@ -85,12 +91,11 @@ func doRun(ctx *context.Context, fpm config.NFPM) error {
 	}
 	g := semerrgroup.New(ctx.Parallelism)
 	for _, format := range fpm.Formats {
-		for platform, artifacts := range linuxBinaries {
+		for _, artifacts := range linuxBinaries {
 			format := format
-			arch := linux.Arch(platform)
 			artifacts := artifacts
 			g.Go(func() error {
-				return create(ctx, fpm, format, arch, artifacts)
+				return create(ctx, fpm, format, artifacts)
 			})
 		}
 	}
@@ -112,60 +117,58 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 	return &overridden, nil
 }
 
-func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries []*artifact.Artifact) error {
+func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*artifact.Artifact) error {
+	arch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips
+
 	overridden, err := mergeOverrides(fpm, format)
 	if err != nil {
 		return err
 	}
-	tmpl := tmpl.New(ctx).
+	t := tmpl.New(ctx).
 		WithArtifact(binaries[0], overridden.Replacements).
 		WithExtraFields(tmpl.Fields{
 			"Release":     fpm.Release,
 			"Epoch":       fpm.Epoch,
 			"PackageName": fpm.PackageName,
 		})
-	name, err := tmpl.Apply(overridden.FileNameTemplate)
+
+	binDir, err := t.Apply(fpm.Bindir)
 	if err != nil {
 		return err
 	}
 
-	binDir, err := tmpl.Apply(fpm.Bindir)
+	homepage, err := t.Apply(fpm.Homepage)
 	if err != nil {
 		return err
 	}
 
-	homepage, err := tmpl.Apply(fpm.Homepage)
+	description, err := t.Apply(fpm.Description)
 	if err != nil {
 		return err
 	}
 
-	description, err := tmpl.Apply(fpm.Description)
+	debKeyFile, err := t.Apply(overridden.Deb.Signature.KeyFile)
 	if err != nil {
 		return err
 	}
 
-	debKeyFile, err := tmpl.Apply(overridden.Deb.Signature.KeyFile)
+	rpmKeyFile, err := t.Apply(overridden.RPM.Signature.KeyFile)
 	if err != nil {
 		return err
 	}
 
-	rpmKeyFile, err := tmpl.Apply(overridden.RPM.Signature.KeyFile)
-	if err != nil {
-		return err
-	}
-
-	apkKeyFile, err := tmpl.Apply(overridden.APK.Signature.KeyFile)
+	apkKeyFile, err := t.Apply(overridden.APK.Signature.KeyFile)
 	if err != nil {
 		return err
 	}
 
 	contents := files.Contents{}
 	for _, content := range overridden.Contents {
-		src, err := tmpl.Apply(content.Source)
+		src, err := t.Apply(content.Source)
 		if err != nil {
 			return err
 		}
-		dst, err := tmpl.Apply(content.Destination)
+		dst, err := t.Apply(content.Destination)
 		if err != nil {
 			return err
 		}
@@ -178,9 +181,10 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		})
 	}
 
+	log := log.WithField("package", fpm.PackageName).WithField("format", format).WithField("arch", arch)
+
 	// FPM meta package should not contain binaries at all
 	if !fpm.Meta {
-		log := log.WithField("package", name+"."+format).WithField("arch", arch)
 		for _, binary := range binaries {
 			src := binary.Path
 			dst := filepath.Join(binDir, binary.Name)
@@ -292,14 +296,25 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 		return err
 	}
 
-	path := filepath.Join(ctx.Config.Dist, name+"."+format)
+	info = nfpm.WithDefaults(info)
+	name, err := t.WithExtraFields(tmpl.Fields{
+		"ConventionalFileName": packager.ConventionalFileName(info),
+	}).Apply(overridden.FileNameTemplate)
+	if err != nil {
+		return err
+	}
+	if !strings.HasSuffix(name, "."+format) {
+		name = name + "." + format
+	}
+
+	path := filepath.Join(ctx.Config.Dist, name)
 	log.WithField("file", path).Info("creating")
 	w, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 	defer w.Close()
-	if err := packager.Package(nfpm.WithDefaults(info), w); err != nil {
+	if err := packager.Package(info, w); err != nil {
 		return fmt.Errorf("nfpm failed: %w", err)
 	}
 	if err := w.Close(); err != nil {
@@ -307,16 +322,16 @@ func create(ctx *context.Context, fpm config.NFPM, format, arch string, binaries
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.LinuxPackage,
-		Name:   name + "." + format,
+		Name:   name,
 		Path:   path,
 		Goos:   binaries[0].Goos,
 		Goarch: binaries[0].Goarch,
 		Goarm:  binaries[0].Goarm,
 		Extra: map[string]interface{}{
-			"Builds": binaries,
-			"ID":     fpm.ID,
-			"Format": format,
-			"Files":  contents,
+			artifact.ExtraBuilds: binaries,
+			artifact.ExtraID:     fpm.ID,
+			artifact.ExtraFormat: format,
+			extraFiles:           contents,
 		},
 	})
 	return nil

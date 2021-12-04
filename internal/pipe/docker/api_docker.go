@@ -1,8 +1,9 @@
 package docker
 
 import (
-	"context"
 	"fmt"
+
+	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
 func init() {
@@ -17,7 +18,7 @@ func init() {
 
 type dockerManifester struct{}
 
-func (m dockerManifester) Create(ctx context.Context, manifest string, images, flags []string) error {
+func (m dockerManifester) Create(ctx *context.Context, manifest string, images, flags []string) error {
 	_ = runCommand(ctx, ".", "docker", "manifest", "rm", manifest)
 
 	args := []string{"manifest", "create", manifest}
@@ -30,7 +31,7 @@ func (m dockerManifester) Create(ctx context.Context, manifest string, images, f
 	return nil
 }
 
-func (m dockerManifester) Push(ctx context.Context, manifest string, flags []string) error {
+func (m dockerManifester) Push(ctx *context.Context, manifest string, flags []string) error {
 	args := []string{"manifest", "push", manifest}
 	args = append(args, flags...)
 	if err := runCommand(ctx, ".", "docker", args...); err != nil {
@@ -43,14 +44,14 @@ type dockerImager struct {
 	buildx bool
 }
 
-func (i dockerImager) Push(ctx context.Context, image string, flags []string) error {
+func (i dockerImager) Push(ctx *context.Context, image string, flags []string) error {
 	if err := runCommand(ctx, ".", "docker", "push", image); err != nil {
 		return fmt.Errorf("failed to push %s: %w", image, err)
 	}
 	return nil
 }
 
-func (i dockerImager) Build(ctx context.Context, root string, images, flags []string) error {
+func (i dockerImager) Build(ctx *context.Context, root string, images, flags []string) error {
 	if err := runCommand(ctx, root, "docker", i.buildCommand(images, flags)...); err != nil {
 		return fmt.Errorf("failed to build %s: %w", images[0], err)
 	}

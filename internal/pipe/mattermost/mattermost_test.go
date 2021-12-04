@@ -2,7 +2,7 @@ package mattermost
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -66,7 +66,7 @@ func TestPostWebhook(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rc := &incomingWebhookRequest{}
 
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		err := json.Unmarshal(body, rc)
 		require.NoError(t, err)
 		require.Equal(t, defaultColor, rc.Attachments[0].Color)
@@ -89,6 +89,7 @@ func TestPostWebhook(t *testing.T) {
 	})
 
 	ctx.Git.CurrentTag = "v1.0.0"
+	ctx.ReleaseURL = "https://github.com/honk/honk/releases/tag/v1.0.0"
 	ctx.Git.URL = "https://github.com/honk/honk"
 
 	os.Setenv("MATTERMOST_WEBHOOK", ts.URL)

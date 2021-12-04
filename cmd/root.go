@@ -83,6 +83,7 @@ single .goreleaser.yml file.
 		newCheckCmd().cmd,
 		newInitCmd().cmd,
 		newDocsCmd().cmd,
+		newSchemaCmd().cmd,
 	)
 
 	root.cmd = cmd

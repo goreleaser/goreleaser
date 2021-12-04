@@ -249,6 +249,7 @@ func TestUpload(t *testing.T) {
 		{"ubi", artifact.UploadableBinary},
 		{"sum", artifact.Checksum},
 		{"sig", artifact.Signature},
+		{"pem", artifact.Certificate},
 	} {
 		file := filepath.Join(folder, "a."+a.ext)
 		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
@@ -259,7 +260,7 @@ func TestUpload(t *testing.T) {
 			Path:   file,
 			Type:   a.typ,
 			Extra: map[string]interface{}{
-				"ID": "foo",
+				artifact.ExtraID: "foo",
 			},
 		})
 	}
@@ -438,6 +439,7 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u3", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/a.sum", "u3", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/a.sig", "u3", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.pem", "u3", "x", content, map[string]string{}},
 			),
 		},
 		{

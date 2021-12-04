@@ -71,6 +71,22 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 
 // Build builds a golang build.
 func (*Builder) Build(ctx *context.Context, build config.Build, options api.Options) error {
+	tpl := tmpl.New(ctx)
+	if build.Main != "" {
+		m, err := tpl.Apply(build.Main)
+		if err != nil {
+			return err
+		}
+		build.Main = m
+	}
+	if build.UnproxiedMain != "" {
+		m, err := tpl.Apply(build.UnproxiedMain)
+		if err != nil {
+			return err
+		}
+		build.UnproxiedMain = m
+	}
+
 	if err := checkMain(build); err != nil {
 		return err
 	}
@@ -84,9 +100,9 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		Goarm:  options.Goarm,
 		Gomips: options.Gomips,
 		Extra: map[string]interface{}{
-			"Binary": strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
-			"Ext":    options.Ext,
-			"ID":     build.ID,
+			artifact.ExtraBinary: strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
+			artifact.ExtraExt:    options.Ext,
+			artifact.ExtraID:     build.ID,
 		},
 	}
 
@@ -234,7 +250,7 @@ func checkMain(build config.Build) error {
 				}
 			}
 		}
-		return fmt.Errorf("build for %s does not contain a main function", build.Binary)
+		return errNoMain{build.Binary}
 	}
 	file, err := parser.ParseFile(token.NewFileSet(), main, nil, 0)
 	if err != nil {
@@ -243,7 +259,15 @@ func checkMain(build config.Build) error {
 	if hasMain(file) {
 		return nil
 	}
-	return fmt.Errorf("build for %s does not contain a main function", build.Binary)
+	return errNoMain{build.Binary}
+}
+
+type errNoMain struct {
+	bin string
+}
+
+func (e errNoMain) Error() string {
+	return fmt.Sprintf("build for %s does not contain a main function\nLearn more at https://goreleaser.com/errors/no-main\n", e.bin)
 }
 
 func hasMain(file *ast.File) bool {

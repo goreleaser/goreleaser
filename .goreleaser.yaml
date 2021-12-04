@@ -20,13 +20,13 @@ builds:
     - darwin
     - windows
   goarch:
-    - 386
+    - "386"
     - amd64
     - arm
     - arm64
   goarm:
-    - 6
-    - 7
+    - "6"
+    - "7"
   mod_timestamp: '{{ .CommitTimestamp }}'
   flags:
     - -trimpath
@@ -46,9 +46,20 @@ changelog:
     exclude:
     - '^docs:'
     - '^test:'
+    - '^chore'
     - Merge pull request
+    - Merge remote-tracking branch
     - Merge branch
     - go mod tidy
+  groups:
+    - title: 'New Features'
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: 'Bug fixes'
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 10
+    - title: Other work
+      order: 999
 
 dockers:
 - image_templates:
@@ -131,6 +142,8 @@ brews:
     - name: go
       type: optional
     - name: git
+    conflicts:
+    - goreleaser-pro
     install: |-
       bin.install "goreleaser"
       bash_completion.install "completions/goreleaser.bash" => "goreleaser"
@@ -154,7 +167,7 @@ scoop:
   license: MIT
 
 nfpms:
-  - file_name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+  - file_name_template: '{{ .ConventionalFileName }}'
     id: packages
     homepage:  https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible
@@ -206,8 +219,15 @@ publishers:
     - 'FURY_TOKEN={{ .Env.FURY_TOKEN }}'
     cmd: ./scripts/fury-upload.sh {{ .ArtifactName }}
 
+milestones:
+  - close: true
+
 release:
+  extra_files:
+    - glob: ./cosign.pub
   footer: |
+    **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ .Tag }}
+
     ## What to do next?
 
     - Check out the [GoReleaser Pro](https://goreleaser.com/pro) distribution;

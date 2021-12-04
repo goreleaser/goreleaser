@@ -2,7 +2,6 @@ package docker
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"os/exec"
@@ -11,6 +10,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
+	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
 var (
@@ -33,18 +33,18 @@ func registerImager(use string, impl imager) {
 
 // imager is something that can build and push docker images.
 type imager interface {
-	Build(ctx context.Context, root string, images, flags []string) error
-	Push(ctx context.Context, image string, flags []string) error
+	Build(ctx *context.Context, root string, images, flags []string) error
+	Push(ctx *context.Context, image string, flags []string) error
 }
 
 // manifester is something that can create and push docker manifests.
 type manifester interface {
-	Create(ctx context.Context, manifest string, images, flags []string) error
-	Push(ctx context.Context, manifest string, flags []string) error
+	Create(ctx *context.Context, manifest string, images, flags []string) error
+	Push(ctx *context.Context, manifest string, flags []string) error
 }
 
 // nolint: unparam
-func runCommand(ctx context.Context, dir, binary string, args ...string) error {
+func runCommand(ctx *context.Context, dir, binary string, args ...string) error {
 	fields := log.Fields{
 		"cmd": append([]string{binary}, args[0]),
 		"cwd": dir,
@@ -53,6 +53,7 @@ func runCommand(ctx context.Context, dir, binary string, args ...string) error {
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, binary, args...)
 	cmd.Dir = dir
+	cmd.Env = ctx.Env.Strings()
 
 	var b bytes.Buffer
 	w := gio.Safe(&b)

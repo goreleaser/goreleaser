@@ -81,6 +81,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		artifact.ByType(artifact.UploadableSourceArchive),
 		artifact.ByType(artifact.Checksum),
 		artifact.ByType(artifact.Signature),
+		artifact.ByType(artifact.Certificate),
 		artifact.ByType(artifact.LinuxPackage),
 	)
 	if len(conf.IDs) > 0 {
@@ -107,7 +108,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		})
 	}
 
-	files, err := extrafiles.Find(conf.ExtraFiles)
+	files, err := extrafiles.Find(ctx, conf.ExtraFiles)
 	if err != nil {
 		return err
 	}

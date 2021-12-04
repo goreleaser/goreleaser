@@ -1,6 +1,4 @@
----
-title: Source Archive
----
+# Source Archive
 
 You may add the current tag source archive to the release as well. This is particularly
 useful if you want to sign it, for example.
@@ -20,6 +18,11 @@ source:
   # Any format git-archive supports, this supports too.
   # Defaults to `tar.gz`
   format: 'tar'
+
+  # Prefix template.
+  # String to prepend to each filename in the archive.
+  # Defaults to empty
+  prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
 ```
 
 !!! tip

@@ -1,6 +1,4 @@
----
-title: Blobs (s3, gcs, azblob)
----
+# Blobs (s3, gcs, azblob)
 
 The `blobs` allows you to upload artifacts to Amazon S3, Azure Blob and
 Google GCS.
@@ -45,14 +43,18 @@ blobs:
     # Default is `{{ .ProjectName }}/{{ .Tag }}`
     folder: "foo/bar/{{.Version}}"
 
-    # You can add extra pre-existing files to the release.
-    # The filename on the release will be the last part of the path (base). If
-    # another file with the same name exists, the last one found will be used.
+    # You can add extra pre-existing files to the bucket.
+    # The filename on the release will be the last part of the path (base).
+    # If another file with the same name exists, the last one found will be used.
+    # These globs can also include templates.
+    #
     # Defaults to empty.
     extra_files:
       - glob: ./path/to/file.txt
       - glob: ./glob/**/to/**/file/**/*
       - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
+      - glob: ./single_file.txt
+        name_template: file.txt # note that this only works if glob matches 1 file only
   -
     provider: gs
     bucket: goreleaser-bucket

@@ -45,6 +45,7 @@ var fakeInfo = context.GitInfo{
 	Commit:      "none",
 	ShortCommit: "none",
 	FullCommit:  "none",
+	Summary:     "none",
 }
 
 func getInfo(ctx *context.Context) (context.GitInfo, error) {
@@ -83,6 +84,10 @@ func getGitInfo() (context.GitInfo, error) {
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get commit date: %w", err)
 	}
+	summary, err := getSummary()
+	if err != nil {
+		return context.GitInfo{}, fmt.Errorf("couldn't get summary: %w", err)
+	}
 	gitURL, err := getURL()
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get remote URL: %w", err)
@@ -107,16 +112,26 @@ func getGitInfo() (context.GitInfo, error) {
 			CommitDate:  date,
 			URL:         gitURL,
 			CurrentTag:  "v0.0.0",
+			Summary:     summary,
 		}, ErrNoTag
 	}
+
+	previous, err := getPreviousTag(tag)
+	if err != nil {
+		// shouldn't error, will only affect templates
+		log.Warnf("couldn't find any tags before %q", tag)
+	}
+
 	return context.GitInfo{
 		Branch:      branch,
 		CurrentTag:  tag,
+		PreviousTag: previous,
 		Commit:      full,
 		FullCommit:  full,
 		ShortCommit: short,
 		CommitDate:  date,
 		URL:         gitURL,
+		Summary:     summary,
 	}, nil
 }
 
@@ -180,6 +195,10 @@ func getFullCommit() (string, error) {
 	return git.Clean(git.Run("show", "--format='%H'", "HEAD", "--quiet"))
 }
 
+func getSummary() (string, error) {
+	return git.Clean(git.Run("describe", "--always", "--dirty", "--tags"))
+}
+
 func getTag() (string, error) {
 	var tag string
 	var err error
@@ -201,6 +220,14 @@ func getTag() (string, error) {
 	}
 
 	return tag, err
+}
+
+func getPreviousTag(current string) (string, error) {
+	if tag := os.Getenv("GORELEASER_PREVIOUS_TAG"); tag != "" {
+		return tag, nil
+	}
+
+	return git.Clean(git.Run("describe", "--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", current)))
 }
 
 func getURL() (string, error) {

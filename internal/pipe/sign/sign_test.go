@@ -83,13 +83,28 @@ func TestSignArtifacts(t *testing.T) {
 	stdin := passwordUser
 	tmplStdin := passwordUserTmpl
 	tests := []struct {
-		desc           string
-		ctx            *context.Context
-		signaturePaths []string
-		signatureNames []string
-		expectedErrMsg string
-		user           string
+		desc             string
+		ctx              *context.Context
+		signaturePaths   []string
+		signatureNames   []string
+		certificateNames []string
+		expectedErrMsg   string
+		user             string
 	}{
+		{
+			desc:           "sign cmd not found",
+			expectedErrMsg: `sign: not-a-valid-cmd failed: exec: "not-a-valid-cmd": executable file not found in $PATH: `,
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Cmd:       "not-a-valid-cmd",
+						},
+					},
+				},
+			),
+		},
 		{
 			desc:           "sign errors",
 			expectedErrMsg: "sign: exit failed",
@@ -106,8 +121,38 @@ func TestSignArtifacts(t *testing.T) {
 			),
 		},
 		{
+			desc:           "invalid certificate template",
+			expectedErrMsg: `sign failed: artifact1: template: tmpl:1:3: executing "tmpl" at <.blah>: map has no entry for key "blah"`,
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts:   "all",
+							Cmd:         "exit",
+							Certificate: "{{ .blah }}",
+						},
+					},
+				},
+			),
+		},
+		{
+			desc:           "invalid signature template",
+			expectedErrMsg: `sign failed: artifact1: template: tmpl:1:3: executing "tmpl" at <.blah>: map has no entry for key "blah"`,
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Cmd:       "exit",
+							Signature: "{{ .blah }}",
+						},
+					},
+				},
+			),
+		},
+		{
 			desc:           "invalid args template",
-			expectedErrMsg: `sign failed: ${FOO}-{{ .foo }{{}}{: invalid template: template: tmpl:1: unexpected "}" in operand`,
+			expectedErrMsg: `sign failed: artifact1: template: tmpl:1: unexpected "}" in operand`,
 			ctx: context.New(
 				config.Project{
 					Signs: []config.Sign{
@@ -119,6 +164,21 @@ func TestSignArtifacts(t *testing.T) {
 					},
 					Env: []string{
 						"FOO=BAR",
+					},
+				},
+			),
+		},
+		{
+			desc:           "invalid env template",
+			expectedErrMsg: `sign failed: artifact1: template: tmpl:1:5: executing "tmpl" at <.blah>: map has no entry for key "blah"`,
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "all",
+							Cmd:       "exit",
+							Env:       []string{"A={{ .blah }}"},
+						},
 					},
 				},
 			),
@@ -275,6 +335,21 @@ func TestSignArtifacts(t *testing.T) {
 					Signs: []config.Sign{
 						{
 							Artifacts: "source",
+						},
+					},
+				},
+			),
+			signaturePaths: []string{"artifact5.tar.gz.sig"},
+			signatureNames: []string{"artifact5.tar.gz.sig"},
+		},
+		{
+			desc: "sign only source filter by id",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Artifacts: "source",
+							IDs:       []string{"should-not-be-used"},
 						},
 					},
 				},
@@ -441,6 +516,39 @@ func TestSignArtifacts(t *testing.T) {
 			),
 			expectedErrMsg: `sign failed: cannot open file /tmp/non-existing-file: open /tmp/non-existing-file: no such file or directory`,
 		},
+		{
+			desc: "sign creating certificate",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Certificate: "${artifact}.pem",
+							Artifacts:   "checksum",
+						},
+					},
+				},
+			),
+			signaturePaths:   []string{"checksum.sig", "checksum2.sig"},
+			signatureNames:   []string{"checksum.sig", "checksum2.sig"},
+			certificateNames: []string{"checksum.pem", "checksum2.pem"},
+		},
+		{
+			desc: "sign all artifacts with env and certificate",
+			ctx: context.New(
+				config.Project{
+					Signs: []config.Sign{
+						{
+							Env:         []string{"NOT_HONK=honk", "HONK={{ .Env.NOT_HONK }}"},
+							Certificate: `{{ trimsuffix (trimsuffix .Env.artifact ".tar.gz") ".deb" }}_${HONK}.pem`,
+							Artifacts:   "all",
+						},
+					},
+				},
+			),
+			signaturePaths:   []string{"artifact1.sig", "artifact2.sig", "artifact3.sig", "checksum.sig", "checksum2.sig", "linux_amd64/artifact4.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
+			signatureNames:   []string{"artifact1.sig", "artifact2.sig", "artifact3_1.0.0_linux_amd64.sig", "checksum.sig", "checksum2.sig", "artifact4_1.0.0_linux_amd64.sig", "artifact5.tar.gz.sig", "package1.deb.sig"},
+			certificateNames: []string{"artifact1_honk.pem", "artifact2_honk.pem", "artifact3_1.0.0_linux_amd64_honk.pem", "checksum_honk.pem", "checksum2_honk.pem", "artifact4_1.0.0_linux_amd64_honk.pem", "artifact5_honk.pem", "package1_honk.pem"},
+		},
 	}
 
 	for _, test := range tests {
@@ -449,12 +557,12 @@ func TestSignArtifacts(t *testing.T) {
 		}
 
 		t.Run(test.desc, func(t *testing.T) {
-			testSign(t, test.ctx, test.signaturePaths, test.signatureNames, test.user, test.expectedErrMsg)
+			testSign(t, test.ctx, test.certificateNames, test.signaturePaths, test.signatureNames, test.user, test.expectedErrMsg)
 		})
 	}
 }
 
-func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, signatureNames []string, user, expectedErrMsg string) {
+func testSign(tb testing.TB, ctx *context.Context, certificateNames, signaturePaths, signatureNames []string, user, expectedErrMsg string) {
 	tb.Helper()
 	tmpdir := tb.TempDir()
 
@@ -476,7 +584,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 		Path: filepath.Join(tmpdir, "artifact1"),
 		Type: artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -484,7 +592,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 		Path: filepath.Join(tmpdir, "artifact2"),
 		Type: artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			"ID": "foo3",
+			artifact.ExtraID: "foo3",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -492,7 +600,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 		Path: filepath.Join(tmpdir, "artifact3"),
 		Type: artifact.UploadableBinary,
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -516,7 +624,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 		Path: filepath.Join(tmpdir, "linux_amd64", "artifact4"),
 		Type: artifact.UploadableBinary,
 		Extra: map[string]interface{}{
-			"ID": "foo3",
+			artifact.ExtraID: "foo3",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -529,7 +637,7 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 		Path: filepath.Join(tmpdir, "package1.deb"),
 		Type: artifact.LinuxPackage,
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 
@@ -554,8 +662,26 @@ func testSign(tb testing.TB, ctx *context.Context, signaturePaths []string, sign
 	require.NoError(tb, Pipe{}.Run(ctx))
 
 	// ensure all artifacts have an ID
-	for _, arti := range ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List() {
-		require.NotEmptyf(tb, arti.ExtraOr("ID", ""), ".Extra.ID on %s", arti.Path)
+	for _, arti := range ctx.Artifacts.Filter(
+		artifact.Or(
+			artifact.ByType(artifact.Signature),
+			artifact.ByType(artifact.Certificate),
+		),
+	).List() {
+		require.NotEmptyf(tb, arti.ID(), ".Extra.ID on %s", arti.Path)
+	}
+
+	certificates := ctx.Artifacts.Filter(artifact.ByType(artifact.Certificate)).List()
+	certNames := []string{}
+	for _, cert := range certificates {
+		certNames = append(certNames, cert.Name)
+		require.True(tb, strings.HasPrefix(cert.Path, ctx.Config.Dist))
+	}
+	sort.Strings(certificateNames)
+	sort.Strings(certNames)
+	require.Equal(tb, len(certificateNames), len(certificates))
+	if len(certificateNames) > 0 {
+		require.Equal(tb, certificateNames, certNames)
 	}
 
 	// verify that only the artifacts and the signatures are in the dist dir

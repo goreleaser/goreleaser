@@ -1,6 +1,4 @@
----
-title: Checksums
----
+# Checksums
 
 GoReleaser generates a `project_1.0.0_checksums.txt` file and uploads it with the
 release, so your users can validate if the downloaded files are correct.
@@ -32,13 +30,17 @@ checksum:
   disable: true
 
   # You can add extra pre-existing files to the checksums file.
-  # The filename on the checksums file will be the last part of the path (base). If
-  # another file with the same name exists, the last one found will be used.
+  # The filename on the checksum will be the last part of the path (base).
+  # If another file with the same name exists, the last one found will be used.
+  # These globs can also include templates.
+  #
   # Defaults to empty.
   extra_files:
     - glob: ./path/to/file.txt
     - glob: ./glob/**/to/**/file/**/*
     - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
+    - glob: ./single_file.txt
+      name_template: file.txt # note that this only works if glob matches 1 file only
 ```
 
 !!! tip

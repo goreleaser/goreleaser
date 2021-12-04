@@ -1,6 +1,4 @@
----
-title: Builds
----
+# Builds
 
 Builds can be customized in multiple ways.
 You can specify for which `GOOS`, `GOARCH` and `GOARM` binaries are built

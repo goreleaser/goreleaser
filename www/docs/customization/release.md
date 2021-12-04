@@ -1,6 +1,4 @@
----
-title: Release
----
+# Release
 
 GoReleaser can create a GitHub/GitLab/Gitea release with the current tag, upload all
 the artifacts and generate the changelog based on the new commits since the
@@ -43,6 +41,17 @@ release:
   # Default is false.
   prerelease: auto
 
+  # What to do with the release notes in case there the release already exists.
+  #
+  # Valid options are:
+  # - `keep-existing`: keep the existing notes
+  # - `append`: append the current release notes to the existing notes
+  # - `prepend`: prepend the current release notes to the existing notes
+  # - `replace`: replace existing notes
+  #
+  # Default is `keep-existing`.
+  mode: append
+
   # Header template for the release body.
   # Defaults to empty.
   header: |
@@ -66,13 +75,17 @@ release:
   disable: true
 
   # You can add extra pre-existing files to the release.
-  # The filename on the release will be the last part of the path (base). If
-  # another file with the same name exists, the last one found will be used.
+  # The filename on the release will be the last part of the path (base).
+  # If another file with the same name exists, the last one found will be used.
+  # These globs can also include templates.
+  #
   # Defaults to empty.
   extra_files:
     - glob: ./path/to/file.txt
     - glob: ./glob/**/to/**/file/**/*
     - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
+    - glob: ./single_file.txt
+      name_template: file.txt # note that this only works if glob matches 1 file only
 ```
 
 !!! tip
@@ -80,7 +93,7 @@ release:
 
 ## GitLab
 
-Second, let's see what can be customized in the `release` section for GitLab.
+Let's see what can be customized in the `release` section for GitLab.
 
 ```yaml
 # .goreleaser.yml
@@ -106,14 +119,29 @@ release:
   # Defaults to false.
   disable: true
 
+  # What to do with the release notes in case there the release already exists.
+  #
+  # Valid options are:
+  # - `keep-existing`: keep the existing notes
+  # - `append`: append the current release notes to the existing notes
+  # - `prepend`: prepend the current release notes to the existing notes
+  # - `replace`: replace existing notes
+  #
+  # Default is `keep-existing`.
+  mode: append
+
   # You can add extra pre-existing files to the release.
-  # The filename on the release will be the last part of the path (base). If
-  # another file with the same name exists, the last one found will be used.
+  # The filename on the release will be the last part of the path (base).
+  # If another file with the same name exists, the last one found will be used.
+  # These globs can also include templates.
+  #
   # Defaults to empty.
   extra_files:
     - glob: ./path/to/file.txt
     - glob: ./glob/**/to/**/file/**/*
     - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
+    - glob: ./single_file.txt
+      name_template: file.txt # note that this only works if glob matches 1 file only
 ```
 
 !!! tip
@@ -151,14 +179,29 @@ release:
   # Defaults to false.
   disable: true
 
+  # What to do with the release notes in case there the release already exists.
+  #
+  # Valid options are:
+  # - `keep-existing`: keep the existing notes
+  # - `append`: append the current release notes to the existing notes
+  # - `prepend`: prepend the current release notes to the existing notes
+  # - `replace`: replace existing notes
+  #
+  # Default is `keep-existing`.
+  mode: append
+
   # You can add extra pre-existing files to the release.
-  # The filename on the release will be the last part of the path (base). If
-  # another file with the same name exists, the last one found will be used.
+  # The filename on the release will be the last part of the path (base).
+  # If another file with the same name exists, the last one found will be used.
+  # These globs can also include templates.
+  #
   # Defaults to empty.
   extra_files:
     - glob: ./path/to/file.txt
     - glob: ./glob/**/to/**/file/**/*
     - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
+    - glob: ./single_file.txt
+      name_template: file.txt # note that this only works if glob matches 1 file only
 ```
 
 To enable uploading `tar.gz` and `checksums.txt` files you need to add the following to your Gitea config in `app.ini`:

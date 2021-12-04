@@ -1,6 +1,4 @@
----
-title: Snapcraft Packages (snaps)
----
+# Snapcraft Packages (snaps)
 
 GoReleaser can also generate `snap` packages.
 [Snaps](http://snapcraft.io/) are a new packaging format, that will let you

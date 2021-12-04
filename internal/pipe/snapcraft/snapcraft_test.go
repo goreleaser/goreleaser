@@ -44,6 +44,7 @@ func TestRunPipeMissingInfo(t *testing.T) {
 }
 
 func TestRunPipe(t *testing.T) {
+	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -78,7 +79,7 @@ func TestRunPipe(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "v1.2.3"
+	ctx.Version = "1.2.3"
 	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"))
 	addBinaries(t, ctx, "bar", filepath.Join(dist, "bar"))
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -87,6 +88,7 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
+	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -104,12 +106,13 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "v1.2.3"
+	ctx.Version = "1.2.3"
 	addBinaries(t, ctx, "foo", dist)
 	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
 }
 
 func TestRunPipeWithName(t *testing.T) {
+	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -130,7 +133,7 @@ func TestRunPipeWithName(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "v1.2.3"
+	ctx.Version = "1.2.3"
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -145,6 +148,7 @@ func TestRunPipeWithName(t *testing.T) {
 }
 
 func TestRunPipeMetadata(t *testing.T) {
+	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -179,7 +183,7 @@ func TestRunPipeMetadata(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "v1.2.3"
+	ctx.Version = "1.2.3"
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -216,6 +220,7 @@ func TestNoSnapcraftInPath(t *testing.T) {
 }
 
 func TestRunNoArguments(t *testing.T) {
+	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -239,7 +244,7 @@ func TestRunNoArguments(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "v1.2.3"
+	ctx.Version = "1.2.3"
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -251,6 +256,7 @@ func TestRunNoArguments(t *testing.T) {
 }
 
 func TestCompleter(t *testing.T) {
+	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -275,7 +281,7 @@ func TestCompleter(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "v1.2.3"
+	ctx.Version = "1.2.3"
 	addBinaries(t, ctx, "foo", dist)
 	addBinaries(t, ctx, "bar", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
@@ -289,6 +295,7 @@ func TestCompleter(t *testing.T) {
 }
 
 func TestCommand(t *testing.T) {
+	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -313,7 +320,7 @@ func TestCommand(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "v1.2.3"
+	ctx.Version = "1.2.3"
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 	yamlFile, err := os.ReadFile(filepath.Join(dist, "foo_amd64", "prime", "meta", "snap.yaml"))
@@ -325,6 +332,7 @@ func TestCommand(t *testing.T) {
 }
 
 func TestExtraFile(t *testing.T) {
+	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
 	dist := filepath.Join(folder, "dist")
 	require.NoError(t, os.Mkdir(dist, 0o755))
@@ -352,7 +360,7 @@ func TestExtraFile(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v1.2.3"
-	ctx.Version = "v1.2.3"
+	ctx.Version = "1.2.3"
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 
@@ -494,7 +502,7 @@ func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 				Goos:   goos,
 				Type:   artifact.Binary,
 				Extra: map[string]interface{}{
-					"ID": name,
+					artifact.ExtraID: name,
 				},
 			})
 		}

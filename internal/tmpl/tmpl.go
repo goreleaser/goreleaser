@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
+
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -30,6 +31,7 @@ const (
 	version         = "Version"
 	rawVersion      = "RawVersion"
 	tag             = "Tag"
+	previousTag     = "PreviousTag"
 	branch          = "Branch"
 	commit          = "Commit"
 	shortCommit     = "ShortCommit"
@@ -37,6 +39,8 @@ const (
 	commitDate      = "CommitDate"
 	commitTimestamp = "CommitTimestamp"
 	gitURL          = "GitURL"
+	summary         = "Summary"
+	releaseURL      = "ReleaseURL"
 	major           = "Major"
 	minor           = "Minor"
 	patch           = "Patch"
@@ -76,6 +80,7 @@ func New(ctx *context.Context) *Template {
 			version:         ctx.Version,
 			rawVersion:      rawVersionV,
 			tag:             ctx.Git.CurrentTag,
+			previousTag:     ctx.Git.PreviousTag,
 			branch:          ctx.Git.Branch,
 			commit:          ctx.Git.Commit,
 			shortCommit:     ctx.Git.ShortCommit,
@@ -83,6 +88,8 @@ func New(ctx *context.Context) *Template {
 			commitDate:      ctx.Git.CommitDate.UTC().Format(time.RFC3339),
 			commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
 			gitURL:          ctx.Git.URL,
+			summary:         ctx.Git.Summary,
+			releaseURL:      ctx.ReleaseURL,
 			env:             ctx.Env,
 			date:            ctx.Date.UTC().Format(time.RFC3339),
 			timestamp:       ctx.Date.UTC().Unix(),
@@ -169,6 +176,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"toupper":    strings.ToUpper,
 			"trim":       strings.TrimSpace,
 			"trimprefix": strings.TrimPrefix,
+			"trimsuffix": strings.TrimSuffix,
 			"dir":        filepath.Dir,
 			"abs":        filepath.Abs,
 			"incmajor":   incMajor,

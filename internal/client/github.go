@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"github.com/google/go-github/v35/github"
+	"github.com/google/go-github/v39/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -25,14 +25,8 @@ type githubClient struct {
 	client *github.Client
 }
 
-// NewUnauthenticatedGitHub returns a github client that is not authenticated.
-// Used in tests only.
-func NewUnauthenticatedGitHub() Client {
-	return &githubClient{client: github.NewClient(nil)}
-}
-
 // NewGitHub returns a github client implementation.
-func NewGitHub(ctx *context.Context, token string) (Client, error) {
+func NewGitHub(ctx *context.Context, token string) (GitHubClient, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
@@ -58,20 +52,41 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	return &githubClient{client: client}, nil
 }
 
-func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
-	result, _, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current)
+func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	notes, _, err := c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, &github.GenerateNotesOptions{
+		TagName:         current,
+		PreviousTagName: github.String(prev),
+	})
 	if err != nil {
 		return "", err
 	}
+	return notes.Body, err
+}
+
+func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
 	var log []string
-	for _, commit := range result.Commits {
-		log = append(log, fmt.Sprintf(
-			"%s: %s (@%s)",
-			commit.GetSHA(),
-			strings.Split(commit.Commit.GetMessage(), "\n")[0],
-			commit.GetAuthor().GetLogin(),
-		))
+
+	opts := &github.ListOptions{PerPage: 100}
+	for {
+		result, resp, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current, opts)
+		if err != nil {
+			return "", err
+		}
+		for _, commit := range result.Commits {
+			log = append(log, fmt.Sprintf(
+				"%s: %s (@%s)",
+				commit.GetSHA(),
+				strings.Split(commit.Commit.GetMessage(), "\n")[0],
+				commit.GetAuthor().GetLogin(),
+			))
+		}
+		if resp.NextPage == 0 {
+			break
+		}
+
+		opts.Page = resp.NextPage
 	}
+
 	return strings.Join(log, "\n"), nil
 }
 
@@ -192,6 +207,9 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		return "", err
 	}
 
+	// Truncate the release notes if it's too long (github doesn't allow more than 125000 characters)
+	body = truncateReleaseBody(body)
+
 	data := &github.RepositoryRelease{
 		Name:       github.String(title),
 		TagName:    github.String(ctx.Git.CurrentTag),
@@ -217,10 +235,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 			data,
 		)
 	} else {
-		// keep the pre-existing release notes
-		if release.GetBody() != "" {
-			data.Body = release.Body
-		}
+		data.Body = github.String(getReleaseNotes(release.GetBody(), body, ctx.Config.Release.ReleaseNotesMode))
 		release, _, err = c.client.Repositories.EditRelease(
 			ctx,
 			ctx.Config.Release.GitHub.Owner,

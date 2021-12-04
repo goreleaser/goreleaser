@@ -77,7 +77,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 				Extra: map[string]interface{}{},
 			}
 			if manifest.ID != "" {
-				art.Extra["ID"] = manifest.ID
+				art.Extra[artifact.ExtraID] = manifest.ID
 			}
 			ctx.Artifacts.Add(art)
 

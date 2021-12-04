@@ -1,6 +1,4 @@
----
-title: Signing Docker Images and Manifests
----
+# Signing Docker Images and Manifests
 
 Signing Docker Images and Manifests is also possible with GoReleaser.
 This pipe was designed based on the common [sign](/customization/sign/) pipe having [cosign](https://github.com/sigstore/cosign) in mind.
@@ -21,17 +19,6 @@ docker_signs:
     # Defaults to "default".
     id: foo
 
-    # Name/template of the signature file.
-    #
-    # Available environment variables:
-    # - '${artifact}': the path to the artifact that will be signed
-    # - '${artifactID}': the ID of the artifact that will be signed
-    #
-    # Note that with cosign you don't need to use this.
-    #
-    # Defaults to empty.
-    signature: "${artifact}_sig"
-
     # Path to the signature command
     #
     # Defaults to `cosign`
@@ -39,8 +26,8 @@ docker_signs:
 
     # Command line templateable arguments for the command
     #
-    # defaults to `["sign", "-key=cosign.key", "${artifact}"]`
-    args: ["sign", "-key=cosign.key", "-upload=false", "${artifact}"]
+    # defaults to `["sign", "--key=cosign.key", "${artifact}"]`
+    args: ["sign", "--key=cosign.key", "--upload=false", "${artifact}"]
 
 
     # Which artifacts to sign
@@ -67,7 +54,25 @@ docker_signs:
     # StdinFile file to be given to the signature command as stdin.
     # Defaults to empty
     stdin_file: ./.password
+
+    # List of environment variables that will be passed to the signing command as well as the templates.
+    #
+    # Defaults to empty
+    env:
+    - FOO=bar
+    - HONK=honkhonk
 ```
+
+### Available variable names
+
+These environment variables might be available in the fields that are templateable:
+
+- `${artifact}`: the path to the artifact that will be signed [^1]
+- `${artifactID}`: the ID of the artifact that will be signed
+- `${certificate}`: the certificate filename, if provided
+
+[^1]: notice that the this might contain `/` characters, which depending on how you use it migth evaluate to actual paths within the filesystem. Use with care.
+
 
 ## Common usage example
 
@@ -85,5 +90,5 @@ docker_signs:
 Later on you (and anyone else) can verify the image with:
 
 ```sh
-cosign verify -key cosign.pub your/image
+cosign verify --key cosign.pub your/image
 ```

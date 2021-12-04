@@ -3,6 +3,7 @@ package changelog
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -78,6 +79,7 @@ func TestChangelog(t *testing.T) {
 			},
 		},
 	})
+	ctx.Git.PreviousTag = "v0.0.1"
 	ctx.Git.CurrentTag = "v0.0.2"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
@@ -89,35 +91,16 @@ func TestChangelog(t *testing.T) {
 	require.NotContains(t, ctx.ReleaseNotes, "cArs")
 	require.NotContains(t, ctx.ReleaseNotes, "from goreleaser/some-branch")
 
+	for _, line := range strings.Split(ctx.ReleaseNotes, "\n")[1:] {
+		if line == "" {
+			continue
+		}
+		require.Truef(t, strings.HasPrefix(line, "* "), "%q: changelog commit must be a list item", line)
+	}
+
 	bts, err := os.ReadFile(filepath.Join(folder, "CHANGELOG.md"))
 	require.NoError(t, err)
 	require.NotEmpty(t, string(bts))
-}
-
-func TestChangelogPreviousTagEnv(t *testing.T) {
-	folder := testlib.Mktmp(t)
-	testlib.GitInit(t)
-	testlib.GitCommit(t, "first")
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCommit(t, "second")
-	testlib.GitTag(t, "v0.0.2")
-	testlib.GitCommit(t, "third")
-	testlib.GitTag(t, "v0.0.3")
-	ctx := context.New(config.Project{
-		Dist: folder,
-		Changelog: config.Changelog{
-			Use:     "git",
-			Filters: config.Filters{},
-		},
-	})
-	ctx.Git.CurrentTag = "v0.0.3"
-	require.NoError(t, os.Setenv("GORELEASER_PREVIOUS_TAG", "v0.0.1"))
-	require.NoError(t, Pipe{}.Run(ctx))
-	require.NoError(t, os.Setenv("GORELEASER_PREVIOUS_TAG", ""))
-	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
-	require.NotContains(t, ctx.ReleaseNotes, "first")
-	require.Contains(t, ctx.ReleaseNotes, "second")
-	require.Contains(t, ctx.ReleaseNotes, "third")
 }
 
 func TestChangelogForGitlab(t *testing.T) {
@@ -148,6 +131,7 @@ func TestChangelogForGitlab(t *testing.T) {
 		},
 	})
 	ctx.TokenType = context.TokenTypeGitLab
+	ctx.Git.PreviousTag = "v0.0.1"
 	ctx.Git.CurrentTag = "v0.0.2"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
@@ -176,6 +160,7 @@ func TestChangelogSort(t *testing.T) {
 	ctx := context.New(config.Project{
 		Changelog: config.Changelog{},
 	})
+	ctx.Git.PreviousTag = "v0.9.9"
 	ctx.Git.CurrentTag = "v1.0.0"
 
 	for _, cfg := range []struct {
@@ -268,6 +253,7 @@ func TestChangelogFilterInvalidRegex(t *testing.T) {
 			},
 		},
 	})
+	ctx.Git.PreviousTag = "v0.0.3"
 	ctx.Git.CurrentTag = "v0.0.4"
 	require.EqualError(t, Pipe{}.Run(ctx), "error parsing regexp: invalid or unsupported Perl syntax: `(?ia`")
 }
@@ -437,8 +423,11 @@ func TestGetChangelogGitHub(t *testing.T) {
 		},
 	})
 
+	expected := "c90f1085f255d0af0b055160bfff5ee40f47af79: fix: do not skip any defaults (#2521) (@caarlos0)"
+	mock := client.NewMock()
+	mock.Changes = expected
 	l := scmChangeloger{
-		client: client.NewUnauthenticatedGitHub(),
+		client: mock,
 		repo: client.Repo{
 			Owner: "goreleaser",
 			Name:  "goreleaser",
@@ -446,7 +435,29 @@ func TestGetChangelogGitHub(t *testing.T) {
 	}
 	log, err := l.Log(ctx, "v0.180.1", "v0.180.2")
 	require.NoError(t, err)
-	require.Equal(t, "c90f1085f255d0af0b055160bfff5ee40f47af79: fix: do not skip any defaults (#2521) (@caarlos0)", log)
+	require.Equal(t, expected, log)
+}
+
+func TestGetChangelogGitHubNative(t *testing.T) {
+	ctx := context.New(config.Project{
+		Changelog: config.Changelog{
+			Use: "github-native",
+		},
+	})
+
+	expected := "**Full Changelog**: https://github.com/gorelease/goreleaser/compare/v0.180.1...v0.180.2"
+	mock := client.NewMock()
+	mock.ReleaseNotes = expected
+	l := githubNativeChangeloger{
+		client: mock,
+		repo: client.Repo{
+			Owner: "goreleaser",
+			Name:  "goreleaser",
+		},
+	}
+	log, err := l.Log(ctx, "v0.180.1", "v0.180.2")
+	require.NoError(t, err)
+	require.Equal(t, expected, log)
 }
 
 func TestGetChangeloger(t *testing.T) {
@@ -466,13 +477,37 @@ func TestGetChangeloger(t *testing.T) {
 		require.IsType(t, c, gitChangeloger{})
 	})
 
-	t.Run("gituhb", func(t *testing.T) {
+	t.Run("github", func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Changelog: config.Changelog{
 				Use: "github",
 			},
 		})
 		ctx.TokenType = context.TokenTypeGitHub
+		c, err := getChangeloger(ctx)
+		require.NoError(t, err)
+		require.IsType(t, c, &scmChangeloger{})
+	})
+
+	t.Run("github-native", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Changelog: config.Changelog{
+				Use: "github-native",
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitHub
+		c, err := getChangeloger(ctx)
+		require.NoError(t, err)
+		require.IsType(t, c, &githubNativeChangeloger{})
+	})
+
+	t.Run("gitlab", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Changelog: config.Changelog{
+				Use: "gitlab",
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitLab
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, c, &scmChangeloger{})
@@ -509,4 +544,75 @@ func TestSkip(t *testing.T) {
 		ctx := context.New(config.Project{})
 		require.False(t, Pipe{}.Skip(ctx))
 	})
+}
+
+func TestGroup(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "first")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCommit(t, "added feature 1")
+	testlib.GitCommit(t, "fixed bug 2")
+	testlib.GitCommit(t, "ignored: whatever")
+	testlib.GitCommit(t, "fix: whatever")
+	testlib.GitCommit(t, "docs: whatever")
+	testlib.GitCommit(t, "chore: something about cArs we dont need")
+	testlib.GitCommit(t, "feat: added that thing")
+	testlib.GitCommit(t, "bug: Merge pull request #999 from goreleaser/some-branch")
+	testlib.GitCommit(t, "this is not a Merge pull request")
+	testlib.GitTag(t, "v0.0.2")
+	ctx := context.New(config.Project{
+		Dist: folder,
+		Changelog: config.Changelog{
+			Groups: []config.ChangeLogGroup{
+				{
+					Title:  "Features",
+					Regexp: "^.*feat[(\\w)]*:+.*$",
+					Order:  0,
+				},
+				{
+					Title:  "Bug Fixes",
+					Regexp: "^.*bug[(\\w)]*:+.*$",
+					Order:  1,
+				},
+				{
+					Title:  "Catch nothing",
+					Regexp: "yada yada yada honk the planet",
+					Order:  10,
+				},
+				{
+					Title: "Others",
+					Order: 999,
+				},
+			},
+		},
+	})
+	ctx.Git.CurrentTag = "v0.0.2"
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.Contains(t, ctx.ReleaseNotes, "### Features")
+	require.Contains(t, ctx.ReleaseNotes, "### Bug Fixes")
+	require.NotContains(t, ctx.ReleaseNotes, "### Catch nothing")
+	require.Contains(t, ctx.ReleaseNotes, "### Others")
+}
+
+func TestGroupBadRegex(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "first")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitTag(t, "v0.0.2")
+	ctx := context.New(config.Project{
+		Dist: folder,
+		Changelog: config.Changelog{
+			Groups: []config.ChangeLogGroup{
+				{
+					Title:  "Something",
+					Regexp: "^.*feat[(\\w", // unterminated regex
+				},
+			},
+		},
+	})
+	ctx.Git.CurrentTag = "v0.0.2"
+	require.EqualError(t, Pipe{}.Run(ctx), `failed to group into "Something": error parsing regexp: missing closing ]: `+"`"+`[(\w`+"`")
 }

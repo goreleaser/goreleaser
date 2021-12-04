@@ -11,7 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .GitURL }}/releases/tag/{{ .Tag }}`
+const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 
 type Pipe struct{}
 

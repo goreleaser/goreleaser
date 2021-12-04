@@ -18,17 +18,17 @@ food = {
                     path = "bin1",
                     installpath = "bin/bin1",
                     executable = true
-                }
+                },
                 {
                     path = "bin2",
                     installpath = "bin/bin2",
                     executable = true
-                }
+                },
                 {
                     path = "bin3",
                     installpath = "bin/bin3",
                     executable = true
-                }
+                },
             }
         },
         {
@@ -41,17 +41,17 @@ food = {
                     path = "bin1",
                     installpath = "bin/bin1",
                     executable = true
-                }
+                },
                 {
                     path = "bin2",
                     installpath = "bin/bin2",
                     executable = true
-                }
+                },
                 {
                     path = "bin3",
                     installpath = "bin/bin3",
                     executable = true
-                }
+                },
             }
         },
         {
@@ -64,17 +64,17 @@ food = {
                     path = "bin1",
                     installpath = "bin/bin1",
                     executable = true
-                }
+                },
                 {
                     path = "bin2",
                     installpath = "bin/bin2",
                     executable = true
-                }
+                },
                 {
                     path = "bin3",
                     installpath = "bin/bin3",
                     executable = true
-                }
+                },
             }
         },
     }

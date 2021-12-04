@@ -193,11 +193,11 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		Goarm:  binaries[0].Goarm,
 		Gomips: binaries[0].Gomips,
 		Extra: map[string]interface{}{
-			"Builds":    binaries,
-			"ID":        arch.ID,
-			"Format":    arch.Format,
-			"WrappedIn": wrap,
-			"Binaries":  bins,
+			artifact.ExtraBuilds:    binaries,
+			artifact.ExtraID:        arch.ID,
+			artifact.ExtraFormat:    arch.Format,
+			artifact.ExtraWrappedIn: wrap,
+			artifact.ExtraBinaries:  bins,
 		},
 	})
 	return nil
@@ -216,26 +216,29 @@ func wrapFolder(a config.Archive) string {
 
 func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
 	for _, binary := range binaries {
-		log.WithField("binary", binary.Name).Info("skip archiving")
 		name, err := tmpl.New(ctx).
 			WithArtifact(binary, archive.Replacements).
 			Apply(archive.NameTemplate)
 		if err != nil {
 			return err
 		}
+		finalName := name + binary.ExtraOr(artifact.ExtraExt, "").(string)
+		log.WithField("binary", binary.Name).
+			WithField("name", finalName).
+			Info("skip archiving")
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Type:   artifact.UploadableBinary,
-			Name:   name + binary.ExtraOr("Ext", "").(string),
+			Name:   finalName,
 			Path:   binary.Path,
 			Goos:   binary.Goos,
 			Goarch: binary.Goarch,
 			Goarm:  binary.Goarm,
 			Gomips: binary.Gomips,
 			Extra: map[string]interface{}{
-				"Builds":   []*artifact.Artifact{binary},
-				"ID":       archive.ID,
-				"Format":   archive.Format,
-				"Binaries": []string{binary.Name},
+				artifact.ExtraBuilds: []*artifact.Artifact{binary},
+				artifact.ExtraID:     archive.ID,
+				artifact.ExtraFormat: archive.Format,
+				artifact.ExtraBinary: binary.Name,
 			},
 		})
 	}

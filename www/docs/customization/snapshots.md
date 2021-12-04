@@ -1,6 +1,4 @@
----
-title: Snapshots
----
+# Snapshots
 
 Sometimes we want to generate a full build of our project,
 but neither want to validate anything nor upload it to anywhere.

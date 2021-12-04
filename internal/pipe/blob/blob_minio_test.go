@@ -58,10 +58,14 @@ func TestMinioUpload(t *testing.T) {
 	tgzpath := filepath.Join(folder, "bin.tar.gz")
 	debpath := filepath.Join(folder, "bin.deb")
 	checkpath := filepath.Join(folder, "check.txt")
+	sigpath := filepath.Join(folder, "f.sig")
+	certpath := filepath.Join(folder, "f.pem")
 	require.NoError(t, os.WriteFile(checkpath, []byte("fake checksums"), 0o744))
 	require.NoError(t, os.WriteFile(srcpath, []byte("fake\nsrc"), 0o744))
 	require.NoError(t, os.WriteFile(tgzpath, []byte("fake\ntargz"), 0o744))
 	require.NoError(t, os.WriteFile(debpath, []byte("fake\ndeb"), 0o744))
+	require.NoError(t, os.WriteFile(sigpath, []byte("fake\nsig"), 0o744))
+	require.NoError(t, os.WriteFile(certpath, []byte("fake\ncert"), 0o744))
 	ctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "testupload",
@@ -87,11 +91,27 @@ func TestMinioUpload(t *testing.T) {
 		Path: checkpath,
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.Signature,
+		Name: "checksum.txt.sig",
+		Path: sigpath,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "foo",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.Certificate,
+		Name: "checksum.pem",
+		Path: certpath,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "foo",
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableSourceArchive,
 		Name: "source.tar.gz",
 		Path: srcpath,
 		Extra: map[string]interface{}{
-			"Format": "tar.gz",
+			artifact.ExtraFormat: "tar.gz",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -99,7 +119,7 @@ func TestMinioUpload(t *testing.T) {
 		Name: "bin.tar.gz",
 		Path: tgzpath,
 		Extra: map[string]interface{}{
-			"ID": "foo",
+			artifact.ExtraID: "foo",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -107,7 +127,7 @@ func TestMinioUpload(t *testing.T) {
 		Name: "bin.deb",
 		Path: debpath,
 		Extra: map[string]interface{}{
-			"ID": "bar",
+			artifact.ExtraID: "bar",
 		},
 	})
 
@@ -119,6 +139,8 @@ func TestMinioUpload(t *testing.T) {
 		"testupload/v1.0.0/bin.deb",
 		"testupload/v1.0.0/bin.tar.gz",
 		"testupload/v1.0.0/checksum.txt",
+		"testupload/v1.0.0/checksum.txt.sig",
+		"testupload/v1.0.0/checksum.pem",
 		"testupload/v1.0.0/source.tar.gz",
 		"testupload/v1.0.0/file.golden",
 	})

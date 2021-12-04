@@ -113,17 +113,6 @@ Below you can find the steps for each of them.
 === "Pro"
     Download the `.deb`, `.rpm` or `.apk` packages from the [Pro releases page][pro-releases] and install them with the appropriate tools.
 
-
-### shell script
-
-=== "OSS"
-    ```sh
-    curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh | sh
-    ```
-
-
-<!-- TODO: write a new shell script and store it within the website -->
-
 ### go install
 
 === "OSS"
@@ -146,7 +135,11 @@ All artifacts are checksummed and the checksum file is signed with [cosign][].
 You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
 
 === "OSS"
-    1. Download the files you want, the `checksums.txt` and `checksums.txt.sig` files from the [releases][releases] page.
+    1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][releases] page:
+      ```sh
+      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt
+      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sig
+      ```
     1. Verify the signature:
       ```sh
       cosign verify-blob \
@@ -160,7 +153,11 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
       ```
 
 === "Pro"
-    1. Download the files you want, the `checksums.txt` and `checksums.txt.sig` files from the [releases][pro-releases] page.
+    1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][pro-releases] page:
+      ```sh
+      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt
+      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.sig
+      ```
     1. Verify the signature:
       ```sh
       cosign verify-blob \
@@ -185,9 +182,6 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
     cosign verify \
       -key https://goreleaser.com/static/goreleaser.pub \
       goreleaser/goreleaser
-    cosign verify \
-      -key https://goreleaser.com/static/goreleaser.pub \
-      ghcr.io/goreleaser/goreleaser
     ```
 
 === "Pro"
@@ -196,9 +190,6 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
     cosign verify \
       -key https://goreleaser.com/static/goreleaser.pub \
       goreleaser/goreleaser-pro
-    cosign verify \
-      -key https://goreleaser.com/static/goreleaser.pub \
-      ghcr.io/goreleaser/goreleaser-pro
     ```
 
 ## Running with Docker
@@ -210,7 +201,7 @@ To do that, you'll need to execute something more-or-less like the examples belo
     Registries:
 
     - [`goreleaser/goreleaser`](https://hub.docker.com/r/goreleaser/goreleaser)
-    - [`ghcr.io/goreleaser/goreleaser`](https://github.com/orgs/goreleaser/packages/container/package/goreleaser)
+    - [`ghcr.io/goreleaser/goreleaser`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser)
 
     Example usage:
 
@@ -230,7 +221,7 @@ To do that, you'll need to execute something more-or-less like the examples belo
     Registries:
 
     - [`goreleaser/goreleaser-pro`](https://hub.docker.com/r/goreleaser/goreleaser-pro)
-    - [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/orgs/goreleaser/packages/container/package/goreleaser-pro)
+    - [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser-pro)
 
     Example usage:
 
@@ -261,7 +252,7 @@ If you need more things, you are encouraged to keep your own image. You can
 always use GoReleaser's [own Dockerfile][dockerfile] as an example though
 and iterate from that.
 
-[dockerfile]: https://github.com/goreleaser/goreleaser/blob/master/Dockerfile
+[dockerfile]: https://github.com/goreleaser/goreleaser/blob/main/Dockerfile
 [releases]: https://github.com/goreleaser/goreleaser/releases
 [pro-releases]: https://github.com/goreleaser/goreleaser-pro/releases
 [cosign]: https://github.com/sigstore/cosign

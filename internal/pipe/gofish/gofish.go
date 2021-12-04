@@ -20,13 +20,12 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const goFishConfigExtra = "GoFishConfig"
-
-const foodFolder = "Food"
+const (
+	goFishConfigExtra = "GoFishConfig"
+	foodFolder        = "Food"
+)
 
 var ErrNoArchivesFound = errors.New("no linux/macos/windows archives found")
-
-var ErrMultipleArchivesSameOS = errors.New("one rig can handle only archive of an OS/Arch combination. Consider using ids in the gofish section")
 
 // Pipe for goFish deployment.
 type Pipe struct{}
@@ -97,7 +96,10 @@ func doRun(ctx *context.Context, goFish config.GoFish, cl client.Client) error {
 				artifact.ByGoarm(goFish.Goarm),
 			),
 		),
-		artifact.ByType(artifact.UploadableArchive),
+		artifact.Or(
+			artifact.ByType(artifact.UploadableArchive),
+			artifact.ByType(artifact.UploadableBinary),
+		),
 	}
 	if len(goFish.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(goFish.IDs...))
@@ -120,15 +122,15 @@ func doRun(ctx *context.Context, goFish config.GoFish, cl client.Client) error {
 	}
 
 	filename := goFish.Name + ".lua"
-	path := filepath.Join(ctx.Config.Dist, filename)
-	log.WithField("food", path).Info("writing")
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil { //nolint: gosec
+	luaPath := filepath.Join(ctx.Config.Dist, filename)
+	log.WithField("food", luaPath).Info("writing")
+	if err := os.WriteFile(luaPath, []byte(content), 0o644); err != nil { //nolint: gosec
 		return fmt.Errorf("failed to write gofish food: %w", err)
 	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name: filename,
-		Path: path,
+		Path: luaPath,
 		Type: artifact.GoFishRig,
 		Extra: map[string]interface{}{
 			goFishConfigExtra: goFish,
@@ -190,8 +192,8 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 		License:  cfg.License,
 	}
 
-	for _, artifact := range artifacts {
-		sum, err := artifact.Checksum("sha256")
+	for _, art := range artifacts {
+		sum, err := art.Checksum("sha256")
 		if err != nil {
 			return result, err
 		}
@@ -203,13 +205,13 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 			}
 			cfg.URLTemplate = url
 		}
-		url, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).Apply(cfg.URLTemplate)
+		url, err := tmpl.New(ctx).WithArtifact(art, map[string]string{}).Apply(cfg.URLTemplate)
 		if err != nil {
 			return result, err
 		}
 
-		goarch := []string{artifact.Goarch}
-		if artifact.Goarch == "all" {
+		goarch := []string{art.Goarch}
+		if art.Goarch == "all" {
 			goarch = []string{"amd64", "arm64"}
 		}
 
@@ -217,14 +219,23 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 			releasePackage := releasePackage{
 				DownloadURL: url,
 				SHA256:      sum,
-				OS:          artifact.Goos,
+				OS:          art.Goos,
 				Arch:        arch,
-				Binaries:    artifact.ExtraOr("Binaries", []string{}).([]string),
+				Binaries:    []binary{},
 			}
-			for _, v := range result.ReleasePackages {
-				if v.OS == artifact.Goos && v.Arch == artifact.Goarch {
-					return result, ErrMultipleArchivesSameOS
+			switch art.Type {
+			case artifact.UploadableArchive:
+				for _, bin := range art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
+					releasePackage.Binaries = append(releasePackage.Binaries, binary{
+						Name:   bin,
+						Target: bin,
+					})
 				}
+			case artifact.UploadableBinary:
+				releasePackage.Binaries = append(releasePackage.Binaries, binary{
+					Name:   art.Name,
+					Target: art.ExtraOr(artifact.ExtraBinary, art.Name).(string),
+				})
 			}
 			result.ReleasePackages = append(result.ReleasePackages, releasePackage)
 		}

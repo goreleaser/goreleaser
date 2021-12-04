@@ -1,6 +1,4 @@
----
-title: Deprecation notices
----
+# Deprecation notices
 
 This page is used to list deprecation notices across GoReleaser.
 
@@ -37,6 +35,36 @@ Description.
     ```
 
 -->
+
+### nfpm.empty_folders
+
+> since 2021-11-14  (v1.0.0)
+
+nFPM empty folders is now deprecated in favor of a `dir` content type:
+
+=== "Before"
+
+    ``` yaml
+    nfpms:
+    - empty_folders:
+      - /foo/bar
+    ```
+
+=== "After"
+    ``` yaml
+    nfpms:
+    - contents:
+      - dst: /foo/bar
+        type: dir
+    ```
+
+### godownloader
+
+> since 2021-10-13
+
+GoDownloader, the install script generator, wasn't been updated for a long time and is now officially deprecated.
+The website and all install scripts will be taken out in 6 months.
+You can still use any of the other install methods.
 
 ### builds for windows/arm64
 

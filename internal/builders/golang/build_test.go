@@ -236,8 +236,8 @@ func TestBuild(t *testing.T) {
 	}
 	ctx := context.New(config)
 	ctx.Env["GO_FLAGS"] = "-v"
-	ctx.Git.CurrentTag = "5.6.7"
-	ctx.Version = "v" + ctx.Git.CurrentTag
+	ctx.Git.CurrentTag = "v5.6.7"
+	ctx.Version = ctx.Git.CurrentTag
 	build := ctx.Config.Builds[0]
 	for _, target := range build.Targets {
 		var ext string
@@ -285,9 +285,9 @@ func TestBuild(t *testing.T) {
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				artifact.ExtraExt:    "",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
 			},
 		},
 		{
@@ -298,9 +298,9 @@ func TestBuild(t *testing.T) {
 			Gomips: "softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				artifact.ExtraExt:    "",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
 			},
 		},
 		{
@@ -311,9 +311,9 @@ func TestBuild(t *testing.T) {
 			Gomips: "softfloat",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				artifact.ExtraExt:    "",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
 			},
 		},
 		{
@@ -323,9 +323,9 @@ func TestBuild(t *testing.T) {
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				artifact.ExtraExt:    "",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
 			},
 		},
 		{
@@ -336,9 +336,9 @@ func TestBuild(t *testing.T) {
 			Goarm:  "6",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    "",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				artifact.ExtraExt:    "",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
 			},
 		},
 		{
@@ -348,9 +348,9 @@ func TestBuild(t *testing.T) {
 			Goarch: "amd64",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    ".exe",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				artifact.ExtraExt:    ".exe",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
 			},
 		},
 		{
@@ -360,9 +360,9 @@ func TestBuild(t *testing.T) {
 			Goarch: "wasm",
 			Type:   artifact.Binary,
 			Extra: map[string]interface{}{
-				"Ext":    ".wasm",
-				"Binary": "foo-v5.6.7",
-				"ID":     "foo",
+				artifact.ExtraExt:    ".wasm",
+				artifact.ExtraBinary: "foo-v5.6.7",
+				artifact.ExtraID:     "foo",
 			},
 		},
 	})
@@ -565,7 +565,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 			Builds: []config.Build{
 				{
 					Binary: "no-main",
-					Hooks:  config.HookConfig{},
+					Hooks:  config.BuildHookConfig{},
 					Targets: []string{
 						runtimeTarget,
 					},
@@ -581,7 +581,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].Main = ""
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
-		}), `build for no-main does not contain a main function`)
+		}), errNoMain{"no-main"}.Error())
 	})
 	t.Run("not main.go", func(t *testing.T) {
 		ctx := newCtx(t)
@@ -595,14 +595,14 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].Main = "."
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
-		}), `build for no-main does not contain a main function`)
+		}), errNoMain{"no-main"}.Error())
 	})
 	t.Run("fixed main.go", func(t *testing.T) {
 		ctx := newCtx(t)
 		ctx.Config.Builds[0].Main = "main.go"
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
-		}), `build for no-main does not contain a main function`)
+		}), errNoMain{"no-main"}.Error())
 	})
 	t.Run("using gomod.proxy", func(t *testing.T) {
 		ctx := newCtx(t)
@@ -613,7 +613,30 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		ctx.Config.Builds[0].UnproxiedMain = "."
 		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
-		}), `build for no-main does not contain a main function`)
+		}), errNoMain{"no-main"}.Error())
+	})
+	t.Run("using gomod.proxy and template", func(t *testing.T) {
+		ctx := newCtx(t)
+		ctx.Config.GoMod.Proxy = true
+		ctx.Env["Main"] = "."
+		ctx.Config.Builds[0].Dir = "dist/proxy/test"
+		ctx.Config.Builds[0].Main = "github.com/caarlos0/test"
+		ctx.Config.Builds[0].UnproxiedDir = "."
+		ctx.Config.Builds[0].UnproxiedMain = "{{ .Env.Main }}"
+		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+			Target: runtimeTarget,
+		}), errNoMain{"no-main"}.Error())
+	})
+	t.Run("using gomod.proxy and invalid template", func(t *testing.T) {
+		ctx := newCtx(t)
+		ctx.Config.GoMod.Proxy = true
+		ctx.Config.Builds[0].Dir = "dist/proxy/test"
+		ctx.Config.Builds[0].Main = "github.com/caarlos0/test"
+		ctx.Config.Builds[0].UnproxiedDir = "."
+		ctx.Config.Builds[0].UnproxiedMain = "{{ .Env.NOPE }}"
+		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+			Target: runtimeTarget,
+		}), `template: tmpl:1:7: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`)
 	})
 }
 
@@ -680,7 +703,7 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 			{
 				Env:    []string{"GO111MODULE=off"},
 				Binary: "foo",
-				Hooks:  config.HookConfig{},
+				Hooks:  config.BuildHookConfig{},
 				Targets: []string{
 					runtimeTarget,
 				},
@@ -707,6 +730,19 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 		require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 			Target: runtimeTarget,
 		}))
+	})
+	t.Run("with template", func(t *testing.T) {
+		ctx.Config.Builds[0].Main = "{{ .Env.Main }}"
+		ctx.Env["Main"] = "."
+		require.NoError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+			Target: runtimeTarget,
+		}))
+	})
+	t.Run("with invalid template", func(t *testing.T) {
+		ctx.Config.Builds[0].Main = "{{ .Env.NOPE }}"
+		require.EqualError(t, Default.Build(ctx, ctx.Config.Builds[0], api.Options{
+			Target: runtimeTarget,
+		}), `template: tmpl:1:7: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`)
 	})
 }
 
@@ -766,7 +802,7 @@ func TestProcessFlags(t *testing.T) {
 		Goarch: "amd64",
 		Goarm:  "7",
 		Extra: map[string]interface{}{
-			"Binary": "binary",
+			artifact.ExtraBinary: "binary",
 		},
 	}
 
@@ -842,8 +878,8 @@ func TestBuildModTimestamp(t *testing.T) {
 	}
 	ctx := context.New(config)
 	ctx.Env["GO_FLAGS"] = "-v"
-	ctx.Git.CurrentTag = "5.6.7"
-	ctx.Version = "v" + ctx.Git.CurrentTag
+	ctx.Git.CurrentTag = "v5.6.7"
+	ctx.Version = ctx.Git.CurrentTag
 	build := ctx.Config.Builds[0]
 	for _, target := range build.Targets {
 		var ext string
@@ -885,7 +921,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 			Builds: []config.Build{build},
 		}
 		ctx := context.New(config)
-		ctx.Version = "v1.2.3"
+		ctx.Version = "1.2.3"
 		ctx.Git.Commit = "aaa"
 
 		line, err := buildGoBuildLine(ctx, config.Builds[0], api.Options{Path: "foo"}, &artifact.Artifact{}, []string{})
@@ -927,7 +963,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 			GoBinary: "go",
 		}, []string{
 			"go", "build",
-			"-ldflags=-s -w -X main.version=v1.2.3 -X main.commit=aaa -X main.builtBy=goreleaser",
+			"-ldflags=-s -w -X main.version=1.2.3 -X main.commit=aaa -X main.builtBy=goreleaser",
 			"-o", "foo", ".",
 		})
 	})
@@ -937,7 +973,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 			Main:     ".",
 			Ldflags:  []string{"-s -w", "-X main.version={{.Version}}"},
 			GoBinary: "go",
-		}, []string{"go", "build", "-ldflags=-s -w -X main.version=v1.2.3", "-o", "foo", "."})
+		}, []string{"go", "build", "-ldflags=-s -w -X main.version=1.2.3", "-o", "foo", "."})
 	})
 }
 

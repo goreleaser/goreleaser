@@ -1,0 +1,22 @@
+linters:
+  enable:
+    - thelper
+    - gofumpt
+    - tparallel
+    - unconvert
+    - unparam
+    - wastedassign
+    - revive
+    - forbidigo
+    - tagliatelle
+
+linters-settings:
+  forbidigo:
+    forbid:
+      - 'ioutil\.*'
+  tagliatelle:
+    case:
+      use-field-name: false
+      rules:
+        yaml: snake
+        json: snake

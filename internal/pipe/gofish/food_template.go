@@ -14,7 +14,11 @@ type releasePackage struct {
 	SHA256      string
 	OS          string
 	Arch        string
-	Binaries    []string
+	Binaries    []binary
+}
+
+type binary struct {
+	Name, Target string
 }
 
 const foodTemplate = `local name = "{{ .Name }}"
@@ -37,12 +41,12 @@ food = {
             resources = {
                 {{- range $binary := $element.Binaries }}
                 {
-                    path = {{if ne $element.OS "windows"}}"{{ $binary }}"{{else}}"{{ $binary }}.exe"{{end}},
-                    installpath = {{if ne $element.OS "windows"}}"bin/{{ $binary }}"{{else}}"bin\\{{ $binary }}.exe"{{end}},
+                    path = "{{ $binary.Name }}",
+                    installpath = {{if ne $element.OS "windows"}}"bin/{{ $binary.Target }}"{{else}}"bin\\{{ $binary.Target }}"{{end}},
                     {{- if ne $element.OS "windows"}}
                     executable = true
                     {{- end }}
-                }
+                },
                 {{- end }}
             }
         },

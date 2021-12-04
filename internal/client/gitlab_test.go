@@ -426,3 +426,112 @@ func TestGitlabChangelog(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "6dcb09b5: Fix all the bugs (Joey User <joey@user.edu>)", log)
 }
+
+func TestGitlabCreateFile(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Handle the test where we know the branch
+		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/files/newfile.txt") {
+			_, err := io.Copy(w, strings.NewReader(`{ "file_path": "newfile.txt", "branch": "somebranch" }`))
+			require.NoError(t, err)
+			return
+		}
+		// Handle the test where we detect the branch
+		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/files/newfile-in-default.txt") {
+			_, err := io.Copy(w, strings.NewReader(`{ "file_path": "newfile.txt", "branch": "main" }`))
+			require.NoError(t, err)
+			return
+		}
+		// File of doooom...gets created, but 404s when getting fetched
+		if strings.HasSuffix(r.URL.Path, "projects/someone/something/repository/files/doomed-file-404.txt") {
+			if r.Method == "PUT" {
+				_, err := io.Copy(w, strings.NewReader(`{ "file_path": "doomed-file-404.txt", "branch": "main" }`))
+				require.NoError(t, err)
+			} else {
+				w.WriteHeader(http.StatusNotFound)
+			}
+			return
+		}
+
+		defer r.Body.Close()
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+	})
+
+	client, err := NewGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	// Test using an arbitrary branch
+	repo := Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "somebranch",
+	}
+
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: repo.Owner}, repo, []byte("Hello there"), "newfile.txt", "test: test commit")
+	require.NoError(t, err)
+
+	// Test detecting the default branch
+	repo = Repo{
+		Owner: "someone",
+		Name:  "something",
+		// Note there is no branch here, gonna try and guess it!
+	}
+
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: repo.Owner}, repo, []byte("Hello there"), "newfile-in-default.txt", "test: test commit")
+	require.NoError(t, err)
+
+	// Test a doomed file. This is a file that is 'successfully' created, but returns a 404 when trying to fetch
+	repo = Repo{
+		Owner:  "someone",
+		Name:   "something",
+		Branch: "doomed",
+	}
+
+	err = client.CreateFile(ctx, config.CommitAuthor{Name: repo.Owner}, repo, []byte("Hello there"), "doomed-file-404.txt", "test: test commit")
+	require.Error(t, err)
+}
+
+func TestCloseMileston(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "projects/someone/something/milestones") {
+			r, err := os.Open("testdata/gitlab/milestones.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		} else if strings.HasSuffix(r.URL.Path, "projects/someone/something/milestones/12") {
+			r, err := os.Open("testdata/gitlab/milestone.json")
+			require.NoError(t, err)
+			_, err = io.Copy(w, r)
+			require.NoError(t, err)
+			return
+		}
+		defer r.Body.Close()
+	}))
+	defer srv.Close()
+
+	ctx := context.New(config.Project{
+		GitLabURLs: config.GitLabURLs{
+			API: srv.URL,
+		},
+	})
+	client, err := NewGitLab(ctx, "test-token")
+	require.NoError(t, err)
+
+	repo := Repo{
+		Owner: "someone",
+		Name:  "something",
+	}
+
+	err = client.CloseMilestone(ctx, repo, "10.0")
+	require.NoError(t, err)
+
+	// Be sure to error on missing milestones
+	err = client.CloseMilestone(ctx, repo, "never-will-exist")
+	require.Error(t, err)
+}

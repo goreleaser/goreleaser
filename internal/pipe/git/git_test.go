@@ -5,7 +5,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -37,6 +36,7 @@ func TestSingleCommit(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
+	require.Equal(t, "v0.0.1", ctx.Git.Summary)
 }
 
 func TestBranch(t *testing.T) {
@@ -51,6 +51,7 @@ func TestBranch(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "test-branch", ctx.Git.Branch)
+	require.Equal(t, "test-branch-tag", ctx.Git.Summary)
 }
 
 func TestNoRemote(t *testing.T) {
@@ -172,9 +173,13 @@ func TestTagIsNotLastCommit(t *testing.T) {
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "commit4")
-	err := Pipe{}.Run(context.New(config.Project{}))
+	ctx := &context.Context{
+		Config: config.Project{},
+	}
+	err := Pipe{}.Run(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "git tag v0.0.1 was not made against commit")
+	require.Contains(t, ctx.Git.Summary, "v0.0.1-1-g") // commit not represented because it changes every test
 }
 
 func TestValidState(t *testing.T) {
@@ -201,6 +206,7 @@ func TestSnapshotNoTags(t *testing.T) {
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 	require.Equal(t, fakeInfo.CurrentTag, ctx.Git.CurrentTag)
+	require.Empty(t, ctx.Git.PreviousTag)
 }
 
 func TestSnapshotNoCommits(t *testing.T) {
@@ -232,6 +238,7 @@ func TestSnapshotDirty(t *testing.T) {
 	ctx := context.New(config.Project{})
 	ctx.Snapshot = true
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.1", ctx.Git.Summary)
 }
 
 func TestGitNotInPath(t *testing.T) {
@@ -277,19 +284,53 @@ func TestTagFromCI(t *testing.T) {
 	}
 }
 
-func TestCommitDate(t *testing.T) {
-	// round to seconds since this is expressed in a Unix timestamp
-	commitDate := time.Now().AddDate(-1, 0, 0).Round(1 * time.Second)
-
+func TestNoPreviousTag(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
-	testlib.GitCommitWithDate(t, "commit1", commitDate)
+	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
 	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
-	require.True(t, commitDate.Equal(ctx.Git.CommitDate), "commit date does not match expected")
+	require.Empty(t, ctx.Git.PreviousTag, "should be empty")
+}
+
+func TestPreviousTagFromCI(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCommit(t, "commit2")
+	testlib.GitTag(t, "v0.0.2")
+
+	for _, tc := range []struct {
+		envs     map[string]string
+		expected string
+	}{
+		{expected: "v0.0.1"},
+		{
+			envs:     map[string]string{"GORELEASER_PREVIOUS_TAG": "v0.0.2"},
+			expected: "v0.0.2",
+		},
+	} {
+		t.Run(tc.expected, func(t *testing.T) {
+			for name, value := range tc.envs {
+				require.NoError(t, os.Setenv(name, value))
+			}
+
+			ctx := &context.Context{
+				Config: config.Project{},
+			}
+			require.NoError(t, Pipe{}.Run(ctx))
+			require.Equal(t, tc.expected, ctx.Git.PreviousTag)
+
+			for name := range tc.envs {
+				require.NoError(t, os.Setenv(name, ""))
+			}
+		})
+	}
 }

@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -433,7 +432,7 @@ func (s *GiteaUploadSuite) SetupTest() {
 	t := s.T()
 	s.GiteaReleasesTestSuite.SetupTest()
 	s.artifact = &artifact.Artifact{Name: "ArtifactName"}
-	file, err := ioutil.TempFile(t.TempDir(), "gitea_test_tempfile")
+	file, err := os.CreateTemp(t.TempDir(), "gitea_test_tempfile")
 	require.NoError(t, err)
 	require.NotNil(t, file)
 	t.Cleanup(func() {

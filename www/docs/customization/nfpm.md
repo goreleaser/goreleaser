@@ -1,6 +1,4 @@
----
-title: Linux packages (via nFPM)
----
+# Linux packages (via nFPM)
 
 GoReleaser can be wired to [nfpm](https://github.com/goreleaser/nfpm) to
 generate and publish `.deb`, `.rpm` and `.apk` packages.
@@ -21,8 +19,9 @@ nfpms:
     package_name: foo
 
     # You can change the file name of the package.
+    #
     # Default: `{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}`
-    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    file_name_template: "{{ .ConventionalFileName }}"
 
     # Build IDs for the builds you want to create NFPM packages for.
     # Defaults to all builds.
@@ -121,12 +120,6 @@ nfpms:
     # Defaults to false.
     meta: true
 
-    # Empty folders that should be created and managed by the packager
-    # implementation.
-    # Default is empty.
-    empty_folders:
-      - /var/log/foobar
-
     # Contents to add to the package.
     # GoReleaser will automatically add the binaries.
     contents:
@@ -195,6 +188,18 @@ nfpms:
           owner: notRoot
           group: notRoot
 
+      # Using the type 'dir', empty directories can be created. When building RPMs, however, this
+      # type has another important purpose: Claiming ownership of that folder. This is important
+      # because when upgrading or removing an RPM package, only the directories for which it has
+      # claimed ownership are removed. However, you should not claim ownership of a folder that
+      # is created by the distro or a dependency of your package.
+      # A directory in the build environment can optionally be provided in the 'src' field in
+      # order copy mtime and mode from that directory without having to specify it manually.
+      - dst: /some/dir
+        type: dir
+        file_info:
+          mode: 0700
+
     # Scripts to execute during the installation of the package.
     # Keys are the possible targets during the installation process
     # Values are the paths to the scripts which will be executed
@@ -217,8 +222,6 @@ nfpms:
           - tig
         replaces:
           - bash
-        empty_folders:
-          - /var/log/bar
       rpm:
         replacements:
           amd64: x86_64

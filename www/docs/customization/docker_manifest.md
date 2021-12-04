@@ -1,6 +1,4 @@
----
-title: Docker Manifests
----
+# Docker Manifests
 
 GoReleaser can also create and push Docker multi-platform images using the `docker manifest` tool.
 
@@ -15,6 +13,11 @@ instead of the Docker images names.
 !!! warning
     Please note that this is a beta feature, and it may change or be removed
     at any time.
+
+!!! warning
+    Notice that the images used in the manifest **need to be pushed** for this to work.
+    This is a limitation of how `docker manifest create` works.
+    For more info, check [this issue](https://github.com/goreleaser/goreleaser/issues/2606).
 
 ## Customization
 

@@ -41,6 +41,7 @@ func TestExecute(t *testing.T) {
 		{"ubinary", "ubi", artifact.UploadableBinary},
 		{"checksum", "sum", artifact.Checksum},
 		{"signature", "sig", artifact.Signature},
+		{"signature", "pem", artifact.Certificate},
 	} {
 		file := filepath.Join(folder, "a."+a.ext)
 		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
@@ -51,7 +52,7 @@ func TestExecute(t *testing.T) {
 			Path:   file,
 			Type:   a.typ,
 			Extra: map[string]interface{}{
-				"ID": a.id,
+				artifact.ExtraID: a.id,
 			},
 		})
 	}
@@ -63,7 +64,7 @@ func TestExecute(t *testing.T) {
 		Path:   "foo/bar:amd64",
 		Type:   artifact.DockerImage,
 		Extra: map[string]interface{}{
-			"ID": "img",
+			artifact.ExtraID: "img",
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -71,7 +72,7 @@ func TestExecute(t *testing.T) {
 		Path: "foo/bar",
 		Type: artifact.DockerManifest,
 		Extra: map[string]interface{}{
-			"ID": "mnf",
+			artifact.ExtraID: "mnf",
 		},
 	})
 
@@ -172,6 +173,7 @@ func TestExecute(t *testing.T) {
 								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"a.sig"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"a.pem"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
 								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
 							},

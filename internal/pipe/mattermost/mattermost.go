@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/apex/log"
@@ -18,7 +17,7 @@ import (
 const (
 	defaultColor           = "#2D313E"
 	defaultUsername        = `GoReleaser`
-	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .GitURL }}/releases/tag/{{ .Tag }}`
+	defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
 	defaultMessageTitle    = `{{ .ProjectName }} {{ .Tag }} is out!`
 )
 
@@ -35,6 +34,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Announce.Mattermost.MessageTemplate == "" {
 		ctx.Config.Announce.Mattermost.MessageTemplate = defaultMessageTemplate
 	}
+
 	if ctx.Config.Announce.Mattermost.TitleTemplate == "" {
 		ctx.Config.Announce.Mattermost.TitleTemplate = defaultMessageTitle
 	}
@@ -111,7 +111,7 @@ func postWebhook(ctx *context.Context, url string, msg *incomingWebhookRequest) 
 
 func closeBody(r *http.Response) {
 	if r.Body != nil {
-		_, _ = io.Copy(ioutil.Discard, r.Body)
+		_, _ = io.Copy(io.Discard, r.Body)
 		_ = r.Body.Close()
 	}
 }

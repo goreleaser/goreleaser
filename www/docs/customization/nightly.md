@@ -1,6 +1,4 @@
----
-title: Nightly
----
+# Nightly
 
 !!! success "GoReleaser Pro"
     The nightly build feature is a [GoReleaser Pro feature](/pro/).

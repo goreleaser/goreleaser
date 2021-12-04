@@ -2,7 +2,6 @@ package env
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -154,7 +153,7 @@ func TestEmptyGiteaFileEnv(t *testing.T) {
 
 func TestEmptyGithubEnvFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
-	f, err := ioutil.TempFile(t.TempDir(), "token")
+	f, err := os.CreateTemp(t.TempDir(), "token")
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	require.NoError(t, os.Chmod(f.Name(), 0o377))
@@ -170,7 +169,7 @@ func TestEmptyGithubEnvFile(t *testing.T) {
 
 func TestEmptyGitlabEnvFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITLAB_TOKEN"))
-	f, err := ioutil.TempFile(t.TempDir(), "token")
+	f, err := os.CreateTemp(t.TempDir(), "token")
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	require.NoError(t, os.Chmod(f.Name(), 0o377))
@@ -186,7 +185,7 @@ func TestEmptyGitlabEnvFile(t *testing.T) {
 
 func TestEmptyGiteaEnvFile(t *testing.T) {
 	require.NoError(t, os.Unsetenv("GITEA_TOKEN"))
-	f, err := ioutil.TempFile(t.TempDir(), "token")
+	f, err := os.CreateTemp(t.TempDir(), "token")
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	require.NoError(t, os.Chmod(f.Name(), 0o377))
@@ -232,7 +231,7 @@ func TestLoadEnv(t *testing.T) {
 	t.Run("env file exists", func(t *testing.T) {
 		env := "SUPER_SECRET_ENV_NOPE"
 		require.NoError(t, os.Unsetenv(env))
-		f, err := ioutil.TempFile(t.TempDir(), "token")
+		f, err := os.CreateTemp(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123")
 		require.NoError(t, f.Close())
@@ -243,7 +242,7 @@ func TestLoadEnv(t *testing.T) {
 	t.Run("env file with an empty line at the end", func(t *testing.T) {
 		env := "SUPER_SECRET_ENV_NOPE"
 		require.NoError(t, os.Unsetenv(env))
-		f, err := ioutil.TempFile(t.TempDir(), "token")
+		f, err := os.CreateTemp(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123\n")
 		require.NoError(t, f.Close())
@@ -254,7 +253,7 @@ func TestLoadEnv(t *testing.T) {
 	t.Run("env file is not readable", func(t *testing.T) {
 		env := "SUPER_SECRET_ENV_NOPE"
 		require.NoError(t, os.Unsetenv(env))
-		f, err := ioutil.TempFile(t.TempDir(), "token")
+		f, err := os.CreateTemp(t.TempDir(), "token")
 		require.NoError(t, err)
 		fmt.Fprintf(f, "123")
 		require.NoError(t, f.Close())

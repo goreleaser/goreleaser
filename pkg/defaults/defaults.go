@@ -15,6 +15,8 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
 	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
+	"github.com/goreleaser/goreleaser/internal/pipe/krew"
+	"github.com/goreleaser/goreleaser/internal/pipe/linkedin"
 	"github.com/goreleaser/goreleaser/internal/pipe/mattermost"
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
@@ -65,6 +67,7 @@ var Defaulters = []Defaulter{
 	artifactory.Pipe{},
 	blob.Pipe{},
 	brew.Pipe{},
+	krew.Pipe{},
 	gofish.Pipe{},
 	scoop.Pipe{},
 	discord.Pipe{},
@@ -75,5 +78,6 @@ var Defaulters = []Defaulter{
 	smtp.Pipe{},
 	mattermost.Pipe{},
 	milestone.Pipe{},
+	linkedin.Pipe{},
 	telegram.Pipe{},
 }

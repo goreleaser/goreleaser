@@ -2,7 +2,6 @@ package artifact
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -245,7 +244,7 @@ func TestChecksumFileDoesntExist(t *testing.T) {
 }
 
 func TestInvalidAlgorithm(t *testing.T) {
-	f, err := ioutil.TempFile(t.TempDir(), "")
+	f, err := os.CreateTemp(t.TempDir(), "")
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	artifact := Artifact{
@@ -271,25 +270,25 @@ func TestByIDs(t *testing.T) {
 		{
 			Name: "foo",
 			Extra: map[string]interface{}{
-				"ID": "foo",
+				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "bar",
 			Extra: map[string]interface{}{
-				"ID": "bar",
+				ExtraID: "bar",
 			},
 		},
 		{
 			Name: "foobar",
 			Extra: map[string]interface{}{
-				"ID": "foo",
+				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "check",
 			Extra: map[string]interface{}{
-				"ID": "check",
+				ExtraID: "check",
 			},
 		},
 		{
@@ -312,25 +311,25 @@ func TestByFormats(t *testing.T) {
 		{
 			Name: "foo",
 			Extra: map[string]interface{}{
-				"Format": "zip",
+				ExtraFormat: "zip",
 			},
 		},
 		{
 			Name: "bar",
 			Extra: map[string]interface{}{
-				"Format": "tar.gz",
+				ExtraFormat: "tar.gz",
 			},
 		},
 		{
 			Name: "foobar",
 			Extra: map[string]interface{}{
-				"Format": "zip",
+				ExtraFormat: "zip",
 			},
 		},
 		{
 			Name: "bin",
 			Extra: map[string]interface{}{
-				"Format": "binary",
+				ExtraFormat: "binary",
 			},
 		},
 	}
@@ -359,17 +358,25 @@ func TestTypeToString(t *testing.T) {
 		DockerManifest,
 		Checksum,
 		Signature,
+		Certificate,
 		UploadableSourceArchive,
 		BrewTap,
 		GoFishRig,
+		KrewPluginManifest,
 		ScoopManifest,
 	} {
 		t.Run(a.String(), func(t *testing.T) {
 			require.NotEqual(t, "unknown", a.String())
+			bts, err := a.MarshalJSON()
+			require.NoError(t, err)
+			require.Equal(t, []byte(`"`+a.String()+`"`), bts)
 		})
 	}
 	t.Run("unknown", func(t *testing.T) {
 		require.Equal(t, "unknown", Type(9999).String())
+		bts, err := Type(9999).MarshalJSON()
+		require.NoError(t, err)
+		require.Equal(t, []byte(`"unknown"`), bts)
 	})
 }
 

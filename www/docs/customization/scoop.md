@@ -1,6 +1,4 @@
----
-title: Scoop Manifests
----
+# Scoop Manifests
 
 After releasing to GitHub or GitLab, GoReleaser can generate and publish a
 _Scoop App Manifest_ into a repository that you have access to.

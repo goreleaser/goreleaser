@@ -3,11 +3,14 @@ name: docs
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
     paths:
       - '.github/workflows/htmltest.yml'
       - 'www/*'
-  pull_request: {}
+  pull_request:
+    paths:
+      - '.github/workflows/htmltest.yml'
+      - 'www/*'
 
 jobs:
   htmltest:
@@ -15,6 +18,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: arduino/setup-task@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
       - run: task docs:build
       - uses: wjdp/htmltest-action@master
         with:

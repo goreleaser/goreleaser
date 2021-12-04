@@ -12,6 +12,13 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+const (
+	// maxReleaseBodyLength defines the max characters size of the body
+	maxReleaseBodyLength = 125000
+	// ellipsis to be used when release notes body is too long
+	ellipsis = "..."
+)
+
 // ErrNotImplemented is returned when a client does not implement certain feature.
 var ErrNotImplemented = fmt.Errorf("not implemented")
 
@@ -46,6 +53,12 @@ type Client interface {
 	Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error)
 }
 
+// GitHubClient is the client with GitHub-only features.
+type GitHubClient interface {
+	Client
+	GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error)
+}
+
 // New creates a new client depending on the token type.
 func New(ctx *context.Context) (Client, error) {
 	return newWithToken(ctx, ctx.Token)
@@ -75,6 +88,13 @@ func NewIfToken(ctx *context.Context, cli Client, token string) (Client, error) 
 	}
 	log.Debug("using custom token")
 	return newWithToken(ctx, token)
+}
+
+func truncateReleaseBody(body string) string {
+	if len(body) > maxReleaseBodyLength {
+		body = body[1:(maxReleaseBodyLength-len(ellipsis))] + ellipsis
+	}
+	return body
 }
 
 // ErrNoMilestoneFound is an error when no milestone is found.

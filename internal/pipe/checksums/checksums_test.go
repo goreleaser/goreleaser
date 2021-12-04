@@ -1,7 +1,6 @@
 package checksums
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -69,7 +68,7 @@ func TestPipe(t *testing.T) {
 				Path: file,
 				Type: artifact.UploadableBinary,
 				Extra: map[string]interface{}{
-					"ID": "id-1",
+					artifact.ExtraID: "id-1",
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -77,7 +76,7 @@ func TestPipe(t *testing.T) {
 				Path: file,
 				Type: artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					"ID": "id-2",
+					artifact.ExtraID: "id-2",
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -85,7 +84,7 @@ func TestPipe(t *testing.T) {
 				Path: file,
 				Type: artifact.LinuxPackage,
 				Extra: map[string]interface{}{
-					"ID": "id-3",
+					artifact.ExtraID: "id-3",
 				},
 			})
 			require.NoError(t, Pipe{}.Run(ctx))
@@ -123,7 +122,7 @@ func TestPipeFileNotExist(t *testing.T) {
 }
 
 func TestPipeInvalidNameTemplate(t *testing.T) {
-	binFile, err := ioutil.TempFile(t.TempDir(), "goreleasertest-bin")
+	binFile, err := os.CreateTemp(t.TempDir(), "goreleasertest-bin")
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, binFile.Close()) })
 	_, err = binFile.WriteString("fake artifact")
@@ -160,7 +159,7 @@ func TestPipeInvalidNameTemplate(t *testing.T) {
 
 func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 	folder := t.TempDir()
-	binFile, err := ioutil.TempFile(folder, "goreleasertest-bin")
+	binFile, err := os.CreateTemp(folder, "goreleasertest-bin")
 	require.NoError(t, err)
 	t.Cleanup(func() { require.NoError(t, binFile.Close()) })
 	_, err = binFile.WriteString("fake artifact")
@@ -233,6 +232,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 
 	tests := map[string]struct {
 		extraFiles []config.ExtraFile
+		ids        []string
 		want       []string
 	}{
 		"default": {
@@ -259,6 +259,15 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 				extraFileBar,
 			},
 		},
+		"one extra file with no builds": {
+			extraFiles: []config.ExtraFile{
+				{Glob: extraFileFooRelPath},
+			},
+			ids: []string{"yada yada yada"},
+			want: []string{
+				extraFileFoo,
+			},
+		},
 	}
 
 	for name, tt := range tests {
@@ -274,6 +283,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 						Algorithm:    "sha256",
 						NameTemplate: "checksums.txt",
 						ExtraFiles:   tt.extraFiles,
+						IDs:          tt.ids,
 					},
 				},
 			)
@@ -283,7 +293,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 				Path: file,
 				Type: artifact.UploadableBinary,
 				Extra: map[string]interface{}{
-					"ID": "id-1",
+					artifact.ExtraID: "id-1",
 				},
 			})
 
