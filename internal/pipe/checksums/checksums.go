@@ -50,7 +50,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		Name: filename,
 		Extra: map[string]interface{}{
 			artifact.ExtraRefresh: func() error {
-				log.Info("refreshing checksums")
+				log.WithField("file", filename).Info("refreshing checksums")
 				return refresh(ctx, filename, filepath)
 			},
 		},
