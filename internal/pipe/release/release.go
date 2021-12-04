@@ -167,9 +167,6 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	for _, artifact := range ctx.Artifacts.Filter(filters).List() {
 		artifact := artifact
 		g.Go(func() error {
-			if err := artifact.Refresh(); err != nil {
-				return err
-			}
 			return upload(ctx, client, releaseID, artifact)
 		})
 	}

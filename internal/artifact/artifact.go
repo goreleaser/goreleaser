@@ -170,7 +170,7 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
-var noop = func() error { return nil }
+var noRefresh = func() error { return nil }
 
 // Refresh executes a Refresh extra function on artifacts, if it exists.
 func (a Artifact) Refresh() error {
@@ -179,7 +179,7 @@ func (a Artifact) Refresh() error {
 	if a.Type != Checksum {
 		return nil
 	}
-	fn, ok := a.ExtraOr(ExtraRefresh, noop).(func() error)
+	fn, ok := a.ExtraOr(ExtraRefresh, noRefresh).(func() error)
 	if !ok {
 		return nil
 	}
@@ -374,4 +374,17 @@ func (artifacts Artifacts) Paths() []string {
 		result = append(result, artifact.Path)
 	}
 	return result
+}
+
+// VisitFn is a function that can be executed against each artifact in a list.
+type VisitFn func(a *Artifact) error
+
+// Visit executes the given function for each artifact in the list.
+func (artifacts Artifacts) Visit(fn VisitFn) error {
+	for _, artifact := range artifacts.List() {
+		if err := fn(artifact); err != nil {
+			return err
+		}
+	}
+	return nil
 }

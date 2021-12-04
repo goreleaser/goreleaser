@@ -464,3 +464,28 @@ func TestRefresher(t *testing.T) {
 		}
 	})
 }
+
+func TestVisit(t *testing.T) {
+	artifacts := New()
+	artifacts.Add(&Artifact{
+		Name: "foo",
+		Type: Checksum,
+	})
+	artifacts.Add(&Artifact{
+		Name: "foo",
+		Type: Binary,
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		require.NoError(t, artifacts.Visit(func(a *Artifact) error {
+			require.Equal(t, "foo", a.Name)
+			return nil
+		}))
+	})
+
+	t.Run("nok", func(t *testing.T) {
+		require.EqualError(t, artifacts.Visit(func(a *Artifact) error {
+			return fmt.Errorf("fake err")
+		}), `fake err`)
+	})
+}
