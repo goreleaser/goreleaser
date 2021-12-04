@@ -49,6 +49,9 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 	for _, artifact := range artifacts {
 		artifact := artifact
 		g.Go(func() error {
+			if err := artifact.Refresh(); err != nil {
+				return err
+			}
 			c, err := resolveCommand(ctx, publisher, artifact)
 			if err != nil {
 				return err

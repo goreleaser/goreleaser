@@ -172,8 +172,13 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 
 var noop = func() error { return nil }
 
-// Refresh executes
+// Refresh executes a Refresh extra function on artifacts, if it exists.
 func (a Artifact) Refresh() error {
+	// for now lets only do it for checksums, as we know for a fact that
+	// they are the only ones that support this right now.
+	if a.Type != Checksum {
+		return nil
+	}
 	fn, ok := a.ExtraOr(ExtraRefresh, noop).(func() error)
 	if !ok {
 		return nil

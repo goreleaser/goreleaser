@@ -392,50 +392,75 @@ func TestPaths(t *testing.T) {
 }
 
 func TestRefresher(t *testing.T) {
-	artifacts := New()
-	path := filepath.Join(t.TempDir(), "f")
-	artifacts.Add(&Artifact{
-		Name: "f",
-		Path: path,
-		Extra: map[string]interface{}{
-			"ID": "ok",
-			"Refresh": func() error {
-				return os.WriteFile(path, []byte("hello"), 0o765)
+	t.Run("ok", func(t *testing.T) {
+		artifacts := New()
+		path := filepath.Join(t.TempDir(), "f")
+		artifacts.Add(&Artifact{
+			Name: "f",
+			Path: path,
+			Type: Checksum,
+			Extra: map[string]interface{}{
+				"Refresh": func() error {
+					return os.WriteFile(path, []byte("hello"), 0o765)
+				},
 			},
-		},
-	})
-	artifacts.Add(&Artifact{
-		Name: "invalid",
-		Extra: map[string]interface{}{
-			"ID": "ok",
-			"Refresh": func() {
-				t.Fatalf("should not have been called")
+		})
+		artifacts.Add(&Artifact{
+			Name: "invalid",
+			Type: Checksum,
+			Extra: map[string]interface{}{
+				"Refresh": func() {
+					t.Fatalf("should not have been called")
+				},
 			},
-		},
-	})
-	artifacts.Add(&Artifact{
-		Name: "no refresh",
-		Extra: map[string]interface{}{
-			"ID": "ok",
-		},
-	})
-	artifacts.Add(&Artifact{
-		Name: "fail",
-		Extra: map[string]interface{}{
-			"ID": "nok",
-			"Refresh": func() error {
-				return fmt.Errorf("fake err")
-			},
-		},
+		})
+		artifacts.Add(&Artifact{
+			Name: "no refresh",
+			Type: Checksum,
+		})
+
+		for _, item := range artifacts.List() {
+			require.NoError(t, item.Refresh())
+		}
+
+		bts, err := os.ReadFile(path)
+		require.NoError(t, err)
+		require.Equal(t, "hello", string(bts))
 	})
 
-	for _, item := range artifacts.Filter(ByIDs("ok")).List() {
-		require.NoError(t, item.Refresh())
-	}
-	for _, item := range artifacts.Filter(ByIDs("nok")).List() {
-		require.EqualError(t, item.Refresh(), `failed to refresh "fail": fake err`)
-	}
-	bts, err := os.ReadFile(path)
-	require.NoError(t, err)
-	require.Equal(t, "hello", string(bts))
+	t.Run("nok", func(t *testing.T) {
+		artifacts := New()
+		artifacts.Add(&Artifact{
+			Name: "fail",
+			Type: Checksum,
+			Extra: map[string]interface{}{
+				"ID": "nok",
+				"Refresh": func() error {
+					return fmt.Errorf("fake err")
+				},
+			},
+		})
+
+		for _, item := range artifacts.List() {
+			require.EqualError(t, item.Refresh(), `failed to refresh "fail": fake err`)
+		}
+	})
+
+	t.Run("not a checksum", func(t *testing.T) {
+		artifacts := New()
+		artifacts.Add(&Artifact{
+			Name: "will be ignored",
+			Type: Binary,
+			Extra: map[string]interface{}{
+				"ID": "ignored",
+				"Refresh": func() error {
+					return fmt.Errorf("err that should not happen")
+				},
+			},
+		})
+
+		for _, item := range artifacts.List() {
+			require.NoError(t, item.Refresh())
+		}
+	})
 }

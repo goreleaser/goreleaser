@@ -191,6 +191,9 @@ func uploadWithFilter(ctx *context.Context, upload *config.Upload, filter artifa
 	for _, artifact := range artifacts {
 		artifact := artifact
 		g.Go(func() error {
+			if err := artifact.Refresh(); err != nil {
+				return err
+			}
 			return uploadAsset(ctx, upload, artifact, kind, check)
 		})
 	}

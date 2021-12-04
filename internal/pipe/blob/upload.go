@@ -98,13 +98,15 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
 		artifact := artifact
 		g.Go(func() error {
+			if err := artifact.Refresh(); err != nil {
+				return err
+			}
+
 			// TODO: replace this with ?prefix=folder on the bucket url
 			dataFile := artifact.Path
 			uploadFile := path.Join(folder, artifact.Name)
 
-			err := uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
-
-			return err
+			return uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
 		})
 	}
 
