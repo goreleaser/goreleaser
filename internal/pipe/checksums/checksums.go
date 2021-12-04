@@ -18,6 +18,8 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+var errNoArtifacts = errors.New("there are no artifacts to sign")
+
 // Pipe for checksums.
 type Pipe struct{}
 
@@ -136,5 +138,3 @@ func checksums(algorithm string, artifact *artifact.Artifact) (string, error) {
 	}
 	return fmt.Sprintf("%v  %v\n", sha, artifact.Name), nil
 }
-
-var errNoArtifacts = errors.New("there are no artifacts to sign")
