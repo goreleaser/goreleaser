@@ -354,6 +354,23 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, "https://github.com/goreleaser/goreleaser/releases/tag/v1.0.0", ctx.ReleaseURL)
 }
 
+func TestDefaultUsingTmpl(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
+
+	ctx := context.New(config.Project{ProjectName: "test-repo"})
+	ctx.TokenType = context.TokenTypeGitHub
+	ctx.Config.GitHubURLs.Download = "https://github.com"
+	ctx.Git.CurrentTag = "v1.0.0"
+	ctx.Config.Release.GitHub.Name = "{{ .ProjectName }}"
+	ctx.Config.Release.GitHub.Owner = "test-owner"
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "test-repo", ctx.Config.Release.GitHub.Name)
+	require.Equal(t, "test-owner", ctx.Config.Release.GitHub.Owner)
+	require.Equal(t, "https://github.com/test-owner/test-repo/releases/tag/v1.0.0", ctx.ReleaseURL)
+}
+
 func TestDefaultWithGitlab(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
@@ -369,6 +386,23 @@ func TestDefaultWithGitlab(t *testing.T) {
 	require.Equal(t, "https://gitlab.com/gitlabowner/gitlabrepo/-/releases/v1.0.0", ctx.ReleaseURL)
 }
 
+func TestDefaultWithGitlabUsingTmpl(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@gitlab.com:gitlabowner/gitlabrepo.git")
+
+	ctx := context.New(config.Project{ProjectName: "test-repo"})
+	ctx.TokenType = context.TokenTypeGitLab
+	ctx.Config.GitLabURLs.Download = "https://gitlab.com"
+	ctx.Git.CurrentTag = "v1.0.0"
+	ctx.Config.Release.GitLab.Name = "{{ .ProjectName }}"
+	ctx.Config.Release.GitLab.Owner = "test-owner"
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "test-repo", ctx.Config.Release.GitLab.Name)
+	require.Equal(t, "test-owner", ctx.Config.Release.GitLab.Owner)
+	require.Equal(t, "https://gitlab.com/test-owner/test-repo/-/releases/v1.0.0", ctx.ReleaseURL)
+}
+
 func TestDefaultWithGitea(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
@@ -382,6 +416,23 @@ func TestDefaultWithGitea(t *testing.T) {
 	require.Equal(t, "gitearepo", ctx.Config.Release.Gitea.Name)
 	require.Equal(t, "giteaowner", ctx.Config.Release.Gitea.Owner)
 	require.Equal(t, "https://git.honk.com/giteaowner/gitearepo/releases/tag/v1.0.0", ctx.ReleaseURL)
+}
+
+func TestDefaultWithGiteaUsingTmpl(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@gitea.example.com:giteaowner/gitearepo.git")
+
+	ctx := context.New(config.Project{ProjectName: "test-repo"})
+	ctx.TokenType = context.TokenTypeGitea
+	ctx.Config.GiteaURLs.Download = "https://git.honk.com"
+	ctx.Git.CurrentTag = "v1.0.0"
+	ctx.Config.Release.Gitea.Name = "{{ .ProjectName }}"
+	ctx.Config.Release.Gitea.Owner = "test-owner"
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "test-repo", ctx.Config.Release.Gitea.Name)
+	require.Equal(t, "test-owner", ctx.Config.Release.Gitea.Owner)
+	require.Equal(t, "https://git.honk.com/test-owner/test-repo/releases/tag/v1.0.0", ctx.ReleaseURL)
 }
 
 func TestDefaultPreRelease(t *testing.T) {

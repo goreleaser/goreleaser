@@ -12,6 +12,8 @@ import (
 	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -24,6 +26,17 @@ type Pipe struct{}
 
 func (Pipe) String() string                 { return "scm releases" }
 func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Release.Disable }
+
+// applyTmplToRepo applies the repo name and repo owner against the template fields
+func applyTmplToRepo(ctx *context.Context, repo config.Repo) (result config.Repo, err error) {
+	tpl := tmpl.New(ctx)
+	result.Name, err = tpl.Apply(repo.Name)
+	if err != nil {
+		return
+	}
+	result.Owner, err = tpl.Apply(repo.Owner)
+	return
+}
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
@@ -47,13 +60,19 @@ func (Pipe) Default(ctx *context.Context) error {
 
 	switch ctx.TokenType {
 	case context.TokenTypeGitLab:
+		var (
+			repo config.Repo
+			err  error
+		)
 		if ctx.Config.Release.GitLab.Name == "" {
-			repo, err := git.ExtractRepoFromConfig()
-			if err != nil {
-				return err
-			}
-			ctx.Config.Release.GitLab = repo
+			repo, err = git.ExtractRepoFromConfig()
+		} else {
+			repo, err = applyTmplToRepo(ctx, ctx.Config.Release.GitLab)
 		}
+		if err != nil {
+			return err
+		}
+		ctx.Config.Release.GitLab = repo
 		ctx.ReleaseURL = fmt.Sprintf(
 			"%s/%s/%s/-/releases/%s",
 			ctx.Config.GitLabURLs.Download,
@@ -62,13 +81,19 @@ func (Pipe) Default(ctx *context.Context) error {
 			ctx.Git.CurrentTag,
 		)
 	case context.TokenTypeGitea:
+		var (
+			repo config.Repo
+			err  error
+		)
 		if ctx.Config.Release.Gitea.Name == "" {
-			repo, err := git.ExtractRepoFromConfig()
-			if err != nil {
-				return err
-			}
-			ctx.Config.Release.Gitea = repo
+			repo, err = git.ExtractRepoFromConfig()
+		} else {
+			repo, err = applyTmplToRepo(ctx, ctx.Config.Release.Gitea)
 		}
+		if err != nil {
+			return err
+		}
+		ctx.Config.Release.Gitea = repo
 		ctx.ReleaseURL = fmt.Sprintf(
 			"%s/%s/%s/releases/tag/%s",
 			ctx.Config.GiteaURLs.Download,
@@ -78,13 +103,19 @@ func (Pipe) Default(ctx *context.Context) error {
 		)
 	default:
 		// We keep github as default for now
+		var (
+			repo config.Repo
+			err  error
+		)
 		if ctx.Config.Release.GitHub.Name == "" {
-			repo, err := git.ExtractRepoFromConfig()
-			if err != nil && !ctx.Snapshot {
-				return err
-			}
-			ctx.Config.Release.GitHub = repo
+			repo, err = git.ExtractRepoFromConfig()
+		} else {
+			repo, err = applyTmplToRepo(ctx, ctx.Config.Release.GitHub)
 		}
+		if err != nil {
+			return err
+		}
+		ctx.Config.Release.GitHub = repo
 		ctx.ReleaseURL = fmt.Sprintf(
 			"%s/%s/%s/releases/tag/%s",
 			ctx.Config.GitHubURLs.Download,
