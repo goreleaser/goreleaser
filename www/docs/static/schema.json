@@ -1715,6 +1715,7 @@
 					},
 					"mode": {
 						"enum": [
+							"keep-existing",
 							"append",
 							"prepend",
 							"replace"
