@@ -6,11 +6,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDescription(t *testing.T) {
@@ -37,21 +36,22 @@ func TestSingleCommit(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
-	require.Equal(t, "commit1", ctx.Git.Subject)
+	require.Equal(t, "commit1", ctx.Git.TagSubject)
 }
 
 func TestAnnotatedTags(t *testing.T) {
-	testlib.Mktmp(t)
+	t.Log(testlib.Mktmp(t))
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit1")
-	testlib.GitAnnotatedTag(t, "v0.0.1", "first version")
+	testlib.GitAnnotatedTag(t, "v0.0.1", "first version\n\nlalalla\nlalal\nlah")
 	ctx := &context.Context{
 		Config: config.Project{},
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
-	require.Equal(t, "first version", ctx.Git.Subject)
+	require.Equal(t, "first version", ctx.Git.TagSubject)
+	require.Equal(t, "first version\n\nlalalla\nlalal\nlah\n", ctx.Git.TagContents)
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
 }
 

@@ -51,9 +51,9 @@ func GitTag(tb testing.TB, tag string) {
 }
 
 // GitAnnotatedTag creates an annotated tag.
-func GitAnnotatedTag(tb testing.TB, tag, subject string) {
+func GitAnnotatedTag(tb testing.TB, tag, message string) {
 	tb.Helper()
-	out, err := fakeGit("tag", "-a", tag, "-m", subject)
+	out, err := fakeGit("tag", "-a", tag, "-m", message)
 	require.NoError(tb, err)
 	require.Empty(tb, out)
 }
