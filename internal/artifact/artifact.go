@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"hash"
 	"hash/crc32"
@@ -111,18 +112,35 @@ const (
 	ExtraFormat    = "Format"
 	ExtraWrappedIn = "WrappedIn"
 	ExtraBinaries  = "Binaries"
+	ExtraRefresh   = "Refresh"
 )
+
+// Extras represents the extra fields in an artifact.
+type Extras map[string]interface{}
+
+func (e Extras) MarshalJSON() ([]byte, error) {
+	m := map[string]interface{}{}
+	for k, v := range e {
+		if k == ExtraRefresh {
+			// refresh is a func, so we can't serialize it.
+			// set v to a string representation of the function signature instead.
+			v = "func() error"
+		}
+		m[k] = v
+	}
+	return json.Marshal(m)
+}
 
 // Artifact represents an artifact and its relevant info.
 type Artifact struct {
-	Name   string                 `json:"name,omitempty"`
-	Path   string                 `json:"path,omitempty"`
-	Goos   string                 `json:"goos,omitempty"`
-	Goarch string                 `json:"goarch,omitempty"`
-	Goarm  string                 `json:"goarm,omitempty"`
-	Gomips string                 `json:"gomips,omitempty"`
-	Type   Type                   `json:"type,omitempty"`
-	Extra  map[string]interface{} `json:"extra,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Path   string `json:"path,omitempty"`
+	Goos   string `json:"goos,omitempty"`
+	Goarch string `json:"goarch,omitempty"`
+	Goarm  string `json:"goarm,omitempty"`
+	Gomips string `json:"gomips,omitempty"`
+	Type   Type   `json:"type,omitempty"`
+	Extra  Extras `json:"extra,omitempty"`
 }
 
 // ExtraOr returns the Extra field with the given key or the or value specified
@@ -167,6 +185,25 @@ func (a Artifact) Checksum(algorithm string) (string, error) {
 		return "", fmt.Errorf("failed to checksum: %w", err)
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+var noRefresh = func() error { return nil }
+
+// Refresh executes a Refresh extra function on artifacts, if it exists.
+func (a Artifact) Refresh() error {
+	// for now lets only do it for checksums, as we know for a fact that
+	// they are the only ones that support this right now.
+	if a.Type != Checksum {
+		return nil
+	}
+	fn, ok := a.ExtraOr(ExtraRefresh, noRefresh).(func() error)
+	if !ok {
+		return nil
+	}
+	if err := fn(); err != nil {
+		return fmt.Errorf("failed to refresh %q: %w", a.Name, err)
+	}
+	return nil
 }
 
 // ID returns the artifact ID if it exists, empty otherwise.
@@ -354,4 +391,17 @@ func (artifacts Artifacts) Paths() []string {
 		result = append(result, artifact.Path)
 	}
 	return result
+}
+
+// VisitFn is a function that can be executed against each artifact in a list.
+type VisitFn func(a *Artifact) error
+
+// Visit executes the given function for each artifact in the list.
+func (artifacts Artifacts) Visit(fn VisitFn) error {
+	for _, artifact := range artifacts.List() {
+		if err := fn(artifact); err != nil {
+			return err
+		}
+	}
+	return nil
 }

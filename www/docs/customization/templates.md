@@ -43,6 +43,7 @@ On fields that support templating, these fields are always available:
 | `.ReleaseURL`          | the current release download url[^4]                                                                   |
 | `.Summary`             | the git summary, e.g. `v1.0.0-10-g34f56g3`[^5]                                                         |
 | `.PrefixedSummary`     | the git summary prefixed with the monorepo config tag prefix (if any)                                  |
+| `.Subject`             | the annotated tag message, or the message of the commit it points out to                               |
 
 [^1]: The `v` prefix is stripped and it might be changed in `snapshot` and `nightly` builds.
 [^2]: Assuming `Tag` is a valid a SemVer, otherwise empty/zeroed.
