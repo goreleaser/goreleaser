@@ -1886,6 +1886,9 @@
 					},
 					"certificate": {
 						"type": "string"
+					},
+					"output": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
