@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"hash"
 	"hash/crc32"
@@ -114,16 +115,31 @@ const (
 	ExtraRefresh   = "Refresh"
 )
 
+// Extras represents the extra fields in an artifact.
+type Extras map[string]interface{}
+
+func (e Extras) MarshalJSON() ([]byte, error) {
+	m := map[string]interface{}{}
+	for k, v := range e {
+		if k == ExtraRefresh {
+			// refresh is a func, so we can't serialize it
+			continue
+		}
+		m[k] = v
+	}
+	return json.Marshal(m)
+}
+
 // Artifact represents an artifact and its relevant info.
 type Artifact struct {
-	Name   string                 `json:"name,omitempty"`
-	Path   string                 `json:"path,omitempty"`
-	Goos   string                 `json:"goos,omitempty"`
-	Goarch string                 `json:"goarch,omitempty"`
-	Goarm  string                 `json:"goarm,omitempty"`
-	Gomips string                 `json:"gomips,omitempty"`
-	Type   Type                   `json:"type,omitempty"`
-	Extra  map[string]interface{} `json:"extra,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Path   string `json:"path,omitempty"`
+	Goos   string `json:"goos,omitempty"`
+	Goarch string `json:"goarch,omitempty"`
+	Goarm  string `json:"goarm,omitempty"`
+	Gomips string `json:"gomips,omitempty"`
+	Type   Type   `json:"type,omitempty"`
+	Extra  Extras `json:"extra,omitempty"`
 }
 
 // ExtraOr returns the Extra field with the given key or the or value specified

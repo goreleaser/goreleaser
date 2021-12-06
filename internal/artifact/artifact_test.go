@@ -1,11 +1,13 @@
 package artifact
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
 )
@@ -488,4 +490,25 @@ func TestVisit(t *testing.T) {
 			return fmt.Errorf("fake err")
 		}), `fake err`)
 	})
+}
+
+func TestMarshalJSON(t *testing.T) {
+	artifacts := New()
+	artifacts.Add(&Artifact{
+		Name: "foo",
+		Type: Binary,
+		Extra: map[string]interface{}{
+			ExtraID: "adsad",
+		},
+	})
+	artifacts.Add(&Artifact{
+		Name: "foo",
+		Type: Checksum,
+		Extra: map[string]interface{}{
+			ExtraRefresh: func() error { return nil },
+		},
+	})
+	bts, err := json.Marshal(artifacts.List())
+	require.NoError(t, err)
+	golden.RequireEqualJSON(t, bts)
 }
