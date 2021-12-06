@@ -22,12 +22,12 @@ const (
 
 // NewWriter creates a new log writer.
 func NewWriter(fields log.Fields, out Output) io.Writer {
-	return NewConditionalWriter(fields, out, IsDebug())
+	return NewConditionalWriter(fields, out, false)
 }
 
-// NewConditionalWriter creates a new log writer that only writes when the given condition is met.
+// NewConditionalWriter creates a new log writer that only writes when the given condition is met or debug is enabled.
 func NewConditionalWriter(fields log.Fields, out Output, condition bool) io.Writer {
-	if condition {
+	if condition || isDebug() {
 		return logWriter{
 			ctx: newLogger(fields),
 			out: out,
@@ -61,8 +61,7 @@ func newLogger(fields log.Fields) *log.Entry {
 	return logger
 }
 
-// IsDebug returns true if the current log level is debug.
-func IsDebug() bool {
+func isDebug() bool {
 	return logLevel() == log.DebugLevel
 }
 

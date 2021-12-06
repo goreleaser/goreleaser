@@ -98,11 +98,11 @@ signs:
     - FOO=bar
     - HONK=honkhonk
 
-    # By default, the stdout and stderr of the signing cmd are discarded.
-    # If you want them to be shown, set this to true.
+    # By default, the stdout and stderr of the signing cmd are discarded unless GoReleaser is running with `--debug` set.
+    # You can set this to true if you want them to be displayed regardless.
     #
     # Defaults to false
-    always_output: true
+    output: true
 ```
 
 ### Available variable names
