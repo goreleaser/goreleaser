@@ -37,6 +37,7 @@ func TestSingleCommit(t *testing.T) {
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
 	require.Equal(t, "commit1", ctx.Git.TagSubject)
+	require.Equal(t, "commit1", ctx.Git.TagContents)
 }
 
 func TestAnnotatedTags(t *testing.T) {
@@ -51,7 +52,7 @@ func TestAnnotatedTags(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 	require.Equal(t, "first version", ctx.Git.TagSubject)
-	require.Equal(t, "first version\n\nlalalla\nlalal\nlah\n", ctx.Git.TagContents)
+	require.Equal(t, "first version\n\nlalalla\nlalal\nlah", ctx.Git.TagContents)
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
 }
 

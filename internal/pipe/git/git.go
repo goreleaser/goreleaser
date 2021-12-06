@@ -217,7 +217,7 @@ func getTagSubject(tag string) (string, error) {
 
 func getTagContents(tag string) (string, error) {
 	out, err := git.Run("tag", "-l", "--format='%(contents)'", tag)
-	return strings.ReplaceAll(strings.TrimSuffix(out, "\n"), "'", ""), err
+	return strings.TrimSuffix(strings.ReplaceAll(out, "'", ""), "\n\n"), err
 }
 
 func getTag() (string, error) {
