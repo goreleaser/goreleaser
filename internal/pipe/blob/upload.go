@@ -102,9 +102,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 			dataFile := artifact.Path
 			uploadFile := path.Join(folder, artifact.Name)
 
-			err := uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
-
-			return err
+			return uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
 		})
 	}
 

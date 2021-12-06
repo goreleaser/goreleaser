@@ -44,6 +44,9 @@ In order to release to GitHub, you'll need to export a `GITHUB_TOKEN` environmen
 It will be used to deploy releases to your GitHub repository.
 You can create a new github token [here](https://github.com/settings/tokens/new).
 
+!!! info
+    The minimum permissions the `GITHUB_TOKEN` should have to run this are `write:packages`
+
 ```sh
 export GITHUB_TOKEN="YOUR_GH_TOKEN"
 ```

@@ -49,6 +49,13 @@ func RequireEqualNakedYaml(tb testing.TB, out []byte) {
 	doRequireEqual(tb, out, ".yaml", "")
 }
 
+func RequireReadFile(tb testing.TB, path string) []byte {
+	tb.Helper()
+	bts, err := os.ReadFile(path)
+	require.NoError(tb, err)
+	return bts
+}
+
 func doRequireEqual(tb testing.TB, out []byte, ext, suffix string) {
 	tb.Helper()
 

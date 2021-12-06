@@ -8,6 +8,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestNotARepo(t *testing.T) {
+	testlib.Mktmp(t)
+	_, err := git.ExtractRepoFromConfig()
+	require.EqualError(t, err, `current folder is not a git repository`)
+}
+
+func TestNoRemote(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	_, err := git.ExtractRepoFromConfig()
+	require.EqualError(t, err, `no remote configured to list refs from`)
+}
+
 func TestRepoName(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
@@ -37,6 +50,7 @@ func TestExtractRepoFromURL(t *testing.T) {
 		"git@custom:goreleaser/goreleaser.git",
 		"https://foo@github.com/goreleaser/goreleaser",
 		"https://github.com/goreleaser/goreleaser.git",
+		"https://something.with.port:8080/goreleaser/goreleaser.git",
 		"https://github.enterprise.com/goreleaser/goreleaser.git",
 		"https://gitlab-ci-token:SOME_TOKEN@gitlab.yourcompany.com/goreleaser/goreleaser.git",
 	} {
