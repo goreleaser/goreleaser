@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"time"
 
@@ -119,7 +120,7 @@ func buildProject(options buildOpts) (*context.Context, error) {
 }
 
 func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {
-	if options.singleTarget && options.output != "" && (options.id != "" || len(ctx.Config.Builds) == 1) {
+	if options.singleTarget && (options.id != "" || len(ctx.Config.Builds) == 1) {
 		return append(pipeline.BuildPipeline, withOutputPipe{options.output})
 	}
 	return pipeline.BuildPipeline
@@ -205,5 +206,9 @@ func (w withOutputPipe) String() string {
 
 func (w withOutputPipe) Run(ctx *context.Context) error {
 	path := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()[0].Path
-	return gio.Copy(path, w.output)
+	out := w.output
+	if out == "" {
+		out = filepath.Base(path)
+	}
+	return gio.Copy(path, out)
 }
