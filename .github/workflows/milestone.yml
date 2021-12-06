@@ -25,7 +25,7 @@ jobs:
       statuses: none
 
     steps:
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v5
         with:
           script: |
             if (!context.payload.pull_request.merged) {
@@ -38,7 +38,7 @@ jobs:
               return;
             }
 
-            milestones = await github.issues.listMilestones({
+            milestones = await github.rest.issues.listMilestones({
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
@@ -50,7 +50,7 @@ jobs:
               return;
             }
 
-            await github.issues.update({
+            await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number,
