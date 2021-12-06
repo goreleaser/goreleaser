@@ -631,6 +631,7 @@ type Sign struct {
 	StdinFile   string   `yaml:"stdin_file,omitempty"`
 	Env         []string `yaml:"env,omitempty"`
 	Certificate string   `yaml:"certificate,omitempty"`
+	Output      bool     `yaml:"output,omitempty"`
 }
 
 // SnapcraftAppMetadata for the binaries that will be in the snap package.

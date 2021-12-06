@@ -61,6 +61,12 @@ docker_signs:
     env:
     - FOO=bar
     - HONK=honkhonk
+
+    # By default, the stdout and stderr of the signing cmd are discarded unless GoReleaser is running with `--debug` set.
+    # You can set this to true if you want them to be displayed regardless.
+    #
+    # Defaults to false
+    output: true
 ```
 
 ### Available variable names
