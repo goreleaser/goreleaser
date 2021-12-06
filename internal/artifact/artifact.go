@@ -122,8 +122,9 @@ func (e Extras) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{}
 	for k, v := range e {
 		if k == ExtraRefresh {
-			// refresh is a func, so we can't serialize it
-			continue
+			// refresh is a func, so we can't serialize it.
+			// set v to a string representation of the function signature instead.
+			v = "func() error"
 		}
 		m[k] = v
 	}
