@@ -39,7 +39,8 @@ const (
 	commitTimestamp = "CommitTimestamp"
 	gitURL          = "GitURL"
 	summary         = "Summary"
-	subject         = "Subject"
+	tagSubject      = "TagSubject"
+	tagContents     = "TagContents"
 	releaseURL      = "ReleaseURL"
 	major           = "Major"
 	minor           = "Minor"
@@ -89,7 +90,8 @@ func New(ctx *context.Context) *Template {
 			commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
 			gitURL:          ctx.Git.URL,
 			summary:         ctx.Git.Summary,
-			subject:         ctx.Git.Subject,
+			tagSubject:      ctx.Git.TagSubject,
+			tagContents:     ctx.Git.TagContents,
 			releaseURL:      ctx.ReleaseURL,
 			env:             ctx.Env,
 			date:            ctx.Date.UTC().Format(time.RFC3339),
