@@ -80,10 +80,11 @@ func TestRunPipe(t *testing.T) {
 				Goarch: "all",
 				Name:   "bin/mybin",
 				Path:   filepath.Join(dist, "darwinall", "bin", "mybin"),
-				Type:   artifact.Binary,
+				Type:   artifact.UniversalBinary,
 				Extra: map[string]interface{}{
-					artifact.ExtraBinary: "bin/mybin",
-					artifact.ExtraID:     "default",
+					artifact.ExtraBinary:   "bin/mybin",
+					artifact.ExtraID:       "default",
+					artifact.ExtraReplaces: true,
 				},
 			}
 			darwinBuild := &artifact.Artifact{
@@ -368,10 +369,11 @@ func TestRunPipeBinary(t *testing.T) {
 		Goarch: "all",
 		Name:   "myunibin",
 		Path:   filepath.Join(dist, "darwinamd64", "mybin"),
-		Type:   artifact.Binary,
+		Type:   artifact.UniversalBinary,
 		Extra: map[string]interface{}{
-			artifact.ExtraBinary: "myunibin",
-			artifact.ExtraID:     "default",
+			artifact.ExtraBinary:   "myunibin",
+			artifact.ExtraID:       "default",
+			artifact.ExtraReplaces: true,
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -397,6 +399,7 @@ func TestRunPipeBinary(t *testing.T) {
 		artifact.ByGoos("darwin"),
 		artifact.ByGoarch("all"),
 	)).List()[0]
+	require.True(t, darwinUniversal.ExtraOr(artifact.ExtraReplaces, false).(bool))
 	windows := binaries.Filter(artifact.ByGoos("windows")).List()[0]
 	require.Equal(t, "mybin_0.0.1_darwin_amd64", darwinThin.Name)
 	require.Equal(t, "mybin", darwinThin.ExtraOr(artifact.ExtraBinary, ""))

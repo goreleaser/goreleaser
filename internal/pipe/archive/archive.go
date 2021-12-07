@@ -198,6 +198,7 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 			artifact.ExtraFormat:    arch.Format,
 			artifact.ExtraWrappedIn: wrap,
 			artifact.ExtraBinaries:  bins,
+			artifact.ExtraReplaces:  binaries[0].Extra[artifact.ExtraReplaces],
 		},
 	})
 	return nil
@@ -235,10 +236,11 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			Goarm:  binary.Goarm,
 			Gomips: binary.Gomips,
 			Extra: map[string]interface{}{
-				artifact.ExtraBuilds: []*artifact.Artifact{binary},
-				artifact.ExtraID:     archive.ID,
-				artifact.ExtraFormat: archive.Format,
-				artifact.ExtraBinary: binary.Name,
+				artifact.ExtraBuilds:   []*artifact.Artifact{binary},
+				artifact.ExtraID:       archive.ID,
+				artifact.ExtraFormat:   archive.Format,
+				artifact.ExtraBinary:   binary.Name,
+				artifact.ExtraReplaces: binaries[0].Extra[artifact.ExtraReplaces],
 			},
 		})
 	}
