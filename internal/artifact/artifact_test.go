@@ -503,6 +503,13 @@ func TestMarshalJSON(t *testing.T) {
 	})
 	artifacts.Add(&Artifact{
 		Name: "foo",
+		Type: UploadableArchive,
+		Extra: map[string]interface{}{
+			ExtraID: "adsad",
+		},
+	})
+	artifacts.Add(&Artifact{
+		Name: "foo",
 		Type: Checksum,
 		Extra: map[string]interface{}{
 			ExtraRefresh: func() error { return nil },
