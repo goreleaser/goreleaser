@@ -206,13 +206,19 @@ func makeUniversalBinary(ctx *context.Context, unibin config.UniversalBinary) er
 		return fmt.Errorf("failed to close file: %w", err)
 	}
 
+	extra := map[string]interface{}{}
+	for k, v := range binaries[0].Extra {
+		extra[k] = v
+	}
+	extra[artifact.ExtraReplaces] = unibin.Replace
+
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.UniversalBinary,
 		Name:   name,
 		Path:   path,
 		Goos:   "darwin",
 		Goarch: "all",
-		Extra:  binaries[0].Extra,
+		Extra:  extra,
 	})
 
 	return nil

@@ -206,15 +206,19 @@ func TestRun(t *testing.T) {
 	t.Run("replacing", func(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx1))
 		require.Len(t, ctx1.Artifacts.Filter(artifact.ByType(artifact.Binary)).List(), 0)
-		require.Len(t, ctx1.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List(), 1)
-		checkUniversalBinary(t, ctx1.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()[0])
+		unis := ctx1.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()
+		require.Len(t, unis, 1)
+		checkUniversalBinary(t, unis[0])
+		require.True(t, unis[0].Extra[artifact.ExtraReplaces].(bool))
 	})
 
 	t.Run("keeping", func(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx2))
 		require.Len(t, ctx2.Artifacts.Filter(artifact.ByType(artifact.Binary)).List(), 2)
-		require.Len(t, ctx2.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List(), 1)
-		checkUniversalBinary(t, ctx2.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()[0])
+		unis := ctx2.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()
+		require.Len(t, unis, 1)
+		checkUniversalBinary(t, unis[0])
+		require.False(t, unis[0].Extra[artifact.ExtraReplaces].(bool))
 	})
 
 	t.Run("bad template", func(t *testing.T) {
