@@ -27,3 +27,6 @@ jobs:
         with:
           commit_message: "docs: update"
           branch: main
+          commit_user_name: actions-user
+          commit_user_email: actions@github.com
+          commit_author: actions-user <actions@github.com>
