@@ -85,7 +85,7 @@ func Test_doRun(t *testing.T) {
 	tests := []struct {
 		name               string
 		args               args
-		artifacts          []*artifact.Artifact
+		artifacts          []artifact.Artifact
 		assertRunError     errChecker
 		assertPublishError errChecker
 		assert             asserter
@@ -98,8 +98,7 @@ func Test_doRun(t *testing.T) {
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
+					Version: "1.0.1",
 					Config: config.Project{
 						Builds: []config.Build{
 							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
@@ -128,7 +127,7 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]*artifact.Artifact{
+			[]artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
@@ -147,8 +146,7 @@ func Test_doRun(t *testing.T) {
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
+					Version: "1.0.1",
 					Config: config.Project{
 						Builds: []config.Build{
 							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
@@ -176,7 +174,7 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]*artifact.Artifact{
+			[]artifact.Artifact{
 				{
 					Name:   "foo_1.0.1_windows_amd64.tar.gz",
 					Goos:   "windows",
@@ -208,8 +206,7 @@ func Test_doRun(t *testing.T) {
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
+					Version: "1.0.1",
 					Config: config.Project{
 						GitHubURLs: config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
 						Builds: []config.Build{
@@ -238,7 +235,7 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]*artifact.Artifact{
+			[]artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
@@ -257,8 +254,7 @@ func Test_doRun(t *testing.T) {
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
+					Version: "1.0.1",
 					Config: config.Project{
 						Builds: []config.Build{
 							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
@@ -286,7 +282,7 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]*artifact.Artifact{
+			[]artifact.Artifact{
 				{
 					Name:   "foo_1.0.1_windows_amd64.tar.gz",
 					Goos:   "windows",
@@ -312,8 +308,7 @@ func Test_doRun(t *testing.T) {
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
+					Version: "1.0.1",
 					Config: config.Project{
 						GitHubURLs: config.GitHubURLs{Download: "https://api.custom.gitlab.enterprise.com"},
 						Builds: []config.Build{
@@ -342,7 +337,7 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]*artifact.Artifact{
+			[]artifact.Artifact{
 				{
 					Name:   "foo_1.0.1_windows_amd64.tar.gz",
 					Goos:   "windows",
@@ -368,8 +363,7 @@ func Test_doRun(t *testing.T) {
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
+					Version: "1.0.1",
 					Config: config.Project{
 						Builds: []config.Build{
 							{Binary: "test"},
@@ -397,7 +391,7 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]*artifact.Artifact{
+			[]artifact.Artifact{
 				{Name: "foo_1.0.1_linux_amd64.tar.gz", Goos: "linux", Goarch: "amd64"},
 				{Name: "foo_1.0.1_linux_386.tar.gz", Goos: "linux", Goarch: "386"},
 			},
@@ -413,8 +407,7 @@ func Test_doRun(t *testing.T) {
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
+					Version: "1.0.1",
 					Config: config.Project{
 						Builds: []config.Build{
 							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
@@ -439,7 +432,7 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]*artifact.Artifact{
+			[]artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
@@ -461,8 +454,7 @@ func Test_doRun(t *testing.T) {
 						Patch:      1,
 						Prerelease: "-pre.1",
 					},
-					Version:   "1.0.1-pre.1",
-					Artifacts: artifact.New(),
+					Version: "1.0.1-pre.1",
 					Config: config.Project{
 						Builds: []config.Build{
 							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
@@ -491,7 +483,7 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]*artifact.Artifact{
+			[]artifact.Artifact{
 				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1-pre.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
@@ -507,8 +499,7 @@ func Test_doRun(t *testing.T) {
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
+					Version: "1.0.1",
 					Config: config.Project{
 						Builds: []config.Build{
 							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
@@ -537,7 +528,7 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]*artifact.Artifact{
+			[]artifact.Artifact{
 				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1-pre.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
@@ -553,8 +544,7 @@ func Test_doRun(t *testing.T) {
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
+					Version: "1.0.1",
 					Config: config.Project{
 						Builds: []config.Build{
 							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
@@ -579,7 +569,7 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]*artifact.Artifact{
+			[]artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
@@ -595,8 +585,7 @@ func Test_doRun(t *testing.T) {
 					Git: context.GitInfo{
 						CurrentTag: "v1.0.1",
 					},
-					Version:   "1.0.1",
-					Artifacts: artifact.New(),
+					Version: "1.0.1",
 					Config: config.Project{
 						Builds: []config.Build{
 							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
@@ -621,7 +610,7 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]*artifact.Artifact{
+			[]artifact.Artifact{
 				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
@@ -633,8 +622,9 @@ func Test_doRun(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx := tt.args.ctx
+			ctx.Artifacts = artifact.New()
 			for _, a := range tt.artifacts {
-				ctx.Artifacts.Add(a)
+				ctx.Artifacts.Add(&a)
 			}
 			require.NoError(t, Pipe{}.Default(ctx))
 
