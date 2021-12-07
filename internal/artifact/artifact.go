@@ -144,6 +144,10 @@ type Artifact struct {
 	Extra  Extras `json:"extra,omitempty"`
 }
 
+func (a Artifact) String() string {
+	return a.Name
+}
+
 // ExtraOr returns the Extra field with the given key or the or value specified
 // if it is nil.
 func (a Artifact) ExtraOr(key string, or interface{}) interface{} {
