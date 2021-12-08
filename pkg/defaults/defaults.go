@@ -35,6 +35,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/telegram"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
 	"github.com/goreleaser/goreleaser/internal/pipe/universalbinary"
+	"github.com/goreleaser/goreleaser/internal/pipe/webhook"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -82,4 +83,5 @@ var Defaulters = []Defaulter{
 	milestone.Pipe{},
 	linkedin.Pipe{},
 	telegram.Pipe{},
+	webhook.Pipe{},
 }
