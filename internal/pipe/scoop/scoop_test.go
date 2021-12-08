@@ -624,6 +624,7 @@ func Test_doRun(t *testing.T) {
 			ctx := tt.args.ctx
 			ctx.Artifacts = artifact.New()
 			for _, a := range tt.artifacts {
+				a.Type = artifact.UploadableArchive
 				ctx.Artifacts.Add(&a)
 			}
 			require.NoError(t, Pipe{}.Default(ctx))
