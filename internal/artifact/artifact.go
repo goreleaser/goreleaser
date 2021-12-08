@@ -113,6 +113,7 @@ const (
 	ExtraWrappedIn = "WrappedIn"
 	ExtraBinaries  = "Binaries"
 	ExtraRefresh   = "Refresh"
+	ExtraReplaces  = "Replaces"
 )
 
 // Extras represents the extra fields in an artifact.
@@ -141,6 +142,10 @@ type Artifact struct {
 	Gomips string `json:"gomips,omitempty"`
 	Type   Type   `json:"type,omitempty"`
 	Extra  Extras `json:"extra,omitempty"`
+}
+
+func (a Artifact) String() string {
+	return a.Name
 }
 
 // ExtraOr returns the Extra field with the given key or the or value specified
@@ -286,6 +291,13 @@ func (artifacts *Artifacts) Remove(filter Filter) error {
 // Filter defines an artifact filter which can be used within the Filter
 // function.
 type Filter func(a *Artifact) bool
+
+// OnlyReplacingUnibins removes universal binaries that did not replace the single-arch ones.
+//
+// This is useful specially on homebrew et al, where you'll want to use only either the single-arch or the universal binaries.
+func OnlyReplacingUnibins(a *Artifact) bool {
+	return a.ExtraOr(ExtraReplaces, true).(bool)
+}
 
 // ByGoos is a predefined filter that filters by the given goos.
 func ByGoos(s string) Filter {

@@ -34,7 +34,7 @@ builds:
     - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
 
 universal_binaries:
-- replace: true
+- replace: false
 
 checksum:
   name_template: 'checksums.txt'

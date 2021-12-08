@@ -170,6 +170,7 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 			),
 			artifact.ByType(artifact.UploadableBinary),
 		),
+		artifact.OnlyReplacingUnibins,
 	}
 	if len(brew.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(brew.IDs...))

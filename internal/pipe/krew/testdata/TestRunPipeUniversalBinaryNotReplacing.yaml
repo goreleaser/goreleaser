@@ -1,0 +1,23 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: TestRunPipeUniversalBinaryNotReplacing
+spec:
+  version: v1.0.1
+  platforms:
+  - bin: unibin
+    uri: https://dummyhost/download/v1.0.1/unibin_amd64.tar.gz
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    selector:
+      matchLabels:
+        os: darwin
+        arch: amd64
+  - bin: unibin
+    uri: https://dummyhost/download/v1.0.1/unibin_amd64.tar.gz
+    sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    selector:
+      matchLabels:
+        os: darwin
+        arch: arm64
+  shortDescription: Short desc
+  description: Some desc
