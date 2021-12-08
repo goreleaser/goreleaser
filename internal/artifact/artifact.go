@@ -24,7 +24,7 @@ type Type int
 
 const (
 	// UploadableArchive a tar.gz/zip archive to be uploaded.
-	UploadableArchive Type = iota
+	UploadableArchive Type = iota + 1
 	// UploadableBinary is a binary file to be uploaded.
 	UploadableBinary
 	// UploadableFile is any file that can be uploaded.
