@@ -133,6 +133,7 @@ nav:
   - errors/dirty.md
   - errors/multiple-tokens.md
   - errors/no-main.md
+  - errors/resource-not-accessible-by-integration.md
 - deprecations.md
 - Cookbooks:
   - About: cookbooks/index.md
