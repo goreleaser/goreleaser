@@ -158,7 +158,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 			tmp := testlib.Mktmp(t)
 			require.NoError(t, gio.Copy(filepath.Join(wd, "testdata/cosign/"), tmp))
 			ctx.Config.Dist = "dist"
-			require.NoError(t, os.Mkdir("dist", 0755))
+			require.NoError(t, os.Mkdir("dist", 0o755))
 
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name: img1,
