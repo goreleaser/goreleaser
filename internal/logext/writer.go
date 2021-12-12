@@ -56,9 +56,10 @@ func (w logWriter) Write(p []byte) (int, error) {
 func newLogger(fields log.Fields) *log.Entry {
 	handler := cli.New(cli.Default.Writer)
 	handler.Padding = cli.Default.Padding + 3
-	logger := log.WithFields(fields)
-	logger.Logger.Handler = handler
-	return logger
+	return (&log.Logger{
+		Handler: handler,
+		Level:   log.InfoLevel,
+	}).WithFields(fields)
 }
 
 func isDebug() bool {

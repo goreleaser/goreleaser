@@ -80,7 +80,7 @@ jobs:
             ./dist/*.rpm
             ./dist/*.apk
           key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}-${{ hashFiles('**/go.sum') }}
-      - uses: sigstore/cosign-installer@v1.3.1
+      - uses: sigstore/cosign-installer@v1.4.1
       - name: setup-syft
         run: |
           curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | \
