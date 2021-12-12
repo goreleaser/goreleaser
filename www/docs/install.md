@@ -135,14 +135,16 @@ Below you can find the steps for each of them.
 All artifacts are checksummed and the checksum file is signed with [cosign][].
 
 === "OSS"
-    1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][releases] page:
+    1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][releases] page:
       ```sh
       wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt
       wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sig
+      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.pem
       ```
     1. Verify the signature:
       ```sh
-      COSIGN_EXPERIMENTAL=1 cosign verify-blob \
+      cosign verify-blob \
+        --cert checksums.txt.pem \
         --signature checksums.txt.sig \
         checksums.txt
       ```
@@ -152,14 +154,16 @@ All artifacts are checksummed and the checksum file is signed with [cosign][].
       ```
 
 === "Pro"
-    1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][pro-releases] page:
+    1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][pro-releases] page:
       ```sh
       wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt
       wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.sig
+      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.pem
       ```
     1. Verify the signature:
       ```sh
-      COSIGN_EXPERIMENTAL=1 cosign verify-blob \
+      cosign verify-blob \
+        --cert checksums.txt.pem \
         --signature checksums.txt.sig \
         checksums.txt
       ```
@@ -175,14 +179,59 @@ Our Docker images are signed with [cosign][].
 Verify the signatures:
 
 === "OSS"
+    You have two options:
+
+    **Option 1**
+
+    Use cosign experimental:
+
     ```sh
     COSIGN_EXPERIMENTAL=1 cosign verify goreleaser/goreleaser
     ```
 
+    **Option 2**
+
+    1. Download the key and signature files from the [releases][releases] page:
+      ```sh
+      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/goreleaser-goreleaser-latest.pem
+      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/goreleaser-goreleaser-latest.sig
+      ```
+    1. Verify the signature:
+      ```sh
+      cosign verify-blob \
+        --cert goreleaser-goreleaser-latest.pem \
+        --signature goreleaser-goreleaser-latest.sig \
+        goreleaser/goreleaser
+      ```
+
 === "Pro"
+    You have two options:
+
+    **Option 1**
+
+    Use cosign experimental:
+
     ```sh
     COSIGN_EXPERIMENTAL=1 cosign verify goreleaser/goreleaser-pro
     ```
+
+    **Option 2**
+
+    1. Download the key and signature files from the [releases][pro-releases] page:
+      ```sh
+      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/goreleaser-goreleaser-pro-latest.pem
+      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/goreleaser-goreleaser-pro-latest.sig
+      ```
+    1. Verify the signature:
+      ```sh
+      cosign verify-blob \
+        --cert goreleaser-goreleaser-pro-latest.pem \
+        --signature goreleaser-goreleaser-pro-latest.sig \
+        goreleaser/goreleaser-pro
+      ```
+
+!!! info
+    The `.pem` and `.sig` files are the image `name:tag`, replacing `/` and `:` with `-`.
 
 ## Running with Docker
 
