@@ -203,17 +203,13 @@ snapcrafts:
 
 signs:
 - cmd: cosign
-  output: true
-  env: ['COSIGN_EXPERIMENTAL=1']
-  certificate: checksums.pem
-  args: ["sign-blob", "--output-signature=${signature}", "--output-certificate=${certificate}", "${artifact}"]
+  stdin: '{{ .Env.COSIGN_PWD }}'
+  args: ["sign-blob", "-key=cosign.key", "-output=${signature}", "${artifact}"]
   artifacts: checksum
 
 docker_signs:
 - artifacts: manifests
-  env: ['COSIGN_EXPERIMENTAL=1']
-  certificate: docker.pem
-  args: ["sign", "--output-signature=${signature}", "--output-certificate=${certificate}", "${artifact}"]
+  stdin: '{{ .Env.COSIGN_PWD }}'
 
 publishers:
   - name: fury.io

@@ -140,7 +140,7 @@ func relativeToDist(dist, f string) (string, error) {
 
 func tmplPath(ctx *context.Context, env map[string]string, s string) (string, error) {
 	result, err := tmpl.New(ctx).WithEnv(env).Apply(expand(s, env))
-	if err != nil {
+	if err != nil || result == "" {
 		return "", err
 	}
 	return relativeToDist(ctx.Config.Dist, result)
@@ -200,7 +200,12 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		stdin = f
 	}
 
-	fields := log.Fields{"cmd": cfg.Cmd, "artifact": art.Name}
+	fields := log.Fields{
+		"cmd":         cfg.Cmd,
+		"artifact":    art.Name,
+		"signature":   name,
+		"certificate": cert,
+	}
 
 	// The GoASTScanner flags this as a security risk.
 	// However, this works as intended. The nosec annotation
