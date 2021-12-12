@@ -3,6 +3,7 @@
 package checksums
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,6 +17,8 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
+
+var errNoArtifacts = errors.New("there are no artifacts to sign")
 
 // Pipe for checksums.
 type Pipe struct{}
@@ -35,12 +38,39 @@ func (Pipe) Default(ctx *context.Context) error {
 }
 
 // Run the pipe.
-func (Pipe) Run(ctx *context.Context) (err error) {
+func (Pipe) Run(ctx *context.Context) error {
+	filename, err := tmpl.New(ctx).Apply(ctx.Config.Checksum.NameTemplate)
+	if err != nil {
+		return err
+	}
+	filepath := filepath.Join(ctx.Config.Dist, filename)
+	if err := refresh(ctx, filepath); err != nil {
+		if errors.Is(err, errNoArtifacts) {
+			return nil
+		}
+		return err
+	}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Type: artifact.Checksum,
+		Path: filepath,
+		Name: filename,
+		Extra: map[string]interface{}{
+			artifact.ExtraRefresh: func() error {
+				log.WithField("file", filename).Info("refreshing checksums")
+				return refresh(ctx, filepath)
+			},
+		},
+	})
+	return nil
+}
+
+func refresh(ctx *context.Context, filepath string) error {
 	filter := artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
 		artifact.ByType(artifact.UploadableSourceArchive),
 		artifact.ByType(artifact.LinuxPackage),
+		artifact.ByType(artifact.SBOM),
 	)
 	if len(ctx.Config.Checksum.IDs) > 0 {
 		filter = artifact.And(filter, artifact.ByIDs(ctx.Config.Checksum.IDs...))
@@ -62,7 +92,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	}
 
 	if len(artifactList) == 0 {
-		return nil
+		return errNoArtifacts
 	}
 
 	g := semerrgroup.New(ctx.Parallelism)
@@ -85,12 +115,8 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return err
 	}
 
-	filename, err := tmpl.New(ctx).Apply(ctx.Config.Checksum.NameTemplate)
-	if err != nil {
-		return err
-	}
 	file, err := os.OpenFile(
-		filepath.Join(ctx.Config.Dist, filename),
+		filepath,
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
 		0o644,
 	)
@@ -98,12 +124,6 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		return err
 	}
 	defer file.Close()
-
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.Checksum,
-		Path: file.Name(),
-		Name: filename,
-	})
 
 	// sort to ensure the signature is deterministic downstream
 	sort.Strings(sumLines)

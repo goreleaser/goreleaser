@@ -477,7 +477,7 @@ type Release struct {
 	Header                 string      `yaml:"header,omitempty"`
 	Footer                 string      `yaml:"footer,omitempty"`
 
-	ReleaseNotesMode ReleaseNotesMode `yaml:"mode,omitempty" jsonschema:"title=enum=keep-existing,enum=append,enum=prepend,enum=replace,default=keep-existing"`
+	ReleaseNotesMode ReleaseNotesMode `yaml:"mode,omitempty" jsonschema:"enum=keep-existing,enum=append,enum=prepend,enum=replace,default=keep-existing"`
 }
 
 // Milestone config used for VCS milestone.
@@ -619,6 +619,17 @@ type NFPMOverridables struct {
 	APK              NFPMAPK           `yaml:"apk,omitempty"`
 }
 
+// SBOM config.
+type SBOM struct {
+	ID        string   `yaml:"id,omitempty"`
+	Cmd       string   `yaml:"cmd,omitempty"`
+	Env       []string `yaml:"env,omitempty"`
+	Args      []string `yaml:"args,omitempty"`
+	Documents []string `yaml:"documents,omitempty"`
+	Artifacts string   `yaml:"artifacts,omitempty"`
+	IDs       []string `yaml:"ids,omitempty"`
+}
+
 // Sign config.
 type Sign struct {
 	ID          string   `yaml:"id,omitempty"`
@@ -631,6 +642,7 @@ type Sign struct {
 	StdinFile   string   `yaml:"stdin_file,omitempty"`
 	Env         []string `yaml:"env,omitempty"`
 	Certificate string   `yaml:"certificate,omitempty"`
+	Output      bool     `yaml:"output,omitempty"`
 }
 
 // SnapcraftAppMetadata for the binaries that will be in the snap package.
@@ -835,6 +847,7 @@ type Project struct {
 	Source          Source           `yaml:"source,omitempty"`
 	GoMod           GoMod            `yaml:"gomod,omitempty"`
 	Announce        Announce         `yaml:"announce,omitempty"`
+	SBOMs           []SBOM           `yaml:"sboms,omitempty"`
 
 	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty"`
 

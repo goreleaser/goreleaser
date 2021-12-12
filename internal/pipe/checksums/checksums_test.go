@@ -3,6 +3,7 @@ package checksums
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -20,27 +21,28 @@ func TestPipe(t *testing.T) {
 	const archive = binary + ".tar.gz"
 	const linuxPackage = binary + ".rpm"
 	const checksums = binary + "_bar_checksums.txt"
+	const sum = "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  "
 
 	tests := map[string]struct {
 		ids  []string
-		want []string
+		want string
 	}{
 		"default": {
-			want: []string{
-				binary,
-				archive,
-				linuxPackage,
-			},
+			want: strings.Join([]string{
+				sum + binary,
+				sum + linuxPackage,
+				sum + archive,
+			}, "\n") + "\n",
 		},
 		"select ids": {
 			ids: []string{
 				"id-1",
 				"id-2",
 			},
-			want: []string{
-				binary,
-				archive,
-			},
+			want: strings.Join([]string{
+				sum + binary,
+				sum + archive,
+			}, "\n") + "\n",
 		},
 	}
 	for name, tt := range tests {
@@ -89,15 +91,48 @@ func TestPipe(t *testing.T) {
 			var artifacts []string
 			for _, a := range ctx.Artifacts.List() {
 				artifacts = append(artifacts, a.Name)
+				require.NoError(t, a.Refresh(), "refresh should not fail and yield same results as nothing changed")
 			}
 			require.Contains(t, artifacts, checksums, binary)
 			bts, err := os.ReadFile(filepath.Join(folder, checksums))
 			require.NoError(t, err)
-			for _, want := range tt.want {
-				require.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  "+want)
-			}
+			require.Contains(t, tt.want, string(bts))
 		})
 	}
+}
+
+func TestRefreshModifying(t *testing.T) {
+	const binary = "binary"
+	folder := t.TempDir()
+	file := filepath.Join(folder, binary)
+	require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
+	ctx := context.New(
+		config.Project{
+			Dist:        folder,
+			ProjectName: binary,
+			Checksum: config.Checksum{
+				NameTemplate: "{{ .ProjectName }}_{{ .Env.FOO }}_checksums.txt",
+				Algorithm:    "sha256",
+			},
+		},
+	)
+	ctx.Git.CurrentTag = "1.2.3"
+	ctx.Env = map[string]string{"FOO": "bar"}
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name: binary,
+		Path: file,
+		Type: artifact.UploadableBinary,
+	})
+	require.NoError(t, Pipe{}.Run(ctx))
+	checks := ctx.Artifacts.Filter(artifact.ByType(artifact.Checksum)).List()
+	require.Len(t, checks, 1)
+	previous, err := os.ReadFile(checks[0].Path)
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(file, []byte("some other string"), 0o644))
+	require.NoError(t, checks[0].Refresh())
+	current, err := os.ReadFile(checks[0].Path)
+	require.NoError(t, err)
+	require.NotEqual(t, string(previous), string(current))
 }
 
 func TestPipeFileNotExist(t *testing.T) {
@@ -188,7 +223,9 @@ func TestPipeCouldNotOpenChecksumsTxt(t *testing.T) {
 }
 
 func TestPipeWhenNoArtifacts(t *testing.T) {
-	ctx := &context.Context{}
+	ctx := &context.Context{
+		Artifacts: artifact.New(),
+	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Len(t, ctx.Artifacts.List(), 0)
 }

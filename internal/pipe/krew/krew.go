@@ -105,6 +105,7 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
 			),
 		),
 		artifact.ByType(artifact.UploadableArchive),
+		artifact.OnlyReplacingUnibins,
 	}
 	if len(krew.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(krew.IDs...))

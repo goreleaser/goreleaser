@@ -27,6 +27,8 @@ type GitInfo struct {
 	CommitDate  time.Time
 	URL         string
 	Summary     string
+	TagSubject  string
+	TagContents string
 }
 
 // Env is the environment variables.
@@ -90,6 +92,7 @@ type Context struct {
 	SkipAnnounce       bool
 	SkipSign           bool
 	SkipValidate       bool
+	SkipSBOMCataloging bool
 	RmDist             bool
 	PreRelease         bool
 	Deprecated         bool

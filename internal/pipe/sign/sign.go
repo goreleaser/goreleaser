@@ -76,11 +76,14 @@ func (Pipe) Run(ctx *context.Context) error {
 					artifact.ByType(artifact.UploadableSourceArchive),
 					artifact.ByType(artifact.Checksum),
 					artifact.ByType(artifact.LinuxPackage),
+					artifact.ByType(artifact.SBOM),
 				))
 			case "archive":
 				filters = append(filters, artifact.ByType(artifact.UploadableArchive))
 			case "binary":
 				filters = append(filters, artifact.ByType(artifact.UploadableBinary))
+			case "sbom":
+				filters = append(filters, artifact.ByType(artifact.SBOM))
 			case "package":
 				filters = append(filters, artifact.ByType(artifact.LinuxPackage))
 			case "none": // TODO(caarlos0): this is not very useful, lets remove it.
@@ -95,11 +98,22 @@ func (Pipe) Run(ctx *context.Context) error {
 			return sign(ctx, cfg, ctx.Artifacts.Filter(artifact.And(filters...)).List())
 		})
 	}
-	return g.Wait()
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	return ctx.Artifacts.
+		Filter(artifact.ByType(artifact.Checksum)).
+		Visit(func(a *artifact.Artifact) error {
+			return a.Refresh()
+		})
 }
 
 func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact) error {
 	for _, a := range artifacts {
+		if err := a.Refresh(); err != nil {
+			return err
+		}
 		artifacts, err := signone(ctx, cfg, a)
 		if err != nil {
 			return err
@@ -174,8 +188,8 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	cmd := exec.CommandContext(ctx, cfg.Cmd, args...)
 	var b bytes.Buffer
 	w := gio.Safe(&b)
-	cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
-	cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
+	cmd.Stderr = io.MultiWriter(logext.NewConditionalWriter(fields, logext.Error, cfg.Output), w)
+	cmd.Stdout = io.MultiWriter(logext.NewConditionalWriter(fields, logext.Info, cfg.Output), w)
 	if stdin != nil {
 		cmd.Stdin = stdin
 	}
@@ -189,7 +203,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		return nil, nil
 	}
 
-	// re-execute template results, using artifact name as artifact so they eval to the actual needed file name.
+	// re-execute template results, using artifact desc as artifact so they eval to the actual needed file desc.
 	env["artifact"] = art.Name
 	name, _ = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Signature, env))   // could never error as it passed the previous check
 	cert, _ = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Certificate, env)) // could never error as it passed the previous check

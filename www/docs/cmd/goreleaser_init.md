@@ -1,6 +1,6 @@
 # goreleaser init
 
-Generates a .goreleaser.yml file
+Generates a .goreleaser.yaml file
 
 ```
 goreleaser init [flags]
@@ -9,7 +9,7 @@ goreleaser init [flags]
 ## Options
 
 ```
-  -f, --config string   Load configuration from file (default ".goreleaser.yml")
+  -f, --config string   Load configuration from file (default ".goreleaser.yaml")
   -h, --help            help for init
 ```
 

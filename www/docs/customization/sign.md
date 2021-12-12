@@ -60,6 +60,7 @@ signs:
     #   package:  linux packages (deb, rpm, apk)
     #   archive:  archives from archive pipe
     #   binary:   binaries if archiving format is set to binary
+    #   sbom:     any Software Bill of Materials generated for other artifacts
     #
     # Defaults to `none`
     artifacts: all
@@ -97,6 +98,12 @@ signs:
     env:
     - FOO=bar
     - HONK=honkhonk
+
+    # By default, the stdout and stderr of the signing cmd are discarded unless GoReleaser is running with `--debug` set.
+    # You can set this to true if you want them to be displayed regardless.
+    #
+    # Defaults to false
+    output: true
 ```
 
 ### Available variable names

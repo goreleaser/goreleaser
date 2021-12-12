@@ -120,7 +120,7 @@ func TestMultipleEnvTokens(t *testing.T) {
 		Config: config.Project{},
 	}
 	require.Error(t, Pipe{}.Run(ctx))
-	require.EqualError(t, Pipe{}.Run(ctx), ErrMultipleTokens.Error())
+	require.EqualError(t, Pipe{}.Run(ctx), "multiple tokens found, but only one is allowed: GITHUB_TOKEN, GITLAB_TOKEN, GITEA_TOKEN\n\nLearn more at https://goreleaser.com/errors/multiple-tokens\n")
 	// so the tests do not depend on each other
 	require.NoError(t, os.Unsetenv("GITHUB_TOKEN"))
 	require.NoError(t, os.Unsetenv("GITLAB_TOKEN"))

@@ -34,7 +34,7 @@ builds:
     - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
 
 universal_binaries:
-- replace: true
+- replace: false
 
 checksum:
   name_template: 'checksums.txt'
@@ -201,27 +201,49 @@ snapcrafts:
     confinement: classic
     publish: true
 
+sboms:
+  - artifacts: archive
+
 signs:
 - cmd: cosign
   env:
-    - COSIGN_EXPERIMENTAL=1
-  certificate: '{{ trimsuffix .Env.artifact ".txt" }}.pem'
+  - COSIGN_EXPERIMENTAL=1
+  certificate: '${artifact}.pem'
+  output: true
   args:
     - sign-blob
     - '--oidc-issuer=https://token.actions.githubusercontent.com'
     - '--output-certificate=${certificate}'
     - '--output-signature=${signature}'
     - '${artifact}'
+- id: sign-sboms
+  cmd: cosign
+  env:
+  - COSIGN_EXPERIMENTAL=1
+  certificate: '${artifact}.pem'
+  output: true
+  args:
+    - sign-blob
+    - '--oidc-issuer=https://token.actions.githubusercontent.com'
+    - '--output-certificate=${certificate}'
+    - '--output-signature=${signature}'
+    - '${artifact}'
+  artifacts: sbom
 
 docker_signs:
-  - cmd: cosign
-    env:
-    - COSIGN_EXPERIMENTAL=1
-    artifacts: manifests
-    args:
-    - 'sign'
-    - '--oidc-issuer=https://token.actions.githubusercontent.com'
-    - '${artifact}'
+- cmd: cosign
+  env:
+  - COSIGN_EXPERIMENTAL=1
+  artifacts: manifests
+  signature: '{{ replace (replace .Env.artifact "/" "-") ":" "-" }}.sig'
+  certificate: '{{ replace (replace .Env.artifact "/" "-") ":" "-" }}.pem'
+  output: true
+  args:
+  - 'sign'
+  - '--oidc-issuer=https://token.actions.githubusercontent.com'
+  - '--output-certificate=${certificate}'
+  - '--output-signature=${signature}'
+  - '${artifact}'
 
 publishers:
   - name: fury.io

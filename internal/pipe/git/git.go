@@ -116,6 +116,16 @@ func getGitInfo() (context.GitInfo, error) {
 		}, ErrNoTag
 	}
 
+	subject, err := getTagSubject(tag)
+	if err != nil {
+		return context.GitInfo{}, fmt.Errorf("couldn't get tag subject: %w", err)
+	}
+
+	contents, err := getTagContents(tag)
+	if err != nil {
+		return context.GitInfo{}, fmt.Errorf("couldn't get tag contents: %w", err)
+	}
+
 	previous, err := getPreviousTag(tag)
 	if err != nil {
 		// shouldn't error, will only affect templates
@@ -132,6 +142,8 @@ func getGitInfo() (context.GitInfo, error) {
 		CommitDate:  date,
 		URL:         gitURL,
 		Summary:     summary,
+		TagSubject:  subject,
+		TagContents: contents,
 	}, nil
 }
 
@@ -197,6 +209,15 @@ func getFullCommit() (string, error) {
 
 func getSummary() (string, error) {
 	return git.Clean(git.Run("describe", "--always", "--dirty", "--tags"))
+}
+
+func getTagSubject(tag string) (string, error) {
+	return git.Clean(git.Run("tag", "-l", "--format='%(contents:subject)'", tag))
+}
+
+func getTagContents(tag string) (string, error) {
+	out, err := git.Run("tag", "-l", "--format='%(contents)'", tag)
+	return strings.TrimSuffix(strings.ReplaceAll(out, "'", ""), "\n\n"), err
 }
 
 func getTag() (string, error) {
