@@ -200,11 +200,12 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		stdin = f
 	}
 
-	fields := log.Fields{
-		"cmd":         cfg.Cmd,
-		"artifact":    art.Name,
-		"signature":   name,
-		"certificate": cert,
+	fields := log.Fields{"cmd": cfg.Cmd, "artifact": art.Name}
+	if name != "" {
+		fields["signature"] = name
+	}
+	if cert != "" {
+		fields["certificate"] = cert
 	}
 
 	// The GoASTScanner flags this as a security risk.
