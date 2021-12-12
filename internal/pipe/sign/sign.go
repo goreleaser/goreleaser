@@ -196,24 +196,22 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		return nil, fmt.Errorf("sign: %s failed: %w: %s", cfg.Cmd, err, b.String())
 	}
 
-	if cfg.Signature == "" {
-		return nil, nil
-	}
+	var result []*artifact.Artifact
 
 	// re-execute template results, using artifact name as artifact so they eval to the actual needed file name.
 	env["artifact"] = art.Name
 	name, _ = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Signature, env))   // could never error as it passed the previous check
 	cert, _ = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Certificate, env)) // could never error as it passed the previous check
 
-	result := []*artifact.Artifact{
-		{
+	if cfg.Signature != "" {
+		result = append(result, &artifact.Artifact{
 			Type: artifact.Signature,
 			Name: name,
 			Path: env["signature"],
 			Extra: map[string]interface{}{
 				artifact.ExtraID: cfg.ID,
 			},
-		},
+		})
 	}
 
 	if cert != "" {
