@@ -132,10 +132,10 @@ func relativeToDist(dist, f string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if !strings.HasPrefix(af, df) {
-		return filepath.Join(dist, f), nil
+	if strings.HasPrefix(af, df) {
+		return f, nil
 	}
-	return f, nil
+	return filepath.Join(dist, f), nil
 }
 
 func tmplPath(ctx *context.Context, env map[string]string, s string) (string, error) {
