@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/apex/log"
@@ -122,6 +123,29 @@ func sign(ctx *context.Context, cfg config.Sign, artifacts []*artifact.Artifact)
 	return nil
 }
 
+func relativeToDist(dist, f string) (string, error) {
+	af, err := filepath.Abs(f)
+	if err != nil {
+		return "", err
+	}
+	df, err := filepath.Abs(dist)
+	if err != nil {
+		return "", err
+	}
+	if !strings.HasPrefix(af, df) {
+		return filepath.Join(dist, f), nil
+	}
+	return f, nil
+}
+
+func tmplPath(ctx *context.Context, env map[string]string, s string) (string, error) {
+	result, err := tmpl.New(ctx).WithEnv(env).Apply(expand(s, env))
+	if err != nil {
+		return "", err
+	}
+	return relativeToDist(ctx.Config.Dist, result)
+}
+
 func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*artifact.Artifact, error) {
 	env := ctx.Env.Copy()
 	env["artifactName"] = art.Name // shouldn't be used
@@ -137,13 +161,13 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		env[k] = v
 	}
 
-	name, err := tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Signature, env))
+	name, err := tmplPath(ctx, env, cfg.Signature)
 	if err != nil {
 		return nil, fmt.Errorf("sign failed: %s: %w", art.Name, err)
 	}
 	env["signature"] = name
 
-	cert, err := tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Certificate, env))
+	cert, err := tmplPath(ctx, env, cfg.Certificate)
 	if err != nil {
 		return nil, fmt.Errorf("sign failed: %s: %w", art.Name, err)
 	}
