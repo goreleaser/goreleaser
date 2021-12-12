@@ -1584,6 +1584,13 @@
 						"$schema": "http://json-schema.org/draft-04/schema#",
 						"$ref": "#/definitions/Announce"
 					},
+					"sboms": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/SBOM"
+						},
+						"type": "array"
+					},
 					"universal_binaries": {
 						"items": {
 							"$schema": "http://json-schema.org/draft-04/schema#",
@@ -1752,6 +1759,45 @@
 					},
 					"branch": {
 						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"SBOM": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"cmd": {
+						"type": "string"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"args": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"documents": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"artifacts": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
