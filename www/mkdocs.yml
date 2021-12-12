@@ -91,6 +91,7 @@ nav:
     - customization/snapcraft.md
     - customization/docker.md
     - customization/docker_manifest.md
+  - customization/sbom.md
   - Signing:
     - Checksums and artifacts: customization/sign.md
     - Docker Images and Manifests: customization/docker_sign.md

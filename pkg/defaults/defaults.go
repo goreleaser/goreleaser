@@ -23,6 +23,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/project"
 	"github.com/goreleaser/goreleaser/internal/pipe/reddit"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
+	"github.com/goreleaser/goreleaser/internal/pipe/sbom"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
 	"github.com/goreleaser/goreleaser/internal/pipe/slack"
@@ -62,6 +63,7 @@ var Defaulters = []Defaulter{
 	checksums.Pipe{},
 	sign.Pipe{},
 	sign.DockerPipe{},
+	sbom.Pipe{},
 	docker.Pipe{},
 	docker.ManifestPipe{},
 	artifactory.Pipe{},

@@ -81,6 +81,10 @@ jobs:
             ./dist/*.apk
           key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}-${{ hashFiles('**/go.sum') }}
       - uses: sigstore/cosign-installer@v1.4.1
+      - name: setup-syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | \
+          sh -s -- -b /usr/local/bin v0.32.0
       - name: setup-validate-krew-manifest
         # TODO: replace this once https://github.com/kubernetes-sigs/krew/pull/736 is merged
         run: go install github.com/caarlos0/krew/cmd/validate-krew-manifest@fork

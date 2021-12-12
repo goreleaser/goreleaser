@@ -23,6 +23,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
+	"github.com/goreleaser/goreleaser/internal/pipe/sbom"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
 	"github.com/goreleaser/goreleaser/internal/pipe/semver"
 	"github.com/goreleaser/goreleaser/internal/pipe/sign"
@@ -75,6 +76,7 @@ var Pipeline = append(
 	gofish.Pipe{},        // create gofish rig
 	krew.Pipe{},          // krew plugins
 	scoop.Pipe{},         // create scoop buckets
+	sbom.Pipe{},          // create SBOMs of artifacts
 	checksums.Pipe{},     // checksums of the files
 	sign.Pipe{},          // sign artifacts
 	docker.Pipe{},        // create and push docker images

@@ -76,11 +76,14 @@ func (Pipe) Run(ctx *context.Context) error {
 					artifact.ByType(artifact.UploadableSourceArchive),
 					artifact.ByType(artifact.Checksum),
 					artifact.ByType(artifact.LinuxPackage),
+					artifact.ByType(artifact.SBOM),
 				))
 			case "archive":
 				filters = append(filters, artifact.ByType(artifact.UploadableArchive))
 			case "binary":
 				filters = append(filters, artifact.ByType(artifact.UploadableBinary))
+			case "sbom":
+				filters = append(filters, artifact.ByType(artifact.SBOM))
 			case "package":
 				filters = append(filters, artifact.ByType(artifact.LinuxPackage))
 			case "none": // TODO(caarlos0): this is not very useful, lets remove it.
@@ -200,7 +203,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 		return nil, nil
 	}
 
-	// re-execute template results, using artifact name as artifact so they eval to the actual needed file name.
+	// re-execute template results, using artifact desc as artifact so they eval to the actual needed file desc.
 	env["artifact"] = art.Name
 	name, _ = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Signature, env))   // could never error as it passed the previous check
 	cert, _ = tmpl.New(ctx).WithEnv(env).Apply(expand(cfg.Certificate, env)) // could never error as it passed the previous check
