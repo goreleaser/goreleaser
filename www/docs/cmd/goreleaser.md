@@ -27,7 +27,7 @@ single .goreleaser.yml file.
 * [goreleaser build](/cmd/goreleaser_build/)	 - Builds the current project
 * [goreleaser check](/cmd/goreleaser_check/)	 - Checks if configuration is valid
 * [goreleaser completion](/cmd/goreleaser_completion/)	 - generate the autocompletion script for the specified shell
-* [goreleaser init](/cmd/goreleaser_init/)	 - Generates a .goreleaser.yml file
+* [goreleaser init](/cmd/goreleaser_init/)	 - Generates a .goreleaser.yaml file
 * [goreleaser jsonschema](/cmd/goreleaser_jsonschema/)	 - outputs goreleaser's JSON schema
 * [goreleaser release](/cmd/goreleaser_release/)	 - Releases the current project
 

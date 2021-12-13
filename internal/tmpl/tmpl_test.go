@@ -33,7 +33,8 @@ func TestWithArtifact(t *testing.T) {
 	ctx.Git.Commit = "commit"
 	ctx.Git.FullCommit = "fullcommit"
 	ctx.Git.ShortCommit = "shortcommit"
-	ctx.Git.Subject = "awesome release"
+	ctx.Git.TagSubject = "awesome release"
+	ctx.Git.TagContents = "awesome release\n\nanother line"
 	ctx.ReleaseNotes = "test release notes"
 	for expect, tmpl := range map[string]string{
 		"bar":                              "{{.Env.FOO}}",
@@ -59,7 +60,8 @@ func TestWithArtifact(t *testing.T) {
 		"1.2.4":                            "{{.Version | incpatch }}",
 		"test release notes":               "{{ .ReleaseNotes }}",
 		"v1.2.2":                           "{{ .PreviousTag }}",
-		"awesome release":                  "{{ .Subject }}",
+		"awesome release":                  "{{ .TagSubject }}",
+		"awesome release\n\nanother line":  "{{ .TagContents }}",
 	} {
 		tmpl := tmpl
 		expect := expect

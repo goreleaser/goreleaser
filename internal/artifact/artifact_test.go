@@ -69,6 +69,22 @@ func TestFilter(t *testing.T) {
 			Name: "checkzumm",
 			Type: Checksum,
 		},
+		{
+			Name:   "unibin-replaces",
+			Goos:   "darwin",
+			Goarch: "all",
+			Extra: map[string]interface{}{
+				ExtraReplaces: true,
+			},
+		},
+		{
+			Name:   "unibin-noreplace",
+			Goos:   "darwin",
+			Goarch: "all",
+			Extra: map[string]interface{}{
+				ExtraReplaces: false,
+			},
+		},
 	}
 	artifacts := New()
 	for _, a := range data {
@@ -76,7 +92,7 @@ func TestFilter(t *testing.T) {
 	}
 
 	require.Len(t, artifacts.Filter(ByGoos("linux")).items, 1)
-	require.Len(t, artifacts.Filter(ByGoos("darwin")).items, 0)
+	require.Len(t, artifacts.Filter(ByGoos("darwin")).items, 2)
 
 	require.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoarch("386")).items, 0)
@@ -87,7 +103,10 @@ func TestFilter(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByType(Checksum)).items, 2)
 	require.Len(t, artifacts.Filter(ByType(Binary)).items, 0)
 
-	require.Len(t, artifacts.Filter(nil).items, 5)
+	require.Len(t, artifacts.Filter(OnlyReplacingUnibins).items, 6)
+	require.Len(t, artifacts.Filter(And(OnlyReplacingUnibins, ByGoos("darwin"))).items, 1)
+
+	require.Len(t, artifacts.Filter(nil).items, 7)
 
 	require.Len(t, artifacts.Filter(
 		And(
@@ -366,6 +385,7 @@ func TestTypeToString(t *testing.T) {
 		GoFishRig,
 		KrewPluginManifest,
 		ScoopManifest,
+		SBOM,
 	} {
 		t.Run(a.String(), func(t *testing.T) {
 			require.NotEqual(t, "unknown", a.String())
@@ -497,6 +517,13 @@ func TestMarshalJSON(t *testing.T) {
 	artifacts.Add(&Artifact{
 		Name: "foo",
 		Type: Binary,
+		Extra: map[string]interface{}{
+			ExtraID: "adsad",
+		},
+	})
+	artifacts.Add(&Artifact{
+		Name: "foo",
+		Type: UploadableArchive,
 		Extra: map[string]interface{}{
 			ExtraID: "adsad",
 		},

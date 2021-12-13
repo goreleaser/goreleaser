@@ -100,6 +100,7 @@ func doRun(ctx *context.Context, goFish config.GoFish, cl client.Client) error {
 			artifact.ByType(artifact.UploadableArchive),
 			artifact.ByType(artifact.UploadableBinary),
 		),
+		artifact.OnlyReplacingUnibins,
 	}
 	if len(goFish.IDs) > 0 {
 		filters = append(filters, artifact.ByIDs(goFish.IDs...))

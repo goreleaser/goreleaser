@@ -336,6 +336,89 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"unibin"},
+			artifact.ExtraReplaces: true,
+		},
+	})
+
+	f, err := os.Create(path)
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
+	client := client.NewMock()
+	distFile := filepath.Join(folder, manifestName(t)+".yaml")
+
+	require.NoError(t, runAll(ctx, client))
+	require.NoError(t, publishAll(ctx, client))
+	require.True(t, client.CreatedFile)
+	golden.RequireEqualNakedYaml(t, []byte(client.Content))
+	requireValidManifest(t)
+	distBts, err := os.ReadFile(distFile)
+	require.NoError(t, err)
+	require.Equal(t, client.Content, string(distBts))
+}
+
+func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
+	folder := t.TempDir()
+	ctx := &context.Context{
+		Git: context.GitInfo{
+			CurrentTag: "v1.0.1",
+		},
+		Version:   "1.0.1",
+		Artifacts: artifact.New(),
+		Config: config.Project{
+			Dist:        folder,
+			ProjectName: "unibin",
+			Krews: []config.Krew{
+				{
+					Name:             manifestName(t),
+					Description:      "Some desc",
+					ShortDescription: "Short desc",
+					Index: config.RepoRef{
+						Owner: "unibin",
+						Name:  "bar",
+					},
+					IDs: []string{
+						"unibin",
+					},
+				},
+			},
+		},
+	}
+	path := filepath.Join(folder, "bin.tar.gz")
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "unibin_amd64.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:       "unibin",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"unibin"},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "unibin_amd64.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "arm64",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:       "unibin",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"unibin"},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "unibin.tar.gz",
+		Path:   path,
+		Goos:   "darwin",
+		Goarch: "all",
+		Type:   artifact.UploadableArchive,
+		Extra: map[string]interface{}{
+			artifact.ExtraID:       "unibin",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"unibin"},
+			artifact.ExtraReplaces: false,
 		},
 	})
 

@@ -34,7 +34,7 @@ builds:
     - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
 
 universal_binaries:
-- replace: true
+- replace: false
 
 checksum:
   name_template: 'checksums.txt'
@@ -201,11 +201,19 @@ snapcrafts:
     confinement: classic
     publish: true
 
+sboms:
+  - artifacts: archive
+
 signs:
 - cmd: cosign
   stdin: '{{ .Env.COSIGN_PWD }}'
   args: ["sign-blob", "-key=cosign.key", "-output=${signature}", "${artifact}"]
   artifacts: checksum
+- id: sign-sboms
+  cmd: cosign
+  stdin: '{{ .Env.COSIGN_PWD }}'
+  args: ["sign-blob", "-key=cosign.key", "-output=${signature}", "${artifact}"]
+  artifacts: sbom
 
 docker_signs:
 - artifacts: manifests

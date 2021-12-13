@@ -91,6 +91,7 @@ nav:
     - customization/snapcraft.md
     - customization/docker.md
     - customization/docker_manifest.md
+  - customization/sbom.md
   - Signing:
     - Checksums and artifacts: customization/sign.md
     - Docker Images and Manifests: customization/docker_sign.md
@@ -133,6 +134,7 @@ nav:
   - errors/dirty.md
   - errors/multiple-tokens.md
   - errors/no-main.md
+  - errors/resource-not-accessible-by-integration.md
 - deprecations.md
 - Cookbooks:
   - About: cookbooks/index.md
