@@ -24,6 +24,7 @@ goreleaser release [flags]
       --rm-dist                      Removes the dist folder
       --skip-announce                Skips announcing releases (implies --skip-validate)
       --skip-publish                 Skips publishing artifacts
+      --skip-sbom                    Skips cataloging artifacts
       --skip-sign                    Skips signing artifacts
       --skip-validate                Skips git checks
       --snapshot                     Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip-publish, --skip-announce and --skip-validate, overrides --nightly)
