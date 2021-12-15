@@ -41,7 +41,7 @@ GoReleaser allows this with the global hooks feature.
         dir: ./submodule # specify command working directory
       - cmd: touch {{ .Env.FILE_TO_TOUCH }}
         env:
-          FILE_TO_TOUCH: 'something-{{ .ProjectName }}' # specify hook level environment variables
+        - 'FILE_TO_TOUCH=something-{{ .ProjectName }}' # specify hook level environment variables
 
     # global after hooks
     after:
@@ -52,7 +52,7 @@ GoReleaser allows this with the global hooks feature.
         dir: ./submodule
       - cmd: touch {{ .Env.RELEASE_DONE }}
         env:
-          RELEASE_DONE: 'something-{{ .ProjectName }}' # specify hook level environment variables
+        - 'RELEASE_DONE=something-{{ .ProjectName }}' # specify hook level environment variables
     ```
 
 
