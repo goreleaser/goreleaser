@@ -2,9 +2,12 @@ package sign
 
 import (
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -49,9 +52,9 @@ func TestDockerSignInvalidArtifacts(t *testing.T) {
 
 func TestDockerSignArtifacts(t *testing.T) {
 	testlib.CheckPath(t, "cosign")
-	key := "testdata/cosign/cosign.key"
+	key := "cosign.key"
 	cmd := "sh"
-	args := []string{"-c", "echo ${artifact} > ${signature} && cosign sign -key=" + key + " -upload=false ${artifact} > ${signature}"}
+	args := []string{"-c", "echo ${artifact} > ${signature} && cosign sign --key=" + key + " --upload=false ${artifact} > ${signature}"}
 	password := "password"
 
 	img1 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1-amd64"
@@ -69,34 +72,50 @@ func TestDockerSignArtifacts(t *testing.T) {
 					Artifacts: "all",
 					Stdin:     &password,
 					Cmd:       "cosign",
-					Args:      []string{"sign", "--key=" + key, "-upload=false", "${artifact}"},
+					Args:      []string{"sign", "--key=" + key, "--upload=false", "${artifact}"},
+				},
+			},
+		},
+		"only certificate": {
+			Expected: []string{
+				"ghcrio-caarlos0-goreleaser-docker-manifest-actions-example-121-amd64.pem",
+				"ghcrio-caarlos0-goreleaser-docker-manifest-actions-example-121-arm64v8.pem",
+				"ghcrio-caarlos0-goreleaser-docker-manifest-actions-example-121.pem",
+			},
+			Signs: []config.Sign{
+				{
+					Artifacts:   "all",
+					Stdin:       &password,
+					Cmd:         "cosign",
+					Certificate: `{{ replace (replace (replace .Env.artifact "/" "-") ":" "-") "." "" }}.pem`,
+					Args:        []string{"sign", "--output-certificate=${certificate}", "--key=" + key, "--upload=false", "${artifact}"},
 				},
 			},
 		},
 		"sign all": {
 			Expected: []string{
-				"testdata/cosign/all_img1.sig",
-				"testdata/cosign/all_img2.sig",
-				"testdata/cosign/all_man1.sig",
+				"all_img1.sig",
+				"all_img2.sig",
+				"all_man1.sig",
 			},
 			Signs: []config.Sign{
 				{
 					Artifacts: "all",
 					Stdin:     &password,
-					Signature: `testdata/cosign/all_${artifactID}.sig`,
+					Signature: `all_${artifactID}.sig`,
 					Cmd:       cmd,
 					Args:      args,
 				},
 			},
 		},
 		"sign all filtering id": {
-			Expected: []string{"testdata/cosign/all_filter_by_id_img2.sig"},
+			Expected: []string{"all_filter_by_id_img2.sig"},
 			Signs: []config.Sign{
 				{
 					Artifacts: "all",
 					IDs:       []string{"img2"},
 					Stdin:     &password,
-					Signature: "testdata/cosign/all_filter_by_id_${artifactID}.sig",
+					Signature: "all_filter_by_id_${artifactID}.sig",
 					Cmd:       cmd,
 					Args:      args,
 				},
@@ -104,26 +123,26 @@ func TestDockerSignArtifacts(t *testing.T) {
 		},
 		"sign images only": {
 			Expected: []string{
-				"testdata/cosign/images_img1.sig",
-				"testdata/cosign/images_img2.sig",
+				"images_img1.sig",
+				"images_img2.sig",
 			},
 			Signs: []config.Sign{
 				{
 					Artifacts: "images",
 					Stdin:     &password,
-					Signature: "testdata/cosign/images_${artifactID}.sig",
+					Signature: "images_${artifactID}.sig",
 					Cmd:       cmd,
 					Args:      args,
 				},
 			},
 		},
 		"sign manifests only": {
-			Expected: []string{"testdata/cosign/manifests_man1.sig"},
+			Expected: []string{"manifests_man1.sig"},
 			Signs: []config.Sign{
 				{
 					Artifacts: "manifests",
 					Stdin:     &password,
-					Signature: "testdata/cosign/manifests_${artifactID}.sig",
+					Signature: "manifests_${artifactID}.sig",
 					Cmd:       cmd,
 					Args:      args,
 				},
@@ -134,12 +153,12 @@ func TestDockerSignArtifacts(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.New(config.Project{})
 			ctx.Config.DockerSigns = cfg.Signs
-
-			t.Cleanup(func() {
-				for _, f := range cfg.Expected {
-					require.NoError(t, os.Remove(f))
-				}
-			})
+			wd, err := os.Getwd()
+			require.NoError(t, err)
+			tmp := testlib.Mktmp(t)
+			require.NoError(t, gio.Copy(filepath.Join(wd, "testdata/cosign/"), tmp))
+			ctx.Config.Dist = "dist"
+			require.NoError(t, os.Mkdir("dist", 0o755))
 
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name: img1,
@@ -169,8 +188,14 @@ func TestDockerSignArtifacts(t *testing.T) {
 			require.NoError(t, DockerPipe{}.Default(ctx))
 			require.NoError(t, DockerPipe{}.Publish(ctx))
 			var sigs []string
-			for _, sig := range ctx.Artifacts.Filter(artifact.ByType(artifact.Signature)).List() {
+			for _, sig := range ctx.Artifacts.Filter(
+				artifact.Or(
+					artifact.ByType(artifact.Signature),
+					artifact.ByType(artifact.Certificate),
+				),
+			).List() {
 				sigs = append(sigs, sig.Name)
+				require.Truef(t, strings.HasPrefix(sig.Path, ctx.Config.Dist), "signature %q is not in dist dir %q", sig.Path, ctx.Config.Dist)
 			}
 			require.Equal(t, cfg.Expected, sigs)
 		})
