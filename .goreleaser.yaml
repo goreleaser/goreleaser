@@ -212,7 +212,7 @@ signs:
   output: true
   args:
     - sign-blob
-    - '--oidc-issuer=https://token.actions.githubusercontent.com'
+    - '--oidc-issuer={{if index .Env "CI"}}https://token.actions.githubusercontent.com{{else}}https://oauth2.sigstore.dev/auth{{end}}'
     - '--output-certificate=${certificate}'
     - '--output-signature=${signature}'
     - '${artifact}'
@@ -224,7 +224,7 @@ signs:
   output: true
   args:
     - sign-blob
-    - '--oidc-issuer=https://token.actions.githubusercontent.com'
+    - '--oidc-issuer={{if index .Env "CI"}}https://token.actions.githubusercontent.com{{else}}https://oauth2.sigstore.dev/auth{{end}}'
     - '--output-certificate=${certificate}'
     - '--output-signature=${signature}'
     - '${artifact}'
@@ -235,14 +235,10 @@ docker_signs:
   env:
   - COSIGN_EXPERIMENTAL=1
   artifacts: manifests
-  signature: '{{ replace (replace .Env.artifact "/" "-") ":" "-" }}.sig'
-  certificate: '{{ replace (replace .Env.artifact "/" "-") ":" "-" }}.pem'
   output: true
   args:
   - 'sign'
-  - '--oidc-issuer=https://token.actions.githubusercontent.com'
-  - '--output-certificate=${certificate}'
-  - '--output-signature=${signature}'
+  - '--oidc-issuer={{if index .Env "CI"}}https://token.actions.githubusercontent.com{{else}}https://oauth2.sigstore.dev/auth{{end}}'
   - '${artifact}'
 
 publishers:

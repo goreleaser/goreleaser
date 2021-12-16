@@ -179,56 +179,14 @@ Our Docker images are signed with [cosign][].
 Verify the signatures:
 
 === "OSS"
-    You have two options:
-
-    **Option 1**
-
-    Use cosign experimental:
-
     ```sh
     COSIGN_EXPERIMENTAL=1 cosign verify goreleaser/goreleaser
     ```
 
-    **Option 2**
-
-    1. Download the key and signature files from the [releases][releases] page:
-      ```sh
-      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/goreleaser-goreleaser-latest.pem
-      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/goreleaser-goreleaser-latest.sig
-      ```
-    1. Verify the signature:
-      ```sh
-      cosign verify-blob \
-        --cert goreleaser-goreleaser-latest.pem \
-        --signature goreleaser-goreleaser-latest.sig \
-        goreleaser/goreleaser
-      ```
-
 === "Pro"
-    You have two options:
-
-    **Option 1**
-
-    Use cosign experimental:
-
     ```sh
     COSIGN_EXPERIMENTAL=1 cosign verify goreleaser/goreleaser-pro
     ```
-
-    **Option 2**
-
-    1. Download the key and signature files from the [releases][pro-releases] page:
-      ```sh
-      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/goreleaser-goreleaser-pro-latest.pem
-      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/goreleaser-goreleaser-pro-latest.sig
-      ```
-    1. Verify the signature:
-      ```sh
-      cosign verify-blob \
-        --cert goreleaser-goreleaser-pro-latest.pem \
-        --signature goreleaser-goreleaser-pro-latest.sig \
-        goreleaser/goreleaser-pro
-      ```
 
 !!! info
     The `.pem` and `.sig` files are the image `name:tag`, replacing `/` and `:` with `-`.
