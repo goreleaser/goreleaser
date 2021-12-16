@@ -8,6 +8,11 @@ on:
       - 'v*'
   pull_request:
 
+permissions:
+  contents: write
+  id-token: write
+  packages: write
+
 jobs:
   goreleaser-check-pkgs:
     runs-on: ubuntu-latest

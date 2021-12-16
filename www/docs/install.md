@@ -128,23 +128,24 @@ Below you can find the steps for each of them.
 === "Pro"
     Download the pre-compiled binaries from the [Pro releases page][pro-releases] and copy them to the desired location.
 
-## Verifying the binaries
+## Verifying the artifacts
+
+### binaries
 
 All artifacts are checksummed and the checksum file is signed with [cosign][].
 
-You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
-
 === "OSS"
-    1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][releases] page:
+    1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][releases] page:
       ```sh
       wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt
       wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.sig
+      wget https://github.com/goreleaser/goreleaser/releases/download/__VERSION__/checksums.txt.pem
       ```
     1. Verify the signature:
       ```sh
       cosign verify-blob \
-        -key https://goreleaser.com/static/goreleaser.pub \
-        -signature checksums.txt.sig \
+        --cert checksums.txt.pem \
+        --signature checksums.txt.sig \
         checksums.txt
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
@@ -153,16 +154,17 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
       ```
 
 === "Pro"
-    1. Download the files you want, and both the `checksums.txt` and `checksums.txt.sig` files from the [releases][pro-releases] page:
+    1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][pro-releases] page:
       ```sh
       wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt
       wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.sig
+      wget https://github.com/goreleaser/goreleaser-pro/releases/download/__VERSION__-pro/checksums.txt.pem
       ```
     1. Verify the signature:
       ```sh
       cosign verify-blob \
-        -key https://goreleaser.com/static/goreleaser.pub \
-        -signature checksums.txt.sig \
+        --cert checksums.txt.pem \
+        --signature checksums.txt.sig \
         checksums.txt
       ```
     1. If the signature is valid, you can then verify the SHA256 sums match with the downloaded binary:
@@ -170,27 +172,24 @@ You can verify it using [our public key](https://goreleaser.com/static/gorelease
       sha256sum --ignore-missing -c checksums.txt
       ```
 
-## Verifying docker images
+### docker images
 
-Our Docker image is signed with [cosign][].
+Our Docker images are signed with [cosign][].
 
-You can verify it using [our public key](https://goreleaser.com/static/goreleaser.pub).
+Verify the signatures:
 
 === "OSS"
-    Verify the signatures:
     ```sh
-    cosign verify \
-      -key https://goreleaser.com/static/goreleaser.pub \
-      goreleaser/goreleaser
+    COSIGN_EXPERIMENTAL=1 cosign verify goreleaser/goreleaser
     ```
 
 === "Pro"
-    Verify the signatures:
     ```sh
-    cosign verify \
-      -key https://goreleaser.com/static/goreleaser.pub \
-      goreleaser/goreleaser-pro
+    COSIGN_EXPERIMENTAL=1 cosign verify goreleaser/goreleaser-pro
     ```
+
+!!! info
+    The `.pem` and `.sig` files are the image `name:tag`, replacing `/` and `:` with `-`.
 
 ## Running with Docker
 
