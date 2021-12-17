@@ -116,6 +116,7 @@ publishers:
       - API_TOKEN=secret-token
 
     # You can publish extra pre-existing files.
+    # These extra files are in addition to any top-level extra_files configuration.
     # The filename published will be the last part of the path (base).
     # If another file with the same name exists, the last one found will be used.
     # These globs can also include templates.

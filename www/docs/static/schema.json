@@ -1431,6 +1431,13 @@
 						},
 						"type": "array"
 					},
+					"extra_files": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/ExtraFile"
+						},
+						"type": "array"
+					},
 					"release": {
 						"$schema": "http://json-schema.org/draft-04/schema#",
 						"$ref": "#/definitions/Release"
@@ -1643,6 +1650,13 @@
 					"env": {
 						"items": {
 							"type": "string"
+						},
+						"type": "array"
+					},
+					"extra_files": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/ExtraFile"
 						},
 						"type": "array"
 					}

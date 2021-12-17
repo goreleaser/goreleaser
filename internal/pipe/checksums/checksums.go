@@ -68,6 +68,7 @@ func refresh(ctx *context.Context, filepath string) error {
 	filter := artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.UploadableFile),
 		artifact.ByType(artifact.UploadableSourceArchive),
 		artifact.ByType(artifact.LinuxPackage),
 		artifact.ByType(artifact.SBOM),

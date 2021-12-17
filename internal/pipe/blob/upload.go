@@ -78,6 +78,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	filter := artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.UploadableFile),
 		artifact.ByType(artifact.UploadableSourceArchive),
 		artifact.ByType(artifact.Checksum),
 		artifact.ByType(artifact.Signature),
@@ -88,6 +89,21 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
 	}
 
+	artifacts := ctx.Artifacts.Filter(filter).List()
+
+	extraFiles, err := extrafiles.Find(ctx, conf.ExtraFiles)
+	if err != nil {
+		return err
+	}
+
+	for name, path := range extraFiles {
+		artifacts = append(artifacts, &artifact.Artifact{
+			Name: name,
+			Path: path,
+			Type: artifact.UploadableFile,
+		})
+	}
+
 	up := &productionUploader{}
 	if err := up.Open(ctx, bucketURL); err != nil {
 		return handleError(err, bucketURL)
@@ -95,7 +111,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	defer up.Close()
 
 	g := semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
+	for _, artifact := range artifacts {
 		artifact := artifact
 		g.Go(func() error {
 			// TODO: replace this with ?prefix=folder on the bucket url
@@ -103,22 +119,6 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 			uploadFile := path.Join(folder, artifact.Name)
 
 			return uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
-		})
-	}
-
-	files, err := extrafiles.Find(ctx, conf.ExtraFiles)
-	if err != nil {
-		return err
-	}
-	for name, fullpath := range files {
-		name := name
-		fullpath := fullpath
-		g.Go(func() error {
-			uploadFile := path.Join(folder, name)
-
-			err := uploadData(ctx, conf, up, fullpath, uploadFile, bucketURL)
-
-			return err
 		})
 	}
 

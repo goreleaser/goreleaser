@@ -131,25 +131,10 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Release.ExtraFiles)
-	if err != nil {
-		return err
-	}
-
-	for name, path := range extraFiles {
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			return fmt.Errorf("failed to upload %s: %w", name, err)
-		}
-		ctx.Artifacts.Add(&artifact.Artifact{
-			Name: name,
-			Path: path,
-			Type: artifact.UploadableFile,
-		})
-	}
-
 	filters := artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.UploadableFile),
 		artifact.ByType(artifact.UploadableSourceArchive),
 		artifact.ByType(artifact.Checksum),
 		artifact.ByType(artifact.Signature),
@@ -161,10 +146,26 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		filters = artifact.And(filters, artifact.ByIDs(ctx.Config.Release.IDs...))
 	}
 
-	filters = artifact.Or(filters, artifact.ByType(artifact.UploadableFile))
+	artifacts := ctx.Artifacts.Filter(filters).List()
+
+	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Release.ExtraFiles)
+	if err != nil {
+		return err
+	}
+
+	for name, path := range extraFiles {
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			return fmt.Errorf("failed to upload %s: %w", name, err)
+		}
+		artifacts = append(artifacts, &artifact.Artifact{
+			Name: name,
+			Path: path,
+			Type: artifact.UploadableFile,
+		})
+	}
 
 	g := semerrgroup.New(ctx.Parallelism)
-	for _, artifact := range ctx.Artifacts.Filter(filters).List() {
+	for _, artifact := range artifacts {
 		artifact := artifact
 		g.Go(func() error {
 			return upload(ctx, client, releaseID, artifact)

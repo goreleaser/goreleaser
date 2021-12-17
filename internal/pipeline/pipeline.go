@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
 	"github.com/goreleaser/goreleaser/internal/pipe/effectiveconfig"
 	"github.com/goreleaser/goreleaser/internal/pipe/env"
+	"github.com/goreleaser/goreleaser/internal/pipe/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
@@ -76,6 +77,7 @@ var Pipeline = append(
 	gofish.Pipe{},        // create gofish rig
 	krew.Pipe{},          // krew plugins
 	scoop.Pipe{},         // create scoop buckets
+	extrafiles.Pipe{},    // add extra file artifacts
 	sbom.Pipe{},          // create SBOMs of artifacts
 	checksums.Pipe{},     // checksums of the files
 	sign.Pipe{},          // sign artifacts

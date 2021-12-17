@@ -79,6 +79,7 @@ nav:
     - customization/hooks.md
     - customization/dist.md
     - customization/project.md
+    - customization/extra_files.md
   - Build:
     - customization/build.md
     - customization/gomod.md

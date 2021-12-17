@@ -821,6 +821,7 @@ type Source struct {
 type Project struct {
 	ProjectName     string           `yaml:"project_name,omitempty"`
 	Env             []string         `yaml:"env,omitempty"`
+	ExtraFiles      []ExtraFile      `yaml:"extra_files,omitempty"`
 	Release         Release          `yaml:"release,omitempty"`
 	Milestones      []Milestone      `yaml:"milestones,omitempty"`
 	Brews           []Homebrew       `yaml:"brews,omitempty"`
