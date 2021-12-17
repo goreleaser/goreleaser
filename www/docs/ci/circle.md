@@ -22,5 +22,4 @@ jobs:
     steps:
       - checkout
       - run: curl -sL https://git.io/goreleaser | bash
-      - run: goreleaser
 ```
