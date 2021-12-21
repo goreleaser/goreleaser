@@ -42,6 +42,7 @@ func TestEqualFiles(t *testing.T) {
 		require.True(t, equalContents)
 	}
 }
+
 func TestEqualFileCointents(t *testing.T) {
 	tests := []struct {
 		a string
