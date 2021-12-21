@@ -25,7 +25,6 @@ builds:
     - arm
     - arm64
   goarm:
-    - "6"
     - "7"
   mod_timestamp: '{{ .CommitTimestamp }}'
   flags:
@@ -133,6 +132,7 @@ brews:
       owner: goreleaser
       name: homebrew-tap
     folder: Formula
+    goarm: "7"
     homepage:  https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible
     license: MIT
