@@ -148,6 +148,7 @@ nav:
   - cookbooks/semantic-release.md
   - cookbooks/set-a-custom-git-tag.md
   - cookbooks/using-main.version.md
+  - cookbooks/override-image-name.md
 - Community:
   - sponsors.md
   - users.md
