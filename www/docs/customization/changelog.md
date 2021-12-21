@@ -15,7 +15,7 @@ changelog:
   # - `git`: uses `git log`;
   # - `github`: uses the compare GitHub API, appending the author login to the changelog.
   # - `gitlab`: uses the compare GitLab API, appending the author name and email to the changelog.
-  # - `github-native`: uses the GitHub release notes generation API.
+  # - `github-native`: uses the GitHub release notes generation API, disables the groups feature.
   #
   # Defaults to `git`.
   use: github
@@ -28,6 +28,8 @@ changelog:
   # Group commits messages by given regex and title.
   # Order value defines the order of the groups.
   # Proving no regex means all commits will be grouped under the default group.
+  # Groups are disabled when using github-native, as it already groups things by itself.
+  #
   # Default is no groups.
   groups:
     - title: Features

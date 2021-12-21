@@ -616,3 +616,32 @@ func TestGroupBadRegex(t *testing.T) {
 	ctx.Git.CurrentTag = "v0.0.2"
 	require.EqualError(t, Pipe{}.Run(ctx), `failed to group into "Something": error parsing regexp: missing closing ]: `+"`"+`[(\w`+"`")
 }
+
+func TestShouldGroup(t *testing.T) {
+	t.Run("with groups", func(t *testing.T) {
+		t.Run("github-native", func(t *testing.T) {
+			require.False(t, shouldGroup(config.Changelog{
+				Use:    "github-native",
+				Groups: []config.ChangeLogGroup{{}},
+			}))
+		})
+		for _, u := range []string{"git", "github", "gitlab"} {
+			t.Run(u, func(t *testing.T) {
+				require.True(t, shouldGroup(config.Changelog{
+					Use:    u,
+					Groups: []config.ChangeLogGroup{{}},
+				}))
+			})
+		}
+	})
+
+	t.Run("without groups", func(t *testing.T) {
+		for _, u := range []string{"git", "github", "gitlab", "github-native"} {
+			t.Run(u, func(t *testing.T) {
+				require.False(t, shouldGroup(config.Changelog{
+					Use: u,
+				}))
+			})
+		}
+	})
+}

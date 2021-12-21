@@ -744,7 +744,7 @@ type Changelog struct {
 	Filters Filters          `yaml:"filters,omitempty"`
 	Sort    string           `yaml:"sort,omitempty"`
 	Skip    bool             `yaml:"skip,omitempty"` // TODO(caarlos0): rename to Disable to match other pipes
-	Use     string           `yaml:"use,omitempty"`
+	Use     string           `yaml:"use,omitempty" jsonschema:"enum=git,enum=github,enum=github-native,enum=gitlab,default=git"`
 	Groups  []ChangeLogGroup `yaml:"groups,omitempty"`
 }
 

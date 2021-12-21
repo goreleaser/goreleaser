@@ -14,6 +14,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -71,7 +72,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		"## Changelog",
 	}
 
-	if len(ctx.Config.Changelog.Groups) > 0 {
+	if shouldGroup(ctx.Config.Changelog) {
 		log.Debug("grouping entries")
 		groups := ctx.Config.Changelog.Groups
 
@@ -122,6 +123,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	path := filepath.Join(ctx.Config.Dist, "CHANGELOG.md")
 	log.WithField("changelog", path).Info("writing")
 	return os.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint: gosec
+}
+
+func shouldGroup(cfg config.Changelog) bool {
+	return len(cfg.Groups) > 0 && cfg.Use != "github-native"
 }
 
 func getAllNonEmpty(ss []string) []string {
