@@ -6,7 +6,7 @@ Google GCS.
 ## Customization
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 blobs:
   # You can have multiple blob configs
   -

@@ -7,10 +7,10 @@ some environment variables on your pipeline:
 
 Also you need to know your channel's chat ID to talk with.
 
-Then, you can add something like the following to your `.goreleaser.yml` config:
+Then, you can add something like the following to your `.goreleaser.yaml` config:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 announce:
   telegram:
     # Whether its enabled or not.

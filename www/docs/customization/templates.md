@@ -134,7 +134,7 @@ This feature is specially useful with [includes](/customization/includes/), so y
 Usage is as simple as you would expect:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 variables:
   description: my project description
   somethingElse: yada yada yada

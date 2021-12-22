@@ -11,10 +11,10 @@ You create your tags like `subproject1/v1.2.3` and `subproject2/v1.2.3`.
 
 ## Usage
 
-You'll need to create a `.goreleaser.yml` for each subproject you want to use GoReleaser in:
+You'll need to create a `.goreleaser.yaml` for each subproject you want to use GoReleaser in:
 
 ```yaml
-# subroj1/.goreleaser.yml
+# subroj1/.goreleaser.yaml
 project_name: subproj1
 
 monorepo:
@@ -25,7 +25,7 @@ monorepo:
 Then, you can release with (from the project's root directory):
 
 ```sh
-goreleaser release --rm-dist -f ./subproj1/.goreleaser.yml
+goreleaser release --rm-dist -f ./subproj1/.goreleaser.yaml
 ```
 
 Then, the following is different from a "regular" run:

@@ -7,7 +7,7 @@ The `scoop` section specifies how the manifest should be created. See
 the commented example below:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 scoop:
   # Template for the url which is determined by the given Token (github or gitlab)
   # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"

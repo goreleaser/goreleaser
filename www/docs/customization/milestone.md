@@ -5,7 +5,7 @@ GoReleaser can close repository milestones after successfully publishing all art
 Let's see what can be customized in the `milestones` section:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 milestones:
   # You can have multiple milestone configs
   -

@@ -8,10 +8,10 @@ You can create one in `Settings | Applications | Generate New Token` page of you
 This token should be added to the environment variables as `GITEA_TOKEN`.
 
 Alternatively, you can provide the Gitea token in a file.
-GoReleaser will check `~/.config/goreleaser/gitea_token` by default, but you can change that in the `.goreleaser.yml` file:
+GoReleaser will check `~/.config/goreleaser/gitea_token` by default, but you can change that in the `.goreleaser.yaml` file:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 env_files:
   gitea_token: ~/.path/to/my/gitea_token
 ```
@@ -19,10 +19,10 @@ env_files:
 ## URLs
 
 You can use GoReleaser with Gitea by providing its URLs in
-the `.goreleaser.yml` configuration file. This takes a normal string or a template value.
+the `.goreleaser.yaml` configuration file. This takes a normal string or a template value.
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 gitea_urls:
   api: https://gitea.myinstance.com/api/v1/
   download: https://gitea.myinstance.com

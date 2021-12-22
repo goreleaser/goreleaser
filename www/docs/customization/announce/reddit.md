@@ -6,10 +6,10 @@ variables on your pipeline:
 - `REDDIT_SECRET`
 - `REDDIT_PASSWORD`
 
-Then, you can add something like the following to your `.goreleaser.yml` config:
+Then, you can add something like the following to your `.goreleaser.yaml` config:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 announce:
   reddit:
     # Whether its enabled or not.

@@ -24,7 +24,7 @@ You can create a PAT and use it for the entire GoReleaser action run.
 You'll need to add it as secret and pass it to the action, for instance:
 
 ```yaml
-# .github/workflows/goreleaser.yml
+# .github/workflows/goreleaser.yaml
 # ...
       - uses: goreleaser/goreleaser-action@v2
         env:
@@ -41,7 +41,7 @@ Let's see, for example, how it would look like for Homebrew Taps.
 We would need to change the workflow file:
 
 ```yaml
-# .github/workflows/goreleaser.yml
+# .github/workflows/goreleaser.yaml
 # ...
       - uses: goreleaser/goreleaser-action@v2
         env:

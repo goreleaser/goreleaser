@@ -6,7 +6,7 @@ Those binaries are in a special format that contains both `arm64` and `amd64` ex
 Here's how to use it:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 universal_binaries:
 -
   # ID of the source build

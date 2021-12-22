@@ -5,6 +5,6 @@ If none is given, it will be inferred from the name of the GitHub, GitLab, or
 Gitea release.
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 project_name: myproject
 ```

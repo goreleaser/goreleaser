@@ -1,18 +1,18 @@
 # GitLab CI
 
-Below are some example GitLab CI jobs that use GoReleaser to release a project. 
+Below are some example GitLab CI jobs that use GoReleaser to release a project.
 
 > If you are using private hosted or Enterprise version of Gitlab, please follow this [guide](/scm/gitlab/) before diving into the details.
 
 ## Basic Releasing
 
-You can easily run GoReleaser in GitLab CI using its Docker container. 
+You can easily run GoReleaser in GitLab CI using its Docker container.
 
 In the repository's GitLab CI settings, add a `GITLAB_TOKEN` variable. The value should
 be an API token with `api` scope for a user that has access to the project. This
 variable should be masked and optionally protected if the job will only run on
 protected branches and tags.
-See [Quick Start](https://goreleaser.com/quick-start/) for more information on 
+See [Quick Start](https://goreleaser.com/quick-start/) for more information on
 GoReleaser's environment variables.
 
 Add a `.gitlab-ci.yml` file to the root of the project:
@@ -36,18 +36,18 @@ release:
     - goreleaser release --rm-dist
 ```
 
-Notice that `entrypoint` is intentionally blank. See the 
-[GitLab documentation on entrypoints](https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#overriding-the-entrypoint-of-an-image) 
+Notice that `entrypoint` is intentionally blank. See the
+[GitLab documentation on entrypoints](https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#overriding-the-entrypoint-of-an-image)
 for more information.
 
-When tags are pushed to the repository, 
-an available GitLab Runner with the Docker executor will pick up the release job. 
-`goreleaser/goreleaser` will start in a container and the repository will be mounted inside. 
-Finally, the `script` section will run within the container starting in your project's directory. 
+When tags are pushed to the repository,
+an available GitLab Runner with the Docker executor will pick up the release job.
+`goreleaser/goreleaser` will start in a container and the repository will be mounted inside.
+Finally, the `script` section will run within the container starting in your project's directory.
 
 ## Releasing Archives and Pushing Images
 
-Pushing images to a registry requires using Docker-in-Docker. To create GitLab releases and push 
+Pushing images to a registry requires using Docker-in-Docker. To create GitLab releases and push
 images to a Docker registry, add a file `.gitlab-ci.yml` to the root of the project:
 
 ```yaml
@@ -102,7 +102,7 @@ The secret variables, `DOCKER_PASSWORD` and `GITLAB_TOKEN`, should be masked.
 Optionally, you might want to protect them if the job that uses them will only
 be run on protected branches or tags.
 
-Make sure the `image_templates` in the file `.goreleaser.yml` reflect that
+Make sure the `image_templates` in the file `.goreleaser.yaml` reflect that
 custom registry!
 
 Example:

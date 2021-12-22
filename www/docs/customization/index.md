@@ -1,6 +1,6 @@
 # Customization
 
-GoReleaser can be customized by tweaking a `.goreleaser.yml` file.
+GoReleaser can be customized by tweaking a `.goreleaser.yaml` file.
 
 You can generate an example config by running [`goreleaser init`](/cmd/goreleaser_init/) or start from scratch.
 
