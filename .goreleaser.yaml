@@ -217,19 +217,6 @@ signs:
     - '--output-certificate=${certificate}'
     - '--output-signature=${signature}'
     - '${artifact}'
-- id: sign-sboms
-  cmd: cosign
-  env:
-  - COSIGN_EXPERIMENTAL=1
-  certificate: '${artifact}.pem'
-  output: true
-  args:
-    - sign-blob
-    - '--oidc-issuer={{if index .Env "CI"}}https://token.actions.githubusercontent.com{{else}}https://oauth2.sigstore.dev/auth{{end}}'
-    - '--output-certificate=${certificate}'
-    - '--output-signature=${signature}'
-    - '${artifact}'
-  artifacts: sbom
 
 docker_signs:
 - cmd: cosign
