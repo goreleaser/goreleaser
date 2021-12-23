@@ -8,10 +8,10 @@ some environment variables on your pipeline:
 - `TWITTER_ACCESS_TOKEN`
 - `TWITTER_ACCESS_TOKEN_SECRET`
 
-Then, you can add something like the following to your `.goreleaser.yml` config:
+Then, you can add something like the following to your `.goreleaser.yaml` config:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 announce:
   twitter:
     # Whether its enabled or not.

@@ -4,7 +4,7 @@ You may add the current tag source archive to the release as well. This is parti
 useful if you want to sign it, for example.
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 source:
   # Whether this pipe is enabled or not.
   # Defaults to `false`

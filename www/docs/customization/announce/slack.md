@@ -5,10 +5,10 @@ environment variables on your pipeline:
 
 - `SLACK_WEBHOOK`
 
-Then, you can add something like the following to your `.goreleaser.yml` config:
+Then, you can add something like the following to your `.goreleaser.yaml` config:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 announce:
   slack:
     # Whether its enabled or not.

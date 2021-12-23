@@ -11,7 +11,7 @@ and the
 for more details.
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 brews:
   -
     # Name template of the recipe

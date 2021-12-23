@@ -5,7 +5,7 @@ Ideally, using sensible defaults and making the most common usecases easy.
 
 GoReleaser expects a couple of things:
 
-- a `.goreleaser.yml` file with the configuration (see the [customization section](/customization) for more info)
+- a `.goreleaser.yaml` file with the configuration (see the [customization section](/customization) for more info)
 - a clean working tree
 - a SemVer-compatible version (e.g. `10.21.34-something`)
 

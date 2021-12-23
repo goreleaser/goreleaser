@@ -13,7 +13,7 @@ First, you need to create an account on [fury.io][fury] and get a push token.
 Then, you need to pass your account name to GoReleaser and have your push token as an environment variable named `FURY_TOKEN`:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 furies:
 - account: myaccount
 ```
@@ -25,7 +25,7 @@ This will automatically upload all your `deb` and `rpm` files.
 You can also have plenty of customization options:
 
 ```yaml
-# goreleaser.yml
+# goreleaser.yaml
 
 furies:
   -

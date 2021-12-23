@@ -25,7 +25,7 @@ You can create several manifests in a single GoReleaser run, here are all the
 options available:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 docker_manifests:
   # You can have multiple Docker manifests.
 -
@@ -104,7 +104,7 @@ Then, on our GoReleaser config file, we need to define both the `dockers` and
 the `docker_manifests` section:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 builds:
 - env:
   - CGO_ENABLED=0
@@ -149,7 +149,7 @@ and push everything to Docker Hub.
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use` to `podman` on your config:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 docker_manifests:
 - name_template: foo/bar:{{ .Version }}
   image_templates:

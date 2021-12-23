@@ -11,7 +11,7 @@ by your `nfpms` section.
 
 If you have only one `build` setup,
 the configuration is as easy as adding the
-name of your image to your `.goreleaser.yml` file:
+name of your image to your `.goreleaser.yaml` file:
 
 ```yaml
 dockers:
@@ -42,7 +42,7 @@ This configuration will build and push a Docker image named `user/repo:tagname`.
 Of course, you can customize a lot of things:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 dockers:
   # You can have multiple Docker images.
   -
@@ -134,7 +134,7 @@ Some users might want to keep their image name as generic as possible.
 That can be accomplished simply by adding template language in the definition:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 project: foo
 dockers:
   -
@@ -156,7 +156,7 @@ Some users might want to push docker tags `:v1`, `:v1.6`,
 accomplished by using multiple `image_templates`:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 dockers:
   -
     image_templates:
@@ -185,7 +185,7 @@ Some users might want to push images to multiple docker registries. That can be
 accomplished by using multiple `image_templates`:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 dockers:
   -
     image_templates:
@@ -208,7 +208,7 @@ Build flags can be applied using `build_flag_templates`.
 The flags must be valid Docker build flags.
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 dockers:
   -
     image_templates:
@@ -243,7 +243,7 @@ docker build -t myuser/myimage . \
 You can use [`podman`](https://podman.io) instead of `docker` by setting `use` to `podman` on your config:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 dockers:
   -
     image_templates:
@@ -258,7 +258,7 @@ Note that GoReleaser will not install Podman for you, nor change any of its conf
 You can use [`buildpacks`](https://buildpacks.io) instead of `docker` by setting `use` to `buildpacks` on your config:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 dockers:
   -
     image_templates:
@@ -270,7 +270,7 @@ Also, you can use a custom buildpack on `build_flag_templates` if you want.
 By default, `gcr.io/buildpacks/builder:v1` will be used.
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 dockers:
   -
     image_templates:

@@ -6,10 +6,10 @@ to [create a Webhook](https://docs.microsoft.com/en-us/microsoftteams/platform/w
 
 - `TEAMS_WEBHOOK`
 
-After this, you can add following section to your `.goreleaser.yml` config:
+After this, you can add following section to your `.goreleaser.yaml` config:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 announce:
   teams:
     # Whether its enabled or not.

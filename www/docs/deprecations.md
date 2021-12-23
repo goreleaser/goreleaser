@@ -680,7 +680,7 @@ FPM is deprecated in favor of nfpm, which is a simpler alternative written
 in Go. The objective is to remove the ruby dependency thus simplify the
 CI/CD pipelines.
 
-Just replace the `fpm` keyword by `nfpm` in your `.goreleaser.yml` file.
+Just replace the `fpm` keyword by `nfpm` in your `.goreleaser.yaml` file.
 
 === "Before"
     ```yaml

@@ -62,7 +62,7 @@ GoReleaser is built for CI tools, you only need to download and execute it
 in your build script. Of course, you can also install it locally if you wish.
 
 You can also customize your entire release process through a
-single .goreleaser.yml file.
+single .goreleaser.yaml file.
 `,
 		Version:       version,
 		SilenceUsage:  true,

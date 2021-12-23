@@ -7,7 +7,7 @@ GoReleaser supports this with the `--snapshot` flag
 and also with the `snapshot` customization section:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 snapshot:
   # Allows you to change the name of the generated snapshot
   #

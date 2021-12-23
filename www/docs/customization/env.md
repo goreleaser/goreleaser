@@ -2,10 +2,10 @@
 
 Global environment variables to be passed down to all hooks and builds.
 
-This is useful for `GO111MODULE`, for example. You can have your `.goreleaser.yml` file like the following:
+This is useful for `GO111MODULE`, for example. You can have your `.goreleaser.yaml` file like the following:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 env:
   - GO111MODULE=on
   - FOO={{ .Env.FOOBAR }}

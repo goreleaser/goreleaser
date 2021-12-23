@@ -8,7 +8,7 @@ A GoReleaser-created verifiable build will include module information in the res
 Configuration options available are described below.
 
 ```yaml
-# goreleaser.yml
+# goreleaser.yaml
 
 gomod:
   # Proxy a module from proxy.golang.org, making the builds verifiable.

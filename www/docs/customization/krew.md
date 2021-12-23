@@ -7,7 +7,7 @@ Check their [website](https://krew.sigs.k8s.io) for more information.
 The `krews` section specifies how the plugins should be created:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 krews:
   -
     # Name template of the recipe

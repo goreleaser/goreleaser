@@ -41,7 +41,7 @@ if [ "$RET" = "false" ]; then
 fi
 ```
 
-Include `templates` and `postinst` in `.goreleaser.yml`:
+Include `templates` and `postinst` in `.goreleaser.yaml`:
 
 ```yaml
     overrides:
