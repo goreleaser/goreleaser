@@ -23,29 +23,71 @@ steps:
 
   - name: test
     image: golang
-    volumes:
-      - name: deps
-        path: /go
     commands:
       - go test -race -v ./... -cover
 
   - name: release
+    image: goreleaser/goreleaser
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - goreleaser release
+    when:
+      event: tag
+```
+
+In case you need to build docker image, use [Docker-In-Docker](https://docs.drone.io/pipeline/docker/examples/services/docker_dind/) (DIND)
+
+```yaml
+---
+kind: pipeline
+name: default
+trigger:
+  ref:
+    - refs/tags/*
+
+services:
+  - name: docker
+    image: docker:dind
+    privileged: true
+    volumes:
+      - name: dockersock
+        path: /var/run
+
+steps:
+  - name: fetch
+    image: docker:git
+    commands:
+      - git fetch --tags
+
+ - name: test
     image: golang
+    commands:
+      - go test -race -v ./... -cover
+
+  - name: release
+    image: goreleaser/goreleaser
     environment:
       GITHUB_TOKEN:
         from_secret: github_token
     volumes:
-      - name: deps
-        path: /go
+      - name: dockersock
+        path: /var/run
     commands:
-      - curl -sL https://git.io/goreleaser | bash
+      - goreleaser release
     when:
       event: tag
 
 volumes:
-  - name: deps
+  - name: dockersock
     temp: {}
 ```
+
+Note: to use DIND you have to set repo as 'trusted'. To mark repository as trusted:
+
+1. contact your Drone's admin
+2. or set your [user as administrator](https://docs.drone.io/server/user/admin/) and then enable 'trusted' switch in repository settings UI
 
 #### 0.8
 ```yaml
