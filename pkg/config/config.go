@@ -25,9 +25,10 @@ type GitHubURLs struct {
 
 // GitLabURLs holds the URLs to be used when using gitlab ce/enterprise.
 type GitLabURLs struct {
-	API           string `yaml:"api,omitempty"`
-	Download      string `yaml:"download,omitempty"`
-	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
+	API                string `yaml:"api,omitempty"`
+	Download           string `yaml:"download,omitempty"`
+	SkipTLSVerify      bool   `yaml:"skip_tls_verify,omitempty"`
+	UsePackageRegistry bool   `yaml:"use_package_registry,omitempty"`
 }
 
 // GiteaURLs holds the URLs to be used when using gitea.
