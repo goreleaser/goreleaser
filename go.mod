@@ -16,7 +16,7 @@ require (
 	github.com/dghubble/oauth1 v0.7.0
 	github.com/fatih/color v1.13.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
-	github.com/google/go-github/v39 v39.2.0
+	github.com/google/go-github/v41 v41.0.0
 	github.com/goreleaser/fileglob v1.2.0
 	github.com/goreleaser/nfpm/v2 v2.11.1
 	github.com/imdario/mergo v0.3.12
