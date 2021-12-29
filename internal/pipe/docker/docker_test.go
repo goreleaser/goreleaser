@@ -464,6 +464,23 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
+		"templated-dockerfile-invalid": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/invalid-templated-dockerfile:v1",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "{{ .Env.Dockerfile }}",
+				},
+			},
+			expect:              []string{},
+			assertError:         shouldErr(`template: tmpl:1:7: executing "tmpl" at <.Env.Dockerfile>: map has no entry for key "Dockerfile"`),
+			assertImageLabels:   noLabels,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+		},
 		"image template with env": {
 			env: map[string]string{
 				"FOO": "test_run_pipe_template",
