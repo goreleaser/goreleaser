@@ -439,6 +439,31 @@ func TestRunPipe(t *testing.T) {
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
+		"templated-dockerfile": {
+			env: map[string]string{
+				"Dockerfile": "testdata/Dockerfile",
+			},
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{
+						registry + "goreleaser/templated_dockerfile:v1",
+					},
+					Goos:       "linux",
+					Goarch:     "amd64",
+					Dockerfile: "{{ .Env.Dockerfile }}",
+					Files: []string{
+						"testdata/extra_file.txt",
+					},
+				},
+			},
+			expect: []string{
+				registry + "goreleaser/templated_dockerfile:v1",
+			},
+			assertError:         shouldNotErr,
+			assertImageLabels:   noLabels,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+		},
 		"image template with env": {
 			env: map[string]string{
 				"FOO": "test_run_pipe_template",
