@@ -10,7 +10,7 @@ require (
 	github.com/apex/log v1.9.0
 	github.com/atc0005/go-teams-notify/v2 v2.6.0
 	github.com/caarlos0/ctrlc v1.0.0
-	github.com/caarlos0/env/v6 v6.8.0
+	github.com/caarlos0/env/v6 v6.9.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.0
