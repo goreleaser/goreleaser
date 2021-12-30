@@ -7,12 +7,10 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
-
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -289,11 +287,9 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 			),
 			sbomPaths: []string{
 				"artifact3-name_1.2.2_linux_amd64.sbom",
-				"artifact4-name_1.2.2_linux_amd64.sbom",
 			},
 			sbomNames: []string{
 				"artifact3-name_1.2.2_linux_amd64.sbom",
-				"artifact4-name_1.2.2_linux_amd64.sbom",
 			},
 		},
 		{
@@ -344,13 +340,11 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 				"artifact1.s2-ish.sbom",
 				"artifact2.s2-ish.sbom",
 				"artifact3-name_1.2.2_linux_amd64.sbom",
-				"artifact4-name_1.2.2_linux_amd64.sbom",
 			},
 			sbomNames: []string{
 				"artifact1.s2-ish.sbom",
 				"artifact2.s2-ish.sbom",
 				"artifact3-name_1.2.2_linux_amd64.sbom",
-				"artifact4-name_1.2.2_linux_amd64.sbom",
 			},
 		},
 		{
@@ -398,11 +392,9 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 			),
 			sbomPaths: []string{
 				"artifact3-name.test-user-name.sbom",
-				"artifact4.test-user-name.sbom",
 			},
 			sbomNames: []string{
 				"artifact3-name.test-user-name.sbom",
-				"artifact4.test-user-name.sbom",
 			},
 		},
 		{
