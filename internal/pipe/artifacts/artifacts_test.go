@@ -1,6 +1,7 @@
 package artifacts
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -30,5 +31,10 @@ func TestArtifacts(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Run(ctx))
-	golden.RequireEqualJSON(t, golden.RequireReadFile(t, filepath.Join(tmp, "artifacts.json")))
+	path := filepath.Join(tmp, "artifacts.json")
+	golden.RequireEqualJSON(t, golden.RequireReadFile(t, path))
+
+	info, err := os.Stat(path)
+	require.NoError(t, err)
+	require.Equal(t, "-rw-r--r--", info.Mode().String())
 }
