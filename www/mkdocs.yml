@@ -149,6 +149,7 @@ nav:
   - cookbooks/set-a-custom-git-tag.md
   - cookbooks/using-main.version.md
   - cookbooks/override-image-name.md
+  - cookbooks/goreleaser-xx.md
 - Community:
   - sponsors.md
   - users.md
