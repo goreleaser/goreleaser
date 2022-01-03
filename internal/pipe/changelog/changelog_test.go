@@ -419,7 +419,7 @@ func TestChangeLogWithoutReleaseFooter(t *testing.T) {
 func TestGetChangelogGitHub(t *testing.T) {
 	ctx := context.New(config.Project{
 		Changelog: config.Changelog{
-			Use: "github",
+			Use: useGitHub,
 		},
 	})
 
@@ -441,7 +441,7 @@ func TestGetChangelogGitHub(t *testing.T) {
 func TestGetChangelogGitHubNative(t *testing.T) {
 	ctx := context.New(config.Project{
 		Changelog: config.Changelog{
-			Use: "github-native",
+			Use: useGitHubNative,
 		},
 	})
 
@@ -472,20 +472,20 @@ func TestGetChangeloger(t *testing.T) {
 		require.IsType(t, c, gitChangeloger{})
 	})
 
-	t.Run("git", func(t *testing.T) {
+	t.Run(useGit, func(t *testing.T) {
 		c, err := getChangeloger(context.New(config.Project{
 			Changelog: config.Changelog{
-				Use: "git",
+				Use: useGit,
 			},
 		}))
 		require.NoError(t, err)
 		require.IsType(t, c, gitChangeloger{})
 	})
 
-	t.Run("github", func(t *testing.T) {
+	t.Run(useGitHub, func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Changelog: config.Changelog{
-				Use: "github",
+				Use: useGitHub,
 			},
 		})
 		ctx.TokenType = context.TokenTypeGitHub
@@ -494,10 +494,10 @@ func TestGetChangeloger(t *testing.T) {
 		require.IsType(t, c, &scmChangeloger{})
 	})
 
-	t.Run("github-native", func(t *testing.T) {
+	t.Run(useGitHubNative, func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Changelog: config.Changelog{
-				Use: "github-native",
+				Use: useGitHubNative,
 			},
 		})
 		ctx.TokenType = context.TokenTypeGitHub
@@ -506,10 +506,10 @@ func TestGetChangeloger(t *testing.T) {
 		require.IsType(t, c, &githubNativeChangeloger{})
 	})
 
-	t.Run("gitlab", func(t *testing.T) {
+	t.Run(useGitLab, func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Changelog: config.Changelog{
-				Use: "gitlab",
+				Use: useGitLab,
 			},
 		})
 		ctx.TokenType = context.TokenTypeGitLab
@@ -628,7 +628,7 @@ func TestChangelogFormat(t *testing.T) {
 			return config.Project{Changelog: config.Changelog{Use: u}}
 		}
 
-		for _, use := range []string{"git", "github"} {
+		for _, use := range []string{useGit, useGitHub, useGitLab} {
 			t.Run(use, func(t *testing.T) {
 				out, err := formatChangelog(
 					context.New(makeConf(use)),
@@ -643,9 +643,9 @@ func TestChangelogFormat(t *testing.T) {
 			})
 		}
 
-		t.Run("github-native", func(t *testing.T) {
+		t.Run(useGitHubNative, func(t *testing.T) {
 			out, err := formatChangelog(
-				context.New(makeConf("github-native")),
+				context.New(makeConf(useGitHubNative)),
 				[]string{
 					"# What's changed",
 					"* aea123 foo",
@@ -671,9 +671,9 @@ func TestChangelogFormat(t *testing.T) {
 			}
 		}
 
-		t.Run("github-native", func(t *testing.T) {
+		t.Run(useGitHubNative, func(t *testing.T) {
 			out, err := formatChangelog(
-				context.New(makeConf("github-native")),
+				context.New(makeConf(useGitHubNative)),
 				[]string{
 					"# What's changed",
 					"* aea123 foo",
@@ -685,7 +685,7 @@ func TestChangelogFormat(t *testing.T) {
 * aea123 foo
 * aef653 bar`, out)
 		})
-		for _, use := range []string{"git", "github", "gitlab"} {
+		for _, use := range []string{useGit, useGitHub, useGitLab} {
 			t.Run(use, func(t *testing.T) {
 				out, err := formatChangelog(
 					context.New(makeConf(use)),

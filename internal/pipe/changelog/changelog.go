@@ -28,11 +28,11 @@ func (u useChangelog) formatable() bool {
 	return u != "github-native"
 }
 
-var (
-	useGit          useChangelog = "git"
-	useGitHub       useChangelog = "github"
-	useGitLab       useChangelog = "gitlab"
-	useGitHubNative useChangelog = "github-native"
+const (
+	useGit          = "git"
+	useGitHub       = "github"
+	useGitLab       = "gitlab"
+	useGitHubNative = "github-native"
 )
 
 // Pipe for checksums.
@@ -265,15 +265,15 @@ func doGetChangelog(ctx *context.Context, prev, tag string) (string, error) {
 
 func getChangeloger(ctx *context.Context) (changeloger, error) {
 	switch ctx.Config.Changelog.Use {
-	case string(useGit):
+	case useGit:
 		fallthrough
 	case "":
 		return gitChangeloger{}, nil
-	case string(useGitHub):
+	case useGitHub:
 		fallthrough
-	case string(useGitLab):
+	case useGitLab:
 		return newSCMChangeloger(ctx)
-	case string(useGitHubNative):
+	case useGitHubNative:
 		return newGithubChangeloger(ctx)
 	default:
 		return nil, fmt.Errorf("invalid changelog.use: %q", ctx.Config.Changelog.Use)
