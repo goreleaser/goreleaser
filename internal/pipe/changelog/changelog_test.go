@@ -445,7 +445,12 @@ func TestGetChangelogGitHubNative(t *testing.T) {
 		},
 	})
 
-	expected := "**Full Changelog**: https://github.com/gorelease/goreleaser/compare/v0.180.1...v0.180.2"
+	expected := `## What's changed
+
+* Foo bar test
+
+**Full Changelog**: https://github.com/gorelease/goreleaser/compare/v0.180.1...v0.180.2
+`
 	mock := client.NewMock()
 	mock.ReleaseNotes = expected
 	l := githubNativeChangeloger{
@@ -617,30 +622,82 @@ func TestGroupBadRegex(t *testing.T) {
 	require.EqualError(t, Pipe{}.Run(ctx), `failed to group into "Something": error parsing regexp: missing closing ]: `+"`"+`[(\w`+"`")
 }
 
-func TestShouldGroup(t *testing.T) {
-	t.Run("with groups", func(t *testing.T) {
-		t.Run("github-native", func(t *testing.T) {
-			require.False(t, shouldGroup(config.Changelog{
-				Use:    "github-native",
-				Groups: []config.ChangeLogGroup{{}},
-			}))
-		})
-		for _, u := range []string{"git", "github", "gitlab"} {
-			t.Run(u, func(t *testing.T) {
-				require.True(t, shouldGroup(config.Changelog{
-					Use:    u,
-					Groups: []config.ChangeLogGroup{{}},
-				}))
+func TestChangelogFormat(t *testing.T) {
+	t.Run("without groups", func(t *testing.T) {
+		makeConf := func(u string) config.Project {
+			return config.Project{Changelog: config.Changelog{Use: u}}
+		}
+
+		for _, use := range []string{"git", "github"} {
+			t.Run(use, func(t *testing.T) {
+				out, err := formatChangelog(
+					context.New(makeConf(use)),
+					[]string{
+						"aea123 foo",
+						"aef653 bar",
+					},
+				)
+				require.NoError(t, err)
+				require.Equal(t, `* aea123 foo
+* aef653 bar`, out)
 			})
 		}
+
+		t.Run("github-native", func(t *testing.T) {
+			out, err := formatChangelog(
+				context.New(makeConf("github-native")),
+				[]string{
+					"# What's changed",
+					"* aea123 foo",
+					"* aef653 bar",
+				},
+			)
+			require.NoError(t, err)
+			require.Equal(t, `# What's changed
+* aea123 foo
+* aef653 bar`, out)
+		})
 	})
 
-	t.Run("without groups", func(t *testing.T) {
-		for _, u := range []string{"git", "github", "gitlab", "github-native"} {
-			t.Run(u, func(t *testing.T) {
-				require.False(t, shouldGroup(config.Changelog{
+	t.Run("with groups", func(t *testing.T) {
+		makeConf := func(u string) config.Project {
+			return config.Project{
+				Changelog: config.Changelog{
 					Use: u,
-				}))
+					Groups: []config.ChangeLogGroup{
+						{Title: "catch-all"},
+					},
+				},
+			}
+		}
+
+		t.Run("github-native", func(t *testing.T) {
+			out, err := formatChangelog(
+				context.New(makeConf("github-native")),
+				[]string{
+					"# What's changed",
+					"* aea123 foo",
+					"* aef653 bar",
+				},
+			)
+			require.NoError(t, err)
+			require.Equal(t, `# What's changed
+* aea123 foo
+* aef653 bar`, out)
+		})
+		for _, use := range []string{"git", "github", "gitlab"} {
+			t.Run(use, func(t *testing.T) {
+				out, err := formatChangelog(
+					context.New(makeConf(use)),
+					[]string{
+						"aea123 foo",
+						"aef653 bar",
+					},
+				)
+				require.NoError(t, err)
+				require.Equal(t, `### catch-all
+* aea123 foo
+* aef653 bar`, out)
 			})
 		}
 	})
