@@ -104,9 +104,7 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 		newLine = "   \n"
 	}
 
-	formatable := useChangelog(ctx.Config.Changelog.Use).formatable()
-
-	if !formatable {
+	if !useChangelog(ctx.Config.Changelog.Use).formatable() {
 		return strings.Join(entries, newLine), nil
 	}
 
