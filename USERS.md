@@ -29,6 +29,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Numary](https://numary.com)
 1. [Planetscale](https://planetscale.com)
 1. [Pulumi](https://pulumi.com)
+1. [prestd](https://prestd.com)
 1. [Schwarz IT](https://jobs.schwarz)
 1. [SemaphoreCI](https://semaphoreci.com)
 1. [Sigstore](https://sigstore.dev)
