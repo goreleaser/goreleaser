@@ -24,7 +24,7 @@ Following inputs can be used
 | `version`**¹**   | String  | `latest`     | GoReleaser version                                               |
 | `args`           | String  |              | Arguments to pass to GoReleaser                                  |
 | `workdir`        | String  | `$(Build.SourcesDirectory)`          | Working directory (below repository root)                        |
-| `install-only`   | Bool    | `false`      | Just install GoReleaser                                          |
+| `installOnly`   | Bool    | `false`      | Just install GoReleaser                                          |
 
 > **¹** Can be a fixed version like `v0.132.0` or a max satisfying semver one like `~> 0.132`. In this case this will return `v0.132.1`.
 > For the `pro` version, add `-pro` to the string
