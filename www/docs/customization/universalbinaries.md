@@ -9,10 +9,17 @@ Here's how to use it:
 # .goreleaser.yaml
 universal_binaries:
 -
-  # ID of the source build
+  # ID of resulting universal binary.
   #
   # Defaults to the project name.
   id: foo
+
+  # IDs to use to filter the built binaries.
+  #
+  # Defaults to the `id` field.
+  ids:
+  - build1
+  - build2
 
   # Universal binary name template.
   #
