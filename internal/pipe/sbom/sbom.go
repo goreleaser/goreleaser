@@ -96,11 +96,7 @@ func catalogTask(ctx *context.Context, cfg config.SBOM) func() error {
 		case "archive":
 			filters = append(filters, artifact.ByType(artifact.UploadableArchive))
 		case "binary":
-			filters = append(filters, artifact.Or(
-				artifact.ByType(artifact.Binary),
-				artifact.ByType(artifact.UploadableBinary),
-				artifact.ByType(artifact.UniversalBinary),
-			))
+			filters = append(filters, artifact.ByType(artifact.UploadableBinary))
 		case "package":
 			filters = append(filters, artifact.ByType(artifact.LinuxPackage))
 		case "any":

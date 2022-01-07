@@ -8,7 +8,7 @@ the name of the binary, flags, environment variables, hooks and etc.
 Here is a commented `builds` section with all fields specified:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 builds:
   # You can have multiple builds defined as a yaml list
   -
@@ -163,7 +163,7 @@ builds:
 Here is an example with multiple binaries:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 builds:
   - main: ./cmd/cli
     id: "cli"
@@ -206,7 +206,7 @@ You can do that by using `{{ .Env.VARIABLE_NAME }}` in the template, for
 example:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 builds:
   - ldflags:
    - -s -w -X "main.goversion={{.Env.GOVERSION}}"
@@ -228,7 +228,7 @@ In addition to simple declarations as shown above _multiple_ hooks can be declar
 to help retaining reusability of config between different build environments.
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 builds:
   -
     id: "with-hooks"
@@ -247,7 +247,7 @@ builds:
 Each hook can also have its own work directory and environment variables:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 builds:
   -
     id: "with-hooks"
@@ -287,10 +287,10 @@ Environment variables are inherited and overridden in the following order:
  very likely to fail.
 
  You can solve this by running `go mod tidy` before calling `goreleaser` or
- by adding a [hook][] doing that on your `.goreleaser.yml` file:
+ by adding a [hook][] doing that on your `.goreleaser.yaml` file:
 
  ```yaml
- # .goreleaser.yml
+ # .goreleaser.yaml
  before:
    hooks:
    - go mod tidy
@@ -330,7 +330,7 @@ Reasons you might want to do that include:
 In any case, its pretty easy to do that now:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 builds:
 -
   # Set the builder to prebuilt
@@ -366,9 +366,9 @@ There is no difference in how the binaries are handled.
 
 !!! tip
     A cool tip here, specially when using CGO, is that you can have one
-    `.goreleaser.yml` file just for the builds, build each in its own machine
+    `.goreleaser.yaml` file just for the builds, build each in its own machine
     with [`goreleaser build --single-target`](/cmd/goreleaser_build/) and
-    have a second `.goreleaser.yml` file that imports those binaries
+    have a second `.goreleaser.yaml` file that imports those binaries
     and release them.
     This tip can also be used to speed up the build process if you run all the
     builds in different machines in parallel.

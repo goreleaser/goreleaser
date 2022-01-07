@@ -79,6 +79,7 @@ func fakeGit(args ...string) (string, error) {
 		"-c", "user.name='GoReleaser'",
 		"-c", "user.email='test@goreleaser.github.com'",
 		"-c", "commit.gpgSign=false",
+		"-c", "tag.gpgSign=false",
 		"-c", "log.showSignature=false",
 	}
 	allArgs = append(allArgs, args...)

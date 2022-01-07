@@ -66,7 +66,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 
 			manifester := manifesters[manifest.Use]
 
-			log.WithField("manifest", name).WithField("images", images).Info("creating docker manifest")
+			log.WithField("manifest", name).WithField("images", images).Info("creating")
 			if err := manifester.Create(ctx, name, images, manifest.CreateFlags); err != nil {
 				return err
 			}
@@ -81,7 +81,7 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			}
 			ctx.Artifacts.Add(art)
 
-			log.WithField("manifest", name).Info("pushing docker manifest")
+			log.WithField("manifest", name).Info("pushing")
 			return manifester.Push(ctx, name, manifest.PushFlags)
 		})
 	}

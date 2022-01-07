@@ -33,14 +33,14 @@ blocks:
 # which may be automatic or manual and optionally depend on conditions.
 promotions:
     - name: Release
-       pipeline_file: goreleaser.yml
+       pipeline_file: goreleaser.yaml
        auto_promote_on:
          - result: passed
            branch:
              - "^refs/tags/v*"
 ```
 
-Pipeline file in `.semaphore/goreleaser.yml`:
+Pipeline file in `.semaphore/goreleaser.yaml`:
 
 ```yaml
 version: "v1.0"

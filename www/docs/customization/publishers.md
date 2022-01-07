@@ -14,7 +14,7 @@ In other words the publisher is expected to be safe to run
 in multiple instances in parallel.
 
 If you have only one `publishers` instance, the configuration is as easy as adding
-the command to your `.goreleaser.yml` file:
+the command to your `.goreleaser.yaml` file:
 
 ```yaml
 publishers:
@@ -88,7 +88,7 @@ Supported variables:
 Of course, you can customize a lot of things:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 publishers:
   -
     # Unique name of your publisher. Used for identification

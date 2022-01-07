@@ -6,7 +6,7 @@ generate and publish `.deb`, `.rpm` and `.apk` packages.
 Available options:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 nfpms:
   # note that this is an array of nfpm configs
   -

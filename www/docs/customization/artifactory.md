@@ -10,7 +10,7 @@ each configured Artifactory.
 
 If you have only one Artifactory instance,
 the configuration is as easy as adding the
-upload target and a username to your `.goreleaser.yml` file:
+upload target and a username to your `.goreleaser.yaml` file:
 
 ```yaml
 artifactories:
@@ -115,7 +115,7 @@ puts:
 Of course, you can customize a lot of things:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 artifactories:
   # You can have multiple Artifactory instances.
   -

@@ -8,10 +8,10 @@ You can create one [here](https://gitlab.com/-/profile/personal_access_tokens).
 This token should be added to the environment variables as `GITLAB_TOKEN`.
 
 Alternatively, you can provide the GitLab token in a file.
-GoReleaser will check `~/.config/goreleaser/gitlab_token` by default, but you can change that in the `.goreleaser.yml` file:
+GoReleaser will check `~/.config/goreleaser/gitlab_token` by default, but you can change that in the `.goreleaser.yaml` file:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 env_files:
   gitlab_token: ~/.path/to/my/gitlab_token
 ```

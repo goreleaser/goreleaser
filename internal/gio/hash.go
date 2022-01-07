@@ -22,6 +22,19 @@ func EqualFiles(a, b string) (bool, error) {
 	return as == bs && am == bm, nil
 }
 
+// EqualFileContents returns true if both files contents are equal.
+func EqualFileContents(a, b string) (bool, error) {
+	_, as, err := sha256sum(a)
+	if err != nil {
+		return false, fmt.Errorf("could not hash %s: %w", a, err)
+	}
+	_, bs, err := sha256sum(b)
+	if err != nil {
+		return false, fmt.Errorf("could not hash %s: %w", b, err)
+	}
+	return as == bs, nil
+}
+
 func sha256sum(path string) (fs.FileMode, string, error) {
 	f, err := os.Open(path)
 	if err != nil {

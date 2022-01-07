@@ -391,7 +391,14 @@
 						"type": "boolean"
 					},
 					"use": {
-						"type": "string"
+						"enum": [
+							"git",
+							"github",
+							"github-native",
+							"gitlab"
+						],
+						"type": "string",
+						"default": "git"
 					},
 					"groups": {
 						"items": {

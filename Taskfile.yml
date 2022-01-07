@@ -152,11 +152,6 @@ tasks:
           Cmd: '{{.rpm}} goreleaser-*.aarch64.rpm'
       - task: goreleaser:test:pkg
         vars:
-          Platform: 'arm/6'
-          Image: fedora
-          Cmd: '{{.rpm}} goreleaser-*.armv6hl.rpm'
-      - task: goreleaser:test:pkg
-        vars:
           Platform: 'arm/7'
           Image: fedora
           Cmd: '{{.rpm}} goreleaser-*.armv7hl.rpm'
@@ -176,11 +171,6 @@ tasks:
           Platform: 'arm64'
           Image: ubuntu
           Cmd: '{{.dpkg}} goreleaser*_arm64.deb'
-      - task: goreleaser:test:pkg
-        vars:
-          Platform: 'arm/6'
-          Image: debian
-          Cmd: '{{.dpkg}} goreleaser*_armel.deb'
       - task: goreleaser:test:pkg
         vars:
           Platform: 'arm/7'
@@ -207,11 +197,6 @@ tasks:
           Platform: 'arm64'
           Image: alpine
           Cmd: '{{.apk}} goreleaser*_aarch64.apk'
-      - task: goreleaser:test:pkg
-        vars:
-          Platform: 'arm/6'
-          Image: alpine
-          Cmd: '{{.apk}} goreleaser*_armhf.apk'
       - task: goreleaser:test:pkg
         vars:
           Platform: 'arm/7'

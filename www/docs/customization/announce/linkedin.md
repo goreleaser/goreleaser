@@ -7,10 +7,10 @@ For it to work, you'll need to set some environment variables on your pipeline:
 !!! warning
     We currently don't support posting in groups.
 
-Then, you can add something like the following to your `.goreleaser.yml` config:
+Then, you can add something like the following to your `.goreleaser.yaml` config:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 announce:
   linkedin:
     # Whether its enabled or not.

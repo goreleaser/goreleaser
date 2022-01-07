@@ -364,8 +364,10 @@ func TestExtraFile(t *testing.T) {
 	addBinaries(t, ctx, "foo", dist)
 	require.NoError(t, Pipe{}.Run(ctx))
 
-	requireEqualFiles(t, "testdata/extra-file.txt", filepath.Join(dist, "foo_amd64", "prime", "a", "b", "c", "extra-file.txt"))
-	requireEqualFiles(t, "testdata/extra-file-2.txt", filepath.Join(dist, "foo_amd64", "prime", "testdata", "extra-file-2.txt"))
+	apath := filepath.Join(dist, "foo_amd64", "prime", "a", "b", "c", "extra-file.txt")
+	bpath := filepath.Join(dist, "foo_amd64", "prime", "testdata", "extra-file-2.txt")
+	requireEqualFileConents(t, "testdata/extra-file.txt", apath)
+	requireEqualFileConents(t, "testdata/extra-file-2.txt", bpath)
 }
 
 func TestDefault(t *testing.T) {
@@ -561,9 +563,9 @@ func TestSkip(t *testing.T) {
 	})
 }
 
-func requireEqualFiles(tb testing.TB, a, b string) {
+func requireEqualFileConents(tb testing.TB, a, b string) {
 	tb.Helper()
-	eq, err := gio.EqualFiles(a, b)
+	eq, err := gio.EqualFileContents(a, b)
 	require.NoError(tb, err)
 	require.True(tb, eq, "%s != %s", a, b)
 }

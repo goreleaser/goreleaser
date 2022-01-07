@@ -1,9 +1,8 @@
 # goreleaser completion bash
 
-generate the autocompletion script for bash
+Generate the autocompletion script for bash
 
 ## Synopsis
-
 
 Generate the autocompletion script for the bash shell.
 
@@ -11,16 +10,21 @@ This script depends on the 'bash-completion' package.
 If it is not installed already, you can install it via your OS's package manager.
 
 To load completions in your current shell session:
-$ source <(goreleaser completion bash)
+
+	source <(goreleaser completion bash)
 
 To load completions for every new session, execute once:
-Linux:
-  $ goreleaser completion bash > /etc/bash_completion.d/goreleaser
-MacOS:
-  $ goreleaser completion bash > /usr/local/etc/bash_completion.d/goreleaser
+
+### Linux:
+
+	goreleaser completion bash > /etc/bash_completion.d/goreleaser
+
+### macOS:
+
+	goreleaser completion bash > /usr/local/etc/bash_completion.d/goreleaser
 
 You will need to start a new shell for this setup to take effect.
-  
+
 
 ```
 goreleaser completion bash
@@ -41,5 +45,5 @@ goreleaser completion bash
 
 ## See also
 
-* [goreleaser completion](/cmd/goreleaser_completion/)	 - generate the autocompletion script for the specified shell
+* [goreleaser completion](/cmd/goreleaser_completion/)	 - Generate the autocompletion script for the specified shell
 

@@ -7,10 +7,10 @@ environment variables on your pipeline:
 - `DISCORD_WEBHOOK_ID`
 - `DISCORD_WEBHOOK_TOKEN`
 
-After this, you can add following section to your `.goreleaser.yml` config:
+After this, you can add following section to your `.goreleaser.yaml` config:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 announce:
   discord:
     # Whether its enabled or not.

@@ -9,7 +9,7 @@ previous tag.
 Let's see what can be customized in the `release` section for GitHub:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 release:
   # Repo in which the release will be created.
   # Default is extracted from the origin remote URL or empty if its private hosted.
@@ -96,7 +96,7 @@ release:
 Let's see what can be customized in the `release` section for GitLab.
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 release:
   # Default is extracted from the origin remote URL or empty if its private hosted.
   # You can also use Gitlab's internal project id by setting it in the name
@@ -158,7 +158,7 @@ release:
 You can also configure the `release` section to upload to a [Gitea](https://gitea.io) instance:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 release:
   # Default is empty.
   gitea:

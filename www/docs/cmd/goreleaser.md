@@ -12,7 +12,7 @@ GoReleaser is built for CI tools, you only need to download and execute it
 in your build script. Of course, you can also install it locally if you wish.
 
 You can also customize your entire release process through a
-single .goreleaser.yml file.
+single .goreleaser.yaml file.
 
 
 ## Options
@@ -26,7 +26,7 @@ single .goreleaser.yml file.
 
 * [goreleaser build](/cmd/goreleaser_build/)	 - Builds the current project
 * [goreleaser check](/cmd/goreleaser_check/)	 - Checks if configuration is valid
-* [goreleaser completion](/cmd/goreleaser_completion/)	 - generate the autocompletion script for the specified shell
+* [goreleaser completion](/cmd/goreleaser_completion/)	 - Generate the autocompletion script for the specified shell
 * [goreleaser init](/cmd/goreleaser_init/)	 - Generates a .goreleaser.yaml file
 * [goreleaser jsonschema](/cmd/goreleaser_jsonschema/)	 - outputs goreleaser's JSON schema
 * [goreleaser release](/cmd/goreleaser_release/)	 - Releases the current project

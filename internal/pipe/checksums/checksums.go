@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -18,7 +19,10 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-var errNoArtifacts = errors.New("there are no artifacts to sign")
+var (
+	errNoArtifacts = errors.New("there are no artifacts to sign")
+	lock           sync.Mutex
+)
 
 // Pipe for checksums.
 type Pipe struct{}
@@ -65,6 +69,8 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func refresh(ctx *context.Context, filepath string) error {
+	lock.Lock()
+	defer lock.Unlock()
 	filter := artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
@@ -132,7 +138,7 @@ func refresh(ctx *context.Context, filepath string) error {
 }
 
 func checksums(algorithm string, artifact *artifact.Artifact) (string, error) {
-	log.WithField("file", artifact.Name).Info("checksumming")
+	log.WithField("file", artifact.Name).Debug("checksumming")
 	sha, err := artifact.Checksum(algorithm)
 	if err != nil {
 		return "", err

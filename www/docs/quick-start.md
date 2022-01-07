@@ -13,7 +13,7 @@ func main() {
 }
 ```
 
-Run the [init](/cmd/goreleaser_init/) command to create an example `.goreleaser.yml` file:
+Run the [init](/cmd/goreleaser_init/) command to create an example `.goreleaser.yaml` file:
 
 ```sh
 goreleaser init
@@ -25,10 +25,10 @@ Now, lets run a "local-only" release to see if it works using the [release](/cmd
 goreleaser release --snapshot --rm-dist
 ```
 
-At this point, you can [customize](/customization/) the generated `.goreleaser.yml` or leave it as-is, it's up to you.
-It is best practice to check `.goreleaser.yml` into the source control.
+At this point, you can [customize](/customization/) the generated `.goreleaser.yaml` or leave it as-is, it's up to you.
+It is best practice to check `.goreleaser.yaml` into the source control.
 
-You can verify your `.goreleaser.yml` is valid by running the [check](/cmd/goreleaser_check/) command:
+You can verify your `.goreleaser.yaml` is valid by running the [check](/cmd/goreleaser_check/) command:
 
 ```sh
 goreleaser check

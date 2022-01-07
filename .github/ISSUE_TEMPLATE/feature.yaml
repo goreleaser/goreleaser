@@ -1,43 +1,34 @@
-name: Bug Report
-description: File a bug report
-labels: [bug, triage]
+name: Feature Request
+description: Request a new feature and/or enhancement to an existing feature
+labels: [enhancement, triage]
 assignees:
   - caarlos0
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report! Please fill the form below.
+        Thanks for taking the time to fill out this feature request! Please fill the form below.
   - type: textarea
-    id: what-happened
+    id: is-it-a-problem
     attributes:
-      label: What happened?
-      description: Also tell us, what did you expect to happen?
+      label: Is your feature request related to a problem? Please describe.
+      description: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
     validations:
       required: true
   - type: textarea
-    id: reproducible
+    id: solution
     attributes:
-      label: How can we reproduce this?
-      description: Please share a public repository that reproduces the issue, or an example config file. Links to failing goreleaser runs and etc are also helpful.
+      label: Describe the solution you'd like
+      description: A clear and concise description of what you want to happen.
     validations:
       required: true
   - type: textarea
-    id: goreleaser-version
+    id: alternatives
     attributes:
-      label: goreleaser version
-      description: '`goreleaser --version` output'
-      render: bash
+      label: Describe alternatives you've considered
+      description: A clear and concise description of any alternative solutions or features you've considered.
     validations:
       required: true
-  - type: checkboxes
-    id: goreleaser-check
-    attributes:
-      label: GoReleaser Check
-      description: 'If I run `goreleaser check` it shows no errors'
-      options:
-        - label: goreleaser check shows no errors
-          required: true
   - type: checkboxes
     id: search
     attributes:

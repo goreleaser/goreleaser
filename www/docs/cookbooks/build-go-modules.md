@@ -8,7 +8,7 @@ need to setup GoReleaser to "proxy" that module before building it.
 To do that, you can simply add this to your config:
 
 ```yaml
-# goreleaser.yml
+# goreleaser.yaml
 gomod:
   proxy: true
 ```
