@@ -702,6 +702,9 @@
 					},
 					"skip_tls_verify": {
 						"type": "boolean"
+					},
+					"use_package_registry": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
