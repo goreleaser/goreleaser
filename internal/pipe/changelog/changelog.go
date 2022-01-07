@@ -76,7 +76,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	changelogElements := append([]string{"## Changelog"}, changes)
+	changelogElements := []string{changes}
 
 	if header != "" {
 		changelogElements = append([]string{header}, changelogElements...)
@@ -108,12 +108,12 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 		return strings.Join(entries, newLine), nil
 	}
 
+	result := []string{"## Changelog"}
 	if len(ctx.Config.Changelog.Groups) == 0 {
 		log.Debug("not grouping entries")
-		return strings.Join(filterAndPrefixItems(entries), newLine), nil
+		return strings.Join(append(result, filterAndPrefixItems(entries)...), newLine), nil
 	}
 
-	var result []string
 	log.Debug("grouping entries")
 	groups := ctx.Config.Changelog.Groups
 

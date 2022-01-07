@@ -69,6 +69,7 @@ func TestChangelog(t *testing.T) {
 	ctx := context.New(config.Project{
 		Dist: folder,
 		Changelog: config.Changelog{
+			Use: "git",
 			Filters: config.Filters{
 				Exclude: []string{
 					"docs:",
@@ -638,7 +639,8 @@ func TestChangelogFormat(t *testing.T) {
 					},
 				)
 				require.NoError(t, err)
-				require.Equal(t, `* aea123 foo
+				require.Equal(t, `## Changelog
+* aea123 foo
 * aef653 bar`, out)
 			})
 		}
@@ -695,7 +697,8 @@ func TestChangelogFormat(t *testing.T) {
 					},
 				)
 				require.NoError(t, err)
-				require.Equal(t, `### catch-all
+				require.Equal(t, `## Changelog
+### catch-all
 * aea123 foo
 * aef653 bar`, out)
 			})
