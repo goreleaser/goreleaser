@@ -28,6 +28,9 @@ gitlab_urls:
   download: https://gitlab.company.com
   # set to true if you use a self-signed certificate
   skip_tls_verify: false
+  # set to true if you want to upload to the Package Registry rather than attachments
+  # Only works with GitLab 13.5+
+  use_package_registry: false
 ```
 
 If none are set, they default to GitLab's public URLs.
@@ -37,6 +40,19 @@ If none are set, they default to GitLab's public URLs.
     on [release](https://docs.gitlab.com/ee/user/project/releases/index.html) functionality
     and [direct asset linking](https://docs.gitlab.com/ee/user/project/releases/index.html#permanent-links-to-release-assets).
 
+## Generic Package Registry
+
+GitLab introduced the [Generic Package Registry](https://docs.gitlab.com/ee/user/packages/package_registry/index.html) in Gitlab 13.5.
+
+Normally, `goreleaser` uploads release files as "attachments", which may have [administrative limits](https://docs.gitlab.com/ee/user/admin_area/settings/account_and_limit_settings.html).  Notably, hosted gitlab.com instances have a 10MB attachment limit which cannot be changed.
+
+Uploading to the Generic Package Registry does not have this restriction.  To use it instead, set `use_package_registry` to `true`.
+
+```yaml
+# .goreleaser.yml
+gitlab_urls:
+  use_package_registry: true
+```
 
 ## Example release
 
