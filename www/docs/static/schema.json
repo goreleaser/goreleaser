@@ -2219,6 +2219,12 @@
 					"id": {
 						"type": "string"
 					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"name_template": {
 						"type": "string"
 					},
