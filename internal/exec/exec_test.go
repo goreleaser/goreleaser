@@ -203,6 +203,59 @@ func TestExecute(t *testing.T) {
 			nil,
 		},
 		{
+			"extra files",
+			[]config.Publisher{
+				{
+					Name: "test",
+					Cmd:  MockCmd + " {{ .ArtifactName }}",
+					Env: []string{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
+								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"a.txt"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
+							},
+						}),
+					},
+					ExtraFiles: []config.ExtraFile{
+						{Glob: filepath.Join("testdata", "*.txt")},
+					},
+				},
+			},
+			nil,
+		},
+		{
+			"extra files with rename",
+			[]config.Publisher{
+				{
+					Name: "test",
+					Cmd:  MockCmd + " {{ .ArtifactName }}",
+					Env: []string{
+						MarshalMockEnv(&MockData{
+							AnyOf: []MockCall{
+								{ExpectedArgs: []string{"a.deb"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"a.ubi"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"a.tar"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"b.txt"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar"}, ExitCode: 0, ExpectedEnv: osEnv()},
+								{ExpectedArgs: []string{"foo/bar:amd64"}, ExitCode: 0, ExpectedEnv: osEnv()},
+							},
+						}),
+					},
+					ExtraFiles: []config.ExtraFile{
+						{
+							Glob:         filepath.Join("testdata", "*.txt"),
+							NameTemplate: "b.txt",
+						},
+					},
+				},
+			},
+			nil,
+		},
+		{
 			"try dir templating",
 			[]config.Publisher{
 				{

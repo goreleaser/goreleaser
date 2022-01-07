@@ -25,9 +25,10 @@ type GitHubURLs struct {
 
 // GitLabURLs holds the URLs to be used when using gitlab ce/enterprise.
 type GitLabURLs struct {
-	API           string `yaml:"api,omitempty"`
-	Download      string `yaml:"download,omitempty"`
-	SkipTLSVerify bool   `yaml:"skip_tls_verify,omitempty"`
+	API                string `yaml:"api,omitempty"`
+	Download           string `yaml:"download,omitempty"`
+	SkipTLSVerify      bool   `yaml:"skip_tls_verify,omitempty"`
+	UsePackageRegistry bool   `yaml:"use_package_registry,omitempty"`
 }
 
 // GiteaURLs holds the URLs to be used when using gitea.
@@ -434,7 +435,8 @@ func (f File) JSONSchemaType() *jsonschema.Type {
 
 // UniversalBinary setups macos universal binaries.
 type UniversalBinary struct {
-	ID           string          `yaml:"id,omitempty"`
+	ID           string          `yaml:"id,omitempty"` // deprecated
+	IDs          []string        `yaml:"ids,omitempty"`
 	NameTemplate string          `yaml:"name_template,omitempty"`
 	Replace      bool            `yaml:"replace,omitempty"`
 	Hooks        BuildHookConfig `yaml:"hooks,omitempty"`
@@ -799,13 +801,14 @@ type Upload struct {
 
 // Publisher configuration.
 type Publisher struct {
-	Name      string   `yaml:"name,omitempty"`
-	IDs       []string `yaml:"ids,omitempty"`
-	Checksum  bool     `yaml:"checksum,omitempty"`
-	Signature bool     `yaml:"signature,omitempty"`
-	Dir       string   `yaml:"dir,omitempty"`
-	Cmd       string   `yaml:"cmd,omitempty"`
-	Env       []string `yaml:"env,omitempty"`
+	Name       string      `yaml:"name,omitempty"`
+	IDs        []string    `yaml:"ids,omitempty"`
+	Checksum   bool        `yaml:"checksum,omitempty"`
+	Signature  bool        `yaml:"signature,omitempty"`
+	Dir        string      `yaml:"dir,omitempty"`
+	Cmd        string      `yaml:"cmd,omitempty"`
+	Env        []string    `yaml:"env,omitempty"`
+	ExtraFiles []ExtraFile `yaml:"extra_files,omitempty"`
 }
 
 // Source configuration.

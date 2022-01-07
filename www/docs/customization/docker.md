@@ -81,7 +81,9 @@ dockers:
     skip_push: false
 
     # Path to the Dockerfile (from the project root).
-    dockerfile: Dockerfile
+    #
+    # Defaults to `Dockerfile`.
+    dockerfile: '{{ .Env.DOCKERFILE }}'
 
     # Set the "backend" for the Docker pipe.
     # Valid options are: docker, buildx, podman, buildpacks

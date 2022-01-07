@@ -377,19 +377,41 @@ func (c *gitlabClient) Upload(
 		projectID = ctx.Config.Release.GitLab.Owner + "/" + projectID
 	}
 
-	log.WithField("file", file.Name()).Debug("uploading file")
-	projectFile, _, err := c.client.Projects.UploadFile(
-		projectID,
-		file.Name(),
-		nil,
-	)
-	if err != nil {
-		return err
+	var baseLinkURL string
+	if ctx.Config.GitLabURLs.UsePackageRegistry {
+		log.WithField("file", file.Name()).Debug("uploading file as generic package")
+		_, _, err := c.client.GenericPackages.PublishPackageFile(
+			projectID,
+			ctx.Config.ProjectName,
+			ctx.Version,
+			artifact.Name,
+			file,
+			nil,
+		)
+		if err != nil {
+			return err
+		}
+		baseLinkURL, err = c.client.GenericPackages.FormatPackageURL(
+			projectID, ctx.Config.ProjectName, ctx.Version, artifact.Name)
+		if err != nil {
+			return err
+		}
+	} else {
+		log.WithField("file", file.Name()).Debug("uploading file as attachment")
+		projectFile, _, err := c.client.Projects.UploadFile(
+			projectID,
+			file.Name(),
+			nil,
+		)
+		if err != nil {
+			return err
+		}
+		baseLinkURL = projectFile.URL
 	}
 
 	log.WithFields(log.Fields{
 		"file": file.Name(),
-		"url":  projectFile.URL,
+		"url":  baseLinkURL,
 	}).Debug("uploaded file")
 
 	// search for project details based on projectID
@@ -398,14 +420,18 @@ func (c *gitlabClient) Upload(
 		return err
 	}
 
-	gitlabBaseURL, err := tmpl.New(ctx).Apply(ctx.Config.GitLabURLs.Download)
-	if err != nil {
-		return fmt.Errorf("templating GitLab Download URL: %w", err)
-	}
-
-	linkURL := gitlabBaseURL + "/" + projectDetails.PathWithNamespace + projectFile.URL
 	name := artifact.Name
 	filename := "/" + name
+	var linkURL string
+	if ctx.Config.GitLabURLs.UsePackageRegistry {
+		linkURL = c.client.BaseURL().String() + baseLinkURL
+	} else {
+		gitlabBaseURL, err := tmpl.New(ctx).Apply(ctx.Config.GitLabURLs.Download)
+		if err != nil {
+			return fmt.Errorf("templating GitLab Download URL: %w", err)
+		}
+		linkURL = gitlabBaseURL + "/" + projectDetails.PathWithNamespace + baseLinkURL
+	}
 	releaseLink, _, err := c.client.ReleaseLinks.CreateReleaseLink(
 		projectID,
 		releaseID,

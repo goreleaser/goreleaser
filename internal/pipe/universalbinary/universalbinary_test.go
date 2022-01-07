@@ -32,6 +32,24 @@ func TestDefault(t *testing.T) {
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.UniversalBinary{
 			ID:           "proj",
+			IDs:          []string{"proj"},
+			NameTemplate: "{{ .ProjectName }}",
+		}, ctx.Config.UniversalBinaries[0])
+	})
+
+	t.Run("given ids", func(t *testing.T) {
+		ctx := &context.Context{
+			Config: config.Project{
+				ProjectName: "proj",
+				UniversalBinaries: []config.UniversalBinary{
+					{IDs: []string{"foo"}},
+				},
+			},
+		}
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, config.UniversalBinary{
+			ID:           "proj",
+			IDs:          []string{"foo"},
 			NameTemplate: "{{ .ProjectName }}",
 		}, ctx.Config.UniversalBinaries[0])
 	})
@@ -48,6 +66,7 @@ func TestDefault(t *testing.T) {
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.UniversalBinary{
 			ID:           "foo",
+			IDs:          []string{"foo"},
 			NameTemplate: "{{ .ProjectName }}",
 		}, ctx.Config.UniversalBinaries[0])
 	})
@@ -64,6 +83,7 @@ func TestDefault(t *testing.T) {
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.UniversalBinary{
 			ID:           "proj",
+			IDs:          []string{"proj"},
 			NameTemplate: "foo",
 		}, ctx.Config.UniversalBinaries[0])
 	})
@@ -111,6 +131,7 @@ func TestRun(t *testing.T) {
 		UniversalBinaries: []config.UniversalBinary{
 			{
 				ID:           "foo",
+				IDs:          []string{"foo"},
 				NameTemplate: "foo",
 				Replace:      true,
 			},
@@ -123,6 +144,7 @@ func TestRun(t *testing.T) {
 		UniversalBinaries: []config.UniversalBinary{
 			{
 				ID:           "foo",
+				IDs:          []string{"foo"},
 				NameTemplate: "foo",
 			},
 		},
@@ -133,6 +155,7 @@ func TestRun(t *testing.T) {
 		UniversalBinaries: []config.UniversalBinary{
 			{
 				ID:           "notfoo",
+				IDs:          []string{"notfoo"},
 				NameTemplate: "notfoo",
 			},
 		},
@@ -143,6 +166,7 @@ func TestRun(t *testing.T) {
 		UniversalBinaries: []config.UniversalBinary{
 			{
 				ID:           "foo",
+				IDs:          []string{"foo"},
 				NameTemplate: "foo",
 			},
 		},
@@ -153,6 +177,7 @@ func TestRun(t *testing.T) {
 		UniversalBinaries: []config.UniversalBinary{
 			{
 				ID:           "foo",
+				IDs:          []string{"foo"},
 				NameTemplate: "foo",
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{

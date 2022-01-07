@@ -702,6 +702,9 @@
 					},
 					"skip_tls_verify": {
 						"type": "boolean"
+					},
+					"use_package_registry": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
@@ -1652,6 +1655,12 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"extra_files": {
+						"items": {
+							"$ref": "#/definitions/ExtraFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -2209,6 +2218,12 @@
 				"properties": {
 					"id": {
 						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"name_template": {
 						"type": "string"
