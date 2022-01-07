@@ -435,7 +435,8 @@ func (f File) JSONSchemaType() *jsonschema.Type {
 
 // UniversalBinary setups macos universal binaries.
 type UniversalBinary struct {
-	ID           string          `yaml:"id,omitempty"`
+	ID           string          `yaml:"id,omitempty"` // deprecated
+	IDs          []string        `yaml:"ids,omitempty"`
 	NameTemplate string          `yaml:"name_template,omitempty"`
 	Replace      bool            `yaml:"replace,omitempty"`
 	Hooks        BuildHookConfig `yaml:"hooks,omitempty"`
