@@ -1652,6 +1652,12 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"extra_files": {
+						"items": {
+							"$ref": "#/definitions/ExtraFile"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,

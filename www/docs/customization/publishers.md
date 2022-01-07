@@ -114,6 +114,19 @@ publishers:
     # Environment variables
     env:
       - API_TOKEN=secret-token
+
+    # You can publish extra pre-existing files.
+    # The filename published will be the last part of the path (base).
+    # If another file with the same name exists, the last one found will be used.
+    # These globs can also include templates.
+    #
+    # Defaults to empty.
+    extra_files:
+      - glob: ./path/to/file.txt
+      - glob: ./glob/**/to/**/file/**/*
+      - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
+      - glob: ./single_file.txt
+        name_template: file.txt # note that this only works if glob matches 1 file only
 ```
 
 These settings should allow you to push your artifacts to any number of endpoints

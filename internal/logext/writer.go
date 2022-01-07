@@ -47,7 +47,7 @@ func (w logWriter) Write(p []byte) (int, error) {
 		case Info:
 			w.ctx.Info(line)
 		case Error:
-			w.ctx.Error(line)
+			w.ctx.Warn(line)
 		}
 	}
 	return len(p), nil

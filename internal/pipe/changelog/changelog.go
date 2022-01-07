@@ -72,7 +72,9 @@ func (Pipe) Run(ctx *context.Context) error {
 		"## Changelog",
 	}
 
-	if shouldGroup(ctx.Config.Changelog) {
+	if ctx.Config.Changelog.Use == "github-native" {
+		changelogElements = []string{strings.Join(entries, changelogStringJoiner)}
+	} else if shouldGroup(ctx.Config.Changelog) {
 		log.Debug("grouping entries")
 		groups := ctx.Config.Changelog.Groups
 

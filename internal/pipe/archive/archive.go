@@ -14,7 +14,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/fileglob"
-
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"

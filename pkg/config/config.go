@@ -800,13 +800,14 @@ type Upload struct {
 
 // Publisher configuration.
 type Publisher struct {
-	Name      string   `yaml:"name,omitempty"`
-	IDs       []string `yaml:"ids,omitempty"`
-	Checksum  bool     `yaml:"checksum,omitempty"`
-	Signature bool     `yaml:"signature,omitempty"`
-	Dir       string   `yaml:"dir,omitempty"`
-	Cmd       string   `yaml:"cmd,omitempty"`
-	Env       []string `yaml:"env,omitempty"`
+	Name       string      `yaml:"name,omitempty"`
+	IDs        []string    `yaml:"ids,omitempty"`
+	Checksum   bool        `yaml:"checksum,omitempty"`
+	Signature  bool        `yaml:"signature,omitempty"`
+	Dir        string      `yaml:"dir,omitempty"`
+	Cmd        string      `yaml:"cmd,omitempty"`
+	Env        []string    `yaml:"env,omitempty"`
+	ExtraFiles []ExtraFile `yaml:"extra_files,omitempty"`
 }
 
 // Source configuration.

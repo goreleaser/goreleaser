@@ -24,5 +24,5 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	path := filepath.Join(ctx.Config.Dist, "artifacts.json")
 	log.Log.WithField("file", path).Info("writing")
-	return os.WriteFile(path, bts, 0o600)
+	return os.WriteFile(path, bts, 0o644)
 }

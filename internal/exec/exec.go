@@ -11,6 +11,7 @@ import (
 	"github.com/apex/log"
 	"github.com/caarlos0/go-shellwords"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -43,6 +44,20 @@ func Execute(ctx *context.Context, publishers []config.Publisher) error {
 func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 	log.Debugf("filtering %d artifacts", len(ctx.Artifacts.List()))
 	artifacts := filterArtifacts(ctx.Artifacts, publisher)
+
+	extraFiles, err := extrafiles.Find(ctx, publisher.ExtraFiles)
+	if err != nil {
+		return err
+	}
+
+	for name, path := range extraFiles {
+		artifacts = append(artifacts, &artifact.Artifact{
+			Name: name,
+			Path: path,
+			Type: artifact.UploadableFile,
+		})
+	}
+
 	log.Debugf("will execute custom publisher with %d artifacts", len(artifacts))
 
 	g := semerrgroup.New(ctx.Parallelism)
