@@ -884,6 +884,16 @@ type Announce struct {
 	Mattermost Mattermost `yaml:"mattermost,omitempty"`
 	LinkedIn   LinkedIn   `yaml:"linkedin,omitempty"`
 	Telegram   Telegram   `yaml:"telegram,omitempty"`
+	Webhook    Webhook    `yaml:"webhook,omitempty"`
+}
+
+type Webhook struct {
+	Enabled         bool              `yaml:"enabled,omitempty"`
+	SkipTLSVerify   bool              `yaml:"skip_tls_verify,omitempty"`
+	MessageTemplate string            `yaml:"message_template,omitempty"`
+	EndpointURL     string            `yaml:"endpoint_url,omitempty"`
+	Headers         map[string]string `yaml:"headers,omitempty"`
+	ContentType     string            `yaml:"content_type,omitempty"`
 }
 
 type Twitter struct {
