@@ -17,10 +17,11 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/google/go-github/v41 v41.0.0
+	github.com/google/uuid v1.3.0
 	github.com/goreleaser/fileglob v1.2.0
 	github.com/goreleaser/nfpm/v2 v2.11.3
 	github.com/imdario/mergo v0.3.12
-	github.com/jarcoal/httpmock v1.0.8
+	github.com/jarcoal/httpmock v1.1.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/slack-go/slack v0.10.0
 	github.com/spf13/cobra v1.3.0
@@ -98,7 +99,6 @@ require (
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/rpmpack v0.0.0-20211125064518-d0ed9b1b61b9 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/google/wire v0.5.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
 	github.com/goreleaser/chglog v0.1.2 // indirect
