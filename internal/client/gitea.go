@@ -61,7 +61,9 @@ func NewGitea(ctx *context.Context, token string) (Client, error) {
 		return nil, err
 	}
 	if ctx != nil {
-		gitea.SetContext(ctx)(client)
+		if err := gitea.SetContext(ctx)(client); err != nil {
+			return nil, err
+		}
 	}
 	return &giteaClient{client: client}, nil
 }
