@@ -158,10 +158,11 @@ func TestGitLabURLsAPITemplate(t *testing.T) {
 
 func TestGitLabURLsDownloadTemplate(t *testing.T) {
 	tests := []struct {
-		name        string
-		downloadURL string
-		wantURL     string
-		wantErr     bool
+		name               string
+		usePackageRegistry bool
+		downloadURL        string
+		wantURL            string
+		wantErr            bool
 	}{
 		{
 			name:    "empty_download_url",
@@ -187,6 +188,11 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 			downloadURL: "https://gitlab.mycompany.com",
 			wantURL:     "https://gitlab.mycompany.com/",
 		},
+		{
+			name:               "url_registry",
+			wantURL:            "/api/v4/projects/test%2Ftest/packages/generic/projectname/v1%2E0%2E0/test",
+			usePackageRegistry: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -208,11 +214,13 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 				err = json.Unmarshal(b, &reqBody)
 				require.NoError(t, err)
 
-				require.Equal(t, tt.wantURL, reqBody["url"])
+				url := reqBody["url"].(string)
+				require.Truef(t, strings.HasSuffix(url, tt.wantURL), "expected %q to end with %q", url, tt.wantURL)
 			}))
 			defer srv.Close()
 
 			ctx := context.New(config.Project{
+				ProjectName: "projectname",
 				Env: []string{
 					"GORELEASER_TEST_GITLAB_URLS_DOWNLOAD=https://gitlab.mycompany.com",
 				},
@@ -223,10 +231,13 @@ func TestGitLabURLsDownloadTemplate(t *testing.T) {
 					},
 				},
 				GitLabURLs: config.GitLabURLs{
-					API:      srv.URL,
-					Download: tt.downloadURL,
+					API:                srv.URL,
+					Download:           tt.downloadURL,
+					UsePackageRegistry: tt.usePackageRegistry,
 				},
 			})
+
+			ctx.Version = "v1.0.0"
 
 			tmpFile, err := os.CreateTemp(t.TempDir(), "")
 			require.NoError(t, err)
