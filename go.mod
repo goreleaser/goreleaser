@@ -11,6 +11,7 @@ require (
 	github.com/atc0005/go-teams-notify/v2 v2.6.0
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/caarlos0/env/v6 v6.9.1
+	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.0
@@ -27,7 +28,6 @@ require (
 	github.com/spf13/cobra v1.3.0
 	github.com/stretchr/testify v1.7.0
 	github.com/ulikunitz/xz v0.5.10
-	github.com/vartanbeno/go-reddit/v2 v2.0.0
 	github.com/xanzy/go-gitlab v0.52.2
 	gocloud.dev v0.24.0
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
