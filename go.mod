@@ -3,7 +3,7 @@ module github.com/goreleaser/goreleaser
 go 1.17
 
 require (
-	code.gitea.io/sdk/gitea v0.15.0
+	code.gitea.io/sdk/gitea v0.15.1
 	github.com/DisgoOrg/disgohook v1.4.4
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/alecthomas/jsonschema v0.0.0-20211209230136-e2b41affa5c1
