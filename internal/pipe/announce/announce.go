@@ -17,6 +17,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/teams"
 	"github.com/goreleaser/goreleaser/internal/pipe/telegram"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
+	"github.com/goreleaser/goreleaser/internal/pipe/webhook"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -39,6 +40,7 @@ var announcers = []Announcer{
 	teams.Pipe{},
 	telegram.Pipe{},
 	twitter.Pipe{},
+	webhook.Pipe{},
 }
 
 // Pipe that announces releases.

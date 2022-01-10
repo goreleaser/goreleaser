@@ -43,6 +43,10 @@
 					"telegram": {
 						"$schema": "http://json-schema.org/draft-04/schema#",
 						"$ref": "#/definitions/Telegram"
+					},
+					"webhook": {
+						"$schema": "http://json-schema.org/draft-04/schema#",
+						"$ref": "#/definitions/Webhook"
 					}
 				},
 				"additionalProperties": false,
@@ -2219,6 +2223,12 @@
 					"id": {
 						"type": "string"
 					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"name_template": {
 						"type": "string"
 					},
@@ -2277,6 +2287,35 @@
 							}
 						},
 						"type": "object"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Webhook": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"skip_tls_verify": {
+						"type": "boolean"
+					},
+					"message_template": {
+						"type": "string"
+					},
+					"endpoint_url": {
+						"type": "string"
+					},
+					"headers": {
+						"patternProperties": {
+							".*": {
+								"type": "string"
+							}
+						},
+						"type": "object"
+					},
+					"content_type": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,

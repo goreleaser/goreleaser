@@ -34,6 +34,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if unibin.ID == "" {
 			unibin.ID = ctx.Config.ProjectName
 		}
+		if len(unibin.IDs) == 0 {
+			unibin.IDs = []string{unibin.ID}
+		}
 		if unibin.NameTemplate == "" {
 			unibin.NameTemplate = "{{ .ProjectName }}"
 		}
@@ -228,6 +231,6 @@ func filterFor(unibin config.UniversalBinary) artifact.Filter {
 	return artifact.And(
 		artifact.ByType(artifact.Binary),
 		artifact.ByGoos("darwin"),
-		artifact.ByIDs(unibin.ID),
+		artifact.ByIDs(unibin.IDs...),
 	)
 }
