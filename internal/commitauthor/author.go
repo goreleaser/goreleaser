@@ -7,8 +7,10 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const defaultName = "goreleaserbot"
-const defaultEmail = "goreleaser@carlosbecker.com"
+const (
+	defaultName  = "goreleaserbot"
+	defaultEmail = "goreleaser@carlosbecker.com"
+)
 
 // Get templates the commit author and returns the filled fields.
 func Get(ctx *context.Context, og config.CommitAuthor) (config.CommitAuthor, error) {
