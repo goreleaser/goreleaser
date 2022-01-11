@@ -15,6 +15,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -42,12 +43,8 @@ func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Brews {
 		brew := &ctx.Config.Brews[i]
 
-		if brew.CommitAuthor.Name == "" {
-			brew.CommitAuthor.Name = "goreleaserbot"
-		}
-		if brew.CommitAuthor.Email == "" {
-			brew.CommitAuthor.Email = "goreleaser@carlosbecker.com"
-		}
+		brew.CommitAuthor = commitauthor.Default(brew.CommitAuthor)
+
 		if brew.CommitMessageTemplate == "" {
 			brew.CommitMessageTemplate = "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
 		}
@@ -135,12 +132,17 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
+	author, err := commitauthor.Get(ctx, brew.CommitAuthor)
+	if err != nil {
+		return err
+	}
+
 	content, err := os.ReadFile(formula.Path)
 	if err != nil {
 		return err
 	}
 
-	return cl.CreateFile(ctx, brew.CommitAuthor, repo, content, gpath, msg)
+	return cl.CreateFile(ctx, author, repo, content, gpath, msg)
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {

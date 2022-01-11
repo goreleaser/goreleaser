@@ -16,6 +16,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -42,12 +43,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Krews {
 		krew := &ctx.Config.Krews[i]
 
-		if krew.CommitAuthor.Name == "" {
-			krew.CommitAuthor.Name = "goreleaserbot"
-		}
-		if krew.CommitAuthor.Email == "" {
-			krew.CommitAuthor.Email = "goreleaser@carlosbecker.com"
-		}
+		krew.CommitAuthor = commitauthor.Default(krew.CommitAuthor)
 		if krew.CommitMessageTemplate == "" {
 			krew.CommitMessageTemplate = "Krew manifest update for {{ .ProjectName }} version {{ .Tag }}"
 		}
@@ -308,12 +304,17 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		return err
 	}
 
+	author, err := commitauthor.Get(ctx, cfg.CommitAuthor)
+	if err != nil {
+		return err
+	}
+
 	content, err := os.ReadFile(manifest.Path)
 	if err != nil {
 		return err
 	}
 
-	return cl.CreateFile(ctx, cfg.CommitAuthor, repo, content, gpath, msg)
+	return cl.CreateFile(ctx, author, repo, content, gpath, msg)
 }
 
 func buildManifestPath(folder, filename string) string {

@@ -14,6 +14,7 @@ import (
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -54,12 +55,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Scoop.Name == "" {
 		ctx.Config.Scoop.Name = ctx.Config.ProjectName
 	}
-	if ctx.Config.Scoop.CommitAuthor.Name == "" {
-		ctx.Config.Scoop.CommitAuthor.Name = "goreleaserbot"
-	}
-	if ctx.Config.Scoop.CommitAuthor.Email == "" {
-		ctx.Config.Scoop.CommitAuthor.Email = "goreleaser@carlosbecker.com"
-	}
+	ctx.Config.Scoop.CommitAuthor = commitauthor.Default(ctx.Config.Scoop.CommitAuthor)
 	if ctx.Config.Scoop.CommitMessageTemplate == "" {
 		ctx.Config.Scoop.CommitMessageTemplate = "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
 	}
@@ -145,6 +141,11 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 		return err
 	}
 
+	author, err := commitauthor.Get(ctx, scoop.CommitAuthor)
+	if err != nil {
+		return err
+	}
+
 	content, err := os.ReadFile(manifest.Path)
 	if err != nil {
 		return err
@@ -153,7 +154,7 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 	repo := client.RepoFromRef(scoop.Bucket)
 	return cl.CreateFile(
 		ctx,
-		scoop.CommitAuthor,
+		author,
 		repo,
 		content,
 		path.Join(scoop.Folder, manifest.Name),
