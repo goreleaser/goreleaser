@@ -304,8 +304,8 @@ github.com/denisenkom/go-mssqldb v0.9.0/go.mod h1:xbL0rPBG9cCiLr28tMa8zpbdarY27N
 github.com/devigned/tab v0.1.1/go.mod h1:XG9mPq0dFghrYvoBF3xdRrJzSTX1b7IQrvaL9mzjeJY=
 github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb h1:7ENzkH+O3juL+yj2undESLTaAeRllHwCs/b8z6aWSfc=
 github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb/go.mod h1:qhZBgV9e4WyB1JNjHpcXVkUe3knWUwYuAPB1hITdm50=
-github.com/dghubble/oauth1 v0.7.0 h1:AlpZdbRiJM4XGHIlQ8BuJ/wlpGwFEJNnB4Mc+78tA/w=
-github.com/dghubble/oauth1 v0.7.0/go.mod h1:8pFdfPkv/jr8mkChVbNVuJ0suiHe278BtWI4Tk1ujxk=
+github.com/dghubble/oauth1 v0.7.1 h1:JjbOVSVVkms9A4h/sTQy5Jb2nFuAAVb2qVYgenJPyrE=
+github.com/dghubble/oauth1 v0.7.1/go.mod h1:0eEzON0UY/OLACQrmnjgJjmvCGXzjBCsZqL1kWDXtF0=
 github.com/dghubble/sling v1.4.0 h1:/n8MRosVTthvMbwlNZgLx579OGVjUOy3GNEv5BIqAWY=
 github.com/dghubble/sling v1.4.0/go.mod h1:0r40aNsU9EdDUVBNhfCstAtFgutjgJGYbO1oNzkMoM8=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
