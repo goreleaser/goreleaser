@@ -22,6 +22,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
+	"github.com/goreleaser/goreleaser/internal/pipe/prebuild"
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
 	"github.com/goreleaser/goreleaser/internal/pipe/sbom"
 	"github.com/goreleaser/goreleaser/internal/pipe/scoop"
@@ -53,6 +54,7 @@ var BuildPipeline = []Piper{
 	snapshot.Pipe{},        // snapshot version handling
 	dist.Pipe{},            // ensure ./dist is clean
 	gomod.Pipe{},           // setup gomod-related stuff
+	prebuild.Pipe{},        // run prebuild stuff
 	gomod.ProxyPipe{},      // proxy gomod if needed
 	effectiveconfig.Pipe{}, // writes the actual config (with defaults et al set) to dist
 	changelog.Pipe{},       // builds the release changelog
