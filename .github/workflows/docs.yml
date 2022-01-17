@@ -5,11 +5,9 @@ on:
     branches:
       - 'main'
     paths:
-      - '.github/workflows/htmltest.yml'
       - 'www/*'
   pull_request:
     paths:
-      - '.github/workflows/htmltest.yml'
       - 'www/*'
 
 jobs:
