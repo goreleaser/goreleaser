@@ -83,6 +83,7 @@ single .goreleaser.yaml file.
 		newCheckCmd().cmd,
 		newInitCmd().cmd,
 		newDocsCmd().cmd,
+		newManCmd().cmd,
 		newSchemaCmd().cmd,
 	)
 

@@ -24,6 +24,8 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.1.0
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/muesli/mango v0.0.0-20220118122812-f367188b892e
+	github.com/muesli/roff v0.1.0
 	github.com/slack-go/slack v0.10.1
 	github.com/spf13/cobra v1.3.0
 	github.com/stretchr/testify v1.7.0
