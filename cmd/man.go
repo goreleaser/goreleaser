@@ -32,8 +32,9 @@ func newManCmd() *manCmd {
 				return err
 			}
 			if err := doc.GenManTree(root.cmd.Root(), &doc.GenManHeader{
-				Title:   "MINE",
-				Section: "3",
+				Title:   "goreleaser",
+				Section: "1",
+				Source:  "https://goreleaser.com",
 			}, root.output); err != nil {
 				return err
 			}

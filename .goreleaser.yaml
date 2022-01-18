@@ -150,17 +150,7 @@ brews:
       bash_completion.install "completions/goreleaser.bash" => "goreleaser"
       zsh_completion.install "completions/goreleaser.zsh" => "_goreleaser"
       fish_completion.install "completions/goreleaser.fish"
-      man3.install "manpages/goreleaser.3.gz"
-      man3.install "manpages/goreleaser-build.3.gz"
-      man3.install "manpages/goreleaser-check.3.gz"
-      man3.install "manpages/goreleaser-completion.3.gz"
-      man3.install "manpages/goreleaser-completion-bash.3.gz"
-      man3.install "manpages/goreleaser-completion-fish.3.gz"
-      man3.install "manpages/goreleaser-completion-powershell.3.gz"
-      man3.install "manpages/goreleaser-completion-zsh.3.gz"
-      man3.install "manpages/goreleaser-init.3.gz"
-      man3.install "manpages/goreleaser-jsonschema.3.gz"
-      man3.install "manpages/goreleaser-release.3.gz"
+      man1.install "manpages/"
 
 rigs:
   - rig:
@@ -194,7 +184,7 @@ nfpms:
       - src: ./completions/goreleaser.zsh
         dst: /usr/local/share/zsh/site-functions/_goreleaser
       - src: ./manpages/*
-        dst: /usr/share/man/man3/
+        dst: /usr/share/man/man1/
     formats:
     - apk
     - deb
