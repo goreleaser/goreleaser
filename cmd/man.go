@@ -10,8 +10,7 @@ import (
 )
 
 type manCmd struct {
-	cmd    *cobra.Command
-	output string
+	cmd *cobra.Command
 }
 
 func newManCmd() *manCmd {
@@ -34,7 +33,6 @@ func newManCmd() *manCmd {
 		},
 	}
 
-	cmd.PersistentFlags().StringVarP(&root.output, "output", "o", "manpages", "output directory")
 	root.cmd = cmd
 	return root
 }
