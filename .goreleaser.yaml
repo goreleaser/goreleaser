@@ -5,6 +5,7 @@ before:
   hooks:
     - go mod tidy
     - ./scripts/completions.sh
+    - go run . man
 
 snapshot:
   name_template: '{{ incpatch .Version }}-next'
@@ -149,6 +150,17 @@ brews:
       bash_completion.install "completions/goreleaser.bash" => "goreleaser"
       zsh_completion.install "completions/goreleaser.zsh" => "_goreleaser"
       fish_completion.install "completions/goreleaser.fish"
+      man3.install "manpages/goreleaser.3.gz"
+      man3.install "manpages/goreleaser-build.3.gz"
+      man3.install "manpages/goreleaser-check.3.gz"
+      man3.install "manpages/goreleaser-completion.3.gz"
+      man3.install "manpages/goreleaser-completion-bash.3.gz"
+      man3.install "manpages/goreleaser-completion-fish.3.gz"
+      man3.install "manpages/goreleaser-completion-powershell.3.gz"
+      man3.install "manpages/goreleaser-completion-zsh.3.gz"
+      man3.install "manpages/goreleaser-init.3.gz"
+      man3.install "manpages/goreleaser-jsonschema.3.gz"
+      man3.install "manpages/goreleaser-release.3.gz"
 
 rigs:
   - rig:
@@ -181,6 +193,8 @@ nfpms:
         dst: /usr/share/fish/completions/goreleaser.fish
       - src: ./completions/goreleaser.zsh
         dst: /usr/local/share/zsh/site-functions/_goreleaser
+      - src: ./manpages/*
+        dst: /usr/share/man/man3/
     formats:
     - apk
     - deb
