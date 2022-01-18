@@ -5,7 +5,7 @@ before:
   hooks:
     - go mod tidy
     - ./scripts/completions.sh
-    - go run . man
+    - ./scripts/manpages.sh
 
 snapshot:
   name_template: '{{ incpatch .Version }}-next'

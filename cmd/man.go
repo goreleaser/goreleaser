@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"compress/gzip"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/muesli/mango/mcobra"
 	"github.com/muesli/roff"
@@ -26,30 +24,13 @@ func newManCmd() *manCmd {
 		Hidden:                true,
 		Args:                  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_ = os.RemoveAll(root.output)
-			if err := os.MkdirAll(root.output, 0o755); err != nil {
-				return err
-			}
-			root.cmd.Root().DisableAutoGenTag = true
 			manPage, err := mcobra.NewManPageFromCobra(1, root.cmd.Root())
 			if err != nil {
 				return err
 			}
 
-			f, err := os.Create(filepath.Join(root.output, "goreleaser.1.gz"))
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-
-			w := gzip.NewWriter(f)
-			defer w.Close()
-			_, err = fmt.Fprint(w, manPage.Build(roff.NewDocument()))
-			if err != nil {
-				return err
-			}
-
-			return nil
+			_, err = fmt.Fprint(os.Stdout, manPage.Build(roff.NewDocument()))
+			return err
 		},
 	}
 
