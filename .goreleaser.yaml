@@ -127,6 +127,7 @@ archives:
       - README.md
       - LICENSE.md
       - completions/*
+      - manpages/*
 
 brews:
   - tap:
