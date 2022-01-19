@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
@@ -70,6 +71,23 @@ func TestSBOMCatalogDefault(t *testing.T) {
 			args:     defaultArgs,
 			env: []string{
 				"SYFT_FILE_METADATA_CATALOGER_ENABLED=true",
+			},
+		},
+		{
+			configs: []config.SBOM{
+				{
+					Artifacts: "archive",
+					Env: []string{
+						"something=something-else",
+					},
+				},
+			},
+			artifact: "archive",
+			cmd:      defaultCmd,
+			sboms:    defaultSboms,
+			args:     defaultArgs,
+			env: []string{
+				"something=something-else",
 			},
 		},
 		{
@@ -224,7 +242,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 		},
 		{
 			desc:           "invalid args template",
-			expectedErrMsg: `cataloging artifacts failed: ${FOO}-{{ .foo }{{}}{: invalid template: template: tmpl:1: unexpected "}" in operand`,
+			expectedErrMsg: `cataloging artifacts failed: arg "${FOO}-{{ .foo }{{}}{": invalid template: template: tmpl:1: unexpected "}" in operand`,
 			ctx: context.New(
 				config.Project{
 					SBOMs: []config.SBOM{
@@ -287,9 +305,11 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 			),
 			sbomPaths: []string{
 				"artifact3-name_1.2.2_linux_amd64.sbom",
+				"artifact4-name_1.2.2_linux_amd64.sbom",
 			},
 			sbomNames: []string{
 				"artifact3-name_1.2.2_linux_amd64.sbom",
+				"artifact4-name_1.2.2_linux_amd64.sbom",
 			},
 		},
 		{
@@ -340,11 +360,13 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 				"artifact1.s2-ish.sbom",
 				"artifact2.s2-ish.sbom",
 				"artifact3-name_1.2.2_linux_amd64.sbom",
+				"artifact4-name_1.2.2_linux_amd64.sbom",
 			},
 			sbomNames: []string{
 				"artifact1.s2-ish.sbom",
 				"artifact2.s2-ish.sbom",
 				"artifact3-name_1.2.2_linux_amd64.sbom",
+				"artifact4-name_1.2.2_linux_amd64.sbom",
 			},
 		},
 		{
@@ -392,9 +414,11 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 			),
 			sbomPaths: []string{
 				"artifact3-name.test-user-name.sbom",
+				"artifact4.test-user-name.sbom",
 			},
 			sbomNames: []string{
 				"artifact3-name.test-user-name.sbom",
+				"artifact4.test-user-name.sbom",
 			},
 		},
 		{
@@ -580,6 +604,173 @@ func Test_subprocessDistPath(t *testing.T) {
 			actual, err := subprocessDistPath(test.distDir, test.pathRelativeToCwd)
 			require.NoError(t, err)
 			assert.Equal(t, test.expects, actual)
+		})
+	}
+}
+
+func Test_templateNames(t *testing.T) {
+	art := artifact.Artifact{
+		Name:   "name-it",
+		Path:   "to/a/place",
+		Goos:   "darwin",
+		Goarch: "amd64",
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "id-it",
+			"Binary":         "binary-name",
+		},
+	}
+
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+
+	tests := []struct {
+		name           string
+		dist           string
+		version        string
+		cfg            config.SBOM
+		artifact       artifact.Artifact
+		expectedValues map[string]string
+		expectedPaths  []string
+	}{
+		{
+			name:     "default configuration",
+			artifact: art,
+			cfg:      config.SBOM{},
+			dist:     "/somewhere/to/dist",
+			expectedPaths: []string{
+				"/somewhere/to/dist/name-it.sbom",
+			},
+			expectedValues: map[string]string{
+				"artifact":   "to/a/place",
+				"artifactID": "id-it",
+				"document":   "/somewhere/to/dist/name-it.sbom",
+				"document0":  "/somewhere/to/dist/name-it.sbom",
+			},
+		},
+		{
+			name:     "default configuration + relative dist",
+			artifact: art,
+			cfg:      config.SBOM{},
+			dist:     "somewhere/to/dist",
+			expectedPaths: []string{
+				filepath.Join(wd, "somewhere/to/dist/name-it.sbom"),
+			},
+			expectedValues: map[string]string{
+				"artifact":   "to/a/place", // note: this is always relative to ${dist}
+				"artifactID": "id-it",
+				"document":   filepath.Join(wd, "somewhere/to/dist/name-it.sbom"),
+				"document0":  filepath.Join(wd, "somewhere/to/dist/name-it.sbom"),
+			},
+		},
+		{
+			name: "custom document using $artifact",
+			// note: this configuration is probably a misconfiguration since it is placing SBOMs within each bin
+			// directory, however, it will behave as correctly as possible.
+			artifact: art,
+			cfg: config.SBOM{
+				Documents: []string{
+					// note: the artifact name is probably an incorrect value here since it can't express all attributes
+					// of the binary (os, arch, etc), so builds with multiple architectures will create SBOMs with the
+					// same name.
+					"${artifact}.cdx.sbom",
+				},
+			},
+			dist: "somewhere/to/dist",
+			expectedPaths: []string{
+				filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom"),
+			},
+			expectedValues: map[string]string{
+				"artifact":   "to/a/place",
+				"artifactID": "id-it",
+				"document":   filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom"),
+				"document0":  filepath.Join(wd, "somewhere/to/dist/to/a/place.cdx.sbom"),
+			},
+		},
+		{
+			name:     "custom document using build vars",
+			artifact: art,
+			cfg: config.SBOM{
+				Documents: []string{
+					"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.cdx.sbom",
+				},
+			},
+			version: "1.0.0",
+			dist:    "somewhere/to/dist",
+			expectedPaths: []string{
+				filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom"),
+			},
+			expectedValues: map[string]string{
+				"artifact":   "to/a/place",
+				"artifactID": "id-it",
+				"document":   filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom"),
+				"document0":  filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom"),
+			},
+		},
+		{
+			name:     "env vars with go templated options",
+			artifact: art,
+			cfg: config.SBOM{
+				Documents: []string{
+					"{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.cdx.sbom",
+				},
+				Env: []string{
+					"with-env-var=value",
+					"custom-os={{ .Os }}-unique",
+					"custom-arch={{ .Arch }}-unique",
+				},
+			},
+			version: "1.0.0",
+			dist:    "somewhere/to/dist",
+			expectedPaths: []string{
+				filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom"),
+			},
+			expectedValues: map[string]string{
+				"artifact":     "to/a/place",
+				"artifactID":   "id-it",
+				"with-env-var": "value",
+				"custom-os":    "darwin-unique",
+				"custom-arch":  "amd64-unique",
+				"document":     filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom"),
+				"document0":    filepath.Join(wd, "somewhere/to/dist/binary-name_1.0.0_darwin_amd64.cdx.sbom"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Dist: tt.dist,
+			})
+			ctx.Version = tt.version
+
+			cfg := tt.cfg
+			require.NoError(t, setConfigDefaults(&cfg))
+
+			var inputArgs []string
+			var expectedArgs []string
+			for key, value := range tt.expectedValues {
+				inputArgs = append(inputArgs, fmt.Sprintf("${%s}", key))
+				expectedArgs = append(expectedArgs, value)
+			}
+			cfg.Args = inputArgs
+
+			actualArgs, actualEnvs, actualPaths, err := applyTemplate(ctx, cfg, &tt.artifact)
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.expectedPaths, actualPaths, "paths differ")
+
+			assert.Equal(t, expectedArgs, actualArgs, "arguments differ")
+
+			actualEnv := make(map[string]string)
+			for _, str := range actualEnvs {
+				key := strings.Split(str, "=")[0]
+				value := strings.Join(strings.Split(str, "=")[1:], "=")
+				actualEnv[key] = value
+			}
+
+			for k, v := range tt.expectedValues {
+				assert.Equal(t, v, actualEnv[k])
+			}
 		})
 	}
 }
