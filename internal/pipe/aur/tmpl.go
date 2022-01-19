@@ -40,10 +40,18 @@ pkgdesc='{{ .Desc }}'
 url='{{ .Homepage }}'
 arch=({{ pkgArray .Arches }})
 license=('{{ .License }}')
-{{ with .Provides }}provides=({{ pkgArray . }}){{ end }}
-{{ with .Conflicts }}conflicts=({{ pkgArray . }}){{ end }}
-{{ with .Depends }}depends=({{ pkgArray . }}){{ end }}
-{{ with .OptDepends }}optdepends=({{ pkgArray . }}){{ end }}
+{{- with .Provides }}
+provides=({{ pkgArray . }})
+{{- end }}
+{{- with .Conflicts }}
+conflicts=({{ pkgArray . }})
+{{- end }}
+{{- with .Depends }}
+depends=({{ pkgArray . }})
+{{- end }}
+{{- with .OptDepends }}
+optdepends=({{ pkgArray . }})
+{{- end }}
 
 {{ range .ReleasePackages -}}
 source_{{ .Arch }}=('{{ .DownloadURL }}')
@@ -51,7 +59,7 @@ sha256sums_{{ .Arch }}=('{{ .SHA256 }}')
 {{ printf "" }}
 {{ end }}
 
-{{-  with .Package }}
+{{-  with .Package -}}
 package() {
 {{ fixLines . }}
 }

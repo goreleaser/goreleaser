@@ -30,7 +30,6 @@ sha256sums_i686=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c
 source_armv7h=('https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_arm7.tar.gz')
 sha256sums_armv7h=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67')
 
-
 package() {
 
   # bin

@@ -36,7 +36,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 		pkg.CommitAuthor = commitauthor.Default(pkg.CommitAuthor)
 		if pkg.CommitMessageTemplate == "" {
-			pkg.CommitMessageTemplate = "PKGBuild update for {{ .ProjectName }} version {{ .Tag }}"
+			pkg.CommitMessageTemplate = "Update to {{ .Tag }}"
 		}
 		if pkg.Name == "" {
 			pkg.Name = ctx.Config.ProjectName + "-bin"
@@ -112,6 +112,16 @@ func doRun(ctx *context.Context, pkgbuild config.PkgBuild, cl client.Client) err
 		return err
 	}
 	pkgbuild.Name = name
+
+	pkg, err := tmpl.New(ctx).Apply(pkgbuild.Package)
+	if err != nil {
+		return err
+	}
+	if strings.TrimSpace(pkg) == "" {
+		pkg = fmt.Sprintf(`install -Dm755 "./%s "${pkgdir}/usr/bin/%[1]s"`, ctx.Config.ProjectName)
+		log.Warnf("guessing package to be %q", pkg)
+	}
+	pkgbuild.Package = pkg
 
 	content, err := buildPKGBuild(ctx, pkgbuild, cl, archives)
 	if err != nil {
