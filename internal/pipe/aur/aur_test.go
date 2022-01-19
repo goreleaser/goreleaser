@@ -641,27 +641,67 @@ func TestRunSkipNoName(t *testing.T) {
 	testlib.AssertSkipped(t, runAll(ctx, client))
 }
 
-func makeBareRepo(t *testing.T) string {
-	t.Helper()
-	dir := t.TempDir()
+func TestKeyPath(t *testing.T) {
+	t.Run("with valid path", func(t *testing.T) {
+		path := makeKey(t)
+		result, err := keyPath(path)
+		require.NoError(t, err)
+		require.Equal(t, path, result)
+	})
+	t.Run("with invalid path", func(t *testing.T) {
+		result, err := keyPath("testdata/nope")
+		require.EqualError(t, err, `key "testdata/nope" does not exist`)
+		require.Equal(t, "", result)
+	})
+	t.Run("with key", func(t *testing.T) {
+		for _, algo := range []keygen.KeyType{keygen.Ed25519, keygen.RSA} {
+			t.Run(string(algo), func(t *testing.T) {
+				path := makeKey(t, algo)
+				bts, err := os.ReadFile(path)
+				require.NoError(t, err)
+
+				result, err := keyPath(string(bts))
+				require.NoError(t, err)
+
+				resultbts, err := os.ReadFile(result)
+				require.NoError(t, err)
+				require.Equal(t, string(bts), string(resultbts))
+			})
+		}
+	})
+	t.Run("empty", func(t *testing.T) {
+		result, err := keyPath("")
+		require.EqualError(t, err, `pkgbuild.private_key is empty`)
+		require.Equal(t, "", result)
+	})
+}
+
+func makeBareRepo(tb testing.TB) string {
+	tb.Helper()
+	dir := tb.TempDir()
 	_, err := git.Run("-C", dir, "init", "--bare", ".")
-	require.NoError(t, err)
+	require.NoError(tb, err)
 	return dir
 }
 
-func makeKey(t *testing.T) string {
-	t.Helper()
-	dir := t.TempDir()
-	_, err := keygen.NewWithWrite(dir, "id", nil, keygen.Ed25519)
-	require.NoError(t, err)
-	return filepath.Join(dir, "id_ed25519")
+func makeKey(tb testing.TB, algo ...keygen.KeyType) string {
+	tb.Helper()
+
+	if len(algo) == 0 {
+		algo = append(algo, keygen.Ed25519)
+	}
+	dir := tb.TempDir()
+	k, err := keygen.NewWithWrite(dir, "id", nil, algo[0])
+	require.NoError(tb, err)
+	return filepath.Join(dir, k.Filename)
 }
 
-func cloneAndGetPKGBUILD(t *testing.T, repo string) []byte {
-	dir := t.TempDir()
+func cloneAndGetPKGBUILD(tb testing.TB, repo string) []byte {
+	tb.Helper()
+	dir := tb.TempDir()
 	_, err := git.Run("-C", dir, "clone", repo, "repo")
-	require.NoError(t, err)
+	require.NoError(tb, err)
 	bts, err := os.ReadFile(filepath.Join(dir, "repo/PKGBUILD"))
-	require.NoError(t, err)
+	require.NoError(tb, err)
 	return bts
 }

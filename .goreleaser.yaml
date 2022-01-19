@@ -168,6 +168,8 @@ pkgbuilds:
     contributors:
       - 'Fernandez Ludovic <lfernandez dot dev at gmail dot com>'
     license: MIT
+    private_key: '{{ .Env.AUR_KEY }}'
+    git_url: 'ssh://aur@aur.archlinux.org/goreleaser-bin.git'
     package: |-
       # bin
       install -Dm755 "./goreleaser" "${pkgdir}/usr/bin/goreleaser"

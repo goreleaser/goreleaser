@@ -20,6 +20,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"golang.org/x/crypto/ssh"
 )
 
 const (
@@ -344,12 +345,9 @@ func doPublish(ctx *context.Context, pkg *artifact.Artifact, _ client.Client) er
 		return err
 	}
 
-	if key == "" {
-		return pipe.Skip("pkgbuild.private_key is empty")
-	}
-
-	if _, err := os.Stat(key); os.IsNotExist(err) {
-		return fmt.Errorf("key %q does not exist", key)
+	key, err = keyPath(key)
+	if err != nil {
+		return err
 	}
 
 	url, err := tmpl.New(ctx).Apply(cfg.GitURL)
@@ -430,4 +428,29 @@ func doPublish(ctx *context.Context, pkg *artifact.Artifact, _ client.Client) er
 	}
 
 	return nil
+}
+
+func keyPath(key string) (string, error) {
+	if key == "" {
+		return "", pipe.Skip("pkgbuild.private_key is empty")
+	}
+	if _, err := ssh.ParsePrivateKey([]byte(key)); err == nil {
+		f, err := os.CreateTemp("", "id_*")
+		if err != nil {
+			return "", fmt.Errorf("failed to store private key: %w", err)
+		}
+		defer f.Close()
+		if _, err := fmt.Fprint(f, key); err != nil {
+			return "", fmt.Errorf("failed to store private key: %w", err)
+		}
+		if err := os.Chmod(f.Name(), 0400); err != nil {
+			return "", fmt.Errorf("failed to store private key: %w", err)
+		}
+		return f.Name(), nil
+	}
+
+	if _, err := os.Stat(key); os.IsNotExist(err) {
+		return "", fmt.Errorf("key %q does not exist", key)
+	}
+	return key, nil
 }
