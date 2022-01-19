@@ -267,87 +267,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.Equal(t, client.Content, string(distBts))
 }
 
-func TestRunPipeMultipleGoFishWithSkip(t *testing.T) {
-	folder := t.TempDir()
-	ctx := &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
-		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Env: map[string]string{
-			"FOO_BAR": "is_bar",
-		},
-		Config: config.Project{
-			Dist:        folder,
-			ProjectName: "foo",
-			Rigs: []config.GoFish{
-				{
-					Name: "foo",
-					Rig: config.RepoRef{
-						Owner: "foo",
-						Name:  "bar",
-					},
-					IDs: []string{
-						"foo",
-					},
-					SkipUpload: "true",
-				},
-				{
-					Name: "bar",
-					Rig: config.RepoRef{
-						Owner: "foo",
-						Name:  "bar",
-					},
-					IDs: []string{
-						"foo",
-					},
-				},
-				{
-					Name: "foobar",
-					Rig: config.RepoRef{
-						Owner: "foo",
-						Name:  "bar",
-					},
-					IDs: []string{
-						"foo",
-					},
-					SkipUpload: "true",
-				},
-			},
-		},
-	}
-	path := filepath.Join(folder, "bin.tar.gz")
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			artifact.ExtraID:       "foo",
-			artifact.ExtraFormat:   "tar.gz",
-			artifact.ExtraBinaries: []string{"foo"},
-		},
-	})
-
-	f, err := os.Create(path)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
-
-	cli := client.NewMock()
-	require.NoError(t, runAll(ctx, cli))
-	require.EqualError(t, publishAll(ctx, cli), `rig.skip_upload is set`)
-	require.True(t, cli.CreatedFile)
-
-	for _, food := range ctx.Config.Rigs {
-		distFile := filepath.Join(folder, food.Name)
-		_, err := os.Stat(distFile)
-		require.NoError(t, err, "file should exist: "+distFile)
-	}
-}
-
-func TestRunPipeForMultipleArmVersions(t *testing.T) {
+func TestRunPipe(t *testing.T) {
 	folder := t.TempDir()
 	ctx := &context.Context{
 		TokenType: context.TokenTypeGitHub,
@@ -364,7 +284,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			ProjectName: "foo",
 			PkgBuilds: []config.PkgBuild{
 				{
-					Name:        "foo-bin",
+					License:     "MIT",
 					Description: "A run pipe test pkgbuild and FOO={{ .Env.FOO }}",
 					Homepage:    "https://github.com/goreleaser",
 				},
@@ -389,6 +309,31 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 		{
 			name:   "bin",
 			goos:   "darwin",
+			goarch: "amd64",
+		},
+		{
+			name:   "bin",
+			goos:   "darwin",
+			goarch: "arm64",
+		},
+		{
+			name:   "bin",
+			goos:   "windows",
+			goarch: "arm64",
+		},
+		{
+			name:   "bin",
+			goos:   "windows",
+			goarch: "amd64",
+		},
+		{
+			name:   "bin",
+			goos:   "linux",
+			goarch: "386",
+		},
+		{
+			name:   "bin",
+			goos:   "linux",
 			goarch: "amd64",
 		},
 		{
@@ -436,6 +381,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 	client := client.NewMock()
 	distFile := filepath.Join(folder, "foo-bin/PKGBUILD")
 
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 

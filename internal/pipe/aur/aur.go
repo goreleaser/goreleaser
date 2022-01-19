@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -279,6 +280,10 @@ func dataFor(ctx *context.Context, cfg config.PkgBuild, cl client.Client, artifa
 		result.Arches = append(result.Arches, releasePackage.Arch)
 	}
 
+	sort.Strings(result.Arches)
+	sort.Slice(result.ReleasePackages, func(i, j int) bool {
+		return result.ReleasePackages[i].Arch < result.ReleasePackages[j].Arch
+	})
 	return result, nil
 }
 

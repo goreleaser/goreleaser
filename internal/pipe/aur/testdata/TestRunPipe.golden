@@ -2,11 +2,13 @@
 
 pkgname='foo-bin'
 pkgver=1.0.1
-pkgrel=
+pkgrel=1
 pkgdesc='A run pipe test pkgbuild and FOO=foo_is_bar'
 url='https://github.com/goreleaser'
-arch=('aarch64' 'armv6h' 'armv7h')
-license=('')
+arch=('aarch64' 'armv6h' 'armv7h' 'i686' 'x86_64')
+license=('MIT')
+provides=('foo')
+conflicts=('foo')
 
 source_aarch64=('https://dummyhost/download/v1.0.1/arm64.tar.gz')
 sha256sums_aarch64=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
@@ -16,6 +18,12 @@ sha256sums_armv6h=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852
 
 source_armv7h=('https://dummyhost/download/v1.0.1/armv7.tar.gz')
 sha256sums_armv7h=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+
+source_i686=('https://dummyhost/download/v1.0.1/bin.tar.gz')
+sha256sums_i686=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+
+source_x86_64=('https://dummyhost/download/v1.0.1/bin.tar.gz')
+sha256sums_x86_64=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
 
 package() {
   install -Dm755 "./foo "${pkgdir}/usr/bin/foo"
