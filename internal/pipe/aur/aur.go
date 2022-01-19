@@ -144,38 +144,57 @@ func doRun(ctx *context.Context, pkgbuild config.PkgBuild, cl client.Client) err
 	}
 	pkgbuild.Package = pkg
 
-	content, err := buildPkgBuild(ctx, pkgbuild, cl, archives)
-	if err != nil {
-		return err
-	}
-
-	pkgbuildPath := filepath.Join(ctx.Config.Dist, "aur", "pkgbuilds", pkgbuild.Name)
-	if err := os.MkdirAll(filepath.Dir(pkgbuildPath), 0o755); err != nil {
-		return fmt.Errorf("failed to write PKGBUILD: %w", err)
-	}
-	log.WithField("pkgbuild", pkgbuildPath).Info("writing")
-	if err := os.WriteFile(pkgbuildPath, []byte(content), 0o644); err != nil { //nolint: gosec
-		return fmt.Errorf("failed to write PKGBUILD: %w", err)
-	}
-
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: "PKGBUILD",
-		Path: pkgbuildPath,
-		Type: artifact.PkgBuild,
-		Extra: map[string]interface{}{
-			pkgBuildExtra: pkgbuild,
+	for _, info := range []struct {
+		name, tpl, ext string
+		kind           artifact.Type
+	}{
+		{
+			name: "PKGBUILD",
+			tpl:  pkgBuildTemplate,
+			ext:  ".pkgbuild",
+			kind: artifact.PkgBuild,
 		},
-	})
+		{
+			name: ".SRCINFO",
+			tpl:  srcInfoTemplate,
+			ext:  ".srcinfo",
+			kind: artifact.SrcInfo,
+		},
+	} {
+		pkgContent, err := buildPkgFile(ctx, pkgbuild, cl, archives, info.tpl)
+		if err != nil {
+			return err
+		}
+
+		path := filepath.Join(ctx.Config.Dist, "aur", pkgbuild.Name+info.ext)
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			return fmt.Errorf("failed to write %s: %w", info.kind, err)
+		}
+		log.WithField("file", path).Info("writing")
+		if err := os.WriteFile(path, []byte(pkgContent), 0o644); err != nil { //nolint: gosec
+			return fmt.Errorf("failed to write %s: %w", info.kind, err)
+		}
+
+		ctx.Artifacts.Add(&artifact.Artifact{
+			Name: info.name,
+			Path: path,
+			Type: info.kind,
+			Extra: map[string]interface{}{
+				pkgBuildExtra:    pkgbuild,
+				artifact.ExtraID: pkgbuild.Name,
+			},
+		})
+	}
 
 	return nil
 }
 
-func buildPkgBuild(ctx *context.Context, goFish config.PkgBuild, client client.Client, artifacts []*artifact.Artifact) (string, error) {
-	data, err := dataFor(ctx, goFish, client, artifacts)
+func buildPkgFile(ctx *context.Context, pkg config.PkgBuild, client client.Client, artifacts []*artifact.Artifact, tpl string) (string, error) {
+	data, err := dataFor(ctx, pkg, client, artifacts)
 	if err != nil {
 		return "", err
 	}
-	return doBuildPkgBuild(ctx, data)
+	return applyTemplate(ctx, tpl, data)
 }
 
 func fixLines(s string) string {
@@ -192,14 +211,14 @@ func fixLines(s string) string {
 	return strings.Join(result, "\n")
 }
 
-func doBuildPkgBuild(ctx *context.Context, data templateData) (string, error) {
+func applyTemplate(ctx *context.Context, tpl string, data templateData) (string, error) {
 	t := template.Must(
 		template.New(data.Name).
 			Funcs(template.FuncMap{
 				"fixLines": fixLines,
 				"pkgArray": toPkgBuildArray,
 			}).
-			Parse(pkgBuildTemplate),
+			Parse(tpl),
 	)
 
 	var out bytes.Buffer
@@ -307,17 +326,14 @@ func dataFor(ctx *context.Context, cfg config.PkgBuild, cl client.Client, artifa
 
 // Publish the PKGBUILD to the AUR repository.
 func (Pipe) Publish(ctx *context.Context) error {
-	cli, err := client.New(ctx)
-	if err != nil {
-		return err
-	}
-	return publishAll(ctx, cli)
-}
-
-func publishAll(ctx *context.Context, cli client.Client) error {
 	skips := pipe.SkipMemento{}
-	for _, pkg := range ctx.Artifacts.Filter(artifact.ByType(artifact.PkgBuild)).List() {
-		err := doPublish(ctx, pkg, cli)
+	for _, pkgs := range ctx.Artifacts.Filter(
+		artifact.Or(
+			artifact.ByType(artifact.PkgBuild),
+			artifact.ByType(artifact.SrcInfo),
+		),
+	).GroupByID() {
+		err := doPublish(ctx, pkgs)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
 			continue
@@ -329,8 +345,8 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 	return skips.Evaluate()
 }
 
-func doPublish(ctx *context.Context, pkg *artifact.Artifact, _ client.Client) error {
-	cfg := pkg.Extra[pkgBuildExtra].(config.PkgBuild)
+func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
+	cfg := pkgs[0].Extra[pkgBuildExtra].(config.PkgBuild)
 
 	if strings.TrimSpace(cfg.SkipUpload) == "true" {
 		return pipe.Skip("pkgbuild.skip_upload is set")
@@ -400,20 +416,20 @@ func doPublish(ctx *context.Context, pkg *artifact.Artifact, _ client.Client) er
 		return fmt.Errorf("failed to setup local AUR repo: %w", err)
 	}
 
-	bts, err := os.ReadFile(pkg.Path)
-	if err != nil {
-		return fmt.Errorf("failed to setup local AUR repo: %w", err)
-	}
+	for _, pkg := range pkgs {
+		bts, err := os.ReadFile(pkg.Path)
+		if err != nil {
+			return fmt.Errorf("failed to read %s: %w", pkg.Name, err)
+		}
 
-	// fmt.Println("AAAAAAAAAAAAAAA " + filepath.Join(cwd, "PKGBUILD"))
-
-	if err := os.WriteFile(filepath.Join(cwd, "PKGBUILD"), bts, 0o644); err != nil {
-		return fmt.Errorf("failed to write PKGBUILD: %w", err)
+		if err := os.WriteFile(filepath.Join(cwd, pkg.Name), bts, 0o644); err != nil {
+			return fmt.Errorf("failed to write %s: %w", pkg.Name, err)
+		}
 	}
 
 	log.WithField("repo", url).WithField("name", cfg.Name).Info("pushing")
 	if err := runGitCmds(cwd, env, [][]string{
-		{"add", "PKGBUILD"},
+		{"add", "-A", "."},
 		{"commit", "-m", msg},
 		{"push", "origin", "HEAD"},
 	}); err != nil {

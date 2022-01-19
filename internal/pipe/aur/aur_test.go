@@ -99,7 +99,7 @@ func assertDefaultTemplateData(t *testing.T, pkgbuild string) {
 func TestFullPkgBuild(t *testing.T) {
 	data := createTemplateData()
 	data.License = "MIT"
-	pkg, err := doBuildPkgBuild(context.New(config.Project{
+	pkg, err := applyTemplate(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
 	require.NoError(t, err)
@@ -108,7 +108,7 @@ func TestFullPkgBuild(t *testing.T) {
 }
 
 func TestPkgBuildSimple(t *testing.T) {
-	pkg, err := doBuildPkgBuild(context.New(config.Project{}), createTemplateData())
+	pkg, err := applyTemplate(context.New(config.Project{}), createTemplateData())
 	require.NoError(t, err)
 	assertDefaultTemplateData(t, pkg)
 }

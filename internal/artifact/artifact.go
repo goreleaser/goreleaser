@@ -59,6 +59,8 @@ const (
 	GoFishRig
 	// PkgBuild is an Arch Linux AUR PKGBUILD file.
 	PkgBuild
+	// SrcInfo is an Arch Linux AUR .SRCINFO file.
+	SrcInfo
 	// KrewPluginManifest is a krew plugin manifest file.
 	KrewPluginManifest
 	// ScoopManifest is an uploadable scoop manifest file.
@@ -103,6 +105,8 @@ func (t Type) String() string {
 		return "SBOM"
 	case PkgBuild:
 		return "PKGBUILD"
+	case SrcInfo:
+		return "SRCINFO"
 	default:
 		return "unknown"
 	}
@@ -246,6 +250,15 @@ func New() Artifacts {
 // List return the actual list of artifacts.
 func (artifacts Artifacts) List() []*Artifact {
 	return artifacts.items
+}
+
+// GroupByID groups the artifacts by their ID.
+func (artifacts Artifacts) GroupByID() map[string][]*Artifact {
+	result := map[string][]*Artifact{}
+	for _, a := range artifacts.items {
+		result[a.ID()] = append(result[a.ID()], a)
+	}
+	return result
 }
 
 // GroupByPlatform groups the artifacts by their platform.

@@ -64,3 +64,30 @@ package() {
 {{ fixLines . }}
 }
 {{ end }}`
+
+const srcInfoTemplate = `pkgbase = {{ .Name }}
+	pkgdesc = {{ .Desc }}
+	pkgver = {{ .Version }}
+	pkgrel = {{ .Rel }}
+	url = {{ .Homepage }}
+	license = {{ .License }}
+	{{ range .OptDepends -}}
+	optdepends = {{ . }}
+	{{ end }}
+	{{ range .Depends -}}
+	depends = {{ . }}
+	{{ end }}
+	{{ range .Conflicts -}}
+	conflicts = {{ . }}
+	{{ end }}
+	{{ range .Provides -}}
+	provides = {{ . }}
+	{{ end }}
+	{{ range .ReleasePackages -}}
+	arch = {{ .Arch }}
+	source_{{ .Arch }} = {{ .DownloadURL }}
+	sha256sums_{{ .Arch }} = {{ .SHA256 }}
+	{{ end}}
+
+pkgname = {{ .Name }}
+`
