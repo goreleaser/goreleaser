@@ -161,6 +161,31 @@ rigs:
     description: Deliver Go binaries as fast and easily as possible
     license: MIT
 
+pkgbuilds:
+  - homepage:  https://goreleaser.com
+    description: Deliver Go binaries as fast and easily as possible
+    maintainer: 'Carlos Alexandro Becker <carlos at becker dot software>'
+    contributors:
+      - 'Fernandez Ludovic <lfernandez dot dev at gmail dot com>'
+    license: MIT
+    package: |-
+      # bin
+      install -Dm755 "./goreleaser" "${pkgdir}/usr/bin/goreleaser"
+
+      # license
+      install -Dm644 "./LICENSE.md" "${pkgdir}/usr/share/licenses/goreleaser/LICENSE"
+
+      # completions
+      mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
+      mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
+      mkdir -p "${pkgdir}/usr/share/fish/vendor_completions.d/"
+      install -Dm644 "./completions/goreleaser.bash" "${pkgdir}/usr/share/bash-completion/completions/goreleaser"
+      install -Dm644 "./completions/goreleaser.zsh" "${pkgdir}/usr/share/zsh/site-functions/_goreleaser"
+      install -Dm644 "./completions/goreleaser.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/goreleaser.fish"
+
+      # man pages
+      install -Dm644 "./manpages/goreleaser.1.gz" "${pkgdir}/usr/share/man/man1/goreleaser.1.gz"
+
 scoop:
   bucket:
     owner: goreleaser

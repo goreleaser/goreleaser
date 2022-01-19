@@ -386,6 +386,7 @@ func TestTypeToString(t *testing.T) {
 		KrewPluginManifest,
 		ScoopManifest,
 		SBOM,
+		PkgBuild,
 	} {
 		t.Run(a.String(), func(t *testing.T) {
 			require.NotEqual(t, "unknown", a.String())

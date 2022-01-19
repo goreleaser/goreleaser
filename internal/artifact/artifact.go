@@ -57,6 +57,8 @@ const (
 	BrewTap
 	// GoFishRig is an uploadable Rigs rig food file.
 	GoFishRig
+	// PkgBuild is an Arch Linux AUR PKGBUILD file.
+	PkgBuild
 	// KrewPluginManifest is a krew plugin manifest file.
 	KrewPluginManifest
 	// ScoopManifest is an uploadable scoop manifest file.
@@ -99,6 +101,8 @@ func (t Type) String() string {
 		return "Scoop Manifest"
 	case SBOM:
 		return "SBOM"
+	case PkgBuild:
+		return "PKGBUILD"
 	default:
 		return "unknown"
 	}
