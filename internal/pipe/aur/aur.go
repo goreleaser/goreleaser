@@ -376,54 +376,47 @@ func doPublish(ctx *context.Context, pkg *artifact.Artifact, _ client.Client) er
 		return err
 	}
 
-	cwd := filepath.Join(ctx.Config.Dist, "aur", "repos")
-	if err := os.MkdirAll(cwd, 0o755); err != nil {
+	parent := filepath.Join(ctx.Config.Dist, "aur", "repos")
+	cwd := filepath.Join(parent, cfg.Name)
+
+	if err := os.MkdirAll(parent, 0o755); err != nil {
 		return err
 	}
 
-	if _, err := git.Clean(git.Run(
-		"-C", cwd,
-		"-c", "ssh.variant=ssh",
-		"-c", fmt.Sprintf(`core.sshCommand="%s"`, sshcmd),
-		"clone", url, cfg.Name,
-	)); err != nil {
-		return fmt.Errorf("failed to clone %q: %w", url, err)
+	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
+
+	if err := runGitCmds(parent, env, [][]string{
+		{"clone", url, cfg.Name},
+	}); err != nil {
+		return fmt.Errorf("failed to setup local AUR repo: %w", err)
+	}
+
+	if err := runGitCmds(cwd, env, [][]string{
+		// setup auth et al
+		{"config", "--local", "user.name", author.Name},
+		{"config", "--local", "user.email", author.Email},
+		{"config", "--local", "commit.gpgSign", "false"},
+	}); err != nil {
+		return fmt.Errorf("failed to setup local AUR repo: %w", err)
 	}
 
 	bts, err := os.ReadFile(pkg.Path)
 	if err != nil {
-		return fmt.Errorf("failed to clone %q: %w", url, err)
+		return fmt.Errorf("failed to setup local AUR repo: %w", err)
 	}
 
-	if err := os.WriteFile(filepath.Join(cwd, cfg.Name, "PKGBUILD"), bts, 0o644); err != nil {
-		return err
-	}
+	// fmt.Println("AAAAAAAAAAAAAAA " + filepath.Join(cwd, "PKGBUILD"))
 
-	if _, err := git.Clean(git.Run(
-		"-C", filepath.Join(cwd, cfg.Name),
-		"add", "-A", ".",
-	)); err != nil {
-		return fmt.Errorf("failed to clone %q (%q): %w", cfg.Name, url, err)
+	if err := os.WriteFile(filepath.Join(cwd, "PKGBUILD"), bts, 0o644); err != nil {
+		return fmt.Errorf("failed to write PKGBUILD: %w", err)
 	}
 
 	log.WithField("repo", url).WithField("name", cfg.Name).Info("pushing")
-
-	if _, err := git.Clean(git.Run(
-		"-C", filepath.Join(cwd, cfg.Name),
-		"-c", fmt.Sprintf("user.name='%s'", author.Name),
-		"-c", fmt.Sprintf("user.email='%s'", author.Email),
-		"-c", "commit.gpgSign=false",
-		"commit", "-m", msg,
-	)); err != nil {
-		return fmt.Errorf("failed to commit PKGBUILD: %w", err)
-	}
-
-	if _, err := git.Clean(git.Run(
-		"-C", filepath.Join(cwd, cfg.Name),
-		"-c", "ssh.variant=ssh",
-		"-c", fmt.Sprintf(`core.sshCommand="%s"`, sshcmd),
-		"push", "origin", "HEAD",
-	)); err != nil {
+	if err := runGitCmds(cwd, env, [][]string{
+		{"add", "PKGBUILD"},
+		{"commit", "-m", msg},
+		{"push", "origin", "HEAD"},
+	}); err != nil {
 		return fmt.Errorf("failed to push %q (%q): %w", cfg.Name, url, err)
 	}
 
@@ -453,4 +446,15 @@ func keyPath(key string) (string, error) {
 		return "", fmt.Errorf("key %q does not exist", key)
 	}
 	return key, nil
+}
+
+func runGitCmds(cwd string, env []string, cmds [][]string) error {
+	for _, cmd := range cmds {
+		args := append([]string{"-C", cwd}, cmd...)
+		if out, err := git.Clean(git.RunWithEnv(env, args...)); err != nil {
+			log.Debug(string(out))
+			return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
+		}
+	}
+	return nil
 }

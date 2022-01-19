@@ -679,7 +679,7 @@ func TestKeyPath(t *testing.T) {
 func makeBareRepo(tb testing.TB) string {
 	tb.Helper()
 	dir := tb.TempDir()
-	_, err := git.Run("-C", dir, "init", "--bare", ".")
+	_, err := git.Run("-C", dir, "init", "--bare", "-b=master", ".")
 	require.NoError(tb, err)
 	return dir
 }
@@ -701,6 +701,10 @@ func cloneAndGetPKGBUILD(tb testing.TB, repo string) []byte {
 	dir := tb.TempDir()
 	_, err := git.Run("-C", dir, "clone", repo, "repo")
 	require.NoError(tb, err)
+	// filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
+	// 	tb.Log(path)
+	// 	return nil
+	// })
 	bts, err := os.ReadFile(filepath.Join(dir, "repo/PKGBUILD"))
 	require.NoError(tb, err)
 	return bts
