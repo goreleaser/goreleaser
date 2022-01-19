@@ -15,13 +15,18 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const pkgBuildExtra = "AURConfig"
+const (
+	pkgBuildExtra     = "AURConfig"
+	defaultSSHCommand = "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i {{ .KeyPath }} -F /dev/null"
+	defaultCommitMsg  = "Update to {{ .Tag }}"
+)
 
 var ErrNoArchivesFound = errors.New("no linux archives found")
 
@@ -37,7 +42,7 @@ func (Pipe) Default(ctx *context.Context) error {
 
 		pkg.CommitAuthor = commitauthor.Default(pkg.CommitAuthor)
 		if pkg.CommitMessageTemplate == "" {
-			pkg.CommitMessageTemplate = "Update to {{ .Tag }}"
+			pkg.CommitMessageTemplate = defaultCommitMsg
 		}
 		if pkg.Name == "" {
 			pkg.Name = ctx.Config.ProjectName + "-bin"
@@ -50,6 +55,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if pkg.Rel == "" {
 			pkg.Rel = "1"
+		}
+		if pkg.SSHCommand == "" {
+			pkg.SSHCommand = defaultSSHCommand
 		}
 	}
 
@@ -76,6 +84,12 @@ func runAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doRun(ctx *context.Context, pkgbuild config.PkgBuild, cl client.Client) error {
+	name, err := tmpl.New(ctx).Apply(pkgbuild.Name)
+	if err != nil {
+		return err
+	}
+	pkgbuild.Name = name
+
 	if pkgbuild.Name == "" {
 		return pipe.Skip("package name is not set")
 	}
@@ -108,39 +122,43 @@ func doRun(ctx *context.Context, pkgbuild config.PkgBuild, cl client.Client) err
 		return ErrNoArchivesFound
 	}
 
-	name, err := tmpl.New(ctx).Apply(pkgbuild.Name)
-	if err != nil {
-		return err
-	}
-	pkgbuild.Name = name
-
 	pkg, err := tmpl.New(ctx).Apply(pkgbuild.Package)
 	if err != nil {
 		return err
 	}
 	if strings.TrimSpace(pkg) == "" {
-		pkg = fmt.Sprintf(`install -Dm755 "./%s "${pkgdir}/usr/bin/%[1]s"`, ctx.Config.ProjectName)
+		art := archives[0]
+		switch art.Type {
+		case artifact.UploadableBinary:
+			name := art.Name
+			bin := art.ExtraOr(artifact.ExtraBinary, art.Name).(string)
+			pkg = fmt.Sprintf(`install -Dm755 "./%s "${pkgdir}/usr/bin/%s"`, name, bin)
+		case artifact.UploadableArchive:
+			for _, bin := range art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
+				pkg = fmt.Sprintf(`install -Dm755 "./%s "${pkgdir}/usr/bin/%[1]s"`, bin)
+				break
+			}
+		}
 		log.Warnf("guessing package to be %q", pkg)
 	}
 	pkgbuild.Package = pkg
 
-	content, err := buildPKGBuild(ctx, pkgbuild, cl, archives)
+	content, err := buildPkgBuild(ctx, pkgbuild, cl, archives)
 	if err != nil {
 		return err
 	}
 
-	filename := "PKGBUILD"
-	pkgbuildPath := filepath.Join(ctx.Config.Dist, pkgbuild.Name, filename)
-	if err := os.MkdirAll(filepath.Dir(pkgbuildPath), 0755); err != nil {
+	pkgbuildPath := filepath.Join(ctx.Config.Dist, "aur", "pkgbuilds", pkgbuild.Name)
+	if err := os.MkdirAll(filepath.Dir(pkgbuildPath), 0o755); err != nil {
 		return fmt.Errorf("failed to write PKGBUILD: %w", err)
 	}
-	log.WithField("food", pkgbuildPath).Info("writing")
+	log.WithField("pkgbuild", pkgbuildPath).Info("writing")
 	if err := os.WriteFile(pkgbuildPath, []byte(content), 0o644); err != nil { //nolint: gosec
 		return fmt.Errorf("failed to write PKGBUILD: %w", err)
 	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name: filename,
+		Name: "PKGBUILD",
 		Path: pkgbuildPath,
 		Type: artifact.PkgBuild,
 		Extra: map[string]interface{}{
@@ -151,7 +169,7 @@ func doRun(ctx *context.Context, pkgbuild config.PkgBuild, cl client.Client) err
 	return nil
 }
 
-func buildPKGBuild(ctx *context.Context, goFish config.PkgBuild, client client.Client, artifacts []*artifact.Artifact) (string, error) {
+func buildPkgBuild(ctx *context.Context, goFish config.PkgBuild, client client.Client, artifacts []*artifact.Artifact) (string, error) {
 	data, err := dataFor(ctx, goFish, client, artifacts)
 	if err != nil {
 		return "", err
@@ -175,8 +193,7 @@ func fixLines(s string) string {
 
 func doBuildPkgBuild(ctx *context.Context, data templateData) (string, error) {
 	t := template.Must(
-		template.
-			New(data.Name).
+		template.New(data.Name).
 			Funcs(template.FuncMap{
 				"fixLines": fixLines,
 				"pkgArray": toPkgBuildArray,
@@ -298,8 +315,8 @@ func (Pipe) Publish(ctx *context.Context) error {
 
 func publishAll(ctx *context.Context, cli client.Client) error {
 	skips := pipe.SkipMemento{}
-	for _, rig := range ctx.Artifacts.Filter(artifact.ByType(artifact.GoFishRig)).List() {
-		err := doPublish(ctx, rig, cli)
+	for _, pkg := range ctx.Artifacts.Filter(artifact.ByType(artifact.PkgBuild)).List() {
+		err := doPublish(ctx, pkg, cli)
 		if err != nil && pipe.IsSkip(err) {
 			skips.Remember(err)
 			continue
@@ -311,42 +328,106 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 	return skips.Evaluate()
 }
 
-func doPublish(ctx *context.Context, food *artifact.Artifact, cl client.Client) error {
-	rig := food.Extra[pkgBuildExtra].(config.PkgBuild)
-	var err error
+func doPublish(ctx *context.Context, pkg *artifact.Artifact, _ client.Client) error {
+	cfg := pkg.Extra[pkgBuildExtra].(config.PkgBuild)
 
-	if strings.TrimSpace(rig.SkipUpload) == "true" {
-		return pipe.Skip("rig.skip_upload is set")
+	if strings.TrimSpace(cfg.SkipUpload) == "true" {
+		return pipe.Skip("pkgbuild.skip_upload is set")
 	}
 
-	if strings.TrimSpace(rig.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
-		return pipe.Skip("prerelease detected with 'auto' upload, skipping gofish publish")
+	if strings.TrimSpace(cfg.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
+		return pipe.Skip("prerelease detected with 'auto' upload, skipping aur publish")
 	}
 
-	// TODO
-	return err
+	key, err := tmpl.New(ctx).Apply(cfg.PrivateKey)
+	if err != nil {
+		return err
+	}
 
-	// repo := client.RepoFromRef(rig.Rig)
+	if key == "" {
+		return pipe.Skip("pkgbuild.private_key is empty")
+	}
 
-	// gpath := buildFoodPath(foodFolder, food.Name)
-	// log.WithField("food", gpath).
-	// 	WithField("repo", repo.String()).
-	// 	Info("pushing")
+	if _, err := os.Stat(key); os.IsNotExist(err) {
+		return fmt.Errorf("key %q does not exist", key)
+	}
 
-	// msg, err := tmpl.New(ctx).Apply(rig.CommitMessageTemplate)
-	// if err != nil {
-	// 	return err
-	// }
+	url, err := tmpl.New(ctx).Apply(cfg.GitURL)
+	if err != nil {
+		return err
+	}
 
-	// author, err := commitauthor.Get(ctx, rig.CommitAuthor)
-	// if err != nil {
-	// 	return err
-	// }
+	if url == "" {
+		return pipe.Skip("pkgbuild.git_url is empty")
+	}
 
-	// content, err := os.ReadFile(food.Path)
-	// if err != nil {
-	// 	return err
-	// }
+	sshcmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
+		"KeyPath": key,
+	}).Apply(cfg.SSHCommand)
+	if err != nil {
+		return err
+	}
 
-	// return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+	msg, err := tmpl.New(ctx).Apply(cfg.CommitMessageTemplate)
+	if err != nil {
+		return err
+	}
+
+	author, err := commitauthor.Get(ctx, cfg.CommitAuthor)
+	if err != nil {
+		return err
+	}
+
+	cwd := filepath.Join(ctx.Config.Dist, "aur", "repos")
+	if err := os.MkdirAll(cwd, 0o755); err != nil {
+		return err
+	}
+
+	if _, err := git.Clean(git.Run(
+		"-C", cwd,
+		"-c", "ssh.variant=ssh",
+		"-c", fmt.Sprintf(`core.sshCommand="%s"`, sshcmd),
+		"clone", url, cfg.Name,
+	)); err != nil {
+		return fmt.Errorf("failed to clone %q: %w", url, err)
+	}
+
+	bts, err := os.ReadFile(pkg.Path)
+	if err != nil {
+		return fmt.Errorf("failed to clone %q: %w", url, err)
+	}
+
+	if err := os.WriteFile(filepath.Join(cwd, cfg.Name, "PKGBUILD"), bts, 0o644); err != nil {
+		return err
+	}
+
+	if _, err := git.Clean(git.Run(
+		"-C", filepath.Join(cwd, cfg.Name),
+		"add", "-A", ".",
+	)); err != nil {
+		return fmt.Errorf("failed to clone %q (%q): %w", cfg.Name, url, err)
+	}
+
+	log.WithField("repo", url).WithField("name", cfg.Name).Info("pushing")
+
+	if _, err := git.Clean(git.Run(
+		"-C", filepath.Join(cwd, cfg.Name),
+		"-c", fmt.Sprintf("user.name='%s'", author.Name),
+		"-c", fmt.Sprintf("user.email='%s'", author.Email),
+		"-c", "commit.gpgSign=false",
+		"commit", "-m", msg,
+	)); err != nil {
+		return fmt.Errorf("failed to commit PKGBUILD: %w", err)
+	}
+
+	if _, err := git.Clean(git.Run(
+		"-C", filepath.Join(cwd, cfg.Name),
+		"-c", "ssh.variant=ssh",
+		"-c", fmt.Sprintf(`core.sshCommand="%s"`, sshcmd),
+		"push", "origin", "HEAD",
+	)); err != nil {
+		return fmt.Errorf("failed to push %q (%q): %w", cfg.Name, url, err)
+	}
+
+	return nil
 }

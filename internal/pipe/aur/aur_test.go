@@ -6,8 +6,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/charmbracelet/keygen"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -135,8 +137,53 @@ func TestFullPipe(t *testing.T) {
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
+		"invalid_key_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.PkgBuilds[0].PrivateKey = "{{ .Asdsa }"
+			},
+			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"no_key": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.PkgBuilds[0].PrivateKey = ""
+			},
+			expectedPublishError: `pkgbuild.private_key is empty`,
+		},
+		"key_not_found": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.PkgBuilds[0].PrivateKey = "testdata/nope"
+			},
+			expectedPublishError: `key "testdata/nope" does not exist`,
+		},
+		"invalid_git_url_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.PkgBuilds[0].GitURL = "{{ .Asdsa }"
+			},
+			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"no_git_url": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.PkgBuilds[0].GitURL = ""
+			},
+			expectedPublishError: `pkgbuild.git_url is empty`,
+		},
+		"invalid_ssh_cmd_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.PkgBuilds[0].SSHCommand = "{{ .Asdsa }"
+			},
+			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"invalid_commit_author_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.PkgBuilds[0].CommitAuthor.Name = "{{ .Asdsa }"
+			},
+			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
+			url := makeBareRepo(t)
+			key := makeKey(t)
+
 			folder := t.TempDir()
 			ctx := &context.Context{
 				Git: context.GitInfo{
@@ -156,6 +203,9 @@ func TestFullPipe(t *testing.T) {
 							IDs: []string{
 								"foo",
 							},
+							PrivateKey:  key,
+							License:     "MIT",
+							GitURL:      url,
 							Description: "A run pipe test fish food and FOO={{ .Env.FOO }}",
 						},
 					},
@@ -169,8 +219,9 @@ func TestFullPipe(t *testing.T) {
 				Goarch: "amd64",
 				Type:   artifact.UploadableArchive,
 				Extra: map[string]interface{}{
-					artifact.ExtraID:     "bar",
-					artifact.ExtraFormat: "tar.gz",
+					artifact.ExtraID:       "bar",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"bar"},
 				},
 			})
 			path := filepath.Join(folder, "bin.tar.gz")
@@ -191,83 +242,29 @@ func TestFullPipe(t *testing.T) {
 			require.NoError(t, err)
 			require.NoError(t, f.Close())
 			client := client.NewMock()
-			distFile := filepath.Join(folder, name, "PKGBUILD")
+			distFile := filepath.Join(folder, "aur/pkgbuilds", name)
 
+			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, runAll(ctx, client))
 			if tt.expectedPublishError != "" {
 				require.EqualError(t, publishAll(ctx, client), tt.expectedPublishError)
 				return
 			}
-
 			require.NoError(t, publishAll(ctx, client))
-			require.True(t, client.CreatedFile)
-			golden.RequireEqual(t, []byte(client.Content))
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
-			require.Equal(t, client.Content, string(distBts))
+
+			golden.RequireEqual(t, distBts)
+			golden.RequireEqual(t, cloneAndGetPKGBUILD(t, url))
 		})
 	}
 }
 
-func TestRunPipeNameTemplate(t *testing.T) {
-	folder := t.TempDir()
-	ctx := &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
-		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Env: map[string]string{
-			"FOO_BAR": "is_bar",
-		},
-		Config: config.Project{
-			Dist:        folder,
-			ProjectName: "foo",
-			Rigs: []config.GoFish{
-				{
-					Name: "foo_{{ .Env.FOO_BAR }}",
-					Rig: config.RepoRef{
-						Owner: "foo",
-						Name:  "bar",
-					},
-					IDs: []string{
-						"foo",
-					},
-				},
-			},
-		},
-	}
-	path := filepath.Join(folder, "bin.tar.gz")
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
-		Extra: map[string]interface{}{
-			artifact.ExtraID:       "foo",
-			artifact.ExtraFormat:   "tar.gz",
-			artifact.ExtraBinaries: []string{"foo"},
-		},
-	})
-
-	f, err := os.Create(path)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
-	client := client.NewMock()
-	distFile := filepath.Join(folder, "foo_is_bar")
-
-	require.NoError(t, runAll(ctx, client))
-	require.NoError(t, publishAll(ctx, client))
-	require.True(t, client.CreatedFile)
-	golden.RequireEqual(t, []byte(client.Content))
-	distBts, err := os.ReadFile(distFile)
-	require.NoError(t, err)
-	require.Equal(t, client.Content, string(distBts))
-}
-
 func TestRunPipe(t *testing.T) {
+	url := makeBareRepo(t)
+	key := makeKey(t)
+
 	folder := t.TempDir()
 	ctx := &context.Context{
 		TokenType: context.TokenTypeGitHub,
@@ -287,6 +284,9 @@ func TestRunPipe(t *testing.T) {
 					License:     "MIT",
 					Description: "A run pipe test pkgbuild and FOO={{ .Env.FOO }}",
 					Homepage:    "https://github.com/goreleaser",
+					IDs:         []string{"foo"},
+					GitURL:      url,
+					PrivateKey:  key,
 				},
 			},
 			GitHubURLs: config.GitHubURLs{
@@ -369,8 +369,9 @@ func TestRunPipe(t *testing.T) {
 			Goarm:  a.goarm,
 			Type:   artifact.UploadableArchive,
 			Extra: map[string]interface{}{
-				artifact.ExtraID:     a.name,
-				artifact.ExtraFormat: "tar.gz",
+				artifact.ExtraID:       "foo",
+				artifact.ExtraFormat:   "tar.gz",
+				artifact.ExtraBinaries: []string{"foo"},
 			},
 		})
 		f, err := os.Create(path)
@@ -379,7 +380,7 @@ func TestRunPipe(t *testing.T) {
 	}
 
 	client := client.NewMock()
-	distFile := filepath.Join(folder, "foo-bin/PKGBUILD")
+	distFile := filepath.Join(folder, "aur/pkgbuilds/foo-bin")
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, client))
@@ -387,7 +388,9 @@ func TestRunPipe(t *testing.T) {
 
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
+
 	golden.RequireEqual(t, distBts)
+	golden.RequireEqual(t, cloneAndGetPKGBUILD(t, url))
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
@@ -405,6 +408,8 @@ func TestRunPipeNoBuilds(t *testing.T) {
 }
 
 func TestRunPipeBinaryRelease(t *testing.T) {
+	url := makeBareRepo(t)
+	key := makeKey(t)
 	folder := t.TempDir()
 	ctx := &context.Context{
 		Git: context.GitInfo{
@@ -415,32 +420,28 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Config: config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
-			Rigs: []config.GoFish{
-				{
-					Name: "foo",
-					Rig: config.RepoRef{
-						Owner: "test",
-						Name:  "test",
-					},
-				},
-			},
+			PkgBuilds: []config.PkgBuild{{
+				GitURL:     url,
+				PrivateKey: key,
+			}},
 		},
 	}
 
-	path := filepath.Join(folder, "dist/foo_darwin_all/foo")
+	path := filepath.Join(folder, "dist/foo_linux_amd64/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "foo_macos",
+		Name:   "foo_linux_amd64",
 		Path:   path,
-		Goos:   "darwin",
-		Goarch: "all",
+		Goos:   "linux",
+		Goarch: "amd64",
 		Type:   artifact.UploadableBinary,
 		Extra: map[string]interface{}{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "binary",
-			artifact.ExtraBinary: "foo",
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "binary",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -449,25 +450,17 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	client := client.NewMock()
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
-	require.True(t, client.CreatedFile)
-	golden.RequireEqualRb(t, []byte(client.Content))
+
+	golden.RequireEqual(t, cloneAndGetPKGBUILD(t, url))
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
-	t.Skip("TODO")
 	folder := t.TempDir()
 	ctx := context.New(config.Project{
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
-		Rigs: []config.GoFish{
-			{
-				Rig: config.RepoRef{
-					Owner: "test",
-					Name:  "test",
-				},
-			},
-		},
+		PkgBuilds:   []config.PkgBuild{{}},
 	})
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
@@ -478,7 +471,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
 		Path:   path,
-		Goos:   "darwin",
+		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
@@ -487,6 +480,8 @@ func TestRunPipeNoUpload(t *testing.T) {
 			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
+
+	require.NoError(t, Pipe{}.Default(ctx))
 	client := client.NewMock()
 
 	assertNoPublish := func(t *testing.T) {
@@ -496,12 +491,12 @@ func TestRunPipeNoUpload(t *testing.T) {
 		require.False(t, client.CreatedFile)
 	}
 	t.Run("skip upload true", func(t *testing.T) {
-		ctx.Config.Rigs[0].SkipUpload = "true"
+		ctx.Config.PkgBuilds[0].SkipUpload = "true"
 		ctx.Semver.Prerelease = ""
 		assertNoPublish(t)
 	})
 	t.Run("skip upload auto", func(t *testing.T) {
-		ctx.Config.Rigs[0].SkipUpload = "auto"
+		ctx.Config.PkgBuilds[0].SkipUpload = "auto"
 		ctx.Semver.Prerelease = "beta1"
 		assertNoPublish(t)
 	})
@@ -534,8 +529,9 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
-			artifact.ExtraID:     "foo",
-			artifact.ExtraFormat: "tar.gz",
+			artifact.ExtraID:       "foo",
+			artifact.ExtraFormat:   "tar.gz",
+			artifact.ExtraBinaries: []string{"foo"},
 		},
 	})
 	client := client.NewMock()
@@ -558,8 +554,9 @@ func TestDefault(t *testing.T) {
 			Name:                  "myproject-bin",
 			Conflicts:             []string{"myproject"},
 			Provides:              []string{"myproject"},
-			CommitMessageTemplate: "Update to {{ .Tag }}",
 			Rel:                   "1",
+			CommitMessageTemplate: defaultCommitMsg,
+			SSHCommand:            defaultSSHCommand,
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
 				Email: "goreleaser@carlosbecker.com",
@@ -584,8 +581,9 @@ func TestDefault(t *testing.T) {
 			Name:                  "myproject-bin",
 			Conflicts:             []string{"somethingelse"},
 			Provides:              []string{"myproject"},
-			CommitMessageTemplate: "Update to {{ .Tag }}",
 			Rel:                   "1",
+			CommitMessageTemplate: defaultCommitMsg,
+			SSHCommand:            defaultSSHCommand,
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
 				Email: "goreleaser@carlosbecker.com",
@@ -608,8 +606,9 @@ func TestDefault(t *testing.T) {
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.PkgBuild{
 			Name:                  "oops",
-			CommitMessageTemplate: "Update to {{ .Tag }}",
 			Rel:                   "1",
+			CommitMessageTemplate: defaultCommitMsg,
+			SSHCommand:            defaultSSHCommand,
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
 				Email: "goreleaser@carlosbecker.com",
@@ -640,4 +639,29 @@ func TestRunSkipNoName(t *testing.T) {
 
 	client := client.NewMock()
 	testlib.AssertSkipped(t, runAll(ctx, client))
+}
+
+func makeBareRepo(t *testing.T) string {
+	t.Helper()
+	dir := t.TempDir()
+	_, err := git.Run("-C", dir, "init", "--bare", ".")
+	require.NoError(t, err)
+	return dir
+}
+
+func makeKey(t *testing.T) string {
+	t.Helper()
+	dir := t.TempDir()
+	_, err := keygen.NewWithWrite(dir, "id", nil, keygen.Ed25519)
+	require.NoError(t, err)
+	return filepath.Join(dir, "id_ed25519")
+}
+
+func cloneAndGetPKGBUILD(t *testing.T, repo string) []byte {
+	dir := t.TempDir()
+	_, err := git.Run("-C", dir, "clone", repo, "repo")
+	require.NoError(t, err)
+	bts, err := os.ReadFile(filepath.Join(dir, "repo/PKGBUILD"))
+	require.NoError(t, err)
+	return bts
 }

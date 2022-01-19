@@ -124,6 +124,9 @@ type PkgBuild struct {
 	Depends               []string     `yaml:"depends,omitempty"`
 	Rel                   string       `yaml:"rel,omitempty"`
 	Package               string       `yaml:"package,omitempty"`
+	GitURL                string       `yaml:"git_url,omitempty"`
+	SSHCommand            string       `yaml:"ssh_command,omitempty"`
+	PrivateKey            string       `yaml:"private_key,omitempty"`
 }
 
 // GoFish contains the gofish section.
