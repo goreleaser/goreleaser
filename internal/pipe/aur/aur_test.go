@@ -139,6 +139,7 @@ func TestSrcInfoSimple(t *testing.T) {
 func TestFullPipe(t *testing.T) {
 	type testcase struct {
 		prepare              func(ctx *context.Context)
+		expectedRunError     string
 		expectedPublishError string
 	}
 	for name, tt := range map[string]testcase{
@@ -148,7 +149,7 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.AURs[0].Homepage = "https://github.com/goreleaser"
 			},
 		},
-		"with_more_opts": {
+		"with-more-opts": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
 				ctx.Config.AURs[0].Homepage = "https://github.com/goreleaser"
@@ -160,55 +161,67 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.AURs[0].Conflicts = []string{"libcurl", "cvs", "blah"}
 			},
 		},
-		"default_gitlab": {
+		"default-gitlab": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitLab
 				ctx.Config.AURs[0].Homepage = "https://gitlab.com/goreleaser"
 			},
 		},
-		"invalid_commit_template": {
+		"invalid-name-template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.AURs[0].Name = "{{ .Asdsa }"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"invalid-package-template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.AURs[0].Package = "{{ .Asdsa }"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+		},
+		"invalid-commit-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
-		"invalid_key_template": {
+		"invalid-key-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
-		"no_key": {
+		"no-key": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = ""
 			},
 			expectedPublishError: `pkgbuild.private_key is empty`,
 		},
-		"key_not_found": {
+		"key-not-found": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = "testdata/nope"
 			},
 			expectedPublishError: `key "testdata/nope" does not exist`,
 		},
-		"invalid_git_url_template": {
+		"invalid-git-url-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitURL = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
-		"no_git_url": {
+		"no-git-url": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitURL = ""
 			},
 			expectedPublishError: `pkgbuild.git_url is empty`,
 		},
-		"invalid_ssh_cmd_template": {
+		"invalid-ssh-cmd-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitSSHCommand = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
-		"invalid_commit_author_template": {
+		"invalid-commit-author-template": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].CommitAuthor.Name = "{{ .Asdsa }"
 			},
@@ -277,7 +290,13 @@ func TestFullPipe(t *testing.T) {
 			client := client.NewMock()
 
 			require.NoError(t, Pipe{}.Default(ctx))
+
+			if tt.expectedRunError != "" {
+				require.EqualError(t, runAll(ctx, client), tt.expectedRunError)
+				return
+			}
 			require.NoError(t, runAll(ctx, client))
+
 			if tt.expectedPublishError != "" {
 				require.EqualError(t, Pipe{}.Publish(ctx), tt.expectedPublishError)
 				return
@@ -413,7 +432,7 @@ func TestRunPipe(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	requireEqualRepoFiles(t, folder, "foo-bin", url)
+	requireEqualRepoFiles(t, folder, "foo", url)
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
@@ -474,7 +493,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	requireEqualRepoFiles(t, folder, "foo-bin", url)
+	requireEqualRepoFiles(t, folder, "foo", url)
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
@@ -575,6 +594,33 @@ func TestDefault(t *testing.T) {
 		require.NoError(t, Pipe{}.Default(ctx))
 		require.Equal(t, config.AUR{
 			Name:                  "myproject-bin",
+			Conflicts:             []string{"myproject"},
+			Provides:              []string{"myproject"},
+			Rel:                   "1",
+			CommitMessageTemplate: defaultCommitMsg,
+			GitSSHCommand:         defaultSSHCommand,
+			CommitAuthor: config.CommitAuthor{
+				Name:  "goreleaserbot",
+				Email: "goreleaser@carlosbecker.com",
+			},
+		}, ctx.Config.AURs[0])
+	})
+
+	t.Run("name-without-bin-suffix", func(t *testing.T) {
+		ctx := &context.Context{
+			TokenType: context.TokenTypeGitHub,
+			Config: config.Project{
+				ProjectName: "myproject",
+				AURs: []config.AUR{
+					{
+						Name: "foo",
+					},
+				},
+			},
+		}
+		require.NoError(t, Pipe{}.Default(ctx))
+		require.Equal(t, config.AUR{
+			Name:                  "foo-bin",
 			Conflicts:             []string{"myproject"},
 			Provides:              []string{"myproject"},
 			Rel:                   "1",
@@ -710,7 +756,7 @@ func requireEqualRepoFiles(tb testing.TB, folder, name, url string) {
 		"PKGBUILD": ".pkgbuild",
 		".SRCINFO": ".srcinfo",
 	} {
-		path := filepath.Join(folder, "aur", name+ext)
+		path := filepath.Join(folder, "aur", name+"-bin"+ext)
 		bts, err := os.ReadFile(path)
 		require.NoError(tb, err)
 		golden.RequireEqualExt(tb, bts, ext)

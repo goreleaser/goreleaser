@@ -46,7 +46,10 @@ func (Pipe) Default(ctx *context.Context) error {
 			pkg.CommitMessageTemplate = defaultCommitMsg
 		}
 		if pkg.Name == "" {
-			pkg.Name = ctx.Config.ProjectName + "-bin"
+			pkg.Name = ctx.Config.ProjectName
+		}
+		if !strings.HasSuffix(pkg.Name, "-bin") {
+			pkg.Name += "-bin"
 		}
 		if len(pkg.Conflicts) == 0 {
 			pkg.Conflicts = []string{ctx.Config.ProjectName}

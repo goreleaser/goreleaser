@@ -3,6 +3,10 @@
 After releasing to GitHub or GitLab, GoReleaser can generate and publish
 a `PKGBUILD` to an _Arch User Repository_.
 
+!!! warning
+    Before going further on this, make sure to read
+    [AUR's Submission Guidelines](https://wiki.archlinux.org/title/AUR_submission_guidelines).
+
 This page describes the available options.
 
 ```yaml
@@ -14,7 +18,8 @@ aurs:
     # Defaults to the Project Name with a -bin suffix.
     #
     # Note that since this integration does not create a PKGBUILD to build from
-    # source, per Arch's guidelines, it should have a `-bin` suffix.
+    # source, per Arch's guidelines.
+    # That said, GoReleaser will enforce a `-bin` suffix if its not present.
     name: package-bin
 
     # Artifact IDs to filter for.
@@ -146,4 +151,5 @@ aurs:
     Learn more about the [name template engine](/customization/templates/).
 
 !!! tip
-    For more info, please refer to the [Arch PKGBUILD wiki reference](https://wiki.archlinux.org/title/PKGBUILD).
+    For more info about what each field does, please refer to
+    [Arch's PKGBUILD reference](https://wiki.archlinux.org/title/PKGBUILD).
