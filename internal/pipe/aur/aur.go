@@ -324,7 +324,7 @@ func dataFor(ctx *context.Context, cfg config.PkgBuild, cl client.Client, artifa
 	return result, nil
 }
 
-// Publish the PKGBUILD to the AUR repository.
+// Publish the PKGBUILD and .SRCINFO files to the AUR repository.
 func (Pipe) Publish(ctx *context.Context) error {
 	skips := pipe.SkipMemento{}
 	for _, pkgs := range ctx.Artifacts.Filter(

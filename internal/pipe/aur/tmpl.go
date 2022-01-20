@@ -71,16 +71,16 @@ const srcInfoTemplate = `pkgbase = {{ .Name }}
 	pkgrel = {{ .Rel }}
 	url = {{ .Homepage }}
 	license = {{ .License }}
-	{{ range .OptDepends -}}
+	{{- range .OptDepends -}}
 	optdepends = {{ . }}
 	{{ end }}
-	{{ range .Depends -}}
+	{{- range .Depends -}}
 	depends = {{ . }}
 	{{ end }}
-	{{ range .Conflicts -}}
+	{{- range .Conflicts -}}
 	conflicts = {{ . }}
 	{{ end }}
-	{{ range .Provides -}}
+	{{- range .Provides -}}
 	provides = {{ . }}
 	{{ end }}
 	{{ range .ReleasePackages -}}

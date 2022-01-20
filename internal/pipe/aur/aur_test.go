@@ -98,17 +98,33 @@ func assertDefaultTemplateData(t *testing.T, pkgbuild string) {
 
 func TestFullPkgBuild(t *testing.T) {
 	data := createTemplateData()
-	data.License = "MIT"
 	pkg, err := applyTemplate(context.New(config.Project{
 		ProjectName: "foo",
-	}), data)
+	}), pkgBuildTemplate, data)
 	require.NoError(t, err)
 
 	golden.RequireEqual(t, []byte(pkg))
 }
 
 func TestPkgBuildSimple(t *testing.T) {
-	pkg, err := applyTemplate(context.New(config.Project{}), createTemplateData())
+	pkg, err := applyTemplate(context.New(config.Project{}), pkgBuildTemplate, createTemplateData())
+	require.NoError(t, err)
+	assertDefaultTemplateData(t, pkg)
+}
+
+func TestFullSrcInfo(t *testing.T) {
+	data := createTemplateData()
+	data.License = "MIT"
+	pkg, err := applyTemplate(context.New(config.Project{
+		ProjectName: "foo",
+	}), srcInfoTemplate, data)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, []byte(pkg))
+}
+
+func TestSrcInfoSimple(t *testing.T) {
+	pkg, err := applyTemplate(context.New(config.Project{}), srcInfoTemplate, createTemplateData())
 	require.NoError(t, err)
 	assertDefaultTemplateData(t, pkg)
 }
@@ -247,10 +263,10 @@ func TestFullPipe(t *testing.T) {
 			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, runAll(ctx, client))
 			if tt.expectedPublishError != "" {
-				require.EqualError(t, publishAll(ctx, client), tt.expectedPublishError)
+				require.EqualError(t, Pipe{}.Publish(ctx), tt.expectedPublishError)
 				return
 			}
-			require.NoError(t, publishAll(ctx, client))
+			require.NoError(t, Pipe{}.Publish(ctx))
 
 			distBts, err := os.ReadFile(distFile)
 			require.NoError(t, err)
@@ -384,7 +400,7 @@ func TestRunPipe(t *testing.T) {
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, client))
-	require.NoError(t, publishAll(ctx, client))
+	require.NoError(t, Pipe{}.Publish(ctx))
 
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
@@ -449,7 +465,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 
 	client := client.NewMock()
 	require.NoError(t, runAll(ctx, client))
-	require.NoError(t, publishAll(ctx, client))
+	require.NoError(t, Pipe{}.Publish(ctx))
 
 	golden.RequireEqual(t, cloneAndGetPKGBUILD(t, url))
 }
@@ -487,7 +503,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 	assertNoPublish := func(t *testing.T) {
 		t.Helper()
 		require.NoError(t, runAll(ctx, client))
-		testlib.AssertSkipped(t, publishAll(ctx, client))
+		testlib.AssertSkipped(t, Pipe{}.Publish(ctx))
 		require.False(t, client.CreatedFile)
 	}
 	t.Run("skip upload true", func(t *testing.T) {
