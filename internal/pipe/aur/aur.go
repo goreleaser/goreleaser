@@ -453,7 +453,7 @@ func keyPath(key string) (string, error) {
 		if _, err := fmt.Fprint(f, key); err != nil {
 			return "", fmt.Errorf("failed to store private key: %w", err)
 		}
-		if err := os.Chmod(f.Name(), 0400); err != nil {
+		if err := os.Chmod(f.Name(), 0o400); err != nil {
 			return "", fmt.Errorf("failed to store private key: %w", err)
 		}
 		return f.Name(), nil
@@ -468,8 +468,7 @@ func keyPath(key string) (string, error) {
 func runGitCmds(cwd string, env []string, cmds [][]string) error {
 	for _, cmd := range cmds {
 		args := append([]string{"-C", cwd}, cmd...)
-		if out, err := git.Clean(git.RunWithEnv(env, args...)); err != nil {
-			log.Debug(string(out))
+		if _, err := git.Clean(git.RunWithEnv(env, args...)); err != nil {
 			return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
 		}
 	}

@@ -2,10 +2,8 @@ package aur
 
 import (
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/charmbracelet/keygen"
@@ -269,7 +267,7 @@ func TestFullPipe(t *testing.T) {
 			}
 			require.NoError(t, Pipe{}.Publish(ctx))
 
-			requireEqualFiles(t, folder, name, url)
+			requireEqualRepoFiles(t, folder, name, url)
 		})
 	}
 }
@@ -398,7 +396,7 @@ func TestRunPipe(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	requireEqualFiles(t, folder, "foo-bin", url)
+	requireEqualRepoFiles(t, folder, "foo-bin", url)
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
@@ -459,7 +457,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	requireEqualFiles(t, folder, "foo-bin", url)
+	requireEqualRepoFiles(t, folder, "foo-bin", url)
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
@@ -710,18 +708,11 @@ func makeKey(tb testing.TB, algo ...keygen.KeyType) string {
 	return filepath.Join(dir, k.Filename)
 }
 
-func requireEqualFiles(tb testing.TB, folder, name, url string) {
+func requireEqualRepoFiles(tb testing.TB, folder, name, url string) {
+	tb.Helper()
 	dir := tb.TempDir()
 	_, err := git.Run("-C", dir, "clone", url, "repo")
 	require.NoError(tb, err)
-
-	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
-		if strings.Contains(path, ".git") {
-			return nil
-		}
-		tb.Log("aaa", path)
-		return nil
-	})
 
 	for reponame, ext := range map[string]string{
 		"PKGBUILD": ".pkgbuild",
