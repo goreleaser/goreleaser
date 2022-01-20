@@ -676,15 +676,6 @@ func TestSkip(t *testing.T) {
 	})
 }
 
-func TestRunSkipNoName(t *testing.T) {
-	ctx := context.New(config.Project{
-		AURs: []config.AUR{{}},
-	})
-
-	client := client.NewMock()
-	testlib.AssertSkipped(t, runAll(ctx, client))
-}
-
 func TestKeyPath(t *testing.T) {
 	t.Run("with valid path", func(t *testing.T) {
 		path := makeKey(t)

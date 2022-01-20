@@ -94,10 +94,6 @@ func doRun(ctx *context.Context, pkgbuild config.AUR, cl client.Client) error {
 	}
 	pkgbuild.Name = name
 
-	if pkgbuild.Name == "" {
-		return pipe.Skip("package name is not set")
-	}
-
 	filters := []artifact.Filter{
 		artifact.ByGoos("linux"),
 		artifact.Or(
