@@ -6,5 +6,5 @@ pkgbase = default_gitlab
 	license = MITarch = x86_64
 	source_x86_64 = https://dummyhost/download/v1.0.1/bin.tar.gz
 	sha256sums_x86_64 = e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-
+	
 pkgname = default_gitlab

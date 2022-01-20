@@ -87,7 +87,7 @@ const srcInfoTemplate = `pkgbase = {{ .Name }}
 	arch = {{ .Arch }}
 	source_{{ .Arch }} = {{ .DownloadURL }}
 	sha256sums_{{ .Arch }} = {{ .SHA256 }}
-	{{- end }}
-
+	{{ end -}}
+{{ printf "\n" -}}
 pkgname = {{ .Name }}
 `
