@@ -282,7 +282,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.Client, artifacts [
 		Version:      ctx.Version,
 		License:      cfg.License,
 		Rel:          cfg.Rel,
-		Maintainer:   cfg.Maintainer,
+		Maintainers:  cfg.Maintainers,
 		Contributors: cfg.Contributors,
 		Provides:     cfg.Provides,
 		Conflicts:    cfg.Conflicts,

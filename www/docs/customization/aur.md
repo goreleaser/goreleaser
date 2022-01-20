@@ -32,9 +32,10 @@ aurs:
     # Default is empty.
     description: "Software to create fast and easy drum rolls."
 
-    # The maintainer of the package.
+    # The maintainers of the package.
     # Defaults to empty.
-    maintainer: 'Foo Bar <foo at bar dot com>'
+    maintainers:
+      - 'Foo Bar <foo at bar dot com>'
 
     # The contributors of the package.
     # Defaults to empty.

@@ -25,17 +25,20 @@ func createTemplateData() templateData {
 	return templateData{
 		Name:       "test-bin",
 		Desc:       "Some desc",
-		Homepage:   "https://google.com",
+		Homepage:   "https://example.com",
 		Conflicts:  []string{"nope"},
 		Depends:    []string{"nope"},
 		Arches:     []string{"x86_64", "i686", "aarch64", "armv6h", "armv7h"},
 		Rel:        "1",
 		Provides:   []string{"test"},
 		OptDepends: []string{"nfpm"},
-		Maintainer: "Ciclano <ciclano@oobar.as>",
+		Maintainers: []string{
+			"Ciclano <ciclano@example.com>",
+			"Cicrano <cicrano@example.com>",
+		},
 		Contributors: []string{
-			"Fulano <fulano@oobar.as>",
-			"Beltrano <Beltrano@oobar.as>",
+			"Fulano <fulano@example.com>",
+			"Beltrano <beltrano@example.com>",
 		},
 		License: "MIT",
 		Version: "0.1.3",
@@ -100,8 +103,12 @@ func TestFullPkgBuild(t *testing.T) {
 func TestPkgBuildSimple(t *testing.T) {
 	pkg, err := applyTemplate(context.New(config.Project{}), pkgBuildTemplate, createTemplateData())
 	require.NoError(t, err)
+	require.Contains(t, pkg, `# Maintainer: Ciclano <ciclano@example.com>`)
+	require.Contains(t, pkg, `# Maintainer: Cicrano <cicrano@example.com>`)
+	require.Contains(t, pkg, `# Contributor: Fulano <fulano@example.com>`)
+	require.Contains(t, pkg, `# Contributor: Beltrano <beltrano@example.com>`)
 	require.Contains(t, pkg, `pkgname='test-bin'`)
-	require.Contains(t, pkg, `url='https://google.com'`)
+	require.Contains(t, pkg, `url='https://example.com'`)
 	require.Contains(t, pkg, `source_x86_64=('https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz')`)
 	require.Contains(t, pkg, `sha256sums_x86_64=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67')`)
 	require.Contains(t, pkg, `pkgver=0.1.3`)
@@ -123,7 +130,7 @@ func TestSrcInfoSimple(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, pkg, `pkgbase = test-bin`)
 	require.Contains(t, pkg, `pkgname = test-bin`)
-	require.Contains(t, pkg, `url = https://google.com`)
+	require.Contains(t, pkg, `url = https://example.com`)
 	require.Contains(t, pkg, `source_x86_64 = https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz`)
 	require.Contains(t, pkg, `sha256sums_x86_64 = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67`)
 	require.Contains(t, pkg, `pkgver = 0.1.3`)
@@ -145,7 +152,8 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
 				ctx.Config.AURs[0].Homepage = "https://github.com/goreleaser"
-				ctx.Config.AURs[0].Maintainer = "me"
+				ctx.Config.AURs[0].Maintainers = []string{"me"}
+				ctx.Config.AURs[0].Contributors = []string{"me as well"}
 				ctx.Config.AURs[0].Depends = []string{"curl", "bash"}
 				ctx.Config.AURs[0].OptDepends = []string{"wget: stuff", "foo: bar"}
 				ctx.Config.AURs[0].Provides = []string{"git", "svn"}

@@ -117,7 +117,7 @@ type AUR struct {
 	License               string       `yaml:"license,omitempty"`
 	SkipUpload            string       `yaml:"skip_upload,omitempty"`
 	URLTemplate           string       `yaml:"url_template,omitempty"`
-	Maintainer            string       `yaml:"maintainer,omitempty"`
+	Maintainers           []string     `yaml:"maintainers,omitempty"`
 	Contributors          []string     `yaml:"contributors,omitempty"`
 	Provides              []string     `yaml:"provides,omitempty"`
 	Conflicts             []string     `yaml:"conflicts,omitempty"`
