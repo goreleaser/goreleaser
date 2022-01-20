@@ -69,21 +69,25 @@ const srcInfoTemplate = `pkgbase = {{ .Name }}
 	pkgdesc = {{ .Desc }}
 	pkgver = {{ .Version }}
 	pkgrel = {{ .Rel }}
-	url = {{ .Homepage }}
-	license = {{ .License }}
-	{{- range .OptDepends -}}
+	{{ with .Homepage -}}
+	url = {{ . }}
+	{{ end -}}
+	{{ with .License -}}
+	license = {{ . }}
+	{{ end -}}
+	{{ range .OptDepends -}}
 	optdepends = {{ . }}
-	{{ end }}
-	{{- range .Depends -}}
+	{{ end -}}
+	{{ range .Depends -}}
 	depends = {{ . }}
-	{{ end }}
-	{{- range .Conflicts -}}
+	{{ end -}}
+	{{ range .Conflicts -}}
 	conflicts = {{ . }}
-	{{ end }}
-	{{- range .Provides -}}
+	{{ end -}}
+	{{ range .Provides -}}
 	provides = {{ . }}
-	{{ end }}
-	{{- range .ReleasePackages -}}
+	{{ end -}}
+	{{ range .ReleasePackages -}}
 	arch = {{ .Arch }}
 	source_{{ .Arch }} = {{ .DownloadURL }}
 	sha256sums_{{ .Arch }} = {{ .SHA256 }}

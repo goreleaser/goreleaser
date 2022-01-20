@@ -3,7 +3,8 @@ pkgbase = with_more_opts
 	pkgver = 1.0.1
 	pkgrel = 1
 	url = https://github.com/goreleaser
-	license = MIToptdepends = wget: stuff
+	license = MIT
+	optdepends = wget: stuff
 	optdepends = foo: bar
 	depends = curl
 	depends = bash

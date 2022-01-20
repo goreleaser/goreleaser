@@ -3,7 +3,8 @@ pkgbase = foo-bin
 	pkgver = 1.0.1
 	pkgrel = 1
 	url = https://github.com/goreleaser
-	license = MITconflicts = foo
+	license = MIT
+	conflicts = foo
 	provides = foo
 	arch = aarch64
 	source_aarch64 = https://dummyhost/download/v1.0.1/arm64.tar.gz

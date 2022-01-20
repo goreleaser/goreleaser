@@ -2,8 +2,7 @@ pkgbase = foo-bin
 	pkgdesc =
 	pkgver = 1.2.1
 	pkgrel = 1
-	url =
-	license = conflicts = foo
+	conflicts = foo
 	provides = foo
 	arch = x86_64
 	source_x86_64 = https://dummyhost/download/v1.2.1/foo_linux_amd64
