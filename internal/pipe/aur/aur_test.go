@@ -42,8 +42,7 @@ func createTemplateData() templateData {
 		},
 		License: "MIT",
 		Version: "0.1.3",
-		Package: `
-		# bin
+		Package: `# bin
 		install -Dm755 "./goreleaser" "${pkgdir}/usr/bin/goreleaser"
 
 		# license
@@ -58,8 +57,7 @@ func createTemplateData() templateData {
 		install -Dm644 "./completions/goreleaser.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/goreleaser.fish"
 
 		# man pages
-		install -Dm644 "./manpages/goreleaser.1.gz" "${pkgdir}/usr/share/man/man1/goreleaser.1.gz"
-		`,
+		install -Dm644 "./manpages/goreleaser.1.gz" "${pkgdir}/usr/share/man/man1/goreleaser.1.gz"`,
 		ReleasePackages: []releasePackage{
 			{
 				Arch:        "x86_64",
