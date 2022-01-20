@@ -25,7 +25,7 @@ import (
 
 const (
 	pkgBuildExtra     = "AURConfig"
-	defaultSSHCommand = "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i {{ .KeyPath }} -F /dev/null"
+	defaultSSHCommand = "ssh -i {{ .KeyPath }} -F /dev/null"
 	defaultCommitMsg  = "Update to {{ .Tag }}"
 )
 
