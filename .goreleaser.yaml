@@ -164,9 +164,9 @@ rigs:
 aurs:
   - homepage:  https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible
-    maintainer: 'Carlos Alexandro Becker <carlos at becker dot software>'
-    contributors:
+    maintainers:
       - 'Fernandez Ludovic <lfernandez dot dev at gmail dot com>'
+      - 'Carlos Alexandro Becker <carlos at becker dot software>'
     license: MIT
     private_key: '{{ .Env.AUR_KEY }}'
     git_url: 'ssh://aur@aur.archlinux.org/goreleaser-bin.git'
