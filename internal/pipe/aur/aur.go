@@ -136,7 +136,7 @@ func doRun(ctx *context.Context, pkgbuild config.AUR, cl client.Client) error {
 			pkg = fmt.Sprintf(`install -Dm755 "./%s "${pkgdir}/usr/bin/%s"`, name, bin)
 		case artifact.UploadableArchive:
 			for _, bin := range art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
-				pkg = fmt.Sprintf(`install -Dm755 "./%s "${pkgdir}/usr/bin/%[1]s"`, bin)
+				pkg = fmt.Sprintf(`install -Dm755 "./%s" "${pkgdir}/usr/bin/%[1]s"`, bin)
 				break
 			}
 		}
