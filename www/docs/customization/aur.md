@@ -144,3 +144,5 @@ aurs:
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
 
+!!! tip
+    For more info, please refer to the [Arch PKGBUILD wiki reference](https://wiki.archlinux.org/title/PKGBUILD).
