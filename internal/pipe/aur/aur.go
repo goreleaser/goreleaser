@@ -34,7 +34,7 @@ var ErrNoArchivesFound = errors.New("no linux archives found")
 // Pipe for arch linux's AUR pkgbuild.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "aur pkgbuild" }
+func (Pipe) String() string                 { return "arch user repositories" }
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.AURs) == 0 }
 
 func (Pipe) Default(ctx *context.Context) error {
