@@ -605,31 +605,6 @@ func TestDefault(t *testing.T) {
 			},
 		}, ctx.Config.AURs[0])
 	})
-
-	t.Run("name provided", func(t *testing.T) {
-		ctx := &context.Context{
-			TokenType: context.TokenTypeGitHub,
-			Config: config.Project{
-				ProjectName: "myproject",
-				AURs: []config.AUR{
-					{
-						Name: "oops",
-					},
-				},
-			},
-		}
-		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, config.AUR{
-			Name:                  "oops",
-			Rel:                   "1",
-			CommitMessageTemplate: defaultCommitMsg,
-			GitSSHCommand:         defaultSSHCommand,
-			CommitAuthor: config.CommitAuthor{
-				Name:  "goreleaserbot",
-				Email: "goreleaser@carlosbecker.com",
-			},
-		}, ctx.Config.AURs[0])
-	})
 }
 
 func TestSkip(t *testing.T) {

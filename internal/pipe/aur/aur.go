@@ -47,12 +47,12 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if pkg.Name == "" {
 			pkg.Name = ctx.Config.ProjectName + "-bin"
-			if len(pkg.Conflicts) == 0 {
-				pkg.Conflicts = []string{ctx.Config.ProjectName}
-			}
-			if len(pkg.Provides) == 0 {
-				pkg.Provides = []string{ctx.Config.ProjectName}
-			}
+		}
+		if len(pkg.Conflicts) == 0 {
+			pkg.Conflicts = []string{ctx.Config.ProjectName}
+		}
+		if len(pkg.Provides) == 0 {
+			pkg.Provides = []string{ctx.Config.ProjectName}
 		}
 		if pkg.Rel == "" {
 			pkg.Rel = "1"

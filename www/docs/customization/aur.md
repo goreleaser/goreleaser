@@ -67,13 +67,13 @@ aurs:
 
     # List of additional packages that the software provides the features of.
     #
-    # Defaults to the Project Name, if the package name is empty.
+    # Defaults to the project name.
     provides:
       - mybin
 
     # List of packages that conflict with, or cause problems with the package.
     #
-    # Defaults to the Project Name, if the package name is empty.
+    # Defaults to the project name.
     conflicts:
       - mybin
 
