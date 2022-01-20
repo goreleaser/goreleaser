@@ -7,22 +7,16 @@ pkgbase = test-bin
 	depends = nope
 	conflicts = nope
 	provides = test
-	
 	arch = x86_64
 	source_x86_64 = https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz
-	sha256sums_x86_64 = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67
-	arch = armv6h
+	sha256sums_x86_64 = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67arch = armv6h
 	source_armv6h = https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_Arm6.tar.gz
-	sha256sums_armv6h = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67
-	arch = aarch64
+	sha256sums_armv6h = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67arch = aarch64
 	source_aarch64 = https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_Arm64.tar.gz
-	sha256sums_aarch64 = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67
-	arch = i686
+	sha256sums_aarch64 = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67arch = i686
 	source_i686 = https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_386.tar.gz
-	sha256sums_i686 = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67
-	arch = armv7h
+	sha256sums_i686 = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67arch = armv7h
 	source_armv7h = https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_arm7.tar.gz
 	sha256sums_armv7h = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67
-	
 
 pkgname = test-bin

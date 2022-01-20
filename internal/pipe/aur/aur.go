@@ -412,6 +412,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		{"config", "--local", "user.name", author.Name},
 		{"config", "--local", "user.email", author.Email},
 		{"config", "--local", "commit.gpgSign", "false"},
+		{"config", "--local", "init.defaultBranch", "master"},
 	}); err != nil {
 		return fmt.Errorf("failed to setup local AUR repo: %w", err)
 	}

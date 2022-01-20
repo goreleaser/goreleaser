@@ -14,5 +14,5 @@ source_x86_64=('https://dummyhost/download/v1.2.1/foo_linux_amd64')
 sha256sums_x86_64=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
 
 package() {
-  install -Dm755 "./foo_linux_amd64 "${pkgdir}/usr/bin/foo_linux_amd64"
+  install -Dm755 "./foo_linux_amd64 "${pkgdir}/usr/bin/foo"
 }

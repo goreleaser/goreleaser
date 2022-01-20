@@ -2,8 +2,10 @@ package aur
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/charmbracelet/keygen"
@@ -87,15 +89,6 @@ func createTemplateData() templateData {
 	}
 }
 
-func assertDefaultTemplateData(t *testing.T, pkgbuild string) {
-	t.Helper()
-	require.Contains(t, pkgbuild, `pkgname='test-bin'`)
-	require.Contains(t, pkgbuild, `url='https://google.com'`)
-	require.Contains(t, pkgbuild, `source_x86_64=('https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz')`)
-	require.Contains(t, pkgbuild, `sha256sums_x86_64=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67')`)
-	require.Contains(t, pkgbuild, `pkgver=0.1.3`)
-}
-
 func TestFullPkgBuild(t *testing.T) {
 	data := createTemplateData()
 	pkg, err := applyTemplate(context.New(config.Project{
@@ -109,7 +102,11 @@ func TestFullPkgBuild(t *testing.T) {
 func TestPkgBuildSimple(t *testing.T) {
 	pkg, err := applyTemplate(context.New(config.Project{}), pkgBuildTemplate, createTemplateData())
 	require.NoError(t, err)
-	assertDefaultTemplateData(t, pkg)
+	require.Contains(t, pkg, `pkgname='test-bin'`)
+	require.Contains(t, pkg, `url='https://google.com'`)
+	require.Contains(t, pkg, `source_x86_64=('https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz')`)
+	require.Contains(t, pkg, `sha256sums_x86_64=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67')`)
+	require.Contains(t, pkg, `pkgver=0.1.3`)
 }
 
 func TestFullSrcInfo(t *testing.T) {
@@ -126,7 +123,12 @@ func TestFullSrcInfo(t *testing.T) {
 func TestSrcInfoSimple(t *testing.T) {
 	pkg, err := applyTemplate(context.New(config.Project{}), srcInfoTemplate, createTemplateData())
 	require.NoError(t, err)
-	assertDefaultTemplateData(t, pkg)
+	require.Contains(t, pkg, `pkgbase = test-bin`)
+	require.Contains(t, pkg, `pkgname = test-bin`)
+	require.Contains(t, pkg, `url = https://google.com`)
+	require.Contains(t, pkg, `source_x86_64 = https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz`)
+	require.Contains(t, pkg, `sha256sums_x86_64 = 1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67`)
+	require.Contains(t, pkg, `pkgver = 0.1.3`)
 }
 
 func TestFullPipe(t *testing.T) {
@@ -258,7 +260,6 @@ func TestFullPipe(t *testing.T) {
 			require.NoError(t, err)
 			require.NoError(t, f.Close())
 			client := client.NewMock()
-			distFile := filepath.Join(folder, "aur/pkgbuilds", name)
 
 			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, runAll(ctx, client))
@@ -268,11 +269,7 @@ func TestFullPipe(t *testing.T) {
 			}
 			require.NoError(t, Pipe{}.Publish(ctx))
 
-			distBts, err := os.ReadFile(distFile)
-			require.NoError(t, err)
-
-			golden.RequireEqual(t, distBts)
-			golden.RequireEqual(t, cloneAndGetPKGBUILD(t, url))
+			requireEqualFiles(t, folder, name, url)
 		})
 	}
 }
@@ -396,17 +393,12 @@ func TestRunPipe(t *testing.T) {
 	}
 
 	client := client.NewMock()
-	distFile := filepath.Join(folder, "aur/pkgbuilds/foo-bin")
 
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	distBts, err := os.ReadFile(distFile)
-	require.NoError(t, err)
-
-	golden.RequireEqual(t, distBts)
-	golden.RequireEqual(t, cloneAndGetPKGBUILD(t, url))
+	requireEqualFiles(t, folder, "foo-bin", url)
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
@@ -451,9 +443,9 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Goarch: "amd64",
 		Type:   artifact.UploadableBinary,
 		Extra: map[string]interface{}{
-			artifact.ExtraID:       "foo",
-			artifact.ExtraFormat:   "binary",
-			artifact.ExtraBinaries: []string{"foo"},
+			artifact.ExtraID:     "foo",
+			artifact.ExtraFormat: "binary",
+			artifact.ExtraBinary: "foo",
 		},
 	})
 
@@ -467,7 +459,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
-	golden.RequireEqual(t, cloneAndGetPKGBUILD(t, url))
+	requireEqualFiles(t, folder, "foo-bin", url)
 }
 
 func TestRunPipeNoUpload(t *testing.T) {
@@ -695,7 +687,13 @@ func TestKeyPath(t *testing.T) {
 func makeBareRepo(tb testing.TB) string {
 	tb.Helper()
 	dir := tb.TempDir()
-	_, err := git.Run("-C", dir, "init", "--bare", "-b=master", ".")
+	_, err := git.Run(
+		"-C", dir,
+		"-c", "init.defaultBranch=master",
+		"init",
+		"--bare",
+		".",
+	)
 	require.NoError(tb, err)
 	return dir
 }
@@ -712,16 +710,30 @@ func makeKey(tb testing.TB, algo ...keygen.KeyType) string {
 	return filepath.Join(dir, k.Filename)
 }
 
-func cloneAndGetPKGBUILD(tb testing.TB, repo string) []byte {
-	tb.Helper()
+func requireEqualFiles(tb testing.TB, folder, name, url string) {
 	dir := tb.TempDir()
-	_, err := git.Run("-C", dir, "clone", repo, "repo")
+	_, err := git.Run("-C", dir, "clone", url, "repo")
 	require.NoError(tb, err)
-	// filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
-	// 	tb.Log(path)
-	// 	return nil
-	// })
-	bts, err := os.ReadFile(filepath.Join(dir, "repo/PKGBUILD"))
-	require.NoError(tb, err)
-	return bts
+
+	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
+		if strings.Contains(path, ".git") {
+			return nil
+		}
+		tb.Log("aaa", path)
+		return nil
+	})
+
+	for reponame, ext := range map[string]string{
+		"PKGBUILD": ".pkgbuild",
+		".SRCINFO": ".srcinfo",
+	} {
+		path := filepath.Join(folder, "aur", name+ext)
+		bts, err := os.ReadFile(path)
+		require.NoError(tb, err)
+		golden.RequireEqualExt(tb, bts, ext)
+
+		bts, err = os.ReadFile(filepath.Join(dir, "repo", reponame))
+		require.NoError(tb, err)
+		golden.RequireEqualExt(tb, bts, ext)
+	}
 }

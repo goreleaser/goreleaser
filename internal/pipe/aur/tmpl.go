@@ -83,11 +83,11 @@ const srcInfoTemplate = `pkgbase = {{ .Name }}
 	{{- range .Provides -}}
 	provides = {{ . }}
 	{{ end }}
-	{{ range .ReleasePackages -}}
+	{{- range .ReleasePackages -}}
 	arch = {{ .Arch }}
 	source_{{ .Arch }} = {{ .DownloadURL }}
 	sha256sums_{{ .Arch }} = {{ .SHA256 }}
-	{{ end}}
+	{{- end }}
 
 pkgname = {{ .Name }}
 `
