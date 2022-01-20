@@ -141,7 +141,4 @@ variables:
   empty: ""
 ```
 
-And then you can use those fields as `{{ .description }}`, for example.
-
-!!! warning
-    You won't be allowed to override GoReleaser "native" fields.
+And then you can use those fields as `{{ .Var.description }}`, for example.

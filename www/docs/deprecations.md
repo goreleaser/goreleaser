@@ -36,6 +36,28 @@ Description.
 
 -->
 
+### variables
+
+> since 2022-01-20 (v1.4.0)
+
+On [GoReleaser PRO][pro], custom variables should now be prefixed with `.Var`.
+
+=== "Before"
+
+    ``` yaml
+    variables:
+      foo: bar
+    some_template: 'lala-{{ .foo }}'
+    ```
+
+=== "After"
+
+    ``` yaml
+    variables:
+      foo: bar
+    some_template: 'lala-{{ .Var.foo }}'
+    ```
+
 ### nfpm.empty_folders
 
 > since 2021-11-14  (v1.0.0)
@@ -60,7 +82,7 @@ nFPM empty folders is now deprecated in favor of a `dir` content type:
 
 ### godownloader
 
-> since 2021-10-13
+> since 2021-10-13 (all)
 
 GoDownloader, the install script generator, wasn't been updated for a long time and is now officially deprecated.
 The website and all install scripts will be taken out in 6 months.

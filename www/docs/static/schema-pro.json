@@ -3,6 +3,93 @@
 		"$ref": "#/definitions/Project",
 		"description": "goreleaser configuration definition file",
 		"definitions": {
+			"AUR": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"commit_author": {
+						"$ref": "#/definitions/CommitAuthor"
+					},
+					"commit_msg_template": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"homepage": {
+						"type": "string"
+					},
+					"license": {
+						"type": "string"
+					},
+					"skip_upload": {
+						"type": "string"
+					},
+					"url_template": {
+						"type": "string"
+					},
+					"maintainers": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"contributors": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"provides": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"conflicts": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"depends": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"optdepends": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"rel": {
+						"type": "string"
+					},
+					"package": {
+						"type": "string"
+					},
+					"git_url": {
+						"type": "string"
+					},
+					"git_ssh_command": {
+						"type": "string"
+					},
+					"private_key": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"After": {
 				"properties": {
 					"hooks": {
@@ -1595,6 +1682,13 @@
 						"items": {
 							"$schema": "http://json-schema.org/draft-04/schema#",
 							"$ref": "#/definitions/GoFish"
+						},
+						"type": "array"
+					},
+					"aurs": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/AUR"
 						},
 						"type": "array"
 					},
