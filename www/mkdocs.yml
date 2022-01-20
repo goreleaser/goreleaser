@@ -100,6 +100,7 @@ nav:
     - customization/blob.md
     - customization/fury.md
     - customization/homebrew.md
+    - customization/aur.md
     - customization/gofish.md
     - customization/krew.md
     - customization/scoop.md

@@ -7,6 +7,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/announce"
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifacts"
+	"github.com/goreleaser/goreleaser/internal/pipe/aur"
 	"github.com/goreleaser/goreleaser/internal/pipe/before"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
@@ -74,6 +75,7 @@ var Pipeline = append(
 	sourcearchive.Pipe{}, // archive the source code using git-archive
 	nfpm.Pipe{},          // archive via fpm (deb, rpm) using "native" go impl
 	snapcraft.Pipe{},     // archive via snapcraft (snap)
+	aur.Pipe{},           // create arch linux aur pkgbuild
 	brew.Pipe{},          // create brew tap
 	gofish.Pipe{},        // create gofish rig
 	krew.Pipe{},          // krew plugins

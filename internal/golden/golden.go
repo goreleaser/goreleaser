@@ -16,7 +16,12 @@ const golden = ".golden"
 
 func RequireEqual(tb testing.TB, out []byte) {
 	tb.Helper()
-	doRequireEqual(tb, out, "", golden)
+	RequireEqualExt(tb, out, "")
+}
+
+func RequireEqualExt(tb testing.TB, out []byte, ext string) {
+	tb.Helper()
+	doRequireEqual(tb, out, ext, golden)
 }
 
 func RequireEqualTxt(tb testing.TB, out []byte) {

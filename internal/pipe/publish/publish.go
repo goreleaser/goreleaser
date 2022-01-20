@@ -8,6 +8,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipe/artifactory"
+	"github.com/goreleaser/goreleaser/internal/pipe/aur"
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/custompublishers"
@@ -43,8 +44,9 @@ var publishers = []Publisher{
 	snapcraft.Pipe{},
 	// This should be one of the last steps
 	release.Pipe{},
-	// brew and scoop use the release URL, so, they should be last
+	// brew et al use the release URL, so, they should be last
 	brew.Pipe{},
+	aur.Pipe{},
 	gofish.Pipe{},
 	krew.Pipe{},
 	scoop.Pipe{},

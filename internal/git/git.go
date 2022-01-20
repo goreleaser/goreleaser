@@ -16,8 +16,7 @@ func IsRepo() bool {
 	return err == nil && strings.TrimSpace(out) == "true"
 }
 
-// Run runs a git command and returns its output or errors.
-func Run(args ...string) (string, error) {
+func RunWithEnv(env []string, args ...string) (string, error) {
 	// TODO: use exex.CommandContext here and refactor.
 	extraArgs := []string{
 		"-c", "log.showSignature=false",
@@ -31,6 +30,7 @@ func Run(args ...string) (string, error) {
 
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
+	cmd.Env = append(cmd.Env, env...)
 
 	log.WithField("args", args).Debug("running git")
 	err := cmd.Run()
@@ -44,6 +44,11 @@ func Run(args ...string) (string, error) {
 	}
 
 	return stdout.String(), nil
+}
+
+// Run runs a git command and returns its output or errors.
+func Run(args ...string) (string, error) {
+	return RunWithEnv([]string{}, args...)
 }
 
 // Clean the output.

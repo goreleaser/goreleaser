@@ -107,6 +107,29 @@ func (a HomebrewDependency) JSONSchemaType() *jsonschema.Type {
 	}
 }
 
+type AUR struct {
+	Name                  string       `yaml:"name,omitempty"`
+	IDs                   []string     `yaml:"ids,omitempty"`
+	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty"`
+	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty"`
+	Description           string       `yaml:"description,omitempty"`
+	Homepage              string       `yaml:"homepage,omitempty"`
+	License               string       `yaml:"license,omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty"`
+	URLTemplate           string       `yaml:"url_template,omitempty"`
+	Maintainers           []string     `yaml:"maintainers,omitempty"`
+	Contributors          []string     `yaml:"contributors,omitempty"`
+	Provides              []string     `yaml:"provides,omitempty"`
+	Conflicts             []string     `yaml:"conflicts,omitempty"`
+	Depends               []string     `yaml:"depends,omitempty"`
+	OptDepends            []string     `yaml:"optdepends,omitempty"`
+	Rel                   string       `yaml:"rel,omitempty"`
+	Package               string       `yaml:"package,omitempty"`
+	GitURL                string       `yaml:"git_url,omitempty"`
+	GitSSHCommand         string       `yaml:"git_ssh_command,omitempty"`
+	PrivateKey            string       `yaml:"private_key,omitempty"`
+}
+
 // GoFish contains the gofish section.
 type GoFish struct {
 	Name                  string       `yaml:"name,omitempty"`
@@ -827,6 +850,7 @@ type Project struct {
 	Milestones      []Milestone      `yaml:"milestones,omitempty"`
 	Brews           []Homebrew       `yaml:"brews,omitempty"`
 	Rigs            []GoFish         `yaml:"rigs,omitempty"`
+	AURs            []AUR            `yaml:"aurs,omitempty"`
 	Krews           []Krew           `yaml:"krews,omitempty"`
 	Scoop           Scoop            `yaml:"scoop,omitempty"`
 	Builds          []Build          `yaml:"builds,omitempty"`
