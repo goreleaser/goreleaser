@@ -138,60 +138,71 @@ func TestFullPipe(t *testing.T) {
 		"default": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitHub
-				ctx.Config.PkgBuilds[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.AURs[0].Homepage = "https://github.com/goreleaser"
+			},
+		},
+		"with_more_opts": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.AURs[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.AURs[0].Maintainer = "me"
+				ctx.Config.AURs[0].Depends = []string{"curl", "bash"}
+				ctx.Config.AURs[0].OptDepends = []string{"wget: stuff", "foo: bar"}
+				ctx.Config.AURs[0].Provides = []string{"git", "svn"}
+				ctx.Config.AURs[0].Conflicts = []string{"libcurl", "cvs", "blah"}
 			},
 		},
 		"default_gitlab": {
 			prepare: func(ctx *context.Context) {
 				ctx.TokenType = context.TokenTypeGitLab
-				ctx.Config.PkgBuilds[0].Homepage = "https://gitlab.com/goreleaser"
+				ctx.Config.AURs[0].Homepage = "https://gitlab.com/goreleaser"
 			},
 		},
 		"invalid_commit_template": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.PkgBuilds[0].CommitMessageTemplate = "{{ .Asdsa }"
+				ctx.Config.AURs[0].CommitMessageTemplate = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 		"invalid_key_template": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.PkgBuilds[0].PrivateKey = "{{ .Asdsa }"
+				ctx.Config.AURs[0].PrivateKey = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 		"no_key": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.PkgBuilds[0].PrivateKey = ""
+				ctx.Config.AURs[0].PrivateKey = ""
 			},
 			expectedPublishError: `pkgbuild.private_key is empty`,
 		},
 		"key_not_found": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.PkgBuilds[0].PrivateKey = "testdata/nope"
+				ctx.Config.AURs[0].PrivateKey = "testdata/nope"
 			},
 			expectedPublishError: `key "testdata/nope" does not exist`,
 		},
 		"invalid_git_url_template": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.PkgBuilds[0].GitURL = "{{ .Asdsa }"
+				ctx.Config.AURs[0].GitURL = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 		"no_git_url": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.PkgBuilds[0].GitURL = ""
+				ctx.Config.AURs[0].GitURL = ""
 			},
 			expectedPublishError: `pkgbuild.git_url is empty`,
 		},
 		"invalid_ssh_cmd_template": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.PkgBuilds[0].SSHCommand = "{{ .Asdsa }"
+				ctx.Config.AURs[0].GitSSHCommand = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
 		"invalid_commit_author_template": {
 			prepare: func(ctx *context.Context) {
-				ctx.Config.PkgBuilds[0].CommitAuthor.Name = "{{ .Asdsa }"
+				ctx.Config.AURs[0].CommitAuthor.Name = "{{ .Asdsa }"
 			},
 			expectedPublishError: `template: tmpl:1: unexpected "}" in operand`,
 		},
@@ -213,12 +224,10 @@ func TestFullPipe(t *testing.T) {
 				Config: config.Project{
 					Dist:        folder,
 					ProjectName: name,
-					PkgBuilds: []config.PkgBuild{
+					AURs: []config.AUR{
 						{
-							Name: name,
-							IDs: []string{
-								"foo",
-							},
+							Name:        name,
+							IDs:         []string{"foo"},
 							PrivateKey:  key,
 							License:     "MIT",
 							GitURL:      url,
@@ -290,7 +299,7 @@ func TestRunPipe(t *testing.T) {
 		Config: config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
-			PkgBuilds: []config.PkgBuild{
+			AURs: []config.AUR{
 				{
 					License:     "MIT",
 					Description: "A run pipe test pkgbuild and FOO={{ .Env.FOO }}",
@@ -404,7 +413,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 		TokenType: context.TokenTypeGitHub,
 		Config: config.Project{
 			ProjectName: "foo",
-			PkgBuilds:   []config.PkgBuild{{}},
+			AURs:        []config.AUR{{}},
 		},
 	}
 	client := client.NewMock()
@@ -426,7 +435,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Config: config.Project{
 			Dist:        folder,
 			ProjectName: "foo",
-			PkgBuilds: []config.PkgBuild{{
+			AURs: []config.AUR{{
 				GitURL:     url,
 				PrivateKey: key,
 			}},
@@ -466,7 +475,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
-		PkgBuilds:   []config.PkgBuild{{}},
+		AURs:        []config.AUR{{}},
 	})
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
@@ -497,12 +506,12 @@ func TestRunPipeNoUpload(t *testing.T) {
 		require.False(t, client.CreatedFile)
 	}
 	t.Run("skip upload true", func(t *testing.T) {
-		ctx.Config.PkgBuilds[0].SkipUpload = "true"
+		ctx.Config.AURs[0].SkipUpload = "true"
 		ctx.Semver.Prerelease = ""
 		assertNoPublish(t)
 	})
 	t.Run("skip upload auto", func(t *testing.T) {
-		ctx.Config.PkgBuilds[0].SkipUpload = "auto"
+		ctx.Config.AURs[0].SkipUpload = "auto"
 		ctx.Semver.Prerelease = "beta1"
 		assertNoPublish(t)
 	})
@@ -550,24 +559,24 @@ func TestDefault(t *testing.T) {
 			TokenType: context.TokenTypeGitHub,
 			Config: config.Project{
 				ProjectName: "myproject",
-				PkgBuilds: []config.PkgBuild{
+				AURs: []config.AUR{
 					{},
 				},
 			},
 		}
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, config.PkgBuild{
+		require.Equal(t, config.AUR{
 			Name:                  "myproject-bin",
 			Conflicts:             []string{"myproject"},
 			Provides:              []string{"myproject"},
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
-			SSHCommand:            defaultSSHCommand,
+			GitSSHCommand:         defaultSSHCommand,
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
 				Email: "goreleaser@carlosbecker.com",
 			},
-		}, ctx.Config.PkgBuilds[0])
+		}, ctx.Config.AURs[0])
 	})
 
 	t.Run("partial", func(t *testing.T) {
@@ -575,7 +584,7 @@ func TestDefault(t *testing.T) {
 			TokenType: context.TokenTypeGitHub,
 			Config: config.Project{
 				ProjectName: "myproject",
-				PkgBuilds: []config.PkgBuild{
+				AURs: []config.AUR{
 					{
 						Conflicts: []string{"somethingelse"},
 					},
@@ -583,18 +592,18 @@ func TestDefault(t *testing.T) {
 			},
 		}
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, config.PkgBuild{
+		require.Equal(t, config.AUR{
 			Name:                  "myproject-bin",
 			Conflicts:             []string{"somethingelse"},
 			Provides:              []string{"myproject"},
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
-			SSHCommand:            defaultSSHCommand,
+			GitSSHCommand:         defaultSSHCommand,
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
 				Email: "goreleaser@carlosbecker.com",
 			},
-		}, ctx.Config.PkgBuilds[0])
+		}, ctx.Config.AURs[0])
 	})
 
 	t.Run("name provided", func(t *testing.T) {
@@ -602,7 +611,7 @@ func TestDefault(t *testing.T) {
 			TokenType: context.TokenTypeGitHub,
 			Config: config.Project{
 				ProjectName: "myproject",
-				PkgBuilds: []config.PkgBuild{
+				AURs: []config.AUR{
 					{
 						Name: "oops",
 					},
@@ -610,16 +619,16 @@ func TestDefault(t *testing.T) {
 			},
 		}
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Equal(t, config.PkgBuild{
+		require.Equal(t, config.AUR{
 			Name:                  "oops",
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
-			SSHCommand:            defaultSSHCommand,
+			GitSSHCommand:         defaultSSHCommand,
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
 				Email: "goreleaser@carlosbecker.com",
 			},
-		}, ctx.Config.PkgBuilds[0])
+		}, ctx.Config.AURs[0])
 	})
 }
 
@@ -630,7 +639,7 @@ func TestSkip(t *testing.T) {
 
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := context.New(config.Project{
-			PkgBuilds: []config.PkgBuild{
+			AURs: []config.AUR{
 				{},
 			},
 		})
@@ -640,7 +649,7 @@ func TestSkip(t *testing.T) {
 
 func TestRunSkipNoName(t *testing.T) {
 	ctx := context.New(config.Project{
-		PkgBuilds: []config.PkgBuild{{}},
+		AURs: []config.AUR{{}},
 	})
 
 	client := client.NewMock()

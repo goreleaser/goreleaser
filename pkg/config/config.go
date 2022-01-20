@@ -107,7 +107,7 @@ func (a HomebrewDependency) JSONSchemaType() *jsonschema.Type {
 	}
 }
 
-type PkgBuild struct {
+type AUR struct {
 	Name                  string       `yaml:"name,omitempty"`
 	IDs                   []string     `yaml:"ids,omitempty"`
 	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty"`
@@ -122,10 +122,11 @@ type PkgBuild struct {
 	Provides              []string     `yaml:"provides,omitempty"`
 	Conflicts             []string     `yaml:"conflicts,omitempty"`
 	Depends               []string     `yaml:"depends,omitempty"`
+	OptDepends            []string     `yaml:"optdepends,omitempty"`
 	Rel                   string       `yaml:"rel,omitempty"`
 	Package               string       `yaml:"package,omitempty"`
 	GitURL                string       `yaml:"git_url,omitempty"`
-	SSHCommand            string       `yaml:"ssh_command,omitempty"`
+	GitSSHCommand         string       `yaml:"git_ssh_command,omitempty"`
 	PrivateKey            string       `yaml:"private_key,omitempty"`
 }
 
@@ -849,7 +850,7 @@ type Project struct {
 	Milestones      []Milestone      `yaml:"milestones,omitempty"`
 	Brews           []Homebrew       `yaml:"brews,omitempty"`
 	Rigs            []GoFish         `yaml:"rigs,omitempty"`
-	PkgBuilds       []PkgBuild       `yaml:"pkgbuilds,omitempty"`
+	AURs            []AUR            `yaml:"aurs,omitempty"`
 	Krews           []Krew           `yaml:"krews,omitempty"`
 	Scoop           Scoop            `yaml:"scoop,omitempty"`
 	Builds          []Build          `yaml:"builds,omitempty"`

@@ -1,2 +1,2 @@
-// Package aur provides Arch Linux AUR integration to GoReleaser.
+// Package aur provides the Arch User Repository (AUR) integration to GoReleaser.
 package aur

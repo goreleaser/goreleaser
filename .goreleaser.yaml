@@ -161,7 +161,7 @@ rigs:
     description: Deliver Go binaries as fast and easily as possible
     license: MIT
 
-pkgbuilds:
+aurs:
   - homepage:  https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible
     maintainer: 'Carlos Alexandro Becker <carlos at becker dot software>'

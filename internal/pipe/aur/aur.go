@@ -35,11 +35,11 @@ var ErrNoArchivesFound = errors.New("no linux archives found")
 type Pipe struct{}
 
 func (Pipe) String() string                 { return "aur pkgbuild" }
-func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.PkgBuilds) == 0 }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.AURs) == 0 }
 
 func (Pipe) Default(ctx *context.Context) error {
-	for i := range ctx.Config.PkgBuilds {
-		pkg := &ctx.Config.PkgBuilds[i]
+	for i := range ctx.Config.AURs {
+		pkg := &ctx.Config.AURs[i]
 
 		pkg.CommitAuthor = commitauthor.Default(pkg.CommitAuthor)
 		if pkg.CommitMessageTemplate == "" {
@@ -57,8 +57,8 @@ func (Pipe) Default(ctx *context.Context) error {
 		if pkg.Rel == "" {
 			pkg.Rel = "1"
 		}
-		if pkg.SSHCommand == "" {
-			pkg.SSHCommand = defaultSSHCommand
+		if pkg.GitSSHCommand == "" {
+			pkg.GitSSHCommand = defaultSSHCommand
 		}
 	}
 
@@ -75,7 +75,7 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func runAll(ctx *context.Context, cli client.Client) error {
-	for _, pkgbuild := range ctx.Config.PkgBuilds {
+	for _, pkgbuild := range ctx.Config.AURs {
 		err := doRun(ctx, pkgbuild, cli)
 		if err != nil {
 			return err
@@ -84,7 +84,7 @@ func runAll(ctx *context.Context, cli client.Client) error {
 	return nil
 }
 
-func doRun(ctx *context.Context, pkgbuild config.PkgBuild, cl client.Client) error {
+func doRun(ctx *context.Context, pkgbuild config.AUR, cl client.Client) error {
 	name, err := tmpl.New(ctx).Apply(pkgbuild.Name)
 	if err != nil {
 		return err
@@ -189,7 +189,7 @@ func doRun(ctx *context.Context, pkgbuild config.PkgBuild, cl client.Client) err
 	return nil
 }
 
-func buildPkgFile(ctx *context.Context, pkg config.PkgBuild, client client.Client, artifacts []*artifact.Artifact, tpl string) (string, error) {
+func buildPkgFile(ctx *context.Context, pkg config.AUR, client client.Client, artifacts []*artifact.Artifact, tpl string) (string, error) {
 	data, err := dataFor(ctx, pkg, client, artifacts)
 	if err != nil {
 		return "", err
@@ -274,7 +274,7 @@ func toPkgBuildArch(arch string) string {
 	}
 }
 
-func dataFor(ctx *context.Context, cfg config.PkgBuild, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
+func dataFor(ctx *context.Context, cfg config.AUR, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
 		Name:         cfg.Name,
 		Desc:         cfg.Description,
@@ -287,6 +287,7 @@ func dataFor(ctx *context.Context, cfg config.PkgBuild, cl client.Client, artifa
 		Provides:     cfg.Provides,
 		Conflicts:    cfg.Conflicts,
 		Depends:      cfg.Depends,
+		OptDepends:   cfg.OptDepends,
 		Package:      cfg.Package,
 	}
 
@@ -346,7 +347,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
-	cfg := pkgs[0].Extra[pkgBuildExtra].(config.PkgBuild)
+	cfg := pkgs[0].Extra[pkgBuildExtra].(config.AUR)
 
 	if strings.TrimSpace(cfg.SkipUpload) == "true" {
 		return pipe.Skip("pkgbuild.skip_upload is set")
@@ -377,7 +378,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 
 	sshcmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"KeyPath": key,
-	}).Apply(cfg.SSHCommand)
+	}).Apply(cfg.GitSSHCommand)
 	if err != nil {
 		return err
 	}
