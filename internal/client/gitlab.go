@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/apex/log"
@@ -407,7 +408,7 @@ func (c *gitlabClient) Upload(
 		projectFile, _, err := c.client.Projects.UploadFile(
 			projectID,
 			file,
-			file.Name(),
+			filepath.Base(file.Name()),
 			nil,
 		)
 		if err != nil {
