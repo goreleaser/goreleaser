@@ -406,6 +406,7 @@ func (c *gitlabClient) Upload(
 		log.WithField("file", file.Name()).Debug("uploading file as attachment")
 		projectFile, _, err := c.client.Projects.UploadFile(
 			projectID,
+			file,
 			file.Name(),
 			nil,
 		)
