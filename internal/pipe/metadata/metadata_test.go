@@ -39,14 +39,14 @@ func TestRun(t *testing.T) {
 
 	require.NoError(t, Pipe{}.Run(ctx))
 	t.Run("artifacts", func(t *testing.T) {
-		requireJsonFile(t, tmp, "artifacts.json")
+		requireEqualJSONFile(t, tmp, "artifacts.json")
 	})
 	t.Run("metadata", func(t *testing.T) {
-		requireJsonFile(t, tmp, "metadata.json")
+		requireEqualJSONFile(t, tmp, "metadata.json")
 	})
 }
 
-func requireJsonFile(tb testing.TB, tmp, s string) {
+func requireEqualJSONFile(tb testing.TB, tmp, s string) {
 	path := filepath.Join(tmp, s)
 	golden.RequireEqualJSON(tb, golden.RequireReadFile(tb, path))
 
