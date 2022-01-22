@@ -80,11 +80,11 @@ var Pipeline = append(
 	gofish.Pipe{},        // create gofish rig
 	krew.Pipe{},          // krew plugins
 	scoop.Pipe{},         // create scoop buckets
-	sbom.Pipe{},          // create SBOMs of metadata
+	sbom.Pipe{},          // create SBOMs of artifacts
 	checksums.Pipe{},     // checksums of the files
-	sign.Pipe{},          // sign metadata
+	sign.Pipe{},          // sign artifacts
 	docker.Pipe{},        // create and push docker images
-	metadata.Pipe{},      // creates an metadata.json in the dist folder
-	publish.Pipe{},       // publishes metadata
+	metadata.Pipe{},      // creates a metadata.json and an artifacts.json files in the dist folder
+	publish.Pipe{},       // publishes artifacts
 	announce.Pipe{},      // announce releases
 )
