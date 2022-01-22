@@ -6,7 +6,6 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/pipe/announce"
 	"github.com/goreleaser/goreleaser/internal/pipe/archive"
-	"github.com/goreleaser/goreleaser/internal/pipe/artifacts"
 	"github.com/goreleaser/goreleaser/internal/pipe/aur"
 	"github.com/goreleaser/goreleaser/internal/pipe/before"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
@@ -22,6 +21,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
+	"github.com/goreleaser/goreleaser/internal/pipe/metadata"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/prebuild"
 	"github.com/goreleaser/goreleaser/internal/pipe/publish"
@@ -65,7 +65,7 @@ var BuildPipeline = []Piper{
 
 // BuildCmdPipeline is the pipeline run by goreleaser build.
 // nolint:gochecknoglobals
-var BuildCmdPipeline = append(BuildPipeline, artifacts.Pipe{})
+var BuildCmdPipeline = append(BuildPipeline, metadata.Pipe{})
 
 // Pipeline contains all pipe implementations in order.
 // nolint: gochecknoglobals
@@ -80,11 +80,11 @@ var Pipeline = append(
 	gofish.Pipe{},        // create gofish rig
 	krew.Pipe{},          // krew plugins
 	scoop.Pipe{},         // create scoop buckets
-	sbom.Pipe{},          // create SBOMs of artifacts
+	sbom.Pipe{},          // create SBOMs of metadata
 	checksums.Pipe{},     // checksums of the files
-	sign.Pipe{},          // sign artifacts
+	sign.Pipe{},          // sign metadata
 	docker.Pipe{},        // create and push docker images
-	artifacts.Pipe{},     // creates an artifacts.json in the dist folder
-	publish.Pipe{},       // publishes artifacts
+	metadata.Pipe{},      // creates an metadata.json in the dist folder
+	publish.Pipe{},       // publishes metadata
 	announce.Pipe{},      // announce releases
 )

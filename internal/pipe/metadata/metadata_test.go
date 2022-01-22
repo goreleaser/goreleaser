@@ -1,4 +1,4 @@
-package artifacts
+package metadata
 
 import (
 	"os"
@@ -12,11 +12,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestArtifacts(t *testing.T) {
+func TestRun(t *testing.T) {
 	tmp := t.TempDir()
 	ctx := context.New(config.Project{
-		Dist: tmp,
+		Dist:        tmp,
+		ProjectName: "name",
 	})
+	ctx.Version = "1.2.3"
+	ctx.Git = context.GitInfo{
+		CurrentTag:  "v1.2.3",
+		PreviousTag: "v1.2.2",
+		Commit:      "aef34a",
+	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "foo",
@@ -31,10 +38,19 @@ func TestArtifacts(t *testing.T) {
 	})
 
 	require.NoError(t, Pipe{}.Run(ctx))
-	path := filepath.Join(tmp, "artifacts.json")
-	golden.RequireEqualJSON(t, golden.RequireReadFile(t, path))
+	t.Run("artifacts", func(t *testing.T) {
+		requireJsonFile(t, tmp, "artifacts.json")
+	})
+	t.Run("metadata", func(t *testing.T) {
+		requireJsonFile(t, tmp, "metadata.json")
+	})
+}
+
+func requireJsonFile(tb testing.TB, tmp, s string) {
+	path := filepath.Join(tmp, s)
+	golden.RequireEqualJSON(tb, golden.RequireReadFile(tb, path))
 
 	info, err := os.Stat(path)
-	require.NoError(t, err)
-	require.Equal(t, "-rw-r--r--", info.Mode().String())
+	require.NoError(tb, err)
+	require.Equal(tb, "-rw-r--r--", info.Mode().String())
 }
