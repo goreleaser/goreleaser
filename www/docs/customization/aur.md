@@ -137,7 +137,7 @@ aurs:
     # This is mainly used to specify the SSH private key used to pull/push to
     # the Git URL.
     #
-    # Defaults to `ssh -i {{ .KeyPath }} -F /dev/null`.
+    # Defaults to `ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null`.
     git_ssh_command: 'ssh -i {{ .Env.KEY }} -o SomeOption=yes'
 
     # Template for the url which is determined by the given Token
