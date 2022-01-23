@@ -13,6 +13,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestRunWithError(t *testing.T) {
+	ctx := context.New(config.Project{
+		Dist:        "testadata/nope",
+		ProjectName: "foo",
+	})
+	require.EqualError(t, Pipe{}.Run(ctx), `open testadata/nope/artifacts.json: no such file or directory`)
+}
+
 func TestRun(t *testing.T) {
 	tmp := t.TempDir()
 	ctx := context.New(config.Project{
