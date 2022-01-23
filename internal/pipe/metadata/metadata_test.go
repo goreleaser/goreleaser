@@ -48,6 +48,7 @@ func TestRun(t *testing.T) {
 }
 
 func requireEqualJSONFile(tb testing.TB, tmp, s string) {
+	tb.Helper()
 	path := filepath.Join(tmp, s)
 	golden.RequireEqualJSON(tb, golden.RequireReadFile(tb, path))
 
