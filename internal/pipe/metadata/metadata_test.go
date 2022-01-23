@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/golden"
@@ -24,7 +25,7 @@ func TestRun(t *testing.T) {
 		PreviousTag: "v1.2.2",
 		Commit:      "aef34a",
 	}
-
+	ctx.Date = time.Date(2022, 01, 22, 10, 12, 13, 0, time.UTC)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "foo",
 		Path:   "foo.txt",
