@@ -181,6 +181,58 @@ func TestRemove(t *testing.T) {
 	})
 }
 
+func TestGroupByID(t *testing.T) {
+	data := []*Artifact{
+		{
+			Name: "foo",
+			Extra: map[string]interface{}{
+				ExtraID: "foo",
+			},
+		},
+		{
+			Name: "bar",
+			Extra: map[string]interface{}{
+				ExtraID: "foo",
+			},
+		},
+		{
+			Name: "foobar",
+			Goos: "linux",
+			Extra: map[string]interface{}{
+				ExtraID: "foovar",
+			},
+		},
+		{
+			Name: "foobar",
+			Goos: "linux",
+			Extra: map[string]interface{}{
+				ExtraID: "foovar",
+			},
+		},
+		{
+			Name: "foobar",
+			Goos: "linux",
+			Extra: map[string]interface{}{
+				ExtraID: "foobar",
+			},
+		},
+		{
+			Name: "check",
+			Type: Checksum,
+		},
+	}
+	artifacts := New()
+	for _, a := range data {
+		artifacts.Add(a)
+	}
+
+	groups := artifacts.GroupByID()
+	require.Len(t, groups["foo"], 2)
+	require.Len(t, groups["foobar"], 1)
+	require.Len(t, groups["foovar"], 2)
+	require.Len(t, groups, 3)
+}
+
 func TestGroupByPlatform(t *testing.T) {
 	data := []*Artifact{
 		{

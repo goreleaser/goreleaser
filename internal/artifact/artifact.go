@@ -256,6 +256,10 @@ func (artifacts Artifacts) List() []*Artifact {
 func (artifacts Artifacts) GroupByID() map[string][]*Artifact {
 	result := map[string][]*Artifact{}
 	for _, a := range artifacts.items {
+		id := a.ID()
+		if id == "" {
+			continue
+		}
 		result[a.ID()] = append(result[a.ID()], a)
 	}
 	return result
