@@ -233,9 +233,15 @@ func TestFullPipe(t *testing.T) {
 			folder := t.TempDir()
 			ctx := &context.Context{
 				Git: context.GitInfo{
-					CurrentTag: "v1.0.1",
+					CurrentTag: "v1.0.1-foo",
 				},
-				Version:   "1.0.1",
+				Semver: context.Semver{
+					Major:      1,
+					Minor:      0,
+					Patch:      1,
+					Prerelease: "foo",
+				},
+				Version:   "1.0.1-foo",
 				Artifacts: artifact.New(),
 				Env: map[string]string{
 					"FOO": "foo_is_bar",
@@ -315,6 +321,11 @@ func TestRunPipe(t *testing.T) {
 		TokenType: context.TokenTypeGitHub,
 		Git: context.GitInfo{
 			CurrentTag: "v1.0.1",
+		},
+		Semver: context.Semver{
+			Major: 1,
+			Minor: 0,
+			Patch: 1,
 		},
 		Version:   "1.0.1",
 		Artifacts: artifact.New(),
@@ -455,6 +466,11 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Git: context.GitInfo{
 			CurrentTag: "v1.2.1",
 		},
+		Semver: context.Semver{
+			Major: 1,
+			Minor: 2,
+			Patch: 1,
+		},
 		Version:   "1.2.1",
 		Artifacts: artifact.New(),
 		Config: config.Project{
@@ -504,6 +520,12 @@ func TestRunPipeNoUpload(t *testing.T) {
 	})
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
+	ctx.Semver = context.Semver{
+		Major: 1,
+		Minor: 0,
+		Patch: 1,
+	}
+
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
@@ -558,6 +580,11 @@ func TestRunEmptyTokenType(t *testing.T) {
 		},
 	})
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
+	ctx.Semver = context.Semver{
+		Major: 1,
+		Minor: 0,
+		Patch: 1,
+	}
 	path := filepath.Join(folder, "whatever.tar.gz")
 	f, err := os.Create(path)
 	require.NoError(t, err)
