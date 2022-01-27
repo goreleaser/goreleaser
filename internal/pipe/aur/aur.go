@@ -275,21 +275,18 @@ func toPkgBuildArch(arch string) string {
 
 func dataFor(ctx *context.Context, cfg config.AUR, cl client.Client, artifacts []*artifact.Artifact) (templateData, error) {
 	result := templateData{
-		Name:            cfg.Name,
-		Desc:            cfg.Description,
-		Homepage:        cfg.Homepage,
-		Version:         fmt.Sprintf("%d.%d.%d", ctx.Semver.Major, ctx.Semver.Minor, ctx.Semver.Patch),
-		License:         cfg.License,
-		ReleasePackages: []releasePackage{},
-		Maintainers:     cfg.Maintainers,
-		Contributors:    cfg.Contributors,
-		Provides:        cfg.Provides,
-		Conflicts:       cfg.Conflicts,
-		Depends:         cfg.Depends,
-		OptDepends:      cfg.OptDepends,
-		Arches:          []string{},
-		Rel:             cfg.Rel,
-		Package:         cfg.Package,
+		Name:         cfg.Name,
+		Desc:         cfg.Description,
+		Homepage:     cfg.Homepage,
+		Version:      fmt.Sprintf("%d.%d.%d", ctx.Semver.Major, ctx.Semver.Minor, ctx.Semver.Patch),
+		License:      cfg.License,
+		Maintainers:  cfg.Maintainers,
+		Contributors: cfg.Contributors,
+		Provides:     cfg.Provides,
+		Conflicts:    cfg.Conflicts,
+		Depends:      cfg.Depends,
+		OptDepends:   cfg.OptDepends,
+		Package:      cfg.Package,
 	}
 
 	for _, art := range artifacts {
