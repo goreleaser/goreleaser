@@ -40,7 +40,7 @@ Description.
 
 > since 2022-01-20 (v1.4.0)
 
-On [GoReleaser PRO][pro], custom variables should now be prefixed with `.Var`.
+On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
 
 === "Before"
 
