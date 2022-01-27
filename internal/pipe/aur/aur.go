@@ -278,7 +278,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.Client, artifacts [
 		Name:         cfg.Name,
 		Desc:         cfg.Description,
 		Homepage:     cfg.Homepage,
-		Version:      ctx.Version,
+		Version:      fmt.Sprintf("%d.%d.%d", ctx.Semver.Major, ctx.Semver.Minor, ctx.Semver.Patch),
 		License:      cfg.License,
 		Rel:          cfg.Rel,
 		Maintainers:  cfg.Maintainers,
