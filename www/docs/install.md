@@ -104,6 +104,18 @@ Below you can find the steps for each of them.
     sudo yum install goreleaser-pro
     ```
 
+### aur
+
+=== "OSS"
+    ```sh
+    yay -S goreleaser-bin
+    ```
+
+=== "Pro"
+    ```sh
+    yay -S goreleaser-pro-bin
+    ```
+
 ### deb, rpm and apk packages
 
 
