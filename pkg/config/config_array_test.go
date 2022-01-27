@@ -8,8 +8,8 @@ import (
 )
 
 type Unmarshaled struct {
-	Strings StringArray `yaml:",omitempty"`
-	Flags   FlagArray   `yaml:",omitempty"`
+	Strings StringArray `yaml:"strings,omitempty"`
+	Flags   FlagArray   `yaml:"flags,omitempty"`
 }
 
 type yamlUnmarshalTestCase struct {
