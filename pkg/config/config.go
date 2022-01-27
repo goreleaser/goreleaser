@@ -521,7 +521,7 @@ type ExtraFile struct {
 
 // NFPM config.
 type NFPM struct {
-	NFPMOverridables `yaml:",inline"`
+	NFPMOverridables `yaml:",inline"`            // nolint: tagliatelle
 	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty"`
 
 	ID          string   `yaml:"id,omitempty"`
