@@ -124,4 +124,5 @@ jobs:
           FURY_TOKEN: ${{ secrets.FURY_TOKEN }}
           DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
           DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          AUR_KEY: ${{ secrets.AUR_KEY }}
         run: task goreleaser
