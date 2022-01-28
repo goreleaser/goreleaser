@@ -146,6 +146,7 @@ nav:
   - cookbooks/cgo-and-crosscompiling.md
   - cookbooks/debconf-templates.md
   - cookbooks/publish-to-nexus.md
+  - cookbooks/publish-to-artifactory.md
   - cookbooks/release-a-library.md
   - cookbooks/semantic-release.md
   - cookbooks/set-a-custom-git-tag.md
