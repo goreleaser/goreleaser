@@ -937,23 +937,33 @@ func TestBuildGoBuildLine(t *testing.T) {
 		requireEqualCmd(t, config.Build{
 			Main: ".",
 			BuildDetails: config.BuildDetails{
-				Flags: []string{"-flag1"},
+				Asmflags: []string{"asmflag1", "asmflag2"},
+				Gcflags:  []string{"gcflag1", "gcflag2"},
+				Flags:    []string{"-flag1", "-flag2"},
+				Tags:     []string{"tag1", "tag2"},
+				Ldflags:  []string{"ldflag1", "ldflag2"},
 			},
 			BuildDetailsOverrides: []config.BuildDetailsOverride{
 				{
 					Goos:   "linux",
 					Goarch: "amd64",
 					BuildDetails: config.BuildDetails{
-						Flags:    []string{"-flag2"},
-						Asmflags: []string{"asm1"},
+						Asmflags: []string{"asmflag3"},
+						Gcflags:  []string{"gcflag3"},
+						Flags:    []string{"-flag3"},
+						Tags:     []string{"tag3"},
+						Ldflags:  []string{"ldflag3"},
 					},
 				},
 			},
 			GoBinary: "go",
 		}, []string{
 			"go", "build",
-			"-flag2",
-			"-asmflags=asm1",
+			"-flag3",
+			"-asmflags=asmflag3",
+			"-gcflags=gcflag3",
+			"-tags=tag3",
+			"-ldflags=ldflag3",
 			"-o", "foo", ".",
 		})
 	})
