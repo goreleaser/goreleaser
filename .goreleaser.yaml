@@ -71,7 +71,7 @@ dockers:
   use: buildx
   build_flag_templates:
   - "--pull"
-  - "--label=io.artifacthub.package.readme-url={{.ENV.README_URL}}"
+  - "--label=io.artifacthub.package.readme-url={{.Env.README_URL}}"
   - "--label=org.opencontainers.image.description={{.Env.DESCRIPTION}}"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.name={{.ProjectName}}"
@@ -88,7 +88,7 @@ dockers:
   use: buildx
   build_flag_templates:
   - "--pull"
-  - "--label=io.artifacthub.package.readme-url={{.ENV.README_URL}}"
+  - "--label=io.artifacthub.package.readme-url={{.Env.README_URL}}"
   - "--label=org.opencontainers.image.description={{.Env.DESCRIPTION}}"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.name={{.ProjectName}}"
