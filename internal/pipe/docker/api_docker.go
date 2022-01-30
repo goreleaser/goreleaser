@@ -13,6 +13,9 @@ func init() {
 	registerImager(useBuildx, dockerImager{
 		buildx: true,
 	})
+	registerImager(useNerdctl, dockerImager{
+		nerdctl: true,
+	})
 	registerImager(useBuildPacks, buildPackImager{})
 }
 
@@ -41,18 +44,27 @@ func (m dockerManifester) Push(ctx *context.Context, manifest string, flags []st
 }
 
 type dockerImager struct {
-	buildx bool
+	nerdctl bool
+	buildx  bool
 }
 
 func (i dockerImager) Push(ctx *context.Context, image string, flags []string) error {
-	if err := runCommand(ctx, ".", "docker", "push", image); err != nil {
+	bin := useDocker
+	if i.nerdctl {
+		bin = useNerdctl
+	}
+	if err := runCommand(ctx, ".", bin, "push", image); err != nil {
 		return fmt.Errorf("failed to push %s: %w", image, err)
 	}
 	return nil
 }
 
 func (i dockerImager) Build(ctx *context.Context, root string, images, flags []string) error {
-	if err := runCommand(ctx, root, "docker", i.buildCommand(images, flags)...); err != nil {
+	bin := useDocker
+	if i.nerdctl {
+		bin = useNerdctl
+	}
+	if err := runCommand(ctx, root, bin, i.buildCommand(images, flags)...); err != nil {
 		return fmt.Errorf("failed to build %s: %w", images[0], err)
 	}
 	return nil

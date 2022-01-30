@@ -24,6 +24,7 @@ const (
 
 	useBuildx     = "buildx"
 	useDocker     = "docker"
+	useNerdctl    = "nerdctl"
 	useBuildPacks = "buildpacks"
 )
 
