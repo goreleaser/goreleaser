@@ -1,5 +1,7 @@
 env:
   - GO111MODULE=on
+  - DESCRIPTION="Deliver Go binaries as fast and easily as possible"
+  - README_URL="https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
 
 before:
   hooks:
@@ -69,6 +71,8 @@ dockers:
   use: buildx
   build_flag_templates:
   - "--pull"
+  - "--label=io.artifacthub.package.readme-url={{.Env.README_URL}}"
+  - "--label=org.opencontainers.image.description={{.Env.DESCRIPTION}}"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.name={{.ProjectName}}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
@@ -84,6 +88,8 @@ dockers:
   use: buildx
   build_flag_templates:
   - "--pull"
+  - "--label=io.artifacthub.package.readme-url={{.Env.README_URL}}"
+  - "--label=org.opencontainers.image.description={{.Env.DESCRIPTION}}"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.name={{.ProjectName}}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
