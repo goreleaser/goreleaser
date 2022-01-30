@@ -1011,7 +1011,7 @@ func TestOverrides(t *testing.T) {
 					Goos:   "linux",
 					Goarch: "amd64",
 					BuildDetails: config.BuildDetails{
-						Ldflags: []string{"overriden"},
+						Ldflags: []string{"overridden"},
 					},
 				},
 			},
@@ -1020,7 +1020,7 @@ func TestOverrides(t *testing.T) {
 			Goarch: "amd64",
 		})
 		require.Equal(t, dets, config.BuildDetails{
-			Ldflags: []string{"overriden"},
+			Ldflags: []string{"overridden"},
 		})
 	})
 
@@ -1035,7 +1035,7 @@ func TestOverrides(t *testing.T) {
 					Goarch: "arm",
 					Goarm:  "6",
 					BuildDetails: config.BuildDetails{
-						Ldflags: []string{"overriden"},
+						Ldflags: []string{"overridden"},
 					},
 				},
 			},
@@ -1045,7 +1045,7 @@ func TestOverrides(t *testing.T) {
 			Goarm:  "6",
 		})
 		require.Equal(t, dets, config.BuildDetails{
-			Ldflags: []string{"overriden"},
+			Ldflags: []string{"overridden"},
 		})
 	})
 
@@ -1060,7 +1060,7 @@ func TestOverrides(t *testing.T) {
 					Goarch: "mips",
 					Gomips: "softfloat",
 					BuildDetails: config.BuildDetails{
-						Ldflags: []string{"overriden"},
+						Ldflags: []string{"overridden"},
 					},
 				},
 			},
@@ -1070,7 +1070,7 @@ func TestOverrides(t *testing.T) {
 			Gomips: "softfloat",
 		})
 		require.Equal(t, dets, config.BuildDetails{
-			Ldflags: []string{"overriden"},
+			Ldflags: []string{"overridden"},
 		})
 	})
 }
