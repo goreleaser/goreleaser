@@ -19,7 +19,7 @@ goreleaser release [flags]
       --release-footer-tmpl string   Load custom release notes footer from a templated markdown file (overrides --release-footer)
       --release-header string        Load custom release notes header from a markdown file
       --release-header-tmpl string   Load custom release notes header from a templated markdown file (overrides --release-header)
-      --release-notes string         Load custom release notes from a markdown file
+      --release-notes string         Load custom release notes from a markdown file (will skip GoReleaser changelog generation)
       --release-notes-tmpl string    Load custom release notes from a templated markdown file (overrides --release-notes)
       --rm-dist                      Removes the dist folder
       --skip-announce                Skips announcing releases (implies --skip-validate)
