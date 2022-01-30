@@ -1,7 +1,5 @@
 env:
   - GO111MODULE=on
-  - DESCRIPTION="Deliver Go binaries as fast and easily as possible"
-  - README_URL="https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
 
 before:
   hooks:
@@ -71,8 +69,11 @@ dockers:
   use: buildx
   build_flag_templates:
   - "--pull"
-  - "--label=io.artifacthub.package.readme-url={{.Env.README_URL}}"
-  - "--label=org.opencontainers.image.description={{.Env.DESCRIPTION}}"
+  - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
+  - "--label=io.artifacthub.package.logo-url=https://goreleaser.com/static/avatar.png"
+  - "--label=io.artifacthub.package.maintainers=[{\"name\":\"Carlos Alexandro Becker\",\"email\":\"carlos@carlosbecker.dev\"}]"
+  - "--label=io.artifacthub.package.license=MIT"
+  - "--label=org.opencontainers.image.description=Deliver Go binaries as fast and easily as possible"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.name={{.ProjectName}}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
@@ -88,8 +89,11 @@ dockers:
   use: buildx
   build_flag_templates:
   - "--pull"
-  - "--label=io.artifacthub.package.readme-url={{.Env.README_URL}}"
-  - "--label=org.opencontainers.image.description={{.Env.DESCRIPTION}}"
+  - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
+  - "--label=io.artifacthub.package.logo-url=https://goreleaser.com/static/avatar.png"
+  - "--label=io.artifacthub.package.maintainers=[{\"name\":\"Carlos Alexandro Becker\",\"email\":\"carlos@carlosbecker.dev\"}]"
+  - "--label=io.artifacthub.package.license=MIT"
+  - "--label=org.opencontainers.image.description=Deliver Go binaries as fast and easily as possible"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.name={{.ProjectName}}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
