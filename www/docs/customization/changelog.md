@@ -5,7 +5,9 @@ You can customize how the changelog is generated using the `changelog` section i
 ```yaml
 # .goreleaser.yml
 changelog:
-  # Set it to true if you wish to skip the changelog generation.
+  # Set this to true if you don't want any changelog at all.
+  # Warning: this will also ignore any changelog files passed via `--release-notes`,
+  # and will render an empty changelog.
   # This may result in an empty release notes on GitHub/GitLab/Gitea.
   skip: true
 
