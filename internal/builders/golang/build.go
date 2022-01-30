@@ -129,21 +129,35 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
+func withOverrides(build config.Build, options api.Options) config.BuildDetails {
+	for _, o := range build.BuildDetailsOverrides {
+		if o.Goos == options.Goos &&
+			o.Goarch == options.Goarch &&
+			o.Gomips == options.Gomips &&
+			o.Goarm == options.Goarm {
+			return o.BuildDetails
+		}
+	}
+	return build.BuildDetails
+}
+
 func buildGoBuildLine(ctx *context.Context, build config.Build, options api.Options, artifact *artifact.Artifact, env []string) ([]string, error) {
+	details := withOverrides(build, options)
+
 	cmd := []string{build.GoBinary, "build"}
-	flags, err := processFlags(ctx, artifact, env, build.Flags, "")
+	flags, err := processFlags(ctx, artifact, env, details.Flags, "")
 	if err != nil {
 		return cmd, err
 	}
 	cmd = append(cmd, flags...)
 
-	asmflags, err := processFlags(ctx, artifact, env, build.Asmflags, "-asmflags=")
+	asmflags, err := processFlags(ctx, artifact, env, details.Asmflags, "-asmflags=")
 	if err != nil {
 		return cmd, err
 	}
 	cmd = append(cmd, asmflags...)
 
-	gcflags, err := processFlags(ctx, artifact, env, build.Gcflags, "-gcflags=")
+	gcflags, err := processFlags(ctx, artifact, env, details.Gcflags, "-gcflags=")
 	if err != nil {
 		return cmd, err
 	}
@@ -151,7 +165,7 @@ func buildGoBuildLine(ctx *context.Context, build config.Build, options api.Opti
 
 	// tags is not a repeatable flag
 	if len(build.Tags) > 0 {
-		tags, err := processFlags(ctx, artifact, env, build.Tags, "")
+		tags, err := processFlags(ctx, artifact, env, details.Tags, "")
 		if err != nil {
 			return cmd, err
 		}
@@ -161,7 +175,7 @@ func buildGoBuildLine(ctx *context.Context, build config.Build, options api.Opti
 	// ldflags is not a repeatable flag
 	if len(build.Ldflags) > 0 {
 		// flag prefix is skipped because ldflags need to output a single string
-		ldflags, err := processFlags(ctx, artifact, env, build.Ldflags, "")
+		ldflags, err := processFlags(ctx, artifact, env, details.Ldflags, "")
 		if err != nil {
 			return cmd, err
 		}
