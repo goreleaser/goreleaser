@@ -27,6 +27,10 @@ func TestRun(t *testing.T) {
 		Dist:        tmp,
 		ProjectName: "name",
 	})
+	ctx.Runtime = context.Runtime{
+		Goos:   "fakeos",
+		Goarch: "fakearch",
+	}
 	ctx.Version = "1.2.3"
 	ctx.Git = context.GitInfo{
 		CurrentTag:  "v1.2.3",
