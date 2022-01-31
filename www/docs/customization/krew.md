@@ -33,11 +33,13 @@ krews:
     index:
       owner: repo-owner
       name: krew-plugins
-      # Optionally a branch can be provided. If the branch does not exist, it
-      # will be created. If no branch is listed, the default branch will be used
+
+      # Optionally a branch can be provided.
+      # Defaults to the default repository branch.
       branch: main
+
       # Optionally a token can be provided, if it differs from the token provided to GoReleaser
-      token: "{{ .Env.KREW_GITHUB_TOKEN }}"
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
 
     # Template for the url which is determined by the given Token (github or gitlab)
     # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
