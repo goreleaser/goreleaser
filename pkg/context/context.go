@@ -9,6 +9,7 @@ package context
 import (
 	ctx "context"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -98,6 +99,12 @@ type Context struct {
 	Deprecated         bool
 	Parallelism        int
 	Semver             Semver
+	Runtime            Runtime
+}
+
+type Runtime struct {
+	Goos   string
+	Goarch string
 }
 
 // Semver represents a semantic version.
@@ -129,6 +136,10 @@ func Wrap(ctx ctx.Context, config config.Project) *Context {
 		Parallelism: 4,
 		Artifacts:   artifact.New(),
 		Date:        time.Now(),
+		Runtime: Runtime{
+			Goos:   runtime.GOOS,
+			Goarch: runtime.GOARCH,
+		},
 	}
 }
 
