@@ -19,6 +19,7 @@ import (
 	api "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/imdario/mergo"
 )
 
 // Default builder instance.
@@ -129,22 +130,39 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
-func withOverrides(build config.Build, options api.Options) config.BuildDetails {
+func withOverrides(ctx *context.Context, build config.Build, options api.Options) (config.BuildDetails, error) {
+	optsTarget := options.Goos + options.Goarch + options.Goarm + options.Gomips
 	for _, o := range build.BuildDetailsOverrides {
-		if o.Goos == options.Goos &&
-			o.Goarch == options.Goarch &&
-			o.Gomips == options.Gomips &&
-			o.Goarm == options.Goarm {
-			return o.BuildDetails
+		overrideTarget, err := tmpl.New(ctx).Apply(o.Goos + o.Goarch + o.Gomips + o.Goarm)
+		if err != nil {
+			return build.BuildDetails, err
+		}
+
+		if optsTarget == overrideTarget {
+			dets := config.BuildDetails{
+				Ldflags:  build.BuildDetails.Ldflags,
+				Tags:     build.BuildDetails.Tags,
+				Flags:    build.BuildDetails.Flags,
+				Asmflags: build.BuildDetails.Asmflags,
+				Gcflags:  build.BuildDetails.Gcflags,
+			}
+			if err := mergo.Merge(&dets, o.BuildDetails, mergo.WithOverride); err != nil {
+				return build.BuildDetails, err
+			}
+			log.WithField("dets", dets).Info("will use")
+			return dets, nil
 		}
 	}
-	return build.BuildDetails
+	return build.BuildDetails, nil
 }
 
 func buildGoBuildLine(ctx *context.Context, build config.Build, options api.Options, artifact *artifact.Artifact, env []string) ([]string, error) {
-	details := withOverrides(build, options)
-
 	cmd := []string{build.GoBinary, "build"}
+
+	details, err := withOverrides(ctx, build, options)
+	if err != nil {
+		return cmd, err
+	}
 	flags, err := processFlags(ctx, artifact, env, details.Flags, "")
 	if err != nil {
 		return cmd, err

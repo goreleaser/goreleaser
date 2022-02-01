@@ -1002,73 +1002,142 @@ func TestBuildGoBuildLine(t *testing.T) {
 
 func TestOverrides(t *testing.T) {
 	t.Run("linux amd64", func(t *testing.T) {
-		dets := withOverrides(config.Build{
-			BuildDetails: config.BuildDetails{
-				Ldflags: []string{"original"},
-			},
-			BuildDetailsOverrides: []config.BuildDetailsOverride{
-				{
-					Goos:   "linux",
-					Goarch: "amd64",
-					BuildDetails: config.BuildDetails{
-						Ldflags: []string{"overridden"},
+		dets, err := withOverrides(
+			context.New(config.Project{}),
+			config.Build{
+				BuildDetails: config.BuildDetails{
+					Ldflags: []string{"original"},
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "linux",
+						Goarch: "amd64",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"overridden"},
+						},
 					},
 				},
+			}, api.Options{
+				Goos:   "linux",
+				Goarch: "amd64",
 			},
-		}, api.Options{
-			Goos:   "linux",
-			Goarch: "amd64",
-		})
+		)
+		require.NoError(t, err)
 		require.Equal(t, dets, config.BuildDetails{
 			Ldflags: []string{"overridden"},
 		})
 	})
 
-	t.Run("with goarm", func(t *testing.T) {
-		dets := withOverrides(config.Build{
-			BuildDetails: config.BuildDetails{
-				Ldflags: []string{"original"},
-			},
-			BuildDetailsOverrides: []config.BuildDetailsOverride{
-				{
-					Goos:   "linux",
-					Goarch: "arm",
-					Goarm:  "6",
-					BuildDetails: config.BuildDetails{
-						Ldflags: []string{"overridden"},
+	t.Run("merges", func(t *testing.T) {
+		dets, err := withOverrides(
+			context.New(config.Project{}),
+			config.Build{
+				BuildDetails: config.BuildDetails{
+					Ldflags:  []string{"original"},
+					Asmflags: []string{"asm1"},
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "linux",
+						Goarch: "amd64",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"overridden"},
+						},
 					},
 				},
+			}, api.Options{
+				Goos:   "linux",
+				Goarch: "amd64",
 			},
-		}, api.Options{
-			Goos:   "linux",
-			Goarch: "arm",
-			Goarm:  "6",
+		)
+		require.NoError(t, err)
+		require.Equal(t, dets, config.BuildDetails{
+			Ldflags:  []string{"overridden"},
+			Asmflags: []string{"asm1"},
 		})
+	})
+
+	t.Run("with template", func(t *testing.T) {
+		ctx := context.New(config.Project{})
+		dets, err := withOverrides(
+			config.Build{
+				BuildDetails: config.BuildDetails{
+					Ldflags:  []string{"original"},
+					Asmflags: []string{"asm1"},
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "{{ .Runtime.Goos }}",
+						Goarch: "{{ .Runtime.Goarch }}",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"overridden"},
+						},
+					},
+				},
+			}, api.Options{
+				Goos:   runtime.GOOS,
+				Goarch: runtime.GOARCH,
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, dets, config.BuildDetails{
+			Ldflags:  []string{"overridden"},
+			Asmflags: []string{"asm1"},
+		})
+	})
+	t.Run("with goarm", func(t *testing.T) {
+		dets, err := withOverrides(
+			context.New(config.Project{}),
+			config.Build{
+				BuildDetails: config.BuildDetails{
+					Ldflags: []string{"original"},
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "linux",
+						Goarch: "arm",
+						Goarm:  "6",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"overridden"},
+						},
+					},
+				},
+			}, api.Options{
+				Goos:   "linux",
+				Goarch: "arm",
+				Goarm:  "6",
+			},
+		)
+		require.NoError(t, err)
 		require.Equal(t, dets, config.BuildDetails{
 			Ldflags: []string{"overridden"},
 		})
 	})
 
 	t.Run("with gomips", func(t *testing.T) {
-		dets := withOverrides(config.Build{
-			BuildDetails: config.BuildDetails{
-				Ldflags: []string{"original"},
-			},
-			BuildDetailsOverrides: []config.BuildDetailsOverride{
-				{
-					Goos:   "linux",
-					Goarch: "mips",
-					Gomips: "softfloat",
-					BuildDetails: config.BuildDetails{
-						Ldflags: []string{"overridden"},
+		dets, err := withOverrides(
+			context.New(config.Project{}),
+			config.Build{
+				BuildDetails: config.BuildDetails{
+					Ldflags: []string{"original"},
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "linux",
+						Goarch: "mips",
+						Gomips: "softfloat",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"overridden"},
+						},
 					},
 				},
+			}, api.Options{
+				Goos:   "linux",
+				Goarch: "mips",
+				Gomips: "softfloat",
 			},
-		}, api.Options{
-			Goos:   "linux",
-			Goarch: "mips",
-			Gomips: "softfloat",
-		})
+		)
+		require.NoError(t, err)
 		require.Equal(t, dets, config.BuildDetails{
 			Ldflags: []string{"overridden"},
 		})
