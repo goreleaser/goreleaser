@@ -1085,6 +1085,24 @@ func TestOverrides(t *testing.T) {
 			Asmflags: []string{"asm1"},
 		})
 	})
+
+	t.Run("with invalid template", func(t *testing.T) {
+		_, err := withOverrides(
+			context.New(config.Project{}),
+			config.Build{
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos: "{{ .Runtime.Goos }",
+					},
+				},
+			}, api.Options{
+				Goos:   runtime.GOOS,
+				Goarch: runtime.GOARCH,
+			},
+		)
+		require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+	})
+
 	t.Run("with goarm", func(t *testing.T) {
 		dets, err := withOverrides(
 			context.New(config.Project{}),
