@@ -191,7 +191,7 @@ func buildGoBuildLine(ctx *context.Context, build config.Build, options api.Opti
 	}
 
 	// ldflags is not a repeatable flag
-	if len(build.Ldflags) > 0 {
+	if len(details.Ldflags) > 0 {
 		// flag prefix is skipped because ldflags need to output a single string
 		ldflags, err := processFlags(ctx, artifact, env, details.Ldflags, "")
 		if err != nil {
