@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/muesli/mango/mcobra"
+	mcobra "github.com/muesli/mango-cobra"
 	"github.com/muesli/roff"
 	"github.com/spf13/cobra"
 )

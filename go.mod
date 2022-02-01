@@ -25,7 +25,7 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.1.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/muesli/mango v0.0.0-20220118122812-f367188b892e
+	github.com/muesli/mango-cobra v0.0.0-20220201011537-57e8ea90d84d
 	github.com/muesli/roff v0.1.0
 	github.com/slack-go/slack v0.10.1
 	github.com/spf13/cobra v1.3.0
@@ -123,6 +123,8 @@ require (
 	github.com/mikesmitty/edkey v0.0.0-20170222072505-3356ea4e686a // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
+	github.com/muesli/mango v0.0.0-20220201014152-f7df5a1c5b4b // indirect
+	github.com/muesli/mango-pflag v0.0.0-20220201005230-61491fbf5067 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
