@@ -33,6 +33,10 @@ func writeMetadata(ctx *context.Context) error {
 		Version:     ctx.Version,
 		Commit:      ctx.Git.Commit,
 		Date:        ctx.Date,
+		Runtime: metaRuntime{
+			Goos:   ctx.Runtime.Goos,
+			Goarch: ctx.Runtime.Goarch,
+		},
 	}, "metadata.json")
 }
 
@@ -51,10 +55,16 @@ func writeJSON(ctx *context.Context, j interface{}, name string) error {
 }
 
 type metadata struct {
-	ProjectName string    `json:"project_name"`
-	Tag         string    `json:"tag"`
-	PreviousTag string    `json:"previous_tag"`
-	Version     string    `json:"version"`
-	Commit      string    `json:"commit"`
-	Date        time.Time `json:"date"`
+	ProjectName string      `json:"project_name"`
+	Tag         string      `json:"tag"`
+	PreviousTag string      `json:"previous_tag"`
+	Version     string      `json:"version"`
+	Commit      string      `json:"commit"`
+	Date        time.Time   `json:"date"`
+	Runtime     metaRuntime `json:"runtime"`
+}
+
+type metaRuntime struct {
+	Goos   string `json:"goos"`
+	Goarch string `json:"goarch"`
 }

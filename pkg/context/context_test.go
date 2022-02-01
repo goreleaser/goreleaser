@@ -2,6 +2,7 @@ package context
 
 import (
 	"os"
+	"runtime"
 	"testing"
 	"time"
 
@@ -20,6 +21,8 @@ func TestNew(t *testing.T) {
 	require.Equal(t, "BAR", ctx.Env["FOO"])
 	require.Equal(t, "1", ctx.Env["BAR"])
 	require.Equal(t, 4, ctx.Parallelism)
+	require.Equal(t, runtime.GOOS, ctx.Runtime.Goos)
+	require.Equal(t, runtime.GOARCH, ctx.Runtime.Goarch)
 }
 
 func TestNewWithTimeout(t *testing.T) {

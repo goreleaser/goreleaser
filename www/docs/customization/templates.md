@@ -45,6 +45,8 @@ On fields that support templating, these fields are always available:
 | `.PrefixedSummary`     | the git summary prefixed with the monorepo config tag prefix (if any)                                  |
 | `.TagSubject`          | the annotated tag message subject, or the message subject of the commit it points out[^6]              |
 | `.TagContents`         | the annotated tag message, or the message of the commit it points out[^7]                              |
+| `.Runtime.Goos`        | equivalent to `runtime.GOOS`                                                                           |
+| `.Runtime.Goarch`      | equivalent to `runtime.GOARCH`                                                                         |
 
 [^1]: The `v` prefix is stripped and it might be changed in `snapshot` and `nightly` builds.
 [^2]: Assuming `Tag` is a valid a SemVer, otherwise empty/zeroed.
