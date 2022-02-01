@@ -1058,8 +1058,8 @@ func TestOverrides(t *testing.T) {
 	})
 
 	t.Run("with template", func(t *testing.T) {
-		ctx := context.New(config.Project{})
 		dets, err := withOverrides(
+			context.New(config.Project{}),
 			config.Build{
 				BuildDetails: config.BuildDetails{
 					Ldflags:  []string{"original"},
