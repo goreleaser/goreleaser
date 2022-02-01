@@ -182,7 +182,7 @@ func buildGoBuildLine(ctx *context.Context, build config.Build, options api.Opti
 	cmd = append(cmd, gcflags...)
 
 	// tags is not a repeatable flag
-	if len(build.Tags) > 0 {
+	if len(details.Tags) > 0 {
 		tags, err := processFlags(ctx, artifact, env, details.Tags, "")
 		if err != nil {
 			return cmd, err
