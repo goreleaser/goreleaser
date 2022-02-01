@@ -63,8 +63,8 @@ func TestWithArtifact(t *testing.T) {
 		"v1.2.2":                           "{{ .PreviousTag }}",
 		"awesome release":                  "{{ .TagSubject }}",
 		"awesome release\n\nanother line":  "{{ .TagContents }}",
-		runtime.GOOS:                       "{{ .Runtime.Goos }}",
-		runtime.GOARCH:                     "{{ .Runtime.Goarch }}",
+		"runtime: " + runtime.GOOS:         "runtime: {{ .Runtime.Goos }}",
+		"runtime: " + runtime.GOARCH:       "runtime: {{ .Runtime.Goarch }}",
 	} {
 		tmpl := tmpl
 		expect := expect
