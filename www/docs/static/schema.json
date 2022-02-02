@@ -287,6 +287,34 @@
 					"main": {
 						"type": "string"
 					},
+					"binary": {
+						"type": "string"
+					},
+					"hooks": {
+						"$schema": "http://json-schema.org/draft-04/schema#",
+						"$ref": "#/definitions/BuildHookConfig"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"builder": {
+						"type": "string"
+					},
+					"mod_timestamp": {
+						"type": "string"
+					},
+					"skip": {
+						"type": "boolean"
+					},
+					"gobinary": {
+						"type": "string"
+					},
+					"no_unique_dist_dir": {
+						"type": "boolean"
+					},
 					"ldflags": {
 						"oneOf": [
 							{
@@ -326,22 +354,6 @@
 							}
 						]
 					},
-					"binary": {
-						"type": "string"
-					},
-					"hooks": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/BuildHookConfig"
-					},
-					"env": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"builder": {
-						"type": "string"
-					},
 					"asmflags": {
 						"oneOf": [
 							{
@@ -368,17 +380,95 @@
 							}
 						]
 					},
-					"mod_timestamp": {
+					"overrides": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/BuildDetailsOverride"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"BuildDetailsOverride": {
+				"properties": {
+					"goos": {
 						"type": "string"
 					},
-					"skip": {
-						"type": "boolean"
-					},
-					"gobinary": {
+					"goarch": {
 						"type": "string"
 					},
-					"no_unique_dist_dir": {
-						"type": "boolean"
+					"goarm": {
+						"type": "string"
+					},
+					"gomips": {
+						"type": "string"
+					},
+					"ldflags": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						]
+					},
+					"tags": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						]
+					},
+					"flags": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						]
+					},
+					"asmflags": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						]
+					},
+					"gcflags": {
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
