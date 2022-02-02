@@ -147,6 +147,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		return err
 	}
 
+	maintainer, err := t.Apply(fpm.Maintainer)
+	if err != nil {
+		return err
+	}
+
 	debKeyFile, err := t.Apply(overridden.Deb.Signature.KeyFile)
 	if err != nil {
 		return err
@@ -209,7 +214,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		Release:         fpm.Release,
 		Prerelease:      fpm.Prerelease,
 		VersionMetadata: fpm.VersionMetadata,
-		Maintainer:      fpm.Maintainer,
+		Maintainer:      maintainer,
 		Description:     description,
 		Vendor:          fpm.Vendor,
 		Homepage:        homepage,

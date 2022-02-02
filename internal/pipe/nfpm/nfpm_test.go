@@ -331,6 +331,12 @@ func TestInvalidTemplate(t *testing.T) {
 		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_DESC>: map has no entry for key "NOPE_DESC"`)
 	})
 
+	t.Run("maintainer", func(t *testing.T) {
+		ctx := makeCtx()
+		ctx.Config.NFPMs[0].Maintainer = "{{ .NOPE_DESC }}"
+		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_DESC>: map has no entry for key "NOPE_DESC"`)
+	})
+
 	t.Run("homepage", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Homepage = "{{ .NOPE_HOMEPAGE }}"
@@ -1148,6 +1154,7 @@ func TestBinDirTemplating(t *testing.T) {
 		Env: []string{
 			"PRO=pro",
 			"DESC=templates",
+			"MAINTAINER=me@me",
 		},
 		NFPMs: []config.NFPM{
 			{
@@ -1160,7 +1167,7 @@ func TestBinDirTemplating(t *testing.T) {
 				Priority:    "standard",
 				Description: "Some description with {{ .Env.DESC }}",
 				License:     "MIT",
-				Maintainer:  "me@me",
+				Maintainer:  "{{ .Env.MAINTAINER }}",
 				Vendor:      "asdf",
 				Homepage:    "https://goreleaser.com/{{ .Env.PRO }}",
 				NFPMOverridables: config.NFPMOverridables{
