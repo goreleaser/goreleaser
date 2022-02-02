@@ -297,21 +297,35 @@ type Build struct {
 	Ignore          []IgnoredBuild  `yaml:"ignore,omitempty"`
 	Dir             string          `yaml:"dir,omitempty"`
 	Main            string          `yaml:"main,omitempty"`
-	Ldflags         StringArray     `yaml:"ldflags,omitempty"`
-	Tags            FlagArray       `yaml:"tags,omitempty"`
-	Flags           FlagArray       `yaml:"flags,omitempty"`
 	Binary          string          `yaml:"binary,omitempty"`
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty"`
 	Env             []string        `yaml:"env,omitempty"`
 	Builder         string          `yaml:"builder,omitempty"`
-	Asmflags        StringArray     `yaml:"asmflags,omitempty"`
-	Gcflags         StringArray     `yaml:"gcflags,omitempty"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty"`
 	Skip            bool            `yaml:"skip,omitempty"`
 	GoBinary        string          `yaml:"gobinary,omitempty"`
 	NoUniqueDistDir bool            `yaml:"no_unique_dist_dir,omitempty"`
 	UnproxiedMain   string          `yaml:"-"` // used by gomod.proxy
 	UnproxiedDir    string          `yaml:"-"` // used by gomod.proxy
+
+	BuildDetails          `yaml:",inline"`       // nolint: tagliatelle
+	BuildDetailsOverrides []BuildDetailsOverride `yaml:"overrides,omitempty"`
+}
+
+type BuildDetailsOverride struct {
+	Goos         string           `yaml:"goos,omitempty"`
+	Goarch       string           `yaml:"goarch,omitempty"`
+	Goarm        string           `yaml:"goarm,omitempty"`
+	Gomips       string           `yaml:"gomips,omitempty"`
+	BuildDetails `yaml:",inline"` // nolint: tagliatelle
+}
+
+type BuildDetails struct {
+	Ldflags  StringArray `yaml:"ldflags,omitempty"`
+	Tags     FlagArray   `yaml:"tags,omitempty"`
+	Flags    FlagArray   `yaml:"flags,omitempty"`
+	Asmflags StringArray `yaml:"asmflags,omitempty"`
+	Gcflags  StringArray `yaml:"gcflags,omitempty"`
 }
 
 type BuildHookConfig struct {

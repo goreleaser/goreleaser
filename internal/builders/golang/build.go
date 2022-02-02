@@ -19,6 +19,7 @@ import (
 	api "github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/imdario/mergo"
 )
 
 // Default builder instance.
@@ -129,29 +130,60 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	return nil
 }
 
+func withOverrides(ctx *context.Context, build config.Build, options api.Options) (config.BuildDetails, error) {
+	optsTarget := options.Goos + options.Goarch + options.Goarm + options.Gomips
+	for _, o := range build.BuildDetailsOverrides {
+		overrideTarget, err := tmpl.New(ctx).Apply(o.Goos + o.Goarch + o.Gomips + o.Goarm)
+		if err != nil {
+			return build.BuildDetails, err
+		}
+
+		if optsTarget == overrideTarget {
+			dets := config.BuildDetails{
+				Ldflags:  build.BuildDetails.Ldflags,
+				Tags:     build.BuildDetails.Tags,
+				Flags:    build.BuildDetails.Flags,
+				Asmflags: build.BuildDetails.Asmflags,
+				Gcflags:  build.BuildDetails.Gcflags,
+			}
+			if err := mergo.Merge(&dets, o.BuildDetails, mergo.WithOverride); err != nil {
+				return build.BuildDetails, err
+			}
+			log.WithField("dets", dets).Info("will use")
+			return dets, nil
+		}
+	}
+	return build.BuildDetails, nil
+}
+
 func buildGoBuildLine(ctx *context.Context, build config.Build, options api.Options, artifact *artifact.Artifact, env []string) ([]string, error) {
 	cmd := []string{build.GoBinary, "build"}
-	flags, err := processFlags(ctx, artifact, env, build.Flags, "")
+
+	details, err := withOverrides(ctx, build, options)
+	if err != nil {
+		return cmd, err
+	}
+	flags, err := processFlags(ctx, artifact, env, details.Flags, "")
 	if err != nil {
 		return cmd, err
 	}
 	cmd = append(cmd, flags...)
 
-	asmflags, err := processFlags(ctx, artifact, env, build.Asmflags, "-asmflags=")
+	asmflags, err := processFlags(ctx, artifact, env, details.Asmflags, "-asmflags=")
 	if err != nil {
 		return cmd, err
 	}
 	cmd = append(cmd, asmflags...)
 
-	gcflags, err := processFlags(ctx, artifact, env, build.Gcflags, "-gcflags=")
+	gcflags, err := processFlags(ctx, artifact, env, details.Gcflags, "-gcflags=")
 	if err != nil {
 		return cmd, err
 	}
 	cmd = append(cmd, gcflags...)
 
 	// tags is not a repeatable flag
-	if len(build.Tags) > 0 {
-		tags, err := processFlags(ctx, artifact, env, build.Tags, "")
+	if len(details.Tags) > 0 {
+		tags, err := processFlags(ctx, artifact, env, details.Tags, "")
 		if err != nil {
 			return cmd, err
 		}
@@ -159,9 +191,9 @@ func buildGoBuildLine(ctx *context.Context, build config.Build, options api.Opti
 	}
 
 	// ldflags is not a repeatable flag
-	if len(build.Ldflags) > 0 {
+	if len(details.Ldflags) > 0 {
 		// flag prefix is skipped because ldflags need to output a single string
-		ldflags, err := processFlags(ctx, artifact, env, build.Ldflags, "")
+		ldflags, err := processFlags(ctx, artifact, env, details.Ldflags, "")
 		if err != nil {
 			return cmd, err
 		}
