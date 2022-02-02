@@ -1028,20 +1028,20 @@ func TestOverrides(t *testing.T) {
 		})
 	})
 
-	t.Run("merges", func(t *testing.T) {
+	t.Run("single sided", func(t *testing.T) {
 		dets, err := withOverrides(
 			context.New(config.Project{}),
 			config.Build{
-				BuildDetails: config.BuildDetails{
-					Ldflags:  []string{"original"},
-					Asmflags: []string{"asm1"},
-				},
+				BuildDetails: config.BuildDetails{},
 				BuildDetailsOverrides: []config.BuildDetailsOverride{
 					{
 						Goos:   "linux",
 						Goarch: "amd64",
 						BuildDetails: config.BuildDetails{
-							Ldflags: []string{"overridden"},
+							Ldflags:  []string{"overridden"},
+							Tags:     []string{"tag1"},
+							Asmflags: []string{"asm1"},
+							Gcflags:  []string{"gcflag1"},
 						},
 					},
 				},
@@ -1053,7 +1053,9 @@ func TestOverrides(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, dets, config.BuildDetails{
 			Ldflags:  []string{"overridden"},
+			Gcflags:  []string{"gcflag1"},
 			Asmflags: []string{"asm1"},
+			Tags:     []string{"tag1"},
 		})
 	})
 
