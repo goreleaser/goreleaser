@@ -197,6 +197,9 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 			contents = append(contents, &files.Content{
 				Source:      filepath.ToSlash(src),
 				Destination: filepath.ToSlash(dst),
+				FileInfo: &files.ContentFileInfo{
+					Mode: 0o755,
+				},
 			})
 		}
 	}
