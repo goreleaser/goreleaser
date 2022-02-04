@@ -15,11 +15,11 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/spf13/cobra"
+	"github.com/muesli/coral"
 )
 
 type buildCmd struct {
-	cmd  *cobra.Command
+	cmd  *coral.Command
 	opts buildOpts
 }
 
@@ -39,7 +39,7 @@ type buildOpts struct {
 func newBuildCmd() *buildCmd {
 	root := &buildCmd{}
 	// nolint: dupl
-	cmd := &cobra.Command{
+	cmd := &coral.Command{
 		Use:     "build",
 		Aliases: []string{"b"},
 		Short:   "Builds the current project",
@@ -60,8 +60,8 @@ defaulting to the current's machine target if not set.
 `,
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args:          cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Args:          coral.NoArgs,
+		RunE: func(cmd *coral.Command, args []string) error {
 			start := time.Now()
 
 			log.Infof(color.New(color.Bold).Sprint("building..."))
