@@ -210,19 +210,39 @@ nfpms:
   - file_name_template: '{{ .ConventionalFileName }}'
     id: packages
     homepage:  https://goreleaser.com
-    description: Deliver Go binaries as fast and easily as possible
+    description: |-
+      Deliver Go binaries as fast and easily as possible.
+      GoReleaser allows you to release easily build, package, publish and
+      announce to several places at one go.
     maintainer: Carlos Alexandro Becker <root@carlosbecker.com>
     license: MIT
     vendor: GoReleaser
     contents:
       - src: ./completions/goreleaser.bash
-        dst: /etc/bash_completion.d/goreleaser
+        dst: /usr/share/bash-completion/completions
+        file_info:
+          mode: 0644
       - src: ./completions/goreleaser.fish
         dst: /usr/share/fish/completions/goreleaser.fish
+        file_info:
+          mode: 0644
       - src: ./completions/goreleaser.zsh
-        dst: /usr/local/share/zsh/site-functions/_goreleaser
+        dst:  /usr/share/zsh/vendor-completions/_goreleaser
+        file_info:
+          mode: 0644
       - src: ./manpages/goreleaser.1.gz
         dst: /usr/share/man/man1/goreleaser.1.gz
+        file_info:
+          mode: 0644
+      - src: ./LICENSE.md
+        dst: /usr/share/doc/goreleaser/copyright
+        file_info:
+          mode: 0644
+      - src: .lintian-overrides
+        dst: ./usr/share/lintian/overrides/goreleaser
+        packager: deb
+        file_info:
+          mode: 0644
     formats:
     - apk
     - deb
