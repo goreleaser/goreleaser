@@ -25,10 +25,10 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.1.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/muesli/mango-cobra v0.0.0-20220201011537-57e8ea90d84d
+	github.com/muesli/coral v1.0.0
+	github.com/muesli/mango-coral v1.0.1
 	github.com/muesli/roff v0.1.0
 	github.com/slack-go/slack v0.10.1
-	github.com/spf13/cobra v1.3.0
 	github.com/stretchr/testify v1.7.0
 	github.com/ulikunitz/xz v0.5.10
 	github.com/xanzy/go-gitlab v0.54.4
@@ -108,6 +108,7 @@ require (
 	github.com/goreleaser/chglog v0.1.2 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-hclog v1.0.0 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
 	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
@@ -123,8 +124,8 @@ require (
 	github.com/mikesmitty/edkey v0.0.0-20170222072505-3356ea4e686a // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
-	github.com/muesli/mango v0.0.0-20220201014152-f7df5a1c5b4b // indirect
-	github.com/muesli/mango-pflag v0.0.0-20220201005230-61491fbf5067 // indirect
+	github.com/muesli/mango v0.1.0 // indirect
+	github.com/muesli/mango-pflag v0.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect

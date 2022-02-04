@@ -7,7 +7,7 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/fatih/color"
-	"github.com/spf13/cobra"
+	"github.com/muesli/coral"
 )
 
 func Execute(version string, exit func(int), args []string) {
@@ -42,7 +42,7 @@ func (cmd *rootCmd) Execute(args []string) {
 }
 
 type rootCmd struct {
-	cmd   *cobra.Command
+	cmd   *coral.Command
 	debug bool
 	exit  func(int)
 }
@@ -51,7 +51,7 @@ func newRootCmd(version string, exit func(int)) *rootCmd {
 	root := &rootCmd{
 		exit: exit,
 	}
-	cmd := &cobra.Command{
+	cmd := &coral.Command{
 		Use:   "goreleaser",
 		Short: "Deliver Go binaries as fast and easily as possible",
 		Long: `GoReleaser is a release automation tool for Go projects.
@@ -67,8 +67,8 @@ single .goreleaser.yaml file.
 		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args:          cobra.NoArgs,
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		Args:          coral.NoArgs,
+		PersistentPreRun: func(cmd *coral.Command, args []string) {
 			if root.debug {
 				log.SetLevel(log.DebugLevel)
 				log.Debug("debug logs enabled")
@@ -91,7 +91,7 @@ single .goreleaser.yaml file.
 	return root
 }
 
-func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
+func shouldPrependRelease(cmd *coral.Command, args []string) bool {
 	// find current cmd, if its not root, it means the user actively
 	// set a command, so let it go
 	xmd, _, _ := cmd.Find(args)
@@ -101,7 +101,7 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 
 	// allow help and the two __complete commands.
 	if len(args) > 0 && (args[0] == "help" || args[0] == "completion" ||
-		args[0] == cobra.ShellCompRequestCmd || args[0] == cobra.ShellCompNoDescRequestCmd) {
+		args[0] == coral.ShellCompRequestCmd || args[0] == coral.ShellCompNoDescRequestCmd) {
 		return false
 	}
 
