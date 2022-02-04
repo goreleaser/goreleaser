@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	pkgBuildExtra     = "AURConfig"
+	aurExtra          = "AURConfig"
 	defaultSSHCommand = "ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null"
 	defaultCommitMsg  = "Update to {{ .Tag }}"
 )
@@ -78,8 +78,8 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func runAll(ctx *context.Context, cli client.Client) error {
-	for _, pkgbuild := range ctx.Config.AURs {
-		err := doRun(ctx, pkgbuild, cli)
+	for _, aur := range ctx.Config.AURs {
+		err := doRun(ctx, aur, cli)
 		if err != nil {
 			return err
 		}
@@ -87,12 +87,12 @@ func runAll(ctx *context.Context, cli client.Client) error {
 	return nil
 }
 
-func doRun(ctx *context.Context, pkgbuild config.AUR, cl client.Client) error {
-	name, err := tmpl.New(ctx).Apply(pkgbuild.Name)
+func doRun(ctx *context.Context, aur config.AUR, cl client.Client) error {
+	name, err := tmpl.New(ctx).Apply(aur.Name)
 	if err != nil {
 		return err
 	}
-	pkgbuild.Name = name
+	aur.Name = name
 
 	filters := []artifact.Filter{
 		artifact.ByGoos("linux"),
@@ -113,8 +113,8 @@ func doRun(ctx *context.Context, pkgbuild config.AUR, cl client.Client) error {
 			artifact.ByType(artifact.UploadableBinary),
 		),
 	}
-	if len(pkgbuild.IDs) > 0 {
-		filters = append(filters, artifact.ByIDs(pkgbuild.IDs...))
+	if len(aur.IDs) > 0 {
+		filters = append(filters, artifact.ByIDs(aur.IDs...))
 	}
 
 	archives := ctx.Artifacts.Filter(artifact.And(filters...)).List()
@@ -122,7 +122,7 @@ func doRun(ctx *context.Context, pkgbuild config.AUR, cl client.Client) error {
 		return ErrNoArchivesFound
 	}
 
-	pkg, err := tmpl.New(ctx).Apply(pkgbuild.Package)
+	pkg, err := tmpl.New(ctx).Apply(aur.Package)
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func doRun(ctx *context.Context, pkgbuild config.AUR, cl client.Client) error {
 		}
 		log.Warnf("guessing package to be %q", pkg)
 	}
-	pkgbuild.Package = pkg
+	aur.Package = pkg
 
 	for _, info := range []struct {
 		name, tpl, ext string
@@ -149,7 +149,7 @@ func doRun(ctx *context.Context, pkgbuild config.AUR, cl client.Client) error {
 	}{
 		{
 			name: "PKGBUILD",
-			tpl:  pkgBuildTemplate,
+			tpl:  aurTemplateData,
 			ext:  ".pkgbuild",
 			kind: artifact.PkgBuild,
 		},
@@ -160,12 +160,12 @@ func doRun(ctx *context.Context, pkgbuild config.AUR, cl client.Client) error {
 			kind: artifact.SrcInfo,
 		},
 	} {
-		pkgContent, err := buildPkgFile(ctx, pkgbuild, cl, archives, info.tpl)
+		pkgContent, err := buildPkgFile(ctx, aur, cl, archives, info.tpl)
 		if err != nil {
 			return err
 		}
 
-		path := filepath.Join(ctx.Config.Dist, "aur", pkgbuild.Name+info.ext)
+		path := filepath.Join(ctx.Config.Dist, "aur", aur.Name+info.ext)
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			return fmt.Errorf("failed to write %s: %w", info.kind, err)
 		}
@@ -179,8 +179,8 @@ func doRun(ctx *context.Context, pkgbuild config.AUR, cl client.Client) error {
 			Path: path,
 			Type: info.kind,
 			Extra: map[string]interface{}{
-				pkgBuildExtra:    pkgbuild,
-				artifact.ExtraID: pkgbuild.Name,
+				aurExtra:         aur,
+				artifact.ExtraID: aur.Name,
 			},
 		})
 	}
@@ -346,10 +346,10 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
-	cfg := pkgs[0].Extra[pkgBuildExtra].(config.AUR)
+	cfg := pkgs[0].Extra[aurExtra].(config.AUR)
 
 	if strings.TrimSpace(cfg.SkipUpload) == "true" {
-		return pipe.Skip("pkgbuild.skip_upload is set")
+		return pipe.Skip("aur.skip_upload is set")
 	}
 
 	if strings.TrimSpace(cfg.SkipUpload) == "auto" && ctx.Semver.Prerelease != "" {
@@ -372,7 +372,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 	}
 
 	if url == "" {
-		return pipe.Skip("pkgbuild.git_url is empty")
+		return pipe.Skip("aur.git_url is empty")
 	}
 
 	sshcmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
@@ -442,7 +442,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 
 func keyPath(key string) (string, error) {
 	if key == "" {
-		return "", pipe.Skip("pkgbuild.private_key is empty")
+		return "", pipe.Skip("aur.private_key is empty")
 	}
 	if _, err := ssh.ParsePrivateKey([]byte(key)); err == nil {
 		f, err := os.CreateTemp("", "id_*")
