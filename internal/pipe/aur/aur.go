@@ -149,7 +149,7 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.Client) error {
 	}{
 		{
 			name: "PKGBUILD",
-			tpl:  pkgBuildTemplate,
+			tpl:  aurTemplateData,
 			ext:  ".pkgbuild",
 			kind: artifact.PkgBuild,
 		},

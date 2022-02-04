@@ -1,5 +1,5 @@
 pkgbase = foo-bin
-	pkgdesc = A run pipe test pkgbuild and FOO=foo_is_bar
+	pkgdesc = A run pipe test aur and FOO=foo_is_bar
 	pkgver = 1.0.1
 	pkgrel = 1
 	url = https://github.com/goreleaser

@@ -88,18 +88,18 @@ func createTemplateData() templateData {
 	}
 }
 
-func TestFullPkgBuild(t *testing.T) {
+func TestFullAur(t *testing.T) {
 	data := createTemplateData()
 	pkg, err := applyTemplate(context.New(config.Project{
 		ProjectName: "foo",
-	}), pkgBuildTemplate, data)
+	}), aurTemplateData, data)
 	require.NoError(t, err)
 
 	golden.RequireEqual(t, []byte(pkg))
 }
 
-func TestPkgBuildSimple(t *testing.T) {
-	pkg, err := applyTemplate(context.New(config.Project{}), pkgBuildTemplate, createTemplateData())
+func TestAurSimple(t *testing.T) {
+	pkg, err := applyTemplate(context.New(config.Project{}), aurTemplateData, createTemplateData())
 	require.NoError(t, err)
 	require.Contains(t, pkg, `# Maintainer: Ciclano <ciclano@example.com>`)
 	require.Contains(t, pkg, `# Maintainer: Cicrano <cicrano@example.com>`)
@@ -193,7 +193,7 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = ""
 			},
-			expectedPublishError: `pkgbuild.private_key is empty`,
+			expectedPublishError: `aur.private_key is empty`,
 		},
 		"key-not-found": {
 			prepare: func(ctx *context.Context) {
@@ -211,7 +211,7 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitURL = ""
 			},
-			expectedPublishError: `pkgbuild.git_url is empty`,
+			expectedPublishError: `aur.git_url is empty`,
 		},
 		"invalid-ssh-cmd-template": {
 			prepare: func(ctx *context.Context) {
@@ -338,7 +338,7 @@ func TestRunPipe(t *testing.T) {
 			AURs: []config.AUR{
 				{
 					License:     "MIT",
-					Description: "A run pipe test pkgbuild and FOO={{ .Env.FOO }}",
+					Description: "A run pipe test aur and FOO={{ .Env.FOO }}",
 					Homepage:    "https://github.com/goreleaser",
 					IDs:         []string{"foo"},
 					GitURL:      url,
@@ -731,7 +731,7 @@ func TestKeyPath(t *testing.T) {
 	})
 	t.Run("empty", func(t *testing.T) {
 		result, err := keyPath("")
-		require.EqualError(t, err, `pkgbuild.private_key is empty`)
+		require.EqualError(t, err, `aur.private_key is empty`)
 		require.Equal(t, "", result)
 	})
 }
