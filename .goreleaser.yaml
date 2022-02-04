@@ -214,9 +214,11 @@ nfpms:
       Deliver Go binaries as fast and easily as possible.
       GoReleaser allows you to release easily build, package, publish and
       announce to several places at one go.
-    maintainer: Carlos Alexandro Becker <root@carlosbecker.com>
+    maintainer: Carlos Alexandro Becker <carlos@becker.software>
     license: MIT
     vendor: GoReleaser
+    bindir: /usr/bin
+    section: utils
     contents:
       - src: ./completions/goreleaser.bash
         dst: /usr/share/bash-completion/completions
