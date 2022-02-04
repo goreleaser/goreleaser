@@ -25,10 +25,10 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.1.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/muesli/mango-cobra v0.0.0-20220201011537-57e8ea90d84d
+	github.com/muesli/coral v1.0.0
+	github.com/muesli/mango-coral v1.0.1
 	github.com/muesli/roff v0.1.0
 	github.com/slack-go/slack v0.10.1
-	github.com/spf13/cobra v1.3.0
 	github.com/stretchr/testify v1.7.0
 	github.com/ulikunitz/xz v0.5.10
 	github.com/xanzy/go-gitlab v0.54.4
@@ -108,6 +108,7 @@ require (
 	github.com/goreleaser/chglog v0.1.2 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-hclog v1.0.0 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
 	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
