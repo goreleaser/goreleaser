@@ -6,6 +6,7 @@ on:
 
 jobs:
   lock:
+    if: github.repository == 'goreleaser/goreleaser'
     runs-on: ubuntu-latest
     steps:
       - uses: dessant/lock-threads@v3
