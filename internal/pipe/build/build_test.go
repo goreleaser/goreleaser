@@ -206,14 +206,14 @@ func TestRunPipeFailingHooks(t *testing.T) {
 		ctx.Git.CurrentTag = "2.3.4"
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "exit 1"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "echo post"}}
-		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: "": exec: "exit": executable file not found in $PATH`)
+		require.EqualError(t, Pipe{}.Run(ctx), "pre hook failed: failed to run 'exit 1': exec: \"exit\": executable file not found in $PATH")
 	})
 	t.Run("post-hook", func(t *testing.T) {
 		ctx := context.New(cfg)
 		ctx.Git.CurrentTag = "2.3.4"
 		ctx.Config.Builds[0].Hooks.Pre = []config.Hook{{Cmd: "echo pre"}}
 		ctx.Config.Builds[0].Hooks.Post = []config.Hook{{Cmd: "exit 1"}}
-		require.EqualError(t, Pipe{}.Run(ctx), `post hook failed: "": exec: "exit": executable file not found in $PATH`)
+		require.EqualError(t, Pipe{}.Run(ctx), `post hook failed: failed to run 'exit 1': exec: "exit": executable file not found in $PATH`)
 	})
 }
 
@@ -681,6 +681,6 @@ func TestRunHookFailWithLogs(t *testing.T) {
 	}
 	ctx := context.New(config)
 	ctx.Git.CurrentTag = "2.4.5"
-	require.EqualError(t, Pipe{}.Run(ctx), "pre hook failed: \"foo\\n\": exit status 1")
+	require.EqualError(t, Pipe{}.Run(ctx), "pre hook failed: failed to run 'sh -c echo foo; exit 1': exit status 1")
 	require.Empty(t, ctx.Artifacts.List())
 }
