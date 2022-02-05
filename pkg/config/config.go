@@ -428,7 +428,7 @@ type File struct {
 // FileInfo is the file info of a file.
 type FileInfo struct {
 	Owner string      `yaml:"owner,omitempty"`
-	Group string      `yaml:"group"`
+	Group string      `yaml:"group,omitempty"`
 	Mode  os.FileMode `yaml:"mode,omitempty"`
 	MTime time.Time   `yaml:"mtime,omitempty"`
 }
