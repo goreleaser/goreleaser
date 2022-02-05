@@ -838,9 +838,6 @@
 							},
 							"info": {
 								"$schema": "http://json-schema.org/draft-04/schema#",
-								"required": [
-									"group"
-								],
 								"properties": {
 									"owner": {
 										"type": "string"
