@@ -221,7 +221,7 @@ nfpms:
     section: utils
     contents:
       - src: ./completions/goreleaser.bash
-        dst: /usr/share/bash-completion/completions
+        dst: /usr/share/bash-completion/completions/goreleaser
         file_info:
           mode: 0644
       - src: ./completions/goreleaser.fish
