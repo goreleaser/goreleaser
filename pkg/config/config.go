@@ -372,9 +372,10 @@ func (bhc Hooks) JSONSchemaType() *jsonschema.Type {
 }
 
 type Hook struct {
-	Dir string   `yaml:"dir,omitempty"`
-	Cmd string   `yaml:"cmd,omitempty"`
-	Env []string `yaml:"env,omitempty"`
+	Dir    string   `yaml:"dir,omitempty"`
+	Cmd    string   `yaml:"cmd,omitempty"`
+	Env    []string `yaml:"env,omitempty"`
+	Output bool     `yaml:"output,omitempty"`
 }
 
 // UnmarshalYAML is a custom unmarshaler that allows simplified declarations of commands as strings.

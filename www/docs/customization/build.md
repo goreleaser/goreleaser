@@ -277,6 +277,7 @@ builds:
       pre:
        - cmd: first-script.sh
          dir: "{{ dir .Dist}}"
+         output: true # always print command output, otherwise only visible in debug mode
          env:
           - HOOK_SPECIFIC_VAR={{ .Env.GLOBAL_VAR }}
        - second-script.sh
