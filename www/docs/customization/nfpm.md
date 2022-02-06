@@ -53,7 +53,9 @@ nfpms:
 
     # Template to your app's description.
     # Default is empty.
-    description: Software to create fast and easy drum rolls.
+    description: |-
+      Drum rolls installer package.
+      Software to create fast and easy drum rolls.
 
     # Your app's license.
     # Default is empty.

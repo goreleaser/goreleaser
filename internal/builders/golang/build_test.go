@@ -226,11 +226,13 @@ func TestBuild(t *testing.T) {
 					"linux_mips_softfloat",
 					"linux_mips64le_softfloat",
 				},
-				Asmflags: []string{".=", "all="},
-				Gcflags:  []string{"all="},
-				Flags:    []string{"{{.Env.GO_FLAGS}}"},
-				Tags:     []string{"osusergo", "netgo", "static_build"},
 				GoBinary: "go",
+				BuildDetails: config.BuildDetails{
+					Asmflags: []string{".=", "all="},
+					Gcflags:  []string{"all="},
+					Flags:    []string{"{{.Env.GO_FLAGS}}"},
+					Tags:     []string{"osusergo", "netgo", "static_build"},
+				},
 			},
 		},
 	}
@@ -450,8 +452,10 @@ func TestBuildFailed(t *testing.T) {
 	config := config.Project{
 		Builds: []config.Build{
 			{
-				ID:    "buildid",
-				Flags: []string{"-flag-that-dont-exists-to-force-failure"},
+				ID: "buildid",
+				BuildDetails: config.BuildDetails{
+					Flags: []string{"-flag-that-dont-exists-to-force-failure"},
+				},
 				Targets: []string{
 					runtimeTarget,
 				},
@@ -474,8 +478,10 @@ func TestRunInvalidAsmflags(t *testing.T) {
 	config := config.Project{
 		Builds: []config.Build{
 			{
-				Binary:   "nametest",
-				Asmflags: []string{"{{.Version}"},
+				Binary: "nametest",
+				BuildDetails: config.BuildDetails{
+					Asmflags: []string{"{{.Version}"},
+				},
 				Targets: []string{
 					runtimeTarget,
 				},
@@ -496,8 +502,10 @@ func TestRunInvalidGcflags(t *testing.T) {
 	config := config.Project{
 		Builds: []config.Build{
 			{
-				Binary:  "nametest",
-				Gcflags: []string{"{{.Version}"},
+				Binary: "nametest",
+				BuildDetails: config.BuildDetails{
+					Gcflags: []string{"{{.Version}"},
+				},
 				Targets: []string{
 					runtimeTarget,
 				},
@@ -518,9 +526,11 @@ func TestRunInvalidLdflags(t *testing.T) {
 	config := config.Project{
 		Builds: []config.Build{
 			{
-				Binary:  "nametest",
-				Flags:   []string{"-v"},
-				Ldflags: []string{"-s -w -X main.version={{.Version}"},
+				Binary: "nametest",
+				BuildDetails: config.BuildDetails{
+					Flags:   []string{"-v"},
+					Ldflags: []string{"-s -w -X main.version={{.Version}"},
+				},
 				Targets: []string{
 					runtimeTarget,
 				},
@@ -542,7 +552,9 @@ func TestRunInvalidFlags(t *testing.T) {
 		Builds: []config.Build{
 			{
 				Binary: "nametest",
-				Flags:  []string{"{{.Env.GOOS}"},
+				BuildDetails: config.BuildDetails{
+					Flags: []string{"{{.Env.GOOS}"},
+				},
 				Targets: []string{
 					runtimeTarget,
 				},
@@ -832,9 +844,11 @@ func TestBuildModTimestamp(t *testing.T) {
 					"linux_mips_softfloat",
 					"linux_mips64le_softfloat",
 				},
-				Asmflags:     []string{".=", "all="},
-				Gcflags:      []string{"all="},
-				Flags:        []string{"{{.Env.GO_FLAGS}}"},
+				BuildDetails: config.BuildDetails{
+					Asmflags: []string{".=", "all="},
+					Gcflags:  []string{"all="},
+					Flags:    []string{"{{.Env.GO_FLAGS}}"},
+				},
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				GoBinary:     "go",
 			},
@@ -888,19 +902,25 @@ func TestBuildGoBuildLine(t *testing.T) {
 		ctx.Version = "1.2.3"
 		ctx.Git.Commit = "aaa"
 
-		line, err := buildGoBuildLine(ctx, config.Builds[0], api.Options{Path: "foo"}, &artifact.Artifact{}, []string{})
+		line, err := buildGoBuildLine(ctx, config.Builds[0], api.Options{
+			Path:   "foo",
+			Goos:   "linux",
+			Goarch: "amd64",
+		}, &artifact.Artifact{}, []string{})
 		require.NoError(t, err)
 		require.Equal(t, expected, line)
 	}
 
 	t.Run("full", func(t *testing.T) {
 		requireEqualCmd(t, config.Build{
-			Main:     ".",
-			Asmflags: []string{"asmflag1", "asmflag2"},
-			Gcflags:  []string{"gcflag1", "gcflag2"},
-			Flags:    []string{"-flag1", "-flag2"},
-			Tags:     []string{"tag1", "tag2"},
-			Ldflags:  []string{"ldflag1", "ldflag2"},
+			Main: ".",
+			BuildDetails: config.BuildDetails{
+				Asmflags: []string{"asmflag1", "asmflag2"},
+				Gcflags:  []string{"gcflag1", "gcflag2"},
+				Flags:    []string{"-flag1", "-flag2"},
+				Tags:     []string{"tag1", "tag2"},
+				Ldflags:  []string{"ldflag1", "ldflag2"},
+			},
 			GoBinary: "go",
 		}, []string{
 			"go", "build",
@@ -909,6 +929,41 @@ func TestBuildGoBuildLine(t *testing.T) {
 			"-gcflags=gcflag1", "-gcflags=gcflag2",
 			"-tags=tag1,tag2",
 			"-ldflags=ldflag1 ldflag2",
+			"-o", "foo", ".",
+		})
+	})
+
+	t.Run("with overrides", func(t *testing.T) {
+		requireEqualCmd(t, config.Build{
+			Main: ".",
+			BuildDetails: config.BuildDetails{
+				Asmflags: []string{"asmflag1", "asmflag2"},
+				Gcflags:  []string{"gcflag1", "gcflag2"},
+				Flags:    []string{"-flag1", "-flag2"},
+				Tags:     []string{"tag1", "tag2"},
+				Ldflags:  []string{"ldflag1", "ldflag2"},
+			},
+			BuildDetailsOverrides: []config.BuildDetailsOverride{
+				{
+					Goos:   "linux",
+					Goarch: "amd64",
+					BuildDetails: config.BuildDetails{
+						Asmflags: []string{"asmflag3"},
+						Gcflags:  []string{"gcflag3"},
+						Flags:    []string{"-flag3"},
+						Tags:     []string{"tag3"},
+						Ldflags:  []string{"ldflag3"},
+					},
+				},
+			},
+			GoBinary: "go",
+		}, []string{
+			"go", "build",
+			"-flag3",
+			"-asmflags=asmflag3",
+			"-gcflags=gcflag3",
+			"-tags=tag3",
+			"-ldflags=ldflag3",
 			"-o", "foo", ".",
 		})
 	})
@@ -922,8 +977,10 @@ func TestBuildGoBuildLine(t *testing.T) {
 
 	t.Run("ldflags1", func(t *testing.T) {
 		requireEqualCmd(t, config.Build{
-			Main:     ".",
-			Ldflags:  []string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.builtBy=goreleaser"},
+			Main: ".",
+			BuildDetails: config.BuildDetails{
+				Ldflags: []string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.builtBy=goreleaser"},
+			},
 			GoBinary: "go",
 		}, []string{
 			"go", "build",
@@ -934,10 +991,176 @@ func TestBuildGoBuildLine(t *testing.T) {
 
 	t.Run("ldflags2", func(t *testing.T) {
 		requireEqualCmd(t, config.Build{
-			Main:     ".",
-			Ldflags:  []string{"-s -w", "-X main.version={{.Version}}"},
+			Main: ".",
+			BuildDetails: config.BuildDetails{
+				Ldflags: []string{"-s -w", "-X main.version={{.Version}}"},
+			},
 			GoBinary: "go",
 		}, []string{"go", "build", "-ldflags=-s -w -X main.version=1.2.3", "-o", "foo", "."})
+	})
+}
+
+func TestOverrides(t *testing.T) {
+	t.Run("linux amd64", func(t *testing.T) {
+		dets, err := withOverrides(
+			context.New(config.Project{}),
+			config.Build{
+				BuildDetails: config.BuildDetails{
+					Ldflags: []string{"original"},
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "linux",
+						Goarch: "amd64",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"overridden"},
+						},
+					},
+				},
+			}, api.Options{
+				Goos:   "linux",
+				Goarch: "amd64",
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, dets, config.BuildDetails{
+			Ldflags: []string{"overridden"},
+		})
+	})
+
+	t.Run("single sided", func(t *testing.T) {
+		dets, err := withOverrides(
+			context.New(config.Project{}),
+			config.Build{
+				BuildDetails: config.BuildDetails{},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "linux",
+						Goarch: "amd64",
+						BuildDetails: config.BuildDetails{
+							Ldflags:  []string{"overridden"},
+							Tags:     []string{"tag1"},
+							Asmflags: []string{"asm1"},
+							Gcflags:  []string{"gcflag1"},
+						},
+					},
+				},
+			}, api.Options{
+				Goos:   "linux",
+				Goarch: "amd64",
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, dets, config.BuildDetails{
+			Ldflags:  []string{"overridden"},
+			Gcflags:  []string{"gcflag1"},
+			Asmflags: []string{"asm1"},
+			Tags:     []string{"tag1"},
+		})
+	})
+
+	t.Run("with template", func(t *testing.T) {
+		dets, err := withOverrides(
+			context.New(config.Project{}),
+			config.Build{
+				BuildDetails: config.BuildDetails{
+					Ldflags:  []string{"original"},
+					Asmflags: []string{"asm1"},
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "{{ .Runtime.Goos }}",
+						Goarch: "{{ .Runtime.Goarch }}",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"overridden"},
+						},
+					},
+				},
+			}, api.Options{
+				Goos:   runtime.GOOS,
+				Goarch: runtime.GOARCH,
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, dets, config.BuildDetails{
+			Ldflags:  []string{"overridden"},
+			Asmflags: []string{"asm1"},
+		})
+	})
+
+	t.Run("with invalid template", func(t *testing.T) {
+		_, err := withOverrides(
+			context.New(config.Project{}),
+			config.Build{
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos: "{{ .Runtime.Goos }",
+					},
+				},
+			}, api.Options{
+				Goos:   runtime.GOOS,
+				Goarch: runtime.GOARCH,
+			},
+		)
+		require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+	})
+
+	t.Run("with goarm", func(t *testing.T) {
+		dets, err := withOverrides(
+			context.New(config.Project{}),
+			config.Build{
+				BuildDetails: config.BuildDetails{
+					Ldflags: []string{"original"},
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "linux",
+						Goarch: "arm",
+						Goarm:  "6",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"overridden"},
+						},
+					},
+				},
+			}, api.Options{
+				Goos:   "linux",
+				Goarch: "arm",
+				Goarm:  "6",
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, dets, config.BuildDetails{
+			Ldflags: []string{"overridden"},
+		})
+	})
+
+	t.Run("with gomips", func(t *testing.T) {
+		dets, err := withOverrides(
+			context.New(config.Project{}),
+			config.Build{
+				BuildDetails: config.BuildDetails{
+					Ldflags: []string{"original"},
+				},
+				BuildDetailsOverrides: []config.BuildDetailsOverride{
+					{
+						Goos:   "linux",
+						Goarch: "mips",
+						Gomips: "softfloat",
+						BuildDetails: config.BuildDetails{
+							Ldflags: []string{"overridden"},
+						},
+					},
+				},
+			}, api.Options{
+				Goos:   "linux",
+				Goarch: "mips",
+				Gomips: "softfloat",
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, dets, config.BuildDetails{
+			Ldflags: []string{"overridden"},
+		})
 	})
 }
 

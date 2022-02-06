@@ -3,6 +3,7 @@ package tmpl
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"text/template"
 
@@ -62,6 +63,8 @@ func TestWithArtifact(t *testing.T) {
 		"v1.2.2":                           "{{ .PreviousTag }}",
 		"awesome release":                  "{{ .TagSubject }}",
 		"awesome release\n\nanother line":  "{{ .TagContents }}",
+		"runtime: " + runtime.GOOS:         "runtime: {{ .Runtime.Goos }}",
+		"runtime: " + runtime.GOARCH:       "runtime: {{ .Runtime.Goarch }}",
 	} {
 		tmpl := tmpl
 		expect := expect

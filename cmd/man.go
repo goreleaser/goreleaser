@@ -4,26 +4,26 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/muesli/mango/mcobra"
+	"github.com/muesli/coral"
+	mcoral "github.com/muesli/mango-coral"
 	"github.com/muesli/roff"
-	"github.com/spf13/cobra"
 )
 
 type manCmd struct {
-	cmd *cobra.Command
+	cmd *coral.Command
 }
 
 func newManCmd() *manCmd {
 	root := &manCmd{}
-	cmd := &cobra.Command{
+	cmd := &coral.Command{
 		Use:                   "man",
 		Short:                 "Generates GoReleaser's command line manpages",
 		SilenceUsage:          true,
 		DisableFlagsInUseLine: true,
 		Hidden:                true,
-		Args:                  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			manPage, err := mcobra.NewManPageFromCobra(1, root.cmd.Root())
+		Args:                  coral.NoArgs,
+		RunE: func(cmd *coral.Command, args []string) error {
+			manPage, err := mcoral.NewManPage(1, root.cmd.Root())
 			if err != nil {
 				return err
 			}

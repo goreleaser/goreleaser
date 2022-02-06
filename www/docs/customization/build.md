@@ -155,6 +155,25 @@ builds:
     # Valid options are: `go` and `prebuilt`.
     # Defaults to `go`.
     builder: prebuilt
+
+    # Overrides allows to override some fields for specific targets.
+    # This can be specially useful when using CGO.
+    # Note: it'll only match if the full target matches.
+    #
+    # Defaults to empty.
+    overrides:
+      - goos: darwin
+        goarch: arm64
+        goarm: ''
+        gomips: ''
+        ldflags:
+          - foo
+        tags:
+          - bar
+        asmflags:
+          - foobar
+        gcflags:
+          - foobaz
 ```
 
 !!! tip
@@ -258,6 +277,7 @@ builds:
       pre:
        - cmd: first-script.sh
          dir: "{{ dir .Dist}}"
+         output: true # always print command output, otherwise only visible in debug mode
          env:
           - HOOK_SPECIFIC_VAR={{ .Env.GLOBAL_VAR }}
        - second-script.sh

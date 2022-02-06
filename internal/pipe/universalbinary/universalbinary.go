@@ -103,7 +103,7 @@ func runHook(ctx *context.Context, hooks config.Hooks) error {
 			return err
 		}
 
-		if err := shell.Run(ctx, dir, cmd, envs); err != nil {
+		if err := shell.Run(ctx, dir, cmd, envs, hook.Output); err != nil {
 			return err
 		}
 	}

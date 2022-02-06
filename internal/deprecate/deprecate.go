@@ -43,10 +43,14 @@ func Notice(ctx *context.Context, property string) {
 // NoticeCustom warns the user about the deprecation of the given property.
 func NoticeCustom(ctx *context.Context, property, tmpl string) {
 	ctx.Deprecated = true
-	cli.Default.Padding += 3
-	defer func() {
-		cli.Default.Padding -= 3
-	}()
+	// XXX: this is very ugly!
+	w := log.Log.(*log.Logger).Handler.(*cli.Handler).Writer
+	handler := cli.New(w)
+	handler.Padding = cli.Default.Padding + 3
+	log := &log.Logger{
+		Handler: handler,
+		Level:   log.InfoLevel,
+	}
 	// replaces . and _ with -
 	url := baseURL + strings.NewReplacer(
 		".", "",

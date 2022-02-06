@@ -1,31 +1,39 @@
 package shell_test
 
 import (
+	"path/filepath"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/goreleaser/goreleaser/internal/shell"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/stretchr/testify/require"
 )
 
-func TestRunAValidCommand(t *testing.T) {
-	assert := assert.New(t)
+func TestRunCommand(t *testing.T) {
+	t.Run("simple", func(t *testing.T) {
+		require.NoError(t, shell.Run(context.New(config.Project{}), "", []string{"echo", "oi"}, []string{}, false))
+	})
 
-	ctx := context.New(config.Project{})
+	t.Run("cmd failed", func(t *testing.T) {
+		require.EqualError(
+			t,
+			shell.Run(context.New(config.Project{}), "", []string{"sh", "-c", "exit 1"}, []string{}, false),
+			`failed to run 'sh -c exit 1': exit status 1`,
+		)
+	})
 
-	err := shell.Run(ctx, "", []string{"echo", "test"}, []string{})
-	assert.NoError(err)
-}
+	t.Run("cmd with output", func(t *testing.T) {
+		require.EqualError(
+			t,
+			shell.Run(context.New(config.Project{}), "", []string{"sh", "-c", `echo something; exit 1`}, []string{}, true),
+			`failed to run 'sh -c echo something; exit 1': exit status 1`,
+		)
+	})
 
-func TestRunAnInValidCommand(t *testing.T) {
-	assert := assert.New(t)
-
-	ctx := context.New(config.Project{})
-
-	err := shell.Run(ctx, "", []string{"invalid", "command"}, []string{})
-
-	assert.Error(err)
-	assert.Contains(err.Error(), "executable file not found")
+	t.Run("with env and dir", func(t *testing.T) {
+		dir := t.TempDir()
+		require.NoError(t, shell.Run(context.New(config.Project{}), dir, []string{"sh", "-c", "touch $FOO"}, []string{"FOO=bar"}, false))
+		require.FileExists(t, filepath.Join(dir, "bar"))
+	})
 }

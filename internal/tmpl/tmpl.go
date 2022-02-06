@@ -52,6 +52,7 @@ const (
 	timestamp       = "Timestamp"
 	modulePath      = "ModulePath"
 	releaseNotes    = "ReleaseNotes"
+	runtimeK        = "Runtime"
 
 	// artifact-only keys.
 	osKey        = "Os"
@@ -102,6 +103,7 @@ func New(ctx *context.Context) *Template {
 			prerelease:      ctx.Semver.Prerelease,
 			isSnapshot:      ctx.Snapshot,
 			releaseNotes:    ctx.ReleaseNotes,
+			runtimeK:        ctx.Runtime,
 		},
 	}
 }

@@ -3,7 +3,7 @@
 pkgname='foo-bin'
 pkgver=1.0.1
 pkgrel=1
-pkgdesc='A run pipe test pkgbuild and FOO=foo_is_bar'
+pkgdesc='A run pipe test aur and FOO=foo_is_bar'
 url='https://github.com/goreleaser'
 arch=('aarch64' 'armv6h' 'armv7h' 'i686' 'x86_64')
 license=('MIT')
