@@ -316,17 +316,25 @@ func newSCMChangeloger(ctx *context.Context) (changeloger, error) {
 
 func loadContent(ctx *context.Context, fileName, tmplName string) (string, error) {
 	if tmplName != "" {
-		log.Debugf("loading template %s", tmplName)
+		log.Debugf("loading template %q", tmplName)
 		content, err := loadFromFile(tmplName)
 		if err != nil {
 			return "", err
 		}
-		return tmpl.New(ctx).Apply(content)
+		content, err = tmpl.New(ctx).Apply(content)
+		if strings.TrimSpace(content) == "" && err == nil {
+			log.Warnf("loaded %q, but it evaluates to an empty string", tmplName)
+		}
+		return content, err
 	}
 
 	if fileName != "" {
-		log.Debugf("loading file %s", fileName)
-		return loadFromFile(fileName)
+		log.Debugf("loading file %q", fileName)
+		content, err := loadFromFile(fileName)
+		if strings.TrimSpace(content) == "" && err == nil {
+			log.Warnf("loaded %q, but it is empty", fileName)
+		}
+		return content, err
 	}
 
 	return "", nil
