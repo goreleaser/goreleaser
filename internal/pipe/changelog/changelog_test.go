@@ -45,6 +45,7 @@ func TestChangelogTmplProvidedViaFlagIsReallyEmpty(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "", ctx.ReleaseNotes)
 }
+
 func TestTemplatedChangelogProvidedViaFlag(t *testing.T) {
 	ctx := context.New(config.Project{})
 	ctx.ReleaseNotesFile = "testdata/changes.md"
