@@ -25,11 +25,25 @@ func TestChangelogProvidedViaFlag(t *testing.T) {
 	require.Equal(t, "c0ff33 coffeee\n", ctx.ReleaseNotes)
 }
 
-func TestChangelogProvidedViaFlagIsAnWhitespaceOnlyFile(t *testing.T) {
+func TestChangelogProvidedViaFlagIsAWhitespaceOnlyFile(t *testing.T) {
 	ctx := context.New(config.Project{})
 	ctx.ReleaseNotesFile = "testdata/changes-empty.md"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "\n", ctx.ReleaseNotes)
+}
+
+func TestChangelogProvidedViaFlagIsReallyEmpty(t *testing.T) {
+	ctx := context.New(config.Project{})
+	ctx.ReleaseNotesFile = "testdata/changes-really-empty.md"
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "", ctx.ReleaseNotes)
+}
+
+func TestChangelogTmplProvidedViaFlagIsReallyEmpty(t *testing.T) {
+	ctx := context.New(config.Project{})
+	ctx.ReleaseNotesTmpl = "testdata/changes-really-empty.md"
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "", ctx.ReleaseNotes)
 }
 
 func TestTemplatedChangelogProvidedViaFlag(t *testing.T) {
