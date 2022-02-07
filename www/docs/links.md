@@ -9,5 +9,5 @@
 - [Contributing Guidelines](https://github.com/goreleaser/goreleaser/blob/main/CONTRIBUTING.md)
 
 This project adheres to the Contributor Covenant
-[code of conduct](https://github.com/goreleaser/goreleaser/blob/main/CODE_OF_CONDUCT.md).
+[code of conduct](https://github.com/goreleaser/.github/blob/main/CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.

@@ -9,7 +9,8 @@
 GoReleaser builds Go binaries for several platforms, creates a GitHub release and then
 pushes a Homebrew formula to a tap repository. All that wrapped in your favorite CI.
 
-This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+This project adheres to the Contributor Covenant [code of conduct](https://github.com/goreleaser/.github/blob/main/CODE_OF_CONDUCT.md).
+By participating, you are expected to uphold this code.
 We appreciate your contribution. Please refer to our [contributing guidelines](CONTRIBUTING.md) for further information.
 
 For questions, support and general discussion, please use [GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions);
