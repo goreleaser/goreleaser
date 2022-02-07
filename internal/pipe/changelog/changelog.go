@@ -49,7 +49,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	}
 	ctx.ReleaseNotes = notes
 
-	if ctx.ReleaseNotes != "" {
+	if ctx.ReleaseNotesFile != "" || ctx.ReleaseNotesTmpl != "" {
 		return nil
 	}
 
