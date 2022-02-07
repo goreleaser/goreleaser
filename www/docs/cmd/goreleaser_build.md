@@ -30,6 +30,7 @@ goreleaser build [flags]
   -f, --config string      Load configuration from file
   -h, --help               help for build
       --id string          Builds only the specified build id
+  -o, --output string      Path to the binary, defaults to the distribution folder according to configs. Only taked into account when using --single-target and a single id (either with --id or if config only has one build)
   -p, --parallelism int    Amount tasks to run concurrently (default: number of CPUs)
       --rm-dist            Remove the dist folder before building
       --single-target      Builds only for current GOOS and GOARCH
