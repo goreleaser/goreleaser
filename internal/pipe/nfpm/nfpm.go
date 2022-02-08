@@ -192,10 +192,10 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 			lines = append(lines, fmt.Sprintf("%s: %s", fpm.PackageName, ov))
 		}
 		lintianPath := filepath.Join(ctx.Config.Dist, "deb", fpm.PackageName, ".lintian")
-		if err := os.MkdirAll(filepath.Dir(lintianPath), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(lintianPath), 0o755); err != nil {
 			return fmt.Errorf("failed to write lintian file: %w", err)
 		}
-		if err := os.WriteFile(lintianPath, []byte(strings.Join(lines, "\n")), 0644); err != nil {
+		if err := os.WriteFile(lintianPath, []byte(strings.Join(lines, "\n")), 0o644); err != nil {
 			return fmt.Errorf("failed to write lintian file: %w", err)
 		}
 

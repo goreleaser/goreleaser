@@ -1,2 +1,0 @@
-goreleaser: statically-linked-binary
-goreleaser: changelog-file-missing-in-native-package
