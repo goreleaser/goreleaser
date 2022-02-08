@@ -615,6 +615,7 @@ type NFPMDeb struct {
 	Triggers  NFPMDebTriggers  `yaml:"triggers,omitempty"`
 	Breaks    []string         `yaml:"breaks,omitempty"`
 	Signature NFPMDebSignature `yaml:"signature,omitempty"`
+	Lintian   []string         `yaml:"lintian_overrides,omitempty"`
 }
 
 type NFPMAPKScripts struct {

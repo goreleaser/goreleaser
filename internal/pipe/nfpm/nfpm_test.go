@@ -598,6 +598,10 @@ func TestDebSpecificConfig(t *testing.T) {
 						Signature: config.NFPMDebSignature{
 							KeyFile: "./testdata/privkey.gpg",
 						},
+						Lintian: []string{
+							"statically-linked-binary",
+							"changelog-file-missing-in-native-package",
+						},
 					},
 				},
 			},
@@ -633,6 +637,10 @@ func TestDebSpecificConfig(t *testing.T) {
 			"NFPM_SOMEID_PASSPHRASE": "hunter2",
 		}
 		require.NoError(t, Pipe{}.Run(ctx))
+
+		bts, err := os.ReadFile(filepath.Join(dist, "deb/foo/.lintian"))
+		require.NoError(t, err)
+		require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
 	})
 
 	t.Run("packager specific passphrase set", func(t *testing.T) {

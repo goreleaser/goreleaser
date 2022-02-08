@@ -186,6 +186,30 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		})
 	}
 
+	if len(fpm.Deb.Lintian) > 0 {
+		lines := make([]string, 0, len(fpm.Deb.Lintian))
+		for _, ov := range fpm.Deb.Lintian {
+			lines = append(lines, fmt.Sprintf("%s: %s", fpm.PackageName, ov))
+		}
+		lintianPath := filepath.Join(ctx.Config.Dist, "deb", fpm.PackageName, ".lintian")
+		if err := os.MkdirAll(filepath.Dir(lintianPath), 0755); err != nil {
+			return fmt.Errorf("failed to write lintian file: %w", err)
+		}
+		if err := os.WriteFile(lintianPath, []byte(strings.Join(lines, "\n")), 0644); err != nil {
+			return fmt.Errorf("failed to write lintian file: %w", err)
+		}
+
+		log.Infof("creating %q", lintianPath)
+		contents = append(contents, &files.Content{
+			Source:      lintianPath,
+			Destination: filepath.Join("./usr/share/lintian/overrides", fpm.PackageName),
+			Packager:    "deb",
+			FileInfo: &files.ContentFileInfo{
+				Mode: 0o644,
+			},
+		})
+	}
+
 	log := log.WithField("package", fpm.PackageName).WithField("format", format).WithField("arch", arch)
 
 	// FPM meta package should not contain binaries at all
