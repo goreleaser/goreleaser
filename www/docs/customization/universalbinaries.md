@@ -74,8 +74,22 @@ You can use the Go template engine to remove it if you'd like.
     - id: bar
       name_template: bin2
     ```
-## Hooks templates
 
-Both the `pre` and `post` hooks allow the regular template variables.
-The `post` hook also allows the usage of `{{ .Path }}` and `{{ .Name }}`,
-denoting the path to the universal binary and its name, respectively.
+## Naming templates
+
+Most fields that support [templating](/customization/templates/) will also
+support the following build details:
+
+| Key     | Description                       |
+|---------|-----------------------------------|
+| .Os     | `GOOS`, always `darwin`           |
+| .Arch   | `GOARCH`, always `all`            |
+| .Arm    | `GOARM`, always empty             |
+| .Ext    | Extension, always empty           |
+| .Target | Build target, always `darwin_all` |
+| .Path   | The binary path                   |
+| .Name   | The binary name                   |
+
+!!! tip
+    Notice that `.Path` and `.Name` will only be available after they are
+    evaluated, so they are mostly only useful in the `post` hooks.
