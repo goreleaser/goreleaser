@@ -37,6 +37,7 @@ universal_binaries:
   # Hooks can be used to customize the final binary,
   # for example, to run generators.
   # Those fields allow templates.
+  #
   # Default is both hooks empty.
   hooks:
     pre: rice embed-go
@@ -73,3 +74,8 @@ You can use the Go template engine to remove it if you'd like.
     - id: bar
       name_template: bin2
     ```
+## Hooks templates
+
+Both the `pre` and `post` hooks allow the regular template variables.
+The `post` hook also allows the usage of `{{ .Path }}` and `{{ .Name }}`,
+denoting the path to the universal binary and its name, respectively.

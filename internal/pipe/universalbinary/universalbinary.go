@@ -16,6 +16,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/shell"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
+	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -51,13 +52,14 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, unibin := range ctx.Config.UniversalBinaries {
 		unibin := unibin
 		g.Go(func() error {
-			if err := runHook(ctx, unibin.Hooks.Pre); err != nil {
+			opts := build.Options{}
+			if err := runHook(ctx, &opts, unibin.Hooks.Pre); err != nil {
 				return fmt.Errorf("pre hook failed: %w", err)
 			}
-			if err := makeUniversalBinary(ctx, unibin); err != nil {
+			if err := makeUniversalBinary(ctx, &opts, unibin); err != nil {
 				return err
 			}
-			if err := runHook(ctx, unibin.Hooks.Post); err != nil {
+			if err := runHook(ctx, &opts, unibin.Hooks.Post); err != nil {
 				return fmt.Errorf("post hook failed: %w", err)
 			}
 			if !unibin.Replace {
@@ -69,7 +71,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	return g.Wait()
 }
 
-func runHook(ctx *context.Context, hooks config.Hooks) error {
+func runHook(ctx *context.Context, opts *build.Options, hooks config.Hooks) error {
 	if len(hooks) == 0 {
 		return nil
 	}
@@ -78,8 +80,9 @@ func runHook(ctx *context.Context, hooks config.Hooks) error {
 		var envs []string
 		envs = append(envs, ctx.Env.Strings()...)
 
+		tpl := tmpl.New(ctx).WithBuildOptions(*opts)
 		for _, rawEnv := range hook.Env {
-			env, err := tmpl.New(ctx).Apply(rawEnv)
+			env, err := tpl.Apply(rawEnv)
 			if err != nil {
 				return err
 			}
@@ -87,12 +90,13 @@ func runHook(ctx *context.Context, hooks config.Hooks) error {
 			envs = append(envs, env)
 		}
 
-		dir, err := tmpl.New(ctx).Apply(hook.Dir)
+		tpl = tpl.WithEnvS(envs)
+		dir, err := tpl.Apply(hook.Dir)
 		if err != nil {
 			return err
 		}
 
-		sh, err := tmpl.New(ctx).WithEnvS(envs).Apply(hook.Cmd)
+		sh, err := tpl.Apply(hook.Cmd)
 		if err != nil {
 			return err
 		}
@@ -125,13 +129,15 @@ const (
 )
 
 // heavily based on https://github.com/randall77/makefat
-func makeUniversalBinary(ctx *context.Context, unibin config.UniversalBinary) error {
+func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin config.UniversalBinary) error {
 	name, err := tmpl.New(ctx).Apply(unibin.NameTemplate)
 	if err != nil {
 		return err
 	}
+	opts.Name = name
 
 	path := filepath.Join(ctx.Config.Dist, name+"_darwin_all", name)
+	opts.Path = path
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}

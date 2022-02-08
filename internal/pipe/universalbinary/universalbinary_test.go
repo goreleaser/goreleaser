@@ -185,6 +185,7 @@ func TestRun(t *testing.T) {
 					},
 					Post: []config.Hook{
 						{Cmd: "touch " + post},
+						{Cmd: `sh -c 'echo "{{ .Name }}" > {{ .Path }}.post'`, Output: true},
 					},
 				},
 			},
@@ -268,6 +269,11 @@ func TestRun(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx5))
 		require.FileExists(t, pre)
 		require.FileExists(t, post)
+		post := filepath.Join(dist, "foo_darwin_all/foo.post")
+		require.FileExists(t, post)
+		bts, err := os.ReadFile(post)
+		require.NoError(t, err)
+		require.Equal(t, "foo\n", string(bts))
 	})
 
 	t.Run("failing pre-hook", func(t *testing.T) {
