@@ -287,6 +287,11 @@ nfpms:
 
     # Custom configuration applied only to the Deb packager.
     deb:
+      # Lintian overrides
+      lintian_overrides:
+        - statically-linked-binary
+        - changelog-file-missing-in-native-package
+
       # Custom deb special files.
       scripts:
         # Deb rules script.

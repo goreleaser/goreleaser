@@ -240,11 +240,6 @@ nfpms:
         dst: /usr/share/doc/goreleaser/copyright
         file_info:
           mode: 0644
-      - src: .lintian-overrides
-        dst: ./usr/share/lintian/overrides/goreleaser
-        packager: deb
-        file_info:
-          mode: 0644
     formats:
     - apk
     - deb
@@ -253,6 +248,10 @@ nfpms:
     - git
     recommends:
     - golang
+    deb:
+      lintian_overrides:
+        - statically-linked-binary
+        - changelog-file-missing-in-native-package
 
 snapcrafts:
   - name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
