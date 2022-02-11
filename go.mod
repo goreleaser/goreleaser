@@ -31,7 +31,7 @@ require (
 	github.com/slack-go/slack v0.10.1
 	github.com/stretchr/testify v1.7.0
 	github.com/ulikunitz/xz v0.5.10
-	github.com/xanzy/go-gitlab v0.54.4
+	github.com/xanzy/go-gitlab v0.55.0
 	gocloud.dev v0.24.0
 	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
