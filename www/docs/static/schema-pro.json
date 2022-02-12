@@ -1499,6 +1499,12 @@
 					"signature": {
 						"$schema": "http://json-schema.org/draft-04/schema#",
 						"$ref": "#/definitions/NFPMDebSignature"
+					},
+					"lintian_overrides": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
