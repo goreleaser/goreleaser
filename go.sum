@@ -155,9 +155,8 @@ github.com/Microsoft/go-winio v0.5.1 h1:aPJp2QD7OOrhO5tQXqQoGSJc+DjDtWTGLOmNyAm6
 github.com/Microsoft/go-winio v0.5.1/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7/go.mod h1:z4/9nQmJSSwwds7ejkxaJwO37dru3geImFUdJlaLzQo=
+github.com/ProtonMail/go-crypto v0.0.0-20210512092938-c05353c2d58c h1:bNpaLLv2Y4kslsdkdCwAYu8Bak1aGVtxwi8Z/wy4Yuo=
 github.com/ProtonMail/go-crypto v0.0.0-20210512092938-c05353c2d58c/go.mod h1:z4/9nQmJSSwwds7ejkxaJwO37dru3geImFUdJlaLzQo=
-github.com/ProtonMail/go-crypto v0.0.0-20220113124808-70ae35bab23f h1:J2FzIrXN82q5uyUraeJpLIm7U6PffRwje2ORho5yIik=
-github.com/ProtonMail/go-crypto v0.0.0-20220113124808-70ae35bab23f/go.mod h1:z4/9nQmJSSwwds7ejkxaJwO37dru3geImFUdJlaLzQo=
 github.com/ProtonMail/go-mime v0.0.0-20190923161245-9b5a4261663a h1:W6RrgN/sTxg1msqzFFb+G80MFmpjMw61IU+slm+wln4=
 github.com/ProtonMail/go-mime v0.0.0-20190923161245-9b5a4261663a/go.mod h1:NYt+V3/4rEeDuaev/zw1zCq8uqVEuPHzDPo3OZrlGJ4=
 github.com/ProtonMail/gopenpgp/v2 v2.2.2 h1:u2m7xt+CZWj88qK1UUNBoXeJCFJwJCZ/Ff4ymGoxEXs=
