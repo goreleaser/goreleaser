@@ -20,7 +20,7 @@ require (
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/google/go-github/v42 v42.0.0
 	github.com/google/uuid v1.3.0
-	github.com/goreleaser/fileglob v1.2.0
+	github.com/goreleaser/fileglob v1.3.0
 	github.com/goreleaser/nfpm/v2 v2.12.1
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.1.0
