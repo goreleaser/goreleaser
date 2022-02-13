@@ -5,6 +5,7 @@ RUN apk add --no-cache bash \
 	docker-cli \
 	docker-cli-buildx \
 	git \
+	gpg \
 	mercurial \
 	make \
 	build-base \
