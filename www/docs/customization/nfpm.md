@@ -92,7 +92,7 @@ nfpms:
       - fish
 
     # Template to the path that the binaries should be installed.
-    # Defaults to `/usr/local/bin`.
+    # Defaults to `/usr/bin`.
     bindir: /usr/bin
 
     # Version Epoch.
