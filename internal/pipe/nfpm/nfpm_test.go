@@ -363,8 +363,8 @@ func TestInvalidTemplate(t *testing.T) {
 
 	t.Run("bindir", func(t *testing.T) {
 		ctx := makeCtx()
-		ctx.Config.NFPMs[0].Bindir = "/usr/local/{{ .NOPE }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:14: executing "tmpl" at <.NOPE>: map has no entry for key "NOPE"`)
+		ctx.Config.NFPMs[0].Bindir = "/usr/{{ .NOPE }}"
+		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:8: executing "tmpl" at <.NOPE>: map has no entry for key "NOPE"`)
 	})
 }
 
@@ -511,7 +511,7 @@ func TestDefault(t *testing.T) {
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.Equal(t, "/usr/local/bin", ctx.Config.NFPMs[0].Bindir)
+	require.Equal(t, "/usr/bin", ctx.Config.NFPMs[0].Bindir)
 	require.Equal(t, []string{"foo", "bar"}, ctx.Config.NFPMs[0].Builds)
 	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].FileNameTemplate)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.NFPMs[0].PackageName)

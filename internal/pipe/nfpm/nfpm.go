@@ -46,7 +46,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			fpm.ID = "default"
 		}
 		if fpm.Bindir == "" {
-			fpm.Bindir = "/usr/local/bin"
+			fpm.Bindir = "/usr/bin"
 		}
 		if fpm.PackageName == "" {
 			fpm.PackageName = ctx.Config.ProjectName
