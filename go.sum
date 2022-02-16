@@ -260,8 +260,8 @@ github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghf
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=
 github.com/cespare/xxhash/v2 v2.1.2/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
-github.com/charmbracelet/keygen v0.2.0 h1:qIOzpnPRsbklVFw+syixgBl1E3q4u2fW9AmQ+ZVSwVw=
-github.com/charmbracelet/keygen v0.2.0/go.mod h1:kFQ3Cvop12fXWX1K29vxDxV9x8ujG4wBSXq//GySSSk=
+github.com/charmbracelet/keygen v0.2.1 h1:H1yYTVe6qIDz+UILYXo6q+qLQNkvyXXA5KEhzyuEfzg=
+github.com/charmbracelet/keygen v0.2.1/go.mod h1:kFQ3Cvop12fXWX1K29vxDxV9x8ujG4wBSXq//GySSSk=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
