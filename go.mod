@@ -13,7 +13,7 @@ require (
 	github.com/caarlos0/env/v6 v6.9.1
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
-	github.com/charmbracelet/keygen v0.2.0
+	github.com/charmbracelet/keygen v0.2.1
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.1
 	github.com/fatih/color v1.13.0
