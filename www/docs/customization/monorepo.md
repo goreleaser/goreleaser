@@ -40,6 +40,3 @@ Then, the following is different from a "regular" run:
 
 The rest of the release process should work as usual.
 
-!!! warning
-    This feature is in beta and might change based on feedback.
-    Let me know you think about it after trying it out!
