@@ -215,10 +215,9 @@ func (w withOutputPipe) String() string {
 
 func (w withOutputPipe) Run(ctx *context.Context) error {
 	path := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()[0].Path
-	name := filepath.Base(path)
 	out := w.output
 	if out == "." {
-		out = name
+		out = filepath.Base(path)
 	}
 	return gio.Copy(path, out)
 }
