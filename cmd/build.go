@@ -94,7 +94,7 @@ defaulting to the current's machine target if not set.
 	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH")
 	cmd.Flags().StringVar(&root.opts.id, "id", "", "Builds only the specified build id")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
-	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Path to the binary, defaults to the distribution folder according to configs. Only taked into account when using --single-target and a single id (either with --id or if config only has one build)")
+	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to thie path after the build. Only taked into account when using --single-target and a single id (either with --id or if config only has one build)")
 	_ = cmd.Flags().MarkHidden("deprecated")
 
 	root.cmd = cmd
@@ -129,7 +129,7 @@ func buildProject(options buildOpts) (*context.Context, error) {
 }
 
 func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {
-	if options.singleTarget && (options.id != "" || len(ctx.Config.Builds) == 1) {
+	if options.output != "" && options.singleTarget && (options.id != "" || len(ctx.Config.Builds) == 1) {
 		return append(pipeline.BuildCmdPipeline, withOutputPipe{options.output})
 	}
 	return pipeline.BuildCmdPipeline
@@ -215,9 +215,10 @@ func (w withOutputPipe) String() string {
 
 func (w withOutputPipe) Run(ctx *context.Context) error {
 	path := ctx.Artifacts.Filter(artifact.ByType(artifact.Binary)).List()[0].Path
+	name := filepath.Base(path)
 	out := w.output
-	if out == "" {
-		out = filepath.Base(path)
+	if out == "." {
+		out = name
 	}
 	return gio.Copy(path, out)
 }
