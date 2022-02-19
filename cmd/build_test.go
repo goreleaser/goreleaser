@@ -63,7 +63,7 @@ func TestSetupPipeline(t *testing.T) {
 	t.Run("single-target and id", func(t *testing.T) {
 		require.Equal(
 			t,
-			append(pipeline.BuildCmdPipeline, withOutputPipe{""}),
+			pipeline.BuildCmdPipeline,
 			setupPipeline(context.New(config.Project{}), buildOpts{
 				singleTarget: true,
 				id:           "foo",
@@ -71,10 +71,22 @@ func TestSetupPipeline(t *testing.T) {
 		)
 	})
 
+	t.Run("single-target and id, given output", func(t *testing.T) {
+		require.Equal(
+			t,
+			append(pipeline.BuildCmdPipeline, withOutputPipe{"foobar"}),
+			setupPipeline(context.New(config.Project{}), buildOpts{
+				singleTarget: true,
+				id:           "foo",
+				output:       ".",
+			}),
+		)
+	})
+
 	t.Run("single-target and single build on config", func(t *testing.T) {
 		require.Equal(
 			t,
-			append(pipeline.BuildCmdPipeline, withOutputPipe{""}),
+			pipeline.BuildCmdPipeline,
 			setupPipeline(
 				context.New(config.Project{
 					Builds: []config.Build{{}},
