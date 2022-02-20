@@ -363,8 +363,24 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		switch pkg.OS {
 		case "darwin":
 			result.MacOSPackages = append(result.MacOSPackages, pkg)
+			switch pkg.Arch {
+			case "amd64":
+				result.MacOSArches = append(result.MacOSArches, "x86_64")
+			case "arm64":
+				result.MacOSArches = append(result.MacOSArches, "aarch64")
+			case "all":
+				result.MacOSArches = append(result.MacOSArches, "aarch64", "x86_64")
+			}
 		case "linux":
 			result.LinuxPackages = append(result.LinuxPackages, pkg)
+			switch pkg.Arch {
+			case "amd64":
+				result.LinuxArches = append(result.LinuxArches, "x86_64")
+			case "arm64":
+				result.LinuxArches = append(result.LinuxArches, "aarch64")
+			case "arm":
+				result.LinuxArches = append(result.LinuxArches, "arm")
+			}
 		}
 	}
 
@@ -376,6 +392,9 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 
 	sort.Slice(result.LinuxPackages, lessFnFor(result.LinuxPackages))
 	sort.Slice(result.MacOSPackages, lessFnFor(result.MacOSPackages))
+	sort.Strings(result.LinuxArches)
+	sort.Strings(result.MacOSArches)
+	log.WithField("linux", result.LinuxArches).WithField("macos", result.MacOSArches).Info("AAAAAAAAAAAAAa")
 	return result, nil
 }
 
