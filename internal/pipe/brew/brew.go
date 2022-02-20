@@ -365,21 +365,21 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 			result.MacOSPackages = append(result.MacOSPackages, pkg)
 			switch pkg.Arch {
 			case "amd64":
-				result.MacOSArches = append(result.MacOSArches, "x86_64")
+				result.MacOSArches = append(result.MacOSArches, ":x86_64")
 			case "arm64":
-				result.MacOSArches = append(result.MacOSArches, "aarch64")
+				result.MacOSArches = append(result.MacOSArches, ":aarch64")
 			case "all":
-				result.MacOSArches = append(result.MacOSArches, "aarch64", "x86_64")
+				result.MacOSArches = append(result.MacOSArches, ":aarch64", ":x86_64")
 			}
 		case "linux":
 			result.LinuxPackages = append(result.LinuxPackages, pkg)
 			switch pkg.Arch {
 			case "amd64":
-				result.LinuxArches = append(result.LinuxArches, "x86_64")
+				result.LinuxArches = append(result.LinuxArches, ":x86_64")
 			case "arm64":
-				result.LinuxArches = append(result.LinuxArches, "aarch64")
+				result.LinuxArches = append(result.LinuxArches, ":aarch64")
 			case "arm":
-				result.LinuxArches = append(result.LinuxArches, "arm")
+				result.LinuxArches = append(result.LinuxArches, ":arm")
 			}
 		}
 	}

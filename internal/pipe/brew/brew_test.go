@@ -105,6 +105,8 @@ func TestFullFormulae(t *testing.T) {
 	data.PostInstall = `system "touch", "/tmp/foo"`
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
 	data.Tests = []string{`system "#{bin}/{{.ProjectName}} -version"`}
+	data.MacOSArches = []string{":x86_64", ":aarch64"}
+	data.LinuxArches = []string{":x86_64", ":aarch64", ":arm"}
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)

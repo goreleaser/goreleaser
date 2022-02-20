@@ -13,7 +13,7 @@ class CustomBlockArchRequirement < Requirement
    end
    def self.supported_arches
      return [] if OS.linux?
-     return [x86_64] if OS.mac?
+     return [:x86_64] if OS.mac?
      []
    end
    def self.plat
