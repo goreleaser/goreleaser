@@ -30,6 +30,7 @@ type GitInfo struct {
 	Summary     string
 	TagSubject  string
 	TagContents string
+	TagBody     string
 }
 
 // Env is the environment variables.

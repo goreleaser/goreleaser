@@ -45,6 +45,7 @@ On fields that support templating, these fields are always available:
 | `.PrefixedSummary`     | the git summary prefixed with the monorepo config tag prefix (if any)                                  |
 | `.TagSubject`          | the annotated tag message subject, or the message subject of the commit it points out[^6]              |
 | `.TagContents`         | the annotated tag message, or the message of the commit it points out[^7]                              |
+| `.TagBody`             | the annotated tag message's body, or the message's body of the commit it points out[^7]                |
 | `.Runtime.Goos`        | equivalent to `runtime.GOOS`                                                                           |
 | `.Runtime.Goarch`      | equivalent to `runtime.GOARCH`                                                                         |
 
