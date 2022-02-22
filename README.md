@@ -24,6 +24,16 @@ For questions, support and general discussion, please use [GitHub Discussions](h
 
 Documentation is hosted live at https://goreleaser.com
 
+## Community
+
+You have questions, need support and or just want to talk about GoReleaser?
+
+Here are ways to get in touch with the GoReleaser community:
+
+[![Join Discord](https://img.shields.io/badge/Join_our_Discord_server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/RGEBtg8vQ6)
+[![Follow Twitter](https://img.shields.io/badge/follow_on_twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/goreleaser)
+[![GitHub Discussions](https://img.shields.io/badge/GITHUB_DISCUSSION-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/goreleaser/goreleaser/discussions)
+
 ## Badges
 
 [![Release](https://img.shields.io/github/release/goreleaser/goreleaser.svg?style=for-the-badge)](https://github.com/goreleaser/goreleaser/releases/latest)
