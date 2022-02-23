@@ -361,7 +361,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		return err
 	}
 
-	key, err = keyPath(key)
+	key, err = keyPath(strings.TrimSpace(key))
 	if err != nil {
 		return err
 	}
