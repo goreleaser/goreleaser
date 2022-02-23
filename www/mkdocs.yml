@@ -146,6 +146,7 @@ nav:
   - cookbooks//build-go-modules.md
   - cookbooks/cgo-and-crosscompiling.md
   - cookbooks/debconf-templates.md
+  - cookbooks/using-jfrog-cli-to-publish-to-artifactory.md
   - cookbooks/publish-to-nexus.md
   - cookbooks/release-a-library.md
   - cookbooks/semantic-release.md
