@@ -61,7 +61,7 @@ steps:
     commands:
       - git fetch --tags
 
- - name: test
+  - name: test
     image: golang
     commands:
       - go test -race -v ./... -cover
