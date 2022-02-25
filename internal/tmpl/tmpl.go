@@ -177,16 +177,18 @@ func (t *Template) Apply(s string) (string, error) {
 			"time": func(s string) string {
 				return time.Now().UTC().Format(s)
 			},
-			"tolower":    strings.ToLower,
-			"toupper":    strings.ToUpper,
-			"trim":       strings.TrimSpace,
-			"trimprefix": strings.TrimPrefix,
-			"trimsuffix": strings.TrimSuffix,
-			"dir":        filepath.Dir,
-			"abs":        filepath.Abs,
-			"incmajor":   incMajor,
-			"incminor":   incMinor,
-			"incpatch":   incPatch,
+			"tolower":       strings.ToLower,
+			"toupper":       strings.ToUpper,
+			"trim":          strings.TrimSpace,
+			"trimprefix":    strings.TrimPrefix,
+			"trimsuffix":    strings.TrimSuffix,
+			"dir":           filepath.Dir,
+			"abs":           filepath.Abs,
+			"incmajor":      incMajor,
+			"incminor":      incMinor,
+			"incpatch":      incPatch,
+			"filter":        filter(false),
+			"reverseFilter": filter(true),
 		}).
 		Parse(s)
 	if err != nil {
@@ -257,4 +259,22 @@ func prefix(v string) string {
 		return "v"
 	}
 	return ""
+}
+
+func filter(reverse bool) func(content, exp string) string {
+	return func(content, exp string) string {
+		re := regexp.MustCompilePOSIX(exp)
+		var lines []string
+		for _, line := range strings.Split(content, "\n") {
+			if reverse && re.MatchString(line) {
+				continue
+			}
+			if !reverse && !re.MatchString(line) {
+				continue
+			}
+			lines = append(lines, line)
+		}
+
+		return strings.Join(lines, "\n")
+	}
 }
