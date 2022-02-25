@@ -457,6 +457,9 @@ func keyPath(key string) (string, error) {
 		if _, err := f.Write([]byte(key)); err != nil {
 			return "", fmt.Errorf("failed to store private key: %w", err)
 		}
+		if err := f.Close(); err != nil {
+			return "", fmt.Errorf("failed to store private key: %w", err)
+		}
 		path = f.Name()
 	}
 
@@ -466,7 +469,7 @@ func keyPath(key string) (string, error) {
 
 	// in any case, ensure the key has the correct permissions.
 	if err := os.Chmod(path, 0o600); err != nil {
-		return "", fmt.Errorf("failed to store private key: %w", err)
+		return "", fmt.Errorf("failed to ensure aur.private_key permissions: %w", err)
 	}
 
 	return path, nil
