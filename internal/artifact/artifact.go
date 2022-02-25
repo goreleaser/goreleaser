@@ -17,7 +17,6 @@ import (
 	"sync"
 
 	"github.com/apex/log"
-	"github.com/scylladb/go-set/strset"
 )
 
 // Type defines the type of an artifact.
@@ -387,9 +386,9 @@ func ByIDs(ids ...string) Filter {
 func ByBinaryLikeArtifacts(arts Artifacts) Filter {
 	// find all of the paths for any uploadable binary artifacts
 	uploadableBins := arts.Filter(ByType(UploadableBinary)).List()
-	uploadableBinPaths := strset.New()
+	uploadableBinPaths := map[string]struct{}{}
 	for _, a := range uploadableBins {
-		uploadableBinPaths.Add(a.Path)
+		uploadableBinPaths[a.Path] = struct{}{}
 	}
 
 	// we want to keep any matching artifact that is not a binary that already has a path accounted for
@@ -398,7 +397,8 @@ func ByBinaryLikeArtifacts(arts Artifacts) Filter {
 		if a.Type == UploadableBinary {
 			return true
 		}
-		return !uploadableBinPaths.Has(a.Path)
+		_, ok := uploadableBinPaths[a.Path]
+		return !ok
 	}
 
 	return And(
