@@ -39,30 +39,6 @@ const formulaTemplate = `# typed: false
 require_relative "{{ .CustomRequire }}"
 {{ end -}}
 
-class {{ .Name }}ArchRequirement < Requirement
-   fatal true
-   satisfy(build_env: false) { self.class.supported_arch? }
-   def message
-     "Your platform #{self.class.plat} is not supported by this tap. Supported arches: #{self.class.supported_arches.join ', '}."
-   end
-   def self.supported_arch?
-     self.supported_arches.include? self.plat
-   end
-   def self.supported_arches
-     return [{{ join .LinuxArches ", " }}] if OS.linux?
-     return [{{ join .MacOSArches ", " }}] if OS.mac?
-     []
-   end
-   def self.plat
-     case RUBY_PLATFORM
-     when /x86_64/ then :x86_64
-     when /arm/ then :arm
-     when /aarch64/ then :aarch64
-     else :dunno
-     end
-   end
- end
-
 class {{ .Name }} < Formula
   desc "{{ .Desc }}"
   homepage "{{ .Homepage }}"
@@ -76,10 +52,10 @@ class {{ .Name }} < Formula
   {{- if and (not .MacOSPackages) .LinuxPackages }}
   depends_on :linux
   {{- end }}
-  depends_on {{ .Name }}ArchRequirement
   {{- printf "\n" }}
 
   {{- if .MacOSPackages }}
+  {{ $numOfMacOSPackages := len .MacOSPackages }}
   on_macos do
   {{- range $element := .MacOSPackages }}
     {{- if eq $element.Arch "all" }}
@@ -91,6 +67,26 @@ class {{ .Name }} < Formula
       {{- range $index, $element := .Install }}
       {{ . -}}
       {{- end }}
+    end
+    {{- else if and (eq $element.Arch "amd64") (eq $numOfMacOSPackages 1) }}
+    url "{{ $element.DownloadURL }}"
+    {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+    sha256 "{{ $element.SHA256 }}"
+
+    def install
+      {{- range $index, $element := .Install }}
+      {{ . -}}
+      {{- end }}
+    end
+
+    if Hardware::CPU.arm?
+      def caveats
+        <<~EOS
+          The darwin_arm64 architecture is not supported for this formula
+          at this time. The darwin_amd64 binary may work in compatibility
+          mode, but it is not fully supported.
+        EOS
+      end
     end
     {{- else }}
     {{- if eq $element.Arch "amd64" }}
