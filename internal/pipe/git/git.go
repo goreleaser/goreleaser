@@ -116,14 +116,19 @@ func getGitInfo() (context.GitInfo, error) {
 		}, ErrNoTag
 	}
 
-	subject, err := getTagSubject(tag)
+	subject, err := getTagWithFormat(tag, "contents:subject")
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get tag subject: %w", err)
 	}
 
-	contents, err := getTagContents(tag)
+	contents, err := getTagWithFormat(tag, "contents")
 	if err != nil {
 		return context.GitInfo{}, fmt.Errorf("couldn't get tag contents: %w", err)
+	}
+
+	body, err := getTagWithFormat(tag, "contents:body")
+	if err != nil {
+		return context.GitInfo{}, fmt.Errorf("couldn't get tag content body: %w", err)
 	}
 
 	previous, err := getPreviousTag(tag)
@@ -144,6 +149,7 @@ func getGitInfo() (context.GitInfo, error) {
 		Summary:     summary,
 		TagSubject:  subject,
 		TagContents: contents,
+		TagBody:     body,
 	}, nil
 }
 
@@ -211,13 +217,9 @@ func getSummary() (string, error) {
 	return git.Clean(git.Run("describe", "--always", "--dirty", "--tags"))
 }
 
-func getTagSubject(tag string) (string, error) {
-	return git.Clean(git.Run("tag", "-l", "--format='%(contents:subject)'", tag))
-}
-
-func getTagContents(tag string) (string, error) {
-	out, err := git.Run("tag", "-l", "--format='%(contents)'", tag)
-	return strings.TrimSuffix(strings.ReplaceAll(out, "'", ""), "\n\n"), err
+func getTagWithFormat(tag, format string) (string, error) {
+	out, err := git.Run("tag", "-l", "--format='%("+format+")'", tag)
+	return strings.TrimSpace(strings.TrimSuffix(strings.ReplaceAll(out, "'", ""), "\n\n")), err
 }
 
 func getTag() (string, error) {

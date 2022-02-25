@@ -41,6 +41,7 @@ const (
 	summary         = "Summary"
 	tagSubject      = "TagSubject"
 	tagContents     = "TagContents"
+	tagBody         = "TagBody"
 	releaseURL      = "ReleaseURL"
 	major           = "Major"
 	minor           = "Minor"
@@ -93,6 +94,7 @@ func New(ctx *context.Context) *Template {
 			summary:         ctx.Git.Summary,
 			tagSubject:      ctx.Git.TagSubject,
 			tagContents:     ctx.Git.TagContents,
+			tagBody:         ctx.Git.TagBody,
 			releaseURL:      ctx.ReleaseURL,
 			env:             ctx.Env,
 			date:            ctx.Date.UTC().Format(time.RFC3339),
