@@ -177,18 +177,18 @@ func (t *Template) Apply(s string) (string, error) {
 			"time": func(s string) string {
 				return time.Now().UTC().Format(s)
 			},
-			"tolower":     strings.ToLower,
-			"toupper":     strings.ToUpper,
-			"trim":        strings.TrimSpace,
-			"trimprefix":  strings.TrimPrefix,
-			"trimsuffix":  strings.TrimSuffix,
-			"dir":         filepath.Dir,
-			"abs":         filepath.Abs,
-			"incmajor":    incMajor,
-			"incminor":    incMinor,
-			"incpatch":    incPatch,
-			"grep":        grep(false),
-			"reverseGrep": grep(true),
+			"tolower":       strings.ToLower,
+			"toupper":       strings.ToUpper,
+			"trim":          strings.TrimSpace,
+			"trimprefix":    strings.TrimPrefix,
+			"trimsuffix":    strings.TrimSuffix,
+			"dir":           filepath.Dir,
+			"abs":           filepath.Abs,
+			"incmajor":      incMajor,
+			"incminor":      incMinor,
+			"incpatch":      incPatch,
+			"filter":        filter(false),
+			"reverseFilter": filter(true),
 		}).
 		Parse(s)
 	if err != nil {
@@ -261,7 +261,7 @@ func prefix(v string) string {
 	return ""
 }
 
-func grep(reverse bool) func(content, exp string) string {
+func filter(reverse bool) func(content, exp string) string {
 	return func(content, exp string) string {
 		re := regexp.MustCompilePOSIX(exp)
 		var lines []string

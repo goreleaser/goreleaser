@@ -67,8 +67,8 @@ func TestWithArtifact(t *testing.T) {
 		"runtime: " + runtime.GOOS:         "runtime: {{ .Runtime.Goos }}",
 		"runtime: " + runtime.GOARCH:       "runtime: {{ .Runtime.Goarch }}",
 
-		"remove this": "{{ grep .Env.MULTILINE \".*remove.*\" }}",
-		"something with\nmultiple lines\nto test things": "{{ reverseGrep .Env.MULTILINE \".*remove.*\" }}",
+		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
+		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",
 	} {
 		tmpl := tmpl
 		expect := expect
