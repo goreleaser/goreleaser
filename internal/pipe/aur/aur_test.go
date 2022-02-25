@@ -199,7 +199,7 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = "testdata/nope"
 			},
-			expectedPublishError: `key "testdata/nope" does not exist`,
+			expectedPublishError: `could not stat aur.private_key: stat testdata/nope: no such file or directory`,
 		},
 		"invalid-git-url-template": {
 			prepare: func(ctx *context.Context) {
@@ -710,7 +710,7 @@ func TestKeyPath(t *testing.T) {
 	})
 	t.Run("with invalid path", func(t *testing.T) {
 		result, err := keyPath("testdata/nope")
-		require.EqualError(t, err, `key "testdata/nope" does not exist`)
+		require.EqualError(t, err, `could not stat aur.private_key: stat testdata/nope: no such file or directory`)
 		require.Equal(t, "", result)
 	})
 	t.Run("with key", func(t *testing.T) {
