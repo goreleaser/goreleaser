@@ -444,25 +444,35 @@ func keyPath(key string) (string, error) {
 	if key == "" {
 		return "", pipe.Skip("aur.private_key is empty")
 	}
+
+	path := key
 	if _, err := ssh.ParsePrivateKey([]byte(key)); err == nil {
+		// if it can be parsed as a valid private key, we write it to a
+		// temp file and use that path on GIT_SSH_COMMAND.
 		f, err := os.CreateTemp("", "id_*")
 		if err != nil {
 			return "", fmt.Errorf("failed to store private key: %w", err)
 		}
 		defer f.Close()
-		if _, err := fmt.Fprint(f, key); err != nil {
+		if _, err := f.Write([]byte(key)); err != nil {
 			return "", fmt.Errorf("failed to store private key: %w", err)
 		}
-		if err := os.Chmod(f.Name(), 0o400); err != nil {
+		if err := f.Close(); err != nil {
 			return "", fmt.Errorf("failed to store private key: %w", err)
 		}
-		return f.Name(), nil
+		path = f.Name()
 	}
 
-	if _, err := os.Stat(key); os.IsNotExist(err) {
-		return "", fmt.Errorf("key %q does not exist", key)
+	if _, err := os.Stat(path); err != nil {
+		return "", fmt.Errorf("could not stat aur.private_key: %w", err)
 	}
-	return key, nil
+
+	// in any case, ensure the key has the correct permissions.
+	if err := os.Chmod(path, 0o600); err != nil {
+		return "", fmt.Errorf("failed to ensure aur.private_key permissions: %w", err)
+	}
+
+	return path, nil
 }
 
 func runGitCmds(cwd string, env []string, cmds [][]string) error {
