@@ -374,6 +374,10 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		}
 	}
 
+	if len(result.MacOSPackages) == 1 && result.MacOSPackages[0].Arch == "amd64" {
+		result.HasOnlyAmd64MacOsPkg = true
+	}
+
 	sort.Slice(result.LinuxPackages, lessFnFor(result.LinuxPackages))
 	sort.Slice(result.MacOSPackages, lessFnFor(result.MacOSPackages))
 	return result, nil

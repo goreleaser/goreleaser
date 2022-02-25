@@ -3,21 +3,22 @@ package brew
 import "github.com/goreleaser/goreleaser/pkg/config"
 
 type templateData struct {
-	Name          string
-	Desc          string
-	Homepage      string
-	Version       string
-	License       string
-	Caveats       []string
-	Plist         string
-	PostInstall   string
-	Dependencies  []config.HomebrewDependency
-	Conflicts     []string
-	Tests         []string
-	CustomRequire string
-	CustomBlock   []string
-	LinuxPackages []releasePackage
-	MacOSPackages []releasePackage
+	Name                 string
+	Desc                 string
+	Homepage             string
+	Version              string
+	License              string
+	Caveats              []string
+	Plist                string
+	PostInstall          string
+	Dependencies         []config.HomebrewDependency
+	Conflicts            []string
+	Tests                []string
+	CustomRequire        string
+	CustomBlock          []string
+	LinuxPackages        []releasePackage
+	MacOSPackages        []releasePackage
+	HasOnlyAmd64MacOsPkg bool
 }
 
 type releasePackage struct {
@@ -63,6 +64,26 @@ class {{ .Name }} < Formula
       {{- range $index, $element := .Install }}
       {{ . -}}
       {{- end }}
+    end
+    {{- else if $.HasOnlyAmd64MacOsPkg }}
+    url "{{ $element.DownloadURL }}"
+    {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+    sha256 "{{ $element.SHA256 }}"
+
+    def install
+      {{- range $index, $element := .Install }}
+      {{ . -}}
+      {{- end }}
+    end
+
+    if Hardware::CPU.arm?
+      def caveats
+        <<~EOS
+          The darwin_arm64 architecture is not supported for the {{ $.Name }}
+          formula at this time. The darwin_amd64 binary may work in compatibility
+          mode, but it might not be fully supported.
+        EOS
+      end
     end
     {{- else }}
     {{- if eq $element.Arch "amd64" }}
