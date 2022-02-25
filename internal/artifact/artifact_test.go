@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
 )
@@ -592,4 +593,260 @@ func TestMarshalJSON(t *testing.T) {
 	bts, err := json.Marshal(artifacts.List())
 	require.NoError(t, err)
 	golden.RequireEqualJSON(t, bts)
+}
+
+func Test_ByBinaryLikeArtifacts(t *testing.T) {
+	tests := []struct {
+		name     string
+		initial  []*Artifact
+		expected []*Artifact
+	}{
+		{
+			name: "keep all unique paths",
+			initial: []*Artifact{
+				{
+					Path: "binary-path",
+					Type: Binary,
+				},
+				{
+					Path: "uploadable-binary-path",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "universal-binary-path",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "binary-path",
+					Type: Binary,
+				},
+				{
+					Path: "uploadable-binary-path",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "universal-binary-path",
+					Type: UniversalBinary,
+				},
+			},
+		},
+		{
+			name: "duplicate path between binaries ignored (odd configuration)",
+			initial: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "uploadable-binary-path",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "uploadable-binary-path",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+		},
+		{
+			name: "remove duplicate binary",
+			initial: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "universal-binary-path",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "universal-binary-path",
+					Type: UniversalBinary,
+				},
+			},
+		},
+		{
+			name: "remove duplicate universal binary",
+			initial: []*Artifact{
+				{
+					Path: "binary-path",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "binary-path",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+			},
+		},
+		{
+			name: "remove multiple duplicates",
+			initial: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+			},
+		},
+		{
+			name: "keep duplicate uploadable binaries (odd configuration)",
+			initial: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+			},
+		},
+		{
+			name: "keeps duplicates when there is no uploadable binary",
+			initial: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			arts := New()
+			for _, a := range tt.initial {
+				arts.Add(a)
+			}
+			actual := arts.Filter(ByBinaryLikeArtifacts(arts)).List()
+			assert.Equal(t, tt.expected, actual)
+
+			if t.Failed() {
+				t.Log("expected:")
+				for _, a := range tt.expected {
+					t.Logf("   %s: %s", a.Type.String(), a.Path)
+				}
+
+				t.Log("got:")
+				for _, a := range actual {
+					t.Logf("   %s: %s", a.Type.String(), a.Path)
+				}
+			}
+		})
+	}
 }
