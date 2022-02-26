@@ -81,9 +81,10 @@ var defaultTemplateData = templateData{
 			Install:     []string{`bin.install "test"`},
 		},
 	},
-	Name:    "Test",
-	Version: "0.1.3",
-	Caveats: []string{},
+	Name:                 "Test",
+	Version:              "0.1.3",
+	Caveats:              []string{},
+	HasOnlyAmd64MacOsPkg: false,
 }
 
 func assertDefaultTemplateData(t *testing.T, formulae string) {
