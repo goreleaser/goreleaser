@@ -3,12 +3,12 @@
 package gzip
 
 import (
-	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
 
 	"github.com/goreleaser/goreleaser/pkg/config"
+	gzip "github.com/klauspost/pgzip"
 )
 
 // Archive as gz.
