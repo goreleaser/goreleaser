@@ -24,6 +24,7 @@ require (
 	github.com/goreleaser/nfpm/v2 v2.14.0
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.1.0
+	github.com/klauspost/pgzip v1.2.5
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/coral v1.0.0
 	github.com/muesli/mango-coral v1.0.1
@@ -118,7 +119,6 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kevinburke/ssh_config v1.1.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
-	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-ieproxy v0.0.1 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
