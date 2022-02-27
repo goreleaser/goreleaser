@@ -247,7 +247,6 @@ github.com/caarlos0/go-shellwords v1.0.12 h1:HWrUnu6lGbWfrDcFiHcZiwOLzHWjjrPVehU
 github.com/caarlos0/go-shellwords v1.0.12/go.mod h1:bYeeX1GrTLPl5cAMYEzdm272qdsQAZiaHgeF0KTk1Gw=
 github.com/caarlos0/testfs v0.4.4 h1:3PHvzHi5Lt+g332CiShwS8ogTgS3HjrmzZxCm6JCDr8=
 github.com/caarlos0/testfs v0.4.4/go.mod h1:bRN55zgG4XCUVVHZCeU+/Tz1Q6AxEJOEJTliBy+1DMk=
-github.com/cavaliercoder/go-cpio v0.0.0-20180626203310-925f9528c45e/go.mod h1:oDpT4efm8tSYHXV5tHSdRvBet/b/QzxZ+XyyPehvm3A=
 github.com/cavaliergopher/cpio v1.0.1 h1:KQFSeKmZhv0cr+kawA3a0xTQCU4QxXF1vhU7P7av2KM=
 github.com/cavaliergopher/cpio v1.0.1/go.mod h1:pBdaqQjnvXxdS/6CvNDwIANIFSP0xRKI16PX4xejRQc=
 github.com/cenkalti/backoff/v4 v4.1.2 h1:6Yo7N8UP2K6LWZnW94DLVSSrbobcWdVzAYOisuDPIFo=
@@ -460,7 +459,6 @@ github.com/google/pprof v0.0.0-20210609004039-a478d1d731e9/go.mod h1:kpwsk12EmLe
 github.com/google/pprof v0.0.0-20210715191844-86eeefc3e471/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
 github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
-github.com/google/rpmpack v0.0.0-20210518075352-dc539ef4f2ea/go.mod h1:+y9lKiqDhR4zkLl+V9h4q0rdyrYVsWWm6LLCQP33DIk=
 github.com/google/rpmpack v0.0.0-20211125064518-d0ed9b1b61b9 h1:ClPt4zdk8fbRqTANpgege8HBktalZaIz32dIGnwcVZI=
 github.com/google/rpmpack v0.0.0-20211125064518-d0ed9b1b61b9/go.mod h1:3YnKULqkUnzpgcZS8uQgbTRwcAW4IqYiUzWFy6aVvu0=
 github.com/google/subcommands v1.0.1/go.mod h1:ZjhPrFU+Olkh9WazFPsl27BQ4UPiG37m3yTrtFlrHVk=
@@ -481,8 +479,8 @@ github.com/goreleaser/chglog v0.1.2 h1:tdzAb/ILeMnphzI9zQ7Nkq+T8R9qyXli8GydD8plF
 github.com/goreleaser/chglog v0.1.2/go.mod h1:tTZsFuSZK4epDXfjMkxzcGbrIOXprf0JFp47BjIr3B8=
 github.com/goreleaser/fileglob v1.3.0 h1:/X6J7U8lbDpQtBvGcwwPS6OpzkNVlVEsFUVRx9+k+7I=
 github.com/goreleaser/fileglob v1.3.0/go.mod h1:Jx6BoXv3mbYkEzwm9THo7xbr5egkAraxkGorbJb4RxU=
-github.com/goreleaser/nfpm/v2 v2.13.0 h1:SeASFH+AeFBoVRCIrzzYhvydvK5lSB1GdVcDvBfpOqs=
-github.com/goreleaser/nfpm/v2 v2.13.0/go.mod h1:/1nEaaBKHLY2Vn8RtSLaV/Vst0VhIWF4ARynuIqJv6Q=
+github.com/goreleaser/nfpm/v2 v2.14.0 h1:1xFq1F1Dy3HSdbjUtd+8CCahxLNlQwylcHwoLOg/lW0=
+github.com/goreleaser/nfpm/v2 v2.14.0/go.mod h1:46Gk7U5PrLL34NxrsorlkiavoX5gwyGOYQSMaPn5xdw=
 github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
@@ -568,6 +566,8 @@ github.com/klauspost/compress v1.11.7/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYs
 github.com/klauspost/compress v1.13.5/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
 github.com/klauspost/compress v1.13.6 h1:P76CopJELS0TiO2mebmnzgWaajssP/EszplttgQxcgc=
 github.com/klauspost/compress v1.13.6/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
+github.com/klauspost/pgzip v1.2.5 h1:qnWYvvKqedOF2ulHpMG72XQol4ILEJ8k2wwRl/Km8oE=
+github.com/klauspost/pgzip v1.2.5/go.mod h1:Ch1tH69qFZu15pkjo5kYi6mth2Zzwzt50oCQKQE9RUs=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kr/fs v0.1.0/go.mod h1:FFnZGqtBN9Gxj7eW1uZ42v5BccTP0vu6NEaFoC2HwRg=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
@@ -732,7 +732,6 @@ github.com/tj/go-spin v1.1.0/go.mod h1:Mg1mzmePZm4dva8Qz60H2lHwmJ2loum4VIrLgVnKw
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/ugorji/go v1.1.7/go.mod h1:kZn38zHttfInRq0xu/PH0az30d+z6vm202qpg1oXVMw=
 github.com/ugorji/go/codec v1.1.7/go.mod h1:Ax+UKWsSmolVDwsd+7N3ZtXu+yMGCf907BLYF3GoBXY=
-github.com/ulikunitz/xz v0.5.7/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
 github.com/ulikunitz/xz v0.5.9/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
 github.com/ulikunitz/xz v0.5.10 h1:t92gobL9l3HE202wg3rlk19F6X+JOxl9BBrCCMYEYd8=
 github.com/ulikunitz/xz v0.5.10/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
