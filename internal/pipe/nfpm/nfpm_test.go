@@ -140,6 +140,10 @@ func TestRunPipe(t *testing.T) {
 							Source:      "./testdata/testfile-{{ .Arch }}.txt",
 							Destination: "/etc/nope3_{{ .ProjectName }}.conf",
 						},
+						{
+							Source:      "./testdata/folder",
+							Destination: "/etc/folder",
+						},
 					},
 					Replacements: map[string]string{
 						"linux": "Tux",
@@ -177,6 +181,7 @@ func TestRunPipe(t *testing.T) {
 			"./testdata/testfile.txt",
 			"./testdata/testfile.txt",
 			"/etc/nope.conf",
+			"./testdata/folder",
 			"./testdata/testfile-" + pkg.Goarch + ".txt",
 			binPath,
 		}, sources(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
@@ -187,10 +192,11 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope-rpm.conf",
 			"/etc/nope2.conf",
 			"/etc/nope3_mybin.conf",
+			"/etc/folder",
 			"/usr/bin/subdir/mybin",
 		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
 	}
-	require.Len(t, ctx.Config.NFPMs[0].Contents, 6, "should not modify the config file list")
+	require.Len(t, ctx.Config.NFPMs[0].Contents, 7, "should not modify the config file list")
 }
 
 func TestRunPipeConventionalNameTemplate(t *testing.T) {
@@ -494,7 +500,7 @@ func TestInvalidConfig(t *testing.T) {
 			artifact.ExtraID: "default",
 		},
 	})
-	require.Contains(t, Pipe{}.Run(ctx).Error(), `invalid nfpm config: package name must be provided`)
+	require.Contains(t, Pipe{}.Run(ctx).Error(), `nfpm failed: package name must be provided`)
 }
 
 func TestDefault(t *testing.T) {
