@@ -319,10 +319,6 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		info.Deb.Signature = nfpm.DebSignature{}
 	}
 
-	if err = nfpm.Validate(info); err != nil {
-		return fmt.Errorf("invalid nfpm config: %w", err)
-	}
-
 	packager, err := nfpm.Get(format)
 	if err != nil {
 		return err
@@ -346,6 +342,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		return err
 	}
 	defer w.Close()
+
 	if err := packager.Package(info, w); err != nil {
 		return fmt.Errorf("nfpm failed: %w", err)
 	}
