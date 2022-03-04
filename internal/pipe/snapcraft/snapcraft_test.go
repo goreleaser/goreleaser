@@ -165,11 +165,55 @@ func TestRunPipeMetadata(t *testing.T) {
 					"/etc/testprojectname": {Bind: "$SNAP_DATA/etc"},
 				},
 				Apps: map[string]config.SnapcraftAppMetadata{
+					"before-foo": {
+						Before:  []string{"foo"},
+						Command: "foo",
+						Daemon:  "notify",
+					},
+					"after-foo": {
+						After:   []string{"foo"},
+						Command: "foo",
+						Daemon:  "notify",
+					},
 					"foo": {
-						Plugs:            []string{"home", "network", "personal-files"},
-						Daemon:           "simple",
-						Args:             "--foo --bar",
+						Args:         "--foo --bar",
+						Adapter:      "foo_adapter",
+						Aliases:      []string{"dummy_alias"},
+						Autostart:    "foobar.desktop",
+						BusName:      "foo_busname",
+						CommandChain: []string{"foo_cmd_chain"},
+						CommonID:     "foo_common_id",
+						Completer:    "", // Separately tested in TestCompleter
+						Daemon:       "simple",
+						Desktop:      "foo_desktop",
+						Environment: map[string]interface{}{
+							"foo": "bar",
+						},
+						Extensions:  []string{"foo_extension"},
+						InstallMode: "disable",
+						Passthrough: map[string]interface{}{
+							"planet": "saturn",
+						},
+						Plugs:            []string{"home", "network", "network-bind", "personal-files"},
+						PostStopCommand:  "foo",
+						RefreshMode:      "endure",
+						ReloadCommand:    "foo",
 						RestartCondition: "always",
+						RestartDelay:     "42ms",
+						Slots:            []string{"foo_slot"},
+						Sockets: map[string]interface{}{
+							"sock": map[string]interface{}{
+								"listen-stream": "$SNAP_COMMON/socket",
+								"socket-group":  "socket-group",
+								"socket-mode":   0o640,
+							},
+						},
+						StartTimeout:    "43ms",
+						StopCommand:     "foo",
+						StopMode:        "sigterm",
+						StopTimeout:     "44ms",
+						Timer:           "00:00-24:00/24",
+						WatchdogTimeout: "45ms",
 					},
 				},
 				Plugs: map[string]interface{}{
@@ -191,14 +235,59 @@ func TestRunPipeMetadata(t *testing.T) {
 	var metadata Metadata
 	err = yaml.Unmarshal(yamlFile, &metadata)
 	require.NoError(t, err)
-	require.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["foo"].Plugs)
-	require.Equal(t, "simple", metadata.Apps["foo"].Daemon)
-	require.Equal(t, "foo --foo --bar", metadata.Apps["foo"].Command)
-	require.Equal(t, []string{"home", "network", "personal-files"}, metadata.Apps["foo"].Plugs)
-	require.Equal(t, "simple", metadata.Apps["foo"].Daemon)
-	require.Equal(t, "foo --foo --bar", metadata.Apps["foo"].Command)
+	require.Equal(t, map[string]AppMetadata{
+		"before-foo": {
+			Before:  []string{"foo"},
+			Command: "foo",
+			Daemon:  "notify",
+		},
+		"after-foo": {
+			After:   []string{"foo"},
+			Command: "foo",
+			Daemon:  "notify",
+		},
+		"foo": {
+			Adapter:      "foo_adapter",
+			Aliases:      []string{"dummy_alias"},
+			Autostart:    "foobar.desktop",
+			BusName:      "foo_busname",
+			Command:      "foo --foo --bar",
+			CommandChain: []string{"foo_cmd_chain"},
+			CommonID:     "foo_common_id",
+			Completer:    "",
+			Daemon:       "simple",
+			Desktop:      "foo_desktop",
+			Environment: map[string]interface{}{
+				"foo": "bar",
+			},
+			Extensions:  []string{"foo_extension"},
+			InstallMode: "disable",
+			Passthrough: map[string]interface{}{
+				"planet": "saturn",
+			},
+			Plugs:            []string{"home", "network", "network-bind", "personal-files"},
+			PostStopCommand:  "foo",
+			RefreshMode:      "endure",
+			ReloadCommand:    "foo",
+			RestartCondition: "always",
+			RestartDelay:     "42ms",
+			Slots:            []string{"foo_slot"},
+			Sockets: map[string]interface{}{
+				"sock": map[interface{}]interface{}{
+					"listen-stream": "$SNAP_COMMON/socket",
+					"socket-group":  "socket-group",
+					"socket-mode":   0o640,
+				},
+			},
+			StartTimeout:    "43ms",
+			StopCommand:     "foo",
+			StopMode:        "sigterm",
+			StopTimeout:     "44ms",
+			Timer:           "00:00-24:00/24",
+			WatchdogTimeout: "45ms",
+		},
+	}, metadata.Apps)
 	require.Equal(t, map[interface{}]interface{}{"read": []interface{}{"$HOME/test"}}, metadata.Plugs["personal-files"])
-	require.Equal(t, "always", metadata.Apps["foo"].RestartCondition)
 	require.Equal(t, "$SNAP_DATA/etc", metadata.Layout["/etc/testprojectname"].Bind)
 }
 

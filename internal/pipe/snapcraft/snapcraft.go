@@ -52,12 +52,39 @@ type Metadata struct {
 }
 
 // AppMetadata for the binaries that will be in the snap package.
+// See: https://snapcraft.io/docs/snapcraft-app-and-service-metadata
 type AppMetadata struct {
-	Command          string
-	Plugs            []string `yaml:",omitempty"`
-	Daemon           string   `yaml:",omitempty"`
-	Completer        string   `yaml:",omitempty"`
-	RestartCondition string   `yaml:"restart-condition,omitempty"`
+	Command string
+
+	Adapter          string                 `yaml:",omitempty"`
+	After            []string               `yaml:",omitempty"`
+	Aliases          []string               `yaml:",omitempty"`
+	Autostart        string                 `yaml:",omitempty"`
+	Before           []string               `yaml:",omitempty"`
+	BusName          string                 `yaml:"bus-name,omitempty"`
+	CommandChain     []string               `yaml:"command-chain,omitempty"`
+	CommonID         string                 `yaml:"common-id,omitempty"`
+	Completer        string                 `yaml:",omitempty"`
+	Daemon           string                 `yaml:",omitempty"`
+	Desktop          string                 `yaml:",omitempty"`
+	Environment      map[string]interface{} `yaml:",omitempty"`
+	Extensions       []string               `yaml:",omitempty"`
+	InstallMode      string                 `yaml:"install-mode,omitempty"`
+	Passthrough      map[string]interface{} `yaml:",omitempty"`
+	Plugs            []string               `yaml:",omitempty"`
+	PostStopCommand  string                 `yaml:"post-stop-command,omitempty"`
+	RefreshMode      string                 `yaml:"refresh-mode,omitempty"`
+	ReloadCommand    string                 `yaml:"reload-command,omitempty"`
+	RestartCondition string                 `yaml:"restart-condition,omitempty"`
+	RestartDelay     string                 `yaml:"restart-delay,omitempty"`
+	Slots            []string               `yaml:",omitempty"`
+	Sockets          map[string]interface{} `yaml:",omitempty"`
+	StartTimeout     string                 `yaml:"start-timeout,omitempty"`
+	StopCommand      string                 `yaml:"stop-command,omitempty"`
+	StopMode         string                 `yaml:"stop-mode,omitempty"`
+	StopTimeout      string                 `yaml:"stop-timeout,omitempty"`
+	Timer            string                 `yaml:",omitempty"`
+	WatchdogTimeout  string                 `yaml:"watchdog-timeout,omitempty"`
 }
 
 type LayoutMetadata struct {
@@ -287,9 +314,35 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 				command,
 				config.Args,
 			}, " ")),
-			Plugs:            config.Plugs,
+			Adapter:          config.Adapter,
+			After:            config.After,
+			Aliases:          config.Aliases,
+			Autostart:        config.Autostart,
+			Before:           config.Before,
+			BusName:          config.BusName,
+			CommandChain:     config.CommandChain,
+			CommonID:         config.CommonID,
+			Completer:        config.Completer,
 			Daemon:           config.Daemon,
+			Desktop:          config.Desktop,
+			Environment:      config.Environment,
+			Extensions:       config.Extensions,
+			InstallMode:      config.InstallMode,
+			Passthrough:      config.Passthrough,
+			Plugs:            config.Plugs,
+			PostStopCommand:  config.PostStopCommand,
+			RefreshMode:      config.RefreshMode,
+			ReloadCommand:    config.ReloadCommand,
 			RestartCondition: config.RestartCondition,
+			RestartDelay:     config.RestartDelay,
+			Slots:            config.Slots,
+			Sockets:          config.Sockets,
+			StartTimeout:     config.StartTimeout,
+			StopCommand:      config.StopCommand,
+			StopMode:         config.StopMode,
+			StopTimeout:      config.StopTimeout,
+			Timer:            config.Timer,
+			WatchdogTimeout:  config.WatchdogTimeout,
 		}
 
 		if config.Completer != "" {
