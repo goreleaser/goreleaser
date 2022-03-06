@@ -146,10 +146,94 @@ snapcrafts:
 
     # Each binary built by GoReleaser is an app inside the snap. In this section
     # you can declare extra details for those binaries. It is optional.
+    # See: https://snapcraft.io/docs/snapcraft-app-and-service-metadata
     apps:
 
       # The name of the app must be the same name as the binary built or the snapcraft name.
       drumroll:
+
+        # If you any to pass args to your binary, you can add them with the
+        # args option.
+        args: --foo
+
+        # The kind of wrapper to generate for the given command.
+        # Defaults to empty.
+        adapter: none
+
+        # List of applications that are ordered to be started after the current
+        # one.
+        # Defaults to empty.
+        after: ["postdrum"]
+
+        # Aliases for the app command.
+        # Defaults to empty.
+        # https://snapcraft.io/docs/commands-and-aliases#heading--aliases
+        aliases: ["droll"]
+
+        # Defines the name of the .desktop file used to start an application
+        # with the desktop session.
+        # Defaults to empty.
+        # https://snapcraft.io/docs/snap-format#heading--autostart
+        autostart: drumroll.desktop
+
+        # List of applications that are ordered to be started before the current
+        # one.
+        # Defaults to empty.
+        before: ["predrum"]
+
+        # D-Bus name this service is reachable as. Mandatory if daemon=dbus.
+        # Defaults to empty.
+        bus_name: drumbus
+
+        # A list of commands to be executed in order before the command of this
+        # app.
+        # Defaults to empty.
+        command_chain: ["foo", "bar", "baz"]
+
+        # An identifier to a desktop-id within an external appstream file.
+        # https://snapcraft.io/docs/using-external-metadata
+        common_id: "com.example.drumroll"
+
+        # Bash completion snippet. More information about completion here:
+        # Defaults to empty.
+        # https://docs.snapcraft.io/tab-completion-for-snaps.
+        completer: drumroll-completion.bash
+
+        # You can override the command name.
+        # Default is the app name.
+        command: bin/drumroll.wrapper
+
+        # If you want your app to be autostarted and to always run in the
+        # background, you can make it a simple daemon.
+        # Defaults to empty.
+        daemon: simple
+
+        # Location of the .desktop file.
+        # Defaults to empty.
+        desktop: usr/share/applications/drumroll.desktop
+
+        # A set of key-value pairs specifying environment variables.
+        # Defaults to empty.
+        environment:
+          foo: bar
+          baz: quo
+
+        # A list of Snapcraft extensions this app depends on.
+        # Defaults to empty.
+        # https://snapcraft.io/docs/snapcraft-extensions
+        extensions: ["gnome-3-38"]
+
+        # Defines whether a freshly installed daemon is started automatically,
+        # or whether startup control is deferred to the snap.
+        # Defaults to empty. Requires `daemon` to be set.
+        install_mode: "disable"
+
+        # A set of key-value attributes passed through to snap.yaml without
+        # snapcraft validation.
+        # Defaults to empty.
+        # https://snapcraft.io/docs/using-in-development-features
+        passthrough:
+          foo: bar
 
         # If your app requires extra permissions to work outside of its default
         # confined space, declare them here.
@@ -158,26 +242,59 @@ snapcrafts:
         # https://snapcraft.io/docs/reference/interfaces.
         plugs: ["home", "network", "personal-files"]
 
-        # If you want your app to be autostarted and to always run in the
-        # background, you can make it a simple daemon.
-        daemon: simple
+        # Sets a command to run from inside the snap after a service stops.
+        # Defaults to empty.
+        post_stop_command: foo
 
-        # If you any to pass args to your binary, you can add them with the
-        # args option.
-        args: --foo
+        # Controls whether the daemon should be restarted during a snap refresh.
+        # Defaults to empty.
+        refresh_mode: endure
 
-        # Bash completion snippet. More information about completion here:
-        # https://docs.snapcraft.io/tab-completion-for-snaps.
-        completer: drumroll-completion.bash
-
-        # You can override the command name.
-        # Defaults is the app name.
-        command: bin/drumroll.wrapper
+        # Command to use to ask the service to reload its configuration.
+        # Defaults to empty. Requires `daemon` to be set.
+        reload_command: foo
 
         # Restart condition of the snap.
         # Defaults to empty.
         # https://snapcraft.io/docs/snapcraft-yaml-reference
         restart_condition: "always"
+
+        # List of slots for interfaces to connect to.
+        # Defaults to empty.
+        slots: ["foo", "bar", "baz"]
+
+        # Maps a daemon’s sockets to services and activates them.
+        # Defaults to empty. Requires `plugs` to contain `network-bind`.
+        sockets:
+          sock:
+            listen-stream: $SNAP_COMMON/socket
+            socket-group: socket-group
+            socket-mode: 416
+
+        # Time to wait for daemon to start.
+        # Defaults to empty.
+        start_timeout: 42ms
+
+        # Command to use to stop the service.
+        # Defaults to empty. Requires `daemon` to be set.
+        stop_command: foo
+
+        # Controls how the daemon should be stopped.
+        # Defaults to empty. Requires `daemon` to be set.
+        stop_mode: sigterm
+
+        # Time to wait for daemon to stop.
+        # Defaults to empty.
+        stop_timeout: 42ms
+
+        # Schedules when, or how often, to run a service or command.
+        # Defaults to empty. Requires `daemon` to be set.
+        # https://snapcraft.io/docs/services-and-daemons
+        timer: "00:00-24:00/24"
+
+        # Declares the service watchdog timeout.
+        # Defaults to empty. Requires `plugs` to contain `daemon-notify`.
+        watchdog_timeout: 42ms
 
     # Allows plugs to be configured. Plugs like system-files and personal-files
     # require this.

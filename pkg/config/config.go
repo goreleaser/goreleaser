@@ -688,12 +688,38 @@ type Sign struct {
 
 // SnapcraftAppMetadata for the binaries that will be in the snap package.
 type SnapcraftAppMetadata struct {
-	Plugs            []string
-	Daemon           string
-	Args             string
-	Completer        string `yaml:"completer,omitempty"`
-	Command          string `yaml:"command"`
-	RestartCondition string `yaml:"restart_condition,omitempty"`
+	Command string `yaml:"command"`
+	Args    string `yaml:"args,omitempty"`
+
+	Adapter          string                 `yaml:"adapter,omitempty"`
+	After            []string               `yaml:"after,omitempty"`
+	Aliases          []string               `yaml:"aliases,omitempty"`
+	Autostart        string                 `yaml:"autostart,omitempty"`
+	Before           []string               `yaml:"before,omitempty"`
+	BusName          string                 `yaml:"bus_name,omitempty"`
+	CommandChain     []string               `yaml:"command_chain,omitempty"`
+	CommonID         string                 `yaml:"common_id,omitempty"`
+	Completer        string                 `yaml:"completer,omitempty"`
+	Daemon           string                 `yaml:"daemon,omitempty"`
+	Desktop          string                 `yaml:"desktop,omitempty"`
+	Environment      map[string]interface{} `yaml:"environment,omitempty"`
+	Extensions       []string               `yaml:"extensions,omitempty"`
+	InstallMode      string                 `yaml:"install_mode,omitempty"`
+	Passthrough      map[string]interface{} `yaml:"passthrough,omitempty"`
+	Plugs            []string               `yaml:"plugs,omitempty"`
+	PostStopCommand  string                 `yaml:"post_stop_command,omitempty"`
+	RefreshMode      string                 `yaml:"refresh_mode,omitempty"`
+	ReloadCommand    string                 `yaml:"reload_command,omitempty"`
+	RestartCondition string                 `yaml:"restart_condition,omitempty"`
+	RestartDelay     string                 `yaml:"restart_delay,omitempty"`
+	Slots            []string               `yaml:"slots,omitempty"`
+	Sockets          map[string]interface{} `yaml:"sockets,omitempty"`
+	StartTimeout     string                 `yaml:"start_timeout,omitempty"`
+	StopCommand      string                 `yaml:"stop_command,omitempty"`
+	StopMode         string                 `yaml:"stop_mode,omitempty"`
+	StopTimeout      string                 `yaml:"stop_timeout,omitempty"`
+	Timer            string                 `yaml:"timer,omitempty"`
+	WatchdogTimeout  string                 `yaml:"watchdog_timeout,omitempty"`
 }
 
 type SnapcraftLayoutMetadata struct {
