@@ -2263,31 +2263,136 @@
 			},
 			"SnapcraftAppMetadata": {
 				"required": [
-					"Plugs",
-					"Daemon",
-					"Args",
 					"command"
 				],
 				"properties": {
-					"Plugs": {
+					"command": {
+						"type": "string"
+					},
+					"args": {
+						"type": "string"
+					},
+					"adapter": {
+						"type": "string"
+					},
+					"after": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Daemon": {
+					"aliases": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"autostart": {
 						"type": "string"
 					},
-					"Args": {
+					"before": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"bus_name": {
+						"type": "string"
+					},
+					"command_chain": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"common_id": {
 						"type": "string"
 					},
 					"completer": {
 						"type": "string"
 					},
-					"command": {
+					"daemon": {
+						"type": "string"
+					},
+					"desktop": {
+						"type": "string"
+					},
+					"environment": {
+						"patternProperties": {
+							".*": {
+								"additionalProperties": true
+							}
+						},
+						"type": "object"
+					},
+					"extensions": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"install_mode": {
+						"type": "string"
+					},
+					"passthrough": {
+						"patternProperties": {
+							".*": {
+								"additionalProperties": true
+							}
+						},
+						"type": "object"
+					},
+					"plugs": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"post_stop_command": {
+						"type": "string"
+					},
+					"refresh_mode": {
+						"type": "string"
+					},
+					"reload_command": {
 						"type": "string"
 					},
 					"restart_condition": {
+						"type": "string"
+					},
+					"restart_delay": {
+						"type": "string"
+					},
+					"slots": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"sockets": {
+						"patternProperties": {
+							".*": {
+								"additionalProperties": true
+							}
+						},
+						"type": "object"
+					},
+					"start_timeout": {
+						"type": "string"
+					},
+					"stop_command": {
+						"type": "string"
+					},
+					"stop_mode": {
+						"type": "string"
+					},
+					"stop_timeout": {
+						"type": "string"
+					},
+					"timer": {
+						"type": "string"
+					},
+					"watchdog_timeout": {
 						"type": "string"
 					}
 				},
