@@ -361,7 +361,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		return err
 	}
 
-	key, err = keyPath(strings.TrimSpace(key))
+	key, err = keyPath(key)
 	if err != nil {
 		return err
 	}
@@ -454,6 +454,13 @@ func keyPath(key string) (string, error) {
 			return "", fmt.Errorf("failed to store private key: %w", err)
 		}
 		defer f.Close()
+
+		// the key needs to EOF at an empty line, seems like github actions
+		// is somehow removing them.
+		if !strings.HasSuffix(key, "\n") {
+			key += "\n"
+		}
+
 		if _, err := f.Write([]byte(key)); err != nil {
 			return "", fmt.Errorf("failed to store private key: %w", err)
 		}

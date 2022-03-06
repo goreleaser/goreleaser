@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/charmbracelet/keygen"
@@ -733,6 +734,18 @@ func TestKeyPath(t *testing.T) {
 		result, err := keyPath("")
 		require.EqualError(t, err, `aur.private_key is empty`)
 		require.Equal(t, "", result)
+	})
+	t.Run("with invalid EOF", func(t *testing.T) {
+		path := makeKey(t, keygen.Ed25519)
+		bts, err := os.ReadFile(path)
+		require.NoError(t, err)
+
+		result, err := keyPath(strings.TrimSpace(string(bts)))
+		require.NoError(t, err)
+
+		resultbts, err := os.ReadFile(result)
+		require.NoError(t, err)
+		require.Equal(t, string(bts), string(resultbts))
 	})
 }
 
