@@ -64,26 +64,31 @@ func createTemplateData() templateData {
 				Arch:        "x86_64",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+				Format:      "tar.gz",
 			},
 			{
 				Arch:        "armv6h",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_Arm6.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+				Format:      "tar.gz",
 			},
 			{
 				Arch:        "aarch64",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_Arm64.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+				Format:      "tar.gz",
 			},
 			{
 				Arch:        "i686",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_386.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+				Format:      "tar.gz",
 			},
 			{
 				Arch:        "armv7h",
 				DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_arm7.tar.gz",
 				SHA256:      "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67",
+				Format:      "tar.gz",
 			},
 		},
 	}
@@ -108,7 +113,7 @@ func TestAurSimple(t *testing.T) {
 	require.Contains(t, pkg, `# Contributor: Beltrano <beltrano@example.com>`)
 	require.Contains(t, pkg, `pkgname='test-bin'`)
 	require.Contains(t, pkg, `url='https://example.com'`)
-	require.Contains(t, pkg, `source_x86_64=('https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz')`)
+	require.Contains(t, pkg, `source_x86_64=('${pkgname}_${pkgver}_x86_64.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz')`)
 	require.Contains(t, pkg, `sha256sums_x86_64=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67')`)
 	require.Contains(t, pkg, `pkgver=0.1.3`)
 }
