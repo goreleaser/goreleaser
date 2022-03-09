@@ -312,6 +312,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.Client, artifacts [
 			DownloadURL: url,
 			SHA256:      sum,
 			Arch:        toPkgBuildArch(art.Goarch + art.Goarm),
+			Format:      art.ExtraOr(artifact.ExtraFormat, "").(string),
 		}
 		result.ReleasePackages = append(result.ReleasePackages, releasePackage)
 		result.Arches = append(result.Arches, releasePackage.Arch)
