@@ -55,7 +55,7 @@ optdepends=({{ pkgArray . }})
 {{- end }}
 
 {{ range .ReleasePackages -}}
-source_{{ .Arch }}=('${pkgname}_${pkgver}_{{ .Arch }}.{{ .Format }}::{{ .DownloadURL }}')
+source_{{ .Arch }}=("${pkgname}_${pkgver}_{{ .Arch }}.{{ .Format }}::{{ .DownloadURL }}")
 sha256sums_{{ .Arch }}=('{{ .SHA256 }}')
 {{ printf "" }}
 {{ end }}

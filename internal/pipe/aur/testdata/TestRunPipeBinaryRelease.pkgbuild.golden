@@ -10,7 +10,7 @@ license=('')
 provides=('foo')
 conflicts=('foo')
 
-source_x86_64=('${pkgname}_${pkgver}_x86_64.binary::https://dummyhost/download/v1.2.1/foo_linux_amd64')
+source_x86_64=("${pkgname}_${pkgver}_x86_64.binary::https://dummyhost/download/v1.2.1/foo_linux_amd64")
 sha256sums_x86_64=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
 
 package() {

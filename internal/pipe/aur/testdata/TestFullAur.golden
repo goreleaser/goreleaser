@@ -16,19 +16,19 @@ conflicts=('nope')
 depends=('nope')
 optdepends=('nfpm')
 
-source_x86_64=('${pkgname}_${pkgver}_x86_64.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz')
+source_x86_64=("${pkgname}_${pkgver}_x86_64.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_x86_64.tar.gz")
 sha256sums_x86_64=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67')
 
-source_armv6h=('${pkgname}_${pkgver}_armv6h.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_Arm6.tar.gz')
+source_armv6h=("${pkgname}_${pkgver}_armv6h.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_Arm6.tar.gz")
 sha256sums_armv6h=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67')
 
-source_aarch64=('${pkgname}_${pkgver}_aarch64.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_Arm64.tar.gz')
+source_aarch64=("${pkgname}_${pkgver}_aarch64.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_Arm64.tar.gz")
 sha256sums_aarch64=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67')
 
-source_i686=('${pkgname}_${pkgver}_i686.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_386.tar.gz')
+source_i686=("${pkgname}_${pkgver}_i686.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_386.tar.gz")
 sha256sums_i686=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67')
 
-source_armv7h=('${pkgname}_${pkgver}_armv7h.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_arm7.tar.gz')
+source_armv7h=("${pkgname}_${pkgver}_armv7h.tar.gz::https://github.com/caarlos0/test/releases/download/v0.1.3/test_Linux_arm7.tar.gz")
 sha256sums_armv7h=('1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c67')
 
 package() {

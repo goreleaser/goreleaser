@@ -10,7 +10,7 @@ license=('MIT')
 provides=('default')
 conflicts=('default')
 
-source_x86_64=('${pkgname}_${pkgver}_x86_64.tar.gz::https://dummyhost/download/v1.0.1-foo/bin.tar.gz')
+source_x86_64=("${pkgname}_${pkgver}_x86_64.tar.gz::https://dummyhost/download/v1.0.1-foo/bin.tar.gz")
 sha256sums_x86_64=('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
 
 package() {
