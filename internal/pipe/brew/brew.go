@@ -323,6 +323,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		Dependencies:  cfg.Dependencies,
 		Conflicts:     cfg.Conflicts,
 		Plist:         cfg.Plist,
+		Service:       split(cfg.Service),
 		PostInstall:   cfg.PostInstall,
 		Tests:         split(cfg.Test),
 		CustomRequire: cfg.CustomRequire,

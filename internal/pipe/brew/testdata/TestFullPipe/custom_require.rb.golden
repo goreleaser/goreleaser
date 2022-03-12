@@ -45,6 +45,10 @@ class CustomRequire < Formula
     <xml>whatever</xml>
   EOS
   end
+  service do
+      run foo/bar
+      keep_alive true
+  end
 
   test do
     system "true"

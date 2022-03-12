@@ -274,6 +274,7 @@ func TestFullPipe(t *testing.T) {
 							Plist:        `<xml>whatever</xml>`,
 							Dependencies: []config.HomebrewDependency{{Name: "zsh", Type: "optional"}, {Name: "bash"}},
 							Conflicts:    []string{"gtk+", "qt"},
+							Service:      "run foo/bar\nkeep_alive true",
 							Install:      `bin.install "{{ .ProjectName }}"`,
 						},
 					},
