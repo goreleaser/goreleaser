@@ -6,14 +6,20 @@ on:
     branches:
       - main
   pull_request:
+permissions:
+  contents: read
+
 jobs:
   misspell:
+    permissions:
+      checks: write  # for reviewdog/action-misspell to report issues using checks
+      contents: read  # for actions/checkout to fetch code
     name: spellcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
       - name: misspell
-        uses: reviewdog/action-misspell@v1
+        uses: reviewdog/action-misspell@83fd95f00e0c172832739f5b4af713aa809f1436 # v1
         with:
           github_token: ${{ secrets.github_token }}
           locale: "US"
