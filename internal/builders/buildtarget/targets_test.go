@@ -160,7 +160,7 @@ func TestAllBuildTargets(t *testing.T) {
 		_, err := matrix(config.Build{
 			Goos:   []string{"invalid"},
 			Goarch: []string{"amd64"},
-		}, []byte("go version go1.17.0"))
+		}, []byte("go version go1.18.0"))
 		require.EqualError(t, err, "invalid goos: invalid")
 	})
 
