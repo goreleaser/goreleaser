@@ -61,7 +61,7 @@ jobs:
           sudo apt-get update
           sudo apt-get --no-install-suggests --no-install-recommends install pack-cli
       - name: setup-snapcraft
-        # FIXME: the mkdirs are a hack for https://github.com/goreleaser/goreleaser/issues/m715
+        # FIXME: the mkdirs are a hack for https://github.com/goreleaser/goreleaser/issues/1715
         run: |
           sudo apt-get update
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
