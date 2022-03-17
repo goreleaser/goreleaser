@@ -57,38 +57,6 @@ func TestAllBuildTargets(t *testing.T) {
 		},
 	}
 
-	t.Run("go 1.15", func(t *testing.T) {
-		result, err := matrix(build, []byte("go version go1.15.0"))
-		require.NoError(t, err)
-		require.Equal(t, []string{
-			"linux_386",
-			"linux_amd64",
-			"linux_arm_6",
-			"linux_arm64",
-			"linux_mips_hardfloat",
-			"linux_mips_softfloat",
-			"linux_mips64_softfloat",
-			"linux_mipsle_hardfloat",
-			"linux_mipsle_softfloat",
-			"linux_mips64le_hardfloat",
-			"linux_riscv64",
-			"darwin_amd64",
-			"freebsd_386",
-			"freebsd_amd64",
-			"freebsd_arm_6",
-			"freebsd_arm_7",
-			"freebsd_arm64",
-			"openbsd_386",
-			"openbsd_amd64",
-			"openbsd_arm64",
-			"windows_386",
-			"windows_amd64",
-			"windows_arm_6",
-			"windows_arm_7",
-			"js_wasm",
-		}, result)
-	})
-
 	t.Run("go 1.16", func(t *testing.T) {
 		result, err := matrix(build, []byte("go version go1.16.2"))
 		require.NoError(t, err)
