@@ -763,9 +763,9 @@ func Test_templateNames(t *testing.T) {
 
 			actualEnv := make(map[string]string)
 			for _, str := range actualEnvs {
-				key := strings.Split(str, "=")[0]
-				value := strings.Join(strings.Split(str, "=")[1:], "=")
-				actualEnv[key] = value
+				k, v, ok := strings.Cut(str, "=")
+				require.True(t, ok)
+				actualEnv[k] = v
 			}
 
 			for k, v := range tt.expectedValues {
