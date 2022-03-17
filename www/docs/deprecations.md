@@ -36,6 +36,15 @@ Description.
 
 -->
 
+### dockers.use: buildpacks
+
+> since 2022-03-16 (v1.6.0)
+
+This will be removed soon due to some issues:
+
+- The binary gets rebuild again during the buildpacks build;
+- There is no ARM support.
+
 ### variables
 
 > since 2022-01-20 (v1.4.0)
@@ -106,7 +115,6 @@ ignore:
 ```
 
 If you try to use new versions of GoReleaser with Go 1.16 or older, it will warn about it until this deprecation warning expires, after that your build will likely fail.
-
 
 ## Expired deprecation notices
 

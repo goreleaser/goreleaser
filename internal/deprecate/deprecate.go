@@ -55,6 +55,8 @@ func NoticeCustom(ctx *context.Context, property, tmpl string) {
 	url := baseURL + strings.NewReplacer(
 		".", "",
 		"_", "",
+		":", "",
+		" ", "-",
 	).Replace(property)
 	var out bytes.Buffer
 	if err := template.Must(template.New("deprecation").Parse("DEPRECATED: "+tmpl)).Execute(&out, templateData{

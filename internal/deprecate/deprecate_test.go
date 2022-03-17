@@ -21,7 +21,7 @@ func TestNotice(t *testing.T) {
 
 	log.Info("first")
 	ctx := context.New(config.Project{})
-	Notice(ctx, "foo.bar.whatever")
+	Notice(ctx, "foo.bar.whatever: foobar")
 	log.Info("last")
 	require.True(t, ctx.Deprecated)
 

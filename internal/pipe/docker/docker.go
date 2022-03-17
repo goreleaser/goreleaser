@@ -9,6 +9,7 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -23,7 +24,7 @@ const (
 
 	useBuildx     = "buildx"
 	useDocker     = "docker"
-	useBuildPacks = "buildpacks"
+	useBuildPacks = "buildpacks" // deprecated: should not be used anymore
 )
 
 // Pipe for docker.
@@ -49,6 +50,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if docker.Dockerfile == "" {
 			docker.Dockerfile = "Dockerfile"
+		}
+		if docker.Use == useBuildPacks {
+			deprecate.Notice(ctx, "dockers.use: buildpacks")
 		}
 		if docker.Use == "" {
 			docker.Use = useDocker
