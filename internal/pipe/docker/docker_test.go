@@ -972,6 +972,9 @@ func TestRunPipe(t *testing.T) {
 
 	for name, docker := range table {
 		for imager := range imagers {
+			if imager == useBuildPacks {
+				continue // deprecated
+			}
 			t.Run(name+" on "+imager, func(t *testing.T) {
 				folder := t.TempDir()
 				dist := filepath.Join(folder, "dist")
