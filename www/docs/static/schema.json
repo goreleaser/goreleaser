@@ -712,9 +712,6 @@
 						},
 						"type": "array"
 					},
-					"use_buildx": {
-						"type": "boolean"
-					},
 					"use": {
 						"type": "string"
 					}
