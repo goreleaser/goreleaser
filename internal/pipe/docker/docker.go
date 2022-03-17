@@ -24,7 +24,7 @@ const (
 
 	useBuildx     = "buildx"
 	useDocker     = "docker"
-	useBuildPacks = "buildpacks"
+	useBuildPacks = "buildpacks" // deprecated: should not be used anymore
 )
 
 // Pipe for docker.
@@ -56,6 +56,9 @@ func (Pipe) Default(ctx *context.Context) error {
 			if docker.Use == "" {
 				docker.Use = useBuildx
 			}
+		}
+		if docker.Use == useBuildPacks {
+			deprecate.Notice(ctx, "docker.use_buildpack")
 		}
 		if docker.Use == "" {
 			docker.Use = useDocker

@@ -7,6 +7,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+// deprected: should not be used anymore.
 type buildPackImager struct{}
 
 func (i buildPackImager) Push(ctx *context.Context, image string, flags []string) error {

@@ -36,6 +36,15 @@ Description.
 
 -->
 
+### dockers.use: buildpack
+
+> since 2022-03-16 (v1.6.0)
+
+This will be removed soon due to some issues:
+
+- The binary gets rebuild again during the buildpack build;
+- There is no ARM support.
+
 ### variables
 
 > since 2022-01-20 (v1.4.0)
