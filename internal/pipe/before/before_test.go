@@ -53,8 +53,8 @@ func TestRunPipeInvalidCommand(t *testing.T) {
 
 func TestRunPipeFail(t *testing.T) {
 	for err, tc := range map[string][]string{
-		"hook failed: go tool foobar: exit status 2; output: go tool: no such tool \"foobar\"\n": {"go tool foobar"},
-		"hook failed: sh ./testdata/foo.sh: exit status 1; output: lalala\n":                     {"sh ./testdata/foo.sh"},
+		"hook failed: go tool foobar: exit status 2; output: go: no such tool \"foobar\"\n": {"go tool foobar"},
+		"hook failed: sh ./testdata/foo.sh: exit status 1; output: lalala\n":                {"sh ./testdata/foo.sh"},
 	} {
 		ctx := context.New(
 			config.Project{

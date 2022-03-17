@@ -122,8 +122,8 @@ func TestAllBuildTargets(t *testing.T) {
 		}, result)
 	})
 
-	t.Run("go 1.17", func(t *testing.T) {
-		result, err := matrix(build, []byte("go version go1.17.0"))
+	t.Run("go 1.18", func(t *testing.T) {
+		result, err := matrix(build, []byte("go version go1.18.0"))
 		require.NoError(t, err)
 		require.Equal(t, []string{
 			"linux_386",
@@ -160,7 +160,7 @@ func TestAllBuildTargets(t *testing.T) {
 		_, err := matrix(config.Build{
 			Goos:   []string{"invalid"},
 			Goarch: []string{"amd64"},
-		}, []byte("go version go1.17.0"))
+		}, []byte("go version go1.18.0"))
 		require.EqualError(t, err, "invalid goos: invalid")
 	})
 
@@ -168,7 +168,7 @@ func TestAllBuildTargets(t *testing.T) {
 		_, err := matrix(config.Build{
 			Goos:   []string{"linux"},
 			Goarch: []string{"invalid"},
-		}, []byte("go version go1.17.0"))
+		}, []byte("go version go1.18.0"))
 		require.EqualError(t, err, "invalid goarch: invalid")
 	})
 
@@ -177,7 +177,7 @@ func TestAllBuildTargets(t *testing.T) {
 			Goos:   []string{"linux"},
 			Goarch: []string{"arm"},
 			Goarm:  []string{"invalid"},
-		}, []byte("go version go1.17.0"))
+		}, []byte("go version go1.18.0"))
 		require.EqualError(t, err, "invalid goarm: invalid")
 	})
 
@@ -186,7 +186,7 @@ func TestAllBuildTargets(t *testing.T) {
 			Goos:   []string{"linux"},
 			Goarch: []string{"mips"},
 			Gomips: []string{"invalid"},
-		}, []byte("go version go1.17.0"))
+		}, []byte("go version go1.18.0"))
 		require.EqualError(t, err, "invalid gomips: invalid")
 	})
 }

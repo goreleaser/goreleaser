@@ -1133,7 +1133,7 @@ func TestRunPipeWhileUsingBuildpacks(t *testing.T) {
 			require.NoError(t, os.Mkdir(wd, 0o755))
 			require.NoError(t, os.Mkdir(dist, 0o755))
 			require.NoError(t, os.Chdir(wd))
-			require.NoError(t, os.WriteFile(filepath.Join(wd, "go.mod"), []byte("module test-mod\n\ngo 1.17"), 0o600))
+			require.NoError(t, os.WriteFile(filepath.Join(wd, "go.mod"), []byte("module test-mod\n\ngo 1.18"), 0o600))
 			require.NoError(t, os.WriteFile(filepath.Join(wd, "main.go"), []byte("package main\n\nfunc main(){}"), 0o600))
 
 			ctx := context.New(config.Project{
