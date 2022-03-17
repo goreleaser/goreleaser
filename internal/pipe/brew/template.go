@@ -10,7 +10,7 @@ type templateData struct {
 	License              string
 	Caveats              []string
 	Plist                string
-	PostInstall          string
+	PostInstall          []string
 	Dependencies         []config.HomebrewDependency
 	Conflicts            []string
 	Tests                []string
@@ -158,7 +158,9 @@ class {{ .Name }} < Formula
   {{- with .PostInstall }}
 
   def post_install
+    {{- range . }}
     {{ . }}
+    {{- end }}
   end
   {{- end -}}
 
@@ -183,9 +185,10 @@ class {{ .Name }} < Formula
   {{- end -}}
 
   {{- with .Service }}
+
   service do
     {{- range . }}
-      {{ . }}
+    {{ . }}
     {{- end }}
   end
   {{- end -}}

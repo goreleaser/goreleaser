@@ -14,15 +14,15 @@ jobs:
   htmltest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: arduino/setup-task@v1
+      - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
+      - uses: arduino/setup-task@accf38bba955639d21816bb68775e5c48c482182 # v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2
         with:
           go-version: 1.17
       - run: task docs:build
-      - uses: wjdp/htmltest-action@master
+      - uses: wjdp/htmltest-action@09118714cd26bef56bd3d0819e4f9b1dce6f60a9 # master
         with:
           path: www/site
           config: www/htmltest.yml
