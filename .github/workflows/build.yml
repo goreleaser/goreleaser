@@ -25,15 +25,15 @@ jobs:
       matrix:
         format: [ deb, rpm, apk ]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
         with:
           fetch-depth: 0
-      - uses: arduino/setup-task@v1
+      - uses: arduino/setup-task@accf38bba955639d21816bb68775e5c48c482182 # v1
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@v1
-      - uses: actions/cache@v2
+      - uses: docker/setup-qemu-action@27d0a4f181a40b142cce983c5393082c365d1480 # v1
+      - uses: actions/cache@661fd3eb7f2f20d8c7c84bc2b0509efd7a826628 # v2
         with:
           path: |
             ./dist/*.deb
@@ -46,15 +46,15 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
         with:
           fetch-depth: 0
-      - uses: arduino/setup-task@v1
+      - uses: arduino/setup-task@accf38bba955639d21816bb68775e5c48c482182 # v1
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@v1
-      - uses: docker/setup-buildx-action@v1
+      - uses: docker/setup-qemu-action@27d0a4f181a40b142cce983c5393082c365d1480 # v1
+      - uses: docker/setup-buildx-action@94ab11c41e45d028884a99163086648e898eed25 # v1
       - name: setup-buildpacks
         run: |
           sudo add-apt-repository ppa:cncf-buildpacks/pack-cli
@@ -67,10 +67,10 @@ jobs:
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
           mkdir -p $HOME/.cache/snapcraft/download
           mkdir -p $HOME/.cache/snapcraft/stage-packages
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2
         with:
           go-version: '1.18'
-      - uses: actions/cache@v2
+      - uses: actions/cache@661fd3eb7f2f20d8c7c84bc2b0509efd7a826628 # v2
         with:
           path: |
             ~/go/pkg/mod
@@ -78,33 +78,33 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - uses: actions/cache@v2
+      - uses: actions/cache@661fd3eb7f2f20d8c7c84bc2b0509efd7a826628 # v2
         with:
           path: |
             ./dist/*.deb
             ./dist/*.rpm
             ./dist/*.apk
           key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}-${{ hashFiles('**/go.sum') }}
-      - uses: sigstore/cosign-installer@v2.1.0
-      - uses: anchore/sbom-action/download-syft@v0.7.0
+      - uses: sigstore/cosign-installer@ab3bb6a537fb08a1b78f7d1175fff799ca6850a3 # v2.1.0
+      - uses: anchore/sbom-action/download-syft@ce4a7cf05d7b684693d7b6bba97bfbee56806edb # v0.7.0
       - name: setup-validate-krew-manifest
         # TODO: replace this once https://github.com/kubernetes-sigs/krew/pull/736 is merged
         run: go install github.com/caarlos0/krew/cmd/validate-krew-manifest@fork
       - run: task ci
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2
         with:
           file: ./coverage.txt
       - run: ./goreleaser check
       - run: git diff
       - name: dockerhub-login
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/login-action@v1
+        uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7 # v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: ghcr-login
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/login-action@v1
+        uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7 # v1
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
