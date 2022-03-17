@@ -9,7 +9,6 @@ import (
 
 	"github.com/apex/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -50,12 +49,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if docker.Dockerfile == "" {
 			docker.Dockerfile = "Dockerfile"
-		}
-		if docker.Buildx {
-			deprecate.Notice(ctx, "docker.use_buildx")
-			if docker.Use == "" {
-				docker.Use = useBuildx
-			}
 		}
 		if docker.Use == "" {
 			docker.Use = useDocker
