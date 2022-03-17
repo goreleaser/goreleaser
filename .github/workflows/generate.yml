@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
         with:
           token: ${{ secrets.GH_PAT }}
-      - uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2
+      - uses: actions/setup-go@f6164bd8c8acb4a71fb2791a8b6c4024ff038dab # v2
         with:
           go-version: 1.18
       - uses: arduino/setup-task@accf38bba955639d21816bb68775e5c48c482182 # v1
