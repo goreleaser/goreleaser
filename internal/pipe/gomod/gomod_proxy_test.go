@@ -45,6 +45,7 @@ func TestGoModProxy(t *testing.T) {
 		require.Equal(t, ".", ctx.Config.Builds[0].UnproxiedMain)
 		require.Equal(t, filepath.Join(dist, "proxy", "foo"), ctx.Config.Builds[0].Dir)
 		require.Equal(t, ".", ctx.Config.Builds[0].UnproxiedDir)
+
 		require.Equal(t, ctx.ModulePath, ctx.ModulePath)
 	})
 
@@ -226,7 +227,7 @@ func requireGoMod(tb testing.TB, module, version string) {
 	require.NoError(tb, err)
 	require.Contains(tb, string(mod), fmt.Sprintf(`module foo
 
-go 1.17
+go 1.18
 
 require %s %s
 `, module, version))
