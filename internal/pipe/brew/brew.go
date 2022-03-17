@@ -324,7 +324,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 		Conflicts:     cfg.Conflicts,
 		Plist:         cfg.Plist,
 		Service:       split(cfg.Service),
-		PostInstall:   cfg.PostInstall,
+		PostInstall:   split(cfg.PostInstall),
 		Tests:         split(cfg.Test),
 		CustomRequire: cfg.CustomRequire,
 		CustomBlock:   split(cfg.CustomBlock),

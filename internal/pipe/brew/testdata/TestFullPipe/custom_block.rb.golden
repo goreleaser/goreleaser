@@ -35,6 +35,11 @@ class CustomBlock < Formula
   conflicts_with "gtk+"
   conflicts_with "qt"
 
+  def post_install
+    system "echo"
+    system "touch" "/tmp/hi"
+  end
+
   def caveats; <<~EOS
     don't do this custom_block
   EOS
@@ -46,9 +51,10 @@ class CustomBlock < Formula
     <xml>whatever</xml>
   EOS
   end
+
   service do
-      run foo/bar
-      keep_alive true
+    run foo/bar
+    keep_alive true
   end
 
   test do

@@ -65,6 +65,7 @@ class Test < Formula
 
   def post_install
     system "touch", "/tmp/foo"
+    system "echo", "done"
   end
 
   def caveats; <<~EOS
