@@ -52,13 +52,13 @@ func (Pipe) Default(ctx *context.Context) error {
 			docker.Dockerfile = "Dockerfile"
 		}
 		if docker.Buildx {
-			deprecate.Notice(ctx, "docker.use_buildx")
+			deprecate.Notice(ctx, "dockers.use_buildx")
 			if docker.Use == "" {
 				docker.Use = useBuildx
 			}
 		}
 		if docker.Use == useBuildPacks {
-			deprecate.Notice(ctx, "docker.use_buildpack")
+			deprecate.Notice(ctx, "dockers.use: buildpacks")
 		}
 		if docker.Use == "" {
 			docker.Use = useDocker

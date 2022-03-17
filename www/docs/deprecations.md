@@ -116,7 +116,7 @@ ignore:
 
 If you try to use new versions of GoReleaser with Go 1.16 or older, it will warn about it until this deprecation warning expires, after that your build will likely fail.
 
-### docker.use_buildx
+### dockers.use_buildx
 
 > since 2021-06-26 (v0.172.0)
 
