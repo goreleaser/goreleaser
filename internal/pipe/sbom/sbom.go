@@ -249,10 +249,8 @@ func applyTemplate(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact) 
 		}
 		extraEnvs = append(extraEnvs, renderedKeyValue)
 
-		fields := strings.Split(renderedKeyValue, "=")
-		key := fields[0]
-		renderedValue := strings.Join(fields[1:], "=")
-		env[key] = renderedValue
+		k, v, _ := strings.Cut(renderedKeyValue, "=")
+		env[k] = v
 	}
 
 	var paths []string

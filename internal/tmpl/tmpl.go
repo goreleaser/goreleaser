@@ -115,8 +115,8 @@ func New(ctx *context.Context) *Template {
 func (t *Template) WithEnvS(envs []string) *Template {
 	result := map[string]string{}
 	for _, env := range envs {
-		parts := strings.SplitN(env, "=", 2)
-		result[parts[0]] = parts[1]
+		k, v, _ := strings.Cut(env, "=")
+		result[k] = v
 	}
 	return t.WithEnv(result)
 }

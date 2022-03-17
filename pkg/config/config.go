@@ -787,7 +787,6 @@ type Docker struct {
 	Files              []string `yaml:"extra_files,omitempty"`
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty"`
 	PushFlags          []string `yaml:"push_flags,omitempty"`
-	Buildx             bool     `yaml:"use_buildx,omitempty"` // deprecated: use Use instead
 	Use                string   `yaml:"use,omitempty"`
 }
 

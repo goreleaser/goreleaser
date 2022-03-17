@@ -55,13 +55,6 @@ func matrix(build config.Build, version []byte) ([]string, error) {
 		if target.mips != "" && !contains(target.mips, validGomips) {
 			return result, fmt.Errorf("invalid gomips: %s", target.mips)
 		}
-		if target.os == "darwin" && target.arch == "arm64" && !go116re.Match(version) {
-			log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
-				"DEPRECATED: skipped darwin/arm64 build on Go < 1.16 for compatibility, check %s for more info.",
-				"https://goreleaser.com/deprecations/#builds-for-darwinarm64",
-			))
-			continue
-		}
 		if target.os == "windows" && target.arch == "arm64" && !go117re.Match(version) {
 			log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
 				"DEPRECATED: skipped windows/arm64 build on Go < 1.17 for compatibility, check %s for more info.",
@@ -138,10 +131,7 @@ func ignored(build config.Build, target target) bool {
 	return false
 }
 
-var (
-	go116re = regexp.MustCompile(`go version go1.1[6-9]`)
-	go117re = regexp.MustCompile(`go version go1.1[7-9]`)
-)
+var go117re = regexp.MustCompile(`go version go1.1[7-9]`)
 
 func goVersion(build config.Build) ([]byte, error) {
 	cmd := exec.Command(build.GoBinary, "version")

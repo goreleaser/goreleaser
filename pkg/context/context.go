@@ -148,11 +148,11 @@ func Wrap(ctx ctx.Context, config config.Project) *Context {
 func ToEnv(env []string) Env {
 	r := Env{}
 	for _, e := range env {
-		p := strings.SplitN(e, "=", 2)
-		if len(p) != 2 || p[0] == "" {
+		k, v, ok := strings.Cut(e, "=")
+		if !ok || k == "" {
 			continue
 		}
-		r[p[0]] = p[1]
+		r[k] = v
 	}
 	return r
 }
