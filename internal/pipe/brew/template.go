@@ -18,6 +18,7 @@ type templateData struct {
 	CustomBlock          []string
 	LinuxPackages        []releasePackage
 	MacOSPackages        []releasePackage
+	Service              []string
 	HasOnlyAmd64MacOsPkg bool
 }
 
@@ -178,6 +179,14 @@ class {{ .Name }} < Formula
   def plist; <<~EOS
     {{ . }}
   EOS
+  end
+  {{- end -}}
+
+  {{- with .Service }}
+  service do
+    {{- range . }}
+      {{ . }}
+    {{- end }}
   end
   {{- end -}}
 
