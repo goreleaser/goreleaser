@@ -955,6 +955,9 @@
 					},
 					"gobinary": {
 						"type": "string"
+					},
+					"mod": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
