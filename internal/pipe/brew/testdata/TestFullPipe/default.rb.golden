@@ -33,6 +33,11 @@ class Default < Formula
   conflicts_with "gtk+"
   conflicts_with "qt"
 
+  def post_install
+    system "echo"
+    system "touch" "/tmp/hi"
+  end
+
   def caveats; <<~EOS
     don't do this default
   EOS
@@ -44,9 +49,10 @@ class Default < Formula
     <xml>whatever</xml>
   EOS
   end
+
   service do
-      run foo/bar
-      keep_alive true
+    run foo/bar
+    keep_alive true
   end
 
   test do
