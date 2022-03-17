@@ -27,7 +27,7 @@ gomod:
 
   # Which Go binary to use.
   # Defaults to `go`.
-  gobinary: go1.15
+  gobinary: go1.17
 ```
 
 !!! tip
