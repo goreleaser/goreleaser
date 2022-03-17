@@ -10,7 +10,7 @@ type templateData struct {
 	License              string
 	Caveats              []string
 	Plist                string
-	PostInstall          string
+	PostInstall          []string
 	Dependencies         []config.HomebrewDependency
 	Conflicts            []string
 	Tests                []string
@@ -18,6 +18,7 @@ type templateData struct {
 	CustomBlock          []string
 	LinuxPackages        []releasePackage
 	MacOSPackages        []releasePackage
+	Service              []string
 	HasOnlyAmd64MacOsPkg bool
 }
 
@@ -157,7 +158,9 @@ class {{ .Name }} < Formula
   {{- with .PostInstall }}
 
   def post_install
+    {{- range . }}
     {{ . }}
+    {{- end }}
   end
   {{- end -}}
 
@@ -178,6 +181,15 @@ class {{ .Name }} < Formula
   def plist; <<~EOS
     {{ . }}
   EOS
+  end
+  {{- end -}}
+
+  {{- with .Service }}
+
+  service do
+    {{- range . }}
+    {{ . }}
+    {{- end }}
   end
   {{- end -}}
 

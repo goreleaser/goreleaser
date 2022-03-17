@@ -121,7 +121,7 @@ func TestWithDefaults(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			if testcase.build.GoBinary != "" && testcase.build.GoBinary != "go" {
-				createFakeGoBinaryWithVersion(t, testcase.build.GoBinary, "go1.17")
+				createFakeGoBinaryWithVersion(t, testcase.build.GoBinary, "go1.18")
 			}
 			config := config.Project{
 				Builds: []config.Build{

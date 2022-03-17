@@ -120,6 +120,11 @@ brews:
       <?xml version="1.0" encoding="UTF-8"?>
       ...
 
+    # Service block.
+    service: |
+      run: foo/bar
+      ...
+
     # So you can `brew test` your formula.
     # Default is empty.
     test: |
