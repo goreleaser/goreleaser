@@ -1042,6 +1042,9 @@
 					},
 					"goarm": {
 						"type": "string"
+					},
+					"service": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
