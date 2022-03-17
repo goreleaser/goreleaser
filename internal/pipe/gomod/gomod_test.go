@@ -18,6 +18,17 @@ func TestRun(t *testing.T) {
 	require.Equal(t, "github.com/goreleaser/goreleaser", ctx.ModulePath)
 }
 
+func TestRunCustomMod(t *testing.T) {
+	ctx := context.New(config.Project{
+		GoMod: config.GoMod{
+			Mod: "readonly",
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "github.com/goreleaser/goreleaser", ctx.ModulePath)
+}
+
 func TestRunOutsideGoModule(t *testing.T) {
 	dir := testlib.Mktmp(t)
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "main.go"), []byte("package main\nfunc main() {println(0)}"), 0o666))

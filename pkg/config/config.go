@@ -937,6 +937,7 @@ type GoMod struct {
 	Proxy    bool     `yaml:"proxy,omitempty"`
 	Env      []string `yaml:"env,omitempty"`
 	GoBinary string   `yaml:"gobinary,omitempty"`
+	Mod      string   `yaml:"mod,omitempty"`
 }
 
 type Announce struct {

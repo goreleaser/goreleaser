@@ -29,7 +29,11 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
-	out, err := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, "list", "-m").CombinedOutput()
+	flags := []string{"list", "-m"}
+	if ctx.Config.GoMod.Mod != "" {
+		flags = append(flags, "-mod="+ctx.Config.GoMod.Mod)
+	}
+	out, err := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, flags...).CombinedOutput()
 	result := strings.TrimSpace(string(out))
 	if result == go115NotAGoModuleError || result == go116NotAGoModuleError {
 		return pipe.Skip("not a go module")
