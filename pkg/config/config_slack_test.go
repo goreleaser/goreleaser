@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"testing"
 
@@ -107,6 +108,34 @@ func TestUnmarshalSlackAttachments(t *testing.T) {
 
 		_, err := LoadReader(badAttachmentsSlackConf())
 		require.Error(t, err)
+	})
+}
+
+func TestUnmarshalYAMLSlackBlocks(t *testing.T) {
+	// func (a *SlackAttachment) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	t.Parallel()
+
+	const testError = "testError"
+	erf := func(_ interface{}) error {
+		return errors.New(testError)
+	}
+
+	t.Run("SlackBlock.UnmarshalYAML error case", func(t *testing.T) {
+		t.Parallel()
+
+		var block SlackBlock
+		err := block.UnmarshalYAML(erf)
+		require.Error(t, err)
+		require.ErrorContains(t, err, testError)
+	})
+
+	t.Run("SlackAttachment.UnmarshalYAML error case", func(t *testing.T) {
+		t.Parallel()
+
+		var attachment SlackAttachment
+		err := attachment.UnmarshalYAML(erf)
+		require.Error(t, err)
+		require.ErrorContains(t, err, testError)
 	})
 }
 

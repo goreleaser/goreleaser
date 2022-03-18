@@ -7,6 +7,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 )
@@ -59,6 +60,8 @@ func TestSkip(t *testing.T) {
 	})
 }
 
+const testVersion = "v1.2.3"
+
 func TestParseRichText(t *testing.T) {
 	t.Parallel()
 
@@ -69,7 +72,7 @@ func TestParseRichText(t *testing.T) {
 		require.NoError(t, yaml.Unmarshal(goodRichSlackConf(), &project))
 
 		ctx := context.New(project)
-		ctx.Version = "v1.2.3"
+		ctx.Version = testVersion
 
 		blocks, attachments, err := parseAdvancedFormatting(ctx)
 		require.NoError(t, err)
@@ -85,7 +88,7 @@ func TestParseRichText(t *testing.T) {
 		require.NoError(t, yaml.Unmarshal(badBlocksSlackConf(), &project))
 
 		ctx := context.New(project)
-		ctx.Version = "v1.2.3"
+		ctx.Version = testVersion
 
 		_, _, err := parseAdvancedFormatting(ctx)
 		require.Error(t, err)
@@ -99,7 +102,7 @@ func TestParseRichText(t *testing.T) {
 		require.NoError(t, yaml.Unmarshal(badAttachmentsSlackConf(), &project))
 
 		ctx := context.New(project)
-		ctx.Version = "v1.2.3"
+		ctx.Version = testVersion
 
 		_, _, err := parseAdvancedFormatting(ctx)
 		require.Error(t, err)
@@ -119,7 +122,7 @@ func TestRichText(t *testing.T) {
 		require.NoError(t, yaml.Unmarshal(goodRichSlackConf(), &project))
 
 		ctx := context.New(project)
-		ctx.Version = "v1.2.3"
+		ctx.Version = testVersion
 
 		require.NoError(t, Pipe{}.Announce(ctx))
 	})
@@ -131,11 +134,64 @@ func TestRichText(t *testing.T) {
 		require.NoError(t, yaml.Unmarshal(badBlocksSlackConf(), &project))
 
 		ctx := context.New(project)
-		ctx.Version = "v1.2.3"
+		ctx.Version = testVersion
 
 		err := Pipe{}.Announce(ctx)
 		require.Error(t, err)
 		require.ErrorContains(t, err, "json")
+	})
+}
+
+func TestUnmarshall(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy unmarshal", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.New(config.Project{})
+		ctx.Version = testVersion
+
+		var blocks slack.Blocks
+		require.NoError(t, unmarshal(ctx, []interface{}{map[string]interface{}{"type": "divider"}}, &blocks))
+	})
+
+	t.Run("unmarshal fails on MarshalJSON", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := context.New(config.Project{})
+		ctx.Version = testVersion
+
+		var blocks slack.Blocks
+		require.Error(t, unmarshal(ctx, []interface{}{map[string]interface{}{"type": func() {}}}, &blocks))
+	})
+
+	t.Run("unmarshal happy to resolve template", func(t *testing.T) {
+		t.Parallel()
+
+		var project config.Project
+		require.NoError(t, yaml.Unmarshal(goodTemplateSlackConf(), &project))
+		ctx := context.New(project)
+		ctx.Version = testVersion
+
+		var blocks slack.Blocks
+		require.NoError(t, unmarshal(ctx, ctx.Config.Announce.Slack.Blocks, &blocks))
+
+		require.Len(t, blocks.BlockSet, 1)
+		header, ok := blocks.BlockSet[0].(*slack.HeaderBlock)
+		require.True(t, ok)
+		require.Contains(t, header.Text.Text, testVersion)
+	})
+
+	t.Run("unmarshal fails on resolve template", func(t *testing.T) {
+		t.Parallel()
+
+		var project config.Project
+		require.NoError(t, yaml.Unmarshal(badTemplateSlackConf(), &project))
+		ctx := context.New(project)
+		ctx.Version = testVersion
+
+		var blocks slack.Blocks
+		require.Error(t, unmarshal(ctx, ctx.Config.Announce.Slack.Blocks, &blocks))
 	})
 }
 
@@ -246,6 +302,46 @@ announce:
           color: '#2eb886'
 		  text: |
             *Helm chart packages*
+`
+
+	buf := bytes.NewBufferString(conf)
+
+	return bytes.ReplaceAll(buf.Bytes(), []byte("\t"), []byte("    "))
+}
+
+func goodTemplateSlackConf() []byte {
+	const conf = `
+project_name: test
+announce:
+  slack:
+    enabled: true
+	message_template: '{{ .Version }}'
+    channel: my_channel
+    blocks:
+      - type: header
+        text:
+          type: plain_text
+          text: '{{ .Version }}'
+`
+
+	buf := bytes.NewBufferString(conf)
+
+	return bytes.ReplaceAll(buf.Bytes(), []byte("\t"), []byte("    "))
+}
+
+func badTemplateSlackConf() []byte {
+	const conf = `
+project_name: test
+announce:
+  slack:
+    enabled: true
+	message_template: fallback
+    channel: my_channel
+    blocks:
+      - type: header
+        text:
+          type: plain_text
+		  text: '{{ .Wrong }}'
 `
 
 	buf := bytes.NewBufferString(conf)
