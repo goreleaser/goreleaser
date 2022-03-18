@@ -3,6 +3,8 @@
 package config
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -979,12 +981,14 @@ type Reddit struct {
 }
 
 type Slack struct {
-	Enabled         bool   `yaml:"enabled,omitempty"`
-	MessageTemplate string `yaml:"message_template,omitempty"`
-	Channel         string `yaml:"channel,omitempty"`
-	Username        string `yaml:"username,omitempty"`
-	IconEmoji       string `yaml:"icon_emoji,omitempty"`
-	IconURL         string `yaml:"icon_url,omitempty"`
+	Enabled         bool              `yaml:"enabled,omitempty"`
+	MessageTemplate string            `yaml:"message_template,omitempty"`
+	Channel         string            `yaml:"channel,omitempty"`
+	Username        string            `yaml:"username,omitempty"`
+	IconEmoji       string            `yaml:"icon_emoji,omitempty"`
+	IconURL         string            `yaml:"icon_url,omitempty"`
+	Blocks          []SlackBlock      `yaml:"blocks,omitempty"`
+	Attachments     []SlackAttachment `yaml:"attachments,omitempty"`
 }
 
 type Discord struct {
@@ -1057,4 +1061,81 @@ func LoadReader(fd io.Reader) (config Project, err error) {
 	err = yaml.UnmarshalStrict(data, &config)
 	log.WithField("config", config).Debug("loaded config file")
 	return config, err
+}
+
+// SlackBlock represents the untyped structure of a rich slack message layout.
+type SlackBlock struct {
+	Internal interface{}
+}
+
+// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack block as untyped interface{}.
+func (a *SlackBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var yamlv2 interface{}
+	if err := unmarshal(&yamlv2); err != nil {
+		return err
+	}
+
+	// We want the untyped structure to be used from json as well.
+	// This requires to transform untyped map[interface{}]interface{} in map[string]interface{}.
+	//
+	// Notice that this hack is no more needed with yaml.v3
+	a.Internal = jsonableValue(yamlv2)
+
+	return nil
+}
+
+// MarshalJSON marshals a slack block as JSON.
+func (a SlackBlock) MarshalJSON() ([]byte, error) {
+	return json.Marshal(a.Internal)
+}
+
+// SlackAttachment represents the untyped structure of a slack message attachment.
+type SlackAttachment struct {
+	Internal interface{}
+}
+
+// UnmarshalYAML is a custom unmarshaler that unmarshals a YAML slack attachment as untyped interface{}.
+func (a *SlackAttachment) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var yamlv2 interface{}
+	if err := unmarshal(&yamlv2); err != nil {
+		return err
+	}
+
+	a.Internal = jsonableValue(yamlv2)
+
+	return nil
+}
+
+// MarshalJSON marshals a slack attachment as JSON.
+func (a SlackAttachment) MarshalJSON() ([]byte, error) {
+	return json.Marshal(a.Internal)
+}
+
+func jsonableArray(in []interface{}) []interface{} {
+	result := make([]interface{}, len(in))
+	for i, v := range in {
+		result[i] = jsonableValue(v)
+	}
+
+	return result
+}
+
+func jsonableMap(in map[interface{}]interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+	for k, v := range in {
+		result[fmt.Sprintf("%v", k)] = jsonableValue(v)
+	}
+
+	return result
+}
+
+func jsonableValue(v interface{}) interface{} {
+	switch v := v.(type) {
+	case []interface{}:
+		return jsonableArray(v)
+	case map[interface{}]interface{}:
+		return jsonableMap(v)
+	default:
+		return v
+	}
 }
