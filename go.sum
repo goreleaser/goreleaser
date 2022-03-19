@@ -451,8 +451,8 @@ github.com/google/pprof v0.0.0-20210609004039-a478d1d731e9/go.mod h1:kpwsk12EmLe
 github.com/google/pprof v0.0.0-20210715191844-86eeefc3e471/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
 github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
-github.com/google/rpmpack v0.0.0-20211125064518-d0ed9b1b61b9 h1:ClPt4zdk8fbRqTANpgege8HBktalZaIz32dIGnwcVZI=
-github.com/google/rpmpack v0.0.0-20211125064518-d0ed9b1b61b9/go.mod h1:3YnKULqkUnzpgcZS8uQgbTRwcAW4IqYiUzWFy6aVvu0=
+github.com/google/rpmpack v0.0.0-20220314092521-38642b5e571e h1:6Jn9JtfCn20uycra92LxTkq5yfBKNSFlRJPBk8/Cxhg=
+github.com/google/rpmpack v0.0.0-20220314092521-38642b5e571e/go.mod h1:83rLnx5vhPyN/mDzBYJWtiPf+9xnSVQynTpqZWe7OnY=
 github.com/google/subcommands v1.0.1/go.mod h1:ZjhPrFU+Olkh9WazFPsl27BQ4UPiG37m3yTrtFlrHVk=
 github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
@@ -471,8 +471,8 @@ github.com/goreleaser/chglog v0.1.2 h1:tdzAb/ILeMnphzI9zQ7Nkq+T8R9qyXli8GydD8plF
 github.com/goreleaser/chglog v0.1.2/go.mod h1:tTZsFuSZK4epDXfjMkxzcGbrIOXprf0JFp47BjIr3B8=
 github.com/goreleaser/fileglob v1.3.0 h1:/X6J7U8lbDpQtBvGcwwPS6OpzkNVlVEsFUVRx9+k+7I=
 github.com/goreleaser/fileglob v1.3.0/go.mod h1:Jx6BoXv3mbYkEzwm9THo7xbr5egkAraxkGorbJb4RxU=
-github.com/goreleaser/nfpm/v2 v2.14.0 h1:1xFq1F1Dy3HSdbjUtd+8CCahxLNlQwylcHwoLOg/lW0=
-github.com/goreleaser/nfpm/v2 v2.14.0/go.mod h1:46Gk7U5PrLL34NxrsorlkiavoX5gwyGOYQSMaPn5xdw=
+github.com/goreleaser/nfpm/v2 v2.15.0 h1:09DHH3L1q2cSani4MRu096PL56IxRgmCe9RECU/zbcM=
+github.com/goreleaser/nfpm/v2 v2.15.0/go.mod h1:fpR40o+Wq6aeE5xoSZY3E23r06aLntuYIr2zBCJ1x1o=
 github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
