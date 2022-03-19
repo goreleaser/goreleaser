@@ -746,9 +746,6 @@
 						},
 						"type": "array"
 					},
-					"use_buildx": {
-						"type": "boolean"
-					},
 					"use": {
 						"type": "string"
 					}
@@ -1016,6 +1013,9 @@
 					},
 					"gobinary": {
 						"type": "string"
+					},
+					"mod": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1099,6 +1099,9 @@
 						"type": "array"
 					},
 					"goarm": {
+						"type": "string"
+					},
+					"service": {
 						"type": "string"
 					}
 				},
