@@ -138,6 +138,15 @@ uploads:
     - foo
     - bar
 
+    # File extensions to filter for.
+    # This might be useful if you have multiple packages with different
+    # extensions with the same ID, and need to upload each extension to
+    # a different place (e.g. nFPM packages).
+    # Default is empty.
+    exts:
+    - deb
+    - rpm
+
     # Upload mode. Valid options are `binary` and `archive`.
     # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name are not supported.
     # In that case these variables are empty.

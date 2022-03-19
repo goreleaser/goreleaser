@@ -121,19 +121,39 @@ artifactories:
   -
     # Unique name of your artifactory instance. Used to identify the instance
     name: production
+
+    # IDs of the artifacts you want to upload.
+    ids:
+    - foo
+    - bar
+
+    # File extensions to filter for.
+    # This might be useful if you have multiple packages with different
+    # extensions with the same ID, and need to upload each extension to
+    # a different place (e.g. nFPM packages).
+    # Default is empty.
+    exts:
+    - deb
+    - rpm
+
     # Upload mode. Valid options are `binary` and `archive`.
     # If mode is `archive`, variables _Os_, _Arch_ and _Arm_ for target name are not supported.
     # In that case these variables are empty.
     # Default is `archive`.
     mode: archive
+
     # URL of your Artifactory instance + path to deploy to
     target: http://artifacts.company.com:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
+
     # User that will be used for the deployment
     username: deployuser
+
     # Upload checksums (defaults to false)
     checksum: true
+
     # Upload signatures (defaults to false)
     signature: true
+
     # Certificate chain used to validate server certificates
     trusted_certificates: |
       -----BEGIN CERTIFICATE-----
@@ -144,3 +164,6 @@ artifactories:
 ```
 
 These settings should allow you to push your artifacts into multiple Artifactories.
+
+!!! tip
+    Learn more about the [name template engine](/customization/templates/).

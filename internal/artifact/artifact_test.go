@@ -380,6 +380,42 @@ func TestByIDs(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByIDs("foo", "bar")).items, 4)
 }
 
+func TestByExts(t *testing.T) {
+	data := []*Artifact{
+		{
+			Name: "foo",
+			Extra: map[string]interface{}{
+				ExtraExt: "deb",
+			},
+		},
+		{
+			Name: "bar",
+			Extra: map[string]interface{}{
+				ExtraExt: "deb",
+			},
+		},
+		{
+			Name: "foobar",
+			Extra: map[string]interface{}{
+				ExtraExt: "rpm",
+			},
+		},
+		{
+			Name:  "check",
+			Extra: map[string]interface{}{},
+		},
+	}
+	artifacts := New()
+	for _, a := range data {
+		artifacts.Add(a)
+	}
+
+	require.Len(t, artifacts.Filter(ByExt("deb")).items, 2)
+	require.Len(t, artifacts.Filter(ByExt("rpm")).items, 1)
+	require.Len(t, artifacts.Filter(ByExt("rpm", "deb")).items, 3)
+	require.Len(t, artifacts.Filter(ByExt("foo")).items, 0)
+}
+
 func TestByFormats(t *testing.T) {
 	data := []*Artifact{
 		{

@@ -176,6 +176,9 @@ func Upload(ctx *context.Context, uploads []config.Upload, kind string, check Re
 		if len(upload.IDs) > 0 {
 			filter = artifact.And(filter, artifact.ByIDs(upload.IDs...))
 		}
+		if len(upload.Exts) > 0 {
+			filter = artifact.And(filter, artifact.ByExt(upload.Exts...))
+		}
 		if err := uploadWithFilter(ctx, &upload, filter, kind, check); err != nil {
 			return err
 		}
