@@ -852,6 +852,7 @@ type Blob struct {
 type Upload struct {
 	Name               string            `yaml:"name,omitempty"`
 	IDs                []string          `yaml:"ids,omitempty"`
+	Exts               []string          `yaml:"exts,omitempty"`
 	Target             string            `yaml:"target,omitempty"`
 	Username           string            `yaml:"username,omitempty"`
 	Mode               string            `yaml:"mode,omitempty"`

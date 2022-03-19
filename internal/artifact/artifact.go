@@ -379,6 +379,18 @@ func ByIDs(ids ...string) Filter {
 	return Or(filters...)
 }
 
+// ByExt filter artifact by their 'Ext' extra field.
+func ByExt(exts ...string) Filter {
+	filters := make([]Filter, 0, len(exts))
+	for _, ext := range exts {
+		ext := ext
+		filters = append(filters, func(a *Artifact) bool {
+			return a.ExtraOr(ExtraExt, "") == ext
+		})
+	}
+	return Or(filters...)
+}
+
 // ByBinaryLikeArtifacts filter artifacts down to artifacts that are Binary, UploadableBinary, or UniversalBinary,
 // deduplicating artifacts by path (preferring UploadableBinary over all others). Note: this filter is unique in the
 // sense that it cannot act in isolation of the state of other artifacts; the filter requires the whole list of

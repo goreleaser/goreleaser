@@ -139,9 +139,6 @@ type check struct {
 
 func checks(checks ...check) func(rs []*h.Request) error {
 	return func(rs []*h.Request) error {
-		if len(rs) != len(checks) {
-			return fmt.Errorf("expected %d requests, got %d", len(checks), len(rs))
-		}
 		for _, r := range rs {
 			found := false
 			for _, c := range checks {
@@ -157,6 +154,9 @@ func checks(checks ...check) func(rs []*h.Request) error {
 			if !found {
 				return fmt.Errorf("check not found for request %+v", r)
 			}
+		}
+		if len(rs) != len(checks) {
+			return fmt.Errorf("expected %d requests, got %d", len(checks), len(rs))
 		}
 		return nil
 	}
@@ -260,7 +260,8 @@ func TestUpload(t *testing.T) {
 			Path:   file,
 			Type:   a.typ,
 			Extra: map[string]interface{}{
-				artifact.ExtraID: "foo",
+				artifact.ExtraID:  "foo",
+				artifact.ExtraExt: a.ext,
 			},
 		})
 	}
@@ -548,6 +549,22 @@ func TestUpload(t *testing.T) {
 				}
 			},
 			checks(),
+		},
+		{
+			"filtering-by-ext", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:         ModeArchive,
+					Name:         "a",
+					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username:     "u3",
+					TrustedCerts: cert(s),
+					Exts:         []string{"deb", "rpm"},
+				}
+			},
+			checks(
+				check{"/blah/2.1.0/a.deb", "u3", "x", content, map[string]string{}},
+			),
 		},
 	}
 
