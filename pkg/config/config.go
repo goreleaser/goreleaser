@@ -29,6 +29,7 @@ type GitLabURLs struct {
 	Download           string `yaml:"download,omitempty"`
 	SkipTLSVerify      bool   `yaml:"skip_tls_verify,omitempty"`
 	UsePackageRegistry bool   `yaml:"use_package_registry,omitempty"`
+	UseJobToken        bool   `yaml:"use_job_token,omitempty"`
 }
 
 // GiteaURLs holds the URLs to be used when using gitea.
