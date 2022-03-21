@@ -23,7 +23,7 @@ jobs:
       - uses: arduino/setup-task@accf38bba955639d21816bb68775e5c48c482182 # v1
       - run: task docs:generate
       - run: task schema:generate
-      - uses: stefanzweifel/git-auto-commit-action@5804e42f86b1891093b151b6c4e78e759c746c4d # v4
+      - uses: stefanzweifel/git-auto-commit-action@c4b132ec2c77a21fcab564bd3c92610cee84b894 # v4
         with:
           commit_message: "docs: update"
           branch: main
