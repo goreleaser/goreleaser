@@ -2710,6 +2710,12 @@
 						},
 						"type": "array"
 					},
+					"exts": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"target": {
 						"type": "string"
 					},
