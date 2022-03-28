@@ -21,7 +21,7 @@ require (
 	github.com/google/go-github/v43 v43.0.0
 	github.com/google/uuid v1.3.0
 	github.com/goreleaser/fileglob v1.3.0
-	github.com/goreleaser/nfpm/v2 v2.15.0
+	github.com/goreleaser/nfpm/v2 v2.15.1
 	github.com/imdario/mergo v0.3.12
 	github.com/jarcoal/httpmock v1.1.0
 	github.com/klauspost/pgzip v1.2.5
