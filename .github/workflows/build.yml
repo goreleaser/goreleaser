@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
         with:
           fetch-depth: 0
-      - uses: arduino/setup-task@accf38bba955639d21816bb68775e5c48c482182 # v1
+      - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -49,7 +49,7 @@ jobs:
       - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
         with:
           fetch-depth: 0
-      - uses: arduino/setup-task@accf38bba955639d21816bb68775e5c48c482182 # v1
+      - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
