@@ -5,11 +5,11 @@ import (
 	"os"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v2"
 )
 
 func TestStringer(t *testing.T) {

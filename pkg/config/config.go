@@ -4,7 +4,6 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -1075,11 +1074,7 @@ func (a *SlackBlock) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 
-	// We want the untyped structure to be used from json as well.
-	// This requires to transform untyped map[interface{}]interface{} in map[string]interface{}.
-	//
-	// Notice that this hack is no more needed with yaml.v3
-	a.Internal = jsonableValue(yamlv2)
+	a.Internal = yamlv2
 
 	return nil
 }
@@ -1101,7 +1096,7 @@ func (a *SlackAttachment) UnmarshalYAML(unmarshal func(interface{}) error) error
 		return err
 	}
 
-	a.Internal = jsonableValue(yamlv2)
+	a.Internal = yamlv2
 
 	return nil
 }
@@ -1109,33 +1104,4 @@ func (a *SlackAttachment) UnmarshalYAML(unmarshal func(interface{}) error) error
 // MarshalJSON marshals a slack attachment as JSON.
 func (a SlackAttachment) MarshalJSON() ([]byte, error) {
 	return json.Marshal(a.Internal)
-}
-
-func jsonableArray(in []interface{}) []interface{} {
-	result := make([]interface{}, len(in))
-	for i, v := range in {
-		result[i] = jsonableValue(v)
-	}
-
-	return result
-}
-
-func jsonableMap(in map[interface{}]interface{}) map[string]interface{} {
-	result := make(map[string]interface{})
-	for k, v := range in {
-		result[fmt.Sprintf("%v", k)] = jsonableValue(v)
-	}
-
-	return result
-}
-
-func jsonableValue(v interface{}) interface{} {
-	switch v := v.(type) {
-	case []interface{}:
-		return jsonableArray(v)
-	case map[interface{}]interface{}:
-		return jsonableMap(v)
-	default:
-		return v
-	}
 }
