@@ -11,8 +11,8 @@ import (
 	"github.com/alecthomas/jsonschema"
 
 	"github.com/apex/log"
+	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/nfpm/v2/files"
-	yaml "gopkg.in/yaml.v2"
 )
 
 // GitHubURLs holds the URLs to be used when using github enterprise.
