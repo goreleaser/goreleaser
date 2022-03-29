@@ -273,7 +273,7 @@ func TestRunPipeMetadata(t *testing.T) {
 			RestartDelay:     "42ms",
 			Slots:            []string{"foo_slot"},
 			Sockets: map[string]interface{}{
-				"sock": map[interface{}]interface{}{
+				"sock": map[string]interface{}{
 					"listen-stream": "$SNAP_COMMON/socket",
 					"socket-group":  "socket-group",
 					"socket-mode":   0o640,
@@ -287,7 +287,7 @@ func TestRunPipeMetadata(t *testing.T) {
 			WatchdogTimeout: "45ms",
 		},
 	}, metadata.Apps)
-	require.Equal(t, map[interface{}]interface{}{"read": []interface{}{"$HOME/test"}}, metadata.Plugs["personal-files"])
+	require.Equal(t, map[string]interface{}{"read": []interface{}{"$HOME/test"}}, metadata.Plugs["personal-files"])
 	require.Equal(t, "$SNAP_DATA/etc", metadata.Layout["/etc/testprojectname"].Bind)
 }
 

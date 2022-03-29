@@ -51,7 +51,7 @@ func TestYAML(t *testing.T) {
 	for _, toPin := range []struct {
 		Title        string
 		InputYAML    []byte
-		ExpectedYAML []byte            // optional: when marshalled YAML is expected to differ from raw input (e.g. on bool flags)
+		ExpectedYAML []byte            // optional: when marshaled YAML is expected to differ from raw input (e.g. on bool flags)
 		Expected     interfaceOrObject // maybe either untyped interface{} or yamlObject struct with struct tags
 		ExpectError  bool
 		WantsStrict  bool // apply Strict mode
