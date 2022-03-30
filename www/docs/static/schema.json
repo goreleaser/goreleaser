@@ -2170,6 +2170,44 @@
 					},
 					"icon_url": {
 						"type": "string"
+					},
+					"blocks": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/SlackBlock"
+						},
+						"type": "array"
+					},
+					"attachments": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/SlackAttachment"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"SlackAttachment": {
+				"required": [
+					"Internal"
+				],
+				"properties": {
+					"Internal": {
+						"additionalProperties": true
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"SlackBlock": {
+				"required": [
+					"Internal"
+				],
+				"properties": {
+					"Internal": {
+						"additionalProperties": true
 					}
 				},
 				"additionalProperties": false,
