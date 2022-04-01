@@ -48,7 +48,7 @@ jobs:
           version: latest
           args: release --rm-dist
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
           # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
 ```
