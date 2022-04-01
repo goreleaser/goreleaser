@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/stretchr/testify/require"
-	yaml "gopkg.in/yaml.v2"
 )
 
 func TestArchiveFiles_justString(t *testing.T) {

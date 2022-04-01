@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
         with:
           fetch-depth: 0
-      - uses: arduino/setup-task@accf38bba955639d21816bb68775e5c48c482182 # v1
+      - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -49,7 +49,7 @@ jobs:
       - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
         with:
           fetch-depth: 0
-      - uses: arduino/setup-task@accf38bba955639d21816bb68775e5c48c482182 # v1
+      - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -81,7 +81,7 @@ jobs:
             ./dist/*.apk
           key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}-${{ hashFiles('**/go.sum') }}
       - uses: sigstore/cosign-installer@ab3bb6a537fb08a1b78f7d1175fff799ca6850a3 # v2.1.0
-      - uses: anchore/sbom-action/download-syft@ce4a7cf05d7b684693d7b6bba97bfbee56806edb # v0.7.0
+      - uses: anchore/sbom-action/download-syft@2ad78246293830258e98b4e707b1fb02d0242828 # v0.7.0
       - name: setup-validate-krew-manifest
         # TODO: replace this once https://github.com/kubernetes-sigs/krew/pull/736 is merged
         run: go install github.com/caarlos0/krew/cmd/validate-krew-manifest@fork
