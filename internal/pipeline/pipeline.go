@@ -75,14 +75,14 @@ var Pipeline = append(
 	sourcearchive.Pipe{}, // archive the source code using git-archive
 	nfpm.Pipe{},          // archive via fpm (deb, rpm) using "native" go impl
 	snapcraft.Pipe{},     // archive via snapcraft (snap)
+	sbom.Pipe{},          // create SBOMs of artifacts
+	checksums.Pipe{},     // checksums of the files
+	sign.Pipe{},          // sign artifacts
 	aur.Pipe{},           // create arch linux aur pkgbuild
 	brew.Pipe{},          // create brew tap
 	gofish.Pipe{},        // create gofish rig
 	krew.Pipe{},          // krew plugins
 	scoop.Pipe{},         // create scoop buckets
-	sbom.Pipe{},          // create SBOMs of artifacts
-	checksums.Pipe{},     // checksums of the files
-	sign.Pipe{},          // sign artifacts
 	docker.Pipe{},        // create and push docker images
 	metadata.Pipe{},      // creates a metadata.json and an artifacts.json files in the dist folder
 	publish.Pipe{},       // publishes artifacts

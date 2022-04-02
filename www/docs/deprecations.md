@@ -36,9 +36,16 @@ Description.
 
 -->
 
+### rigs
+
+> since 2022-03-21 (v1.8.0)
+
+GoFish was deprecated by their authors, therefore, we're removing its
+support from GoReleaser too.
+
 ### dockers.use: buildpacks
 
-> since 2022-03-16 (v1.6.0)
+> since 2022-03-16 (v1.7.0)
 
 This will be removed soon due to some issues:
 

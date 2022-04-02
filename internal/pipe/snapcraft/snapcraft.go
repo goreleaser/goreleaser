@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/apex/log"
-	"gopkg.in/yaml.v2"
+	"github.com/goreleaser/goreleaser/internal/yaml"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/gio"

@@ -163,14 +163,6 @@ brews:
       fish_completion.install "completions/goreleaser.fish"
       man1.install "manpages/goreleaser.1.gz"
 
-rigs:
-  - rig:
-      owner: goreleaser
-      name: fish-food
-    homepage:  https://goreleaser.com
-    description: Deliver Go binaries as fast and easily as possible
-    license: MIT
-
 aurs:
   - homepage:  https://goreleaser.com
     description: Deliver Go binaries as fast and easily as possible

@@ -3,7 +3,7 @@
 ## API Token
 
 GoReleaser requires an API token with the `api` scope selected to deploy the artifacts to GitLab.
-That token can either be a Persoanl or a Project one.
+That token can either be a Personal or a Project one.
 
 This token should be added to the environment variables as `GITLAB_TOKEN`.
 

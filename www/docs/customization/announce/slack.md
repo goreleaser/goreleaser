@@ -30,6 +30,23 @@ announce:
 
     # URL to an image to use as the icon for this message.
     icon_url: ''
+
+    # Blocks for advanced formatting, see: https://api.slack.com/messaging/webhooks#advanced_message_formatting
+    # and https://api.slack.com/messaging/composing/layouts#adding-blocks.
+    #
+    # Templating is possible inside this structure.
+    #
+    # Attention: goreleaser doesn't check the full structure of the Slack API: please make sure that
+    # your configuration for advanced message formatting abides by this API.
+    blocks: []
+
+    # Attachments, see: https://api.slack.com/reference/messaging/attachments
+    #
+    # Templating is possible inside this structure.
+    #
+    # Attention: goreleaser doesn't check the full structure of the Slack API: please make sure that
+    # your configuration for advanced message formatting abides by this API.
+    attachments: []
 ```
 
 !!! tip
