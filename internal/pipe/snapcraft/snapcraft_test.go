@@ -54,8 +54,8 @@ func TestRunPipe(t *testing.T) {
 		Snapcrafts: []config.Snapcraft{
 			{
 				NameTemplate:     "foo_{{.Arch}}",
-				Summary:          "test summary {{.Arch}}",
-				Description:      "test description {{.Arch}}",
+				Summary:          "test summary {{.ProjectName}}",
+				Description:      "test description {{.ProjectName}}",
 				Publish:          true,
 				Builds:           []string{"foo"},
 				ChannelTemplates: []string{"stable"},
