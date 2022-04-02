@@ -44,7 +44,12 @@ func Notice(ctx *context.Context, property string) {
 func NoticeCustom(ctx *context.Context, property, tmpl string) {
 	ctx.Deprecated = true
 	// XXX: this is very ugly!
-	w := log.Log.(*log.Logger).Handler.(*cli.Handler).Writer
+	oldHandler, ok := log.Log.(*log.Logger).Handler.(*cli.Handler)
+	if !ok {
+		// probably in a test, and the cli logger wasn't set
+		return
+	}
+	w := oldHandler.Writer
 	handler := cli.New(w)
 	handler.Padding = cli.Default.Padding + 3
 	log := &log.Logger{
