@@ -144,7 +144,7 @@ type GoFish struct {
 	URLTemplate           string       `yaml:"url_template,omitempty"`
 	IDs                   []string     `yaml:"ids,omitempty"`
 	Goarm                 string       `yaml:"goarm,omitempty"`
-}
+} // deprecated
 
 // Homebrew contains the brew section.
 type Homebrew struct {
@@ -893,7 +893,7 @@ type Project struct {
 	Release         Release          `yaml:"release,omitempty"`
 	Milestones      []Milestone      `yaml:"milestones,omitempty"`
 	Brews           []Homebrew       `yaml:"brews,omitempty"`
-	Rigs            []GoFish         `yaml:"rigs,omitempty"`
+	Rigs            []GoFish         `yaml:"rigs,omitempty"` // deprecated
 	AURs            []AUR            `yaml:"aurs,omitempty"`
 	Krews           []Krew           `yaml:"krews,omitempty"`
 	Scoop           Scoop            `yaml:"scoop,omitempty"`
