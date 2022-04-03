@@ -91,6 +91,13 @@ builds:
       - 6
       - 7
 
+    # GOAMD64 to build when GOARCH is amd64.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    # Default is only v2.
+    goamd64:
+      - v2
+      - v3
+
     # GOMIPS and GOMIPS64 to build when GOARCH is mips, mips64, mipsle or mips64le.
     # For more info refer to: https://golang.org/doc/install/source#environment
     # Default is only hardfloat.
@@ -110,8 +117,8 @@ builds:
         gomips: hardfloat
 
     # Optionally override the matrix generation and specify only the final list of targets.
-    # Format is `{goos}_{goarch}` with optionally a suffix with `_{goarm}` or `_{gomips}`.
-    # This overrides `goos`, `goarch`, `goarm`, `gomips` and `ignores`.
+    # Format is `{goos}_{goarch}` with optionally a suffix with `_{goarm}`, `_{goamd64}` or `_{gomips}`.
+    # This overrides `goos`, `goarch`, `goarm`, `gomips`, `goamd64` and `ignores`.
     targets:
       - linux_amd64
       - darwin_arm64

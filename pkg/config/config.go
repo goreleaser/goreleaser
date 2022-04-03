@@ -220,10 +220,11 @@ type BuildHooks struct { // renamed on pro
 
 // IgnoredBuild represents a build ignored by the user.
 type IgnoredBuild struct {
-	Goos   string `yaml:"goos,omitempty"`
-	Goarch string `yaml:"goarch,omitempty"`
-	Goarm  string `yaml:"goarm,omitempty"`
-	Gomips string `yaml:"gomips,omitempty"`
+	Goos    string `yaml:"goos,omitempty"`
+	Goarch  string `yaml:"goarch,omitempty"`
+	Goarm   string `yaml:"goarm,omitempty"`
+	Gomips  string `yaml:"gomips,omitempty"`
+	Goamd64 string `yaml:"goamd64,omitempty"`
 }
 
 // StringArray is a wrapper for an array of strings.
@@ -295,6 +296,7 @@ type Build struct {
 	Goarch          []string        `yaml:"goarch,omitempty"`
 	Goarm           []string        `yaml:"goarm,omitempty"`
 	Gomips          []string        `yaml:"gomips,omitempty"`
+	Goamd64         []string        `yaml:"goamd64,omitempty"`
 	Targets         []string        `yaml:"targets,omitempty"`
 	Ignore          []IgnoredBuild  `yaml:"ignore,omitempty"`
 	Dir             string          `yaml:"dir,omitempty"`
@@ -319,6 +321,7 @@ type BuildDetailsOverride struct {
 	Goarch       string           `yaml:"goarch,omitempty"`
 	Goarm        string           `yaml:"goarm,omitempty"`
 	Gomips       string           `yaml:"gomips,omitempty"`
+	Goamd64      string           `yaml:"goamd64,omitempty"`
 	BuildDetails `yaml:",inline"` // nolint: tagliatelle
 }
 

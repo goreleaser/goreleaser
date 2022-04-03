@@ -118,7 +118,7 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 }
 
 func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*artifact.Artifact) error {
-	arch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips
+	arch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips // TODO: goamd64 here too?
 
 	overridden, err := mergeOverrides(fpm, format)
 	if err != nil {

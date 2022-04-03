@@ -28,14 +28,15 @@ func For(name string) Builder {
 
 // Options to be passed down to a builder.
 type Options struct {
-	Name   string
-	Path   string
-	Ext    string
-	Target string
-	Goos   string
-	Goarch string
-	Goarm  string
-	Gomips string
+	Name    string
+	Path    string
+	Ext     string
+	Target  string
+	Goos    string
+	Goarch  string
+	Goamd64 string
+	Goarm   string
+	Gomips  string
 }
 
 // Builder defines a builder.

@@ -39,6 +39,10 @@ func TestAllBuildTargets(t *testing.T) {
 			"hardfloat",
 			"softfloat",
 		},
+		Goamd64: []string{
+			"v2",
+			"v3",
+		},
 		Ignore: []config.IgnoredBuild{
 			{
 				Goos:   "linux",
@@ -62,7 +66,8 @@ func TestAllBuildTargets(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, []string{
 			"linux_386",
-			"linux_amd64",
+			"linux_amd64_v2",
+			"linux_amd64_v3",
 			"linux_arm_6",
 			"linux_arm64",
 			"linux_mips_hardfloat",
@@ -72,18 +77,22 @@ func TestAllBuildTargets(t *testing.T) {
 			"linux_mipsle_softfloat",
 			"linux_mips64le_hardfloat",
 			"linux_riscv64",
-			"darwin_amd64",
+			"darwin_amd64_v2",
+			"darwin_amd64_v3",
 			"darwin_arm64",
 			"freebsd_386",
-			"freebsd_amd64",
+			"freebsd_amd64_v2",
+			"freebsd_amd64_v3",
 			"freebsd_arm_6",
 			"freebsd_arm_7",
 			"freebsd_arm64",
 			"openbsd_386",
-			"openbsd_amd64",
+			"openbsd_amd64_v2",
+			"openbsd_amd64_v3",
 			"openbsd_arm64",
 			"windows_386",
-			"windows_amd64",
+			"windows_amd64_v2",
+			"windows_amd64_v3",
 			"windows_arm_6",
 			"windows_arm_7",
 			"js_wasm",
@@ -95,7 +104,8 @@ func TestAllBuildTargets(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, []string{
 			"linux_386",
-			"linux_amd64",
+			"linux_amd64_v2",
+			"linux_amd64_v3",
 			"linux_arm_6",
 			"linux_arm64",
 			"linux_mips_hardfloat",
@@ -105,18 +115,22 @@ func TestAllBuildTargets(t *testing.T) {
 			"linux_mipsle_softfloat",
 			"linux_mips64le_hardfloat",
 			"linux_riscv64",
-			"darwin_amd64",
+			"darwin_amd64_v2",
+			"darwin_amd64_v3",
 			"darwin_arm64",
 			"freebsd_386",
-			"freebsd_amd64",
+			"freebsd_amd64_v2",
+			"freebsd_amd64_v3",
 			"freebsd_arm_6",
 			"freebsd_arm_7",
 			"freebsd_arm64",
 			"openbsd_386",
-			"openbsd_amd64",
+			"openbsd_amd64_v2",
+			"openbsd_amd64_v3",
 			"openbsd_arm64",
 			"windows_386",
-			"windows_amd64",
+			"windows_amd64_v2",
+			"windows_amd64_v3",
 			"windows_arm_6",
 			"windows_arm_7",
 			"windows_arm64",
@@ -126,8 +140,9 @@ func TestAllBuildTargets(t *testing.T) {
 
 	t.Run("invalid goos", func(t *testing.T) {
 		_, err := matrix(config.Build{
-			Goos:   []string{"invalid"},
-			Goarch: []string{"amd64"},
+			Goos:    []string{"invalid"},
+			Goarch:  []string{"amd64"},
+			Goamd64: []string{"v2"},
 		}, []byte("go version go1.18.0"))
 		require.EqualError(t, err, "invalid goos: invalid")
 	})
@@ -156,6 +171,15 @@ func TestAllBuildTargets(t *testing.T) {
 			Gomips: []string{"invalid"},
 		}, []byte("go version go1.18.0"))
 		require.EqualError(t, err, "invalid gomips: invalid")
+	})
+
+	t.Run("invalid goamd64", func(t *testing.T) {
+		_, err := matrix(config.Build{
+			Goos:    []string{"linux"},
+			Goarch:  []string{"amd64"},
+			Goamd64: []string{"invalid"},
+		}, []byte("go version go1.18.0"))
+		require.EqualError(t, err, "invalid goamd64: invalid")
 	})
 }
 
@@ -212,7 +236,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 	}
 	for _, p := range platforms {
 		t.Run(fmt.Sprintf("%v %v valid=%v", p.os, p.arch, p.valid), func(t *testing.T) {
-			require.Equal(t, p.valid, valid(target{p.os, p.arch, "", ""}))
+			require.Equal(t, p.valid, valid(target{p.os, p.arch, "", "", ""}))
 		})
 	}
 }
@@ -222,27 +246,30 @@ func TestList(t *testing.T) {
 		targets, err := List(config.Build{
 			Goos:     []string{"linux"},
 			Goarch:   []string{"amd64"},
+			Goamd64:  []string{"v2"},
 			GoBinary: "go",
 		})
 		require.NoError(t, err)
-		require.Equal(t, []string{"linux_amd64"}, targets)
+		require.Equal(t, []string{"linux_amd64_v2"}, targets)
 	})
 
 	t.Run("success with dir", func(t *testing.T) {
 		targets, err := List(config.Build{
 			Goos:     []string{"linux"},
 			Goarch:   []string{"amd64"},
+			Goamd64:  []string{"v2"},
 			GoBinary: "go",
 			Dir:      "./testdata",
 		})
 		require.NoError(t, err)
-		require.Equal(t, []string{"linux_amd64"}, targets)
+		require.Equal(t, []string{"linux_amd64_v2"}, targets)
 	})
 
 	t.Run("error with dir", func(t *testing.T) {
 		_, err := List(config.Build{
 			Goos:     []string{"linux"},
 			Goarch:   []string{"amd64"},
+			Goamd64:  []string{"v2"},
 			GoBinary: "go",
 			Dir:      "targets.go",
 		})
@@ -253,6 +280,7 @@ func TestList(t *testing.T) {
 		_, err := List(config.Build{
 			Goos:     []string{"linux"},
 			Goarch:   []string{"amd64"},
+			Goamd64:  []string{"v2"},
 			GoBinary: "nope",
 		})
 		require.EqualError(t, err, `unable to determine version of go binary (nope): exec: "nope": executable file not found in $PATH`)

@@ -45,6 +45,7 @@ func TestWithArtifact(t *testing.T) {
 		"amd64":                            "{{.Arch}}",
 		"6":                                "{{.Arm}}",
 		"softfloat":                        "{{.Mips}}",
+		"v3":                               "{{.Amd64}}",
 		"1.2.3":                            "{{.Version}}",
 		"v1.2.3":                           "{{.Tag}}",
 		"1-2-3":                            "{{.Major}}-{{.Minor}}-{{.Patch}}",
@@ -78,11 +79,12 @@ func TestWithArtifact(t *testing.T) {
 			t.Parallel()
 			result, err := New(ctx).WithArtifact(
 				&artifact.Artifact{
-					Name:   "not-this-binary",
-					Goarch: "amd64",
-					Goos:   "linux",
-					Goarm:  "6",
-					Gomips: "softfloat",
+					Name:    "not-this-binary",
+					Goarch:  "amd64",
+					Goos:    "linux",
+					Goarm:   "6",
+					Gomips:  "softfloat",
+					Goamd64: "v3",
 					Extra: map[string]interface{}{
 						artifact.ExtraBinary: "binary",
 					},
