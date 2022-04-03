@@ -54,8 +54,8 @@ func TestRunPipe(t *testing.T) {
 		Snapcrafts: []config.Snapcraft{
 			{
 				NameTemplate:     "foo_{{.Arch}}",
-				Summary:          "test summary",
-				Description:      "test description",
+				Summary:          "test summary {{.ProjectName}}",
+				Description:      "test description {{.ProjectName}}",
 				Publish:          true,
 				Builds:           []string{"foo"},
 				ChannelTemplates: []string{"stable"},
@@ -85,6 +85,40 @@ func TestRunPipe(t *testing.T) {
 	require.NoError(t, Pipe{}.Run(ctx))
 	list := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List()
 	require.Len(t, list, 9)
+}
+
+func TestBadTemolate(t *testing.T) {
+	testlib.CheckPath(t, "snapcraft")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate:     "foo_{{.Arch}}",
+				Publish:          true,
+				Builds:           []string{"foo"},
+				ChannelTemplates: []string{"stable"},
+			},
+		},
+	})
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Version = "1.2.3"
+	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"))
+
+	t.Run("description", func(t *testing.T) {
+		ctx.Config.Snapcrafts[0].Description = "{{.Bad}}"
+		ctx.Config.Snapcrafts[0].Summary = "summary"
+		require.Error(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("summary", func(t *testing.T) {
+		ctx.Config.Snapcrafts[0].Description = "description"
+		ctx.Config.Snapcrafts[0].Summary = "{{.Bad}}"
+		require.Error(t, Pipe{}.Run(ctx))
+	})
 }
 
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
