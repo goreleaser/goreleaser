@@ -237,14 +237,22 @@ func TestGroupByID(t *testing.T) {
 func TestGroupByPlatform(t *testing.T) {
 	data := []*Artifact{
 		{
-			Name:   "foo",
-			Goos:   "linux",
-			Goarch: "amd64",
+			Name:    "foo",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v2",
 		},
 		{
-			Name:   "bar",
-			Goos:   "linux",
-			Goarch: "amd64",
+			Name:    "bar",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v2",
+		},
+		{
+			Name:    "bar",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v3",
 		},
 		{
 			Name:   "foobar",
@@ -275,7 +283,8 @@ func TestGroupByPlatform(t *testing.T) {
 	}
 
 	groups := artifacts.GroupByPlatform()
-	require.Len(t, groups["linuxamd64"], 2)
+	require.Len(t, groups["linuxamd64v2"], 2)
+	require.Len(t, groups["linuxamd64v3"], 1)
 	require.Len(t, groups["linuxarm6"], 1)
 	require.Len(t, groups["linuxmipssoftfloat"], 1)
 	require.Len(t, groups["linuxmipshardfloat"], 1)
@@ -885,4 +894,10 @@ func Test_ByBinaryLikeArtifacts(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestArtifactStringer(t *testing.T) {
+	require.Equal(t, "foobar", Artifact{
+		Name: "foobar",
+	}.String())
 }
