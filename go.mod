@@ -32,7 +32,7 @@ require (
 	github.com/slack-go/slack v0.10.2
 	github.com/stretchr/testify v1.7.1
 	github.com/ulikunitz/xz v0.5.10
-	github.com/xanzy/go-gitlab v0.61.0
+	github.com/xanzy/go-gitlab v0.62.0
 	gocloud.dev v0.25.0
 	golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29
 	golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
