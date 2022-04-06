@@ -86,7 +86,7 @@ jobs:
         # TODO: replace this once https://github.com/kubernetes-sigs/krew/pull/736 is merged
         run: go install github.com/caarlos0/krew/cmd/validate-krew-manifest@fork
       - run: task ci
-      - uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b # v2
+      - uses: codecov/codecov-action@e3c560433a6cc60aec8812599b7844a7b4fa0d71 # v3
         with:
           file: ./coverage.txt
       - run: ./goreleaser check
