@@ -346,6 +346,13 @@ func ByGoarm(s string) Filter {
 	}
 }
 
+// ByGoamd64 is a predefined filter that filters by the given goamd64.
+func ByGoamd64(s string) Filter {
+	return func(a *Artifact) bool {
+		return a.Goamd64 == s
+	}
+}
+
 // ByType is a predefined filter that filters by the given type.
 func ByType(t Type) Filter {
 	return func(a *Artifact) bool {

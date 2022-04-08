@@ -48,6 +48,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Goarch == "" {
 			docker.Goarch = "amd64"
 		}
+		if docker.Goamd64 == "" {
+			docker.Goamd64 = "v2"
+		}
 		if docker.Dockerfile == "" {
 			docker.Dockerfile = "Dockerfile"
 		}
@@ -105,6 +108,7 @@ func (Pipe) Run(ctx *context.Context) error {
 				artifact.ByGoos(docker.Goos),
 				artifact.ByGoarch(docker.Goarch),
 				artifact.ByGoarm(docker.Goarm),
+				artifact.ByGoamd64(docker.Goamd64),
 				artifact.Or(
 					artifact.ByType(artifact.Binary),
 					artifact.ByType(artifact.LinuxPackage),

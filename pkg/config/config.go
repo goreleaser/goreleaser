@@ -785,6 +785,7 @@ type Docker struct {
 	Goos               string   `yaml:"goos,omitempty"`
 	Goarch             string   `yaml:"goarch,omitempty"`
 	Goarm              string   `yaml:"goarm,omitempty"`
+	Goamd64            string   `yaml:"goamd64,omitempty"`
 	Dockerfile         string   `yaml:"dockerfile,omitempty"`
 	ImageTemplates     []string `yaml:"image_templates,omitempty"`
 	SkipPush           string   `yaml:"skip_push,omitempty"`
