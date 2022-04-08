@@ -24,8 +24,9 @@ import (
 )
 
 const (
-	defaultNameTemplate       = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
-	defaultBinaryNameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+	defaultNameTemplateSuffix = `{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if eq .Amd64 "v3" }}v3{{ end }}`
+	defaultNameTemplate       = "{{ .ProjectName }}_" + defaultNameTemplateSuffix
+	defaultBinaryNameTemplate = "{{ .Binary }}_" + defaultNameTemplateSuffix
 )
 
 // ErrArchiveDifferentBinaryCount happens when an archive uses several builds which have different goos/goarch/etc sets,

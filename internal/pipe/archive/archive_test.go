@@ -39,7 +39,7 @@ func TestRunPipe(t *testing.T) {
 		t.Run("Archive format "+format, func(t *testing.T) {
 			dist := filepath.Join(folder, format+"_dist")
 			require.NoError(t, os.Mkdir(dist, 0o755))
-			for _, arch := range []string{"darwinamd64", "darwinall", "linux386", "linuxarm7", "linuxmipssoftfloat"} {
+			for _, arch := range []string{"darwinamd64v2", "darwinall", "linux386", "linuxarm7", "linuxmipssoftfloat", "linuxamd64v3"} {
 				createFakeBinary(t, dist, arch, "bin/mybin")
 			}
 			createFakeBinary(t, dist, "windowsamd64", "bin/mybin.exe")
@@ -88,11 +88,12 @@ func TestRunPipe(t *testing.T) {
 				},
 			}
 			darwinBuild := &artifact.Artifact{
-				Goos:   "darwin",
-				Goarch: "amd64",
-				Name:   "bin/mybin",
-				Path:   filepath.Join(dist, "darwinamd64", "bin", "mybin"),
-				Type:   artifact.Binary,
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v2",
+				Name:    "bin/mybin",
+				Path:    filepath.Join(dist, "darwinamd64v2", "bin", "mybin"),
+				Type:    artifact.Binary,
 				Extra: map[string]interface{}{
 					artifact.ExtraBinary: "bin/mybin",
 					artifact.ExtraID:     "default",
@@ -134,14 +135,27 @@ func TestRunPipe(t *testing.T) {
 				},
 			}
 			windowsBuild := &artifact.Artifact{
-				Goos:   "windows",
-				Goarch: "amd64",
-				Name:   "bin/mybin.exe",
-				Path:   filepath.Join(dist, "windowsamd64", "bin", "mybin.exe"),
-				Type:   artifact.Binary,
+				Goos:    "windows",
+				Goarch:  "amd64",
+				Goamd64: "v2",
+				Name:    "bin/mybin.exe",
+				Path:    filepath.Join(dist, "windowsamd64", "bin", "mybin.exe"),
+				Type:    artifact.Binary,
 				Extra: map[string]interface{}{
 					artifact.ExtraBinary: "mybin",
 					artifact.ExtraExt:    ".exe",
+					artifact.ExtraID:     "default",
+				},
+			}
+			linuxAmd64Build := &artifact.Artifact{
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v3",
+				Name:    "bin/mybin",
+				Path:    filepath.Join(dist, "linuxamd64v3", "bin", "mybin"),
+				Type:    artifact.Binary,
+				Extra: map[string]interface{}{
+					artifact.ExtraBinary: "mybin",
 					artifact.ExtraID:     "default",
 				},
 			}
@@ -151,6 +165,7 @@ func TestRunPipe(t *testing.T) {
 			ctx.Artifacts.Add(linuxArmBuild)
 			ctx.Artifacts.Add(linuxMipsBuild)
 			ctx.Artifacts.Add(windowsBuild)
+			ctx.Artifacts.Add(linuxAmd64Build)
 			ctx.Version = "0.0.1"
 			ctx.Git.CurrentTag = "v0.0.1"
 			ctx.Config.Archives[0].Format = format
@@ -165,7 +180,7 @@ func TestRunPipe(t *testing.T) {
 				require.Equal(t, []string{expectBin}, arch.ExtraOr(artifact.ExtraBinaries, []string{}).([]string))
 				require.Equal(t, "", arch.ExtraOr(artifact.ExtraBinary, "").(string))
 			}
-			require.Len(t, archives, 6)
+			require.Len(t, archives, 7)
 			// TODO: should verify the artifact fields here too
 
 			if format == "tar.gz" {
@@ -176,6 +191,7 @@ func TestRunPipe(t *testing.T) {
 					"foobar_0.0.1_linux_386.tar.gz":            "linux",
 					"foobar_0.0.1_linux_armv7.tar.gz":          "linux",
 					"foobar_0.0.1_linux_mips_softfloat.tar.gz": "linux",
+					"foobar_0.0.1_linux_amd64v3.tar.gz":        "linux",
 				} {
 					require.Equal(
 						t,
