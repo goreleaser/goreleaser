@@ -54,6 +54,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if brew.Goarm == "" {
 			brew.Goarm = "6"
 		}
+		if brew.Goamd64 == "" {
+			brew.Goamd64 = "v2"
+		}
 	}
 
 	return nil
@@ -157,7 +160,10 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 			artifact.ByGoos("linux"),
 		),
 		artifact.Or(
-			artifact.ByGoarch("amd64"),
+			artifact.And(
+				artifact.ByGoarch("amd64"),
+				artifact.ByGoamd64(brew.Goamd64),
+			),
 			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("all"),
 			artifact.And(

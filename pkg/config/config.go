@@ -170,6 +170,7 @@ type Homebrew struct {
 	CustomBlock           string               `yaml:"custom_block,omitempty"`
 	IDs                   []string             `yaml:"ids,omitempty"`
 	Goarm                 string               `yaml:"goarm,omitempty"`
+	Goamd64               string               `yaml:"goamd64,omitempty"`
 	Service               string               `yaml:"service,omitempty"`
 }
 

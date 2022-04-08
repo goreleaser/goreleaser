@@ -25,9 +25,14 @@ brews:
     - bar
 
     # GOARM to specify which 32-bit arm version to use if there are multiple versions
-    # from the build section. Brew formulas support atm only one 32-bit version.
+    # from the build section. Brew formulas support only one 32-bit version.
     # Default is 6 for all artifacts or each id if there a multiple versions.
     goarm: 6
+
+    # GOAMD64 to specify which amd64 version to use if there are multiple versions
+    # from the build section.
+    # Default is v2.
+    goarm: v2
 
     # NOTE: make sure the url_template, the token and given repo (github or gitlab) owner and name are from the
     # same kind. We will probably unify this in the next major version like it is done with scoop.
