@@ -137,7 +137,7 @@ func TestRunPipe(t *testing.T) {
 							Type:        "symlink",
 						},
 						{
-							Source:      "./testdata/testfile-{{ .Arch }}.txt",
+							Source:      "./testdata/testfile-{{ .Arch }}{{.Amd64}}{{.Arm}}{{.Mips}}.txt",
 							Destination: "/etc/nope3_{{ .ProjectName }}.conf",
 						},
 						{
@@ -155,26 +155,81 @@ func TestRunPipe(t *testing.T) {
 	ctx.Version = "1.0.0"
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "subdir/mybin",
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
-					artifact.ExtraID: "default",
-				},
-			})
+		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips"} {
+			switch goarch {
+			case "arm":
+				for _, goarm := range []string{"6", "7"} {
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "subdir/mybin",
+						Path:   binPath,
+						Goarch: goarch,
+						Goos:   goos,
+						Goarm:  goarm,
+						Type:   artifact.Binary,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "default",
+						},
+					})
+				}
+			case "amd64":
+				for _, goamd64 := range []string{"v2", "v3"} {
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:    "subdir/mybin",
+						Path:    binPath,
+						Goarch:  goarch,
+						Goos:    goos,
+						Goamd64: goamd64,
+						Type:    artifact.Binary,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "default",
+						},
+					})
+				}
+			case "mips":
+				for _, gomips := range []string{"softfloat", "hardfloat"} {
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "subdir/mybin",
+						Path:   binPath,
+						Goarch: goarch,
+						Goos:   goos,
+						Gomips: gomips,
+						Type:   artifact.Binary,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "default",
+						},
+					})
+				}
+			default:
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "subdir/mybin",
+					Path:   binPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Type:   artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "default",
+					},
+				})
+			}
 		}
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 6)
+	require.Len(t, packages, 24)
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
-		require.Equal(t, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format, pkg.Name)
+		arch := pkg.Goarch
+		if pkg.Goarm != "" {
+			arch += "v" + pkg.Goarm
+		}
+		if pkg.Goamd64 == "v3" {
+			arch += pkg.Goamd64
+		}
+		if pkg.Gomips != "" {
+			arch += "_" + pkg.Gomips
+		}
+		require.Equal(t, "foo_1.0.0_Tux_"+arch+"-10-20."+format, pkg.Name)
 		require.Equal(t, "someid", pkg.ID())
 		require.ElementsMatch(t, []string{
 			"./testdata/testfile.txt",
@@ -182,7 +237,7 @@ func TestRunPipe(t *testing.T) {
 			"./testdata/testfile.txt",
 			"/etc/nope.conf",
 			"./testdata/folder",
-			"./testdata/testfile-" + pkg.Goarch + ".txt",
+			"./testdata/testfile-" + pkg.Goarch + pkg.Goamd64 + pkg.Goarm + pkg.Gomips + ".txt",
 			binPath,
 		}, sources(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
 		require.ElementsMatch(t, []string{
