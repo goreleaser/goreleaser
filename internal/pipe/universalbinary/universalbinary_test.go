@@ -192,6 +192,17 @@ func TestRun(t *testing.T) {
 		},
 	})
 
+	ctx6 := context.New(config.Project{
+		Dist: dist,
+		UniversalBinaries: []config.UniversalBinary{
+			{
+				ID:           "foobar",
+				IDs:          []string{"foo"},
+				NameTemplate: "foo",
+			},
+		},
+	})
+
 	for arch, path := range paths {
 		cmd := exec.Command("go", "build", "-o", path, src)
 		cmd.Env = append(os.Environ(), "GOOS=darwin", "GOARCH="+arch)
@@ -216,6 +227,7 @@ func TestRun(t *testing.T) {
 		ctx1.Artifacts.Add(&art)
 		ctx2.Artifacts.Add(&art)
 		ctx5.Artifacts.Add(&art)
+		ctx6.Artifacts.Add(&art)
 		ctx4.Artifacts.Add(&artifact.Artifact{
 			Name:   "fake",
 			Path:   path + "wrong",
@@ -228,6 +240,14 @@ func TestRun(t *testing.T) {
 			},
 		})
 	}
+
+	t.Run("ensure new artifact id", func(t *testing.T) {
+		require.NoError(t, Pipe{}.Run(ctx6))
+		unis := ctx6.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()
+		require.Len(t, unis, 1)
+		checkUniversalBinary(t, unis[0])
+		require.Equal(t, "foobar", unis[0].ID())
+	})
 
 	t.Run("replacing", func(t *testing.T) {
 		require.NoError(t, Pipe{}.Run(ctx1))
