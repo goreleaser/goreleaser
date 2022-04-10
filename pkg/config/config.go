@@ -207,6 +207,7 @@ type Scoop struct {
 	SkipUpload            string       `yaml:"skip_upload,omitempty"`
 	PreInstall            []string     `yaml:"pre_install,omitempty"`
 	PostInstall           []string     `yaml:"post_install,omitempty"`
+	Goamd64               string       `yaml:"goamd64,omitempty"`
 }
 
 // CommitAuthor is the author of a Git commit.
