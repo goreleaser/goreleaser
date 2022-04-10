@@ -129,6 +129,7 @@ type AUR struct {
 	GitURL                string       `yaml:"git_url,omitempty"`
 	GitSSHCommand         string       `yaml:"git_ssh_command,omitempty"`
 	PrivateKey            string       `yaml:"private_key,omitempty"`
+	Goamd64               string       `yaml:"goamd64,omitempty"`
 }
 
 // GoFish contains the gofish section.
