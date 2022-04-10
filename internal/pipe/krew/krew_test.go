@@ -268,6 +268,19 @@ func TestFullPipe(t *testing.T) {
 					artifact.ExtraBinaries: []string{"name"},
 				},
 			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "this-should-be-ignored.tar.gz",
+				Path:    path,
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v3",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					artifact.ExtraID:       "foo",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"name"},
+				},
+			})
 
 			f, err := os.Create(path)
 			require.NoError(t, err)
@@ -275,6 +288,7 @@ func TestFullPipe(t *testing.T) {
 			client := client.NewMock()
 			distFile := filepath.Join(folder, name+".yaml")
 
+			require.NoError(t, Pipe{}.Default(ctx))
 			err = runAll(ctx, client)
 			if tt.expectedRunError != "" {
 				require.EqualError(t, err, tt.expectedRunError)
@@ -432,6 +446,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	client := client.NewMock()
 	distFile := filepath.Join(folder, manifestName(t)+".yaml")
 
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
@@ -493,6 +508,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	client := client.NewMock()
 	distFile := filepath.Join(folder, t.Name()+".yaml")
 
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
@@ -579,6 +595,7 @@ func TestRunPipeMultipleKrewWithSkip(t *testing.T) {
 	require.NoError(t, f.Close())
 
 	cli := client.NewMock()
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, cli))
 	require.EqualError(t, publishAll(ctx, cli), `krews.skip_upload is set`)
 	require.True(t, cli.CreatedFile)
@@ -699,6 +716,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			client := client.NewMock()
 			distFile := filepath.Join(folder, name+".yaml")
 
+			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, runAll(ctx, client))
 			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
@@ -772,6 +790,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		},
 	})
 	client := client.NewMock()
+	require.NoError(t, Pipe{}.Default(ctx))
 
 	assertNoPublish := func(t *testing.T) {
 		t.Helper()
@@ -828,6 +847,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		},
 	})
 	client := client.NewMock()
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, client))
 }
 
@@ -867,6 +887,7 @@ func TestRunMultipleBinaries(t *testing.T) {
 			artifact.ExtraBinaries: []string{"bin1", "bin2"},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	client := client.NewMock()
 	require.EqualError(t, runAll(ctx, client), `krew: only one binary per archive allowed, got 2 on "bin.tar.gz"`)
 }

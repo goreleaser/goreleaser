@@ -188,6 +188,7 @@ type Krew struct {
 	Homepage              string       `yaml:"homepage,omitempty"`
 	URLTemplate           string       `yaml:"url_template,omitempty"`
 	Goarm                 string       `yaml:"goarm,omitempty"`
+	Goamd64               string       `yaml:"goamd64,omitempty"`
 	SkipUpload            string       `yaml:"skip_upload,omitempty"`
 }
 

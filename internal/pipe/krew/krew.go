@@ -50,6 +50,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if krew.Name == "" {
 			krew.Name = ctx.Config.ProjectName
 		}
+		if krew.Goamd64 == "" {
+			krew.Goamd64 = "v2"
+		}
 	}
 
 	return nil
@@ -94,7 +97,7 @@ func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
 		artifact.Or(
 			artifact.And(
 				artifact.ByGoarch("amd64"),
-				artifact.ByGoamd64("v2"),
+				artifact.ByGoamd64(krew.Goamd64),
 			),
 			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("all"),
