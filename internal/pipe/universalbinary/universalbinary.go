@@ -224,6 +224,7 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 		extra[k] = v
 	}
 	extra[artifact.ExtraReplaces] = unibin.Replace
+	extra[artifact.ExtraID] = unibin.ID
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type:   artifact.UniversalBinary,

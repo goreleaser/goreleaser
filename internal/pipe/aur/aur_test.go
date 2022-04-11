@@ -234,7 +234,7 @@ func TestFullPipe(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			url := makeBareRepo(t)
-			key := makeKey(t)
+			key := makeKey(t, keygen.Ed25519)
 
 			folder := t.TempDir()
 			ctx := &context.Context{
@@ -335,7 +335,7 @@ func TestFullPipe(t *testing.T) {
 
 func TestRunPipe(t *testing.T) {
 	url := makeBareRepo(t)
-	key := makeKey(t)
+	key := makeKey(t, keygen.Ed25519)
 
 	folder := t.TempDir()
 	ctx := &context.Context{
@@ -482,7 +482,7 @@ func TestRunPipeNoBuilds(t *testing.T) {
 
 func TestRunPipeBinaryRelease(t *testing.T) {
 	url := makeBareRepo(t)
-	key := makeKey(t)
+	key := makeKey(t, keygen.Ed25519)
 	folder := t.TempDir()
 	ctx := &context.Context{
 		Git: context.GitInfo{
@@ -731,7 +731,7 @@ func TestSkip(t *testing.T) {
 
 func TestKeyPath(t *testing.T) {
 	t.Run("with valid path", func(t *testing.T) {
-		path := makeKey(t)
+		path := makeKey(t, keygen.Ed25519)
 		result, err := keyPath(path)
 		require.NoError(t, err)
 		require.Equal(t, path, result)
@@ -790,16 +790,14 @@ func makeBareRepo(tb testing.TB) string {
 	return dir
 }
 
-func makeKey(tb testing.TB, algo ...keygen.KeyType) string {
+func makeKey(tb testing.TB, algo keygen.KeyType) string {
 	tb.Helper()
 
-	if len(algo) == 0 {
-		algo = append(algo, keygen.Ed25519)
-	}
 	dir := tb.TempDir()
-	k, err := keygen.NewWithWrite(dir, "id", nil, algo[0])
+	filepath := filepath.Join(dir, "id")
+	_, err := keygen.NewWithWrite(filepath, nil, algo)
 	require.NoError(tb, err)
-	return filepath.Join(dir, k.Filename)
+	return fmt.Sprintf("%s_%s", filepath, algo)
 }
 
 func requireEqualRepoFiles(tb testing.TB, folder, name, url string) {

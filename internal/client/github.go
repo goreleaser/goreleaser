@@ -244,7 +244,10 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 			data,
 		)
 	}
-	log.WithField("url", release.GetHTMLURL()).Info("release updated")
+	if err != nil {
+		log.WithField("url", release.GetHTMLURL()).Info("release updated")
+	}
+
 	githubReleaseID := strconv.FormatInt(release.GetID(), 10)
 	return githubReleaseID, err
 }

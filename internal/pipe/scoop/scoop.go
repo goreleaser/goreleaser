@@ -22,7 +22,7 @@ import (
 )
 
 // ErrNoWindows when there is no build for windows (goos doesn't contain windows).
-var ErrNoWindows = errors.New("scoop requires a windows build")
+var ErrNoWindows = errors.New("scoop requires a windows build and archive")
 
 const scoopConfigExtra = "ScoopConfig"
 
@@ -67,11 +67,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 func doRun(ctx *context.Context, cl client.Client) error {
 	scoop := ctx.Config.Scoop
-
-	// TODO: multiple archives
-	if ctx.Config.Archives[0].Format == "binary" {
-		return pipe.Skip("archive format is binary")
-	}
 
 	archives := ctx.Artifacts.Filter(
 		artifact.And(

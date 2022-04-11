@@ -78,15 +78,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives:    []config.Archive{{}},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -121,15 +113,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives:    []config.Archive{{}},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -178,15 +162,7 @@ func Test_doRun(t *testing.T) {
 					Version: "1.0.1",
 					Config: config.Project{
 						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives:    []config.Archive{{}},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -220,15 +196,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives:    []config.Archive{{}},
-						Release: config.Release{
-							GitLab: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -271,15 +239,7 @@ func Test_doRun(t *testing.T) {
 					Version: "1.0.1",
 					Config: config.Project{
 						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.gitlab.enterprise.com"},
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives:    []config.Archive{{}},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -321,15 +281,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives:    []config.Archive{{}},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -342,11 +294,8 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]artifact.Artifact{
-				{Name: "foo_1.0.1_linux_amd64.tar.gz", Goos: "linux", Goarch: "amd64", Goamd64: "v2"},
-				{Name: "foo_1.0.1_linux_386.tar.gz", Goos: "linux", Goarch: "386"},
-			},
-			shouldErr("scoop requires a windows build"),
+			[]artifact.Artifact{},
+			shouldErr(ErrNoWindows.Error()),
 			shouldNotErr,
 			noAssertions,
 		},
@@ -360,9 +309,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives:    []config.Archive{{}},
 						Release: config.Release{
 							Draft: true,
 						},
@@ -402,15 +349,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1-pre.1",
 					Config: config.Project{
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives:    []config.Archive{{}},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							SkipUpload: "auto",
 							Bucket: config.RepoRef{
@@ -442,15 +381,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives:    []config.Archive{{}},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							SkipUpload: "true",
 							Bucket: config.RepoRef{
@@ -482,9 +413,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives:    []config.Archive{{}},
 						Release: config.Release{
 							Disable: true,
 						},
@@ -518,14 +447,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "binary"},
-						},
-						Release: config.Release{
-							Draft: true,
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -538,11 +460,8 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v2", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
-			},
-			shouldErr("archive format is binary"),
+			[]artifact.Artifact{},
+			shouldErr(ErrNoWindows.Error()),
 			shouldNotErr,
 			noAssertions,
 		},
@@ -587,9 +506,7 @@ func Test_buildManifest(t *testing.T) {
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
-					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archives:    []config.Archive{{}},
 					Release: config.Release{
 						GitHub: config.Repo{
 							Owner: "test",
@@ -622,9 +539,7 @@ func Test_buildManifest(t *testing.T) {
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
-					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archives:    []config.Archive{{}},
 					Release: config.Release{
 						GitHub: config.Repo{
 							Owner: "test",
@@ -659,15 +574,7 @@ func Test_buildManifest(t *testing.T) {
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
-					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archives:    []config.Archive{{}},
-					Release: config.Release{
-						GitHub: config.Repo{
-							Owner: "test",
-							Name:  "test",
-						},
-					},
 					Scoop: config.Scoop{
 						Bucket: config.RepoRef{
 							Owner: "test",
@@ -696,15 +603,7 @@ func Test_buildManifest(t *testing.T) {
 					GitLabURLs: config.GitLabURLs{
 						Download: "https://gitlab.com",
 					},
-					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archives:    []config.Archive{{}},
-					Release: config.Release{
-						GitHub: config.Repo{
-							Owner: "test",
-							Name:  "test",
-						},
-					},
 					Scoop: config.Scoop{
 						Bucket: config.RepoRef{
 							Owner: "test",
@@ -800,7 +699,6 @@ func getScoopPipeSkipCtx(folder string) (*context.Context, string) {
 		Version:   "1.0.1",
 		Artifacts: artifact.New(),
 		Config: config.Project{
-			Archives:    []config.Archive{{}},
 			Dist:        folder,
 			ProjectName: "run-pipe",
 			Scoop: config.Scoop{
@@ -879,15 +777,7 @@ func TestWrapInDirectory(t *testing.T) {
 			GitLabURLs: config.GitLabURLs{
 				Download: "https://gitlab.com",
 			},
-			Dist:        ".",
 			ProjectName: "run-pipe",
-			Archives:    []config.Archive{{}},
-			Release: config.Release{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
-				},
-			},
 			Scoop: config.Scoop{
 				Bucket: config.RepoRef{
 					Owner: "test",

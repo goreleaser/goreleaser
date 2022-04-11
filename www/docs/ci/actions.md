@@ -16,11 +16,15 @@ Below is a simple snippet to use this action in your workflow:
 name: goreleaser
 
 on:
-  pull_request:
   push:
+    # run only against tags
+    tags:
+      - '*'
 
 permissions:
   contents: write
+  # packages: write
+  # issues: write
 
 jobs:
   goreleaser:
@@ -64,31 +68,6 @@ jobs:
     `TagBody`, `TagSubject` or `TagContents` in your templates.
     For more information, take a look at
     [actions/checkout#290](https://github.com/actions/checkout/issues/290).
-
-### Run on new tag
-
-If you want to run GoReleaser only on new tag, you can use this event:
-
-```yaml
-on:
-  push:
-    tags:
-      - '*'
-```
-
-Or with a condition on GoReleaser step:
-
-```yaml
-      -
-        name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          version: latest
-          args: release --rm-dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
 
 !!! tip
     For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
@@ -140,6 +119,15 @@ Following inputs can be used as `step.with` keys
 | `install-only`   | Bool    | `false`      | Just install GoReleaser                                          |
 
 [^1]: Can be a fixed version like `v0.117.0` or a max satisfying SemVer one like `~> 0.132`. In this case this will return `v0.132.1`.
+
+### Outputs
+
+Following outputs are available
+
+| Name              | Type    | Description                           |
+|-------------------|---------|---------------------------------------|
+| `artifacts`       | JSON    | Build result artifacts |
+| `metadata`        | JSON    | Build result metadata |
 
 ### Environment Variables
 
