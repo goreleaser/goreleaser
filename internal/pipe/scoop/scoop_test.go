@@ -503,13 +503,13 @@ func Test_buildManifest(t *testing.T) {
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
+					ProjectName: "run-pipe",
 					Release: config.Release{
 						GitHub: config.Repo{
 							Owner: "test",
 							Name:  "test",
 						},
 					},
-					ProjectName: "run-pipe",
 					Scoop: config.Scoop{
 						Bucket: config.RepoRef{
 							Owner: "test",
