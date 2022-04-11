@@ -24,29 +24,7 @@ func TestDefault(t *testing.T) {
 
 	ctx := &context.Context{
 		TokenType: context.TokenTypeGitHub,
-		Config: config.Project{
-			ProjectName: "barr",
-			Builds: []config.Build{
-				{
-					Binary: "foo",
-					Goos:   []string{"linux", "darwin"},
-					Goarch: []string{"386", "amd64"},
-				},
-				{
-					Binary: "bar",
-					Goos:   []string{"linux", "darwin"},
-					Goarch: []string{"386", "amd64"},
-					Ignore: []config.IgnoredBuild{
-						{Goos: "darwin", Goarch: "amd64"},
-					},
-				},
-				{
-					Binary: "foobar",
-					Goos:   []string{"linux"},
-					Goarch: []string{"amd64"},
-				},
-			},
-		},
+		Config:    config.Project{ProjectName: "barr"},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.Scoop.Name)
@@ -100,20 +78,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "tar.gz"},
-						},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -148,20 +113,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "tar.gz", WrapInDirectory: "true"},
-						},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -208,21 +160,8 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						GitHubURLs: config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
+						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "tar.gz"},
-						},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -256,20 +195,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "tar.gz"},
-						},
-						Release: config.Release{
-							GitLab: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -310,21 +236,8 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						GitHubURLs: config.GitHubURLs{Download: "https://api.custom.gitlab.enterprise.com"},
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
+						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.gitlab.enterprise.com"},
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "tar.gz"},
-						},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -365,20 +278,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test"},
-						},
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "tar.gz"},
-						},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -391,11 +291,8 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]artifact.Artifact{
-				{Name: "foo_1.0.1_linux_amd64.tar.gz", Goos: "linux", Goarch: "amd64"},
-				{Name: "foo_1.0.1_linux_386.tar.gz", Goos: "linux", Goarch: "386"},
-			},
-			shouldErr("scoop requires a windows build"),
+			[]artifact.Artifact{},
+			shouldErr(ErrNoWindows.Error()),
 			shouldNotErr,
 			noAssertions,
 		},
@@ -409,14 +306,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "tar.gz"},
-						},
 						Release: config.Release{
 							Draft: true,
 						},
@@ -456,20 +346,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1-pre.1",
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "tar.gz"},
-						},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							SkipUpload: "auto",
 							Bucket: config.RepoRef{
@@ -501,20 +378,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "tar.gz"},
-						},
-						Release: config.Release{
-							GitHub: config.Repo{
-								Owner: "test",
-								Name:  "test",
-							},
-						},
 						Scoop: config.Scoop{
 							SkipUpload: "true",
 							Bucket: config.RepoRef{
@@ -546,14 +410,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "tar.gz"},
-						},
 						Release: config.Release{
 							Disable: true,
 						},
@@ -587,17 +444,7 @@ func Test_doRun(t *testing.T) {
 					},
 					Version: "1.0.1",
 					Config: config.Project{
-						Builds: []config.Build{
-							{Binary: "test", Goarch: []string{"amd64"}, Goos: []string{"windows"}},
-						},
-						Dist:        ".",
 						ProjectName: "run-pipe",
-						Archives: []config.Archive{
-							{Format: "binary"},
-						},
-						Release: config.Release{
-							Draft: true,
-						},
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
 								Owner: "test",
@@ -610,11 +457,8 @@ func Test_doRun(t *testing.T) {
 				},
 				client.NewMock(),
 			},
-			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Path: file},
-				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
-			},
-			shouldErr("archive format is binary"),
+			[]artifact.Artifact{},
+			shouldErr(ErrNoWindows.Error()),
 			shouldNotErr,
 			noAssertions,
 		},
@@ -659,11 +503,7 @@ func Test_buildManifest(t *testing.T) {
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
-					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archives: []config.Archive{
-						{Format: "tar.gz"},
-					},
 					Release: config.Release{
 						GitHub: config.Repo{
 							Owner: "test",
@@ -696,11 +536,7 @@ func Test_buildManifest(t *testing.T) {
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
-					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archives: []config.Archive{
-						{Format: "tar.gz"},
-					},
 					Release: config.Release{
 						GitHub: config.Repo{
 							Owner: "test",
@@ -735,20 +571,7 @@ func Test_buildManifest(t *testing.T) {
 					GitHubURLs: config.GitHubURLs{
 						Download: "https://github.com",
 					},
-					Builds: []config.Build{
-						{Binary: "test"},
-					},
-					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archives: []config.Archive{
-						{Format: "tar.gz"},
-					},
-					Release: config.Release{
-						GitHub: config.Repo{
-							Owner: "test",
-							Name:  "test",
-						},
-					},
 					Scoop: config.Scoop{
 						Bucket: config.RepoRef{
 							Owner: "test",
@@ -777,20 +600,7 @@ func Test_buildManifest(t *testing.T) {
 					GitLabURLs: config.GitLabURLs{
 						Download: "https://gitlab.com",
 					},
-					Builds: []config.Build{
-						{Binary: "test"},
-					},
-					Dist:        ".",
 					ProjectName: "run-pipe",
-					Archives: []config.Archive{
-						{Format: "tar.gz"},
-					},
-					Release: config.Release{
-						GitHub: config.Repo{
-							Owner: "test",
-							Name:  "test",
-						},
-					},
 					Scoop: config.Scoop{
 						Bucket: config.RepoRef{
 							Owner: "test",
@@ -884,12 +694,6 @@ func getScoopPipeSkipCtx(folder string) (*context.Context, string) {
 		Version:   "1.0.1",
 		Artifacts: artifact.New(),
 		Config: config.Project{
-			Archives: []config.Archive{
-				{Format: "tar.gz"},
-			},
-			Builds: []config.Build{
-				{Binary: "test"},
-			},
 			Dist:        folder,
 			ProjectName: "run-pipe",
 			Scoop: config.Scoop{
@@ -954,20 +758,7 @@ func TestWrapInDirectory(t *testing.T) {
 			GitLabURLs: config.GitLabURLs{
 				Download: "https://gitlab.com",
 			},
-			Builds: []config.Build{
-				{Binary: "test"},
-			},
-			Dist:        ".",
 			ProjectName: "run-pipe",
-			Archives: []config.Archive{
-				{Format: "tar.gz", WrapInDirectory: "true"},
-			},
-			Release: config.Release{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
-				},
-			},
 			Scoop: config.Scoop{
 				Bucket: config.RepoRef{
 					Owner: "test",
