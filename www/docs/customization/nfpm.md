@@ -24,7 +24,7 @@ nfpms:
     file_name_template: "{{ .ConventionalFileName }}"
 
     # Build IDs for the builds you want to create NFPM packages for.
-    # Defaults to all builds.
+    # Defaults empty, which means no filtering.
     builds:
       - foo
       - bar

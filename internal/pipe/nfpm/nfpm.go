@@ -54,11 +54,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.FileNameTemplate == "" {
 			fpm.FileNameTemplate = defaultNameTemplate
 		}
-		if len(fpm.Builds) == 0 { // TODO: change this to empty by default and deal with it in the filtering code
-			for _, b := range ctx.Config.Builds {
-				fpm.Builds = append(fpm.Builds, b.ID)
-			}
-		}
 		ids.Inc(fpm.ID)
 	}
 

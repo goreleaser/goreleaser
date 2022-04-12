@@ -565,15 +565,11 @@ func TestDefault(t *testing.T) {
 			NFPMs: []config.NFPM{
 				{},
 			},
-			Builds: []config.Build{
-				{ID: "foo"},
-				{ID: "bar"},
-			},
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "/usr/bin", ctx.Config.NFPMs[0].Bindir)
-	require.Equal(t, []string{"foo", "bar"}, ctx.Config.NFPMs[0].Builds)
+	require.Empty(t, ctx.Config.NFPMs[0].Builds)
 	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].FileNameTemplate)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.NFPMs[0].PackageName)
 }
@@ -581,10 +577,6 @@ func TestDefault(t *testing.T) {
 func TestDefaultSet(t *testing.T) {
 	ctx := &context.Context{
 		Config: config.Project{
-			Builds: []config.Build{
-				{ID: "foo"},
-				{ID: "bar"},
-			},
 			NFPMs: []config.NFPM{
 				{
 					Builds: []string{"foo"},
