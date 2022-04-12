@@ -269,11 +269,25 @@ func TestFullPipe(t *testing.T) {
 			}
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bar_bin.tar.gz",
-				Path:   "doesnt matter",
-				Goos:   "linux",
-				Goarch: "amd64",
-				Type:   artifact.UploadableArchive,
+				Name:    "should-be-ignored.tar.gz",
+				Path:    "doesnt matter",
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v3",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					artifact.ExtraID:       "bar",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"bar"},
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "bar_bin.tar.gz",
+				Path:    "doesnt matter",
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v2",
+				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:       "bar",
 					artifact.ExtraFormat:   "tar.gz",
@@ -282,11 +296,12 @@ func TestFullPipe(t *testing.T) {
 			})
 			path := filepath.Join(folder, "bin.tar.gz")
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bin.tar.gz",
-				Path:   path,
-				Goos:   "linux",
-				Goarch: "amd64",
-				Type:   artifact.UploadableArchive,
+				Name:    "bin.tar.gz",
+				Path:    path,
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v2",
+				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "tar.gz",
@@ -424,12 +439,13 @@ func TestRunPipe(t *testing.T) {
 	} {
 		path := filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
 		ctx.Artifacts.Add(&artifact.Artifact{
-			Name:   fmt.Sprintf("%s.tar.gz", a.name),
-			Path:   path,
-			Goos:   a.goos,
-			Goarch: a.goarch,
-			Goarm:  a.goarm,
-			Type:   artifact.UploadableArchive,
+			Name:    fmt.Sprintf("%s.tar.gz", a.name),
+			Path:    path,
+			Goos:    a.goos,
+			Goarch:  a.goarch,
+			Goarm:   a.goarm,
+			Goamd64: "v2",
+			Type:    artifact.UploadableArchive,
 			Extra: map[string]interface{}{
 				artifact.ExtraID:       "foo",
 				artifact.ExtraFormat:   "tar.gz",
@@ -491,11 +507,12 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 
 	path := filepath.Join(folder, "dist/foo_linux_amd64/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "foo_linux_amd64",
-		Path:   path,
-		Goos:   "linux",
-		Goarch: "amd64",
-		Type:   artifact.UploadableBinary,
+		Name:    "foo_linux_amd64",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v2",
+		Type:    artifact.UploadableBinary,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "binary",
@@ -537,11 +554,12 @@ func TestRunPipeNoUpload(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   path,
-		Goos:   "linux",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v2",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
@@ -630,6 +648,7 @@ func TestDefault(t *testing.T) {
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
 			GitSSHCommand:         defaultSSHCommand,
+			Goamd64:               "v2",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
 				Email: "goreleaser@carlosbecker.com",
@@ -657,6 +676,7 @@ func TestDefault(t *testing.T) {
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
 			GitSSHCommand:         defaultSSHCommand,
+			Goamd64:               "v2",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
 				Email: "goreleaser@carlosbecker.com",
@@ -672,6 +692,7 @@ func TestDefault(t *testing.T) {
 				AURs: []config.AUR{
 					{
 						Conflicts: []string{"somethingelse"},
+						Goamd64:   "v3",
 					},
 				},
 			},
@@ -684,6 +705,7 @@ func TestDefault(t *testing.T) {
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
 			GitSSHCommand:         defaultSSHCommand,
+			Goamd64:               "v3",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
 				Email: "goreleaser@carlosbecker.com",

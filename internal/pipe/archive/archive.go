@@ -24,8 +24,9 @@ import (
 )
 
 const (
-	defaultNameTemplate       = "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
-	defaultBinaryNameTemplate = "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+	defaultNameTemplateSuffix = `{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if eq .Amd64 "v3" }}v3{{ end }}`
+	defaultNameTemplate       = "{{ .ProjectName }}_" + defaultNameTemplateSuffix
+	defaultBinaryNameTemplate = "{{ .Binary }}_" + defaultNameTemplateSuffix
 )
 
 // ErrArchiveDifferentBinaryCount happens when an archive uses several builds which have different goos/goarch/etc sets,
@@ -184,13 +185,14 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		bins = append(bins, binary.Name)
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Type:   artifact.UploadableArchive,
-		Name:   folder + "." + format,
-		Path:   archivePath,
-		Goos:   binaries[0].Goos,
-		Goarch: binaries[0].Goarch,
-		Goarm:  binaries[0].Goarm,
-		Gomips: binaries[0].Gomips,
+		Type:    artifact.UploadableArchive,
+		Name:    folder + "." + format,
+		Path:    archivePath,
+		Goos:    binaries[0].Goos,
+		Goarch:  binaries[0].Goarch,
+		Goarm:   binaries[0].Goarm,
+		Gomips:  binaries[0].Gomips,
+		Goamd64: binaries[0].Goamd64,
 		Extra: map[string]interface{}{
 			artifact.ExtraBuilds:    binaries,
 			artifact.ExtraID:        arch.ID,
@@ -227,13 +229,14 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 			WithField("name", finalName).
 			Info("skip archiving")
 		ctx.Artifacts.Add(&artifact.Artifact{
-			Type:   artifact.UploadableBinary,
-			Name:   finalName,
-			Path:   binary.Path,
-			Goos:   binary.Goos,
-			Goarch: binary.Goarch,
-			Goarm:  binary.Goarm,
-			Gomips: binary.Gomips,
+			Type:    artifact.UploadableBinary,
+			Name:    finalName,
+			Path:    binary.Path,
+			Goos:    binary.Goos,
+			Goarch:  binary.Goarch,
+			Goarm:   binary.Goarm,
+			Gomips:  binary.Gomips,
+			Goamd64: binary.Goamd64,
 			Extra: map[string]interface{}{
 				artifact.ExtraBuilds:   []*artifact.Artifact{binary},
 				artifact.ExtraID:       archive.ID,

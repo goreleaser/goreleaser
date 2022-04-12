@@ -481,6 +481,115 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	}
 }
 
+func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
+	for name, fn := range map[string]func(ctx *context.Context){
+		"v2": func(ctx *context.Context) {
+			ctx.Config.Brews[0].Goamd64 = "v2"
+		},
+		"v3": func(ctx *context.Context) {
+			ctx.Config.Brews[0].Goamd64 = "v3"
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			folder := t.TempDir()
+			ctx := &context.Context{
+				TokenType: context.TokenTypeGitHub,
+				Git: context.GitInfo{
+					CurrentTag: "v1.0.1",
+				},
+				Version:   "1.0.1",
+				Artifacts: artifact.New(),
+				Env: map[string]string{
+					"FOO": "foo_is_bar",
+				},
+				Config: config.Project{
+					Dist:        folder,
+					ProjectName: name,
+					Brews: []config.Homebrew{
+						{
+							Name:        name,
+							Description: "A run pipe test formula",
+							Tap: config.RepoRef{
+								Owner: "test",
+								Name:  "test",
+							},
+							Homepage: "https://github.com/goreleaser",
+						},
+					},
+					GitHubURLs: config.GitHubURLs{
+						Download: "https://github.com",
+					},
+					Release: config.Release{
+						GitHub: config.Repo{
+							Owner: "test",
+							Name:  "test",
+						},
+					},
+				},
+			}
+			fn(ctx)
+			for _, a := range []struct {
+				name    string
+				goos    string
+				goarch  string
+				goamd64 string
+			}{
+				{
+					name:   "bin",
+					goos:   "darwin",
+					goarch: "arm64",
+				},
+				{
+					name:   "arm64",
+					goos:   "linux",
+					goarch: "arm64",
+				},
+				{
+					name:    "amd64v2",
+					goos:    "linux",
+					goarch:  "amd64",
+					goamd64: "v2",
+				},
+				{
+					name:    "amd64v3",
+					goos:    "linux",
+					goarch:  "amd64",
+					goamd64: "v3",
+				},
+			} {
+				path := filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    fmt.Sprintf("%s.tar.gz", a.name),
+					Path:    path,
+					Goos:    a.goos,
+					Goarch:  a.goarch,
+					Goamd64: a.goamd64,
+					Type:    artifact.UploadableArchive,
+					Extra: map[string]interface{}{
+						artifact.ExtraID:     a.name,
+						artifact.ExtraFormat: "tar.gz",
+					},
+				})
+				f, err := os.Create(path)
+				require.NoError(t, err)
+				require.NoError(t, f.Close())
+			}
+
+			client := client.NewMock()
+			distFile := filepath.Join(folder, name+".rb")
+
+			require.NoError(t, runAll(ctx, client))
+			require.NoError(t, publishAll(ctx, client))
+			require.True(t, client.CreatedFile)
+			golden.RequireEqualRb(t, []byte(client.Content))
+
+			distBts, err := os.ReadFile(distFile)
+			require.NoError(t, err)
+			require.Equal(t, client.Content, string(distBts))
+		})
+	}
+}
+
 func TestRunPipeForMultipleArmVersions(t *testing.T) {
 	for name, fn := range map[string]func(ctx *context.Context){
 		"multiple_armv5": func(ctx *context.Context) {

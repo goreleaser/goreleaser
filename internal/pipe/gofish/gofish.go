@@ -88,7 +88,10 @@ func doRun(ctx *context.Context, goFish config.GoFish, cl client.Client) error {
 			artifact.ByGoos("windows"),
 		),
 		artifact.Or(
-			artifact.ByGoarch("amd64"),
+			artifact.And(
+				artifact.ByGoarch("amd64"),
+				artifact.ByGoamd64("v2"),
+			),
 			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("all"),
 			artifact.And(

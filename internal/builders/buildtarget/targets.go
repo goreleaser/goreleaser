@@ -1,5 +1,5 @@
 // Package buildtarget can generate a list of targets based on a matrix of
-// goos, goarch, goarm, gomips and go version.
+// goos, goarch, goarm, goamd64, gomips and go version.
 package buildtarget
 
 import (
@@ -15,15 +15,12 @@ import (
 )
 
 type target struct {
-	os, arch, arm, mips string
+	os, arch, arm, mips, amd64 string
 }
 
 func (t target) String() string {
-	if t.arm != "" {
-		return fmt.Sprintf("%s_%s_%s", t.os, t.arch, t.arm)
-	}
-	if t.mips != "" {
-		return fmt.Sprintf("%s_%s_%s", t.os, t.arch, t.mips)
+	if extra := t.arm + t.mips + t.amd64; extra != "" {
+		return fmt.Sprintf("%s_%s_%s", t.os, t.arch, extra)
 	}
 	return fmt.Sprintf("%s_%s", t.os, t.arch)
 }
@@ -54,6 +51,9 @@ func matrix(build config.Build, version []byte) ([]string, error) {
 		}
 		if target.mips != "" && !contains(target.mips, validGomips) {
 			return result, fmt.Errorf("invalid gomips: %s", target.mips)
+		}
+		if target.amd64 != "" && !contains(target.amd64, validGoamd64) {
+			return result, fmt.Errorf("invalid goamd64: %s", target.amd64)
 		}
 		if target.os == "windows" && target.arch == "arm64" && !go117re.Match(version) {
 			log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
@@ -91,6 +91,16 @@ func allBuildTargets(build config.Build) (targets []target) {
 				}
 				continue
 			}
+			if strings.HasPrefix(goarch, "amd64") {
+				for _, goamd := range build.Goamd64 {
+					targets = append(targets, target{
+						os:    goos,
+						arch:  goarch,
+						amd64: goamd,
+					})
+				}
+				continue
+			}
 			if strings.HasPrefix(goarch, "mips") {
 				for _, gomips := range build.Gomips {
 					targets = append(targets, target{
@@ -124,6 +134,9 @@ func ignored(build config.Build, target target) bool {
 			continue
 		}
 		if ig.Gomips != "" && ig.Gomips != target.mips {
+			continue
+		}
+		if ig.Goamd64 != "" && ig.Goamd64 != target.amd64 {
 			continue
 		}
 		return true
@@ -242,6 +255,7 @@ var (
 		"riscv64",
 	}
 
-	validGoarm  = []string{"5", "6", "7"}
-	validGomips = []string{"hardfloat", "softfloat"}
+	validGoarm   = []string{"5", "6", "7"}
+	validGomips  = []string{"hardfloat", "softfloat"}
+	validGoamd64 = []string{"v2", "v3"}
 )

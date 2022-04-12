@@ -171,20 +171,25 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 
 	var gomips string
 	var goarm string
+	var goamd64 string
 	if strings.HasPrefix(goarch, "arm") && len(parts) > 2 {
 		goarm = parts[2]
 	}
 	if strings.HasPrefix(goarch, "mips") && len(parts) > 2 {
 		gomips = parts[2]
 	}
+	if strings.HasPrefix(goarch, "amd64") && len(parts) > 2 {
+		goamd64 = parts[2]
+	}
 
 	buildOpts := builders.Options{
-		Target: target,
-		Ext:    ext,
-		Goos:   goos,
-		Goarch: goarch,
-		Goarm:  goarm,
-		Gomips: gomips,
+		Target:  target,
+		Ext:     ext,
+		Goos:    goos,
+		Goarch:  goarch,
+		Goarm:   goarm,
+		Gomips:  gomips,
+		Goamd64: goamd64,
 	}
 
 	binary, err := tmpl.New(ctx).WithBuildOptions(buildOpts).Apply(build.Binary)

@@ -71,6 +71,11 @@ scoop:
   # An array of commands to be executed after an application is installed.
   # Default is empty.
   post_install: ["Write-Host 'Running postinstall command'"]
+
+  # GOAMD64 to specify which amd64 version to use if there are multiple versions
+  # from the build section.
+  # Default is v2.
+  goamd64: v3
 ```
 
 By defining the `scoop` section, GoReleaser will take care of publishing the

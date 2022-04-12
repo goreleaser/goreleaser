@@ -61,6 +61,9 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 		if len(build.Gomips) == 0 {
 			build.Gomips = []string{"hardfloat"}
 		}
+		if len(build.Goamd64) == 0 {
+			build.Goamd64 = []string{"v2"}
+		}
 		targets, err := buildtarget.List(build)
 		build.Targets = targets
 		if err != nil {
@@ -77,13 +80,14 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 
 	artifact := &artifact.Artifact{
-		Type:   artifact.Binary,
-		Path:   options.Path,
-		Name:   options.Name,
-		Goos:   options.Goos,
-		Goarch: options.Goarch,
-		Goarm:  options.Goarm,
-		Gomips: options.Gomips,
+		Type:    artifact.Binary,
+		Path:    options.Path,
+		Name:    options.Name,
+		Goos:    options.Goos,
+		Goarch:  options.Goarch,
+		Goamd64: options.Goamd64,
+		Goarm:   options.Goarm,
+		Gomips:  options.Gomips,
 		Extra: map[string]interface{}{
 			artifact.ExtraBinary: strings.TrimSuffix(filepath.Base(options.Path), options.Ext),
 			artifact.ExtraExt:    options.Ext,
@@ -99,6 +103,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		"GOARM="+options.Goarm,
 		"GOMIPS="+options.Gomips,
 		"GOMIPS64="+options.Gomips,
+		"GOAMD64="+options.Goamd64,
 	)
 
 	cmd, err := buildGoBuildLine(ctx, build, options, artifact, env)
@@ -131,9 +136,9 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 }
 
 func withOverrides(ctx *context.Context, build config.Build, options api.Options) (config.BuildDetails, error) {
-	optsTarget := options.Goos + options.Goarch + options.Goarm + options.Gomips
+	optsTarget := options.Goos + options.Goarch + options.Goarm + options.Gomips + options.Goamd64
 	for _, o := range build.BuildDetailsOverrides {
-		overrideTarget, err := tmpl.New(ctx).Apply(o.Goos + o.Goarch + o.Gomips + o.Goarm)
+		overrideTarget, err := tmpl.New(ctx).Apply(o.Goos + o.Goarch + o.Gomips + o.Goarm + o.Goamd64)
 		if err != nil {
 			return build.BuildDetails, err
 		}

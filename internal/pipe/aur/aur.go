@@ -63,6 +63,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if pkg.GitSSHCommand == "" {
 			pkg.GitSSHCommand = defaultSSHCommand
 		}
+		if pkg.Goamd64 == "" {
+			pkg.Goamd64 = "v2"
+		}
 	}
 
 	return nil
@@ -97,7 +100,10 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.Client) error {
 	filters := []artifact.Filter{
 		artifact.ByGoos("linux"),
 		artifact.Or(
-			artifact.ByGoarch("amd64"),
+			artifact.And(
+				artifact.ByGoarch("amd64"),
+				artifact.ByGoamd64(aur.Goamd64),
+			),
 			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("386"),
 			artifact.And(

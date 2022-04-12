@@ -58,6 +58,9 @@ dockers:
     # GOARM of the built binaries/packages that should be used.
     goarm: ''
 
+    # GOAMD64 of the built binaries/packages that should be used.
+    goamd64: 'v2'
+
     # IDs to filter the binaries/packages.
     ids:
     - mybuild

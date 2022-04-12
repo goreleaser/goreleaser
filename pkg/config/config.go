@@ -129,6 +129,7 @@ type AUR struct {
 	GitURL                string       `yaml:"git_url,omitempty"`
 	GitSSHCommand         string       `yaml:"git_ssh_command,omitempty"`
 	PrivateKey            string       `yaml:"private_key,omitempty"`
+	Goamd64               string       `yaml:"goamd64,omitempty"`
 }
 
 // GoFish contains the gofish section.
@@ -170,6 +171,7 @@ type Homebrew struct {
 	CustomBlock           string               `yaml:"custom_block,omitempty"`
 	IDs                   []string             `yaml:"ids,omitempty"`
 	Goarm                 string               `yaml:"goarm,omitempty"`
+	Goamd64               string               `yaml:"goamd64,omitempty"`
 	Service               string               `yaml:"service,omitempty"`
 }
 
@@ -186,6 +188,7 @@ type Krew struct {
 	Homepage              string       `yaml:"homepage,omitempty"`
 	URLTemplate           string       `yaml:"url_template,omitempty"`
 	Goarm                 string       `yaml:"goarm,omitempty"`
+	Goamd64               string       `yaml:"goamd64,omitempty"`
 	SkipUpload            string       `yaml:"skip_upload,omitempty"`
 }
 
@@ -204,6 +207,7 @@ type Scoop struct {
 	SkipUpload            string       `yaml:"skip_upload,omitempty"`
 	PreInstall            []string     `yaml:"pre_install,omitempty"`
 	PostInstall           []string     `yaml:"post_install,omitempty"`
+	Goamd64               string       `yaml:"goamd64,omitempty"`
 }
 
 // CommitAuthor is the author of a Git commit.
@@ -220,10 +224,11 @@ type BuildHooks struct { // renamed on pro
 
 // IgnoredBuild represents a build ignored by the user.
 type IgnoredBuild struct {
-	Goos   string `yaml:"goos,omitempty"`
-	Goarch string `yaml:"goarch,omitempty"`
-	Goarm  string `yaml:"goarm,omitempty"`
-	Gomips string `yaml:"gomips,omitempty"`
+	Goos    string `yaml:"goos,omitempty"`
+	Goarch  string `yaml:"goarch,omitempty"`
+	Goarm   string `yaml:"goarm,omitempty"`
+	Gomips  string `yaml:"gomips,omitempty"`
+	Goamd64 string `yaml:"goamd64,omitempty"`
 }
 
 // StringArray is a wrapper for an array of strings.
@@ -295,6 +300,7 @@ type Build struct {
 	Goarch          []string        `yaml:"goarch,omitempty"`
 	Goarm           []string        `yaml:"goarm,omitempty"`
 	Gomips          []string        `yaml:"gomips,omitempty"`
+	Goamd64         []string        `yaml:"goamd64,omitempty"`
 	Targets         []string        `yaml:"targets,omitempty"`
 	Ignore          []IgnoredBuild  `yaml:"ignore,omitempty"`
 	Dir             string          `yaml:"dir,omitempty"`
@@ -319,6 +325,7 @@ type BuildDetailsOverride struct {
 	Goarch       string           `yaml:"goarch,omitempty"`
 	Goarm        string           `yaml:"goarm,omitempty"`
 	Gomips       string           `yaml:"gomips,omitempty"`
+	Goamd64      string           `yaml:"goamd64,omitempty"`
 	BuildDetails `yaml:",inline"` // nolint: tagliatelle
 }
 
@@ -782,6 +789,7 @@ type Docker struct {
 	Goos               string   `yaml:"goos,omitempty"`
 	Goarch             string   `yaml:"goarch,omitempty"`
 	Goarm              string   `yaml:"goarm,omitempty"`
+	Goamd64            string   `yaml:"goamd64,omitempty"`
 	Dockerfile         string   `yaml:"dockerfile,omitempty"`
 	ImageTemplates     []string `yaml:"image_templates,omitempty"`
 	SkipPush           string   `yaml:"skip_push,omitempty"`

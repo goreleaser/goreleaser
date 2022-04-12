@@ -68,6 +68,7 @@ may have some extra fields:
 | `.Arch`         | `GOARCH`[^8]                          |
 | `.Arm`          | `GOARM`[^8]                           |
 | `.Mips`         | `GOMIPS`[^8]                          |
+| `.Amd64`        | `GOAMD64`[^8]                         |
 | `.Binary`       | binary name                           |
 | `.ArtifactName` | archive name                          |
 | `.ArtifactPath` | absolute path to artifact             |

@@ -59,6 +59,9 @@ func (Pipe) Default(ctx *context.Context) error {
 	if ctx.Config.Scoop.CommitMessageTemplate == "" {
 		ctx.Config.Scoop.CommitMessageTemplate = "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
 	}
+	if ctx.Config.Scoop.Goamd64 == "" {
+		ctx.Config.Scoop.Goamd64 = "v2"
+	}
 	return nil
 }
 
@@ -69,6 +72,13 @@ func doRun(ctx *context.Context, cl client.Client) error {
 		artifact.And(
 			artifact.ByGoos("windows"),
 			artifact.ByType(artifact.UploadableArchive),
+			artifact.Or(
+				artifact.And(
+					artifact.ByGoarch("amd64"),
+					artifact.ByGoamd64(scoop.Goamd64),
+				),
+				artifact.ByGoarch("386"),
+			),
 		),
 	).List()
 	if len(archives) == 0 {

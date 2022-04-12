@@ -639,6 +639,24 @@ func TestBuildOptionsForTarget(t *testing.T) {
 				Gomips: "softfloat",
 			},
 		},
+		{
+			name: "with goamd64",
+			build: config.Build{
+				ID:     "testid",
+				Binary: "testbinary",
+				Targets: []string{
+					"linux_amd64_v3",
+				},
+			},
+			expectedOpts: &api.Options{
+				Name:    "testbinary",
+				Path:    filepath.Join(tmpDir, "testid_linux_amd64_v3", "testbinary"),
+				Target:  "linux_amd64_v3",
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v3",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

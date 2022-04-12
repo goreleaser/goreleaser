@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	defaultNameTemplate = "{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+	defaultNameTemplate = `{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if eq .Amd64 "v3" }}v3{{ end }}`
 	extraFiles          = "Files"
 )
 
@@ -118,7 +118,7 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 }
 
 func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*artifact.Artifact) error {
-	arch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips
+	arch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips + binaries[0].Goamd64
 
 	overridden, err := mergeOverrides(fpm, format)
 	if err != nil {
@@ -350,12 +350,14 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		return fmt.Errorf("could not close package file: %w", err)
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Type:   artifact.LinuxPackage,
-		Name:   name,
-		Path:   path,
-		Goos:   binaries[0].Goos,
-		Goarch: binaries[0].Goarch,
-		Goarm:  binaries[0].Goarm,
+		Type:    artifact.LinuxPackage,
+		Name:    name,
+		Path:    path,
+		Goos:    binaries[0].Goos,
+		Goarch:  binaries[0].Goarch,
+		Goarm:   binaries[0].Goarm,
+		Gomips:  binaries[0].Gomips,
+		Goamd64: binaries[0].Goamd64,
 		Extra: map[string]interface{}{
 			artifact.ExtraBuilds: binaries,
 			artifact.ExtraID:     fpm.ID,

@@ -146,14 +146,15 @@ func (e Extras) MarshalJSON() ([]byte, error) {
 
 // Artifact represents an artifact and its relevant info.
 type Artifact struct {
-	Name   string `json:"name,omitempty"`
-	Path   string `json:"path,omitempty"`
-	Goos   string `json:"goos,omitempty"`
-	Goarch string `json:"goarch,omitempty"`
-	Goarm  string `json:"goarm,omitempty"`
-	Gomips string `json:"gomips,omitempty"`
-	Type   Type   `json:"type,omitempty"`
-	Extra  Extras `json:"extra,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Path    string `json:"path,omitempty"`
+	Goos    string `json:"goos,omitempty"`
+	Goarch  string `json:"goarch,omitempty"`
+	Goarm   string `json:"goarm,omitempty"`
+	Gomips  string `json:"gomips,omitempty"`
+	Goamd64 string `json:"goamd64,omitempty"`
+	Type    Type   `json:"type,omitempty"`
+	Extra   Extras `json:"extra,omitempty"`
 }
 
 func (a Artifact) String() string {
@@ -269,7 +270,7 @@ func (artifacts Artifacts) GroupByID() map[string][]*Artifact {
 func (artifacts Artifacts) GroupByPlatform() map[string][]*Artifact {
 	result := map[string][]*Artifact{}
 	for _, a := range artifacts.items {
-		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips
+		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips + a.Goamd64
 		result[plat] = append(result[plat], a)
 	}
 	return result
@@ -342,6 +343,13 @@ func ByGoarch(s string) Filter {
 func ByGoarm(s string) Filter {
 	return func(a *Artifact) bool {
 		return a.Goarm == s
+	}
+}
+
+// ByGoamd64 is a predefined filter that filters by the given goamd64.
+func ByGoamd64(s string) Filter {
+	return func(a *Artifact) bool {
+		return a.Goamd64 == s
 	}
 }
 
