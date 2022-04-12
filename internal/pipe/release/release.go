@@ -48,7 +48,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	switch ctx.TokenType {
 	case context.TokenTypeGitLab:
 		if ctx.Config.Release.GitLab.Name == "" {
-			repo, err := git.ExtractRepoFromConfig()
+			repo, err := git.ExtractRepoFromConfig(ctx)
 			if err != nil {
 				return err
 			}
@@ -63,7 +63,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		)
 	case context.TokenTypeGitea:
 		if ctx.Config.Release.Gitea.Name == "" {
-			repo, err := git.ExtractRepoFromConfig()
+			repo, err := git.ExtractRepoFromConfig(ctx)
 			if err != nil {
 				return err
 			}
@@ -79,7 +79,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	default:
 		// We keep github as default for now
 		if ctx.Config.Release.GitHub.Name == "" {
-			repo, err := git.ExtractRepoFromConfig()
+			repo, err := git.ExtractRepoFromConfig(ctx)
 			if err != nil && !ctx.Snapshot {
 				return err
 			}

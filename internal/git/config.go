@@ -1,6 +1,7 @@
 package git
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -11,11 +12,11 @@ import (
 )
 
 // ExtractRepoFromConfig gets the repo name from the Git config.
-func ExtractRepoFromConfig() (result config.Repo, err error) {
-	if !IsRepo() {
+func ExtractRepoFromConfig(ctx context.Context) (result config.Repo, err error) {
+	if !IsRepo(ctx) {
 		return result, errors.New("current folder is not a git repository")
 	}
-	out, err := Run("ls-remote", "--get-url")
+	out, err := Run(ctx, "ls-remote", "--get-url")
 	if err != nil {
 		return result, fmt.Errorf("no remote configured to list refs from")
 	}

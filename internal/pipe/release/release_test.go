@@ -498,16 +498,14 @@ func TestDefaultFilled(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
-	ctx := &context.Context{
-		Config: config.Project{
-			Release: config.Release{
-				GitHub: config.Repo{
-					Name:  "foo",
-					Owner: "bar",
-				},
+	ctx := context.New(config.Project{
+		Release: config.Release{
+			GitHub: config.Repo{
+				Name:  "foo",
+				Owner: "bar",
 			},
 		},
-	}
+	})
 	ctx.TokenType = context.TokenTypeGitHub
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Release.GitHub.Name)
@@ -516,9 +514,7 @@ func TestDefaultFilled(t *testing.T) {
 
 func TestDefaultNotAGitRepo(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
 	require.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
 	require.Empty(t, ctx.Config.Release.GitHub.String())
@@ -526,9 +522,7 @@ func TestDefaultNotAGitRepo(t *testing.T) {
 
 func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
 	testlib.GitInit(t)
 	require.EqualError(t, Pipe{}.Default(ctx), "no remote configured to list refs from")
@@ -537,9 +531,7 @@ func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
 
 func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Snapshot = true
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -548,9 +540,7 @@ func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
 
 func TestDefaultGitRepoWithoutRemote(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
 	require.Error(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Release.GitHub.String())

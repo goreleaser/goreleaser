@@ -244,7 +244,7 @@ func getChangelog(ctx *context.Context, tag string) (string, error) {
 	prev := ctx.Git.PreviousTag
 	if prev == "" {
 		// get first commit
-		result, err := git.Clean(git.Run("rev-list", "--max-parents=0", "HEAD"))
+		result, err := git.Clean(git.Run(ctx, "rev-list", "--max-parents=0", "HEAD"))
 		if err != nil {
 			return "", err
 		}
@@ -283,7 +283,7 @@ func newGithubChangeloger(ctx *context.Context) (changeloger, error) {
 	if err != nil {
 		return nil, err
 	}
-	repo, err := git.ExtractRepoFromConfig()
+	repo, err := git.ExtractRepoFromConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -301,7 +301,7 @@ func newSCMChangeloger(ctx *context.Context) (changeloger, error) {
 	if err != nil {
 		return nil, err
 	}
-	repo, err := git.ExtractRepoFromConfig()
+	repo, err := git.ExtractRepoFromConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -348,14 +348,14 @@ type gitChangeloger struct{}
 
 var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
 
-func (g gitChangeloger) Log(_ *context.Context, prev, current string) (string, error) {
+func (g gitChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
 	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
 	if validSHA1.MatchString(prev) {
 		args = append(args, prev, current)
 	} else {
 		args = append(args, fmt.Sprintf("tags/%s..tags/%s", prev, current))
 	}
-	return git.Run(args...)
+	return git.Run(ctx, args...)
 }
 
 type scmChangeloger struct {

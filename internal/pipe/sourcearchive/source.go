@@ -43,7 +43,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		args = append(args, "--prefix", prefix)
 	}
 	args = append(args, ctx.Git.FullCommit)
-	out, err := git.Clean(git.Run(args...))
+	out, err := git.Clean(git.Run(ctx, args...))
 	log.Debug(out)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableSourceArchive,
