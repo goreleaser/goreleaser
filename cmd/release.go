@@ -133,7 +133,7 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Con
 	ctx.ReleaseFooterFile = options.releaseFooterFile
 	ctx.ReleaseFooterTmpl = options.releaseFooterTmpl
 	ctx.Snapshot = options.snapshot
-	if options.autoSnapshot && git.CheckDirty() != nil {
+	if options.autoSnapshot && git.CheckDirty(ctx) != nil {
 		log.Info("git repo is dirty and --auto-snapshot is set, implying --snapshot")
 		ctx.Snapshot = true
 	}

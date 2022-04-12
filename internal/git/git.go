@@ -3,6 +3,7 @@ package git
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"os/exec"
 	"strings"
@@ -11,19 +12,18 @@ import (
 )
 
 // IsRepo returns true if current folder is a git repository.
-func IsRepo() bool {
-	out, err := Run("rev-parse", "--is-inside-work-tree")
+func IsRepo(ctx context.Context) bool {
+	out, err := Run(ctx, "rev-parse", "--is-inside-work-tree")
 	return err == nil && strings.TrimSpace(out) == "true"
 }
 
-func RunWithEnv(env []string, args ...string) (string, error) {
-	// TODO: use exex.CommandContext here and refactor.
+func RunWithEnv(ctx context.Context, env []string, args ...string) (string, error) {
 	extraArgs := []string{
 		"-c", "log.showSignature=false",
 	}
 	args = append(extraArgs, args...)
 	/* #nosec */
-	cmd := exec.Command("git", args...)
+	cmd := exec.CommandContext(ctx, "git", args...)
 
 	stdout := bytes.Buffer{}
 	stderr := bytes.Buffer{}
@@ -47,8 +47,8 @@ func RunWithEnv(env []string, args ...string) (string, error) {
 }
 
 // Run runs a git command and returns its output or errors.
-func Run(args ...string) (string, error) {
-	return RunWithEnv([]string{}, args...)
+func Run(ctx context.Context, args ...string) (string, error) {
+	return RunWithEnv(ctx, []string{}, args...)
 }
 
 // Clean the output.

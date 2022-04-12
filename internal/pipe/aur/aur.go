@@ -408,13 +408,13 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 
 	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
 
-	if err := runGitCmds(parent, env, [][]string{
+	if err := runGitCmds(ctx, parent, env, [][]string{
 		{"clone", url, cfg.Name},
 	}); err != nil {
 		return fmt.Errorf("failed to setup local AUR repo: %w", err)
 	}
 
-	if err := runGitCmds(cwd, env, [][]string{
+	if err := runGitCmds(ctx, cwd, env, [][]string{
 		// setup auth et al
 		{"config", "--local", "user.name", author.Name},
 		{"config", "--local", "user.email", author.Email},
@@ -436,7 +436,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 	}
 
 	log.WithField("repo", url).WithField("name", cfg.Name).Info("pushing")
-	if err := runGitCmds(cwd, env, [][]string{
+	if err := runGitCmds(ctx, cwd, env, [][]string{
 		{"add", "-A", "."},
 		{"commit", "-m", msg},
 		{"push", "origin", "HEAD"},
@@ -489,10 +489,10 @@ func keyPath(key string) (string, error) {
 	return path, nil
 }
 
-func runGitCmds(cwd string, env []string, cmds [][]string) error {
+func runGitCmds(ctx *context.Context, cwd string, env []string, cmds [][]string) error {
 	for _, cmd := range cmds {
 		args := append([]string{"-C", cwd}, cmd...)
-		if _, err := git.Clean(git.RunWithEnv(env, args...)); err != nil {
+		if _, err := git.Clean(git.RunWithEnv(ctx, env, args...)); err != nil {
 			return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
 		}
 	}

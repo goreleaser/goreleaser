@@ -237,36 +237,34 @@ func TestFullPipe(t *testing.T) {
 			key := makeKey(t, keygen.Ed25519)
 
 			folder := t.TempDir()
-			ctx := &context.Context{
-				Git: context.GitInfo{
-					CurrentTag: "v1.0.1-foo",
-				},
-				Semver: context.Semver{
-					Major:      1,
-					Minor:      0,
-					Patch:      1,
-					Prerelease: "foo",
-				},
-				Version:   "1.0.1-foo",
-				Artifacts: artifact.New(),
-				Env: map[string]string{
-					"FOO": "foo_is_bar",
-				},
-				Config: config.Project{
-					Dist:        folder,
-					ProjectName: name,
-					AURs: []config.AUR{
-						{
-							Name:        name,
-							IDs:         []string{"foo"},
-							PrivateKey:  key,
-							License:     "MIT",
-							GitURL:      url,
-							Description: "A run pipe test fish food and FOO={{ .Env.FOO }}",
-						},
+			ctx := context.New(config.Project{
+				Dist:        folder,
+				ProjectName: name,
+				AURs: []config.AUR{
+					{
+						Name:        name,
+						IDs:         []string{"foo"},
+						PrivateKey:  key,
+						License:     "MIT",
+						GitURL:      url,
+						Description: "A run pipe test fish food and FOO={{ .Env.FOO }}",
 					},
 				},
+			})
+			ctx.Git = context.GitInfo{
+				CurrentTag: "v1.0.1-foo",
 			}
+			ctx.Semver = context.Semver{
+				Major:      1,
+				Minor:      0,
+				Patch:      1,
+				Prerelease: "foo",
+			}
+			ctx.Version = "1.0.1-foo"
+			ctx.Env = map[string]string{
+				"FOO": "foo_is_bar",
+			}
+
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:    "should-be-ignored.tar.gz",
@@ -338,45 +336,45 @@ func TestRunPipe(t *testing.T) {
 	key := makeKey(t, keygen.Ed25519)
 
 	folder := t.TempDir()
-	ctx := &context.Context{
-		TokenType: context.TokenTypeGitHub,
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
-		},
-		Semver: context.Semver{
-			Major: 1,
-			Minor: 0,
-			Patch: 1,
-		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Env: map[string]string{
-			"FOO": "foo_is_bar",
-		},
-		Config: config.Project{
-			Dist:        folder,
-			ProjectName: "foo",
-			AURs: []config.AUR{
-				{
-					License:     "MIT",
-					Description: "A run pipe test aur and FOO={{ .Env.FOO }}",
-					Homepage:    "https://github.com/goreleaser",
-					IDs:         []string{"foo"},
-					GitURL:      url,
-					PrivateKey:  key,
-				},
-			},
-			GitHubURLs: config.GitHubURLs{
-				Download: "https://github.com",
-			},
-			Release: config.Release{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
-				},
+	ctx := context.New(config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		AURs: []config.AUR{
+			{
+				License:     "MIT",
+				Description: "A run pipe test aur and FOO={{ .Env.FOO }}",
+				Homepage:    "https://github.com/goreleaser",
+				IDs:         []string{"foo"},
+				GitURL:      url,
+				PrivateKey:  key,
 			},
 		},
+		GitHubURLs: config.GitHubURLs{
+			Download: "https://github.com",
+		},
+		Release: config.Release{
+			GitHub: config.Repo{
+				Owner: "test",
+				Name:  "test",
+			},
+		},
+	})
+
+	ctx.TokenType = context.TokenTypeGitHub
+	ctx.Git = context.GitInfo{
+		CurrentTag: "v1.0.1",
 	}
+	ctx.Semver = context.Semver{
+		Major: 1,
+		Minor: 0,
+		Patch: 1,
+	}
+	ctx.Version = "1.0.1"
+	ctx.Artifacts = artifact.New()
+	ctx.Env = map[string]string{
+		"FOO": "foo_is_bar",
+	}
+
 	for _, a := range []struct {
 		name   string
 		goos   string
@@ -484,26 +482,24 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 	url := makeBareRepo(t)
 	key := makeKey(t, keygen.Ed25519)
 	folder := t.TempDir()
-	ctx := &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.2.1",
-		},
-		Semver: context.Semver{
-			Major: 1,
-			Minor: 2,
-			Patch: 1,
-		},
-		Version:   "1.2.1",
-		Artifacts: artifact.New(),
-		Config: config.Project{
-			Dist:        folder,
-			ProjectName: "foo",
-			AURs: []config.AUR{{
-				GitURL:     url,
-				PrivateKey: key,
-			}},
-		},
+	ctx := context.New(config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		AURs: []config.AUR{{
+			GitURL:     url,
+			PrivateKey: key,
+		}},
+	})
+
+	ctx.Git = context.GitInfo{
+		CurrentTag: "v1.2.1",
 	}
+	ctx.Semver = context.Semver{
+		Major: 1,
+		Minor: 2,
+		Patch: 1,
+	}
+	ctx.Version = "1.2.1"
 
 	path := filepath.Join(folder, "dist/foo_linux_amd64/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
@@ -780,6 +776,7 @@ func makeBareRepo(tb testing.TB) string {
 	tb.Helper()
 	dir := tb.TempDir()
 	_, err := git.Run(
+		context.New(config.Project{}),
 		"-C", dir,
 		"-c", "init.defaultBranch=master",
 		"init",
@@ -803,7 +800,7 @@ func makeKey(tb testing.TB, algo keygen.KeyType) string {
 func requireEqualRepoFiles(tb testing.TB, folder, name, url string) {
 	tb.Helper()
 	dir := tb.TempDir()
-	_, err := git.Run("-C", dir, "clone", url, "repo")
+	_, err := git.Run(context.New(config.Project{}), "-C", dir, "clone", url, "repo")
 	require.NoError(tb, err)
 
 	for reponame, ext := range map[string]string{

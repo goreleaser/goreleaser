@@ -1,6 +1,7 @@
 package testlib
 
 import (
+	"context"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/git"
@@ -83,7 +84,7 @@ func fakeGit(args ...string) (string, error) {
 		"-c", "log.showSignature=false",
 	}
 	allArgs = append(allArgs, args...)
-	return git.Run(allArgs...)
+	return git.Run(context.TODO(), allArgs...)
 }
 
 // GitCheckoutBranch allows us to change the active branch that we're using.
