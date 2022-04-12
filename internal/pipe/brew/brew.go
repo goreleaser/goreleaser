@@ -153,7 +153,6 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 		return pipe.Skip("brew tap name is not set")
 	}
 
-	// TODO: properly cover this with tests
 	filters := []artifact.Filter{
 		artifact.Or(
 			artifact.ByGoos("darwin"),
