@@ -85,6 +85,9 @@
 					},
 					"private_key": {
 						"type": "string"
+					},
+					"goamd64": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -298,6 +301,12 @@
 						},
 						"type": "array"
 					},
+					"goamd64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"targets": {
 						"items": {
 							"type": "string"
@@ -437,6 +446,9 @@
 						"type": "string"
 					},
 					"gomips": {
+						"type": "string"
+					},
+					"goamd64": {
 						"type": "string"
 					},
 					"ldflags": {
@@ -714,6 +726,9 @@
 						"type": "string"
 					},
 					"goarm": {
+						"type": "string"
+					},
+					"goamd64": {
 						"type": "string"
 					},
 					"dockerfile": {
@@ -1101,6 +1116,9 @@
 					"goarm": {
 						"type": "string"
 					},
+					"goamd64": {
+						"type": "string"
+					},
 					"service": {
 						"type": "string"
 					}
@@ -1140,6 +1158,9 @@
 						"type": "string"
 					},
 					"gomips": {
+						"type": "string"
+					},
+					"goamd64": {
 						"type": "string"
 					}
 				},
@@ -1222,6 +1243,9 @@
 						"type": "string"
 					},
 					"goarm": {
+						"type": "string"
+					},
+					"goamd64": {
 						"type": "string"
 					},
 					"skip_upload": {
@@ -2260,6 +2284,9 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"goamd64": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2332,6 +2359,44 @@
 					},
 					"icon_url": {
 						"type": "string"
+					},
+					"blocks": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/SlackBlock"
+						},
+						"type": "array"
+					},
+					"attachments": {
+						"items": {
+							"$schema": "http://json-schema.org/draft-04/schema#",
+							"$ref": "#/definitions/SlackAttachment"
+						},
+						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"SlackAttachment": {
+				"required": [
+					"Internal"
+				],
+				"properties": {
+					"Internal": {
+						"additionalProperties": true
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"SlackBlock": {
+				"required": [
+					"Internal"
+				],
+				"properties": {
+					"Internal": {
+						"additionalProperties": true
 					}
 				},
 				"additionalProperties": false,
