@@ -76,11 +76,16 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context, fpm config.NFPM) error {
-	linuxBinaries := ctx.Artifacts.Filter(artifact.And(
+	filters := []artifact.Filter{
 		artifact.ByType(artifact.Binary),
 		artifact.ByGoos("linux"),
-		artifact.ByIDs(fpm.Builds...),
-	)).GroupByPlatform()
+	}
+	if len(fpm.Builds) > 0 {
+		filters = append(filters, artifact.ByIDs(fpm.Builds...))
+	}
+	linuxBinaries := ctx.Artifacts.
+		Filter(artifact.And(filters...)).
+		GroupByPlatform()
 	if len(linuxBinaries) == 0 {
 		return fmt.Errorf("no linux binaries found for builds %v", fpm.Builds)
 	}
