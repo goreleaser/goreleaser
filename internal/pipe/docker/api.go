@@ -3,6 +3,7 @@ package docker
 import (
 	"bytes"
 	"fmt"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"io"
 	"os/exec"
 	"sync"
@@ -33,7 +34,7 @@ func registerImager(use string, impl imager) {
 
 // imager is something that can build and push docker images.
 type imager interface {
-	Build(ctx *context.Context, root string, images, flags []string) error
+	Build(ctx *context.Context, docker config.Docker, root string, images, flags []string) error
 	Push(ctx *context.Context, image string, flags []string) error
 }
 

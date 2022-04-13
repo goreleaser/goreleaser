@@ -2,6 +2,7 @@ package docker
 
 import (
 	"fmt"
+	"github.com/goreleaser/goreleaser/pkg/config"
 
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -51,7 +52,7 @@ func (i dockerImager) Push(ctx *context.Context, image string, flags []string) e
 	return nil
 }
 
-func (i dockerImager) Build(ctx *context.Context, root string, images, flags []string) error {
+func (i dockerImager) Build(ctx *context.Context, _ config.Docker, root string, images, flags []string) error {
 	if err := runCommand(ctx, root, "docker", i.buildCommand(images, flags)...); err != nil {
 		return fmt.Errorf("failed to build %s: %w", images[0], err)
 	}

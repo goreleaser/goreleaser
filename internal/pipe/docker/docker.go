@@ -24,6 +24,7 @@ const (
 
 	useBuildx     = "buildx"
 	useDocker     = "docker"
+	useKaniko     = "kaniko"
 	useBuildPacks = "buildpacks" // deprecated: should not be used anymore
 )
 
@@ -177,7 +178,7 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	}
 
 	log.Info("building docker image")
-	if err := imagers[docker.Use].Build(ctx, tmp, images, buildFlags); err != nil {
+	if err := imagers[docker.Use].Build(ctx, docker, tmp, images, buildFlags); err != nil {
 		return err
 	}
 
