@@ -10,6 +10,9 @@ on:
     paths:
       - 'www/*'
 
+permissions:
+  contents: read
+
 jobs:
   htmltest:
     runs-on: ubuntu-latest

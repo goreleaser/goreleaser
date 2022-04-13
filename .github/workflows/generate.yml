@@ -10,8 +10,13 @@ on:
       - CONTRIBUTING.md
       - USERS.md
 
+permissions:
+  contents: read
+
 jobs:
   docs:
+    permissions:
+      contents: write  # for stefanzweifel/git-auto-commit-action to push code in repo
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
