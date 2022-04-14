@@ -11,6 +11,7 @@ linters:
     - revive
     - forbidigo
     - tagliatelle
+    - misspell
 
 linters-settings:
   forbidigo:
