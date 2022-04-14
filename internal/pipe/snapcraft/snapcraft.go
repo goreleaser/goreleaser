@@ -187,7 +187,10 @@ func doRun(ctx *context.Context, snap config.Snapcraft) error {
 
 func isValidArch(arch string) bool {
 	// https://snapcraft.io/docs/architectures
-	for _, a := range []string{"s390x", "ppc64el", "arm64", "armhf", "amd64", "i386"} {
+	if strings.HasPrefix(arch, "amd64") {
+		return true
+	}
+	for _, a := range []string{"s390x", "ppc64el", "arm64", "armhf", "i386"} {
 		if arch == a {
 			return true
 		}
