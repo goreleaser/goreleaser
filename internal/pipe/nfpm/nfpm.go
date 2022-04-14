@@ -118,7 +118,9 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 }
 
 func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*artifact.Artifact) error {
-	arch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips + binaries[0].Goamd64
+	// TODO: improve mips handling on nfpm
+	infoArch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips // key used for the ConventionalFileName et al
+	arch := infoArch + binaries[0].Goamd64                                  // unique arch key
 
 	overridden, err := mergeOverrides(fpm, format)
 	if err != nil {
@@ -231,7 +233,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	log.WithField("files", destinations(contents)).Debug("all archive files")
 
 	info := &nfpm.Info{
-		Arch:            arch,
+		Arch:            infoArch,
 		Platform:        "linux",
 		Name:            fpm.PackageName,
 		Version:         ctx.Version,
