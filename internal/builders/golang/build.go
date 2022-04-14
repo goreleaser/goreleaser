@@ -62,7 +62,7 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 			build.Gomips = []string{"hardfloat"}
 		}
 		if len(build.Goamd64) == 0 {
-			build.Goamd64 = []string{"v2"}
+			build.Goamd64 = []string{"v1"}
 		}
 		targets, err := buildtarget.List(build)
 		build.Targets = targets

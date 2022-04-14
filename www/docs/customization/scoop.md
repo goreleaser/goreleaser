@@ -74,7 +74,7 @@ scoop:
 
   # GOAMD64 to specify which amd64 version to use if there are multiple versions
   # from the build section.
-  # Default is v2.
+  # Default is v1.
   goamd64: v3
 ```
 

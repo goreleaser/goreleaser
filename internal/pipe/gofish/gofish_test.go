@@ -198,7 +198,7 @@ func TestFullPipe(t *testing.T) {
 				Path:    "doesnt matter",
 				Goos:    "darwin",
 				Goarch:  "amd64",
-				Goamd64: "v2",
+				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:     "bar",
@@ -211,7 +211,7 @@ func TestFullPipe(t *testing.T) {
 				Path:    path,
 				Goos:    "darwin",
 				Goarch:  "amd64",
-				Goamd64: "v2",
+				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:       "foo",
@@ -329,7 +329,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 		Path:    path,
 		Goos:    "darwin",
 		Goarch:  "amd64",
-		Goamd64: "v2",
+		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "unibin",
@@ -412,7 +412,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 		Path:    path,
 		Goos:    "darwin",
 		Goarch:  "amd64",
-		Goamd64: "v2",
+		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
@@ -492,7 +492,7 @@ func TestRunPipeMultipleGoFishWithSkip(t *testing.T) {
 		Path:    path,
 		Goos:    "darwin",
 		Goarch:  "amd64",
-		Goamd64: "v2",
+		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
@@ -609,7 +609,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 					Goos:    a.goos,
 					Goarch:  a.goarch,
 					Goarm:   a.goarm,
-					Goamd64: "v2",
+					Goamd64: "v1",
 					Type:    artifact.UploadableArchive,
 					Extra: map[string]interface{}{
 						artifact.ExtraID:       a.name,
@@ -731,7 +731,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Path:    path,
 		Goos:    "darwin",
 		Goarch:  "amd64",
-		Goamd64: "v2",
+		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
@@ -784,7 +784,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Path:    path,
 		Goos:    "darwin",
 		Goarch:  "amd64",
-		Goamd64: "v2",
+		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     "foo",

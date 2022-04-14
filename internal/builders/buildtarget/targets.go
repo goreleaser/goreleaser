@@ -257,5 +257,5 @@ var (
 
 	validGoarm   = []string{"5", "6", "7"}
 	validGomips  = []string{"hardfloat", "softfloat"}
-	validGoamd64 = []string{"v2", "v3"}
+	validGoamd64 = []string{"v1", "v2", "v3", "v4"}
 )

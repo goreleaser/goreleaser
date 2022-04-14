@@ -93,7 +93,7 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v2", Path: file},
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldNotErr,
@@ -131,7 +131,7 @@ func Test_doRun(t *testing.T) {
 					Name:    "foo_1.0.1_windows_amd64.tar.gz",
 					Goos:    "windows",
 					Goarch:  "amd64",
-					Goamd64: "v2",
+					Goamd64: "v1",
 					Path:    file,
 					Extra: map[string]interface{}{
 						"Wrap": "foo_1.0.1_windows_amd64",
@@ -176,7 +176,7 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v2", Path: file},
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldNotErr,
@@ -214,7 +214,7 @@ func Test_doRun(t *testing.T) {
 					Name:    "foo_1.0.1_windows_amd64.tar.gz",
 					Goos:    "windows",
 					Goarch:  "amd64",
-					Goamd64: "v2",
+					Goamd64: "v1",
 					Path:    file,
 				},
 				{
@@ -257,7 +257,7 @@ func Test_doRun(t *testing.T) {
 					Name:    "foo_1.0.1_windows_amd64.tar.gz",
 					Goos:    "windows",
 					Goarch:  "amd64",
-					Goamd64: "v2",
+					Goamd64: "v1",
 					Path:    file,
 				},
 				{
@@ -326,7 +326,7 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v2", Path: file},
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldNotErr,
@@ -364,7 +364,7 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v2", Path: file},
+				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
 				{Name: "foo_1.0.1-pre.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldNotErr,
@@ -396,7 +396,7 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v2", Path: file},
+				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
 				{Name: "foo_1.0.1-pre.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldNotErr,
@@ -430,7 +430,7 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{
-				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v2", Path: file},
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
 				{Name: "foo_1.0.1_windows_386.tar.gz", Goos: "windows", Goarch: "386", Path: file},
 			},
 			shouldNotErr,
@@ -635,7 +635,7 @@ func Test_buildManifest(t *testing.T) {
 					Name:    "foo_1.0.1_windows_amd64.tar.gz",
 					Goos:    "windows",
 					Goarch:  "amd64",
-					Goamd64: "v2",
+					Goamd64: "v1",
 					Path:    file,
 					Extra: map[string]interface{}{
 						artifact.ExtraBuilds: []*artifact.Artifact{
@@ -720,7 +720,7 @@ func getScoopPipeSkipCtx(folder string) (*context.Context, string) {
 		Path:    path,
 		Goos:    "windows",
 		Goarch:  "amd64",
-		Goamd64: "v2",
+		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     "foo",
@@ -799,7 +799,7 @@ func TestWrapInDirectory(t *testing.T) {
 			Name:    "foo_1.0.1_windows_amd64.tar.gz",
 			Goos:    "windows",
 			Goarch:  "amd64",
-			Goamd64: "v2",
+			Goamd64: "v1",
 			Path:    file,
 			Extra: map[string]interface{}{
 				artifact.ExtraWrappedIn: "foo_1.0.1_windows_amd64",

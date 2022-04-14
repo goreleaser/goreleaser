@@ -284,7 +284,7 @@ func TestFullPipe(t *testing.T) {
 				Path:    "doesnt matter",
 				Goos:    "linux",
 				Goarch:  "amd64",
-				Goamd64: "v2",
+				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:       "bar",
@@ -298,7 +298,7 @@ func TestFullPipe(t *testing.T) {
 				Path:    path,
 				Goos:    "linux",
 				Goarch:  "amd64",
-				Goamd64: "v2",
+				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:       "foo",
@@ -442,7 +442,7 @@ func TestRunPipe(t *testing.T) {
 			Goos:    a.goos,
 			Goarch:  a.goarch,
 			Goarm:   a.goarm,
-			Goamd64: "v2",
+			Goamd64: "v1",
 			Type:    artifact.UploadableArchive,
 			Extra: map[string]interface{}{
 				artifact.ExtraID:       "foo",
@@ -507,7 +507,7 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 		Path:    path,
 		Goos:    "linux",
 		Goarch:  "amd64",
-		Goamd64: "v2",
+		Goamd64: "v1",
 		Type:    artifact.UploadableBinary,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     "foo",
@@ -554,7 +554,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		Path:    path,
 		Goos:    "linux",
 		Goarch:  "amd64",
-		Goamd64: "v2",
+		Goamd64: "v1",
 		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
@@ -644,7 +644,7 @@ func TestDefault(t *testing.T) {
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
 			GitSSHCommand:         defaultSSHCommand,
-			Goamd64:               "v2",
+			Goamd64:               "v1",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
 				Email: "goreleaser@carlosbecker.com",
@@ -672,7 +672,7 @@ func TestDefault(t *testing.T) {
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
 			GitSSHCommand:         defaultSSHCommand,
-			Goamd64:               "v2",
+			Goamd64:               "v1",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
 				Email: "goreleaser@carlosbecker.com",

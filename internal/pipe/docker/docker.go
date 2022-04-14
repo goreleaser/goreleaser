@@ -49,7 +49,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			docker.Goarch = "amd64"
 		}
 		if docker.Goamd64 == "" {
-			docker.Goamd64 = "v2"
+			docker.Goamd64 = "v1"
 		}
 		if docker.Dockerfile == "" {
 			docker.Dockerfile = "Dockerfile"

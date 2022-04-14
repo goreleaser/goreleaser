@@ -108,10 +108,13 @@ func TestRunPipe(t *testing.T) {
 					Suggests:         []string{"bzr"},
 					Replaces:         []string{"fish"},
 					Conflicts:        []string{"git"},
-					EmptyFolders:     []string{"/var/log/foobar"},
 					Release:          "10",
 					Epoch:            "20",
 					Contents: []*files.Content{
+						{
+							Destination: "/var/log/foobar",
+							Type:        "dir",
+						},
 						{
 							Source:      "./testdata/testfile.txt",
 							Destination: "/usr/share/testfile.txt",
@@ -172,7 +175,7 @@ func TestRunPipe(t *testing.T) {
 					})
 				}
 			case "amd64":
-				for _, goamd64 := range []string{"v2", "v3"} {
+				for _, goamd64 := range []string{"v1", "v2", "v3", "v4"} {
 					ctx.Artifacts.Add(&artifact.Artifact{
 						Name:    "subdir/mybin",
 						Path:    binPath,
@@ -215,7 +218,7 @@ func TestRunPipe(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 24)
+	require.Len(t, packages, 30)
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
@@ -223,7 +226,7 @@ func TestRunPipe(t *testing.T) {
 		if pkg.Goarm != "" {
 			arch += "v" + pkg.Goarm
 		}
-		if pkg.Goamd64 == "v3" {
+		if pkg.Goamd64 != "v1" {
 			arch += pkg.Goamd64
 		}
 		if pkg.Gomips != "" {
@@ -241,6 +244,7 @@ func TestRunPipe(t *testing.T) {
 			binPath,
 		}, sources(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
 		require.ElementsMatch(t, []string{
+			"/var/log/foobar",
 			"/usr/share/testfile.txt",
 			"/etc/mydir",
 			"/etc/nope.conf",
@@ -251,7 +255,7 @@ func TestRunPipe(t *testing.T) {
 			"/usr/bin/subdir/mybin",
 		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
 	}
-	require.Len(t, ctx.Config.NFPMs[0].Contents, 7, "should not modify the config file list")
+	require.Len(t, ctx.Config.NFPMs[0].Contents, 8, "should not modify the config file list")
 }
 
 func TestRunPipeConventionalNameTemplate(t *testing.T) {
@@ -1059,7 +1063,6 @@ func TestMeta(t *testing.T) {
 					Suggests:         []string{"bzr"},
 					Replaces:         []string{"fish"},
 					Conflicts:        []string{"git"},
-					EmptyFolders:     []string{"/var/log/foobar"},
 					Release:          "10",
 					Epoch:            "20",
 					Contents: []*files.Content{
@@ -1077,6 +1080,10 @@ func TestMeta(t *testing.T) {
 							Destination: "/etc/nope-rpm.conf",
 							Type:        "config",
 							Packager:    "rpm",
+						},
+						{
+							Destination: "/var/log/foobar",
+							Type:        "dir",
 						},
 					},
 					Replacements: map[string]string{
@@ -1111,13 +1118,14 @@ func TestMeta(t *testing.T) {
 		require.Equal(t, pkg.Name, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ID(), "someid")
 		require.ElementsMatch(t, []string{
+			"/var/log/foobar",
 			"/usr/share/testfile.txt",
 			"/etc/nope.conf",
 			"/etc/nope-rpm.conf",
 		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
 	}
 
-	require.Len(t, ctx.Config.NFPMs[0].Contents, 3, "should not modify the config file list")
+	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
 }
 
 func TestSkipSign(t *testing.T) {

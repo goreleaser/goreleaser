@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	defaultNameTemplateSuffix = `{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if eq .Amd64 "v3" }}v3{{ end }}`
+	defaultNameTemplateSuffix = `{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
 	defaultNameTemplate       = "{{ .ProjectName }}_" + defaultNameTemplateSuffix
 	defaultBinaryNameTemplate = "{{ .Binary }}_" + defaultNameTemplateSuffix
 )

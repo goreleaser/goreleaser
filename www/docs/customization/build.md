@@ -93,7 +93,7 @@ builds:
 
     # GOAMD64 to build when GOARCH is amd64.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Default is only v2.
+    # Default is only v1.
     goamd64:
       - v2
       - v3

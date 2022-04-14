@@ -51,7 +51,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			krew.Name = ctx.Config.ProjectName
 		}
 		if krew.Goamd64 == "" {
-			krew.Goamd64 = "v2"
+			krew.Goamd64 = "v1"
 		}
 	}
 

@@ -483,11 +483,17 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 
 func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 	for name, fn := range map[string]func(ctx *context.Context){
+		"v1": func(ctx *context.Context) {
+			ctx.Config.Brews[0].Goamd64 = "v1"
+		},
 		"v2": func(ctx *context.Context) {
 			ctx.Config.Brews[0].Goamd64 = "v2"
 		},
 		"v3": func(ctx *context.Context) {
 			ctx.Config.Brews[0].Goamd64 = "v3"
+		},
+		"v4": func(ctx *context.Context) {
+			ctx.Config.Brews[0].Goamd64 = "v4"
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -548,6 +554,12 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 					name:    "amd64v2",
 					goos:    "linux",
 					goarch:  "amd64",
+					goamd64: "v1",
+				},
+				{
+					name:    "amd64v2",
+					goos:    "linux",
+					goarch:  "amd64",
 					goamd64: "v2",
 				},
 				{
@@ -555,6 +567,12 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 					goos:    "linux",
 					goarch:  "amd64",
 					goamd64: "v3",
+				},
+				{
+					name:    "amd64v3",
+					goos:    "linux",
+					goarch:  "amd64",
+					goamd64: "v4",
 				},
 			} {
 				path := filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))

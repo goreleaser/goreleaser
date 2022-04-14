@@ -134,7 +134,7 @@ aurs:
     commit_msg_template: "pkgbuild updates"
 
     # If you build for multiple GOAMD64 versions, you may use this to choose which one to use.
-    # Defaults to `v2`.
+    # Defaults to `v1`.
     goamd64: v2
 
     # The value to be passed to `GIT_SSH_COMMAND`.

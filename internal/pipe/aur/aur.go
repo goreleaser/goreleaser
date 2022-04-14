@@ -64,7 +64,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			pkg.GitSSHCommand = defaultSSHCommand
 		}
 		if pkg.Goamd64 == "" {
-			pkg.Goamd64 = "v2"
+			pkg.Goamd64 = "v1"
 		}
 	}
 

@@ -57,12 +57,22 @@ func TestFilter(t *testing.T) {
 		{
 			Name:    "bar",
 			Goarch:  "amd64",
+			Goamd64: "v1",
+		},
+		{
+			Name:    "bar",
+			Goarch:  "amd64",
 			Goamd64: "v2",
 		},
 		{
 			Name:    "bar",
 			Goarch:  "amd64",
 			Goamd64: "v3",
+		},
+		{
+			Name:    "bar",
+			Goarch:  "amd64",
+			Goamd64: "v4",
 		},
 		{
 			Name:  "foobar",
@@ -101,11 +111,13 @@ func TestFilter(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByGoos("linux")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoos("darwin")).items, 2)
 
-	require.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 2)
+	require.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 4)
 	require.Len(t, artifacts.Filter(ByGoarch("386")).items, 0)
 
+	require.Len(t, artifacts.Filter(ByGoamd64("v1")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoamd64("v2")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoamd64("v3")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoamd64("v4")).items, 1)
 
 	require.Len(t, artifacts.Filter(ByGoarm("6")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoarm("7")).items, 0)
@@ -113,10 +125,10 @@ func TestFilter(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByType(Checksum)).items, 2)
 	require.Len(t, artifacts.Filter(ByType(Binary)).items, 0)
 
-	require.Len(t, artifacts.Filter(OnlyReplacingUnibins).items, 7)
+	require.Len(t, artifacts.Filter(OnlyReplacingUnibins).items, 9)
 	require.Len(t, artifacts.Filter(And(OnlyReplacingUnibins, ByGoos("darwin"))).items, 1)
 
-	require.Len(t, artifacts.Filter(nil).items, 8)
+	require.Len(t, artifacts.Filter(nil).items, 10)
 
 	require.Len(t, artifacts.Filter(
 		And(

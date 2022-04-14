@@ -93,7 +93,7 @@ type LayoutMetadata struct {
 	Type     string `yaml:",omitempty"`
 }
 
-const defaultNameTemplate = `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if eq .Amd64 "v3" }}v3{{ end }}`
+const defaultNameTemplate = `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
 
 // Pipe for snapcraft packaging.
 type Pipe struct{}
@@ -396,12 +396,13 @@ func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries [
 		return nil
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Type:   artifact.PublishableSnapcraft,
-		Name:   folder + ".snap",
-		Path:   snapFile,
-		Goos:   binaries[0].Goos,
-		Goarch: binaries[0].Goarch,
-		Goarm:  binaries[0].Goarm,
+		Type:    artifact.PublishableSnapcraft,
+		Name:    folder + ".snap",
+		Path:    snapFile,
+		Goos:    binaries[0].Goos,
+		Goarch:  binaries[0].Goarch,
+		Goarm:   binaries[0].Goarm,
+		Goamd64: binaries[0].Goamd64,
 		Extra: map[string]interface{}{
 			releasesExtra: channels,
 		},

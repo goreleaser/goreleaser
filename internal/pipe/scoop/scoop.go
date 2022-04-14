@@ -60,7 +60,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Scoop.CommitMessageTemplate = "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
 	}
 	if ctx.Config.Scoop.Goamd64 == "" {
-		ctx.Config.Scoop.Goamd64 = "v2"
+		ctx.Config.Scoop.Goamd64 = "v1"
 	}
 	return nil
 }

@@ -39,7 +39,7 @@ func TestRunPipe(t *testing.T) {
 		t.Run("Archive format "+format, func(t *testing.T) {
 			dist := filepath.Join(folder, format+"_dist")
 			require.NoError(t, os.Mkdir(dist, 0o755))
-			for _, arch := range []string{"darwinamd64v2", "darwinall", "linux386", "linuxarm7", "linuxmipssoftfloat", "linuxamd64v3"} {
+			for _, arch := range []string{"darwinamd64v1", "darwinall", "linux386", "linuxarm7", "linuxmipssoftfloat", "linuxamd64v3"} {
 				createFakeBinary(t, dist, arch, "bin/mybin")
 			}
 			createFakeBinary(t, dist, "windowsamd64", "bin/mybin.exe")
@@ -90,9 +90,9 @@ func TestRunPipe(t *testing.T) {
 			darwinBuild := &artifact.Artifact{
 				Goos:    "darwin",
 				Goarch:  "amd64",
-				Goamd64: "v2",
+				Goamd64: "v1",
 				Name:    "bin/mybin",
-				Path:    filepath.Join(dist, "darwinamd64v2", "bin", "mybin"),
+				Path:    filepath.Join(dist, "darwinamd64v1", "bin", "mybin"),
 				Type:    artifact.Binary,
 				Extra: map[string]interface{}{
 					artifact.ExtraBinary: "bin/mybin",
@@ -137,7 +137,7 @@ func TestRunPipe(t *testing.T) {
 			windowsBuild := &artifact.Artifact{
 				Goos:    "windows",
 				Goarch:  "amd64",
-				Goamd64: "v2",
+				Goamd64: "v1",
 				Name:    "bin/mybin.exe",
 				Path:    filepath.Join(dist, "windowsamd64", "bin", "mybin.exe"),
 				Type:    artifact.Binary,
