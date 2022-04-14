@@ -97,6 +97,8 @@ nav:
     - Docker Images and Manifests: customization/docker_sign.md
   - Publish:
     - customization/release.md
+    - customization/snapshots.md
+    - customization/nightlies.md
     - customization/blob.md
     - customization/fury.md
     - customization/homebrew.md
@@ -109,8 +111,6 @@ nav:
     - customization/publishers.md
     - customization/artifactory.md
     - customization/milestone.md
-    - customization/snapshots.md
-    - customization/nightly.md
   - Announce:
       - About: customization/announce/index.md
       - customization/announce/discord.md
