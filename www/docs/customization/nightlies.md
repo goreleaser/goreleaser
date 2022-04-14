@@ -34,6 +34,9 @@ This means that if you use `{{ .Version }}` on your name templates, you'll get t
 - GitHub/GitLab/Gitea releases;
 - Homebrew taps;
 - Scoop manifests;
+- Arch User Repositories;
+- GoFish Rigs;
+- Krew Plugin Manifests;
 - Milestone closing;
 - All announcers;
 
