@@ -628,6 +628,7 @@ func TestOverrides(t *testing.T) {
 
 func TestDebSpecificConfig(t *testing.T) {
 	setupContext := func(tb testing.TB) *context.Context {
+		tb.Helper()
 		folder := t.TempDir()
 		dist := filepath.Join(folder, "dist")
 		require.NoError(t, os.Mkdir(dist, 0o755))
