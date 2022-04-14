@@ -191,7 +191,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		for _, ov := range fpm.Deb.Lintian {
 			lines = append(lines, fmt.Sprintf("%s: %s", fpm.PackageName, ov))
 		}
-		lintianPath := filepath.Join(ctx.Config.Dist, "deb", fpm.PackageName, ".lintian")
+		lintianPath := filepath.Join(ctx.Config.Dist, "deb", fpm.PackageName+"_"+arch, ".lintian")
 		if err := os.MkdirAll(filepath.Dir(lintianPath), 0o755); err != nil {
 			return fmt.Errorf("failed to write lintian file: %w", err)
 		}
@@ -199,7 +199,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 			return fmt.Errorf("failed to write lintian file: %w", err)
 		}
 
-		log.Infof("creating %q", lintianPath)
+		log.Debugf("creating %q", lintianPath)
 		contents = append(contents, &files.Content{
 			Source:      lintianPath,
 			Destination: filepath.Join("./usr/share/lintian/overrides", fpm.PackageName),

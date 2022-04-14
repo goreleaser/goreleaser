@@ -627,84 +627,101 @@ func TestOverrides(t *testing.T) {
 }
 
 func TestDebSpecificConfig(t *testing.T) {
-	folder := t.TempDir()
-	dist := filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0o755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
-	binPath := filepath.Join(dist, "mybin", "mybin")
-	f, err := os.Create(binPath)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
-	ctx := context.New(config.Project{
-		ProjectName: "mybin",
-		Dist:        dist,
-		NFPMs: []config.NFPM{
-			{
-				ID:      "someid",
-				Builds:  []string{"default"},
-				Formats: []string{"deb"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-					Contents: []*files.Content{
-						{
-							Source:      "testdata/testfile.txt",
-							Destination: "/usr/share/testfile.txt",
+	setupContext := func(tb testing.TB) *context.Context {
+		tb.Helper()
+		folder := t.TempDir()
+		dist := filepath.Join(folder, "dist")
+		require.NoError(t, os.Mkdir(dist, 0o755))
+		require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+		binPath := filepath.Join(dist, "mybin", "mybin")
+		f, err := os.Create(binPath)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+		ctx := context.New(config.Project{
+			ProjectName: "mybin",
+			Dist:        dist,
+			NFPMs: []config.NFPM{
+				{
+					ID:         "someid",
+					Builds:     []string{"default"},
+					Formats:    []string{"deb"},
+					Maintainer: "foo",
+					NFPMOverridables: config.NFPMOverridables{
+						PackageName: "foo",
+						Contents: []*files.Content{
+							{
+								Source:      "testdata/testfile.txt",
+								Destination: "/usr/share/testfile.txt",
+							},
 						},
-					},
-					Deb: config.NFPMDeb{
-						Signature: config.NFPMDebSignature{
-							KeyFile: "./testdata/privkey.gpg",
-						},
-						Lintian: []string{
-							"statically-linked-binary",
-							"changelog-file-missing-in-native-package",
+						Deb: config.NFPMDeb{
+							Signature: config.NFPMDebSignature{
+								KeyFile: "./testdata/privkey.gpg",
+							},
 						},
 					},
 				},
 			},
-		},
-	})
-	ctx.Version = "1.0.0"
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "mybin",
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
-					artifact.ExtraID: "default",
-				},
-			})
+		})
+		ctx.Version = "1.0.0"
+		ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+		for _, goos := range []string{"linux", "darwin"} {
+			for _, goarch := range []string{"amd64", "386"} {
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "mybin",
+					Path:   binPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Type:   artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "default",
+					},
+				})
+			}
 		}
+		return ctx
 	}
 
 	t.Run("no passphrase set", func(t *testing.T) {
 		require.Contains(
 			t,
-			Pipe{}.Run(ctx).Error(),
+			Pipe{}.Run(setupContext(t)).Error(),
 			`key is encrypted but no passphrase was provided`,
 		)
 	})
 
 	t.Run("general passphrase set", func(t *testing.T) {
+		ctx := setupContext(t)
 		ctx.Env = map[string]string{
 			"NFPM_SOMEID_PASSPHRASE": "hunter2",
 		}
 		require.NoError(t, Pipe{}.Run(ctx))
-
-		bts, err := os.ReadFile(filepath.Join(dist, "deb/foo/.lintian"))
-		require.NoError(t, err)
-		require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
 	})
 
 	t.Run("packager specific passphrase set", func(t *testing.T) {
+		ctx := setupContext(t)
 		ctx.Env = map[string]string{
 			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
 		}
 		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("lintian", func(t *testing.T) {
+		ctx := setupContext(t)
+		ctx.Env = map[string]string{
+			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
+		}
+		ctx.Config.NFPMs[0].NFPMOverridables.Deb.Lintian = []string{
+			"statically-linked-binary",
+			"changelog-file-missing-in-native-package",
+		}
+		require.NoError(t, Pipe{}.Run(ctx))
+
+		for _, goarch := range []string{"amd64", "386"} {
+			bts, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "deb/foo_"+goarch+"/.lintian"))
+			require.NoError(t, err)
+			require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
+		}
 	})
 }
 
