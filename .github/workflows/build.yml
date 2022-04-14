@@ -82,6 +82,8 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}-${{ hashFiles('**/go.sum') }}
       - uses: sigstore/cosign-installer@ab3bb6a537fb08a1b78f7d1175fff799ca6850a3 # v2.1.0
       - uses: anchore/sbom-action/download-syft@407a3ec314b07e326eff3ba171091cbc150460a8 # v0.10.0
+      - name: setup-validate-krew-manifest
+        run: go install sigs.k8s.io/krew/cmd/validate-krew-manifest@latest
       - uses: developer-guy/setup-krew@f1d3e33a8038fbd736abfb7f21c581b310f597d4
       - run: task ci
       - uses: codecov/codecov-action@e3c560433a6cc60aec8812599b7844a7b4fa0d71 # v3
