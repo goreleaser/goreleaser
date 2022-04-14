@@ -86,7 +86,7 @@ On the nFPM name template field, you can use those extra fields as well:
 | `.PackageName` | package the name. Same as `ProjectName` if not overridden. |
 | `.ConventionalFileName` | conventional package file name as provided by nFPM[^9] |
 
-[^9]: Please beware: some OSs might have the same names for different ARM versions, for example, for Debian both ARMv6 and ARMv7 are called `armhf`. Make sure that's not your case otherwise you might end up with colliding names.
+[^9]: Please beware: some OSs might have the same names for different ARM versions, for example, for Debian both ARMv6 and ARMv7 are called `armhf`. Make sure that's not your case otherwise you might end up with colliding names. It also does not handle multiple GOAMD64 versions.
 
 ## Functions
 
