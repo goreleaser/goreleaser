@@ -55,7 +55,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			brew.Goarm = "6"
 		}
 		if brew.Goamd64 == "" {
-			brew.Goamd64 = "v2"
+			brew.Goamd64 = "v1"
 		}
 	}
 

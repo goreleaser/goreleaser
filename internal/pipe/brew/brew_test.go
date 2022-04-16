@@ -277,17 +277,19 @@ func TestFullPipe(t *testing.T) {
 							Service:      "run foo/bar\nkeep_alive true",
 							PostInstall:  "system \"echo\"\nsystem \"touch\" \"/tmp/hi\"",
 							Install:      `bin.install "{{ .ProjectName }}"`,
+							Goamd64:      "v1",
 						},
 					},
 				},
 			}
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bar_bin.tar.gz",
-				Path:   "doesnt matter",
-				Goos:   "darwin",
-				Goarch: "amd64",
-				Type:   artifact.UploadableArchive,
+				Name:    "bar_bin.tar.gz",
+				Path:    "doesnt matter",
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:     "bar",
 					artifact.ExtraFormat: "tar.gz",
@@ -295,11 +297,12 @@ func TestFullPipe(t *testing.T) {
 			})
 			path := filepath.Join(folder, "bin.tar.gz")
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bin.tar.gz",
-				Path:   path,
-				Goos:   "darwin",
-				Goarch: "amd64",
-				Type:   artifact.UploadableArchive,
+				Name:    "bin.tar.gz",
+				Path:    path,
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:     "foo",
 					artifact.ExtraFormat: "tar.gz",
@@ -350,7 +353,8 @@ func TestRunPipeNameTemplate(t *testing.T) {
 			ProjectName: "foo",
 			Brews: []config.Homebrew{
 				{
-					Name: "foo_{{ .Env.FOO_BAR }}",
+					Name:    "foo_{{ .Env.FOO_BAR }}",
+					Goamd64: "v1",
 					Tap: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -364,11 +368,12 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	}
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "tar.gz",
@@ -407,7 +412,8 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 			ProjectName: "foo",
 			Brews: []config.Homebrew{
 				{
-					Name: "foo",
+					Name:    "foo",
+					Goamd64: "v1",
 					Tap: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -418,7 +424,8 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 					SkipUpload: "true",
 				},
 				{
-					Name: "bar",
+					Name:    "bar",
+					Goamd64: "v1",
 					Tap: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -428,7 +435,8 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 					},
 				},
 				{
-					Name: "foobar",
+					Name:    "foobar",
+					Goamd64: "v1",
 					Tap: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -439,7 +447,8 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 					SkipUpload: "true",
 				},
 				{
-					Name: "baz",
+					Name:    "baz",
+					Goamd64: "v1",
 					Tap: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -454,11 +463,12 @@ func TestRunPipeMultipleBrewsWithSkip(t *testing.T) {
 	}
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "tar.gz",
@@ -959,6 +969,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 					Owner: "test",
 					Name:  "test",
 				},
+				Goamd64: "v1",
 			},
 		},
 	})
@@ -972,11 +983,12 @@ func TestRunPipeNoUpload(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "tar.gz",
@@ -1019,6 +1031,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 					Owner: "test",
 					Name:  "test",
 				},
+				Goamd64: "v1",
 			},
 		},
 	})
@@ -1028,11 +1041,12 @@ func TestRunEmptyTokenType(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "tar.gz",
@@ -1210,17 +1224,19 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 						"unibin",
 					},
 					Install: `bin.install "unibin"`,
+					Goamd64: "v1",
 				},
 			},
 		},
 	}
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin_amd64.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin_amd64.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
@@ -1228,11 +1244,12 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin_arm64.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "arm64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin_arm64.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "arm64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
