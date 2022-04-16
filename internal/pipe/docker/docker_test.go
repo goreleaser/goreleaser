@@ -19,10 +19,12 @@ import (
 )
 
 var (
-	it          = flag.Bool("it", false, "push images to docker hub")
-	debug       = flag.Bool("debug", false, "enable debug logs")
-	registry    = "localhost:5000/"
-	altRegistry = "localhost:5050/"
+	it              = flag.Bool("it", false, "push images to docker hub")
+	debug           = flag.Bool("debug", false, "enable debug logs")
+	registryPort    = "5050"
+	registry        = fmt.Sprintf("localhost:%s/", registryPort)
+	altRegistryPort = "5051"
+	altRegistry     = fmt.Sprintf("localhost:%s/", altRegistryPort)
 )
 
 func TestMain(m *testing.M) {
@@ -43,8 +45,8 @@ func start(t *testing.T) {
 	}
 	t.Log("starting registries")
 	for _, line := range []string{
-		"run -d -p 5000:5000 --name registry registry:2",
-		"run -d -p 5050:5000 --name alt_registry registry:2",
+		fmt.Sprintf("run -d -p %s:5000 --name registry registry:2", registryPort),
+		fmt.Sprintf("run -d -p %s:5000 --name alt_registry registry:2", altRegistryPort),
 	} {
 		if out, err := exec.Command("docker", strings.Fields(line)...).CombinedOutput(); err != nil {
 			t.Log("failed to start docker registry", string(out), err)
@@ -296,7 +298,7 @@ func TestRunPipe(t *testing.T) {
 			expect:              []string{registry + "goreleaser/test_multiarch_fail:latest-arm64v8"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldErr("failed to create localhost:5000/goreleaser/test_multiarch_fail:test"),
+			manifestAssertError: shouldErr("failed to create localhost:5050/goreleaser/test_multiarch_fail:test"),
 			assertImageLabels:   noLabels,
 		},
 		"multiarch manifest template error": {
@@ -519,7 +521,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			expect:              []string{},
 			assertImageLabels:   noLabels,
-			assertError:         shouldErr(`failed to build localhost:5000/goreleaser/test_run_pipe_template_UPPERCASE:v1.0.0`),
+			assertError:         shouldErr(`failed to build localhost:5050/goreleaser/test_run_pipe_template_UPPERCASE:v1.0.0`),
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
@@ -681,7 +683,7 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/one_img_error_with_skip_push:true",
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("failed to build localhost:5000/goreleaser/one_img_error_with_skip_push:false"),
+			assertError:       shouldErr("failed to build localhost:5050/goreleaser/one_img_error_with_skip_push:false"),
 		},
 		"valid_no_latest": {
 			dockers: []config.Docker{
@@ -739,7 +741,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("failed to build localhost:5000/goreleaser/test_build_args:latest"),
+			assertError:       shouldErr("failed to build localhost:5050/goreleaser/test_build_args:latest"),
 		},
 		"bad_dockerfile": {
 			dockers: []config.Docker{
@@ -753,7 +755,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("failed to build localhost:5000/goreleaser/bad_dockerfile:latest"),
+			assertError:       shouldErr("failed to build localhost:5050/goreleaser/bad_dockerfile:latest"),
 		},
 		"tag_template_error": {
 			dockers: []config.Docker{
