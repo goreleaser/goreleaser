@@ -201,6 +201,13 @@ func TestInvalidTargets(t *testing.T) {
 			},
 			expectedErr: "invalid gomips: mehfloat",
 		},
+		"goamd64": {
+			build: config.Build{
+				Goarch:  []string{"amd64"},
+				Goamd64: []string{"v1", "v431"},
+			},
+			expectedErr: "invalid goamd64: v431",
+		},
 	} {
 		t.Run(s, func(t *testing.T) {
 			config := config.Project{
