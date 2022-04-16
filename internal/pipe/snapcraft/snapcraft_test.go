@@ -613,23 +613,50 @@ func Test_processChannelsTemplates(t *testing.T) {
 func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 	t.Helper()
 	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386", "arm6"} {
-			folder := goos + goarch
-			require.NoError(t, os.MkdirAll(filepath.Join(dist, folder), 0o755))
-			binPath := filepath.Join(dist, folder, name)
+		for _, goarch := range []string{"amd64", "386", "arm"} {
+			binPath := filepath.Join(dist, name)
+			require.NoError(t, os.MkdirAll(filepath.Dir(binPath), 0o755))
 			f, err := os.Create(binPath)
 			require.NoError(t, err)
 			require.NoError(t, f.Close())
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "subdir/" + name,
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
-					artifact.ExtraID: name,
-				},
-			})
+			switch goarch {
+			case "arm":
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "subdir/" + name,
+					Path:   binPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Goarm:  "6",
+					Type:   artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: name,
+					},
+				})
+
+			case "amd64":
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    "subdir/" + name,
+					Path:    binPath,
+					Goarch:  goarch,
+					Goos:    goos,
+					Goamd64: "v1",
+					Type:    artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: name,
+					},
+				})
+			default:
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "subdir/" + name,
+					Path:   binPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Type:   artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: name,
+					},
+				})
+			}
 		}
 	}
 }
@@ -659,10 +686,6 @@ func Test_isValidArch(t *testing.T) {
 		{"ppc64el", true},
 		{"arm64", true},
 		{"armhf", true},
-		{"amd64v1", true},
-		{"amd64v2", true},
-		{"amd64v3", true},
-		{"amd64v4", true},
 		{"i386", true},
 		{"mips", false},
 		{"armel", false},
