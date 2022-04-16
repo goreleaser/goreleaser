@@ -47,20 +47,13 @@ func newBuildCmd() *buildCmd {
 		Use:     "build",
 		Aliases: []string{"b"},
 		Short:   "Builds the current project",
-		Long: `The ` + "`goreleaser build`" + ` command is analogous to the
-` + "`go build`" + ` command, in the sense it only builds binaries.
+		Long: `The ` + "`goreleaser build`" + ` command is analogous to the ` + "`go build`" + ` command, in the sense it only builds binaries.
 
-Its itented usage is, for example, within Makefiles to avoid setting up
-ldflags and etc in several places. That way, the GoReleaser config becomes the
-source of truth for how the binaries should be built.
+Its itented usage is, for example, within Makefiles to avoid setting up ldflags and etc in several places. That way, the GoReleaser config becomes the source of truth for how the binaries should be built.
 
-It also allows you to generate a local build for your current machine only using
-the ` + "`--single-target`" + ` option, and specific build IDs using the
-` + "`--id`" + ` option in case you have more than one.
+It also allows you to generate a local build for your current machine only using the ` + "`--single-target`" + ` option, and specific build IDs using the ` + "`--id`" + ` option in case you have more than one.
 
-When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and
-` + "`GOARCH`" + ` environment variables are used to determine the target,
-defaulting to the current's machine target if not set.
+When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" + ` environment variables are used to determine the target, defaulting to the current's machine target if not set.
 `,
 		SilenceUsage:  true,
 		SilenceErrors: true,
