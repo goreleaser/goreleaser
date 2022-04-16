@@ -114,7 +114,8 @@ builds:
         goarch: arm
         goarm: 7
       - goarm: mips64
-        gomips: hardfloat
+      - gomips: hardfloat
+      - goamd64: v4
 
     # Optionally override the matrix generation and specify only the final list of targets.
     # Format is `{goos}_{goarch}` with optionally a suffix with `_{goarm}`, `_{goamd64}` or `_{gomips}`.
@@ -364,7 +365,7 @@ builds:
   builder: prebuilt
 
   # When builder is `prebuilt` there are no defaults for goos, goarch,
-  # goarm, gomips and targets.
+  # goarm, gomips, goamd64 and targets.
   goos:
   - linux
   - darwin
