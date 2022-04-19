@@ -1,6 +1,6 @@
 # Semaphore
 
-In [Sempahore 2.0](https://semaphoreci.com) each project starts with the
+In [Semaphore 2.0](https://semaphoreci.com) each project starts with the
 default pipeline specified in `.semaphore/semaphore.yml`.
 
 ```yaml
@@ -82,4 +82,3 @@ data:
 
 Check [Managing Secrets](https://docs.semaphoreci.com/article/51-secrets-yaml-reference)
 for more detailed documentation.
-
