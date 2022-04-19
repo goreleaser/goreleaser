@@ -74,11 +74,6 @@ func (Pipe) Default(ctx *context.Context) error {
 				archive.NameTemplate = defaultBinaryNameTemplate
 			}
 		}
-		if len(archive.Builds) == 0 {
-			for _, build := range ctx.Config.Builds {
-				archive.Builds = append(archive.Builds, build.ID)
-			}
-		}
 		ids.Inc(archive.ID)
 	}
 	return ids.Validate()
@@ -89,15 +84,14 @@ func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for i, archive := range ctx.Config.Archives {
 		archive := archive
-		artifacts := ctx.Artifacts.Filter(
-			artifact.And(
-				artifact.Or(
-					artifact.ByType(artifact.Binary),
-					artifact.ByType(artifact.UniversalBinary),
-				),
-				artifact.ByIDs(archive.Builds...),
-			),
-		).GroupByPlatform()
+		filter := []artifact.Filter{artifact.Or(
+			artifact.ByType(artifact.Binary),
+			artifact.ByType(artifact.UniversalBinary),
+		)}
+		if len(archive.Builds) > 0 {
+			filter = append(filter, artifact.ByIDs(archive.Builds...))
+		}
+		artifacts := ctx.Artifacts.Filter(artifact.And(filter...)).GroupByPlatform()
 		if err := checkArtifacts(artifacts); err != nil && !archive.AllowDifferentBinaryCount {
 			return fmt.Errorf("invalid archive: %d: %w", i, ErrArchiveDifferentBinaryCount)
 		}
