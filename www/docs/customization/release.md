@@ -70,7 +70,9 @@ release:
   # Default is `{{.Tag}}` on OSS and `{{.PrefixedTag}}` on Pro.
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
-  # You can disable this pipe in order to not upload any artifacts.
+  # You can disable this pipe in order to not create the release on any SCM.
+  # Keep in mind that this might also break things that depens on the release URL, for instance, homebrew taps.
+  #
   # Defaults to false.
   disable: true
 
