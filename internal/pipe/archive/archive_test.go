@@ -297,10 +297,23 @@ func TestRunPipeNoBinaries(t *testing.T) {
 	ctx := context.New(config.Project{
 		Dist:        dist,
 		ProjectName: "foobar",
-		Archives:    []config.Archive{{}},
+		Archives: []config.Archive{{
+			Builds: []string{"not-default"},
+		}},
 	})
 	ctx.Version = "0.0.1"
 	ctx.Git.CurrentTag = "v0.0.1"
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Goos:   "linux",
+		Goarch: "amd64",
+		Name:   "bin/mybin",
+		Path:   filepath.Join(dist, "linuxamd64", "bin", "mybin"),
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			artifact.ExtraBinary: "bin/mybin",
+			artifact.ExtraID:     "default",
+		},
+	})
 	require.NoError(t, Pipe{}.Run(ctx))
 }
 
