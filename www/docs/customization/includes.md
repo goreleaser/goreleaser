@@ -15,7 +15,7 @@ includes:
   - from_url:
       url: https://raw.githubusercontent.com/goreleaser/goreleaser/main/.goreleaser.yaml
   - from_url:
-      url: caarlos0/goreleaserfiles/main/packages.yml # the https://raw.githubusercontent.com/ prefix may be ommited
+      url: caarlos0/goreleaserfiles/main/packages.yml # the https://raw.githubusercontent.com/ prefix may be omitted
   - from_url:
       url: https://api.mycompany.com/configs/goreleaser.yaml
       headers:
