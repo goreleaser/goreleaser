@@ -69,6 +69,21 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 		if err != nil {
 			return build, err
 		}
+	} else {
+		for i, target := range build.Targets {
+			if strings.HasSuffix(target, "_amd64") {
+				build.Targets[i] = target + "_v1"
+			}
+			if strings.HasSuffix(target, "_arm") {
+				build.Targets[i] = target + "_6"
+			}
+			if strings.HasSuffix(target, "_mips") ||
+				strings.HasSuffix(target, "_mips64") ||
+				strings.HasSuffix(target, "_mipsle") ||
+				strings.HasSuffix(target, "_mips64le") {
+				build.Targets[i] = target + "_hardfloat"
+			}
+		}
 	}
 	return build, nil
 }
