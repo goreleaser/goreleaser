@@ -95,6 +95,66 @@ func TestWithDefaults(t *testing.T) {
 			},
 			goBinary: "go",
 		},
+		"custom targets no amd64": {
+			build: config.Build{
+				ID:     "foo3",
+				Binary: "foo",
+				Targets: []string{
+					"linux_386",
+					"darwin_amd64",
+				},
+			},
+			targets: []string{
+				"linux_386",
+				"darwin_amd64_v1",
+			},
+			goBinary: "go",
+		},
+		"custom targets no arm": {
+			build: config.Build{
+				ID:      "foo3",
+				Binary:  "foo",
+				Targets: []string{"linux_arm"},
+			},
+			targets:  []string{"linux_arm_6"},
+			goBinary: "go",
+		},
+		"custom targets no mips": {
+			build: config.Build{
+				ID:      "foo3",
+				Binary:  "foo",
+				Targets: []string{"linux_mips"},
+			},
+			targets:  []string{"linux_mips_hardfloat"},
+			goBinary: "go",
+		},
+		"custom targets no mipsle": {
+			build: config.Build{
+				ID:      "foo3",
+				Binary:  "foo",
+				Targets: []string{"linux_mipsle"},
+			},
+			targets:  []string{"linux_mipsle_hardfloat"},
+			goBinary: "go",
+		},
+		"custom targets no mips64": {
+			build: config.Build{
+				ID:      "foo3",
+				Binary:  "foo",
+				Targets: []string{"linux_mips64"},
+			},
+			targets:  []string{"linux_mips64_hardfloat"},
+			goBinary: "go",
+		},
+		"custom targets no mips64le": {
+			build: config.Build{
+				ID:      "foo3",
+				Binary:  "foo",
+				Targets: []string{"linux_mips64le"},
+			},
+			targets:  []string{"linux_mips64le_hardfloat"},
+			goBinary: "go",
+		},
 		"empty with custom dir": {
 			build: config.Build{
 				ID:     "foo2",
