@@ -50,6 +50,7 @@ func TestExtractRepoFromURL(t *testing.T) {
 	for _, url := range []string{
 		"git@github.com:goreleaser/goreleaser.git",
 		"git@custom:goreleaser/goreleaser.git",
+		"ssh://username@git.example.com/goreleaser",
 		"https://foo@github.com/goreleaser/goreleaser",
 		"https://github.com/goreleaser/goreleaser.git",
 		"https://something.with.port:8080/goreleaser/goreleaser.git",
@@ -78,8 +79,8 @@ func TestExtractRepoFromURL(t *testing.T) {
 
 	// invalid urls
 	for _, url := range []string{
-		"git@gist.github.com:someid.git",
-		"https://gist.github.com/someid.git",
+		"git@gist.github.com:",
+		"https://gist.github.com/",
 	} {
 		t.Run(url, func(t *testing.T) {
 			repo, err := git.ExtractRepoFromURL(url)
