@@ -185,6 +185,42 @@ func TestWithDefaults(t *testing.T) {
 			},
 			goBinary: "go",
 		},
+		"go first class targets": {
+			build: config.Build{
+				ID:      "foo3",
+				Binary:  "foo",
+				Targets: []string{goStableFirstClassTargetsName},
+			},
+			targets:  go118FirstClassTargets,
+			goBinary: "go",
+		},
+		"go 1.18 first class targets": {
+			build: config.Build{
+				ID:      "foo3",
+				Binary:  "foo",
+				Targets: []string{go118FirstClassTargetsName},
+			},
+			targets:  go118FirstClassTargets,
+			goBinary: "go",
+		},
+		"go 1.18 first class targets plus custom": {
+			build: config.Build{
+				ID:      "foo3",
+				Binary:  "foo",
+				Targets: []string{"linux_amd64_v1", go118FirstClassTargetsName, "darwin_amd64_v2"},
+			},
+			targets:  append(go118FirstClassTargets, "darwin_amd64_v2"),
+			goBinary: "go",
+		},
+		"repeatin targets": {
+			build: config.Build{
+				ID:      "foo3",
+				Binary:  "foo",
+				Targets: []string{go118FirstClassTargetsName, go118FirstClassTargetsName, goStableFirstClassTargetsName},
+			},
+			targets:  go118FirstClassTargets,
+			goBinary: "go",
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			if testcase.build.GoBinary != "" && testcase.build.GoBinary != "go" {

@@ -2,8 +2,8 @@
 
 Builds can be customized in multiple ways.
 You can specify for which `GOOS`, `GOARCH` and `GOARM` binaries are built
-(goreleaser will generate a matrix of all combinations), and you can change
-the name of the binary, flags, environment variables, hooks and etc.
+(GoReleaser will generate a matrix of all combinations), and you can change
+the name of the binary, flags, environment variables, hooks and more.
 
 Here is a commented `builds` section with all fields specified:
 
@@ -119,9 +119,16 @@ builds:
 
     # Optionally override the matrix generation and specify only the final list of targets.
     # Format is `{goos}_{goarch}` with optionally a suffix with `_{goarm}`, `_{goamd64}` or `_{gomips}`.
+    #
+    # Special values:
+    # - go_118_first_class: evaluates to the first-class targets of go1.18
+    # - go_first_class: evaluates to latest stable go first-class targets, currently same as 1.18.
+    #
     # This overrides `goos`, `goarch`, `goarm`, `gomips`, `goamd64` and `ignores`.
     targets:
-      - linux_amd64
+      - go_first_class
+      - go_118_first_class
+      - linux_amd64_v1
       - darwin_arm64
       - linux_arm_6
 
@@ -186,6 +193,13 @@ builds:
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
+
+!!! info
+    First-class build targets are gathered by running:
+    ```sh
+    go tool dist list -json | jq -r '.[] | select(.FirstClass) | [.GOOS, .GOARCH] | @tsv'
+    ```
+    We also recommend reading the [official wiki about Go ports](https://github.com/golang/go/wiki/PortingPolicy#first-class-ports).
 
 Here is an example with multiple binaries:
 
@@ -335,7 +349,7 @@ This is useful in scenarios where two tags point to the same commit.
 
 ## Reproducible Builds
 
-To make your releases, checksums, and signatures reproducible, you will need to make some (if not all) of the following modifications to the build defaults in GoReleaser:
+To make your releases, checksums and signatures reproducible, you will need to make some (if not all) of the following modifications to the build defaults in GoReleaser:
 
 * Modify `ldflags`: by default `main.Date` is set to the time GoReleaser is run (`{{.Date}}`), you can set this to `{{.CommitDate}}` or just not pass the variable.
 * Modify `mod_timestamp`: by default this is empty string, set to `{{.CommitTimestamp}}` or a constant value instead.
@@ -407,5 +421,6 @@ There is no difference in how the binaries are handled.
     GoReleaser will fail.
 
 !!! warning
-    When using the `prebuilt` binary, there are no defaults for `goos` et al,
-    so you need to either provide those or the final `targets` matrix.
+    When using the `prebuilt` binary, there are no defaults for `goos`,
+    `goarch`, `goarm`, `gomips` and `goamd64`.
+    You'll need to either provide them or the final `targets` matrix.

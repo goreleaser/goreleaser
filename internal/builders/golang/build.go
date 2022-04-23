@@ -65,27 +65,65 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 			build.Goamd64 = []string{"v1"}
 		}
 		targets, err := buildtarget.List(build)
-		build.Targets = targets
 		if err != nil {
 			return build, err
 		}
+		build.Targets = targets
 	} else {
-		for i, target := range build.Targets {
+		targets := map[string]bool{}
+		for _, target := range build.Targets {
+			if target == go118FirstClassTargetsName ||
+				target == goStableFirstClassTargetsName {
+				for _, t := range go118FirstClassTargets {
+					targets[t] = true
+				}
+				continue
+			}
 			if strings.HasSuffix(target, "_amd64") {
-				build.Targets[i] = target + "_v1"
+				targets[target+"_v1"] = true
+				continue
 			}
 			if strings.HasSuffix(target, "_arm") {
-				build.Targets[i] = target + "_6"
+				targets[target+"_6"] = true
+				continue
 			}
 			if strings.HasSuffix(target, "_mips") ||
 				strings.HasSuffix(target, "_mips64") ||
 				strings.HasSuffix(target, "_mipsle") ||
 				strings.HasSuffix(target, "_mips64le") {
-				build.Targets[i] = target + "_hardfloat"
+				targets[target+"_hardfloat"] = true
+				continue
 			}
+			targets[target] = true
 		}
+		build.Targets = keys(targets)
 	}
 	return build, nil
+}
+
+func keys(m map[string]bool) []string {
+	result := make([]string, 0, len(m))
+	for k := range m {
+		result = append(result, k)
+	}
+	return result
+}
+
+const (
+	go118FirstClassTargetsName    = "go_118_first_class"
+	goStableFirstClassTargetsName = "go_first_class"
+)
+
+// go tool dist list -json | jq -r '.[] | select(.FirstClass) | [.GOOS, .GOARCH] | @tsv'
+var go118FirstClassTargets = []string{
+	"darwin_amd64_v1",
+	"darwin_arm64",
+	"linux_386",
+	"linux_amd64_v1",
+	"linux_arm_6",
+	"linux_arm64",
+	"windows_386",
+	"windows_amd64_v1",
 }
 
 // Build builds a golang build.
