@@ -312,7 +312,9 @@ type Build struct {
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty"`
 	Skip            bool            `yaml:"skip,omitempty"`
 	GoBinary        string          `yaml:"gobinary,omitempty"`
+	Command         string          `yaml:"command,omitempty"`
 	NoUniqueDistDir bool            `yaml:"no_unique_dist_dir,omitempty"`
+	NoMainCheck     bool            `yaml:"no_main_check,omitempty"`
 	UnproxiedMain   string          `yaml:"-"` // used by gomod.proxy
 	UnproxiedDir    string          `yaml:"-"` // used by gomod.proxy
 

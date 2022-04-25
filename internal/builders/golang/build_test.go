@@ -205,6 +205,21 @@ func TestWithDefaults(t *testing.T) {
 	}
 }
 
+func TestDefaults(t *testing.T) {
+	t.Run("command not set", func(t *testing.T) {
+		build, err := Default.WithDefaults(config.Build{})
+		require.NoError(t, err)
+		require.Equal(t, "build", build.Command)
+	})
+	t.Run("command set", func(t *testing.T) {
+		build, err := Default.WithDefaults(config.Build{
+			Command: "test",
+		})
+		require.NoError(t, err)
+		require.Equal(t, "test", build.Command)
+	})
+}
+
 // createFakeGoBinaryWithVersion creates a temporary executable with the
 // given name, which will output a go version string with the given version.
 //  The temporary directory created by this function will be placed in the PATH
@@ -648,15 +663,7 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 		folder := testlib.Mktmp(t)
 		writeMainWithoutMainFunc(t, folder)
 		config := config.Project{
-			Builds: []config.Build{
-				{
-					Binary: "no-main",
-					Hooks:  config.BuildHookConfig{},
-					Targets: []string{
-						runtimeTarget,
-					},
-				},
-			},
+			Builds: []config.Build{{Binary: "no-main"}},
 		}
 		ctx := context.New(config)
 		ctx.Git.CurrentTag = "5.6.7"
@@ -701,6 +708,28 @@ func TestRunPipeWithoutMainFunc(t *testing.T) {
 			Target: runtimeTarget,
 		}), errNoMain{"no-main"}.Error())
 	})
+}
+
+func TestBuildTests(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	writeTest(t, folder)
+	config := config.Project{
+		Builds: []config.Build{{
+			Binary:  "foo.test",
+			Command: "test",
+			BuildDetails: config.BuildDetails{
+				Flags: []string{"-c"},
+			},
+		}},
+	}
+	ctx := context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
+	ctx.Config.Builds[0].NoMainCheck = true
+	build, err := Default.WithDefaults(config.Builds[0])
+	require.NoError(t, err)
+	require.NoError(t, Default.Build(ctx, build, api.Options{
+		Target: runtimeTarget,
+	}))
 }
 
 func TestRunPipeWithProxiedRepo(t *testing.T) {
@@ -1257,6 +1286,20 @@ func writeGoodMain(t *testing.T, folder string) {
 		filepath.Join(folder, "main.go"),
 		[]byte("package main\nvar a = 1\nfunc main() {println(0)}"),
 		0o644,
+	))
+}
+
+func writeTest(t *testing.T, folder string) {
+	t.Helper()
+	require.NoError(t, os.WriteFile(
+		filepath.Join(folder, "main_test.go"),
+		[]byte("package main\nimport\"testing\"\nfunc TestFoo(t *testing.T) {t.Log(\"OK\")}"),
+		0o644,
+	))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(folder, "go.mod"),
+		[]byte("module foo\n"),
+		0o666,
 	))
 }
 

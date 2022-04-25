@@ -125,10 +125,19 @@ builds:
       - darwin_arm64
       - linux_arm_6
 
-    # Set a specific go binary to use when building. It is safe to ignore
-    # this option in most cases.
+    # Set a specific go binary to use when building.
+    # It is safe to ignore this option in most cases.
+    #
     # Default is "go"
     gobinary: "go1.13.4"
+
+    # Sets the command to run to build.
+    # Can be useful if you want to build tests, for example,
+    # in which case you can set this to "test".
+    # It is safe to ignore this option in most cases.
+    #
+    # Default is "build".
+    command: test
 
     # Set the modified timestamp on the output binary, typically
     # you would do this to ensure a build was reproducible. Pass
@@ -157,6 +166,12 @@ builds:
     #
     # Defaults to `false`.
     no_unique_dist_dir: true
+
+    # By default, GoReleaser will check if the main filepath has a main function.
+    # This can be used to skip that check, in case you're building tests, for example.
+    #
+    # Defaults to `false`.
+    no_main_check: true
 
     # Builder allows you to use a different build implementation.
     # This is a GoReleaser Pro feature.
