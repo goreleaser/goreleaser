@@ -316,6 +316,7 @@ func TestBuild(t *testing.T) {
 					"linux_mips64le_softfloat",
 				},
 				GoBinary: "go",
+				Command:  "build",
 				BuildDetails: config.BuildDetails{
 					Asmflags: []string{".=", "all="},
 					Gcflags:  []string{"all="},
@@ -494,6 +495,7 @@ func TestBuildCodeInSubdir(t *testing.T) {
 					runtimeTarget,
 				},
 				GoBinary: "go",
+				Command:  "build",
 			},
 		},
 	}
@@ -521,6 +523,7 @@ func TestBuildWithDotGoDir(t *testing.T) {
 				Binary:   "foo",
 				Targets:  []string{runtimeTarget},
 				GoBinary: "go",
+				Command:  "build",
 			},
 		},
 	}
@@ -549,6 +552,7 @@ func TestBuildFailed(t *testing.T) {
 					runtimeTarget,
 				},
 				GoBinary: "go",
+				Command:  "build",
 			},
 		},
 	}
@@ -773,6 +777,7 @@ import _ "github.com/goreleaser/goreleaser"
 					runtimeTarget,
 				},
 				GoBinary: "go",
+				Command:  "build",
 			},
 		},
 	}
@@ -800,6 +805,7 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 					runtimeTarget,
 				},
 				GoBinary: "go",
+				Command:  "build",
 			},
 		},
 	}
@@ -954,6 +960,7 @@ func TestBuildModTimestamp(t *testing.T) {
 				},
 				ModTimestamp: fmt.Sprintf("%d", modTime.Unix()),
 				GoBinary:     "go",
+				Command:      "build",
 			},
 		},
 	}
@@ -1006,7 +1013,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 		ctx.Git.Commit = "aaa"
 
 		line, err := buildGoBuildLine(ctx, config.Builds[0], api.Options{
-			Path:   "foo",
+			Path:   config.Builds[0].Binary,
 			Goos:   "linux",
 			Goarch: "amd64",
 		}, &artifact.Artifact{}, []string{})
@@ -1024,7 +1031,9 @@ func TestBuildGoBuildLine(t *testing.T) {
 				Tags:     []string{"tag1", "tag2"},
 				Ldflags:  []string{"ldflag1", "ldflag2"},
 			},
+			Binary:   "foo",
 			GoBinary: "go",
+			Command:  "build",
 		}, []string{
 			"go", "build",
 			"-flag1", "-flag2",
@@ -1060,6 +1069,8 @@ func TestBuildGoBuildLine(t *testing.T) {
 				},
 			},
 			GoBinary: "go",
+			Binary:   "foo",
+			Command:  "build",
 		}, []string{
 			"go", "build",
 			"-flag3",
@@ -1075,7 +1086,21 @@ func TestBuildGoBuildLine(t *testing.T) {
 		requireEqualCmd(t, config.Build{
 			Main:     ".",
 			GoBinary: "go",
+			Command:  "build",
+			Binary:   "foo",
 		}, strings.Fields("go build -o foo ."))
+	})
+
+	t.Run("test", func(t *testing.T) {
+		requireEqualCmd(t, config.Build{
+			Main:     ".",
+			GoBinary: "go",
+			Command:  "test",
+			Binary:   "foo.test",
+			BuildDetails: config.BuildDetails{
+				Flags: []string{"-c"},
+			},
+		}, strings.Fields("go test -c -o foo.test ."))
 	})
 
 	t.Run("ldflags1", func(t *testing.T) {
@@ -1085,6 +1110,8 @@ func TestBuildGoBuildLine(t *testing.T) {
 				Ldflags: []string{"-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.builtBy=goreleaser"},
 			},
 			GoBinary: "go",
+			Command:  "build",
+			Binary:   "foo",
 		}, []string{
 			"go", "build",
 			"-ldflags=-s -w -X main.version=1.2.3 -X main.commit=aaa -X main.builtBy=goreleaser",
@@ -1099,6 +1126,8 @@ func TestBuildGoBuildLine(t *testing.T) {
 				Ldflags: []string{"-s -w", "-X main.version={{.Version}}"},
 			},
 			GoBinary: "go",
+			Binary:   "foo",
+			Command:  "build",
 		}, []string{"go", "build", "-ldflags=-s -w -X main.version=1.2.3", "-o", "foo", "."})
 	})
 }
