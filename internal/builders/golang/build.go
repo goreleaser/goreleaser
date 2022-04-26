@@ -39,6 +39,9 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 	if build.GoBinary == "" {
 		build.GoBinary = "go"
 	}
+	if build.Command == "" {
+		build.Command = "build"
+	}
 	if build.Dir == "" {
 		build.Dir = "."
 	}
@@ -177,7 +180,7 @@ func withOverrides(ctx *context.Context, build config.Build, options api.Options
 }
 
 func buildGoBuildLine(ctx *context.Context, build config.Build, options api.Options, artifact *artifact.Artifact, env []string) ([]string, error) {
-	cmd := []string{build.GoBinary, "build"}
+	cmd := []string{build.GoBinary, build.Command}
 
 	details, err := withOverrides(ctx, build, options)
 	if err != nil {
@@ -255,6 +258,9 @@ func run(ctx *context.Context, command, env []string, dir string) error {
 }
 
 func checkMain(build config.Build) error {
+	if build.NoMainCheck {
+		return nil
+	}
 	main := build.Main
 	if build.UnproxiedMain != "" {
 		main = build.UnproxiedMain
