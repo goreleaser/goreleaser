@@ -25,7 +25,7 @@ scoop:
     branch: main
 
     # Optionally a token can be provided, if it differs from the token provided to GoReleaser
-    token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    token: "{{ .Env.SCOOP_TAP_GITHUB_TOKEN }}"
 
   # Folder inside the repository to put the scoop.
   # Default is the root folder.
