@@ -140,7 +140,7 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 	}
 	opts.Name = name
 
-	path := filepath.Join(ctx.Config.Dist, name+"_darwin_all", name)
+	path := filepath.Join(ctx.Config.Dist, unibin.ID+"_darwin_all", name)
 	opts.Path = path
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
@@ -151,7 +151,9 @@ func makeUniversalBinary(ctx *context.Context, opts *build.Options, unibin confi
 		return pipe.Skip(fmt.Sprintf("no darwin binaries found with id %q", unibin.ID))
 	}
 
-	log.WithField("binary", path).Infof("creating from %d binaries", len(binaries))
+	log.WithField("id", unibin.ID).
+		WithField("binary", path).
+		Infof("creating from %d binaries", len(binaries))
 
 	var inputs []input
 	offset := int64(align)

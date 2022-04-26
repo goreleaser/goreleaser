@@ -288,6 +288,7 @@ func TestDefaultBuildID(t *testing.T) {
 			Builds: []config.Build{
 				{
 					Binary: "{{.Env.FOO}}",
+					ID:     "bar",
 				},
 				{
 					Binary: "bar",
@@ -295,9 +296,11 @@ func TestDefaultBuildID(t *testing.T) {
 			},
 		},
 	}
-	require.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'foo', please fix your config")
-	build := ctx.Config.Builds[0]
-	require.Equal(t, ctx.Config.ProjectName, build.ID)
+	require.EqualError(t, Pipe{}.Default(ctx), "found 2 builds with the ID 'bar', please fix your config")
+	build1 := ctx.Config.Builds[0].ID
+	build2 := ctx.Config.Builds[1].ID
+	require.Equal(t, build1, build2)
+	require.Equal(t, "bar", build2)
 }
 
 func TestSeveralBuildsWithTheSameID(t *testing.T) {
