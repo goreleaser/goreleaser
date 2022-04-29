@@ -29,7 +29,7 @@ pipeline {
       }
 
       steps {
-        sh 'curl -sL https://git.io/goreleaser | bash'
+        sh 'curl -sfL https://goreleaser.com/static/install | bash'
       }
     }
   }
