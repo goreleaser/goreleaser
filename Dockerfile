@@ -8,6 +8,7 @@ RUN apk add --no-cache bash \
 	gpg \
 	mercurial \
 	make \
+	openssh-client \
 	build-base \
 	tini
 
