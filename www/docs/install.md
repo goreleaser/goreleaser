@@ -104,7 +104,6 @@ Below you can find the steps for each of them.
 
 ### deb, rpm and apk packages
 
-
 === "OSS"
     Download the `.deb`, `.rpm` or `.apk` packages from the [OSS releases page][releases] and install them with the appropriate tools.
 
@@ -120,10 +119,6 @@ Below you can find the steps for each of them.
 
 ### bash script
 
-This might be useful if you need to run it in a CI or Makefile.
-Note that the script will try to download the latest version, verify its
-checksums and signagures (if cosign is installed), and run it.
-
 === "OSS"
     ```sh
     curl -sfL https://goreleaser.com/static/run | bash
@@ -134,15 +129,22 @@ checksums and signagures (if cosign is installed), and run it.
     curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro bash
     ```
 
-You can also set a `VERSION` variable to specify a version instead of using
-latest.
+=== "Additional Options"
+    You can also set the `VERSION` and `DISTRIBUTION` variables to specify
+    a version instead of using latest and `pro` or `oss` distributions,
+    respectively.
 
-You can also pass flags and args to GoReleaser:
+    You can also pass flags and args to GoReleaser:
 
-```bash
-curl -sfL https://goreleaser.com/static/run |
-  VERSION=__VERSION__ DISTRIBUTION=oss bash -s -- check
-```
+    ```bash
+    curl -sfL https://goreleaser.com/static/run |
+      VERSION=__VERSION__ DISTRIBUTION=oss bash -s -- check
+    ```
+
+!!! tip
+    This script does not install anything, it just downloads, verifies and
+    runs GoReleaser.
+    It's purpose is to be used within scripts and CIs.
 
 ### manually
 
