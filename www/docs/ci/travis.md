@@ -19,7 +19,7 @@ services:
 
 script:
   - go test ./... # replace this with your test script
-  - curl -sfL https://git.io/goreleaser | sh -s -- check # check goreleaser config for deprecations
+  - curl -sfL https://goreleaser.com/static/run | bash -s -- check # check goreleaser config for deprecations
 
 after_success:
 # Docker login is required if you want to push Docker images.
@@ -36,7 +36,7 @@ after_success:
 deploy:
 - provider: script
   skip_cleanup: true
-  script: curl -sL https://git.io/goreleaser | bash
+  script: curl -sfL https://goreleaser.com/static/run | bash
   on:
     tags: true
     condition: $TRAVIS_OS_NAME = linux

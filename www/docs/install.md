@@ -118,6 +118,32 @@ Below you can find the steps for each of them.
     go install github.com/goreleaser/goreleaser@latest
     ```
 
+### bash script
+
+This might be useful if you need to run it in a CI or Makefile.
+Note that the script will try to download the latest version, verify its
+checksums and signagures (if cosign is installed), and run it.
+
+=== "OSS"
+    ```sh
+    curl -sfL https://goreleaser.com/static/run | bash
+    ```
+
+=== "Pro"
+    ```sh
+    curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro bash
+    ```
+
+You can also set a `VERSION` variable to specify a version instead of using
+latest.
+
+You can also pass flags and args to GoReleaser:
+
+```bash
+curl -sfL https://goreleaser.com/static/run |
+  VERSION=__VERSION__ DISTRIBUTION=oss bash -s -- check
+```
+
 ### manually
 
 === "OSS"

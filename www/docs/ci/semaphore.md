@@ -63,7 +63,7 @@ blocks:
       jobs:
       - name: goreleaser
         commands:
-          - curl -sL https://git.io/goreleaser | bash
+          - curl -sfL https://goreleaser.com/static/run | bash
 ```
 
 The following YAML file, `createSecret.yml` creates a new secret item that is
