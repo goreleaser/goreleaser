@@ -21,5 +21,5 @@ jobs:
       - image: cimg/go:1.18
     steps:
       - checkout
-      - run: curl -sL https://goreleaser.com/static/install | bash
+      - run: curl -sfL https://goreleaser.com/static/run | bash
 ```
