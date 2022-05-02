@@ -81,12 +81,15 @@ tasks:
     cmds:
       - cp -rf CONTRIBUTING.md www/docs/contributing.md
       - cp -rf USERS.md www/docs/users.md
+      - cp -rf EULA.md www/docs/eula.md
     sources:
       - CONTRIBUTING.md
       - USERS.md
+      - EULA.md
     generates:
       - www/docs/contributing.md
       - www/docs/users.md
+      - www/docs/eula.md
 
   docs:imgs:
     desc: Download and resize images

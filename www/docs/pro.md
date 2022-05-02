@@ -36,6 +36,10 @@ You can then pass it to the [`release` command](/cmd/goreleaser_release/) either
 If you use the GitHub action, you will want to set the `distribution` option to `goreleaser-pro`.
 Check the [documentation](/ci/actions/) for more details.
 
+## EULA
+
+Please, make sure you read and agree with our [EULA](/eula).
+
 ---
 
 **✨✨ Thanks for your support! ✨✨**
