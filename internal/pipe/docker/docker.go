@@ -130,6 +130,7 @@ func (Pipe) Run(ctx *context.Context) error {
 	if err := g.Wait(); err != nil {
 		return fmt.Errorf("docker build failed: %w\nLearn more at https://goreleaser.com/errors/docker-build\n")
 	}
+	return nil
 }
 
 func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.Artifact) error {
