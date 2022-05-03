@@ -1,6 +1,6 @@
 # Build does not contain a main function
 
-This usually happens if you're trying to build a library or if you didn't setup the `builds.main` section in your `.goreleaser.yaml` and you `main.go` is not in the root folder.
+This usually happens if you're trying to build a library or if you didn't setup the `builds.main` section in your `.goreleaser.yaml` and your `main.go` is not in the root folder.
 
 Here's an example error:
 
