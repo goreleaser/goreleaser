@@ -441,3 +441,5 @@ There is no difference in how the binaries are handled.
     When using the `prebuilt` binary, there are no defaults for `goos`,
     `goarch`, `goarm`, `gomips` and `goamd64`.
     You'll need to either provide them or the final `targets` matrix.
+
+If you'd like to see this in action, check [this example on GitHub](https://github.com/caarlos0/goreleaser-pro-prebuilt-example).
