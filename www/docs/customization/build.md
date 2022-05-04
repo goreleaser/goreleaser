@@ -394,13 +394,15 @@ builds:
   builder: prebuilt
 
   # When builder is `prebuilt` there are no defaults for goos, goarch,
-  # goarm, gomips, goamd64 and targets.
+  # goarm, gomips, goamd64 and targets, so you always have to specify them:
   goos:
-  - linux
-  - darwin
+    - linux
+    - darwin
   goarch:
-  - amd64
-  - arm64
+    - amd64
+    - arm64
+  goamd64:
+    - v1
 
   # prebuilt specific options
   prebuilt:
@@ -408,14 +410,14 @@ builds:
     # GoReleaser removes the `dist` folder before running, so you will likely
     # want to put the binaries elsewhere.
     # This field is required when using the `prebuilt` builder.
-    path: output/mybin_{{ .Os }}_{{ .Arch }}
+    path: output/mybin_{{ .Os }}_{{ .Arch }}_{{ with .Amd64 }}_{{ . }}{{ end }}/mybin
 ```
 
 This example config will import into your release pipeline the following binaries:
 
 - `output/mybin_linux_amd64`
 - `output/mybin_linux_arm64`
-- `output/mybin_darwin_amd64`
+- `output/mybin_darwin_amd64_v1`
 - `output/mybin_darwin_arm64`
 
 The other steps of the pipeline will act as if those were built by GoReleaser itself.
