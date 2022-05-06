@@ -10,11 +10,11 @@ import (
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/muesli/coral"
+	"github.com/spf13/cobra"
 )
 
 type checkCmd struct {
-	cmd        *coral.Command
+	cmd        *cobra.Command
 	config     string
 	quiet      bool
 	deprecated bool
@@ -22,14 +22,14 @@ type checkCmd struct {
 
 func newCheckCmd() *checkCmd {
 	root := &checkCmd{}
-	cmd := &coral.Command{
+	cmd := &cobra.Command{
 		Use:           "check",
 		Aliases:       []string{"c"},
 		Short:         "Checks if configuration is valid",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args:          coral.NoArgs,
-		RunE: func(cmd *coral.Command, args []string) error {
+		Args:          cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if root.quiet {
 				log.SetHandler(cli.New(io.Discard))
 			}

@@ -7,7 +7,7 @@ import (
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/fatih/color"
-	"github.com/muesli/coral"
+	"github.com/spf13/cobra"
 )
 
 func Execute(version string, exit func(int), args []string) {
@@ -42,7 +42,7 @@ func (cmd *rootCmd) Execute(args []string) {
 }
 
 type rootCmd struct {
-	cmd   *coral.Command
+	cmd   *cobra.Command
 	debug bool
 	exit  func(int)
 }
@@ -51,7 +51,7 @@ func newRootCmd(version string, exit func(int)) *rootCmd {
 	root := &rootCmd{
 		exit: exit,
 	}
-	cmd := &coral.Command{
+	cmd := &cobra.Command{
 		Use:   "goreleaser",
 		Short: "Deliver Go binaries as fast and easily as possible",
 		Long: `GoReleaser is a release automation tool for Go projects.
@@ -64,8 +64,8 @@ You can also customize your entire release process through a single .goreleaser.
 		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args:          coral.NoArgs,
-		PersistentPreRun: func(cmd *coral.Command, args []string) {
+		Args:          cobra.NoArgs,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if root.debug {
 				log.SetLevel(log.DebugLevel)
 				log.Debug("debug logs enabled")
@@ -88,7 +88,7 @@ You can also customize your entire release process through a single .goreleaser.
 	return root
 }
 
-func shouldPrependRelease(cmd *coral.Command, args []string) bool {
+func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 	// find current cmd, if its not root, it means the user actively
 	// set a command, so let it go
 	xmd, _, _ := cmd.Find(args)
@@ -98,7 +98,7 @@ func shouldPrependRelease(cmd *coral.Command, args []string) bool {
 
 	// allow help and the two __complete commands.
 	if len(args) > 0 && (args[0] == "help" || args[0] == "completion" ||
-		args[0] == coral.ShellCompRequestCmd || args[0] == coral.ShellCompNoDescRequestCmd) {
+		args[0] == cobra.ShellCompRequestCmd || args[0] == cobra.ShellCompNoDescRequestCmd) {
 		return false
 	}
 

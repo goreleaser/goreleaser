@@ -18,11 +18,11 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/muesli/coral"
+	"github.com/spf13/cobra"
 )
 
 type buildCmd struct {
-	cmd  *coral.Command
+	cmd  *cobra.Command
 	opts buildOpts
 }
 
@@ -43,7 +43,7 @@ type buildOpts struct {
 func newBuildCmd() *buildCmd {
 	root := &buildCmd{}
 	// nolint: dupl
-	cmd := &coral.Command{
+	cmd := &cobra.Command{
 		Use:     "build",
 		Aliases: []string{"b"},
 		Short:   "Builds the current project",
@@ -57,8 +57,8 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 `,
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args:          coral.NoArgs,
-		RunE: func(cmd *coral.Command, args []string) error {
+		Args:          cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
 			start := time.Now()
 
 			log.Infof(color.New(color.Bold).Sprint("building..."))

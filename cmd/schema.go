@@ -8,24 +8,24 @@ import (
 
 	"github.com/alecthomas/jsonschema"
 	"github.com/goreleaser/goreleaser/pkg/config"
-	"github.com/muesli/coral"
+	"github.com/spf13/cobra"
 )
 
 type schemaCmd struct {
-	cmd    *coral.Command
+	cmd    *cobra.Command
 	output string
 }
 
 func newSchemaCmd() *schemaCmd {
 	root := &schemaCmd{}
-	cmd := &coral.Command{
+	cmd := &cobra.Command{
 		Use:           "jsonschema",
 		Aliases:       []string{"schema"},
 		Short:         "outputs goreleaser's JSON schema",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args:          coral.NoArgs,
-		RunE: func(cmd *coral.Command, args []string) error {
+		Args:          cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
 			schema := jsonschema.Reflect(&config.Project{})
 			schema.Description = "goreleaser configuration definition file"
 			bts, err := json.MarshalIndent(schema, "	", "	")

@@ -26,10 +26,10 @@ require (
 	github.com/jarcoal/httpmock v1.1.0
 	github.com/klauspost/pgzip v1.2.5
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/muesli/coral v1.0.0
-	github.com/muesli/mango-coral v1.0.1
+	github.com/muesli/mango-cobra v1.1.0
 	github.com/muesli/roff v0.1.0
 	github.com/slack-go/slack v0.10.3
+	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.1
 	github.com/ulikunitz/xz v0.5.10
 	github.com/xanzy/go-gitlab v0.64.0
