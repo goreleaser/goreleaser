@@ -1,5 +1,5 @@
 # Publish to Artifactory using jfrog cli
-This cookbook is an example of a [publishers](/customization/publishers/) section that uses the [jfrog cli](https://jfrog.com/getcli/) to upload files to Artifactory.  It is an alternative to using the [Artifactory Publisher](/customization/artifactory.md) to upload to artifactory.
+This cookbook is an example of a [publishers](/customization/publishers/) section that uses the [jfrog cli](https://jfrog.com/getcli/) to upload files to Artifactory.  It is an alternative to using the [Artifactory Publisher](/customization/artifactory) to upload to artifactory.
 
 The benefit of this method is that it uses the jfrog cli configuration instead of environment variables for configuration.
 
