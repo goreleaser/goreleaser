@@ -44,7 +44,6 @@ changelog:
   use: github
   filters:
     exclude:
-    - '^docs:'
     - '^test:'
     - '^chore'
     - Merge pull request
@@ -58,6 +57,9 @@ changelog:
     - title: 'Bug fixes'
       regexp: "^.*fix[(\\w)]*:+.*$"
       order: 10
+    - title: 'Documentation improvements'
+      regexp: "^.*docs[(\\w)]*:+.*$"
+      order: 20
     - title: Other work
       order: 999
 
