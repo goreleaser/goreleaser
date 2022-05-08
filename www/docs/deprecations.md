@@ -36,6 +36,25 @@ Description.
 
 -->
 
+### nfpms.maintainer
+
+> since 2022-05-07 (v1.9.0)
+
+nFPM will soon make mandatory setting the maintainer field.
+
+=== "Before"
+    ```yaml
+    nfpms:
+    - maintainer: ''
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+    - maintainer: 'Name <email>'
+    ```
+
+
 ### rigs
 
 > since 2022-03-21 (v1.8.0)
@@ -74,7 +93,7 @@ On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
     some_template: 'lala-{{ .Var.foo }}'
     ```
 
-### nfpm.empty_folders
+### nfpms.empty_folders
 
 > since 2021-11-14  (v1.0.0)
 

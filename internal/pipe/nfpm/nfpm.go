@@ -3,6 +3,7 @@ package nfpm
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -54,10 +55,16 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.FileNameTemplate == "" {
 			fpm.FileNameTemplate = defaultNameTemplate
 		}
+		if len(fpm.EmptyFolders) > 0 {
+			deprecate.Notice(ctx, "nfpms.empty_folders")
+		}
+		if fpm.Maintainer == "" {
+			deprecate.Notice(ctx, "nfpms.maintainer")
+		}
 		ids.Inc(fpm.ID)
 	}
 
-	deprecation.Noticer = deprecate.NewWriter(ctx)
+	deprecation.Noticer = io.Discard
 	return ids.Validate()
 }
 
