@@ -321,7 +321,13 @@
 					"gobinary": {
 						"type": "string"
 					},
+					"command": {
+						"type": "string"
+					},
 					"no_unique_dist_dir": {
+						"type": "boolean"
+					},
+					"no_main_check": {
 						"type": "boolean"
 					},
 					"ldflags": {
