@@ -354,6 +354,18 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, "https://github.com/goreleaser/goreleaser/releases/tag/v1.0.0", ctx.ReleaseURL)
 }
 
+func TestDefaultInvalidURL(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:goreleaser.git")
+
+	ctx := context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitHub
+	ctx.Config.GitHubURLs.Download = "https://github.com"
+	ctx.Git.CurrentTag = "v1.0.0"
+	require.Error(t, Pipe{}.Default(ctx))
+}
+
 func TestDefaultWithGitlab(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
@@ -369,6 +381,18 @@ func TestDefaultWithGitlab(t *testing.T) {
 	require.Equal(t, "https://gitlab.com/gitlabowner/gitlabrepo/-/releases/v1.0.0", ctx.ReleaseURL)
 }
 
+func TestDefaultWithGitlabInvalidURL(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@gitlab.com:gitlabrepo.git")
+
+	ctx := context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitLab
+	ctx.Config.GitLabURLs.Download = "https://gitlab.com"
+	ctx.Git.CurrentTag = "v1.0.0"
+	require.Error(t, Pipe{}.Default(ctx))
+}
+
 func TestDefaultWithGitea(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
@@ -382,6 +406,18 @@ func TestDefaultWithGitea(t *testing.T) {
 	require.Equal(t, "gitearepo", ctx.Config.Release.Gitea.Name)
 	require.Equal(t, "giteaowner", ctx.Config.Release.Gitea.Owner)
 	require.Equal(t, "https://git.honk.com/giteaowner/gitearepo/releases/tag/v1.0.0", ctx.ReleaseURL)
+}
+
+func TestDefaultWithGiteaInvalidURL(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@gitea.example.com:gitearepo.git")
+
+	ctx := context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitea
+	ctx.Config.GiteaURLs.Download = "https://git.honk.com"
+	ctx.Git.CurrentTag = "v1.0.0"
+	require.Error(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultPreRelease(t *testing.T) {

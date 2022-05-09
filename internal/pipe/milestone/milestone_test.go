@@ -31,6 +31,18 @@ func TestDefaultWithRepoConfig(t *testing.T) {
 	require.Equal(t, "configowner", ctx.Config.Milestones[0].Repo.Owner)
 }
 
+func TestDefaultWithInvalidRemote(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:githubowner.git")
+
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
+	ctx.TokenType = context.TokenTypeGitHub
+	require.Error(t, Pipe{}.Default(ctx))
+}
+
 func TestDefaultWithRepoRemote(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)

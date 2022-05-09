@@ -536,6 +536,21 @@ func TestGetChangeloger(t *testing.T) {
 		require.IsType(t, c, &githubNativeChangeloger{})
 	})
 
+	t.Run(useGitHubNative+"-invalid-repo", func(t *testing.T) {
+		testlib.Mktmp(t)
+		testlib.GitInit(t)
+		testlib.GitRemoteAdd(t, "https://gist.github.com/")
+		ctx := context.New(config.Project{
+			Changelog: config.Changelog{
+				Use: useGitHubNative,
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitHub
+		c, err := getChangeloger(ctx)
+		require.EqualError(t, err, "unsupported repository URL: https://gist.github.com/")
+		require.Nil(t, c)
+	})
+
 	t.Run(useGitLab, func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Changelog: config.Changelog{
@@ -546,6 +561,21 @@ func TestGetChangeloger(t *testing.T) {
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, c, &scmChangeloger{})
+	})
+
+	t.Run(useGitHub+"-invalid-repo", func(t *testing.T) {
+		testlib.Mktmp(t)
+		testlib.GitInit(t)
+		testlib.GitRemoteAdd(t, "https://gist.github.com/")
+		ctx := context.New(config.Project{
+			Changelog: config.Changelog{
+				Use: useGitHub,
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitHub
+		c, err := getChangeloger(ctx)
+		require.EqualError(t, err, "unsupported repository URL: https://gist.github.com/")
+		require.Nil(t, c)
 	})
 
 	t.Run("invalid", func(t *testing.T) {

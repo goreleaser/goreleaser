@@ -60,6 +60,8 @@ func TestExtractRepoFromURL(t *testing.T) {
 			repo, err := git.ExtractRepoFromURL(url)
 			require.NoError(t, err)
 			require.Equal(t, "goreleaser/goreleaser", repo.String())
+			require.NoError(t, repo.CheckSCM())
+			require.Equal(t, url, repo.RawURL)
 		})
 	}
 
@@ -73,18 +75,35 @@ func TestExtractRepoFromURL(t *testing.T) {
 			repo, err := git.ExtractRepoFromURL(url)
 			require.NoError(t, err)
 			require.Equal(t, "group/nested/goreleaser/goreleaser", repo.String())
+			require.NoError(t, repo.CheckSCM())
+			require.Equal(t, url, repo.RawURL)
 		})
 	}
 
-	// invalid urls
 	for _, url := range []string{
 		"git@gist.github.com:someid.git",
 		"https://gist.github.com/someid.git",
 	} {
 		t.Run(url, func(t *testing.T) {
 			repo, err := git.ExtractRepoFromURL(url)
+			require.NoError(t, err)
+			require.Equal(t, "someid", repo.String())
+			require.Error(t, repo.CheckSCM())
+			require.Equal(t, url, repo.RawURL)
+		})
+	}
+
+	// invalid urls
+	for _, url := range []string{
+		"git@gist.github.com:",
+		"https://gist.github.com/",
+	} {
+		t.Run(url, func(t *testing.T) {
+			repo, err := git.ExtractRepoFromURL(url)
 			require.EqualError(t, err, "unsupported repository URL: "+url)
 			require.Equal(t, "", repo.String())
+			require.Error(t, repo.CheckSCM())
+			require.Equal(t, url, repo.RawURL)
 		})
 	}
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -48,7 +49,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	switch ctx.TokenType {
 	case context.TokenTypeGitLab:
 		if ctx.Config.Release.GitLab.Name == "" {
-			repo, err := git.ExtractRepoFromConfig(ctx)
+			repo, err := getRepository(ctx)
 			if err != nil {
 				return err
 			}
@@ -63,7 +64,7 @@ func (Pipe) Default(ctx *context.Context) error {
 		)
 	case context.TokenTypeGitea:
 		if ctx.Config.Release.Gitea.Name == "" {
-			repo, err := git.ExtractRepoFromConfig(ctx)
+			repo, err := getRepository(ctx)
 			if err != nil {
 				return err
 			}
@@ -79,7 +80,7 @@ func (Pipe) Default(ctx *context.Context) error {
 	default:
 		// We keep github as default for now
 		if ctx.Config.Release.GitHub.Name == "" {
-			repo, err := git.ExtractRepoFromConfig(ctx)
+			repo, err := getRepository(ctx)
 			if err != nil && !ctx.Snapshot {
 				return err
 			}
@@ -107,6 +108,17 @@ func (Pipe) Default(ctx *context.Context) error {
 	log.Debugf("pre-release for tag %s set to %v", ctx.Git.CurrentTag, ctx.PreRelease)
 
 	return nil
+}
+
+func getRepository(ctx *context.Context) (config.Repo, error) {
+	repo, err := git.ExtractRepoFromConfig(ctx)
+	if err != nil {
+		return config.Repo{}, err
+	}
+	if err := repo.CheckSCM(); err != nil {
+		return config.Repo{}, err
+	}
+	return repo, nil
 }
 
 // Publish the release.
