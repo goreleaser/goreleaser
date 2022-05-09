@@ -287,6 +287,9 @@ func newGithubChangeloger(ctx *context.Context) (changeloger, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := repo.CheckSCM(); err != nil {
+		return nil, err
+	}
 	return &githubNativeChangeloger{
 		client: cli,
 		repo: client.Repo{
@@ -303,6 +306,9 @@ func newSCMChangeloger(ctx *context.Context) (changeloger, error) {
 	}
 	repo, err := git.ExtractRepoFromConfig(ctx)
 	if err != nil {
+		return nil, err
+	}
+	if err := repo.CheckSCM(); err != nil {
 		return nil, err
 	}
 	return &scmChangeloger{

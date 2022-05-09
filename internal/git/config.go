@@ -16,7 +16,7 @@ func ExtractRepoFromConfig(ctx context.Context) (result config.Repo, err error) 
 	if !IsRepo(ctx) {
 		return result, errors.New("current folder is not a git repository")
 	}
-	out, err := Run(ctx, "ls-remote", "--get-url")
+	out, err := Clean(Run(ctx, "ls-remote", "--get-url"))
 	if err != nil {
 		return result, fmt.Errorf("no remote configured to list refs from")
 	}
@@ -44,19 +44,32 @@ func ExtractRepoFromURL(rawurl string) (config.Repo, error) {
 	// now we can parse it with net/url
 	u, err := url.Parse(s)
 	if err != nil {
-		return config.Repo{}, err
+		return config.Repo{
+			RawURL: rawurl,
+		}, err
 	}
 
 	// split the parsed url path by /, the last parts should be the owner and name
 	ss := strings.Split(strings.TrimPrefix(u.Path, "/"), "/")
 
-	// if less than 2 parts, its likely not a valid repository
+	// if empty, returns an error
+	if len(ss) == 0 || ss[0] == "" {
+		return config.Repo{
+			RawURL: rawurl,
+		}, fmt.Errorf("unsupported repository URL: %s", rawurl)
+	}
+
+	// if less than 2 parts, its likely not a valid repository, but we'll allow it.
 	if len(ss) < 2 {
-		return config.Repo{}, fmt.Errorf("unsupported repository URL: %s", rawurl)
+		return config.Repo{
+			RawURL: rawurl,
+			Owner:  ss[0],
+		}, nil
 	}
 	repo := config.Repo{
-		Owner: strings.Join(ss[:len(ss)-1], "/"),
-		Name:  ss[len(ss)-1],
+		RawURL: rawurl,
+		Owner:  strings.Join(ss[:len(ss)-1], "/"),
+		Name:   ss[len(ss)-1],
 	}
 	log.WithField("owner", repo.Owner).WithField("name", repo.Name).Debugf("parsed url")
 	return repo, nil

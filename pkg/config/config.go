@@ -4,6 +4,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -42,16 +43,30 @@ type GiteaURLs struct {
 // Repo represents any kind of repo (github, gitlab, etc).
 // to upload releases into.
 type Repo struct {
-	Owner string `yaml:"owner,omitempty"`
-	Name  string `yaml:"name,omitempty"`
+	Owner  string `yaml:"owner,omitempty"`
+	Name   string `yaml:"name,omitempty"`
+	RawURL string `yaml:"-"`
 }
 
 // String of the repo, e.g. owner/name.
 func (r Repo) String() string {
-	if r.Owner == "" && r.Name == "" {
-		return ""
+	if r.isSCM() {
+		return r.Owner + "/" + r.Name
 	}
-	return r.Owner + "/" + r.Name
+	return r.Owner
+}
+
+// CheckSCM returns an error if the given url is not a valid scm url.
+func (r Repo) CheckSCM() error {
+	if r.isSCM() {
+		return nil
+	}
+	return fmt.Errorf("invalid scm url: %s", r.RawURL)
+}
+
+// isSCM returns true if the repo has both an owner and name.
+func (r Repo) isSCM() bool {
+	return r.Owner != "" && r.Name != ""
 }
 
 // RepoRef represents any kind of repo which may differ
