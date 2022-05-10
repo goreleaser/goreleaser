@@ -15,6 +15,7 @@ archives:
     id: my-archive
 
     # Builds reference which build instances should be archived in this archive.
+    # Default is empty, which includes all builds.
     builds:
     - default
 
@@ -23,6 +24,11 @@ archives:
     # uploaded directly.
     # Default is `tar.gz`.
     format: zip
+
+    # This will create an archive without any binaries, only the files are there.
+    # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
+    # Defaul is false.
+    meta: true
 
     # Archive name template.
     # Defaults:

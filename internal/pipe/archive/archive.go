@@ -84,6 +84,10 @@ func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.New(ctx.Parallelism)
 	for i, archive := range ctx.Config.Archives {
 		archive := archive
+		if archive.Meta {
+			return createMeta(ctx, archive)
+		}
+
 		filter := []artifact.Filter{artifact.Or(
 			artifact.ByType(artifact.Binary),
 			artifact.ByType(artifact.UniversalBinary),
@@ -120,11 +124,18 @@ func checkArtifacts(artifacts map[string][]*artifact.Artifact) error {
 	return ErrArchiveDifferentBinaryCount
 }
 
+func createMeta(ctx *context.Context, arch config.Archive) error {
+	return doCreate(ctx, arch, nil, arch.Format, tmpl.New(ctx))
+}
+
 func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {
+	template := tmpl.New(ctx).WithArtifact(binaries[0], arch.Replacements)
 	format := packageFormat(arch, binaries[0].Goos)
-	folder, err := tmpl.New(ctx).
-		WithArtifact(binaries[0], arch.Replacements).
-		Apply(arch.NameTemplate)
+	return doCreate(ctx, arch, binaries, format, template)
+}
+
+func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact, format string, template *tmpl.Template) error {
+	folder, err := template.Apply(arch.NameTemplate)
 	if err != nil {
 		return err
 	}
@@ -149,8 +160,6 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	log := log.WithField("archive", archivePath)
 	log.Info("creating")
 
-	template := tmpl.New(ctx).
-		WithArtifact(binaries[0], arch.Replacements)
 	wrap, err := template.Apply(wrapFolder(arch))
 	if err != nil {
 		return err
@@ -162,6 +171,9 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 	files, err := findFiles(template, arch.Files)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %w", err)
+	}
+	if arch.Meta && len(files) == 0 {
+		return fmt.Errorf("no files found")
 	}
 	for _, f := range files {
 		if err = a.Add(f); err != nil {
@@ -178,24 +190,28 @@ func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Arti
 		}
 		bins = append(bins, binary.Name)
 	}
-	ctx.Artifacts.Add(&artifact.Artifact{
-		Type:    artifact.UploadableArchive,
-		Name:    folder + "." + format,
-		Path:    archivePath,
-		Goos:    binaries[0].Goos,
-		Goarch:  binaries[0].Goarch,
-		Goarm:   binaries[0].Goarm,
-		Gomips:  binaries[0].Gomips,
-		Goamd64: binaries[0].Goamd64,
+	art := &artifact.Artifact{
+		Type: artifact.UploadableArchive,
+		Name: folder + "." + format,
+		Path: archivePath,
 		Extra: map[string]interface{}{
 			artifact.ExtraBuilds:    binaries,
 			artifact.ExtraID:        arch.ID,
 			artifact.ExtraFormat:    arch.Format,
 			artifact.ExtraWrappedIn: wrap,
 			artifact.ExtraBinaries:  bins,
-			artifact.ExtraReplaces:  binaries[0].Extra[artifact.ExtraReplaces],
 		},
-	})
+	}
+	if len(binaries) > 0 {
+		art.Goos = binaries[0].Goos
+		art.Goarch = binaries[0].Goarch
+		art.Goarm = binaries[0].Goarm
+		art.Gomips = binaries[0].Gomips
+		art.Goamd64 = binaries[0].Goamd64
+		art.Extra[artifact.ExtraReplaces] = binaries[0].Extra[artifact.ExtraReplaces]
+	}
+
+	ctx.Artifacts.Add(art)
 	return nil
 }
 
