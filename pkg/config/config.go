@@ -516,6 +516,7 @@ type Archive struct {
 	FormatOverrides           []FormatOverride  `yaml:"format_overrides,omitempty"`
 	WrapInDirectory           string            `yaml:"wrap_in_directory,omitempty"`
 	Files                     []File            `yaml:"files,omitempty"`
+	Meta                      bool              `yaml:"meta,omitempty"`
 	AllowDifferentBinaryCount bool              `yaml:"allow_different_binary_count,omitempty"`
 }
 
