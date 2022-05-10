@@ -22,6 +22,7 @@ You can also customize your entire release process through a single .goreleaser.
 ## See also
 
 * [goreleaser build](/cmd/goreleaser_build/)	 - Builds the current project
+* [goreleaser changelog](/cmd/goreleaser_changelog/)	 - Preview your changelog
 * [goreleaser check](/cmd/goreleaser_check/)	 - Checks if configuration is valid
 * [goreleaser completion](/cmd/goreleaser_completion/)	 - Generate the autocompletion script for the specified shell
 * [goreleaser init](/cmd/goreleaser_init/)	 - Generates a .goreleaser.yaml file

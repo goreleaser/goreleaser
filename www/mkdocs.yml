@@ -127,6 +127,7 @@ nav:
     - goreleaser: cmd/goreleaser.md
     - goreleaser init: cmd/goreleaser_init.md
     - goreleaser check: cmd/goreleaser_check.md
+    - goreleaser changelog: cmd/goreleaser_changelog.md
     - goreleaser build: cmd/goreleaser_build.md
     - goreleaser release: cmd/goreleaser_release.md
     - goreleaser completion: cmd/goreleaser_completion.md
