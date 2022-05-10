@@ -205,6 +205,9 @@
 						},
 						"type": "array"
 					},
+					"meta": {
+						"type": "boolean"
+					},
 					"allow_different_binary_count": {
 						"type": "boolean"
 					}
