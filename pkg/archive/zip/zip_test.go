@@ -2,6 +2,7 @@ package zip
 
 import (
 	"archive/zip"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -135,4 +136,14 @@ func TestZipFileInfo(t *testing.T) {
 		require.Equal(t, now.Unix(), next.Modified.Unix())
 		require.Equal(t, fs.FileMode(0o755), next.FileInfo().Mode())
 	}
+}
+
+func TestTarInvalidLink(t *testing.T) {
+	archive := New(io.Discard)
+	defer archive.Close() // nolint: errcheck
+
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/badlink.txt",
+		Destination: "badlink.txt",
+	}))
 }
