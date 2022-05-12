@@ -24,9 +24,8 @@ source:
   # Defaults to empty
   prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
 
-  # Additional files/template/globs you want to add to the archive.
-  # Defaults are any files matching `LICENSE*`, `README*`, `CHANGELOG*`,
-  #  `license*`, `readme*` and `changelog*`.
+  # Additional files/template/globs you want to add to the source archive.
+  # Defaults to empty.
   files:
     - LICENSE.txt
     - README_{{.Os}}.md
