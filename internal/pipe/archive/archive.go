@@ -8,12 +8,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"sync"
 
 	"github.com/apex/log"
-	"github.com/goreleaser/fileglob"
+	"github.com/goreleaser/goreleaser/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -171,7 +170,7 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 	a = NewEnhancedArchive(a, wrap)
 	defer a.Close()
 
-	files, err := findFiles(template, arch.Files)
+	files, err := archivefiles.Eval(template, arch.Files)
 	if err != nil {
 		return fmt.Errorf("failed to find files to archive: %w", err)
 	}
@@ -260,66 +259,6 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		})
 	}
 	return nil
-}
-
-func findFiles(template *tmpl.Template, files []config.File) ([]config.File, error) {
-	var result []config.File
-	for _, f := range files {
-		replaced, err := template.Apply(f.Source)
-		if err != nil {
-			return result, fmt.Errorf("failed to apply template %s: %w", f.Source, err)
-		}
-
-		files, err := fileglob.Glob(replaced)
-		if err != nil {
-			return result, fmt.Errorf("globbing failed for pattern %s: %w", f.Source, err)
-		}
-
-		for _, file := range files {
-			result = append(result, config.File{
-				Source:      file,
-				Destination: destinationFor(f, file),
-				Info:        f.Info,
-			})
-		}
-	}
-
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].Destination < result[j].Destination
-	})
-
-	return unique(result), nil
-}
-
-// remove duplicates
-func unique(in []config.File) []config.File {
-	var result []config.File
-	exist := map[string]string{}
-	for _, f := range in {
-		if current := exist[f.Destination]; current != "" {
-			log.Warnf(
-				"file '%s' already exists in archive as '%s' - '%s' will be ignored",
-				f.Destination,
-				current,
-				f.Source,
-			)
-			continue
-		}
-		exist[f.Destination] = f.Source
-		result = append(result, f)
-	}
-
-	return result
-}
-
-func destinationFor(f config.File, path string) string {
-	if f.Destination == "" {
-		return path
-	}
-	if f.StripParent {
-		return filepath.Join(f.Destination, filepath.Base(path))
-	}
-	return filepath.Join(f.Destination, path)
 }
 
 func packageFormat(archive config.Archive, platform string) string {
