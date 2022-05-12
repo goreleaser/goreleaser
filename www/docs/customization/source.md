@@ -23,6 +23,33 @@ source:
   # String to prepend to each filename in the archive.
   # Defaults to empty
   prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
+
+  # Additional files/template/globs you want to add to the archive.
+  # Defaults are any files matching `LICENSE*`, `README*`, `CHANGELOG*`,
+  #  `license*`, `readme*` and `changelog*`.
+  files:
+    - LICENSE.txt
+    - README_{{.Os}}.md
+    - CHANGELOG.md
+    - docs/*
+    - design/*.png
+    - templates/**/*
+    # a more complete example, check the globbing deep dive below
+    - src: '*.md'
+      dst: docs
+      # Strip parent folders when adding files to the archive.
+      # Default: false
+      strip_parent: true
+      # File info.
+      # Not all fields are supported by all formats available formats.
+      # Defaults to the file info of the actual file if not provided.
+      info:
+        owner: root
+        group: root
+        mode: 0644
+        # format is `time.RFC3339Nano`
+        mtime: 2008-01-02T15:04:05Z
+
 ```
 
 !!! tip

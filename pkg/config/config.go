@@ -910,6 +910,7 @@ type Source struct {
 	Format         string `yaml:"format,omitempty"`
 	Enabled        bool   `yaml:"enabled,omitempty"`
 	PrefixTemplate string `yaml:"prefix_template,omitempty"`
+	Files          []File `yaml:"files,omitempty"`
 }
 
 // Project includes all project configuration.
