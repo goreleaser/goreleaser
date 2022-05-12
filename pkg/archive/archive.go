@@ -2,8 +2,8 @@
 package archive
 
 import (
-	"os"
-	"strings"
+	"fmt"
+	"io"
 
 	"github.com/goreleaser/goreleaser/pkg/archive/gzip"
 	"github.com/goreleaser/goreleaser/pkg/archive/tar"
@@ -20,21 +20,18 @@ type Archive interface {
 }
 
 // New archive.
-func New(file *os.File) Archive {
-	if strings.HasSuffix(file.Name(), ".tar.gz") {
-		return targz.New(file)
+func New(w io.Writer, format string) (Archive, error) {
+	switch format {
+	case "tar.gz":
+		return targz.New(w), nil
+	case "tar":
+		return tar.New(w), nil
+	case "gz":
+		return gzip.New(w), nil
+	case "tar.xz":
+		return tarxz.New(w), nil
+	case "zip":
+		return zip.New(w), nil
 	}
-	if strings.HasSuffix(file.Name(), ".gz") {
-		return gzip.New(file)
-	}
-	if strings.HasSuffix(file.Name(), ".tar.xz") {
-		return tarxz.New(file)
-	}
-	if strings.HasSuffix(file.Name(), ".zip") {
-		return zip.New(file)
-	}
-	if strings.HasSuffix(file.Name(), ".tar") {
-		return tar.New(file)
-	}
-	return targz.New(file)
+	return nil, fmt.Errorf("invalid archive format: %s", format)
 }

@@ -901,8 +901,9 @@ func TestDuplicateFilesInsideArchive(t *testing.T) {
 	ff, err := os.CreateTemp(folder, "")
 	require.NoError(t, err)
 	require.NoError(t, ff.Close())
-
-	a := NewEnhancedArchive(archive.New(f), "")
+	a, err := archive.New(f, "tar.gz")
+	require.NoError(t, err)
+	a = NewEnhancedArchive(a, "")
 	t.Cleanup(func() {
 		require.NoError(t, a.Close())
 	})
@@ -1155,4 +1156,19 @@ func TestArchive_globbing(t *testing.T) {
 			"var/yada/d.txt",
 		})
 	})
+}
+
+func TestInvalidFormat(t *testing.T) {
+	ctx := context.New(config.Project{
+		Dist: t.TempDir(),
+		Archives: []config.Archive{
+			{
+				ID:           "foo",
+				NameTemplate: "foo",
+				Meta:         true,
+				Format:       "7z",
+			},
+		},
+	})
+	require.EqualError(t, Pipe{}.Run(ctx), "invalid archive format: 7z")
 }
