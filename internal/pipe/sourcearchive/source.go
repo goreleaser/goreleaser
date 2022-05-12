@@ -38,7 +38,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	path := filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("file", filename).Info("creating source archive")
 
-	out, err := git.Clean(git.Run(ctx, "ls-files"))
+	out, err := git.Run(ctx, "ls-files")
 	if err != nil {
 		return fmt.Errorf("could not list source files: %w", err)
 	}
@@ -58,19 +58,22 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+
+	var ff []config.File
 	for _, f := range strings.Split(out, "\n") {
-		if err := arch.Add(config.File{
-			Source:      f,
-			Destination: filepath.Join(prefix, f),
-		}); err != nil {
-			return fmt.Errorf("could not add %q to archive: %w", f, err)
+		if strings.TrimSpace(f) == "" {
+			continue
 		}
+		ff = append(ff, config.File{
+			Source: f,
+		})
 	}
-	files, err := archivefiles.Eval(tmpl.New(ctx), ctx.Config.Source.Files)
+	files, err := archivefiles.Eval(tmpl.New(ctx), append(ff, ctx.Config.Source.Files...))
 	if err != nil {
 		return err
 	}
 	for _, f := range files {
+		f.Destination = filepath.Join(prefix, f.Destination)
 		if err := arch.Add(f); err != nil {
 			return fmt.Errorf("could not add %q to archive: %w", f.Source, err)
 		}

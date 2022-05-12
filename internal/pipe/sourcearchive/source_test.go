@@ -21,6 +21,7 @@ func TestArchive(t *testing.T) {
 
 			testlib.GitInit(t)
 			require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0o655))
+			require.NoError(t, os.WriteFile("code.py", []byte("print 1"), 0o655))
 			require.NoError(t, os.WriteFile("README.md", []byte("# my dope fake project"), 0o655))
 			testlib.GitAdd(t)
 			testlib.GitCommit(t, "feat: first")
@@ -73,7 +74,12 @@ func TestArchive(t *testing.T) {
 			for _, zf := range z.File {
 				paths = append(paths, zf.Name)
 			}
-			require.Equal(t, []string{"foo-1.0.0/README.md", "added-later.txt", "code.txt"}, paths)
+			require.Equal(t, []string{
+				"foo-1.0.0/README.md",
+				"foo-1.0.0/added-later.txt",
+				"foo-1.0.0/code.py",
+				"foo-1.0.0/code.txt",
+			}, paths)
 		})
 	}
 }
