@@ -164,8 +164,11 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 	if err != nil {
 		return err
 	}
-
-	a := NewEnhancedArchive(archive.New(archiveFile), wrap)
+	a, err := archive.New(archiveFile, format)
+	if err != nil {
+		return err
+	}
+	a = NewEnhancedArchive(a, wrap)
 	defer a.Close()
 
 	files, err := findFiles(template, arch.Files)
