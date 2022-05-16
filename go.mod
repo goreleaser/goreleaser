@@ -18,7 +18,7 @@ require (
 	github.com/dghubble/oauth1 v0.7.1
 	github.com/fatih/color v1.13.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
-	github.com/google/go-github/v44 v44.0.0
+	github.com/google/go-github/v44 v44.1.0
 	github.com/google/uuid v1.3.0
 	github.com/goreleaser/fileglob v1.3.0
 	github.com/goreleaser/nfpm/v2 v2.15.1
@@ -94,7 +94,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.7 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/rpmpack v0.0.0-20220314092521-38642b5e571e // indirect
 	github.com/google/wire v0.5.0 // indirect
