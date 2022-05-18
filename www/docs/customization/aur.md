@@ -127,7 +127,7 @@ aurs:
     # Defaults are shown below.
     commit_author:
       name: goreleaserbot
-      email: goreleaser@carlosbecker.com
+      email: bot@goreleaser.com
 
     # Commit message template.
     # Defaults to `Update to {{ .Tag }}`.

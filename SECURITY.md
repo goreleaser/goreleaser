@@ -6,4 +6,4 @@ Only the last stable version at any given point.
 
 ## Reporting a Vulnerability
 
-Vulnerabilities can be disclosed via email to carlos@becker.software
+Vulnerabilities can be disclosed via email to sec@goreleaser.com
