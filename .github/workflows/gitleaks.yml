@@ -1,0 +1,13 @@
+name: gitleaks
+
+on: [push,pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: zricethezav/gitleaks-action@master
