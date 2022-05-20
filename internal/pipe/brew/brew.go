@@ -408,7 +408,7 @@ func split(s string) []string {
 func formulaNameFor(name string) string {
 	name = strings.ReplaceAll(name, "-", " ")
 	name = strings.ReplaceAll(name, "_", " ")
-	name = strings.ReplaceAll(name, ".", "_")
+	name = strings.ReplaceAll(name, ".", "")
 	name = strings.ReplaceAll(name, "@", "AT")
 	return strings.ReplaceAll(strings.Title(name), " ", "") // nolint:staticcheck
 }
