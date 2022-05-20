@@ -309,8 +309,6 @@ release:
     - Follow us on [Twitter](https://twitter.com/goreleaser)
 
 announce:
-  skip: "{{gt .Patch 0}}"
-
   twitter:
     enabled: true
     message_template: 'GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'
