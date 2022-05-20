@@ -218,7 +218,7 @@ func (c *githubClient) findDraftRelease(ctx *context.Context) (*github.Repositor
 			return nil, err
 		}
 		for _, r := range releases {
-			if r.TagName == &ctx.Git.CurrentTag {
+			if r.GetTagName() == ctx.Git.CurrentTag {
 				return r, nil
 			}
 		}
@@ -227,7 +227,7 @@ func (c *githubClient) findDraftRelease(ctx *context.Context) (*github.Repositor
 		}
 		opts.Page = resp.NextPage
 	}
-	return nil, nil
+	return nil, fmt.Errorf("no existing draft release found for %s", ctx.Git.CurrentTag)
 }
 
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string, error) {
