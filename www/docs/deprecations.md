@@ -146,6 +146,13 @@ GoDownloader, the install script generator, wasn't been updated for a long time 
 The website and all install scripts will be taken out in 6 months.
 You can still use any of the other install methods.
 
+This also includes `install.goreleaser.com`.
+
+Most common tools installed via that website were probably
+[GoReleaser](/install/) itself and
+[golangci-lint](https://golangci-lint.run/usage/install/).
+
+Please follow to the check their documentation for alternative install methods.
 
 ### dockers.use_buildx
 
