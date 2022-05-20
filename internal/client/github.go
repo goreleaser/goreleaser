@@ -200,36 +200,6 @@ func (c *githubClient) CreateFile(
 	return err
 }
 
-// you can't get a an existing draft by tag
-// so we must find one in the list of all releases
-func (c *githubClient) findDraftRelease(ctx *context.Context) (*github.RepositoryRelease, error) {
-	opts := &github.ListOptions{
-		Page:    1,
-		PerPage: 100,
-	}
-	for {
-		releases, resp, err := c.client.Repositories.ListReleases(
-			ctx,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
-			opts,
-		)
-		if err != nil {
-			return nil, err
-		}
-		for _, r := range releases {
-			if r.TagName == &ctx.Git.CurrentTag {
-				return r, nil
-			}
-		}
-		if resp.NextPage == 0 {
-			break
-		}
-		opts.Page = resp.NextPage
-	}
-	return nil, nil
-}
-
 func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string, error) {
 	var release *github.RepositoryRelease
 	title, err := tmpl.New(ctx).Apply(ctx.Config.Release.NameTemplate)
@@ -251,16 +221,12 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		data.DiscussionCategoryName = github.String(ctx.Config.Release.DiscussionCategoryName)
 	}
 
-	if ctx.Config.Release.Draft {
-		release, err = c.findDraftRelease(ctx)
-	} else {
-		release, _, err = c.client.Repositories.GetReleaseByTag(
-			ctx,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
-			ctx.Git.CurrentTag,
-		)
-	}
+	release, _, err = c.client.Repositories.GetReleaseByTag(
+		ctx,
+		ctx.Config.Release.GitHub.Owner,
+		ctx.Config.Release.GitHub.Name,
+		ctx.Git.CurrentTag,
+	)
 	if err != nil {
 		release, _, err = c.client.Repositories.CreateRelease(
 			ctx,
