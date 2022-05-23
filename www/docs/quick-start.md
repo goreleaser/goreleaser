@@ -78,7 +78,7 @@ goreleaser release
 
 That's all it takes!
 
-GoReleaser will build the binaries for your app for Windows, Linux and macOS, both amd64 and i386 architectures.
+GoReleaser will build the binaries for your app for Linux and macOS, both amd64 and i386 architectures.
 You can customize that by changing the `builds` section. Check the [documentation](/customization/build/) for more information.
 
 After building the binaries, GoReleaser will create an archive for each OS/Arch pair into a separate file.
