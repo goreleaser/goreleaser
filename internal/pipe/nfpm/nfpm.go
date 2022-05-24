@@ -59,7 +59,7 @@ func (Pipe) Default(ctx *context.Context) error {
 			deprecate.Notice(ctx, "nfpms.empty_folders")
 		}
 		if fpm.Maintainer == "" {
-			deprecate.Notice(ctx, "nfpms.maintainer")
+			deprecate.NoticeCustom(ctx, "nfpms.maintainer", "`{{ .Property }}` should always be set, check {{ .URL }} for more info")
 		}
 		ids.Inc(fpm.ID)
 	}
