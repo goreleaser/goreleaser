@@ -45,6 +45,8 @@ tasks:
   report:
     status:
       - test -z "$GITHUB_STEP_SUMMARY"
+    env:
+      NO_COLOR: 1
     cmds:
       - tparse -format markdown -file output.json -all > $GITHUB_STEP_SUMMARY
 
