@@ -38,7 +38,16 @@ tasks:
       SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
       TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
     cmds:
-      - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m
+      - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m | tee output.json | tparse -notests -follow -all
+    generates:
+      - output.json
+
+  report:
+    status:
+      - test -z "$GITHUB_STEP_SUMMARY"
+    cmds:
+      - tparse -format markdown -file output.json -all > $GITHUB_STEP_SUMMARY
+
 
   cover:
     desc: Open the cover tool
@@ -61,6 +70,9 @@ tasks:
       - task: setup
       - task: build
       - task: test
+        vars:
+          TEST_OPTIONS: "-json"
+      - task: report
 
   default:
     desc: Runs the default tasks
