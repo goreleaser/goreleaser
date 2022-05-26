@@ -34,7 +34,7 @@ tasks:
     env:
       LC_ALL: C
     vars:
-      TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
+      TEST_OPTIONS: '{{default "-json" .TEST_OPTIONS}}'
       SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
       TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
     cmds:
@@ -70,8 +70,6 @@ tasks:
       - task: setup
       - task: build
       - task: test
-        vars:
-          TEST_OPTIONS: "-json"
       - task: report
 
   default:
