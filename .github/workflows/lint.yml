@@ -17,7 +17,7 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@fcdc43634adb5f7ae75a9d7a9b9361790f7293e2 # v2
+      - uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923 # v2
         with:
           go-version: ~1.18
       - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
