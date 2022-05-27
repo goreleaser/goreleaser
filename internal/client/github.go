@@ -225,7 +225,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
-		ctx.Git.CurrentTag,
+		data.GetTagName(),
 	)
 	if err != nil {
 		release, _, err = c.client.Repositories.CreateRelease(
