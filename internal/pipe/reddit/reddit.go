@@ -3,9 +3,9 @@ package reddit
 import (
 	"fmt"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
 	"github.com/caarlos0/go-reddit/v3/reddit"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )

@@ -5,8 +5,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
+	"github.com/caarlos0/log"
+	"github.com/caarlos0/log/handlers/cli"
 )
 
 // Output type of the log output.

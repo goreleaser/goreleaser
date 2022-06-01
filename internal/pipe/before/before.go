@@ -7,8 +7,8 @@ import (
 	"io"
 	"os/exec"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/go-shellwords"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/tmpl"

@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )

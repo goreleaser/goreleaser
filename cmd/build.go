@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/ctrlc"
+	"github.com/caarlos0/log"
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/gio"
@@ -111,7 +111,6 @@ func buildProject(options buildOpts) (*context.Context, error) {
 				logging.Log(
 					pipe.String(),
 					errhandler.Handle(pipe.Run),
-					logging.DefaultInitialPadding,
 				),
 			)(ctx); err != nil {
 				return err

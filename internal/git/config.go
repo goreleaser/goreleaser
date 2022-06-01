@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 

@@ -16,7 +16,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 )
 
 // Type defines the type of an artifact.

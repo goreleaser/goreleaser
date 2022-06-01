@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
+	"github.com/caarlos0/log"
+	"github.com/caarlos0/log/handlers/cli"
 	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/stretchr/testify/require"
 )

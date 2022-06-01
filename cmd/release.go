@@ -4,8 +4,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/ctrlc"
+	"github.com/caarlos0/log"
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
@@ -110,7 +110,6 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 				logging.Log(
 					pipe.String(),
 					errhandler.Handle(pipe.Run),
-					logging.DefaultInitialPadding,
 				),
 			)(ctx); err != nil {
 				return err

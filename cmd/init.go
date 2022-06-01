@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/internal/static"
 	"github.com/spf13/cobra"

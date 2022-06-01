@@ -7,13 +7,14 @@ require (
 	github.com/DisgoOrg/disgohook v1.4.4
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/alecthomas/jsonschema v0.0.0-20211209230136-e2b41affa5c1
-	github.com/apex/log v1.9.0
 	github.com/atc0005/go-teams-notify/v2 v2.6.1
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/caarlos0/env/v6 v6.9.2
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
+	github.com/caarlos0/log v0.0.0-20220601031310-573bfbc37276
 	github.com/charmbracelet/keygen v0.3.0
+	github.com/charmbracelet/lipgloss v0.5.0
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.1
 	github.com/fatih/color v1.13.0
@@ -28,6 +29,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/mango-cobra v1.1.0
 	github.com/muesli/roff v0.1.0
+	github.com/muesli/termenv v0.11.1-0.20220204035834-5ac8409525e0
 	github.com/slack-go/slack v0.10.3
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.1
@@ -111,15 +113,19 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kevinburke/ssh_config v1.1.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.9 // indirect
 	github.com/mattn/go-ieproxy v0.0.1 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/muesli/mango v0.1.0 // indirect
 	github.com/muesli/mango-pflag v0.1.0 // indirect
+	github.com/muesli/reflow v0.2.1-0.20210115123740-9e1d0d53df68 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
