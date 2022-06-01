@@ -15,10 +15,10 @@ import (
 )
 
 func TestNotice(t *testing.T) {
-	var w bytes.Buffer
-
-	log.SetHandler(cli.New(&w))
 	lipgloss.SetColorProfile(termenv.Ascii)
+
+	var w bytes.Buffer
+	log.SetHandler(cli.New(&w))
 
 	log.Info("first")
 	ctx := context.New(config.Project{})
@@ -30,10 +30,10 @@ func TestNotice(t *testing.T) {
 }
 
 func TestNoticeCustom(t *testing.T) {
-	var w bytes.Buffer
-
-	log.SetHandler(cli.New(&w))
 	lipgloss.SetColorProfile(termenv.Ascii)
+
+	var w bytes.Buffer
+	log.SetHandler(cli.New(&w))
 
 	log.Info("first")
 	ctx := context.New(config.Project{})
