@@ -10,7 +10,7 @@ require (
 	github.com/apex/log v1.9.0
 	github.com/atc0005/go-teams-notify/v2 v2.6.1
 	github.com/caarlos0/ctrlc v1.0.0
-	github.com/caarlos0/env/v6 v6.9.2
+	github.com/caarlos0/env/v6 v6.9.3
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
 	github.com/charmbracelet/keygen v0.3.0
