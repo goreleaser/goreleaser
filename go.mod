@@ -30,7 +30,7 @@ require (
 	github.com/muesli/roff v0.1.0
 	github.com/slack-go/slack v0.10.3
 	github.com/spf13/cobra v1.4.0
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.2
 	github.com/ulikunitz/xz v0.5.10
 	github.com/xanzy/go-gitlab v0.68.0
 	gocloud.dev v0.24.0
