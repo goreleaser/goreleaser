@@ -12,9 +12,9 @@ require (
 	github.com/caarlos0/env/v6 v6.9.3
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
-	github.com/caarlos0/log v0.0.0-20220601125653-975e6cd09b7b
+	github.com/caarlos0/log v0.0.0-20220607144435-1f324af67dab
 	github.com/charmbracelet/keygen v0.3.0
-	github.com/charmbracelet/lipgloss v0.5.1-0.20220601125546-d8aa337605e4
+	github.com/charmbracelet/lipgloss v0.5.1-0.20220604171933-77aae4ab0bf5
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.1
 	github.com/fatih/color v1.13.0
@@ -29,7 +29,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/mango-cobra v1.1.0
 	github.com/muesli/roff v0.1.0
-	github.com/muesli/termenv v0.11.1-0.20220204194139-01dd0df73b0b
+	github.com/muesli/termenv v0.12.1-0.20220606102431-9500d1649068
 	github.com/slack-go/slack v0.10.3
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.2
@@ -80,6 +80,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.4.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.7.0 // indirect
 	github.com/aws/smithy-go v1.8.0 // indirect
+	github.com/aymanbagabas/go-osc52 v1.0.3 // indirect
 	github.com/blakesmith/ar v0.0.0-20190502131153-809d4375e1fb // indirect
 	github.com/caarlos0/sshmarshal v0.0.0-20220308164159-9ddb9f83c6b3 // indirect
 	github.com/cavaliergopher/cpio v1.0.1 // indirect
@@ -133,7 +134,7 @@ require (
 	github.com/xanzy/ssh-agent v0.3.1 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
+	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
@@ -146,3 +147,5 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
+
+replace github.com/caarlos0/log => ../../forks/log

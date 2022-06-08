@@ -5,17 +5,18 @@ import (
 	"os"
 
 	"github.com/caarlos0/log"
-	"github.com/caarlos0/log/handlers/cli"
-	"github.com/fatih/color"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 	"github.com/spf13/cobra"
 )
+
+var boldStyle = lipgloss.NewStyle().Bold(true)
 
 func Execute(version string, exit func(int), args []string) {
 	// enable colored output on travis
 	if os.Getenv("CI") != "" {
-		color.NoColor = false
+		lipgloss.SetColorProfile(termenv.ANSI256)
 	}
-	log.SetHandler(cli.Default)
 	newRootCmd(version, exit).Execute(args)
 }
 

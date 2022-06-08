@@ -3,10 +3,10 @@ package logext
 import (
 	"bytes"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/caarlos0/log/handlers/cli"
 )
 
 // Output type of the log output.
@@ -54,12 +54,9 @@ func (w logWriter) Write(p []byte) (int, error) {
 }
 
 func newLogger(fields log.Fields) *log.Entry {
-	handler := cli.New(cli.Default.Writer)
-	handler.Padding = cli.Default.Padding + 3
-	return (&log.Logger{
-		Handler: handler,
-		Level:   log.InfoLevel,
-	}).WithFields(fields)
+	handler := log.New(os.Stderr)
+	handler.IncreasePadding()
+	return handler.WithFields(fields)
 }
 
 func isDebug() bool {

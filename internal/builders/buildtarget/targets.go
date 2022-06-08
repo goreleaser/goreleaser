@@ -56,6 +56,7 @@ func matrix(build config.Build, version []byte) ([]string, error) {
 			return result, fmt.Errorf("invalid goamd64: %s", target.amd64)
 		}
 		if target.os == "windows" && target.arch == "arm64" && !go117re.Match(version) {
+			// TODO: time to remove this!
 			log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
 				"DEPRECATED: skipped windows/arm64 build on Go < 1.17 for compatibility, check %s for more info.",
 				"https://goreleaser.com/deprecations/#builds-for-windowsarm64",

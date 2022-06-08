@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/caarlos0/log"
-	"github.com/caarlos0/log/handlers/cli"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -18,7 +17,7 @@ func TestNotice(t *testing.T) {
 	lipgloss.SetColorProfile(termenv.Ascii)
 
 	var w bytes.Buffer
-	log.SetHandler(cli.New(&w))
+	log.Log = log.New(&w)
 
 	log.Info("first")
 	ctx := context.New(config.Project{})
@@ -33,7 +32,7 @@ func TestNoticeCustom(t *testing.T) {
 	lipgloss.SetColorProfile(termenv.Ascii)
 
 	var w bytes.Buffer
-	log.SetHandler(cli.New(&w))
+	log.Log = log.New(&w)
 
 	log.Info("first")
 	ctx := context.New(config.Project{})
