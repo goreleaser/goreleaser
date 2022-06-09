@@ -221,13 +221,39 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		data.DiscussionCategoryName = github.String(ctx.Config.Release.DiscussionCategoryName)
 	}
 
-	release, _, err = c.client.Repositories.GetReleaseByTag(
-		ctx,
-		ctx.Config.Release.GitHub.Owner,
-		ctx.Config.Release.GitHub.Name,
-		data.GetTagName(),
-	)
-	if err != nil {
+	if *data.Draft {
+		opt := github.ListOptions{PerPage: 50}
+		for {
+			releases, resp, err := c.client.Repositories.ListReleases(
+				ctx,
+				ctx.Config.Release.GitHub.Owner,
+				ctx.Config.Release.GitHub.Name,
+				&opt,
+			)
+			if err != nil {
+				return "", err
+			}
+			for _, r := range releases {
+				if *r.Draft && *r.Name == *data.Name {
+					release = r
+					break
+				}
+			}
+			if resp.NextPage == 0 {
+				break
+			}
+			opt.Page = resp.NextPage
+		}
+	} else {
+		release, _, err = c.client.Repositories.GetReleaseByTag(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			data.GetTagName(),
+		)
+	}
+
+	if release == nil {
 		release, _, err = c.client.Repositories.CreateRelease(
 			ctx,
 			ctx.Config.Release.GitHub.Owner,
