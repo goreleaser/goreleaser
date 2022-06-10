@@ -60,7 +60,7 @@ gitlab_urls:
 
 ## Example release
 
-Here's an example of how the release might look like:
+Here's an example of what the release might look like:
 
 <a href="https://gitlab.com/goreleaser/example/-/releases">
   <figure>
