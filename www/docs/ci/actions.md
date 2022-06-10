@@ -168,7 +168,7 @@ create a secret named `GH_PAT`, the step will look like this:
 
 You can also read the [GitHub documentation](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) about it.
 
-## How does it look like?
+## What does it look like?
 
 You can check [this example repository](https://github.com/goreleaser/example) for a real world example.
 
