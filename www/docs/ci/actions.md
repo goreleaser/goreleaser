@@ -151,7 +151,7 @@ The following [permissions](https://docs.github.com/en/actions/reference/authent
 
 `GITHUB_TOKEN` permissions [are limited to the repository][about-github-token] that contains your workflow.
 
-If you need to push the homebrew tap to another repository, you must therefore create a custom
+If you need to push the homebrew tap to another repository, you must create a custom
 [Personal Access Token][pat] with `repo` permissions and [add it as a secret in the repository][secrets]. If you
 create a secret named `GH_PAT`, the step will look like this:
 
