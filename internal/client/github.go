@@ -222,27 +222,15 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 	}
 
 	if *data.Draft {
-		opt := github.ListOptions{PerPage: 50}
-		for {
-			releases, resp, err := c.client.Repositories.ListReleases(
-				ctx,
-				ctx.Config.Release.GitHub.Owner,
-				ctx.Config.Release.GitHub.Name,
-				&opt,
-			)
+		release, err = c.getExistedDraftRelease(ctx, data)
+		if err != nil {
+			return "", err
+		}
+		if release != nil {
+			err = c.deleteExistedDraftReleaseAssets(ctx, release.GetID())
 			if err != nil {
 				return "", err
 			}
-			for _, r := range releases {
-				if *r.Draft && *r.Name == *data.Name {
-					release = r
-					break
-				}
-			}
-			if resp.NextPage == 0 {
-				break
-			}
-			opt.Page = resp.NextPage
 		}
 	} else {
 		release, _, _ = c.client.Repositories.GetReleaseByTag(
@@ -382,4 +370,59 @@ func overrideGitHubClientAPI(ctx *context.Context, client *github.Client) error 
 	client.UploadURL = upload
 
 	return nil
+}
+
+func (c *githubClient) getExistedDraftRelease(ctx *context.Context, release *github.RepositoryRelease) (*github.RepositoryRelease, error) {
+	opt := github.ListOptions{PerPage: 50}
+	for {
+		releases, resp, err := c.client.Repositories.ListReleases(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			&opt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range releases {
+			if *r.Draft && *r.Name == *release.Name {
+				return r, nil
+			}
+		}
+		if resp.NextPage == 0 {
+			return nil, nil
+		}
+		opt.Page = resp.NextPage
+	}
+}
+
+func (c *githubClient) deleteExistedDraftReleaseAssets(ctx *context.Context, releaseID int64) error {
+	opt := github.ListOptions{PerPage: 50}
+	for {
+		assets, resp, err := c.client.Repositories.ListReleaseAssets(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			releaseID,
+			&opt,
+		)
+		if err != nil {
+			return err
+		}
+		for _, a := range assets {
+			_, err := c.client.Repositories.DeleteReleaseAsset(
+				ctx,
+				ctx.Config.Release.GitHub.Owner,
+				ctx.Config.Release.GitHub.Name,
+				a.GetID(),
+			)
+			if err != nil {
+				return err
+			}
+		}
+		if resp.NextPage == 0 {
+			return nil
+		}
+		opt.Page = resp.NextPage
+	}
 }
