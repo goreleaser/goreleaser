@@ -50,10 +50,13 @@ func TestSemaphoreError(t *testing.T) {
 	for _, i := range []int{1, 4} {
 		t.Run(fmt.Sprintf("limit-%d", i), func(t *testing.T) {
 			g := New(i)
+			var lock sync.Mutex
 			output := []int{}
 			for i := 0; i < 10; i++ {
 				i := i
 				g.Go(func() error {
+					lock.Lock()
+					defer lock.Unlock()
 					output = append(output, i)
 					return fmt.Errorf("fake err")
 				})
