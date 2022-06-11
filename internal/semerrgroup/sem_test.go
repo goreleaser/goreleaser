@@ -86,7 +86,7 @@ func TestSemaphoreSkipAware(t *testing.T) {
 }
 
 func TestSemaphoreSkipAndRealError(t *testing.T) {
-	g := NewSkipAware(New(20))
+	g := NewSkipAware(New(10))
 	for i := 0; i < 100; i++ {
 		g.Go(func() error {
 			time.Sleep(10 * time.Millisecond)
