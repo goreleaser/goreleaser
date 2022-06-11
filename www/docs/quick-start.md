@@ -13,6 +13,11 @@ func main() {
 }
 ```
 
+Initialize modules with
+```sh
+go mod init main
+```
+
 Run the [init](/cmd/goreleaser_init/) command to create an example `.goreleaser.yaml` file:
 
 ```sh
