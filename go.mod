@@ -12,7 +12,7 @@ require (
 	github.com/caarlos0/env/v6 v6.9.3
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
-	github.com/caarlos0/log v0.0.0-20220607144435-1f324af67dab
+	github.com/caarlos0/log v0.0.0-20220608122621-ce98df556a3a
 	github.com/charmbracelet/keygen v0.3.0
 	github.com/charmbracelet/lipgloss v0.5.1-0.20220604171933-77aae4ab0bf5
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
@@ -147,5 +147,3 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
-
-replace github.com/caarlos0/log => ../../forks/log
