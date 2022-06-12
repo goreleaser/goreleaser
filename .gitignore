@@ -13,3 +13,4 @@ completions/
 .task/
 .idea/
 manpages
+output.json
