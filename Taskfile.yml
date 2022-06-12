@@ -34,22 +34,11 @@ tasks:
     env:
       LC_ALL: C
     vars:
-      TEST_OPTIONS: '{{default "-json" .TEST_OPTIONS}}'
+      TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
       SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
       TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
     cmds:
-      - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m | tee output.json | tparse -notests -follow -all
-    generates:
-      - output.json
-
-  report:
-    status:
-      - test -z "$GITHUB_STEP_SUMMARY"
-    env:
-      NO_COLOR: 1
-    cmds:
-      - tparse -format markdown -file output.json -all > $GITHUB_STEP_SUMMARY
-
+      - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m
 
   cover:
     desc: Open the cover tool
