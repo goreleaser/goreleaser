@@ -175,7 +175,14 @@
 						"type": "array"
 					},
 					"wrap_in_directory": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"files": {
 						"items": {
