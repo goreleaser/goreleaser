@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/fatih/color"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
@@ -54,14 +52,6 @@ func matrix(build config.Build, version []byte) ([]string, error) {
 		}
 		if target.amd64 != "" && !contains(target.amd64, validGoamd64) {
 			return result, fmt.Errorf("invalid goamd64: %s", target.amd64)
-		}
-		if target.os == "windows" && target.arch == "arm64" && !go117re.Match(version) {
-			// TODO: time to remove this!
-			log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(
-				"DEPRECATED: skipped windows/arm64 build on Go < 1.17 for compatibility, check %s for more info.",
-				"https://goreleaser.com/deprecations/#builds-for-windowsarm64",
-			))
-			continue
 		}
 		if !valid(target) {
 			log.WithField("target", target).Debug("skipped invalid build")
@@ -144,8 +134,6 @@ func ignored(build config.Build, target target) bool {
 	}
 	return false
 }
-
-var go117re = regexp.MustCompile(`go version go1.1[7-9]`)
 
 func goVersion(build config.Build) ([]byte, error) {
 	cmd := exec.Command(build.GoBinary, "version")
