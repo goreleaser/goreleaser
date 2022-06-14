@@ -55,9 +55,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.FileNameTemplate == "" {
 			fpm.FileNameTemplate = defaultNameTemplate
 		}
-		if len(fpm.EmptyFolders) > 0 {
-			deprecate.Notice(ctx, "nfpms.empty_folders")
-		}
 		if fpm.Maintainer == "" {
 			deprecate.NoticeCustom(ctx, "nfpms.maintainer", "`{{ .Property }}` should always be set, check {{ .URL }} for more info")
 		}
