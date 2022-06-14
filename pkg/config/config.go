@@ -10,11 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alecthomas/jsonschema"
-
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/nfpm/v2/files"
+	"github.com/invopop/jsonschema"
 )
 
 // GitHubURLs holds the URLs to be used when using github enterprise.
@@ -108,17 +107,17 @@ func (a *HomebrewDependency) UnmarshalYAML(unmarshal func(interface{}) error) er
 	return nil
 }
 
-func (a HomebrewDependency) JSONSchemaType() *jsonschema.Type {
+func (a HomebrewDependency) JSONSchema() *jsonschema.Schema {
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
 	}
 	schema := reflector.Reflect(&homebrewDependency{})
-	return &jsonschema.Type{
-		OneOf: []*jsonschema.Type{
+	return &jsonschema.Schema{
+		OneOf: []*jsonschema.Schema{
 			{
 				Type: "string",
 			},
-			schema.Type,
+			schema,
 		},
 	}
 }
@@ -264,13 +263,13 @@ func (a *StringArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (a StringArray) JSONSchemaType() *jsonschema.Type {
-	return &jsonschema.Type{
-		OneOf: []*jsonschema.Type{{
+func (a StringArray) JSONSchema() *jsonschema.Schema {
+	return &jsonschema.Schema{
+		OneOf: []*jsonschema.Schema{{
 			Type: "string",
 		}, {
 			Type: "array",
-			Items: &jsonschema.Type{
+			Items: &jsonschema.Schema{
 				Type: "string",
 			},
 		}},
@@ -295,13 +294,13 @@ func (a *FlagArray) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (a FlagArray) JSONSchemaType() *jsonschema.Type {
-	return &jsonschema.Type{
-		OneOf: []*jsonschema.Type{{
+func (a FlagArray) JSONSchema() *jsonschema.Schema {
+	return &jsonschema.Schema{
+		OneOf: []*jsonschema.Schema{{
 			Type: "string",
 		}, {
 			Type: "array",
-			Items: &jsonschema.Type{
+			Items: &jsonschema.Schema{
 				Type: "string",
 			},
 		}},
@@ -379,24 +378,6 @@ func (bhc *Hooks) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (bhc Hooks) JSONSchemaType() *jsonschema.Type {
-	type t Hooks
-	reflector := jsonschema.Reflector{
-		ExpandedStruct: true,
-	}
-	schema := reflector.Reflect(&t{})
-	return &jsonschema.Type{
-		Items: &jsonschema.Type{
-			OneOf: []*jsonschema.Type{
-				{
-					Type: "string",
-				},
-				schema.Type,
-			},
-		},
-	}
-}
-
 type Hook struct {
 	Dir    string   `yaml:"dir,omitempty"`
 	Cmd    string   `yaml:"cmd,omitempty"`
@@ -421,18 +402,18 @@ func (bh *Hook) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (bh Hook) JSONSchemaType() *jsonschema.Type {
+func (bh Hook) JSONSchema() *jsonschema.Schema {
 	type t Hook
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
 	}
 	schema := reflector.Reflect(&t{})
-	return &jsonschema.Type{
-		OneOf: []*jsonschema.Type{
+	return &jsonschema.Schema{
+		OneOf: []*jsonschema.Schema{
 			{
 				Type: "string",
 			},
-			schema.Type,
+			schema,
 		},
 	}
 }
@@ -478,21 +459,21 @@ func (f *File) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
-func (f File) JSONSchemaType() *jsonschema.Type {
+func (f File) JSONSchema() *jsonschema.Schema {
 	type t File
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
 	}
 	schema := reflector.Reflect(&t{})
 	// jsonschema would just refer to FileInfo in the definition. It doesn't get included there, as we override the
-	// generated schema with JSONSchemaType here. So we need to include it directly in the schema of File.
+	// generated schema with JSONSchema here. So we need to include it directly in the schema of File.
 	schema.Properties.Set("info", reflector.Reflect(&FileInfo{}).Type)
-	return &jsonschema.Type{
-		OneOf: []*jsonschema.Type{
+	return &jsonschema.Schema{
+		OneOf: []*jsonschema.Schema{
 			{
 				Type: "string",
 			},
-			schema.Type,
+			schema,
 		},
 	}
 }

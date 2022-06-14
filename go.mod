@@ -6,7 +6,6 @@ require (
 	code.gitea.io/sdk/gitea v0.15.1
 	github.com/DisgoOrg/disgohook v1.4.4
 	github.com/Masterminds/semver/v3 v3.1.1
-	github.com/alecthomas/jsonschema v0.0.0-20211209230136-e2b41affa5c1
 	github.com/atc0005/go-teams-notify/v2 v2.6.1
 	github.com/caarlos0/ctrlc v1.0.0
 	github.com/caarlos0/env/v6 v6.9.3
@@ -23,13 +22,14 @@ require (
 	github.com/goreleaser/fileglob v1.3.0
 	github.com/goreleaser/nfpm/v2 v2.15.1
 	github.com/imdario/mergo v0.3.13
+	github.com/invopop/jsonschema v0.4.0
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/klauspost/pgzip v1.2.5
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/mango-cobra v1.1.0
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.12.1-0.20220606102431-9500d1649068
-	github.com/slack-go/slack v0.10.3
+	github.com/slack-go/slack v0.11.0
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.2
 	github.com/ulikunitz/xz v0.5.10

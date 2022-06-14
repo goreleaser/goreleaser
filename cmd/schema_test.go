@@ -21,5 +21,5 @@ func TestGenerateSchema(t *testing.T) {
 
 	schema := map[string]interface{}{}
 	require.NoError(t, json.NewDecoder(outFile).Decode(&schema))
-	require.Equal(t, "http://json-schema.org/draft-04/schema#", schema["$schema"].(string))
+	require.Equal(t, "http://json-schema.org/draft/2020-12/schema", schema["$schema"].(string))
 }
