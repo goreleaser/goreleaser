@@ -58,6 +58,11 @@ jobs:
 ```
 
 !!! warning "Some things to look closely..."
+    #### The action does not install dependencies
+    GoReleaser Action will not install any other software needed to release.
+    It's the user's responsibility to install and configure Go, Docker, Syft,
+    Cosign and any other tools the release might need.
+
     #### Fetch depthness
     Notice the `fetch-depth: 0` option on the `Checkout` workflow step.
     It is required for GoReleaser to work properly.
