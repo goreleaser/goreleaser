@@ -93,9 +93,13 @@ On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
     some_template: 'lala-{{ .Var.foo }}'
     ```
 
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
 ### nfpms.empty_folders
 
-> since 2021-11-14  (v1.0.0)
+> since 2021-11-14 (v1.0.0), removed 2022-06-14 (v1.10.0)
 
 nFPM empty folders is now deprecated in favor of a `dir` content type:
 
@@ -115,9 +119,6 @@ nFPM empty folders is now deprecated in favor of a `dir` content type:
         type: dir
     ```
 
-## Expired deprecation notices
-
-The following options were deprecated in the past and were already removed.
 
 ### builds for windows/arm64
 
