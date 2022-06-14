@@ -20,7 +20,7 @@ require (
 	github.com/google/go-github/v45 v45.1.0
 	github.com/google/uuid v1.3.0
 	github.com/goreleaser/fileglob v1.3.0
-	github.com/goreleaser/nfpm/v2 v2.15.1
+	github.com/goreleaser/nfpm/v2 v2.16.0
 	github.com/imdario/mergo v0.3.13
 	github.com/invopop/jsonschema v0.4.0
 	github.com/jarcoal/httpmock v1.2.0
