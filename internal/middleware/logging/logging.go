@@ -1,6 +1,8 @@
 package logging
 
 import (
+	"time"
+
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
 	"github.com/fatih/color"
@@ -25,7 +27,11 @@ const ExtraPadding = DefaultInitialPadding * 2
 // The middleware always resets to the default padding.
 func Log(title string, next middleware.Action, padding Padding) middleware.Action {
 	return func(ctx *context.Context) error {
+		start := time.Now()
 		defer func() {
+			if took := time.Since(start).Round(time.Second); took > 0 {
+				log.Info(color.New(color.Italic, color.Faint).Sprintf("took %s", took))
+			}
 			cli.Default.Padding = int(DefaultInitialPadding)
 		}()
 		cli.Default.Padding = int(padding)
