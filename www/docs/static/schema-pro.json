@@ -1288,12 +1288,6 @@
 						},
 						"type": "array"
 					},
-					"empty_folders": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
 					"contents": {
 						"items": {
 							"$ref": "#/$defs/Content"
@@ -1548,12 +1542,6 @@
 						"type": "array"
 					},
 					"replaces": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"empty_folders": {
 						"items": {
 							"type": "string"
 						},
