@@ -37,3 +37,12 @@ func TestConfigFileDoesntExist(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, config.Project{}, proj)
 }
+
+func TestConfigFileFromStdin(t *testing.T) {
+	folder := setup(t)
+	err := os.Remove(filepath.Join(folder, "goreleaser.yml"))
+	require.NoError(t, err)
+	proj, err := loadConfig("-")
+	require.NoError(t, err)
+	require.Equal(t, config.Project{}, proj)
+}

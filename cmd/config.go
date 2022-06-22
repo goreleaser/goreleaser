@@ -8,6 +8,10 @@ import (
 )
 
 func loadConfig(path string) (config.Project, error) {
+	if path == "-" {
+		log.Info("loading config from stdin")
+		return config.LoadReader(os.Stdin)
+	}
 	if path != "" {
 		return config.Load(path)
 	}
