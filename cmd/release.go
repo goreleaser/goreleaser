@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"runtime"
 	"time"
 
@@ -52,23 +51,14 @@ func newReleaseCmd() *releaseCmd {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args:          cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			start := time.Now()
-
-			log.Infof(boldStyle.Render("releasing..."))
-
+		RunE: timedRunE("release", func(cmd *cobra.Command, args []string) error {
 			ctx, err := releaseProject(root.opts)
 			if err != nil {
-				return wrapError(err, boldStyle.Render(fmt.Sprintf("release failed after %0.2fs", time.Since(start).Seconds())))
+				return err
 			}
-
-			if ctx.Deprecated {
-				log.Warn(boldStyle.Render("your config is using deprecated properties, check logs above for details"))
-			}
-
-			log.Infof(boldStyle.Render(fmt.Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds())))
+			deprecateWarn(ctx)
 			return nil
-		},
+		}),
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
@@ -80,7 +70,7 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().StringVar(&root.opts.releaseFooterTmpl, "release-footer-tmpl", "", "Load custom release notes footer from a templated markdown file (overrides --release-footer)")
 	cmd.Flags().BoolVar(&root.opts.autoSnapshot, "auto-snapshot", false, "Automatically sets --snapshot if the repo is dirty")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip-publish, --skip-announce and --skip-validate)")
-	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts")
+	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts (implies --skip-announce)")
 	cmd.Flags().BoolVar(&root.opts.skipAnnounce, "skip-announce", false, "Skips announcing releases (implies --skip-validate)")
 	cmd.Flags().BoolVar(&root.opts.skipSign, "skip-sign", false, "Skips signing artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipSBOMCataloging, "skip-sbom", false, "Skips cataloging artifacts")

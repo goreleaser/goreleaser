@@ -57,23 +57,14 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args:          cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			start := time.Now()
-
-			log.Infof(boldStyle.Render("building..."))
-
+		RunE: timedRunE("build", func(cmd *cobra.Command, args []string) error {
 			ctx, err := buildProject(root.opts)
 			if err != nil {
-				return wrapError(err, boldStyle.Render(fmt.Sprintf("build failed after %0.2fs", time.Since(start).Seconds())))
+				return err
 			}
-
-			if ctx.Deprecated {
-				log.Warn(boldStyle.Render("your config is using deprecated properties, check logs above for details"))
-			}
-
-			log.Infof(boldStyle.Render(fmt.Sprintf("build succeeded after %0.2fs", time.Since(start).Seconds())))
+			deprecateWarn(ctx)
 			return nil
-		},
+		}),
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
