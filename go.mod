@@ -26,7 +26,7 @@ require (
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/klauspost/pgzip v1.2.5
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/muesli/mango-cobra v1.1.0
+	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.12.1-0.20220606102431-9500d1649068
 	github.com/slack-go/slack v0.11.0
