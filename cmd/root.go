@@ -63,7 +63,9 @@ Its goal is to simplify the build, release and publish steps while providing var
 
 GoReleaser is built for CI tools, you only need to download and execute it in your build script. Of course, you can also install it locally if you wish.
 
-You can also customize your entire release process through a single .goreleaser.yaml file.
+You can customize your entire release process through a single .goreleaser.yaml file.
+
+Check out our website for more information, examples and documentation: https://goreleaser.com
 `,
 		Version:       version,
 		SilenceUsage:  true,
