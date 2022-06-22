@@ -137,10 +137,10 @@ func timedRunE(verb string, rune func(cmd *cobra.Command, args []string) error) 
 		log.Infof(boldStyle.Render(fmt.Sprintf("starting %s...", verb)))
 
 		if err := rune(cmd, args); err != nil {
-			return wrapError(err, boldStyle.Render(fmt.Sprintf("%s failed after %0.2fs", verb, time.Since(start).Seconds())))
+			return wrapError(err, boldStyle.Render(fmt.Sprintf("%s failed after %s", verb, time.Since(start).Truncate(time.Second))))
 		}
 
-		log.Infof(boldStyle.Render(fmt.Sprintf("%s succeeded after %0.2fs", verb, time.Since(start).Seconds())))
+		log.Infof(boldStyle.Render(fmt.Sprintf("%s succeeded after %s", verb, time.Since(start).Truncate(time.Second))))
 		return nil
 	}
 }
