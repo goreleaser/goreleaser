@@ -112,10 +112,6 @@ func (t Type) String() string {
 	}
 }
 
-func (t Type) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("%q", t)), nil
-}
-
 const (
 	ExtraID        = "ID"
 	ExtraBinary    = "Binary"
@@ -136,8 +132,7 @@ func (e Extras) MarshalJSON() ([]byte, error) {
 	for k, v := range e {
 		if k == ExtraRefresh {
 			// refresh is a func, so we can't serialize it.
-			// set v to a string representation of the function signature instead.
-			v = "func() error"
+			continue
 		}
 		m[k] = v
 	}
@@ -153,7 +148,8 @@ type Artifact struct {
 	Goarm   string `json:"goarm,omitempty"`
 	Gomips  string `json:"gomips,omitempty"`
 	Goamd64 string `json:"goamd64,omitempty"`
-	Type    Type   `json:"type,omitempty"`
+	Type    Type   `json:"internal_type,omitempty"`
+	TypeS   string `json:"type,omitempty"`
 	Extra   Extras `json:"extra,omitempty"`
 }
 
@@ -489,7 +485,7 @@ type VisitFn func(a *Artifact) error
 
 // Visit executes the given function for each artifact in the list.
 func (artifacts Artifacts) Visit(fn VisitFn) error {
-	for _, artifact := range artifacts.List() {
+	for _, artifact := range artifacts.items {
 		if err := fn(artifact); err != nil {
 			return err
 		}

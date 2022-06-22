@@ -7,7 +7,7 @@
 package context
 
 import (
-	ctx "context"
+	stdctx "context"
 	"os"
 	"runtime"
 	"strings"
@@ -69,7 +69,7 @@ const (
 
 // Context carries along some data through the pipes.
 type Context struct {
-	ctx.Context
+	stdctx.Context
 	Config             config.Project
 	Env                Env
 	SkipTokenCheck     bool
@@ -119,17 +119,17 @@ type Semver struct {
 
 // New context.
 func New(config config.Project) *Context {
-	return Wrap(ctx.Background(), config)
+	return Wrap(stdctx.Background(), config)
 }
 
 // NewWithTimeout new context with the given timeout.
-func NewWithTimeout(config config.Project, timeout time.Duration) (*Context, ctx.CancelFunc) {
-	ctx, cancel := ctx.WithTimeout(ctx.Background(), timeout)
+func NewWithTimeout(config config.Project, timeout time.Duration) (*Context, stdctx.CancelFunc) {
+	ctx, cancel := stdctx.WithTimeout(stdctx.Background(), timeout)
 	return Wrap(ctx, config), cancel
 }
 
 // Wrap wraps an existing context.
-func Wrap(ctx ctx.Context, config config.Project) *Context {
+func Wrap(ctx stdctx.Context, config config.Project) *Context {
 	return &Context{
 		Context:     ctx,
 		Config:      config,
