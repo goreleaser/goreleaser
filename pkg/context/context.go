@@ -95,6 +95,7 @@ type Context struct {
 	SkipSign           bool
 	SkipValidate       bool
 	SkipSBOMCataloging bool
+	SkipDocker         bool
 	RmDist             bool
 	PreRelease         bool
 	Deprecated         bool
