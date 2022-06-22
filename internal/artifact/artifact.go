@@ -246,10 +246,6 @@ func New() Artifacts {
 
 // List return the actual list of artifacts.
 func (artifacts Artifacts) List() []*Artifact {
-	_ = artifacts.Visit(func(a *Artifact) error {
-		a.TypeS = a.Type.String()
-		return nil
-	})
 	return artifacts.items
 }
 

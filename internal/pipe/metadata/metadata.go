@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/caarlos0/log"
+	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -41,6 +42,10 @@ func writeMetadata(ctx *context.Context) error {
 }
 
 func writeArtifacts(ctx *context.Context) error {
+	_ = ctx.Artifacts.Visit(func(a *artifact.Artifact) error {
+		a.TypeS = a.Type.String()
+		return nil
+	})
 	return writeJSON(ctx, ctx.Artifacts.List(), "artifacts.json")
 }
 

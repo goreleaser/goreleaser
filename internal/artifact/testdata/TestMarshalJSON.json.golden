@@ -1,1 +1,1 @@
-[{"name":"foo","internal_type":4,"type":"Binary","extra":{"ID":"adsad"}},{"name":"foo","internal_type":1,"type":"Archive","extra":{"ID":"adsad"}},{"name":"foo","internal_type":12,"type":"Checksum","extra":{}}]
+[{"name":"foo","internal_type":4,"extra":{"ID":"adsad"}},{"name":"foo","internal_type":1,"extra":{"ID":"adsad"}},{"name":"foo","internal_type":12,"extra":{}}]
