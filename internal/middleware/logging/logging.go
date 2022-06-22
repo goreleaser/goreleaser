@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/caarlos0/log"
@@ -9,7 +10,10 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-var bold = lipgloss.NewStyle().Bold(true)
+var (
+	bold  = lipgloss.NewStyle().Bold(true)
+	faint = lipgloss.NewStyle().Italic(true).Faint(true)
+)
 
 // Log pretty prints the given action and its title.
 func Log(title string, next middleware.Action) middleware.Action {
@@ -17,7 +21,7 @@ func Log(title string, next middleware.Action) middleware.Action {
 		start := time.Now()
 		defer func() {
 			if took := time.Since(start).Round(time.Second); took > 0 {
-				log.Info(color.New(color.Italic, color.Faint).Sprintf("took %s", took))
+				log.Info(faint.Render(fmt.Sprintf("took: %s", took)))
 			}
 			log.ResetPadding()
 		}()
