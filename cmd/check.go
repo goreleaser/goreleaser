@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
 	"github.com/caarlos0/ctrlc"
-	"github.com/fatih/color"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/spf13/cobra"
@@ -31,7 +29,7 @@ func newCheckCmd() *checkCmd {
 		Args:          cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if root.quiet {
-				log.SetHandler(cli.New(io.Discard))
+				log.Log = log.New(io.Discard)
 			}
 
 			cfg, err := loadConfig(root.config)
@@ -42,10 +40,10 @@ func newCheckCmd() *checkCmd {
 			ctx.Deprecated = root.deprecated
 
 			if err := ctrlc.Default.Run(ctx, func() error {
-				log.Info(color.New(color.Bold).Sprint("checking config:"))
+				log.Info(boldStyle.Render("checking config..."))
 				return defaults.Pipe{}.Run(ctx)
 			}); err != nil {
-				log.WithError(err).Error(color.New(color.Bold).Sprintf("config is invalid"))
+				log.WithError(err).Error(boldStyle.Render("config is invalid"))
 				return fmt.Errorf("invalid config: %w", err)
 			}
 
@@ -56,7 +54,7 @@ func newCheckCmd() *checkCmd {
 					"",
 				)
 			}
-			log.Infof(color.New(color.Bold).Sprintf("config is valid"))
+			log.Infof(boldStyle.Render("config is valid"))
 			return nil
 		},
 	}

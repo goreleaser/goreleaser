@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/slack-go/slack"

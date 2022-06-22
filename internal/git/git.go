@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 )
 
 // IsRepo returns true if current folder is a git repository.

@@ -7,13 +7,14 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
-	"github.com/fatih/color"
+	"github.com/caarlos0/log"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
 const baseURL = "https://goreleaser.com/deprecations#"
+
+var warnStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Bold(true)
 
 // Notice warns the user about the deprecation of the given property.
 func Notice(ctx *context.Context, property string) {
@@ -22,20 +23,9 @@ func Notice(ctx *context.Context, property string) {
 
 // NoticeCustom warns the user about the deprecation of the given property.
 func NoticeCustom(ctx *context.Context, property, tmpl string) {
-	ctx.Deprecated = true
-	// XXX: this is very ugly!
-	oldHandler, ok := log.Log.(*log.Logger).Handler.(*cli.Handler)
-	if !ok {
-		// probably in a test, and the cli logger wasn't set
-		return
-	}
-	w := oldHandler.Writer
-	handler := cli.New(w)
-	handler.Padding = cli.Default.Padding + 3
-	log := &log.Logger{
-		Handler: handler,
-		Level:   log.InfoLevel,
-	}
+	log.IncreasePadding()
+	defer log.DecreasePadding()
+
 	// replaces . and _ with -
 	url := baseURL + strings.NewReplacer(
 		".", "",
@@ -50,7 +40,9 @@ func NoticeCustom(ctx *context.Context, property, tmpl string) {
 	}); err != nil {
 		panic(err) // this should never happen
 	}
-	log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(out.String()))
+
+	ctx.Deprecated = true
+	log.Warn(warnStyle.Render(out.String()))
 }
 
 type templateData struct {

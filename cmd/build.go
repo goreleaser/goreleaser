@@ -7,9 +7,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/ctrlc"
-	"github.com/fatih/color"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
@@ -61,18 +60,18 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			start := time.Now()
 
-			log.Infof(color.New(color.Bold).Sprint("building..."))
+			log.Infof(boldStyle.Render("building..."))
 
 			ctx, err := buildProject(root.opts)
 			if err != nil {
-				return wrapError(err, color.New(color.Bold).Sprintf("build failed after %0.2fs", time.Since(start).Seconds()))
+				return wrapError(err, boldStyle.Render(fmt.Sprintf("build failed after %0.2fs", time.Since(start).Seconds())))
 			}
 
 			if ctx.Deprecated {
-				log.Warn(color.New(color.Bold).Sprintf("your config is using deprecated properties, check logs above for details"))
+				log.Warn(boldStyle.Render("your config is using deprecated properties, check logs above for details"))
 			}
 
-			log.Infof(color.New(color.Bold).Sprintf("build succeeded after %0.2fs", time.Since(start).Seconds()))
+			log.Infof(boldStyle.Render(fmt.Sprintf("build succeeded after %0.2fs", time.Since(start).Seconds())))
 			return nil
 		},
 	}
@@ -111,7 +110,6 @@ func buildProject(options buildOpts) (*context.Context, error) {
 				logging.Log(
 					pipe.String(),
 					errhandler.Handle(pipe.Run),
-					logging.DefaultInitialPadding,
 				),
 			)(ctx); err != nil {
 				return err
