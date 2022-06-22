@@ -483,46 +483,6 @@ func TestByFormats(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByFormats("zip", "tar.gz")).items, 3)
 }
 
-func TestTypeToString(t *testing.T) {
-	for _, a := range []Type{
-		UploadableArchive,
-		UploadableBinary,
-		UploadableFile,
-		Binary,
-		UniversalBinary,
-		LinuxPackage,
-		PublishableSnapcraft,
-		Snapcraft,
-		PublishableDockerImage,
-		DockerImage,
-		DockerManifest,
-		Checksum,
-		Signature,
-		Certificate,
-		UploadableSourceArchive,
-		BrewTap,
-		GoFishRig,
-		KrewPluginManifest,
-		ScoopManifest,
-		SBOM,
-		PkgBuild,
-		SrcInfo,
-	} {
-		t.Run(a.String(), func(t *testing.T) {
-			require.NotEqual(t, "unknown", a.String())
-			bts, err := a.MarshalJSON()
-			require.NoError(t, err)
-			require.Equal(t, []byte(`"`+a.String()+`"`), bts)
-		})
-	}
-	t.Run("unknown", func(t *testing.T) {
-		require.Equal(t, "unknown", Type(9999).String())
-		bts, err := Type(9999).MarshalJSON()
-		require.NoError(t, err)
-		require.Equal(t, []byte(`"unknown"`), bts)
-	})
-}
-
 func TestPaths(t *testing.T) {
 	paths := []string{"a/b", "b/c", "d/e", "f/g"}
 	artifacts := New()
@@ -900,7 +860,11 @@ func Test_ByBinaryLikeArtifacts(t *testing.T) {
 				arts.Add(a)
 			}
 			actual := arts.Filter(ByBinaryLikeArtifacts(arts)).List()
-			assert.Equal(t, tt.expected, actual)
+			expected := New()
+			for _, a := range tt.expected {
+				expected.Add(a)
+			}
+			assert.Equal(t, expected.List(), actual)
 
 			if t.Failed() {
 				t.Log("expected:")

@@ -112,10 +112,6 @@ func (t Type) String() string {
 	}
 }
 
-func (t Type) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("%q", t)), nil
-}
-
 const (
 	ExtraID        = "ID"
 	ExtraBinary    = "Binary"
@@ -153,7 +149,8 @@ type Artifact struct {
 	Goarm   string `json:"goarm,omitempty"`
 	Gomips  string `json:"gomips,omitempty"`
 	Goamd64 string `json:"goamd64,omitempty"`
-	Type    Type   `json:"type,omitempty"`
+	Type    Type   `json:"internal_type,omitempty"`
+	TypeS   string `json:"type,omitempty"`
 	Extra   Extras `json:"extra,omitempty"`
 }
 
@@ -250,6 +247,10 @@ func New() Artifacts {
 
 // List return the actual list of artifacts.
 func (artifacts Artifacts) List() []*Artifact {
+	_ = artifacts.Visit(func(a *Artifact) error {
+		a.TypeS = a.Type.String()
+		return nil
+	})
 	return artifacts.items
 }
 
@@ -489,7 +490,7 @@ type VisitFn func(a *Artifact) error
 
 // Visit executes the given function for each artifact in the list.
 func (artifacts Artifacts) Visit(fn VisitFn) error {
-	for _, artifact := range artifacts.List() {
+	for _, artifact := range artifacts.items {
 		if err := fn(artifact); err != nil {
 			return err
 		}
