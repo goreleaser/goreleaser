@@ -3,8 +3,8 @@ package telegram
 import (
 	"fmt"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/env/v6"
+	"github.com/caarlos0/log"
 	api "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"

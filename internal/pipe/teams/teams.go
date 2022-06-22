@@ -3,9 +3,9 @@ package teams
 import (
 	"fmt"
 
-	"github.com/apex/log"
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
 	"github.com/caarlos0/env/v6"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
