@@ -97,6 +97,16 @@ func TestSkip(t *testing.T) {
 		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
 	})
 
+	t.Run("skip before", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Before: config.Before{
+				Hooks: []string{""},
+			},
+		})
+		ctx.SkipBefore = true
+		require.True(t, Pipe{}.Skip(ctx))
+	})
+
 	t.Run("dont skip", func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Before: config.Before{

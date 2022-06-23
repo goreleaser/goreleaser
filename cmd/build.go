@@ -30,6 +30,7 @@ type buildOpts struct {
 	id            string
 	snapshot      bool
 	skipValidate  bool
+	skipBefore    bool
 	skipPostHooks bool
 	rmDist        bool
 	deprecated    bool
@@ -70,6 +71,7 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot build, skipping all validations")
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
+	cmd.Flags().BoolVar(&root.opts.skipBefore, "skip-before", false, "Skips global before hooks")
 	cmd.Flags().BoolVar(&root.opts.skipPostHooks, "skip-post-hooks", false, "Skips all post-build hooks")
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
@@ -125,6 +127,7 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Snapshot = options.snapshot
 	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
+	ctx.SkipBefore = options.skipBefore
 	ctx.SkipPostBuildHooks = options.skipPostHooks
 	ctx.RmDist = options.rmDist
 	ctx.SkipTokenCheck = true
