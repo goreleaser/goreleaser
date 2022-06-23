@@ -19,8 +19,10 @@ import (
 // allowing to publish multi-arch docker images.
 type ManifestPipe struct{}
 
-func (ManifestPipe) String() string                 { return "docker manifests" }
-func (ManifestPipe) Skip(ctx *context.Context) bool { return len(ctx.Config.DockerManifests) == 0 }
+func (ManifestPipe) String() string { return "docker manifests" }
+func (ManifestPipe) Skip(ctx *context.Context) bool {
+	return len(ctx.Config.DockerManifests) == 0 || ctx.SkipDocker
+}
 
 // Default sets the pipe defaults.
 func (ManifestPipe) Default(ctx *context.Context) error {

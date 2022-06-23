@@ -31,7 +31,7 @@ const (
 type Pipe struct{}
 
 func (Pipe) String() string                 { return "docker images" }
-func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Dockers) == 0 }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Dockers) == 0 || ctx.SkipDocker }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
