@@ -88,13 +88,18 @@ func validateImager(use string) error {
 
 // Publish the docker images.
 func (Pipe) Publish(ctx *context.Context) error {
+	skips := pipe.SkipMemento{}
 	images := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableDockerImage)).List()
 	for _, image := range images {
 		if err := dockerPush(ctx, image); err != nil {
+			if pipe.IsSkip(err) {
+				skips.Remember(err)
+				continue
+			}
 			return err
 		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 // Run the pipe.
@@ -187,15 +192,6 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 		return err
 	}
 
-	if strings.TrimSpace(docker.SkipPush) == "true" {
-		return pipe.Skip("docker.skip_push is set")
-	}
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
-	if strings.TrimSpace(docker.SkipPush) == "auto" && ctx.Semver.Prerelease != "" {
-		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish")
-	}
 	for _, img := range images {
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Type:   artifact.PublishableDockerImage,
@@ -245,10 +241,19 @@ func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]st
 
 func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	log.WithField("image", image.Name).Info("pushing")
+
 	docker := image.Extra[dockerConfigExtra].(config.Docker)
+	if strings.TrimSpace(docker.SkipPush) == "true" {
+		return pipe.Skip("docker.skip_push is set: " + image.Name)
+	}
+	if strings.TrimSpace(docker.SkipPush) == "auto" && ctx.Semver.Prerelease != "" {
+		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish: " + image.Name)
+	}
+
 	if err := imagers[docker.Use].Push(ctx, image.Name, docker.PushFlags); err != nil {
 		return err
 	}
+
 	art := &artifact.Artifact{
 		Type:   artifact.DockerImage,
 		Name:   image.Name,

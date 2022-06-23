@@ -655,8 +655,10 @@ func TestRunPipe(t *testing.T) {
 			expect: []string{
 				registry + "goreleaser/test_run_pipe:latest",
 			},
-			assertImageLabels: noLabels,
-			assertError:       testlib.AssertSkipped,
+			assertImageLabels:   noLabels,
+			assertError:         shouldNotErr,
+			pubAssertError:      testlib.AssertSkipped,
+			manifestAssertError: shouldNotErr,
 		},
 		"one_img_error_with_skip_push": {
 			dockers: []config.Docker{
@@ -839,8 +841,10 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/mybin:v1.0.0-123",
 				registry + "goreleaser/mybin:latest",
 			},
-			assertImageLabels: noLabels,
-			assertError:       testlib.AssertSkipped,
+			assertImageLabels:   noLabels,
+			assertError:         shouldNotErr,
+			pubAssertError:      testlib.AssertSkipped,
+			manifestAssertError: shouldNotErr,
 		},
 		"no_permissions": {
 			dockers: []config.Docker{
