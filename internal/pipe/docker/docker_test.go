@@ -1373,7 +1373,9 @@ func TestSkip(t *testing.T) {
 		})
 
 		t.Run("skip docker", func(t *testing.T) {
-			ctx := context.New(config.Project{})
+			ctx := context.New(config.Project{
+				Dockers: []config.Docker{{}},
+			})
 			ctx.SkipDocker = true
 			require.True(t, Pipe{}.Skip(ctx))
 		})
@@ -1392,7 +1394,9 @@ func TestSkip(t *testing.T) {
 		})
 
 		t.Run("skip docker", func(t *testing.T) {
-			ctx := context.New(config.Project{})
+			ctx := context.New(config.Project{
+				DockerManifests: []config.DockerManifest{{}},
+			})
 			ctx.SkipDocker = true
 			require.True(t, ManifestPipe{}.Skip(ctx))
 		})
