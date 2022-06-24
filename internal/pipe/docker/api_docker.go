@@ -61,7 +61,7 @@ func (i dockerImager) Build(ctx *context.Context, root string, images, flags []s
 func (i dockerImager) buildCommand(images, flags []string) []string {
 	base := []string{"build", "."}
 	if i.buildx {
-		base = []string{"buildx", "build", ".", "--load"}
+		base = []string{"buildx", "--builder", "default", "build", ".", "--load"}
 	}
 	for _, image := range images {
 		base = append(base, "-t", image)
