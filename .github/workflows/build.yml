@@ -91,12 +91,7 @@ jobs:
           task setup
           task build
       - name: test
-        run: |
-          task test | tee output.json | tparse -notests -follow -all
-          tparse -format markdown -file output.json -all > $GITHUB_STEP_SUMMARY
-        env:
-          TEST_OPTIONS: "-json"
-          NO_COLOR: 1
+        run: ./scripts/test.sh
       - uses: codecov/codecov-action@81cd2dc8148241f03f5839d295e000b8f761e378 # v3
         with:
           file: ./coverage.txt
