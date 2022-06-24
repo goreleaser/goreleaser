@@ -50,8 +50,8 @@ var BuildPipeline = []Piper{
 	env.Pipe{},             // load and validate environment variables
 	git.Pipe{},             // get and validate git repo state
 	semver.Pipe{},          // parse current tag to a semver
-	before.Pipe{},          // run global hooks before build
 	defaults.Pipe{},        // load default configs
+	before.Pipe{},          // run global hooks before build
 	snapshot.Pipe{},        // snapshot version handling
 	dist.Pipe{},            // ensure ./dist is clean
 	gomod.Pipe{},           // setup gomod-related stuff
