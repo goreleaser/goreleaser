@@ -232,11 +232,9 @@ func (u *productionUploader) Upload(ctx *context.Context, filepath string, data 
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if cerr := w.Close(); err == nil {
-			err = cerr
-		}
-	}()
-	_, err = w.Write(data)
-	return err
+	defer func() { _ = w.Close() }()
+	if _, err = w.Write(data); err != nil {
+		return err
+	}
+	return w.Close()
 }
