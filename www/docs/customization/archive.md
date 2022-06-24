@@ -27,7 +27,7 @@ archives:
 
     # This will create an archive without any binaries, only the files are there.
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
-    # Defaul is false.
+    # Default is false.
     meta: true
 
     # Archive name template.
