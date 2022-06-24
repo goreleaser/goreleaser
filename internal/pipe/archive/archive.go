@@ -236,7 +236,7 @@ func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Art
 		if err != nil {
 			return err
 		}
-		finalName := name + binary.ExtraOr(artifact.ExtraExt, "").(string)
+		finalName := name + artifact.ExtraOr(*binary, artifact.ExtraExt, "")
 		log.WithField("binary", binary.Name).
 			WithField("name", finalName).
 			Info("skip archiving")

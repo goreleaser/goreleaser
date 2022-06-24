@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
@@ -360,13 +361,35 @@ func TestInvalidAlgorithm(t *testing.T) {
 }
 
 func TestExtraOr(t *testing.T) {
-	a := &Artifact{
+	a := Artifact{
 		Extra: map[string]interface{}{
 			"Foo": "foo",
+			"docker": config.Docker{
+				ID:  "id",
+				Use: "docker",
+			},
+			"binaries": []string{"foo", "bar"},
 		},
 	}
-	require.Equal(t, "foo", a.ExtraOr("Foo", "bar"))
-	require.Equal(t, "bar", a.ExtraOr("Foobar", "bar"))
+
+	foo, err := Extra[string](a, "Foo")
+	require.NoError(t, err)
+	require.Equal(t, "foo", foo)
+	require.Equal(t, "foo", ExtraOr(a, "Foo", "bar"))
+
+	bar, err := Extra[string](a, "Foobar")
+	require.NoError(t, err)
+	require.Equal(t, "bar", bar)
+	require.Equal(t, "bar", ExtraOr(a, "Foobar", "bar"))
+
+	docker, err := Extra[config.Docker](a, "docker")
+	require.NoError(t, err)
+	require.Equal(t, "id", docker.ID)
+
+	binaries, err := Extra[[]string](a, "binaries")
+	require.NoError(t, err)
+	require.Equal(t, []string{"foo", "bar"}, binaries)
+	require.Equal(t, []string{"foo", "bar"}, ExtraOr(a, "binaries", []string{}))
 }
 
 func TestByIDs(t *testing.T) {

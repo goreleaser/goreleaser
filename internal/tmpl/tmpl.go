@@ -139,16 +139,12 @@ func (t *Template) WithExtraFields(f Fields) *Template {
 
 // WithArtifact populates Fields from the artifact and replacements.
 func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]string) *Template {
-	bin := a.Extra[binary]
-	if bin == nil {
-		bin = t.fields[projectName]
-	}
 	t.fields[osKey] = replace(replacements, a.Goos)
 	t.fields[arch] = replace(replacements, a.Goarch)
 	t.fields[arm] = replace(replacements, a.Goarm)
 	t.fields[mips] = replace(replacements, a.Gomips)
 	t.fields[amd64] = replace(replacements, a.Goamd64)
-	t.fields[binary] = bin.(string)
+	t.fields[binary] = artifact.ExtraOr(*a, binary, t.fields[projectName].(string))
 	t.fields[artifactName] = a.Name
 	t.fields[artifactPath] = a.Path
 	return t

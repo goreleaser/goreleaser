@@ -242,7 +242,11 @@ func processBuildFlagTemplates(ctx *context.Context, docker config.Docker) ([]st
 func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	log.WithField("image", image.Name).Info("pushing")
 
-	docker := image.Extra[dockerConfigExtra].(config.Docker)
+	docker, err := artifact.Extra[config.Docker](*image, dockerConfigExtra)
+	if err != nil {
+		return err
+	}
+
 	if strings.TrimSpace(docker.SkipPush) == "true" {
 		return pipe.Skip("docker.skip_push is set: " + image.Name)
 	}
