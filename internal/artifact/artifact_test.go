@@ -554,15 +554,6 @@ func TestRefresher(t *testing.T) {
 			},
 		})
 		artifacts.Add(&Artifact{
-			Name: "invalid",
-			Type: Checksum,
-			Extra: map[string]interface{}{
-				"Refresh": func() {
-					t.Fatalf("should not have been called")
-				},
-			},
-		})
-		artifacts.Add(&Artifact{
 			Name: "no refresh",
 			Type: Checksum,
 		})
