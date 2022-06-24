@@ -242,7 +242,7 @@ func TestRunPipe(t *testing.T) {
 			"./testdata/folder",
 			"./testdata/testfile-" + pkg.Goarch + pkg.Goamd64 + pkg.Goarm + pkg.Gomips + ".txt",
 			binPath,
-		}, sources(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",
 			"/usr/share/testfile.txt",
@@ -253,7 +253,7 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope3_mybin.conf",
 			"/etc/folder",
 			"/usr/bin/subdir/mybin",
-		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 8, "should not modify the config file list")
 }
@@ -389,8 +389,8 @@ func TestRunPipeConventionalNameTemplate(t *testing.T) {
 			"foo_1.0.0_x86_64v4.apk",
 		}, pkg.Name, "package name is not expected")
 		require.Equal(t, "someid", pkg.ID())
-		require.ElementsMatch(t, []string{binPath}, sources(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
-		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 }
 
@@ -1207,7 +1207,7 @@ func TestMeta(t *testing.T) {
 			"/usr/share/testfile.txt",
 			"/etc/nope.conf",
 			"/etc/nope-rpm.conf",
-		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
@@ -1355,7 +1355,7 @@ func TestBinDirTemplating(t *testing.T) {
 		// the final binary should contain the evaluated bindir (after template eval)
 		require.ElementsMatch(t, []string{
 			"/usr/lib/pro/nagios/plugins/subdir/mybin",
-		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 }
 

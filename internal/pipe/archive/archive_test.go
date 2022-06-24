@@ -175,8 +175,8 @@ func TestRunPipe(t *testing.T) {
 					expectBin += ".exe"
 				}
 				require.Equal(t, "myid", arch.ID(), "all archives must have the archive ID set")
-				require.Equal(t, []string{expectBin}, arch.ExtraOr(artifact.ExtraBinaries, []string{}).([]string))
-				require.Equal(t, "", arch.ExtraOr(artifact.ExtraBinary, "").(string))
+				require.Equal(t, []string{expectBin}, artifact.ExtraOr(*arch, artifact.ExtraBinaries, []string{}))
+				require.Equal(t, "", artifact.ExtraOr(*arch, artifact.ExtraBinary, ""))
 			}
 			require.Len(t, archives, 7)
 			// TODO: should verify the artifact fields here too
@@ -426,14 +426,14 @@ func TestRunPipeBinary(t *testing.T) {
 		artifact.ByGoos("darwin"),
 		artifact.ByGoarch("all"),
 	)).List()[0]
-	require.True(t, darwinUniversal.ExtraOr(artifact.ExtraReplaces, false).(bool))
+	require.True(t, artifact.ExtraOr(*darwinUniversal, artifact.ExtraReplaces, false))
 	windows := binaries.Filter(artifact.ByGoos("windows")).List()[0]
 	require.Equal(t, "mybin_0.0.1_darwin_amd64", darwinThin.Name)
-	require.Equal(t, "mybin", darwinThin.ExtraOr(artifact.ExtraBinary, ""))
+	require.Equal(t, "mybin", artifact.ExtraOr(*darwinThin, artifact.ExtraBinary, ""))
 	require.Equal(t, "myunibin_0.0.1_darwin_all", darwinUniversal.Name)
-	require.Equal(t, "myunibin", darwinUniversal.ExtraOr(artifact.ExtraBinary, ""))
+	require.Equal(t, "myunibin", artifact.ExtraOr(*darwinUniversal, artifact.ExtraBinary, ""))
 	require.Equal(t, "mybin_0.0.1_windows_amd64.exe", windows.Name)
-	require.Equal(t, "mybin.exe", windows.ExtraOr(artifact.ExtraBinary, ""))
+	require.Equal(t, "mybin.exe", artifact.ExtraOr(*windows, artifact.ExtraBinary, ""))
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {
@@ -659,7 +659,7 @@ func TestRunPipeWrap(t *testing.T) {
 
 	archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
 	require.Len(t, archives, 1)
-	require.Equal(t, "foo_macOS", archives[0].ExtraOr(artifact.ExtraWrappedIn, ""))
+	require.Equal(t, "foo_macOS", artifact.ExtraOr(*archives[0], artifact.ExtraWrappedIn, ""))
 
 	// Check archive contents
 	f, err = os.Open(filepath.Join(dist, "foo.tar.gz"))
@@ -817,13 +817,13 @@ func TestBinaryOverride(t *testing.T) {
 			darwin := archives.Filter(artifact.ByGoos("darwin")).List()[0]
 			require.Equal(t, "foobar_0.0.1_darwin_amd64."+format, darwin.Name)
 			require.Equal(t, format, darwin.Format())
-			require.Empty(t, darwin.ExtraOr(artifact.ExtraWrappedIn, ""))
+			require.Empty(t, artifact.ExtraOr(*darwin, artifact.ExtraWrappedIn, ""))
 
 			archives = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
 			windows := archives.Filter(artifact.ByGoos("windows")).List()[0]
 			require.Equal(t, "foobar_0.0.1_windows_amd64.exe", windows.Name)
-			require.Empty(t, windows.ExtraOr(artifact.ExtraWrappedIn, ""))
-			require.Equal(t, "mybin.exe", windows.ExtraOr(artifact.ExtraBinary, ""))
+			require.Empty(t, artifact.ExtraOr(*windows, artifact.ExtraWrappedIn, ""))
+			require.Equal(t, "mybin.exe", artifact.ExtraOr(*windows, artifact.ExtraBinary, ""))
 		})
 	}
 }
