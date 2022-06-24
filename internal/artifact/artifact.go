@@ -3,6 +3,7 @@ package artifact
 
 // nolint: gosec
 import (
+	"bytes"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -180,7 +181,9 @@ func Extra[T any](a Artifact, key string) (T, error) {
 		return t, err
 	}
 
-	err = json.Unmarshal(bts, &t)
+	decoder := json.NewDecoder(bytes.NewReader(bts))
+	decoder.DisallowUnknownFields()
+	err = decoder.Decode(&t)
 	return t, err
 }
 

@@ -360,7 +360,7 @@ func TestInvalidAlgorithm(t *testing.T) {
 	require.Empty(t, sum)
 }
 
-func TestExtraOr(t *testing.T) {
+func TestExtra(t *testing.T) {
 	a := Artifact{
 		Extra: map[string]interface{}{
 			"Foo": "foo",
@@ -368,28 +368,50 @@ func TestExtraOr(t *testing.T) {
 				ID:  "id",
 				Use: "docker",
 			},
-			"binaries": []string{"foo", "bar"},
+			"fail-plz": config.Homebrew{
+				Plist: "aaaa",
+			},
+			"unsupported": func() {},
+			"binaries":    []string{"foo", "bar"},
 		},
 	}
 
-	foo, err := Extra[string](a, "Foo")
-	require.NoError(t, err)
-	require.Equal(t, "foo", foo)
-	require.Equal(t, "foo", ExtraOr(a, "Foo", "bar"))
+	t.Run("string", func(t *testing.T) {
+		foo, err := Extra[string](a, "Foo")
+		require.NoError(t, err)
+		require.Equal(t, "foo", foo)
+		require.Equal(t, "foo", ExtraOr(a, "Foo", "bar"))
+	})
 
-	bar, err := Extra[string](a, "Foobar")
-	require.NoError(t, err)
-	require.Equal(t, "bar", bar)
-	require.Equal(t, "bar", ExtraOr(a, "Foobar", "bar"))
+	t.Run("missing field", func(t *testing.T) {
+		bar, err := Extra[string](a, "Foobar")
+		require.NoError(t, err)
+		require.Equal(t, "", bar)
+		require.Equal(t, "bar", ExtraOr(a, "Foobar", "bar"))
+	})
 
-	docker, err := Extra[config.Docker](a, "docker")
-	require.NoError(t, err)
-	require.Equal(t, "id", docker.ID)
+	t.Run("complex", func(t *testing.T) {
+		docker, err := Extra[config.Docker](a, "docker")
+		require.NoError(t, err)
+		require.Equal(t, "id", docker.ID)
+	})
 
-	binaries, err := Extra[[]string](a, "binaries")
-	require.NoError(t, err)
-	require.Equal(t, []string{"foo", "bar"}, binaries)
-	require.Equal(t, []string{"foo", "bar"}, ExtraOr(a, "binaries", []string{}))
+	t.Run("array", func(t *testing.T) {
+		binaries, err := Extra[[]string](a, "binaries")
+		require.NoError(t, err)
+		require.Equal(t, []string{"foo", "bar"}, binaries)
+		require.Equal(t, []string{"foo", "bar"}, ExtraOr(a, "binaries", []string{}))
+	})
+
+	t.Run("unmarshal error", func(t *testing.T) {
+		_, err := Extra[config.Docker](a, "fail-plz")
+		require.EqualError(t, err, "json: unknown field \"Name\"")
+	})
+
+	t.Run("marshal error", func(t *testing.T) {
+		_, err := Extra[config.Docker](a, "unsupported")
+		require.EqualError(t, err, "json: unsupported type: func()")
+	})
 }
 
 func TestByIDs(t *testing.T) {
