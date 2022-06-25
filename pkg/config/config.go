@@ -351,6 +351,7 @@ type BuildDetails struct {
 	Flags    FlagArray   `yaml:"flags,omitempty"`
 	Asmflags StringArray `yaml:"asmflags,omitempty"`
 	Gcflags  StringArray `yaml:"gcflags,omitempty"`
+	Env      []string    `yaml:"env,omitempty"`
 }
 
 type BuildHookConfig struct {

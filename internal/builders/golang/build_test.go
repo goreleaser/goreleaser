@@ -1175,6 +1175,7 @@ func TestOverrides(t *testing.T) {
 			config.Build{
 				BuildDetails: config.BuildDetails{
 					Ldflags: []string{"original"},
+					Env:     []string{"FOO=bar"},
 				},
 				BuildDetailsOverrides: []config.BuildDetailsOverride{
 					{
@@ -1182,6 +1183,7 @@ func TestOverrides(t *testing.T) {
 						Goarch: "amd64",
 						BuildDetails: config.BuildDetails{
 							Ldflags: []string{"overridden"},
+							Env:     []string{"FOO=overridden"},
 						},
 					},
 				},
@@ -1193,6 +1195,7 @@ func TestOverrides(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, dets, config.BuildDetails{
 			Ldflags: []string{"overridden"},
+			Env:     []string{"FOO=overridden"},
 		})
 	})
 
