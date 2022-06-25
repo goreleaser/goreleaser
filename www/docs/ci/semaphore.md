@@ -77,7 +77,7 @@ metadata:
 data:
   env_vars:
     - name: GITHUB_TOKEN
-      value: "4afk4388304hfhei34950dg43245"
+      value: "your token here"
 ```
 
 Check [Managing Secrets](https://docs.semaphoreci.com/article/51-secrets-yaml-reference)
