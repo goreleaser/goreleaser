@@ -619,6 +619,7 @@ func TestGroup(t *testing.T) {
 	testlib.GitCommit(t, "added feature 1")
 	testlib.GitCommit(t, "fixed bug 2")
 	testlib.GitCommit(t, "ignored: whatever")
+	testlib.GitCommit(t, "feat(deps): update foobar [bot]")
 	testlib.GitCommit(t, "fix: whatever")
 	testlib.GitCommit(t, "docs: whatever")
 	testlib.GitCommit(t, "chore: something about cArs we dont need")
@@ -630,6 +631,11 @@ func TestGroup(t *testing.T) {
 		Dist: folder,
 		Changelog: config.Changelog{
 			Groups: []config.ChangeLogGroup{
+				{
+					Title:  "Bots",
+					Regexp: ".*bot.*",
+					Order:  900,
+				},
 				{
 					Title:  "Features",
 					Regexp: "^.*feat[(\\w)]*:+.*$",
@@ -655,6 +661,7 @@ func TestGroup(t *testing.T) {
 	ctx.Git.CurrentTag = "v0.0.2"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.Contains(t, ctx.ReleaseNotes, "### Bots")
 	require.Contains(t, ctx.ReleaseNotes, "### Features")
 	require.Contains(t, ctx.ReleaseNotes, "### Bug Fixes")
 	require.NotContains(t, ctx.ReleaseNotes, "### Catch nothing")

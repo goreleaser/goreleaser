@@ -95,6 +95,12 @@ func (Pipe) Run(ctx *context.Context) error {
 	return os.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint: gosec
 }
 
+type changelogGroup struct {
+	title   string
+	entries []string
+	order   int
+}
+
 func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 	newLine := "\n"
 	if ctx.TokenType == context.TokenTypeGitLab || ctx.TokenType == context.TokenTypeGitea {
@@ -115,14 +121,15 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 	}
 
 	log.Debug("grouping entries")
-	groups := ctx.Config.Changelog.Groups
-
-	sort.Slice(groups, func(i, j int) bool { return groups[i].Order < groups[j].Order })
-	for _, group := range groups {
-		items := make([]string, 0)
+	var groups []changelogGroup
+	for _, group := range ctx.Config.Changelog.Groups {
+		item := changelogGroup{
+			title: group.Title,
+			order: group.Order,
+		}
 		if group.Regexp == "" {
 			// If no regexp is provided, we purge all strikethrough entries and add remaining entries to the list
-			items = filterAndPrefixItems(entries)
+			item.entries = filterAndPrefixItems(entries)
 			// clear array
 			entries = nil
 		} else {
@@ -133,18 +140,22 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 			for i, entry := range entries {
 				match := regex.MatchString(entry)
 				if match {
-					items = append(items, li+entry)
+					item.entries = append(item.entries, li+entry)
 					// Striking out the matched entry
 					entries[i] = ""
 				}
 			}
 		}
-		if len(items) > 0 {
-			result = append(result, fmt.Sprintf("### %s", group.Title))
-			result = append(result, items...)
-		}
+		groups = append(groups, item)
 	}
 
+	sort.Slice(groups, func(i, j int) bool { return groups[i].order < groups[j].order })
+	for _, group := range groups {
+		if len(group.entries) > 0 {
+			result = append(result, fmt.Sprintf("### %s", group.title))
+			result = append(result, group.entries...)
+		}
+	}
 	return strings.Join(result, newLine), nil
 }
 
