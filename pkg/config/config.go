@@ -321,7 +321,6 @@ type Build struct {
 	Main            string          `yaml:"main,omitempty"`
 	Binary          string          `yaml:"binary,omitempty"`
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty"`
-	Env             []string        `yaml:"env,omitempty"`
 	Builder         string          `yaml:"builder,omitempty"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty"`
 	Skip            bool            `yaml:"skip,omitempty"`
