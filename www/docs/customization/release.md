@@ -71,7 +71,7 @@ release:
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not create the release on any SCM.
-  # Keep in mind that this might also break things that depens on the release URL, for instance, homebrew taps.
+  # Keep in mind that this might also break things that depend on the release URL, for instance, homebrew taps.
   #
   # Defaults to false.
   disable: true
@@ -91,7 +91,7 @@ release:
 ```
 
 !!! tip
-    [Learn how to setup an API token, GitHub enteprise and etc](/scm/github/).
+    [Learn how to setup an API token, GitHub Enterprise and etc](/scm/github/).
 
 ## GitLab
 

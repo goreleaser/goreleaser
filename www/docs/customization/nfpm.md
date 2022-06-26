@@ -166,7 +166,7 @@ nfpms:
       - dst: /var/log/boo.log
         type: ghost
 
-      # You can user the packager field to add files that are unique to a specific packager
+      # You can use the packager field to add files that are unique to a specific packager
       - src: path/to/rpm/file.conf
         dst: /etc/file.conf
         type: "config|noreplace"
@@ -301,7 +301,7 @@ nfpms:
 
       # Custom deb triggers
       triggers:
-        # register interrest on a trigger activated by another package
+        # register interest on a trigger activated by another package
         # (also available: interest_await, interest_noawait)
         interest:
           - some-trigger-name
