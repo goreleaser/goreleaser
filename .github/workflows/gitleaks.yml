@@ -1,6 +1,10 @@
 name: gitleaks
 
-on: [push,pull_request]
+on:
+  push:
+    branches:
+      - 'main'
+
 
 permissions:
   contents: read
