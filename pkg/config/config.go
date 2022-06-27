@@ -321,7 +321,6 @@ type Build struct {
 	Main            string          `yaml:"main,omitempty"`
 	Binary          string          `yaml:"binary,omitempty"`
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty"`
-	Env             []string        `yaml:"env,omitempty"`
 	Builder         string          `yaml:"builder,omitempty"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty"`
 	Skip            bool            `yaml:"skip,omitempty"`
@@ -351,6 +350,7 @@ type BuildDetails struct {
 	Flags    FlagArray   `yaml:"flags,omitempty"`
 	Asmflags StringArray `yaml:"asmflags,omitempty"`
 	Gcflags  StringArray `yaml:"gcflags,omitempty"`
+	Env      []string    `yaml:"env,omitempty"`
 }
 
 type BuildHookConfig struct {

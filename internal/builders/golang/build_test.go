@@ -340,7 +340,6 @@ func TestBuild(t *testing.T) {
 		Builds: []config.Build{
 			{
 				ID:     "foo",
-				Env:    []string{"GO111MODULE=off"},
 				Binary: "bin/foo-{{ .Version }}",
 				Targets: []string{
 					"linux_amd64",
@@ -354,6 +353,7 @@ func TestBuild(t *testing.T) {
 				GoBinary: "go",
 				Command:  "build",
 				BuildDetails: config.BuildDetails{
+					Env:      []string{"GO111MODULE=off"},
 					Asmflags: []string{".=", "all="},
 					Gcflags:  []string{"all="},
 					Flags:    []string{"{{.Env.GO_FLAGS}}"},
@@ -524,7 +524,6 @@ func TestBuildCodeInSubdir(t *testing.T) {
 		Builds: []config.Build{
 			{
 				ID:     "foo",
-				Env:    []string{"GO111MODULE=off"},
 				Dir:    "bar",
 				Binary: "foo",
 				Targets: []string{
@@ -532,6 +531,9 @@ func TestBuildCodeInSubdir(t *testing.T) {
 				},
 				GoBinary: "go",
 				Command:  "build",
+				BuildDetails: config.BuildDetails{
+					Env: []string{"GO111MODULE=off"},
+				},
 			},
 		},
 	}
@@ -555,11 +557,13 @@ func TestBuildWithDotGoDir(t *testing.T) {
 		Builds: []config.Build{
 			{
 				ID:       "foo",
-				Env:      []string{"GO111MODULE=off"},
 				Binary:   "foo",
 				Targets:  []string{runtimeTarget},
 				GoBinary: "go",
 				Command:  "build",
+				BuildDetails: config.BuildDetails{
+					Env: []string{"GO111MODULE=off"},
+				},
 			},
 		},
 	}
@@ -834,11 +838,13 @@ func TestRunPipeWithMainFuncNotInMainGoFile(t *testing.T) {
 	config := config.Project{
 		Builds: []config.Build{
 			{
-				Env:    []string{"GO111MODULE=off"},
 				Binary: "foo",
 				Hooks:  config.BuildHookConfig{},
 				Targets: []string{
 					runtimeTarget,
+				},
+				BuildDetails: config.BuildDetails{
+					Env: []string{"GO111MODULE=off"},
 				},
 				GoBinary: "go",
 				Command:  "build",
@@ -978,7 +984,6 @@ func TestBuildModTimestamp(t *testing.T) {
 		Builds: []config.Build{
 			{
 				ID:     "foo",
-				Env:    []string{"GO111MODULE=off"},
 				Binary: "bin/foo-{{ .Version }}",
 				Targets: []string{
 					"linux_amd64",
@@ -990,6 +995,7 @@ func TestBuildModTimestamp(t *testing.T) {
 					"linux_mips64le_softfloat",
 				},
 				BuildDetails: config.BuildDetails{
+					Env:      []string{"GO111MODULE=off"},
 					Asmflags: []string{".=", "all="},
 					Gcflags:  []string{"all="},
 					Flags:    []string{"{{.Env.GO_FLAGS}}"},
@@ -1175,6 +1181,7 @@ func TestOverrides(t *testing.T) {
 			config.Build{
 				BuildDetails: config.BuildDetails{
 					Ldflags: []string{"original"},
+					Env:     []string{"FOO=bar"},
 				},
 				BuildDetailsOverrides: []config.BuildDetailsOverride{
 					{
@@ -1182,6 +1189,7 @@ func TestOverrides(t *testing.T) {
 						Goarch: "amd64",
 						BuildDetails: config.BuildDetails{
 							Ldflags: []string{"overridden"},
+							Env:     []string{"FOO=overridden"},
 						},
 					},
 				},
@@ -1193,6 +1201,7 @@ func TestOverrides(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, dets, config.BuildDetails{
 			Ldflags: []string{"overridden"},
+			Env:     []string{"FOO=overridden"},
 		})
 	})
 

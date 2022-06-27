@@ -72,8 +72,8 @@ func TestBuild(t *testing.T) {
 				Binary:  "testing.v{{.Version}}",
 				BuildDetails: config.BuildDetails{
 					Flags: []string{"-n"},
+					Env:   []string{"BLAH=1"},
 				},
-				Env: []string{"BLAH=1"},
 			},
 		},
 	}
@@ -245,8 +245,10 @@ func TestDefaultExpandEnv(t *testing.T) {
 		Config: config.Project{
 			Builds: []config.Build{
 				{
-					Env: []string{
-						"XFOO=bar_$XBAR",
+					BuildDetails: config.BuildDetails{
+						Env: []string{
+							"XFOO=bar_$XBAR",
+						},
 					},
 				},
 			},

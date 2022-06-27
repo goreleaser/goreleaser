@@ -194,6 +194,7 @@ builds:
     overrides:
       - goos: darwin
         goarch: arm64
+        goamd64: v1
         goarm: ''
         gomips: ''
         ldflags:
@@ -204,6 +205,8 @@ builds:
           - foobar
         gcflags:
           - foobaz
+        env:
+          - CGO_ENABLED=1
 ```
 
 !!! tip

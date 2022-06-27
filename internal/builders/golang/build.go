@@ -206,11 +206,12 @@ func withOverrides(ctx *context.Context, build config.Build, options api.Options
 				Flags:    build.BuildDetails.Flags,
 				Asmflags: build.BuildDetails.Asmflags,
 				Gcflags:  build.BuildDetails.Gcflags,
+				Env:      build.BuildDetails.Env,
 			}
 			if err := mergo.Merge(&dets, o.BuildDetails, mergo.WithOverride); err != nil {
 				return build.BuildDetails, err
 			}
-			log.WithField("dets", dets).Info("will use")
+			log.WithField("details", dets).Infof("overridden build details for %s", optsTarget)
 			return dets, nil
 		}
 	}
