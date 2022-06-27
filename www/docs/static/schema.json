@@ -299,12 +299,6 @@
 					"hooks": {
 						"$ref": "#/$defs/BuildHookConfig"
 					},
-					"env": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
 					"builder": {
 						"type": "string"
 					},
@@ -340,6 +334,12 @@
 					},
 					"gcflags": {
 						"$ref": "#/$defs/StringArray"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"overrides": {
 						"items": {
@@ -382,6 +382,12 @@
 					},
 					"gcflags": {
 						"$ref": "#/$defs/StringArray"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
