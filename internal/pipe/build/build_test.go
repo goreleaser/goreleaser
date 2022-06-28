@@ -492,8 +492,7 @@ func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
 	})
 	g := semerrgroup.New(ctx.Parallelism)
 	runPipeOnBuild(ctx, g, build)
-	err := g.Wait()
-	require.NoError(t, err)
+	require.NoError(t, g.Wait())
 	require.FileExists(t, filepath.Join(tmpDir, "pre-hook-amd64-linux"))
 	require.FileExists(t, filepath.Join(tmpDir, "post-hook-amd64-linux"))
 }
