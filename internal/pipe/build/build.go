@@ -31,13 +31,14 @@ func (Pipe) String() string {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, build := range ctx.Config.Builds {
 		if build.Skip {
 			log.WithField("id", build.ID).Info("skip is set")
 			continue
 		}
 		log.WithField("build", build).Debug("building")
-		if err := runPipeOnBuild(ctx, build); err != nil {
+		if err := runPipeOnBuild(ctx, g, build); err != nil {
 			return err
 		}
 	}
@@ -81,8 +82,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 	return builders.For(build.Builder).WithDefaults(build)
 }
 
-func runPipeOnBuild(ctx *context.Context, build config.Build) error {
-	g := semerrgroup.New(ctx.Parallelism)
+func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Build) error {
 	for _, target := range build.Targets {
 		target := target
 		build := build
