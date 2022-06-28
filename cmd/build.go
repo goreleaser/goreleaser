@@ -77,7 +77,7 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
 	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH")
-	cmd.Flags().StringArrayVar(&root.opts.id, "id", nil, "Builds only the specified build id(s)")
+	cmd.Flags().StringArrayVar(&root.opts.id, "id", nil, "Builds only the specified build ids")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if config only has one build)")
 	_ = cmd.Flags().MarkHidden("deprecated")
@@ -184,7 +184,7 @@ func setupBuildID(ctx *context.Context, ids []string) error {
 	}
 
 	if len(keep) == 0 {
-		return fmt.Errorf("no builds with id(s) '%s'", ids)
+		return fmt.Errorf("no builds with ids '%s'", ids)
 	}
 
 	ctx.Config.Builds = keep
