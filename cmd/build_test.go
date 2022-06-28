@@ -209,6 +209,38 @@ func TestBuildFlags(t *testing.T) {
 			}))
 		})
 
+		t.Run("match-multiple", func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Builds: []config.Build{
+					{
+						ID: "default",
+					},
+					{
+						ID: "foo",
+					},
+				},
+			})
+			require.NoError(t, setupBuildContext(ctx, buildOpts{
+				id: []string{"foo", "default"},
+			}))
+		})
+
+		t.Run("match-partial", func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Builds: []config.Build{
+					{
+						ID: "default",
+					},
+					{
+						ID: "foo",
+					},
+				},
+			})
+			require.NoError(t, setupBuildContext(ctx, buildOpts{
+				id: []string{"foo", "notdefault"},
+			}))
+		})
+
 		t.Run("dont match", func(t *testing.T) {
 			ctx := context.New(config.Project{
 				Builds: []config.Build{
