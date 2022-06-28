@@ -66,7 +66,7 @@ func TestSetupPipeline(t *testing.T) {
 			pipeline.BuildCmdPipeline,
 			setupPipeline(context.New(config.Project{}), buildOpts{
 				singleTarget: true,
-				id:           "foo",
+				id:           []string{"foo"},
 			}),
 		)
 	})
@@ -77,7 +77,7 @@ func TestSetupPipeline(t *testing.T) {
 			append(pipeline.BuildCmdPipeline, withOutputPipe{"foobar"}),
 			setupPipeline(context.New(config.Project{}), buildOpts{
 				singleTarget: true,
-				id:           "foo",
+				id:           []string{"foo"},
 				output:       ".",
 			}),
 		)
@@ -106,7 +106,7 @@ func TestSetupPipeline(t *testing.T) {
 				context.New(config.Project{}),
 				buildOpts{
 					singleTarget: true,
-					id:           "foo",
+					id:           []string{"foo"},
 					output:       "foobar",
 				},
 			),
@@ -205,7 +205,7 @@ func TestBuildFlags(t *testing.T) {
 				},
 			})
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
-				id: "foo",
+				id: []string{"foo"},
 			}))
 		})
 
@@ -221,14 +221,14 @@ func TestBuildFlags(t *testing.T) {
 				},
 			})
 			require.EqualError(t, setupBuildContext(ctx, buildOpts{
-				id: "bar",
-			}), "no builds with id 'bar'")
+				id: []string{"bar"},
+			}), "no builds with id(s) '[bar]'")
 		})
 
 		t.Run("default config", func(t *testing.T) {
 			ctx := context.New(config.Project{})
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
-				id: "aaa",
+				id: []string{"aaa"},
 			}))
 		})
 
@@ -241,7 +241,7 @@ func TestBuildFlags(t *testing.T) {
 				},
 			})
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
-				id: "not foo but doesnt matter",
+				id: []string{"not foo but doesnt matter"},
 			}))
 		})
 	})

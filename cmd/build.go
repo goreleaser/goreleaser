@@ -27,7 +27,7 @@ type buildCmd struct {
 
 type buildOpts struct {
 	config        string
-	id            string
+	id            []string
 	snapshot      bool
 	skipValidate  bool
 	skipBefore    bool
@@ -77,7 +77,7 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
 	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH")
-	cmd.Flags().StringVar(&root.opts.id, "id", "", "Builds only the specified build id")
+	cmd.Flags().StringArrayVar(&root.opts.id, "id", nil, "Builds only the specified build id(s)")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if config only has one build)")
 	_ = cmd.Flags().MarkHidden("deprecated")
@@ -113,7 +113,7 @@ func buildProject(options buildOpts) (*context.Context, error) {
 }
 
 func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {
-	if options.output != "" && options.singleTarget && (options.id != "" || len(ctx.Config.Builds) == 1) {
+	if options.output != "" && options.singleTarget && (len(options.id) > 0 || len(ctx.Config.Builds) == 1) {
 		return append(pipeline.BuildCmdPipeline, withOutputPipe{options.output})
 	}
 	return pipeline.BuildCmdPipeline
@@ -136,7 +136,7 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 		setupBuildSingleTarget(ctx)
 	}
 
-	if options.id != "" {
+	if len(options.id) > 0 {
 		if err := setupBuildID(ctx, options.id); err != nil {
 			return err
 		}
@@ -167,7 +167,7 @@ func setupBuildSingleTarget(ctx *context.Context) {
 	}
 }
 
-func setupBuildID(ctx *context.Context, id string) error {
+func setupBuildID(ctx *context.Context, ids []string) error {
 	if len(ctx.Config.Builds) < 2 {
 		log.Warn("single build in config, '--id' ignored")
 		return nil
@@ -175,14 +175,16 @@ func setupBuildID(ctx *context.Context, id string) error {
 
 	var keep []config.Build
 	for _, build := range ctx.Config.Builds {
-		if build.ID == id {
-			keep = append(keep, build)
-			break
+		for _, id := range ids {
+			if build.ID == id {
+				keep = append(keep, build)
+				break
+			}
 		}
 	}
 
 	if len(keep) == 0 {
-		return fmt.Errorf("no builds with id '%s'", id)
+		return fmt.Errorf("no builds with id(s) '%s'", ids)
 	}
 
 	ctx.Config.Builds = keep
