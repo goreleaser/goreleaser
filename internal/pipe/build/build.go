@@ -38,11 +38,9 @@ func (Pipe) Run(ctx *context.Context) error {
 			continue
 		}
 		log.WithField("build", build).Debug("building")
-		if err := runPipeOnBuild(ctx, g, build); err != nil {
-			return err
-		}
+		runPipeOnBuild(ctx, g, build)
 	}
-	return nil
+	return g.Wait()
 }
 
 // Default sets the pipe defaults.
@@ -82,7 +80,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 	return builders.For(build.Builder).WithDefaults(build)
 }
 
-func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Build) error {
+func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Build) {
 	for _, target := range build.Targets {
 		target := target
 		build := build
@@ -106,8 +104,6 @@ func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Buil
 			return nil
 		})
 	}
-
-	return g.Wait()
 }
 
 func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hooks config.Hooks) error {

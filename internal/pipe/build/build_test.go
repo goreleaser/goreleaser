@@ -491,7 +491,8 @@ func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
 		},
 	})
 	g := semerrgroup.New(ctx.Parallelism)
-	err := runPipeOnBuild(ctx, g, build)
+	runPipeOnBuild(ctx, g, build)
+	err := g.Wait()
 	require.NoError(t, err)
 	require.FileExists(t, filepath.Join(tmpDir, "pre-hook-amd64-linux"))
 	require.FileExists(t, filepath.Join(tmpDir, "post-hook-amd64-linux"))
@@ -523,7 +524,8 @@ func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 		},
 	})
 	g := semerrgroup.New(ctx.Parallelism)
-	err := runPipeOnBuild(ctx, g, build)
+	runPipeOnBuild(ctx, g, build)
+	err := g.Wait()
 	require.NoError(t, err)
 	require.FileExists(t, filepath.Join(tmpDir, "pre-hook-linux_amd64"))
 	require.FileExists(t, filepath.Join(tmpDir, "pre-hook-darwin_amd64"))
@@ -547,7 +549,8 @@ func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
 		},
 	})
 	g := semerrgroup.New(ctx.Parallelism)
-	err := runPipeOnBuild(ctx, g, build)
+	runPipeOnBuild(ctx, g, build)
+	err := g.Wait()
 	require.EqualError(t, err, `template: tmpl:1:11: executing "tmpl" at <.XYZ>: map has no entry for key "XYZ"`)
 }
 
