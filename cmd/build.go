@@ -27,7 +27,7 @@ type buildCmd struct {
 
 type buildOpts struct {
 	config        string
-	id            []string
+	ids           []string
 	snapshot      bool
 	skipValidate  bool
 	skipBefore    bool
@@ -77,7 +77,7 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
 	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH")
-	cmd.Flags().StringArrayVar(&root.opts.id, "id", nil, "Builds only the specified build ids")
+	cmd.Flags().StringArrayVar(&root.opts.ids, "id", nil, "Builds only the specified build ids")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if config only has one build)")
 	_ = cmd.Flags().MarkHidden("deprecated")
@@ -113,7 +113,7 @@ func buildProject(options buildOpts) (*context.Context, error) {
 }
 
 func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {
-	if options.output != "" && options.singleTarget && (len(options.id) > 0 || len(ctx.Config.Builds) == 1) {
+	if options.output != "" && options.singleTarget && (len(options.ids) > 0 || len(ctx.Config.Builds) == 1) {
 		return append(pipeline.BuildCmdPipeline, withOutputPipe{options.output})
 	}
 	return pipeline.BuildCmdPipeline
@@ -136,8 +136,8 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 		setupBuildSingleTarget(ctx)
 	}
 
-	if len(options.id) > 0 {
-		if err := setupBuildID(ctx, options.id); err != nil {
+	if len(options.ids) > 0 {
+		if err := setupBuildID(ctx, options.ids); err != nil {
 			return err
 		}
 	}

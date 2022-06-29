@@ -66,7 +66,7 @@ func TestSetupPipeline(t *testing.T) {
 			pipeline.BuildCmdPipeline,
 			setupPipeline(context.New(config.Project{}), buildOpts{
 				singleTarget: true,
-				id:           []string{"foo"},
+				ids:          []string{"foo"},
 			}),
 		)
 	})
@@ -77,7 +77,7 @@ func TestSetupPipeline(t *testing.T) {
 			append(pipeline.BuildCmdPipeline, withOutputPipe{"foobar"}),
 			setupPipeline(context.New(config.Project{}), buildOpts{
 				singleTarget: true,
-				id:           []string{"foo"},
+				ids:          []string{"foo"},
 				output:       ".",
 			}),
 		)
@@ -106,7 +106,7 @@ func TestSetupPipeline(t *testing.T) {
 				context.New(config.Project{}),
 				buildOpts{
 					singleTarget: true,
-					id:           []string{"foo"},
+					ids:          []string{"foo"},
 					output:       "foobar",
 				},
 			),
@@ -205,7 +205,7 @@ func TestBuildFlags(t *testing.T) {
 				},
 			})
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
-				id: []string{"foo"},
+				ids: []string{"foo"},
 			}))
 		})
 
@@ -221,7 +221,7 @@ func TestBuildFlags(t *testing.T) {
 				},
 			})
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
-				id: []string{"foo", "default"},
+				ids: []string{"foo", "default"},
 			}))
 		})
 
@@ -237,7 +237,7 @@ func TestBuildFlags(t *testing.T) {
 				},
 			})
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
-				id: []string{"foo", "notdefault"},
+				ids: []string{"foo", "notdefault"},
 			}))
 		})
 
@@ -253,14 +253,14 @@ func TestBuildFlags(t *testing.T) {
 				},
 			})
 			require.EqualError(t, setupBuildContext(ctx, buildOpts{
-				id: []string{"bar"},
+				ids: []string{"bar"},
 			}), "no builds with id(s) '[bar]'")
 		})
 
 		t.Run("default config", func(t *testing.T) {
 			ctx := context.New(config.Project{})
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
-				id: []string{"aaa"},
+				ids: []string{"aaa"},
 			}))
 		})
 
@@ -273,7 +273,7 @@ func TestBuildFlags(t *testing.T) {
 				},
 			})
 			require.NoError(t, setupBuildContext(ctx, buildOpts{
-				id: []string{"not foo but doesnt matter"},
+				ids: []string{"not foo but doesnt matter"},
 			}))
 		})
 	})
