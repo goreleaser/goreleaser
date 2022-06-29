@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/caarlos0/ctrlc"
@@ -184,7 +185,7 @@ func setupBuildID(ctx *context.Context, ids []string) error {
 	}
 
 	if len(keep) == 0 {
-		return fmt.Errorf("no builds with ids '%s'", ids)
+		return fmt.Errorf("no builds with ids %s", strings.Join(ids, ", "))
 	}
 
 	ctx.Config.Builds = keep

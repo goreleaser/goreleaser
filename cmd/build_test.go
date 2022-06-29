@@ -253,8 +253,8 @@ func TestBuildFlags(t *testing.T) {
 				},
 			})
 			require.EqualError(t, setupBuildContext(ctx, buildOpts{
-				ids: []string{"bar"},
-			}), "no builds with id(s) '[bar]'")
+				ids: []string{"bar", "fooz"},
+			}), "no builds with ids bar, fooz")
 		})
 
 		t.Run("default config", func(t *testing.T) {
