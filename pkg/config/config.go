@@ -307,6 +307,12 @@ func (a FlagArray) JSONSchema() *jsonschema.Schema {
 	}
 }
 
+// PreBuilt holds the data for prebuild binary specification. Currently a feature of goreleaser-pro, but back porting
+// this field to support yamls made for goreleaser-pro.
+type PreBuilt struct {
+	Path string `yaml:"path,omitempty"`
+}
+
 // Build contains the build configuration section.
 type Build struct {
 	ID              string          `yaml:"id,omitempty"`
@@ -330,6 +336,7 @@ type Build struct {
 	NoMainCheck     bool            `yaml:"no_main_check,omitempty"`
 	UnproxiedMain   string          `yaml:"-"` // used by gomod.proxy
 	UnproxiedDir    string          `yaml:"-"` // used by gomod.proxy
+	PreBuilt        PreBuilt        `yaml:"prebuilt,omitempty"`
 
 	BuildDetails          `yaml:",inline"`       // nolint: tagliatelle
 	BuildDetailsOverrides []BuildDetailsOverride `yaml:"overrides,omitempty"`
