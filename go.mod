@@ -31,7 +31,7 @@ require (
 	github.com/muesli/termenv v0.12.1-0.20220606102431-9500d1649068
 	github.com/slack-go/slack v0.11.0
 	github.com/spf13/cobra v1.5.0
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	github.com/ulikunitz/xz v0.5.10
 	github.com/xanzy/go-gitlab v0.68.2
 	gocloud.dev v0.24.0
