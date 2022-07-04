@@ -22,7 +22,7 @@ goreleaser build [flags]
 ```
   -f, --config string      Load configuration from file
   -h, --help               help for build
-      --id string          Builds only the specified build id
+      --id stringArray     Builds only the specified build ids
   -o, --output string      Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if config only has one build)
   -p, --parallelism int    Amount tasks to run concurrently (default: number of CPUs)
       --rm-dist            Remove the dist folder before building
