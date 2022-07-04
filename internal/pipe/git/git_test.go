@@ -37,7 +37,7 @@ func TestSingleCommit(t *testing.T) {
 }
 
 func TestAnnotatedTags(t *testing.T) {
-	t.Log(testlib.Mktmp(t))
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit1")
