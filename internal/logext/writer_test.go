@@ -7,11 +7,15 @@ import (
 	"testing"
 
 	"github.com/caarlos0/log"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/muesli/termenv"
 	"github.com/stretchr/testify/require"
 )
 
 func TestWriter(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+
 	t.Run("info", func(t *testing.T) {
 		for _, out := range []Output{Info, Error} {
 			t.Run(strconv.Itoa(int(out)), func(t *testing.T) {
