@@ -3,23 +3,17 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/muesli/termenv"
 	"github.com/spf13/cobra"
 )
 
 var boldStyle = lipgloss.NewStyle().Bold(true)
 
 func Execute(version string, exit func(int), args []string) {
-	// enable colored output on travis
-	if os.Getenv("CI") != "" {
-		lipgloss.SetColorProfile(termenv.ANSI256)
-	}
 	newRootCmd(version, exit).Execute(args)
 }
 
