@@ -206,8 +206,7 @@ func TestRun(t *testing.T) {
 	for arch, path := range paths {
 		cmd := exec.Command("go", "build", "-o", path, src)
 		cmd.Env = append(os.Environ(), "GOOS=darwin", "GOARCH="+arch)
-		out, err := cmd.CombinedOutput()
-		t.Log(string(out))
+		_, err := cmd.CombinedOutput()
 		require.NoError(t, err)
 
 		modTime := time.Unix(0, 0)
