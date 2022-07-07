@@ -1047,18 +1047,30 @@ func TestBuildModTimestamp(t *testing.T) {
 func TestBuildGoBuildLine(t *testing.T) {
 	requireEqualCmd := func(tb testing.TB, build config.Build, expected []string) {
 		tb.Helper()
-		config := config.Project{
+		cfg := config.Project{
 			Builds: []config.Build{build},
 		}
-		ctx := context.New(config)
+		ctx := context.New(cfg)
 		ctx.Version = "1.2.3"
 		ctx.Git.Commit = "aaa"
 
-		line, err := buildGoBuildLine(ctx, config.Builds[0], api.Options{
-			Path:   config.Builds[0].Binary,
+		options := api.Options{
+			Path:   cfg.Builds[0].Binary,
 			Goos:   "linux",
 			Goarch: "amd64",
-		}, &artifact.Artifact{}, []string{})
+		}
+
+		dets, err := withOverrides(ctx, build, options)
+		require.NoError(t, err)
+
+		line, err := buildGoBuildLine(
+			ctx,
+			build,
+			dets,
+			options,
+			&artifact.Artifact{},
+			[]string{},
+		)
 		require.NoError(t, err)
 		require.Equal(t, expected, line)
 	}
@@ -1181,7 +1193,7 @@ func TestOverrides(t *testing.T) {
 			config.Build{
 				BuildDetails: config.BuildDetails{
 					Ldflags: []string{"original"},
-					Env:     []string{"FOO=bar"},
+					Env:     []string{"BAR=foo", "FOO=bar"},
 				},
 				BuildDetailsOverrides: []config.BuildDetailsOverride{
 					{
@@ -1201,7 +1213,7 @@ func TestOverrides(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, dets, config.BuildDetails{
 			Ldflags: []string{"overridden"},
-			Env:     []string{"FOO=overridden"},
+			Env:     []string{"BAR=foo", "FOO=overridden"},
 		})
 	})
 
