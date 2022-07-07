@@ -1054,11 +1054,16 @@ func TestBuildGoBuildLine(t *testing.T) {
 		ctx.Version = "1.2.3"
 		ctx.Git.Commit = "aaa"
 
-		line, err := buildGoBuildLine(ctx, config.Builds[0], api.Options{
+		options := api.Options{
 			Path:   config.Builds[0].Binary,
 			Goos:   "linux",
 			Goarch: "amd64",
-		}, &artifact.Artifact{}, []string{})
+		}
+
+		details, err := withOverrides(ctx, config.Builds[0], options)
+		require.NoError(t, err)
+
+		line, err := buildGoBuildLine(ctx, config.Builds[0], details, options, &artifact.Artifact{}, []string{})
 		require.NoError(t, err)
 		require.Equal(t, expected, line)
 	}
@@ -1096,6 +1101,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 				Flags:    []string{"-flag1", "-flag2"},
 				Tags:     []string{"tag1", "tag2"},
 				Ldflags:  []string{"ldflag1", "ldflag2"},
+				Env:      []string{"FOO=bar"},
 			},
 			BuildDetailsOverrides: []config.BuildDetailsOverride{
 				{
@@ -1107,6 +1113,7 @@ func TestBuildGoBuildLine(t *testing.T) {
 						Flags:    []string{"-flag3"},
 						Tags:     []string{"tag3"},
 						Ldflags:  []string{"ldflag3"},
+						Env:      []string{"FOO=overridden"},
 					},
 				},
 			},
