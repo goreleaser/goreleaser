@@ -20,5 +20,8 @@ if [ -n "$GITHUB_TOKEN" ]; then
 	echo "$GITHUB_TOKEN" | docker login ghcr.io -u docker --password-stdin
 fi
 
+# prevents git from complaining about unsafe dir. especially when using github actions
+git config --global --add safe.directory .
+
 # shellcheck disable=SC2068
 exec goreleaser $@
