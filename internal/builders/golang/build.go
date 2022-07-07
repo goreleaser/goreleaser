@@ -156,7 +156,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	env := append(ctx.Env.Strings(), build.Env...)
+	env := append(ctx.Env.Strings(), details.Env...)
 	env = append(
 		env,
 		"GOOS="+options.Goos,
