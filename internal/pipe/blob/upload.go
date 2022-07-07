@@ -3,11 +3,12 @@ package blob
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/url"
+	"os"
 	"path"
+	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
@@ -22,7 +23,7 @@ import (
 	_ "gocloud.dev/blob/gcsblob"
 	_ "gocloud.dev/blob/s3blob"
 
-	// import the secrets packages we want to be able to open:.
+	// import the secrets packages we want to be able to be used.
 	_ "gocloud.dev/secrets/awskms"
 	_ "gocloud.dev/secrets/azurekeyvault"
 	_ "gocloud.dev/secrets/gcpkms"
@@ -40,7 +41,7 @@ func urlFor(ctx *context.Context, conf config.Blob) (string, error) {
 		return bucketURL, nil
 	}
 
-	var query = url.Values{}
+	query := url.Values{}
 	if conf.Endpoint != "" {
 		query.Add("endpoint", conf.Endpoint)
 		query.Add("s3ForcePathStyle", "true")
@@ -67,45 +68,46 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 	if err != nil {
 		return err
 	}
+	folder = strings.TrimPrefix(folder, "/")
 
 	bucketURL, err := urlFor(ctx, conf)
 	if err != nil {
 		return err
 	}
 
-	var filter = artifact.Or(
+	filter := artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
 		artifact.ByType(artifact.UploadableSourceArchive),
 		artifact.ByType(artifact.Checksum),
 		artifact.ByType(artifact.Signature),
+		artifact.ByType(artifact.Certificate),
 		artifact.ByType(artifact.LinuxPackage),
+		artifact.ByType(artifact.SBOM),
 	)
 	if len(conf.IDs) > 0 {
 		filter = artifact.And(filter, artifact.ByIDs(conf.IDs...))
 	}
 
-	var up = newUploader(ctx)
+	up := &productionUploader{}
 	if err := up.Open(ctx, bucketURL); err != nil {
 		return handleError(err, bucketURL)
 	}
 	defer up.Close()
 
-	var g = semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filter).List() {
 		artifact := artifact
 		g.Go(func() error {
 			// TODO: replace this with ?prefix=folder on the bucket url
-			var dataFile = artifact.Path
-			var uploadFile = path.Join(folder, artifact.Name)
+			dataFile := artifact.Path
+			uploadFile := path.Join(folder, artifact.Name)
 
-			err := uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
-
-			return err
+			return uploadData(ctx, conf, up, dataFile, uploadFile, bucketURL)
 		})
 	}
 
-	files, err := extrafiles.Find(conf.ExtraFiles)
+	files, err := extrafiles.Find(ctx, conf.ExtraFiles)
 	if err != nil {
 		return err
 	}
@@ -113,7 +115,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		name := name
 		fullpath := fullpath
 		g.Go(func() error {
-			var uploadFile = path.Join(folder, name)
+			uploadFile := path.Join(folder, name)
 
 			err := uploadData(ctx, conf, up, fullpath, uploadFile, bucketURL)
 
@@ -137,6 +139,16 @@ func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, u
 	return err
 }
 
+// errorContains check if error contains specific string.
+func errorContains(err error, subs ...string) bool {
+	for _, sub := range subs {
+		if strings.Contains(err.Error(), sub) {
+			return true
+		}
+	}
+	return false
+}
+
 func handleError(err error, url string) error {
 	switch {
 	case errorContains(err, "NoSuchBucket", "ContainerNotFound", "notFound"):
@@ -158,15 +170,8 @@ func handleError(err error, url string) error {
 	}
 }
 
-func newUploader(ctx *context.Context) uploader {
-	if ctx.SkipPublish {
-		return &skipUploader{}
-	}
-	return &productionUploader{}
-}
-
 func getData(ctx *context.Context, conf config.Blob, path string) ([]byte, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return data, fmt.Errorf("failed to open file %s: %w", path, err)
 	}
@@ -192,18 +197,6 @@ type uploader interface {
 	Upload(ctx *context.Context, path string, data []byte) error
 }
 
-// skipUploader is used when --skip-upload is set and will just log
-// things without really doing anything.
-type skipUploader struct{}
-
-func (u *skipUploader) Close() error                            { return nil }
-func (u *skipUploader) Open(_ *context.Context, _ string) error { return nil }
-
-func (u *skipUploader) Upload(_ *context.Context, path string, _ []byte) error {
-	log.WithField("path", path).Warn("upload skipped because skip-publish is set")
-	return nil
-}
-
 // productionUploader actually do upload to.
 type productionUploader struct {
 	bucket *blob.Bucket
@@ -215,6 +208,7 @@ func (u *productionUploader) Close() error {
 	}
 	return u.bucket.Close()
 }
+
 func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
 	log.WithFields(log.Fields{
 		"bucket": bucket,
@@ -228,7 +222,7 @@ func (u *productionUploader) Open(ctx *context.Context, bucket string) error {
 	return nil
 }
 
-func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte) (err error) {
+func (u *productionUploader) Upload(ctx *context.Context, filepath string, data []byte) error {
 	log.WithField("path", filepath).Info("uploading")
 
 	opts := &blob.WriterOptions{
@@ -238,11 +232,9 @@ func (u *productionUploader) Upload(ctx *context.Context, filepath string, data 
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if cerr := w.Close(); err == nil {
-			err = cerr
-		}
-	}()
-	_, err = w.Write(data)
-	return
+	defer func() { _ = w.Close() }()
+	if _, err = w.Write(data); err != nil {
+		return err
+	}
+	return w.Close()
 }

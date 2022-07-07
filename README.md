@@ -9,28 +9,39 @@
 GoReleaser builds Go binaries for several platforms, creates a GitHub release and then
 pushes a Homebrew formula to a tap repository. All that wrapped in your favorite CI.
 
-This project adheres to the Contributor Covenant [code of conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+This project adheres to the Contributor Covenant [code of conduct](https://github.com/goreleaser/.github/blob/main/CODE_OF_CONDUCT.md).
+By participating, you are expected to uphold this code.
 We appreciate your contribution. Please refer to our [contributing guidelines](CONTRIBUTING.md) for further information.
 
 For questions, support and general discussion, please use [GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions);
 
 ## Get GoReleaser
 
-- [On my machine](https://goreleaser.com/install/);
+- [On your machine](https://goreleaser.com/install/);
 - [On CI/CD systems](https://goreleaser.com/ci/).
 
 ## Documentation
 
 Documentation is hosted live at https://goreleaser.com
 
+## Community
+
+You have questions, need support and or just want to talk about GoReleaser?
+
+Here are ways to get in touch with the GoReleaser community:
+
+[![Join Discord](https://img.shields.io/badge/Join_our_Discord_server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/RGEBtg8vQ6)
+[![Follow Twitter](https://img.shields.io/badge/follow_on_twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/goreleaser)
+[![GitHub Discussions](https://img.shields.io/badge/GITHUB_DISCUSSION-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/goreleaser/goreleaser/discussions)
+
 ## Badges
 
 [![Release](https://img.shields.io/github/release/goreleaser/goreleaser.svg?style=for-the-badge)](https://github.com/goreleaser/goreleaser/releases/latest)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=for-the-badge)](/LICENSE.md)
 [![Build status](https://img.shields.io/github/workflow/status/goreleaser/goreleaser/build?style=for-the-badge)](https://github.com/goreleaser/goreleaser/actions?workflow=build)
-[![Codecov branch](https://img.shields.io/codecov/c/github/goreleaser/goreleaser/master.svg?style=for-the-badge)](https://codecov.io/gh/goreleaser/goreleaser)
+[![Codecov branch](https://img.shields.io/codecov/c/github/goreleaser/goreleaser/main.svg?style=for-the-badge)](https://codecov.io/gh/goreleaser/goreleaser)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/goreleaser&style=for-the-badge)](https://artifacthub.io/packages/search?repo=goreleaser)
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=for-the-badge)](http://godoc.org/github.com/goreleaser/goreleaser)
-[![SayThanks.io](https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg?style=for-the-badge)](https://saythanks.io/to/caarlos0)
 [![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=for-the-badge)](https://github.com/goreleaser)
 [![Backers on Open Collective](https://opencollective.com/goreleaser/backers/badge.svg?style=for-the-badge)](https://opencollective.com/goreleaser/backers/)
 [![Sponsors on Open Collective](https://opencollective.com/goreleaser/sponsors/badge.svg?style=for-the-badge)](https://opencollective.com/goreleaser/sponsors/)
@@ -45,6 +56,18 @@ Does your company use goreleaser? Help keep the project bug-free and feature ric
 <a href="https://opencollective.com/goreleaser/sponsors/2/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/2/avatar"></a>
 <a href="https://opencollective.com/goreleaser/sponsors/3/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/3/avatar"></a>
 <a href="https://opencollective.com/goreleaser/sponsors/4/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/4/avatar"></a>
+<a href="https://opencollective.com/goreleaser/sponsors/5/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/5/avatar"></a>
+<a href="https://opencollective.com/goreleaser/sponsors/6/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/6/avatar"></a>
+<a href="https://opencollective.com/goreleaser/sponsors/7/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/7/avatar"></a>
+<a href="https://opencollective.com/goreleaser/sponsors/8/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/8/avatar"></a>
+<a href="https://opencollective.com/goreleaser/sponsors/9/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/9/avatar"></a>
+<a href="https://opencollective.com/goreleaser/sponsors/10/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/10/avatar"></a>
+<a href="https://opencollective.com/goreleaser/sponsors/11/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/11/avatar"></a>
+<a href="https://opencollective.com/goreleaser/sponsors/12/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/12/avatar"></a>
+<a href="https://opencollective.com/goreleaser/sponsors/13/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/13/avatar"></a>
+<a href="https://opencollective.com/goreleaser/sponsors/14/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/14/avatar"></a>
+<a href="https://opencollective.com/goreleaser/sponsors/15/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/15/avatar"></a>
+<a href="https://opencollective.com/goreleaser/sponsors/16/website" target="_blank"><img src="https://opencollective.com/goreleaser/sponsors/16/avatar"></a>
 
 ## Backers
 

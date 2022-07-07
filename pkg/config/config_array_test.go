@@ -3,13 +3,13 @@ package config
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/goreleaser/goreleaser/internal/yaml"
+	"github.com/stretchr/testify/require"
 )
 
 type Unmarshaled struct {
-	Strings StringArray `yaml:",omitempty"`
-	Flags   FlagArray   `yaml:",omitempty"`
+	Strings StringArray `yaml:"strings,omitempty"`
+	Flags   FlagArray   `yaml:"flags,omitempty"`
 }
 
 type yamlUnmarshalTestCase struct {
@@ -92,10 +92,10 @@ func TestStringArray(t *testing.T) {
 
 		err := yaml.UnmarshalStrict([]byte(testCase.yaml), &actual)
 		if testCase.err == "" {
-			assert.NoError(t, err)
-			assert.Equal(t, testCase.expected, actual)
+			require.NoError(t, err)
+			require.Equal(t, testCase.expected, actual)
 		} else {
-			assert.EqualError(t, err, testCase.err)
+			require.EqualError(t, err, testCase.err)
 		}
 	}
 }
@@ -106,10 +106,10 @@ func TestFlagArray(t *testing.T) {
 
 		err := yaml.UnmarshalStrict([]byte(testCase.yaml), &actual)
 		if testCase.err == "" {
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		} else {
-			assert.EqualError(t, err, testCase.err)
+			require.EqualError(t, err, testCase.err)
 		}
-		assert.Equal(t, testCase.expected, actual)
+		require.Equal(t, testCase.expected, actual)
 	}
 }

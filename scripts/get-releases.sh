@@ -1,21 +1,32 @@
 #!/bin/bash
 set -euo pipefail
 
-url="https://api.github.com/repos/goreleaser/goreleaser/releases"
-
 get_last_page() {
-	curl -sf -I -H "Authorization: Bearer $GITHUB_TOKEN" \
+	local url="$1"
+	curl -sSf -I -H "Authorization: Bearer $GITHUB_TOKEN" \
 		"$url" |
-		grep -E '^Link: ' |
-		sed -e 's/^Link:.*page=//g' -e 's/>.*$//g'
+		grep -E '^link: ' |
+		sed -e 's/^link:.*page=//g' -e 's/>.*$//g' || echo "1"
 }
 
-last_page="$(get_last_page)"
-tmp="$(mktemp -d)"
+generate() {
+	local url="$1"
+	local file="$2"
+	last_page="$(get_last_page "$url")"
+	tmp="$(mktemp -d)"
 
-for i in $(seq 1 "$last_page"); do
-	echo "page: $i"
-	curl -H "Authorization: Bearer $GITHUB_TOKEN" -sf "$url?page=$i" >"$tmp/$i.json"
-done
+	for i in $(seq 1 "$last_page"); do
+		echo "page: $i"
+		curl -H "Authorization: Bearer $GITHUB_TOKEN" -sSf "$url?page=$i" | jq 'map({tag_name: .tag_name})' >"$tmp/$i.json"
+	done
 
-jq '[inputs] | add' "$tmp"/*.json >www/docs/static/releases.json
+	if test "$last_page" -eq "1"; then
+		cp -f "$tmp"/1.json "$file"
+	else
+		jq --compact-output -s 'add' "$tmp"/*.json >"$file"
+	fi
+	du -hs "$file"
+}
+
+generate "https://api.github.com/repos/goreleaser/goreleaser/releases" "www/docs/static/releases.json"
+generate "https://api.github.com/repos/goreleaser/goreleaser-pro/releases" "www/docs/static/releases-pro.json"

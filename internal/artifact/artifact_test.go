@@ -1,11 +1,14 @@
 package artifact
 
 import (
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
@@ -16,7 +19,7 @@ var _ fmt.Stringer = Type(0)
 
 func TestAdd(t *testing.T) {
 	var g errgroup.Group
-	var artifacts = New()
+	artifacts := New()
 	for _, a := range []*Artifact{
 		{
 			Name: "foo",
@@ -41,20 +44,36 @@ func TestAdd(t *testing.T) {
 			return nil
 		})
 	}
-	assert.NoError(t, g.Wait())
-	assert.Len(t, artifacts.List(), 4)
+	require.NoError(t, g.Wait())
+	require.Len(t, artifacts.List(), 4)
 }
 
 func TestFilter(t *testing.T) {
-	var data = []*Artifact{
+	data := []*Artifact{
 		{
 			Name:   "foo",
 			Goos:   "linux",
 			Goarch: "arm",
 		},
 		{
-			Name:   "bar",
-			Goarch: "amd64",
+			Name:    "bar",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+		},
+		{
+			Name:    "bar",
+			Goarch:  "amd64",
+			Goamd64: "v2",
+		},
+		{
+			Name:    "bar",
+			Goarch:  "amd64",
+			Goamd64: "v3",
+		},
+		{
+			Name:    "bar",
+			Goarch:  "amd64",
+			Goamd64: "v4",
 		},
 		{
 			Name:  "foobar",
@@ -68,27 +87,51 @@ func TestFilter(t *testing.T) {
 			Name: "checkzumm",
 			Type: Checksum,
 		},
+		{
+			Name:   "unibin-replaces",
+			Goos:   "darwin",
+			Goarch: "all",
+			Extra: map[string]interface{}{
+				ExtraReplaces: true,
+			},
+		},
+		{
+			Name:   "unibin-noreplace",
+			Goos:   "darwin",
+			Goarch: "all",
+			Extra: map[string]interface{}{
+				ExtraReplaces: false,
+			},
+		},
 	}
-	var artifacts = New()
+	artifacts := New()
 	for _, a := range data {
 		artifacts.Add(a)
 	}
 
-	assert.Len(t, artifacts.Filter(ByGoos("linux")).items, 1)
-	assert.Len(t, artifacts.Filter(ByGoos("darwin")).items, 0)
+	require.Len(t, artifacts.Filter(ByGoos("linux")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoos("darwin")).items, 2)
 
-	assert.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 1)
-	assert.Len(t, artifacts.Filter(ByGoarch("386")).items, 0)
+	require.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 4)
+	require.Len(t, artifacts.Filter(ByGoarch("386")).items, 0)
 
-	assert.Len(t, artifacts.Filter(ByGoarm("6")).items, 1)
-	assert.Len(t, artifacts.Filter(ByGoarm("7")).items, 0)
+	require.Len(t, artifacts.Filter(ByGoamd64("v1")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoamd64("v2")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoamd64("v3")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoamd64("v4")).items, 1)
 
-	assert.Len(t, artifacts.Filter(ByType(Checksum)).items, 2)
-	assert.Len(t, artifacts.Filter(ByType(Binary)).items, 0)
+	require.Len(t, artifacts.Filter(ByGoarm("6")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoarm("7")).items, 0)
 
-	assert.Len(t, artifacts.Filter(nil).items, 5)
+	require.Len(t, artifacts.Filter(ByType(Checksum)).items, 2)
+	require.Len(t, artifacts.Filter(ByType(Binary)).items, 0)
 
-	assert.Len(t, artifacts.Filter(
+	require.Len(t, artifacts.Filter(OnlyReplacingUnibins).items, 9)
+	require.Len(t, artifacts.Filter(And(OnlyReplacingUnibins, ByGoos("darwin"))).items, 1)
+
+	require.Len(t, artifacts.Filter(nil).items, 10)
+
+	require.Len(t, artifacts.Filter(
 		And(
 			ByType(Checksum),
 			func(a *Artifact) bool {
@@ -97,7 +140,7 @@ func TestFilter(t *testing.T) {
 		),
 	).List(), 1)
 
-	assert.Len(t, artifacts.Filter(
+	require.Len(t, artifacts.Filter(
 		Or(
 			ByType(Checksum),
 			And(
@@ -108,17 +151,130 @@ func TestFilter(t *testing.T) {
 	).List(), 2)
 }
 
-func TestGroupByPlatform(t *testing.T) {
-	var data = []*Artifact{
+func TestRemove(t *testing.T) {
+	data := []*Artifact{
 		{
 			Name:   "foo",
 			Goos:   "linux",
-			Goarch: "amd64",
+			Goarch: "arm",
+			Type:   Binary,
+		},
+		{
+			Name:   "universal",
+			Goos:   "darwin",
+			Goarch: "all",
+			Type:   UniversalBinary,
 		},
 		{
 			Name:   "bar",
-			Goos:   "linux",
 			Goarch: "amd64",
+		},
+		{
+			Name: "checks",
+			Type: Checksum,
+		},
+	}
+
+	t.Run("null filter", func(t *testing.T) {
+		artifacts := New()
+		for _, a := range data {
+			artifacts.Add(a)
+		}
+		require.NoError(t, artifacts.Remove(nil))
+		require.Len(t, artifacts.List(), len(data))
+	})
+
+	t.Run("removing", func(t *testing.T) {
+		artifacts := New()
+		for _, a := range data {
+			artifacts.Add(a)
+		}
+		require.NoError(t, artifacts.Remove(
+			Or(
+				ByType(Checksum),
+				ByType(UniversalBinary),
+				And(
+					ByGoos("linux"),
+					ByGoarch("arm"),
+				),
+			),
+		))
+
+		require.Len(t, artifacts.List(), 1)
+	})
+}
+
+func TestGroupByID(t *testing.T) {
+	data := []*Artifact{
+		{
+			Name: "foo",
+			Extra: map[string]interface{}{
+				ExtraID: "foo",
+			},
+		},
+		{
+			Name: "bar",
+			Extra: map[string]interface{}{
+				ExtraID: "foo",
+			},
+		},
+		{
+			Name: "foobar",
+			Goos: "linux",
+			Extra: map[string]interface{}{
+				ExtraID: "foovar",
+			},
+		},
+		{
+			Name: "foobar",
+			Goos: "linux",
+			Extra: map[string]interface{}{
+				ExtraID: "foovar",
+			},
+		},
+		{
+			Name: "foobar",
+			Goos: "linux",
+			Extra: map[string]interface{}{
+				ExtraID: "foobar",
+			},
+		},
+		{
+			Name: "check",
+			Type: Checksum,
+		},
+	}
+	artifacts := New()
+	for _, a := range data {
+		artifacts.Add(a)
+	}
+
+	groups := artifacts.GroupByID()
+	require.Len(t, groups["foo"], 2)
+	require.Len(t, groups["foobar"], 1)
+	require.Len(t, groups["foovar"], 2)
+	require.Len(t, groups, 3)
+}
+
+func TestGroupByPlatform(t *testing.T) {
+	data := []*Artifact{
+		{
+			Name:    "foo",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v2",
+		},
+		{
+			Name:    "bar",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v2",
+		},
+		{
+			Name:    "bar",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v3",
 		},
 		{
 			Name:   "foobar",
@@ -143,25 +299,25 @@ func TestGroupByPlatform(t *testing.T) {
 			Type: Checksum,
 		},
 	}
-	var artifacts = New()
+	artifacts := New()
 	for _, a := range data {
 		artifacts.Add(a)
 	}
 
-	var groups = artifacts.GroupByPlatform()
-	assert.Len(t, groups["linuxamd64"], 2)
-	assert.Len(t, groups["linuxarm6"], 1)
-	assert.Len(t, groups["linuxmipssoftfloat"], 1)
-	assert.Len(t, groups["linuxmipshardfloat"], 1)
+	groups := artifacts.GroupByPlatform()
+	require.Len(t, groups["linuxamd64v2"], 2)
+	require.Len(t, groups["linuxamd64v3"], 1)
+	require.Len(t, groups["linuxarm6"], 1)
+	require.Len(t, groups["linuxmipssoftfloat"], 1)
+	require.Len(t, groups["linuxmipshardfloat"], 1)
 }
 
 func TestChecksum(t *testing.T) {
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
-	var file = filepath.Join(folder, "subject")
-	require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+	folder := t.TempDir()
+	file := filepath.Join(folder, "subject")
+	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
-	var artifact = Artifact{
+	artifact := Artifact{
 		Path: file,
 	}
 
@@ -183,18 +339,20 @@ func TestChecksum(t *testing.T) {
 }
 
 func TestChecksumFileDoesntExist(t *testing.T) {
-	var artifact = Artifact{
-		Path: "/tmp/adasdasdas/asdasd/asdas",
+	file := filepath.Join(t.TempDir(), "nope")
+	artifact := Artifact{
+		Path: file,
 	}
 	sum, err := artifact.Checksum("sha1")
-	require.EqualError(t, err, `failed to checksum: open /tmp/adasdasdas/asdasd/asdas: no such file or directory`)
+	require.EqualError(t, err, fmt.Sprintf(`failed to checksum: open %s: no such file or directory`, file))
 	require.Empty(t, sum)
 }
 
 func TestInvalidAlgorithm(t *testing.T) {
-	f, err := ioutil.TempFile("", "")
+	f, err := os.CreateTemp(t.TempDir(), "")
 	require.NoError(t, err)
-	var artifact = Artifact{
+	require.NoError(t, f.Close())
+	artifact := Artifact{
 		Path: f.Name(),
 	}
 	sum, err := artifact.Checksum("sha1ssss")
@@ -202,40 +360,84 @@ func TestInvalidAlgorithm(t *testing.T) {
 	require.Empty(t, sum)
 }
 
-func TestExtraOr(t *testing.T) {
-	var a = &Artifact{
+func TestExtra(t *testing.T) {
+	a := Artifact{
 		Extra: map[string]interface{}{
 			"Foo": "foo",
+			"docker": config.Docker{
+				ID:  "id",
+				Use: "docker",
+			},
+			"fail-plz": config.Homebrew{
+				Plist: "aaaa",
+			},
+			"unsupported": func() {},
+			"binaries":    []string{"foo", "bar"},
 		},
 	}
-	require.Equal(t, "foo", a.ExtraOr("Foo", "bar"))
-	require.Equal(t, "bar", a.ExtraOr("Foobar", "bar"))
+
+	t.Run("string", func(t *testing.T) {
+		foo, err := Extra[string](a, "Foo")
+		require.NoError(t, err)
+		require.Equal(t, "foo", foo)
+		require.Equal(t, "foo", ExtraOr(a, "Foo", "bar"))
+	})
+
+	t.Run("missing field", func(t *testing.T) {
+		bar, err := Extra[string](a, "Foobar")
+		require.NoError(t, err)
+		require.Equal(t, "", bar)
+		require.Equal(t, "bar", ExtraOr(a, "Foobar", "bar"))
+	})
+
+	t.Run("complex", func(t *testing.T) {
+		docker, err := Extra[config.Docker](a, "docker")
+		require.NoError(t, err)
+		require.Equal(t, "id", docker.ID)
+	})
+
+	t.Run("array", func(t *testing.T) {
+		binaries, err := Extra[[]string](a, "binaries")
+		require.NoError(t, err)
+		require.Equal(t, []string{"foo", "bar"}, binaries)
+		require.Equal(t, []string{"foo", "bar"}, ExtraOr(a, "binaries", []string{}))
+	})
+
+	t.Run("unmarshal error", func(t *testing.T) {
+		_, err := Extra[config.Docker](a, "fail-plz")
+		require.EqualError(t, err, "json: unknown field \"Name\"")
+	})
+
+	t.Run("marshal error", func(t *testing.T) {
+		_, err := Extra[config.Docker](a, "unsupported")
+		require.EqualError(t, err, "json: unsupported type: func()")
+	})
 }
 
 func TestByIDs(t *testing.T) {
-	var data = []*Artifact{
+	data := []*Artifact{
 		{
 			Name: "foo",
 			Extra: map[string]interface{}{
-				"ID": "foo",
+				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "bar",
 			Extra: map[string]interface{}{
-				"ID": "bar",
+				ExtraID: "bar",
 			},
 		},
 		{
 			Name: "foobar",
 			Extra: map[string]interface{}{
-				"ID": "foo",
+				ExtraID: "foo",
 			},
 		},
 		{
 			Name: "check",
 			Extra: map[string]interface{}{
-				"ID": "check",
+				ExtraID: "check",
 			},
 		},
 		{
@@ -243,7 +445,7 @@ func TestByIDs(t *testing.T) {
 			Type: Checksum,
 		},
 	}
-	var artifacts = New()
+	artifacts := New()
 	for _, a := range data {
 		artifacts.Add(a)
 	}
@@ -253,34 +455,70 @@ func TestByIDs(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByIDs("foo", "bar")).items, 4)
 }
 
-func TestByFormats(t *testing.T) {
-	var data = []*Artifact{
+func TestByExts(t *testing.T) {
+	data := []*Artifact{
 		{
 			Name: "foo",
 			Extra: map[string]interface{}{
-				"Format": "zip",
+				ExtraExt: "deb",
 			},
 		},
 		{
 			Name: "bar",
 			Extra: map[string]interface{}{
-				"Format": "tar.gz",
+				ExtraExt: "deb",
 			},
 		},
 		{
 			Name: "foobar",
 			Extra: map[string]interface{}{
-				"Format": "zip",
+				ExtraExt: "rpm",
+			},
+		},
+		{
+			Name:  "check",
+			Extra: map[string]interface{}{},
+		},
+	}
+	artifacts := New()
+	for _, a := range data {
+		artifacts.Add(a)
+	}
+
+	require.Len(t, artifacts.Filter(ByExt("deb")).items, 2)
+	require.Len(t, artifacts.Filter(ByExt("rpm")).items, 1)
+	require.Len(t, artifacts.Filter(ByExt("rpm", "deb")).items, 3)
+	require.Len(t, artifacts.Filter(ByExt("foo")).items, 0)
+}
+
+func TestByFormats(t *testing.T) {
+	data := []*Artifact{
+		{
+			Name: "foo",
+			Extra: map[string]interface{}{
+				ExtraFormat: "zip",
+			},
+		},
+		{
+			Name: "bar",
+			Extra: map[string]interface{}{
+				ExtraFormat: "tar.gz",
+			},
+		},
+		{
+			Name: "foobar",
+			Extra: map[string]interface{}{
+				ExtraFormat: "zip",
 			},
 		},
 		{
 			Name: "bin",
 			Extra: map[string]interface{}{
-				"Format": "binary",
+				ExtraFormat: "binary",
 			},
 		},
 	}
-	var artifacts = New()
+	artifacts := New()
 	for _, a := range data {
 		artifacts.Add(a)
 	}
@@ -288,4 +526,399 @@ func TestByFormats(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByFormats("binary")).items, 1)
 	require.Len(t, artifacts.Filter(ByFormats("zip")).items, 2)
 	require.Len(t, artifacts.Filter(ByFormats("zip", "tar.gz")).items, 3)
+}
+
+func TestPaths(t *testing.T) {
+	paths := []string{"a/b", "b/c", "d/e", "f/g"}
+	artifacts := New()
+	for _, a := range paths {
+		artifacts.Add(&Artifact{
+			Path: a,
+		})
+	}
+	require.ElementsMatch(t, paths, artifacts.Paths())
+}
+
+func TestRefresher(t *testing.T) {
+	t.Run("ok", func(t *testing.T) {
+		artifacts := New()
+		path := filepath.Join(t.TempDir(), "f")
+		artifacts.Add(&Artifact{
+			Name: "f",
+			Path: path,
+			Type: Checksum,
+			Extra: map[string]interface{}{
+				"Refresh": func() error {
+					return os.WriteFile(path, []byte("hello"), 0o765)
+				},
+			},
+		})
+		artifacts.Add(&Artifact{
+			Name: "no refresh",
+			Type: Checksum,
+		})
+
+		for _, item := range artifacts.List() {
+			require.NoError(t, item.Refresh())
+		}
+
+		bts, err := os.ReadFile(path)
+		require.NoError(t, err)
+		require.Equal(t, "hello", string(bts))
+	})
+
+	t.Run("nok", func(t *testing.T) {
+		artifacts := New()
+		artifacts.Add(&Artifact{
+			Name: "fail",
+			Type: Checksum,
+			Extra: map[string]interface{}{
+				"ID": "nok",
+				"Refresh": func() error {
+					return fmt.Errorf("fake err")
+				},
+			},
+		})
+
+		for _, item := range artifacts.List() {
+			require.EqualError(t, item.Refresh(), `failed to refresh "fail": fake err`)
+		}
+	})
+
+	t.Run("not a checksum", func(t *testing.T) {
+		artifacts := New()
+		artifacts.Add(&Artifact{
+			Name: "will be ignored",
+			Type: Binary,
+			Extra: map[string]interface{}{
+				"ID": "ignored",
+				"Refresh": func() error {
+					return fmt.Errorf("err that should not happen")
+				},
+			},
+		})
+
+		for _, item := range artifacts.List() {
+			require.NoError(t, item.Refresh())
+		}
+	})
+}
+
+func TestVisit(t *testing.T) {
+	artifacts := New()
+	artifacts.Add(&Artifact{
+		Name: "foo",
+		Type: Checksum,
+	})
+	artifacts.Add(&Artifact{
+		Name: "foo",
+		Type: Binary,
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		require.NoError(t, artifacts.Visit(func(a *Artifact) error {
+			require.Equal(t, "foo", a.Name)
+			return nil
+		}))
+	})
+
+	t.Run("nok", func(t *testing.T) {
+		require.EqualError(t, artifacts.Visit(func(a *Artifact) error {
+			return fmt.Errorf("fake err")
+		}), `fake err`)
+	})
+}
+
+func TestMarshalJSON(t *testing.T) {
+	artifacts := New()
+	artifacts.Add(&Artifact{
+		Name: "foo",
+		Type: Binary,
+		Extra: map[string]interface{}{
+			ExtraID: "adsad",
+		},
+	})
+	artifacts.Add(&Artifact{
+		Name: "foo",
+		Type: UploadableArchive,
+		Extra: map[string]interface{}{
+			ExtraID: "adsad",
+		},
+	})
+	artifacts.Add(&Artifact{
+		Name: "foo",
+		Type: Checksum,
+		Extra: map[string]interface{}{
+			ExtraRefresh: func() error { return nil },
+		},
+	})
+	bts, err := json.Marshal(artifacts.List())
+	require.NoError(t, err)
+	golden.RequireEqualJSON(t, bts)
+}
+
+func Test_ByBinaryLikeArtifacts(t *testing.T) {
+	tests := []struct {
+		name     string
+		initial  []*Artifact
+		expected []*Artifact
+	}{
+		{
+			name: "keep all unique paths",
+			initial: []*Artifact{
+				{
+					Path: "binary-path",
+					Type: Binary,
+				},
+				{
+					Path: "uploadable-binary-path",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "universal-binary-path",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "binary-path",
+					Type: Binary,
+				},
+				{
+					Path: "uploadable-binary-path",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "universal-binary-path",
+					Type: UniversalBinary,
+				},
+			},
+		},
+		{
+			name: "duplicate path between binaries ignored (odd configuration)",
+			initial: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "uploadable-binary-path",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "uploadable-binary-path",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+		},
+		{
+			name: "remove duplicate binary",
+			initial: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "universal-binary-path",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "universal-binary-path",
+					Type: UniversalBinary,
+				},
+			},
+		},
+		{
+			name: "remove duplicate universal binary",
+			initial: []*Artifact{
+				{
+					Path: "binary-path",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "binary-path",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+			},
+		},
+		{
+			name: "remove multiple duplicates",
+			initial: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+			},
+		},
+		{
+			name: "keep duplicate uploadable binaries (odd configuration)",
+			initial: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UploadableBinary,
+				},
+			},
+		},
+		{
+			name: "keeps duplicates when there is no uploadable binary",
+			initial: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+			expected: []*Artifact{
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: Binary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+				{
+					Path: "!!!duplicate!!!",
+					Type: UniversalBinary,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			arts := New()
+			for _, a := range tt.initial {
+				arts.Add(a)
+			}
+			actual := arts.Filter(ByBinaryLikeArtifacts(arts)).List()
+			expected := New()
+			for _, a := range tt.expected {
+				expected.Add(a)
+			}
+			assert.Equal(t, expected.List(), actual)
+
+			if t.Failed() {
+				t.Log("expected:")
+				for _, a := range tt.expected {
+					t.Logf("   %s: %s", a.Type.String(), a.Path)
+				}
+
+				t.Log("got:")
+				for _, a := range actual {
+					t.Logf("   %s: %s", a.Type.String(), a.Path)
+				}
+			}
+		})
+	}
+}
+
+func TestArtifactStringer(t *testing.T) {
+	require.Equal(t, "foobar", Artifact{
+		Name: "foobar",
+	}.String())
 }

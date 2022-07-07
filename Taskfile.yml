@@ -1,0 +1,224 @@
+# https://taskfile.dev
+
+version: '3'
+
+env:
+  GO111MODULE: on
+  GOPROXY: https://proxy.golang.org,direct
+
+vars:
+  DOCKER: '{{default "docker" .DOCKER}}'
+
+tasks:
+  dev:
+    desc: Setup git hooks
+    cmds:
+      - cp -f scripts/pre-commit.sh .git/hooks/pre-commit
+
+  setup:
+    desc: Install dependencies
+    cmds:
+      - go mod tidy
+
+  build:
+    desc: Build the binary
+    sources:
+      - ./**/*.go
+    generates:
+      - ./goreleaser
+    cmds:
+      - go build
+
+  test:
+    desc: Run tests
+    env:
+      LC_ALL: C
+    vars:
+      TEST_OPTIONS: '{{default "" .TEST_OPTIONS}}'
+      SOURCE_FILES: '{{default "./..." .SOURCE_FILES}}'
+      TEST_PATTERN: '{{default "." .TEST_PATTERN}}'
+    cmds:
+      - go test {{.TEST_OPTIONS}} -failfast -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt {{.SOURCE_FILES}} -run {{.TEST_PATTERN}} -timeout=5m
+
+  cover:
+    desc: Open the cover tool
+    cmds:
+      - go tool cover -html=coverage.txt
+
+  fmt:
+    desc: gofumpt all code
+    cmds:
+      - gofumpt -w -l .
+
+  lint:
+    desc: Lint the code with golangci-lint
+    cmds:
+      - golangci-lint run ./...
+
+  ci:
+    desc: Run all CI steps
+    cmds:
+      - task: setup
+      - task: build
+      - task: test
+
+  default:
+    desc: Runs the default tasks
+    cmds:
+      - task: ci
+
+  schema:generate:
+    desc: Generate JSONSchema
+    cmds:
+      - go run . schema -o ./www/docs/static/schema.json
+    sources:
+      - pkg/config/config.go
+    generates:
+      - ./www/docs/static/schema.json
+
+  docs:generate:
+    desc: Generate docs
+    cmds:
+      - cp -rf CONTRIBUTING.md www/docs/contributing.md
+      - cp -rf USERS.md www/docs/users.md
+      - cp -rf EULA.md www/docs/eula.md
+    sources:
+      - CONTRIBUTING.md
+      - USERS.md
+      - EULA.md
+    generates:
+      - www/docs/contributing.md
+      - www/docs/users.md
+      - www/docs/eula.md
+
+  docs:imgs:
+    desc: Download and resize images
+    cmds:
+      - wget -O www/docs/static/logo.png https://raw.githubusercontent.com/goreleaser/artwork/master/goreleaserfundo.png
+      - wget -O www/docs/static/card.png https://raw.githubusercontent.com/goreleaser/artwork/master/twitter-card.png
+      - wget -O www/docs/static/avatar.png https://github.com/goreleaser.png
+      - convert www/docs/static/avatar.png -define icon:auto-resize=64,48,32,16 www/docs/static/favicon.ico
+      - convert www/docs/static/avatar.png -resize x120 www/docs/static/apple-touch-icon.png
+
+  docs:serve:
+    desc: Start documentation server
+    cmds:
+      - task: docs:generate
+      - '{{.DOCKER}} run --rm -p 8000:8000 -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material'
+
+  docs:build:
+    desc: Build docs
+    cmds:
+      - task: docs:generate
+      - '{{.DOCKER}} run --rm -v ${PWD}/www:/docs docker.io/squidfunk/mkdocs-material build'
+
+  docs:vercel:build:
+    desc: Build documentation for deploying to Vercel
+    cmds:
+      - scripts/vercel/install.sh
+      - scripts/vercel/build.sh
+
+  release:
+    desc: Create a new tag
+    vars:
+      NEXT:
+        sh: svu n
+    cmds:
+      - git tag {{.NEXT}}
+      - echo {{.NEXT}}
+      - git push origin --tags
+
+  goreleaser:test:pkg:
+    desc: Test a package
+    cmds:
+      - docker run --platform linux/{{.Platform}} --rm --workdir /tmp -v $PWD/dist:/tmp {{.Image}} sh -c '{{.Cmd}} && goreleaser --version'
+
+  goreleaser:test:rpm:
+    desc: Tests rpm packages
+    vars:
+      rpm: 'rpm --nodeps -ivh'
+    cmds:
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: '386'
+          Image: centos:centos7
+          Cmd: '{{.rpm}} goreleaser-*.i386.rpm'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'amd64'
+          Image: fedora
+          Cmd: '{{.rpm}} goreleaser-*.x86_64.rpm'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm64'
+          Image: fedora
+          Cmd: '{{.rpm}} goreleaser-*.aarch64.rpm'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm/7'
+          Image: fedora
+          Cmd: '{{.rpm}} goreleaser-*.armv7hl.rpm'
+
+  goreleaser:test:deb:
+    desc: Tests deb packages
+    vars:
+      dpkg: 'dpkg --ignore-depends=git -i'
+    cmds:
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'amd64'
+          Image: ubuntu
+          Cmd: '{{.dpkg}} goreleaser*_amd64.deb'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm64'
+          Image: ubuntu
+          Cmd: '{{.dpkg}} goreleaser*_arm64.deb'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm/7'
+          Image: ubuntu
+          Cmd: '{{.dpkg}} goreleaser*_armhf.deb'
+
+  goreleaser:test:apk:
+    desc: Tests apk packages
+    vars:
+      apk: 'apk add --allow-untrusted -U'
+    cmds:
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: '386'
+          Image: alpine
+          Cmd: '{{.apk}} goreleaser*_x86.apk'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'amd64'
+          Image: alpine
+          Cmd: '{{.apk}} goreleaser*_x86_64.apk'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm64'
+          Image: alpine
+          Cmd: '{{.apk}} goreleaser*_aarch64.apk'
+      - task: goreleaser:test:pkg
+        vars:
+          Platform: 'arm/7'
+          Image: alpine
+          Cmd: '{{.apk}} goreleaser*_armv7.apk'
+
+  goreleaser:test:
+    desc: Test built linux packages
+    cmds:
+      - task: goreleaser:test:apk
+      - task: goreleaser:test:deb
+      - task: goreleaser:test:rpm
+
+  goreleaser:
+    desc: Run GoReleaser either in snapshot or release mode
+    deps:
+      - build
+    vars:
+      SNAPSHOT:
+        sh: 'if [[ $GITHUB_REF != refs/tags/v* ]]; then echo "--snapshot"; fi'
+    cmds:
+      - ./goreleaser release --rm-dist {{.SNAPSHOT}}

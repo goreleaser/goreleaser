@@ -1,0 +1,34 @@
+{
+    "version": "1.0.1",
+    "architecture": {
+        "32bit": {
+            "url": "https://github.com/test/test/releases/download/v1.0.1/foo_1.0.1_windows_386.tar.gz",
+            "bin": [
+                "foo.exe",
+                "bar.exe"
+            ],
+            "hash": "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269"
+        },
+        "64bit": {
+            "url": "https://github.com/test/test/releases/download/v1.0.1/foo_1.0.1_windows_amd64.tar.gz",
+            "bin": [
+                "foo.exe",
+                "bar.exe"
+            ],
+            "hash": "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269"
+        }
+    },
+    "homepage": "https://github.com/goreleaser",
+    "description": "A run pipe test formula",
+    "persist": [
+        "data",
+        "config",
+        "test.ini"
+    ],
+    "pre_install": [
+        "Write-Host 'Running preinstall command'"
+    ],
+    "post_install": [
+        "Write-Host 'Running postinstall command'"
+    ]
+}

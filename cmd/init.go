@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/apex/log"
-	"github.com/fatih/color"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/static"
 	"github.com/spf13/cobra"
 )
@@ -15,22 +15,32 @@ type initCmd struct {
 }
 
 func newInitCmd() *initCmd {
-	var root = &initCmd{}
-	var cmd = &cobra.Command{
+	root := &initCmd{}
+	cmd := &cobra.Command{
 		Use:           "init",
 		Aliases:       []string{"i"},
-		Short:         "Generates a .goreleaser.yml file",
+		Short:         "Generates a .goreleaser.yaml file",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		Args:          cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f, err := os.OpenFile(root.config, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0644)
+			conf, err := os.OpenFile(root.config, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_EXCL, 0o644)
 			if err != nil {
 				return err
 			}
-			defer f.Close()
+			defer conf.Close()
 
-			log.Infof(color.New(color.Bold).Sprintf("Generating %s file", root.config))
-			if _, err := f.WriteString(static.ExampleConfig); err != nil {
+			log.Infof(boldStyle.Render(fmt.Sprintf("Generating %s file", root.config)))
+			if _, err := conf.WriteString(static.ExampleConfig); err != nil {
+				return err
+			}
+
+			gitignore, err := os.OpenFile(".gitignore", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
+			if err != nil {
+				return err
+			}
+			defer gitignore.Close()
+			if _, err := gitignore.WriteString("\ndist/\n"); err != nil {
 				return err
 			}
 
@@ -39,7 +49,7 @@ func newInitCmd() *initCmd {
 		},
 	}
 
-	cmd.Flags().StringVarP(&root.config, "config", "f", ".goreleaser.yml", "Load configuration from file")
+	cmd.Flags().StringVarP(&root.config, "config", "f", ".goreleaser.yaml", "Load configuration from file")
 
 	root.cmd = cmd
 	return root

@@ -1,6 +1,4 @@
----
-title: Scoop
----
+# Scoop Manifests
 
 After releasing to GitHub or GitLab, GoReleaser can generate and publish a
 _Scoop App Manifest_ into a repository that you have access to.
@@ -9,26 +7,35 @@ The `scoop` section specifies how the manifest should be created. See
 the commented example below:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 scoop:
   # Template for the url which is determined by the given Token (github or gitlab)
   # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-  # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}"
-  # Gitea is not supported yet, but the support coming
+  # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/-/releases/{{ .Tag }}/downloads/{{ .ArtifactName }}"
+  # Default for gitea is "https://gitea.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
   url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
   # Repository to push the app manifest to.
   bucket:
     owner: user
     name: scoop-bucket
+
+    # Optionally a branch can be provided.
+    # Defaults to the default repository branch.
+    branch: main
+
     # Optionally a token can be provided, if it differs from the token provided to GoReleaser
-    token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
+    token: "{{ .Env.SCOOP_TAP_GITHUB_TOKEN }}"
+
+  # Folder inside the repository to put the scoop.
+  # Default is the root folder.
+  folder: Scoops
 
   # Git author used to commit to the repository.
   # Defaults are shown.
   commit_author:
     name: goreleaserbot
-    email: goreleaser@carlosbecker.com
+    email: bot@goreleaser.com
 
   # The project name and current git tag are used in the format string.
   commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
@@ -45,10 +52,30 @@ scoop:
   # Default is empty.
   license: MIT
 
+  # Setting this will prevent goreleaser to actually try to commit the updated
+  # manifest leaving the responsibility of publishing it to the user.
+  # If set to auto, the release will not be uploaded to the scoop bucket
+  # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1
+  # Default is false.
+  skip_upload: true
+
   # Persist data between application updates
   persist:
   - "data"
   - "config.toml"
+
+  # An array of commands to be executed before an application is installed.
+  # Default is empty.
+  pre_install: ["Write-Host 'Running preinstall command'"]
+
+  # An array of commands to be executed after an application is installed.
+  # Default is empty.
+  post_install: ["Write-Host 'Running postinstall command'"]
+
+  # GOAMD64 to specify which amd64 version to use if there are multiple versions
+  # from the build section.
+  # Default is v1.
+  goamd64: v3
 ```
 
 By defining the `scoop` section, GoReleaser will take care of publishing the

@@ -1,14 +1,11 @@
----
-title: Milestone
----
+# Closing Milestones
 
-GoReleaser can close repository milestones after successfully
-publishing all artifacts.
+GoReleaser can close repository milestones after successfully publishing all artifacts.
 
 Let's see what can be customized in the `milestones` section:
 
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 milestones:
   # You can have multiple milestone configs
   -
@@ -22,7 +19,7 @@ milestones:
     # Default is false
     close: true
 
-    # Fail release on errors, such as missing milestone on close
+    # Fail release on errors, such as missing milestone.
     # Default is false
     fail_on_error: true
 
@@ -32,4 +29,4 @@ milestones:
 ```
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).

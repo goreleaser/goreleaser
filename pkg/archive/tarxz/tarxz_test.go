@@ -3,48 +3,79 @@ package tarxz
 import (
 	"archive/tar"
 	"io"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/stretchr/testify/require"
 	"github.com/ulikunitz/xz"
 )
 
 func TestTarXzFile(t *testing.T) {
-	var assert = assert.New(t)
-	tmp, err := ioutil.TempDir("", "")
-	assert.NoError(err)
+	tmp := t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.tar.xz"))
-	assert.NoError(err)
+	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
 	archive := New(f)
+	defer archive.Close() // nolint: errcheck
 
-	assert.Error(archive.Add("nope.txt", "../testdata/nope.txt"))
-	assert.NoError(archive.Add("foo.txt", "../testdata/foo.txt"))
-	assert.NoError(archive.Add("sub1", "../testdata/sub1"))
-	assert.NoError(archive.Add("sub1/bar.txt", "../testdata/sub1/bar.txt"))
-	assert.NoError(archive.Add("sub1/executable", "../testdata/sub1/executable"))
-	assert.NoError(archive.Add("sub1/sub2", "../testdata/sub1/sub2"))
-	assert.NoError(archive.Add("sub1/sub2/subfoo.txt", "../testdata/sub1/sub2/subfoo.txt"))
+	require.Error(t, archive.Add(config.File{
+		Source:      "../testdata/nope.txt",
+		Destination: "nope.txt",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/foo.txt",
+		Destination: "foo.txt",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/sub1",
+		Destination: "sub1",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/sub1/bar.txt",
+		Destination: "sub1/bar.txt",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/sub1/executable",
+		Destination: "sub1/executable",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/sub1/sub2",
+		Destination: "sub1/sub2",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/sub1/sub2/subfoo.txt",
+		Destination: "sub1/sub2/subfoo.txt",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/regular.txt",
+		Destination: "regular.txt",
+	}))
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/link.txt",
+		Destination: "link.txt",
+	}))
 
-	assert.NoError(archive.Close())
-	assert.Error(archive.Add("tar.go", "tar.go"))
-	assert.NoError(f.Close())
+	require.NoError(t, archive.Close())
+	require.Error(t, archive.Add(config.File{
+		Source:      "tar.go",
+		Destination: "tar.go",
+	}))
+	require.NoError(t, f.Close())
 
-	t.Log(f.Name())
 	f, err = os.Open(f.Name())
-	assert.NoError(err)
+	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
 
 	info, err := f.Stat()
-	assert.NoError(err)
-	assert.Truef(info.Size() < 500, "archived file should be smaller than %d", info.Size())
+	require.NoError(t, err)
+	require.Truef(t, info.Size() < 500, "archived file should be smaller than %d", info.Size())
 
 	xzf, err := xz.NewReader(f)
-	assert.NoError(err)
-	//defer xzf.Close() // nolint: errcheck
+	require.NoError(t, err)
 
 	var paths []string
 	r := tar.NewReader(xzf)
@@ -53,20 +84,74 @@ func TestTarXzFile(t *testing.T) {
 		if err == io.EOF {
 			break
 		}
-		assert.NoError(err)
+		require.NoError(t, err)
 		paths = append(paths, next.Name)
-		t.Logf("%s: %v", next.Name, next.FileInfo().Mode())
 		if next.Name == "sub1/executable" {
-			var ex = next.FileInfo().Mode() | 0111
-			assert.Equal(next.FileInfo().Mode().String(), ex.String())
+			ex := next.FileInfo().Mode() | 0o111
+			require.Equal(t, next.FileInfo().Mode().String(), ex.String())
+		}
+		if next.Name == "link.txt" {
+			require.Equal(t, next.Linkname, "regular.txt")
 		}
 	}
-	assert.Equal([]string{
+	require.Equal(t, []string{
 		"foo.txt",
 		"sub1",
 		"sub1/bar.txt",
 		"sub1/executable",
 		"sub1/sub2",
 		"sub1/sub2/subfoo.txt",
+		"regular.txt",
+		"link.txt",
 	}, paths)
+}
+
+func TestTarXzFileInfo(t *testing.T) {
+	now := time.Now().Truncate(time.Second)
+	f, err := os.Create(filepath.Join(t.TempDir(), "test.tar.gz"))
+	require.NoError(t, err)
+	defer f.Close() // nolint: errcheck
+	archive := New(f)
+	defer archive.Close() // nolint: errcheck
+
+	require.NoError(t, archive.Add(config.File{
+		Source:      "../testdata/foo.txt",
+		Destination: "nope.txt",
+		Info: config.FileInfo{
+			Mode:  0o755,
+			Owner: "carlos",
+			Group: "root",
+			MTime: now,
+		},
+	}))
+
+	require.NoError(t, archive.Close())
+	require.NoError(t, f.Close())
+
+	f, err = os.Open(f.Name())
+	require.NoError(t, err)
+	defer f.Close() // nolint: errcheck
+
+	xzf, err := xz.NewReader(f)
+	require.NoError(t, err)
+
+	var found int
+	r := tar.NewReader(xzf)
+	for {
+		next, err := r.Next()
+		if err == io.EOF {
+			break
+		}
+		require.NoError(t, err)
+
+		found++
+		require.Equal(t, "nope.txt", next.Name)
+		require.Equal(t, now, next.ModTime)
+		require.Equal(t, fs.FileMode(0o755), next.FileInfo().Mode())
+		require.Equal(t, "carlos", next.Uname)
+		require.Equal(t, 0, next.Uid)
+		require.Equal(t, "root", next.Gname)
+		require.Equal(t, 0, next.Gid)
+	}
+	require.Equal(t, 1, found)
 }

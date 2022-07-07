@@ -1,20 +1,30 @@
+// Package exec can execute commands on the OS.
 package exec
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"os"
 	"os/exec"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/go-shellwords"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/extrafiles"
+	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/mattn/go-shellwords"
 )
 
+// Environment variables to pass through to exec
+var passthroughEnvVars = []string{"HOME", "USER", "USERPROFILE", "TMPDIR", "TMP", "TEMP", "PATH"}
+
+// Execute the given publisher
 func Execute(ctx *context.Context, publishers []config.Publisher) error {
 	if ctx.SkipPublish {
 		return pipe.ErrSkipPublishEnabled
@@ -34,9 +44,23 @@ func Execute(ctx *context.Context, publishers []config.Publisher) error {
 func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 	log.Debugf("filtering %d artifacts", len(ctx.Artifacts.List()))
 	artifacts := filterArtifacts(ctx.Artifacts, publisher)
+
+	extraFiles, err := extrafiles.Find(ctx, publisher.ExtraFiles)
+	if err != nil {
+		return err
+	}
+
+	for name, path := range extraFiles {
+		artifacts = append(artifacts, &artifact.Artifact{
+			Name: name,
+			Path: path,
+			Type: artifact.UploadableFile,
+		})
+	}
+
 	log.Debugf("will execute custom publisher with %d artifacts", len(artifacts))
 
-	var g = semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range artifacts {
 		artifact := artifact
 		g.Go(func() error {
@@ -45,36 +69,48 @@ func executePublisher(ctx *context.Context, publisher config.Publisher) error {
 				return err
 			}
 
-			return executeCommand(c)
+			return executeCommand(c, artifact)
 		})
 	}
 
 	return g.Wait()
 }
 
-func executeCommand(c *command) error {
+func executeCommand(c *command, artifact *artifact.Artifact) error {
 	log.WithField("args", c.Args).
 		WithField("env", c.Env).
+		WithField("artifact", artifact.Name).
 		Debug("executing command")
 
 	// nolint: gosec
-	var cmd = exec.CommandContext(c.Ctx, c.Args[0], c.Args[1:]...)
-	cmd.Env = c.Env
+	cmd := exec.CommandContext(c.Ctx, c.Args[0], c.Args[1:]...)
+	cmd.Env = []string{}
+	for _, key := range passthroughEnvVars {
+		if value := os.Getenv(key); value != "" {
+			cmd.Env = append(cmd.Env, key+"="+value)
+		}
+	}
+	cmd.Env = append(cmd.Env, c.Env...)
+
 	if c.Dir != "" {
 		cmd.Dir = c.Dir
 	}
 
-	entry := log.WithField("cmd", c.Args[0])
-	cmd.Stderr = logext.NewErrWriter(entry)
-	cmd.Stdout = logext.NewWriter(entry)
+	fields := log.Fields{
+		"cmd":      c.Args[0],
+		"artifact": artifact.Name,
+	}
+	var b bytes.Buffer
+	w := gio.Safe(&b)
+	cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
+	cmd.Stdout = io.MultiWriter(logext.NewWriter(fields, logext.Info), w)
 
-	log.WithField("cmd", cmd.Args).Info("publishing")
+	log.WithFields(fields).Info("publishing")
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("publishing: %s failed: %w",
-			c.Args[0], err)
+		return fmt.Errorf("publishing: %s failed: %w: %s", c.Args[0], err, b.String())
 	}
 
-	log.Debugf("command %s finished successfully", c.Args[0])
+	log.WithFields(fields).Debugf("command %s finished successfully", c.Args[0])
 	return nil
 }
 
@@ -84,6 +120,8 @@ func filterArtifacts(artifacts artifact.Artifacts, publisher config.Publisher) [
 		artifact.ByType(artifact.UploadableFile),
 		artifact.ByType(artifact.LinuxPackage),
 		artifact.ByType(artifact.UploadableBinary),
+		artifact.ByType(artifact.DockerImage),
+		artifact.ByType(artifact.DockerManifest),
 	}
 
 	if publisher.Checksum {
@@ -91,10 +129,10 @@ func filterArtifacts(artifacts artifact.Artifacts, publisher config.Publisher) [
 	}
 
 	if publisher.Signature {
-		filters = append(filters, artifact.ByType(artifact.Signature))
+		filters = append(filters, artifact.ByType(artifact.Signature), artifact.ByType(artifact.Certificate))
 	}
 
-	var filter = artifact.Or(filters...)
+	filter := artifact.Or(filters...)
 
 	if len(publisher.IDs) > 0 {
 		filter = artifact.And(filter, artifact.ByIDs(publisher.IDs...))

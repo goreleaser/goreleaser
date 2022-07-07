@@ -21,4 +21,4 @@ if [ -n "$GITHUB_TOKEN" ]; then
 fi
 
 # shellcheck disable=SC2068
-goreleaser $@
+exec goreleaser $@

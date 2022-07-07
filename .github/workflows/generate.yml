@@ -1,0 +1,37 @@
+name: generate
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - '.github/workflows/generate.yml'
+      - pkg/config/config.go
+      - CONTRIBUTING.md
+      - USERS.md
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    permissions:
+      contents: write  # for stefanzweifel/git-auto-commit-action to push code in repo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
+        with:
+          token: ${{ secrets.GH_PAT }}
+      - uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923 # v3
+        with:
+          go-version: 1.18
+      - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
+      - run: task docs:generate
+      - run: task schema:generate
+      - uses: stefanzweifel/git-auto-commit-action@49620cd3ed21ee620a48530e81dba0d139c9cb80 # v4
+        with:
+          commit_message: "chore: docs auto-update"
+          branch: main
+          commit_user_name: actions-user
+          commit_user_email: actions@github.com
+          commit_author: actions-user <actions@github.com>

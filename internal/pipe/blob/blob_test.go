@@ -1,17 +1,11 @@
 package blob
 
 import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
+	"fmt"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,49 +13,59 @@ func TestDescription(t *testing.T) {
 	require.NotEmpty(t, Pipe{}.String())
 }
 
-func TestNoBlob(t *testing.T) {
-	testlib.AssertSkipped(t, Pipe{}.Publish(context.New(config.Project{})))
+func TestErrors(t *testing.T) {
+	for k, v := range map[string]string{
+		"NoSuchBucket":                 "provided bucket does not exist: someurl: NoSuchBucket",
+		"ContainerNotFound":            "provided bucket does not exist: someurl: ContainerNotFound",
+		"notFound":                     "provided bucket does not exist: someurl: notFound",
+		"NoCredentialProviders":        "check credentials and access to bucket: someurl: NoCredentialProviders",
+		"InvalidAccessKeyId":           "aws access key id you provided does not exist in our records: InvalidAccessKeyId",
+		"AuthenticationFailed":         "azure storage key you provided is not valid: AuthenticationFailed",
+		"invalid_grant":                "google app credentials you provided is not valid: invalid_grant",
+		"no such host":                 "azure storage account you provided is not valid: no such host",
+		"ServiceCode=ResourceNotFound": "missing azure storage key for provided bucket someurl: ServiceCode=ResourceNotFound",
+		"other":                        "failed to write to bucket: other",
+	} {
+		t.Run(k, func(t *testing.T) {
+			require.EqualError(t, handleError(fmt.Errorf(k), "someurl"), v)
+		})
+	}
 }
 
 func TestDefaultsNoConfig(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	var assert = assert.New(t)
-	var ctx = context.New(config.Project{
-		Blobs: []config.Blob{
-			{},
-		},
+	ctx := context.New(config.Project{
+		Blobs: []config.Blob{{}},
 	})
-	assert.EqualError(Pipe{}.Default(ctx), errorString)
+	require.EqualError(t, Pipe{}.Default(ctx), errorString)
 }
 
 func TestDefaultsNoBucket(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	var assert = assert.New(t)
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Blobs: []config.Blob{
 			{
 				Provider: "azblob",
 			},
 		},
 	})
-	assert.EqualError(Pipe{}.Default(ctx), errorString)
+	require.EqualError(t, Pipe{}.Default(ctx), errorString)
 }
 
 func TestDefaultsNoProvider(t *testing.T) {
 	errorString := "bucket or provider cannot be empty"
-	var assert = assert.New(t)
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Blobs: []config.Blob{
 			{
 				Bucket: "goreleaser-bucket",
 			},
 		},
 	})
-	assert.EqualError(Pipe{}.Default(ctx), errorString)
+	require.EqualError(t, Pipe{}.Default(ctx), errorString)
 }
 
 func TestDefaults(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Blobs: []config.Blob{
 			{
 				Bucket:   "foo",
@@ -91,8 +95,7 @@ func TestDefaults(t *testing.T) {
 }
 
 func TestDefaultsWithProvider(t *testing.T) {
-	var assert = assert.New(t)
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Blobs: []config.Blob{
 			{
 				Bucket:   "foo",
@@ -108,151 +111,7 @@ func TestDefaultsWithProvider(t *testing.T) {
 			},
 		},
 	})
-	assert.Nil(Pipe{}.Default(ctx))
-}
-
-func TestPipe_Publish(t *testing.T) {
-	pipePublish(t, []config.ExtraFile{})
-}
-
-func TestPipe_PublishExtraFiles(t *testing.T) {
-	var extra = []config.ExtraFile{
-		{
-			Glob: "./testdata/file.golden",
-		},
-	}
-	pipePublish(t, extra)
-}
-
-func pipePublish(t *testing.T, extra []config.ExtraFile) {
-	gcloudCredentials, _ := filepath.Abs("./testdata/credentials.json")
-
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	assert.NoError(t, err)
-	tgzpath := filepath.Join(folder, "bin.tar.gz")
-	debpath := filepath.Join(folder, "bin.deb")
-	assert.NoError(t, ioutil.WriteFile(tgzpath, []byte("fake\ntargz"), 0744))
-	assert.NoError(t, ioutil.WriteFile(debpath, []byte("fake\ndeb"), 0744))
-
-	// Azure Blob Context
-	var azblobctx = context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "testupload",
-		Blobs: []config.Blob{
-			{
-				Bucket:     "foo",
-				Provider:   "azblob",
-				ExtraFiles: extra,
-			},
-		},
-	})
-
-	azblobctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	azblobctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.UploadableArchive,
-		Name: "bin.tar.gz",
-		Path: tgzpath,
-	})
-	azblobctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.LinuxPackage,
-		Name: "bin.deb",
-		Path: debpath,
-	})
-
-	// Google Cloud Storage Context
-	var gsctx = context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "testupload",
-		Blobs: []config.Blob{
-			{
-				Bucket:     "foo",
-				Provider:   "gs",
-				ExtraFiles: extra,
-			},
-		},
-	})
-
-	gsctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-
-	gsctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.UploadableArchive,
-		Name: "bin.tar.gz",
-		Path: tgzpath,
-	})
-	gsctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.LinuxPackage,
-		Name: "bin.deb",
-		Path: debpath,
-	})
-
-	// AWS S3 Context
-	var s3ctx = context.New(config.Project{
-		Dist:        folder,
-		ProjectName: "testupload",
-		Blobs: []config.Blob{
-			{
-				Bucket:     "foo",
-				Provider:   "s3",
-				ExtraFiles: extra,
-			},
-		},
-	})
-	s3ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	s3ctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.UploadableArchive,
-		Name: "bin.tar.gz",
-		Path: tgzpath,
-	})
-	s3ctx.Artifacts.Add(&artifact.Artifact{
-		Type: artifact.LinuxPackage,
-		Name: "bin.deb",
-		Path: debpath,
-	})
-
-	type args struct {
-		ctx *context.Context
-	}
-	tests := []struct {
-		name          string
-		args          args
-		env           map[string]string
-		wantErr       bool
-		wantErrString string
-	}{
-		{
-			name:          "Azure Blob Bucket Test Publish",
-			args:          args{azblobctx},
-			env:           map[string]string{"AZURE_STORAGE_ACCOUNT": "hjsdhjsdhs", "AZURE_STORAGE_KEY": "eHCSajxLvl94l36gIMlzZ/oW2O0rYYK+cVn5jNT2"},
-			wantErr:       false,
-			wantErrString: "azure storage account you provided is not valid",
-		},
-		{
-			name:          "Google Cloud Storage Bucket Test Publish",
-			args:          args{gsctx},
-			env:           map[string]string{"GOOGLE_APPLICATION_CREDENTIALS": gcloudCredentials},
-			wantErr:       false,
-			wantErrString: "google app credentials you provided is not valid",
-		},
-		{
-			name:          "AWS S3 Bucket Test Publish",
-			args:          args{s3ctx},
-			env:           map[string]string{"AWS_ACCESS_KEY": "WPXKJC7CZQCFPKY5727N", "AWS_SECRET_KEY": "eHCSajxLvl94l36gIMlzZ/oW2O0rYYK+cVn5jNT2", "AWS_REGION": "us-east-1"},
-			wantErr:       false,
-			wantErrString: "aws access key id you provided does not exist in our records",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			p := Pipe{}
-			setEnv(tt.env)
-			defer unsetEnv(tt.env)
-			if err := p.Publish(tt.args.ctx); (err != nil) != tt.wantErr {
-				if !strings.HasPrefix(err.Error(), tt.wantErrString) {
-					t.Errorf("Pipe.Publish() error = %v, wantErr %v", err, tt.wantErrString)
-				}
-			}
-		})
-	}
+	require.Nil(t, Pipe{}.Default(ctx))
 }
 
 func TestURL(t *testing.T) {
@@ -312,14 +171,15 @@ func TestURL(t *testing.T) {
 	})
 }
 
-func setEnv(env map[string]string) {
-	for k, v := range env {
-		os.Setenv(k, v)
-	}
-}
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
 
-func unsetEnv(env map[string]string) {
-	for k := range env {
-		os.Unsetenv(k)
-	}
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Blobs: []config.Blob{{}},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }

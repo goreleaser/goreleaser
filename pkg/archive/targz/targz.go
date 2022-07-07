@@ -3,16 +3,28 @@
 package targz
 
 import (
-	"archive/tar"
 	"compress/gzip"
 	"io"
-	"os"
+
+	"github.com/goreleaser/goreleaser/pkg/archive/tar"
+	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
 // Archive as tar.gz.
 type Archive struct {
 	gw *gzip.Writer
-	tw *tar.Writer
+	tw *tar.Archive
+}
+
+// New tar.gz archive.
+func New(target io.Writer) Archive {
+	// the error will be nil since the compression level is valid
+	gw, _ := gzip.NewWriterLevel(target, gzip.BestCompression)
+	tw := tar.New(gw)
+	return Archive{
+		gw: gw,
+		tw: &tw,
+	}
 }
 
 // Close all closeables.
@@ -23,39 +35,7 @@ func (a Archive) Close() error {
 	return a.gw.Close()
 }
 
-// New tar.gz archive.
-func New(target io.Writer) Archive {
-	// the error will be nil since the compression level is valid
-	gw, _ := gzip.NewWriterLevel(target, gzip.BestCompression)
-	tw := tar.NewWriter(gw)
-	return Archive{
-		gw: gw,
-		tw: tw,
-	}
-}
-
 // Add file to the archive.
-func (a Archive) Add(name, path string) error {
-	file, err := os.Open(path) // #nosec
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	info, err := file.Stat()
-	if err != nil {
-		return err
-	}
-	header, err := tar.FileInfoHeader(info, name)
-	if err != nil {
-		return err
-	}
-	header.Name = name
-	if err = a.tw.WriteHeader(header); err != nil {
-		return err
-	}
-	if info.IsDir() {
-		return nil
-	}
-	_, err = io.Copy(a.tw, file)
-	return err
+func (a Archive) Add(f config.File) error {
+	return a.tw.Add(f)
 }

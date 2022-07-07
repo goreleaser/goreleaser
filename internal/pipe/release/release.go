@@ -6,13 +6,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/git"
-	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -23,9 +23,8 @@ var ErrMultipleReleases = errors.New("multiple releases are defined. Only one is
 // Pipe for github release.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "github/gitlab/gitea releases"
-}
+func (Pipe) String() string                 { return "scm releases" }
+func (Pipe) Skip(ctx *context.Context) bool { return ctx.Config.Release.Disable }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
@@ -47,41 +46,20 @@ func (Pipe) Default(ctx *context.Context) error {
 		ctx.Config.Release.NameTemplate = "{{.Tag}}"
 	}
 
-	// nolint: exhaustive
 	switch ctx.TokenType {
 	case context.TokenTypeGitLab:
-		{
-			if ctx.Config.Release.GitLab.Name == "" {
-				repo, err := git.ExtractRepoFromConfig()
-				if err != nil {
-					return err
-				}
-				ctx.Config.Release.GitLab = repo
-			}
-
-			return nil
-		}
-	case context.TokenTypeGitea:
-		{
-			if ctx.Config.Release.Gitea.Name == "" {
-				repo, err := git.ExtractRepoFromConfig()
-				if err != nil {
-					return err
-				}
-				ctx.Config.Release.Gitea = repo
-			}
-
-			return nil
-		}
-	}
-
-	// We keep github as default for now
-	if ctx.Config.Release.GitHub.Name == "" {
-		repo, err := git.ExtractRepoFromConfig()
-		if err != nil && !ctx.Snapshot {
+		if err := setupGitLab(ctx); err != nil {
 			return err
 		}
-		ctx.Config.Release.GitHub = repo
+	case context.TokenTypeGitea:
+		if err := setupGitea(ctx); err != nil {
+			return err
+		}
+	default:
+		// We keep github as default for now
+		if err := setupGitHub(ctx); err != nil {
+			return err
+		}
 	}
 
 	// Check if we have to check the git tag for an indicator to mark as pre release
@@ -99,11 +77,19 @@ func (Pipe) Default(ctx *context.Context) error {
 	return nil
 }
 
+func getRepository(ctx *context.Context) (config.Repo, error) {
+	repo, err := git.ExtractRepoFromConfig(ctx)
+	if err != nil {
+		return config.Repo{}, err
+	}
+	if err := repo.CheckSCM(); err != nil {
+		return config.Repo{}, err
+	}
+	return repo, nil
+}
+
 // Publish the release.
 func (Pipe) Publish(ctx *context.Context) error {
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
 	c, err := client.New(ctx)
 	if err != nil {
 		return err
@@ -112,9 +98,6 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func doPublish(ctx *context.Context, client client.Client) error {
-	if ctx.Config.Release.Disable {
-		return pipe.Skip("release pipe is disabled")
-	}
 	log.WithField("tag", ctx.Git.CurrentTag).
 		WithField("repo", ctx.Config.Release.GitHub.String()).
 		Info("creating or updating release")
@@ -127,7 +110,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		return err
 	}
 
-	extraFiles, err := extrafiles.Find(ctx.Config.Release.ExtraFiles)
+	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Release.ExtraFiles)
 	if err != nil {
 		return err
 	}
@@ -143,13 +126,15 @@ func doPublish(ctx *context.Context, client client.Client) error {
 		})
 	}
 
-	var filters = artifact.Or(
+	filters := artifact.Or(
 		artifact.ByType(artifact.UploadableArchive),
 		artifact.ByType(artifact.UploadableBinary),
 		artifact.ByType(artifact.UploadableSourceArchive),
 		artifact.ByType(artifact.Checksum),
 		artifact.ByType(artifact.Signature),
+		artifact.ByType(artifact.Certificate),
 		artifact.ByType(artifact.LinuxPackage),
+		artifact.ByType(artifact.SBOM),
 	)
 
 	if len(ctx.Config.Release.IDs) > 0 {
@@ -158,7 +143,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 
 	filters = artifact.Or(filters, artifact.ByType(artifact.UploadableFile))
 
-	var g = semerrgroup.New(ctx.Parallelism)
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, artifact := range ctx.Artifacts.Filter(filters).List() {
 		artifact := artifact
 		g.Go(func() error {
@@ -189,19 +174,16 @@ func upload(ctx *context.Context, cli client.Client, releaseID string, artifact 
 	}
 
 	var err error
-loop:
 	for try < 10 {
 		err = tryUpload()
 		if err == nil {
 			return nil
 		}
-		switch err.(type) {
-		case client.RetriableError:
+		if errors.As(err, &client.RetriableError{}) {
 			time.Sleep(time.Duration(try*50) * time.Millisecond)
 			continue
-		default:
-			break loop
 		}
+		break
 	}
 
 	return fmt.Errorf("failed to upload %s after %d tries: %w", artifact.Name, try, err)

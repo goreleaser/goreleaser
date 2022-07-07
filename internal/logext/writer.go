@@ -1,33 +1,83 @@
 package logext
 
-import "github.com/apex/log"
+import (
+	"bytes"
+	"io"
+	"os"
+	"strings"
 
-// Writer writes with log.Info.
-type Writer struct {
-	ctx *log.Entry
-}
+	"github.com/caarlos0/log"
+)
+
+// Output type of the log output.
+type Output int
+
+const (
+	// Info usually is used with stdout.
+	Info Output = iota
+
+	// Error usually is used with stderr.
+	Error
+)
 
 // NewWriter creates a new log writer.
-func NewWriter(ctx *log.Entry) Writer {
-	return Writer{ctx: ctx}
+func NewWriter(fields log.Fields, out Output) io.Writer {
+	return NewConditionalWriter(fields, out, false)
 }
 
-func (t Writer) Write(p []byte) (n int, err error) {
-	t.ctx.Info(string(p))
+// NewConditionalWriter creates a new log writer that only writes when the given condition is met or debug is enabled.
+func NewConditionalWriter(fields log.Fields, out Output, condition bool) io.Writer {
+	if condition || isDebug() {
+		return logWriter{
+			ctx: newLogger(fields),
+			out: out,
+		}
+	}
+	return io.Discard
+}
+
+type logWriter struct {
+	ctx *log.Entry
+	out Output
+}
+
+func (w logWriter) Write(p []byte) (int, error) {
+	for _, line := range strings.Split(toString(p), "\n") {
+		switch w.out {
+		case Info:
+			w.ctx.Info(line)
+		case Error:
+			w.ctx.Warn(line)
+		}
+	}
 	return len(p), nil
 }
 
-// Writer writes with log.Error.
-type ErrorWriter struct {
-	ctx *log.Entry
+func newLogger(fields log.Fields) *log.Entry {
+	handler := log.New(currentWriter())
+	handler.IncreasePadding()
+	return handler.WithFields(fields)
 }
 
-// NewWriter creates a new log writer.
-func NewErrWriter(ctx *log.Entry) ErrorWriter {
-	return ErrorWriter{ctx: ctx}
+func currentWriter() io.Writer {
+	logger, ok := log.Log.(*log.Logger)
+	if !ok {
+		return os.Stderr
+	}
+	return logger.Writer
 }
 
-func (w ErrorWriter) Write(p []byte) (n int, err error) {
-	w.ctx.Error(string(p))
-	return len(p), nil
+func isDebug() bool {
+	return logLevel() == log.DebugLevel
+}
+
+func logLevel() log.Level {
+	if logger, ok := log.Log.(*log.Logger); ok {
+		return logger.Level
+	}
+	return log.InfoLevel
+}
+
+func toString(b []byte) string {
+	return string(bytes.TrimSuffix(b, []byte("\n")))
 }

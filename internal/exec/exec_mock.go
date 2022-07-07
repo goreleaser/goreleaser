@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"sort"
 	"strings"
 )
 
@@ -36,6 +37,8 @@ func (m *MockData) UnmarshalJSON(b []byte) error {
 	return json.Unmarshal(b, (*t)(m))
 }
 
+// MarshalMockEnv mocks marshal.
+//
 // nolint: interfacer
 func MarshalMockEnv(data *MockData) string {
 	b, err := data.MarshalJSON()
@@ -78,6 +81,11 @@ func ExecuteMockData(jsonData string) int {
 		if item.ExpectedEnv == nil {
 			item.ExpectedEnv = []string{}
 		}
+
+		sort.Strings(givenEnv)
+		sort.Strings(item.ExpectedEnv)
+		sort.Strings(givenArgs)
+		sort.Strings(item.ExpectedArgs)
 
 		if reflect.DeepEqual(item.ExpectedArgs, givenArgs) &&
 			reflect.DeepEqual(item.ExpectedEnv, givenEnv) {

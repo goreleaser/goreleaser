@@ -1,2 +1,2 @@
-FROM scratch
+FROM alpine
 ADD mybin /

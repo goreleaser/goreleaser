@@ -1,6 +1,6 @@
 # Semaphore
 
-In [Sempahore 2.0](https://semaphoreci.com) each project starts with the
+In [Semaphore 2.0](https://semaphoreci.com) each project starts with the
 default pipeline specified in `.semaphore/semaphore.yml`.
 
 ```yaml
@@ -33,14 +33,14 @@ blocks:
 # which may be automatic or manual and optionally depend on conditions.
 promotions:
     - name: Release
-       pipeline_file: goreleaser.yml
+       pipeline_file: goreleaser.yaml
        auto_promote_on:
          - result: passed
            branch:
              - "^refs/tags/v*"
 ```
 
-Pipeline file in `.semaphore/goreleaser.yml`:
+Pipeline file in `.semaphore/goreleaser.yaml`:
 
 ```yaml
 version: "v1.0"
@@ -63,7 +63,7 @@ blocks:
       jobs:
       - name: goreleaser
         commands:
-          - curl -sL https://git.io/goreleaser | bash
+          - curl -sfL https://goreleaser.com/static/run | bash
 ```
 
 The following YAML file, `createSecret.yml` creates a new secret item that is
@@ -77,9 +77,8 @@ metadata:
 data:
   env_vars:
     - name: GITHUB_TOKEN
-      value: "4afk4388304hfhei34950dg43245"
+      value: "your token here"
 ```
 
 Check [Managing Secrets](https://docs.semaphoreci.com/article/51-secrets-yaml-reference)
 for more detailed documentation.
-

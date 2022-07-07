@@ -1,23 +1,25 @@
 package git_test
 
 import (
+	"context"
 	"os"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/testlib"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGit(t *testing.T) {
-	out, err := git.Run("status")
-	assert.NoError(t, err)
-	assert.NotEmpty(t, out)
+	ctx := context.Background()
+	out, err := git.Run(ctx, "status")
+	require.NoError(t, err)
+	require.NotEmpty(t, out)
 
-	out, err = git.Run("command-that-dont-exist")
-	assert.Error(t, err)
-	assert.Empty(t, out)
-	assert.Equal(
+	out, err = git.Run(ctx, "command-that-dont-exist")
+	require.Error(t, err)
+	require.Empty(t, out)
+	require.Equal(
 		t,
 		"git: 'command-that-dont-exist' is not a git command. See 'git --help'.\n",
 		err.Error(),
@@ -25,8 +27,8 @@ func TestGit(t *testing.T) {
 }
 
 func TestGitWarning(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	ctx := context.Background()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "foo")
 	testlib.GitBranch(t, "tags/1.2.2")
@@ -35,27 +37,29 @@ func TestGitWarning(t *testing.T) {
 	testlib.GitBranch(t, "tags/1.2.3")
 	testlib.GitTag(t, "1.2.3")
 
-	out, err := git.Run("describe", "--tags", "--abbrev=0", "tags/1.2.3^")
-	assert.NoError(t, err)
-	assert.Equal(t, "1.2.2\n", out)
+	out, err := git.Run(ctx, "describe", "--tags", "--abbrev=0", "tags/1.2.3^")
+	require.NoError(t, err)
+	require.Equal(t, "1.2.2\n", out)
 }
 
 func TestRepo(t *testing.T) {
-	assert.True(t, git.IsRepo(), "goreleaser folder should be a git repo")
+	ctx := context.Background()
+	require.True(t, git.IsRepo(ctx), "goreleaser folder should be a git repo")
 
-	assert.NoError(t, os.Chdir(os.TempDir()))
-	assert.False(t, git.IsRepo(), os.TempDir()+" folder should be a git repo")
+	require.NoError(t, os.Chdir(os.TempDir()))
+	require.False(t, git.IsRepo(ctx), os.TempDir()+" folder should be a git repo")
 }
 
 func TestClean(t *testing.T) {
+	ctx := context.Background()
 	out, err := git.Clean("asdasd 'ssadas'\nadasd", nil)
-	assert.NoError(t, err)
-	assert.Equal(t, "asdasd ssadas", out)
+	require.NoError(t, err)
+	require.Equal(t, "asdasd ssadas", out)
 
-	out, err = git.Clean(git.Run("command-that-dont-exist"))
-	assert.Error(t, err)
-	assert.Empty(t, out)
-	assert.Equal(
+	out, err = git.Clean(git.Run(ctx, "command-that-dont-exist"))
+	require.Error(t, err)
+	require.Empty(t, out)
+	require.Equal(
 		t,
 		"git: 'command-that-dont-exist' is not a git command. See 'git --help'.",
 		err.Error(),

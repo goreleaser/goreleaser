@@ -1,34 +1,42 @@
 package archive
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/stretchr/testify/require"
 )
 
 func TestArchive(t *testing.T) {
-	var assert = assert.New(t)
-	folder, err := ioutil.TempDir("", "archivetest")
-	assert.NoError(err)
+	folder := t.TempDir()
 	empty, err := os.Create(folder + "/empty.txt")
-	assert.NoError(err)
-	assert.NoError(os.Mkdir(folder+"/folder-inside", 0755))
+	require.NoError(t, err)
+	require.NoError(t, empty.Close())
+	require.NoError(t, os.Mkdir(folder+"/folder-inside", 0o755))
 
-	for _, format := range []string{"tar.gz", "zip", "gz", "tar.xz", "willbeatargzanyway"} {
+	for _, format := range []string{"tar.gz", "zip", "gz", "tar.xz", "tar"} {
 		format := format
 		t.Run(format, func(t *testing.T) {
-			var archive = newArchive(folder, format, t)
-			assert.NoError(archive.Add("empty.txt", empty.Name()))
-			assert.Error(archive.Add("dont.txt", empty.Name()+"_nope"))
-			assert.NoError(archive.Close())
+			archive, err := New(io.Discard, format)
+			require.NoError(t, err)
+			t.Cleanup(func() {
+				require.NoError(t, archive.Close())
+			})
+			require.NoError(t, archive.Add(config.File{
+				Source:      empty.Name(),
+				Destination: "empty.txt",
+			}))
+			require.Error(t, archive.Add(config.File{
+				Source:      empty.Name() + "_nope",
+				Destination: "dont.txt",
+			}))
 		})
 	}
-}
 
-func newArchive(folder, format string, t *testing.T) Archive {
-	file, err := os.Create(folder + "/folder." + format)
-	assert.NoError(t, err)
-	return New(file)
+	t.Run("7z", func(t *testing.T) {
+		_, err := New(io.Discard, "7z")
+		require.EqualError(t, err, "invalid archive format: 7z")
+	})
 }

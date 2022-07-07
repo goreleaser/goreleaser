@@ -1,133 +1,133 @@
 package milestone
 
 import (
-	"errors"
-	"os"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDefaultWithRepoConfig(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:githubowner/githubrepo.git")
 
-	var ctx = &context.Context{
-		Config: config.Project{
-			Milestones: []config.Milestone{
-				{
-					Repo: config.Repo{
-						Name:  "configrepo",
-						Owner: "configowner",
-					},
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{
+			{
+				Repo: config.Repo{
+					Name:  "configrepo",
+					Owner: "configowner",
 				},
 			},
 		},
-	}
+	})
 	ctx.TokenType = context.TokenTypeGitHub
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "configrepo", ctx.Config.Milestones[0].Repo.Name)
-	assert.Equal(t, "configowner", ctx.Config.Milestones[0].Repo.Owner)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "configrepo", ctx.Config.Milestones[0].Repo.Name)
+	require.Equal(t, "configowner", ctx.Config.Milestones[0].Repo.Owner)
+}
+
+func TestDefaultWithInvalidRemote(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:githubowner.git")
+
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
+	ctx.TokenType = context.TokenTypeGitHub
+	require.Error(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultWithRepoRemote(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:githubowner/githubrepo.git")
 
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
 	ctx.TokenType = context.TokenTypeGitHub
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "githubrepo", ctx.Config.Milestones[0].Repo.Name)
-	assert.Equal(t, "githubowner", ctx.Config.Milestones[0].Repo.Owner)
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "githubrepo", ctx.Config.Milestones[0].Repo.Name)
+	require.Equal(t, "githubowner", ctx.Config.Milestones[0].Repo.Owner)
 }
 
 func TestDefaultWithNameTemplate(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
-			Milestones: []config.Milestone{
-				{
-					NameTemplate: "confignametemplate",
-				},
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{
+			{
+				NameTemplate: "confignametemplate",
 			},
 		},
-	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "confignametemplate", ctx.Config.Milestones[0].NameTemplate)
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "confignametemplate", ctx.Config.Milestones[0].NameTemplate)
 }
 
 func TestDefaultWithoutGitRepo(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
-	var ctx = &context.Context{
-		Config: config.Project{},
-	}
+	testlib.Mktmp(t)
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
 	ctx.TokenType = context.TokenTypeGitHub
-	assert.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
-	assert.Empty(t, ctx.Config.Milestones[0].Repo.String())
+	require.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
+	require.Empty(t, ctx.Config.Milestones[0].Repo.String())
 }
 
 func TestDefaultWithoutGitRepoOrigin(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
-	var ctx = &context.Context{
-		Config: config.Project{},
-	}
+	testlib.Mktmp(t)
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
 	ctx.TokenType = context.TokenTypeGitHub
 	testlib.GitInit(t)
-	assert.EqualError(t, Pipe{}.Default(ctx), "repository doesn't have an `origin` remote")
-	assert.Empty(t, ctx.Config.Milestones[0].Repo.String())
+	require.EqualError(t, Pipe{}.Default(ctx), "no remote configured to list refs from")
+	require.Empty(t, ctx.Config.Milestones[0].Repo.String())
 }
 
 func TestDefaultWithoutGitRepoSnapshot(t *testing.T) {
-	_, back := testlib.Mktmp(t)
-	defer back()
-	var ctx = &context.Context{
-		Config: config.Project{},
-	}
+	testlib.Mktmp(t)
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Snapshot = true
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Empty(t, ctx.Config.Milestones[0].Repo.String())
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Empty(t, ctx.Config.Milestones[0].Repo.String())
 }
 
 func TestDefaultWithoutNameTemplate(t *testing.T) {
-	var ctx = &context.Context{
-		Config: config.Project{
-			Milestones: []config.Milestone{},
-		},
-	}
-	assert.NoError(t, Pipe{}.Default(ctx))
-	assert.Equal(t, "{{ .Tag }}", ctx.Config.Milestones[0].NameTemplate)
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.Equal(t, "{{ .Tag }}", ctx.Config.Milestones[0].NameTemplate)
 }
 
 func TestString(t *testing.T) {
-	assert.NotEmpty(t, Pipe{}.String())
+	require.NotEmpty(t, Pipe{}.String())
 }
 
 func TestPublishCloseDisabled(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Milestones: []config.Milestone{
 			{
 				Close: false,
 			},
 		},
 	})
-	client := &DummyClient{}
+	client := client.NewMock()
 	testlib.AssertSkipped(t, doPublish(ctx, client))
-	assert.Equal(t, "", client.ClosedMilestone)
+	require.Equal(t, "", client.ClosedMilestone)
 }
 
 func TestPublishCloseEnabled(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Milestones: []config.Milestone{
 			{
 				Close:        true,
@@ -140,13 +140,13 @@ func TestPublishCloseEnabled(t *testing.T) {
 		},
 	})
 	ctx.Git.CurrentTag = "v1.0.0"
-	client := &DummyClient{}
-	assert.NoError(t, doPublish(ctx, client))
-	assert.Equal(t, "v1.0.0", client.ClosedMilestone)
+	client := client.NewMock()
+	require.NoError(t, doPublish(ctx, client))
+	require.Equal(t, "v1.0.0", client.ClosedMilestone)
 }
 
 func TestPublishCloseError(t *testing.T) {
-	var config = config.Project{
+	config := config.Project{
 		Milestones: []config.Milestone{
 			{
 				Close:        true,
@@ -158,17 +158,17 @@ func TestPublishCloseError(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "v1.0.0"
-	client := &DummyClient{
+	client := &client.Mock{
 		FailToCloseMilestone: true,
 	}
-	assert.NoError(t, doPublish(ctx, client))
-	assert.Equal(t, "", client.ClosedMilestone)
+	require.NoError(t, doPublish(ctx, client))
+	require.Equal(t, "", client.ClosedMilestone)
 }
 
 func TestPublishCloseFailOnError(t *testing.T) {
-	var config = config.Project{
+	config := config.Project{
 		Milestones: []config.Milestone{
 			{
 				Close:        true,
@@ -181,42 +181,26 @@ func TestPublishCloseFailOnError(t *testing.T) {
 			},
 		},
 	}
-	var ctx = context.New(config)
+	ctx := context.New(config)
 	ctx.Git.CurrentTag = "v1.0.0"
-	client := &DummyClient{
+	client := &client.Mock{
 		FailToCloseMilestone: true,
 	}
-	assert.Error(t, doPublish(ctx, client))
-	assert.Equal(t, "", client.ClosedMilestone)
+	require.Error(t, doPublish(ctx, client))
+	require.Equal(t, "", client.ClosedMilestone)
 }
 
-type DummyClient struct {
-	ClosedMilestone      string
-	FailToCloseMilestone bool
-}
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
 
-func (c *DummyClient) CloseMilestone(ctx *context.Context, repo client.Repo, title string) error {
-	if c.FailToCloseMilestone {
-		return errors.New("milestone failed")
-	}
-
-	c.ClosedMilestone = title
-
-	return nil
-}
-
-func (c *DummyClient) CreateRelease(ctx *context.Context, body string) (string, error) {
-	return "", nil
-}
-
-func (c *DummyClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
-	return "", nil
-}
-
-func (c *DummyClient) CreateFile(ctx *context.Context, commitAuthor config.CommitAuthor, repo client.Repo, content []byte, path, msg string) error {
-	return nil
-}
-
-func (c *DummyClient) Upload(ctx *context.Context, releaseID string, artifact *artifact.Artifact, file *os.File) error {
-	return nil
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Milestones: []config.Milestone{
+				{},
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }

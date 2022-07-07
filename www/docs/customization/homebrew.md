@@ -1,6 +1,4 @@
----
-title: Homebrew
----
+# Homebrew Taps
 
 After releasing to GitHub or GitLab, GoReleaser can generate and publish
 a _homebrew-tap_ recipe into a repository that you have access to.
@@ -12,13 +10,8 @@ and the
 [formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md)
 for more details.
 
-!!! warning
-    If you have multiple 32-bit arm versions in each `build` section, and
-    you do not specify any `ids` in the brew section, it will default to all
-    artifacts and GoReleaser will fail.
-
 ```yaml
-# .goreleaser.yml
+# .goreleaser.yaml
 brews:
   -
     # Name template of the recipe
@@ -32,31 +25,40 @@ brews:
     - bar
 
     # GOARM to specify which 32-bit arm version to use if there are multiple versions
-    # from the build section. Brew formulas support atm only one 32-bit version.
+    # from the build section. Brew formulas support only one 32-bit version.
     # Default is 6 for all artifacts or each id if there a multiple versions.
     goarm: 6
+
+    # GOAMD64 to specify which amd64 version to use if there are multiple versions
+    # from the build section.
+    # Default is v1.
+    goamd64: v3
 
     # NOTE: make sure the url_template, the token and given repo (github or gitlab) owner and name are from the
     # same kind. We will probably unify this in the next major version like it is done with scoop.
 
     # GitHub/GitLab repository to push the formula to
-    # Gitea is not supported yet, but the support coming
     tap:
       owner: repo-owner
       name: homebrew-tap
+
+      # Optionally a branch can be provided.
+      # Defaults to the default repository branch.
+      branch: main
+
       # Optionally a token can be provided, if it differs from the token provided to GoReleaser
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
 
-    # Template for the url which is determined by the given Token (github or gitlab)
-    # Default for github is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    # Default for gitlab is "https://gitlab.com/<repo_owner>/<repo_name>/uploads/{{ .ArtifactUploadHash }}/{{ .ArtifactName }}"
+    # Template for the url which is determined by the given Token (github, gitlab or gitea)
+    #
+    # Default depends on the client.
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Allows you to set a custom download strategy. Note that you'll need
     # to implement the strategy and add it to your tap repository.
     # Example: https://docs.brew.sh/Formula-Cookbook#specifying-the-download-strategy-explicitly
     # Default is empty.
-    download_strategy: CurlDownloadStrategy.
+    download_strategy: CurlDownloadStrategy
 
     # Allows you to add a custom require_relative at the top of the formula template
     # Default is empty
@@ -66,7 +68,10 @@ brews:
     # Defaults are shown.
     commit_author:
       name: goreleaserbot
-      email: goreleaser@carlosbecker.com
+      email: bot@goreleaser.com
+
+    # The project name and current git tag are used in the format string.
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
 
     # Folder inside the repository to put the formula.
     # Default is the root folder.
@@ -80,9 +85,13 @@ brews:
     # Default is empty.
     homepage: "https://example.com/"
 
-    # Your app's description.
+    # Template of your app's description.
     # Default is empty.
     description: "Software to create fast and easy drum rolls."
+
+    # SPDX identifier of your app's license.
+    # Default is empty.
+    license: "MIT"
 
     # Setting this will prevent goreleaser to actually try to commit the updated
     # formula - instead, the formula file will be stored on the dist folder only,
@@ -116,6 +125,11 @@ brews:
       <?xml version="1.0" encoding="UTF-8"?>
       ...
 
+    # Service block.
+    service: |
+      run: foo/bar
+      ...
+
     # So you can `brew test` your formula.
     # Default is empty.
     test: |
@@ -127,10 +141,17 @@ brews:
     install: |
       bin.install "program"
       ...
+
+    # Custom post_install script for brew.
+    # Could be used to do any additional work after the "install" script
+    # Default is empty.
+    post_install: |
+    	etc.install "app-config.conf"
+    	...
 ```
 
 !!! tip
-    Learn more about the [name template engine](/customization/templates).
+    Learn more about the [name template engine](/customization/templates/).
 
 By defining the `brew` section, GoReleaser will take care of publishing the
 Homebrew tap.
@@ -143,20 +164,23 @@ class Program < Formula
   homepage "https://github.com/user/repo"
   version "v1.2.3"
 
-  if os.Mac?
+  on_macos do
     url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_macOs_64bit.zip"
     sha256 "9ee30fc358fae8d248a2d7538957089885da321dca3f09e3296fe2058e7fff74"
-  elsif os.Linux?
-    url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_Linux_64bit.zip"
-    sha256 "b41bebd25fd7bb1a67dc2cd5ee12c9f67073094567fdf7b3871f05fd74a45fdd"
-    if Hardware::CPU.arm?
-      if Hardware::CPU.is_64_bit?
-        url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_Linux_arm64.zip"
-            sha256 "97cadca3c3c3f36388a4a601acf878dd356d6275a976bee516798b72bfdbeecf"
-      else
-        url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_Linux_armv7.zip"
-        sha256 "78f31239430eaaec01df783e2a3443753a8126c325292ed8ddb1658ddd2b401d"
-      end
+  end
+
+  on_linux
+    if Hardware::CPU.intel?
+      url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_Linux_64bit.zip"
+      sha256 "b41bebd25fd7bb1a67dc2cd5ee12c9f67073094567fdf7b3871f05fd74a45fdd"
+    end
+    if Hardware::CPU.arm? && !Hardware::CPU.is_64_bit?
+      url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_Linux_armv7.zip"
+      sha256 "78f31239430eaaec01df783e2a3443753a8126c325292ed8ddb1658ddd2b401d"
+    end
+    if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
+      url "https://github.com/user/repo/releases/download/v1.2.3/program_v1.2.3_Linux_arm64.zip"
+      sha256 "97cadca3c3c3f36388a4a601acf878dd356d6275a976bee516798b72bfdbeecf"
     end
   end
 
@@ -165,6 +189,10 @@ class Program < Formula
 
   def install
     bin.install "program"
+  end
+
+  def post_install
+  	etc.install "app-config.conf"
   end
 end
 ```
@@ -182,3 +210,7 @@ from one software to another.
 
 Our suggestion is to create a `my-app-head.rb` file on your tap following
 [homebrew's documentation](https://docs.brew.sh/Formula-Cookbook#unstable-versions-head).
+
+## Limitations
+
+- Only one `GOARM` build is allowed;

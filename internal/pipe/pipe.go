@@ -1,7 +1,10 @@
 // Package pipe provides generic erros for pipes to use.
 package pipe
 
-import "strings"
+import (
+	"errors"
+	"strings"
+)
 
 // ErrSnapshotEnabled happens when goreleaser is running in snapshot mode.
 // It usually means that publishing and maybe some validations were skipped.
@@ -10,6 +13,9 @@ var ErrSnapshotEnabled = Skip("disabled during snapshot mode")
 // ErrSkipPublishEnabled happens if --skip-publish is set.
 // It means that the part of a Piper that publishes its artifacts was not run.
 var ErrSkipPublishEnabled = Skip("publishing is disabled")
+
+// ErrSkipAnnounceEnabled happens if --skip-announce is set.
+var ErrSkipAnnounceEnabled = Skip("announcing is disabled")
 
 // ErrSkipSignEnabled happens if --skip-sign is set.
 // It means that the part of a Piper that signs some things was not run.
@@ -21,8 +27,7 @@ var ErrSkipValidateEnabled = Skip("validation is disabled")
 
 // IsSkip returns true if the error is an ErrSkip.
 func IsSkip(err error) bool {
-	_, ok := err.(ErrSkip)
-	return ok
+	return errors.As(err, &ErrSkip{})
 }
 
 // ErrSkip occurs when a pipe is skipped for some reason.

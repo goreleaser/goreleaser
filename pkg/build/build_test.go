@@ -5,20 +5,21 @@ import (
 
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type dummy struct{}
 
-func (*dummy) WithDefaults(build config.Build) config.Build {
-	return build
+func (*dummy) WithDefaults(build config.Build) (config.Build, error) {
+	return build, nil
 }
+
 func (*dummy) Build(ctx *context.Context, build config.Build, options Options) error {
 	return nil
 }
 
 func TestRegisterAndGet(t *testing.T) {
-	var builder = &dummy{}
+	builder := &dummy{}
 	Register("dummy", builder)
-	assert.Equal(t, builder, For("dummy"))
+	require.Equal(t, builder, For("dummy"))
 }

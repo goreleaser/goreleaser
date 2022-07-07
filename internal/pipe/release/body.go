@@ -4,35 +4,37 @@ import (
 	"bytes"
 	"text/template"
 
-	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const bodyTemplateText = `{{ .ReleaseNotes }}
-
-{{- with .DockerImages }}
-
-## Docker images
-{{ range $element := . }}
-- ` + "`docker pull {{ . -}}`" + `
-{{- end -}}
-{{- end }}
+const bodyTemplateText = `{{ with .Header }}{{ . }}{{ "\n" }}{{ end }}
+{{- .ReleaseNotes }}
+{{- with .Footer }}{{ "\n" }}{{ . }}{{ end }}
 `
 
 func describeBody(ctx *context.Context) (bytes.Buffer, error) {
 	var out bytes.Buffer
-	// nolint:prealloc
-	var dockers []string
-	for _, a := range ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImage)).List() {
-		dockers = append(dockers, a.Name)
+	t := tmpl.New(ctx)
+
+	header, err := t.Apply(ctx.Config.Release.Header)
+	if err != nil {
+		return out, err
 	}
-	var bodyTemplate = template.Must(template.New("release").Parse(bodyTemplateText))
-	err := bodyTemplate.Execute(&out, struct {
+	footer, err := t.Apply(ctx.Config.Release.Footer)
+	if err != nil {
+		return out, err
+	}
+
+	bodyTemplate := template.Must(template.New("release").Parse(bodyTemplateText))
+	err = bodyTemplate.Execute(&out, struct {
+		Header       string
+		Footer       string
 		ReleaseNotes string
-		DockerImages []string
 	}{
+		Header:       header,
+		Footer:       footer,
 		ReleaseNotes: ctx.ReleaseNotes,
-		DockerImages: dockers,
 	})
 	return out, err
 }

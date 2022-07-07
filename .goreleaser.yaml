@@ -1,0 +1,322 @@
+env:
+  - GO111MODULE=on
+
+before:
+  hooks:
+    - go mod tidy
+    - ./scripts/completions.sh
+    - ./scripts/manpages.sh
+
+snapshot:
+  name_template: '{{ incpatch .Version }}-next'
+
+gomod:
+  proxy: true
+
+builds:
+- env:
+    - CGO_ENABLED=0
+  goos:
+    - linux
+    - darwin
+    - windows
+  goarch:
+    - "386"
+    - amd64
+    - arm
+    - arm64
+  goarm:
+    - "7"
+  mod_timestamp: '{{ .CommitTimestamp }}'
+  flags:
+    - -trimpath
+  ldflags:
+    - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser
+
+universal_binaries:
+- replace: false
+
+checksum:
+  name_template: 'checksums.txt'
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+    - '^test:'
+    - '^chore'
+    - 'merge conflict'
+    - Merge pull request
+    - Merge remote-tracking branch
+    - Merge branch
+    - go mod tidy
+  groups:
+    - title: Dependency updates
+      regexp: "^.*feat\\(deps\\)*:+.*$"
+      order: 300
+    - title: 'New Features'
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 100
+    - title: 'Bug fixes'
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 200
+    - title: 'Documentation updates'
+      regexp: "^.*docs[(\\w)]*:+.*$"
+      order: 400
+    - title: Other work
+      order: 9999
+
+
+
+dockers:
+- image_templates:
+  - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
+  dockerfile: Dockerfile
+  use: buildx
+  build_flag_templates:
+  - "--pull"
+  - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
+  - "--label=io.artifacthub.package.logo-url=https://goreleaser.com/static/avatar.png"
+  - "--label=io.artifacthub.package.maintainers=[{\"name\":\"Carlos Alexandro Becker\",\"email\":\"carlos@carlosbecker.dev\"}]"
+  - "--label=io.artifacthub.package.license=MIT"
+  - "--label=org.opencontainers.image.description=Deliver Go binaries as fast and easily as possible"
+  - "--label=org.opencontainers.image.created={{.Date}}"
+  - "--label=org.opencontainers.image.name={{.ProjectName}}"
+  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+  - "--label=org.opencontainers.image.version={{.Version}}"
+  - "--label=org.opencontainers.image.source={{.GitURL}}"
+  - "--platform=linux/amd64"
+  extra_files:
+  - scripts/entrypoint.sh
+- image_templates:
+  - 'goreleaser/goreleaser:{{ .Tag }}-arm64'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
+  dockerfile: Dockerfile
+  use: buildx
+  build_flag_templates:
+  - "--pull"
+  - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/goreleaser/goreleaser/main/README.md"
+  - "--label=io.artifacthub.package.logo-url=https://goreleaser.com/static/avatar.png"
+  - "--label=io.artifacthub.package.maintainers=[{\"name\":\"Carlos Alexandro Becker\",\"email\":\"carlos@carlosbecker.dev\"}]"
+  - "--label=io.artifacthub.package.license=MIT"
+  - "--label=org.opencontainers.image.description=Deliver Go binaries as fast and easily as possible"
+  - "--label=org.opencontainers.image.created={{.Date}}"
+  - "--label=org.opencontainers.image.name={{.ProjectName}}"
+  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+  - "--label=org.opencontainers.image.version={{.Version}}"
+  - "--label=org.opencontainers.image.source={{.GitURL}}"
+  - "--platform=linux/arm64"
+  goarch: arm64
+  extra_files:
+  - scripts/entrypoint.sh
+
+docker_manifests:
+- name_template: 'goreleaser/goreleaser:{{ .Tag }}'
+  image_templates:
+  - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'goreleaser/goreleaser:{{ .Tag }}-arm64'
+- name_template: 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}'
+  image_templates:
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
+- name_template: 'goreleaser/goreleaser:latest'
+  image_templates:
+  - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'goreleaser/goreleaser:{{ .Tag }}-arm64'
+- name_template: 'ghcr.io/goreleaser/goreleaser:latest'
+  image_templates:
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-amd64'
+  - 'ghcr.io/goreleaser/goreleaser:{{ .Tag }}-arm64'
+
+archives:
+  - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+    format_overrides:
+    - goos: windows
+      format: zip
+    files:
+      - README.md
+      - LICENSE.md
+      - completions/*
+      - manpages/*
+
+brews:
+  - tap:
+      owner: goreleaser
+      name: homebrew-tap
+    folder: Formula
+    goarm: "7"
+    homepage:  https://goreleaser.com
+    description: Deliver Go binaries as fast and easily as possible
+    license: MIT
+    test: |
+      system "#{bin}/goreleaser -v"
+    dependencies:
+    - name: go
+      type: optional
+    - name: git
+    conflicts:
+    - goreleaser-pro
+    install: |-
+      bin.install "goreleaser"
+      bash_completion.install "completions/goreleaser.bash" => "goreleaser"
+      zsh_completion.install "completions/goreleaser.zsh" => "_goreleaser"
+      fish_completion.install "completions/goreleaser.fish"
+      man1.install "manpages/goreleaser.1.gz"
+
+aurs:
+  - homepage:  https://goreleaser.com
+    description: Deliver Go binaries as fast and easily as possible
+    maintainers:
+      - 'Fernandez Ludovic <lfernandez dot dev at gmail dot com>'
+      - 'Carlos Alexandro Becker <carlos at becker dot software>'
+    license: MIT
+    private_key: '{{ .Env.AUR_KEY }}'
+    git_url: 'ssh://aur@aur.archlinux.org/goreleaser-bin.git'
+    package: |-
+      # bin
+      install -Dm755 "./goreleaser" "${pkgdir}/usr/bin/goreleaser"
+
+      # license
+      install -Dm644 "./LICENSE.md" "${pkgdir}/usr/share/licenses/goreleaser/LICENSE"
+
+      # completions
+      mkdir -p "${pkgdir}/usr/share/bash-completion/completions/"
+      mkdir -p "${pkgdir}/usr/share/zsh/site-functions/"
+      mkdir -p "${pkgdir}/usr/share/fish/vendor_completions.d/"
+      install -Dm644 "./completions/goreleaser.bash" "${pkgdir}/usr/share/bash-completion/completions/goreleaser"
+      install -Dm644 "./completions/goreleaser.zsh" "${pkgdir}/usr/share/zsh/site-functions/_goreleaser"
+      install -Dm644 "./completions/goreleaser.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/goreleaser.fish"
+
+      # man pages
+      install -Dm644 "./manpages/goreleaser.1.gz" "${pkgdir}/usr/share/man/man1/goreleaser.1.gz"
+
+scoop:
+  bucket:
+    owner: goreleaser
+    name: scoop-bucket
+  homepage:  https://goreleaser.com
+  description: Deliver Go binaries as fast and easily as possible
+  license: MIT
+
+nfpms:
+  - file_name_template: '{{ .ConventionalFileName }}'
+    id: packages
+    homepage:  https://goreleaser.com
+    description: |-
+      Deliver Go binaries as fast and easily as possible.
+      GoReleaser allows you to release easily build, package, publish and
+      announce to several places at one go.
+    maintainer: Carlos Alexandro Becker <carlos@becker.software>
+    license: MIT
+    vendor: GoReleaser
+    bindir: /usr/bin
+    section: utils
+    contents:
+      - src: ./completions/goreleaser.bash
+        dst: /usr/share/bash-completion/completions/goreleaser
+        file_info:
+          mode: 0644
+      - src: ./completions/goreleaser.fish
+        dst: /usr/share/fish/completions/goreleaser.fish
+        file_info:
+          mode: 0644
+      - src: ./completions/goreleaser.zsh
+        dst:  /usr/share/zsh/vendor-completions/_goreleaser
+        file_info:
+          mode: 0644
+      - src: ./manpages/goreleaser.1.gz
+        dst: /usr/share/man/man1/goreleaser.1.gz
+        file_info:
+          mode: 0644
+      - src: ./LICENSE.md
+        dst: /usr/share/doc/goreleaser/copyright
+        file_info:
+          mode: 0644
+    formats:
+    - apk
+    - deb
+    - rpm
+    dependencies:
+    - git
+    recommends:
+    - golang
+    deb:
+      lintian_overrides:
+        - statically-linked-binary
+        - changelog-file-missing-in-native-package
+
+snapcrafts:
+  - name_template: '{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    summary: Deliver Go binaries as fast and easily as possible
+    description: |
+      GoReleaser builds Go binaries for several platforms, creates a GitHub
+      release and then pushes a Homebrew formula to a repository. All that
+      wrapped in your favorite CI.
+    grade: stable
+    confinement: classic
+    publish: true
+
+sboms:
+  - artifacts: archive
+
+signs:
+- cmd: cosign
+  env:
+  - COSIGN_EXPERIMENTAL=1
+  certificate: '${artifact}.pem'
+  output: true
+  artifacts: checksum
+  args:
+    - sign-blob
+    - '--output-certificate=${certificate}'
+    - '--output-signature=${signature}'
+    - '${artifact}'
+
+docker_signs:
+- cmd: cosign
+  env:
+  - COSIGN_EXPERIMENTAL=1
+  artifacts: manifests
+  output: true
+  args:
+  - 'sign'
+  - '${artifact}'
+
+publishers:
+  - name: fury.io
+    ids:
+    - packages
+    env:
+    - 'FURY_TOKEN={{ .Env.FURY_TOKEN }}'
+    cmd: ./scripts/fury-upload.sh {{ .ArtifactName }}
+
+milestones:
+  - close: true
+
+release:
+  footer: |
+    **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+    ## What to do next?
+
+    - Read the [documentation](https://goreleaser.com/intro/)
+    - Check out the [GoReleaser Pro](https://goreleaser.com/pro) distribution
+    - Join our [Discord server](https://discord.gg/RGEBtg8vQ6)
+    - Follow us on [Twitter](https://twitter.com/goreleaser)
+
+announce:
+  twitter:
+    enabled: true
+    message_template: 'GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'
+
+  discord:
+    enabled: true
+    message_template: 'GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'

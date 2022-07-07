@@ -8,9 +8,10 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 
-	"github.com/apex/log"
-	"github.com/google/go-github/v28/github"
+	"github.com/caarlos0/log"
+	"github.com/google/go-github/v45/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -25,10 +26,11 @@ type githubClient struct {
 }
 
 // NewGitHub returns a github client implementation.
-func NewGitHub(ctx *context.Context, token string) (Client, error) {
+func NewGitHub(ctx *context.Context, token string) (GitHubClient, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
+
 	httpClient := oauth2.NewClient(ctx, ts)
 	base := httpClient.Transport.(*oauth2.Transport).Base
 	if base == nil || reflect.ValueOf(base).IsNil() {
@@ -38,28 +40,73 @@ func NewGitHub(ctx *context.Context, token string) (Client, error) {
 	base.(*http.Transport).TLSClientConfig = &tls.Config{
 		InsecureSkipVerify: ctx.Config.GitHubURLs.SkipTLSVerify,
 	}
+	base.(*http.Transport).Proxy = http.ProxyFromEnvironment
 	httpClient.Transport.(*oauth2.Transport).Base = base
+
 	client := github.NewClient(httpClient)
-	if ctx.Config.GitHubURLs.API != "" {
-		api, err := url.Parse(ctx.Config.GitHubURLs.API)
-		if err != nil {
-			return &githubClient{}, err
-		}
-		upload, err := url.Parse(ctx.Config.GitHubURLs.Upload)
-		if err != nil {
-			return &githubClient{}, err
-		}
-		client.BaseURL = api
-		client.UploadURL = upload
+	err := overrideGitHubClientAPI(ctx, client)
+	if err != nil {
+		return &githubClient{}, err
 	}
 
 	return &githubClient{client: client}, nil
 }
 
+func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	notes, _, err := c.client.Repositories.GenerateReleaseNotes(ctx, repo.Owner, repo.Name, &github.GenerateNotesOptions{
+		TagName:         current,
+		PreviousTagName: github.String(prev),
+	})
+	if err != nil {
+		return "", err
+	}
+	return notes.Body, err
+}
+
+func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
+	var log []string
+
+	opts := &github.ListOptions{PerPage: 100}
+	for {
+		result, resp, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current, opts)
+		if err != nil {
+			return "", err
+		}
+		for _, commit := range result.Commits {
+			log = append(log, fmt.Sprintf(
+				"%s: %s (@%s)",
+				commit.GetSHA(),
+				strings.Split(commit.Commit.GetMessage(), "\n")[0],
+				commit.GetAuthor().GetLogin(),
+			))
+		}
+		if resp.NextPage == 0 {
+			break
+		}
+
+		opts.Page = resp.NextPage
+	}
+
+	return strings.Join(log, "\n"), nil
+}
+
+// GetDefaultBranch returns the default branch of a github repo
+func (c *githubClient) GetDefaultBranch(ctx *context.Context, repo Repo) (string, error) {
+	p, res, err := c.client.Repositories.Get(ctx, repo.Owner, repo.Name)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"projectID":  repo.String(),
+			"statusCode": res.StatusCode,
+			"err":        err.Error(),
+		}).Warn("error checking for default branch")
+		return "", err
+	}
+	return p.GetDefaultBranch(), nil
+}
+
 // CloseMilestone closes a given milestone.
 func (c *githubClient) CloseMilestone(ctx *context.Context, repo Repo, title string) error {
 	milestone, err := c.getMilestoneByTitle(ctx, repo, title)
-
 	if err != nil {
 		return err
 	}
@@ -90,6 +137,22 @@ func (c *githubClient) CreateFile(
 	path,
 	message string,
 ) error {
+	var branch string
+	var err error
+	if repo.Branch != "" {
+		branch = repo.Branch
+	} else {
+		branch, err = c.GetDefaultBranch(ctx, repo)
+		if err != nil {
+			// Fall back to sdk default
+			log.WithFields(log.Fields{
+				"fileName":        path,
+				"projectID":       repo.String(),
+				"requestedBranch": branch,
+				"err":             err.Error(),
+			}).Warn("error checking for default branch, using master")
+		}
+	}
 	options := &github.RepositoryContentFileOptions{
 		Committer: &github.CommitAuthor{
 			Name:  github.String(commitAuthor.Name),
@@ -99,6 +162,12 @@ func (c *githubClient) CreateFile(
 		Message: github.String(message),
 	}
 
+	// Set the branch if we got it above...otherwise, just default to
+	// whatever the SDK does auto-magically
+	if branch != "" {
+		options.Branch = &branch
+	}
+
 	file, _, res, err := c.client.Repositories.GetContents(
 		ctx,
 		repo.Owner,
@@ -106,7 +175,7 @@ func (c *githubClient) CreateFile(
 		path,
 		&github.RepositoryContentGetOptions{},
 	)
-	if err != nil && res.StatusCode != 404 {
+	if err != nil && (res == nil || res.StatusCode != 404) {
 		return err
 	}
 
@@ -138,18 +207,25 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		return "", err
 	}
 
-	var data = &github.RepositoryRelease{
+	// Truncate the release notes if it's too long (github doesn't allow more than 125000 characters)
+	body = truncateReleaseBody(body)
+
+	data := &github.RepositoryRelease{
 		Name:       github.String(title),
 		TagName:    github.String(ctx.Git.CurrentTag),
 		Body:       github.String(body),
 		Draft:      github.Bool(ctx.Config.Release.Draft),
 		Prerelease: github.Bool(ctx.PreRelease),
 	}
+	if ctx.Config.Release.DiscussionCategoryName != "" {
+		data.DiscussionCategoryName = github.String(ctx.Config.Release.DiscussionCategoryName)
+	}
+
 	release, _, err = c.client.Repositories.GetReleaseByTag(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
-		ctx.Git.CurrentTag,
+		data.GetTagName(),
 	)
 	if err != nil {
 		release, _, err = c.client.Repositories.CreateRelease(
@@ -159,10 +235,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 			data,
 		)
 	} else {
-		// keep the pre-existing release notes
-		if release.GetBody() != "" {
-			data.Body = release.Body
-		}
+		data.Body = github.String(getReleaseNotes(release.GetBody(), body, ctx.Config.Release.ReleaseNotesMode))
 		release, _, err = c.client.Repositories.EditRelease(
 			ctx,
 			ctx.Config.Release.GitHub.Owner,
@@ -171,15 +244,23 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 			data,
 		)
 	}
-	log.WithField("url", release.GetHTMLURL()).Info("release updated")
+	if err != nil {
+		log.WithField("url", release.GetHTMLURL()).Info("release updated")
+	}
+
 	githubReleaseID := strconv.FormatInt(release.GetID(), 10)
 	return githubReleaseID, err
 }
 
 func (c *githubClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
+	downloadURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.Download)
+	if err != nil {
+		return "", fmt.Errorf("templating GitHub download URL: %w", err)
+	}
+
 	return fmt.Sprintf(
 		"%s/%s/%s/releases/download/{{ .Tag }}/{{ .ArtifactName }}",
-		ctx.Config.GitHubURLs.Download,
+		downloadURL,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
 	), nil
@@ -228,7 +309,6 @@ func (c *githubClient) getMilestoneByTitle(ctx *context.Context, repo Repo, titl
 			repo.Name,
 			opts,
 		)
-
 		if err != nil {
 			return nil, err
 		}
@@ -247,4 +327,33 @@ func (c *githubClient) getMilestoneByTitle(ctx *context.Context, repo Repo, titl
 	}
 
 	return nil, nil
+}
+
+func overrideGitHubClientAPI(ctx *context.Context, client *github.Client) error {
+	if ctx.Config.GitHubURLs.API == "" {
+		return nil
+	}
+
+	apiURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.API)
+	if err != nil {
+		return fmt.Errorf("templating GitHub API URL: %w", err)
+	}
+	api, err := url.Parse(apiURL)
+	if err != nil {
+		return err
+	}
+
+	uploadURL, err := tmpl.New(ctx).Apply(ctx.Config.GitHubURLs.Upload)
+	if err != nil {
+		return fmt.Errorf("templating GitHub upload URL: %w", err)
+	}
+	upload, err := url.Parse(uploadURL)
+	if err != nil {
+		return err
+	}
+
+	client.BaseURL = api
+	client.UploadURL = upload
+
+	return nil
 }

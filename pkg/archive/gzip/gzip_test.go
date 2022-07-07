@@ -2,45 +2,85 @@ package gzip
 
 import (
 	"compress/gzip"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/goreleaser/goreleaser/pkg/config"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGzFile(t *testing.T) {
-	var assert = assert.New(t)
-	tmp, err := ioutil.TempDir("", "")
-	assert.NoError(err)
+	tmp := t.TempDir()
 	f, err := os.Create(filepath.Join(tmp, "test.gz"))
-	assert.NoError(err)
+	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
 	archive := New(f)
+	defer archive.Close() // nolint: errcheck
 
-	assert.NoError(archive.Add("sub1/sub2/subfoo.txt", "../testdata/sub1/sub2/subfoo.txt"))
-	assert.EqualError(archive.Add("foo.txt", "../testdata/foo.txt"), "gzip: failed to add foo.txt, only one file can be archived in gz format")
-	assert.NoError(archive.Close())
+	require.NoError(t, archive.Add(config.File{
+		Destination: "sub1/sub2/subfoo.txt",
+		Source:      "../testdata/sub1/sub2/subfoo.txt",
+	}))
+	require.EqualError(t, archive.Add(config.File{
+		Destination: "foo.txt",
+		Source:      "../testdata/foo.txt",
+	}), "gzip: failed to add foo.txt, only one file can be archived in gz format")
+	require.NoError(t, archive.Close())
+	require.NoError(t, f.Close())
 
-	assert.NoError(f.Close())
-
-	t.Log(f.Name())
 	f, err = os.Open(f.Name())
-	assert.NoError(err)
+	require.NoError(t, err)
 	defer f.Close() // nolint: errcheck
 
 	info, err := f.Stat()
-	assert.NoError(err)
-	assert.Truef(info.Size() < 500, "archived file should be smaller than %d", info.Size())
+	require.NoError(t, err)
+	require.Truef(t, info.Size() < 500, "archived file should be smaller than %d", info.Size())
 
 	gzf, err := gzip.NewReader(f)
-	assert.NoError(err)
+	require.NoError(t, err)
 	defer gzf.Close() // nolint: errcheck
 
-	assert.Equal("sub1/sub2/subfoo.txt", gzf.Name)
+	require.Equal(t, "sub1/sub2/subfoo.txt", gzf.Name)
 
-	bts, err := ioutil.ReadAll(gzf)
-	assert.NoError(err)
-	assert.Equal("sub\n", string(bts))
+	bts, err := io.ReadAll(gzf)
+	require.NoError(t, err)
+	require.Equal(t, "sub\n", string(bts))
+}
+
+func TestGzFileCustomMtime(t *testing.T) {
+	f, err := os.Create(filepath.Join(t.TempDir(), "test.gz"))
+	require.NoError(t, err)
+	defer f.Close() // nolint: errcheck
+	archive := New(f)
+	defer archive.Close() // nolint: errcheck
+
+	now := time.Now().Truncate(time.Second)
+
+	require.NoError(t, archive.Add(config.File{
+		Destination: "sub1/sub2/subfoo.txt",
+		Source:      "../testdata/sub1/sub2/subfoo.txt",
+		Info: config.FileInfo{
+			MTime: now,
+		},
+	}))
+	require.NoError(t, archive.Close())
+	require.NoError(t, f.Close())
+
+	f, err = os.Open(f.Name())
+	require.NoError(t, err)
+	defer f.Close() // nolint: errcheck
+
+	info, err := f.Stat()
+	require.NoError(t, err)
+	require.Truef(t, info.Size() < 500, "archived file should be smaller than %d", info.Size())
+
+	gzf, err := gzip.NewReader(f)
+	require.NoError(t, err)
+	defer gzf.Close() // nolint: errcheck
+
+	require.Equal(t, "sub1/sub2/subfoo.txt", gzf.Name)
+	require.Equal(t, now, gzf.Header.ModTime)
 }

@@ -1,25 +1,19 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
-	"os"
+	"time"
 
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
-	"github.com/fatih/color"
+	"github.com/caarlos0/log"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/spf13/cobra"
 )
 
+var boldStyle = lipgloss.NewStyle().Bold(true)
+
 func Execute(version string, exit func(int), args []string) {
-	// enable colored output on travis
-	if os.Getenv("CI") != "" {
-		color.NoColor = false
-	}
-
-	log.SetHandler(cli.Default)
-
-	fmt.Println()
-	defer fmt.Println()
 	newRootCmd(version, exit).Execute(args)
 }
 
@@ -31,9 +25,10 @@ func (cmd *rootCmd) Execute(args []string) {
 	}
 
 	if err := cmd.cmd.Execute(); err != nil {
-		var code = 1
-		var msg = "command failed"
-		if eerr, ok := err.(*exitError); ok {
+		code := 1
+		msg := "command failed"
+		eerr := &exitError{}
+		if errors.As(err, &eerr) {
 			code = eerr.code
 			if eerr.details != "" {
 				msg = eerr.details
@@ -51,15 +46,25 @@ type rootCmd struct {
 }
 
 func newRootCmd(version string, exit func(int)) *rootCmd {
-	var root = &rootCmd{
+	root := &rootCmd{
 		exit: exit,
 	}
-	var cmd = &cobra.Command{
-		Use:           "goreleaser",
-		Short:         "Deliver Go binaries as fast and easily as possible",
+	cmd := &cobra.Command{
+		Use:   "goreleaser",
+		Short: "Deliver Go binaries as fast and easily as possible",
+		Long: `GoReleaser is a release automation tool for Go projects.
+Its goal is to simplify the build, release and publish steps while providing variant customization options for all steps.
+
+GoReleaser is built for CI tools, you only need to download and execute it in your build script. Of course, you can also install it locally if you wish.
+
+You can customize your entire release process through a single .goreleaser.yaml file.
+
+Check out our website for more information, examples and documentation: https://goreleaser.com
+`,
 		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		Args:          cobra.NoArgs,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if root.debug {
 				log.SetLevel(log.DebugLevel)
@@ -74,6 +79,9 @@ func newRootCmd(version string, exit func(int)) *rootCmd {
 		newReleaseCmd().cmd,
 		newCheckCmd().cmd,
 		newInitCmd().cmd,
+		newDocsCmd().cmd,
+		newManCmd().cmd,
+		newSchemaCmd().cmd,
 	)
 
 	root.cmd = cmd
@@ -88,8 +96,9 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 		return false
 	}
 
-	// allow help command.
-	if len(args) > 0 && args[0] == "help" {
+	// allow help and the two __complete commands.
+	if len(args) > 0 && (args[0] == "help" || args[0] == "completion" ||
+		args[0] == cobra.ShellCompRequestCmd || args[0] == cobra.ShellCompNoDescRequestCmd) {
 		return false
 	}
 
@@ -109,4 +118,25 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 
 	// otherwise, we should probably prepend release
 	return true
+}
+
+func deprecateWarn(ctx *context.Context) {
+	if ctx.Deprecated {
+		log.Warn(boldStyle.Render("your config is using deprecated properties, check logs above for details"))
+	}
+}
+
+func timedRunE(verb string, rune func(cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		start := time.Now()
+
+		log.Infof(boldStyle.Render(fmt.Sprintf("starting %s...", verb)))
+
+		if err := rune(cmd, args); err != nil {
+			return wrapError(err, boldStyle.Render(fmt.Sprintf("%s failed after %s", verb, time.Since(start).Truncate(time.Second))))
+		}
+
+		log.Infof(boldStyle.Render(fmt.Sprintf("%s succeeded after %s", verb, time.Since(start).Truncate(time.Second))))
+		return nil
+	}
 }

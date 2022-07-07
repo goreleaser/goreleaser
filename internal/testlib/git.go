@@ -1,85 +1,96 @@
 package testlib
 
 import (
+	"context"
 	"testing"
-	"time"
 
 	"github.com/goreleaser/goreleaser/internal/git"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // GitInit inits a new git project.
-func GitInit(t *testing.T) {
+func GitInit(tb testing.TB) {
+	tb.Helper()
 	out, err := fakeGit("init")
-	assert.NoError(t, err)
-	assert.Contains(t, out, "Initialized empty Git repository")
-	assert.NoError(t, err)
+	require.NoError(tb, err)
+	require.Contains(tb, out, "Initialized empty Git repository")
+	require.NoError(tb, err)
+	GitCheckoutBranch(tb, "main")
+	_, _ = fakeGit("branch", "-D", "master")
 }
 
 // GitRemoteAdd adds the given url as remote.
-func GitRemoteAdd(t *testing.T, url string) {
+func GitRemoteAdd(tb testing.TB, url string) {
+	tb.Helper()
 	out, err := fakeGit("remote", "add", "origin", url)
-	assert.NoError(t, err)
-	assert.Empty(t, out)
+	require.NoError(tb, err)
+	require.Empty(tb, out)
+}
+
+// GitRemoteAddWithName adds the given url as remote with given name.
+func GitRemoteAddWithName(tb testing.TB, remote, url string) {
+	tb.Helper()
+	out, err := fakeGit("remote", "add", remote, url)
+	require.NoError(tb, err)
+	require.Empty(tb, out)
 }
 
 // GitCommit creates a git commits.
-func GitCommit(t *testing.T, msg string) {
-	GitCommitWithDate(t, msg, time.Time{})
-}
-
-// GitCommitWithDate creates a git commit with a commit date.
-func GitCommitWithDate(t *testing.T, msg string, commitDate time.Time) {
-	env := (map[string]string)(nil)
-	if !commitDate.IsZero() {
-		env = map[string]string{
-			"GIT_COMMITTER_DATE": commitDate.Format(time.RFC1123Z),
-		}
-	}
-	out, err := fakeGitEnv(env, "commit", "--allow-empty", "-m", msg)
-	assert.NoError(t, err)
-	assert.Contains(t, out, "master", msg)
+func GitCommit(tb testing.TB, msg string) {
+	tb.Helper()
+	out, err := fakeGit("commit", "--allow-empty", "-m", msg)
+	require.NoError(tb, err)
+	require.Contains(tb, out, "main", msg)
 }
 
 // GitTag creates a git tag.
-func GitTag(t *testing.T, tag string) {
+func GitTag(tb testing.TB, tag string) {
+	tb.Helper()
 	out, err := fakeGit("tag", tag)
-	assert.NoError(t, err)
-	assert.Empty(t, out)
+	require.NoError(tb, err)
+	require.Empty(tb, out)
+}
+
+// GitAnnotatedTag creates an annotated tag.
+func GitAnnotatedTag(tb testing.TB, tag, message string) {
+	tb.Helper()
+	out, err := fakeGit("tag", "-a", tag, "-m", message)
+	require.NoError(tb, err)
+	require.Empty(tb, out)
 }
 
 // GitBranch creates a git branch.
-func GitBranch(t *testing.T, branch string) {
+func GitBranch(tb testing.TB, branch string) {
+	tb.Helper()
 	out, err := fakeGit("branch", branch)
-	assert.NoError(t, err)
-	assert.Empty(t, out)
+	require.NoError(tb, err)
+	require.Empty(tb, out)
 }
 
 // GitAdd adds all files to stage.
-func GitAdd(t *testing.T) {
+func GitAdd(tb testing.TB) {
+	tb.Helper()
 	out, err := fakeGit("add", "-A")
-	assert.NoError(t, err)
-	assert.Empty(t, out)
-}
-
-func fakeGitEnv(env map[string]string, args ...string) (string, error) {
-	var allArgs = []string{
-		"-c", "user.name='GoReleaser'",
-		"-c", "user.email='test@goreleaser.github.com'",
-		"-c", "commit.gpgSign=false",
-		"-c", "log.showSignature=false",
-	}
-	allArgs = append(allArgs, args...)
-	return git.RunEnv(env, allArgs...)
+	require.NoError(tb, err)
+	require.Empty(tb, out)
 }
 
 func fakeGit(args ...string) (string, error) {
-	return fakeGitEnv(nil, args...)
+	allArgs := []string{
+		"-c", "user.name='GoReleaser'",
+		"-c", "user.email='test@goreleaser.github.com'",
+		"-c", "commit.gpgSign=false",
+		"-c", "tag.gpgSign=false",
+		"-c", "log.showSignature=false",
+	}
+	allArgs = append(allArgs, args...)
+	return git.Run(context.TODO(), allArgs...)
 }
 
 // GitCheckoutBranch allows us to change the active branch that we're using.
-func GitCheckoutBranch(t *testing.T, name string) {
+func GitCheckoutBranch(tb testing.TB, name string) {
+	tb.Helper()
 	out, err := fakeGit("checkout", "-b", name)
-	assert.NoError(t, err)
-	assert.Empty(t, out)
+	require.NoError(tb, err)
+	require.Empty(tb, out)
 }

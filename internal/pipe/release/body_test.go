@@ -1,68 +1,66 @@
 package release
 
 import (
-	"flag"
-	"io/ioutil"
 	"testing"
 
-	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var update = flag.Bool("update", false, "update .golden files")
-
 func TestDescribeBody(t *testing.T) {
-	var changelog = "feature1: description\nfeature2: other description"
-	var ctx = context.New(config.Project{})
+	changelog := "feature1: description\nfeature2: other description"
+	ctx := context.New(config.Project{})
 	ctx.ReleaseNotes = changelog
-	for _, d := range []string{
-		"goreleaser/goreleaser:0.40.0",
-		"goreleaser/goreleaser:latest",
-		"goreleaser/godownloader:v0.1.0",
-	} {
-		ctx.Artifacts.Add(&artifact.Artifact{
-			Name: d,
-			Type: artifact.DockerImage,
-		})
-	}
 	out, err := describeBody(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	var golden = "testdata/release1.golden"
-	if *update {
-		_ = ioutil.WriteFile(golden, out.Bytes(), 0755)
-	}
-	bts, err := ioutil.ReadFile(golden)
-	assert.NoError(t, err)
-	assert.Equal(t, string(bts), out.String())
-}
-
-func TestDescribeBodyNoDockerImagesNoBrews(t *testing.T) {
-	var changelog = "feature1: description\nfeature2: other description"
-	var ctx = &context.Context{
-		ReleaseNotes: changelog,
-	}
-	out, err := describeBody(ctx)
-	assert.NoError(t, err)
-
-	var golden = "testdata/release2.golden"
-	if *update {
-		_ = ioutil.WriteFile(golden, out.Bytes(), 0655)
-	}
-	bts, err := ioutil.ReadFile(golden)
-	assert.NoError(t, err)
-
-	assert.Equal(t, string(bts), out.String())
+	golden.RequireEqual(t, out.Bytes())
 }
 
 func TestDontEscapeHTML(t *testing.T) {
-	var changelog = "<h1>test</h1>"
-	var ctx = context.New(config.Project{})
+	changelog := "<h1>test</h1>"
+	ctx := context.New(config.Project{})
 	ctx.ReleaseNotes = changelog
 
 	out, err := describeBody(ctx)
-	assert.NoError(t, err)
-	assert.Contains(t, out.String(), changelog)
+	require.NoError(t, err)
+	require.Contains(t, out.String(), changelog)
+}
+
+func TestDescribeBodyWithHeaderAndFooter(t *testing.T) {
+	changelog := "feature1: description\nfeature2: other description"
+	ctx := context.New(config.Project{
+		Release: config.Release{
+			Header: "## Yada yada yada\nsomething\n",
+			Footer: "\n---\n\nGet images at docker.io/foo/bar:{{.Tag}}\n\n---\n\nGet GoReleaser Pro at https://goreleaser.com/pro",
+		},
+	})
+	ctx.ReleaseNotes = changelog
+	ctx.Git = context.GitInfo{CurrentTag: "v1.0"}
+	out, err := describeBody(ctx)
+	require.NoError(t, err)
+
+	golden.RequireEqual(t, out.Bytes())
+}
+
+func TestDescribeBodyWithInvalidHeaderTemplate(t *testing.T) {
+	ctx := context.New(config.Project{
+		Release: config.Release{
+			Header: "## {{ .Nop }\n",
+		},
+	})
+	_, err := describeBody(ctx)
+	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+}
+
+func TestDescribeBodyWithInvalidFooterTemplate(t *testing.T) {
+	ctx := context.New(config.Project{
+		Release: config.Release{
+			Footer: "{{ .Nops }",
+		},
+	})
+	_, err := describeBody(ctx)
+	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
 }

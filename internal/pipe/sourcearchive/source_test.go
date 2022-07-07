@@ -1,7 +1,6 @@
 package sourcearchive
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,22 +15,22 @@ import (
 func TestArchive(t *testing.T) {
 	for _, format := range []string{"tar.gz", "tar", "zip"} {
 		t.Run(format, func(t *testing.T) {
-			tmp, back := testlib.Mktmp(t)
-			defer back()
-			require.NoError(t, os.Mkdir("dist", 0744))
+			tmp := testlib.Mktmp(t)
+			require.NoError(t, os.Mkdir("dist", 0o744))
 
 			testlib.GitInit(t)
-			require.NoError(t, ioutil.WriteFile("code.txt", []byte("not really code"), 0655))
-			require.NoError(t, ioutil.WriteFile("README.md", []byte("# my dope fake project"), 0655))
+			require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0o655))
+			require.NoError(t, os.WriteFile("README.md", []byte("# my dope fake project"), 0o655))
 			testlib.GitAdd(t)
 			testlib.GitCommit(t, "feat: first")
 
-			var ctx = context.New(config.Project{
+			ctx := context.New(config.Project{
 				ProjectName: "foo",
 				Dist:        "dist",
 				Source: config.Source{
-					Format:  format,
-					Enabled: true,
+					Format:         format,
+					Enabled:        true,
+					PrefixTemplate: "{{ .ProjectName }}-{{ .Version }}/",
 				},
 			})
 			ctx.Git.FullCommit = "HEAD"
@@ -40,14 +39,14 @@ func TestArchive(t *testing.T) {
 			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, Pipe{}.Run(ctx))
 
-			var artifacts = ctx.Artifacts.List()
+			artifacts := ctx.Artifacts.List()
 			require.Len(t, artifacts, 1)
 			require.Equal(t, artifact.Artifact{
 				Type: artifact.UploadableSourceArchive,
 				Name: "foo-1.0.0." + format,
 				Path: "dist/foo-1.0.0." + format,
 				Extra: map[string]interface{}{
-					"Format": format,
+					artifact.ExtraFormat: format,
 				},
 			}, *artifacts[0])
 			stat, err := os.Stat(filepath.Join(tmp, "dist", "foo-1.0.0."+format))
@@ -58,7 +57,7 @@ func TestArchive(t *testing.T) {
 }
 
 func TestDefault(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, config.Source{
 		NameTemplate: "{{ .ProjectName }}-{{ .Version }}",
@@ -67,7 +66,7 @@ func TestDefault(t *testing.T) {
 }
 
 func TestInvalidNameTemplate(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		Source: config.Source{
 			Enabled:      true,
 			NameTemplate: "{{ .foo }-asdda",
@@ -77,9 +76,20 @@ func TestInvalidNameTemplate(t *testing.T) {
 }
 
 func TestDisabled(t *testing.T) {
-	testlib.AssertSkipped(t, Pipe{}.Run(context.New(config.Project{})))
+	require.True(t, Pipe{}.Skip(context.New(config.Project{})))
 }
 
-func TestString(t *testing.T) {
-	require.NotEmpty(t, Pipe{}.String())
+func TestSkip(t *testing.T) {
+	t.Run("skip", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Source: config.Source{
+				Enabled: true,
+			},
+		})
+		require.False(t, Pipe{}.Skip(ctx))
+	})
 }

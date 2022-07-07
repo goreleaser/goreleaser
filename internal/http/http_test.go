@@ -5,7 +5,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	h "net/http"
 	"net/http/httptest"
 	"os"
@@ -21,27 +21,25 @@ import (
 )
 
 func TestAssetOpenDefault(t *testing.T) {
-	tf, err := ioutil.TempFile("", "")
-	if err != nil {
-		t.Fatalf("can not create tmp file: %v", err)
-		return
-	}
-	fmt.Fprint(tf, "a")
-	tf.Close()
+	tf := filepath.Join(t.TempDir(), "asset")
+	require.NoError(t, os.WriteFile(tf, []byte("a"), 0o765))
+
 	a, err := assetOpenDefault("blah", &artifact.Artifact{
-		Path: tf.Name(),
+		Path: tf,
 	})
 	if err != nil {
 		t.Fatalf("can not open asset: %v", err)
 	}
-	bs, err := ioutil.ReadAll(a.ReadCloser)
+	t.Cleanup(func() {
+		require.NoError(t, a.ReadCloser.Close())
+	})
+	bs, err := io.ReadAll(a.ReadCloser)
 	if err != nil {
 		t.Fatalf("can not read asset: %v", err)
 	}
 	if string(bs) != "a" {
 		t.Fatalf("unexpected read content")
 	}
-	os.Remove(tf.Name())
 	_, err = assetOpenDefault("blah", &artifact.Artifact{
 		Path: "blah",
 	})
@@ -98,9 +96,29 @@ func TestCheckConfig(t *testing.T) {
 		{"secret missing", args{ctx, &config.Upload{Name: "b", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"target missing", args{ctx, &config.Upload{Name: "a", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 		{"name missing", args{ctx, &config.Upload{Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
+		{"username missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Mode: ModeArchive}, "test"}, true},
+		{"username present", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, false},
 		{"mode missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe"}, "test"}, true},
 		{"mode invalid", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: "blabla"}, "test"}, true},
 		{"cert invalid", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeBinary, TrustedCerts: "bad cert!"}, "test"}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := CheckConfig(tt.args.ctx, tt.args.upload, tt.args.kind); (err != nil) != tt.wantErr {
+				t.Errorf("CheckConfig() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+
+	delete(ctx.Env, "TEST_A_SECRET")
+
+	tests = []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{"username missing", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Mode: ModeArchive}, "test"}, false},
+		{"username present", args{ctx, &config.Upload{Name: "a", Target: "http://blabla", Username: "pepe", Mode: ModeArchive}, "test"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -121,9 +139,6 @@ type check struct {
 
 func checks(checks ...check) func(rs []*h.Request) error {
 	return func(rs []*h.Request) error {
-		if len(rs) != len(checks) {
-			return fmt.Errorf("expected %d requests, got %d", len(checks), len(rs))
-		}
 		for _, r := range rs {
 			found := false
 			for _, c := range checks {
@@ -140,6 +155,9 @@ func checks(checks ...check) func(rs []*h.Request) error {
 				return fmt.Errorf("check not found for request %+v", r)
 			}
 		}
+		if len(rs) != len(checks) {
+			return fmt.Errorf("expected %d requests, got %d", len(checks), len(rs))
+		}
 		return nil
 	}
 }
@@ -149,7 +167,7 @@ func doCheck(c check, r *h.Request) error {
 	if r.ContentLength != contentLength {
 		return fmt.Errorf("request content-length header value %v unexpected, wanted %v", r.ContentLength, contentLength)
 	}
-	bs, err := ioutil.ReadAll(r.Body)
+	bs, err := io.ReadAll(r.Body)
 	if err != nil {
 		return fmt.Errorf("reading request body: %v", err)
 	}
@@ -179,13 +197,13 @@ func TestUpload(t *testing.T) {
 	var m sync.Mutex
 	mux := h.NewServeMux()
 	mux.Handle("/", h.HandlerFunc(func(w h.ResponseWriter, r *h.Request) {
-		bs, err := ioutil.ReadAll(r.Body)
+		bs, err := io.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(h.StatusInternalServerError)
 			fmt.Fprintf(w, "reading request body: %v", err)
 			return
 		}
-		r.Body = ioutil.NopCloser(bytes.NewReader(bs))
+		r.Body = io.NopCloser(bytes.NewReader(bs))
 		m.Lock()
 		requests = append(requests, r)
 		m.Unlock()
@@ -194,7 +212,7 @@ func TestUpload(t *testing.T) {
 	}))
 	assetOpen = func(k string, a *artifact.Artifact) (*asset, error) {
 		return &asset{
-			ReadCloser: ioutil.NopCloser(bytes.NewReader(content)),
+			ReadCloser: io.NopCloser(bytes.NewReader(content)),
 			Size:       int64(len(content)),
 		}, nil
 	}
@@ -219,8 +237,7 @@ func TestUpload(t *testing.T) {
 	ctx.Env["TEST_A_USERNAME"] = "u2"
 	ctx.Version = "2.1.0"
 	ctx.Artifacts = artifact.New()
-	folder, err := ioutil.TempDir("", "goreleasertest")
-	require.NoError(t, err)
+	folder := t.TempDir()
 	for _, a := range []struct {
 		ext string
 		typ artifact.Type
@@ -232,9 +249,10 @@ func TestUpload(t *testing.T) {
 		{"ubi", artifact.UploadableBinary},
 		{"sum", artifact.Checksum},
 		{"sig", artifact.Signature},
+		{"pem", artifact.Certificate},
 	} {
-		var file = filepath.Join(folder, "a."+a.ext)
-		require.NoError(t, ioutil.WriteFile(file, []byte("lorem ipsum"), 0644))
+		file := filepath.Join(folder, "a."+a.ext)
+		require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 		ctx.Artifacts.Add(&artifact.Artifact{
 			Name:   "a." + a.ext,
 			Goos:   "linux",
@@ -242,7 +260,8 @@ func TestUpload(t *testing.T) {
 			Path:   file,
 			Type:   a.typ,
 			Extra: map[string]interface{}{
-				"ID": "foo",
+				artifact.ExtraID:  "foo",
+				artifact.ExtraExt: a.ext,
 			},
 		})
 	}
@@ -256,7 +275,8 @@ func TestUpload(t *testing.T) {
 		setup        func(*httptest.Server) (*context.Context, config.Upload)
 		check        func(r []*h.Request) error
 	}{
-		{"wrong-mode", true, true, true, true,
+		{
+			"wrong-mode", true, true, true, true,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         "wrong-mode",
@@ -268,7 +288,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(),
 		},
-		{"username-from-env", true, true, false, false,
+		{
+			"username-from-env", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeArchive,
@@ -282,7 +303,8 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u2", "x", content, map[string]string{}},
 			),
 		},
-		{"post", true, true, false, false,
+		{
+			"post", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Method:       h.MethodPost,
@@ -298,7 +320,8 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
 			),
 		},
-		{"archive", true, true, false, false,
+		{
+			"archive", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeArchive,
@@ -313,7 +336,8 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
 			),
 		},
-		{"archive_with_os_tmpl", true, true, false, false,
+		{
+			"archive_with_os_tmpl", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeArchive,
@@ -328,7 +352,8 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/linux/amd64/a.tar", "u1", "x", content, map[string]string{}},
 			),
 		},
-		{"archive_with_ids", true, true, false, false,
+		{
+			"archive_with_ids", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeArchive,
@@ -344,7 +369,8 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u1", "x", content, map[string]string{}},
 			),
 		},
-		{"binary", true, true, false, false,
+		{
+			"binary", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -356,7 +382,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
-		{"binary_with_os_tmpl", true, true, false, false,
+		{
+			"binary_with_os_tmpl", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -368,7 +395,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/Linux/amd64/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
-		{"binary_with_ids", true, true, false, false,
+		{
+			"binary_with_ids", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -381,7 +409,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
-		{"binary-add-ending-bar", true, true, false, false,
+		{
+			"binary-add-ending-bar", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -393,7 +422,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{}}),
 		},
-		{"archive-with-checksum-and-signature", true, true, false, false,
+		{
+			"archive-with-checksum-and-signature", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeArchive,
@@ -410,9 +440,11 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.tar", "u3", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/a.sum", "u3", "x", content, map[string]string{}},
 				check{"/blah/2.1.0/a.sig", "u3", "x", content, map[string]string{}},
+				check{"/blah/2.1.0/a.pem", "u3", "x", content, map[string]string{}},
 			),
 		},
-		{"bad-template", true, true, true, true,
+		{
+			"bad-template", true, true, true, true,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -426,7 +458,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(),
 		},
-		{"failed-request", true, true, true, true,
+		{
+			"failed-request", true, true, true, true,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -440,7 +473,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(),
 		},
-		{"broken-cert", false, true, false, true,
+		{
+			"broken-cert", false, true, false, true,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:         ModeBinary,
@@ -454,15 +488,8 @@ func TestUpload(t *testing.T) {
 			},
 			checks(),
 		},
-		{"skip-publishing", true, true, true, true,
-			func(s *httptest.Server) (*context.Context, config.Upload) {
-				c := *ctx
-				c.SkipPublish = true
-				return &c, config.Upload{}
-			},
-			checks(),
-		},
-		{"checksumheader", true, true, false, false,
+		{
+			"checksumheader", true, true, false, false,
 			func(s *httptest.Server) (*context.Context, config.Upload) {
 				return ctx, config.Upload{
 					Mode:           ModeBinary,
@@ -475,9 +502,74 @@ func TestUpload(t *testing.T) {
 			},
 			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"-x-sha256": "5e2bf57d3f40c4b6df69daf1936cb766f832374b4fc0259a7cbff06e2f70f269"}}),
 		},
+		{
+			"custom-headers", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:     ModeBinary,
+					Name:     "a",
+					Target:   s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username: "u2",
+					CustomHeaders: map[string]string{
+						"x-custom-header-name": "custom-header-value",
+					},
+					TrustedCerts: cert(s),
+				}
+			},
+			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"x-custom-header-name": "custom-header-value"}}),
+		},
+		{
+			"custom-headers-with-template", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:     ModeBinary,
+					Name:     "a",
+					Target:   s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username: "u2",
+					CustomHeaders: map[string]string{
+						"x-project-name": "{{ .ProjectName }}",
+					},
+					TrustedCerts: cert(s),
+				}
+			},
+			checks(check{"/blah/2.1.0/a.ubi", "u2", "x", content, map[string]string{"x-project-name": "blah"}}),
+		},
+		{
+			"invalid-template-in-custom-headers", true, true, true, true,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:     ModeBinary,
+					Name:     "a",
+					Target:   s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username: "u2",
+					CustomHeaders: map[string]string{
+						"x-custom-header-name": "{{ .Env.NONEXISTINGVARIABLE and some bad expressions }}",
+					},
+					TrustedCerts: cert(s),
+				}
+			},
+			checks(),
+		},
+		{
+			"filtering-by-ext", true, true, false, false,
+			func(s *httptest.Server) (*context.Context, config.Upload) {
+				return ctx, config.Upload{
+					Mode:         ModeArchive,
+					Name:         "a",
+					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username:     "u3",
+					TrustedCerts: cert(s),
+					Exts:         []string{"deb", "rpm"},
+				}
+			},
+			checks(
+				check{"/blah/2.1.0/a.deb", "u3", "x", content, map[string]string{}},
+			),
+		},
 	}
 
 	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Upload), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {
+		t.Helper()
 		requests = nil
 		ctx, upload := setup(srv)
 		wantErr := wantErrPlain
@@ -509,7 +601,6 @@ func TestUpload(t *testing.T) {
 			})
 		}
 	}
-
 }
 
 func cert(srv *httptest.Server) string {

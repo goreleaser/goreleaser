@@ -4,10 +4,9 @@ package dist
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -15,14 +14,14 @@ import (
 type Pipe struct{}
 
 func (Pipe) String() string {
-	return "checking ./dist"
+	return "checking distribution directory"
 }
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) (err error) {
 	_, err = os.Stat(ctx.Config.Dist)
 	if os.IsNotExist(err) {
-		log.Debug("./dist doesn't exist, creating empty folder")
+		log.Debugf("%s doesn't exist, creating empty folder", ctx.Config.Dist)
 		return mkdir(ctx)
 	}
 	if ctx.RmDist {
@@ -33,22 +32,22 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		}
 		return err
 	}
-	files, err := ioutil.ReadDir(ctx.Config.Dist)
+	files, err := os.ReadDir(ctx.Config.Dist)
 	if err != nil {
 		return
 	}
 	if len(files) != 0 {
-		log.Debugf("there are %d files on ./dist", len(files))
+		log.Debugf("there are %d files on %s", len(files), ctx.Config.Dist)
 		return fmt.Errorf(
 			"%s is not empty, remove it before running goreleaser or use the --rm-dist flag",
 			ctx.Config.Dist,
 		)
 	}
-	log.Debug("./dist is empty")
+	log.Debugf("%s is empty", ctx.Config.Dist)
 	return mkdir(ctx)
 }
 
 func mkdir(ctx *context.Context) error {
 	// #nosec
-	return os.MkdirAll(ctx.Config.Dist, 0755)
+	return os.MkdirAll(ctx.Config.Dist, 0o755)
 }

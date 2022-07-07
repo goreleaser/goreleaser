@@ -1,0 +1,3 @@
+  • first
+    • DEPRECATED: `foo.bar.whatever: foobar` should not be used anymore, check https://goreleaser.com/deprecations#foobarwhatever-foobar for more info
+  • last

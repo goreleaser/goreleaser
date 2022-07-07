@@ -1,12 +1,12 @@
+// Package milestone implements Pipe and manages VCS milestones.
 package milestone
 
 import (
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
-	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
@@ -15,16 +15,11 @@ const defaultNameTemplate = "{{ .Tag }}"
 // Pipe for milestone.
 type Pipe struct{}
 
-func (Pipe) String() string {
-	return "milestones"
-}
+func (Pipe) String() string                 { return "milestones" }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Milestones) == 0 }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
-	if len(ctx.Config.Milestones) == 0 {
-		ctx.Config.Milestones = append(ctx.Config.Milestones, config.Milestone{})
-	}
-
 	for i := range ctx.Config.Milestones {
 		milestone := &ctx.Config.Milestones[i]
 
@@ -33,9 +28,11 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 
 		if milestone.Repo.Name == "" {
-			repo, err := git.ExtractRepoFromConfig()
-
+			repo, err := git.ExtractRepoFromConfig(ctx)
 			if err != nil && !ctx.Snapshot {
+				return err
+			}
+			if err := repo.CheckSCM(); err != nil && !ctx.Snapshot {
 				return err
 			}
 
@@ -48,9 +45,6 @@ func (Pipe) Default(ctx *context.Context) error {
 
 // Publish the release.
 func (Pipe) Publish(ctx *context.Context) error {
-	if ctx.SkipPublish {
-		return pipe.ErrSkipPublishEnabled
-	}
 	c, err := client.New(ctx)
 	if err != nil {
 		return err
@@ -63,11 +57,10 @@ func doPublish(ctx *context.Context, vcsClient client.Client) error {
 		milestone := &ctx.Config.Milestones[i]
 
 		if !milestone.Close {
-			return pipe.Skip("milestone pipe is disabled")
+			return pipe.Skip("closing not enabled")
 		}
 
 		name, err := tmpl.New(ctx).Apply(milestone.NameTemplate)
-
 		if err != nil {
 			return err
 		}

@@ -18,6 +18,11 @@
 		display: none
 	}
 
+	[data-md-color-scheme=slate] .tx-container {
+		padding-top: 1rem;
+		background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: hsla(232, 15%, 21%, 1)'/></svg>") no-repeat bottom, linear-gradient(to bottom, var(--md-primary-fg-color), var(--goreleaser-primary-color) 99%, #fff 99%)
+	}
+
 	.tx-container {
 		padding-top: 1rem;
 		background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: white' /></svg>") no-repeat bottom, linear-gradient(to bottom, var(--md-primary-fg-color), var(--goreleaser-primary-color) 99%, #fff 99%)
@@ -121,13 +126,25 @@
 			</div>
 			<div class="tx-hero__content">
 				<h1>GoReleaser</h1>
-				<p>Release Go projects as fast and easily as possible!</p>
+				<h2>Release Go projects as fast and easily as possible!</h2>
+				<p>With GoReleaser, you can:</p>
+				<ul>
+					<li>Cross-compile your Go project</li>
+					<li>Release to GitHub, GitLab and Gitea</li>
+					<li>Create nightly builds</li>
+					<li>Create Docker images and manifests</li>
+					<li>Create Linux packages and Homebrew taps</li>
+					<li>Sign artifacts, checksums and container images</li>
+					<li>Announce new releases on Twitter, Slack, Discord and others</li>
+					<li>Generate SBOMs (Software Bill of Materials) for binaries and container images</li>
+					<li>... and much more!</li>
+				</ul>
 				<a href="{{ page.next_page.url | url }}" title="{{ page.next_page.title | striptags }}"
 					class="md-button md-button--primary">
 					Get started
 				</a>
-				<a href="{{ config.repo_url }}" title="{{ lang.t('source.link.title') }}" class="md-button">
-					Go to GitHub
+				<a href="/pro/" title="{{ lang.t('source.link.title') }}" class="md-button">
+					Get Pro
 				</a>
 			</div>
 		</div>

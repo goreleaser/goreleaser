@@ -3,26 +3,29 @@ name: docs
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
     paths:
-      - '.github/workflows/htmltest.yml'
       - 'www/*'
-  pull_request: {}
+  pull_request:
+    paths:
+      - 'www/*'
+
+permissions:
+  contents: read
 
 jobs:
   htmltest:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2.3.2
-      -
-        name: build
-        run: |
-          docker run --rm -v ${PWD}/www:/docs squidfunk/mkdocs-material build
-      -
-        name: htmltest
-        run: |
-          cd www
-          curl https://htmltest.wjdp.uk | bash
-          ./bin/htmltest -c htmltest.yml
+      - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
+      - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923 # v3
+        with:
+          go-version: 1.18
+      - run: task docs:build
+      - uses: wjdp/htmltest-action@09118714cd26bef56bd3d0819e4f9b1dce6f60a9 # master
+        with:
+          path: www/site
+          config: www/htmltest.yml

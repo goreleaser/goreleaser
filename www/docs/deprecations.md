@@ -1,6 +1,4 @@
----
-title: Deprecation notices
----
+# Deprecation notices
 
 This page is used to list deprecation notices across GoReleaser.
 
@@ -15,9 +13,401 @@ goreleaser check
 
 ## Active deprecation notices
 
+<!--
+
+Template for new deprecations:
+
+### property
+
+> since yyyy-mm-dd
+
+Description.
+
+=== "Before"
+
+    ``` yaml
+    foo: bar
+    ```
+
+=== "After"
+    ``` yaml
+    foo: bar
+    ```
+
+-->
+
+### nfpms.maintainer
+
+> since 2022-05-07 (v1.9.0)
+
+nFPM will soon make mandatory setting the maintainer field.
+
+=== "Before"
+    ```yaml
+    nfpms:
+    - maintainer: ''
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+    - maintainer: 'Name <email>'
+    ```
+
+
+### rigs
+
+> since 2022-03-21 (v1.8.0)
+
+GoFish was deprecated by their authors, therefore, we're removing its
+support from GoReleaser too.
+
+### dockers.use: buildpacks
+
+> since 2022-03-16 (v1.7.0)
+
+This will be removed soon due to some issues:
+
+- The binary gets rebuild again during the buildpacks build;
+- There is no ARM support.
+
+### variables
+
+> since 2022-01-20 (v1.4.0)
+
+On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
+
+=== "Before"
+
+    ``` yaml
+    variables:
+      foo: bar
+    some_template: 'lala-{{ .foo }}'
+    ```
+
+=== "After"
+
+    ``` yaml
+    variables:
+      foo: bar
+    some_template: 'lala-{{ .Var.foo }}'
+    ```
+
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
+### nfpms.empty_folders
+
+> since 2021-11-14 (v1.0.0), removed 2022-06-14 (v1.10.0)
+
+nFPM empty folders is now deprecated in favor of a `dir` content type:
+
+=== "Before"
+
+    ``` yaml
+    nfpms:
+    - empty_folders:
+      - /foo/bar
+    ```
+
+=== "After"
+    ``` yaml
+    nfpms:
+    - contents:
+      - dst: /foo/bar
+        type: dir
+    ```
+
+
+### builds for windows/arm64
+
+> since 2021-08-16 (v0.175.0), removed 2022-06-12 (v1.10.0)
+
+Since Go 1.17, `windows/arm64` is a valid target.
+
+Prior to v0.175.0, GoReleaser would just ignore this target.
+Since in Go 1.17 it is now a valid target, GoReleaser will build it if the Go version being used is 1.17 or later.
+
+If you want to make sure it is ignored in the future, you need to add this to your build config:
+
+```yaml
+ignore:
+- goos: windows
+  goarch: arm64
+```
+
+If you try to use new versions of GoReleaser with Go 1.16 or older, it will warn about it until this deprecation warning expires, after that your build will likely fail.
+
+### godownloader
+
+> since 2021-10-13 (all), removed 2022-05-18
+
+GoDownloader, the install script generator, wasn't been updated for a long time and is now officially deprecated.
+The website and all install scripts will be taken out in 6 months.
+You can still use any of the other install methods.
+
+This also includes `install.goreleaser.com`.
+
+Most common tools installed via that website were probably
+[GoReleaser](/install/) itself and
+[golangci-lint](https://golangci-lint.run/usage/install/).
+
+Please follow to the check their documentation for alternative install methods.
+
+### dockers.use_buildx
+
+> since 2021-06-26 (v0.172.0), removed 2022-03-16 (v1.7.0)
+
+`use_buildx` is deprecated in favor of the more generalist `use`, since now it also allow other options in the future:
+
+Change this:
+
+=== "Before"
+    ```yaml
+    dockers:
+      -
+        use_buildx: true
+    ```
+
+=== "After"
+    ```yaml
+    dockers:
+      -
+        use: buildx
+    ```
+
+### builds for darwin/arm64
+
+> since 2021-02-17 (v0.157.0), removed 2022-03-16 (v1.7.0)
+
+Since Go 1.16, `darwin/arm64` is macOS on Apple Silicon instead of `iOS`.
+
+Prior to v0.156.0, GoReleaser would just ignore this target.
+Since in Go 1.16 and later it is a valid target, GoReleaser will now build it if the Go version being used is 1.16 or later.
+
+If you want to make sure it is ignored in the future, you need to add this to your build config:
+
+```yaml
+ignore:
+- goos: darwin
+  goarch: arm64
+```
+
+If you try to use new versions of GoReleaser with Go 1.15 or older, it will warn about it until this deprecation warning expires, after that your build will likely fail.
+
+### Skipping SemVer Validations
+
+> since 2021-02-28 (v0.158.0), removed 2021-09-22 (v0.180.0)
+
+GoReleaser skips SemVer validations when run with `--skip-validation` or `--snapshot`.
+This causes other problems later, such as [invalid Linux packages](https://github.com/goreleaser/goreleaser/issues/2081).
+Because of that, once this deprecation expires, GoReleaser will hard fail on non-semver versions, as stated on our [limitations page](https://goreleaser.com/limitations/semver/).
+
+### docker.builds
+
+> since 2021-01-07 (v0.154.0), removed 2021-08-13 (v0.175.0)
+
+`builds` is deprecated in favor of `ids`, since now it also allows to copy nfpm packages:
+
+Change this:
+
+=== "Before"
+    ```yaml
+    dockers:
+      -
+        builds: ['a', 'b']
+    ```
+
+=== "After"
+    ```yaml
+    dockers:
+      -
+        ids: ['a', 'b']
+    ```
+
+### docker.binaries
+
+> since 2021-01-07 (v0.154.0), removed 2021-08-13 (v0.175.0)
+
+`binaries` is deprecated and now does nothing.
+If you want to filter something out, use the `ids` property.
+
+Change this:
+
+=== "Before"
+    ```yaml
+    dockers:
+      -
+        binaries: ['foo']
+    ```
+
+=== "After"
+    ```yaml
+    dockers:
+      -
+        ids: ['foo']
+    ```
+
+### nfpms.files
+
+> since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
+
+`files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        files:
+          foo: bar
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - src: foo
+            dst: bar
+    ```
+
+### nfpms.config_files
+
+> since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
+
+`config_files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        config_files:
+          foo: bar
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - src: foo
+            dst: bar
+            type: config
+    ```
+
+### nfpms.symlinks
+
+> since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
+
+`symlinks` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        symlinks:
+          foo: bar
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - src: foo
+            dst: bar
+            type: symlink
+    ```
+
+### nfpms.rpm.ghost_files
+
+> since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
+
+`rpm.ghost_files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        rpm:
+          ghost_files:
+            - foo
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - dst: bar
+            type: ghost
+            packager: rpm # optional
+    ```
+
+### nfpms.rpm.config_noreplace_files
+
+> since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
+
+`rpm.config_noreplace_files` is deprecated in favor of `contents` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        rpm:
+          config_noreplace_files:
+            foo: bar
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        contents:
+          - src: foo
+            dst: bar
+            type: config|noreplace
+            packager: rpm # optional
+    ```
+
+
+### nfpms.deb.version_metadata
+
+> since 2020-12-21 (v0.149.0), removed 2021-07-26 (v0.172.0)
+
+`deb.version_metadata` is deprecated in favor of `version_metadata` (check [this page](https://goreleaser.com/customization/nfpm/) for more details):
+
+Change this:
+
+=== "Before"
+    ```yaml
+    nfpms:
+      -
+        deb:
+          version_metadata: beta1
+    ```
+
+=== "After"
+    ```yaml
+    nfpms:
+      -
+        version_metadata: beta1
+    ```
+
 ### brews.github
 
-> since 2020-07-06 (v0.139.0)
+> since 2020-07-06 (v0.139.0), removed 2021-01-04 (v0.152.0)
 
 GitHub section was deprecated in favour of `tap` which
 reflects Homebrew's naming convention. GitHub will be picked
@@ -45,7 +435,7 @@ Change this:
 
 ### brews.gitlab
 
-> since 2020-07-06 (v0.139.0)
+> since 2020-07-06 (v0.139.0), removed 2021-01-04 (v0.152.0)
 
 GitLab section was deprecated in favour of `tap` which
 reflects Homebrew's naming convention. GitLab will be picked
@@ -70,33 +460,6 @@ Change this:
           owner: goreleaser
           name: homebrew-tap
     ```
-
-<!--
-
-Template for new deprecations:
-
-### property
-
-> since yyyy-mm-dd
-
-Description.
-
-=== "Before"
-
-    ``` yaml
-    foo: bar
-    ```
-
-=== "After"
-    ``` yaml
-    foo: bar
-    ```
-
--->
-
-## Expired deprecation notices
-
-The following options were deprecated in the past and were already removed.
 
 ### puts
 
@@ -383,7 +746,7 @@ FPM is deprecated in favor of nfpm, which is a simpler alternative written
 in Go. The objective is to remove the ruby dependency thus simplify the
 CI/CD pipelines.
 
-Just replace the `fpm` keyword by `nfpm` in your `goreleaser.yaml` file.
+Just replace the `fpm` keyword by `nfpm` in your `.goreleaser.yaml` file.
 
 === "Before"
     ```yaml

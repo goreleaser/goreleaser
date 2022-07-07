@@ -1,10 +1,11 @@
----
-title: CGO
----
+# CGO
 
-Unfortunately, GoReleaser does not support CGO.
+If you need to cross-compile with CGO enabled, our Docker image is not
+supported and your config will not look that "clean", unfortunately.
 
-You can see the discussion about this in
+You can check [this cookbook](/cookbooks/cgo-and-crosscompiling/) for an
+example.
+
+You can also see the discussion about CGO in
 [this issue](https://github.com/goreleaser/goreleaser/issues/708).
 
-You can see the comments on the issue referenced for workarounds on it.

@@ -6,7 +6,7 @@ your changes are pulled to a repo like
 and that's what you're building off.
 
 This repo has the wrong name, so to prevent GoReleaser from publishing to
-the wrong GitHub repo, add to your `.goreleaser.yml` file's release section:
+the wrong GitHub repo, add to your `.goreleaser.yaml` file's release section:
 
 ```yaml
 release:

@@ -3,91 +3,101 @@ package tmpl
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"text/template"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestWithArtifact(t *testing.T) {
-	var ctx = context.New(config.Project{
+	t.Parallel()
+	ctx := context.New(config.Project{
 		ProjectName: "proj",
 	})
+	ctx.ModulePath = "github.com/goreleaser/goreleaser"
 	ctx.Env = map[string]string{
-		"FOO": "bar",
+		"FOO":       "bar",
+		"MULTILINE": "something with\nmultiple lines\nremove this\nto test things",
 	}
 	ctx.Version = "1.2.3"
+	ctx.Git.PreviousTag = "v1.2.2"
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Semver = context.Semver{
 		Major: 1,
 		Minor: 2,
 		Patch: 3,
 	}
+	ctx.Git.Branch = "test-branch"
 	ctx.Git.Commit = "commit"
 	ctx.Git.FullCommit = "fullcommit"
 	ctx.Git.ShortCommit = "shortcommit"
+	ctx.Git.TagSubject = "awesome release"
+	ctx.Git.TagContents = "awesome release\n\nanother line"
+	ctx.Git.TagBody = "another line"
+	ctx.ReleaseNotes = "test release notes"
 	for expect, tmpl := range map[string]string{
-		"bar":         "{{.Env.FOO}}",
-		"Linux":       "{{.Os}}",
-		"amd64":       "{{.Arch}}",
-		"6":           "{{.Arm}}",
-		"softfloat":   "{{.Mips}}",
-		"1.2.3":       "{{.Version}}",
-		"v1.2.3":      "{{.Tag}}",
-		"1-2-3":       "{{.Major}}-{{.Minor}}-{{.Patch}}",
-		"commit":      "{{.Commit}}",
-		"fullcommit":  "{{.FullCommit}}",
-		"shortcommit": "{{.ShortCommit}}",
-		"binary":      "{{.Binary}}",
-		"proj":        "{{.ProjectName}}",
-		"":            "{{.ArtifactUploadHash}}",
+		"bar":                              "{{.Env.FOO}}",
+		"Linux":                            "{{.Os}}",
+		"amd64":                            "{{.Arch}}",
+		"6":                                "{{.Arm}}",
+		"softfloat":                        "{{.Mips}}",
+		"v3":                               "{{.Amd64}}",
+		"1.2.3":                            "{{.Version}}",
+		"v1.2.3":                           "{{.Tag}}",
+		"1-2-3":                            "{{.Major}}-{{.Minor}}-{{.Patch}}",
+		"test-branch":                      "{{.Branch}}",
+		"commit":                           "{{.Commit}}",
+		"fullcommit":                       "{{.FullCommit}}",
+		"shortcommit":                      "{{.ShortCommit}}",
+		"binary":                           "{{.Binary}}",
+		"proj":                             "{{.ProjectName}}",
+		"github.com/goreleaser/goreleaser": "{{ .ModulePath }}",
+		"v2.0.0":                           "{{.Tag | incmajor }}",
+		"2.0.0":                            "{{.Version | incmajor }}",
+		"v1.3.0":                           "{{.Tag | incminor }}",
+		"1.3.0":                            "{{.Version | incminor }}",
+		"v1.2.4":                           "{{.Tag | incpatch }}",
+		"1.2.4":                            "{{.Version | incpatch }}",
+		"test release notes":               "{{ .ReleaseNotes }}",
+		"v1.2.2":                           "{{ .PreviousTag }}",
+		"awesome release":                  "{{ .TagSubject }}",
+		"awesome release\n\nanother line":  "{{ .TagContents }}",
+		"another line":                     "{{ .TagBody }}",
+		"runtime: " + runtime.GOOS:         "runtime: {{ .Runtime.Goos }}",
+		"runtime: " + runtime.GOARCH:       "runtime: {{ .Runtime.Goarch }}",
+
+		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
+		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",
 	} {
 		tmpl := tmpl
 		expect := expect
-		t.Run(expect, func(tt *testing.T) {
-			tt.Parallel()
+		t.Run(expect, func(t *testing.T) {
+			t.Parallel()
 			result, err := New(ctx).WithArtifact(
 				&artifact.Artifact{
-					Name:   "not-this-binary",
-					Goarch: "amd64",
-					Goos:   "linux",
-					Goarm:  "6",
-					Gomips: "softfloat",
+					Name:    "not-this-binary",
+					Goarch:  "amd64",
+					Goos:    "linux",
+					Goarm:   "6",
+					Gomips:  "softfloat",
+					Goamd64: "v3",
 					Extra: map[string]interface{}{
-						"Binary": "binary",
+						artifact.ExtraBinary: "binary",
 					},
 				},
 				map[string]string{"linux": "Linux"},
 			).Apply(tmpl)
-			assert.NoError(tt, err)
-			assert.Equal(tt, expect, result)
+			require.NoError(t, err)
+			require.Equal(t, expect, result)
 		})
 	}
 
-	t.Run("artifact with gitlab ArtifactUploadHash", func(tt *testing.T) {
-		tt.Parallel()
-		uploadHash := "820ead5d9d2266c728dce6d4d55b6460"
-		result, err := New(ctx).WithArtifact(
-			&artifact.Artifact{
-				Name:   "another-binary",
-				Goarch: "amd64",
-				Goos:   "linux",
-				Goarm:  "6",
-				Extra: map[string]interface{}{
-					"ArtifactUploadHash": uploadHash,
-				},
-			}, map[string]string{},
-		).Apply("{{ .ArtifactUploadHash }}")
-		assert.NoError(tt, err)
-		assert.Equal(tt, uploadHash, result)
-	})
-
-	t.Run("artifact without binary name", func(tt *testing.T) {
-		tt.Parallel()
+	t.Run("artifact without binary name", func(t *testing.T) {
+		t.Parallel()
 		result, err := New(ctx).WithArtifact(
 			&artifact.Artifact{
 				Name:   "another-binary",
@@ -96,15 +106,15 @@ func TestWithArtifact(t *testing.T) {
 				Goarm:  "6",
 			}, map[string]string{},
 		).Apply("{{ .Binary }}")
-		assert.NoError(tt, err)
-		assert.Equal(tt, ctx.Config.ProjectName, result)
+		require.NoError(t, err)
+		require.Equal(t, ctx.Config.ProjectName, result)
 	})
 
-	t.Run("template using artifact Fields with no artifact", func(tt *testing.T) {
-		tt.Parallel()
+	t.Run("template using artifact Fields with no artifact", func(t *testing.T) {
+		t.Parallel()
 		result, err := New(ctx).Apply("{{ .Os }}")
-		assert.EqualError(tt, err, `template: tmpl:1:3: executing "tmpl" at <.Os>: map has no entry for key "Os"`)
-		assert.Empty(tt, result)
+		require.EqualError(t, err, `template: tmpl:1:3: executing "tmpl" at <.Os>: map has no entry for key "Os"`)
+		require.Empty(t, result)
 	})
 }
 
@@ -125,7 +135,7 @@ func TestEnv(t *testing.T) {
 			out:  "",
 		},
 	}
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Env = map[string]string{
 		"FOO": "BAR",
 	}
@@ -133,13 +143,13 @@ func TestEnv(t *testing.T) {
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
 			out, _ := New(ctx).Apply(tC.in)
-			assert.Equal(t, tC.out, out)
+			require.Equal(t, tC.out, out)
 		})
 	}
 }
 
 func TestWithEnv(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Env = map[string]string{
 		"FOO": "BAR",
 	}
@@ -148,17 +158,22 @@ func TestWithEnv(t *testing.T) {
 		"FOO=foo",
 		"BAR=bar",
 	}).Apply("{{ .Env.FOO }}-{{ .Env.BAR }}")
-	assert.NoError(t, err)
-	assert.Equal(t, "foo-bar", out)
+	require.NoError(t, err)
+	require.Equal(t, "foo-bar", out)
 }
 
 func TestFuncMap(t *testing.T) {
-	var ctx = context.New(config.Project{
+	ctx := context.New(config.Project{
 		ProjectName: "proj",
+		Env: []string{
+			"FOO=bar",
+		},
 	})
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
+	ctx.Git.URL = "https://github.com/foo/bar.git"
+	ctx.ReleaseURL = "https://github.com/foo/bar/releases/tag/v1.0.0"
 	ctx.Git.CurrentTag = "v1.2.4"
 	for _, tc := range []struct {
 		Template string
@@ -169,6 +184,16 @@ func TestFuncMap(t *testing.T) {
 			Template: `{{ replace "v1.24" "v" "" }}`,
 			Name:     "replace",
 			Expected: "1.24",
+		},
+		{
+			Template: `{{ if index .Env "SOME_ENV"  }}{{ .Env.SOME_ENV }}{{ else }}default value{{ end }}`,
+			Name:     "default value",
+			Expected: "default value",
+		},
+		{
+			Template: `{{ if index .Env "FOO"  }}{{ .Env.FOO }}{{ else }}default value{{ end }}`,
+			Name:     "default value set",
+			Expected: "bar",
 		},
 		{
 			Template: `{{ time "2006-01-02" }}`,
@@ -188,6 +213,21 @@ func TestFuncMap(t *testing.T) {
 			Expected: "test",
 		},
 		{
+			Template: `{{ trimprefix "v1.2.4" "v" }}`,
+			Name:     "trimprefix",
+			Expected: "1.2.4",
+		},
+		{
+			Template: `{{ trimsuffix .GitURL ".git" }}`,
+			Name:     "trimsuffix",
+			Expected: "https://github.com/foo/bar",
+		},
+		{
+			Template: `{{ .ReleaseURL }}`,
+			Name:     "trimsuffix",
+			Expected: "https://github.com/foo/bar/releases/tag/v1.0.0",
+		},
+		{
 			Template: `{{ toupper "test" }}`,
 			Name:     "toupper",
 			Expected: "TEST",
@@ -204,11 +244,11 @@ func TestFuncMap(t *testing.T) {
 		},
 	} {
 		out, err := New(ctx).Apply(tc.Template)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		if tc.Expected != "" {
-			assert.Equal(t, tc.Expected, out)
+			require.Equal(t, tc.Expected, out)
 		} else {
-			assert.NotEmpty(t, out)
+			require.NotEmpty(t, out)
 		}
 	}
 }
@@ -271,9 +311,9 @@ func TestApplySingleEnvOnly(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := New(ctx).ApplySingleEnvOnly(tc.tpl)
 			if tc.expectedErr != nil {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 		})
 	}
@@ -283,22 +323,21 @@ func TestInvalidTemplate(t *testing.T) {
 	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v1.1.1"
 	_, err := New(ctx).Apply("{{{.Foo}")
-	assert.EqualError(t, err, "template: tmpl:1: unexpected \"{\" in command")
+	require.EqualError(t, err, "template: tmpl:1: unexpected \"{\" in command")
 }
 
 func TestEnvNotFound(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	ctx.Git.CurrentTag = "v1.2.4"
 	result, err := New(ctx).Apply("{{.Env.FOO}}")
-	assert.Empty(t, result)
-	assert.EqualError(t, err, `template: tmpl:1:6: executing "tmpl" at <.Env.FOO>: map has no entry for key "FOO"`)
+	require.Empty(t, result)
+	require.EqualError(t, err, `template: tmpl:1:6: executing "tmpl" at <.Env.FOO>: map has no entry for key "FOO"`)
 }
 
 func TestWithExtraFields(t *testing.T) {
-	var ctx = context.New(config.Project{})
+	ctx := context.New(config.Project{})
 	out, _ := New(ctx).WithExtraFields(Fields{
 		"MyCustomField": "foo",
 	}).Apply("{{ .MyCustomField }}")
-	assert.Equal(t, "foo", out)
-
+	require.Equal(t, "foo", out)
 }

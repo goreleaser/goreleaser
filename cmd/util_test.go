@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -17,49 +16,59 @@ func (e *exitMemento) Exit(i int) {
 	e.code = i
 }
 
-func setup(t *testing.T) (current string, back func()) {
+func setup(tb testing.TB) string {
+	tb.Helper()
+
 	_ = os.Unsetenv("GITHUB_TOKEN")
 	_ = os.Unsetenv("GITLAB_TOKEN")
 
-	folder, err := ioutil.TempDir("", "")
-	require.NoError(t, err)
 	previous, err := os.Getwd()
-	require.NoError(t, err)
-	require.NoError(t, os.Chdir(folder))
-	createGoreleaserYaml(t)
-	createMainGo(t)
-	goModInit(t)
-	testlib.GitInit(t)
-	testlib.GitAdd(t)
-	testlib.GitCommit(t, "asdf")
-	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCommit(t, "asas89d")
-	testlib.GitCommit(t, "assssf")
-	testlib.GitCommit(t, "assd")
-	testlib.GitTag(t, "v0.0.2")
-	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/fake.git")
-	return folder, func() {
-		require.NoError(t, os.Chdir(previous))
-	}
+	require.NoError(tb, err)
+
+	tb.Cleanup(func() {
+		require.NoError(tb, os.Chdir(previous))
+	})
+
+	folder := tb.TempDir()
+	require.NoError(tb, os.Chdir(folder))
+
+	createGoreleaserYaml(tb)
+	createMainGo(tb)
+	goModInit(tb)
+	testlib.GitInit(tb)
+	testlib.GitAdd(tb)
+	testlib.GitCommit(tb, "asdf")
+	testlib.GitTag(tb, "v0.0.1")
+	testlib.GitCommit(tb, "asas89d")
+	testlib.GitCommit(tb, "assssf")
+	testlib.GitCommit(tb, "assd")
+	testlib.GitTag(tb, "v0.0.2")
+	testlib.GitRemoteAdd(tb, "git@github.com:goreleaser/fake.git")
+
+	return folder
 }
 
-func createFile(t *testing.T, filename, contents string) {
-	require.NoError(t, ioutil.WriteFile(filename, []byte(contents), 0644))
+func createFile(tb testing.TB, filename, contents string) {
+	tb.Helper()
+	require.NoError(tb, os.WriteFile(filename, []byte(contents), 0o644))
 }
 
-func createMainGo(t *testing.T) {
-	createFile(t, "main.go", "package main\nfunc main() {println(0)}")
+func createMainGo(tb testing.TB) {
+	tb.Helper()
+	createFile(tb, "main.go", "package main\nfunc main() {println(0)}")
 }
 
-func goModInit(t *testing.T) {
-	createFile(t, "go.mod", `module foo
+func goModInit(tb testing.TB) {
+	tb.Helper()
+	createFile(tb, "go.mod", `module foo
 
-go 1.15
+go 1.18
 `)
 }
 
-func createGoreleaserYaml(t *testing.T) {
-	var yaml = `build:
+func createGoreleaserYaml(tb testing.TB) {
+	tb.Helper()
+	yaml := `build:
   binary: fake
   goos:
     - linux
@@ -70,5 +79,5 @@ release:
     owner: goreleaser
     name: fake
 `
-	createFile(t, "goreleaser.yml", yaml)
+	createFile(tb, "goreleaser.yml", yaml)
 }

@@ -4,7 +4,7 @@ package artifactory
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	h "net/http"
 
 	"github.com/goreleaser/goreleaser/internal/http"
@@ -15,15 +15,15 @@ import (
 // Pipe for Artifactory.
 type Pipe struct{}
 
-// String returns the description of the pipe.
-func (Pipe) String() string {
-	return "artifactory"
-}
+func (Pipe) String() string                 { return "artifactory" }
+func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Artifactories) == 0 }
 
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	for i := range ctx.Config.Artifactories {
-		ctx.Config.Artifactories[i].ChecksumHeader = "X-Checksum-SHA256"
+		if ctx.Config.Artifactories[i].ChecksumHeader == "" {
+			ctx.Config.Artifactories[i].ChecksumHeader = "X-Checksum-SHA256"
+		}
 		ctx.Config.Artifactories[i].Method = h.MethodPut
 	}
 	return http.Defaults(ctx.Config.Artifactories)
@@ -33,10 +33,6 @@ func (Pipe) Default(ctx *context.Context) error {
 //
 // Docs: https://www.jfrog.com/confluence/display/RTF/Artifactory+REST+API#ArtifactoryRESTAPI-Example-DeployinganArtifact
 func (Pipe) Publish(ctx *context.Context) error {
-	if len(ctx.Config.Artifactories) == 0 {
-		return pipe.Skip("artifactory section is not configured")
-	}
-
 	// Check requirements for every instance we have configured.
 	// If not fulfilled, we can skip this pipeline
 	for _, instance := range ctx.Config.Artifactories {
@@ -79,7 +75,7 @@ func checkResponse(r *h.Response) error {
 		return nil
 	}
 	errorResponse := &errorResponse{Response: r}
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err == nil && data != nil {
 		err := json.Unmarshal(data, errorResponse)
 		if err != nil {

@@ -1,0 +1,40 @@
+{
+  "commit": {
+    "id": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+    "short_id": "6dcb09b5",
+    "created_at": "2021-09-30T20:05:21.000-04:00",
+    "parent_ids": [
+      "133bd0aeb6202b229d3dbf316c82c2935e5e3e93"
+    ],
+    "title": "ding",
+    "message": "Fix all the bugs\nlalalal",
+    "author_name": "Joey User",
+    "author_email": "joey@user.edu",
+    "authored_date": "2021-09-30T20:05:21.000-04:00",
+    "committer_name": "Joey User",
+    "committer_email": "joey@user.edu",
+    "committed_date": "2021-09-30T20:05:21.000-04:00",
+    "trailers": {},
+    "web_url": "https://gitlab.com/somenamespace/someproject/-/commit/09df0b820664240198f7b70887cac139db1af610"
+  },
+  "commits": [
+    {
+      "id": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+      "short_id": "6dcb09b5",
+      "created_at": "2021-09-30T20:05:21.000-04:00",
+      "parent_ids": [
+        "133bd0aeb6202b229d3dbf316c82c2935e5e3e93"
+      ],
+      "title": "ding",
+      "message": "Fix all the bugs\nlalalal",
+      "author_name": "Joey User",
+      "author_email": "joey@user.edu",
+      "authored_date": "2021-09-30T20:05:21.000-04:00",
+      "committer_name": "Joey User",
+      "committer_email": "joey@user.edu",
+      "committed_date": "2021-09-30T20:05:21.000-04:00",
+      "trailers": {},
+      "web_url": "https://gitlab.com/somenamespace/someproject/-/commit/09df0b820664240198f7b70887cac139db1af610"
+    }
+  ]
+}

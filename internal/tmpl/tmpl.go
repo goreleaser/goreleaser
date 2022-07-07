@@ -10,6 +10,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -29,12 +30,19 @@ const (
 	version         = "Version"
 	rawVersion      = "RawVersion"
 	tag             = "Tag"
+	previousTag     = "PreviousTag"
+	branch          = "Branch"
 	commit          = "Commit"
 	shortCommit     = "ShortCommit"
 	fullCommit      = "FullCommit"
 	commitDate      = "CommitDate"
 	commitTimestamp = "CommitTimestamp"
 	gitURL          = "GitURL"
+	summary         = "Summary"
+	tagSubject      = "TagSubject"
+	tagContents     = "TagContents"
+	tagBody         = "TagBody"
+	releaseURL      = "ReleaseURL"
 	major           = "Major"
 	minor           = "Minor"
 	patch           = "Patch"
@@ -43,18 +51,19 @@ const (
 	env             = "Env"
 	date            = "Date"
 	timestamp       = "Timestamp"
+	modulePath      = "ModulePath"
+	releaseNotes    = "ReleaseNotes"
+	runtimeK        = "Runtime"
 
 	// artifact-only keys.
 	osKey        = "Os"
+	amd64        = "Amd64"
 	arch         = "Arch"
 	arm          = "Arm"
 	mips         = "Mips"
 	binary       = "Binary"
 	artifactName = "ArtifactName"
 	artifactPath = "ArtifactPath"
-
-	// gitlab only.
-	artifactUploadHash = "ArtifactUploadHash"
 
 	// build keys.
 	name   = "Name"
@@ -71,15 +80,23 @@ func New(ctx *context.Context) *Template {
 	return &Template{
 		fields: Fields{
 			projectName:     ctx.Config.ProjectName,
+			modulePath:      ctx.ModulePath,
 			version:         ctx.Version,
 			rawVersion:      rawVersionV,
 			tag:             ctx.Git.CurrentTag,
+			previousTag:     ctx.Git.PreviousTag,
+			branch:          ctx.Git.Branch,
 			commit:          ctx.Git.Commit,
 			shortCommit:     ctx.Git.ShortCommit,
 			fullCommit:      ctx.Git.FullCommit,
 			commitDate:      ctx.Git.CommitDate.UTC().Format(time.RFC3339),
 			commitTimestamp: ctx.Git.CommitDate.UTC().Unix(),
 			gitURL:          ctx.Git.URL,
+			summary:         ctx.Git.Summary,
+			tagSubject:      ctx.Git.TagSubject,
+			tagContents:     ctx.Git.TagContents,
+			tagBody:         ctx.Git.TagBody,
+			releaseURL:      ctx.ReleaseURL,
 			env:             ctx.Env,
 			date:            ctx.Date.UTC().Format(time.RFC3339),
 			timestamp:       ctx.Date.UTC().Unix(),
@@ -88,6 +105,8 @@ func New(ctx *context.Context) *Template {
 			patch:           ctx.Semver.Patch,
 			prerelease:      ctx.Semver.Prerelease,
 			isSnapshot:      ctx.Snapshot,
+			releaseNotes:    ctx.ReleaseNotes,
+			runtimeK:        ctx.Runtime,
 		},
 	}
 }
@@ -95,10 +114,10 @@ func New(ctx *context.Context) *Template {
 // WithEnvS overrides template's env field with the given KEY=VALUE list of
 // environment variables.
 func (t *Template) WithEnvS(envs []string) *Template {
-	var result = map[string]string{}
+	result := map[string]string{}
 	for _, env := range envs {
-		var parts = strings.SplitN(env, "=", 2)
-		result[parts[0]] = parts[1]
+		k, v, _ := strings.Cut(env, "=")
+		result[k] = v
 	}
 	return t.WithEnv(result)
 }
@@ -120,22 +139,14 @@ func (t *Template) WithExtraFields(f Fields) *Template {
 
 // WithArtifact populates Fields from the artifact and replacements.
 func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]string) *Template {
-	var bin = a.Extra[binary]
-	if bin == nil {
-		bin = t.fields[projectName]
-	}
 	t.fields[osKey] = replace(replacements, a.Goos)
 	t.fields[arch] = replace(replacements, a.Goarch)
 	t.fields[arm] = replace(replacements, a.Goarm)
 	t.fields[mips] = replace(replacements, a.Gomips)
-	t.fields[binary] = bin.(string)
+	t.fields[amd64] = replace(replacements, a.Goamd64)
+	t.fields[binary] = artifact.ExtraOr(*a, binary, t.fields[projectName].(string))
 	t.fields[artifactName] = a.Name
 	t.fields[artifactPath] = a.Path
-	if val, ok := a.Extra["ArtifactUploadHash"]; ok {
-		t.fields[artifactUploadHash] = val
-	} else {
-		t.fields[artifactUploadHash] = ""
-	}
 	return t
 }
 
@@ -149,8 +160,10 @@ func buildOptsToFields(opts build.Options) Fields {
 		ext:    opts.Ext,
 		name:   opts.Name,
 		path:   opts.Path,
-		osKey:  opts.Os,
-		arch:   opts.Arch,
+		osKey:  opts.Goos,
+		arch:   opts.Goarch,
+		arm:    opts.Goarm,
+		mips:   opts.Gomips,
 	}
 }
 
@@ -164,11 +177,18 @@ func (t *Template) Apply(s string) (string, error) {
 			"time": func(s string) string {
 				return time.Now().UTC().Format(s)
 			},
-			"tolower": strings.ToLower,
-			"toupper": strings.ToUpper,
-			"trim":    strings.TrimSpace,
-			"dir":     filepath.Dir,
-			"abs":     filepath.Abs,
+			"tolower":       strings.ToLower,
+			"toupper":       strings.ToUpper,
+			"trim":          strings.TrimSpace,
+			"trimprefix":    strings.TrimPrefix,
+			"trimsuffix":    strings.TrimSuffix,
+			"dir":           filepath.Dir,
+			"abs":           filepath.Abs,
+			"incmajor":      incMajor,
+			"incminor":      incMinor,
+			"incpatch":      incPatch,
+			"filter":        filter(false),
+			"reverseFilter": filter(true),
 		}).
 		Parse(s)
 	if err != nil {
@@ -220,4 +240,41 @@ func replace(replacements map[string]string, original string) string {
 		return original
 	}
 	return result
+}
+
+func incMajor(v string) string {
+	return prefix(v) + semver.MustParse(v).IncMajor().String()
+}
+
+func incMinor(v string) string {
+	return prefix(v) + semver.MustParse(v).IncMinor().String()
+}
+
+func incPatch(v string) string {
+	return prefix(v) + semver.MustParse(v).IncPatch().String()
+}
+
+func prefix(v string) string {
+	if v != "" && v[0] == 'v' {
+		return "v"
+	}
+	return ""
+}
+
+func filter(reverse bool) func(content, exp string) string {
+	return func(content, exp string) string {
+		re := regexp.MustCompilePOSIX(exp)
+		var lines []string
+		for _, line := range strings.Split(content, "\n") {
+			if reverse && re.MatchString(line) {
+				continue
+			}
+			if !reverse && !re.MatchString(line) {
+				continue
+			}
+			lines = append(lines, line)
+		}
+
+		return strings.Join(lines, "\n")
+	}
 }
