@@ -151,7 +151,12 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		},
 	}
 
-	env := append(ctx.Env.Strings(), build.Env...)
+	details, err := withOverrides(ctx, build, options)
+	if err != nil {
+		return err
+	}
+
+	env := append(ctx.Env.Strings(), details.Env...)
 	env = append(
 		env,
 		"GOOS="+options.Goos,
@@ -162,7 +167,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		"GOAMD64="+options.Goamd64,
 	)
 
-	cmd, err := buildGoBuildLine(ctx, build, options, artifact, env)
+	cmd, err := buildGoBuildLine(ctx, build, details, options, artifact, env)
 	if err != nil {
 		return err
 	}
@@ -206,25 +211,23 @@ func withOverrides(ctx *context.Context, build config.Build, options api.Options
 				Flags:    build.BuildDetails.Flags,
 				Asmflags: build.BuildDetails.Asmflags,
 				Gcflags:  build.BuildDetails.Gcflags,
-				Env:      build.BuildDetails.Env,
 			}
 			if err := mergo.Merge(&dets, o.BuildDetails, mergo.WithOverride); err != nil {
 				return build.BuildDetails, err
 			}
+
+			dets.Env = context.ToEnv(append(build.Env, o.BuildDetails.Env...)).Strings()
 			log.WithField("details", dets).Infof("overridden build details for %s", optsTarget)
 			return dets, nil
 		}
 	}
+
 	return build.BuildDetails, nil
 }
 
-func buildGoBuildLine(ctx *context.Context, build config.Build, options api.Options, artifact *artifact.Artifact, env []string) ([]string, error) {
+func buildGoBuildLine(ctx *context.Context, build config.Build, details config.BuildDetails, options api.Options, artifact *artifact.Artifact, env []string) ([]string, error) {
 	cmd := []string{build.GoBinary, build.Command}
 
-	details, err := withOverrides(ctx, build, options)
-	if err != nil {
-		return cmd, err
-	}
 	flags, err := processFlags(ctx, artifact, env, details.Flags, "")
 	if err != nil {
 		return cmd, err
