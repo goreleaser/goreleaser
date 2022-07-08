@@ -21,7 +21,7 @@ if [ -n "$GITHUB_TOKEN" ]; then
 fi
 
 # prevents git from complaining about unsafe dir. especially when using github actions
-git config --global --add safe.directory .
+git config --global --add safe.directory $(pwd)
 
 # shellcheck disable=SC2068
 exec goreleaser $@
