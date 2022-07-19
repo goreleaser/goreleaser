@@ -15,7 +15,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// ManifestPipe is beta implementation of for the docker manifest feature,
+// ManifestPipe is an implementation for the docker manifest feature,
 // allowing to publish multi-arch docker images.
 type ManifestPipe struct{}
 

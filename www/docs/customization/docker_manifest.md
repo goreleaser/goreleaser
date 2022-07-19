@@ -11,10 +11,6 @@ config file, GoReleaser will add the manifest's to the release notes
 instead of the Docker images names.
 
 !!! warning
-    Please note that this is a beta feature, and it may change or be removed
-    at any time.
-
-!!! warning
     Notice that the images used in the manifest **need to be pushed** for this to work.
     This is a limitation of how `docker manifest create` works.
     For more info, check [this issue](https://github.com/goreleaser/goreleaser/issues/2606).
@@ -81,11 +77,11 @@ docker_manifests:
 We basically build and push our images as usual, but we also add a new
 section to our config defining which images are part of which manifests.
 
-GoReleaser will create and publish the manifest in its publish phase.
+GoReleaser will create and publish the manifest in its publishing phase.
 
 !!! warning
     Unfortunately, the manifest tool needs the images to be pushed to create
-    the manifest, that's why we both create and push it in the publish phase.
+    the manifest, that's why we both create and push it in the publishing phase.
 
 ## Example config
 
