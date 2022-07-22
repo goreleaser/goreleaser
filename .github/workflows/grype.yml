@@ -19,7 +19,7 @@ jobs:
     - uses: anchore/scan-action@v3
       with:
         path: "."
-        fail-build: false
+        fail-build: true
 
   scan-image:
     name: scan-image
@@ -34,4 +34,4 @@ jobs:
     - uses: anchore/scan-action@v3
       with:
         image: "goreleaser/goreleaser:latest"
-        fail-build: false
+        fail-build: true
