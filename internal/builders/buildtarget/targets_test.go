@@ -67,7 +67,7 @@ func TestAllBuildTargets(t *testing.T) {
 	}
 
 	t.Run("go 1.18", func(t *testing.T) {
-		result, err := matrix(build, []byte("go version go1.18.0"))
+		result, err := List(build)
 		require.NoError(t, err)
 		require.Equal(t, []string{
 			"linux_386",
@@ -111,46 +111,46 @@ func TestAllBuildTargets(t *testing.T) {
 	})
 
 	t.Run("invalid goos", func(t *testing.T) {
-		_, err := matrix(config.Build{
+		_, err := List(config.Build{
 			Goos:    []string{"invalid"},
 			Goarch:  []string{"amd64"},
 			Goamd64: []string{"v2"},
-		}, []byte("go version go1.18.0"))
+		})
 		require.EqualError(t, err, "invalid goos: invalid")
 	})
 
 	t.Run("invalid goarch", func(t *testing.T) {
-		_, err := matrix(config.Build{
+		_, err := List(config.Build{
 			Goos:   []string{"linux"},
 			Goarch: []string{"invalid"},
-		}, []byte("go version go1.18.0"))
+		})
 		require.EqualError(t, err, "invalid goarch: invalid")
 	})
 
 	t.Run("invalid goarm", func(t *testing.T) {
-		_, err := matrix(config.Build{
+		_, err := List(config.Build{
 			Goos:   []string{"linux"},
 			Goarch: []string{"arm"},
 			Goarm:  []string{"invalid"},
-		}, []byte("go version go1.18.0"))
+		})
 		require.EqualError(t, err, "invalid goarm: invalid")
 	})
 
 	t.Run("invalid gomips", func(t *testing.T) {
-		_, err := matrix(config.Build{
+		_, err := List(config.Build{
 			Goos:   []string{"linux"},
 			Goarch: []string{"mips"},
 			Gomips: []string{"invalid"},
-		}, []byte("go version go1.18.0"))
+		})
 		require.EqualError(t, err, "invalid gomips: invalid")
 	})
 
 	t.Run("invalid goamd64", func(t *testing.T) {
-		_, err := matrix(config.Build{
+		_, err := List(config.Build{
 			Goos:    []string{"linux"},
 			Goarch:  []string{"amd64"},
 			Goamd64: []string{"invalid"},
-		}, []byte("go version go1.18.0"))
+		})
 		require.EqualError(t, err, "invalid goamd64: invalid")
 	})
 }
@@ -235,26 +235,5 @@ func TestList(t *testing.T) {
 		})
 		require.NoError(t, err)
 		require.Equal(t, []string{"linux_amd64_v2"}, targets)
-	})
-
-	t.Run("error with dir", func(t *testing.T) {
-		_, err := List(config.Build{
-			Goos:     []string{"linux"},
-			Goarch:   []string{"amd64"},
-			Goamd64:  []string{"v2"},
-			GoBinary: "go",
-			Dir:      "targets.go",
-		})
-		require.EqualError(t, err, "invalid builds.dir property, it should be a directory: targets.go")
-	})
-
-	t.Run("fail", func(t *testing.T) {
-		_, err := List(config.Build{
-			Goos:     []string{"linux"},
-			Goarch:   []string{"amd64"},
-			Goamd64:  []string{"v2"},
-			GoBinary: "nope",
-		})
-		require.EqualError(t, err, `unable to determine version of go binary (nope): exec: "nope": executable file not found in $PATH`)
 	})
 }

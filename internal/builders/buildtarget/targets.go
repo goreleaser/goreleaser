@@ -4,8 +4,6 @@ package buildtarget
 
 import (
 	"fmt"
-	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -25,14 +23,6 @@ func (t target) String() string {
 
 // List compiles the list of targets for the given builds.
 func List(build config.Build) ([]string, error) {
-	version, err := goVersion(build)
-	if err != nil {
-		return nil, err
-	}
-	return matrix(build, version)
-}
-
-func matrix(build config.Build, version []byte) ([]string, error) {
 	// nolint:prealloc
 	var targets []target
 	// nolint:prealloc
@@ -133,23 +123,6 @@ func ignored(build config.Build, target target) bool {
 		return true
 	}
 	return false
-}
-
-func goVersion(build config.Build) ([]byte, error) {
-	cmd := exec.Command(build.GoBinary, "version")
-	// If the build.Dir is acessible, set the cmd dir to it in case
-	// of reletive path to GoBinary
-	if fileInfo, err := os.Stat(build.Dir); err == nil {
-		if !fileInfo.IsDir() {
-			return nil, fmt.Errorf("invalid builds.dir property, it should be a directory: %s", build.Dir)
-		}
-		cmd.Dir = build.Dir
-	}
-	bts, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, fmt.Errorf("unable to determine version of go binary (%s): %w", build.GoBinary, err)
-	}
-	return bts, nil
 }
 
 func valid(target target) bool {
