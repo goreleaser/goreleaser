@@ -80,7 +80,7 @@ jobs:
             ./dist/*.rpm
             ./dist/*.apk
           key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}-${{ hashFiles('**/go.sum') }}
-      - uses: sigstore/cosign-installer@v2.4.1
+      - uses: sigstore/cosign-installer@v2.5.0
       - uses: anchore/sbom-action/download-syft@v0.11.0
       - name: setup-validate-krew-manifest
         run: go install sigs.k8s.io/krew/cmd/validate-krew-manifest@latest
