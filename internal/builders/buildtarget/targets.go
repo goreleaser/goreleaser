@@ -155,6 +155,7 @@ var (
 		"freebsdarm",
 		"freebsdarm64", // not on the official list for some reason, yet its supported on go 1.14+
 		"illumosamd64",
+		"iosarm64",
 		"jswasm",
 		"linux386",
 		"linuxamd64",
@@ -192,6 +193,7 @@ var (
 		"dragonfly",
 		"freebsd",
 		"illumos",
+		"ios",
 		"js",
 		"linux",
 		"netbsd",

@@ -18,6 +18,7 @@ func TestAllBuildTargets(t *testing.T) {
 			"openbsd",
 			"windows",
 			"js",
+			"ios",
 		},
 		Goarch: []string{
 			"386",
@@ -107,6 +108,7 @@ func TestAllBuildTargets(t *testing.T) {
 			"windows_arm_7",
 			"windows_arm64",
 			"js_wasm",
+			"ios_arm64",
 		}, result)
 	})
 
@@ -174,6 +176,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"freebsd", "amd64", true},
 		{"freebsd", "arm", true},
 		{"illumos", "amd64", true},
+		{"ios", "arm64", true},
 		{"linux", "386", true},
 		{"linux", "amd64", true},
 		{"linux", "arm", true},
