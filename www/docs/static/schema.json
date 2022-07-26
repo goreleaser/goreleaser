@@ -922,8 +922,7 @@
 							},
 							"Info": {
 								"$ref": "#/$defs/FileInfo"
-							},
-							"info": "object"
+							}
 						},
 						"additionalProperties": false,
 						"type": "object",
