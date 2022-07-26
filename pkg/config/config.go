@@ -460,10 +460,11 @@ func (f *File) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func (f File) JSONSchema() *jsonschema.Schema {
+	type t File
 	reflector := jsonschema.Reflector{
 		ExpandedStruct: true,
 	}
-	schema := reflector.Reflect(&File{})
+	schema := reflector.Reflect(&t{})
 	return &jsonschema.Schema{
 		OneOf: []*jsonschema.Schema{
 			{
