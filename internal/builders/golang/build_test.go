@@ -1211,10 +1211,8 @@ func TestOverrides(t *testing.T) {
 			},
 		)
 		require.NoError(t, err)
-		require.Equal(t, dets, config.BuildDetails{
-			Ldflags: []string{"overridden"},
-			Env:     []string{"BAR=foo", "FOO=overridden"},
-		})
+		require.ElementsMatch(t, dets.Ldflags, []string{"overridden"})
+		require.ElementsMatch(t, dets.Env, []string{"BAR=foo", "FOO=overridden"})
 	})
 
 	t.Run("single sided", func(t *testing.T) {
