@@ -126,6 +126,18 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	infoArch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips // key used for the ConventionalFileName et al
 	arch := infoArch + binaries[0].Goamd64                                  // unique arch key
 
+	if format == "termux.deb" {
+		if arch == "386" {
+			return nil // skip arch
+		}
+		replacer := strings.NewReplacer(
+			"amd64", "x86_64",
+			"arm64", "aarch64",
+		)
+		infoArch = replacer.Replace(infoArch)
+		arch = replacer.Replace(arch)
+	}
+
 	overridden, err := mergeOverrides(fpm, format)
 	if err != nil {
 		return err
@@ -138,7 +150,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 			"PackageName": fpm.PackageName,
 		})
 
-	binDir, err := t.Apply(fpm.Bindir)
+	patchedBindir := fpm.Bindir
+	if format == "termux.deb" {
+		patchedBindir = "/data/data/com.termux/files" + patchedBindir
+	}
+	binDir, err := t.Apply(patchedBindir)
 	if err != nil {
 		return err
 	}
@@ -324,7 +340,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		info.Deb.Signature = nfpm.DebSignature{}
 	}
 
-	packager, err := nfpm.Get(format)
+	packager, err := nfpm.Get(strings.Replace(format, "termux.deb", "deb", 1))
 	if err != nil {
 		return err
 	}

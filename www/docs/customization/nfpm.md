@@ -66,6 +66,8 @@ nfpms:
       - apk
       - deb
       - rpm
+      # same as deb but with altered bindir and arch for termux
+      - termux.deb
 
     # Packages your package depends on.
     dependencies:
