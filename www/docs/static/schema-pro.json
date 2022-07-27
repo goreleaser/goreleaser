@@ -5,196 +5,160 @@
 		"$defs": {
 			"AUR": {
 				"properties": {
-					"Name": {
+					"name": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"CommitAuthor": {
+					"commit_author": {
 						"$ref": "#/$defs/CommitAuthor"
 					},
-					"CommitMessageTemplate": {
+					"commit_msg_template": {
 						"type": "string"
 					},
-					"Description": {
+					"description": {
 						"type": "string"
 					},
-					"Homepage": {
+					"homepage": {
 						"type": "string"
 					},
-					"License": {
+					"license": {
 						"type": "string"
 					},
-					"SkipUpload": {
+					"skip_upload": {
 						"type": "string"
 					},
-					"URLTemplate": {
+					"url_template": {
 						"type": "string"
 					},
-					"Maintainers": {
+					"maintainers": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Contributors": {
+					"contributors": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Provides": {
+					"provides": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Conflicts": {
+					"conflicts": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Depends": {
+					"depends": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"OptDepends": {
+					"optdepends": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Rel": {
+					"rel": {
 						"type": "string"
 					},
-					"Package": {
+					"package": {
 						"type": "string"
 					},
-					"GitURL": {
+					"git_url": {
 						"type": "string"
 					},
-					"GitSSHCommand": {
+					"git_ssh_command": {
 						"type": "string"
 					},
-					"PrivateKey": {
+					"private_key": {
 						"type": "string"
 					},
-					"Goamd64": {
+					"goamd64": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Name",
-					"IDs",
-					"CommitAuthor",
-					"CommitMessageTemplate",
-					"Description",
-					"Homepage",
-					"License",
-					"SkipUpload",
-					"URLTemplate",
-					"Maintainers",
-					"Contributors",
-					"Provides",
-					"Conflicts",
-					"Depends",
-					"OptDepends",
-					"Rel",
-					"Package",
-					"GitURL",
-					"GitSSHCommand",
-					"PrivateKey",
-					"Goamd64"
-				]
+				"type": "object"
 			},
 			"After": {
 				"properties": {
-					"Hooks": {
-						"$ref": "#/$defs/Hooks"
+					"hooks": {
+						"items": {
+							"$ref": "#/$defs/Hook"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Hooks"
-				]
+				"type": "object"
 			},
 			"Announce": {
 				"properties": {
-					"Skip": {
+					"skip": {
 						"type": "string"
 					},
-					"Twitter": {
+					"twitter": {
 						"$ref": "#/$defs/Twitter"
 					},
-					"Reddit": {
+					"reddit": {
 						"$ref": "#/$defs/Reddit"
 					},
-					"Slack": {
+					"slack": {
 						"$ref": "#/$defs/Slack"
 					},
-					"Discord": {
+					"discord": {
 						"$ref": "#/$defs/Discord"
 					},
-					"Teams": {
+					"teams": {
 						"$ref": "#/$defs/Teams"
 					},
-					"SMTP": {
+					"smtp": {
 						"$ref": "#/$defs/SMTP"
 					},
-					"Mattermost": {
+					"mattermost": {
 						"$ref": "#/$defs/Mattermost"
 					},
-					"LinkedIn": {
+					"linkedin": {
 						"$ref": "#/$defs/LinkedIn"
 					},
-					"Telegram": {
+					"telegram": {
 						"$ref": "#/$defs/Telegram"
 					},
-					"Webhook": {
+					"webhook": {
 						"$ref": "#/$defs/Webhook"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Skip",
-					"Twitter",
-					"Reddit",
-					"Slack",
-					"Discord",
-					"Teams",
-					"SMTP",
-					"Mattermost",
-					"LinkedIn",
-					"Telegram",
-					"Webhook"
-				]
+				"type": "object"
 			},
 			"Archive": {
 				"properties": {
-					"ID": {
+					"id": {
 						"type": "string"
 					},
-					"Builds": {
+					"builds": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"NameTemplate": {
+					"name_template": {
 						"type": "string"
 					},
-					"Replacements": {
+					"replacements": {
 						"patternProperties": {
 							".*": {
 								"type": "string"
@@ -202,16 +166,16 @@
 						},
 						"type": "object"
 					},
-					"Format": {
+					"format": {
 						"type": "string"
 					},
-					"FormatOverrides": {
+					"format_overrides": {
 						"items": {
 							"$ref": "#/$defs/FormatOverride"
 						},
 						"type": "array"
 					},
-					"WrapInDirectory": {
+					"wrap_in_directory": {
 						"oneOf": [
 							{
 								"type": "string"
@@ -221,76 +185,64 @@
 							}
 						]
 					},
-					"Files": {
+					"files": {
 						"items": {
 							"$ref": "#/$defs/File"
 						},
 						"type": "array"
 					},
-					"Meta": {
+					"meta": {
 						"type": "boolean"
 					},
-					"AllowDifferentBinaryCount": {
+					"allow_different_binary_count": {
 						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"ID",
-					"Builds",
-					"NameTemplate",
-					"Replacements",
-					"Format",
-					"FormatOverrides",
-					"WrapInDirectory",
-					"Files",
-					"Meta",
-					"AllowDifferentBinaryCount"
-				]
+				"type": "object"
 			},
 			"Before": {
 				"properties": {
-					"Hooks": {
-						"$ref": "#/$defs/Hooks"
+					"hooks": {
+						"items": {
+							"$ref": "#/$defs/Hook"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Hooks"
-				]
+				"type": "object"
 			},
 			"Blob": {
 				"properties": {
-					"Bucket": {
+					"bucket": {
 						"type": "string"
 					},
-					"Provider": {
+					"provider": {
 						"type": "string"
 					},
-					"Region": {
+					"region": {
 						"type": "string"
 					},
-					"DisableSSL": {
+					"disableSSL": {
 						"type": "boolean"
 					},
-					"Folder": {
+					"folder": {
 						"type": "string"
 					},
-					"KMSKey": {
+					"kmskey": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Endpoint": {
+					"endpoint": {
 						"type": "string"
 					},
-					"ExtraFiles": {
+					"extra_files": {
 						"items": {
 							"$ref": "#/$defs/ExtraFile"
 						},
@@ -298,203 +250,155 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Bucket",
-					"Provider",
-					"Region",
-					"DisableSSL",
-					"Folder",
-					"KMSKey",
-					"IDs",
-					"Endpoint",
-					"ExtraFiles"
-				]
+				"type": "object"
 			},
 			"Build": {
 				"properties": {
-					"ID": {
+					"id": {
 						"type": "string"
 					},
-					"Goos": {
+					"goos": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Goarch": {
+					"goarch": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Goarm": {
+					"goarm": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Gomips": {
+					"gomips": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Goamd64": {
+					"goamd64": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Targets": {
+					"targets": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Ignore": {
+					"ignore": {
 						"items": {
 							"$ref": "#/$defs/IgnoredBuild"
 						},
 						"type": "array"
 					},
-					"Dir": {
+					"dir": {
 						"type": "string"
 					},
-					"Main": {
+					"main": {
 						"type": "string"
 					},
-					"Binary": {
+					"binary": {
 						"type": "string"
 					},
-					"Hooks": {
+					"hooks": {
 						"$ref": "#/$defs/BuildHookConfig"
 					},
-					"Builder": {
+					"builder": {
 						"type": "string"
 					},
-					"ModTimestamp": {
+					"mod_timestamp": {
 						"type": "string"
 					},
-					"Skip": {
+					"skip": {
 						"type": "boolean"
 					},
-					"GoBinary": {
+					"gobinary": {
 						"type": "string"
 					},
-					"Command": {
+					"command": {
 						"type": "string"
 					},
-					"NoUniqueDistDir": {
+					"no_unique_dist_dir": {
 						"type": "boolean"
 					},
-					"NoMainCheck": {
+					"no_main_check": {
 						"type": "boolean"
 					},
-					"UnproxiedMain": {
-						"type": "string"
-					},
-					"UnproxiedDir": {
-						"type": "string"
-					},
-					"Ldflags": {
+					"ldflags": {
 						"$ref": "#/$defs/StringArray"
 					},
-					"Tags": {
+					"tags": {
 						"$ref": "#/$defs/FlagArray"
 					},
-					"Flags": {
+					"flags": {
 						"$ref": "#/$defs/FlagArray"
 					},
-					"Asmflags": {
+					"asmflags": {
 						"$ref": "#/$defs/StringArray"
 					},
-					"Gcflags": {
+					"gcflags": {
 						"$ref": "#/$defs/StringArray"
 					},
-					"Env": {
+					"env": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"BuildDetailsOverrides": {
+					"overrides": {
 						"items": {
 							"$ref": "#/$defs/BuildDetailsOverride"
 						},
 						"type": "array"
 					},
-					"PreBuilt": {
+					"prebuilt": {
 						"$ref": "#/$defs/PreBuiltOptions"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"ID",
-					"Goos",
-					"Goarch",
-					"Goarm",
-					"Gomips",
-					"Goamd64",
-					"Targets",
-					"Ignore",
-					"Dir",
-					"Main",
-					"Binary",
-					"Hooks",
-					"Builder",
-					"ModTimestamp",
-					"Skip",
-					"GoBinary",
-					"Command",
-					"NoUniqueDistDir",
-					"NoMainCheck",
-					"UnproxiedMain",
-					"UnproxiedDir",
-					"Ldflags",
-					"Tags",
-					"Flags",
-					"Asmflags",
-					"Gcflags",
-					"Env",
-					"BuildDetailsOverrides",
-					"PreBuilt"
-				]
+				"type": "object"
 			},
 			"BuildDetailsOverride": {
 				"properties": {
-					"Goos": {
+					"goos": {
 						"type": "string"
 					},
-					"Goarch": {
+					"goarch": {
 						"type": "string"
 					},
-					"Goarm": {
+					"goarm": {
 						"type": "string"
 					},
-					"Gomips": {
+					"gomips": {
 						"type": "string"
 					},
-					"Goamd64": {
+					"goamd64": {
 						"type": "string"
 					},
-					"Ldflags": {
+					"ldflags": {
 						"$ref": "#/$defs/StringArray"
 					},
-					"Tags": {
+					"tags": {
 						"$ref": "#/$defs/FlagArray"
 					},
-					"Flags": {
+					"flags": {
 						"$ref": "#/$defs/FlagArray"
 					},
-					"Asmflags": {
+					"asmflags": {
 						"$ref": "#/$defs/StringArray"
 					},
-					"Gcflags": {
+					"gcflags": {
 						"$ref": "#/$defs/StringArray"
 					},
-					"Env": {
+					"env": {
 						"items": {
 							"type": "string"
 						},
@@ -502,69 +406,53 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Goos",
-					"Goarch",
-					"Goarm",
-					"Gomips",
-					"Goamd64",
-					"Ldflags",
-					"Tags",
-					"Flags",
-					"Asmflags",
-					"Gcflags",
-					"Env"
-				]
+				"type": "object"
 			},
 			"BuildHookConfig": {
 				"properties": {
-					"Pre": {
-						"$ref": "#/$defs/Hooks"
+					"pre": {
+						"items": {
+							"$ref": "#/$defs/Hook"
+						},
+						"type": "array"
 					},
-					"Post": {
-						"$ref": "#/$defs/Hooks"
+					"post": {
+						"items": {
+							"$ref": "#/$defs/Hook"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Pre",
-					"Post"
-				]
+				"type": "object"
 			},
 			"ChangeLogGroup": {
 				"properties": {
-					"Title": {
+					"title": {
 						"type": "string"
 					},
-					"Regexp": {
+					"regexp": {
 						"type": "string"
 					},
-					"Order": {
+					"order": {
 						"type": "integer"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Title",
-					"Regexp",
-					"Order"
-				]
+				"type": "object"
 			},
 			"Changelog": {
 				"properties": {
-					"Filters": {
+					"filters": {
 						"$ref": "#/$defs/Filters"
 					},
-					"Sort": {
+					"sort": {
 						"type": "string"
 					},
-					"Skip": {
+					"skip": {
 						"type": "boolean"
 					},
-					"Use": {
+					"use": {
 						"type": "string",
 						"enum": [
 							"git",
@@ -574,7 +462,7 @@
 						],
 						"default": "git"
 					},
-					"Groups": {
+					"groups": {
 						"items": {
 							"$ref": "#/$defs/ChangeLogGroup"
 						},
@@ -582,33 +470,26 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Filters",
-					"Sort",
-					"Skip",
-					"Use",
-					"Groups"
-				]
+				"type": "object"
 			},
 			"Checksum": {
 				"properties": {
-					"NameTemplate": {
+					"name_template": {
 						"type": "string"
 					},
-					"Algorithm": {
+					"algorithm": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Disable": {
+					"disable": {
 						"type": "boolean"
 					},
-					"ExtraFiles": {
+					"extra_files": {
 						"items": {
 							"$ref": "#/$defs/ExtraFile"
 						},
@@ -616,277 +497,206 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"NameTemplate",
-					"Algorithm",
-					"IDs",
-					"Disable",
-					"ExtraFiles"
-				]
+				"type": "object"
 			},
 			"CommitAuthor": {
 				"properties": {
-					"Name": {
+					"name": {
 						"type": "string"
 					},
-					"Email": {
+					"email": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Name",
-					"Email"
-				]
+				"type": "object"
 			},
 			"Content": {
 				"properties": {
-					"Source": {
+					"src": {
 						"type": "string"
 					},
-					"Destination": {
+					"dst": {
 						"type": "string"
 					},
-					"Type": {
+					"type": {
 						"type": "string"
 					},
-					"Packager": {
+					"packager": {
 						"type": "string"
 					},
-					"FileInfo": {
+					"file_info": {
 						"$ref": "#/$defs/ContentFileInfo"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Source",
-					"Destination",
-					"Type",
-					"Packager",
-					"FileInfo"
-				]
+				"type": "object"
 			},
 			"ContentFileInfo": {
 				"properties": {
-					"Owner": {
+					"owner": {
 						"type": "string"
 					},
-					"Group": {
+					"group": {
 						"type": "string"
 					},
-					"Mode": {
+					"mode": {
 						"type": "integer"
 					},
-					"MTime": {
+					"mtime": {
 						"type": "string",
 						"format": "date-time"
-					},
-					"Size": {
-						"type": "integer"
 					}
 				},
 				"additionalProperties": false,
 				"type": "object",
 				"required": [
-					"Owner",
-					"Group",
-					"Mode",
-					"MTime",
-					"Size"
+					"group"
 				]
-			},
-			"Contents": {
-				"items": {
-					"$ref": "#/$defs/Content"
-				},
-				"type": "array"
 			},
 			"Discord": {
 				"properties": {
-					"Enabled": {
+					"enabled": {
 						"type": "boolean"
 					},
-					"MessageTemplate": {
+					"message_template": {
 						"type": "string"
 					},
-					"Author": {
+					"author": {
 						"type": "string"
 					},
-					"Color": {
+					"color": {
 						"type": "string"
 					},
-					"IconURL": {
+					"icon_url": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Enabled",
-					"MessageTemplate",
-					"Author",
-					"Color",
-					"IconURL"
-				]
+				"type": "object"
 			},
 			"Docker": {
 				"properties": {
-					"ID": {
+					"id": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Goos": {
+					"goos": {
 						"type": "string"
 					},
-					"Goarch": {
+					"goarch": {
 						"type": "string"
 					},
-					"Goarm": {
+					"goarm": {
 						"type": "string"
 					},
-					"Goamd64": {
+					"goamd64": {
 						"type": "string"
 					},
-					"Dockerfile": {
+					"dockerfile": {
 						"type": "string"
 					},
-					"ImageTemplates": {
+					"image_templates": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"SkipPush": {
+					"skip_push": {
 						"type": "string"
 					},
-					"Files": {
+					"extra_files": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"BuildFlagTemplates": {
+					"build_flag_templates": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"PushFlags": {
+					"push_flags": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Use": {
+					"use": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"ID",
-					"IDs",
-					"Goos",
-					"Goarch",
-					"Goarm",
-					"Goamd64",
-					"Dockerfile",
-					"ImageTemplates",
-					"SkipPush",
-					"Files",
-					"BuildFlagTemplates",
-					"PushFlags",
-					"Use"
-				]
+				"type": "object"
 			},
 			"DockerManifest": {
 				"properties": {
-					"ID": {
+					"id": {
 						"type": "string"
 					},
-					"NameTemplate": {
+					"name_template": {
 						"type": "string"
 					},
-					"SkipPush": {
+					"skip_push": {
 						"type": "string"
 					},
-					"ImageTemplates": {
+					"image_templates": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"CreateFlags": {
+					"create_flags": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"PushFlags": {
+					"push_flags": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Use": {
+					"use": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"ID",
-					"NameTemplate",
-					"SkipPush",
-					"ImageTemplates",
-					"CreateFlags",
-					"PushFlags",
-					"Use"
-				]
+				"type": "object"
 			},
 			"EnvFiles": {
 				"properties": {
-					"GitHubToken": {
+					"github_token": {
 						"type": "string"
 					},
-					"GitLabToken": {
+					"gitlab_token": {
 						"type": "string"
 					},
-					"GiteaToken": {
+					"gitea_token": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"GitHubToken",
-					"GitLabToken",
-					"GiteaToken"
-				]
+				"type": "object"
 			},
 			"ExtraFile": {
 				"properties": {
-					"Glob": {
+					"glob": {
 						"type": "string"
 					},
-					"NameTemplate": {
+					"name_template": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Glob",
-					"NameTemplate"
-				]
+				"type": "object"
 			},
 			"File": {
 				"oneOf": [
@@ -899,58 +709,46 @@
 						"$defs": {
 							"FileInfo": {
 								"properties": {
-									"Owner": {
+									"owner": {
 										"type": "string"
 									},
-									"Group": {
+									"group": {
 										"type": "string"
 									},
-									"Mode": {
+									"mode": {
 										"type": "integer"
 									},
-									"MTime": {
+									"mtime": {
 										"type": "string",
 										"format": "date-time"
 									}
 								},
 								"additionalProperties": false,
-								"type": "object",
-								"required": [
-									"Owner",
-									"Group",
-									"Mode",
-									"MTime"
-								]
+								"type": "object"
 							}
 						},
 						"properties": {
-							"Source": {
+							"src": {
 								"type": "string"
 							},
-							"Destination": {
+							"dst": {
 								"type": "string"
 							},
-							"StripParent": {
+							"strip_parent": {
 								"type": "boolean"
 							},
-							"Info": {
+							"info": {
 								"$ref": "#/$defs/FileInfo"
 							}
 						},
 						"additionalProperties": false,
-						"type": "object",
-						"required": [
-							"Source",
-							"Destination",
-							"StripParent",
-							"Info"
-						]
+						"type": "object"
 					}
 				]
 			},
 			"Filters": {
 				"properties": {
-					"Exclude": {
+					"exclude": {
 						"items": {
 							"type": "string"
 						},
@@ -958,10 +756,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Exclude"
-				]
+				"type": "object"
 			},
 			"FlagArray": {
 				"oneOf": [
@@ -978,312 +773,240 @@
 			},
 			"FormatOverride": {
 				"properties": {
-					"Goos": {
+					"goos": {
 						"type": "string"
 					},
-					"Format": {
+					"format": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Goos",
-					"Format"
-				]
+				"type": "object"
 			},
 			"Fury": {
 				"properties": {
-					"Account": {
+					"account": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Formats": {
+					"formats": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"SecretName": {
+					"secret_name": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Account",
-					"IDs",
-					"Formats",
-					"SecretName"
-				]
+				"type": "object"
 			},
 			"GitHubURLs": {
 				"properties": {
-					"API": {
+					"api": {
 						"type": "string"
 					},
-					"Upload": {
+					"upload": {
 						"type": "string"
 					},
-					"Download": {
+					"download": {
 						"type": "string"
 					},
-					"SkipTLSVerify": {
+					"skip_tls_verify": {
 						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"API",
-					"Upload",
-					"Download",
-					"SkipTLSVerify"
-				]
+				"type": "object"
 			},
 			"GitLabURLs": {
 				"properties": {
-					"API": {
+					"api": {
 						"type": "string"
 					},
-					"Download": {
+					"download": {
 						"type": "string"
 					},
-					"SkipTLSVerify": {
+					"skip_tls_verify": {
 						"type": "boolean"
 					},
-					"UsePackageRegistry": {
+					"use_package_registry": {
 						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"API",
-					"Download",
-					"SkipTLSVerify",
-					"UsePackageRegistry"
-				]
+				"type": "object"
 			},
 			"GiteaURLs": {
 				"properties": {
-					"API": {
+					"api": {
 						"type": "string"
 					},
-					"Download": {
+					"download": {
 						"type": "string"
 					},
-					"SkipTLSVerify": {
+					"skip_tls_verify": {
 						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"API",
-					"Download",
-					"SkipTLSVerify"
-				]
+				"type": "object"
 			},
 			"GoFish": {
 				"properties": {
-					"Name": {
+					"name": {
 						"type": "string"
 					},
-					"Rig": {
+					"rig": {
 						"$ref": "#/$defs/RepoRef"
 					},
-					"CommitAuthor": {
+					"commit_author": {
 						"$ref": "#/$defs/CommitAuthor"
 					},
-					"CommitMessageTemplate": {
+					"commit_msg_template": {
 						"type": "string"
 					},
-					"Description": {
+					"description": {
 						"type": "string"
 					},
-					"Homepage": {
+					"homepage": {
 						"type": "string"
 					},
-					"License": {
+					"license": {
 						"type": "string"
 					},
-					"SkipUpload": {
+					"skip_upload": {
 						"type": "string"
 					},
-					"URLTemplate": {
+					"url_template": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Goarm": {
+					"goarm": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Name",
-					"Rig",
-					"CommitAuthor",
-					"CommitMessageTemplate",
-					"Description",
-					"Homepage",
-					"License",
-					"SkipUpload",
-					"URLTemplate",
-					"IDs",
-					"Goarm"
-				]
+				"type": "object"
 			},
 			"GoMod": {
 				"properties": {
-					"Proxy": {
+					"proxy": {
 						"type": "boolean"
 					},
-					"Env": {
+					"env": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"GoBinary": {
+					"gobinary": {
 						"type": "string"
 					},
-					"Mod": {
+					"mod": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Proxy",
-					"Env",
-					"GoBinary",
-					"Mod"
-				]
+				"type": "object"
 			},
 			"Homebrew": {
 				"properties": {
-					"Name": {
+					"name": {
 						"type": "string"
 					},
-					"Tap": {
+					"tap": {
 						"$ref": "#/$defs/RepoRef"
 					},
-					"CommitAuthor": {
+					"commit_author": {
 						"$ref": "#/$defs/CommitAuthor"
 					},
-					"CommitMessageTemplate": {
+					"commit_msg_template": {
 						"type": "string"
 					},
-					"Folder": {
+					"folder": {
 						"type": "string"
 					},
-					"Caveats": {
+					"caveats": {
 						"type": "string"
 					},
-					"Plist": {
+					"plist": {
 						"type": "string"
 					},
-					"Install": {
+					"install": {
 						"type": "string"
 					},
-					"PostInstall": {
+					"post_install": {
 						"type": "string"
 					},
-					"Dependencies": {
+					"dependencies": {
 						"items": {
 							"$ref": "#/$defs/HomebrewDependency"
 						},
 						"type": "array"
 					},
-					"Test": {
+					"test": {
 						"type": "string"
 					},
-					"Conflicts": {
+					"conflicts": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Description": {
+					"description": {
 						"type": "string"
 					},
-					"Homepage": {
+					"homepage": {
 						"type": "string"
 					},
-					"License": {
+					"license": {
 						"type": "string"
 					},
-					"SkipUpload": {
+					"skip_upload": {
 						"type": "string"
 					},
-					"DownloadStrategy": {
+					"download_strategy": {
 						"type": "string"
 					},
-					"URLTemplate": {
+					"url_template": {
 						"type": "string"
 					},
-					"CustomRequire": {
+					"custom_require": {
 						"type": "string"
 					},
-					"CustomBlock": {
+					"custom_block": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Goarm": {
+					"goarm": {
 						"type": "string"
 					},
-					"Goamd64": {
+					"goamd64": {
 						"type": "string"
 					},
-					"Service": {
+					"service": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Name",
-					"Tap",
-					"CommitAuthor",
-					"CommitMessageTemplate",
-					"Folder",
-					"Caveats",
-					"Plist",
-					"Install",
-					"PostInstall",
-					"Dependencies",
-					"Test",
-					"Conflicts",
-					"Description",
-					"Homepage",
-					"License",
-					"SkipUpload",
-					"DownloadStrategy",
-					"URLTemplate",
-					"CustomRequire",
-					"CustomBlock",
-					"IDs",
-					"Goarm",
-					"Goamd64",
-					"Service"
-				]
+				"type": "object"
 			},
 			"HomebrewDependency": {
 				"oneOf": [
@@ -1294,19 +1017,15 @@
 						"$schema": "http://json-schema.org/draft/2020-12/schema",
 						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/homebrew-dependency",
 						"properties": {
-							"Name": {
+							"name": {
 								"type": "string"
 							},
-							"Type": {
+							"type": {
 								"type": "string"
 							}
 						},
 						"additionalProperties": false,
-						"type": "object",
-						"required": [
-							"Name",
-							"Type"
-						]
+						"type": "object"
 					}
 				]
 			},
@@ -1319,101 +1038,75 @@
 						"$schema": "http://json-schema.org/draft/2020-12/schema",
 						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
 						"properties": {
-							"Dir": {
+							"dir": {
 								"type": "string"
 							},
-							"Cmd": {
+							"cmd": {
 								"type": "string"
 							},
-							"Env": {
+							"env": {
 								"items": {
 									"type": "string"
 								},
 								"type": "array"
 							},
-							"Output": {
+							"output": {
 								"type": "boolean"
 							}
 						},
 						"additionalProperties": false,
-						"type": "object",
-						"required": [
-							"Dir",
-							"Cmd",
-							"Env",
-							"Output"
-						]
+						"type": "object"
 					}
 				]
 			},
-			"Hooks": {
-				"items": {
-					"$ref": "#/$defs/Hook"
-				},
-				"type": "array"
-			},
 			"IgnoredBuild": {
 				"properties": {
-					"Goos": {
+					"goos": {
 						"type": "string"
 					},
-					"Goarch": {
+					"goarch": {
 						"type": "string"
 					},
-					"Goarm": {
+					"goarm": {
 						"type": "string"
 					},
-					"Gomips": {
+					"gomips": {
 						"type": "string"
 					},
-					"Goamd64": {
+					"goamd64": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Goos",
-					"Goarch",
-					"Goarm",
-					"Gomips",
-					"Goamd64"
-				]
+				"type": "object"
 			},
 			"Include": {
 				"properties": {
-					"FromURL": {
+					"from_url": {
 						"$ref": "#/$defs/IncludeFromURL"
 					},
-					"FromFile": {
+					"from_file": {
 						"$ref": "#/$defs/IncludeFromFile"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"FromURL",
-					"FromFile"
-				]
+				"type": "object"
 			},
 			"IncludeFromFile": {
 				"properties": {
-					"Path": {
+					"path": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Path"
-				]
+				"type": "object"
 			},
 			"IncludeFromURL": {
 				"properties": {
-					"URL": {
+					"url": {
 						"type": "string"
 					},
-					"Headers": {
+					"headers": {
 						"patternProperties": {
 							".*": {
 								"type": "string"
@@ -1423,192 +1116,149 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"URL",
-					"Headers"
-				]
+				"type": "object"
 			},
 			"Krew": {
 				"properties": {
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Name": {
+					"name": {
 						"type": "string"
 					},
-					"Index": {
+					"index": {
 						"$ref": "#/$defs/RepoRef"
 					},
-					"CommitAuthor": {
+					"commit_author": {
 						"$ref": "#/$defs/CommitAuthor"
 					},
-					"CommitMessageTemplate": {
+					"commit_msg_template": {
 						"type": "string"
 					},
-					"Caveats": {
+					"caveats": {
 						"type": "string"
 					},
-					"ShortDescription": {
+					"short_description": {
 						"type": "string"
 					},
-					"Description": {
+					"description": {
 						"type": "string"
 					},
-					"Homepage": {
+					"homepage": {
 						"type": "string"
 					},
-					"URLTemplate": {
+					"url_template": {
 						"type": "string"
 					},
-					"Goarm": {
+					"goarm": {
 						"type": "string"
 					},
-					"Goamd64": {
+					"goamd64": {
 						"type": "string"
 					},
-					"SkipUpload": {
+					"skip_upload": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"IDs",
-					"Name",
-					"Index",
-					"CommitAuthor",
-					"CommitMessageTemplate",
-					"Caveats",
-					"ShortDescription",
-					"Description",
-					"Homepage",
-					"URLTemplate",
-					"Goarm",
-					"Goamd64",
-					"SkipUpload"
-				]
+				"type": "object"
 			},
 			"LinkedIn": {
 				"properties": {
-					"Enabled": {
+					"enabled": {
 						"type": "boolean"
 					},
-					"MessageTemplate": {
+					"message_template": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Enabled",
-					"MessageTemplate"
-				]
+				"type": "object"
 			},
 			"Mattermost": {
 				"properties": {
-					"Enabled": {
+					"enabled": {
 						"type": "boolean"
 					},
-					"MessageTemplate": {
+					"message_template": {
 						"type": "string"
 					},
-					"TitleTemplate": {
+					"title_template": {
 						"type": "string"
 					},
-					"Color": {
+					"color": {
 						"type": "string"
 					},
-					"Channel": {
+					"channel": {
 						"type": "string"
 					},
-					"Username": {
+					"username": {
 						"type": "string"
 					},
-					"IconEmoji": {
+					"icon_emoji": {
 						"type": "string"
 					},
-					"IconURL": {
+					"icon_url": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Enabled",
-					"MessageTemplate",
-					"TitleTemplate",
-					"Color",
-					"Channel",
-					"Username",
-					"IconEmoji",
-					"IconURL"
-				]
+				"type": "object"
 			},
 			"Milestone": {
 				"properties": {
-					"Repo": {
+					"repo": {
 						"$ref": "#/$defs/Repo"
 					},
-					"Close": {
+					"close": {
 						"type": "boolean"
 					},
-					"FailOnError": {
+					"fail_on_error": {
 						"type": "boolean"
 					},
-					"NameTemplate": {
+					"name_template": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Repo",
-					"Close",
-					"FailOnError",
-					"NameTemplate"
-				]
+				"type": "object"
 			},
 			"Monorepo": {
 				"properties": {
-					"TagPrefix": {
+					"tag_prefix": {
 						"type": "string"
 					},
-					"Dir": {
+					"dir": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"TagPrefix",
-					"Dir"
-				]
+				"type": "object"
 			},
 			"NFPM": {
 				"properties": {
-					"FileNameTemplate": {
+					"file_name_template": {
 						"type": "string"
 					},
-					"PackageName": {
+					"package_name": {
 						"type": "string"
 					},
-					"Epoch": {
+					"epoch": {
 						"type": "string"
 					},
-					"Release": {
+					"release": {
 						"type": "string"
 					},
-					"Prerelease": {
+					"prerelease": {
 						"type": "string"
 					},
-					"VersionMetadata": {
+					"version_metadata": {
 						"type": "string"
 					},
-					"Replacements": {
+					"replacements": {
 						"patternProperties": {
 							".*": {
 								"type": "string"
@@ -1616,52 +1266,55 @@
 						},
 						"type": "object"
 					},
-					"Dependencies": {
+					"dependencies": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Recommends": {
+					"recommends": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Suggests": {
+					"suggests": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Conflicts": {
+					"conflicts": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Replaces": {
+					"replaces": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Contents": {
-						"$ref": "#/$defs/Contents"
+					"contents": {
+						"items": {
+							"$ref": "#/$defs/Content"
+						},
+						"type": "array"
 					},
-					"Scripts": {
+					"scripts": {
 						"$ref": "#/$defs/NFPMScripts"
 					},
-					"RPM": {
+					"rpm": {
 						"$ref": "#/$defs/NFPMRPM"
 					},
-					"Deb": {
+					"deb": {
 						"$ref": "#/$defs/NFPMDeb"
 					},
-					"APK": {
+					"apk": {
 						"$ref": "#/$defs/NFPMAPK"
 					},
-					"Overrides": {
+					"overrides": {
 						"patternProperties": {
 							".*": {
 								"$ref": "#/$defs/NFPMOverridables"
@@ -1669,154 +1322,106 @@
 						},
 						"type": "object"
 					},
-					"ID": {
+					"id": {
 						"type": "string"
 					},
-					"Builds": {
+					"builds": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Formats": {
+					"formats": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Section": {
+					"section": {
 						"type": "string"
 					},
-					"Priority": {
+					"priority": {
 						"type": "string"
 					},
-					"Vendor": {
+					"vendor": {
 						"type": "string"
 					},
-					"Homepage": {
+					"homepage": {
 						"type": "string"
 					},
-					"Maintainer": {
+					"maintainer": {
 						"type": "string"
 					},
-					"Description": {
+					"description": {
 						"type": "string"
 					},
-					"License": {
+					"license": {
 						"type": "string"
 					},
-					"Bindir": {
+					"bindir": {
 						"type": "string"
 					},
-					"Meta": {
+					"meta": {
 						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"FileNameTemplate",
-					"PackageName",
-					"Epoch",
-					"Release",
-					"Prerelease",
-					"VersionMetadata",
-					"Replacements",
-					"Dependencies",
-					"Recommends",
-					"Suggests",
-					"Conflicts",
-					"Replaces",
-					"Contents",
-					"Scripts",
-					"RPM",
-					"Deb",
-					"APK",
-					"Overrides",
-					"ID",
-					"Builds",
-					"Formats",
-					"Section",
-					"Priority",
-					"Vendor",
-					"Homepage",
-					"Maintainer",
-					"Description",
-					"License",
-					"Bindir",
-					"Meta"
-				]
+				"type": "object"
 			},
 			"NFPMAPK": {
 				"properties": {
-					"Scripts": {
+					"scripts": {
 						"$ref": "#/$defs/NFPMAPKScripts"
 					},
-					"Signature": {
+					"signature": {
 						"$ref": "#/$defs/NFPMAPKSignature"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Scripts",
-					"Signature"
-				]
+				"type": "object"
 			},
 			"NFPMAPKScripts": {
 				"properties": {
-					"PreUpgrade": {
+					"preupgrade": {
 						"type": "string"
 					},
-					"PostUpgrade": {
+					"postupgrade": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"PreUpgrade",
-					"PostUpgrade"
-				]
+				"type": "object"
 			},
 			"NFPMAPKSignature": {
 				"properties": {
-					"KeyFile": {
+					"key_file": {
 						"type": "string"
 					},
-					"KeyPassphrase": {
-						"type": "string"
-					},
-					"KeyName": {
+					"key_name": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"KeyFile",
-					"KeyPassphrase",
-					"KeyName"
-				]
+				"type": "object"
 			},
 			"NFPMDeb": {
 				"properties": {
-					"Scripts": {
+					"scripts": {
 						"$ref": "#/$defs/NFPMDebScripts"
 					},
-					"Triggers": {
+					"triggers": {
 						"$ref": "#/$defs/NFPMDebTriggers"
 					},
-					"Breaks": {
+					"breaks": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Signature": {
+					"signature": {
 						"$ref": "#/$defs/NFPMDebSignature"
 					},
-					"Lintian": {
+					"lintian_overrides": {
 						"items": {
 							"type": "string"
 						},
@@ -1824,84 +1429,65 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Scripts",
-					"Triggers",
-					"Breaks",
-					"Signature",
-					"Lintian"
-				]
+				"type": "object"
 			},
 			"NFPMDebScripts": {
 				"properties": {
-					"Rules": {
+					"rules": {
 						"type": "string"
 					},
-					"Templates": {
+					"templates": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Rules",
-					"Templates"
-				]
+				"type": "object"
 			},
 			"NFPMDebSignature": {
 				"properties": {
-					"KeyFile": {
+					"key_file": {
 						"type": "string"
 					},
-					"KeyPassphrase": {
-						"type": "string"
-					},
-					"Type": {
+					"type": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"KeyFile",
-					"KeyPassphrase",
-					"Type"
-				]
+				"type": "object"
 			},
 			"NFPMDebTriggers": {
 				"properties": {
-					"Interest": {
+					"interest": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"InterestAwait": {
+					"interest_await": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"InterestNoAwait": {
+					"interest_noawait": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Activate": {
+					"activate": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"ActivateAwait": {
+					"activate_await": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"ActivateNoAwait": {
+					"activate_noawait": {
 						"items": {
 							"type": "string"
 						},
@@ -1909,37 +1495,29 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Interest",
-					"InterestAwait",
-					"InterestNoAwait",
-					"Activate",
-					"ActivateAwait",
-					"ActivateNoAwait"
-				]
+				"type": "object"
 			},
 			"NFPMOverridables": {
 				"properties": {
-					"FileNameTemplate": {
+					"file_name_template": {
 						"type": "string"
 					},
-					"PackageName": {
+					"package_name": {
 						"type": "string"
 					},
-					"Epoch": {
+					"epoch": {
 						"type": "string"
 					},
-					"Release": {
+					"release": {
 						"type": "string"
 					},
-					"Prerelease": {
+					"prerelease": {
 						"type": "string"
 					},
-					"VersionMetadata": {
+					"version_metadata": {
 						"type": "string"
 					},
-					"Replacements": {
+					"replacements": {
 						"patternProperties": {
 							".*": {
 								"type": "string"
@@ -1947,454 +1525,364 @@
 						},
 						"type": "object"
 					},
-					"Dependencies": {
+					"dependencies": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Recommends": {
+					"recommends": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Suggests": {
+					"suggests": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Conflicts": {
+					"conflicts": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Replaces": {
+					"replaces": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Contents": {
-						"$ref": "#/$defs/Contents"
+					"contents": {
+						"items": {
+							"$ref": "#/$defs/Content"
+						},
+						"type": "array"
 					},
-					"Scripts": {
+					"scripts": {
 						"$ref": "#/$defs/NFPMScripts"
 					},
-					"RPM": {
+					"rpm": {
 						"$ref": "#/$defs/NFPMRPM"
 					},
-					"Deb": {
+					"deb": {
 						"$ref": "#/$defs/NFPMDeb"
 					},
-					"APK": {
+					"apk": {
 						"$ref": "#/$defs/NFPMAPK"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"FileNameTemplate",
-					"PackageName",
-					"Epoch",
-					"Release",
-					"Prerelease",
-					"VersionMetadata",
-					"Replacements",
-					"Dependencies",
-					"Recommends",
-					"Suggests",
-					"Conflicts",
-					"Replaces",
-					"Contents",
-					"Scripts",
-					"RPM",
-					"Deb",
-					"APK"
-				]
+				"type": "object"
 			},
 			"NFPMRPM": {
 				"properties": {
-					"Summary": {
+					"summary": {
 						"type": "string"
 					},
-					"Group": {
+					"group": {
 						"type": "string"
 					},
-					"Compression": {
+					"compression": {
 						"type": "string"
 					},
-					"Signature": {
+					"signature": {
 						"$ref": "#/$defs/NFPMRPMSignature"
 					},
-					"Scripts": {
+					"scripts": {
 						"$ref": "#/$defs/NFPMRPMScripts"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Summary",
-					"Group",
-					"Compression",
-					"Signature",
-					"Scripts"
-				]
+				"type": "object"
 			},
 			"NFPMRPMScripts": {
 				"properties": {
-					"PreTrans": {
+					"pretrans": {
 						"type": "string"
 					},
-					"PostTrans": {
+					"posttrans": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"PreTrans",
-					"PostTrans"
-				]
+				"type": "object"
 			},
 			"NFPMRPMSignature": {
 				"properties": {
-					"KeyFile": {
-						"type": "string"
-					},
-					"KeyPassphrase": {
+					"key_file": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"KeyFile",
-					"KeyPassphrase"
-				]
+				"type": "object"
 			},
 			"NFPMScripts": {
 				"properties": {
-					"PreInstall": {
+					"preinstall": {
 						"type": "string"
 					},
-					"PostInstall": {
+					"postinstall": {
 						"type": "string"
 					},
-					"PreRemove": {
+					"preremove": {
 						"type": "string"
 					},
-					"PostRemove": {
+					"postremove": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"PreInstall",
-					"PostInstall",
-					"PreRemove",
-					"PostRemove"
-				]
+				"type": "object"
 			},
 			"Nightly": {
 				"properties": {
-					"NameTemplate": {
+					"name_template": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"NameTemplate"
-				]
+				"type": "object"
 			},
 			"PreBuiltOptions": {
 				"properties": {
-					"Path": {
+					"path": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Path"
-				]
+				"type": "object"
 			},
 			"Project": {
 				"properties": {
-					"ProjectName": {
+					"project_name": {
 						"type": "string"
 					},
-					"Env": {
+					"env": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Release": {
+					"release": {
 						"$ref": "#/$defs/Release"
 					},
-					"Milestones": {
+					"milestones": {
 						"items": {
 							"$ref": "#/$defs/Milestone"
 						},
 						"type": "array"
 					},
-					"Brews": {
+					"brews": {
 						"items": {
 							"$ref": "#/$defs/Homebrew"
 						},
 						"type": "array"
 					},
-					"Rigs": {
+					"rigs": {
 						"items": {
 							"$ref": "#/$defs/GoFish"
 						},
 						"type": "array"
 					},
-					"AURs": {
+					"aurs": {
 						"items": {
 							"$ref": "#/$defs/AUR"
 						},
 						"type": "array"
 					},
-					"Krews": {
+					"krews": {
 						"items": {
 							"$ref": "#/$defs/Krew"
 						},
 						"type": "array"
 					},
-					"Scoop": {
+					"scoop": {
 						"$ref": "#/$defs/Scoop"
 					},
-					"Builds": {
+					"builds": {
 						"items": {
 							"$ref": "#/$defs/Build"
 						},
 						"type": "array"
 					},
-					"Archives": {
+					"archives": {
 						"items": {
 							"$ref": "#/$defs/Archive"
 						},
 						"type": "array"
 					},
-					"NFPMs": {
+					"nfpms": {
 						"items": {
 							"$ref": "#/$defs/NFPM"
 						},
 						"type": "array"
 					},
-					"Snapcrafts": {
+					"snapcrafts": {
 						"items": {
 							"$ref": "#/$defs/Snapcraft"
 						},
 						"type": "array"
 					},
-					"Snapshot": {
+					"snapshot": {
 						"$ref": "#/$defs/Snapshot"
 					},
-					"Nightly": {
+					"nightly": {
 						"$ref": "#/$defs/Nightly"
 					},
-					"Checksum": {
+					"checksum": {
 						"$ref": "#/$defs/Checksum"
 					},
-					"Dockers": {
+					"dockers": {
 						"items": {
 							"$ref": "#/$defs/Docker"
 						},
 						"type": "array"
 					},
-					"DockerManifests": {
+					"docker_manifests": {
 						"items": {
 							"$ref": "#/$defs/DockerManifest"
 						},
 						"type": "array"
 					},
-					"Artifactories": {
+					"artifactories": {
 						"items": {
 							"$ref": "#/$defs/Upload"
 						},
 						"type": "array"
 					},
-					"Uploads": {
+					"uploads": {
 						"items": {
 							"$ref": "#/$defs/Upload"
 						},
 						"type": "array"
 					},
-					"Blobs": {
+					"blobs": {
 						"items": {
 							"$ref": "#/$defs/Blob"
 						},
 						"type": "array"
 					},
-					"Furies": {
+					"furies": {
 						"items": {
 							"$ref": "#/$defs/Fury"
 						},
 						"type": "array"
 					},
-					"Publishers": {
+					"publishers": {
 						"items": {
 							"$ref": "#/$defs/Publisher"
 						},
 						"type": "array"
 					},
-					"Changelog": {
+					"changelog": {
 						"$ref": "#/$defs/Changelog"
 					},
-					"Dist": {
+					"dist": {
 						"type": "string"
 					},
-					"Signs": {
+					"signs": {
 						"items": {
 							"$ref": "#/$defs/Sign"
 						},
 						"type": "array"
 					},
-					"DockerSigns": {
+					"docker_signs": {
 						"items": {
 							"$ref": "#/$defs/Sign"
 						},
 						"type": "array"
 					},
-					"EnvFiles": {
+					"env_files": {
 						"$ref": "#/$defs/EnvFiles"
 					},
-					"Before": {
+					"before": {
 						"$ref": "#/$defs/Before"
 					},
-					"After": {
+					"after": {
 						"$ref": "#/$defs/After"
 					},
-					"Source": {
+					"source": {
 						"$ref": "#/$defs/Source"
 					},
-					"GoMod": {
+					"gomod": {
 						"$ref": "#/$defs/GoMod"
 					},
-					"Monorepo": {
+					"monorepo": {
 						"$ref": "#/$defs/Monorepo"
 					},
-					"Announce": {
+					"announce": {
 						"$ref": "#/$defs/Announce"
 					},
-					"SBOMs": {
+					"sboms": {
 						"items": {
 							"$ref": "#/$defs/SBOM"
 						},
 						"type": "array"
 					},
-					"UniversalBinaries": {
+					"universal_binaries": {
 						"items": {
 							"$ref": "#/$defs/UniversalBinary"
 						},
 						"type": "array"
 					},
-					"SingleBuild": {
+					"build": {
 						"$ref": "#/$defs/Build"
 					},
-					"GitHubURLs": {
+					"github_urls": {
 						"$ref": "#/$defs/GitHubURLs"
 					},
-					"GitLabURLs": {
+					"gitlab_urls": {
 						"$ref": "#/$defs/GitLabURLs"
 					},
-					"GiteaURLs": {
+					"gitea_urls": {
 						"$ref": "#/$defs/GiteaURLs"
 					},
-					"Includes": {
+					"includes": {
 						"items": {
 							"$ref": "#/$defs/Include"
 						},
 						"type": "array"
 					},
-					"Variables": {
+					"variables": {
 						"type": "object"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"ProjectName",
-					"Env",
-					"Release",
-					"Milestones",
-					"Brews",
-					"Rigs",
-					"AURs",
-					"Krews",
-					"Scoop",
-					"Builds",
-					"Archives",
-					"NFPMs",
-					"Snapcrafts",
-					"Snapshot",
-					"Nightly",
-					"Checksum",
-					"Dockers",
-					"DockerManifests",
-					"Artifactories",
-					"Uploads",
-					"Blobs",
-					"Furies",
-					"Publishers",
-					"Changelog",
-					"Dist",
-					"Signs",
-					"DockerSigns",
-					"EnvFiles",
-					"Before",
-					"After",
-					"Source",
-					"GoMod",
-					"Monorepo",
-					"Announce",
-					"SBOMs",
-					"UniversalBinaries",
-					"SingleBuild",
-					"GitHubURLs",
-					"GitLabURLs",
-					"GiteaURLs",
-					"Includes",
-					"Variables"
-				]
+				"type": "object"
 			},
 			"Publisher": {
 				"properties": {
-					"Name": {
+					"name": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Checksum": {
+					"checksum": {
 						"type": "boolean"
 					},
-					"Signature": {
+					"signature": {
 						"type": "boolean"
 					},
-					"Dir": {
+					"dir": {
 						"type": "string"
 					},
-					"Cmd": {
+					"cmd": {
 						"type": "string"
 					},
-					"Env": {
+					"env": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"ExtraFiles": {
+					"extra_files": {
 						"items": {
 							"$ref": "#/$defs/ExtraFile"
 						},
@@ -2402,95 +1890,77 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Name",
-					"IDs",
-					"Checksum",
-					"Signature",
-					"Dir",
-					"Cmd",
-					"Env",
-					"ExtraFiles"
-				]
+				"type": "object"
 			},
 			"Reddit": {
 				"properties": {
-					"Enabled": {
+					"enabled": {
 						"type": "boolean"
 					},
-					"ApplicationID": {
+					"application_id": {
 						"type": "string"
 					},
-					"Username": {
+					"username": {
 						"type": "string"
 					},
-					"TitleTemplate": {
+					"title_template": {
 						"type": "string"
 					},
-					"URLTemplate": {
+					"url_template": {
 						"type": "string"
 					},
-					"Sub": {
+					"sub": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Enabled",
-					"ApplicationID",
-					"Username",
-					"TitleTemplate",
-					"URLTemplate",
-					"Sub"
-				]
+				"type": "object"
 			},
 			"Release": {
 				"properties": {
-					"GitHub": {
+					"github": {
 						"$ref": "#/$defs/Repo"
 					},
-					"GitLab": {
+					"gitlab": {
 						"$ref": "#/$defs/Repo"
 					},
-					"Gitea": {
+					"gitea": {
 						"$ref": "#/$defs/Repo"
 					},
-					"Draft": {
+					"draft": {
 						"type": "boolean"
 					},
-					"Disable": {
+					"disable": {
 						"type": "boolean"
 					},
-					"Prerelease": {
+					"prerelease": {
 						"type": "string"
 					},
-					"NameTemplate": {
+					"name_template": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"ExtraFiles": {
+					"extra_files": {
 						"items": {
 							"$ref": "#/$defs/ExtraFile"
 						},
 						"type": "array"
 					},
-					"DiscussionCategoryName": {
+					"discussion_category_name": {
 						"type": "string"
 					},
-					"Header": {
+					"header": {
 						"type": "string"
 					},
-					"Footer": {
+					"footer": {
 						"type": "string"
 					},
-					"ReleaseNotesMode": {
+					"mode": {
 						"type": "string",
 						"enum": [
 							"keep-existing",
@@ -2502,97 +1972,68 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"GitHub",
-					"GitLab",
-					"Gitea",
-					"Draft",
-					"Disable",
-					"Prerelease",
-					"NameTemplate",
-					"IDs",
-					"ExtraFiles",
-					"DiscussionCategoryName",
-					"Header",
-					"Footer",
-					"ReleaseNotesMode"
-				]
+				"type": "object"
 			},
 			"Repo": {
 				"properties": {
-					"Owner": {
+					"owner": {
 						"type": "string"
 					},
-					"Name": {
-						"type": "string"
-					},
-					"RawURL": {
+					"name": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Owner",
-					"Name",
-					"RawURL"
-				]
+				"type": "object"
 			},
 			"RepoRef": {
 				"properties": {
-					"Owner": {
+					"owner": {
 						"type": "string"
 					},
-					"Name": {
+					"name": {
 						"type": "string"
 					},
-					"Token": {
+					"token": {
 						"type": "string"
 					},
-					"Branch": {
+					"branch": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Owner",
-					"Name",
-					"Token",
-					"Branch"
-				]
+				"type": "object"
 			},
 			"SBOM": {
 				"properties": {
-					"ID": {
+					"id": {
 						"type": "string"
 					},
-					"Cmd": {
+					"cmd": {
 						"type": "string"
 					},
-					"Env": {
+					"env": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Args": {
+					"args": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Documents": {
+					"documents": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Artifacts": {
+					"artifacts": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
@@ -2600,225 +2041,176 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"ID",
-					"Cmd",
-					"Env",
-					"Args",
-					"Documents",
-					"Artifacts",
-					"IDs"
-				]
+				"type": "object"
 			},
 			"SMTP": {
 				"properties": {
-					"Enabled": {
+					"enabled": {
 						"type": "boolean"
 					},
-					"Host": {
+					"host": {
 						"type": "string"
 					},
-					"Port": {
+					"port": {
 						"type": "integer"
 					},
-					"Username": {
+					"username": {
 						"type": "string"
 					},
-					"From": {
+					"from": {
 						"type": "string"
 					},
-					"To": {
+					"to": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"SubjectTemplate": {
+					"subject_template": {
 						"type": "string"
 					},
-					"BodyTemplate": {
+					"body_template": {
 						"type": "string"
 					},
-					"InsecureSkipVerify": {
+					"insecure_skip_verify": {
 						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Enabled",
-					"Host",
-					"Port",
-					"Username",
-					"From",
-					"To",
-					"SubjectTemplate",
-					"BodyTemplate",
-					"InsecureSkipVerify"
-				]
+				"type": "object"
 			},
 			"Scoop": {
 				"properties": {
-					"Name": {
+					"name": {
 						"type": "string"
 					},
-					"Bucket": {
+					"bucket": {
 						"$ref": "#/$defs/RepoRef"
 					},
-					"Folder": {
+					"folder": {
 						"type": "string"
 					},
-					"CommitAuthor": {
+					"commit_author": {
 						"$ref": "#/$defs/CommitAuthor"
 					},
-					"CommitMessageTemplate": {
+					"commit_msg_template": {
 						"type": "string"
 					},
-					"Homepage": {
+					"homepage": {
 						"type": "string"
 					},
-					"Description": {
+					"description": {
 						"type": "string"
 					},
-					"License": {
+					"license": {
 						"type": "string"
 					},
-					"URLTemplate": {
+					"url_template": {
 						"type": "string"
 					},
-					"Persist": {
+					"persist": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"SkipUpload": {
+					"skip_upload": {
 						"type": "string"
 					},
-					"PreInstall": {
+					"pre_install": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"PostInstall": {
+					"post_install": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Goamd64": {
+					"goamd64": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Name",
-					"Bucket",
-					"Folder",
-					"CommitAuthor",
-					"CommitMessageTemplate",
-					"Homepage",
-					"Description",
-					"License",
-					"URLTemplate",
-					"Persist",
-					"SkipUpload",
-					"PreInstall",
-					"PostInstall",
-					"Goamd64"
-				]
+				"type": "object"
 			},
 			"Sign": {
 				"properties": {
-					"ID": {
+					"id": {
 						"type": "string"
 					},
-					"Cmd": {
+					"cmd": {
 						"type": "string"
 					},
-					"Args": {
+					"args": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Signature": {
+					"signature": {
 						"type": "string"
 					},
-					"Artifacts": {
+					"artifacts": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Stdin": {
+					"stdin": {
 						"type": "string"
 					},
-					"StdinFile": {
+					"stdin_file": {
 						"type": "string"
 					},
-					"Env": {
+					"env": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Certificate": {
+					"certificate": {
 						"type": "string"
 					},
-					"Output": {
+					"output": {
 						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"ID",
-					"Cmd",
-					"Args",
-					"Signature",
-					"Artifacts",
-					"IDs",
-					"Stdin",
-					"StdinFile",
-					"Env",
-					"Certificate",
-					"Output"
-				]
+				"type": "object"
 			},
 			"Slack": {
 				"properties": {
-					"Enabled": {
+					"enabled": {
 						"type": "boolean"
 					},
-					"MessageTemplate": {
+					"message_template": {
 						"type": "string"
 					},
-					"Channel": {
+					"channel": {
 						"type": "string"
 					},
-					"Username": {
+					"username": {
 						"type": "string"
 					},
-					"IconEmoji": {
+					"icon_emoji": {
 						"type": "string"
 					},
-					"IconURL": {
+					"icon_url": {
 						"type": "string"
 					},
-					"Blocks": {
+					"blocks": {
 						"items": {
 							"$ref": "#/$defs/SlackBlock"
 						},
 						"type": "array"
 					},
-					"Attachments": {
+					"attachments": {
 						"items": {
 							"$ref": "#/$defs/SlackAttachment"
 						},
@@ -2826,17 +2218,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Enabled",
-					"MessageTemplate",
-					"Channel",
-					"Username",
-					"IconEmoji",
-					"IconURL",
-					"Blocks",
-					"Attachments"
-				]
+				"type": "object"
 			},
 			"SlackAttachment": {
 				"properties": {
@@ -2860,10 +2242,10 @@
 			},
 			"Snapcraft": {
 				"properties": {
-					"NameTemplate": {
+					"name_template": {
 						"type": "string"
 					},
-					"Replacements": {
+					"replacements": {
 						"patternProperties": {
 							".*": {
 								"type": "string"
@@ -2871,46 +2253,46 @@
 						},
 						"type": "object"
 					},
-					"Publish": {
+					"publish": {
 						"type": "boolean"
 					},
-					"ID": {
+					"id": {
 						"type": "string"
 					},
-					"Builds": {
+					"builds": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Name": {
+					"name": {
 						"type": "string"
 					},
-					"Summary": {
+					"summary": {
 						"type": "string"
 					},
-					"Description": {
+					"description": {
 						"type": "string"
 					},
-					"Base": {
+					"base": {
 						"type": "string"
 					},
-					"License": {
+					"license": {
 						"type": "string"
 					},
-					"Grade": {
+					"grade": {
 						"type": "string"
 					},
-					"ChannelTemplates": {
+					"channel_templates": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Confinement": {
+					"confinement": {
 						"type": "string"
 					},
-					"Layout": {
+					"layout": {
 						"patternProperties": {
 							".*": {
 								"$ref": "#/$defs/SnapcraftLayoutMetadata"
@@ -2918,7 +2300,7 @@
 						},
 						"type": "object"
 					},
-					"Apps": {
+					"apps": {
 						"patternProperties": {
 							".*": {
 								"$ref": "#/$defs/SnapcraftAppMetadata"
@@ -2926,10 +2308,10 @@
 						},
 						"type": "object"
 					},
-					"Plugs": {
+					"plugs": {
 						"type": "object"
 					},
-					"Files": {
+					"extra_files": {
 						"items": {
 							"$ref": "#/$defs/SnapcraftExtraFiles"
 						},
@@ -2937,259 +2319,193 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"NameTemplate",
-					"Replacements",
-					"Publish",
-					"ID",
-					"Builds",
-					"Name",
-					"Summary",
-					"Description",
-					"Base",
-					"License",
-					"Grade",
-					"ChannelTemplates",
-					"Confinement",
-					"Layout",
-					"Apps",
-					"Plugs",
-					"Files"
-				]
+				"type": "object"
 			},
 			"SnapcraftAppMetadata": {
 				"properties": {
-					"Command": {
+					"command": {
 						"type": "string"
 					},
-					"Args": {
+					"args": {
 						"type": "string"
 					},
-					"Adapter": {
+					"adapter": {
 						"type": "string"
 					},
-					"After": {
+					"after": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Aliases": {
+					"aliases": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Autostart": {
+					"autostart": {
 						"type": "string"
 					},
-					"Before": {
+					"before": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"BusName": {
+					"bus_name": {
 						"type": "string"
 					},
-					"CommandChain": {
+					"command_chain": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"CommonID": {
+					"common_id": {
 						"type": "string"
 					},
-					"Completer": {
+					"completer": {
 						"type": "string"
 					},
-					"Daemon": {
+					"daemon": {
 						"type": "string"
 					},
-					"Desktop": {
+					"desktop": {
 						"type": "string"
 					},
-					"Environment": {
+					"environment": {
 						"type": "object"
 					},
-					"Extensions": {
+					"extensions": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"InstallMode": {
+					"install_mode": {
 						"type": "string"
 					},
-					"Passthrough": {
+					"passthrough": {
 						"type": "object"
 					},
-					"Plugs": {
+					"plugs": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"PostStopCommand": {
+					"post_stop_command": {
 						"type": "string"
 					},
-					"RefreshMode": {
+					"refresh_mode": {
 						"type": "string"
 					},
-					"ReloadCommand": {
+					"reload_command": {
 						"type": "string"
 					},
-					"RestartCondition": {
+					"restart_condition": {
 						"type": "string"
 					},
-					"RestartDelay": {
+					"restart_delay": {
 						"type": "string"
 					},
-					"Slots": {
+					"slots": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Sockets": {
+					"sockets": {
 						"type": "object"
 					},
-					"StartTimeout": {
+					"start_timeout": {
 						"type": "string"
 					},
-					"StopCommand": {
+					"stop_command": {
 						"type": "string"
 					},
-					"StopMode": {
+					"stop_mode": {
 						"type": "string"
 					},
-					"StopTimeout": {
+					"stop_timeout": {
 						"type": "string"
 					},
-					"Timer": {
+					"timer": {
 						"type": "string"
 					},
-					"WatchdogTimeout": {
+					"watchdog_timeout": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
 				"type": "object",
 				"required": [
-					"Command",
-					"Args",
-					"Adapter",
-					"After",
-					"Aliases",
-					"Autostart",
-					"Before",
-					"BusName",
-					"CommandChain",
-					"CommonID",
-					"Completer",
-					"Daemon",
-					"Desktop",
-					"Environment",
-					"Extensions",
-					"InstallMode",
-					"Passthrough",
-					"Plugs",
-					"PostStopCommand",
-					"RefreshMode",
-					"ReloadCommand",
-					"RestartCondition",
-					"RestartDelay",
-					"Slots",
-					"Sockets",
-					"StartTimeout",
-					"StopCommand",
-					"StopMode",
-					"StopTimeout",
-					"Timer",
-					"WatchdogTimeout"
+					"command"
 				]
 			},
 			"SnapcraftExtraFiles": {
 				"properties": {
-					"Source": {
+					"source": {
 						"type": "string"
 					},
-					"Destination": {
+					"destination": {
 						"type": "string"
 					},
-					"Mode": {
+					"mode": {
 						"type": "integer"
 					}
 				},
 				"additionalProperties": false,
 				"type": "object",
 				"required": [
-					"Source",
-					"Destination",
-					"Mode"
+					"source"
 				]
 			},
 			"SnapcraftLayoutMetadata": {
 				"properties": {
-					"Symlink": {
+					"symlink": {
 						"type": "string"
 					},
-					"Bind": {
+					"bind": {
 						"type": "string"
 					},
-					"BindFile": {
+					"bind_file": {
 						"type": "string"
 					},
-					"Type": {
+					"type": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Symlink",
-					"Bind",
-					"BindFile",
-					"Type"
-				]
+				"type": "object"
 			},
 			"Snapshot": {
 				"properties": {
-					"NameTemplate": {
+					"name_template": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"NameTemplate"
-				]
+				"type": "object"
 			},
 			"Source": {
 				"properties": {
-					"NameTemplate": {
+					"name_template": {
 						"type": "string"
 					},
-					"Format": {
+					"format": {
 						"type": "string"
 					},
-					"Enabled": {
+					"enabled": {
 						"type": "boolean"
 					},
-					"PrefixTemplate": {
+					"prefix_template": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"NameTemplate",
-					"Format",
-					"Enabled",
-					"PrefixTemplate"
-				]
+				"type": "object"
 			},
 			"StringArray": {
 				"oneOf": [
@@ -3206,144 +2522,121 @@
 			},
 			"Teams": {
 				"properties": {
-					"Enabled": {
+					"enabled": {
 						"type": "boolean"
 					},
-					"TitleTemplate": {
+					"title_template": {
 						"type": "string"
 					},
-					"MessageTemplate": {
+					"message_template": {
 						"type": "string"
 					},
-					"Color": {
+					"color": {
 						"type": "string"
 					},
-					"IconURL": {
+					"icon_url": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Enabled",
-					"TitleTemplate",
-					"MessageTemplate",
-					"Color",
-					"IconURL"
-				]
+				"type": "object"
 			},
 			"Telegram": {
 				"properties": {
-					"Enabled": {
+					"enabled": {
 						"type": "boolean"
 					},
-					"MessageTemplate": {
+					"message_template": {
 						"type": "string"
 					},
-					"ChatID": {
+					"chat_id": {
 						"type": "integer"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Enabled",
-					"MessageTemplate",
-					"ChatID"
-				]
+				"type": "object"
 			},
 			"Twitter": {
 				"properties": {
-					"Enabled": {
+					"enabled": {
 						"type": "boolean"
 					},
-					"MessageTemplate": {
+					"message_template": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Enabled",
-					"MessageTemplate"
-				]
+				"type": "object"
 			},
 			"UniversalBinary": {
 				"properties": {
-					"ID": {
+					"id": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"NameTemplate": {
+					"name_template": {
 						"type": "string"
 					},
-					"Replace": {
+					"replace": {
 						"type": "boolean"
 					},
-					"Hooks": {
+					"hooks": {
 						"$ref": "#/$defs/BuildHookConfig"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"ID",
-					"IDs",
-					"NameTemplate",
-					"Replace",
-					"Hooks"
-				]
+				"type": "object"
 			},
 			"Upload": {
 				"properties": {
-					"Name": {
+					"name": {
 						"type": "string"
 					},
-					"IDs": {
+					"ids": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Exts": {
+					"exts": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
-					"Target": {
+					"target": {
 						"type": "string"
 					},
-					"Username": {
+					"username": {
 						"type": "string"
 					},
-					"Mode": {
+					"mode": {
 						"type": "string"
 					},
-					"Method": {
+					"method": {
 						"type": "string"
 					},
-					"ChecksumHeader": {
+					"checksum_header": {
 						"type": "string"
 					},
-					"TrustedCerts": {
+					"trusted_certificates": {
 						"type": "string"
 					},
-					"Checksum": {
+					"checksum": {
 						"type": "boolean"
 					},
-					"Signature": {
+					"signature": {
 						"type": "boolean"
 					},
-					"CustomArtifactName": {
+					"custom_artifact_name": {
 						"type": "boolean"
 					},
-					"CustomHeaders": {
+					"custom_headers": {
 						"patternProperties": {
 							".*": {
 								"type": "string"
@@ -3353,38 +2646,23 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Name",
-					"IDs",
-					"Exts",
-					"Target",
-					"Username",
-					"Mode",
-					"Method",
-					"ChecksumHeader",
-					"TrustedCerts",
-					"Checksum",
-					"Signature",
-					"CustomArtifactName",
-					"CustomHeaders"
-				]
+				"type": "object"
 			},
 			"Webhook": {
 				"properties": {
-					"Enabled": {
+					"enabled": {
 						"type": "boolean"
 					},
-					"SkipTLSVerify": {
+					"skip_tls_verify": {
 						"type": "boolean"
 					},
-					"MessageTemplate": {
+					"message_template": {
 						"type": "string"
 					},
-					"EndpointURL": {
+					"endpoint_url": {
 						"type": "string"
 					},
-					"Headers": {
+					"headers": {
 						"patternProperties": {
 							".*": {
 								"type": "string"
@@ -3392,20 +2670,12 @@
 						},
 						"type": "object"
 					},
-					"ContentType": {
+					"content_type": {
 						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"Enabled",
-					"SkipTLSVerify",
-					"MessageTemplate",
-					"EndpointURL",
-					"Headers",
-					"ContentType"
-				]
+				"type": "object"
 			}
 		},
 		"description": "goreleaser configuration definition file"
