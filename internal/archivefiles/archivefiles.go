@@ -64,11 +64,17 @@ func unique(in []config.File) []config.File {
 }
 
 func destinationFor(f config.File, path string) string {
-	if f.Destination == "" {
-		return path
-	}
+	var filePath string
+
 	if f.StripParent {
-		return filepath.Join(f.Destination, filepath.Base(path))
+		filePath = filepath.Base(path)
+	} else {
+		filePath = path
 	}
-	return filepath.Join(f.Destination, path)
+
+	if f.Destination == "" {
+		return filePath
+	} else {
+		return filepath.Join(f.Destination, filePath)
+	}
 }

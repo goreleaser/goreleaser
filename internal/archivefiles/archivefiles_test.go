@@ -31,6 +31,26 @@ func TestEval(t *testing.T) {
 		}, result)
 	})
 
+	t.Run("strip parent plays nicely with destination omitted", func(t *testing.T) {
+		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a/b", StripParent: true}})
+
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{Source: "testdata/a/b/a.txt", Destination: "a.txt"},
+			{Source: "testdata/a/b/c/d.txt", Destination: "d.txt"},
+		}, result)
+	})
+
+	t.Run("strip parent plays nicely with destination as an empty string", func(t *testing.T) {
+		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a/b", Destination: "", StripParent: true}})
+
+		require.NoError(t, err)
+		require.Equal(t, []config.File{
+			{Source: "testdata/a/b/a.txt", Destination: "a.txt"},
+			{Source: "testdata/a/b/c/d.txt", Destination: "d.txt"},
+		}, result)
+	})
+
 	t.Run("match multiple files within tree without destination", func(t *testing.T) {
 		result, err := Eval(tmpl, []config.File{{Source: "./testdata/a"}})
 

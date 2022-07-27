@@ -142,9 +142,6 @@ files:
 # ...
 ```
 
-!!! warning
-    `strip_parent` is only effective if `dst` is not empty.
-
 ## Packaging only the binaries
 
 Since GoReleaser will always add the `README` and `LICENSE` files to the
