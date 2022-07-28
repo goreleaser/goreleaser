@@ -16,11 +16,6 @@ builds:
     # Defaults to the binary name.
     id: "my-build"
 
-    # Path to project's (sub)directory containing Go code.
-    # This is the working directory for the Go build command(s).
-    # Default is `.`.
-    dir: go
-
     # Path to main.go file or main package.
     # Notice: when used with `gomod.proxy`, this must be a package.
     #
@@ -179,6 +174,14 @@ builds:
     #
     # Defaults to `false`.
     no_main_check: true
+
+    # Path to project's (sub)directory containing Go code.
+    # This is the working directory for the Go build command(s).
+    # If dir does not contain a `go.mod` file, and you are using `gomod.proxy`,
+    # produced binaries will be invalid.
+    # You would likely want to use `main` instead of this.
+    # Default is `.`.
+    dir: go
 
     # Builder allows you to use a different build implementation.
     # This is a GoReleaser Pro feature.
