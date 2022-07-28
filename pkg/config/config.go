@@ -496,6 +496,7 @@ type Archive struct {
 	Files                     []File            `yaml:"files,omitempty"`
 	Meta                      bool              `yaml:"meta,omitempty"`
 	AllowDifferentBinaryCount bool              `yaml:"allow_different_binary_count,omitempty"`
+	StripParentBinaryFolder   bool              `yaml:"strip_parent_binary_folder,omitempty"`
 }
 
 type ReleaseNotesMode string
