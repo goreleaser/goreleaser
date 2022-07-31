@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/Masterminds/sprig"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -190,6 +191,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"filter":        filter(false),
 			"reverseFilter": filter(true),
 		}).
+		Funcs(template.FuncMap(sprig.FuncMap())).
 		Parse(s)
 	if err != nil {
 		return "", err
