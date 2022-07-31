@@ -106,6 +106,8 @@ On all fields, you have these available functions:
 | `filter "text" "regex"`        | keeps only the lines matching the given regex, analogous to `grep -E`                                                          |
 | `reverseFilter "text" "regex"` | keeps only the lines **not** matching the given regex, analogous to `grep -vE`                                                 |
 
+Additionally, all functions of [Sprig](http://masterminds.github.io/sprig/) are available.
+
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:
 
