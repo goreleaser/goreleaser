@@ -6,6 +6,7 @@ require (
 	code.gitea.io/sdk/gitea v0.15.1
 	github.com/DisgoOrg/disgohook v1.4.4
 	github.com/Masterminds/semver/v3 v3.1.1
+	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/atc0005/go-teams-notify/v2 v2.6.1
 	github.com/caarlos0/ctrlc v1.1.0
 	github.com/caarlos0/env/v6 v6.9.3
@@ -127,6 +128,8 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
+	github.com/shopspring/decimal v1.2.0 // indirect
+	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.1 // indirect
