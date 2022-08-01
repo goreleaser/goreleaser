@@ -23,7 +23,7 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 
 		files, err := fileglob.Glob(replaced)
 		if err != nil {
-			return result, fmt.Errorf("globbing failed for pattern %s: %w", f.Source, err)
+			return result, fmt.Errorf("globbing failed for pattern %s: %w", replaced, err)
 		}
 
 		for _, file := range files {
