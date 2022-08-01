@@ -6,6 +6,12 @@ class Default < Formula
   desc "A run pipe test formula and FOO=foo_is_bar"
   homepage "https://github.com/goreleaser"
   version "1.0.1"
+
+  depends_on "zsh" => :optional
+  depends_on "bash"
+
+  conflicts_with "gtk+"
+  conflicts_with "qt"
   depends_on :macos
 
   on_macos do
@@ -26,12 +32,6 @@ class Default < Formula
       end
     end
   end
-
-  depends_on "zsh" => :optional
-  depends_on "bash"
-
-  conflicts_with "gtk+"
-  conflicts_with "qt"
 
   def post_install
     system "echo"

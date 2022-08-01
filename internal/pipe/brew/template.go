@@ -45,6 +45,19 @@ class {{ .Name }} < Formula
   {{- if .License }}
   license "{{ .License }}"
   {{- end }}
+  {{- with .Dependencies }}
+  {{ range $index, $element := . }}
+  depends_on "{{ .Name }}"
+  {{- if .Type }} => :{{ .Type }}{{- end }}
+  {{- end }}
+  {{- end -}}
+
+  {{- with .Conflicts }}
+  {{ range $index, $element := . }}
+  conflicts_with "{{ . }}"
+  {{- end }}
+  {{- end }}
+
   {{- if and (not .LinuxPackages) .MacOSPackages }}
   depends_on :macos
   {{- end }}
@@ -139,19 +152,6 @@ class {{ .Name }} < Formula
   {{- with .CustomBlock }}
   {{ range $index, $element := . }}
   {{ . }}
-  {{- end }}
-  {{- end }}
-
-  {{- with .Dependencies }}
-  {{ range $index, $element := . }}
-  depends_on "{{ .Name }}"
-  {{- if .Type }} => :{{ .Type }}{{- end }}
-  {{- end }}
-  {{- end -}}
-
-  {{- with .Conflicts }}
-  {{ range $index, $element := . }}
-  conflicts_with "{{ . }}"
   {{- end }}
   {{- end }}
 
