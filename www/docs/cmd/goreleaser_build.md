@@ -23,10 +23,10 @@ goreleaser build [flags]
   -f, --config string      Load configuration from file
   -h, --help               help for build
       --id stringArray     Builds only the specified build ids
-  -o, --output string      Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if config only has one build)
+  -o, --output string      Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if configuration only has one build)
   -p, --parallelism int    Amount tasks to run concurrently (default: number of CPUs)
       --rm-dist            Remove the dist folder before building
-      --single-target      Builds only for current GOOS and GOARCH
+      --single-target      Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file
       --skip-after         Skips global after hooks
       --skip-before        Skips global before hooks
       --skip-post-hooks    Skips all post-build hooks
