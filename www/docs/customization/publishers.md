@@ -24,7 +24,7 @@ publishers:
 
 ### Environment
 
-Commands which are executed as custom publishers only inherit a subset of
+Commands, which are executed as custom publishers only inherit a subset of
 the system environment variables (unlike existing hooks) as a precaution to
 avoid leaking sensitive data accidentally and provide better control of the
 environment for each individual process where variable names may overlap
@@ -41,7 +41,7 @@ Environment variables that are kept:
 - `PATH`
 
 
-You can however use `.Env.NAME` templating syntax which enables
+You can however use `.Env.NAME` templating syntax, which enables
 more explicit inheritance.
 
 ```yaml
@@ -129,7 +129,7 @@ publishers:
         name_template: file.txt # note that this only works if glob matches 1 file only
 ```
 
-These settings should allow you to push your artifacts to any number of endpoints
+These settings should allow you to push your artifacts to any number of endpoints,
 which may require non-trivial authentication or has otherwise complex requirements.
 
 !!! tip
