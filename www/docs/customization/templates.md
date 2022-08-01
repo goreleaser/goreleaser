@@ -72,6 +72,7 @@ may have some extra fields:
 | `.Binary`       | binary name                           |
 | `.ArtifactName` | archive name                          |
 | `.ArtifactPath` | absolute path to artifact             |
+| `.ArtifactExt`  | binary extension (e.g. `.exe`)        |
 
 [^8]: Might have been replaced by `archives.replacements`.
 
