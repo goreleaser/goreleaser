@@ -58,7 +58,8 @@ aurs:
     private_key: '{{ .Env.AUR_KEY }}'
 
     # The AUR Git URL for this package.
-    # Defaults to empty.
+    # Defaults to empty
+    # Publish is skipped if empty.
     git_url: 'ssh://aur@aur.archlinux.org/mypackage-bin.git'
 
     # Setting this will prevent goreleaser to actually try to commit the updated
