@@ -29,7 +29,7 @@ require (
 	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.12.1-0.20220615005108-4e9068de9898
-	github.com/slack-go/slack v0.11.0
+	github.com/slack-go/slack v0.11.2
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
 	github.com/ulikunitz/xz v0.5.10
