@@ -2,6 +2,7 @@
 
 GoReleaser Pro is a paid, closed-source GoReleaser distribution with some additional features:
 
+- [x] Have custom [before and after hooks for achives](/customization/archive/);
 - [x] Prepare a release with [`goreleaser release --prepare`](/cmd/goreleaser_release/), publish and announce it later with [`goreleaser publish`](/cmd/goreleaser_publish/) and [`goreleaser announce`](/cmd/goreleaser_announce/);
 - [x] Preview and test your next release's changelog with [`goreleaser changelog`](/cmd/goreleaser_changelog/);
 - [x] Continuously release [nightly builds](/customization/nightlies/);
@@ -18,7 +19,7 @@ GoReleaser Pro is a paid, closed-source GoReleaser distribution with some additi
 
 ## Roadmap
 
-The roadmap is not public (yet), but we do have a couple of ideas and your input is always welcome!
+The roadmap is not public (yet), but we do have a couple of ideas, and your input is always welcome!
 Once you buy it, feel free to [email me](mailto:carlos@becker.software?subject=GoReleaser%20Feature%20Suggestion) with your suggestions.
 
 ## Pricing & Sponsors
