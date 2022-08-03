@@ -514,6 +514,7 @@ type Release struct {
 	Gitea                  Repo        `yaml:"gitea,omitempty"`
 	Draft                  bool        `yaml:"draft,omitempty"`
 	Disable                bool        `yaml:"disable,omitempty"`
+	SkipUpload             bool        `yaml:"skip_upload,omitempty"`
 	Prerelease             string      `yaml:"prerelease,omitempty"`
 	NameTemplate           string      `yaml:"name_template,omitempty"`
 	IDs                    []string    `yaml:"ids,omitempty"`
