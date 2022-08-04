@@ -3,6 +3,7 @@ package snapshot
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -40,7 +41,7 @@ func TestSnapshotInvalidNametemplate(t *testing.T) {
 			NameTemplate: "{{.ShortCommit}{{{sss}}}",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `failed to generate snapshot name: template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
 func TestSnapshotEmptyFinalName(t *testing.T) {

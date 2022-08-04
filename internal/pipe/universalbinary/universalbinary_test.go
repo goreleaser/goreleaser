@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -267,13 +268,13 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("bad template", func(t *testing.T) {
-		require.EqualError(t, Pipe{}.Run(context.New(config.Project{
+		testlib.RequireTemplateError(t, Pipe{}.Run(context.New(config.Project{
 			UniversalBinaries: []config.UniversalBinary{
 				{
 					NameTemplate: "{{.Name}",
 				},
 			},
-		})), `template: tmpl:1: unexpected "}" in operand`)
+		})))
 	})
 
 	t.Run("no darwin builds", func(t *testing.T) {

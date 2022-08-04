@@ -142,7 +142,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "1.2.3"
 	addBinaries(t, ctx, "foo", dist)
-	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeWithName(t *testing.T) {
