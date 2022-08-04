@@ -89,10 +89,35 @@ archives:
           # format is `time.RFC3339Nano`
           mtime: 2008-01-02T15:04:05Z
 
+    # Before and after hooks for each archive.
+    # Skipped if archive format is binary.
+    # This feature is available in [GoReleaser Pro](/pro) only.
+    hooks:
+      before:
+      - make clean # simple string
+      - cmd: go generate ./... # specify cmd
+      - cmd: go mod tidy
+        output: true # always prints command output
+        dir: ./submodule # specify command working directory
+      - cmd: touch {{ .Env.FILE_TO_TOUCH }}
+        env:
+        - 'FILE_TO_TOUCH=something-{{ .ProjectName }}' # specify hook level environment variables
+
+      after:
+      - make clean
+      - cmd: cat *.yaml
+        dir: ./submodule
+      - cmd: touch {{ .Env.RELEASE_DONE }}
+        env:
+        - 'RELEASE_DONE=something-{{ .ProjectName }}' # specify hook level environment variables
+
     # Disables the binary count check.
     # Default: false
     allow_different_binary_count: true
 ```
+
+!!! success "GoReleaser Pro"
+    Archive hooks is a [GoReleaser Pro feature](/pro/).
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).

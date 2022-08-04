@@ -20,20 +20,20 @@ require (
 	github.com/google/go-github/v45 v45.2.0
 	github.com/google/uuid v1.3.0
 	github.com/goreleaser/fileglob v1.3.0
-	github.com/goreleaser/nfpm/v2 v2.16.0
+	github.com/goreleaser/nfpm/v2 v2.17.0
 	github.com/imdario/mergo v0.3.13
-	github.com/invopop/jsonschema v0.4.0
+	github.com/invopop/jsonschema v0.5.0
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/klauspost/pgzip v1.2.5
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
 	github.com/muesli/termenv v0.12.1-0.20220615005108-4e9068de9898
-	github.com/slack-go/slack v0.11.0
+	github.com/slack-go/slack v0.11.2
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
 	github.com/ulikunitz/xz v0.5.10
-	github.com/xanzy/go-gitlab v0.68.2
+	github.com/xanzy/go-gitlab v0.70.0
 	gocloud.dev v0.24.0
 	golang.org/x/crypto v0.0.0-20220307211146-efcb8507fb70
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5

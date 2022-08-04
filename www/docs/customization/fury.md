@@ -31,7 +31,12 @@ furies:
   -
     # fury.io account.
     # Config is skipped if empty
-    account: my-account
+    account: "{{ .Env.FURY_ACCOUNT }}"
+
+    # Skip the announcing feature in some conditions, for instance, when publishing patch releases.
+    # Valid options are `true`, `false`, empty, or a template that evaluates to a boolean (`true` or `false`).
+    # Defaults to empty - which means false.
+    skip: "{{gt .Patch 0}}"
 
     # Environment variable name to get the push token from.
     # You might want to change it if you have multiple fury configurations for some reason.
