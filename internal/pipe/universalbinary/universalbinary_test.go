@@ -327,7 +327,7 @@ func TestRun(t *testing.T) {
 			Env: []string{"FOO=foo-{{.Tag}"},
 		}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
-		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: template: tmpl:1: unexpected "}" in operand`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("hook with bad dir tmpl", func(t *testing.T) {
@@ -337,7 +337,7 @@ func TestRun(t *testing.T) {
 			Dir: "{{.Tag}",
 		}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
-		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: template: tmpl:1: unexpected "}" in operand`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("hook with bad cmd tmpl", func(t *testing.T) {
@@ -346,7 +346,7 @@ func TestRun(t *testing.T) {
 			Cmd: "echo blah-{{.Tag }",
 		}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
-		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: template: tmpl:1: unexpected "}" in operand`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 }
 

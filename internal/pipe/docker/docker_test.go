@@ -319,7 +319,7 @@ func TestRunPipe(t *testing.T) {
 			expect:              []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+			manifestAssertError: shouldErr(`template: tmpl:1: bad character U+007D '}'`),
 			assertImageLabels:   noLabels,
 		},
 		"multiarch image template error": {
@@ -340,7 +340,7 @@ func TestRunPipe(t *testing.T) {
 			expect:              []string{registry + "goreleaser/test_multiarch_img_tmpl_error"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+			manifestAssertError: shouldErr(`template: tmpl:1: bad character U+007D '}'`),
 			assertImageLabels:   noLabels,
 		},
 		"multiarch missing manifest name": {
