@@ -83,6 +83,6 @@ class Test < Formula
   end
 
   test do
-    system "#{bin}/foo\", \"-version"
+    system "#{bin}/foo", "-version"
   end
 end

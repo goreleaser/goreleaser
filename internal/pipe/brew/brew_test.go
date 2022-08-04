@@ -105,7 +105,7 @@ func TestFullFormulae(t *testing.T) {
 	data.Plist = "it works"
 	data.PostInstall = []string{`touch "/tmp/foo"`, `system "echo", "done"`}
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
-	data.Tests = []string{`system "#{bin}/{{.ProjectName}}\", \"-version"`}
+	data.Tests = []string{`system "#{bin}/{{.ProjectName}}", "-version"`}
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
@@ -357,7 +357,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 					Description: "Foo bar",
 					Homepage:    "https://goreleaser.com",
 					Goamd64:     "v1",
-					Install:     "bin.install foo foo",
+					Install:     `bin.install "foo"`,
 					Tap: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -533,7 +533,7 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 								Name:  "test",
 							},
 							Homepage: "https://github.com/goreleaser",
-							Install:  "bin.install foo foo",
+							Install:  `bin.install "foo"`,
 						},
 					},
 					GitHubURLs: config.GitHubURLs{
