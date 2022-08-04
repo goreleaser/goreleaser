@@ -11,5 +11,5 @@ func RequireTemplateError(tb testing.TB, err error) {
 
 	require.Error(tb, err)
 	require.Contains(tb, err.Error(), "template:")
-	require.Regexp(tb, "bad character|map has no entry|in operand", err.Error())
+	require.Regexp(tb, "bad character|map has no entry|unexpected \"}\" in operand", err.Error())
 }
