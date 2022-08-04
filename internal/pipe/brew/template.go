@@ -52,12 +52,6 @@ class {{ .Name }} < Formula
   {{- end }}
   {{- end -}}
 
-  {{- with .Conflicts }}
-  {{ range $index, $element := . }}
-  conflicts_with "{{ . }}"
-  {{- end }}
-  {{- end }}
-
   {{- if and (not .LinuxPackages) .MacOSPackages }}
   depends_on :macos
   {{- end }}
@@ -71,7 +65,7 @@ class {{ .Name }} < Formula
   {{- range $element := .MacOSPackages }}
     {{- if eq $element.Arch "all" }}
     url "{{ $element.DownloadURL }}"
-    {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+	{{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
     sha256 "{{ $element.SHA256 }}"
 
     def install
@@ -81,7 +75,7 @@ class {{ .Name }} < Formula
     end
     {{- else if $.HasOnlyAmd64MacOsPkg }}
     url "{{ $element.DownloadURL }}"
-    {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+	{{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
     sha256 "{{ $element.SHA256 }}"
 
     def install
@@ -107,7 +101,7 @@ class {{ .Name }} < Formula
     if Hardware::CPU.arm?
     {{- end}}
       url "{{ $element.DownloadURL }}"
-      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+      {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
       sha256 "{{ $element.SHA256 }}"
 
       def install
@@ -136,7 +130,7 @@ class {{ .Name }} < Formula
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
     {{- end }}
       url "{{ $element.DownloadURL }}"
-      {{- if .DownloadStrategy }}, :using => {{ .DownloadStrategy }}{{- end }}
+	  {{- if .DownloadStrategy }}, using: {{ .DownloadStrategy }}{{- end }}
       sha256 "{{ $element.SHA256 }}"
 
       def install
@@ -147,6 +141,12 @@ class {{ .Name }} < Formula
     end
   {{- end }}
   end
+  {{- end }}
+
+  {{- with .Conflicts }}
+  {{ range $index, $element := . }}
+  conflicts_with "{{ . }}"
+  {{- end }}
   {{- end }}
 
   {{- with .CustomBlock }}
@@ -166,21 +166,23 @@ class {{ .Name }} < Formula
 
   {{- with .Caveats }}
 
-  def caveats; <<~EOS
+  def caveats
+    <<~EOS
     {{- range $index, $element := . }}
-    {{ . -}}
+      {{ . -}}
     {{- end }}
-  EOS
+    EOS
   end
   {{- end -}}
 
   {{- with .Plist }}
 
-  plist_options :startup => false
+  plist_options startup: false
 
-  def plist; <<~EOS
-    {{ . }}
-  EOS
+  def plist
+    <<~EOS
+      {{ . }}
+    EOS
   end
   {{- end -}}
 
