@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// RequireTemplateError requires thqt an error happens and that it is an template error.
 func RequireTemplateError(tb testing.TB, err error) {
 	tb.Helper()
 
