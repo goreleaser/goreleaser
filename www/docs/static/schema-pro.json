@@ -1,5 +1,5 @@
 {
-		"$schema": "http://json-schema.org/draft/2020-12/schema",
+		"$schema": "https://json-schema.org/draft/2020-12/schema",
 		"$id": "https://github.com/goreleaser/goreleaser/pkg/config/project",
 		"$ref": "#/$defs/Project",
 		"$defs": {
@@ -96,10 +96,7 @@
 			"After": {
 				"properties": {
 					"hooks": {
-						"items": {
-							"$ref": "#/$defs/Hook"
-						},
-						"type": "array"
+						"$ref": "#/$defs/Hooks"
 					}
 				},
 				"additionalProperties": false,
@@ -196,6 +193,21 @@
 					},
 					"allow_different_binary_count": {
 						"type": "boolean"
+					},
+					"hooks": {
+						"$ref": "#/$defs/ArchiveHooks"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ArchiveHooks": {
+				"properties": {
+					"before": {
+						"$ref": "#/$defs/Hooks"
+					},
+					"after": {
+						"$ref": "#/$defs/Hooks"
 					}
 				},
 				"additionalProperties": false,
@@ -204,10 +216,7 @@
 			"Before": {
 				"properties": {
 					"hooks": {
-						"items": {
-							"$ref": "#/$defs/Hook"
-						},
-						"type": "array"
+						"$ref": "#/$defs/Hooks"
 					}
 				},
 				"additionalProperties": false,
@@ -411,16 +420,10 @@
 			"BuildHookConfig": {
 				"properties": {
 					"pre": {
-						"items": {
-							"$ref": "#/$defs/Hook"
-						},
-						"type": "array"
+						"$ref": "#/$defs/Hooks"
 					},
 					"post": {
-						"items": {
-							"$ref": "#/$defs/Hook"
-						},
-						"type": "array"
+						"$ref": "#/$defs/Hooks"
 					}
 				},
 				"additionalProperties": false,
@@ -553,6 +556,12 @@
 				"required": [
 					"group"
 				]
+			},
+			"Contents": {
+				"items": {
+					"$ref": "#/$defs/Content"
+				},
+				"type": "array"
 			},
 			"Discord": {
 				"properties": {
@@ -704,7 +713,7 @@
 						"type": "string"
 					},
 					{
-						"$schema": "http://json-schema.org/draft/2020-12/schema",
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
 						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
 						"$defs": {
 							"FileInfo": {
@@ -801,6 +810,9 @@
 						"type": "array"
 					},
 					"secret_name": {
+						"type": "string"
+					},
+					"skip": {
 						"type": "string"
 					}
 				},
@@ -1014,7 +1026,7 @@
 						"type": "string"
 					},
 					{
-						"$schema": "http://json-schema.org/draft/2020-12/schema",
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
 						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/homebrew-dependency",
 						"properties": {
 							"name": {
@@ -1035,7 +1047,7 @@
 						"type": "string"
 					},
 					{
-						"$schema": "http://json-schema.org/draft/2020-12/schema",
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
 						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
 						"properties": {
 							"dir": {
@@ -1058,6 +1070,12 @@
 						"type": "object"
 					}
 				]
+			},
+			"Hooks": {
+				"items": {
+					"$ref": "#/$defs/Hook"
+				},
+				"type": "array"
 			},
 			"IgnoredBuild": {
 				"properties": {
@@ -1297,10 +1315,7 @@
 						"type": "array"
 					},
 					"contents": {
-						"items": {
-							"$ref": "#/$defs/Content"
-						},
-						"type": "array"
+						"$ref": "#/$defs/Contents"
 					},
 					"scripts": {
 						"$ref": "#/$defs/NFPMScripts"
@@ -1556,10 +1571,7 @@
 						"type": "array"
 					},
 					"contents": {
-						"items": {
-							"$ref": "#/$defs/Content"
-						},
-						"type": "array"
+						"$ref": "#/$defs/Contents"
 					},
 					"scripts": {
 						"$ref": "#/$defs/NFPMScripts"
