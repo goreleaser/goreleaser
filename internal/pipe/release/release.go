@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/git"
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -108,6 +109,10 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	releaseID, err := client.CreateRelease(ctx, body.String())
 	if err != nil {
 		return err
+	}
+
+	if ctx.Config.Release.SkipUpload {
+		return pipe.Skip("release.skip_upload is set")
 	}
 
 	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Release.ExtraFiles)

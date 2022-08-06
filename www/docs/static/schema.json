@@ -1802,6 +1802,9 @@
 					"disable": {
 						"type": "boolean"
 					},
+					"skip_upload": {
+						"type": "boolean"
+					},
 					"prerelease": {
 						"type": "string"
 					},

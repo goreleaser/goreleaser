@@ -76,6 +76,12 @@ release:
   # Defaults to false.
   disable: true
 
+  # Set this to true if you want to disable just the artifact upload to the SCM.
+  # If this is true, GoReleaser will still create the release with the changelog, but won't upload anything to it.
+  #
+  # Defaults to false.
+  skip_upload: true
+
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
