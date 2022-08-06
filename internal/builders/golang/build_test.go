@@ -258,8 +258,9 @@ func TestDefaults(t *testing.T) {
 
 // createFakeGoBinaryWithVersion creates a temporary executable with the
 // given name, which will output a go version string with the given version.
-//  The temporary directory created by this function will be placed in the PATH
-// variable for the duration of (and cleaned up at the end of) the
+//
+// The temporary directory created by this function will be placed in the
+// PATH variable for the duration of (and cleaned up at the end of) the
 // current test run.
 func createFakeGoBinaryWithVersion(tb testing.TB, name, version string) {
 	tb.Helper()
