@@ -1,6 +1,6 @@
 module github.com/goreleaser/goreleaser
 
-go 1.18
+go 1.19
 
 require (
 	code.gitea.io/sdk/gitea v0.15.1
