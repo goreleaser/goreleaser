@@ -771,7 +771,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+			assertError:       shouldErr(`template: tmpl:1: bad character U+007D '}'`),
 		},
 		"build_flag_template_error": {
 			dockers: []config.Docker{
