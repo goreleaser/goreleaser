@@ -49,6 +49,7 @@ class {{ .Name }} < Formula
   {{ range $index, $element := . }}
   depends_on "{{ .Name }}"
   {{- if .Type }} => :{{ .Type }}{{- end }}
+  {{- if .Version}} => :{{ .Version }}{{- end }}
   {{- end }}
   {{- end -}}
 
@@ -149,15 +150,7 @@ class {{ .Name }} < Formula
   {{- end }}
   {{- end }}
 
-  {{- with .Dependencies }}
-  {{ range $index, $element := . }}
-  depends_on "{{ .Name }}"
-  {{- if .Type }} => :{{ .Type }}{{- end }}
-  {{- if .Version}} => :{{ .Version }}{{- end }}
-  {{- end }}
-  {{- end -}}
-
-  {{- with .Conflicts }}
+  {{- with .CustomBlock}}
   {{ range $index, $element := . }}
   {{ . }}
   {{- end }}
