@@ -658,6 +658,7 @@ type NFPMOverridables struct {
 	Suggests         []string          `yaml:"suggests,omitempty" json:"suggests,omitempty"`
 	Conflicts        []string          `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
 	Replaces         []string          `yaml:"replaces,omitempty" json:"replaces,omitempty"`
+	Provides         []string          `yaml:"provides,omitempty" json:"provides,omitempty"`
 	Contents         files.Contents    `yaml:"contents,omitempty" json:"contents,omitempty"`
 	Scripts          NFPMScripts       `yaml:"scripts,omitempty" json:"scripts,omitempty"`
 	RPM              NFPMRPM           `yaml:"rpm,omitempty" json:"rpm,omitempty"`

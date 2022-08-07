@@ -67,27 +67,31 @@ nfpms:
       - deb
       - rpm
 
-    # Packages your package depends on.
+    # Packages your package depends on. (overridable)
     dependencies:
       - git
       - zsh
 
-    # Packages your package recommends installing.
+    # Packages it provides. (overridable)
+    provides:
+      - bar
+
+    # Packages your package recommends installing. (overridable)
     recommends:
       - bzr
       - gtk
 
-    # Packages your package suggests installing.
+    # Packages your package suggests installing. (overridable)
     suggests:
       - cvs
       - ksh
 
-    # Packages that conflict with your package.
+    # Packages that conflict with your package. (overridable)
     conflicts:
       - svn
       - bash
 
-    # Packages it replaces.
+    # Packages it replaces. (overridable)
     replaces:
       - fish
 
@@ -224,6 +228,8 @@ nfpms:
           - tig
         replaces:
           - bash
+        provides:
+          - bash
       rpm:
         replacements:
           amd64: x86_64
@@ -359,3 +365,6 @@ nfpms:
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
+
+!!! info
+    Fields marked with "overridable" can be overriden for any format.

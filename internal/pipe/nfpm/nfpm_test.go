@@ -108,6 +108,7 @@ func TestRunPipe(t *testing.T) {
 					Suggests:         []string{"bzr"},
 					Replaces:         []string{"fish"},
 					Conflicts:        []string{"git"},
+					Provides:         []string{"ash"},
 					Release:          "10",
 					Epoch:            "20",
 					Contents: []*files.Content{
