@@ -69,6 +69,9 @@ func TestWithArtifact(t *testing.T) {
 		"another line":                     "{{ .TagBody }}",
 		"runtime: " + runtime.GOOS:         "runtime: {{ .Runtime.Goos }}",
 		"runtime: " + runtime.GOARCH:       "runtime: {{ .Runtime.Goarch }}",
+		"artifact name: not-this-binary":   "artifact name: {{ .ArtifactName }}",
+		"artifact ext: .exe":               "artifact ext: {{ .ArtifactExt }}",
+		"artifact path: /tmp/foo.exe":      "artifact path: {{ .ArtifactPath }}",
 
 		"remove this": "{{ filter .Env.MULTILINE \".*remove.*\" }}",
 		"something with\nmultiple lines\nto test things": "{{ reverseFilter .Env.MULTILINE \".*remove.*\" }}",
@@ -80,6 +83,7 @@ func TestWithArtifact(t *testing.T) {
 			result, err := New(ctx).WithArtifact(
 				&artifact.Artifact{
 					Name:    "not-this-binary",
+					Path:    "/tmp/foo.exe",
 					Goarch:  "amd64",
 					Goos:    "linux",
 					Goarm:   "6",
@@ -87,6 +91,7 @@ func TestWithArtifact(t *testing.T) {
 					Goamd64: "v3",
 					Extra: map[string]interface{}{
 						artifact.ExtraBinary: "binary",
+						artifact.ExtraExt:    ".exe",
 					},
 				},
 				map[string]string{"linux": "Linux"},

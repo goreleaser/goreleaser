@@ -101,11 +101,17 @@ func (Pipe) Run(ctx *context.Context) error {
 		for group, artifacts := range artifacts {
 			log.Debugf("group %s has %d binaries", group, len(artifacts))
 			artifacts := artifacts
-			g.Go(func() error {
-				if packageFormat(archive, artifacts[0].Goos) == "binary" {
+			if packageFormat(archive, artifacts[0].Goos) == "binary" {
+				g.Go(func() error {
 					return skip(ctx, archive, artifacts)
+				})
+				continue
+			}
+			g.Go(func() error {
+				if err := create(ctx, archive, artifacts); err != nil {
+					return err
 				}
-				return create(ctx, archive, artifacts)
+				return nil
 			})
 		}
 	}

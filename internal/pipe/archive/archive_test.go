@@ -569,7 +569,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 			artifact.ExtraID:     "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
@@ -607,7 +607,7 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 			artifact.ExtraID:     "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: failed to apply template {{.asdsd}: template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {

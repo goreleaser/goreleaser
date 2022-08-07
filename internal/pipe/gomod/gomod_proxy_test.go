@@ -227,7 +227,7 @@ func requireGoMod(tb testing.TB, module, version string) {
 	require.NoError(tb, err)
 	require.Contains(tb, string(mod), fmt.Sprintf(`module foo
 
-go 1.18
+go 1.19
 
 require %s %s
 `, module, version))

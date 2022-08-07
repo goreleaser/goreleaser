@@ -256,6 +256,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 			Conflicts:  overridden.Conflicts,
 			Depends:    overridden.Dependencies,
 			Recommends: overridden.Recommends,
+			Provides:   overridden.Provides,
 			Suggests:   overridden.Suggests,
 			Replaces:   overridden.Replaces,
 			Contents:   contents,

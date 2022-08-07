@@ -1,5 +1,5 @@
 {
-		"$schema": "http://json-schema.org/draft/2020-12/schema",
+		"$schema": "https://json-schema.org/draft/2020-12/schema",
 		"$id": "https://github.com/goreleaser/goreleaser/pkg/config/project",
 		"$ref": "#/$defs/Project",
 		"$defs": {
@@ -396,16 +396,10 @@
 			"BuildHookConfig": {
 				"properties": {
 					"pre": {
-						"items": {
-							"$ref": "#/$defs/Hook"
-						},
-						"type": "array"
+						"$ref": "#/$defs/Hooks"
 					},
 					"post": {
-						"items": {
-							"$ref": "#/$defs/Hook"
-						},
-						"type": "array"
+						"$ref": "#/$defs/Hooks"
 					}
 				},
 				"additionalProperties": false,
@@ -538,6 +532,12 @@
 				"required": [
 					"group"
 				]
+			},
+			"Contents": {
+				"items": {
+					"$ref": "#/$defs/Content"
+				},
+				"type": "array"
 			},
 			"Discord": {
 				"properties": {
@@ -689,7 +689,7 @@
 						"type": "string"
 					},
 					{
-						"$schema": "http://json-schema.org/draft/2020-12/schema",
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
 						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
 						"$defs": {
 							"FileInfo": {
@@ -975,7 +975,7 @@
 						"type": "string"
 					},
 					{
-						"$schema": "http://json-schema.org/draft/2020-12/schema",
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
 						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/homebrew-dependency",
 						"properties": {
 							"name": {
@@ -996,7 +996,7 @@
 						"type": "string"
 					},
 					{
-						"$schema": "http://json-schema.org/draft/2020-12/schema",
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
 						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
 						"properties": {
 							"dir": {
@@ -1019,6 +1019,12 @@
 						"type": "object"
 					}
 				]
+			},
+			"Hooks": {
+				"items": {
+					"$ref": "#/$defs/Hook"
+				},
+				"type": "array"
 			},
 			"IgnoredBuild": {
 				"properties": {
@@ -1207,11 +1213,14 @@
 						},
 						"type": "array"
 					},
-					"contents": {
+					"provides": {
 						"items": {
-							"$ref": "#/$defs/Content"
+							"type": "string"
 						},
 						"type": "array"
+					},
+					"contents": {
+						"$ref": "#/$defs/Contents"
 					},
 					"scripts": {
 						"$ref": "#/$defs/NFPMScripts"
@@ -1466,11 +1475,14 @@
 						},
 						"type": "array"
 					},
-					"contents": {
+					"provides": {
 						"items": {
-							"$ref": "#/$defs/Content"
+							"type": "string"
 						},
 						"type": "array"
+					},
+					"contents": {
+						"$ref": "#/$defs/Contents"
 					},
 					"scripts": {
 						"$ref": "#/$defs/NFPMScripts"
@@ -1800,6 +1812,9 @@
 						"type": "boolean"
 					},
 					"disable": {
+						"type": "boolean"
+					},
+					"skip_upload": {
 						"type": "boolean"
 					},
 					"prerelease": {
