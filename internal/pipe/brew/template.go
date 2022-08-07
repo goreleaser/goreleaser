@@ -150,7 +150,7 @@ class {{ .Name }} < Formula
   {{- end }}
   {{- end }}
 
-  {{- with .CustomBlock}}
+  {{- with .CustomBlock }}
   {{ range $index, $element := . }}
   {{ . }}
   {{- end }}
