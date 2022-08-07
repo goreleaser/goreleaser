@@ -28,7 +28,7 @@ class CustomDownloadStrategy < Formula
   end
 
   depends_on "zsh" => :optional
-  depends_on "bash"
+  depends_on "bash" => :3.2.57
 
   conflicts_with "gtk+"
   conflicts_with "qt"

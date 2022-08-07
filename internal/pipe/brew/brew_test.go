@@ -272,7 +272,7 @@ func TestFullPipe(t *testing.T) {
 							Caveats:      "don't do this {{ .ProjectName }}",
 							Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
 							Plist:        `<xml>whatever</xml>`,
-							Dependencies: []config.HomebrewDependency{{Name: "zsh", Type: "optional"}, {Name: "bash"}},
+							Dependencies: []config.HomebrewDependency{{Name: "zsh", Type: "optional"}, {Name: "bash", Version: "3.2.57"}},
 							Conflicts:    []string{"gtk+", "qt"},
 							Service:      "run foo/bar\nkeep_alive true",
 							PostInstall:  "system \"echo\"\nsystem \"touch\" \"/tmp/hi\"",

@@ -146,6 +146,7 @@ class {{ .Name }} < Formula
   {{ range $index, $element := . }}
   depends_on "{{ .Name }}"
   {{- if .Type }} => :{{ .Type }}{{- end }}
+  {{- if .Version}} => :{{ .Version }}{{- end }}
   {{- end }}
   {{- end -}}
 
