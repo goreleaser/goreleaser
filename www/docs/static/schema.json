@@ -1213,6 +1213,12 @@
 						},
 						"type": "array"
 					},
+					"provides": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"contents": {
 						"$ref": "#/$defs/Contents"
 					},
@@ -1464,6 +1470,12 @@
 						"type": "array"
 					},
 					"replaces": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"provides": {
 						"items": {
 							"type": "string"
 						},
