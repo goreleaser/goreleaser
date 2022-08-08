@@ -20,7 +20,12 @@ if [ -n "$GITHUB_TOKEN" ]; then
 	echo "$GITHUB_TOKEN" | docker login ghcr.io -u docker --password-stdin
 fi
 
-# prevents git from complaining about unsafe dir. especially when using github actions
+if [ -n "$CI_REGISTRY_PASSWORD" ]; then
+	# Log into GitLab registry
+	echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
+fi
+
+# prevents git from complaining about unsafe dir, specially when using github actions
 git config --global --add safe.directory .
 
 # shellcheck disable=SC2068
