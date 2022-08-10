@@ -164,6 +164,10 @@ artifactories:
     # User that will be used for the deployment
     username: deployuser
 
+    # Client certificate and key (when provided, added as client cert to TLS connections)
+    client_x509_cert: /path/to/client.cert.pem
+    client_x509_key: /path/to/client.key.pem
+
     # Upload checksums (defaults to false)
     checksum: true
 

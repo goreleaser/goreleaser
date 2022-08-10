@@ -187,6 +187,10 @@ uploads:
     # An optional username that will be used for the deployment for basic authn
     username: deployuser
 
+    # Client certificate and key (when provided, added as client cert to TLS connections)
+    client_x509_cert: /path/to/client.cert.pem
+    client_x509_key: /path/to/client.key.pem
+
     # An optional header you can use to tell GoReleaser to pass the artifact's
     # SHA256 checksum within the upload request.
     # Default is empty.
