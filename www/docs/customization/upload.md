@@ -20,7 +20,12 @@ uploads:
 Prerequisites:
 
 - An HTTP server accepting HTTP requests
-- A user + password with grants to upload an artifact using HTTP requests for basic authentication (only if the server requires it)
+- A user + password / client x509 certificate / API key with grants to upload an artifact
+
+!!! note
+    authentication is optional and may be provided if the server requires it
+    - user/pass is for Basic Authentication
+    - client x509 certificate is for mutual TLS authentication (aka "mTLS")
 
 ### Target
 
@@ -88,6 +93,22 @@ environment variable `UPLOAD_PRODUCTION_SECRET`.
 The name will be transformed to uppercase.
 
 This field is optional and is used only for basic http authentication.
+
+### Client authorization with x509 certificate (mTLS / mutual TLS)
+
+If your artifactory server supports authorization with mTLS (client certificates), you can provide them by specifying
+the location of an x509 certificate/key pair of pem-encode files.
+
+```yaml
+uploads:
+- name: production
+  client_x509_cert: path/to/client.cert.pem
+  client_x509_key: path/to/client.key.pem
+  target: 'http://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}'
+```
+
+This will offer the client certificate during the TLS handshake, which your artifactory server may use to authenticate
+and authorize you to upload.
 
 ### Server authentication
 

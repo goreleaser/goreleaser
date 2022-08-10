@@ -22,7 +22,7 @@ artifactories:
 Prerequisites:
 
 - A running Artifactory instances
-- A user + password / API key with grants to upload an artifact
+- A user + password / client x509 certificate / API key with grants to upload an artifact
 
 ### Target
 
@@ -81,6 +81,22 @@ The name of the environment variable will be `ARTIFACTORY_NAME_SECRET`.
 If your instance is named `production`, you need to store the secret in the
 environment variable `ARTIFACTORY_PRODUCTION_SECRET`.
 The name will be transformed to uppercase.
+
+### Client authorization with x509 certificate (mTLS / mutual TLS)
+
+If your artifactory server supports authorization with mTLS (client certificates), you can provide them by specifying
+the location of an x509 certificate/key pair of pem-encode files.
+
+```yaml
+artifactories:
+  - name: production
+    target: http://<Your-Instance>:8081/artifactory/example-repo-local/{{ .ProjectName }}/{{ .Version }}/
+    client_x509_cert: path/to/client.cert.pem
+    client_x509_key: path/to/client.key.pem
+```
+
+This will offer the client certificate during the TLS handshake, which your artifactory server may use to authenticate
+and authorize you to upload.
 
 ### Server authentication
 
