@@ -568,7 +568,9 @@ func TestUpload(t *testing.T) {
 			),
 		},
 		{
-			name:   "client cert",
+			name: "given a server with ClientAuth = RequireAnyClientCert, " +
+				"and an Upload with ClientX509Cert and ClientX509Key set, " +
+				"then the response should pass",
 			tryTLS: true,
 			setup: func(s *httptest.Server) (*context.Context, config.Upload) {
 				s.TLS.ClientAuth = tls.RequireAnyClientCert
@@ -586,6 +588,25 @@ func TestUpload(t *testing.T) {
 			check: checks(
 				check{"/blah/2.1.0/a.deb", "u3", "x", content, map[string]string{}},
 			),
+		},
+		{
+			name: "given a server with ClientAuth = RequireAnyClientCert, " +
+				"and an Upload without either ClientX509Cert or ClientX509Key set, " +
+				"then the response should fail",
+			tryTLS: true,
+			setup: func(s *httptest.Server) (*context.Context, config.Upload) {
+				s.TLS.ClientAuth = tls.RequireAnyClientCert
+				return ctx, config.Upload{
+					Mode:         ModeArchive,
+					Name:         "a",
+					Target:       s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username:     "u3",
+					TrustedCerts: cert(s),
+					Exts:         []string{"deb", "rpm"},
+				}
+			},
+			wantErrTLS: true,
+			check:      checks(),
 		},
 	}
 
