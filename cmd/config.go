@@ -3,11 +3,15 @@ package cmd
 import (
 	"os"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/pkg/config"
 )
 
 func loadConfig(path string) (config.Project, error) {
+	if path == "-" {
+		log.Info("loading config from stdin")
+		return config.LoadReader(os.Stdin)
+	}
 	if path != "" {
 		return config.Load(path)
 	}

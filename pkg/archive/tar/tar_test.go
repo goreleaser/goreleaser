@@ -82,7 +82,6 @@ func TestTarFile(t *testing.T) {
 		}
 		require.NoError(t, err)
 		paths = append(paths, next.Name)
-		t.Logf("%s: %v", next.Name, next.FileInfo().Mode())
 		if next.Name == "sub1/executable" {
 			ex := next.FileInfo().Mode() | 0o111
 			require.Equal(t, next.FileInfo().Mode().String(), ex.String())
@@ -151,15 +150,11 @@ func TestTarFileInfo(t *testing.T) {
 }
 
 func TestTarInvalidLink(t *testing.T) {
-	tmp := t.TempDir()
-	f, err := os.Create(filepath.Join(tmp, "test.tar"))
-	require.NoError(t, err)
-	defer f.Close() // nolint: errcheck
-	archive := New(f)
+	archive := New(io.Discard)
 	defer archive.Close() // nolint: errcheck
 
-	require.EqualError(t, archive.Add(config.File{
+	require.NoError(t, archive.Add(config.File{
 		Source:      "../testdata/badlink.txt",
 		Destination: "badlink.txt",
-	}), "open ../testdata/badlink.txt: no such file or directory")
+	}))
 }

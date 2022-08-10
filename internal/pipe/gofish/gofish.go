@@ -11,7 +11,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
@@ -229,7 +229,7 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 			}
 			switch art.Type {
 			case artifact.UploadableArchive:
-				for _, bin := range art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
+				for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
 					releasePackage.Binaries = append(releasePackage.Binaries, binary{
 						Name:   bin,
 						Target: bin,
@@ -238,7 +238,7 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 			case artifact.UploadableBinary:
 				releasePackage.Binaries = append(releasePackage.Binaries, binary{
 					Name:   art.Name,
-					Target: art.ExtraOr(artifact.ExtraBinary, art.Name).(string),
+					Target: artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name),
 				})
 			}
 			result.ReleasePackages = append(result.ReleasePackages, releasePackage)
@@ -273,8 +273,11 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doPublish(ctx *context.Context, food *artifact.Artifact, cl client.Client) error {
-	rig := food.Extra[goFishConfigExtra].(config.GoFish)
-	var err error
+	rig, err := artifact.Extra[config.GoFish](*food, goFishConfigExtra)
+	if err != nil {
+		return err
+	}
+
 	cl, err = client.NewIfToken(ctx, cl, rig.Rig.Token)
 	if err != nil {
 		return err

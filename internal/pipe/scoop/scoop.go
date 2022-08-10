@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
@@ -120,9 +120,12 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 	}
 
 	manifest := manifests[0]
-	scoop := manifest.Extra[scoopConfigExtra].(config.Scoop)
 
-	var err error
+	scoop, err := artifact.Extra[config.Scoop](*manifest, scoopConfigExtra)
+	if err != nil {
+		return err
+	}
+
 	cl, err = client.NewIfToken(ctx, cl, scoop.Bucket.Token)
 	if err != nil {
 		return err
@@ -251,9 +254,14 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 			"sum":              sum,
 		}).Debug("scoop url templating")
 
+		binaries, err := binaries(*artifact)
+		if err != nil {
+			return manifest, err
+		}
+
 		manifest.Architecture[arch] = Resource{
 			URL:  url,
-			Bin:  binaries(artifact),
+			Bin:  binaries,
 			Hash: sum,
 		}
 	}
@@ -261,12 +269,16 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 	return manifest, nil
 }
 
-func binaries(a *artifact.Artifact) []string {
+func binaries(a artifact.Artifact) ([]string, error) {
 	// nolint: prealloc
 	var bins []string
-	wrap := a.ExtraOr(artifact.ExtraWrappedIn, "").(string)
-	for _, b := range a.ExtraOr(artifact.ExtraBuilds, []*artifact.Artifact{}).([]*artifact.Artifact) {
+	wrap := artifact.ExtraOr(a, artifact.ExtraWrappedIn, "")
+	builds, err := artifact.Extra[[]artifact.Artifact](a, artifact.ExtraBuilds)
+	if err != nil {
+		return nil, err
+	}
+	for _, b := range builds {
 		bins = append(bins, filepath.Join(wrap, b.Name))
 	}
-	return bins
+	return bins, nil
 }

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	api "github.com/goreleaser/goreleaser/pkg/build"
@@ -72,8 +73,8 @@ func TestBuild(t *testing.T) {
 				Binary:  "testing.v{{.Version}}",
 				BuildDetails: config.BuildDetails{
 					Flags: []string{"-n"},
+					Env:   []string{"BLAH=1"},
 				},
-				Env: []string{"BLAH=1"},
 			},
 		},
 	}
@@ -245,8 +246,10 @@ func TestDefaultExpandEnv(t *testing.T) {
 		Config: config.Project{
 			Builds: []config.Build{
 				{
-					Env: []string{
-						"XFOO=bar_$XBAR",
+					BuildDetails: config.BuildDetails{
+						Env: []string{
+							"XFOO=bar_$XBAR",
+						},
 					},
 				},
 			},
@@ -487,8 +490,9 @@ func TestBuild_hooksKnowGoosGoarch(t *testing.T) {
 			build,
 		},
 	})
-	err := runPipeOnBuild(ctx, build)
-	require.NoError(t, err)
+	g := semerrgroup.New(ctx.Parallelism)
+	runPipeOnBuild(ctx, g, build)
+	require.NoError(t, g.Wait())
 	require.FileExists(t, filepath.Join(tmpDir, "pre-hook-amd64-linux"))
 	require.FileExists(t, filepath.Join(tmpDir, "post-hook-amd64-linux"))
 }
@@ -518,8 +522,9 @@ func TestPipeOnBuild_hooksRunPerTarget(t *testing.T) {
 			build,
 		},
 	})
-	err := runPipeOnBuild(ctx, build)
-	require.NoError(t, err)
+	g := semerrgroup.New(ctx.Parallelism)
+	runPipeOnBuild(ctx, g, build)
+	require.NoError(t, g.Wait())
 	require.FileExists(t, filepath.Join(tmpDir, "pre-hook-linux_amd64"))
 	require.FileExists(t, filepath.Join(tmpDir, "pre-hook-darwin_amd64"))
 	require.FileExists(t, filepath.Join(tmpDir, "pre-hook-windows_amd64"))
@@ -541,8 +546,9 @@ func TestPipeOnBuild_invalidBinaryTpl(t *testing.T) {
 			build,
 		},
 	})
-	err := runPipeOnBuild(ctx, build)
-	require.EqualError(t, err, `template: tmpl:1:11: executing "tmpl" at <.XYZ>: map has no entry for key "XYZ"`)
+	g := semerrgroup.New(ctx.Parallelism)
+	runPipeOnBuild(ctx, g, build)
+	require.EqualError(t, g.Wait(), `template: tmpl:1:11: executing "tmpl" at <.XYZ>: map has no entry for key "XYZ"`)
 }
 
 func TestBuildOptionsForTarget(t *testing.T) {

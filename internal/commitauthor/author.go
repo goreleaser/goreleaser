@@ -9,7 +9,7 @@ import (
 
 const (
 	defaultName  = "goreleaserbot"
-	defaultEmail = "goreleaser@carlosbecker.com"
+	defaultEmail = "bot@goreleaser.com"
 )
 
 // Get templates the commit author and returns the filled fields.

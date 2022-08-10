@@ -93,9 +93,13 @@ On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
     some_template: 'lala-{{ .Var.foo }}'
     ```
 
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
 ### nfpms.empty_folders
 
-> since 2021-11-14  (v1.0.0)
+> since 2021-11-14 (v1.0.0), removed 2022-06-14 (v1.10.0)
 
 nFPM empty folders is now deprecated in favor of a `dir` content type:
 
@@ -115,17 +119,10 @@ nFPM empty folders is now deprecated in favor of a `dir` content type:
         type: dir
     ```
 
-### godownloader
-
-> since 2021-10-13 (all)
-
-GoDownloader, the install script generator, wasn't been updated for a long time and is now officially deprecated.
-The website and all install scripts will be taken out in 6 months.
-You can still use any of the other install methods.
 
 ### builds for windows/arm64
 
-> since 2021-08-16 (v0.175.0)
+> since 2021-08-16 (v0.175.0), removed 2022-06-12 (v1.10.0)
 
 Since Go 1.17, `windows/arm64` is a valid target.
 
@@ -142,9 +139,21 @@ ignore:
 
 If you try to use new versions of GoReleaser with Go 1.16 or older, it will warn about it until this deprecation warning expires, after that your build will likely fail.
 
-## Expired deprecation notices
+### godownloader
 
-The following options were deprecated in the past and were already removed.
+> since 2021-10-13 (all), removed 2022-05-18
+
+GoDownloader, the install script generator, wasn't been updated for a long time and is now officially deprecated.
+The website and all install scripts will be taken out in 6 months.
+You can still use any of the other install methods.
+
+This also includes `install.goreleaser.com`.
+
+Most common tools installed via that website were probably
+[GoReleaser](/install/) itself and
+[golangci-lint](https://golangci-lint.run/usage/install/).
+
+Please follow to the check their documentation for alternative install methods.
 
 ### dockers.use_buildx
 

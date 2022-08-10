@@ -4,7 +4,7 @@ package announce
 import (
 	"fmt"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
@@ -69,10 +69,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, announcer := range announcers {
 		if err := skip.Maybe(
 			announcer,
-			logging.Log(
+			logging.PadLog(
 				announcer.String(),
 				errhandler.Handle(announcer.Announce),
-				logging.ExtraPadding,
 			),
 		)(ctx); err != nil {
 			return fmt.Errorf("%s: failed to announce release: %w", announcer.String(), err)

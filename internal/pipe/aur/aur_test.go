@@ -647,7 +647,7 @@ func TestDefault(t *testing.T) {
 			Goamd64:               "v1",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
-				Email: "goreleaser@carlosbecker.com",
+				Email: "bot@goreleaser.com",
 			},
 		}, ctx.Config.AURs[0])
 	})
@@ -675,7 +675,7 @@ func TestDefault(t *testing.T) {
 			Goamd64:               "v1",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
-				Email: "goreleaser@carlosbecker.com",
+				Email: "bot@goreleaser.com",
 			},
 		}, ctx.Config.AURs[0])
 	})
@@ -704,7 +704,7 @@ func TestDefault(t *testing.T) {
 			Goamd64:               "v3",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
-				Email: "goreleaser@carlosbecker.com",
+				Email: "bot@goreleaser.com",
 			},
 		}, ctx.Config.AURs[0])
 	})

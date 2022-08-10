@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -206,8 +207,7 @@ func TestRun(t *testing.T) {
 	for arch, path := range paths {
 		cmd := exec.Command("go", "build", "-o", path, src)
 		cmd.Env = append(os.Environ(), "GOOS=darwin", "GOARCH="+arch)
-		out, err := cmd.CombinedOutput()
-		t.Log(string(out))
+		_, err := cmd.CombinedOutput()
 		require.NoError(t, err)
 
 		modTime := time.Unix(0, 0)
@@ -255,7 +255,7 @@ func TestRun(t *testing.T) {
 		unis := ctx1.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()
 		require.Len(t, unis, 1)
 		checkUniversalBinary(t, unis[0])
-		require.True(t, unis[0].Extra[artifact.ExtraReplaces].(bool))
+		require.True(t, artifact.ExtraOr(*unis[0], artifact.ExtraReplaces, false))
 	})
 
 	t.Run("keeping", func(t *testing.T) {
@@ -264,17 +264,17 @@ func TestRun(t *testing.T) {
 		unis := ctx2.Artifacts.Filter(artifact.ByType(artifact.UniversalBinary)).List()
 		require.Len(t, unis, 1)
 		checkUniversalBinary(t, unis[0])
-		require.False(t, unis[0].Extra[artifact.ExtraReplaces].(bool))
+		require.False(t, artifact.ExtraOr(*unis[0], artifact.ExtraReplaces, true))
 	})
 
 	t.Run("bad template", func(t *testing.T) {
-		require.EqualError(t, Pipe{}.Run(context.New(config.Project{
+		testlib.RequireTemplateError(t, Pipe{}.Run(context.New(config.Project{
 			UniversalBinaries: []config.UniversalBinary{
 				{
 					NameTemplate: "{{.Name}",
 				},
 			},
-		})), `template: tmpl:1: unexpected "}" in operand`)
+		})))
 	})
 
 	t.Run("no darwin builds", func(t *testing.T) {
@@ -327,7 +327,7 @@ func TestRun(t *testing.T) {
 			Env: []string{"FOO=foo-{{.Tag}"},
 		}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
-		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: template: tmpl:1: unexpected "}" in operand`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("hook with bad dir tmpl", func(t *testing.T) {
@@ -337,7 +337,7 @@ func TestRun(t *testing.T) {
 			Dir: "{{.Tag}",
 		}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
-		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: template: tmpl:1: unexpected "}" in operand`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("hook with bad cmd tmpl", func(t *testing.T) {
@@ -346,7 +346,7 @@ func TestRun(t *testing.T) {
 			Cmd: "echo blah-{{.Tag }",
 		}}
 		ctx.Config.UniversalBinaries[0].Hooks.Post = []config.Hook{}
-		require.EqualError(t, Pipe{}.Run(ctx), `pre hook failed: template: tmpl:1: unexpected "}" in operand`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 }
 

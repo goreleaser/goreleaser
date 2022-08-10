@@ -5,11 +5,11 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/ctrlc"
-	"github.com/fatih/color"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
@@ -28,9 +28,10 @@ type buildCmd struct {
 
 type buildOpts struct {
 	config        string
-	id            string
+	ids           []string
 	snapshot      bool
 	skipValidate  bool
+	skipBefore    bool
 	skipPostHooks bool
 	rmDist        bool
 	deprecated    bool
@@ -58,36 +59,28 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Args:          cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			start := time.Now()
-
-			log.Infof(color.New(color.Bold).Sprint("building..."))
-
+		RunE: timedRunE("build", func(cmd *cobra.Command, args []string) error {
 			ctx, err := buildProject(root.opts)
 			if err != nil {
-				return wrapError(err, color.New(color.Bold).Sprintf("build failed after %0.2fs", time.Since(start).Seconds()))
+				return err
 			}
-
-			if ctx.Deprecated {
-				log.Warn(color.New(color.Bold).Sprintf("your config is using deprecated properties, check logs above for details"))
-			}
-
-			log.Infof(color.New(color.Bold).Sprintf("build succeeded after %0.2fs", time.Since(start).Seconds()))
+			deprecateWarn(ctx)
 			return nil
-		},
+		}),
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot build, skipping all validations")
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips several sanity checks")
+	cmd.Flags().BoolVar(&root.opts.skipBefore, "skip-before", false, "Skips global before hooks")
 	cmd.Flags().BoolVar(&root.opts.skipPostHooks, "skip-post-hooks", false, "Skips all post-build hooks")
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
-	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH")
-	cmd.Flags().StringVar(&root.opts.id, "id", "", "Builds only the specified build id")
+	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file")
+	cmd.Flags().StringArrayVar(&root.opts.ids, "id", nil, "Builds only the specified build ids")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
-	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if config only has one build)")
+	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if configuration only has one build)")
 	_ = cmd.Flags().MarkHidden("deprecated")
 
 	root.cmd = cmd
@@ -111,7 +104,6 @@ func buildProject(options buildOpts) (*context.Context, error) {
 				logging.Log(
 					pipe.String(),
 					errhandler.Handle(pipe.Run),
-					logging.DefaultInitialPadding,
 				),
 			)(ctx); err != nil {
 				return err
@@ -122,7 +114,7 @@ func buildProject(options buildOpts) (*context.Context, error) {
 }
 
 func setupPipeline(ctx *context.Context, options buildOpts) []pipeline.Piper {
-	if options.output != "" && options.singleTarget && (options.id != "" || len(ctx.Config.Builds) == 1) {
+	if options.output != "" && options.singleTarget && (len(options.ids) > 0 || len(ctx.Config.Builds) == 1) {
 		return append(pipeline.BuildCmdPipeline, withOutputPipe{options.output})
 	}
 	return pipeline.BuildCmdPipeline
@@ -136,6 +128,7 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 	log.Debugf("parallelism: %v", ctx.Parallelism)
 	ctx.Snapshot = options.snapshot
 	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
+	ctx.SkipBefore = options.skipBefore
 	ctx.SkipPostBuildHooks = options.skipPostHooks
 	ctx.RmDist = options.rmDist
 	ctx.SkipTokenCheck = true
@@ -144,8 +137,8 @@ func setupBuildContext(ctx *context.Context, options buildOpts) error {
 		setupBuildSingleTarget(ctx)
 	}
 
-	if options.id != "" {
-		if err := setupBuildID(ctx, options.id); err != nil {
+	if len(options.ids) > 0 {
+		if err := setupBuildID(ctx, options.ids); err != nil {
 			return err
 		}
 	}
@@ -164,7 +157,7 @@ func setupBuildSingleTarget(ctx *context.Context) {
 	if goarch == "" {
 		goarch = runtime.GOARCH
 	}
-	log.Infof("building only for %s/%s", goos, goarch)
+	log.WithField("reason", "single target is enabled").Warnf("building only for %s/%s", goos, goarch)
 	if len(ctx.Config.Builds) == 0 {
 		ctx.Config.Builds = append(ctx.Config.Builds, config.Build{})
 	}
@@ -175,7 +168,7 @@ func setupBuildSingleTarget(ctx *context.Context) {
 	}
 }
 
-func setupBuildID(ctx *context.Context, id string) error {
+func setupBuildID(ctx *context.Context, ids []string) error {
 	if len(ctx.Config.Builds) < 2 {
 		log.Warn("single build in config, '--id' ignored")
 		return nil
@@ -183,14 +176,16 @@ func setupBuildID(ctx *context.Context, id string) error {
 
 	var keep []config.Build
 	for _, build := range ctx.Config.Builds {
-		if build.ID == id {
-			keep = append(keep, build)
-			break
+		for _, id := range ids {
+			if build.ID == id {
+				keep = append(keep, build)
+				break
+			}
 		}
 	}
 
 	if len(keep) == 0 {
-		return fmt.Errorf("no builds with id '%s'", id)
+		return fmt.Errorf("no builds with ids %s", strings.Join(ids, ", "))
 	}
 
 	ctx.Config.Builds = keep

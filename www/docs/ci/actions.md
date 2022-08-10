@@ -42,7 +42,7 @@ jobs:
         name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18
+          go-version: 1.19
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
@@ -58,6 +58,11 @@ jobs:
 ```
 
 !!! warning "Some things to look closely..."
+    #### The action does not install dependencies
+    GoReleaser Action will not install any other software needed to release.
+    It's the user's responsibility to install and configure Go, Docker, Syft,
+    Cosign and any other tools the release might need.
+
     #### Fetch depthness
     Notice the `fetch-depth: 0` option on the `Checkout` workflow step.
     It is required for GoReleaser to work properly.
@@ -142,16 +147,16 @@ Following environment variables can be used as `step.env` keys
 
 The following [permissions](https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token) are required by GoReleaser:
 
- - `content: write` if you wish to
+ - `contents: write` if you wish to
     - [upload archives as GitHub Releases](/customization/release/), or
     - publish to [Homebrew](/customization/homebrew/), or [Scoop](/customization/scoop/) (assuming it's part of the same repository)
- - or just `content: read` if you don't need any of the above
+ - or just `contents: read` if you don't need any of the above
  - `packages: write` if you [push Docker images](/customization/docker/) to GitHub
  - `issues: write` if you use [milestone closing capability](/customization/milestone/)
 
 `GITHUB_TOKEN` permissions [are limited to the repository][about-github-token] that contains your workflow.
 
-If you need to push the homebrew tap to another repository, you must therefore create a custom
+If you need to push the homebrew tap to another repository, you must create a custom
 [Personal Access Token][pat] with `repo` permissions and [add it as a secret in the repository][secrets]. If you
 create a secret named `GH_PAT`, the step will look like this:
 
@@ -168,7 +173,7 @@ create a secret named `GH_PAT`, the step will look like this:
 
 You can also read the [GitHub documentation](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) about it.
 
-## How does it look like?
+## What does it look like?
 
 You can check [this example repository](https://github.com/goreleaser/example) for a real world example.
 

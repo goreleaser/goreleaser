@@ -16,11 +16,6 @@ builds:
     # Defaults to the binary name.
     id: "my-build"
 
-    # Path to project's (sub)directory containing Go code.
-    # This is the working directory for the Go build command(s).
-    # Default is `.`.
-    dir: go
-
     # Path to main.go file or main package.
     # Notice: when used with `gomod.proxy`, this must be a package.
     #
@@ -165,11 +160,11 @@ builds:
     # Default is false
     skip: false
 
-    # By default, GoRelaser will create your binaries inside `dist/${BuildID}_${BuildTarget}`, which is an unique directory per build target in the matrix.
-    # You are able to set subdirs within that folder using the `binary` property.
+    # By default, GoReleaser will create your binaries inside `dist/${BuildID}_${BuildTarget}`, which is an unique directory per build target in the matrix.
+    # You can set subdirs within that folder using the `binary` property.
     #
     # However, if for some reason you don't want that unique directory to be created, you can set this property.
-    # If you do, you are responsible of keeping different builds from overriding each other.
+    # If you do, you are responsible for keeping different builds from overriding each other.
     #
     # Defaults to `false`.
     no_unique_dist_dir: true
@@ -179,6 +174,14 @@ builds:
     #
     # Defaults to `false`.
     no_main_check: true
+
+    # Path to project's (sub)directory containing Go code.
+    # This is the working directory for the Go build command(s).
+    # If dir does not contain a `go.mod` file, and you are using `gomod.proxy`,
+    # produced binaries will be invalid.
+    # You would likely want to use `main` instead of this.
+    # Default is `.`.
+    dir: go
 
     # Builder allows you to use a different build implementation.
     # This is a GoReleaser Pro feature.
@@ -194,6 +197,7 @@ builds:
     overrides:
       - goos: darwin
         goarch: arm64
+        goamd64: v1
         goarm: ''
         gomips: ''
         ldflags:
@@ -204,6 +208,8 @@ builds:
           - foobar
         gcflags:
           - foobaz
+        env:
+          - CGO_ENABLED=1
 ```
 
 !!! tip
@@ -443,3 +449,20 @@ There is no difference in how the binaries are handled.
     You'll need to either provide them or the final `targets` matrix.
 
 If you'd like to see this in action, check [this example on GitHub](https://github.com/caarlos0/goreleaser-pro-prebuilt-example).
+
+## A note about folder names inside `dist`
+
+By default, GoReleaser will create your binaries inside `dist/${BuildID}_${BuildTarget}`, which is an unique directory per build target in the matrix.
+
+Those names have no guarantees of remaining the same from one version to another.
+If you really need to access them from outside GoReleaser, you should be able to consistently get the path of a binary by parsing `dist/artifacts.json`.
+
+You can also set `builds.no_unique_dist_dir` (as documented earlier in this page), but in that case you are responsible for preventing name conflicts.
+
+### Why is there a `_v1` suffix on `amd64` builds?
+
+Go 1.18 introduced the `GOAMD64` option, and `v1` is the default value for that option.
+
+Since you can have GoReleaser build for multiple different `GOAMD64` targets, it adds that suffix to prevent name conflicts.
+The same thing happens for `arm` and `GOARM`, `mips` and `GOMIPS` and others.
+

@@ -22,9 +22,9 @@ jobs:
       - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
         with:
           token: ${{ secrets.GH_PAT }}
-      - uses: actions/setup-go@f6164bd8c8acb4a71fb2791a8b6c4024ff038dab # v2
+      - uses: actions/setup-go@84cbf8094393cdc5fe1fe1671ff2647332956b1a # v3
         with:
-          go-version: 1.18
+          go-version: 1.19
       - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
       - run: task docs:generate
       - run: task schema:generate

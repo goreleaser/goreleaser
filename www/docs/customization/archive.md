@@ -27,7 +27,7 @@ archives:
 
     # This will create an archive without any binaries, only the files are there.
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
-    # Defaul is false.
+    # Default is false.
     meta: true
 
     # Archive name template.
@@ -48,9 +48,9 @@ archives:
       darwin: macOS
       linux: Tux
 
-    # Set to true, if you want all files in the archive to be in a single directory.
+    # Set this to true if you want all files in the archive to be in a single directory.
     # If set to true and you extract the archive 'goreleaser_Linux_arm64.tar.gz',
-    # you get a folder 'goreleaser_Linux_arm64'.
+    # you'll get a folder 'goreleaser_Linux_arm64'.
     # If set to false, all files are extracted separately.
     # You can also set it to a custom folder name (templating is supported).
     # Default is false.
@@ -89,10 +89,35 @@ archives:
           # format is `time.RFC3339Nano`
           mtime: 2008-01-02T15:04:05Z
 
+    # Before and after hooks for each archive.
+    # Skipped if archive format is binary.
+    # This feature is available in [GoReleaser Pro](/pro) only.
+    hooks:
+      before:
+      - make clean # simple string
+      - cmd: go generate ./... # specify cmd
+      - cmd: go mod tidy
+        output: true # always prints command output
+        dir: ./submodule # specify command working directory
+      - cmd: touch {{ .Env.FILE_TO_TOUCH }}
+        env:
+        - 'FILE_TO_TOUCH=something-{{ .ProjectName }}' # specify hook level environment variables
+
+      after:
+      - make clean
+      - cmd: cat *.yaml
+        dir: ./submodule
+      - cmd: touch {{ .Env.RELEASE_DONE }}
+        env:
+        - 'RELEASE_DONE=something-{{ .ProjectName }}' # specify hook level environment variables
+
     # Disables the binary count check.
     # Default: false
     allow_different_binary_count: true
 ```
+
+!!! success "GoReleaser Pro"
+    Archive hooks is a [GoReleaser Pro feature](/pro/).
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
@@ -141,9 +166,6 @@ files:
   strip_parent: true
 # ...
 ```
-
-!!! warning
-    `strip_parent` is only effective if `dst` is not empty.
 
 ## Packaging only the binaries
 

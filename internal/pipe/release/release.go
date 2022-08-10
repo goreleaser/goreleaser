@@ -6,11 +6,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/extrafiles"
 	"github.com/goreleaser/goreleaser/internal/git"
+	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -48,51 +49,18 @@ func (Pipe) Default(ctx *context.Context) error {
 
 	switch ctx.TokenType {
 	case context.TokenTypeGitLab:
-		if ctx.Config.Release.GitLab.Name == "" {
-			repo, err := getRepository(ctx)
-			if err != nil {
-				return err
-			}
-			ctx.Config.Release.GitLab = repo
+		if err := setupGitLab(ctx); err != nil {
+			return err
 		}
-		ctx.ReleaseURL = fmt.Sprintf(
-			"%s/%s/%s/-/releases/%s",
-			ctx.Config.GitLabURLs.Download,
-			ctx.Config.Release.GitLab.Owner,
-			ctx.Config.Release.GitLab.Name,
-			ctx.Git.CurrentTag,
-		)
 	case context.TokenTypeGitea:
-		if ctx.Config.Release.Gitea.Name == "" {
-			repo, err := getRepository(ctx)
-			if err != nil {
-				return err
-			}
-			ctx.Config.Release.Gitea = repo
+		if err := setupGitea(ctx); err != nil {
+			return err
 		}
-		ctx.ReleaseURL = fmt.Sprintf(
-			"%s/%s/%s/releases/tag/%s",
-			ctx.Config.GiteaURLs.Download,
-			ctx.Config.Release.Gitea.Owner,
-			ctx.Config.Release.Gitea.Name,
-			ctx.Git.CurrentTag,
-		)
 	default:
 		// We keep github as default for now
-		if ctx.Config.Release.GitHub.Name == "" {
-			repo, err := getRepository(ctx)
-			if err != nil && !ctx.Snapshot {
-				return err
-			}
-			ctx.Config.Release.GitHub = repo
+		if err := setupGitHub(ctx); err != nil {
+			return err
 		}
-		ctx.ReleaseURL = fmt.Sprintf(
-			"%s/%s/%s/releases/tag/%s",
-			ctx.Config.GitHubURLs.Download,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
-			ctx.Git.CurrentTag,
-		)
 	}
 
 	// Check if we have to check the git tag for an indicator to mark as pre release
@@ -141,6 +109,10 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	releaseID, err := client.CreateRelease(ctx, body.String())
 	if err != nil {
 		return err
+	}
+
+	if ctx.Config.Release.SkipUpload {
+		return pipe.Skip("release.skip_upload is set")
 	}
 
 	extraFiles, err := extrafiles.Find(ctx, ctx.Config.Release.ExtraFiles)

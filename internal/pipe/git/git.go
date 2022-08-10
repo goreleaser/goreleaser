@@ -9,8 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apex/log"
-
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"

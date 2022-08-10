@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
@@ -55,11 +55,8 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.FileNameTemplate == "" {
 			fpm.FileNameTemplate = defaultNameTemplate
 		}
-		if len(fpm.EmptyFolders) > 0 {
-			deprecate.Notice(ctx, "nfpms.empty_folders")
-		}
 		if fpm.Maintainer == "" {
-			deprecate.Notice(ctx, "nfpms.maintainer")
+			deprecate.NoticeCustom(ctx, "nfpms.maintainer", "`{{ .Property }}` should always be set, check {{ .URL }} for more info")
 		}
 		ids.Inc(fpm.ID)
 	}
@@ -256,13 +253,13 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		Homepage:        homepage,
 		License:         fpm.License,
 		Overridables: nfpm.Overridables{
-			Conflicts:    overridden.Conflicts,
-			Depends:      overridden.Dependencies,
-			Recommends:   overridden.Recommends,
-			Suggests:     overridden.Suggests,
-			Replaces:     overridden.Replaces,
-			EmptyFolders: overridden.EmptyFolders,
-			Contents:     contents,
+			Conflicts:  overridden.Conflicts,
+			Depends:    overridden.Dependencies,
+			Recommends: overridden.Recommends,
+			Provides:   overridden.Provides,
+			Suggests:   overridden.Suggests,
+			Replaces:   overridden.Replaces,
+			Contents:   contents,
 			Scripts: nfpm.Scripts{
 				PreInstall:  overridden.Scripts.PreInstall,
 				PostInstall: overridden.Scripts.PostInstall,

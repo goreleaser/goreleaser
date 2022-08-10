@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
@@ -201,14 +201,12 @@ func (Pipe) Publish(ctx *context.Context) error {
 		return pipe.ErrSkipPublishEnabled
 	}
 	snaps := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List()
-	g := semerrgroup.New(ctx.Parallelism)
 	for _, snap := range snaps {
-		snap := snap
-		g.Go(func() error {
-			return push(ctx, snap)
-		})
+		if err := push(ctx, snap); err != nil {
+			return err
+		}
 	}
-	return g.Wait()
+	return nil
 }
 
 func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries []*artifact.Artifact) error {
@@ -418,7 +416,7 @@ const (
 
 func push(ctx *context.Context, snap *artifact.Artifact) error {
 	log := log.WithField("snap", snap.Name)
-	releases := snap.Extra[releasesExtra].([]string)
+	releases := artifact.ExtraOr(*snap, releasesExtra, []string{})
 	/* #nosec */
 	cmd := exec.CommandContext(ctx, "snapcraft", "upload", "--release="+strings.Join(releases, ","), snap.Path)
 	log.WithField("args", cmd.Args).Info("pushing snap")

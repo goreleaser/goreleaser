@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/go-shellwords"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/shell"
@@ -31,17 +31,16 @@ func (Pipe) String() string {
 
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
+	g := semerrgroup.New(ctx.Parallelism)
 	for _, build := range ctx.Config.Builds {
 		if build.Skip {
 			log.WithField("id", build.ID).Info("skip is set")
 			continue
 		}
 		log.WithField("build", build).Debug("building")
-		if err := runPipeOnBuild(ctx, build); err != nil {
-			return err
-		}
+		runPipeOnBuild(ctx, g, build)
 	}
-	return nil
+	return g.Wait()
 }
 
 // Default sets the pipe defaults.
@@ -81,8 +80,7 @@ func buildWithDefaults(ctx *context.Context, build config.Build) (config.Build, 
 	return builders.For(build.Builder).WithDefaults(build)
 }
 
-func runPipeOnBuild(ctx *context.Context, build config.Build) error {
-	g := semerrgroup.New(ctx.Parallelism)
+func runPipeOnBuild(ctx *context.Context, g semerrgroup.Group, build config.Build) {
 	for _, target := range build.Targets {
 		target := target
 		build := build
@@ -106,8 +104,6 @@ func runPipeOnBuild(ctx *context.Context, build config.Build) error {
 			return nil
 		})
 	}
-
-	return g.Wait()
 }
 
 func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hooks config.Hooks) error {
