@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -566,6 +567,26 @@ func TestUpload(t *testing.T) {
 				check{"/blah/2.1.0/a.deb", "u3", "x", content, map[string]string{}},
 			),
 		},
+		{
+			name:   "client cert",
+			tryTLS: true,
+			setup: func(s *httptest.Server) (*context.Context, config.Upload) {
+				s.TLS.ClientAuth = tls.RequireAnyClientCert
+				return ctx, config.Upload{
+					Mode:           ModeArchive,
+					Name:           "a",
+					Target:         s.URL + "/{{.ProjectName}}/{{.Version}}/",
+					Username:       "u3",
+					TrustedCerts:   cert(s),
+					ClientX509Cert: "testcert.pem",
+					ClientX509Key:  "testkey.pem",
+					Exts:           []string{"deb", "rpm"},
+				}
+			},
+			check: checks(
+				check{"/blah/2.1.0/a.deb", "u3", "x", content, map[string]string{}},
+			),
+		},
 	}
 
 	uploadAndCheck := func(t *testing.T, setup func(*httptest.Server) (*context.Context, config.Upload), wantErrPlain, wantErrTLS bool, check func(r []*h.Request) error, srv *httptest.Server) {
@@ -585,21 +606,23 @@ func TestUpload(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		if tt.tryPlain {
-			t.Run(tt.name, func(t *testing.T) {
-				srv := httptest.NewServer(mux)
-				defer srv.Close()
-				uploadAndCheck(t, tt.setup, tt.wantErrPlain, tt.wantErrTLS, tt.check, srv)
-			})
-		}
-		if tt.tryTLS {
-			t.Run(tt.name+"-tls", func(t *testing.T) {
-				srv := httptest.NewUnstartedServer(mux)
-				srv.StartTLS()
-				defer srv.Close()
-				uploadAndCheck(t, tt.setup, tt.wantErrPlain, tt.wantErrTLS, tt.check, srv)
-			})
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.tryPlain {
+				t.Run(tt.name, func(t *testing.T) {
+					srv := httptest.NewServer(mux)
+					defer srv.Close()
+					uploadAndCheck(t, tt.setup, tt.wantErrPlain, tt.wantErrTLS, tt.check, srv)
+				})
+			}
+			if tt.tryTLS {
+				t.Run(tt.name+"-tls", func(t *testing.T) {
+					srv := httptest.NewUnstartedServer(mux)
+					srv.StartTLS()
+					defer srv.Close()
+					uploadAndCheck(t, tt.setup, tt.wantErrPlain, tt.wantErrTLS, tt.check, srv)
+				})
+			}
+		})
 	}
 }
 

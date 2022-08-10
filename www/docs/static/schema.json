@@ -2508,6 +2508,12 @@
 					"checksum_header": {
 						"type": "string"
 					},
+					"client_x509_cert": {
+						"type": "string"
+					},
+					"client_x509_key": {
+						"type": "string"
+					},
 					"trusted_certificates": {
 						"type": "string"
 					},
@@ -2530,7 +2536,11 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"client_x509_cert",
+					"client_x509_key"
+				]
 			},
 			"Webhook": {
 				"properties": {
