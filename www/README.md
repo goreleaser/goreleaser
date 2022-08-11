@@ -13,7 +13,7 @@ To iterate with documentation, therefore, it is recommended to run the mkdocs se
 ### NOTE to M1/M2 mac owners
 
 If running on an arm64-based mac (M1 or M2, aka "Applie Silicon"), you may find this method quite slow. Until
-a multiarch docker images can be built and made available, you may wish to build your own via:
+multiarch docker images can be built and made available, you may wish to build your own via:
 
 ```bash
 git clone git@github.com:squidfunk/mkdocs-material.git
