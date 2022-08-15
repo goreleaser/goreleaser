@@ -4,7 +4,6 @@ go 1.19
 
 require (
 	code.gitea.io/sdk/gitea v0.15.1
-	github.com/DisgoOrg/disgohook v1.4.4
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/atc0005/go-teams-notify/v2 v2.6.1
 	github.com/caarlos0/ctrlc v1.1.0
@@ -16,6 +15,8 @@ require (
 	github.com/charmbracelet/lipgloss v0.5.1-0.20220615005615-2e17a8a06096
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.1
+	github.com/disgoorg/disgo v0.13.16
+	github.com/disgoorg/snowflake/v2 v2.0.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/google/go-github/v45 v45.2.0
 	github.com/google/uuid v1.3.0
@@ -62,8 +63,6 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.3.1 // indirect
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
-	github.com/DisgoOrg/log v1.1.0 // indirect
-	github.com/DisgoOrg/restclient v1.2.8 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
@@ -98,6 +97,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dghubble/sling v1.4.0 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
+	github.com/disgoorg/log v1.2.0 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect
@@ -114,7 +114,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.4.0 // indirect
 	github.com/googleapis/go-type-adapters v1.0.0 // indirect
 	github.com/goreleaser/chglog v0.1.2 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.1 // indirect
 	github.com/hashicorp/go-version v1.2.1 // indirect
@@ -138,6 +138,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/sasha-s/go-csync v0.0.0-20210812194225-61421b77c44b // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
