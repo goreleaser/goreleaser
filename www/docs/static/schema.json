@@ -802,6 +802,9 @@
 					},
 					"use_package_registry": {
 						"type": "boolean"
+					},
+					"use_job_token": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
