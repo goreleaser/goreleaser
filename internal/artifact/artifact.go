@@ -259,21 +259,21 @@ func (a Artifact) Format() string {
 // Artifacts is a list of artifacts.
 type Artifacts struct {
 	items []*Artifact
-	lock  *sync.RWMutex
+	lock  *sync.Mutex
 }
 
 // New return a new list of artifacts.
 func New() Artifacts {
 	return Artifacts{
 		items: []*Artifact{},
-		lock:  &sync.RWMutex{},
+		lock:  &sync.Mutex{},
 	}
 }
 
 // List return the actual list of artifacts.
 func (artifacts Artifacts) List() []*Artifact {
-	artifacts.lock.RLock()
-	defer artifacts.lock.RUnlock()
+	artifacts.lock.Lock()
+	defer artifacts.lock.Unlock()
 	return artifacts.items
 }
 
@@ -293,7 +293,7 @@ func (artifacts Artifacts) GroupByID() map[string][]*Artifact {
 // GroupByPlatform groups the artifacts by their platform.
 func (artifacts Artifacts) GroupByPlatform() map[string][]*Artifact {
 	result := map[string][]*Artifact{}
-	for _, a := range artifacts.items {
+	for _, a := range artifacts.List() {
 		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips + a.Goamd64
 		result[plat] = append(result[plat], a)
 	}
