@@ -1245,6 +1245,9 @@
 					"bindir": {
 						"type": "string"
 					},
+					"changelog": {
+						"type": "string"
+					},
 					"meta": {
 						"type": "boolean"
 					}
