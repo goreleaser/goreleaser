@@ -100,6 +100,7 @@ func TestRunPipe(t *testing.T) {
 				Maintainer:  "me@me",
 				Vendor:      "asdf",
 				Homepage:    "https://goreleaser.com/{{ .Env.PRO }}",
+				Changelog:   "./testdata/changelog.yaml",
 				NFPMOverridables: config.NFPMOverridables{
 					FileNameTemplate: defaultNameTemplate + "-{{ .Release }}-{{ .Epoch }}",
 					PackageName:      "foo",

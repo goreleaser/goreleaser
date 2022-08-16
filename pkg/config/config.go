@@ -556,6 +556,7 @@ type NFPM struct {
 	Description string   `yaml:"description,omitempty" json:"description,omitempty"`
 	License     string   `yaml:"license,omitempty" json:"license,omitempty"`
 	Bindir      string   `yaml:"bindir,omitempty" json:"bindir,omitempty"`
+	Changelog   string   `yaml:"changelog,omitempty" json:"changelog,omitempty"`
 	Meta        bool     `yaml:"meta,omitempty" json:"meta,omitempty"` // make package without binaries - only deps
 }
 
