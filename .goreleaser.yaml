@@ -67,8 +67,6 @@ changelog:
     - title: Other work
       order: 9999
 
-
-
 dockers:
 - image_templates:
   - 'goreleaser/goreleaser:{{ .Tag }}-amd64'
