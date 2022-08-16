@@ -173,6 +173,9 @@
 							}
 						]
 					},
+					"strip_parent_binary_folder": {
+						"type": "boolean"
+					},
 					"files": {
 						"items": {
 							"$ref": "#/$defs/File"
