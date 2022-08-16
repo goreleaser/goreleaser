@@ -1252,13 +1252,13 @@ func TestDefaultDockerfile(t *testing.T) {
 }
 
 func TestDraftRelease(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
+	ctx := context.New(
+		config.Project{
 			Release: config.Release{
 				Draft: true,
 			},
 		},
-	}
+	)
 
 	require.False(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }
