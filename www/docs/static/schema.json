@@ -802,6 +802,9 @@
 					},
 					"use_package_registry": {
 						"type": "boolean"
+					},
+					"use_job_token": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
@@ -817,48 +820,6 @@
 					},
 					"skip_tls_verify": {
 						"type": "boolean"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"GoFish": {
-				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"rig": {
-						"$ref": "#/$defs/RepoRef"
-					},
-					"commit_author": {
-						"$ref": "#/$defs/CommitAuthor"
-					},
-					"commit_msg_template": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"homepage": {
-						"type": "string"
-					},
-					"license": {
-						"type": "string"
-					},
-					"skip_upload": {
-						"type": "string"
-					},
-					"url_template": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"goarm": {
-						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1586,12 +1547,6 @@
 					"brews": {
 						"items": {
 							"$ref": "#/$defs/Homebrew"
-						},
-						"type": "array"
-					},
-					"rigs": {
-						"items": {
-							"$ref": "#/$defs/GoFish"
 						},
 						"type": "array"
 					},
