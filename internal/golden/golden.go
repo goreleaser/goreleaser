@@ -39,17 +39,7 @@ func RequireEqualRb(tb testing.TB, out []byte) {
 	doRequireEqual(tb, out, ".rb", golden)
 }
 
-func RequireEqualLua(tb testing.TB, out []byte) {
-	tb.Helper()
-	doRequireEqual(tb, out, ".lua", golden)
-}
-
 func RequireEqualYaml(tb testing.TB, out []byte) {
-	tb.Helper()
-	doRequireEqual(tb, out, ".yml", golden)
-}
-
-func RequireEqualNakedYaml(tb testing.TB, out []byte) {
 	tb.Helper()
 	doRequireEqual(tb, out, ".yaml", "")
 }
