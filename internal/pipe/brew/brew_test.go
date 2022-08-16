@@ -747,9 +747,8 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
-	ctx := &context.Context{
-		TokenType: context.TokenTypeGitHub,
-		Config: config.Project{
+	ctx := context.New(
+		config.Project{
 			Brews: []config.Homebrew{
 				{
 					Tap: config.RepoRef{
@@ -759,7 +758,8 @@ func TestRunPipeNoBuilds(t *testing.T) {
 				},
 			},
 		},
-	}
+	)
+	ctx.TokenType = context.TokenTypeGitHub
 	client := client.NewMock()
 	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)

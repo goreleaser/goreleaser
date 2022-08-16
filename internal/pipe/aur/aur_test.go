@@ -465,13 +465,13 @@ func TestRunPipe(t *testing.T) {
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
-	ctx := &context.Context{
-		TokenType: context.TokenTypeGitHub,
-		Config: config.Project{
+	ctx := context.New(
+		config.Project{
 			ProjectName: "foo",
 			AURs:        []config.AUR{{}},
 		},
-	}
+	)
+	ctx.TokenType = context.TokenTypeGitHub
 	client := client.NewMock()
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
