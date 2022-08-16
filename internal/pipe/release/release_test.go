@@ -354,6 +354,18 @@ func TestDefault(t *testing.T) {
 	require.Equal(t, "https://github.com/goreleaser/goreleaser/releases/tag/v1.0.0", ctx.ReleaseURL)
 }
 
+func TestDefaultInvalidURL(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:goreleaser.git")
+
+	ctx := context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitHub
+	ctx.Config.GitHubURLs.Download = "https://github.com"
+	ctx.Git.CurrentTag = "v1.0.0"
+	require.Error(t, Pipe{}.Default(ctx))
+}
+
 func TestDefaultWithGitlab(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
@@ -369,6 +381,18 @@ func TestDefaultWithGitlab(t *testing.T) {
 	require.Equal(t, "https://gitlab.com/gitlabowner/gitlabrepo/-/releases/v1.0.0", ctx.ReleaseURL)
 }
 
+func TestDefaultWithGitlabInvalidURL(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@gitlab.com:gitlabrepo.git")
+
+	ctx := context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitLab
+	ctx.Config.GitLabURLs.Download = "https://gitlab.com"
+	ctx.Git.CurrentTag = "v1.0.0"
+	require.Error(t, Pipe{}.Default(ctx))
+}
+
 func TestDefaultWithGitea(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
@@ -382,6 +406,18 @@ func TestDefaultWithGitea(t *testing.T) {
 	require.Equal(t, "gitearepo", ctx.Config.Release.Gitea.Name)
 	require.Equal(t, "giteaowner", ctx.Config.Release.Gitea.Owner)
 	require.Equal(t, "https://git.honk.com/giteaowner/gitearepo/releases/tag/v1.0.0", ctx.ReleaseURL)
+}
+
+func TestDefaultWithGiteaInvalidURL(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@gitea.example.com:gitearepo.git")
+
+	ctx := context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitea
+	ctx.Config.GiteaURLs.Download = "https://git.honk.com"
+	ctx.Git.CurrentTag = "v1.0.0"
+	require.Error(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultPreRelease(t *testing.T) {
@@ -498,16 +534,14 @@ func TestDefaultFilled(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
-	ctx := &context.Context{
-		Config: config.Project{
-			Release: config.Release{
-				GitHub: config.Repo{
-					Name:  "foo",
-					Owner: "bar",
-				},
+	ctx := context.New(config.Project{
+		Release: config.Release{
+			GitHub: config.Repo{
+				Name:  "foo",
+				Owner: "bar",
 			},
 		},
-	}
+	})
 	ctx.TokenType = context.TokenTypeGitHub
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "foo", ctx.Config.Release.GitHub.Name)
@@ -516,9 +550,7 @@ func TestDefaultFilled(t *testing.T) {
 
 func TestDefaultNotAGitRepo(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
 	require.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
 	require.Empty(t, ctx.Config.Release.GitHub.String())
@@ -526,9 +558,7 @@ func TestDefaultNotAGitRepo(t *testing.T) {
 
 func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
 	testlib.GitInit(t)
 	require.EqualError(t, Pipe{}.Default(ctx), "no remote configured to list refs from")
@@ -537,9 +567,7 @@ func TestDefaultGitRepoWithoutOrigin(t *testing.T) {
 
 func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Snapshot = true
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -548,9 +576,7 @@ func TestDefaultNotAGitRepoSnapshot(t *testing.T) {
 
 func TestDefaultGitRepoWithoutRemote(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	ctx.TokenType = context.TokenTypeGitHub
 	require.Error(t, Pipe{}.Default(ctx))
 	require.Empty(t, ctx.Config.Release.GitHub.String())
@@ -584,6 +610,18 @@ func TestSkip(t *testing.T) {
 			},
 		})
 		require.True(t, Pipe{}.Skip(ctx))
+	})
+
+	t.Run("skip upload", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Release: config.Release{
+				SkipUpload: true,
+			},
+		})
+		client := &client.Mock{}
+		testlib.AssertSkipped(t, doPublish(ctx, client))
+		require.True(t, client.CreatedRelease)
+		require.False(t, client.UploadedFile)
 	})
 
 	t.Run("dont skip", func(t *testing.T) {

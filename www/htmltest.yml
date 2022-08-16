@@ -13,6 +13,8 @@ IgnoreURLs:
 - https://github.com/goreleaser/goreleaser/pkgs
 - https://iron.security
 - https://marketplace.visualstudio.com
+- docs.github.com
+- help.github.com
 IgnoreDirs:
 - overrides
 IgnoreDirectoryMissingTrailingSlash: true

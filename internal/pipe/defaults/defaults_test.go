@@ -18,10 +18,8 @@ func TestFillBasicData(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
-	ctx := &context.Context{
-		TokenType: context.TokenTypeGitHub,
-		Config:    config.Project{},
-	}
+	ctx := context.New(config.Project{})
+	ctx.TokenType = context.TokenTypeGitHub
 
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "goreleaser", ctx.Config.Release.GitHub.Owner)
@@ -47,51 +45,49 @@ func TestFillPartial(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:goreleaser/goreleaser.git")
 
-	ctx := &context.Context{
-		Config: config.Project{
-			GitHubURLs: config.GitHubURLs{
-				Download: "https://github.company.com",
+	ctx := context.New(config.Project{
+		GitHubURLs: config.GitHubURLs{
+			Download: "https://github.company.com",
+		},
+		Dist: "disttt",
+		Release: config.Release{
+			GitHub: config.Repo{
+				Owner: "goreleaser",
+				Name:  "test",
 			},
-			Dist: "disttt",
-			Release: config.Release{
-				GitHub: config.Repo{
-					Owner: "goreleaser",
-					Name:  "test",
-				},
-			},
-			Archives: []config.Archive{
-				{
-					Files: []config.File{
-						{Source: "glob/*"},
-					},
-				},
-			},
-			Builds: []config.Build{
-				{
-					ID:     "build1",
-					Binary: "testreleaser",
-				},
-				{Goos: []string{"linux"}},
-				{
-					ID:     "build3",
-					Binary: "another",
-					Ignore: []config.IgnoredBuild{
-						{Goos: "darwin", Goarch: "amd64"},
-					},
-				},
-			},
-			Dockers: []config.Docker{
-				{
-					ImageTemplates: []string{"a/b"},
-				},
-			},
-			Brews: []config.Homebrew{
-				{
-					Description: "foo",
+		},
+		Archives: []config.Archive{
+			{
+				Files: []config.File{
+					{Source: "glob/*"},
 				},
 			},
 		},
-	}
+		Builds: []config.Build{
+			{
+				ID:     "build1",
+				Binary: "testreleaser",
+			},
+			{Goos: []string{"linux"}},
+			{
+				ID:     "build3",
+				Binary: "another",
+				Ignore: []config.IgnoredBuild{
+					{Goos: "darwin", Goarch: "amd64"},
+				},
+			},
+		},
+		Dockers: []config.Docker{
+			{
+				ImageTemplates: []string{"a/b"},
+			},
+		},
+		Brews: []config.Homebrew{
+			{
+				Description: "foo",
+			},
+		},
+	})
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Len(t, ctx.Config.Archives[0].Files, 1)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Goos)
@@ -101,15 +97,13 @@ func TestFillPartial(t *testing.T) {
 	require.Equal(t, "disttt", ctx.Config.Dist)
 	require.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
 
-	ctx = &context.Context{
-		TokenType: context.TokenTypeGitea,
-
-		Config: config.Project{
-			GiteaURLs: config.GiteaURLs{
-				API: "https://gitea.com/api/v1",
-			},
+	ctx = context.New(config.Project{
+		GiteaURLs: config.GiteaURLs{
+			API: "https://gitea.com/api/v1",
 		},
-	}
+	})
+	ctx.TokenType = context.TokenTypeGitea
+
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "https://gitea.com", ctx.Config.GiteaURLs.Download)
 }
@@ -141,16 +135,15 @@ func TestGiteaTemplateDownloadURL(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		ctx := &context.Context{
-			TokenType: context.TokenTypeGitea,
-			Env: context.Env{
-				"GORELEASER_TEST_GITEA_URLS_API": "https://gitea.com/api/v1",
+		ctx := context.New(config.Project{
+			GiteaURLs: config.GiteaURLs{
+				API: tt.apiURL,
 			},
-			Config: config.Project{
-				GiteaURLs: config.GiteaURLs{
-					API: tt.apiURL,
-				},
-			},
+		})
+
+		ctx.TokenType = context.TokenTypeGitea
+		ctx.Env = context.Env{
+			"GORELEASER_TEST_GITEA_URLS_API": "https://gitea.com/api/v1",
 		}
 
 		err := Pipe{}.Run(ctx)

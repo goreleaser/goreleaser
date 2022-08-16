@@ -12,7 +12,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
@@ -53,6 +53,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if brew.Goarm == "" {
 			brew.Goarm = "6"
+		}
+		if brew.Goamd64 == "" {
+			brew.Goamd64 = "v1"
 		}
 	}
 
@@ -105,8 +108,10 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Client) error {
-	brew := formula.Extra[brewConfigExtra].(config.Homebrew)
-	var err error
+	brew, err := artifact.Extra[config.Homebrew](*formula, brewConfigExtra)
+	if err != nil {
+		return err
+	}
 	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
 	if err != nil {
 		return err
@@ -150,14 +155,16 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 		return pipe.Skip("brew tap name is not set")
 	}
 
-	// TODO: properly cover this with tests
 	filters := []artifact.Filter{
 		artifact.Or(
 			artifact.ByGoos("darwin"),
 			artifact.ByGoos("linux"),
 		),
 		artifact.Or(
-			artifact.ByGoarch("amd64"),
+			artifact.And(
+				artifact.ByGoarch("amd64"),
+				artifact.ByGoamd64(brew.Goamd64),
+			),
 			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("all"),
 			artifact.And(
@@ -290,10 +297,10 @@ func installs(cfg config.Homebrew, art *artifact.Artifact) []string {
 	switch art.Type {
 	case artifact.UploadableBinary:
 		name := art.Name
-		bin := art.ExtraOr(artifact.ExtraBinary, art.Name).(string)
+		bin := artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name)
 		install[fmt.Sprintf("bin.install %q => %q", name, bin)] = true
 	case artifact.UploadableArchive:
-		for _, bin := range art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
+		for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
 			install[fmt.Sprintf("bin.install %q", bin)] = true
 		}
 	}
@@ -403,7 +410,7 @@ func split(s string) []string {
 func formulaNameFor(name string) string {
 	name = strings.ReplaceAll(name, "-", " ")
 	name = strings.ReplaceAll(name, "_", " ")
-	name = strings.ReplaceAll(name, ".", "_")
+	name = strings.ReplaceAll(name, ".", "")
 	name = strings.ReplaceAll(name, "@", "AT")
-	return strings.ReplaceAll(strings.Title(name), " ", "")
+	return strings.ReplaceAll(strings.Title(name), " ", "") // nolint:staticcheck
 }

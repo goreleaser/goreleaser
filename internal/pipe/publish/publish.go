@@ -63,10 +63,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, publisher := range publishers {
 		if err := skip.Maybe(
 			publisher,
-			logging.Log(
+			logging.PadLog(
 				publisher.String(),
 				errhandler.Handle(publisher.Publish),
-				logging.ExtraPadding,
 			),
 		)(ctx); err != nil {
 			return fmt.Errorf("%s: failed to publish artifacts: %w", publisher.String(), err)

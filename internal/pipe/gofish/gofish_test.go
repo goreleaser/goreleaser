@@ -194,11 +194,12 @@ func TestFullPipe(t *testing.T) {
 			}
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bar_bin.tar.gz",
-				Path:   "doesnt matter",
-				Goos:   "darwin",
-				Goarch: "amd64",
-				Type:   artifact.UploadableArchive,
+				Name:    "bar_bin.tar.gz",
+				Path:    "doesnt matter",
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:     "bar",
 					artifact.ExtraFormat: "tar.gz",
@@ -206,11 +207,12 @@ func TestFullPipe(t *testing.T) {
 			})
 			path := filepath.Join(folder, "bin.tar.gz")
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bin.tar.gz",
-				Path:   path,
-				Goos:   "darwin",
-				Goarch: "amd64",
-				Type:   artifact.UploadableArchive,
+				Name:    "bin.tar.gz",
+				Path:    path,
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "tar.gz",
@@ -323,11 +325,12 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	}
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "unibin_amd64.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "unibin_amd64.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
@@ -405,11 +408,12 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	}
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
@@ -484,11 +488,12 @@ func TestRunPipeMultipleGoFishWithSkip(t *testing.T) {
 	}
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
@@ -599,12 +604,13 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			} {
 				path := filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
 				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   fmt.Sprintf("%s.tar.gz", a.name),
-					Path:   path,
-					Goos:   a.goos,
-					Goarch: a.goarch,
-					Goarm:  a.goarm,
-					Type:   artifact.UploadableArchive,
+					Name:    fmt.Sprintf("%s.tar.gz", a.name),
+					Path:    path,
+					Goos:    a.goos,
+					Goarch:  a.goarch,
+					Goarm:   a.goarm,
+					Goamd64: "v1",
+					Type:    artifact.UploadableArchive,
 					Extra: map[string]interface{}{
 						artifact.ExtraID:       a.name,
 						artifact.ExtraFormat:   "tar.gz",
@@ -721,11 +727,12 @@ func TestRunPipeNoUpload(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
@@ -773,11 +780,12 @@ func TestRunEmptyTokenType(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "tar.gz",

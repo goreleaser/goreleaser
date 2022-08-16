@@ -100,7 +100,7 @@ Make sure to also read the [relevant documentation][docs] for more options.
 
 [issue]: https://github.com/goreleaser/goreleaser/issues/1354
 [pr]: https://github.com/goreleaser/goreleaser/pull/2129
-[docs]: /customization/gomod/
+[docs]: /customization/verifiable_builds/
 
 ## Real example
 

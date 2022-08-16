@@ -68,9 +68,11 @@ may have some extra fields:
 | `.Arch`         | `GOARCH`[^8]                          |
 | `.Arm`          | `GOARM`[^8]                           |
 | `.Mips`         | `GOMIPS`[^8]                          |
+| `.Amd64`        | `GOAMD64`[^8]                         |
 | `.Binary`       | binary name                           |
 | `.ArtifactName` | archive name                          |
 | `.ArtifactPath` | absolute path to artifact             |
+| `.ArtifactExt`  | binary extension (e.g. `.exe`)        |
 
 [^8]: Might have been replaced by `archives.replacements`.
 
@@ -85,7 +87,7 @@ On the nFPM name template field, you can use those extra fields as well:
 | `.PackageName` | package the name. Same as `ProjectName` if not overridden. |
 | `.ConventionalFileName` | conventional package file name as provided by nFPM[^9] |
 
-[^9]: Please beware: some OSs might have the same names for different ARM versions, for example, for Debian both ARMv6 and ARMv7 are called `armhf`. Make sure that's not your case otherwise you might end up with colliding names.
+[^9]: Please beware: some OSs might have the same names for different ARM versions, for example, for Debian both ARMv6 and ARMv7 are called `armhf`. Make sure that's not your case otherwise you might end up with colliding names. It also does not handle multiple GOAMD64 versions.
 
 ## Functions
 
@@ -94,6 +96,7 @@ On all fields, you have these available functions:
 | Usage                          | Description                                                                                                                    |
 |--------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | `replace "v1.2" "v" ""`        | replaces all matches. See [ReplaceAll](https://golang.org/pkg/strings/#ReplaceAll)                                             |
+| `split "1.2" "."`              | split string at separator. See [Split](https://golang.org/pkg/strings/#Split)                                             |
 | `time "01/02/2006"`            | current UTC time in the specified format (this is not deterministic, a new time for every call)                                |
 | `tolower "V1.2"`               | makes input string lowercase. See [ToLower](https://golang.org/pkg/strings/#ToLower)                                           |
 | `toupper "v1.2"`               | makes input string uppercase. See [ToUpper](https://golang.org/pkg/strings/#ToUpper)                                           |

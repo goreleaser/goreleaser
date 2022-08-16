@@ -70,9 +70,17 @@ release:
   # Default is `{{.Tag}}` on OSS and `{{.PrefixedTag}}` on Pro.
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
-  # You can disable this pipe in order to not upload any artifacts.
+  # You can disable this pipe in order to not create the release on any SCM.
+  # Keep in mind that this might also break things that depend on the release URL, for instance, homebrew taps.
+  #
   # Defaults to false.
   disable: true
+
+  # Set this to true if you want to disable just the artifact upload to the SCM.
+  # If this is true, GoReleaser will still create the release with the changelog, but won't upload anything to it.
+  #
+  # Defaults to false.
+  skip_upload: true
 
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
@@ -89,7 +97,7 @@ release:
 ```
 
 !!! tip
-    [Learn how to setup an API token, GitHub enteprise and etc](/scm/github/).
+    [Learn how to setup an API token, GitHub Enterprise and etc](/scm/github/).
 
 ## GitLab
 

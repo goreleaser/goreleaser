@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine
+FROM golang:1.19.0-alpine@sha256:0eb08c89ab1b0c638a9fe2780f7ae3ab18f6ecda2c76b908e09eb8073912045d
 
 RUN apk add --no-cache bash \
 	curl \
@@ -8,11 +8,12 @@ RUN apk add --no-cache bash \
 	gpg \
 	mercurial \
 	make \
+	openssh-client \
 	build-base \
 	tini
 
 # install cosign
-COPY --from=gcr.io/projectsigstore/cosign:v1.5.1@sha256:6247b2e693b0e6a62dcfa75eb46b698c1f4cd1aca36aaefafd4bbb2f2b2af717 /ko-app/cosign /usr/local/bin/cosign
+COPY --from=gcr.io/projectsigstore/cosign:v1.10.0@sha256:a719237925984033fb72685c1998d922c903bbe62464f6d401b5108d3195bb94 /ko-app/cosign /usr/local/bin/cosign
 
 ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
 CMD [ "-h" ]

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
@@ -63,6 +63,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if pkg.GitSSHCommand == "" {
 			pkg.GitSSHCommand = defaultSSHCommand
 		}
+		if pkg.Goamd64 == "" {
+			pkg.Goamd64 = "v1"
+		}
 	}
 
 	return nil
@@ -97,7 +100,10 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.Client) error {
 	filters := []artifact.Filter{
 		artifact.ByGoos("linux"),
 		artifact.Or(
-			artifact.ByGoarch("amd64"),
+			artifact.And(
+				artifact.ByGoarch("amd64"),
+				artifact.ByGoamd64(aur.Goamd64),
+			),
 			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("386"),
 			artifact.And(
@@ -131,10 +137,10 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.Client) error {
 		switch art.Type {
 		case artifact.UploadableBinary:
 			name := art.Name
-			bin := art.ExtraOr(artifact.ExtraBinary, art.Name).(string)
+			bin := artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name)
 			pkg = fmt.Sprintf(`install -Dm755 "./%s "${pkgdir}/usr/bin/%s"`, name, bin)
 		case artifact.UploadableArchive:
-			for _, bin := range art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
+			for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
 				pkg = fmt.Sprintf(`install -Dm755 "./%s" "${pkgdir}/usr/bin/%[1]s"`, bin)
 				break
 			}
@@ -312,7 +318,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.Client, artifacts [
 			DownloadURL: url,
 			SHA256:      sum,
 			Arch:        toPkgBuildArch(art.Goarch + art.Goarm),
-			Format:      art.ExtraOr(artifact.ExtraFormat, "").(string),
+			Format:      artifact.ExtraOr(*art, artifact.ExtraFormat, ""),
 		}
 		result.ReleasePackages = append(result.ReleasePackages, releasePackage)
 		result.Arches = append(result.Arches, releasePackage.Arch)
@@ -347,7 +353,10 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
-	cfg := pkgs[0].Extra[aurExtra].(config.AUR)
+	cfg, err := artifact.Extra[config.AUR](*pkgs[0], aurExtra)
+	if err != nil {
+		return err
+	}
 
 	if strings.TrimSpace(cfg.SkipUpload) == "true" {
 		return pipe.Skip("aur.skip_upload is set")
@@ -402,13 +411,13 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 
 	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
 
-	if err := runGitCmds(parent, env, [][]string{
+	if err := runGitCmds(ctx, parent, env, [][]string{
 		{"clone", url, cfg.Name},
 	}); err != nil {
 		return fmt.Errorf("failed to setup local AUR repo: %w", err)
 	}
 
-	if err := runGitCmds(cwd, env, [][]string{
+	if err := runGitCmds(ctx, cwd, env, [][]string{
 		// setup auth et al
 		{"config", "--local", "user.name", author.Name},
 		{"config", "--local", "user.email", author.Email},
@@ -430,7 +439,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 	}
 
 	log.WithField("repo", url).WithField("name", cfg.Name).Info("pushing")
-	if err := runGitCmds(cwd, env, [][]string{
+	if err := runGitCmds(ctx, cwd, env, [][]string{
 		{"add", "-A", "."},
 		{"commit", "-m", msg},
 		{"push", "origin", "HEAD"},
@@ -483,10 +492,10 @@ func keyPath(key string) (string, error) {
 	return path, nil
 }
 
-func runGitCmds(cwd string, env []string, cmds [][]string) error {
+func runGitCmds(ctx *context.Context, cwd string, env []string, cmds [][]string) error {
 	for _, cmd := range cmds {
 		args := append([]string{"-C", cwd}, cmd...)
-		if _, err := git.Clean(git.RunWithEnv(env, args...)); err != nil {
+		if _, err := git.Clean(git.RunWithEnv(ctx, env, args...)); err != nil {
 			return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
 		}
 	}

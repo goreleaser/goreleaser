@@ -10,22 +10,27 @@ on:
       - CONTRIBUTING.md
       - USERS.md
 
+permissions:
+  contents: read
+
 jobs:
   docs:
+    permissions:
+      contents: write  # for stefanzweifel/git-auto-commit-action to push code in repo
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
         with:
           token: ${{ secrets.GH_PAT }}
-      - uses: actions/setup-go@f6164bd8c8acb4a71fb2791a8b6c4024ff038dab # v2
+      - uses: actions/setup-go@84cbf8094393cdc5fe1fe1671ff2647332956b1a # v3
         with:
-          go-version: 1.18
-      - uses: arduino/setup-task@accf38bba955639d21816bb68775e5c48c482182 # v1
+          go-version: 1.19
+      - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
       - run: task docs:generate
       - run: task schema:generate
-      - uses: stefanzweifel/git-auto-commit-action@5804e42f86b1891093b151b6c4e78e759c746c4d # v4
+      - uses: stefanzweifel/git-auto-commit-action@49620cd3ed21ee620a48530e81dba0d139c9cb80 # v4
         with:
-          commit_message: "docs: update"
+          commit_message: "chore: docs auto-update"
           branch: main
           commit_user_name: actions-user
           commit_user_email: actions@github.com

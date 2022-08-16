@@ -1,8 +1,8 @@
 {
-		"$schema": "http://json-schema.org/draft-04/schema#",
-		"$ref": "#/definitions/Project",
-		"description": "goreleaser configuration definition file",
-		"definitions": {
+		"$schema": "https://json-schema.org/draft/2020-12/schema",
+		"$id": "https://github.com/goreleaser/goreleaser/pkg/config/project",
+		"$ref": "#/$defs/Project",
+		"$defs": {
 			"AUR": {
 				"properties": {
 					"name": {
@@ -15,7 +15,7 @@
 						"type": "array"
 					},
 					"commit_author": {
-						"$ref": "#/definitions/CommitAuthor"
+						"$ref": "#/$defs/CommitAuthor"
 					},
 					"commit_msg_template": {
 						"type": "string"
@@ -85,6 +85,9 @@
 					},
 					"private_key": {
 						"type": "string"
+					},
+					"goamd64": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -93,19 +96,7 @@
 			"After": {
 				"properties": {
 					"hooks": {
-						"items": {
-							"oneOf": [
-								{
-									"type": "string"
-								},
-								{
-									"$schema": "http://json-schema.org/draft-04/schema#",
-									"properties": {},
-									"additionalProperties": false,
-									"type": "object"
-								}
-							]
-						}
+						"$ref": "#/$defs/Hooks"
 					}
 				},
 				"additionalProperties": false,
@@ -117,44 +108,34 @@
 						"type": "string"
 					},
 					"twitter": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Twitter"
+						"$ref": "#/$defs/Twitter"
 					},
 					"reddit": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Reddit"
+						"$ref": "#/$defs/Reddit"
 					},
 					"slack": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Slack"
+						"$ref": "#/$defs/Slack"
 					},
 					"discord": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Discord"
+						"$ref": "#/$defs/Discord"
 					},
 					"teams": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Teams"
+						"$ref": "#/$defs/Teams"
 					},
 					"smtp": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/SMTP"
+						"$ref": "#/$defs/SMTP"
 					},
 					"mattermost": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Mattermost"
+						"$ref": "#/$defs/Mattermost"
 					},
 					"linkedin": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/LinkedIn"
+						"$ref": "#/$defs/LinkedIn"
 					},
 					"telegram": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Telegram"
+						"$ref": "#/$defs/Telegram"
 					},
 					"webhook": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Webhook"
+						"$ref": "#/$defs/Webhook"
 					}
 				},
 				"additionalProperties": false,
@@ -187,23 +168,46 @@
 					},
 					"format_overrides": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/FormatOverride"
+							"$ref": "#/$defs/FormatOverride"
 						},
 						"type": "array"
 					},
 					"wrap_in_directory": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"files": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/File"
+							"$ref": "#/$defs/File"
 						},
 						"type": "array"
 					},
+					"meta": {
+						"type": "boolean"
+					},
 					"allow_different_binary_count": {
 						"type": "boolean"
+					},
+					"hooks": {
+						"$ref": "#/$defs/ArchiveHooks"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ArchiveHooks": {
+				"properties": {
+					"before": {
+						"$ref": "#/$defs/Hooks"
+					},
+					"after": {
+						"$ref": "#/$defs/Hooks"
 					}
 				},
 				"additionalProperties": false,
@@ -212,19 +216,7 @@
 			"Before": {
 				"properties": {
 					"hooks": {
-						"items": {
-							"oneOf": [
-								{
-									"type": "string"
-								},
-								{
-									"$schema": "http://json-schema.org/draft-04/schema#",
-									"properties": {},
-									"additionalProperties": false,
-									"type": "object"
-								}
-							]
-						}
+						"$ref": "#/$defs/Hooks"
 					}
 				},
 				"additionalProperties": false,
@@ -261,7 +253,7 @@
 					},
 					"extra_files": {
 						"items": {
-							"$ref": "#/definitions/ExtraFile"
+							"$ref": "#/$defs/ExtraFile"
 						},
 						"type": "array"
 					}
@@ -298,6 +290,12 @@
 						},
 						"type": "array"
 					},
+					"goamd64": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"targets": {
 						"items": {
 							"type": "string"
@@ -306,8 +304,7 @@
 					},
 					"ignore": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/IgnoredBuild"
+							"$ref": "#/$defs/IgnoredBuild"
 						},
 						"type": "array"
 					},
@@ -321,14 +318,7 @@
 						"type": "string"
 					},
 					"hooks": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/BuildHookConfig"
-					},
-					"env": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
+						"$ref": "#/$defs/BuildHookConfig"
 					},
 					"builder": {
 						"type": "string"
@@ -342,84 +332,44 @@
 					"gobinary": {
 						"type": "string"
 					},
+					"command": {
+						"type": "string"
+					},
 					"no_unique_dist_dir": {
 						"type": "boolean"
 					},
+					"no_main_check": {
+						"type": "boolean"
+					},
 					"ldflags": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						]
+						"$ref": "#/$defs/StringArray"
 					},
 					"tags": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						]
+						"$ref": "#/$defs/FlagArray"
 					},
 					"flags": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						]
+						"$ref": "#/$defs/FlagArray"
 					},
 					"asmflags": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						]
+						"$ref": "#/$defs/StringArray"
 					},
 					"gcflags": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						]
+						"$ref": "#/$defs/StringArray"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					},
 					"overrides": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/BuildDetailsOverride"
+							"$ref": "#/$defs/BuildDetailsOverride"
 						},
 						"type": "array"
 					},
 					"prebuilt": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/PreBuiltOptions"
+						"$ref": "#/$defs/PreBuiltOptions"
 					}
 				},
 				"additionalProperties": false,
@@ -439,70 +389,29 @@
 					"gomips": {
 						"type": "string"
 					},
+					"goamd64": {
+						"type": "string"
+					},
 					"ldflags": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						]
+						"$ref": "#/$defs/StringArray"
 					},
 					"tags": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						]
+						"$ref": "#/$defs/FlagArray"
 					},
 					"flags": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						]
+						"$ref": "#/$defs/FlagArray"
 					},
 					"asmflags": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						]
+						"$ref": "#/$defs/StringArray"
 					},
 					"gcflags": {
-						"oneOf": [
-							{
-								"type": "string"
-							},
-							{
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						]
+						"$ref": "#/$defs/StringArray"
+					},
+					"env": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
@@ -511,34 +420,10 @@
 			"BuildHookConfig": {
 				"properties": {
 					"pre": {
-						"items": {
-							"oneOf": [
-								{
-									"type": "string"
-								},
-								{
-									"$schema": "http://json-schema.org/draft-04/schema#",
-									"properties": {},
-									"additionalProperties": false,
-									"type": "object"
-								}
-							]
-						}
+						"$ref": "#/$defs/Hooks"
 					},
 					"post": {
-						"items": {
-							"oneOf": [
-								{
-									"type": "string"
-								},
-								{
-									"$schema": "http://json-schema.org/draft-04/schema#",
-									"properties": {},
-									"additionalProperties": false,
-									"type": "object"
-								}
-							]
-						}
+						"$ref": "#/$defs/Hooks"
 					}
 				},
 				"additionalProperties": false,
@@ -562,8 +447,7 @@
 			"Changelog": {
 				"properties": {
 					"filters": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Filters"
+						"$ref": "#/$defs/Filters"
 					},
 					"sort": {
 						"type": "string"
@@ -572,19 +456,18 @@
 						"type": "boolean"
 					},
 					"use": {
+						"type": "string",
 						"enum": [
 							"git",
 							"github",
 							"github-native",
 							"gitlab"
 						],
-						"type": "string",
 						"default": "git"
 					},
 					"groups": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/ChangeLogGroup"
+							"$ref": "#/$defs/ChangeLogGroup"
 						},
 						"type": "array"
 					}
@@ -611,7 +494,7 @@
 					},
 					"extra_files": {
 						"items": {
-							"$ref": "#/definitions/ExtraFile"
+							"$ref": "#/$defs/ExtraFile"
 						},
 						"type": "array"
 					}
@@ -646,17 +529,13 @@
 						"type": "string"
 					},
 					"file_info": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/ContentFileInfo"
+						"$ref": "#/$defs/ContentFileInfo"
 					}
 				},
 				"additionalProperties": false,
 				"type": "object"
 			},
 			"ContentFileInfo": {
-				"required": [
-					"group"
-				],
 				"properties": {
 					"owner": {
 						"type": "string"
@@ -673,7 +552,16 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"group"
+				]
+			},
+			"Contents": {
+				"items": {
+					"$ref": "#/$defs/Content"
+				},
+				"type": "array"
 			},
 			"Discord": {
 				"properties": {
@@ -714,6 +602,9 @@
 						"type": "string"
 					},
 					"goarm": {
+						"type": "string"
+					},
+					"goamd64": {
 						"type": "string"
 					},
 					"dockerfile": {
@@ -822,19 +713,10 @@
 						"type": "string"
 					},
 					{
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"properties": {
-							"src": {
-								"type": "string"
-							},
-							"dst": {
-								"type": "string"
-							},
-							"strip_parent": {
-								"type": "boolean"
-							},
-							"info": {
-								"$schema": "http://json-schema.org/draft-04/schema#",
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
+						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
+						"$defs": {
+							"FileInfo": {
 								"properties": {
 									"owner": {
 										"type": "string"
@@ -854,6 +736,20 @@
 								"type": "object"
 							}
 						},
+						"properties": {
+							"src": {
+								"type": "string"
+							},
+							"dst": {
+								"type": "string"
+							},
+							"strip_parent": {
+								"type": "boolean"
+							},
+							"info": {
+								"$ref": "#/$defs/FileInfo"
+							}
+						},
 						"additionalProperties": false,
 						"type": "object"
 					}
@@ -870,6 +766,19 @@
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"FlagArray": {
+				"oneOf": [
+					{
+						"type": "string"
+					},
+					{
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				]
 			},
 			"FormatOverride": {
 				"properties": {
@@ -901,6 +810,9 @@
 						"type": "array"
 					},
 					"secret_name": {
+						"type": "string"
+					},
+					"skip": {
 						"type": "string"
 					}
 				},
@@ -964,10 +876,10 @@
 						"type": "string"
 					},
 					"rig": {
-						"$ref": "#/definitions/RepoRef"
+						"$ref": "#/$defs/RepoRef"
 					},
 					"commit_author": {
-						"$ref": "#/definitions/CommitAuthor"
+						"$ref": "#/$defs/CommitAuthor"
 					},
 					"commit_msg_template": {
 						"type": "string"
@@ -1027,12 +939,10 @@
 						"type": "string"
 					},
 					"tap": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/RepoRef"
+						"$ref": "#/$defs/RepoRef"
 					},
 					"commit_author": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/CommitAuthor"
+						"$ref": "#/$defs/CommitAuthor"
 					},
 					"commit_msg_template": {
 						"type": "string"
@@ -1054,8 +964,7 @@
 					},
 					"dependencies": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/HomebrewDependency"
+							"$ref": "#/$defs/HomebrewDependency"
 						},
 						"type": "array"
 					},
@@ -1101,6 +1010,9 @@
 					"goarm": {
 						"type": "string"
 					},
+					"goamd64": {
+						"type": "string"
+					},
 					"service": {
 						"type": "string"
 					}
@@ -1114,7 +1026,8 @@
 						"type": "string"
 					},
 					{
-						"$schema": "http://json-schema.org/draft-04/schema#",
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
+						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/homebrew-dependency",
 						"properties": {
 							"name": {
 								"type": "string"
@@ -1127,6 +1040,42 @@
 						"type": "object"
 					}
 				]
+			},
+			"Hook": {
+				"oneOf": [
+					{
+						"type": "string"
+					},
+					{
+						"$schema": "https://json-schema.org/draft/2020-12/schema",
+						"$id": "https://github.com/goreleaser/goreleaser/pkg/config/t",
+						"properties": {
+							"dir": {
+								"type": "string"
+							},
+							"cmd": {
+								"type": "string"
+							},
+							"env": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							"output": {
+								"type": "boolean"
+							}
+						},
+						"additionalProperties": false,
+						"type": "object"
+					}
+				]
+			},
+			"Hooks": {
+				"items": {
+					"$ref": "#/$defs/Hook"
+				},
+				"type": "array"
 			},
 			"IgnoredBuild": {
 				"properties": {
@@ -1141,6 +1090,9 @@
 					},
 					"gomips": {
 						"type": "string"
+					},
+					"goamd64": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1149,12 +1101,10 @@
 			"Include": {
 				"properties": {
 					"from_url": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/IncludeFromURL"
+						"$ref": "#/$defs/IncludeFromURL"
 					},
 					"from_file": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/IncludeFromFile"
+						"$ref": "#/$defs/IncludeFromFile"
 					}
 				},
 				"additionalProperties": false,
@@ -1198,10 +1148,10 @@
 						"type": "string"
 					},
 					"index": {
-						"$ref": "#/definitions/RepoRef"
+						"$ref": "#/$defs/RepoRef"
 					},
 					"commit_author": {
-						"$ref": "#/definitions/CommitAuthor"
+						"$ref": "#/$defs/CommitAuthor"
 					},
 					"commit_msg_template": {
 						"type": "string"
@@ -1222,6 +1172,9 @@
 						"type": "string"
 					},
 					"goarm": {
+						"type": "string"
+					},
+					"goamd64": {
 						"type": "string"
 					},
 					"skip_upload": {
@@ -1276,7 +1229,7 @@
 			"Milestone": {
 				"properties": {
 					"repo": {
-						"$ref": "#/definitions/Repo"
+						"$ref": "#/$defs/Repo"
 					},
 					"close": {
 						"type": "boolean"
@@ -1361,40 +1314,31 @@
 						},
 						"type": "array"
 					},
-					"empty_folders": {
+					"provides": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
 					"contents": {
-						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Content"
-						},
-						"type": "array"
+						"$ref": "#/$defs/Contents"
 					},
 					"scripts": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/NFPMScripts"
+						"$ref": "#/$defs/NFPMScripts"
 					},
 					"rpm": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/NFPMRPM"
+						"$ref": "#/$defs/NFPMRPM"
 					},
 					"deb": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/NFPMDeb"
+						"$ref": "#/$defs/NFPMDeb"
 					},
 					"apk": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/NFPMAPK"
+						"$ref": "#/$defs/NFPMAPK"
 					},
 					"overrides": {
 						"patternProperties": {
 							".*": {
-								"$schema": "http://json-schema.org/draft-04/schema#",
-								"$ref": "#/definitions/NFPMOverridables"
+								"$ref": "#/$defs/NFPMOverridables"
 							}
 						},
 						"type": "object"
@@ -1448,12 +1392,10 @@
 			"NFPMAPK": {
 				"properties": {
 					"scripts": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/NFPMAPKScripts"
+						"$ref": "#/$defs/NFPMAPKScripts"
 					},
 					"signature": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/NFPMAPKSignature"
+						"$ref": "#/$defs/NFPMAPKSignature"
 					}
 				},
 				"additionalProperties": false,
@@ -1486,12 +1428,10 @@
 			"NFPMDeb": {
 				"properties": {
 					"scripts": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/NFPMDebScripts"
+						"$ref": "#/$defs/NFPMDebScripts"
 					},
 					"triggers": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/NFPMDebTriggers"
+						"$ref": "#/$defs/NFPMDebTriggers"
 					},
 					"breaks": {
 						"items": {
@@ -1500,8 +1440,7 @@
 						"type": "array"
 					},
 					"signature": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/NFPMDebSignature"
+						"$ref": "#/$defs/NFPMDebSignature"
 					},
 					"lintian_overrides": {
 						"items": {
@@ -1637,29 +1576,26 @@
 						},
 						"type": "array"
 					},
-					"empty_folders": {
+					"provides": {
 						"items": {
 							"type": "string"
 						},
 						"type": "array"
 					},
 					"contents": {
-						"items": {
-							"$ref": "#/definitions/Content"
-						},
-						"type": "array"
+						"$ref": "#/$defs/Contents"
 					},
 					"scripts": {
-						"$ref": "#/definitions/NFPMScripts"
+						"$ref": "#/$defs/NFPMScripts"
 					},
 					"rpm": {
-						"$ref": "#/definitions/NFPMRPM"
+						"$ref": "#/$defs/NFPMRPM"
 					},
 					"deb": {
-						"$ref": "#/definitions/NFPMDeb"
+						"$ref": "#/$defs/NFPMDeb"
 					},
 					"apk": {
-						"$ref": "#/definitions/NFPMAPK"
+						"$ref": "#/$defs/NFPMAPK"
 					}
 				},
 				"additionalProperties": false,
@@ -1677,12 +1613,10 @@
 						"type": "string"
 					},
 					"signature": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/NFPMRPMSignature"
+						"$ref": "#/$defs/NFPMRPMSignature"
 					},
 					"scripts": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/NFPMRPMScripts"
+						"$ref": "#/$defs/NFPMRPMScripts"
 					}
 				},
 				"additionalProperties": false,
@@ -1757,226 +1691,186 @@
 						"type": "array"
 					},
 					"release": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Release"
+						"$ref": "#/$defs/Release"
 					},
 					"milestones": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Milestone"
+							"$ref": "#/$defs/Milestone"
 						},
 						"type": "array"
 					},
 					"brews": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Homebrew"
+							"$ref": "#/$defs/Homebrew"
 						},
 						"type": "array"
 					},
 					"rigs": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/GoFish"
+							"$ref": "#/$defs/GoFish"
 						},
 						"type": "array"
 					},
 					"aurs": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/AUR"
+							"$ref": "#/$defs/AUR"
 						},
 						"type": "array"
 					},
 					"krews": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Krew"
+							"$ref": "#/$defs/Krew"
 						},
 						"type": "array"
 					},
 					"scoop": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Scoop"
+						"$ref": "#/$defs/Scoop"
 					},
 					"builds": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Build"
+							"$ref": "#/$defs/Build"
 						},
 						"type": "array"
 					},
 					"archives": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Archive"
+							"$ref": "#/$defs/Archive"
 						},
 						"type": "array"
 					},
 					"nfpms": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/NFPM"
+							"$ref": "#/$defs/NFPM"
 						},
 						"type": "array"
 					},
 					"snapcrafts": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Snapcraft"
+							"$ref": "#/$defs/Snapcraft"
 						},
 						"type": "array"
 					},
 					"snapshot": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Snapshot"
+						"$ref": "#/$defs/Snapshot"
 					},
 					"nightly": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Nightly"
+						"$ref": "#/$defs/Nightly"
 					},
 					"checksum": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Checksum"
+						"$ref": "#/$defs/Checksum"
 					},
 					"dockers": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Docker"
+							"$ref": "#/$defs/Docker"
 						},
 						"type": "array"
 					},
 					"docker_manifests": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/DockerManifest"
+							"$ref": "#/$defs/DockerManifest"
 						},
 						"type": "array"
 					},
 					"artifactories": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Upload"
+							"$ref": "#/$defs/Upload"
 						},
 						"type": "array"
 					},
 					"uploads": {
 						"items": {
-							"$ref": "#/definitions/Upload"
+							"$ref": "#/$defs/Upload"
 						},
 						"type": "array"
 					},
 					"blobs": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Blob"
+							"$ref": "#/$defs/Blob"
 						},
 						"type": "array"
 					},
 					"furies": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Fury"
+							"$ref": "#/$defs/Fury"
 						},
 						"type": "array"
 					},
 					"publishers": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Publisher"
+							"$ref": "#/$defs/Publisher"
 						},
 						"type": "array"
 					},
 					"changelog": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Changelog"
+						"$ref": "#/$defs/Changelog"
 					},
 					"dist": {
 						"type": "string"
 					},
 					"signs": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Sign"
+							"$ref": "#/$defs/Sign"
 						},
 						"type": "array"
 					},
 					"docker_signs": {
 						"items": {
-							"$ref": "#/definitions/Sign"
+							"$ref": "#/$defs/Sign"
 						},
 						"type": "array"
 					},
 					"env_files": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/EnvFiles"
+						"$ref": "#/$defs/EnvFiles"
 					},
 					"before": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Before"
+						"$ref": "#/$defs/Before"
 					},
 					"after": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/After"
+						"$ref": "#/$defs/After"
 					},
 					"source": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Source"
+						"$ref": "#/$defs/Source"
 					},
 					"gomod": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/GoMod"
+						"$ref": "#/$defs/GoMod"
 					},
 					"monorepo": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Monorepo"
+						"$ref": "#/$defs/Monorepo"
 					},
 					"announce": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Announce"
+						"$ref": "#/$defs/Announce"
 					},
 					"sboms": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/SBOM"
+							"$ref": "#/$defs/SBOM"
 						},
 						"type": "array"
 					},
 					"universal_binaries": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/UniversalBinary"
+							"$ref": "#/$defs/UniversalBinary"
 						},
 						"type": "array"
 					},
 					"build": {
-						"$ref": "#/definitions/Build"
+						"$ref": "#/$defs/Build"
 					},
 					"github_urls": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/GitHubURLs"
+						"$ref": "#/$defs/GitHubURLs"
 					},
 					"gitlab_urls": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/GitLabURLs"
+						"$ref": "#/$defs/GitLabURLs"
 					},
 					"gitea_urls": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/GiteaURLs"
+						"$ref": "#/$defs/GiteaURLs"
 					},
 					"includes": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/Include"
+							"$ref": "#/$defs/Include"
 						},
 						"type": "array"
 					},
 					"variables": {
-						"patternProperties": {
-							".*": {
-								"additionalProperties": true
-							}
-						},
 						"type": "object"
 					}
 				},
@@ -2014,7 +1908,7 @@
 					},
 					"extra_files": {
 						"items": {
-							"$ref": "#/definitions/ExtraFile"
+							"$ref": "#/$defs/ExtraFile"
 						},
 						"type": "array"
 					}
@@ -2049,19 +1943,21 @@
 			"Release": {
 				"properties": {
 					"github": {
-						"$schema": "http://json-schema.org/draft-04/schema#",
-						"$ref": "#/definitions/Repo"
+						"$ref": "#/$defs/Repo"
 					},
 					"gitlab": {
-						"$ref": "#/definitions/Repo"
+						"$ref": "#/$defs/Repo"
 					},
 					"gitea": {
-						"$ref": "#/definitions/Repo"
+						"$ref": "#/$defs/Repo"
 					},
 					"draft": {
 						"type": "boolean"
 					},
 					"disable": {
+						"type": "boolean"
+					},
+					"skip_upload": {
 						"type": "boolean"
 					},
 					"prerelease": {
@@ -2078,8 +1974,7 @@
 					},
 					"extra_files": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/ExtraFile"
+							"$ref": "#/$defs/ExtraFile"
 						},
 						"type": "array"
 					},
@@ -2093,13 +1988,13 @@
 						"type": "string"
 					},
 					"mode": {
+						"type": "string",
 						"enum": [
 							"keep-existing",
 							"append",
 							"prepend",
 							"replace"
 						],
-						"type": "string",
 						"default": "keep-existing"
 					}
 				},
@@ -2217,13 +2112,13 @@
 						"type": "string"
 					},
 					"bucket": {
-						"$ref": "#/definitions/RepoRef"
+						"$ref": "#/$defs/RepoRef"
 					},
 					"folder": {
 						"type": "string"
 					},
 					"commit_author": {
-						"$ref": "#/definitions/CommitAuthor"
+						"$ref": "#/$defs/CommitAuthor"
 					},
 					"commit_msg_template": {
 						"type": "string"
@@ -2260,6 +2155,9 @@
 							"type": "string"
 						},
 						"type": "array"
+					},
+					"goamd64": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -2332,10 +2230,42 @@
 					},
 					"icon_url": {
 						"type": "string"
+					},
+					"blocks": {
+						"items": {
+							"$ref": "#/$defs/SlackBlock"
+						},
+						"type": "array"
+					},
+					"attachments": {
+						"items": {
+							"$ref": "#/$defs/SlackAttachment"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"SlackAttachment": {
+				"properties": {
+					"Internal": true
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"Internal"
+				]
+			},
+			"SlackBlock": {
+				"properties": {
+					"Internal": true
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"Internal"
+				]
 			},
 			"Snapcraft": {
 				"properties": {
@@ -2392,8 +2322,7 @@
 					"layout": {
 						"patternProperties": {
 							".*": {
-								"$schema": "http://json-schema.org/draft-04/schema#",
-								"$ref": "#/definitions/SnapcraftLayoutMetadata"
+								"$ref": "#/$defs/SnapcraftLayoutMetadata"
 							}
 						},
 						"type": "object"
@@ -2401,24 +2330,17 @@
 					"apps": {
 						"patternProperties": {
 							".*": {
-								"$schema": "http://json-schema.org/draft-04/schema#",
-								"$ref": "#/definitions/SnapcraftAppMetadata"
+								"$ref": "#/$defs/SnapcraftAppMetadata"
 							}
 						},
 						"type": "object"
 					},
 					"plugs": {
-						"patternProperties": {
-							".*": {
-								"additionalProperties": true
-							}
-						},
 						"type": "object"
 					},
 					"extra_files": {
 						"items": {
-							"$schema": "http://json-schema.org/draft-04/schema#",
-							"$ref": "#/definitions/SnapcraftExtraFiles"
+							"$ref": "#/$defs/SnapcraftExtraFiles"
 						},
 						"type": "array"
 					}
@@ -2427,9 +2349,6 @@
 				"type": "object"
 			},
 			"SnapcraftAppMetadata": {
-				"required": [
-					"command"
-				],
 				"properties": {
 					"command": {
 						"type": "string"
@@ -2483,11 +2402,6 @@
 						"type": "string"
 					},
 					"environment": {
-						"patternProperties": {
-							".*": {
-								"additionalProperties": true
-							}
-						},
 						"type": "object"
 					},
 					"extensions": {
@@ -2500,11 +2414,6 @@
 						"type": "string"
 					},
 					"passthrough": {
-						"patternProperties": {
-							".*": {
-								"additionalProperties": true
-							}
-						},
 						"type": "object"
 					},
 					"plugs": {
@@ -2535,11 +2444,6 @@
 						"type": "array"
 					},
 					"sockets": {
-						"patternProperties": {
-							".*": {
-								"additionalProperties": true
-							}
-						},
 						"type": "object"
 					},
 					"start_timeout": {
@@ -2562,12 +2466,12 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"command"
+				]
 			},
 			"SnapcraftExtraFiles": {
-				"required": [
-					"source"
-				],
 				"properties": {
 					"source": {
 						"type": "string"
@@ -2580,7 +2484,10 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"source"
+				]
 			},
 			"SnapcraftLayoutMetadata": {
 				"properties": {
@@ -2626,6 +2533,19 @@
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"StringArray": {
+				"oneOf": [
+					{
+						"type": "string"
+					},
+					{
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				]
 			},
 			"Teams": {
 				"properties": {
@@ -2693,7 +2613,7 @@
 						"type": "boolean"
 					},
 					"hooks": {
-						"$ref": "#/definitions/BuildHookConfig"
+						"$ref": "#/$defs/BuildHookConfig"
 					}
 				},
 				"additionalProperties": false,
@@ -2705,6 +2625,12 @@
 						"type": "string"
 					},
 					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"exts": {
 						"items": {
 							"type": "string"
 						},
@@ -2778,5 +2704,6 @@
 				"additionalProperties": false,
 				"type": "object"
 			}
-		}
+		},
+		"description": "goreleaser configuration definition file"
 	}

@@ -108,10 +108,14 @@ func TestRunPipe(t *testing.T) {
 					Suggests:         []string{"bzr"},
 					Replaces:         []string{"fish"},
 					Conflicts:        []string{"git"},
-					EmptyFolders:     []string{"/var/log/foobar"},
+					Provides:         []string{"ash"},
 					Release:          "10",
 					Epoch:            "20",
 					Contents: []*files.Content{
+						{
+							Destination: "/var/log/foobar",
+							Type:        "dir",
+						},
 						{
 							Source:      "./testdata/testfile.txt",
 							Destination: "/usr/share/testfile.txt",
@@ -137,7 +141,7 @@ func TestRunPipe(t *testing.T) {
 							Type:        "symlink",
 						},
 						{
-							Source:      "./testdata/testfile-{{ .Arch }}.txt",
+							Source:      "./testdata/testfile-{{ .Arch }}{{.Amd64}}{{.Arm}}{{.Mips}}.txt",
 							Destination: "/etc/nope3_{{ .ProjectName }}.conf",
 						},
 						{
@@ -155,26 +159,81 @@ func TestRunPipe(t *testing.T) {
 	ctx.Version = "1.0.0"
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "subdir/mybin",
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
-					artifact.ExtraID: "default",
-				},
-			})
+		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips"} {
+			switch goarch {
+			case "arm":
+				for _, goarm := range []string{"6", "7"} {
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "subdir/mybin",
+						Path:   binPath,
+						Goarch: goarch,
+						Goos:   goos,
+						Goarm:  goarm,
+						Type:   artifact.Binary,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "default",
+						},
+					})
+				}
+			case "amd64":
+				for _, goamd64 := range []string{"v1", "v2", "v3", "v4"} {
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:    "subdir/mybin",
+						Path:    binPath,
+						Goarch:  goarch,
+						Goos:    goos,
+						Goamd64: goamd64,
+						Type:    artifact.Binary,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "default",
+						},
+					})
+				}
+			case "mips":
+				for _, gomips := range []string{"softfloat", "hardfloat"} {
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "subdir/mybin",
+						Path:   binPath,
+						Goarch: goarch,
+						Goos:   goos,
+						Gomips: gomips,
+						Type:   artifact.Binary,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "default",
+						},
+					})
+				}
+			default:
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "subdir/mybin",
+					Path:   binPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Type:   artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "default",
+					},
+				})
+			}
 		}
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 6)
+	require.Len(t, packages, 30)
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
-		require.Equal(t, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format, pkg.Name)
+		arch := pkg.Goarch
+		if pkg.Goarm != "" {
+			arch += "v" + pkg.Goarm
+		}
+		if pkg.Goamd64 != "v1" {
+			arch += pkg.Goamd64
+		}
+		if pkg.Gomips != "" {
+			arch += "_" + pkg.Gomips
+		}
+		require.Equal(t, "foo_1.0.0_Tux_"+arch+"-10-20."+format, pkg.Name)
 		require.Equal(t, "someid", pkg.ID())
 		require.ElementsMatch(t, []string{
 			"./testdata/testfile.txt",
@@ -182,10 +241,11 @@ func TestRunPipe(t *testing.T) {
 			"./testdata/testfile.txt",
 			"/etc/nope.conf",
 			"./testdata/folder",
-			"./testdata/testfile-" + pkg.Goarch + ".txt",
+			"./testdata/testfile-" + pkg.Goarch + pkg.Goamd64 + pkg.Goarm + pkg.Gomips + ".txt",
 			binPath,
-		}, sources(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 		require.ElementsMatch(t, []string{
+			"/var/log/foobar",
 			"/usr/share/testfile.txt",
 			"/etc/mydir",
 			"/etc/nope.conf",
@@ -194,9 +254,9 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope3_mybin.conf",
 			"/etc/folder",
 			"/usr/bin/subdir/mybin",
-		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
-	require.Len(t, ctx.Config.NFPMs[0].Contents, 7, "should not modify the config file list")
+	require.Len(t, ctx.Config.NFPMs[0].Contents, 8, "should not modify the config file list")
 }
 
 func TestRunPipeConventionalNameTemplate(t *testing.T) {
@@ -225,7 +285,7 @@ func TestRunPipeConventionalNameTemplate(t *testing.T) {
 				Homepage:    "https://goreleaser.com/",
 				Bindir:      "/usr/bin",
 				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: "{{ .ConventionalFileName }}",
+					FileNameTemplate: `{{ trimsuffix (trimsuffix (trimsuffix .ConventionalFileName ".deb") ".rpm") ".apk" }}{{ if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end }}`,
 					PackageName:      "foo",
 				},
 			},
@@ -234,36 +294,104 @@ func TestRunPipeConventionalNameTemplate(t *testing.T) {
 	ctx.Version = "1.0.0"
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
 	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "subdir/mybin",
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
-					artifact.ExtraID: "default",
-				},
-			})
+		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips"} {
+			switch goarch {
+			case "arm":
+				for _, goarm := range []string{"6", "7"} {
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "subdir/mybin",
+						Path:   binPath,
+						Goarch: goarch,
+						Goos:   goos,
+						Goarm:  goarm,
+						Type:   artifact.Binary,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "default",
+						},
+					})
+				}
+			case "amd64":
+				for _, goamd64 := range []string{"v1", "v2", "v3", "v4"} {
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:    "subdir/mybin",
+						Path:    binPath,
+						Goarch:  goarch,
+						Goos:    goos,
+						Goamd64: goamd64,
+						Type:    artifact.Binary,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "default",
+						},
+					})
+				}
+			case "mips":
+				for _, gomips := range []string{"softfloat", "hardfloat"} {
+					ctx.Artifacts.Add(&artifact.Artifact{
+						Name:   "subdir/mybin",
+						Path:   binPath,
+						Goarch: goarch,
+						Goos:   goos,
+						Gomips: gomips,
+						Type:   artifact.Binary,
+						Extra: map[string]interface{}{
+							artifact.ExtraID: "default",
+						},
+					})
+				}
+			default:
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "subdir/mybin",
+					Path:   binPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Type:   artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "default",
+					},
+				})
+			}
 		}
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 6)
+	require.Len(t, packages, 30)
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
 		require.Contains(t, []string{
-			"foo_1.0.0_amd64.deb",
-			"foo_1.0.0_x86.apk",
-			"foo_1.0.0_i386.deb",
-			"foo_1.0.0_x86_64.apk",
+			"foo-1.0.0.aarch64.rpm",
+			"foo-1.0.0.armv6hl.rpm",
+			"foo-1.0.0.armv7hl.rpm",
 			"foo-1.0.0.i386.rpm",
+			"foo-1.0.0.mipshardfloat.rpm",
+			"foo-1.0.0.mipssoftfloat.rpm",
 			"foo-1.0.0.x86_64.rpm",
+			"foo-1.0.0.x86_64v2.rpm",
+			"foo-1.0.0.x86_64v3.rpm",
+			"foo-1.0.0.x86_64v4.rpm",
+			"foo_1.0.0_aarch64.apk",
+			"foo_1.0.0_amd64.deb",
+			"foo_1.0.0_amd64v2.deb",
+			"foo_1.0.0_amd64v3.deb",
+			"foo_1.0.0_amd64v4.deb",
+			"foo_1.0.0_arm64.deb",
+			"foo_1.0.0_armhf.apk",
+			"foo_1.0.0_armhf.deb",
+			"foo_1.0.0_armv7.apk",
+			"foo_1.0.0_i386.deb",
+			"foo_1.0.0_mipshardfloat.apk",
+			"foo_1.0.0_mipshardfloat.deb",
+			"foo_1.0.0_mipssoftfloat.apk",
+			"foo_1.0.0_mipssoftfloat.deb",
+			"foo_1.0.0_x86.apk",
+			"foo_1.0.0_x86_64.apk",
+			"foo_1.0.0_x86_64v2.apk",
+			"foo_1.0.0_x86_64v3.apk",
+			"foo_1.0.0_x86_64v4.apk",
 		}, pkg.Name, "package name is not expected")
 		require.Equal(t, "someid", pkg.ID())
-		require.ElementsMatch(t, []string{binPath}, sources(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
-		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 }
 
@@ -302,7 +430,7 @@ func TestInvalidTemplate(t *testing.T) {
 			FileNameTemplate: "{{.Foo}",
 		}
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1: unexpected "}" in operand`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("source", func(t *testing.T) {
@@ -315,7 +443,7 @@ func TestInvalidTemplate(t *testing.T) {
 				},
 			},
 		}
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_SOURCE>: map has no entry for key "NOPE_SOURCE"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("target", func(t *testing.T) {
@@ -328,49 +456,49 @@ func TestInvalidTemplate(t *testing.T) {
 				},
 			},
 		}
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_TARGET>: map has no entry for key "NOPE_TARGET"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("description", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Description = "{{ .NOPE_DESC }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_DESC>: map has no entry for key "NOPE_DESC"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("maintainer", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Maintainer = "{{ .NOPE_DESC }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_DESC>: map has no entry for key "NOPE_DESC"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("homepage", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Homepage = "{{ .NOPE_HOMEPAGE }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_HOMEPAGE>: map has no entry for key "NOPE_HOMEPAGE"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("deb key file", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Deb.Signature.KeyFile = "{{ .NOPE_KEY_FILE }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_KEY_FILE>: map has no entry for key "NOPE_KEY_FILE"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("rpm key file", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].RPM.Signature.KeyFile = "{{ .NOPE_KEY_FILE }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_KEY_FILE>: map has no entry for key "NOPE_KEY_FILE"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("apk key file", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].APK.Signature.KeyFile = "{{ .NOPE_KEY_FILE }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_KEY_FILE>: map has no entry for key "NOPE_KEY_FILE"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("bindir", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Bindir = "/usr/{{ .NOPE }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:8: executing "tmpl" at <.NOPE>: map has no entry for key "NOPE"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 }
 
@@ -405,7 +533,7 @@ func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
 			artifact.ExtraID: "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
 func TestNoBuildsFound(t *testing.T) {
@@ -510,15 +638,11 @@ func TestDefault(t *testing.T) {
 			NFPMs: []config.NFPM{
 				{},
 			},
-			Builds: []config.Build{
-				{ID: "foo"},
-				{ID: "bar"},
-			},
 		},
 	}
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "/usr/bin", ctx.Config.NFPMs[0].Bindir)
-	require.Equal(t, []string{"foo", "bar"}, ctx.Config.NFPMs[0].Builds)
+	require.Empty(t, ctx.Config.NFPMs[0].Builds)
 	require.Equal(t, defaultNameTemplate, ctx.Config.NFPMs[0].FileNameTemplate)
 	require.Equal(t, ctx.Config.ProjectName, ctx.Config.NFPMs[0].PackageName)
 }
@@ -526,10 +650,6 @@ func TestDefault(t *testing.T) {
 func TestDefaultSet(t *testing.T) {
 	ctx := &context.Context{
 		Config: config.Project{
-			Builds: []config.Build{
-				{ID: "foo"},
-				{ID: "bar"},
-			},
 			NFPMs: []config.NFPM{
 				{
 					Builds: []string{"foo"},
@@ -576,84 +696,101 @@ func TestOverrides(t *testing.T) {
 }
 
 func TestDebSpecificConfig(t *testing.T) {
-	folder := t.TempDir()
-	dist := filepath.Join(folder, "dist")
-	require.NoError(t, os.Mkdir(dist, 0o755))
-	require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
-	binPath := filepath.Join(dist, "mybin", "mybin")
-	f, err := os.Create(binPath)
-	require.NoError(t, err)
-	require.NoError(t, f.Close())
-	ctx := context.New(config.Project{
-		ProjectName: "mybin",
-		Dist:        dist,
-		NFPMs: []config.NFPM{
-			{
-				ID:      "someid",
-				Builds:  []string{"default"},
-				Formats: []string{"deb"},
-				NFPMOverridables: config.NFPMOverridables{
-					PackageName: "foo",
-					Contents: []*files.Content{
-						{
-							Source:      "testdata/testfile.txt",
-							Destination: "/usr/share/testfile.txt",
+	setupContext := func(tb testing.TB) *context.Context {
+		tb.Helper()
+		folder := t.TempDir()
+		dist := filepath.Join(folder, "dist")
+		require.NoError(t, os.Mkdir(dist, 0o755))
+		require.NoError(t, os.Mkdir(filepath.Join(dist, "mybin"), 0o755))
+		binPath := filepath.Join(dist, "mybin", "mybin")
+		f, err := os.Create(binPath)
+		require.NoError(t, err)
+		require.NoError(t, f.Close())
+		ctx := context.New(config.Project{
+			ProjectName: "mybin",
+			Dist:        dist,
+			NFPMs: []config.NFPM{
+				{
+					ID:         "someid",
+					Builds:     []string{"default"},
+					Formats:    []string{"deb"},
+					Maintainer: "foo",
+					NFPMOverridables: config.NFPMOverridables{
+						PackageName: "foo",
+						Contents: []*files.Content{
+							{
+								Source:      "testdata/testfile.txt",
+								Destination: "/usr/share/testfile.txt",
+							},
 						},
-					},
-					Deb: config.NFPMDeb{
-						Signature: config.NFPMDebSignature{
-							KeyFile: "./testdata/privkey.gpg",
-						},
-						Lintian: []string{
-							"statically-linked-binary",
-							"changelog-file-missing-in-native-package",
+						Deb: config.NFPMDeb{
+							Signature: config.NFPMDebSignature{
+								KeyFile: "./testdata/privkey.gpg",
+							},
 						},
 					},
 				},
 			},
-		},
-	})
-	ctx.Version = "1.0.0"
-	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386"} {
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "mybin",
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
-					artifact.ExtraID: "default",
-				},
-			})
+		})
+		ctx.Version = "1.0.0"
+		ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
+		for _, goos := range []string{"linux", "darwin"} {
+			for _, goarch := range []string{"amd64", "386"} {
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "mybin",
+					Path:   binPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Type:   artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "default",
+					},
+				})
+			}
 		}
+		return ctx
 	}
 
 	t.Run("no passphrase set", func(t *testing.T) {
 		require.Contains(
 			t,
-			Pipe{}.Run(ctx).Error(),
+			Pipe{}.Run(setupContext(t)).Error(),
 			`key is encrypted but no passphrase was provided`,
 		)
 	})
 
 	t.Run("general passphrase set", func(t *testing.T) {
+		ctx := setupContext(t)
 		ctx.Env = map[string]string{
 			"NFPM_SOMEID_PASSPHRASE": "hunter2",
 		}
 		require.NoError(t, Pipe{}.Run(ctx))
-
-		bts, err := os.ReadFile(filepath.Join(dist, "deb/foo/.lintian"))
-		require.NoError(t, err)
-		require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
 	})
 
 	t.Run("packager specific passphrase set", func(t *testing.T) {
+		ctx := setupContext(t)
 		ctx.Env = map[string]string{
 			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
 		}
 		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("lintian", func(t *testing.T) {
+		ctx := setupContext(t)
+		ctx.Env = map[string]string{
+			"NFPM_SOMEID_DEB_PASSPHRASE": "hunter2",
+		}
+		ctx.Config.NFPMs[0].NFPMOverridables.Deb.Lintian = []string{
+			"statically-linked-binary",
+			"changelog-file-missing-in-native-package",
+		}
+		require.NoError(t, Pipe{}.Run(ctx))
+
+		for _, goarch := range []string{"amd64", "386"} {
+			bts, err := os.ReadFile(filepath.Join(ctx.Config.Dist, "deb/foo_"+goarch+"/.lintian"))
+			require.NoError(t, err)
+			require.Equal(t, "foo: statically-linked-binary\nfoo: changelog-file-missing-in-native-package", string(bts))
+		}
 	})
 }
 
@@ -1012,7 +1149,6 @@ func TestMeta(t *testing.T) {
 					Suggests:         []string{"bzr"},
 					Replaces:         []string{"fish"},
 					Conflicts:        []string{"git"},
-					EmptyFolders:     []string{"/var/log/foobar"},
 					Release:          "10",
 					Epoch:            "20",
 					Contents: []*files.Content{
@@ -1030,6 +1166,10 @@ func TestMeta(t *testing.T) {
 							Destination: "/etc/nope-rpm.conf",
 							Type:        "config",
 							Packager:    "rpm",
+						},
+						{
+							Destination: "/var/log/foobar",
+							Type:        "dir",
 						},
 					},
 					Replacements: map[string]string{
@@ -1064,13 +1204,14 @@ func TestMeta(t *testing.T) {
 		require.Equal(t, pkg.Name, "foo_1.0.0_Tux_"+pkg.Goarch+"-10-20."+format)
 		require.Equal(t, pkg.ID(), "someid")
 		require.ElementsMatch(t, []string{
+			"/var/log/foobar",
 			"/usr/share/testfile.txt",
 			"/etc/nope.conf",
 			"/etc/nope-rpm.conf",
-		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 
-	require.Len(t, ctx.Config.NFPMs[0].Contents, 3, "should not modify the config file list")
+	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
 }
 
 func TestSkipSign(t *testing.T) {
@@ -1215,7 +1356,7 @@ func TestBinDirTemplating(t *testing.T) {
 		// the final binary should contain the evaluated bindir (after template eval)
 		require.ElementsMatch(t, []string{
 			"/usr/lib/pro/nagios/plugins/subdir/mybin",
-		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 }
 

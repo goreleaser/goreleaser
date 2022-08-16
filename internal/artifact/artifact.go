@@ -3,6 +3,7 @@ package artifact
 
 // nolint: gosec
 import (
+	"bytes"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
@@ -16,7 +17,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 )
 
 // Type defines the type of an artifact.
@@ -112,10 +113,6 @@ func (t Type) String() string {
 	}
 }
 
-func (t Type) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("%q", t)), nil
-}
-
 const (
 	ExtraID        = "ID"
 	ExtraBinary    = "Binary"
@@ -129,15 +126,14 @@ const (
 )
 
 // Extras represents the extra fields in an artifact.
-type Extras map[string]interface{}
+type Extras map[string]any
 
 func (e Extras) MarshalJSON() ([]byte, error) {
-	m := map[string]interface{}{}
+	m := map[string]any{}
 	for k, v := range e {
 		if k == ExtraRefresh {
 			// refresh is a func, so we can't serialize it.
-			// set v to a string representation of the function signature instead.
-			v = "func() error"
+			continue
 		}
 		m[k] = v
 	}
@@ -146,27 +142,58 @@ func (e Extras) MarshalJSON() ([]byte, error) {
 
 // Artifact represents an artifact and its relevant info.
 type Artifact struct {
-	Name   string `json:"name,omitempty"`
-	Path   string `json:"path,omitempty"`
-	Goos   string `json:"goos,omitempty"`
-	Goarch string `json:"goarch,omitempty"`
-	Goarm  string `json:"goarm,omitempty"`
-	Gomips string `json:"gomips,omitempty"`
-	Type   Type   `json:"type,omitempty"`
-	Extra  Extras `json:"extra,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Path    string `json:"path,omitempty"`
+	Goos    string `json:"goos,omitempty"`
+	Goarch  string `json:"goarch,omitempty"`
+	Goarm   string `json:"goarm,omitempty"`
+	Gomips  string `json:"gomips,omitempty"`
+	Goamd64 string `json:"goamd64,omitempty"`
+	Type    Type   `json:"internal_type,omitempty"`
+	TypeS   string `json:"type,omitempty"`
+	Extra   Extras `json:"extra,omitempty"`
 }
 
 func (a Artifact) String() string {
 	return a.Name
 }
 
+// Extra tries to get the extra field with the given name, returning either
+// its value, the default value for its type, or an error.
+//
+// If the extra value cannot be cast into the given type, it'll try to convert
+// it to JSON and unmarshal it into the correct type after.
+//
+// If that fails as well, it'll error.
+func Extra[T any](a Artifact, key string) (T, error) {
+	ex := a.Extra[key]
+	if ex == nil {
+		return *(new(T)), nil
+	}
+
+	t, ok := ex.(T)
+	if ok {
+		return t, nil
+	}
+
+	bts, err := json.Marshal(ex)
+	if err != nil {
+		return t, err
+	}
+
+	decoder := json.NewDecoder(bytes.NewReader(bts))
+	decoder.DisallowUnknownFields()
+	err = decoder.Decode(&t)
+	return t, err
+}
+
 // ExtraOr returns the Extra field with the given key or the or value specified
 // if it is nil.
-func (a Artifact) ExtraOr(key string, or interface{}) interface{} {
+func ExtraOr[T any](a Artifact, key string, or T) T {
 	if a.Extra[key] == nil {
 		return or
 	}
-	return a.Extra[key]
+	return a.Extra[key].(T)
 }
 
 // Checksum calculates the checksum of the artifact.
@@ -213,11 +240,7 @@ func (a Artifact) Refresh() error {
 	if a.Type != Checksum {
 		return nil
 	}
-	fn, ok := a.ExtraOr(ExtraRefresh, noRefresh).(func() error)
-	if !ok {
-		return nil
-	}
-	if err := fn(); err != nil {
+	if err := ExtraOr(a, ExtraRefresh, noRefresh)(); err != nil {
 		return fmt.Errorf("failed to refresh %q: %w", a.Name, err)
 	}
 	return nil
@@ -225,12 +248,12 @@ func (a Artifact) Refresh() error {
 
 // ID returns the artifact ID if it exists, empty otherwise.
 func (a Artifact) ID() string {
-	return a.ExtraOr(ExtraID, "").(string)
+	return ExtraOr(a, ExtraID, "")
 }
 
 // Format returns the artifact Format if it exists, empty otherwise.
 func (a Artifact) Format() string {
-	return a.ExtraOr(ExtraFormat, "").(string)
+	return ExtraOr(a, ExtraFormat, "")
 }
 
 // Artifacts is a list of artifacts.
@@ -269,7 +292,7 @@ func (artifacts Artifacts) GroupByID() map[string][]*Artifact {
 func (artifacts Artifacts) GroupByPlatform() map[string][]*Artifact {
 	result := map[string][]*Artifact{}
 	for _, a := range artifacts.items {
-		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips
+		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips + a.Goamd64
 		result[plat] = append(result[plat], a)
 	}
 	return result
@@ -321,7 +344,7 @@ type Filter func(a *Artifact) bool
 //
 // This is useful specially on homebrew et al, where you'll want to use only either the single-arch or the universal binaries.
 func OnlyReplacingUnibins(a *Artifact) bool {
-	return a.ExtraOr(ExtraReplaces, true).(bool)
+	return ExtraOr(*a, ExtraReplaces, true)
 }
 
 // ByGoos is a predefined filter that filters by the given goos.
@@ -342,6 +365,13 @@ func ByGoarch(s string) Filter {
 func ByGoarm(s string) Filter {
 	return func(a *Artifact) bool {
 		return a.Goarm == s
+	}
+}
+
+// ByGoamd64 is a predefined filter that filters by the given goamd64.
+func ByGoamd64(s string) Filter {
+	return func(a *Artifact) bool {
+		return a.Goamd64 == s
 	}
 }
 
@@ -385,7 +415,7 @@ func ByExt(exts ...string) Filter {
 	for _, ext := range exts {
 		ext := ext
 		filters = append(filters, func(a *Artifact) bool {
-			return a.ExtraOr(ExtraExt, "") == ext
+			return ExtraOr(*a, ExtraExt, "") == ext
 		})
 	}
 	return Or(filters...)
@@ -481,7 +511,7 @@ type VisitFn func(a *Artifact) error
 
 // Visit executes the given function for each artifact in the list.
 func (artifacts Artifacts) Visit(fn VisitFn) error {
-	for _, artifact := range artifacts.List() {
+	for _, artifact := range artifacts.items {
 		if err := fn(artifact); err != nil {
 			return err
 		}

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
@@ -19,10 +19,12 @@ import (
 )
 
 var (
-	it          = flag.Bool("it", false, "push images to docker hub")
-	debug       = flag.Bool("debug", false, "enable debug logs")
-	registry    = "localhost:5000/"
-	altRegistry = "localhost:5050/"
+	it              = flag.Bool("it", false, "push images to docker hub")
+	debug           = flag.Bool("debug", false, "enable debug logs")
+	registryPort    = "5050"
+	registry        = fmt.Sprintf("localhost:%s/", registryPort)
+	altRegistryPort = "5051"
+	altRegistry     = fmt.Sprintf("localhost:%s/", altRegistryPort)
 )
 
 func TestMain(m *testing.M) {
@@ -43,8 +45,8 @@ func start(t *testing.T) {
 	}
 	t.Log("starting registries")
 	for _, line := range []string{
-		"run -d -p 5000:5000 --name registry registry:2",
-		"run -d -p 5050:5000 --name alt_registry registry:2",
+		fmt.Sprintf("run -d -p %s:5000 --name registry registry:2", registryPort),
+		fmt.Sprintf("run -d -p %s:5000 --name alt_registry registry:2", altRegistryPort),
 	} {
 		if out, err := exec.Command("docker", strings.Fields(line)...).CombinedOutput(); err != nil {
 			t.Log("failed to start docker registry", string(out), err)
@@ -79,13 +81,17 @@ func TestRunPipe(t *testing.T) {
 		t.Helper()
 		require.NoError(t, err)
 	}
+	shouldTemplateErr := func(t *testing.T, err error) {
+		t.Helper()
+		testlib.RequireTemplateError(t, err)
+	}
 	type imageLabelFinder func(*testing.T, string)
 	shouldFindImagesWithLabels := func(image string, filters ...string) func(*testing.T, string) {
 		return func(t *testing.T, use string) {
 			t.Helper()
 			for _, filter := range filters {
 				cmd := exec.Command("docker", "images", "-q", "--filter", "reference=*/"+image, "--filter", filter)
-				t.Log("running", cmd)
+				// t.Log("running", cmd)
 				output, err := cmd.CombinedOutput()
 				require.NoError(t, err, string(output))
 				uniqueIDs := map[string]string{}
@@ -270,7 +276,7 @@ func TestRunPipe(t *testing.T) {
 					fmt.Sprintf("docker push %sgoreleaser/dummy:v1", registry),
 					fmt.Sprintf("docker manifest create %sgoreleaser/test_multiarch:2test --amend %sgoreleaser/dummy:v1 --insecure", registry, registry),
 				} {
-					t.Log("running", cmd)
+					// t.Log("running", cmd)
 					parts := strings.Fields(cmd)
 					out, err := exec.CommandContext(ctx, parts[0], parts[1:]...).CombinedOutput()
 					require.NoError(t, err, cmd+": "+string(out))
@@ -296,7 +302,7 @@ func TestRunPipe(t *testing.T) {
 			expect:              []string{registry + "goreleaser/test_multiarch_fail:latest-arm64v8"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldErr("failed to create localhost:5000/goreleaser/test_multiarch_fail:test"),
+			manifestAssertError: shouldErr("failed to create localhost:5050/goreleaser/test_multiarch_fail:test"),
 			assertImageLabels:   noLabels,
 		},
 		"multiarch manifest template error": {
@@ -317,7 +323,7 @@ func TestRunPipe(t *testing.T) {
 			expect:              []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+			manifestAssertError: shouldTemplateErr,
 			assertImageLabels:   noLabels,
 		},
 		"multiarch image template error": {
@@ -338,7 +344,7 @@ func TestRunPipe(t *testing.T) {
 			expect:              []string{registry + "goreleaser/test_multiarch_img_tmpl_error"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+			manifestAssertError: shouldTemplateErr,
 			assertImageLabels:   noLabels,
 		},
 		"multiarch missing manifest name": {
@@ -476,7 +482,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			expect:              []string{},
-			assertError:         shouldErr(`template: tmpl:1:7: executing "tmpl" at <.Env.Dockerfile>: map has no entry for key "Dockerfile"`),
+			assertError:         shouldTemplateErr,
 			assertImageLabels:   noLabels,
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
@@ -519,7 +525,7 @@ func TestRunPipe(t *testing.T) {
 			},
 			expect:              []string{},
 			assertImageLabels:   noLabels,
-			assertError:         shouldErr(`failed to build localhost:5000/goreleaser/test_run_pipe_template_UPPERCASE:v1.0.0`),
+			assertError:         shouldErr(`failed to build localhost:5050/goreleaser/test_run_pipe_template_UPPERCASE:v1.0.0`),
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
 		},
@@ -653,8 +659,10 @@ func TestRunPipe(t *testing.T) {
 			expect: []string{
 				registry + "goreleaser/test_run_pipe:latest",
 			},
-			assertImageLabels: noLabels,
-			assertError:       testlib.AssertSkipped,
+			assertImageLabels:   noLabels,
+			assertError:         shouldNotErr,
+			pubAssertError:      testlib.AssertSkipped,
+			manifestAssertError: shouldNotErr,
 		},
 		"one_img_error_with_skip_push": {
 			dockers: []config.Docker{
@@ -681,7 +689,7 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/one_img_error_with_skip_push:true",
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("failed to build localhost:5000/goreleaser/one_img_error_with_skip_push:false"),
+			assertError:       shouldErr("failed to build localhost:5050/goreleaser/one_img_error_with_skip_push:false"),
 		},
 		"valid_no_latest": {
 			dockers: []config.Docker{
@@ -739,7 +747,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("failed to build localhost:5000/goreleaser/test_build_args:latest"),
+			assertError:       shouldErr("failed to build localhost:5050/goreleaser/test_build_args:latest"),
 		},
 		"bad_dockerfile": {
 			dockers: []config.Docker{
@@ -753,7 +761,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr("failed to build localhost:5000/goreleaser/bad_dockerfile:latest"),
+			assertError:       shouldErr("failed to build localhost:5050/goreleaser/bad_dockerfile:latest"),
 		},
 		"tag_template_error": {
 			dockers: []config.Docker{
@@ -767,7 +775,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+			assertError:       shouldTemplateErr,
 		},
 		"build_flag_template_error": {
 			dockers: []config.Docker{
@@ -784,7 +792,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+			assertError:       shouldTemplateErr,
 		},
 		"missing_env_on_tag_template": {
 			dockers: []config.Docker{
@@ -798,7 +806,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`template: tmpl:1:46: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`),
+			assertError:       shouldTemplateErr,
 		},
 		"missing_env_on_build_flag_template": {
 			dockers: []config.Docker{
@@ -815,7 +823,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`template: tmpl:1:19: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`),
+			assertError:       shouldTemplateErr,
 		},
 		"image_has_projectname_template_variable": {
 			dockers: []config.Docker{
@@ -837,8 +845,10 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/mybin:v1.0.0-123",
 				registry + "goreleaser/mybin:latest",
 			},
-			assertImageLabels: noLabels,
-			assertError:       testlib.AssertSkipped,
+			assertImageLabels:   noLabels,
+			assertError:         shouldNotErr,
+			pubAssertError:      testlib.AssertSkipped,
+			manifestAssertError: shouldNotErr,
 		},
 		"no_permissions": {
 			dockers: []config.Docker{
@@ -1081,7 +1091,7 @@ func TestRunPipe(t *testing.T) {
 				// this might should not fail as the image should have been created when
 				// the step ran
 				for _, img := range docker.expect {
-					t.Log("removing docker image", img)
+					// t.Log("removing docker image", img)
 					require.NoError(t, rmi(img), "could not delete image %s", img)
 				}
 			})
@@ -1116,7 +1126,7 @@ func TestBuildCommand(t *testing.T) {
 			name:   "buildx",
 			buildx: true,
 			flags:  []string{"--label=foo", "--build-arg=bar=baz"},
-			expect: []string{"buildx", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
+			expect: []string{"buildx", "--builder", "default", "build", ".", "--load", "-t", images[0], "-t", images[1], "--label=foo", "--build-arg=bar=baz"},
 		},
 	}
 	for _, tt := range tests {
@@ -1370,6 +1380,14 @@ func TestSkip(t *testing.T) {
 			require.True(t, Pipe{}.Skip(context.New(config.Project{})))
 		})
 
+		t.Run("skip docker", func(t *testing.T) {
+			ctx := context.New(config.Project{
+				Dockers: []config.Docker{{}},
+			})
+			ctx.SkipDocker = true
+			require.True(t, Pipe{}.Skip(ctx))
+		})
+
 		t.Run("dont skip", func(t *testing.T) {
 			ctx := context.New(config.Project{
 				Dockers: []config.Docker{{}},
@@ -1381,6 +1399,14 @@ func TestSkip(t *testing.T) {
 	t.Run("manifest", func(t *testing.T) {
 		t.Run("skip", func(t *testing.T) {
 			require.True(t, ManifestPipe{}.Skip(context.New(config.Project{})))
+		})
+
+		t.Run("skip docker", func(t *testing.T) {
+			ctx := context.New(config.Project{
+				DockerManifests: []config.DockerManifest{{}},
+			})
+			ctx.SkipDocker = true
+			require.True(t, ManifestPipe{}.Skip(ctx))
 		})
 
 		t.Run("dont skip", func(t *testing.T) {

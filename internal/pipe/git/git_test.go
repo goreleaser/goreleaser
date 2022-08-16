@@ -18,9 +18,7 @@ func TestDescription(t *testing.T) {
 
 func TestNotAGitFolder(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	require.EqualError(t, Pipe{}.Run(ctx), ErrNotRepository.Error())
 }
 
@@ -30,9 +28,7 @@ func TestSingleCommit(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 	require.Equal(t, "v0.0.1", ctx.Git.Summary)
@@ -41,14 +37,12 @@ func TestSingleCommit(t *testing.T) {
 }
 
 func TestAnnotatedTags(t *testing.T) {
-	t.Log(testlib.Mktmp(t))
+	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit1")
 	testlib.GitAnnotatedTag(t, "v0.0.1", "first version\n\nlalalla\nlalal\nlah")
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 	require.Equal(t, "first version", ctx.Git.TagSubject)
@@ -64,9 +58,7 @@ func TestBranch(t *testing.T) {
 	testlib.GitCommit(t, "test-branch-commit")
 	testlib.GitTag(t, "test-branch-tag")
 	testlib.GitCheckoutBranch(t, "test-branch")
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "test-branch", ctx.Git.Branch)
 	require.Equal(t, "test-branch-tag", ctx.Git.Summary)
@@ -77,18 +69,14 @@ func TestNoRemote(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	require.EqualError(t, Pipe{}.Run(ctx), "couldn't get remote URL: fatal: No remote configured to list refs from.")
 }
 
 func TestNewRepository(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	// TODO: improve this error handling
 	require.Contains(t, Pipe{}.Run(ctx).Error(), `fatal: ambiguous argument 'HEAD'`)
 }
@@ -191,9 +179,7 @@ func TestTagIsNotLastCommit(t *testing.T) {
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.1")
 	testlib.GitCommit(t, "commit4")
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	err := Pipe{}.Run(ctx)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "git tag v0.0.1 was not made against commit")
@@ -290,9 +276,7 @@ func TestTagFromCI(t *testing.T) {
 			require.NoError(t, os.Setenv(name, value))
 		}
 
-		ctx := &context.Context{
-			Config: config.Project{},
-		}
+		ctx := context.New(config.Project{})
 		require.NoError(t, Pipe{}.Run(ctx))
 		require.Equal(t, tc.expected, ctx.Git.CurrentTag)
 
@@ -308,9 +292,7 @@ func TestNoPreviousTag(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit1")
 	testlib.GitTag(t, "v0.0.1")
-	ctx := &context.Context{
-		Config: config.Project{},
-	}
+	ctx := context.New(config.Project{})
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
 	require.Empty(t, ctx.Git.PreviousTag, "should be empty")
@@ -340,9 +322,7 @@ func TestPreviousTagFromCI(t *testing.T) {
 				require.NoError(t, os.Setenv(name, value))
 			}
 
-			ctx := &context.Context{
-				Config: config.Project{},
-			}
+			ctx := context.New(config.Project{})
 			require.NoError(t, Pipe{}.Run(ctx))
 			require.Equal(t, tc.expected, ctx.Git.PreviousTag)
 

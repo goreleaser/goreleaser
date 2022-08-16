@@ -3,7 +3,7 @@
 ## API Token
 
 GoReleaser requires an API token with the `api` scope selected to deploy the artifacts to GitLab.
-That token can either be a Persoanl or a Project one.
+That token can either be a Personal or a Project one.
 
 This token should be added to the environment variables as `GITLAB_TOKEN`.
 
@@ -65,7 +65,7 @@ gitlab_urls:
 
 ## Example release
 
-Here's an example of how the release might look like:
+Here's an example of what the release might look like:
 
 <a href="https://gitlab.com/goreleaser/example/-/releases">
   <figure>

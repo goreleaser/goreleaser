@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/apex/log"
-	"github.com/google/go-github/v43/github"
+	"github.com/caarlos0/log"
+	"github.com/google/go-github/v45/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -225,7 +225,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
-		ctx.Git.CurrentTag,
+		data.GetTagName(),
 	)
 	if err != nil {
 		release, _, err = c.client.Repositories.CreateRelease(
@@ -244,7 +244,10 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 			data,
 		)
 	}
-	log.WithField("url", release.GetHTMLURL()).Info("release updated")
+	if err != nil {
+		log.WithField("url", release.GetHTMLURL()).Info("release updated")
+	}
+
 	githubReleaseID := strconv.FormatInt(release.GetID(), 10)
 	return githubReleaseID, err
 }

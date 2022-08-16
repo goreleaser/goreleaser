@@ -81,7 +81,7 @@ nav:
     - customization/project.md
   - Build:
     - customization/build.md
-    - customization/gomod.md
+    - customization/verifiable_builds.md
     - customization/monorepo.md
     - customization/universalbinaries.md
   - Packaging and Archiving:
@@ -97,11 +97,12 @@ nav:
     - Docker Images and Manifests: customization/docker_sign.md
   - Publish:
     - customization/release.md
+    - customization/snapshots.md
+    - customization/nightlies.md
     - customization/blob.md
     - customization/fury.md
     - customization/homebrew.md
     - customization/aur.md
-    - customization/gofish.md
     - customization/krew.md
     - customization/scoop.md
     - customization/changelog.md
@@ -110,8 +111,6 @@ nav:
     - customization/publishers.md
     - customization/artifactory.md
     - customization/milestone.md
-    - customization/snapshots.md
-    - customization/nightly.md
   - Announce:
       - About: customization/announce/index.md
       - customization/announce/discord.md
@@ -128,6 +127,7 @@ nav:
     - goreleaser: cmd/goreleaser.md
     - goreleaser init: cmd/goreleaser_init.md
     - goreleaser check: cmd/goreleaser_check.md
+    - goreleaser changelog: cmd/goreleaser_changelog.md
     - goreleaser build: cmd/goreleaser_build.md
     - goreleaser release: cmd/goreleaser_release.md
     - goreleaser completion: cmd/goreleaser_completion.md
@@ -135,6 +135,7 @@ nav:
 - Common errors:
   - errors/dirty.md
   - errors/multiple-tokens.md
+  - errors/docker-build.md
   - errors/no-main.md
   - errors/resource-not-accessible-by-integration.md
   - errors/no-history.md

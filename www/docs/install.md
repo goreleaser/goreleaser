@@ -31,20 +31,6 @@ Below you can find the steps for each of them.
     The [formula in homebrew-core](https://github.com/Homebrew/homebrew-core/blob/master/Formula/goreleaser.rb) might be slightly outdated.
     Use our homebrew tap to always get the latest updates.
 
-### gofish
-
-=== "OSS"
-    ```sh
-    gofish rig add https://github.com/goreleaser/fish-food
-    gofish install github.com/goreleaser/fish-food/goreleaser
-    ```
-
-=== "Pro"
-    ```sh
-    gofish rig add https://github.com/goreleaser/fish-food
-    gofish install github.com/goreleaser/fish-food/goreleaser-pro
-    ```
-
 ### snapcraft
 
 === "OSS"
@@ -118,7 +104,6 @@ Below you can find the steps for each of them.
 
 ### deb, rpm and apk packages
 
-
 === "OSS"
     Download the `.deb`, `.rpm` or `.apk` packages from the [OSS releases page][releases] and install them with the appropriate tools.
 
@@ -131,6 +116,35 @@ Below you can find the steps for each of them.
     ```sh
     go install github.com/goreleaser/goreleaser@latest
     ```
+
+### bash script
+
+=== "OSS"
+    ```sh
+    curl -sfL https://goreleaser.com/static/run | bash
+    ```
+
+=== "Pro"
+    ```sh
+    curl -sfL https://goreleaser.com/static/run | DISTRIBUTION=pro bash
+    ```
+
+=== "Additional Options"
+    You can also set the `VERSION` and `DISTRIBUTION` variables to specify
+    a version instead of using latest and `pro` or `oss` distributions,
+    respectively.
+
+    You can also pass flags and args to GoReleaser:
+
+    ```bash
+    curl -sfL https://goreleaser.com/static/run |
+      VERSION=__VERSION__ DISTRIBUTION=oss bash -s -- check
+    ```
+
+!!! tip
+    This script does not install anything, it just downloads, verifies and
+    runs GoReleaser.
+    It's purpose is to be used within scripts and CIs.
 
 ### manually
 

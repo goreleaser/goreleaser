@@ -2,7 +2,7 @@
 
 Below are some example GitLab CI jobs that use GoReleaser to release a project.
 
-> If you are using private hosted or Enterprise version of Gitlab, please follow this [guide](/scm/gitlab/) before diving into the details.
+> If you are using private hosted or Enterprise version of GitLab, please follow this [guide](/scm/gitlab/) before diving into the details.
 
 ## Basic Releasing
 

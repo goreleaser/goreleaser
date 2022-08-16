@@ -23,7 +23,7 @@ steps:
   BuildMyApp:
     title: Compiling go code
     stage: build
-    image: 'golang:1.18'
+    image: 'golang:1.19'
     commands:
       - go build
   ReleaseMyApp:
@@ -35,7 +35,7 @@ steps:
 ```
 
 You need to pass the variable `GITHUB_TOKEN` in the Codefresh UI that
-contains credentials to your Github account or load it from
+contains credentials to your GitHub account or load it from
 [shared configuration](https://codefresh.io/docs/docs/configure-ci-cd-pipeline/shared-configuration/).
 You should also restrict this pipeline to run only on tags when you add
 [git triggers](https://codefresh.io/docs/docs/configure-ci-cd-pipeline/triggers/git-triggers/)

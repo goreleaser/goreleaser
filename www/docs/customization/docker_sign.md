@@ -77,7 +77,7 @@ These environment variables might be available in the fields that are templateab
 - `${artifactID}`: the ID of the artifact that will be signed
 - `${certificate}`: the certificate filename, if provided
 
-[^1]: notice that the this might contain `/` characters, which depending on how you use it migth evaluate to actual paths within the filesystem. Use with care.
+[^1]: notice that the this might contain `/` characters, which depending on how you use it might evaluate to actual paths within the filesystem. Use with care.
 
 
 ## Common usage example

@@ -15,22 +15,32 @@ func TestDefaultWithRepoConfig(t *testing.T) {
 	testlib.GitInit(t)
 	testlib.GitRemoteAdd(t, "git@github.com:githubowner/githubrepo.git")
 
-	ctx := &context.Context{
-		Config: config.Project{
-			Milestones: []config.Milestone{
-				{
-					Repo: config.Repo{
-						Name:  "configrepo",
-						Owner: "configowner",
-					},
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{
+			{
+				Repo: config.Repo{
+					Name:  "configrepo",
+					Owner: "configowner",
 				},
 			},
 		},
-	}
+	})
 	ctx.TokenType = context.TokenTypeGitHub
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "configrepo", ctx.Config.Milestones[0].Repo.Name)
 	require.Equal(t, "configowner", ctx.Config.Milestones[0].Repo.Owner)
+}
+
+func TestDefaultWithInvalidRemote(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:githubowner.git")
+
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
+	ctx.TokenType = context.TokenTypeGitHub
+	require.Error(t, Pipe{}.Default(ctx))
 }
 
 func TestDefaultWithRepoRemote(t *testing.T) {
@@ -48,26 +58,22 @@ func TestDefaultWithRepoRemote(t *testing.T) {
 }
 
 func TestDefaultWithNameTemplate(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Milestones: []config.Milestone{
-				{
-					NameTemplate: "confignametemplate",
-				},
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{
+			{
+				NameTemplate: "confignametemplate",
 			},
 		},
-	}
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "confignametemplate", ctx.Config.Milestones[0].NameTemplate)
 }
 
 func TestDefaultWithoutGitRepo(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := &context.Context{
-		Config: config.Project{
-			Milestones: []config.Milestone{{}},
-		},
-	}
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
 	ctx.TokenType = context.TokenTypeGitHub
 	require.EqualError(t, Pipe{}.Default(ctx), "current folder is not a git repository")
 	require.Empty(t, ctx.Config.Milestones[0].Repo.String())
@@ -75,11 +81,9 @@ func TestDefaultWithoutGitRepo(t *testing.T) {
 
 func TestDefaultWithoutGitRepoOrigin(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := &context.Context{
-		Config: config.Project{
-			Milestones: []config.Milestone{{}},
-		},
-	}
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
 	ctx.TokenType = context.TokenTypeGitHub
 	testlib.GitInit(t)
 	require.EqualError(t, Pipe{}.Default(ctx), "no remote configured to list refs from")
@@ -88,11 +92,9 @@ func TestDefaultWithoutGitRepoOrigin(t *testing.T) {
 
 func TestDefaultWithoutGitRepoSnapshot(t *testing.T) {
 	testlib.Mktmp(t)
-	ctx := &context.Context{
-		Config: config.Project{
-			Milestones: []config.Milestone{{}},
-		},
-	}
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
 	ctx.TokenType = context.TokenTypeGitHub
 	ctx.Snapshot = true
 	require.NoError(t, Pipe{}.Default(ctx))
@@ -100,11 +102,9 @@ func TestDefaultWithoutGitRepoSnapshot(t *testing.T) {
 }
 
 func TestDefaultWithoutNameTemplate(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
-			Milestones: []config.Milestone{{}},
-		},
-	}
+	ctx := context.New(config.Project{
+		Milestones: []config.Milestone{{}},
+	})
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.Equal(t, "{{ .Tag }}", ctx.Config.Milestones[0].NameTemplate)
 }

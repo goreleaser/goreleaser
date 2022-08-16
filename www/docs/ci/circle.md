@@ -18,8 +18,8 @@ workflows:
 jobs:
   release:
     docker:
-      - image: cimg/go:1.18
+      - image: cimg/go:1.19
     steps:
       - checkout
-      - run: curl -sL https://git.io/goreleaser | bash
+      - run: curl -sfL https://goreleaser.com/static/run | bash
 ```

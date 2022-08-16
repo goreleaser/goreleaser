@@ -234,46 +234,58 @@ func TestFullPipe(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			url := makeBareRepo(t)
-			key := makeKey(t)
+			key := makeKey(t, keygen.Ed25519)
 
 			folder := t.TempDir()
-			ctx := &context.Context{
-				Git: context.GitInfo{
-					CurrentTag: "v1.0.1-foo",
-				},
-				Semver: context.Semver{
-					Major:      1,
-					Minor:      0,
-					Patch:      1,
-					Prerelease: "foo",
-				},
-				Version:   "1.0.1-foo",
-				Artifacts: artifact.New(),
-				Env: map[string]string{
-					"FOO": "foo_is_bar",
-				},
-				Config: config.Project{
-					Dist:        folder,
-					ProjectName: name,
-					AURs: []config.AUR{
-						{
-							Name:        name,
-							IDs:         []string{"foo"},
-							PrivateKey:  key,
-							License:     "MIT",
-							GitURL:      url,
-							Description: "A run pipe test fish food and FOO={{ .Env.FOO }}",
-						},
+			ctx := context.New(config.Project{
+				Dist:        folder,
+				ProjectName: name,
+				AURs: []config.AUR{
+					{
+						Name:        name,
+						IDs:         []string{"foo"},
+						PrivateKey:  key,
+						License:     "MIT",
+						GitURL:      url,
+						Description: "A run pipe test fish food and FOO={{ .Env.FOO }}",
 					},
 				},
+			})
+			ctx.Git = context.GitInfo{
+				CurrentTag: "v1.0.1-foo",
 			}
+			ctx.Semver = context.Semver{
+				Major:      1,
+				Minor:      0,
+				Patch:      1,
+				Prerelease: "foo",
+			}
+			ctx.Version = "1.0.1-foo"
+			ctx.Env = map[string]string{
+				"FOO": "foo_is_bar",
+			}
+
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bar_bin.tar.gz",
-				Path:   "doesnt matter",
-				Goos:   "linux",
-				Goarch: "amd64",
-				Type:   artifact.UploadableArchive,
+				Name:    "should-be-ignored.tar.gz",
+				Path:    "doesnt matter",
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v3",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					artifact.ExtraID:       "bar",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"bar"},
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "bar_bin.tar.gz",
+				Path:    "doesnt matter",
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:       "bar",
 					artifact.ExtraFormat:   "tar.gz",
@@ -282,11 +294,12 @@ func TestFullPipe(t *testing.T) {
 			})
 			path := filepath.Join(folder, "bin.tar.gz")
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bin.tar.gz",
-				Path:   path,
-				Goos:   "linux",
-				Goarch: "amd64",
-				Type:   artifact.UploadableArchive,
+				Name:    "bin.tar.gz",
+				Path:    path,
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "tar.gz",
@@ -320,48 +333,48 @@ func TestFullPipe(t *testing.T) {
 
 func TestRunPipe(t *testing.T) {
 	url := makeBareRepo(t)
-	key := makeKey(t)
+	key := makeKey(t, keygen.Ed25519)
 
 	folder := t.TempDir()
-	ctx := &context.Context{
-		TokenType: context.TokenTypeGitHub,
-		Git: context.GitInfo{
-			CurrentTag: "v1.0.1",
-		},
-		Semver: context.Semver{
-			Major: 1,
-			Minor: 0,
-			Patch: 1,
-		},
-		Version:   "1.0.1",
-		Artifacts: artifact.New(),
-		Env: map[string]string{
-			"FOO": "foo_is_bar",
-		},
-		Config: config.Project{
-			Dist:        folder,
-			ProjectName: "foo",
-			AURs: []config.AUR{
-				{
-					License:     "MIT",
-					Description: "A run pipe test aur and FOO={{ .Env.FOO }}",
-					Homepage:    "https://github.com/goreleaser",
-					IDs:         []string{"foo"},
-					GitURL:      url,
-					PrivateKey:  key,
-				},
-			},
-			GitHubURLs: config.GitHubURLs{
-				Download: "https://github.com",
-			},
-			Release: config.Release{
-				GitHub: config.Repo{
-					Owner: "test",
-					Name:  "test",
-				},
+	ctx := context.New(config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		AURs: []config.AUR{
+			{
+				License:     "MIT",
+				Description: "A run pipe test aur and FOO={{ .Env.FOO }}",
+				Homepage:    "https://github.com/goreleaser",
+				IDs:         []string{"foo"},
+				GitURL:      url,
+				PrivateKey:  key,
 			},
 		},
+		GitHubURLs: config.GitHubURLs{
+			Download: "https://github.com",
+		},
+		Release: config.Release{
+			GitHub: config.Repo{
+				Owner: "test",
+				Name:  "test",
+			},
+		},
+	})
+
+	ctx.TokenType = context.TokenTypeGitHub
+	ctx.Git = context.GitInfo{
+		CurrentTag: "v1.0.1",
 	}
+	ctx.Semver = context.Semver{
+		Major: 1,
+		Minor: 0,
+		Patch: 1,
+	}
+	ctx.Version = "1.0.1"
+	ctx.Artifacts = artifact.New()
+	ctx.Env = map[string]string{
+		"FOO": "foo_is_bar",
+	}
+
 	for _, a := range []struct {
 		name   string
 		goos   string
@@ -424,12 +437,13 @@ func TestRunPipe(t *testing.T) {
 	} {
 		path := filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
 		ctx.Artifacts.Add(&artifact.Artifact{
-			Name:   fmt.Sprintf("%s.tar.gz", a.name),
-			Path:   path,
-			Goos:   a.goos,
-			Goarch: a.goarch,
-			Goarm:  a.goarm,
-			Type:   artifact.UploadableArchive,
+			Name:    fmt.Sprintf("%s.tar.gz", a.name),
+			Path:    path,
+			Goos:    a.goos,
+			Goarch:  a.goarch,
+			Goarm:   a.goarm,
+			Goamd64: "v1",
+			Type:    artifact.UploadableArchive,
 			Extra: map[string]interface{}{
 				artifact.ExtraID:       "foo",
 				artifact.ExtraFormat:   "tar.gz",
@@ -466,36 +480,35 @@ func TestRunPipeNoBuilds(t *testing.T) {
 
 func TestRunPipeBinaryRelease(t *testing.T) {
 	url := makeBareRepo(t)
-	key := makeKey(t)
+	key := makeKey(t, keygen.Ed25519)
 	folder := t.TempDir()
-	ctx := &context.Context{
-		Git: context.GitInfo{
-			CurrentTag: "v1.2.1",
-		},
-		Semver: context.Semver{
-			Major: 1,
-			Minor: 2,
-			Patch: 1,
-		},
-		Version:   "1.2.1",
-		Artifacts: artifact.New(),
-		Config: config.Project{
-			Dist:        folder,
-			ProjectName: "foo",
-			AURs: []config.AUR{{
-				GitURL:     url,
-				PrivateKey: key,
-			}},
-		},
+	ctx := context.New(config.Project{
+		Dist:        folder,
+		ProjectName: "foo",
+		AURs: []config.AUR{{
+			GitURL:     url,
+			PrivateKey: key,
+		}},
+	})
+
+	ctx.Git = context.GitInfo{
+		CurrentTag: "v1.2.1",
 	}
+	ctx.Semver = context.Semver{
+		Major: 1,
+		Minor: 2,
+		Patch: 1,
+	}
+	ctx.Version = "1.2.1"
 
 	path := filepath.Join(folder, "dist/foo_linux_amd64/foo")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "foo_linux_amd64",
-		Path:   path,
-		Goos:   "linux",
-		Goarch: "amd64",
-		Type:   artifact.UploadableBinary,
+		Name:    "foo_linux_amd64",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableBinary,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:     "foo",
 			artifact.ExtraFormat: "binary",
@@ -537,11 +550,12 @@ func TestRunPipeNoUpload(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   path,
-		Goos:   "linux",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin",
+		Path:    path,
+		Goos:    "linux",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
@@ -630,9 +644,10 @@ func TestDefault(t *testing.T) {
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
 			GitSSHCommand:         defaultSSHCommand,
+			Goamd64:               "v1",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
-				Email: "goreleaser@carlosbecker.com",
+				Email: "bot@goreleaser.com",
 			},
 		}, ctx.Config.AURs[0])
 	})
@@ -657,9 +672,10 @@ func TestDefault(t *testing.T) {
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
 			GitSSHCommand:         defaultSSHCommand,
+			Goamd64:               "v1",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
-				Email: "goreleaser@carlosbecker.com",
+				Email: "bot@goreleaser.com",
 			},
 		}, ctx.Config.AURs[0])
 	})
@@ -672,6 +688,7 @@ func TestDefault(t *testing.T) {
 				AURs: []config.AUR{
 					{
 						Conflicts: []string{"somethingelse"},
+						Goamd64:   "v3",
 					},
 				},
 			},
@@ -684,9 +701,10 @@ func TestDefault(t *testing.T) {
 			Rel:                   "1",
 			CommitMessageTemplate: defaultCommitMsg,
 			GitSSHCommand:         defaultSSHCommand,
+			Goamd64:               "v3",
 			CommitAuthor: config.CommitAuthor{
 				Name:  "goreleaserbot",
-				Email: "goreleaser@carlosbecker.com",
+				Email: "bot@goreleaser.com",
 			},
 		}, ctx.Config.AURs[0])
 	})
@@ -709,7 +727,7 @@ func TestSkip(t *testing.T) {
 
 func TestKeyPath(t *testing.T) {
 	t.Run("with valid path", func(t *testing.T) {
-		path := makeKey(t)
+		path := makeKey(t, keygen.Ed25519)
 		result, err := keyPath(path)
 		require.NoError(t, err)
 		require.Equal(t, path, result)
@@ -758,6 +776,7 @@ func makeBareRepo(tb testing.TB) string {
 	tb.Helper()
 	dir := tb.TempDir()
 	_, err := git.Run(
+		context.New(config.Project{}),
 		"-C", dir,
 		"-c", "init.defaultBranch=master",
 		"init",
@@ -768,22 +787,20 @@ func makeBareRepo(tb testing.TB) string {
 	return dir
 }
 
-func makeKey(tb testing.TB, algo ...keygen.KeyType) string {
+func makeKey(tb testing.TB, algo keygen.KeyType) string {
 	tb.Helper()
 
-	if len(algo) == 0 {
-		algo = append(algo, keygen.Ed25519)
-	}
 	dir := tb.TempDir()
-	k, err := keygen.NewWithWrite(dir, "id", nil, algo[0])
+	filepath := filepath.Join(dir, "id")
+	_, err := keygen.NewWithWrite(filepath, nil, algo)
 	require.NoError(tb, err)
-	return filepath.Join(dir, k.Filename)
+	return fmt.Sprintf("%s_%s", filepath, algo)
 }
 
 func requireEqualRepoFiles(tb testing.TB, folder, name, url string) {
 	tb.Helper()
 	dir := tb.TempDir()
-	_, err := git.Run("-C", dir, "clone", url, "repo")
+	_, err := git.Run(context.New(config.Project{}), "-C", dir, "clone", url, "repo")
 	require.NoError(tb, err)
 
 	for reponame, ext := range map[string]string{

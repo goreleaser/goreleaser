@@ -4,20 +4,19 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/ctrlc"
-	"github.com/fatih/color"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/middleware/errhandler"
 	"github.com/goreleaser/goreleaser/internal/middleware/logging"
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
 	"github.com/goreleaser/goreleaser/internal/pipeline"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"github.com/muesli/coral"
+	"github.com/spf13/cobra"
 )
 
 type releaseCmd struct {
-	cmd  *coral.Command
+	cmd  *cobra.Command
 	opts releaseOpts
 }
 
@@ -36,6 +35,8 @@ type releaseOpts struct {
 	skipValidate       bool
 	skipAnnounce       bool
 	skipSBOMCataloging bool
+	skipDocker         bool
+	skipBefore         bool
 	rmDist             bool
 	deprecated         bool
 	parallelism        int
@@ -45,30 +46,21 @@ type releaseOpts struct {
 func newReleaseCmd() *releaseCmd {
 	root := &releaseCmd{}
 	// nolint: dupl
-	cmd := &coral.Command{
+	cmd := &cobra.Command{
 		Use:           "release",
 		Aliases:       []string{"r"},
 		Short:         "Releases the current project",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Args:          coral.NoArgs,
-		RunE: func(cmd *coral.Command, args []string) error {
-			start := time.Now()
-
-			log.Infof(color.New(color.Bold).Sprint("releasing..."))
-
+		Args:          cobra.NoArgs,
+		RunE: timedRunE("release", func(cmd *cobra.Command, args []string) error {
 			ctx, err := releaseProject(root.opts)
 			if err != nil {
-				return wrapError(err, color.New(color.Bold).Sprintf("release failed after %0.2fs", time.Since(start).Seconds()))
+				return err
 			}
-
-			if ctx.Deprecated {
-				log.Warn(color.New(color.Bold).Sprintf("your config is using deprecated properties, check logs above for details"))
-			}
-
-			log.Infof(color.New(color.Bold).Sprintf("release succeeded after %0.2fs", time.Since(start).Seconds()))
+			deprecateWarn(ctx)
 			return nil
-		},
+		}),
 	}
 
 	cmd.Flags().StringVarP(&root.opts.config, "config", "f", "", "Load configuration from file")
@@ -80,10 +72,12 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().StringVar(&root.opts.releaseFooterTmpl, "release-footer-tmpl", "", "Load custom release notes footer from a templated markdown file (overrides --release-footer)")
 	cmd.Flags().BoolVar(&root.opts.autoSnapshot, "auto-snapshot", false, "Automatically sets --snapshot if the repo is dirty")
 	cmd.Flags().BoolVar(&root.opts.snapshot, "snapshot", false, "Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip-publish, --skip-announce and --skip-validate)")
-	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts")
+	cmd.Flags().BoolVar(&root.opts.skipPublish, "skip-publish", false, "Skips publishing artifacts (implies --skip-announce)")
 	cmd.Flags().BoolVar(&root.opts.skipAnnounce, "skip-announce", false, "Skips announcing releases (implies --skip-validate)")
 	cmd.Flags().BoolVar(&root.opts.skipSign, "skip-sign", false, "Skips signing artifacts")
 	cmd.Flags().BoolVar(&root.opts.skipSBOMCataloging, "skip-sbom", false, "Skips cataloging artifacts")
+	cmd.Flags().BoolVar(&root.opts.skipDocker, "skip-docker", false, "Skips Docker Images/Manifests builds")
+	cmd.Flags().BoolVar(&root.opts.skipBefore, "skip-before", false, "Skips global before hooks")
 	cmd.Flags().BoolVar(&root.opts.skipValidate, "skip-validate", false, "Skips git checks")
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Removes the dist folder")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
@@ -110,7 +104,6 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 				logging.Log(
 					pipe.String(),
 					errhandler.Handle(pipe.Run),
-					logging.DefaultInitialPadding,
 				),
 			)(ctx); err != nil {
 				return err
@@ -133,7 +126,7 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Con
 	ctx.ReleaseFooterFile = options.releaseFooterFile
 	ctx.ReleaseFooterTmpl = options.releaseFooterTmpl
 	ctx.Snapshot = options.snapshot
-	if options.autoSnapshot && git.CheckDirty() != nil {
+	if options.autoSnapshot && git.CheckDirty(ctx) != nil {
 		log.Info("git repo is dirty and --auto-snapshot is set, implying --snapshot")
 		ctx.Snapshot = true
 	}
@@ -142,6 +135,8 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Con
 	ctx.SkipValidate = ctx.Snapshot || options.skipValidate
 	ctx.SkipSign = options.skipSign
 	ctx.SkipSBOMCataloging = options.skipSBOMCataloging
+	ctx.SkipDocker = options.skipDocker
+	ctx.SkipBefore = options.skipBefore
 	ctx.RmDist = options.rmDist
 
 	// test only

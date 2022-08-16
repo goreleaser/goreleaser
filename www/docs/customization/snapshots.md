@@ -33,8 +33,8 @@ You can also check if its a snapshot build inside a template with:
     Learn more about the [name template engine](/customization/templates/).
 
 Note that the idea behind GoReleaser's snapshots is for local builds or to validate your build on the CI pipeline.
-Artifacts wont't be uploaded and will only be generated into the `dist` folder.
+Artifacts won't be uploaded and will only be generated into the `dist` folder.
 
 !!! info "Maybe you are looking for something else?"
     - If just want to build the binaries, and no packages at all, check the [`goreleaser build` command](/cmd/goreleaser_build/);
-    - If you actually want to create nightly builds, check out the [nightly documentation](/customization/nightly/).
+    - If you actually want to create nightly builds, check out the [nightly documentation](/customization/nightlies/).

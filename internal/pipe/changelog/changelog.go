@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -95,6 +95,12 @@ func (Pipe) Run(ctx *context.Context) error {
 	return os.WriteFile(path, []byte(ctx.ReleaseNotes), 0o644) //nolint: gosec
 }
 
+type changelogGroup struct {
+	title   string
+	entries []string
+	order   int
+}
+
 func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 	newLine := "\n"
 	if ctx.TokenType == context.TokenTypeGitLab || ctx.TokenType == context.TokenTypeGitea {
@@ -115,14 +121,15 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 	}
 
 	log.Debug("grouping entries")
-	groups := ctx.Config.Changelog.Groups
-
-	sort.Slice(groups, func(i, j int) bool { return groups[i].Order < groups[j].Order })
-	for _, group := range groups {
-		items := make([]string, 0)
+	var groups []changelogGroup
+	for _, group := range ctx.Config.Changelog.Groups {
+		item := changelogGroup{
+			title: group.Title,
+			order: group.Order,
+		}
 		if group.Regexp == "" {
 			// If no regexp is provided, we purge all strikethrough entries and add remaining entries to the list
-			items = filterAndPrefixItems(entries)
+			item.entries = filterAndPrefixItems(entries)
 			// clear array
 			entries = nil
 		} else {
@@ -133,18 +140,22 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 			for i, entry := range entries {
 				match := regex.MatchString(entry)
 				if match {
-					items = append(items, li+entry)
+					item.entries = append(item.entries, li+entry)
 					// Striking out the matched entry
 					entries[i] = ""
 				}
 			}
 		}
-		if len(items) > 0 {
-			result = append(result, fmt.Sprintf("### %s", group.Title))
-			result = append(result, items...)
-		}
+		groups = append(groups, item)
 	}
 
+	sort.Slice(groups, func(i, j int) bool { return groups[i].order < groups[j].order })
+	for _, group := range groups {
+		if len(group.entries) > 0 {
+			result = append(result, fmt.Sprintf("\n### %s", group.title))
+			result = append(result, group.entries...)
+		}
+	}
 	return strings.Join(result, newLine), nil
 }
 
@@ -244,7 +255,7 @@ func getChangelog(ctx *context.Context, tag string) (string, error) {
 	prev := ctx.Git.PreviousTag
 	if prev == "" {
 		// get first commit
-		result, err := git.Clean(git.Run("rev-list", "--max-parents=0", "HEAD"))
+		result, err := git.Clean(git.Run(ctx, "rev-list", "--max-parents=0", "HEAD"))
 		if err != nil {
 			return "", err
 		}
@@ -283,8 +294,11 @@ func newGithubChangeloger(ctx *context.Context) (changeloger, error) {
 	if err != nil {
 		return nil, err
 	}
-	repo, err := git.ExtractRepoFromConfig()
+	repo, err := git.ExtractRepoFromConfig(ctx)
 	if err != nil {
+		return nil, err
+	}
+	if err := repo.CheckSCM(); err != nil {
 		return nil, err
 	}
 	return &githubNativeChangeloger{
@@ -301,8 +315,11 @@ func newSCMChangeloger(ctx *context.Context) (changeloger, error) {
 	if err != nil {
 		return nil, err
 	}
-	repo, err := git.ExtractRepoFromConfig()
+	repo, err := git.ExtractRepoFromConfig(ctx)
 	if err != nil {
+		return nil, err
+	}
+	if err := repo.CheckSCM(); err != nil {
 		return nil, err
 	}
 	return &scmChangeloger{
@@ -348,14 +365,14 @@ type gitChangeloger struct{}
 
 var validSHA1 = regexp.MustCompile(`^[a-fA-F0-9]{40}$`)
 
-func (g gitChangeloger) Log(_ *context.Context, prev, current string) (string, error) {
+func (g gitChangeloger) Log(ctx *context.Context, prev, current string) (string, error) {
 	args := []string{"log", "--pretty=oneline", "--abbrev-commit", "--no-decorate", "--no-color"}
 	if validSHA1.MatchString(prev) {
 		args = append(args, prev, current)
 	} else {
 		args = append(args, fmt.Sprintf("tags/%s..tags/%s", prev, current))
 	}
-	return git.Run(args...)
+	return git.Run(ctx, args...)
 }
 
 type scmChangeloger struct {

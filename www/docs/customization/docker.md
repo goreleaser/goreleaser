@@ -58,6 +58,9 @@ dockers:
     # GOARM of the built binaries/packages that should be used.
     goarm: ''
 
+    # GOAMD64 of the built binaries/packages that should be used.
+    goamd64: 'v2'
+
     # IDs to filter the binaries/packages.
     ids:
     - mybuild
@@ -236,6 +239,27 @@ docker build -t myuser/myimage . \
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
+
+## Use a specific builder with Docker buildx
+
+If `buildx` is enabled, the `default` context builder will be used when building
+the image. This builder is always available and backed by BuildKit in the
+Docker engine. If you want to use a different builder, you can specify it using
+the `build_flag_templates` field:
+
+```yaml
+# .goreleaser.yaml
+dockers:
+  -
+    image_templates:
+    - "myuser/myimage"
+    use: buildx
+    build_flag_templates:
+    - "--builder=mybuilder"
+```
+
+!!! tip
+    Learn more about the [buildx builder instances](https://docs.docker.com/buildx/working-with-buildx/#work-with-builder-instances).
 
 ## Podman
 

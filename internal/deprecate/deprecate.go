@@ -4,36 +4,17 @@ package deprecate
 
 import (
 	"bytes"
-	"io"
 	"strings"
-	"sync"
 	"text/template"
 
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
-	"github.com/fatih/color"
+	"github.com/caarlos0/log"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
 const baseURL = "https://goreleaser.com/deprecations#"
 
-// NewWriter return a io.Writer that notices deprecations.
-func NewWriter(ctx *context.Context) io.Writer {
-	return &writer{ctx: ctx}
-}
-
-type writer struct {
-	ctx  *context.Context
-	once sync.Once
-}
-
-func (w *writer) Write(p []byte) (n int, err error) {
-	w.once.Do(func() {
-		w.ctx.Deprecated = true
-	})
-	log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf("DEPRECATED: " + strings.TrimSuffix(string(p), "\n")))
-	return len(p), nil
-}
+var warnStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Bold(true)
 
 // Notice warns the user about the deprecation of the given property.
 func Notice(ctx *context.Context, property string) {
@@ -42,15 +23,9 @@ func Notice(ctx *context.Context, property string) {
 
 // NoticeCustom warns the user about the deprecation of the given property.
 func NoticeCustom(ctx *context.Context, property, tmpl string) {
-	ctx.Deprecated = true
-	// XXX: this is very ugly!
-	w := log.Log.(*log.Logger).Handler.(*cli.Handler).Writer
-	handler := cli.New(w)
-	handler.Padding = cli.Default.Padding + 3
-	log := &log.Logger{
-		Handler: handler,
-		Level:   log.InfoLevel,
-	}
+	log.IncreasePadding()
+	defer log.DecreasePadding()
+
 	// replaces . and _ with -
 	url := baseURL + strings.NewReplacer(
 		".", "",
@@ -65,7 +40,9 @@ func NoticeCustom(ctx *context.Context, property, tmpl string) {
 	}); err != nil {
 		panic(err) // this should never happen
 	}
-	log.Warn(color.New(color.Bold, color.FgHiYellow).Sprintf(out.String()))
+
+	ctx.Deprecated = true
+	log.Warn(warnStyle.Render(out.String()))
 }
 
 type templateData struct {

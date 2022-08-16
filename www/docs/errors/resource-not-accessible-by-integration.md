@@ -11,7 +11,6 @@ While it is a good practice, and should work for most cases, if your workflow wr
 Integrations that may cause this:
 
 - Homebrew Tap
-- Gofish Rigs
 - Krew Plugins
 
 ## Fixing it
@@ -71,6 +70,5 @@ Read the documentation for each topic:
 - [GitHub](/scm/github/)
 - [GitHub Actions](/ci/actions/)
 - [Homebrew Tap](/customization/homebrew/)
-- [Gofish Rigs](/customization/gofish/)
 - [Krew Plugin Manifests](/customization/krew/)
 - [Scoop Manifests](/customization/scoop/)

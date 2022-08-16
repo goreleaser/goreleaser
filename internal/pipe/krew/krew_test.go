@@ -243,11 +243,12 @@ func TestFullPipe(t *testing.T) {
 			}
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bar_bin.tar.gz",
-				Path:   "doesnt matter",
-				Goos:   "darwin",
-				Goarch: "amd64",
-				Type:   artifact.UploadableArchive,
+				Name:    "bar_bin.tar.gz",
+				Path:    "doesnt matter",
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:     "bar",
 					artifact.ExtraFormat: "tar.gz",
@@ -255,11 +256,25 @@ func TestFullPipe(t *testing.T) {
 			})
 			path := filepath.Join(folder, "bin.tar.gz")
 			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "bin.tar.gz",
-				Path:   path,
-				Goos:   "darwin",
-				Goarch: "amd64",
-				Type:   artifact.UploadableArchive,
+				Name:    "bin.tar.gz",
+				Path:    path,
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					artifact.ExtraID:       "foo",
+					artifact.ExtraFormat:   "tar.gz",
+					artifact.ExtraBinaries: []string{"name"},
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "this-should-be-ignored.tar.gz",
+				Path:    path,
+				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v3",
+				Type:    artifact.UploadableArchive,
 				Extra: map[string]interface{}{
 					artifact.ExtraID:       "foo",
 					artifact.ExtraFormat:   "tar.gz",
@@ -273,6 +288,7 @@ func TestFullPipe(t *testing.T) {
 			client := client.NewMock()
 			distFile := filepath.Join(folder, name+".yaml")
 
+			require.NoError(t, Pipe{}.Default(ctx))
 			err = runAll(ctx, client)
 			if tt.expectedRunError != "" {
 				require.EqualError(t, err, tt.expectedRunError)
@@ -385,11 +401,12 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	}
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "unibin_amd64.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "unibin_amd64.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
@@ -397,11 +414,12 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 		},
 	})
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "unibin_amd64.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "arm64",
-		Type:   artifact.UploadableArchive,
+		Name:    "unibin_amd64.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "arm64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "unibin",
 			artifact.ExtraFormat:   "tar.gz",
@@ -428,6 +446,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	client := client.NewMock()
 	distFile := filepath.Join(folder, manifestName(t)+".yaml")
 
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
@@ -470,11 +489,12 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	}
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
@@ -488,6 +508,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	client := client.NewMock()
 	distFile := filepath.Join(folder, t.Name()+".yaml")
 
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
@@ -556,11 +577,12 @@ func TestRunPipeMultipleKrewWithSkip(t *testing.T) {
 	}
 	path := filepath.Join(folder, "bin.tar.gz")
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
@@ -573,6 +595,7 @@ func TestRunPipeMultipleKrewWithSkip(t *testing.T) {
 	require.NoError(t, f.Close())
 
 	cli := client.NewMock()
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, cli))
 	require.EqualError(t, publishAll(ctx, cli), `krews.skip_upload is set`)
 	require.True(t, cli.CreatedFile)
@@ -672,12 +695,13 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			} {
 				path := filepath.Join(folder, fmt.Sprintf("%s.tar.gz", a.name))
 				ctx.Artifacts.Add(&artifact.Artifact{
-					Name:   fmt.Sprintf("%s.tar.gz", a.name),
-					Path:   path,
-					Goos:   a.goos,
-					Goarch: a.goarch,
-					Goarm:  a.goarm,
-					Type:   artifact.UploadableArchive,
+					Name:    fmt.Sprintf("%s.tar.gz", a.name),
+					Path:    path,
+					Goos:    a.goos,
+					Goarch:  a.goarch,
+					Goarm:   a.goarm,
+					Goamd64: "v1",
+					Type:    artifact.UploadableArchive,
 					Extra: map[string]interface{}{
 						artifact.ExtraID:       a.name,
 						artifact.ExtraFormat:   "tar.gz",
@@ -692,6 +716,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			client := client.NewMock()
 			distFile := filepath.Join(folder, name+".yaml")
 
+			require.NoError(t, Pipe{}.Default(ctx))
 			require.NoError(t, runAll(ctx, client))
 			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
@@ -752,11 +777,12 @@ func TestRunPipeNoUpload(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
@@ -764,6 +790,7 @@ func TestRunPipeNoUpload(t *testing.T) {
 		},
 	})
 	client := client.NewMock()
+	require.NoError(t, Pipe{}.Default(ctx))
 
 	assertNoPublish := func(t *testing.T) {
 		t.Helper()
@@ -807,11 +834,12 @@ func TestRunEmptyTokenType(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
@@ -819,6 +847,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 		},
 	})
 	client := client.NewMock()
+	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, runAll(ctx, client))
 }
 
@@ -846,17 +875,19 @@ func TestRunMultipleBinaries(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Name:   "bin.tar.gz",
-		Path:   path,
-		Goos:   "darwin",
-		Goarch: "amd64",
-		Type:   artifact.UploadableArchive,
+		Name:    "bin.tar.gz",
+		Path:    path,
+		Goos:    "darwin",
+		Goarch:  "amd64",
+		Goamd64: "v1",
+		Type:    artifact.UploadableArchive,
 		Extra: map[string]interface{}{
 			artifact.ExtraID:       "foo",
 			artifact.ExtraFormat:   "tar.gz",
 			artifact.ExtraBinaries: []string{"bin1", "bin2"},
 		},
 	})
+	require.NoError(t, Pipe{}.Default(ctx))
 	client := client.NewMock()
 	require.EqualError(t, runAll(ctx, client), `krew: only one binary per archive allowed, got 2 on "bin.tar.gz"`)
 }

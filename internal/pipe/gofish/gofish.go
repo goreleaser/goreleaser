@@ -11,10 +11,11 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -35,6 +36,9 @@ func (Pipe) String() string                 { return "gofish fish food cookbook"
 func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Rigs) == 0 }
 
 func (Pipe) Default(ctx *context.Context) error {
+	if len(ctx.Config.Rigs) > 0 {
+		deprecate.Notice(ctx, "rigs")
+	}
 	for i := range ctx.Config.Rigs {
 		goFish := &ctx.Config.Rigs[i]
 
@@ -84,7 +88,10 @@ func doRun(ctx *context.Context, goFish config.GoFish, cl client.Client) error {
 			artifact.ByGoos("windows"),
 		),
 		artifact.Or(
-			artifact.ByGoarch("amd64"),
+			artifact.And(
+				artifact.ByGoarch("amd64"),
+				artifact.ByGoamd64("v1"),
+			),
 			artifact.ByGoarch("arm64"),
 			artifact.ByGoarch("all"),
 			artifact.And(
@@ -222,7 +229,7 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 			}
 			switch art.Type {
 			case artifact.UploadableArchive:
-				for _, bin := range art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
+				for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
 					releasePackage.Binaries = append(releasePackage.Binaries, binary{
 						Name:   bin,
 						Target: bin,
@@ -231,7 +238,7 @@ func dataFor(ctx *context.Context, cfg config.GoFish, cl client.Client, artifact
 			case artifact.UploadableBinary:
 				releasePackage.Binaries = append(releasePackage.Binaries, binary{
 					Name:   art.Name,
-					Target: art.ExtraOr(artifact.ExtraBinary, art.Name).(string),
+					Target: artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name),
 				})
 			}
 			result.ReleasePackages = append(result.ReleasePackages, releasePackage)
@@ -266,8 +273,11 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doPublish(ctx *context.Context, food *artifact.Artifact, cl client.Client) error {
-	rig := food.Extra[goFishConfigExtra].(config.GoFish)
-	var err error
+	rig, err := artifact.Extra[config.GoFish](*food, goFishConfigExtra)
+	if err != nil {
+		return err
+	}
+
 	cl, err = client.NewIfToken(ctx, cl, rig.Rig.Token)
 	if err != nil {
 		return err

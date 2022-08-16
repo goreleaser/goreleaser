@@ -20,11 +20,11 @@ nfpms:
 
     # You can change the file name of the package.
     #
-    # Default: `{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}`
+    # Default:`{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
     file_name_template: "{{ .ConventionalFileName }}"
 
     # Build IDs for the builds you want to create NFPM packages for.
-    # Defaults to all builds.
+    # Defaults empty, which means no filtering.
     builds:
       - foo
       - bar
@@ -67,27 +67,31 @@ nfpms:
       - deb
       - rpm
 
-    # Packages your package depends on.
+    # Packages your package depends on. (overridable)
     dependencies:
       - git
       - zsh
 
-    # Packages your package recommends installing.
+    # Packages it provides. (overridable)
+    provides:
+      - bar
+
+    # Packages your package recommends installing. (overridable)
     recommends:
       - bzr
       - gtk
 
-    # Packages your package suggests installing.
+    # Packages your package suggests installing. (overridable)
     suggests:
       - cvs
       - ksh
 
-    # Packages that conflict with your package.
+    # Packages that conflict with your package. (overridable)
     conflicts:
       - svn
       - bash
 
-    # Packages it replaces.
+    # Packages it replaces. (overridable)
     replaces:
       - fish
 
@@ -166,7 +170,7 @@ nfpms:
       - dst: /var/log/boo.log
         type: ghost
 
-      # You can user the packager field to add files that are unique to a specific packager
+      # You can use the packager field to add files that are unique to a specific packager
       - src: path/to/rpm/file.conf
         dst: /etc/file.conf
         type: "config|noreplace"
@@ -223,6 +227,8 @@ nfpms:
         recommends:
           - tig
         replaces:
+          - bash
+        provides:
           - bash
       rpm:
         replacements:
@@ -301,7 +307,7 @@ nfpms:
 
       # Custom deb triggers
       triggers:
-        # register interrest on a trigger activated by another package
+        # register interest on a trigger activated by another package
         # (also available: interest_await, interest_noawait)
         interest:
           - some-trigger-name
@@ -359,3 +365,6 @@ nfpms:
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
+
+!!! info
+    Fields marked with "overridable" can be overriden for any format.

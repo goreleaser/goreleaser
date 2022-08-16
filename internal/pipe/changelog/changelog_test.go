@@ -536,6 +536,21 @@ func TestGetChangeloger(t *testing.T) {
 		require.IsType(t, c, &githubNativeChangeloger{})
 	})
 
+	t.Run(useGitHubNative+"-invalid-repo", func(t *testing.T) {
+		testlib.Mktmp(t)
+		testlib.GitInit(t)
+		testlib.GitRemoteAdd(t, "https://gist.github.com/")
+		ctx := context.New(config.Project{
+			Changelog: config.Changelog{
+				Use: useGitHubNative,
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitHub
+		c, err := getChangeloger(ctx)
+		require.EqualError(t, err, "unsupported repository URL: https://gist.github.com/")
+		require.Nil(t, c)
+	})
+
 	t.Run(useGitLab, func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Changelog: config.Changelog{
@@ -546,6 +561,21 @@ func TestGetChangeloger(t *testing.T) {
 		c, err := getChangeloger(ctx)
 		require.NoError(t, err)
 		require.IsType(t, c, &scmChangeloger{})
+	})
+
+	t.Run(useGitHub+"-invalid-repo", func(t *testing.T) {
+		testlib.Mktmp(t)
+		testlib.GitInit(t)
+		testlib.GitRemoteAdd(t, "https://gist.github.com/")
+		ctx := context.New(config.Project{
+			Changelog: config.Changelog{
+				Use: useGitHub,
+			},
+		})
+		ctx.TokenType = context.TokenTypeGitHub
+		c, err := getChangeloger(ctx)
+		require.EqualError(t, err, "unsupported repository URL: https://gist.github.com/")
+		require.Nil(t, c)
 	})
 
 	t.Run("invalid", func(t *testing.T) {
@@ -589,6 +619,7 @@ func TestGroup(t *testing.T) {
 	testlib.GitCommit(t, "added feature 1")
 	testlib.GitCommit(t, "fixed bug 2")
 	testlib.GitCommit(t, "ignored: whatever")
+	testlib.GitCommit(t, "feat(deps): update foobar [bot]")
 	testlib.GitCommit(t, "fix: whatever")
 	testlib.GitCommit(t, "docs: whatever")
 	testlib.GitCommit(t, "chore: something about cArs we dont need")
@@ -600,6 +631,11 @@ func TestGroup(t *testing.T) {
 		Dist: folder,
 		Changelog: config.Changelog{
 			Groups: []config.ChangeLogGroup{
+				{
+					Title:  "Bots",
+					Regexp: ".*bot.*",
+					Order:  900,
+				},
 				{
 					Title:  "Features",
 					Regexp: "^.*feat[(\\w)]*:+.*$",
@@ -625,6 +661,7 @@ func TestGroup(t *testing.T) {
 	ctx.Git.CurrentTag = "v0.0.2"
 	require.NoError(t, Pipe{}.Run(ctx))
 	require.Contains(t, ctx.ReleaseNotes, "## Changelog")
+	require.Contains(t, ctx.ReleaseNotes, "### Bots")
 	require.Contains(t, ctx.ReleaseNotes, "### Features")
 	require.Contains(t, ctx.ReleaseNotes, "### Bug Fixes")
 	require.NotContains(t, ctx.ReleaseNotes, "### Catch nothing")
@@ -727,6 +764,7 @@ func TestChangelogFormat(t *testing.T) {
 				)
 				require.NoError(t, err)
 				require.Equal(t, `## Changelog
+
 ### catch-all
 * aea123 foo
 * aef653 bar`, out)

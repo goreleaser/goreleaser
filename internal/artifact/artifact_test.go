@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/golden"
+	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
@@ -55,8 +56,24 @@ func TestFilter(t *testing.T) {
 			Goarch: "arm",
 		},
 		{
-			Name:   "bar",
-			Goarch: "amd64",
+			Name:    "bar",
+			Goarch:  "amd64",
+			Goamd64: "v1",
+		},
+		{
+			Name:    "bar",
+			Goarch:  "amd64",
+			Goamd64: "v2",
+		},
+		{
+			Name:    "bar",
+			Goarch:  "amd64",
+			Goamd64: "v3",
+		},
+		{
+			Name:    "bar",
+			Goarch:  "amd64",
+			Goamd64: "v4",
 		},
 		{
 			Name:  "foobar",
@@ -95,8 +112,13 @@ func TestFilter(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByGoos("linux")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoos("darwin")).items, 2)
 
-	require.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoarch("amd64")).items, 4)
 	require.Len(t, artifacts.Filter(ByGoarch("386")).items, 0)
+
+	require.Len(t, artifacts.Filter(ByGoamd64("v1")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoamd64("v2")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoamd64("v3")).items, 1)
+	require.Len(t, artifacts.Filter(ByGoamd64("v4")).items, 1)
 
 	require.Len(t, artifacts.Filter(ByGoarm("6")).items, 1)
 	require.Len(t, artifacts.Filter(ByGoarm("7")).items, 0)
@@ -104,10 +126,10 @@ func TestFilter(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByType(Checksum)).items, 2)
 	require.Len(t, artifacts.Filter(ByType(Binary)).items, 0)
 
-	require.Len(t, artifacts.Filter(OnlyReplacingUnibins).items, 6)
+	require.Len(t, artifacts.Filter(OnlyReplacingUnibins).items, 9)
 	require.Len(t, artifacts.Filter(And(OnlyReplacingUnibins, ByGoos("darwin"))).items, 1)
 
-	require.Len(t, artifacts.Filter(nil).items, 7)
+	require.Len(t, artifacts.Filter(nil).items, 10)
 
 	require.Len(t, artifacts.Filter(
 		And(
@@ -237,14 +259,22 @@ func TestGroupByID(t *testing.T) {
 func TestGroupByPlatform(t *testing.T) {
 	data := []*Artifact{
 		{
-			Name:   "foo",
-			Goos:   "linux",
-			Goarch: "amd64",
+			Name:    "foo",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v2",
 		},
 		{
-			Name:   "bar",
-			Goos:   "linux",
-			Goarch: "amd64",
+			Name:    "bar",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v2",
+		},
+		{
+			Name:    "bar",
+			Goos:    "linux",
+			Goarch:  "amd64",
+			Goamd64: "v3",
 		},
 		{
 			Name:   "foobar",
@@ -275,7 +305,8 @@ func TestGroupByPlatform(t *testing.T) {
 	}
 
 	groups := artifacts.GroupByPlatform()
-	require.Len(t, groups["linuxamd64"], 2)
+	require.Len(t, groups["linuxamd64v2"], 2)
+	require.Len(t, groups["linuxamd64v3"], 1)
 	require.Len(t, groups["linuxarm6"], 1)
 	require.Len(t, groups["linuxmipssoftfloat"], 1)
 	require.Len(t, groups["linuxmipshardfloat"], 1)
@@ -329,14 +360,58 @@ func TestInvalidAlgorithm(t *testing.T) {
 	require.Empty(t, sum)
 }
 
-func TestExtraOr(t *testing.T) {
-	a := &Artifact{
+func TestExtra(t *testing.T) {
+	a := Artifact{
 		Extra: map[string]interface{}{
 			"Foo": "foo",
+			"docker": config.Docker{
+				ID:  "id",
+				Use: "docker",
+			},
+			"fail-plz": config.Homebrew{
+				Plist: "aaaa",
+			},
+			"unsupported": func() {},
+			"binaries":    []string{"foo", "bar"},
 		},
 	}
-	require.Equal(t, "foo", a.ExtraOr("Foo", "bar"))
-	require.Equal(t, "bar", a.ExtraOr("Foobar", "bar"))
+
+	t.Run("string", func(t *testing.T) {
+		foo, err := Extra[string](a, "Foo")
+		require.NoError(t, err)
+		require.Equal(t, "foo", foo)
+		require.Equal(t, "foo", ExtraOr(a, "Foo", "bar"))
+	})
+
+	t.Run("missing field", func(t *testing.T) {
+		bar, err := Extra[string](a, "Foobar")
+		require.NoError(t, err)
+		require.Equal(t, "", bar)
+		require.Equal(t, "bar", ExtraOr(a, "Foobar", "bar"))
+	})
+
+	t.Run("complex", func(t *testing.T) {
+		docker, err := Extra[config.Docker](a, "docker")
+		require.NoError(t, err)
+		require.Equal(t, "id", docker.ID)
+	})
+
+	t.Run("array", func(t *testing.T) {
+		binaries, err := Extra[[]string](a, "binaries")
+		require.NoError(t, err)
+		require.Equal(t, []string{"foo", "bar"}, binaries)
+		require.Equal(t, []string{"foo", "bar"}, ExtraOr(a, "binaries", []string{}))
+	})
+
+	t.Run("unmarshal error", func(t *testing.T) {
+		_, err := Extra[config.Docker](a, "fail-plz")
+		require.EqualError(t, err, "json: unknown field \"tap\"")
+	})
+
+	t.Run("marshal error", func(t *testing.T) {
+		_, err := Extra[config.Docker](a, "unsupported")
+		require.EqualError(t, err, "json: unsupported type: func()")
+	})
 }
 
 func TestByIDs(t *testing.T) {
@@ -453,46 +528,6 @@ func TestByFormats(t *testing.T) {
 	require.Len(t, artifacts.Filter(ByFormats("zip", "tar.gz")).items, 3)
 }
 
-func TestTypeToString(t *testing.T) {
-	for _, a := range []Type{
-		UploadableArchive,
-		UploadableBinary,
-		UploadableFile,
-		Binary,
-		UniversalBinary,
-		LinuxPackage,
-		PublishableSnapcraft,
-		Snapcraft,
-		PublishableDockerImage,
-		DockerImage,
-		DockerManifest,
-		Checksum,
-		Signature,
-		Certificate,
-		UploadableSourceArchive,
-		BrewTap,
-		GoFishRig,
-		KrewPluginManifest,
-		ScoopManifest,
-		SBOM,
-		PkgBuild,
-		SrcInfo,
-	} {
-		t.Run(a.String(), func(t *testing.T) {
-			require.NotEqual(t, "unknown", a.String())
-			bts, err := a.MarshalJSON()
-			require.NoError(t, err)
-			require.Equal(t, []byte(`"`+a.String()+`"`), bts)
-		})
-	}
-	t.Run("unknown", func(t *testing.T) {
-		require.Equal(t, "unknown", Type(9999).String())
-		bts, err := Type(9999).MarshalJSON()
-		require.NoError(t, err)
-		require.Equal(t, []byte(`"unknown"`), bts)
-	})
-}
-
 func TestPaths(t *testing.T) {
 	paths := []string{"a/b", "b/c", "d/e", "f/g"}
 	artifacts := New()
@@ -515,15 +550,6 @@ func TestRefresher(t *testing.T) {
 			Extra: map[string]interface{}{
 				"Refresh": func() error {
 					return os.WriteFile(path, []byte("hello"), 0o765)
-				},
-			},
-		})
-		artifacts.Add(&Artifact{
-			Name: "invalid",
-			Type: Checksum,
-			Extra: map[string]interface{}{
-				"Refresh": func() {
-					t.Fatalf("should not have been called")
 				},
 			},
 		})
@@ -870,7 +896,11 @@ func Test_ByBinaryLikeArtifacts(t *testing.T) {
 				arts.Add(a)
 			}
 			actual := arts.Filter(ByBinaryLikeArtifacts(arts)).List()
-			assert.Equal(t, tt.expected, actual)
+			expected := New()
+			for _, a := range tt.expected {
+				expected.Add(a)
+			}
+			assert.Equal(t, expected.List(), actual)
 
 			if t.Failed() {
 				t.Log("expected:")
@@ -885,4 +915,10 @@ func Test_ByBinaryLikeArtifacts(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestArtifactStringer(t *testing.T) {
+	require.Equal(t, "foobar", Artifact{
+		Name: "foobar",
+	}.String())
 }

@@ -1,6 +1,7 @@
 package git_test
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -10,11 +11,12 @@ import (
 )
 
 func TestGit(t *testing.T) {
-	out, err := git.Run("status")
+	ctx := context.Background()
+	out, err := git.Run(ctx, "status")
 	require.NoError(t, err)
 	require.NotEmpty(t, out)
 
-	out, err = git.Run("command-that-dont-exist")
+	out, err = git.Run(ctx, "command-that-dont-exist")
 	require.Error(t, err)
 	require.Empty(t, out)
 	require.Equal(
@@ -25,6 +27,7 @@ func TestGit(t *testing.T) {
 }
 
 func TestGitWarning(t *testing.T) {
+	ctx := context.Background()
 	testlib.Mktmp(t)
 	testlib.GitInit(t)
 	testlib.GitCommit(t, "foo")
@@ -34,24 +37,26 @@ func TestGitWarning(t *testing.T) {
 	testlib.GitBranch(t, "tags/1.2.3")
 	testlib.GitTag(t, "1.2.3")
 
-	out, err := git.Run("describe", "--tags", "--abbrev=0", "tags/1.2.3^")
+	out, err := git.Run(ctx, "describe", "--tags", "--abbrev=0", "tags/1.2.3^")
 	require.NoError(t, err)
 	require.Equal(t, "1.2.2\n", out)
 }
 
 func TestRepo(t *testing.T) {
-	require.True(t, git.IsRepo(), "goreleaser folder should be a git repo")
+	ctx := context.Background()
+	require.True(t, git.IsRepo(ctx), "goreleaser folder should be a git repo")
 
 	require.NoError(t, os.Chdir(os.TempDir()))
-	require.False(t, git.IsRepo(), os.TempDir()+" folder should be a git repo")
+	require.False(t, git.IsRepo(ctx), os.TempDir()+" folder should be a git repo")
 }
 
 func TestClean(t *testing.T) {
+	ctx := context.Background()
 	out, err := git.Clean("asdasd 'ssadas'\nadasd", nil)
 	require.NoError(t, err)
 	require.Equal(t, "asdasd ssadas", out)
 
-	out, err = git.Clean(git.Run("command-that-dont-exist"))
+	out, err = git.Clean(git.Run(ctx, "command-that-dont-exist"))
 	require.Error(t, err)
 	require.Empty(t, out)
 	require.Equal(

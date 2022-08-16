@@ -3,11 +3,12 @@ package nfpm
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
@@ -27,7 +28,7 @@ import (
 )
 
 const (
-	defaultNameTemplate = "{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
+	defaultNameTemplate = `{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
 	extraFiles          = "Files"
 )
 
@@ -54,15 +55,13 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.FileNameTemplate == "" {
 			fpm.FileNameTemplate = defaultNameTemplate
 		}
-		if len(fpm.Builds) == 0 { // TODO: change this to empty by default and deal with it in the filtering code
-			for _, b := range ctx.Config.Builds {
-				fpm.Builds = append(fpm.Builds, b.ID)
-			}
+		if fpm.Maintainer == "" {
+			deprecate.NoticeCustom(ctx, "nfpms.maintainer", "`{{ .Property }}` should always be set, check {{ .URL }} for more info")
 		}
 		ids.Inc(fpm.ID)
 	}
 
-	deprecation.Noticer = deprecate.NewWriter(ctx)
+	deprecation.Noticer = io.Discard
 	return ids.Validate()
 }
 
@@ -81,11 +80,16 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func doRun(ctx *context.Context, fpm config.NFPM) error {
-	linuxBinaries := ctx.Artifacts.Filter(artifact.And(
+	filters := []artifact.Filter{
 		artifact.ByType(artifact.Binary),
 		artifact.ByGoos("linux"),
-		artifact.ByIDs(fpm.Builds...),
-	)).GroupByPlatform()
+	}
+	if len(fpm.Builds) > 0 {
+		filters = append(filters, artifact.ByIDs(fpm.Builds...))
+	}
+	linuxBinaries := ctx.Artifacts.
+		Filter(artifact.And(filters...)).
+		GroupByPlatform()
 	if len(linuxBinaries) == 0 {
 		return fmt.Errorf("no linux binaries found for builds %v", fpm.Builds)
 	}
@@ -118,7 +122,9 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 }
 
 func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*artifact.Artifact) error {
-	arch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips
+	// TODO: improve mips handling on nfpm
+	infoArch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips // key used for the ConventionalFileName et al
+	arch := infoArch + binaries[0].Goamd64                                  // unique arch key
 
 	overridden, err := mergeOverrides(fpm, format)
 	if err != nil {
@@ -191,7 +197,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		for _, ov := range fpm.Deb.Lintian {
 			lines = append(lines, fmt.Sprintf("%s: %s", fpm.PackageName, ov))
 		}
-		lintianPath := filepath.Join(ctx.Config.Dist, "deb", fpm.PackageName, ".lintian")
+		lintianPath := filepath.Join(ctx.Config.Dist, "deb", fpm.PackageName+"_"+arch, ".lintian")
 		if err := os.MkdirAll(filepath.Dir(lintianPath), 0o755); err != nil {
 			return fmt.Errorf("failed to write lintian file: %w", err)
 		}
@@ -199,7 +205,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 			return fmt.Errorf("failed to write lintian file: %w", err)
 		}
 
-		log.Infof("creating %q", lintianPath)
+		log.Debugf("creating %q", lintianPath)
 		contents = append(contents, &files.Content{
 			Source:      lintianPath,
 			Destination: filepath.Join("./usr/share/lintian/overrides", fpm.PackageName),
@@ -231,7 +237,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	log.WithField("files", destinations(contents)).Debug("all archive files")
 
 	info := &nfpm.Info{
-		Arch:            arch,
+		Arch:            infoArch,
 		Platform:        "linux",
 		Name:            fpm.PackageName,
 		Version:         ctx.Version,
@@ -247,13 +253,13 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		Homepage:        homepage,
 		License:         fpm.License,
 		Overridables: nfpm.Overridables{
-			Conflicts:    overridden.Conflicts,
-			Depends:      overridden.Dependencies,
-			Recommends:   overridden.Recommends,
-			Suggests:     overridden.Suggests,
-			Replaces:     overridden.Replaces,
-			EmptyFolders: overridden.EmptyFolders,
-			Contents:     contents,
+			Conflicts:  overridden.Conflicts,
+			Depends:    overridden.Dependencies,
+			Recommends: overridden.Recommends,
+			Provides:   overridden.Provides,
+			Suggests:   overridden.Suggests,
+			Replaces:   overridden.Replaces,
+			Contents:   contents,
 			Scripts: nfpm.Scripts{
 				PreInstall:  overridden.Scripts.PreInstall,
 				PostInstall: overridden.Scripts.PostInstall,
@@ -350,12 +356,14 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		return fmt.Errorf("could not close package file: %w", err)
 	}
 	ctx.Artifacts.Add(&artifact.Artifact{
-		Type:   artifact.LinuxPackage,
-		Name:   name,
-		Path:   path,
-		Goos:   binaries[0].Goos,
-		Goarch: binaries[0].Goarch,
-		Goarm:  binaries[0].Goarm,
+		Type:    artifact.LinuxPackage,
+		Name:    name,
+		Path:    path,
+		Goos:    binaries[0].Goos,
+		Goarch:  binaries[0].Goarch,
+		Goarm:   binaries[0].Goarm,
+		Gomips:  binaries[0].Gomips,
+		Goamd64: binaries[0].Goamd64,
 		Extra: map[string]interface{}{
 			artifact.ExtraBuilds: binaries,
 			artifact.ExtraID:     fpm.ID,

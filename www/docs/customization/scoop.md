@@ -25,7 +25,7 @@ scoop:
     branch: main
 
     # Optionally a token can be provided, if it differs from the token provided to GoReleaser
-    token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    token: "{{ .Env.SCOOP_TAP_GITHUB_TOKEN }}"
 
   # Folder inside the repository to put the scoop.
   # Default is the root folder.
@@ -35,7 +35,7 @@ scoop:
   # Defaults are shown.
   commit_author:
     name: goreleaserbot
-    email: goreleaser@carlosbecker.com
+    email: bot@goreleaser.com
 
   # The project name and current git tag are used in the format string.
   commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
@@ -71,6 +71,11 @@ scoop:
   # An array of commands to be executed after an application is installed.
   # Default is empty.
   post_install: ["Write-Host 'Running postinstall command'"]
+
+  # GOAMD64 to specify which amd64 version to use if there are multiple versions
+  # from the build section.
+  # Default is v1.
+  goamd64: v3
 ```
 
 By defining the `scoop` section, GoReleaser will take care of publishing the

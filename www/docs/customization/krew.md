@@ -25,6 +25,11 @@ krews:
     # Default is 6 for all artifacts or each id if there a multiple versions.
     goarm: 6
 
+    # GOAMD64 to specify which amd64 version to use if there are multiple versions
+    # from the build section.
+    # Default is v1.
+    goamd64: v3
+
     # NOTE: make sure the url_template, the token and given repo (github or gitlab) owner and name are from the
     # same kind. We will probably unify this in the next major version like it is done with scoop.
 
@@ -51,7 +56,7 @@ krews:
     # Defaults are shown.
     commit_author:
       name: goreleaserbot
-      email: goreleaser@carlosbecker.com
+      email: bot@goreleaser.com
 
     # The project name and current git tag are used in the format string.
     commit_msg_template: "Krew plugin update for {{ .ProjectName }} version {{ .Tag }}"

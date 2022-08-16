@@ -4,7 +4,7 @@ package sourcearchive
 import (
 	"path/filepath"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -43,7 +43,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		args = append(args, "--prefix", prefix)
 	}
 	args = append(args, ctx.Git.FullCommit)
-	out, err := git.Clean(git.Run(args...))
+	out, err := git.Clean(git.Run(ctx, args...))
 	log.Debug(out)
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableSourceArchive,

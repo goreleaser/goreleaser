@@ -21,7 +21,7 @@ To load completions for every new session, execute once:
 
 ### macOS:
 
-	goreleaser completion bash > /usr/local/etc/bash_completion.d/goreleaser
+	goreleaser completion bash > $(brew --prefix)/etc/bash_completion.d/goreleaser
 
 You will need to start a new shell for this setup to take effect.
 

@@ -16,11 +16,15 @@ Below is a simple snippet to use this action in your workflow:
 name: goreleaser
 
 on:
-  pull_request:
   push:
+    # run only against tags
+    tags:
+      - '*'
 
 permissions:
   contents: write
+  # packages: write
+  # issues: write
 
 jobs:
   goreleaser:
@@ -38,7 +42,7 @@ jobs:
         name: Set up Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.18
+          go-version: 1.19
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
@@ -54,6 +58,11 @@ jobs:
 ```
 
 !!! warning "Some things to look closely..."
+    #### The action does not install dependencies
+    GoReleaser Action will not install any other software needed to release.
+    It's the user's responsibility to install and configure Go, Docker, Syft,
+    Cosign and any other tools the release might need.
+
     #### Fetch depthness
     Notice the `fetch-depth: 0` option on the `Checkout` workflow step.
     It is required for GoReleaser to work properly.
@@ -64,31 +73,6 @@ jobs:
     `TagBody`, `TagSubject` or `TagContents` in your templates.
     For more information, take a look at
     [actions/checkout#290](https://github.com/actions/checkout/issues/290).
-
-### Run on new tag
-
-If you want to run GoReleaser only on new tag, you can use this event:
-
-```yaml
-on:
-  push:
-    tags:
-      - '*'
-```
-
-Or with a condition on GoReleaser step:
-
-```yaml
-      -
-        name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          version: latest
-          args: release --rm-dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
 
 !!! tip
     For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
@@ -141,6 +125,15 @@ Following inputs can be used as `step.with` keys
 
 [^1]: Can be a fixed version like `v0.117.0` or a max satisfying SemVer one like `~> 0.132`. In this case this will return `v0.132.1`.
 
+### Outputs
+
+Following outputs are available
+
+| Name              | Type    | Description                           |
+|-------------------|---------|---------------------------------------|
+| `artifacts`       | JSON    | Build result artifacts |
+| `metadata`        | JSON    | Build result metadata |
+
 ### Environment Variables
 
 Following environment variables can be used as `step.env` keys
@@ -154,16 +147,16 @@ Following environment variables can be used as `step.env` keys
 
 The following [permissions](https://docs.github.com/en/actions/reference/authentication-in-a-workflow#permissions-for-the-github_token) are required by GoReleaser:
 
- - `content: write` if you wish to
+ - `contents: write` if you wish to
     - [upload archives as GitHub Releases](/customization/release/), or
     - publish to [Homebrew](/customization/homebrew/), or [Scoop](/customization/scoop/) (assuming it's part of the same repository)
- - or just `content: read` if you don't need any of the above
+ - or just `contents: read` if you don't need any of the above
  - `packages: write` if you [push Docker images](/customization/docker/) to GitHub
  - `issues: write` if you use [milestone closing capability](/customization/milestone/)
 
 `GITHUB_TOKEN` permissions [are limited to the repository][about-github-token] that contains your workflow.
 
-If you need to push the homebrew tap to another repository, you must therefore create a custom
+If you need to push the homebrew tap to another repository, you must create a custom
 [Personal Access Token][pat] with `repo` permissions and [add it as a secret in the repository][secrets]. If you
 create a secret named `GH_PAT`, the step will look like this:
 
@@ -180,7 +173,7 @@ create a secret named `GH_PAT`, the step will look like this:
 
 You can also read the [GitHub documentation](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) about it.
 
-## How does it look like?
+## What does it look like?
 
 You can check [this example repository](https://github.com/goreleaser/example) for a real world example.
 

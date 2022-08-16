@@ -10,10 +10,10 @@ import (
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
+	"github.com/goreleaser/goreleaser/internal/yaml"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v2"
 )
 
 func TestDescription(t *testing.T) {
@@ -54,8 +54,8 @@ func TestRunPipe(t *testing.T) {
 		Snapcrafts: []config.Snapcraft{
 			{
 				NameTemplate:     "foo_{{.Arch}}",
-				Summary:          "test summary",
-				Description:      "test description",
+				Summary:          "test summary {{.ProjectName}}",
+				Description:      "test description {{.ProjectName}}",
 				Publish:          true,
 				Builds:           []string{"foo"},
 				ChannelTemplates: []string{"stable"},
@@ -87,6 +87,40 @@ func TestRunPipe(t *testing.T) {
 	require.Len(t, list, 9)
 }
 
+func TestBadTemolate(t *testing.T) {
+	testlib.CheckPath(t, "snapcraft")
+	folder := t.TempDir()
+	dist := filepath.Join(folder, "dist")
+	require.NoError(t, os.Mkdir(dist, 0o755))
+	ctx := context.New(config.Project{
+		ProjectName: "mybin",
+		Dist:        dist,
+		Snapcrafts: []config.Snapcraft{
+			{
+				NameTemplate:     "foo_{{.Arch}}",
+				Publish:          true,
+				Builds:           []string{"foo"},
+				ChannelTemplates: []string{"stable"},
+			},
+		},
+	})
+	ctx.Git.CurrentTag = "v1.2.3"
+	ctx.Version = "1.2.3"
+	addBinaries(t, ctx, "foo", filepath.Join(dist, "foo"))
+
+	t.Run("description", func(t *testing.T) {
+		ctx.Config.Snapcrafts[0].Description = "{{.Bad}}"
+		ctx.Config.Snapcrafts[0].Summary = "summary"
+		require.Error(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("summary", func(t *testing.T) {
+		ctx.Config.Snapcrafts[0].Description = "description"
+		ctx.Config.Snapcrafts[0].Summary = "{{.Bad}}"
+		require.Error(t, Pipe{}.Run(ctx))
+	})
+}
+
 func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	testlib.CheckPath(t, "snapcraft")
 	folder := t.TempDir()
@@ -108,7 +142,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 	ctx.Git.CurrentTag = "v1.2.3"
 	ctx.Version = "1.2.3"
 	addBinaries(t, ctx, "foo", dist)
-	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeWithName(t *testing.T) {
@@ -273,7 +307,7 @@ func TestRunPipeMetadata(t *testing.T) {
 			RestartDelay:     "42ms",
 			Slots:            []string{"foo_slot"},
 			Sockets: map[string]interface{}{
-				"sock": map[interface{}]interface{}{
+				"sock": map[string]interface{}{
 					"listen-stream": "$SNAP_COMMON/socket",
 					"socket-group":  "socket-group",
 					"socket-mode":   0o640,
@@ -287,7 +321,7 @@ func TestRunPipeMetadata(t *testing.T) {
 			WatchdogTimeout: "45ms",
 		},
 	}, metadata.Apps)
-	require.Equal(t, map[interface{}]interface{}{"read": []interface{}{"$HOME/test"}}, metadata.Plugs["personal-files"])
+	require.Equal(t, map[string]interface{}{"read": []interface{}{"$HOME/test"}}, metadata.Plugs["personal-files"])
 	require.Equal(t, "$SNAP_DATA/etc", metadata.Layout["/etc/testprojectname"].Bind)
 }
 
@@ -579,23 +613,50 @@ func Test_processChannelsTemplates(t *testing.T) {
 func addBinaries(t *testing.T, ctx *context.Context, name, dist string) {
 	t.Helper()
 	for _, goos := range []string{"linux", "darwin"} {
-		for _, goarch := range []string{"amd64", "386", "arm6"} {
-			folder := goos + goarch
-			require.NoError(t, os.MkdirAll(filepath.Join(dist, folder), 0o755))
-			binPath := filepath.Join(dist, folder, name)
+		for _, goarch := range []string{"amd64", "386", "arm"} {
+			binPath := filepath.Join(dist, name)
+			require.NoError(t, os.MkdirAll(filepath.Dir(binPath), 0o755))
 			f, err := os.Create(binPath)
 			require.NoError(t, err)
 			require.NoError(t, f.Close())
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name:   "subdir/" + name,
-				Path:   binPath,
-				Goarch: goarch,
-				Goos:   goos,
-				Type:   artifact.Binary,
-				Extra: map[string]interface{}{
-					artifact.ExtraID: name,
-				},
-			})
+			switch goarch {
+			case "arm":
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "subdir/" + name,
+					Path:   binPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Goarm:  "6",
+					Type:   artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: name,
+					},
+				})
+
+			case "amd64":
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:    "subdir/" + name,
+					Path:    binPath,
+					Goarch:  goarch,
+					Goos:    goos,
+					Goamd64: "v1",
+					Type:    artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: name,
+					},
+				})
+			default:
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name:   "subdir/" + name,
+					Path:   binPath,
+					Goarch: goarch,
+					Goos:   goos,
+					Type:   artifact.Binary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: name,
+					},
+				})
+			}
 		}
 	}
 }
@@ -625,7 +686,6 @@ func Test_isValidArch(t *testing.T) {
 		{"ppc64el", true},
 		{"arm64", true},
 		{"armhf", true},
-		{"amd64", true},
 		{"i386", true},
 		{"mips", false},
 		{"armel", false},
