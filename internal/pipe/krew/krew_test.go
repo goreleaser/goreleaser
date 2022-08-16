@@ -113,7 +113,7 @@ func TestFullManifest(t *testing.T) {
 	manifest, err := doBuildManifest(data)
 	require.NoError(t, err)
 
-	golden.RequireEquaYaml(t, []byte(manifest))
+	golden.RequireEqualYaml(t, []byte(manifest))
 	requireValidManifest(t)
 }
 
@@ -122,7 +122,7 @@ func TestSimple(t *testing.T) {
 	data.Metadata.Name = manifestName(t)
 	manifest, err := doBuildManifest(data)
 	require.NoError(t, err)
-	golden.RequireEquaYaml(t, []byte(manifest))
+	golden.RequireEqualYaml(t, []byte(manifest))
 	requireValidManifest(t)
 }
 
@@ -304,7 +304,7 @@ func TestFullPipe(t *testing.T) {
 
 			require.NoError(t, err)
 			require.True(t, client.CreatedFile)
-			golden.RequireEquaYaml(t, []byte(client.Content))
+			golden.RequireEqualYaml(t, []byte(client.Content))
 			requireValidManifest(t)
 
 			distBts, err := os.ReadFile(distFile)
@@ -365,7 +365,7 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	golden.RequireEquaYaml(t, []byte(client.Content))
+	golden.RequireEqualYaml(t, []byte(client.Content))
 	requireValidManifest(t)
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
@@ -450,7 +450,7 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	golden.RequireEquaYaml(t, []byte(client.Content))
+	golden.RequireEqualYaml(t, []byte(client.Content))
 	requireValidManifest(t)
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
@@ -512,7 +512,7 @@ func TestRunPipeNameTemplate(t *testing.T) {
 	require.NoError(t, runAll(ctx, client))
 	require.NoError(t, publishAll(ctx, client))
 	require.True(t, client.CreatedFile)
-	golden.RequireEquaYaml(t, []byte(client.Content))
+	golden.RequireEqualYaml(t, []byte(client.Content))
 	requireValidManifest(t)
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
@@ -720,7 +720,7 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 			require.NoError(t, runAll(ctx, client))
 			require.NoError(t, publishAll(ctx, client))
 			require.True(t, client.CreatedFile)
-			golden.RequireEquaYaml(t, []byte(client.Content))
+			golden.RequireEqualYaml(t, []byte(client.Content))
 			requireValidManifest(t)
 
 			distBts, err := os.ReadFile(distFile)
