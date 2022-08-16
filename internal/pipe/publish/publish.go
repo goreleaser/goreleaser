@@ -13,7 +13,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/custompublishers"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
-	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
@@ -47,7 +46,6 @@ var publishers = []Publisher{
 	// brew et al use the release URL, so, they should be last
 	brew.Pipe{},
 	aur.Pipe{},
-	gofish.Pipe{},
 	krew.Pipe{},
 	scoop.Pipe{},
 	milestone.Pipe{},
