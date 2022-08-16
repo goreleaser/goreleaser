@@ -30,6 +30,7 @@ type GitLabURLs struct {
 	Download           string `yaml:"download,omitempty" json:"download,omitempty"`
 	SkipTLSVerify      bool   `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
 	UsePackageRegistry bool   `yaml:"use_package_registry,omitempty" json:"use_package_registry,omitempty"`
+	UseJobToken        bool   `yaml:"use_job_token,omitempty" json:"use_job_token,omitempty"`
 }
 
 // GiteaURLs holds the URLs to be used when using gitea.
@@ -145,21 +146,6 @@ type AUR struct {
 	PrivateKey            string       `yaml:"private_key,omitempty" json:"private_key,omitempty"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 }
-
-// GoFish contains the gofish section.
-type GoFish struct {
-	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
-	Rig                   RepoRef      `yaml:"rig,omitempty" json:"rig,omitempty"`
-	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
-	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
-	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
-	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
-	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty"`
-	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
-	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Goarm                 string       `yaml:"goarm,omitempty" json:"goarm,omitempty"`
-} // deprecated
 
 // Homebrew contains the brew section.
 type Homebrew struct {
@@ -901,7 +887,6 @@ type Project struct {
 	Release         Release          `yaml:"release,omitempty" json:"release,omitempty"`
 	Milestones      []Milestone      `yaml:"milestones,omitempty" json:"milestones,omitempty"`
 	Brews           []Homebrew       `yaml:"brews,omitempty" json:"brews,omitempty"`
-	Rigs            []GoFish         `yaml:"rigs,omitempty" json:"rigs,omitempty"` // deprecated
 	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`
 	Krews           []Krew           `yaml:"krews,omitempty" json:"krews,omitempty"`
 	Scoop           Scoop            `yaml:"scoop,omitempty" json:"scoop,omitempty"`

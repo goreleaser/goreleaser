@@ -56,8 +56,6 @@ const (
 	UploadableSourceArchive
 	// BrewTap is an uploadable homebrew tap recipe file.
 	BrewTap
-	// GoFishRig is an uploadable Rigs rig food file.
-	GoFishRig
 	// PkgBuild is an Arch Linux AUR PKGBUILD file.
 	PkgBuild
 	// SrcInfo is an Arch Linux AUR .SRCINFO file.
@@ -96,8 +94,6 @@ func (t Type) String() string {
 		return "Source"
 	case BrewTap:
 		return "Brew Tap"
-	case GoFishRig:
-		return "GoFish Rig"
 	case KrewPluginManifest:
 		return "Krew Plugin Manifest"
 	case ScoopManifest:

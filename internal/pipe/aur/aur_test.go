@@ -590,13 +590,8 @@ func TestRunEmptyTokenType(t *testing.T) {
 		Dist:        folder,
 		ProjectName: "foo",
 		Release:     config.Release{},
-		Rigs: []config.GoFish{
-			{
-				Rig: config.RepoRef{
-					Owner: "test",
-					Name:  "test",
-				},
-			},
+		AURs: []config.AUR{
+			{},
 		},
 	})
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.1"}
@@ -612,7 +607,7 @@ func TestRunEmptyTokenType(t *testing.T) {
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Name:   "bin",
 		Path:   path,
-		Goos:   "darwin",
+		Goos:   "linux",
 		Goarch: "amd64",
 		Type:   artifact.UploadableArchive,
 		Extra: map[string]interface{}{
