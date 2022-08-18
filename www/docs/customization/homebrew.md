@@ -113,6 +113,13 @@ brews:
       - name: git
       - name: zsh
         type: optional
+      - name: fish
+        version: v1.2.3
+      # if providing both version and type, only the type will be taken into account.
+      - name: elvish
+        type: optional
+        version: v1.2.3
+
 
     # Packages that conflict with your package.
     conflicts:
