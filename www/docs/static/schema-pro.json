@@ -998,6 +998,9 @@
 							},
 							"type": {
 								"type": "string"
+							},
+							"version": {
+								"type": "string"
 							}
 						},
 						"additionalProperties": false,
@@ -1344,6 +1347,9 @@
 						"type": "string"
 					},
 					"bindir": {
+						"type": "string"
+					},
+					"changelog": {
 						"type": "string"
 					},
 					"meta": {
@@ -1910,6 +1916,9 @@
 						"$ref": "#/$defs/Repo"
 					},
 					"draft": {
+						"type": "boolean"
+					},
+					"replace_existing_draft": {
 						"type": "boolean"
 					},
 					"disable": {
