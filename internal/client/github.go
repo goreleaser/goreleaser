@@ -207,6 +207,12 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		return "", err
 	}
 
+	if ctx.Config.Release.Draft && ctx.Config.Release.ReplaceExistingDraft {
+		if err := c.deleteExistedDraftRelease(ctx, title); err != nil {
+			return "", err
+		}
+	}
+
 	// Truncate the release notes if it's too long (github doesn't allow more than 125000 characters)
 	body = truncateReleaseBody(body)
 
@@ -221,27 +227,13 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		data.DiscussionCategoryName = github.String(ctx.Config.Release.DiscussionCategoryName)
 	}
 
-	if *data.Draft {
-		release, err = c.getExistedDraftRelease(ctx, data)
-		if err != nil {
-			return "", err
-		}
-		if release != nil {
-			err = c.deleteExistedDraftReleaseAssets(ctx, release.GetID())
-			if err != nil {
-				return "", err
-			}
-		}
-	} else {
-		release, _, _ = c.client.Repositories.GetReleaseByTag(
-			ctx,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
-			data.GetTagName(),
-		)
-	}
-
-	if release == nil {
+	release, _, err = c.client.Repositories.GetReleaseByTag(
+		ctx,
+		ctx.Config.Release.GitHub.Owner,
+		ctx.Config.Release.GitHub.Name,
+		data.GetTagName(),
+	)
+	if err != nil {
 		release, _, err = c.client.Repositories.CreateRelease(
 			ctx,
 			ctx.Config.Release.GitHub.Owner,
@@ -372,7 +364,7 @@ func overrideGitHubClientAPI(ctx *context.Context, client *github.Client) error 
 	return nil
 }
 
-func (c *githubClient) getExistedDraftRelease(ctx *context.Context, release *github.RepositoryRelease) (*github.RepositoryRelease, error) {
+func (c *githubClient) deleteExistedDraftRelease(ctx *context.Context, name string) error {
 	opt := github.ListOptions{PerPage: 50}
 	for {
 		releases, resp, err := c.client.Repositories.ListReleases(
@@ -382,42 +374,18 @@ func (c *githubClient) getExistedDraftRelease(ctx *context.Context, release *git
 			&opt,
 		)
 		if err != nil {
-			return nil, err
+			return fmt.Errorf("could not delete existing drafts: %w", err)
 		}
 		for _, r := range releases {
-			if *r.Draft && *r.Name == *release.Name {
-				return r, nil
-			}
-		}
-		if resp.NextPage == 0 {
-			return nil, nil
-		}
-		opt.Page = resp.NextPage
-	}
-}
-
-func (c *githubClient) deleteExistedDraftReleaseAssets(ctx *context.Context, releaseID int64) error {
-	opt := github.ListOptions{PerPage: 50}
-	for {
-		assets, resp, err := c.client.Repositories.ListReleaseAssets(
-			ctx,
-			ctx.Config.Release.GitHub.Owner,
-			ctx.Config.Release.GitHub.Name,
-			releaseID,
-			&opt,
-		)
-		if err != nil {
-			return err
-		}
-		for _, a := range assets {
-			_, err := c.client.Repositories.DeleteReleaseAsset(
-				ctx,
-				ctx.Config.Release.GitHub.Owner,
-				ctx.Config.Release.GitHub.Name,
-				a.GetID(),
-			)
-			if err != nil {
-				return err
+			if r.GetDraft() && r.GetName() == name {
+				if _, err := c.client.Repositories.DeleteRelease(
+					ctx,
+					ctx.Config.Release.GitHub.Owner,
+					ctx.Config.Release.GitHub.Name,
+					r.GetID(),
+				); err != nil {
+					return fmt.Errorf("could not delete previous draft release: %w", err)
+				}
 			}
 		}
 		if resp.NextPage == 0 {
