@@ -48,7 +48,7 @@ class {{ .Name }} < Formula
   {{- with .Dependencies }}
   {{ range $index, $element := . }}
   depends_on "{{ .Name }}"
-  {{- if .Type }} => :{{ .Type }}{{- end }}
+  {{- if .Type }} => :{{ .Type }}{{- else if .Version }} => "{{ .Version }}"{{- end }}
   {{- end }}
   {{- end -}}
 
