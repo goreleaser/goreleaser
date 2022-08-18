@@ -427,18 +427,16 @@ type FileInfo struct {
 	MTime time.Time   `yaml:"mtime,omitempty" json:"mtime,omitempty"`
 }
 
-// type alias to prevent stack overflow
-type fileAlias File
-
 // UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
 func (f *File) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	type t File
 	var str string
 	if err := unmarshal(&str); err == nil {
 		*f = File{Source: str}
 		return nil
 	}
 
-	var file fileAlias
+	var file t
 	if err := unmarshal(&file); err != nil {
 		return err
 	}

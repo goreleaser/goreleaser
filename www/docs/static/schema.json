@@ -731,6 +731,32 @@
 					}
 				]
 			},
+			"FileInfo": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://github.com/goreleaser/goreleaser/pkg/config/file-info",
+				"$ref": "#/$defs/FileInfo",
+				"$defs": {
+					"FileInfo": {
+						"properties": {
+							"owner": {
+								"type": "string"
+							},
+							"group": {
+								"type": "string"
+							},
+							"mode": {
+								"type": "integer"
+							},
+							"mtime": {
+								"type": "string",
+								"format": "date-time"
+							}
+						},
+						"additionalProperties": false,
+						"type": "object"
+					}
+				}
+			},
 			"Filters": {
 				"properties": {
 					"exclude": {
