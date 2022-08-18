@@ -67,27 +67,31 @@ nfpms:
       - deb
       - rpm
 
-    # Packages your package depends on.
+    # Packages your package depends on. (overridable)
     dependencies:
       - git
       - zsh
 
-    # Packages your package recommends installing.
+    # Packages it provides. (overridable)
+    provides:
+      - bar
+
+    # Packages your package recommends installing. (overridable)
     recommends:
       - bzr
       - gtk
 
-    # Packages your package suggests installing.
+    # Packages your package suggests installing. (overridable)
     suggests:
       - cvs
       - ksh
 
-    # Packages that conflict with your package.
+    # Packages that conflict with your package. (overridable)
     conflicts:
       - svn
       - bash
 
-    # Packages it replaces.
+    # Packages it replaces. (overridable)
     replaces:
       - fish
 
@@ -121,6 +125,16 @@ nfpms:
     # When set to `true`, the `builds` option is ignored.
     # Defaults to false.
     meta: true
+
+    # Changelog YAML file, see: https://github.com/goreleaser/chglog
+    #
+    # You can use goreleaser/chglog to create the changelog for your project,
+    # pass that changelog yaml file to GoReleaser,
+    # and it should in turn setup it accordingly for the given available
+    # formats (deb and rpm at the moment).
+    #
+    # Experimental.
+    changelog: ./foo.yml
 
     # Contents to add to the package.
     # GoReleaser will automatically add the binaries.
@@ -166,7 +180,7 @@ nfpms:
       - dst: /var/log/boo.log
         type: ghost
 
-      # You can user the packager field to add files that are unique to a specific packager
+      # You can use the packager field to add files that are unique to a specific packager
       - src: path/to/rpm/file.conf
         dst: /etc/file.conf
         type: "config|noreplace"
@@ -223,6 +237,8 @@ nfpms:
         recommends:
           - tig
         replaces:
+          - bash
+        provides:
           - bash
       rpm:
         replacements:
@@ -301,7 +317,7 @@ nfpms:
 
       # Custom deb triggers
       triggers:
-        # register interrest on a trigger activated by another package
+        # register interest on a trigger activated by another package
         # (also available: interest_await, interest_noawait)
         interest:
           - some-trigger-name
@@ -359,3 +375,6 @@ nfpms:
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
+
+!!! info
+    Fields marked with "overridable" can be overriden for any format.

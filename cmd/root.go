@@ -2,20 +2,18 @@ package cmd
 
 import (
 	"errors"
-	"os"
+	"fmt"
+	"time"
 
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
-	"github.com/fatih/color"
+	"github.com/caarlos0/log"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/spf13/cobra"
 )
 
+var boldStyle = lipgloss.NewStyle().Bold(true)
+
 func Execute(version string, exit func(int), args []string) {
-	// enable colored output on travis
-	if os.Getenv("CI") != "" {
-		color.NoColor = false
-	}
-	log.SetHandler(cli.Default)
 	newRootCmd(version, exit).Execute(args)
 }
 
@@ -59,7 +57,9 @@ Its goal is to simplify the build, release and publish steps while providing var
 
 GoReleaser is built for CI tools, you only need to download and execute it in your build script. Of course, you can also install it locally if you wish.
 
-You can also customize your entire release process through a single .goreleaser.yaml file.
+You can customize your entire release process through a single .goreleaser.yaml file.
+
+Check out our website for more information, examples and documentation: https://goreleaser.com
 `,
 		Version:       version,
 		SilenceUsage:  true,
@@ -118,4 +118,25 @@ func shouldPrependRelease(cmd *cobra.Command, args []string) bool {
 
 	// otherwise, we should probably prepend release
 	return true
+}
+
+func deprecateWarn(ctx *context.Context) {
+	if ctx.Deprecated {
+		log.Warn(boldStyle.Render("your config is using deprecated properties, check logs above for details"))
+	}
+}
+
+func timedRunE(verb string, rune func(cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		start := time.Now()
+
+		log.Infof(boldStyle.Render(fmt.Sprintf("starting %s...", verb)))
+
+		if err := rune(cmd, args); err != nil {
+			return wrapError(err, boldStyle.Render(fmt.Sprintf("%s failed after %s", verb, time.Since(start).Truncate(time.Second))))
+		}
+
+		log.Infof(boldStyle.Render(fmt.Sprintf("%s succeeded after %s", verb, time.Since(start).Truncate(time.Second))))
+		return nil
+	}
 }

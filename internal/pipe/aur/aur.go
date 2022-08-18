@@ -11,7 +11,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
@@ -137,10 +137,10 @@ func doRun(ctx *context.Context, aur config.AUR, cl client.Client) error {
 		switch art.Type {
 		case artifact.UploadableBinary:
 			name := art.Name
-			bin := art.ExtraOr(artifact.ExtraBinary, art.Name).(string)
+			bin := artifact.ExtraOr(*art, artifact.ExtraBinary, art.Name)
 			pkg = fmt.Sprintf(`install -Dm755 "./%s "${pkgdir}/usr/bin/%s"`, name, bin)
 		case artifact.UploadableArchive:
-			for _, bin := range art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string) {
+			for _, bin := range artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{}) {
 				pkg = fmt.Sprintf(`install -Dm755 "./%s" "${pkgdir}/usr/bin/%[1]s"`, bin)
 				break
 			}
@@ -318,7 +318,7 @@ func dataFor(ctx *context.Context, cfg config.AUR, cl client.Client, artifacts [
 			DownloadURL: url,
 			SHA256:      sum,
 			Arch:        toPkgBuildArch(art.Goarch + art.Goarm),
-			Format:      art.ExtraOr(artifact.ExtraFormat, "").(string),
+			Format:      artifact.ExtraOr(*art, artifact.ExtraFormat, ""),
 		}
 		result.ReleasePackages = append(result.ReleasePackages, releasePackage)
 		result.Arches = append(result.Arches, releasePackage.Arch)
@@ -353,7 +353,10 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
-	cfg := pkgs[0].Extra[aurExtra].(config.AUR)
+	cfg, err := artifact.Extra[config.AUR](*pkgs[0], aurExtra)
+	if err != nil {
+		return err
+	}
 
 	if strings.TrimSpace(cfg.SkipUpload) == "true" {
 		return pipe.Skip("aur.skip_upload is set")

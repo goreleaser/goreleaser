@@ -75,7 +75,7 @@ var defaultTemplateData = templateData{
 		},
 		{
 			DownloadURL: "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_arm64.tar.gz",
-			SHA256:      "1633f61598ab0791e213135923624eb342196b349490sadasdsadsadasdasdsd",
+			SHA256:      "1df5fdc2bad4ed4c28fbdc77b6c542988c0dc0e2ae34e0dc912bbb1c66646c58",
 			OS:          "darwin",
 			Arch:        "arm64",
 			Install:     []string{`bin.install "test"`},
@@ -103,9 +103,9 @@ func TestFullFormulae(t *testing.T) {
 	data.Dependencies = []config.HomebrewDependency{{Name: "gtk+"}}
 	data.Conflicts = []string{"svn"}
 	data.Plist = "it works"
-	data.PostInstall = []string{`system "touch", "/tmp/foo"`, `system "echo", "done"`}
+	data.PostInstall = []string{`touch "/tmp/foo"`, `system "echo", "done"`}
 	data.CustomBlock = []string{"devel do", `  url "https://github.com/caarlos0/test/releases/download/v0.1.3/test_Darwin_x86_64.tar.gz"`, `  sha256 "1633f61598ab0791e213135923624eb342196b3494909c91899bcd0560f84c68"`, "end"}
-	data.Tests = []string{`system "#{bin}/{{.ProjectName}} -version"`}
+	data.Tests = []string{`system "#{bin}/{{.ProjectName}}", "-version"`}
 	formulae, err := doBuildFormula(context.New(config.Project{
 		ProjectName: "foo",
 	}), data)
@@ -145,8 +145,8 @@ func TestFormulaeSimple(t *testing.T) {
 }
 
 func TestSplit(t *testing.T) {
-	parts := split("system \"true\"\nsystem \"#{bin}/foo -h\"")
-	require.Equal(t, []string{"system \"true\"", "system \"#{bin}/foo -h\""}, parts)
+	parts := split("system \"true\"\nsystem \"#{bin}/foo\", \"-h\"")
+	require.Equal(t, []string{"system \"true\"", "system \"#{bin}/foo\", \"-h\""}, parts)
 	parts = split("")
 	require.Equal(t, []string{}, parts)
 	parts = split("\n  ")
@@ -268,14 +268,14 @@ func TestFullPipe(t *testing.T) {
 							IDs: []string{
 								"foo",
 							},
-							Description:  "A run pipe test formula and FOO={{ .Env.FOO }}",
+							Description:  "Run pipe test formula and FOO={{ .Env.FOO }}",
 							Caveats:      "don't do this {{ .ProjectName }}",
-							Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
+							Test:         "system \"true\"\nsystem \"#{bin}/foo\", \"-h\"",
 							Plist:        `<xml>whatever</xml>`,
 							Dependencies: []config.HomebrewDependency{{Name: "zsh", Type: "optional"}, {Name: "bash"}},
 							Conflicts:    []string{"gtk+", "qt"},
 							Service:      "run foo/bar\nkeep_alive true",
-							PostInstall:  "system \"echo\"\nsystem \"touch\" \"/tmp/hi\"",
+							PostInstall:  "system \"echo\"\ntouch \"/tmp/hi\"",
 							Install:      `bin.install "{{ .ProjectName }}"`,
 							Goamd64:      "v1",
 						},
@@ -353,8 +353,11 @@ func TestRunPipeNameTemplate(t *testing.T) {
 			ProjectName: "foo",
 			Brews: []config.Homebrew{
 				{
-					Name:    "foo_{{ .Env.FOO_BAR }}",
-					Goamd64: "v1",
+					Name:        "foo_{{ .Env.FOO_BAR }}",
+					Description: "Foo bar",
+					Homepage:    "https://goreleaser.com",
+					Goamd64:     "v1",
+					Install:     `bin.install "foo"`,
 					Tap: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -524,12 +527,13 @@ func TestRunPipeForMultipleAmd64Versions(t *testing.T) {
 					Brews: []config.Homebrew{
 						{
 							Name:        name,
-							Description: "A run pipe test formula",
+							Description: "Run pipe test formula",
 							Tap: config.RepoRef{
 								Owner: "test",
 								Name:  "test",
 							},
 							Homepage: "https://github.com/goreleaser",
+							Install:  `bin.install "foo"`,
 						},
 					},
 					GitHubURLs: config.GitHubURLs{
@@ -648,9 +652,9 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 					Brews: []config.Homebrew{
 						{
 							Name:         name,
-							Description:  "A run pipe test formula and FOO={{ .Env.FOO }}",
+							Description:  "Run pipe test formula and FOO={{ .Env.FOO }}",
 							Caveats:      "don't do this {{ .ProjectName }}",
-							Test:         "system \"true\"\nsystem \"#{bin}/foo -h\"",
+							Test:         "system \"true\"\nsystem \"#{bin}/foo\", \"-h\"",
 							Plist:        `<xml>whatever</xml>`,
 							Dependencies: []config.HomebrewDependency{{Name: "zsh"}, {Name: "bash", Type: "recommended"}},
 							Conflicts:    []string{"gtk+", "qt"},
@@ -743,9 +747,8 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
-	ctx := &context.Context{
-		TokenType: context.TokenTypeGitHub,
-		Config: config.Project{
+	ctx := context.New(
+		config.Project{
 			Brews: []config.Homebrew{
 				{
 					Tap: config.RepoRef{
@@ -755,7 +758,8 @@ func TestRunPipeNoBuilds(t *testing.T) {
 				},
 			},
 		},
-	}
+	)
+	ctx.TokenType = context.TokenTypeGitHub
 	client := client.NewMock()
 	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)
@@ -921,7 +925,9 @@ func TestRunPipeBinaryRelease(t *testing.T) {
 			ProjectName: "foo",
 			Brews: []config.Homebrew{
 				{
-					Name: "foo",
+					Name:        "foo",
+					Homepage:    "https://goreleaser.com",
+					Description: "Fake desc",
 					Tap: config.RepoRef{
 						Owner: "foo",
 						Name:  "bar",
@@ -1159,7 +1165,9 @@ func TestRunPipeUniversalBinary(t *testing.T) {
 			ProjectName: "unibin",
 			Brews: []config.Homebrew{
 				{
-					Name: "unibin",
+					Name:        "unibin",
+					Homepage:    "https://goreleaser.com",
+					Description: "Fake desc",
 					Tap: config.RepoRef{
 						Owner: "unibin",
 						Name:  "bar",
@@ -1215,7 +1223,9 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 			ProjectName: "unibin",
 			Brews: []config.Homebrew{
 				{
-					Name: "unibin",
+					Name:        "unibin",
+					Homepage:    "https://goreleaser.com",
+					Description: "Fake desc",
 					Tap: config.RepoRef{
 						Owner: "unibin",
 						Name:  "bar",

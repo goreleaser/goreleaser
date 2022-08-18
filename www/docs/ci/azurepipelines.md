@@ -21,13 +21,13 @@ Following inputs can be used
 | Name             | Type    | Default      | Description                                                      |
 |------------------|---------|--------------|------------------------------------------------------------------|
 | `distribution`   | String  | `goreleaser` | GoReleaser distribution, either `goreleaser` or `goreleaser-pro` |
-| `version`**¹**   | String  | `latest`     | GoReleaser version                                               |
+| `version`[^version]   | String  | `latest`     | GoReleaser version                                               |
 | `args`           | String  |              | Arguments to pass to GoReleaser                                  |
 | `workdir`        | String  | `$(Build.SourcesDirectory)`          | Working directory (below repository root)                        |
 | `installOnly`   | Bool    | `false`      | Just install GoReleaser                                          |
 
-> **¹** Can be a fixed version like `v0.132.0` or a max satisfying semver one like `~> 0.132`. In this case this will return `v0.132.1`.
-> For the `pro` version, add `-pro` to the string
+
+[^version]: Can be a fixed version like `v1.10.0` or a max satisfying semver one like `~> v1.10`. In this case this will return the latest patch release of `v1.10`. For the `pro` version, add `-pro` to the string
 
 ### Task environment variables
 
@@ -50,7 +50,7 @@ Following environment variables can be used, as environment variable.
 
 | Name             | Description                           |
 |------------------|---------------------------------------|
-| `GITHUB_TOKEN`   | [GITHUB_TOKEN](https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token) for e.g. `brew` or `gofish` |
+| `GITHUB_TOKEN`   | [GITHUB_TOKEN](https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token) for e.g. `brew` |
 | `GORELEASER_KEY` | Your [GoReleaser Pro](https://goreleaser.com/pro) License Key, in case you are using the `goreleaser-pro` distribution                              |
 
 ### Example pipeline
@@ -69,7 +69,7 @@ trigger:
       - refs/tags/*
 
 variables:
-  GO_VERSION: "1.18"
+  GO_VERSION: "1.19"
 
 pool:
   vmImage: ubuntu-latest

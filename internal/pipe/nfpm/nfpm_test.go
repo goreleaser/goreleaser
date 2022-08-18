@@ -100,6 +100,7 @@ func TestRunPipe(t *testing.T) {
 				Maintainer:  "me@me",
 				Vendor:      "asdf",
 				Homepage:    "https://goreleaser.com/{{ .Env.PRO }}",
+				Changelog:   "./testdata/changelog.yaml",
 				NFPMOverridables: config.NFPMOverridables{
 					FileNameTemplate: defaultNameTemplate + "-{{ .Release }}-{{ .Epoch }}",
 					PackageName:      "foo",
@@ -108,6 +109,7 @@ func TestRunPipe(t *testing.T) {
 					Suggests:         []string{"bzr"},
 					Replaces:         []string{"fish"},
 					Conflicts:        []string{"git"},
+					Provides:         []string{"ash"},
 					Release:          "10",
 					Epoch:            "20",
 					Contents: []*files.Content{
@@ -242,7 +244,7 @@ func TestRunPipe(t *testing.T) {
 			"./testdata/folder",
 			"./testdata/testfile-" + pkg.Goarch + pkg.Goamd64 + pkg.Goarm + pkg.Gomips + ".txt",
 			binPath,
-		}, sources(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",
 			"/usr/share/testfile.txt",
@@ -253,7 +255,7 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope3_mybin.conf",
 			"/etc/folder",
 			"/usr/bin/subdir/mybin",
-		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 8, "should not modify the config file list")
 }
@@ -389,8 +391,8 @@ func TestRunPipeConventionalNameTemplate(t *testing.T) {
 			"foo_1.0.0_x86_64v4.apk",
 		}, pkg.Name, "package name is not expected")
 		require.Equal(t, "someid", pkg.ID())
-		require.ElementsMatch(t, []string{binPath}, sources(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
-		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+		require.ElementsMatch(t, []string{"/usr/bin/subdir/mybin"}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 }
 
@@ -429,7 +431,7 @@ func TestInvalidTemplate(t *testing.T) {
 			FileNameTemplate: "{{.Foo}",
 		}
 		require.NoError(t, Pipe{}.Default(ctx))
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1: unexpected "}" in operand`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("source", func(t *testing.T) {
@@ -442,7 +444,7 @@ func TestInvalidTemplate(t *testing.T) {
 				},
 			},
 		}
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_SOURCE>: map has no entry for key "NOPE_SOURCE"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("target", func(t *testing.T) {
@@ -455,49 +457,49 @@ func TestInvalidTemplate(t *testing.T) {
 				},
 			},
 		}
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_TARGET>: map has no entry for key "NOPE_TARGET"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("description", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Description = "{{ .NOPE_DESC }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_DESC>: map has no entry for key "NOPE_DESC"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("maintainer", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Maintainer = "{{ .NOPE_DESC }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_DESC>: map has no entry for key "NOPE_DESC"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("homepage", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Homepage = "{{ .NOPE_HOMEPAGE }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_HOMEPAGE>: map has no entry for key "NOPE_HOMEPAGE"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("deb key file", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Deb.Signature.KeyFile = "{{ .NOPE_KEY_FILE }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_KEY_FILE>: map has no entry for key "NOPE_KEY_FILE"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("rpm key file", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].RPM.Signature.KeyFile = "{{ .NOPE_KEY_FILE }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_KEY_FILE>: map has no entry for key "NOPE_KEY_FILE"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("apk key file", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].APK.Signature.KeyFile = "{{ .NOPE_KEY_FILE }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:3: executing "tmpl" at <.NOPE_KEY_FILE>: map has no entry for key "NOPE_KEY_FILE"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 
 	t.Run("bindir", func(t *testing.T) {
 		ctx := makeCtx()
 		ctx.Config.NFPMs[0].Bindir = "/usr/{{ .NOPE }}"
-		require.Contains(t, Pipe{}.Run(ctx).Error(), `template: tmpl:1:8: executing "tmpl" at <.NOPE>: map has no entry for key "NOPE"`)
+		testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 	})
 }
 
@@ -532,7 +534,7 @@ func TestRunPipeInvalidContentsSourceTemplate(t *testing.T) {
 			artifact.ExtraID: "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
 func TestNoBuildsFound(t *testing.T) {
@@ -1207,7 +1209,7 @@ func TestMeta(t *testing.T) {
 			"/usr/share/testfile.txt",
 			"/etc/nope.conf",
 			"/etc/nope-rpm.conf",
-		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 4, "should not modify the config file list")
@@ -1355,7 +1357,7 @@ func TestBinDirTemplating(t *testing.T) {
 		// the final binary should contain the evaluated bindir (after template eval)
 		require.ElementsMatch(t, []string{
 			"/usr/lib/pro/nagios/plugins/subdir/mybin",
-		}, destinations(pkg.ExtraOr(extraFiles, files.Contents{}).(files.Contents)))
+		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 }
 

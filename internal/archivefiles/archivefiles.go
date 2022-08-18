@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/fileglob"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -23,7 +23,7 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 
 		files, err := fileglob.Glob(replaced)
 		if err != nil {
-			return result, fmt.Errorf("globbing failed for pattern %s: %w", f.Source, err)
+			return result, fmt.Errorf("globbing failed for pattern %s: %w", replaced, err)
 		}
 
 		for _, file := range files {
@@ -64,9 +64,6 @@ func unique(in []config.File) []config.File {
 }
 
 func destinationFor(f config.File, path string) string {
-	if f.Destination == "" {
-		return path
-	}
 	if f.StripParent {
 		return filepath.Join(f.Destination, filepath.Base(path))
 	}

@@ -13,7 +13,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
 	"github.com/goreleaser/goreleaser/internal/pipe/custompublishers"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
-	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/release"
@@ -47,7 +46,6 @@ var publishers = []Publisher{
 	// brew et al use the release URL, so, they should be last
 	brew.Pipe{},
 	aur.Pipe{},
-	gofish.Pipe{},
 	krew.Pipe{},
 	scoop.Pipe{},
 	milestone.Pipe{},
@@ -63,10 +61,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	for _, publisher := range publishers {
 		if err := skip.Maybe(
 			publisher,
-			logging.Log(
+			logging.PadLog(
 				publisher.String(),
 				errhandler.Handle(publisher.Publish),
-				logging.ExtraPadding,
 			),
 		)(ctx); err != nil {
 			return fmt.Errorf("%s: failed to publish artifacts: %w", publisher.String(), err)

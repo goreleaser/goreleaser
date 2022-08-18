@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -95,6 +95,16 @@ func TestInvalidTemplate(t *testing.T) {
 func TestSkip(t *testing.T) {
 	t.Run("skip", func(t *testing.T) {
 		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
+	})
+
+	t.Run("skip before", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Before: config.Before{
+				Hooks: []string{""},
+			},
+		})
+		ctx.SkipBefore = true
+		require.True(t, Pipe{}.Skip(ctx))
 	})
 
 	t.Run("dont skip", func(t *testing.T) {

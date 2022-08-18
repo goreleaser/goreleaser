@@ -81,7 +81,7 @@ nav:
     - customization/project.md
   - Build:
     - customization/build.md
-    - customization/gomod.md
+    - customization/verifiable_builds.md
     - customization/monorepo.md
     - customization/universalbinaries.md
   - Packaging and Archiving:

@@ -55,12 +55,6 @@ nFPM will soon make mandatory setting the maintainer field.
     ```
 
 
-### rigs
-
-> since 2022-03-21 (v1.8.0)
-
-GoFish was deprecated by their authors, therefore, we're removing its
-support from GoReleaser too.
 
 ### dockers.use: buildpacks
 
@@ -93,9 +87,20 @@ On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
     some_template: 'lala-{{ .Var.foo }}'
     ```
 
+## Expired deprecation notices
+
+The following options were deprecated in the past and were already removed.
+
+### rigs
+
+> since 2022-03-21 (v1.8.0), removed 2022-08-16 (v1.11.0)
+
+GoFish was deprecated by their authors, therefore, we're removing its
+support from GoReleaser too.
+
 ### nfpms.empty_folders
 
-> since 2021-11-14  (v1.0.0)
+> since 2021-11-14 (v1.0.0), removed 2022-06-14 (v1.10.0)
 
 nFPM empty folders is now deprecated in favor of a `dir` content type:
 
@@ -115,9 +120,10 @@ nFPM empty folders is now deprecated in favor of a `dir` content type:
         type: dir
     ```
 
+
 ### builds for windows/arm64
 
-> since 2021-08-16 (v0.175.0)
+> since 2021-08-16 (v0.175.0), removed 2022-06-12 (v1.10.0)
 
 Since Go 1.17, `windows/arm64` is a valid target.
 
@@ -133,10 +139,6 @@ ignore:
 ```
 
 If you try to use new versions of GoReleaser with Go 1.16 or older, it will warn about it until this deprecation warning expires, after that your build will likely fail.
-
-## Expired deprecation notices
-
-The following options were deprecated in the past and were already removed.
 
 ### godownloader
 

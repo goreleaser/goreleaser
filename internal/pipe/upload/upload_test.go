@@ -12,6 +12,7 @@ import (
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -396,7 +397,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 				Name:   "production",
 				Mode:   "binary",
 				// This template is not correct and should fail
-				Target:   "http://storage.company.com/example-repo-local/{{ .ProjectName /{{ .Version }}/",
+				Target:   "http://storage.company.com/example-repo-local/{{ .ProjectName}",
 				Username: "deployuser",
 			},
 		},
@@ -414,9 +415,7 @@ func TestRunPipe_TargetTemplateError(t *testing.T) {
 		Goos:   "darwin",
 		Type:   artifact.UploadableBinary,
 	})
-	err := Pipe{}.Publish(ctx)
-	require.Error(t, err)
-	require.Contains(t, err.Error(), `upload: error while building the target url: template: tmpl:1: unexpected "/" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Publish(ctx))
 }
 
 func TestRunPipe_BadCredentials(t *testing.T) {

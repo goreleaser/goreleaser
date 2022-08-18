@@ -18,7 +18,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/effectiveconfig"
 	"github.com/goreleaser/goreleaser/internal/pipe/env"
 	"github.com/goreleaser/goreleaser/internal/pipe/git"
-	"github.com/goreleaser/goreleaser/internal/pipe/gofish"
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/metadata"
@@ -50,8 +49,8 @@ var BuildPipeline = []Piper{
 	env.Pipe{},             // load and validate environment variables
 	git.Pipe{},             // get and validate git repo state
 	semver.Pipe{},          // parse current tag to a semver
-	before.Pipe{},          // run global hooks before build
 	defaults.Pipe{},        // load default configs
+	before.Pipe{},          // run global hooks before build
 	snapshot.Pipe{},        // snapshot version handling
 	dist.Pipe{},            // ensure ./dist is clean
 	gomod.Pipe{},           // setup gomod-related stuff
@@ -80,7 +79,6 @@ var Pipeline = append(
 	sign.Pipe{},          // sign artifacts
 	aur.Pipe{},           // create arch linux aur pkgbuild
 	brew.Pipe{},          // create brew tap
-	gofish.Pipe{},        // create gofish rig
 	krew.Pipe{},          // krew plugins
 	scoop.Pipe{},         // create scoop buckets
 	docker.Pipe{},        // create and push docker images

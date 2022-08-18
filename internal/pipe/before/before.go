@@ -7,8 +7,8 @@ import (
 	"io"
 	"os/exec"
 
-	"github.com/apex/log"
 	"github.com/caarlos0/go-shellwords"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/logext"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -18,8 +18,10 @@ import (
 // Pipe is a global hook pipe.
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "running before hooks" }
-func (Pipe) Skip(ctx *context.Context) bool { return len(ctx.Config.Before.Hooks) == 0 }
+func (Pipe) String() string { return "running before hooks" }
+func (Pipe) Skip(ctx *context.Context) bool {
+	return len(ctx.Config.Before.Hooks) == 0 || ctx.SkipBefore
+}
 
 // Run executes the hooks.
 func (Pipe) Run(ctx *context.Context) error {

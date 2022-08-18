@@ -15,6 +15,7 @@ goreleaser release [flags]
   -k, --key string                   GoReleaser Pro license key [$GORELEASER_KEY]
       --nightly                      Generate a nightly build, publishing artifacts that support it (implies --skip-announce and --skip-validate)
   -p, --parallelism int              Amount tasks to run concurrently (default: number of CPUs)
+      --prepare                      Will run the release in such way that it can be published and announced later with goreleaser publish and goreleaser announce (implies --skip-publish, --skip-announce and --skip-after)
       --release-footer string        Load custom release notes footer from a markdown file
       --release-footer-tmpl string   Load custom release notes footer from a templated markdown file (overrides --release-footer)
       --release-header string        Load custom release notes header from a markdown file
@@ -22,8 +23,11 @@ goreleaser release [flags]
       --release-notes string         Load custom release notes from a markdown file (will skip GoReleaser changelog generation)
       --release-notes-tmpl string    Load custom release notes from a templated markdown file (overrides --release-notes)
       --rm-dist                      Removes the dist folder
+      --skip-after                   Skips global after hooks
       --skip-announce                Skips announcing releases (implies --skip-validate)
-      --skip-publish                 Skips publishing artifacts
+      --skip-before                  Skips global before hooks
+      --skip-docker                  Skips Docker Images/Manifests builds
+      --skip-publish                 Skips publishing artifacts (implies --skip-announce)
       --skip-sbom                    Skips cataloging artifacts
       --skip-sign                    Skips signing artifacts
       --skip-validate                Skips git checks

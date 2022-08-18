@@ -30,11 +30,16 @@ You can use GoReleaser with GitLab Enterprise by providing its URLs in the
 gitlab_urls:
   api: https://gitlab.mycompany.com/api/v4/
   download: https://gitlab.company.com
+
   # set to true if you use a self-signed certificate
   skip_tls_verify: false
+
   # set to true if you want to upload to the Package Registry rather than attachments
   # Only works with GitLab 13.5+
   use_package_registry: false
+
+  # Set this if you set GITLAB_TOKEN to the value of CI_JOB_TOKEN:
+  use_job_token: true
 ```
 
 If none are set, they default to GitLab's public URLs.
@@ -60,7 +65,7 @@ gitlab_urls:
 
 ## Example release
 
-Here's an example of how the release might look like:
+Here's an example of what the release might look like:
 
 <a href="https://gitlab.com/goreleaser/example/-/releases">
   <figure>

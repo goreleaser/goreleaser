@@ -1,7 +1,7 @@
 package errhandler
 
 import (
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -16,7 +16,7 @@ func Handle(action middleware.Action) middleware.Action {
 			return nil
 		}
 		if pipe.IsSkip(err) {
-			log.WithError(err).Warn("pipe skipped")
+			log.WithField("reason", err.Error()).Warn("pipe skipped")
 			return nil
 		}
 		return err

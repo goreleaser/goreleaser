@@ -58,14 +58,15 @@ aurs:
     private_key: '{{ .Env.AUR_KEY }}'
 
     # The AUR Git URL for this package.
-    # Defaults to empty.
+    # Defaults to empty
+    # Publish is skipped if empty.
     git_url: 'ssh://aur@aur.archlinux.org/mypackage-bin.git'
 
     # Setting this will prevent goreleaser to actually try to commit the updated
     # formula - instead, the formula file will be stored on the dist folder only,
     # leaving the responsibility of publishing it to the user.
     #
-    # If set to auto, the release will not be uploaded to the homebrew tap
+    # If set to auto, the release will not be uploaded to the AUR repo
     # in case there is an indicator for prerelease in the tag e.g. v1.0.0-rc1.
     #
     # Default is false.

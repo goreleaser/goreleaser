@@ -13,7 +13,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
@@ -233,7 +233,7 @@ func manifestFor(ctx *context.Context, cfg config.Krew, cl client.Client, artifa
 		}
 
 		for _, arch := range goarch {
-			bins := art.ExtraOr(artifact.ExtraBinaries, []string{}).([]string)
+			bins := artifact.ExtraOr(*art, artifact.ExtraBinaries, []string{})
 			if len(bins) != 1 {
 				return result, fmt.Errorf("krew: only one binary per archive allowed, got %d on %q", len(bins), art.Name)
 			}
@@ -283,8 +283,11 @@ func publishAll(ctx *context.Context, cli client.Client) error {
 }
 
 func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Client) error {
-	cfg := manifest.Extra[krewConfigExtra].(config.Krew)
-	var err error
+	cfg, err := artifact.Extra[config.Krew](*manifest, krewConfigExtra)
+	if err != nil {
+		return err
+	}
+
 	cl, err = client.NewIfToken(ctx, cl, cfg.Index.Token)
 	if err != nil {
 		return err

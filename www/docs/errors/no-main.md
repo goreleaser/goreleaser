@@ -31,3 +31,7 @@ builds:
 ```
 
 For more info, check the [builds documentation](/customization/build/).
+
+## If you ran goreleaser outside the root of the project
+
+Run goreleaser in the root of the project.

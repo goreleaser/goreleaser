@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -15,12 +15,14 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// ManifestPipe is beta implementation of for the docker manifest feature,
+// ManifestPipe is an implementation for the docker manifest feature,
 // allowing to publish multi-arch docker images.
 type ManifestPipe struct{}
 
-func (ManifestPipe) String() string                 { return "docker manifests" }
-func (ManifestPipe) Skip(ctx *context.Context) bool { return len(ctx.Config.DockerManifests) == 0 }
+func (ManifestPipe) String() string { return "docker manifests" }
+func (ManifestPipe) Skip(ctx *context.Context) bool {
+	return len(ctx.Config.DockerManifests) == 0 || ctx.SkipDocker
+}
 
 // Default sets the pipe defaults.
 func (ManifestPipe) Default(ctx *context.Context) error {

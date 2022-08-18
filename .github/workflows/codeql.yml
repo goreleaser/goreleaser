@@ -16,6 +16,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
-    - uses: github/codeql-action/init@27ea8f8fe5977c00f5b37e076ab846c5bd783b96 # v2
-    - uses: github/codeql-action/autobuild@27ea8f8fe5977c00f5b37e076ab846c5bd783b96 # v2
-    - uses: github/codeql-action/analyze@27ea8f8fe5977c00f5b37e076ab846c5bd783b96 # v2
+    - uses: github/codeql-action/init@2ca79b6fa8d3ec278944088b4aa5f46912db5d63 # v2
+    - uses: github/codeql-action/autobuild@2ca79b6fa8d3ec278944088b4aa5f46912db5d63 # v2
+    - uses: github/codeql-action/analyze@2ca79b6fa8d3ec278944088b4aa5f46912db5d63 # v2

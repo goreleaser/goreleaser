@@ -79,7 +79,6 @@ func TestZipFile(t *testing.T) {
 	paths := make([]string, len(r.File))
 	for i, zf := range r.File {
 		paths[i] = zf.Name
-		t.Logf("%s: %v", zf.Name, zf.Mode())
 		if zf.Name == "sub1/executable" {
 			ex := zf.Mode() | 0o111
 			require.Equal(t, zf.Mode().String(), ex.String())

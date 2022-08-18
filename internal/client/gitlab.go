@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/apex/log"
+	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -44,7 +44,14 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 
 		options = append(options, gitlab.WithBaseURL(apiURL))
 	}
-	client, err := gitlab.NewClient(token, options...)
+
+	var client *gitlab.Client
+	var err error
+	if ctx.Config.GitLabURLs.UseJobToken {
+		client, err = gitlab.NewJobClient(token, options...)
+	} else {
+		client, err = gitlab.NewClient(token, options...)
+	}
 	if err != nil {
 		return &gitlabClient{}, err
 	}

@@ -1,0 +1,37 @@
+name: "grype"
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  scan-source:
+    name: scan-source
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+    - uses: actions/checkout@b0e28b5ac45a892f91e7d036f8200cf5ed489415 # v3
+    - uses: anchore/scan-action@v3
+      with:
+        path: "."
+        fail-build: true
+
+  scan-image:
+    name: scan-image
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+    - uses: anchore/scan-action@v3
+      with:
+        image: "goreleaser/goreleaser:latest"
+        fail-build: true

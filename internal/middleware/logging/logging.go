@@ -1,36 +1,43 @@
 package logging
 
 import (
-	"github.com/apex/log"
-	"github.com/apex/log/handlers/cli"
-	"github.com/fatih/color"
+	"fmt"
+	"time"
+
+	"github.com/caarlos0/log"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/internal/middleware"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-// Padding is a logging initial padding.
-type Padding int
-
-// DefaultInitialPadding is the default padding in the log library.
-const DefaultInitialPadding Padding = 3
-
-// ExtraPadding is the double of the DefaultInitialPadding.
-const ExtraPadding = DefaultInitialPadding * 2
+var (
+	bold  = lipgloss.NewStyle().Bold(true)
+	faint = lipgloss.NewStyle().Italic(true).Faint(true)
+)
 
 // Log pretty prints the given action and its title.
-// You can have different padding levels by providing different initial
-// paddings. The middleware will print the title in the given padding and the
-// action logs in padding+default padding.
-// The default padding in the log library is 3.
-// The middleware always resets to the default padding.
-func Log(title string, next middleware.Action, padding Padding) middleware.Action {
+func Log(title string, next middleware.Action) middleware.Action {
 	return func(ctx *context.Context) error {
+		start := time.Now()
 		defer func() {
-			cli.Default.Padding = int(DefaultInitialPadding)
+			if took := time.Since(start).Round(time.Second); took > 0 {
+				log.Info(faint.Render(fmt.Sprintf("took: %s", took)))
+			}
+			log.ResetPadding()
 		}()
-		cli.Default.Padding = int(padding)
-		log.Infof(color.New(color.Bold).Sprint(title))
-		cli.Default.Padding = int(padding + DefaultInitialPadding)
+		log.Infof(bold.Render(title))
+		log.IncreasePadding()
+		return next(ctx)
+	}
+}
+
+// PadLog pretty prints the given action and its title with an increased padding.
+func PadLog(title string, next middleware.Action) middleware.Action {
+	return func(ctx *context.Context) error {
+		defer log.ResetPadding()
+		log.IncreasePadding()
+		log.Infof(bold.Render(title))
+		log.IncreasePadding()
 		return next(ctx)
 	}
 }
