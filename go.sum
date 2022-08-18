@@ -445,8 +445,8 @@ github.com/goreleaser/chglog v0.2.2 h1:V7nf07baXtGAgGevvqgW2MM4kZ6gOr12vKNSAU3VI
 github.com/goreleaser/chglog v0.2.2/go.mod h1:2s5JwtCOWjZa8AIneL+xdUl9SRuigCjRHNHsX30dupE=
 github.com/goreleaser/fileglob v1.3.0 h1:/X6J7U8lbDpQtBvGcwwPS6OpzkNVlVEsFUVRx9+k+7I=
 github.com/goreleaser/fileglob v1.3.0/go.mod h1:Jx6BoXv3mbYkEzwm9THo7xbr5egkAraxkGorbJb4RxU=
-github.com/goreleaser/nfpm/v2 v2.18.0 h1:1ZijW0vik1rxWvhMTJe6xZZSRfZ/b3eHRylQ+ElK3Xc=
-github.com/goreleaser/nfpm/v2 v2.18.0/go.mod h1:CCNOctcFfuzGLbaA8D4trDCa4xfSMtp9uoempUcG8gE=
+github.com/goreleaser/nfpm/v2 v2.18.1 h1:TuZQvnOLCXVv/wdDwS1luoQKRQo0vtjwP09YWcXMhR8=
+github.com/goreleaser/nfpm/v2 v2.18.1/go.mod h1:CCNOctcFfuzGLbaA8D4trDCa4xfSMtp9uoempUcG8gE=
 github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
