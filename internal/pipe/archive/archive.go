@@ -190,11 +190,15 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 	}
 	bins := []string{}
 	for _, binary := range binaries {
+		dst := binary.Name
+		if arch.StripParentBinaryFolder {
+			dst = filepath.Base(dst)
+		}
 		if err := a.Add(config.File{
 			Source:      binary.Path,
-			Destination: binary.Name,
+			Destination: dst,
 		}); err != nil {
-			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, binary.Name, err)
+			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, dst, err)
 		}
 		bins = append(bins, binary.Name)
 	}

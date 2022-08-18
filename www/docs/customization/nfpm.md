@@ -126,6 +126,16 @@ nfpms:
     # Defaults to false.
     meta: true
 
+    # Changelog YAML file, see: https://github.com/goreleaser/chglog
+    #
+    # You can use goreleaser/chglog to create the changelog for your project,
+    # pass that changelog yaml file to GoReleaser,
+    # and it should in turn setup it accordingly for the given available
+    # formats (deb and rpm at the moment).
+    #
+    # Experimental.
+    changelog: ./foo.yml
+
     # Contents to add to the package.
     # GoReleaser will automatically add the binaries.
     contents:

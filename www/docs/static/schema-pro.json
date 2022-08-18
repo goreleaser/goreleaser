@@ -182,6 +182,9 @@
 							}
 						]
 					},
+					"strip_parent_binary_folder": {
+						"type": "boolean"
+					},
 					"files": {
 						"items": {
 							"$ref": "#/$defs/File"
@@ -552,10 +555,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"group"
-				]
+				"type": "object"
 			},
 			"Contents": {
 				"items": {
@@ -755,6 +755,32 @@
 					}
 				]
 			},
+			"FileInfo": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"$id": "https://github.com/goreleaser/goreleaser/pkg/config/file-info",
+				"$ref": "#/$defs/FileInfo",
+				"$defs": {
+					"FileInfo": {
+						"properties": {
+							"owner": {
+								"type": "string"
+							},
+							"group": {
+								"type": "string"
+							},
+							"mode": {
+								"type": "integer"
+							},
+							"mtime": {
+								"type": "string",
+								"format": "date-time"
+							}
+						},
+						"additionalProperties": false,
+						"type": "object"
+					}
+				}
+			},
 			"Filters": {
 				"properties": {
 					"exclude": {
@@ -850,6 +876,9 @@
 					},
 					"use_package_registry": {
 						"type": "boolean"
+					},
+					"use_job_token": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
@@ -865,48 +894,6 @@
 					},
 					"skip_tls_verify": {
 						"type": "boolean"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object"
-			},
-			"GoFish": {
-				"properties": {
-					"name": {
-						"type": "string"
-					},
-					"rig": {
-						"$ref": "#/$defs/RepoRef"
-					},
-					"commit_author": {
-						"$ref": "#/$defs/CommitAuthor"
-					},
-					"commit_msg_template": {
-						"type": "string"
-					},
-					"description": {
-						"type": "string"
-					},
-					"homepage": {
-						"type": "string"
-					},
-					"license": {
-						"type": "string"
-					},
-					"skip_upload": {
-						"type": "string"
-					},
-					"url_template": {
-						"type": "string"
-					},
-					"ids": {
-						"items": {
-							"type": "string"
-						},
-						"type": "array"
-					},
-					"goarm": {
-						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1033,6 +1020,9 @@
 								"type": "string"
 							},
 							"type": {
+								"type": "string"
+							},
+							"version": {
 								"type": "string"
 							}
 						},
@@ -1382,6 +1372,9 @@
 					"bindir": {
 						"type": "string"
 					},
+					"changelog": {
+						"type": "string"
+					},
 					"meta": {
 						"type": "boolean"
 					}
@@ -1705,12 +1698,6 @@
 						},
 						"type": "array"
 					},
-					"rigs": {
-						"items": {
-							"$ref": "#/$defs/GoFish"
-						},
-						"type": "array"
-					},
 					"aurs": {
 						"items": {
 							"$ref": "#/$defs/AUR"
@@ -1952,6 +1939,9 @@
 						"$ref": "#/$defs/Repo"
 					},
 					"draft": {
+						"type": "boolean"
+					},
+					"replace_existing_draft": {
 						"type": "boolean"
 					},
 					"disable": {
@@ -2651,6 +2641,12 @@
 					"checksum_header": {
 						"type": "string"
 					},
+					"client_x509_cert": {
+						"type": "string"
+					},
+					"client_x509_key": {
+						"type": "string"
+					},
 					"trusted_certificates": {
 						"type": "string"
 					},
@@ -2673,7 +2669,11 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"client_x509_cert",
+					"client_x509_key"
+				]
 			},
 			"Webhook": {
 				"properties": {
