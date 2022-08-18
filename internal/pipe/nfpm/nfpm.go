@@ -252,10 +252,12 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		Vendor:          fpm.Vendor,
 		Homepage:        homepage,
 		License:         fpm.License,
+		Changelog:       fpm.Changelog,
 		Overridables: nfpm.Overridables{
 			Conflicts:  overridden.Conflicts,
 			Depends:    overridden.Dependencies,
 			Recommends: overridden.Recommends,
+			Provides:   overridden.Provides,
 			Suggests:   overridden.Suggests,
 			Replaces:   overridden.Replaces,
 			Contents:   contents,

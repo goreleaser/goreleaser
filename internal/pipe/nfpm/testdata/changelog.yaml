@@ -1,0 +1,23 @@
+- semver: 0.2.2
+  date: 2022-08-15T23:28:59-03:00
+  packager: GitHub <noreply@github.com>
+  changes:
+    - commit: 4864bcced8ccc6b0428b237aa75e5c6b7e56fa69
+      note: 'fix: force old version of go-git to avoid go-crypto issues'
+      author:
+        name: Carlos A Becker
+        email: caarlos0@users.noreply.github.com
+      committer:
+        name: Carlos A Becker
+        email: caarlos0@users.noreply.github.com
+    - commit: 1893f0b7a809699baf5138569de677a0a5de0445
+      note: 'fix: old go-crypto version'
+      author:
+        name: Carlos A Becker
+        email: caarlos0@users.noreply.github.com
+      committer:
+        name: Carlos A Becker
+        email: caarlos0@users.noreply.github.com
+- semver: 0.2.1
+  date: 2022-08-15T22:44:59-03:00
+  packager: GitHub <noreply@github.com>

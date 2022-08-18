@@ -56,8 +56,6 @@ const (
 	UploadableSourceArchive
 	// BrewTap is an uploadable homebrew tap recipe file.
 	BrewTap
-	// GoFishRig is an uploadable Rigs rig food file.
-	GoFishRig
 	// PkgBuild is an Arch Linux AUR PKGBUILD file.
 	PkgBuild
 	// SrcInfo is an Arch Linux AUR .SRCINFO file.
@@ -96,8 +94,6 @@ func (t Type) String() string {
 		return "Source"
 	case BrewTap:
 		return "Brew Tap"
-	case GoFishRig:
-		return "GoFish Rig"
 	case KrewPluginManifest:
 		return "Krew Plugin Manifest"
 	case ScoopManifest:
@@ -272,13 +268,15 @@ func New() Artifacts {
 
 // List return the actual list of artifacts.
 func (artifacts Artifacts) List() []*Artifact {
+	artifacts.lock.Lock()
+	defer artifacts.lock.Unlock()
 	return artifacts.items
 }
 
 // GroupByID groups the artifacts by their ID.
 func (artifacts Artifacts) GroupByID() map[string][]*Artifact {
 	result := map[string][]*Artifact{}
-	for _, a := range artifacts.items {
+	for _, a := range artifacts.List() {
 		id := a.ID()
 		if id == "" {
 			continue
@@ -291,7 +289,7 @@ func (artifacts Artifacts) GroupByID() map[string][]*Artifact {
 // GroupByPlatform groups the artifacts by their platform.
 func (artifacts Artifacts) GroupByPlatform() map[string][]*Artifact {
 	result := map[string][]*Artifact{}
-	for _, a := range artifacts.items {
+	for _, a := range artifacts.List() {
 		plat := a.Goos + a.Goarch + a.Goarm + a.Gomips + a.Goamd64
 		result[plat] = append(result[plat], a)
 	}
@@ -489,7 +487,7 @@ func (artifacts *Artifacts) Filter(filter Filter) Artifacts {
 	}
 
 	result := New()
-	for _, a := range artifacts.items {
+	for _, a := range artifacts.List() {
 		if filter(a) {
 			result.items = append(result.items, a)
 		}
@@ -511,7 +509,7 @@ type VisitFn func(a *Artifact) error
 
 // Visit executes the given function for each artifact in the list.
 func (artifacts Artifacts) Visit(fn VisitFn) error {
-	for _, artifact := range artifacts.items {
+	for _, artifact := range artifacts.List() {
 		if err := fn(artifact); err != nil {
 			return err
 		}

@@ -112,6 +112,19 @@ func CheckConfig(ctx *context.Context, upload *config.Upload, kind string) error
 		return misconfigured(kind, upload, "no certificate could be added from the specified trusted_certificates configuration")
 	}
 
+	if upload.ClientX509Cert != "" && upload.ClientX509Key == "" {
+		return misconfigured(kind, upload, "'client_x509_key' must be set when 'client_x509_cert' is set")
+	}
+	if upload.ClientX509Key != "" && upload.ClientX509Cert == "" {
+		return misconfigured(kind, upload, "'client_x509_cert' must be set when 'client_x509_key' is set")
+	}
+	if upload.ClientX509Cert != "" && upload.ClientX509Key != "" {
+		if _, err := tls.LoadX509KeyPair(upload.ClientX509Cert, upload.ClientX509Key); err != nil {
+			return misconfigured(kind, upload,
+				"client x509 certificate could not be loaded from the specified 'client_x509_cert' and 'client_x509_key'")
+		}
+	}
+
 	return nil
 }
 
@@ -306,27 +319,34 @@ func newUploadRequest(ctx *context.Context, method, target, username, secret str
 }
 
 func getHTTPClient(upload *config.Upload) (*h.Client, error) {
-	if upload.TrustedCerts == "" {
+	if upload.TrustedCerts == "" && upload.ClientX509Cert == "" && upload.ClientX509Key == "" {
 		return h.DefaultClient, nil
 	}
-	pool, err := x509.SystemCertPool()
-	if err != nil {
-		if runtime.GOOS == "windows" {
-			// on windows ignore errors until golang issues #16736 & #18609 get fixed
-			pool = x509.NewCertPool()
-		} else {
+	transport := &h.Transport{
+		Proxy:           h.ProxyFromEnvironment,
+		TLSClientConfig: &tls.Config{},
+	}
+	if upload.TrustedCerts != "" {
+		pool, err := x509.SystemCertPool()
+		if err != nil {
+			if runtime.GOOS == "windows" {
+				// on windows ignore errors until golang issues #16736 & #18609 get fixed
+				pool = x509.NewCertPool()
+			} else {
+				return nil, err
+			}
+		}
+		pool.AppendCertsFromPEM([]byte(upload.TrustedCerts)) // already validated certs checked by CheckConfig
+		transport.TLSClientConfig.RootCAs = pool
+	}
+	if upload.ClientX509Cert != "" && upload.ClientX509Key != "" {
+		cert, err := tls.LoadX509KeyPair(upload.ClientX509Cert, upload.ClientX509Key)
+		if err != nil {
 			return nil, err
 		}
+		transport.TLSClientConfig.Certificates = []tls.Certificate{cert}
 	}
-	pool.AppendCertsFromPEM([]byte(upload.TrustedCerts)) // already validated certs checked by CheckConfig
-	return &h.Client{
-		Transport: &h.Transport{
-			Proxy: h.ProxyFromEnvironment,
-			TLSClientConfig: &tls.Config{ // nolint: gosec
-				RootCAs: pool,
-			},
-		},
-	}, nil
+	return &h.Client{Transport: transport}, nil
 }
 
 // executeHTTPRequest processes the http call with respect of context ctx.

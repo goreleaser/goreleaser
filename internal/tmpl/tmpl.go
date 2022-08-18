@@ -176,6 +176,7 @@ func (t *Template) Apply(s string) (string, error) {
 		Option("missingkey=error").
 		Funcs(template.FuncMap{
 			"replace": strings.ReplaceAll,
+			"split":   strings.Split,
 			"time": func(s string) string {
 				return time.Now().UTC().Format(s)
 			},
