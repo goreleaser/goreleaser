@@ -9,7 +9,8 @@ class CustomRequire < Formula
   version "1.0.1"
 
   depends_on "zsh" => :optional
-  depends_on "bash"
+  depends_on "bash" => "3.2.57"
+  depends_on "fish" => :optional
   depends_on :macos
 
   on_macos do
@@ -30,9 +31,6 @@ class CustomRequire < Formula
       end
     end
   end
-
-  depends_on "zsh" => :optional
-  depends_on "bash" => :3.2.57
 
   conflicts_with "gtk+"
   conflicts_with "qt"
