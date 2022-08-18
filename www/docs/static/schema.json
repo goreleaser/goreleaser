@@ -1772,6 +1772,9 @@
 					"draft": {
 						"type": "boolean"
 					},
+					"replace_existing_draft": {
+						"type": "boolean"
+					},
 					"disable": {
 						"type": "boolean"
 					},
