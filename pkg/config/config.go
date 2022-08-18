@@ -500,6 +500,7 @@ type Release struct {
 	GitLab                 Repo        `yaml:"gitlab,omitempty" json:"gitlab,omitempty"`
 	Gitea                  Repo        `yaml:"gitea,omitempty" json:"gitea,omitempty"`
 	Draft                  bool        `yaml:"draft,omitempty" json:"draft,omitempty"`
+	ReplaceExistingDraft   bool        `yaml:"replace_existing_draft,omitempty" json:"replace_existing_draft,omitempty"`
 	Disable                bool        `yaml:"disable,omitempty" json:"disable,omitempty"`
 	SkipUpload             bool        `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty"`
 	Prerelease             string      `yaml:"prerelease,omitempty" json:"prerelease,omitempty"`
