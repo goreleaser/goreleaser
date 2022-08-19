@@ -73,7 +73,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - uses: actions/cache@a7c34adf76222e77931dedbf4a45b2e4648ced19 # v2
+      - uses: actions/cache@a7c34adf76222e77931dedbf4a45b2e4648ced19 # v3
         with:
           path: |
             ./dist/*.deb
