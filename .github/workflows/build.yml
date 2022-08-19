@@ -33,7 +33,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-qemu-action@8b122486cedac8393e77aa9734c3528886e4a1a8 # v1
-      - uses: actions/cache@a7c34adf76222e77931dedbf4a45b2e4648ced19 # v2
+      - uses: actions/cache@a7c34adf76222e77931dedbf4a45b2e4648ced19 # v3
         with:
           path: |
             ./dist/*.deb
