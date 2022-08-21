@@ -217,11 +217,12 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 	body = truncateReleaseBody(body)
 
 	data := &github.RepositoryRelease{
-		Name:       github.String(title),
-		TagName:    github.String(ctx.Git.CurrentTag),
-		Body:       github.String(body),
-		Draft:      github.Bool(ctx.Config.Release.Draft),
-		Prerelease: github.Bool(ctx.PreRelease),
+		Name:            github.String(title),
+		TagName:         github.String(ctx.Git.CurrentTag),
+		TargetCommitish: github.String(ctx.Git.Commit),
+		Body:            github.String(body),
+		Draft:           github.Bool(ctx.Config.Release.Draft),
+		Prerelease:      github.Bool(ctx.PreRelease),
 	}
 	if ctx.Config.Release.DiscussionCategoryName != "" {
 		data.DiscussionCategoryName = github.String(ctx.Config.Release.DiscussionCategoryName)
