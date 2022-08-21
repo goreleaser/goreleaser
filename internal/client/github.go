@@ -387,6 +387,15 @@ func (c *githubClient) deleteExistedDraftRelease(ctx *context.Context, name stri
 				); err != nil {
 					return fmt.Errorf("could not delete previous draft release: %w", err)
 				}
+
+				log.WithFields(log.Fields{
+					"commit": r.GetTargetCommitish(),
+					"tag":    r.GetTagName(),
+					"name":   r.GetName(),
+				}).Info("deleted previous draft release")
+
+				// in theory, there should be only 1 release matching, so we can just return
+				return nil
 			}
 		}
 		if resp.NextPage == 0 {
