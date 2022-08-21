@@ -2,7 +2,9 @@ name: "grype"
 
 on:
   push:
-    branches: [ main ]
+    branches: ['main']
+    tags: ['v*']
+  pull_request:
 
 jobs:
   scan-source:

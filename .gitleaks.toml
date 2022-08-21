@@ -1,0 +1,5 @@
+[[rules]]
+id = "ignore-testdata"
+[rules.allowlist]
+paths = ['''.*/testdata/*''']
+
