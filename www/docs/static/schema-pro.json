@@ -1658,6 +1658,15 @@
 				"properties": {
 					"name_template": {
 						"type": "string"
+					},
+					"tag_name": {
+						"type": "string"
+					},
+					"publish_release": {
+						"type": "boolean"
+					},
+					"keep_single_release": {
+						"type": "boolean"
 					}
 				},
 				"additionalProperties": false,
