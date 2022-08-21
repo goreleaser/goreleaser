@@ -208,7 +208,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 	}
 
 	if ctx.Config.Release.Draft && ctx.Config.Release.ReplaceExistingDraft {
-		if err := c.deleteExistedDraftRelease(ctx, title); err != nil {
+		if err := c.deleteExistingDraftRelease(ctx, title); err != nil {
 			return "", err
 		}
 	}
@@ -365,7 +365,7 @@ func overrideGitHubClientAPI(ctx *context.Context, client *github.Client) error 
 	return nil
 }
 
-func (c *githubClient) deleteExistedDraftRelease(ctx *context.Context, name string) error {
+func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name string) error {
 	opt := github.ListOptions{PerPage: 50}
 	for {
 		releases, resp, err := c.client.Repositories.ListReleases(
