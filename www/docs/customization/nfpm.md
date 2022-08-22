@@ -66,7 +66,6 @@ nfpms:
       - apk
       - deb
       - rpm
-      # same as deb but with altered bindir and arch for termux
       - termux.deb
 
     # Packages your package depends on. (overridable)
@@ -380,3 +379,10 @@ nfpms:
 
 !!! info
     Fields marked with "overridable" can be overriden for any format.
+
+## A note about Termux
+
+Termux is the same format as `deb`, the differences are:
+- it uses a different `bindir` (prefixed with `/data/data/com.termux/files/`)
+- it uses slightly different architecture names than Debian
+
