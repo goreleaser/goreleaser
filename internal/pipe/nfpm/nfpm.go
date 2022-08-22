@@ -121,10 +121,38 @@ func mergeOverrides(fpm config.NFPM, format string) (*config.NFPMOverridables, e
 	return &overridden, nil
 }
 
+const termuxFormat = "termux.deb"
+
+func isSupportedTermuxArch(arch string) bool {
+	for _, a := range []string{"amd64", "arm64", "386"} {
+		if strings.HasPrefix(arch, a) {
+			return true
+		}
+	}
+	return false
+}
+
 func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*artifact.Artifact) error {
 	// TODO: improve mips handling on nfpm
 	infoArch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips // key used for the ConventionalFileName et al
 	arch := infoArch + binaries[0].Goamd64                                  // unique arch key
+
+	bindDir := fpm.Bindir
+	if format == termuxFormat {
+		if !isSupportedTermuxArch(arch) {
+			log.Debugf("skipping termux.deb for %s as its not supported by termux", arch)
+			return nil
+		}
+
+		replacer := strings.NewReplacer(
+			"386", "i686",
+			"amd64", "x86_64",
+			"arm64", "aarch64",
+		)
+		infoArch = replacer.Replace(infoArch)
+		arch = replacer.Replace(arch)
+		bindDir = filepath.Join("/data/data/com.termux/files", bindDir)
+	}
 
 	overridden, err := mergeOverrides(fpm, format)
 	if err != nil {
@@ -138,7 +166,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 			"PackageName": fpm.PackageName,
 		})
 
-	binDir, err := t.Apply(fpm.Bindir)
+	binDir, err := t.Apply(bindDir)
 	if err != nil {
 		return err
 	}
@@ -326,7 +354,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		info.Deb.Signature = nfpm.DebSignature{}
 	}
 
-	packager, err := nfpm.Get(format)
+	packager, err := nfpm.Get(strings.Replace(format, "termux.", "", 1))
 	if err != nil {
 		return err
 	}

@@ -92,7 +92,7 @@ func TestRunPipe(t *testing.T) {
 				ID:          "someid",
 				Bindir:      "/usr/bin",
 				Builds:      []string{"default"},
-				Formats:     []string{"deb", "rpm", "apk"},
+				Formats:     []string{"deb", "rpm", "apk", "termux.deb"},
 				Section:     "somesection",
 				Priority:    "standard",
 				Description: "Some description with {{ .Env.DESC }}",
@@ -220,7 +220,7 @@ func TestRunPipe(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 30)
+	require.Len(t, packages, 36)
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
@@ -245,6 +245,12 @@ func TestRunPipe(t *testing.T) {
 			"./testdata/testfile-" + pkg.Goarch + pkg.Goamd64 + pkg.Goarm + pkg.Gomips + ".txt",
 			binPath,
 		}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
+
+		bin := "/usr/bin/subdir/"
+		if format == termuxFormat {
+			bin = filepath.Join("/data/data/com.termux/files", bin)
+		}
+		bin = filepath.Join(bin, "mybin")
 		require.ElementsMatch(t, []string{
 			"/var/log/foobar",
 			"/usr/share/testfile.txt",
@@ -254,7 +260,7 @@ func TestRunPipe(t *testing.T) {
 			"/etc/nope2.conf",
 			"/etc/nope3_mybin.conf",
 			"/etc/folder",
-			"/usr/bin/subdir/mybin",
+			bin,
 		}, destinations(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))
 	}
 	require.Len(t, ctx.Config.NFPMs[0].Contents, 8, "should not modify the config file list")
