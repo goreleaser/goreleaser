@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/spf13/cobra"
+	cobracompletefig "github.com/withfig/autocomplete-tools/integrations/cobra"
 )
 
 var boldStyle = lipgloss.NewStyle().Bold(true)
@@ -82,8 +83,8 @@ Check out our website for more information, examples and documentation: https://
 		newDocsCmd().cmd,
 		newManCmd().cmd,
 		newSchemaCmd().cmd,
+		cobracompletefig.CreateCompletionSpecCommand(),
 	)
-
 	root.cmd = cmd
 	return root
 }
