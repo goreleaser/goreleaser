@@ -201,14 +201,12 @@ func (Pipe) Publish(ctx *context.Context) error {
 		return pipe.ErrSkipPublishEnabled
 	}
 	snaps := ctx.Artifacts.Filter(artifact.ByType(artifact.PublishableSnapcraft)).List()
-	g := semerrgroup.New(ctx.Parallelism)
 	for _, snap := range snaps {
-		snap := snap
-		g.Go(func() error {
-			return push(ctx, snap)
-		})
+		if err := push(ctx, snap); err != nil {
+			return err
+		}
 	}
-	return g.Wait()
+	return nil
 }
 
 func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries []*artifact.Artifact) error {

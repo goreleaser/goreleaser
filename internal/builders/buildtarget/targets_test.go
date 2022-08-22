@@ -31,6 +31,7 @@ func TestAllBuildTargets(t *testing.T) {
 			"mipsle",
 			"mips64le",
 			"riscv64",
+			"loong64",
 		},
 		Goarm: []string{
 			"6",
@@ -84,6 +85,7 @@ func TestAllBuildTargets(t *testing.T) {
 			"linux_mipsle_softfloat",
 			"linux_mips64le_hardfloat",
 			"linux_riscv64",
+			"linux_loong64",
 			"darwin_amd64_v1",
 			"darwin_amd64_v2",
 			"darwin_amd64_v4",
@@ -189,6 +191,7 @@ func TestGoosGoarchCombos(t *testing.T) {
 		{"linux", "ppc64le", true},
 		{"linux", "s390x", true},
 		{"linux", "riscv64", true},
+		{"linux", "loong64", true},
 		{"netbsd", "386", true},
 		{"netbsd", "amd64", true},
 		{"netbsd", "arm", true},

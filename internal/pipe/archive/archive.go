@@ -101,11 +101,17 @@ func (Pipe) Run(ctx *context.Context) error {
 		for group, artifacts := range artifacts {
 			log.Debugf("group %s has %d binaries", group, len(artifacts))
 			artifacts := artifacts
-			g.Go(func() error {
-				if packageFormat(archive, artifacts[0].Goos) == "binary" {
+			if packageFormat(archive, artifacts[0].Goos) == "binary" {
+				g.Go(func() error {
 					return skip(ctx, archive, artifacts)
+				})
+				continue
+			}
+			g.Go(func() error {
+				if err := create(ctx, archive, artifacts); err != nil {
+					return err
 				}
-				return create(ctx, archive, artifacts)
+				return nil
 			})
 		}
 	}
@@ -184,11 +190,15 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 	}
 	bins := []string{}
 	for _, binary := range binaries {
+		dst := binary.Name
+		if arch.StripParentBinaryFolder {
+			dst = filepath.Base(dst)
+		}
 		if err := a.Add(config.File{
 			Source:      binary.Path,
-			Destination: binary.Name,
+			Destination: dst,
 		}); err != nil {
-			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, binary.Name, err)
+			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, dst, err)
 		}
 		bins = append(bins, binary.Name)
 	}

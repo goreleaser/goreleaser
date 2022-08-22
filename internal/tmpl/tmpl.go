@@ -63,6 +63,7 @@ const (
 	mips         = "Mips"
 	binary       = "Binary"
 	artifactName = "ArtifactName"
+	artifactExt  = "ArtifactExt"
 	artifactPath = "ArtifactPath"
 
 	// build keys.
@@ -146,6 +147,7 @@ func (t *Template) WithArtifact(a *artifact.Artifact, replacements map[string]st
 	t.fields[amd64] = replace(replacements, a.Goamd64)
 	t.fields[binary] = artifact.ExtraOr(*a, binary, t.fields[projectName].(string))
 	t.fields[artifactName] = a.Name
+	t.fields[artifactExt] = artifact.ExtraOr(*a, artifact.ExtraExt, "")
 	t.fields[artifactPath] = a.Path
 	return t
 }
@@ -174,6 +176,7 @@ func (t *Template) Apply(s string) (string, error) {
 		Option("missingkey=error").
 		Funcs(template.FuncMap{
 			"replace": strings.ReplaceAll,
+			"split":   strings.Split,
 			"time": func(s string) string {
 				return time.Now().UTC().Format(s)
 			},

@@ -258,8 +258,9 @@ func TestDefaults(t *testing.T) {
 
 // createFakeGoBinaryWithVersion creates a temporary executable with the
 // given name, which will output a go version string with the given version.
-//  The temporary directory created by this function will be placed in the PATH
-// variable for the duration of (and cleaned up at the end of) the
+//
+// The temporary directory created by this function will be placed in the
+// PATH variable for the duration of (and cleaned up at the end of) the
 // current test run.
 func createFakeGoBinaryWithVersion(tb testing.TB, name, version string) {
 	tb.Helper()
@@ -626,7 +627,7 @@ func TestRunInvalidAsmflags(t *testing.T) {
 	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
-	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, err)
 }
 
 func TestRunInvalidGcflags(t *testing.T) {
@@ -650,7 +651,7 @@ func TestRunInvalidGcflags(t *testing.T) {
 	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
-	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, err)
 }
 
 func TestRunInvalidLdflags(t *testing.T) {
@@ -675,7 +676,7 @@ func TestRunInvalidLdflags(t *testing.T) {
 	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
-	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, err)
 }
 
 func TestRunInvalidFlags(t *testing.T) {
@@ -698,7 +699,7 @@ func TestRunInvalidFlags(t *testing.T) {
 	err := Default.Build(ctx, ctx.Config.Builds[0], api.Options{
 		Target: runtimeTarget,
 	})
-	require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, err)
 }
 
 func TestRunPipeWithoutMainFunc(t *testing.T) {
@@ -903,15 +904,15 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 }
 
 func TestInvalidTemplate(t *testing.T) {
-	for template, eerr := range map[string]string{
-		"{{ .Nope }":    `template: tmpl:1: unexpected "}" in operand`,
-		"{{.Env.NOPE}}": `template: tmpl:1:6: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`,
+	for _, template := range []string{
+		"{{ .Nope }",
+		"{{.Env.NOPE}}",
 	} {
 		t.Run(template, func(t *testing.T) {
 			ctx := context.New(config.Project{})
 			ctx.Git.CurrentTag = "3.4.1"
 			flags, err := tmpl.New(ctx).Apply(template)
-			require.EqualError(t, err, eerr)
+			testlib.RequireTemplateError(t, err)
 			require.Empty(t, flags)
 		})
 	}
@@ -966,10 +967,8 @@ func TestProcessFlagsInvalid(t *testing.T) {
 		"{{.Version}",
 	}
 
-	expected := `template: tmpl:1: unexpected "}" in operand`
-
 	flags, err := processFlags(ctx, &artifact.Artifact{}, []string{}, source, "-testflag=")
-	require.EqualError(t, err, expected)
+	testlib.RequireTemplateError(t, err)
 	require.Nil(t, flags)
 }
 
@@ -1291,7 +1290,7 @@ func TestOverrides(t *testing.T) {
 				Goarch: runtime.GOARCH,
 			},
 		)
-		require.EqualError(t, err, `template: tmpl:1: unexpected "}" in operand`)
+		testlib.RequireTemplateError(t, err)
 	})
 
 	t.Run("with goarm", func(t *testing.T) {

@@ -24,8 +24,15 @@ release:
     - bar
 
   # If set to true, will not auto-publish the release.
+  # Available only for GitHub and Gitea.
   # Default is false.
   draft: true
+
+  # Whether to remove existing draft releases with the same name before creating a new one.
+  # Only effective if `draft` is set to true.
+  # Available only for GitHub.
+  # Default is false.
+  replace_existing_draft: true
 
   # If set, will create a release discussion in the category specified.
   #
@@ -76,6 +83,12 @@ release:
   # Defaults to false.
   disable: true
 
+  # Set this to true if you want to disable just the artifact upload to the SCM.
+  # If this is true, GoReleaser will still create the release with the changelog, but won't upload anything to it.
+  #
+  # Defaults to false.
+  skip_upload: true
+
   # You can add extra pre-existing files to the release.
   # The filename on the release will be the last part of the path (base).
   # If another file with the same name exists, the last one found will be used.
@@ -91,7 +104,7 @@ release:
 ```
 
 !!! tip
-    [Learn how to setup an API token, GitHub Enterprise and etc](/scm/github/).
+    [Learn how to set up an API token, GitHub Enterprise, etc](/scm/github/).
 
 ## GitLab
 
@@ -147,7 +160,7 @@ release:
 ```
 
 !!! tip
-    [Learn how to setup an API token, self-hosted GitLab and etc](/scm/gitlab/).
+    [Learn how to set up an API token, self-hosted GitLab, etc](/scm/gitlab/).
 
 !!! tip
     If you use GitLab subgroups, you need to specify it in the `owner` field, e.g. `mygroup/mysubgroup`.
@@ -214,7 +227,7 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 ```
 
 !!! tip
-    [Learn how to setup an API token](/scm/gitea/).
+    [Learn how to set up an API token](/scm/gitea/).
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).

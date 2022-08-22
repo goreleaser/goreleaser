@@ -77,10 +77,10 @@ When using ` + "`--single-target`" + `, the ` + "`GOOS`" + ` and ` + "`GOARCH`" 
 	cmd.Flags().BoolVar(&root.opts.rmDist, "rm-dist", false, "Remove the dist folder before building")
 	cmd.Flags().IntVarP(&root.opts.parallelism, "parallelism", "p", 0, "Amount tasks to run concurrently (default: number of CPUs)")
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire build process")
-	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH")
+	cmd.Flags().BoolVar(&root.opts.singleTarget, "single-target", false, "Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file")
 	cmd.Flags().StringArrayVar(&root.opts.ids, "id", nil, "Builds only the specified build ids")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
-	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if config only has one build)")
+	cmd.Flags().StringVarP(&root.opts.output, "output", "o", "", "Copy the binary to the path after the build. Only taken into account when using --single-target and a single id (either with --id or if configuration only has one build)")
 	_ = cmd.Flags().MarkHidden("deprecated")
 
 	root.cmd = cmd
@@ -157,7 +157,7 @@ func setupBuildSingleTarget(ctx *context.Context) {
 	if goarch == "" {
 		goarch = runtime.GOARCH
 	}
-	log.Infof("building only for %s/%s", goos, goarch)
+	log.WithField("reason", "single target is enabled").Warnf("building only for %s/%s", goos, goarch)
 	if len(ctx.Config.Builds) == 0 {
 		ctx.Config.Builds = append(ctx.Config.Builds, config.Build{})
 	}

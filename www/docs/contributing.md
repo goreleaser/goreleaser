@@ -9,7 +9,7 @@ By participating to this project, you agree to abide our [code of conduct](https
 Prerequisites:
 
 - [Task](https://taskfile.dev/#/installation)
-- [Go 1.18+](https://golang.org/doc/install)
+- [Go 1.19+](https://golang.org/doc/install)
 
 Other things you might need to run the tests:
 

@@ -33,9 +33,35 @@ func createFakeBinary(t *testing.T, dist, arch, bin string) {
 
 func TestRunPipe(t *testing.T) {
 	folder := testlib.Mktmp(t)
-	for _, format := range []string{"tar.gz", "zip"} {
-		t.Run("Archive format "+format, func(t *testing.T) {
-			dist := filepath.Join(folder, format+"_dist")
+	for _, dets := range []struct {
+		Format string
+		Strip  bool
+	}{
+		{
+			Format: "tar.gz",
+			Strip:  true,
+		},
+		{
+			Format: "tar.gz",
+			Strip:  false,
+		},
+
+		{
+			Format: "zip",
+			Strip:  true,
+		},
+		{
+			Format: "zip",
+			Strip:  false,
+		},
+	} {
+		format := dets.Format
+		name := "archive." + format
+		if dets.Strip {
+			name = "strip_" + name
+		}
+		t.Run(name, func(t *testing.T) {
+			dist := filepath.Join(folder, name+"_dist")
 			require.NoError(t, os.Mkdir(dist, 0o755))
 			for _, arch := range []string{"darwinamd64v1", "darwinall", "linux386", "linuxarm7", "linuxmipssoftfloat", "linuxamd64v3"} {
 				createFakeBinary(t, dist, arch, "bin/mybin")
@@ -56,9 +82,10 @@ func TestRunPipe(t *testing.T) {
 					ProjectName: "foobar",
 					Archives: []config.Archive{
 						{
-							ID:           "myid",
-							Builds:       []string{"default"},
-							NameTemplate: defaultNameTemplate,
+							ID:                      "myid",
+							Builds:                  []string{"default"},
+							NameTemplate:            defaultNameTemplate,
+							StripParentBinaryFolder: dets.Strip,
 							Files: []config.File{
 								{Source: "README.{{.Os}}.*"},
 								{Source: "./foo/**/*"},
@@ -169,6 +196,7 @@ func TestRunPipe(t *testing.T) {
 			ctx.Config.Archives[0].Format = format
 			require.NoError(t, Pipe{}.Run(ctx))
 			archives := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableArchive)).List()
+
 			for _, arch := range archives {
 				expectBin := "bin/mybin"
 				if arch.Goos == "windows" {
@@ -180,6 +208,11 @@ func TestRunPipe(t *testing.T) {
 			}
 			require.Len(t, archives, 7)
 			// TODO: should verify the artifact fields here too
+
+			expectBin := "bin/mybin"
+			if dets.Strip {
+				expectBin = "mybin"
+			}
 
 			if format == "tar.gz" {
 				// Check archive contents
@@ -196,7 +229,7 @@ func TestRunPipe(t *testing.T) {
 						[]string{
 							fmt.Sprintf("README.%s.md", os),
 							"foo/bar/foobar/blah.txt",
-							"bin/mybin",
+							expectBin,
 						},
 						tarFiles(t, filepath.Join(dist, name)),
 					)
@@ -208,7 +241,7 @@ func TestRunPipe(t *testing.T) {
 					[]string{
 						"README.windows.md",
 						"foo/bar/foobar/blah.txt",
-						"bin/mybin.exe",
+						expectBin + ".exe",
 					},
 					zipFiles(t, filepath.Join(dist, "foobar_0.0.1_windows_amd64.zip")),
 				)
@@ -536,7 +569,7 @@ func TestRunPipeInvalidNameTemplate(t *testing.T) {
 			artifact.ExtraID:     "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
@@ -574,7 +607,7 @@ func TestRunPipeInvalidFilesNameTemplate(t *testing.T) {
 			artifact.ExtraID:     "default",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), `failed to find files to archive: failed to apply template {{.asdsd}: template: tmpl:1: unexpected "}" in operand`)
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
 func TestRunPipeInvalidWrapInDirectoryTemplate(t *testing.T) {

@@ -152,7 +152,7 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 	sort.Slice(groups, func(i, j int) bool { return groups[i].order < groups[j].order })
 	for _, group := range groups {
 		if len(group.entries) > 0 {
-			result = append(result, fmt.Sprintf("### %s", group.title))
+			result = append(result, fmt.Sprintf("\n### %s", group.title))
 			result = append(result, group.entries...)
 		}
 	}

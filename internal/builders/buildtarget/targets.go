@@ -169,6 +169,7 @@ var (
 		"linuxmips64le",
 		"linuxs390x",
 		"linuxriscv64",
+		"linuxloong64",
 		"netbsd386",
 		"netbsdamd64",
 		"netbsdarm",
@@ -217,6 +218,7 @@ var (
 		"s390x",
 		"wasm",
 		"riscv64",
+		"loong64",
 	}
 
 	validGoarm   = []string{"5", "6", "7"}

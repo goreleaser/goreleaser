@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v46/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -207,15 +207,22 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		return "", err
 	}
 
+	if ctx.Config.Release.Draft && ctx.Config.Release.ReplaceExistingDraft {
+		if err := c.deleteExistingDraftRelease(ctx, title); err != nil {
+			return "", err
+		}
+	}
+
 	// Truncate the release notes if it's too long (github doesn't allow more than 125000 characters)
 	body = truncateReleaseBody(body)
 
 	data := &github.RepositoryRelease{
-		Name:       github.String(title),
-		TagName:    github.String(ctx.Git.CurrentTag),
-		Body:       github.String(body),
-		Draft:      github.Bool(ctx.Config.Release.Draft),
-		Prerelease: github.Bool(ctx.PreRelease),
+		Name:            github.String(title),
+		TagName:         github.String(ctx.Git.CurrentTag),
+		TargetCommitish: github.String(ctx.Git.Commit),
+		Body:            github.String(body),
+		Draft:           github.Bool(ctx.Config.Release.Draft),
+		Prerelease:      github.Bool(ctx.PreRelease),
 	}
 	if ctx.Config.Release.DiscussionCategoryName != "" {
 		data.DiscussionCategoryName = github.String(ctx.Config.Release.DiscussionCategoryName)
@@ -356,4 +363,44 @@ func overrideGitHubClientAPI(ctx *context.Context, client *github.Client) error 
 	client.UploadURL = upload
 
 	return nil
+}
+
+func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name string) error {
+	opt := github.ListOptions{PerPage: 50}
+	for {
+		releases, resp, err := c.client.Repositories.ListReleases(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			&opt,
+		)
+		if err != nil {
+			return fmt.Errorf("could not delete existing drafts: %w", err)
+		}
+		for _, r := range releases {
+			if r.GetDraft() && r.GetName() == name {
+				if _, err := c.client.Repositories.DeleteRelease(
+					ctx,
+					ctx.Config.Release.GitHub.Owner,
+					ctx.Config.Release.GitHub.Name,
+					r.GetID(),
+				); err != nil {
+					return fmt.Errorf("could not delete previous draft release: %w", err)
+				}
+
+				log.WithFields(log.Fields{
+					"commit": r.GetTargetCommitish(),
+					"tag":    r.GetTagName(),
+					"name":   r.GetName(),
+				}).Info("deleted previous draft release")
+
+				// in theory, there should be only 1 release matching, so we can just return
+				return nil
+			}
+		}
+		if resp.NextPage == 0 {
+			return nil
+		}
+		opt.Page = resp.NextPage
+	}
 }

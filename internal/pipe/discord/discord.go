@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/DisgoOrg/disgohook"
-	"github.com/DisgoOrg/disgohook/api"
 	"github.com/caarlos0/env/v6"
 	"github.com/caarlos0/log"
+	"github.com/disgoorg/disgo/discord"
+	"github.com/disgoorg/disgo/webhook"
+	"github.com/disgoorg/snowflake/v2"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -52,31 +53,33 @@ func (p Pipe) Announce(ctx *context.Context) error {
 	}
 
 	var cfg Config
-	if err := env.Parse(&cfg); err != nil {
+	if err = env.Parse(&cfg); err != nil {
 		return fmt.Errorf("announce: failed to announce to discord: %w", err)
 	}
 
 	log.Infof("posting: '%s'", msg)
 
-	webhook, err := disgohook.NewWebhookClientByToken(nil, nil, fmt.Sprintf("%s/%s", cfg.WebhookID, cfg.WebhookToken))
+	webhookID, err := snowflake.Parse(cfg.WebhookID)
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to discord: %w", err)
 	}
+
 	color, err := strconv.Atoi(ctx.Config.Announce.Discord.Color)
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to discord: %w", err)
 	}
-	if _, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
-		AddEmbeds(api.Embed{
-			Author: &api.EmbedAuthor{
-				Name:    &ctx.Config.Announce.Discord.Author,
-				IconURL: &ctx.Config.Announce.Discord.IconURL,
+	if _, err = webhook.New(webhookID, cfg.WebhookToken).CreateMessage(discord.WebhookMessageCreate{
+		Embeds: []discord.Embed{
+			{
+				Author: &discord.EmbedAuthor{
+					Name:    ctx.Config.Announce.Discord.Author,
+					IconURL: ctx.Config.Announce.Discord.IconURL,
+				},
+				Description: msg,
+				Color:       color,
 			},
-			Description: &msg,
-			Color:       &color,
-		}).
-		Build(),
-	); err != nil {
+		},
+	}); err != nil {
 		return fmt.Errorf("announce: failed to announce to discord: %w", err)
 	}
 	return nil

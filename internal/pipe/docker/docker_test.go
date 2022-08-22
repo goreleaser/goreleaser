@@ -81,13 +81,17 @@ func TestRunPipe(t *testing.T) {
 		t.Helper()
 		require.NoError(t, err)
 	}
+	shouldTemplateErr := func(t *testing.T, err error) {
+		t.Helper()
+		testlib.RequireTemplateError(t, err)
+	}
 	type imageLabelFinder func(*testing.T, string)
 	shouldFindImagesWithLabels := func(image string, filters ...string) func(*testing.T, string) {
 		return func(t *testing.T, use string) {
 			t.Helper()
 			for _, filter := range filters {
 				cmd := exec.Command("docker", "images", "-q", "--filter", "reference=*/"+image, "--filter", filter)
-				t.Log("running", cmd)
+				// t.Log("running", cmd)
 				output, err := cmd.CombinedOutput()
 				require.NoError(t, err, string(output))
 				uniqueIDs := map[string]string{}
@@ -272,7 +276,7 @@ func TestRunPipe(t *testing.T) {
 					fmt.Sprintf("docker push %sgoreleaser/dummy:v1", registry),
 					fmt.Sprintf("docker manifest create %sgoreleaser/test_multiarch:2test --amend %sgoreleaser/dummy:v1 --insecure", registry, registry),
 				} {
-					t.Log("running", cmd)
+					// t.Log("running", cmd)
 					parts := strings.Fields(cmd)
 					out, err := exec.CommandContext(ctx, parts[0], parts[1:]...).CombinedOutput()
 					require.NoError(t, err, cmd+": "+string(out))
@@ -319,7 +323,7 @@ func TestRunPipe(t *testing.T) {
 			expect:              []string{registry + "goreleaser/test_multiarch_manifest_tmpl_error"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+			manifestAssertError: shouldTemplateErr,
 			assertImageLabels:   noLabels,
 		},
 		"multiarch image template error": {
@@ -340,7 +344,7 @@ func TestRunPipe(t *testing.T) {
 			expect:              []string{registry + "goreleaser/test_multiarch_img_tmpl_error"},
 			assertError:         shouldNotErr,
 			pubAssertError:      shouldNotErr,
-			manifestAssertError: shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+			manifestAssertError: shouldTemplateErr,
 			assertImageLabels:   noLabels,
 		},
 		"multiarch missing manifest name": {
@@ -478,7 +482,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			expect:              []string{},
-			assertError:         shouldErr(`template: tmpl:1:7: executing "tmpl" at <.Env.Dockerfile>: map has no entry for key "Dockerfile"`),
+			assertError:         shouldTemplateErr,
 			assertImageLabels:   noLabels,
 			pubAssertError:      shouldNotErr,
 			manifestAssertError: shouldNotErr,
@@ -771,7 +775,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+			assertError:       shouldTemplateErr,
 		},
 		"build_flag_template_error": {
 			dockers: []config.Docker{
@@ -788,7 +792,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`template: tmpl:1: unexpected "}" in operand`),
+			assertError:       shouldTemplateErr,
 		},
 		"missing_env_on_tag_template": {
 			dockers: []config.Docker{
@@ -802,7 +806,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`template: tmpl:1:46: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`),
+			assertError:       shouldTemplateErr,
 		},
 		"missing_env_on_build_flag_template": {
 			dockers: []config.Docker{
@@ -819,7 +823,7 @@ func TestRunPipe(t *testing.T) {
 				},
 			},
 			assertImageLabels: noLabels,
-			assertError:       shouldErr(`template: tmpl:1:19: executing "tmpl" at <.Env.NOPE>: map has no entry for key "NOPE"`),
+			assertError:       shouldTemplateErr,
 		},
 		"image_has_projectname_template_variable": {
 			dockers: []config.Docker{
@@ -1087,7 +1091,7 @@ func TestRunPipe(t *testing.T) {
 				// this might should not fail as the image should have been created when
 				// the step ran
 				for _, img := range docker.expect {
-					t.Log("removing docker image", img)
+					// t.Log("removing docker image", img)
 					require.NoError(t, rmi(img), "could not delete image %s", img)
 				}
 			})
@@ -1248,13 +1252,13 @@ func TestDefaultDockerfile(t *testing.T) {
 }
 
 func TestDraftRelease(t *testing.T) {
-	ctx := &context.Context{
-		Config: config.Project{
+	ctx := context.New(
+		config.Project{
 			Release: config.Release{
 				Draft: true,
 			},
 		},
-	}
+	)
 
 	require.False(t, pipe.IsSkip(Pipe{}.Publish(ctx)))
 }

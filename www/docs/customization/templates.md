@@ -72,6 +72,7 @@ may have some extra fields:
 | `.Binary`       | binary name                           |
 | `.ArtifactName` | archive name                          |
 | `.ArtifactPath` | absolute path to artifact             |
+| `.ArtifactExt`  | binary extension (e.g. `.exe`)        |
 
 [^8]: Might have been replaced by `archives.replacements`.
 
@@ -95,6 +96,7 @@ On all fields, you have these available functions:
 | Usage                          | Description                                                                                                                    |
 |--------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | `replace "v1.2" "v" ""`        | replaces all matches. See [ReplaceAll](https://golang.org/pkg/strings/#ReplaceAll)                                             |
+| `split "1.2" "."`              | split string at separator. See [Split](https://golang.org/pkg/strings/#Split)                                             |
 | `time "01/02/2006"`            | current UTC time in the specified format (this is not deterministic, a new time for every call)                                |
 | `tolower "V1.2"`               | makes input string lowercase. See [ToLower](https://golang.org/pkg/strings/#ToLower)                                           |
 | `toupper "v1.2"`               | makes input string uppercase. See [ToUpper](https://golang.org/pkg/strings/#ToUpper)                                           |

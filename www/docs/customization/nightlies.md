@@ -16,8 +16,25 @@ nightly:
   #
   # Note that some pipes require this to be semantic version compliant (nfpm, for example).
   #
-  # Default is `{{ incpatch .Version }}-{{ .ShortCommit }}-dev`.
+  # Default is `{{ incpatch .Version }}-{{ .ShortCommit }}-nightly`.
   name_template: '{{ incpatch .Version }}-devel'
+
+  # Tag name to create if publish_release is enabled.
+  #
+  # Default is `nightly`
+  tag_name: devel
+
+  # Whether to publish a release or not.
+  # Only works on GitHub.
+  #
+  # Default is `false`.
+  publish_release: true
+
+  # Whether to delete previous pre-releases for the same `tag_name` when releasing.
+  # This allows you to keep a single pre-release.
+  #
+  # Default is `false`.
+  keep_single_release: true
 ```
 
 ## How it works
@@ -31,17 +48,17 @@ This means that if you use `{{ .Version }}` on your name templates, you'll get t
 ## What is skipped when using `--nightly`?
 
 - Go mod proxying;
-- GitHub/GitLab/Gitea releases;
+- GitHub/GitLab/Gitea releases (unless specified);
 - Homebrew taps;
 - Scoop manifests;
 - Arch User Repositories;
-- GoFish Rigs;
 - Krew Plugin Manifests;
 - Milestone closing;
 - All announcers;
 
-Everything else is executed normally. Just make sure to use the `Version` template variable instead of `Tag`.
-You can also check if its a nightly build inside a template with:
+Everything else is executed normally.
+Just make sure to use the `Version` template variable instead of `Tag`.
+You can also check if it is a nightly build inside a template with:
 
 ```
 {{ if .IsNightly }}something{{ else }}something else{{ end }}

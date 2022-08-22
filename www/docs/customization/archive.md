@@ -48,13 +48,20 @@ archives:
       darwin: macOS
       linux: Tux
 
-    # Set to true, if you want all files in the archive to be in a single directory.
+    # Set this to true if you want all files in the archive to be in a single directory.
     # If set to true and you extract the archive 'goreleaser_Linux_arm64.tar.gz',
-    # you get a folder 'goreleaser_Linux_arm64'.
+    # you'll get a folder 'goreleaser_Linux_arm64'.
     # If set to false, all files are extracted separately.
     # You can also set it to a custom folder name (templating is supported).
     # Default is false.
     wrap_in_directory: true
+
+    # If set to true, will strip the parent directories away from binary files.
+    #
+    # This might be useful if you have your binary be built with a subdir for some reason, but do no want that subdir inside the archive.
+    #
+    # Default is false.
+    strip_parent_binary_folder: true
 
     # Can be used to change the archive formats for specific GOOSs.
     # Most common use case is to archive as zip on Windows.
@@ -89,10 +96,35 @@ archives:
           # format is `time.RFC3339Nano`
           mtime: 2008-01-02T15:04:05Z
 
+    # Before and after hooks for each archive.
+    # Skipped if archive format is binary.
+    # This feature is available in [GoReleaser Pro](/pro) only.
+    hooks:
+      before:
+      - make clean # simple string
+      - cmd: go generate ./... # specify cmd
+      - cmd: go mod tidy
+        output: true # always prints command output
+        dir: ./submodule # specify command working directory
+      - cmd: touch {{ .Env.FILE_TO_TOUCH }}
+        env:
+        - 'FILE_TO_TOUCH=something-{{ .ProjectName }}' # specify hook level environment variables
+
+      after:
+      - make clean
+      - cmd: cat *.yaml
+        dir: ./submodule
+      - cmd: touch {{ .Env.RELEASE_DONE }}
+        env:
+        - 'RELEASE_DONE=something-{{ .ProjectName }}' # specify hook level environment variables
+
     # Disables the binary count check.
     # Default: false
     allow_different_binary_count: true
 ```
+
+!!! success "GoReleaser Pro"
+    Archive hooks is a [GoReleaser Pro feature](/pro/).
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
