@@ -18,7 +18,7 @@ require (
 	github.com/disgoorg/disgo v0.13.16
 	github.com/disgoorg/snowflake/v2 v2.0.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
-	github.com/google/go-github/v46 v46.0.0
+	github.com/google/go-github/v47 v47.0.0
 	github.com/google/uuid v1.3.0
 	github.com/goreleaser/fileglob v1.3.0
 	github.com/goreleaser/nfpm/v2 v2.18.1
