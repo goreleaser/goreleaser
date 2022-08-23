@@ -1801,6 +1801,9 @@
 					"replace_existing_draft": {
 						"type": "boolean"
 					},
+					"target_commitish": {
+						"type": "string"
+					},
 					"disable": {
 						"type": "boolean"
 					},
