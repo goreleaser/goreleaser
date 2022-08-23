@@ -34,6 +34,13 @@ release:
   # Default is false.
   replace_existing_draft: true
 
+  # Useful if you want to delay the creation of the tag in the remote.
+  # You can create the tag locally, but not push it, and run GoReleaser.
+  # It'll then set the `target_commitish` portion of the GitHub release to the value of this field.
+  # Only works on GitHub.
+  # Default is empty.
+  target_commitish: '{{ .Commit }}'
+
   # If set, will create a release discussion in the category specified.
   #
   # Warning: do not use categories in the 'Announcement' format.
