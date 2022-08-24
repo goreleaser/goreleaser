@@ -35,7 +35,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/ulikunitz/xz v0.5.10
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
-	github.com/xanzy/go-gitlab v0.73.0
+	github.com/xanzy/go-gitlab v0.73.1
 	gocloud.dev v0.26.0
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
 	golang.org/x/oauth2 v0.0.0-20220722155238-128564f6959c
