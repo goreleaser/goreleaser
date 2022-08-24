@@ -15,7 +15,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.5.1-0.20220615005615-2e17a8a06096
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.1
-	github.com/disgoorg/disgo v0.13.16
+	github.com/disgoorg/disgo v0.13.17
 	github.com/disgoorg/snowflake/v2 v2.0.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/google/go-github/v47 v47.0.0
