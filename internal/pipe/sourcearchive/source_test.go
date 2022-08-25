@@ -35,9 +35,9 @@ func TestArchive(t *testing.T) {
 					Format:         format,
 					Enabled:        true,
 					PrefixTemplate: "{{ .ProjectName }}-{{ .Version }}/",
-					Files: []config.File{{
-						Source: "*.txt",
-					}},
+					Files: []string{
+						"*.txt",
+					},
 				},
 			})
 			ctx.Git.FullCommit = "HEAD"
@@ -75,10 +75,11 @@ func TestArchive(t *testing.T) {
 				paths = append(paths, zf.Name)
 			}
 			require.Equal(t, []string{
+				"foo-1.0.0/",
 				"foo-1.0.0/README.md",
-				"foo-1.0.0/added-later.txt",
 				"foo-1.0.0/code.py",
 				"foo-1.0.0/code.txt",
+				"foo-1.0.0/added-later.txt",
 			}, paths)
 		})
 	}

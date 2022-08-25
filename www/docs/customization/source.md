@@ -25,6 +25,7 @@ source:
   prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
 
   # Additional files/template/globs you want to add to the source archive.
+  # Will use --add-file of git-archive.
   # Defaults to empty.
   files:
     - LICENSE.txt
@@ -33,22 +34,6 @@ source:
     - docs/*
     - design/*.png
     - templates/**/*
-    # a more complete example, check the globbing deep dive below
-    - src: '*.md'
-      dst: docs
-      # Strip parent folders when adding files to the archive.
-      # Default: false
-      strip_parent: true
-      # File info.
-      # Not all fields are supported by all formats available formats.
-      # Defaults to the file info of the actual file if not provided.
-      info:
-        owner: root
-        group: root
-        mode: 0644
-        # format is `time.RFC3339Nano`
-        mtime: 2008-01-02T15:04:05Z
-
 ```
 
 !!! tip
