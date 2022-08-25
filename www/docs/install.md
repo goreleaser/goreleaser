@@ -2,7 +2,7 @@
 
 There are two GoReleaser distributions: OSS and [Pro](/pro/).
 
-You can install the pre-compiled binary (in several different ways), use Docker or compile from source (when on OSS).
+You can install the pre-compiled binary (in several ways), use Docker or compile from source (when on OSS).
 
 Below you can find the steps for each of them.
 
@@ -144,7 +144,7 @@ Below you can find the steps for each of them.
 !!! tip
     This script does not install anything, it just downloads, verifies and
     runs GoReleaser.
-    It's purpose is to be used within scripts and CIs.
+    Its purpose is to be used within scripts and CIs.
 
 ### manually
 
@@ -154,11 +154,31 @@ Below you can find the steps for each of them.
 === "Pro"
     Download the pre-compiled binaries from the [Pro releases page][pro-releases] and copy them to the desired location.
 
+### nightly
+
+Nightly build are pre-releases of the current code into the main branch.
+Use it for testing out new features only.
+
+#### manually
+
+=== "Pro"
+    Download the pre-compiled binaries from the [nightly release][nighly-pro-releases] and copy them to the desired location.
+
+#### docker
+
+=== "Pro"
+    Docker images are also available, look for tags with a `-nightly` suffix.
+
+    Registries:
+
+    - [`goreleaser/goreleaser-pro`](https://hub.docker.com/r/goreleaser/goreleaser-pro)
+    - [`ghcr.io/goreleaser/goreleaser-pro`](https://github.com/goreleaser/goreleaser/pkgs/container/goreleaser-pro)
+
 ## Verifying the artifacts
 
 ### binaries
 
-All artifacts are checksummed and the checksum file is signed with [cosign][].
+All artifacts are checksummed, and the checksum file is signed with [cosign][].
 
 === "OSS"
     1. Download the files you want, and the `checksums.txt`, `checksum.txt.pem` and `checksums.txt.sig` files from the [releases][releases] page:
@@ -265,7 +285,7 @@ To do that, you'll need to execute something more-or-less like the examples belo
 
 
 !!! info
-    Currently, the provided docker image does not support
+    Now, the provided docker image does not support
     the generation of snapcraft packages.
 
 Note that the image will almost always have the last stable Go version.
@@ -280,6 +300,7 @@ and iterate from that.
 [dockerfile]: https://github.com/goreleaser/goreleaser/blob/main/Dockerfile
 [releases]: https://github.com/goreleaser/goreleaser/releases
 [pro-releases]: https://github.com/goreleaser/goreleaser-pro/releases
+[nightly-pro-releases]: https://github.com/goreleaser/goreleaser-pro/releases/nightly
 [cosign]: https://github.com/sigstore/cosign
 
 ## Compiling from source
