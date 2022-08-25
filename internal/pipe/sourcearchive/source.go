@@ -97,12 +97,6 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	return err
 }
 
-// check if file is tracked, and, if it is we should not add it to the archive again.
-func isTracked(ctx *context.Context, path string) bool {
-	_, err := git.Run(ctx, "ls-files", "--error-unmatch", path)
-	return err == nil
-}
-
 // Default sets the pipe defaults.
 func (Pipe) Default(ctx *context.Context) error {
 	archive := &ctx.Config.Source
