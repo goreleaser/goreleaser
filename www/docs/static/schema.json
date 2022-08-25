@@ -2379,6 +2379,12 @@
 					},
 					"prefix_template": {
 						"type": "string"
+					},
+					"files": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
