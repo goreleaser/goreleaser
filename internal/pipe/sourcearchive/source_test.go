@@ -27,6 +27,8 @@ func TestArchive(t *testing.T) {
 			testlib.GitCommit(t, "feat: first")
 			require.NoError(t, os.WriteFile("added-later.txt", []byte("this file was added later"), 0o655))
 			require.NoError(t, os.WriteFile("ignored.md", []byte("never added"), 0o655))
+			require.NoError(t, os.MkdirAll("subfolder", 0o755))
+			require.NoError(t, os.WriteFile("subfolder/file.md", []byte("a file within a folder, added later"), 0o655))
 
 			ctx := context.New(config.Project{
 				ProjectName: "foo",
@@ -35,8 +37,9 @@ func TestArchive(t *testing.T) {
 					Format:         format,
 					Enabled:        true,
 					PrefixTemplate: "{{ .ProjectName }}-{{ .Version }}/",
-					Files: []string{
-						"*.txt",
+					Files: []config.File{
+						{Source: "*.txt"},
+						{Source: "subfolder/*"},
 					},
 				},
 			})
@@ -65,24 +68,32 @@ func TestArchive(t *testing.T) {
 				return
 			}
 
-			f, err := os.Open(path)
-			require.NoError(t, err)
-			z, err := zip.NewReader(f, stat.Size())
-			require.NoError(t, err)
-
-			var paths []string
-			for _, zf := range z.File {
-				paths = append(paths, zf.Name)
-			}
-			require.Equal(t, []string{
-				"foo-1.0.0/",
+			require.ElementsMatch(t, []string{
 				"foo-1.0.0/README.md",
 				"foo-1.0.0/code.py",
 				"foo-1.0.0/code.txt",
 				"foo-1.0.0/added-later.txt",
-			}, paths)
+				"foo-1.0.0/subfolder/file.md",
+			}, lsZip(t, path))
 		})
 	}
+}
+
+func lsZip(tb testing.TB, path string) []string {
+	tb.Helper()
+
+	stat, err := os.Stat(path)
+	require.NoError(tb, err)
+	f, err := os.Open(path)
+	require.NoError(tb, err)
+	z, err := zip.NewReader(f, stat.Size())
+	require.NoError(tb, err)
+
+	var paths []string
+	for _, zf := range z.File {
+		paths = append(paths, zf.Name)
+	}
+	return paths
 }
 
 func TestInvalidFormat(t *testing.T) {
@@ -96,7 +107,7 @@ func TestInvalidFormat(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Run(ctx), "fatal: Unknown archive format '7z'")
+	require.EqualError(t, Pipe{}.Run(ctx), "invalid archive format: 7z")
 }
 
 func TestDefault(t *testing.T) {

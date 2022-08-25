@@ -2382,7 +2382,7 @@
 					},
 					"files": {
 						"items": {
-							"type": "string"
+							"$ref": "#/$defs/File"
 						},
 						"type": "array"
 					}
