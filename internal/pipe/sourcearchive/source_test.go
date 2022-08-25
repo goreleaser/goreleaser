@@ -96,7 +96,7 @@ func TestInvalidFormat(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Run(ctx), "invalid archive format: 7z")
+	require.EqualError(t, Pipe{}.Run(ctx), "fatal: Unknown archive format '7z'")
 }
 
 func TestDefault(t *testing.T) {

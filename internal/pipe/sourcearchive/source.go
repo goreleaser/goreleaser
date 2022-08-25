@@ -36,6 +36,7 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	args := []string{
 		"archive",
 		"-o", path,
+		"--format", ctx.Config.Source.Format,
 	}
 
 	tpl := tmpl.New(ctx)
