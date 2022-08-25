@@ -36,7 +36,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to discord: env: environment variable "DISCORD_WEBHOOK_ID" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to discord: env: environment variable "DISCORD_WEBHOOK_ID" should not be empty; environment variable "DISCORD_WEBHOOK_TOKEN" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {

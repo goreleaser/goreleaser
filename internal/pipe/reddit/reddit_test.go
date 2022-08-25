@@ -47,7 +47,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to reddit: env: environment variable "REDDIT_SECRET" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to reddit: env: environment variable "REDDIT_SECRET" should not be empty; environment variable "REDDIT_PASSWORD" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {
