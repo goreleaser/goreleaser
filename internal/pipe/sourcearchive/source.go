@@ -2,13 +2,17 @@
 package sourcearchive
 
 import (
+	"fmt"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
+	"github.com/goreleaser/goreleaser/pkg/archive"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -33,31 +37,54 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	filename := name + "." + ctx.Config.Source.Format
 	path := filepath.Join(ctx.Config.Dist, filename)
 	log.WithField("file", filename).Info("creating source archive")
-	args := []string{
-		"archive",
-		"-o", path,
-		"--format", ctx.Config.Source.Format,
+
+	out, err := git.Run(ctx, "ls-files")
+	if err != nil {
+		return fmt.Errorf("could not list source files: %w", err)
 	}
 
-	if ctx.Config.Source.PrefixTemplate != "" {
-		prefix, err := tmpl.New(ctx).Apply(ctx.Config.Source.PrefixTemplate)
-		if err != nil {
-			return err
+	prefix, err := tmpl.New(ctx).Apply(ctx.Config.Source.PrefixTemplate)
+	if err != nil {
+		return err
+	}
+
+	af, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("could not create archive: %w", err)
+	}
+	defer af.Close() //nolint:errcheck
+
+	arch, err := archive.New(af, ctx.Config.Source.Format)
+	if err != nil {
+		return err
+	}
+
+	var ff []config.File
+	for _, f := range strings.Split(out, "\n") {
+		if strings.TrimSpace(f) == "" {
+			continue
 		}
-		args = append(args, "--prefix", prefix)
+		ff = append(ff, config.File{
+			Source: f,
+		})
 	}
-
-	files, err := evalFiles(ctx)
+	files, err := archivefiles.Eval(tmpl.New(ctx), append(ff, ctx.Config.Source.Files...))
 	if err != nil {
 		return err
 	}
 	for _, f := range files {
-		args = append(args, "--add-file", f)
+		f.Destination = filepath.Join(prefix, f.Destination)
+		if err := arch.Add(f); err != nil {
+			return fmt.Errorf("could not add %q to archive: %w", f.Source, err)
+		}
 	}
 
-	args = append(args, ctx.Git.FullCommit)
-	out, err := git.Clean(git.Run(ctx, args...))
-	log.Debug(out)
+	if err := arch.Close(); err != nil {
+		return fmt.Errorf("could not close archive file: %w", err)
+	}
+	if err := af.Close(); err != nil {
+		return fmt.Errorf("could not close archive file: %w", err)
+	}
 
 	ctx.Artifacts.Add(&artifact.Artifact{
 		Type: artifact.UploadableSourceArchive,
@@ -68,41 +95,6 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		},
 	})
 	return err
-}
-
-// to reuse the archivefiles packages, we do something funky:
-// - convert the []string to []config.File
-// - eval it in archivefiles
-// - convert it back to []string
-//
-// we also handle files already tracked, as if we add them again,
-// they'll get duplicated in the archive.
-func evalFiles(ctx *context.Context) ([]string, error) {
-	var files []config.File
-	for _, f := range ctx.Config.Source.Files {
-		files = append(files, config.File{
-			Source: f,
-		})
-	}
-	addFiles, err := archivefiles.Eval(tmpl.New(ctx), files)
-	if err != nil {
-		return nil, err
-	}
-
-	var result []string
-	for _, f := range addFiles {
-		if isTracked(ctx, f.Source) {
-			continue
-		}
-		result = append(result, f.Source)
-	}
-	return result, nil
-}
-
-// check if file is tracked, and, if it is we should not add it to the archive again.
-func isTracked(ctx *context.Context, path string) bool {
-	_, err := git.Run(ctx, "ls-files", "--error-unmatch", path)
-	return err == nil
 }
 
 // Default sets the pipe defaults.
