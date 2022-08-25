@@ -40,30 +40,20 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	}
 
 	tpl := tmpl.New(ctx)
-	prefix, err := tpl.Apply(ctx.Config.Source.PrefixTemplate)
-	if err != nil {
-		return err
-	}
-	if prefix != "" {
+	if ctx.Config.Source.PrefixTemplate != "" {
+		prefix, err := tpl.Apply(ctx.Config.Source.PrefixTemplate)
+		if err != nil {
+			return err
+		}
 		args = append(args, "--prefix", prefix)
 	}
 
-	var files []config.File
-	for _, f := range ctx.Config.Source.Files {
-		files = append(files, config.File{
-			Source: f,
-		})
-	}
-	addFiles, err := archivefiles.Eval(tpl, files)
+	files, err := evalFiles(ctx)
 	if err != nil {
 		return err
 	}
-
-	for _, f := range addFiles {
-		if isTracked(ctx, f.Source) {
-			continue
-		}
-		args = append(args, "--add-file", f.Source)
+	for _, f := range files {
+		args = append(args, "--add-file", f)
 	}
 
 	args = append(args, ctx.Git.FullCommit)
@@ -81,6 +71,36 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 	return err
 }
 
+// to reuse the archivefiles packages, we do something funky:
+// - convert the []string to []config.File
+// - eval it in archivefiles
+// - convert it back to []string
+//
+// we also handle files already tracked, as if we add them again,
+// they'll get duplicated in the archive.
+func evalFiles(ctx *context.Context) ([]string, error) {
+	var files []config.File
+	for _, f := range ctx.Config.Source.Files {
+		files = append(files, config.File{
+			Source: f,
+		})
+	}
+	addFiles, err := archivefiles.Eval(tmpl.New(ctx), files)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []string
+	for _, f := range addFiles {
+		if isTracked(ctx, f.Source) {
+			continue
+		}
+		result = append(result, f.Source)
+	}
+	return result, nil
+}
+
+// check if file is tracked, and, if it is we should not add it to the archive again.
 func isTracked(ctx *context.Context, path string) bool {
 	_, err := git.Run(ctx, "ls-files", "--error-unmatch", path)
 	return err == nil
