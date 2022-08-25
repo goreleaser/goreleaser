@@ -39,9 +39,8 @@ func (Pipe) Run(ctx *context.Context) (err error) {
 		"--format", ctx.Config.Source.Format,
 	}
 
-	tpl := tmpl.New(ctx)
 	if ctx.Config.Source.PrefixTemplate != "" {
-		prefix, err := tpl.Apply(ctx.Config.Source.PrefixTemplate)
+		prefix, err := tmpl.New(ctx).Apply(ctx.Config.Source.PrefixTemplate)
 		if err != nil {
 			return err
 		}
