@@ -876,10 +876,11 @@ type Publisher struct {
 
 // Source configuration.
 type Source struct {
-	NameTemplate   string `yaml:"name_template,omitempty" json:"name_template,omitempty"`
-	Format         string `yaml:"format,omitempty" json:"format,omitempty"`
-	Enabled        bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
-	PrefixTemplate string `yaml:"prefix_template,omitempty" json:"prefix_template,omitempty"`
+	NameTemplate   string   `yaml:"name_template,omitempty" json:"name_template,omitempty"`
+	Format         string   `yaml:"format,omitempty" json:"format,omitempty"`
+	Enabled        bool     `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	PrefixTemplate string   `yaml:"prefix_template,omitempty" json:"prefix_template,omitempty"`
+	Files          []string `yaml:"files,omitempty" json:"files,omitempty"`
 }
 
 // Project includes all project configuration.

@@ -23,6 +23,17 @@ source:
   # String to prepend to each filename in the archive.
   # Defaults to empty
   prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
+
+  # Additional files/template/globs you want to add to the source archive.
+  # Will use --add-file of git-archive.
+  # Defaults to empty.
+  files:
+    - LICENSE.txt
+    - README_{{.Os}}.md
+    - CHANGELOG.md
+    - docs/*
+    - design/*.png
+    - templates/**/*
 ```
 
 !!! tip

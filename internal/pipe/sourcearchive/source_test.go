@@ -1,6 +1,7 @@
 package sourcearchive
 
 import (
+	"archive/zip"
 	"os"
 	"path/filepath"
 	"testing"
@@ -20,9 +21,12 @@ func TestArchive(t *testing.T) {
 
 			testlib.GitInit(t)
 			require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0o655))
+			require.NoError(t, os.WriteFile("code.py", []byte("print 1"), 0o655))
 			require.NoError(t, os.WriteFile("README.md", []byte("# my dope fake project"), 0o655))
 			testlib.GitAdd(t)
 			testlib.GitCommit(t, "feat: first")
+			require.NoError(t, os.WriteFile("added-later.txt", []byte("this file was added later"), 0o655))
+			require.NoError(t, os.WriteFile("ignored.md", []byte("never added"), 0o655))
 
 			ctx := context.New(config.Project{
 				ProjectName: "foo",
@@ -31,6 +35,9 @@ func TestArchive(t *testing.T) {
 					Format:         format,
 					Enabled:        true,
 					PrefixTemplate: "{{ .ProjectName }}-{{ .Version }}/",
+					Files: []string{
+						"*.txt",
+					},
 				},
 			})
 			ctx.Git.FullCommit = "HEAD"
@@ -49,11 +56,47 @@ func TestArchive(t *testing.T) {
 					artifact.ExtraFormat: format,
 				},
 			}, *artifacts[0])
-			stat, err := os.Stat(filepath.Join(tmp, "dist", "foo-1.0.0."+format))
+			path := filepath.Join(tmp, "dist", "foo-1.0.0."+format)
+			stat, err := os.Stat(path)
 			require.NoError(t, err)
 			require.Greater(t, stat.Size(), int64(100))
+
+			if format != "zip" {
+				return
+			}
+
+			f, err := os.Open(path)
+			require.NoError(t, err)
+			z, err := zip.NewReader(f, stat.Size())
+			require.NoError(t, err)
+
+			var paths []string
+			for _, zf := range z.File {
+				paths = append(paths, zf.Name)
+			}
+			require.Equal(t, []string{
+				"foo-1.0.0/",
+				"foo-1.0.0/README.md",
+				"foo-1.0.0/code.py",
+				"foo-1.0.0/code.txt",
+				"foo-1.0.0/added-later.txt",
+			}, paths)
 		})
 	}
+}
+
+func TestInvalidFormat(t *testing.T) {
+	ctx := context.New(config.Project{
+		Dist:        t.TempDir(),
+		ProjectName: "foo",
+		Source: config.Source{
+			Format:         "7z",
+			Enabled:        true,
+			PrefixTemplate: "{{ .ProjectName }}-{{ .Version }}/",
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.EqualError(t, Pipe{}.Run(ctx), "fatal: Unknown archive format '7z'")
 }
 
 func TestDefault(t *testing.T) {
