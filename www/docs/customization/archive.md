@@ -56,6 +56,13 @@ archives:
     # Default is false.
     wrap_in_directory: true
 
+    # If set to true, will strip the parent directories away from binary files.
+    #
+    # This might be useful if you have your binary be built with a subdir for some reason, but do no want that subdir inside the archive.
+    #
+    # Default is false.
+    strip_parent_binary_folder: true
+
     # Can be used to change the archive formats for specific GOOSs.
     # Most common use case is to archive as zip on Windows.
     # Default is empty.

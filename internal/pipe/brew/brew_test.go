@@ -268,16 +268,20 @@ func TestFullPipe(t *testing.T) {
 							IDs: []string{
 								"foo",
 							},
-							Description:  "Run pipe test formula and FOO={{ .Env.FOO }}",
-							Caveats:      "don't do this {{ .ProjectName }}",
-							Test:         "system \"true\"\nsystem \"#{bin}/foo\", \"-h\"",
-							Plist:        `<xml>whatever</xml>`,
-							Dependencies: []config.HomebrewDependency{{Name: "zsh", Type: "optional"}, {Name: "bash"}},
-							Conflicts:    []string{"gtk+", "qt"},
-							Service:      "run foo/bar\nkeep_alive true",
-							PostInstall:  "system \"echo\"\ntouch \"/tmp/hi\"",
-							Install:      `bin.install "{{ .ProjectName }}"`,
-							Goamd64:      "v1",
+							Description: "Run pipe test formula and FOO={{ .Env.FOO }}",
+							Caveats:     "don't do this {{ .ProjectName }}",
+							Test:        "system \"true\"\nsystem \"#{bin}/foo\", \"-h\"",
+							Plist:       `<xml>whatever</xml>`,
+							Dependencies: []config.HomebrewDependency{
+								{Name: "zsh", Type: "optional"},
+								{Name: "bash", Version: "3.2.57"},
+								{Name: "fish", Type: "optional", Version: "v1.2.3"},
+							},
+							Conflicts:   []string{"gtk+", "qt"},
+							Service:     "run foo/bar\nkeep_alive true",
+							PostInstall: "system \"echo\"\ntouch \"/tmp/hi\"",
+							Install:     `bin.install "{{ .ProjectName }}"`,
+							Goamd64:     "v1",
 						},
 					},
 				},
@@ -747,9 +751,8 @@ func TestRunPipeForMultipleArmVersions(t *testing.T) {
 }
 
 func TestRunPipeNoBuilds(t *testing.T) {
-	ctx := &context.Context{
-		TokenType: context.TokenTypeGitHub,
-		Config: config.Project{
+	ctx := context.New(
+		config.Project{
 			Brews: []config.Homebrew{
 				{
 					Tap: config.RepoRef{
@@ -759,7 +762,8 @@ func TestRunPipeNoBuilds(t *testing.T) {
 				},
 			},
 		},
-	}
+	)
+	ctx.TokenType = context.TokenTypeGitHub
 	client := client.NewMock()
 	require.Equal(t, ErrNoArchivesFound, runAll(ctx, client))
 	require.False(t, client.CreatedFile)

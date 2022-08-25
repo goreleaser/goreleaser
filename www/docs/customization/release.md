@@ -24,8 +24,22 @@ release:
     - bar
 
   # If set to true, will not auto-publish the release.
+  # Available only for GitHub and Gitea.
   # Default is false.
   draft: true
+
+  # Whether to remove existing draft releases with the same name before creating a new one.
+  # Only effective if `draft` is set to true.
+  # Available only for GitHub.
+  # Default is false.
+  replace_existing_draft: true
+
+  # Useful if you want to delay the creation of the tag in the remote.
+  # You can create the tag locally, but not push it, and run GoReleaser.
+  # It'll then set the `target_commitish` portion of the GitHub release to the value of this field.
+  # Only works on GitHub.
+  # Default is empty.
+  target_commitish: '{{ .Commit }}'
 
   # If set, will create a release discussion in the category specified.
   #
@@ -97,7 +111,7 @@ release:
 ```
 
 !!! tip
-    [Learn how to setup an API token, GitHub Enterprise and etc](/scm/github/).
+    [Learn how to set up an API token, GitHub Enterprise, etc](/scm/github/).
 
 ## GitLab
 
@@ -153,7 +167,7 @@ release:
 ```
 
 !!! tip
-    [Learn how to setup an API token, self-hosted GitLab and etc](/scm/gitlab/).
+    [Learn how to set up an API token, self-hosted GitLab, etc](/scm/gitlab/).
 
 !!! tip
     If you use GitLab subgroups, you need to specify it in the `owner` field, e.g. `mygroup/mysubgroup`.
@@ -220,7 +234,7 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 ```
 
 !!! tip
-    [Learn how to setup an API token](/scm/gitea/).
+    [Learn how to set up an API token](/scm/gitea/).
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).

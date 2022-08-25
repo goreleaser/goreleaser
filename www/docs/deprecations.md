@@ -55,12 +55,6 @@ nFPM will soon make mandatory setting the maintainer field.
     ```
 
 
-### rigs
-
-> since 2022-03-21 (v1.8.0)
-
-GoFish was deprecated by their authors, therefore, we're removing its
-support from GoReleaser too.
 
 ### dockers.use: buildpacks
 
@@ -96,6 +90,13 @@ On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
 ## Expired deprecation notices
 
 The following options were deprecated in the past and were already removed.
+
+### rigs
+
+> since 2022-03-21 (v1.8.0), removed 2022-08-16 (v1.11.0)
+
+GoFish was deprecated by their authors, therefore, we're removing its
+support from GoReleaser too.
 
 ### nfpms.empty_folders
 

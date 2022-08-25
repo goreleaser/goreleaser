@@ -11,8 +11,9 @@ import (
 	"strings"
 
 	"github.com/caarlos0/log"
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v47/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -63,10 +64,19 @@ func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, pre
 	return notes.Body, err
 }
 
+func commitAbbrevLen(ctx *context.Context) int {
+	hash, err := git.Clean(git.Run(ctx, "rev-parse", "--short", "HEAD", "--quiet"))
+	if err != nil || len(hash) > 40 {
+		return 40 // max sha1 len
+	}
+	return len(hash)
+}
+
 func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
 	var log []string
-
+	commitlen := commitAbbrevLen(ctx)
 	opts := &github.ListOptions{PerPage: 100}
+
 	for {
 		result, resp, err := c.client.Repositories.CompareCommits(ctx, repo.Owner, repo.Name, prev, current, opts)
 		if err != nil {
@@ -75,7 +85,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 		for _, commit := range result.Commits {
 			log = append(log, fmt.Sprintf(
 				"%s: %s (@%s)",
-				commit.GetSHA(),
+				commit.GetSHA()[0:commitlen-1],
 				strings.Split(commit.Commit.GetMessage(), "\n")[0],
 				commit.GetAuthor().GetLogin(),
 			))
@@ -83,7 +93,6 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 		if resp.NextPage == 0 {
 			break
 		}
-
 		opts.Page = resp.NextPage
 	}
 
@@ -207,6 +216,12 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		return "", err
 	}
 
+	if ctx.Config.Release.Draft && ctx.Config.Release.ReplaceExistingDraft {
+		if err := c.deleteExistingDraftRelease(ctx, title); err != nil {
+			return "", err
+		}
+	}
+
 	// Truncate the release notes if it's too long (github doesn't allow more than 125000 characters)
 	body = truncateReleaseBody(body)
 
@@ -217,8 +232,19 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		Draft:      github.Bool(ctx.Config.Release.Draft),
 		Prerelease: github.Bool(ctx.PreRelease),
 	}
+
 	if ctx.Config.Release.DiscussionCategoryName != "" {
 		data.DiscussionCategoryName = github.String(ctx.Config.Release.DiscussionCategoryName)
+	}
+
+	if target := ctx.Config.Release.TargetCommitish; target != "" {
+		target, err := tmpl.New(ctx).Apply(target)
+		if err != nil {
+			return "", err
+		}
+		if target != "" {
+			data.TargetCommitish = github.String(target)
+		}
 	}
 
 	release, _, err = c.client.Repositories.GetReleaseByTag(
@@ -356,4 +382,44 @@ func overrideGitHubClientAPI(ctx *context.Context, client *github.Client) error 
 	client.UploadURL = upload
 
 	return nil
+}
+
+func (c *githubClient) deleteExistingDraftRelease(ctx *context.Context, name string) error {
+	opt := github.ListOptions{PerPage: 50}
+	for {
+		releases, resp, err := c.client.Repositories.ListReleases(
+			ctx,
+			ctx.Config.Release.GitHub.Owner,
+			ctx.Config.Release.GitHub.Name,
+			&opt,
+		)
+		if err != nil {
+			return fmt.Errorf("could not delete existing drafts: %w", err)
+		}
+		for _, r := range releases {
+			if r.GetDraft() && r.GetName() == name {
+				if _, err := c.client.Repositories.DeleteRelease(
+					ctx,
+					ctx.Config.Release.GitHub.Owner,
+					ctx.Config.Release.GitHub.Name,
+					r.GetID(),
+				); err != nil {
+					return fmt.Errorf("could not delete previous draft release: %w", err)
+				}
+
+				log.WithFields(log.Fields{
+					"commit": r.GetTargetCommitish(),
+					"tag":    r.GetTagName(),
+					"name":   r.GetName(),
+				}).Info("deleted previous draft release")
+
+				// in theory, there should be only 1 release matching, so we can just return
+				return nil
+			}
+		}
+		if resp.NextPage == 0 {
+			return nil
+		}
+		opt.Page = resp.NextPage
+	}
 }

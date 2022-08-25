@@ -30,6 +30,7 @@ type GitLabURLs struct {
 	Download           string `yaml:"download,omitempty" json:"download,omitempty"`
 	SkipTLSVerify      bool   `yaml:"skip_tls_verify,omitempty" json:"skip_tls_verify,omitempty"`
 	UsePackageRegistry bool   `yaml:"use_package_registry,omitempty" json:"use_package_registry,omitempty"`
+	UseJobToken        bool   `yaml:"use_job_token,omitempty" json:"use_job_token,omitempty"`
 }
 
 // GiteaURLs holds the URLs to be used when using gitea.
@@ -81,8 +82,9 @@ type RepoRef struct {
 
 // HomebrewDependency represents Homebrew dependency.
 type HomebrewDependency struct {
-	Name string `yaml:"name,omitempty" json:"name,omitempty"`
-	Type string `yaml:"type,omitempty" json:"type,omitempty"`
+	Name    string `yaml:"name,omitempty" json:"name,omitempty"`
+	Type    string `yaml:"type,omitempty" json:"type,omitempty"`
+	Version string `yaml:"version,omitempty" json:"version,omitempty"`
 }
 
 // type alias to prevent stack overflowing in the custom unmarshaler.
@@ -145,21 +147,6 @@ type AUR struct {
 	PrivateKey            string       `yaml:"private_key,omitempty" json:"private_key,omitempty"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 }
-
-// GoFish contains the gofish section.
-type GoFish struct {
-	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
-	Rig                   RepoRef      `yaml:"rig,omitempty" json:"rig,omitempty"`
-	CommitAuthor          CommitAuthor `yaml:"commit_author,omitempty" json:"commit_author,omitempty"`
-	CommitMessageTemplate string       `yaml:"commit_msg_template,omitempty" json:"commit_msg_template,omitempty"`
-	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
-	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
-	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
-	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty"`
-	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
-	IDs                   []string     `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Goarm                 string       `yaml:"goarm,omitempty" json:"goarm,omitempty"`
-} // deprecated
 
 // Homebrew contains the brew section.
 type Homebrew struct {
@@ -440,18 +427,16 @@ type FileInfo struct {
 	MTime time.Time   `yaml:"mtime,omitempty" json:"mtime,omitempty"`
 }
 
-// type alias to prevent stack overflow
-type fileAlias File
-
 // UnmarshalYAML is a custom unmarshaler that wraps strings in arrays.
 func (f *File) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	type t File
 	var str string
 	if err := unmarshal(&str); err == nil {
 		*f = File{Source: str}
 		return nil
 	}
 
-	var file fileAlias
+	var file t
 	if err := unmarshal(&file); err != nil {
 		return err
 	}
@@ -493,6 +478,7 @@ type Archive struct {
 	Format                    string            `yaml:"format,omitempty" json:"format,omitempty"`
 	FormatOverrides           []FormatOverride  `yaml:"format_overrides,omitempty" json:"format_overrides,omitempty"`
 	WrapInDirectory           string            `yaml:"wrap_in_directory,omitempty" json:"wrap_in_directory,omitempty" jsonschema:"oneof_type=string;boolean"`
+	StripParentBinaryFolder   bool              `yaml:"strip_parent_binary_folder,omitempty" json:"strip_parent_binary_folder,omitempty"`
 	Files                     []File            `yaml:"files,omitempty" json:"files,omitempty"`
 	Meta                      bool              `yaml:"meta,omitempty" json:"meta,omitempty"`
 	AllowDifferentBinaryCount bool              `yaml:"allow_different_binary_count,omitempty" json:"allow_different_binary_count,omitempty"`
@@ -513,6 +499,8 @@ type Release struct {
 	GitLab                 Repo        `yaml:"gitlab,omitempty" json:"gitlab,omitempty"`
 	Gitea                  Repo        `yaml:"gitea,omitempty" json:"gitea,omitempty"`
 	Draft                  bool        `yaml:"draft,omitempty" json:"draft,omitempty"`
+	ReplaceExistingDraft   bool        `yaml:"replace_existing_draft,omitempty" json:"replace_existing_draft,omitempty"`
+	TargetCommitish        string      `yaml:"target_commitish,omitempty" json:"target_commitish,omitempty"`
 	Disable                bool        `yaml:"disable,omitempty" json:"disable,omitempty"`
 	SkipUpload             bool        `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty"`
 	Prerelease             string      `yaml:"prerelease,omitempty" json:"prerelease,omitempty"`
@@ -556,6 +544,7 @@ type NFPM struct {
 	Description string   `yaml:"description,omitempty" json:"description,omitempty"`
 	License     string   `yaml:"license,omitempty" json:"license,omitempty"`
 	Bindir      string   `yaml:"bindir,omitempty" json:"bindir,omitempty"`
+	Changelog   string   `yaml:"changelog,omitempty" json:"changelog,omitempty"`
 	Meta        bool     `yaml:"meta,omitempty" json:"meta,omitempty"` // make package without binaries - only deps
 }
 
@@ -864,6 +853,8 @@ type Upload struct {
 	Mode               string            `yaml:"mode,omitempty" json:"mode,omitempty"`
 	Method             string            `yaml:"method,omitempty" json:"method,omitempty"`
 	ChecksumHeader     string            `yaml:"checksum_header,omitempty" json:"checksum_header,omitempty"`
+	ClientX509Cert     string            `yaml:"client_x509_cert" json:"client_x509_cert"`
+	ClientX509Key      string            `yaml:"client_x509_key" json:"client_x509_key"`
 	TrustedCerts       string            `yaml:"trusted_certificates,omitempty" json:"trusted_certificates,omitempty"`
 	Checksum           bool              `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	Signature          bool              `yaml:"signature,omitempty" json:"signature,omitempty"`
@@ -899,7 +890,6 @@ type Project struct {
 	Release         Release          `yaml:"release,omitempty" json:"release,omitempty"`
 	Milestones      []Milestone      `yaml:"milestones,omitempty" json:"milestones,omitempty"`
 	Brews           []Homebrew       `yaml:"brews,omitempty" json:"brews,omitempty"`
-	Rigs            []GoFish         `yaml:"rigs,omitempty" json:"rigs,omitempty"` // deprecated
 	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`
 	Krews           []Krew           `yaml:"krews,omitempty" json:"krews,omitempty"`
 	Scoop           Scoop            `yaml:"scoop,omitempty" json:"scoop,omitempty"`
