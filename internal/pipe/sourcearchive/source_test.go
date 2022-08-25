@@ -79,23 +79,6 @@ func TestArchive(t *testing.T) {
 	}
 }
 
-func lsZip(tb testing.TB, path string) []string {
-	tb.Helper()
-
-	stat, err := os.Stat(path)
-	require.NoError(tb, err)
-	f, err := os.Open(path)
-	require.NoError(tb, err)
-	z, err := zip.NewReader(f, stat.Size())
-	require.NoError(tb, err)
-
-	var paths []string
-	for _, zf := range z.File {
-		paths = append(paths, zf.Name)
-	}
-	return paths
-}
-
 func TestInvalidFormat(t *testing.T) {
 	ctx := context.New(config.Project{
 		Dist:        t.TempDir(),
@@ -126,7 +109,45 @@ func TestInvalidNameTemplate(t *testing.T) {
 			NameTemplate: "{{ .foo }-asdda",
 		},
 	})
-	require.EqualError(t, Pipe{}.Run(ctx), "template: tmpl:1: unexpected \"}\" in operand")
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
+}
+
+func TestInvalidInvalidFileTemplate(t *testing.T) {
+	testlib.Mktmp(t)
+	require.NoError(t, os.Mkdir("dist", 0o744))
+
+	testlib.GitInit(t)
+	require.NoError(t, os.WriteFile("code.txt", []byte("not really code"), 0o655))
+	testlib.GitAdd(t)
+	testlib.GitCommit(t, "feat: first")
+
+	ctx := context.New(config.Project{
+		ProjectName: "foo",
+		Dist:        "dist",
+		Source: config.Source{
+			Format:  "tar.gz",
+			Enabled: true,
+			Files: []config.File{
+				{Source: "{{.Test}"},
+			},
+		},
+	})
+	ctx.Git.FullCommit = "HEAD"
+	ctx.Version = "1.0.0"
+	require.NoError(t, Pipe{}.Default(ctx))
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
+}
+
+func TestInvalidPrefixTemplate(t *testing.T) {
+	ctx := context.New(config.Project{
+		Dist: t.TempDir(),
+		Source: config.Source{
+			Enabled:        true,
+			PrefixTemplate: "{{ .ProjectName }/",
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	testlib.RequireTemplateError(t, Pipe{}.Run(ctx))
 }
 
 func TestDisabled(t *testing.T) {
@@ -146,4 +167,25 @@ func TestSkip(t *testing.T) {
 		})
 		require.False(t, Pipe{}.Skip(ctx))
 	})
+}
+
+func TestString(t *testing.T) {
+	require.NotEmpty(t, Pipe{}.String())
+}
+
+func lsZip(tb testing.TB, path string) []string {
+	tb.Helper()
+
+	stat, err := os.Stat(path)
+	require.NoError(tb, err)
+	f, err := os.Open(path)
+	require.NoError(tb, err)
+	z, err := zip.NewReader(f, stat.Size())
+	require.NoError(tb, err)
+
+	var paths []string
+	for _, zf := range z.File {
+		paths = append(paths, zf.Name)
+	}
+	return paths
 }
