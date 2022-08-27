@@ -1,8 +1,6 @@
 package testlib
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestGit(t *testing.T) {
 	TestMkTemp(t)

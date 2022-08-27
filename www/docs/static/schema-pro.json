@@ -2531,6 +2531,12 @@
 					},
 					"prefix_template": {
 						"type": "string"
+					},
+					"files": {
+						"items": {
+							"$ref": "#/$defs/File"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,
