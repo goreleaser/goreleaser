@@ -45,9 +45,9 @@ You can also use GoReleaser to [build](/cmd/goreleaser_build/) the binary only f
 goreleaser build --single-target
 ```
 
-In order to release to GitHub, you'll need to export a `GITHUB_TOKEN` environment variable, which should contain a valid GitHub token with the `repo` scope.
+To release to GitHub, you'll need to export a `GITHUB_TOKEN` environment variable, which should contain a valid GitHub token with the `repo` scope.
 It will be used to deploy releases to your GitHub repository.
-You can create a new github token [here](https://github.com/settings/tokens/new).
+You can create a new GitHub token [here](https://github.com/settings/tokens/new).
 
 !!! info
     The minimum permissions the `GITHUB_TOKEN` should have to run this are `write:packages`

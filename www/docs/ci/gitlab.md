@@ -47,7 +47,7 @@ for more information.
 
 When tags are pushed to the repository,
 an available GitLab Runner with the Docker executor will pick up the release job.
-`goreleaser/goreleaser` will start in a container and the repository will be mounted inside.
+`goreleaser/goreleaser` will start in a container, and the repository will be mounted inside.
 Finally, the `script` section will run within the container starting in your project's directory.
 
 ## Releasing Archives and Pushing Images

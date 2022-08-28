@@ -1,6 +1,6 @@
 # Semantic Versioning
 
-GoReleaser enforces semantic versioning and will error on non compliant tags.
+GoReleaser enforces semantic versioning and will error on non-compliant tags.
 
 Your tag **should** be a valid [semantic version](http://semver.org/).
 If it is not, GoReleaser will error.
