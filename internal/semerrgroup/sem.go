@@ -40,7 +40,7 @@ func (s *skipAwareGroup) Go(fn func() error) {
 	s.g.Go(func() error {
 		err := fn()
 		// if the err is a skip, set it for later, but return nil for now so the
-		// the group proceeds.
+		// group proceeds.
 		if pipe.IsSkip(err) {
 			s.skipOnce.Do(func() {
 				s.skipErr = err
