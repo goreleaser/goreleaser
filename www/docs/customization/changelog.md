@@ -28,9 +28,12 @@ changelog:
   sort: asc
 
   # Max commit hash length to use in the changelog.
+  #
   # 0: use whatever the changelog implementation gives you
   # -1: remove the commit hash from the changelog
   # any other number: max length.
+  #
+  # Default is 0.
   abbrev: -1
 
   # Group commits messages by given regex and title.
