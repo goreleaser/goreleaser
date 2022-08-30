@@ -449,6 +449,9 @@
 							"$ref": "#/$defs/ChangeLogGroup"
 						},
 						"type": "array"
+					},
+					"abbrev": {
+						"type": "integer"
 					}
 				},
 				"additionalProperties": false,
