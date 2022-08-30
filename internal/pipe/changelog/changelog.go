@@ -114,6 +114,24 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 		return strings.Join(entries, newLine), nil
 	}
 
+	for i := range entries {
+		entry := entries[i]
+		abbr := ctx.Config.Changelog.Abbrev
+		switch abbr {
+		case 0:
+			continue
+		case -1:
+			_, rest, _ := strings.Cut(entry, " ")
+			entries[i] = rest
+		default:
+			commit, rest, _ := strings.Cut(entry, " ")
+			if abbr > len(commit) {
+				continue
+			}
+			entries[i] = fmt.Sprintf("%s %s", commit[:abbr], rest)
+		}
+	}
+
 	result := []string{"## Changelog"}
 	if len(ctx.Config.Changelog.Groups) == 0 {
 		log.Debug("not grouping entries")

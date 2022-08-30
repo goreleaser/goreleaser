@@ -772,3 +772,90 @@ func TestChangelogFormat(t *testing.T) {
 		}
 	})
 }
+
+func TestAbbrev(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitCommit(t, "first")
+	testlib.GitTag(t, "v0.0.1")
+	testlib.GitCommit(t, "added feature 1")
+	testlib.GitCommit(t, "fixed bug 2")
+	testlib.GitCommit(t, "ignored: whatever")
+	testlib.GitCommit(t, "feat(deps): update foobar [bot]")
+	testlib.GitCommit(t, "fix: whatever")
+	testlib.GitCommit(t, "docs: whatever")
+	testlib.GitCommit(t, "chore: something about cArs we dont need")
+	testlib.GitCommit(t, "feat: added that thing")
+	testlib.GitCommit(t, "bug: Merge pull request #999 from goreleaser/some-branch")
+	testlib.GitCommit(t, "this is not a Merge pull request")
+	testlib.GitTag(t, "v0.0.2")
+
+	t.Run("no abbrev", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist:      folder,
+			Changelog: config.Changelog{},
+		})
+		ctx.Git.CurrentTag = "v0.0.2"
+		require.NoError(t, Pipe{}.Run(ctx))
+		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
+	})
+
+	t.Run("abbrev -1", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Abbrev: -1,
+			},
+		})
+		ctx.Git.CurrentTag = "v0.0.2"
+		require.NoError(t, Pipe{}.Run(ctx))
+	})
+
+	t.Run("abbrev 3", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Abbrev: 3,
+			},
+		})
+		ctx.Git.CurrentTag = "v0.0.2"
+		require.NoError(t, Pipe{}.Run(ctx))
+		ensureCommitHashLen(t, ctx.ReleaseNotes, 3)
+	})
+
+	t.Run("abbrev 7", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Abbrev: 7,
+			},
+		})
+		ctx.Git.CurrentTag = "v0.0.2"
+		require.NoError(t, Pipe{}.Run(ctx))
+		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
+	})
+
+	t.Run("abbrev 40", func(t *testing.T) {
+		ctx := context.New(config.Project{
+			Dist: folder,
+			Changelog: config.Changelog{
+				Abbrev: 40,
+			},
+		})
+		ctx.Git.CurrentTag = "v0.0.2"
+		require.NoError(t, Pipe{}.Run(ctx))
+		ensureCommitHashLen(t, ctx.ReleaseNotes, 7)
+	})
+}
+
+func ensureCommitHashLen(tb testing.TB, log string, l int) {
+	tb.Helper()
+	for _, line := range strings.Split(log, "\n") {
+		if strings.HasPrefix(line, "#") || strings.TrimSpace(line) == "" {
+			continue
+		}
+		parts := strings.SplitN(line, " ", 3)
+		commit := strings.TrimPrefix(parts[1], "* ")
+		require.Len(tb, commit, l)
+	}
+}
