@@ -13,7 +13,6 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/google/go-github/v47/github"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -64,17 +63,8 @@ func (c *githubClient) GenerateReleaseNotes(ctx *context.Context, repo Repo, pre
 	return notes.Body, err
 }
 
-func commitAbbrevLen(ctx *context.Context) int {
-	hash, err := git.Clean(git.Run(ctx, "rev-parse", "--short", "HEAD", "--quiet"))
-	if err != nil || len(hash) > 40 {
-		return 40 // max sha1 len
-	}
-	return len(hash)
-}
-
 func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current string) (string, error) {
 	var log []string
-	commitlen := commitAbbrevLen(ctx)
 	opts := &github.ListOptions{PerPage: 100}
 
 	for {
@@ -85,7 +75,7 @@ func (c *githubClient) Changelog(ctx *context.Context, repo Repo, prev, current 
 		for _, commit := range result.Commits {
 			log = append(log, fmt.Sprintf(
 				"%s: %s (@%s)",
-				commit.GetSHA()[0:commitlen-1],
+				commit.GetSHA(),
 				strings.Split(commit.Commit.GetMessage(), "\n")[0],
 				commit.GetAuthor().GetLogin(),
 			))

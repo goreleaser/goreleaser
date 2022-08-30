@@ -808,6 +808,7 @@ type Changelog struct {
 	Skip    bool             `yaml:"skip,omitempty" json:"skip,omitempty"` // TODO(caarlos0): rename to Disable to match other pipes
 	Use     string           `yaml:"use,omitempty" json:"use,omitempty" jsonschema:"enum=git,enum=github,enum=github-native,enum=gitlab,default=git"`
 	Groups  []ChangeLogGroup `yaml:"groups,omitempty" json:"groups,omitempty"`
+	Abbrev  int              `yaml:"abbrev,omitempty" json:"abbrev,omitempty"`
 }
 
 // ChangeLogGroup holds the grouping criteria for the changelog.
