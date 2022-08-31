@@ -3,7 +3,7 @@
 GoReleaser is a release automation tool for Go projects.
 The goal is to simplify the build, release and publish steps while providing variant customization options for all steps.
 
-It has been widely adopted by the Go community in the past years, with [thousands of projects](https://github.com/search?l=&q=filename%3Agoreleaser+language%3Ayaml+-path%3A%2Fvendor&type=code) it to manage their releases.
+It has been widely adopted by the Go community in the past years, with [thousands of projects](https://github.com/search?l=&q=filename%3Agoreleaser+language%3Ayaml+-path%3A%2Fvendor&type=code) using it to manage their releases.
 You can check some of our users out [here](/users).
 
 GoReleaser was built with CI tools in mind — you only really need to download and execute it in your build script.
