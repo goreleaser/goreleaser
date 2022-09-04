@@ -72,5 +72,5 @@ Push your branch to your `goreleaser` fork and open a pull request against the m
 
 ## Financial contributions
 
-We also welcome financial contributions in full transparency on our [open collective](https://opencollective.com/goreleaser).
-Anyone can file an expense. If the expense makes sense for the development of the community, it will be "merged" in the ledger of our open collective by the core contributors and the person who filed the expense will be reimbursed.
+You can contribute in our OpenCollective or to any of the contributors directly.
+See [this page](https://goreleaser.com/sponsors) for more details.
