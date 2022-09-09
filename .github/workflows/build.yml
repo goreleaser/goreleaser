@@ -14,6 +14,16 @@ permissions:
   packages: write
 
 jobs:
+  govulncheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
+      - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3
+        with:
+          go-version: '1.19'
+          cache: true
+      - run: go install golang.org/x/vuln/cmd/govulncheck@latest
+      - run: govulncheck ./...
   goreleaser-check-pkgs:
     runs-on: ubuntu-latest
     env:
@@ -39,7 +49,7 @@ jobs:
             ./dist/*.deb
             ./dist/*.rpm
             ./dist/*.apk
-          key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}-${{ hashFiles('**/go.sum') }}
+          key: ${{ github.ref }}
       - run: task goreleaser:test:${{ matrix.format }}
   goreleaser:
     runs-on: ubuntu-latest
@@ -65,21 +75,14 @@ jobs:
       - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3
         with:
           go-version: '1.19'
-      - uses: actions/cache@fd5de65bc895cf536527842281bea11763fefd77 # v3
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+          cache: true
       - uses: actions/cache@fd5de65bc895cf536527842281bea11763fefd77 # v3
         with:
           path: |
             ./dist/*.deb
             ./dist/*.rpm
             ./dist/*.apk
-          key: ${{ runner.os }}-go-${{ hashFiles('**/*.go') }}-${{ hashFiles('**/go.sum') }}
+          key: ${{ github.ref }}
       - uses: sigstore/cosign-installer@v2.5.1
       - uses: anchore/sbom-action/download-syft@v0.12.0
       - name: setup-validate-krew-manifest
