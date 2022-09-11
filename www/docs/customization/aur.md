@@ -102,7 +102,8 @@ aurs:
     # List of files that can contain user-made changes and should be preserved
     # during package upgrades and removals.
     #
-    # Defaults to empty.
+    # Default: empty.
+    # Since: v1.12
     backup:
       - /etc/foo.conf
 
