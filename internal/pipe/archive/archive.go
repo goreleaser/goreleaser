@@ -6,6 +6,7 @@ package archive
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -150,7 +151,7 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 		lock.Unlock()
 		return err
 	}
-	if _, err = os.Stat(archivePath); !os.IsNotExist(err) {
+	if _, err = os.Stat(archivePath); !errors.Is(err, fs.ErrNotExist) {
 		lock.Unlock()
 		return fmt.Errorf("archive named %s already exists. Check your archive name template", archivePath)
 	}

@@ -84,7 +84,7 @@ func fakeGit(args ...string) (string, error) {
 		"-c", "log.showSignature=false",
 	}
 	allArgs = append(allArgs, args...)
-	return git.Run(context.TODO(), allArgs...)
+	return git.Run(context.Background(), allArgs...)
 }
 
 // GitCheckoutBranch allows us to change the active branch that we're using.

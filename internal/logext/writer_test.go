@@ -2,6 +2,7 @@ package logext
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"strconv"
 	"testing"
@@ -24,7 +25,7 @@ func TestWriter(t *testing.T) {
 				})
 				var b bytes.Buffer
 				log.Log = log.New(&b)
-				l, err := NewWriter(log.Fields{"foo": "bar"}, out).Write([]byte("foo\nbar\n"))
+				l, err := io.WriteString(NewWriter(log.Fields{"foo": "bar"}, out), "foo\nbar\n")
 				require.NoError(t, err)
 				require.Equal(t, 8, l)
 				require.Empty(t, b.String())
@@ -41,7 +42,7 @@ func TestWriter(t *testing.T) {
 				var b bytes.Buffer
 				log.Log = log.New(&b)
 				log.SetLevel(log.DebugLevel)
-				l, err := NewWriter(log.Fields{"foo": "bar"}, out).Write([]byte("foo\nbar\n"))
+				l, err := io.WriteString(NewWriter(log.Fields{"foo": "bar"}, out), "foo\nbar\n")
 				require.NoError(t, err)
 				require.Equal(t, 8, l)
 				golden.RequireEqualTxt(t, b.Bytes())
