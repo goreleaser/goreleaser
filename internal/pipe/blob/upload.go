@@ -116,10 +116,7 @@ func doUpload(ctx *context.Context, conf config.Blob) error {
 		fullpath := fullpath
 		g.Go(func() error {
 			uploadFile := path.Join(folder, name)
-
-			err := uploadData(ctx, conf, up, fullpath, uploadFile, bucketURL)
-
-			return err
+			return uploadData(ctx, conf, up, fullpath, uploadFile, bucketURL)
 		})
 	}
 
@@ -132,11 +129,10 @@ func uploadData(ctx *context.Context, conf config.Blob, up uploader, dataFile, u
 		return err
 	}
 
-	err = up.Upload(ctx, uploadFile, data)
-	if err != nil {
+	if err := up.Upload(ctx, uploadFile, data); err != nil {
 		return handleError(err, bucketURL)
 	}
-	return err
+	return nil
 }
 
 // errorContains check if error contains specific string.
