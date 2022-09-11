@@ -99,6 +99,13 @@ aurs:
     optdepends:
       - 'wget: for downloading things'
 
+    # List of files that can contain user-made changes and should be preserved
+    # during package upgrades and removals.
+    #
+    # Defaults to empty.
+    backup:
+      - /etc/foo.conf
+
     # Custom package instructions.
     #
     # Defaults to `install -Dm755 "./PROJECT_NAME" "${pkgdir}/usr/bin/PROJECT_NAME",

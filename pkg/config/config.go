@@ -140,6 +140,7 @@ type AUR struct {
 	Conflicts             []string     `yaml:"conflicts,omitempty" json:"conflicts,omitempty"`
 	Depends               []string     `yaml:"depends,omitempty" json:"depends,omitempty"`
 	OptDepends            []string     `yaml:"optdepends,omitempty" json:"optdepends,omitempty"`
+	Backup                []string     `yaml:"backup,omitempty" json:"backup,omitempty"`
 	Rel                   string       `yaml:"rel,omitempty" json:"rel,omitempty"`
 	Package               string       `yaml:"package,omitempty" json:"package,omitempty"`
 	GitURL                string       `yaml:"git_url,omitempty" json:"git_url,omitempty"`

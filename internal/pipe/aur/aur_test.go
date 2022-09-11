@@ -33,6 +33,10 @@ func createTemplateData() templateData {
 		Rel:        "1",
 		Provides:   []string{"test"},
 		OptDepends: []string{"nfpm"},
+		Backup: []string{
+			"/etc/mypkg.conf",
+			"/var/share/mypkg",
+		},
 		Maintainers: []string{
 			"Ciclano <ciclano@example.com>",
 			"Cicrano <cicrano@example.com>",
