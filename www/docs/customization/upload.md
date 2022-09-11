@@ -163,7 +163,9 @@ uploads:
     # This might be useful if you have multiple packages with different
     # extensions with the same ID, and need to upload each extension to
     # a different place (e.g. nFPM packages).
-    # Default is empty.
+    #
+    # Default: empty.
+    # Since: v1.7.
     exts:
     - deb
     - rpm
@@ -188,6 +190,7 @@ uploads:
     username: deployuser
 
     # Client certificate and key (when provided, added as client cert to TLS connections)
+    # Since: v1.11.
     client_x509_cert: /path/to/client.cert.pem
     client_x509_key: /path/to/client.key.pem
 

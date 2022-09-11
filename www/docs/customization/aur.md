@@ -1,5 +1,7 @@
 # Arch User Repositories
 
+Since: v1.4.
+
 After releasing to GitHub or GitLab, GoReleaser can generate and publish
 a `PKGBUILD` to an _Arch User Repository_.
 

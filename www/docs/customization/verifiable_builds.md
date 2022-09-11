@@ -26,7 +26,9 @@ gomod:
     - GOPRIVATE=example.com/blah
 
   # Sets the `-mod` flag value.
-  # Defaults to empty.
+  #
+  # Default: empty.
+  # Since: v1.7.
   mod: mod
 
   # Which Go binary to use.

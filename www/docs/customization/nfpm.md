@@ -66,7 +66,7 @@ nfpms:
       - apk
       - deb
       - rpm
-      - termux.deb
+      - termux.deb # Since GoReleaser v1.11.
 
     # Packages your package depends on. (overridable)
     dependencies:
@@ -74,6 +74,7 @@ nfpms:
       - zsh
 
     # Packages it provides. (overridable)
+    # Since: v1.11.
     provides:
       - bar
 
@@ -135,6 +136,8 @@ nfpms:
     # formats (deb and rpm at the moment).
     #
     # Experimental.
+    # Default: empty.
+    # Since: v1.11.
     changelog: ./foo.yml
 
     # Contents to add to the package.

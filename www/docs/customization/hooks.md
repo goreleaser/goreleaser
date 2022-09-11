@@ -38,7 +38,7 @@ GoReleaser allows this with the global hooks feature.
       - make clean # simple string
       - cmd: go generate ./... # specify cmd
       - cmd: go mod tidy
-        output: true # always prints command output
+        output: true # always prints command output. Since GoReleaser v1.5.
         dir: ./submodule # specify command working directory
       - cmd: touch {{ .Env.FILE_TO_TOUCH }}
         env:

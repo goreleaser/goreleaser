@@ -133,6 +133,8 @@ brews:
       ...
 
     # Service block.
+    #
+    # Since: v1.7.
     service: |
       run: foo/bar
       ...

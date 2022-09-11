@@ -31,14 +31,18 @@ release:
   # Whether to remove existing draft releases with the same name before creating a new one.
   # Only effective if `draft` is set to true.
   # Available only for GitHub.
-  # Default is false.
+  #
+  # Default: false.
+  # Since: v1.11.
   replace_existing_draft: true
 
   # Useful if you want to delay the creation of the tag in the remote.
   # You can create the tag locally, but not push it, and run GoReleaser.
   # It'll then set the `target_commitish` portion of the GitHub release to the value of this field.
   # Only works on GitHub.
-  # Default is empty.
+  #
+  # Default: empty.
+  # Since: v1.11.
   target_commitish: '{{ .Commit }}'
 
   # If set, will create a release discussion in the category specified.
@@ -93,7 +97,8 @@ release:
   # Set this to true if you want to disable just the artifact upload to the SCM.
   # If this is true, GoReleaser will still create the release with the changelog, but won't upload anything to it.
   #
-  # Defaults to false.
+  # Default: false.
+  # Since: v1.11.
   skip_upload: true
 
   # You can add extra pre-existing files to the release.
