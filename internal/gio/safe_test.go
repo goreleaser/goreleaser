@@ -2,6 +2,7 @@ package gio
 
 import (
 	"bytes"
+	"io"
 	"sync"
 	"testing"
 
@@ -18,7 +19,7 @@ func TestSafe(t *testing.T) {
 	wg.Add(chars)
 	for i := 0; i < chars; i++ {
 		go func() {
-			s, err := w.Write([]byte("a"))
+			s, err := io.WriteString(w, "a")
 			require.Equal(t, 1, s)
 			require.NoError(t, err)
 			wg.Done()

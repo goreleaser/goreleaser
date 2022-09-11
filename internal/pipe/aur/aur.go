@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -471,7 +472,7 @@ func keyPath(key string) (string, error) {
 			key += "\n"
 		}
 
-		if _, err := f.Write([]byte(key)); err != nil {
+		if _, err := io.WriteString(f, key); err != nil {
 			return "", fmt.Errorf("failed to store private key: %w", err)
 		}
 		if err := f.Close(); err != nil {

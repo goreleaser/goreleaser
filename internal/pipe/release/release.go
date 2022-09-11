@@ -3,6 +3,7 @@ package release
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"time"
 
@@ -121,7 +122,7 @@ func doPublish(ctx *context.Context, client client.Client) error {
 	}
 
 	for name, path := range extraFiles {
-		if _, err := os.Stat(path); os.IsNotExist(err) {
+		if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
 			return fmt.Errorf("failed to upload %s: %w", name, err)
 		}
 		ctx.Artifacts.Add(&artifact.Artifact{

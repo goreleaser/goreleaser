@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"strings"
 
@@ -146,7 +147,7 @@ func loadEnv(env, path string) (string, error) {
 		return "", err
 	}
 	f, err := os.Open(path) // #nosec
-	if os.IsNotExist(err) {
+	if errors.Is(err, fs.ErrNotExist) {
 		return "", nil
 	}
 	if err != nil {

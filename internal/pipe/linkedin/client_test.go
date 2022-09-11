@@ -2,6 +2,7 @@ package linkedin
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -56,12 +57,12 @@ func TestCreateLinkedInClient(t *testing.T) {
 
 func TestClient_Share(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		_, _ = rw.Write([]byte(`
+		_, _ = io.WriteString(rw, `
 {
 	"id": "foo",
 	"activity": "123456789"
 }
-`))
+`)
 	}))
 	defer server.Close()
 

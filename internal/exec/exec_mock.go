@@ -27,9 +27,9 @@ type MockCall struct {
 	ExitCode     int      `json:"exit_code"`
 }
 
-func (m *MockData) MarshalJSON() ([]byte, error) {
+func (m MockData) MarshalJSON() ([]byte, error) {
 	type t MockData
-	return json.Marshal((*t)(m))
+	return json.Marshal((t)(m))
 }
 
 func (m *MockData) UnmarshalJSON(b []byte) error {

@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/google/uuid"
@@ -180,8 +179,7 @@ func TestAnnounceBasicAuthWebhook(t *testing.T) {
 			},
 		},
 	})
-	os.Setenv("BASIC_AUTH_HEADER_VALUE", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte("user:pass"))))
-	defer os.Unsetenv("BASIC_AUTH_HEADER_VALUE")
+	t.Setenv("BASIC_AUTH_HEADER_VALUE", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte("user:pass"))))
 	require.NoError(t, Pipe{}.Announce(ctx))
 }
 

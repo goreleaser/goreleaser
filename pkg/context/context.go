@@ -126,7 +126,7 @@ func New(config config.Project) *Context {
 
 // NewWithTimeout new context with the given timeout.
 func NewWithTimeout(config config.Project, timeout time.Duration) (*Context, stdctx.CancelFunc) {
-	ctx, cancel := stdctx.WithTimeout(stdctx.Background(), timeout)
+	ctx, cancel := stdctx.WithTimeout(stdctx.Background(), timeout) // nosem
 	return Wrap(ctx, config), cancel
 }
 

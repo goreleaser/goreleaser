@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"path"
 	"strings"
 
 	"github.com/caarlos0/log"
@@ -68,7 +69,7 @@ func ExtractRepoFromURL(rawurl string) (config.Repo, error) {
 	}
 	repo := config.Repo{
 		RawURL: rawurl,
-		Owner:  strings.Join(ss[:len(ss)-1], "/"),
+		Owner:  path.Join(ss[:len(ss)-1]...),
 		Name:   ss[len(ss)-1],
 	}
 	log.WithField("owner", repo.Owner).WithField("name", repo.Name).Debugf("parsed url")
