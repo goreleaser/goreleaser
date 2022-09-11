@@ -20,6 +20,9 @@ func TestSetupGitLab(t *testing.T) {
 	t.Run("with templates", func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Env: []string{"NAME=foo", "OWNER=bar"},
+			GitLabURLs: config.GitLabURLs{
+				Download: "https://{{ .Env.OWNER }}/download",
+			},
 			Release: config.Release{
 				GitLab: config.Repo{
 					Owner: "{{.Env.OWNER}}",
@@ -31,6 +34,7 @@ func TestSetupGitLab(t *testing.T) {
 		require.NoError(t, setupGitLab(ctx))
 		require.Equal(t, "bar", ctx.Config.Release.GitLab.Owner)
 		require.Equal(t, "foo", ctx.Config.Release.GitLab.Name)
+		require.Equal(t, "https://bar/download/bar/foo/-/releases/", ctx.ReleaseURL)
 	})
 
 	t.Run("with invalid templates", func(t *testing.T) {
@@ -73,6 +77,9 @@ func TestSetupGitea(t *testing.T) {
 	t.Run("with templates", func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Env: []string{"NAME=foo", "OWNER=bar"},
+			GiteaURLs: config.GiteaURLs{
+				Download: "https://{{ .Env.OWNER }}/download",
+			},
 			Release: config.Release{
 				Gitea: config.Repo{
 					Owner: "{{.Env.OWNER}}",
@@ -84,6 +91,7 @@ func TestSetupGitea(t *testing.T) {
 		require.NoError(t, setupGitea(ctx))
 		require.Equal(t, "bar", ctx.Config.Release.Gitea.Owner)
 		require.Equal(t, "foo", ctx.Config.Release.Gitea.Name)
+		require.Equal(t, "https://bar/download/bar/foo/releases/tag/", ctx.ReleaseURL)
 	})
 
 	t.Run("with invalid templates", func(t *testing.T) {
@@ -126,6 +134,9 @@ func TestSetupGitHub(t *testing.T) {
 	t.Run("with templates", func(t *testing.T) {
 		ctx := context.New(config.Project{
 			Env: []string{"NAME=foo", "OWNER=bar"},
+			GitHubURLs: config.GitHubURLs{
+				Download: "https://{{ .Env.OWNER }}/download",
+			},
 			Release: config.Release{
 				GitHub: config.Repo{
 					Owner: "{{.Env.OWNER}}",
@@ -137,6 +148,7 @@ func TestSetupGitHub(t *testing.T) {
 		require.NoError(t, setupGitHub(ctx))
 		require.Equal(t, "bar", ctx.Config.Release.GitHub.Owner)
 		require.Equal(t, "foo", ctx.Config.Release.GitHub.Name)
+		require.Equal(t, "https://bar/download/bar/foo/releases/tag/", ctx.ReleaseURL)
 	})
 
 	t.Run("with invalid templates", func(t *testing.T) {
