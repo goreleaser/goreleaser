@@ -28,15 +28,14 @@ func setupGitHub(ctx *context.Context) error {
 	}
 	ctx.Config.Release.GitHub.Name = name
 
-	ctx.ReleaseURL = fmt.Sprintf(
+	ctx.ReleaseURL, err = tmpl.New(ctx).Apply(fmt.Sprintf(
 		"%s/%s/%s/releases/tag/%s",
 		ctx.Config.GitHubURLs.Download,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
 		ctx.Git.CurrentTag,
-	)
-
-	return nil
+	))
+	return err
 }
 
 func setupGitLab(ctx *context.Context) error {
@@ -60,15 +59,14 @@ func setupGitLab(ctx *context.Context) error {
 	}
 	ctx.Config.Release.GitLab.Name = name
 
-	ctx.ReleaseURL = fmt.Sprintf(
+	ctx.ReleaseURL, err = tmpl.New(ctx).Apply(fmt.Sprintf(
 		"%s/%s/%s/-/releases/%s",
 		ctx.Config.GitLabURLs.Download,
 		ctx.Config.Release.GitLab.Owner,
 		ctx.Config.Release.GitLab.Name,
 		ctx.Git.CurrentTag,
-	)
-
-	return nil
+	))
+	return err
 }
 
 func setupGitea(ctx *context.Context) error {
@@ -92,13 +90,12 @@ func setupGitea(ctx *context.Context) error {
 	}
 	ctx.Config.Release.Gitea.Name = name
 
-	ctx.ReleaseURL = fmt.Sprintf(
+	ctx.ReleaseURL, err = tmpl.New(ctx).Apply(fmt.Sprintf(
 		"%s/%s/%s/releases/tag/%s",
 		ctx.Config.GiteaURLs.Download,
 		ctx.Config.Release.Gitea.Owner,
 		ctx.Config.Release.Gitea.Name,
 		ctx.Git.CurrentTag,
-	)
-
-	return nil
+	))
+	return err
 }
