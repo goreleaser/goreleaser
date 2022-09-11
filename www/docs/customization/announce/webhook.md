@@ -1,5 +1,7 @@
 # Webhook
 
+Since: v1.3.
+
 Webhooks are a way to receive notifications. With this `Goreleaser` functionality, you can send events to any server
 exposing a webhook.
 

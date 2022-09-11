@@ -33,7 +33,8 @@ changelog:
   # -1: remove the commit hash from the changelog
   # any other number: max length.
   #
-  # Default is 0.
+  # Default: 0.
+  # Since: v1.11.2
   abbrev: -1
 
   # Group commits messages by given regex and title.

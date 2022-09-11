@@ -25,7 +25,9 @@ source:
   prefix_template: '{{ .ProjectName }}-{{ .Version }}/'
 
   # Additional files/template/globs you want to add to the source archive.
-  # Defaults to empty.
+  #
+  # Default: empty.
+  # Since: v1.11.
   files:
     - LICENSE.txt
     - README_{{.Os}}.md

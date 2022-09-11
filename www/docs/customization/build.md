@@ -116,8 +116,8 @@ builds:
     # Format is `{goos}_{goarch}` with optionally a suffix with `_{goarm}`, `_{goamd64}` or `_{gomips}`.
     #
     # Special values:
-    # - go_118_first_class: evaluates to the first-class targets of go1.18
-    # - go_first_class: evaluates to latest stable go first-class targets, currently same as 1.18.
+    # - go_118_first_class: evaluates to the first-class targets of go1.18. Since GoReleaser v1.9.
+    # - go_first_class: evaluates to latest stable go first-class targets, currently same as 1.18. Since GoReleaser v1.9.
     #
     # This overrides `goos`, `goarch`, `goarm`, `gomips`, `goamd64` and `ignores`.
     targets:
@@ -138,7 +138,8 @@ builds:
     # in which case you can set this to "test".
     # It is safe to ignore this option in most cases.
     #
-    # Default is "build".
+    # Default: build.
+    # Since: v1.9.
     command: test
 
     # Set the modified timestamp on the output binary, typically
@@ -172,7 +173,8 @@ builds:
     # By default, GoReleaser will check if the main filepath has a main function.
     # This can be used to skip that check, in case you're building tests, for example.
     #
-    # Defaults to `false`.
+    # Default: false.
+    # Since: v1.9.
     no_main_check: true
 
     # Path to project's (sub)directory containing Go code.
@@ -193,7 +195,8 @@ builds:
     # This can be specially useful when using CGO.
     # Note: it'll only match if the full target matches.
     #
-    # Defaults to empty.
+    # Default: empty.
+    # Since: v1.5.
     overrides:
       - goos: darwin
         goarch: arm64
@@ -320,7 +323,7 @@ builds:
       pre:
        - cmd: first-script.sh
          dir: "{{ dir .Dist}}"
-         output: true # always print command output, otherwise only visible in debug mode
+         output: true # always print command output, otherwise only visible in debug mode. Since GoReleaser v1.5.
          env:
           - HOOK_SPECIFIC_VAR={{ .Env.GLOBAL_VAR }}
        - second-script.sh

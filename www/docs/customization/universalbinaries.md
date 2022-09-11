@@ -17,6 +17,7 @@ universal_binaries:
   # IDs to use to filter the built binaries.
   #
   # Defaults to the `id` field.
+  # Since: v1.3.
   ids:
   - build1
   - build2

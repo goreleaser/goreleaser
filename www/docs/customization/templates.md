@@ -43,11 +43,11 @@ On fields that support templating, these fields are always available:
 | `.ReleaseURL`          | the current release download url[^4]                                                                   |
 | `.Summary`             | the git summary, e.g. `v1.0.0-10-g34f56g3`[^5]                                                         |
 | `.PrefixedSummary`     | the git summary prefixed with the monorepo config tag prefix (if any)                                  |
-| `.TagSubject`          | the annotated tag message subject, or the message subject of the commit it points out[^6]              |
-| `.TagContents`         | the annotated tag message, or the message of the commit it points out[^7]                              |
-| `.TagBody`             | the annotated tag message's body, or the message's body of the commit it points out[^7]                |
-| `.Runtime.Goos`        | equivalent to `runtime.GOOS`                                                                           |
-| `.Runtime.Goarch`      | equivalent to `runtime.GOARCH`                                                                         |
+| `.TagSubject`          | the annotated tag message subject, or the message subject of the commit it points out[^6][^v1.2]       |
+| `.TagContents`         | the annotated tag message, or the message of the commit it points out[^7][^v1.2]                       |
+| `.TagBody`             | the annotated tag message's body, or the message's body of the commit it points out[^7][^v1.2]         |
+| `.Runtime.Goos`        | equivalent to `runtime.GOOS`[^v1.5]                                                                    |
+| `.Runtime.Goarch`      | equivalent to `runtime.GOARCH`[^v1.5]                                                                  |
 
 [^1]: The `v` prefix is stripped, and it might be changed in `snapshot` and `nightly` builds.
 [^2]: Assuming `Tag` is a valid a SemVer, otherwise empty/zeroed.
@@ -72,7 +72,7 @@ may have some extra fields:
 | `.Binary`       | binary name                           |
 | `.ArtifactName` | archive name                          |
 | `.ArtifactPath` | absolute path to artifact             |
-| `.ArtifactExt`  | binary extension (e.g. `.exe`)        |
+| `.ArtifactExt`  | binary extension (e.g. `.exe`)[^v1.11]|
 
 [^8]: Might have been replaced by `archives.replacements`.
 
@@ -96,7 +96,7 @@ On all fields, you have these available functions:
 | Usage                          | Description                                                                                                                    |
 |--------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | `replace "v1.2" "v" ""`        | replaces all matches. See [ReplaceAll](https://golang.org/pkg/strings/#ReplaceAll)                                             |
-| `split "1.2" "."`              | split string at separator. See [Split](https://golang.org/pkg/strings/#Split)                                             |
+| `split "1.2" "."`              | split string at separator. See [Split](https://golang.org/pkg/strings/#Split)[^v1.11]                                          |
 | `time "01/02/2006"`            | current UTC time in the specified format (this is not deterministic, a new time for every call)                                |
 | `tolower "V1.2"`               | makes input string lowercase. See [ToLower](https://golang.org/pkg/strings/#ToLower)                                           |
 | `toupper "v1.2"`               | makes input string uppercase. See [ToUpper](https://golang.org/pkg/strings/#ToUpper)                                           |
@@ -105,8 +105,8 @@ On all fields, you have these available functions:
 | `trimsuffix "1.2v" "v"`        | removes provided trailing suffix string, if present. See [TrimSuffix](https://pkg.go.dev/strings#TrimSuffix)                   |
 | `dir .Path`                    | returns all but the last element of path, typically the path's directory. See [Dir](https://golang.org/pkg/path/filepath/#Dir) |
 | `abs .ArtifactPath`            | returns an absolute representation of path. See [Abs](https://golang.org/pkg/path/filepath/#Abs)                               |
-| `filter "text" "regex"`        | keeps only the lines matching the given regex, analogous to `grep -E`                                                          |
-| `reverseFilter "text" "regex"` | keeps only the lines **not** matching the given regex, analogous to `grep -vE`                                                 |
+| `filter "text" "regex"`        | keeps only the lines matching the given regex, analogous to `grep -E`[^v1.6]                                                   |
+| `reverseFilter "text" "regex"` | keeps only the lines **not** matching the given regex, analogous to `grep -vE`[^v1.6]                                          |
 
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:
@@ -150,3 +150,8 @@ variables:
 ```
 
 And then you can use those fields as `{{ .Var.description }}`, for example.
+
+[^v1.2]: Since GoReleaser v1.2.
+[^v1.5]: Since GoReleaser v1.5.
+[^v1.6]: Since GoReleaser v1.6.
+[^v1.11]: Since GoReleaser v1.11.

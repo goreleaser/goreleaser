@@ -27,7 +27,9 @@ archives:
 
     # This will create an archive without any binaries, only the files are there.
     # The name template must not contain any references to `Os`, `Arch` and etc, since the archive will be meta.
-    # Default is false.
+    #
+    # Default: false.
+    # Since: v1.9.
     meta: true
 
     # Archive name template.
@@ -60,7 +62,8 @@ archives:
     #
     # This might be useful if you have your binary be built with a subdir for some reason, but do no want that subdir inside the archive.
     #
-    # Default is false.
+    # Default: false.
+    # Since: v1.11.
     strip_parent_binary_folder: true
 
     # Can be used to change the archive formats for specific GOOSs.
