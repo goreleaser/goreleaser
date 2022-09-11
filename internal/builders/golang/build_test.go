@@ -496,7 +496,7 @@ func TestBuild(t *testing.T) {
 		},
 	})
 
-	modTimes := map[time.Time]bool{}
+	modTimes := map[int64]bool{}
 	for _, bin := range ctx.Artifacts.List() {
 		if bin.Type != artifact.Binary {
 			continue
@@ -506,7 +506,7 @@ func TestBuild(t *testing.T) {
 		require.NoError(t, err)
 
 		// make this a suitable map key, per docs: https://golang.org/pkg/time/#Time
-		modTime := fi.ModTime().UTC().Round(0)
+		modTime := fi.ModTime().UTC().Round(0).Unix()
 
 		if modTimes[modTime] {
 			t.Fatal("duplicate modified time found, times should be different by default")
