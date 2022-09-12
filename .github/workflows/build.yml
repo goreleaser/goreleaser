@@ -79,7 +79,7 @@ jobs:
             ./dist/*.rpm
             ./dist/*.apk
           key: ${{ github.ref }}
-      - uses: sigstore/cosign-installer@v2.5.1
+      - uses: sigstore/cosign-installer@v2.6.0
       - uses: anchore/sbom-action/download-syft@v0.12.0
       - name: setup-validate-krew-manifest
         run: go install sigs.k8s.io/krew/cmd/validate-krew-manifest@latest
