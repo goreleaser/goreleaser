@@ -30,22 +30,15 @@ jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      -
-        name: Fetch all tags
-        run: git fetch --force --tags
-      -
-        name: Set up Go
-        uses: actions/setup-go@v2
+      - run: git fetch --force --tags
+      - uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      -
-        name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+          cache: true
+      - uses: goreleaser/goreleaser-action@v2
         with:
           # either 'goreleaser' (default) or 'goreleaser-pro'
           distribution: goreleaser
@@ -73,6 +66,11 @@ jobs:
     `TagBody`, `TagSubject` or `TagContents` in your templates.
     For more information, take a look at
     [actions/checkout#290](https://github.com/actions/checkout/issues/290).
+
+    #### Caching go dependencies
+    When using the `setup-go` action, you can optionally set `cache: true` for
+    it to aumatically cache and restore your go dependencies, which usually
+    helps speed up build times.
 
 !!! tip
     For detailed instructions please follow GitHub Actions [workflow syntax][syntax].
