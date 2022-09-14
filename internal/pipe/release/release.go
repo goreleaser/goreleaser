@@ -96,7 +96,11 @@ func (Pipe) Publish(ctx *context.Context) error {
 	if err != nil {
 		return err
 	}
-	return doPublish(ctx, c)
+	if err := doPublish(ctx, c); err != nil {
+		return err
+	}
+	log.WithField("url", ctx.ReleaseURL).Info("published")
+	return nil
 }
 
 func doPublish(ctx *context.Context, client client.Client) error {
