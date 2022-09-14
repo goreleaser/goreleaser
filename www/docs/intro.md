@@ -1,21 +1,70 @@
 # Introduction
 
-GoReleaser is a release automation tool for Go projects.
-The goal is to simplify the build, release and publish steps while providing variant customization options for all steps.
+Putting it simply, GoReleaser is a release automation tool for Go projects.
 
-It has been widely adopted by the Go community in the past years, with [thousands of projects](https://github.com/search?l=&q=filename%3Agoreleaser+language%3Ayaml+-path%3A%2Fvendor&type=code) using it to manage their releases.
+## Why we made it?
+
+GoReleaser was created to solve a problem we all had at some point: releasing
+software is boring and error prone.
+
+To fix that, we all end up creating scripts to automate the work, with various
+levels of success.
+
+Generally speaking, those scripts tend to not be reusable and have dependencies
+on many other tools - which makes it hard to run the process on other machines.
+
+GoReleaser aims to make all these scripts obsolete: instead of writing scripts,
+you write a simple YAML configuration file; instead of many tools, you (usually)
+only need a single `goreleaser` binary.
+
+Then, you can simply run a single command to build, archive, package, sign and
+publish artifacts.
+
+We work hard to make it easy for you, our user, to do the best thing for your
+users.
+That's why we focus on providing easy-to-use integrations, good defaults and
+many tutorials with tools that help mitigate supply chain security issues,
+package managers, go mod proxying and so on.
+
+This way its easy to provide easy to install packages, with signed checksums,
+software bill of materials, and reproducible binaries, for example.
+
+## Is it any good?
+
+GoReleaser has been widely adopted by the Go community in the past few years,
+with
+[thousands of projects and companies](https://github.com/search?l=&q=filename%3Agoreleaser+language%3Ayaml+-path%3A%2Fvendor&type=code)
+using it to manage their releases.
+
 You can check some of our users out [here](/users).
 
-GoReleaser was built with CI tools in mind — you only really need to download and execute it in your build script.
-Installing it in your machine is optional.
+## Use cases
 
-Your entire release process can be customized through a `.goreleaser.yml` file.
-Once you set it up, every time you want to create a new release, all you need to do is tag and run `goreleaser release`:
+GoReleaser is built with CI tools in mind — you only really need to download and
+execute it in your build script.
 
-<script id="asciicast-385826" src="https://asciinema.org/a/385826.js" async></script>
+Installing it in your machine is entirely up to you, but still possible.
+
+## Usage
+
+Your entire release process is customized through a `.goreleaser.yml` file.
+
+Once you set it up, every time you want to create a new release, all you need to
+do is push a git tag and run `goreleaser release`:
+
+<video autoplay loop>
+  <source src="https://user-images.githubusercontent.com/245435/190040641-1fa183e5-d05a-4f9d-b466-02969a529b86.mp4" type="video/mp4">
+</video>
+
+You can also do it in your continuous integration platform of choice.
+
+---
 
 Hopefully you find it useful, and the docs easy to follow.
-Feel free to [create an issue][iss] if you find something that's not clear and join our [Discord][dis] to chat with other users and maintainers.
+
+
+Feel free to [create an issue][iss] if you find something that's not clear and
+join our [Discord][dis] to chat with other users and maintainers.
 
 [iss]: https://github.com/goreleaser/goreleaser/issues
 [dis]: https://discord.gg/RGEBtg8vQ6
