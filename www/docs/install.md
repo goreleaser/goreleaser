@@ -189,7 +189,7 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
       ```
     1. Verify the signature:
       ```sh
-      cosign verify-blob \
+      COSIGN_EXPERIMENTAL=1 cosign verify-blob \
         --cert checksums.txt.pem \
         --signature checksums.txt.sig \
         checksums.txt
@@ -208,7 +208,7 @@ All artifacts are checksummed, and the checksum file is signed with [cosign][].
       ```
     1. Verify the signature:
       ```sh
-      cosign verify-blob \
+      COSIGN_EXPERIMENTAL=1 cosign verify-blob \
         --cert checksums.txt.pem \
         --signature checksums.txt.sig \
         checksums.txt
