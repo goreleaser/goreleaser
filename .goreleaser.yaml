@@ -318,3 +318,8 @@ announce:
   discord:
     enabled: true
     message_template: 'GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'
+
+
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=4 sw=4 tw=0 fo=jcroql
+
