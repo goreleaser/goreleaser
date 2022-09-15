@@ -39,5 +39,5 @@ changelog:
 
 # modelines, feel free to remove those if you don't want/use them:
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=4 sw=4 tw=0 fo=cnqoj
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
 `
