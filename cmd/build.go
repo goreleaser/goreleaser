@@ -165,6 +165,10 @@ func setupBuildSingleTarget(ctx *context.Context) {
 		build := &ctx.Config.Builds[i]
 		build.Goos = []string{goos}
 		build.Goarch = []string{goarch}
+		build.Goarm = nil
+		build.Gomips = nil
+		build.Goamd64 = nil
+		build.Targets = nil
 	}
 }
 
