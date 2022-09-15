@@ -223,7 +223,7 @@ nfpms:
         file_info:
           mode: 0644
       - src: ./completions/goreleaser.fish
-        dst: /usr/share/fish/completions/goreleaser.fish
+        dst: /usr/share/fish/vendor_completions.d/goreleaser.fish
         file_info:
           mode: 0644
       - src: ./completions/goreleaser.zsh
