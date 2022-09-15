@@ -208,8 +208,8 @@ github.com/blakesmith/ar v0.0.0-20190502131153-809d4375e1fb h1:m935MPodAbYS46DG4
 github.com/blakesmith/ar v0.0.0-20190502131153-809d4375e1fb/go.mod h1:PkYb9DJNAwrSvRx5DYA+gUcOIgTGVMNkfSCbZM8cWpI=
 github.com/caarlos0/ctrlc v1.2.0 h1:AtbThhmbeYx1WW3WXdWrd94EHKi+0NPRGS4/4pzrjwk=
 github.com/caarlos0/ctrlc v1.2.0/go.mod h1:n3gDlSjsXZ7rbD9/RprIR040b7oaLfNStikPd4gFago=
-github.com/caarlos0/env/v6 v6.10.0 h1:lA7sxiGArZ2KkiqpOQNf8ERBRWI+v8MWIH+eGjSN22I=
-github.com/caarlos0/env/v6 v6.10.0/go.mod h1:hvp/ryKXKipEkcuYjs9mI4bBCg+UI0Yhgm5Zu0ddvwc=
+github.com/caarlos0/env/v6 v6.10.1 h1:t1mPSxNpei6M5yAeu1qtRdPAK29Nbcf/n3G7x+b3/II=
+github.com/caarlos0/env/v6 v6.10.1/go.mod h1:hvp/ryKXKipEkcuYjs9mI4bBCg+UI0Yhgm5Zu0ddvwc=
 github.com/caarlos0/go-reddit/v3 v3.0.1 h1:w8ugvsrHhaE/m4ez0BO/sTBOBWI9WZTjG7VTecHnql4=
 github.com/caarlos0/go-reddit/v3 v3.0.1/go.mod h1:QlwgmG5SAqxMeQvg/A2dD1x9cIZCO56BMnMdjXLoisI=
 github.com/caarlos0/go-rpmutils v0.2.1-0.20211112020245-2cd62ff89b11 h1:IRrDwVlWQr6kS1U8/EtyA1+EHcc4yl8pndcqXWrEamg=
