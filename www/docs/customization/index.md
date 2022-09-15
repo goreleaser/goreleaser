@@ -15,9 +15,21 @@ GoReleaser also has a [jsonschema][] file which you can use to have better edito
     https://goreleaser.com/static/schema.json
     ```
 
+    You can also specify it in your `.goreleaser.yml` config file by adding a
+    comment like the following:
+    ```yaml
+    # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+    ```
+
 === "Pro"
     ```sh
     https://goreleaser.com/static/schema-pro.json
+    ```
+
+    You can also specify it in your `.goreleaser.yml` config file by adding a
+    comment like the following:
+    ```yaml
+    # yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
     ```
 
 You can also generate it for your specific version using the [`goreleaser jsonschema`][schema] command.
