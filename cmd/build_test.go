@@ -278,3 +278,49 @@ func TestBuildFlags(t *testing.T) {
 		})
 	})
 }
+
+func TestBuildSingleTargetWithSpecificTargets(t *testing.T) {
+	ctx := context.New(config.Project{
+		ProjectName: "test",
+		Builds: []config.Build{
+			{
+				Targets: []string{
+					"linux_amd64_v1",
+					"darwin_arm64",
+					"darwin_amd64_v1",
+				},
+			},
+		},
+	})
+
+	t.Setenv("GOOS", "linux")
+	t.Setenv("GOARCH", "amd64")
+	setupBuildSingleTarget(ctx)
+	require.Equal(t, config.Build{
+		Goos:   []string{"linux"},
+		Goarch: []string{"amd64"},
+	}, ctx.Config.Builds[0])
+}
+
+func TestBuildSingleTargetRemoveOtherOptions(t *testing.T) {
+	ctx := context.New(config.Project{
+		ProjectName: "test",
+		Builds: []config.Build{
+			{
+				Goos:    []string{"linux", "darwin"},
+				Goarch:  []string{"amd64", "arm64"},
+				Goamd64: []string{"v1", "v2"},
+				Goarm:   []string{"6"},
+				Gomips:  []string{"anything"},
+			},
+		},
+	})
+
+	t.Setenv("GOOS", "linux")
+	t.Setenv("GOARCH", "amd64")
+	setupBuildSingleTarget(ctx)
+	require.Equal(t, config.Build{
+		Goos:   []string{"linux"},
+		Goarch: []string{"amd64"},
+	}, ctx.Config.Builds[0])
+}
