@@ -84,15 +84,17 @@ You can use the Go template engine to remove it if you'd like.
 Most fields that support [templating](/customization/templates/) will also
 support the following build details:
 
-| Key     | Description                       |
-|---------|-----------------------------------|
-| .Os     | `GOOS`, always `darwin`           |
-| .Arch   | `GOARCH`, always `all`            |
-| .Arm    | `GOARM`, always empty             |
-| .Ext    | Extension, always empty           |
-| .Target | Build target, always `darwin_all` |
-| .Path   | The binary path                   |
-| .Name   | The binary name                   |
+<!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->
+
+Key    |Description
+-------|---------------------------------
+.Os    |`GOOS`, always `darwin`
+.Arch  |`GOARCH`, always `all`
+.Arm   |`GOARM`, always empty
+.Ext   |Extension, always empty
+.Target|Build target, always `darwin_all`
+.Path  |The binary path
+.Name  |The binary name
 
 !!! tip
     Notice that `.Path` and `.Name` will only be available after they are
