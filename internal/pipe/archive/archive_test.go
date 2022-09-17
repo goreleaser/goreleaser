@@ -396,6 +396,9 @@ func TestRunPipeBinary(t *testing.T) {
 	f, err = os.Create(filepath.Join(dist, "windowsamd64", "mybin.exe"))
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
+	f, err = os.Create(filepath.Join(dist, "windowsamd64", "myotherbin"))
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
 	f, err = os.Create(filepath.Join(folder, "README.md"))
 	require.NoError(t, err)
 	require.NoError(t, f.Close())
@@ -406,7 +409,7 @@ func TestRunPipeBinary(t *testing.T) {
 				{
 					Format:       "binary",
 					NameTemplate: defaultBinaryNameTemplate,
-					Builds:       []string{"default"},
+					Builds:       []string{"default", "default2"},
 				},
 			},
 		},
@@ -448,9 +451,22 @@ func TestRunPipeBinary(t *testing.T) {
 			artifact.ExtraID:     "default",
 		},
 	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Goos:   "windows",
+		Goarch: "amd64",
+		Name:   "myotherbin.exe",
+		Path:   filepath.Join(dist, "windowsamd64", "myotherbin.exe"),
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			artifact.ExtraBinary: "myotherbin",
+			artifact.ExtraExt:    ".exe",
+			artifact.ExtraID:     "default2",
+		},
+	})
+
 	require.NoError(t, Pipe{}.Run(ctx))
 	binaries := ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary))
-	require.Len(t, binaries.List(), 3)
+	require.Len(t, binaries.List(), 4)
 	darwinThin := binaries.Filter(artifact.And(
 		artifact.ByGoos("darwin"),
 		artifact.ByGoarch("amd64"),
@@ -461,12 +477,15 @@ func TestRunPipeBinary(t *testing.T) {
 	)).List()[0]
 	require.True(t, artifact.ExtraOr(*darwinUniversal, artifact.ExtraReplaces, false))
 	windows := binaries.Filter(artifact.ByGoos("windows")).List()[0]
+	windows2 := binaries.Filter(artifact.ByGoos("windows")).List()[1]
 	require.Equal(t, "mybin_0.0.1_darwin_amd64", darwinThin.Name)
 	require.Equal(t, "mybin", artifact.ExtraOr(*darwinThin, artifact.ExtraBinary, ""))
 	require.Equal(t, "myunibin_0.0.1_darwin_all", darwinUniversal.Name)
 	require.Equal(t, "myunibin", artifact.ExtraOr(*darwinUniversal, artifact.ExtraBinary, ""))
 	require.Equal(t, "mybin_0.0.1_windows_amd64.exe", windows.Name)
 	require.Equal(t, "mybin.exe", artifact.ExtraOr(*windows, artifact.ExtraBinary, ""))
+	require.Equal(t, "myotherbin_0.0.1_windows_amd64.exe", windows2.Name)
+	require.Equal(t, "myotherbin.exe", artifact.ExtraOr(*windows2, artifact.ExtraBinary, ""))
 }
 
 func TestRunPipeDistRemoved(t *testing.T) {

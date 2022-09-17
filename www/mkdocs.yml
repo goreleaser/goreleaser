@@ -139,6 +139,7 @@ nav:
   - errors/no-main.md
   - errors/resource-not-accessible-by-integration.md
   - errors/no-history.md
+  - errors/multiple-binaries-archive.md
 - deprecations.md
 - Cookbooks:
   - About: cookbooks/index.md
