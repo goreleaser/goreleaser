@@ -39,7 +39,8 @@ An example configuration for `goreleaser` in upload mode `binary` with the targe
   target: 'http://some.server/some/path/example-repo-local/{{ .ProjectName }}/{{ .Version }}/{{ .Os }}/{{ .Arch }}{{ if .Arm }}{{ .Arm }}{{ end }}'
 ```
 
-and will result in an HTTP PUT request sent to `http://some.server/some/path/example-repo-local/goreleaser/1.0.0/Darwin/x86_64/goreleaser`.
+and will result in an HTTP PUT request sent to
+`http://some.server/some/path/example-repo-local/goreleaser/1.0.0/Darwin/x86_64/goreleaser`.
 
 Supported variables:
 
@@ -96,8 +97,9 @@ This field is optional and is used only for basic http authentication.
 
 ### Client authorization with x509 certificate (mTLS / mutual TLS)
 
-If your artifactory server supports authorization with mTLS (client certificates), you can provide them by specifying
-the location of an x509 certificate/key pair of pem-encode files.
+If your artifactory server supports authorization with mTLS (client
+certificates), you can provide them by specifying the location of an x509
+certificate/key pair of pem-encode files.
 
 ```yaml
 uploads:
@@ -112,8 +114,8 @@ and authorize you to upload.
 
 ### Server authentication
 
-You can authenticate your TLS server adding a trusted X.509 certificate chain
-in your upload configuration.
+You can authenticate your TLS server adding a trusted X.509 certificate chain in
+your upload configuration.
 
 The trusted certificate chain will be used to validate the server certificates.
 
@@ -219,7 +221,8 @@ uploads:
       -----END CERTIFICATE-----
 ```
 
-These settings should allow you to push your artifacts into multiple HTTP servers.
+These settings should allow you to push your artifacts into multiple HTTP
+servers.
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).

@@ -1,10 +1,12 @@
 # Signing Docker Images and Manifests
 
 Signing Docker Images and Manifests is also possible with GoReleaser.
-This pipe was designed based on the common [sign](/customization/sign/) pipe having [cosign](https://github.com/sigstore/cosign) in mind.
+This pipe was designed based on the common [sign](/customization/sign/) pipe
+having [cosign](https://github.com/sigstore/cosign) in mind.
 
 !!! info
-    Note that this pipe will run only at the end of the GoReleaser execution (in its publish phase), as cosign will change the image in the registry.
+    Note that this pipe will run only at the end of the GoReleaser execution (in
+    its publishing phase), as cosign will change the image in the registry.
 
 
 To customize the signing pipeline you can use the following options:
@@ -76,9 +78,11 @@ These environment variables might be available in the fields that are templateab
 
 - `${artifact}`: the path to the artifact that will be signed [^1]
 - `${artifactID}`: the ID of the artifact that will be signed
-- `${certificate}`: the certificate filename, if provided
+- `${certificate}`: the certificate file name, if provided
 
-[^1]: notice that the this might contain `/` characters, which depending on how you use it might evaluate to actual paths within the filesystem. Use with care.
+[^1]: notice that this might contain `/` characters, which depending on how
+  you use it might evaluate to actual paths within the file system. Use with
+  care.
 
 
 ## Common usage example
@@ -96,6 +100,6 @@ docker_signs:
 
 Later on you (and anyone else) can verify the image with:
 
-```sh
+```bash
 cosign verify --key cosign.pub your/image
 ```

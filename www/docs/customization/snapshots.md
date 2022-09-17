@@ -3,8 +3,8 @@
 Sometimes we want to generate a full build of our project,
 but neither want to validate anything nor upload it to anywhere.
 
-GoReleaser supports this with the `--snapshot` flag
-and also with the `snapshot` customization section:
+GoReleaser supports this with the `--snapshot` flag and with the `snapshot`
+customization section:
 
 ```yaml
 # .goreleaser.yaml
@@ -20,10 +20,11 @@ snapshot:
 
 ## How it works
 
-When you run GoReleaser with `--snapshot`, it will set the `Version` template variable to the evaluation of `snapshot.name_template`.
-This means that if you use `{{ .Version }}` on your name templates, you'll get the snapshot version.
+When you run GoReleaser with `--snapshot`, it will set the `Version` template
+variable to the evaluation of `snapshot.name_template`. This means that if you
+use `{{ .Version }}` on your name templates, you'll get the snapshot version.
 
-You can also check if its a snapshot build inside a template with:
+You can also check if it's a snapshot build inside a template with:
 
 ```
 {{ if .IsSnapshot }}something{{ else }}something else{{ end }}
@@ -32,8 +33,9 @@ You can also check if its a snapshot build inside a template with:
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
 
-Note that the idea behind GoReleaser's snapshots is for local builds or to validate your build on the CI pipeline.
-Artifacts won't be uploaded and will only be generated into the `dist` folder.
+Note that the idea behind GoReleaser's snapshots is for local builds or to
+validate your build on the CI pipeline. Artifacts won't be uploaded and will
+only be generated into the `dist` folder.
 
 !!! info "Maybe you are looking for something else?"
     - If just want to build the binaries, and no packages at all, check the [`goreleaser build` command](/cmd/goreleaser_build/);

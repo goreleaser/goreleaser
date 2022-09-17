@@ -5,7 +5,7 @@ a _homebrew-tap_ recipe into a repository that you have access to.
 
 The `brews` section specifies how the formula should be created.
 You can check the
-[Homebrew documentation](https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap.md)
+[Homebrew documentation](https://github.com/Homebrew/brew/blob/master/docs/How-to-Create-and-Maintain-a-Tap.md),
 and the
 [formula cookbook](https://github.com/Homebrew/brew/blob/master/docs/Formula-Cookbook.md)
 for more details.
@@ -24,18 +24,21 @@ brews:
     - foo
     - bar
 
-    # GOARM to specify which 32-bit arm version to use if there are multiple versions
-    # from the build section. Brew formulas support only one 32-bit version.
+    # GOARM to specify which 32-bit arm version to use if there are multiple
+    # versions from the build section. Brew formulas support only one 32-bit
+    # version.
     # Default is 6 for all artifacts or each id if there a multiple versions.
     goarm: 6
 
-    # GOAMD64 to specify which amd64 version to use if there are multiple versions
-    # from the build section.
+    # GOAMD64 to specify which amd64 version to use if there are multiple
+    # versions from the build section.
     # Default is v1.
     goamd64: v3
 
-    # NOTE: make sure the url_template, the token and given repo (github or gitlab) owner and name are from the
-    # same kind. We will probably unify this in the next major version like it is done with scoop.
+    # NOTE: make sure the url_template, the token and given repo (github or
+    # gitlab) owner and name are from the same kind.
+    # We will probably unify this in the next major version like it is
+    # done with scoop.
 
     # GitHub/GitLab repository to push the formula to
     tap:
@@ -46,10 +49,12 @@ brews:
       # Defaults to the default repository branch.
       branch: main
 
-      # Optionally a token can be provided, if it differs from the token provided to GoReleaser
+      # Optionally a token can be provided, if it differs from the token
+      # provided to GoReleaser
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
 
-    # Template for the url which is determined by the given Token (github, gitlab or gitea)
+    # Template for the url which is determined by the given Token (github,
+    # gitlab or gitea)
     #
     # Default depends on the client.
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
@@ -60,7 +65,8 @@ brews:
     # Default is empty.
     download_strategy: CurlDownloadStrategy
 
-    # Allows you to add a custom require_relative at the top of the formula template
+    # Allows you to add a custom require_relative at the top of the formula
+    # template.
     # Default is empty
     custom_require: custom_download_strategy
 
@@ -115,7 +121,8 @@ brews:
         type: optional
       - name: fish
         version: v1.2.3
-      # if providing both version and type, only the type will be taken into account.
+      # if providing both version and type, only the type will be taken into
+      # account.
       - name: elvish
         type: optional
         version: v1.2.3

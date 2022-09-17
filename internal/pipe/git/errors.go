@@ -11,7 +11,7 @@ type ErrDirty struct {
 }
 
 func (e ErrDirty) Error() string {
-	return fmt.Sprintf("git is currently in a dirty state\nPlease check in your pipeline what can be changing the following files:\n%v\nLearn more at https://goreleaser.com/errors/dirty\n", e.status)
+	return fmt.Sprintf("git is in a dirty state\nPlease check in your pipeline what can be changing the following files:\n%v\nLearn more at https://goreleaser.com/errors/dirty\n", e.status)
 }
 
 // ErrWrongRef happens when the HEAD reference is different from the tag being built.
