@@ -69,10 +69,10 @@ snapcrafts:
       - beta
       - candidate
       - stable
-      - {{ .Major }}.{{ .Minor }}/edge
-      - {{ .Major }}.{{ .Minor }}/beta
-      - {{ .Major }}.{{ .Minor }}/candidate
-      - {{ .Major }}.{{ .Minor }}/stable
+      - '{{ .Major }}.{{ .Minor }}/edge'
+      - '{{ .Major }}.{{ .Minor }}/beta'
+      - '{{ .Major }}.{{ .Minor }}/candidate'
+      - '{{ .Major }}.{{ .Minor }}/stable'
 
     # A guardrail to prevent you from releasing a snap to all your users before
     # it is ready.
@@ -89,7 +89,8 @@ snapcrafts:
     # https://snapcraft.io/docs/reference/confinement
     confinement: strict
 
-    # Your app's license, based on SPDX license expressions: https://spdx.org/licenses
+    # Your app's license, based on SPDX license expressions:
+    # https://spdx.org/licenses
     # Default is empty.
     license: MIT
 
@@ -112,8 +113,8 @@ snapcrafts:
         mode: 0755
 
     # With layouts, you can make elements in $SNAP, $SNAP_DATA, $SNAP_COMMON
-    # accessible from locations such as /usr, /var and /etc. This helps when using
-    # pre-compiled binaries and libraries that expect to find files and
+    # accessible from locations such as /usr, /var and /etc. This helps when
+    # using pre-compiled binaries and libraries that expect to find files and
     # directories outside of locations referenced by $SNAP or $SNAP_DATA.
     # About snap environment variables:
     # * HOME: set to SNAP_USER_DATA for all commands

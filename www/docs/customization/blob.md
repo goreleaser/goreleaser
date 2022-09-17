@@ -84,7 +84,7 @@ chain in the following order:
 
 ### Azure Blob Provider
 
-Currently it supports authentication only with
+It supports authentication only with
 [environment variables](https://docs.microsoft.com/en-us/azure/storage/common/storage-azure-cli#set-default-azure-storage-account-environment-variables):
 
 - `AZURE_STORAGE_ACCOUNT`

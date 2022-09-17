@@ -1,13 +1,15 @@
 # Global Hooks
 
-Some release cycles may need run something before or after everything else.
+Some release cycles may need to run something before or after everything else.
 
 GoReleaser allows this with the global hooks feature.
 
 === "OSS"
-    The `before` section allows for global hooks that will be executed **before** the release is started.
+    The `before` section allows for global hooks that will be executed
+    **before** the release is started.
 
-    The configuration is straightforward, here is an example will all possible options:
+    The configuration is straightforward, here is an example will all possible
+    options:
 
     ```yaml
     # .goreleaser.yaml
@@ -22,12 +24,15 @@ GoReleaser allows this with the global hooks feature.
 
 === "Pro"
     !!! success "GoReleaser Pro"
-        Global after hooks and the additional options in before hooks (`dir` and `env`) are [GoReleaser Pro features](/pro/).
+        Global after hooks, and the additional options in before hooks (`dir`
+        and `env`) are [GoReleaser Pro features](/pro/).
 
-    The `before` section allows for global hooks that will be executed **before** the release is started.
-    Likewise, the `after` section allows for global hooks that will be executed **after** the release is started.
+    The `before` section allows for global hooks that will be executed
+    **before** the release is started. Likewise, the `after` section allows for
+    global hooks that will be executed **after** the release is started.
 
-    The configuration is straightforward, here is an example will all possible options:
+    The configuration is straightforward, here is an example will all possible
+    options:
 
     ```yaml
     # .goreleaser.yaml
@@ -61,8 +66,9 @@ Note that if any of the hooks fails the release process is aborted.
 
 ## Complex commands
 
-If you need to do anything more complex, it is recommended to create a shell script and call it instead.
-You can also go crazy with `sh -c "my commands"`, but it gets ugly really fast.
+If you need to do anything more complex, it is recommended to create a shell
+script and call it instead. You can also go crazy with `sh -c "my commands"`,
+but it gets ugly really fast.
 
 !!! tip
     Learn more about the [name template engine](/customization/templates/).

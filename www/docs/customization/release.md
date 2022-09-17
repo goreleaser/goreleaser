@@ -1,7 +1,7 @@
 # Release
 
-GoReleaser can create a GitHub/GitLab/Gitea release with the current tag, upload all
-the artifacts and generate the changelog based on the new commits since the
+GoReleaser can create a GitHub/GitLab/Gitea release with the current tag, upload
+all the artifacts and generate the changelog based on the new commits since the
 previous tag.
 
 ## GitHub
@@ -28,7 +28,8 @@ release:
   # Default is false.
   draft: true
 
-  # Whether to remove existing draft releases with the same name before creating a new one.
+  # Whether to remove existing draft releases with the same name before creating
+  # a new one.
   # Only effective if `draft` is set to true.
   # Available only for GitHub.
   #
@@ -38,7 +39,8 @@ release:
 
   # Useful if you want to delay the creation of the tag in the remote.
   # You can create the tag locally, but not push it, and run GoReleaser.
-  # It'll then set the `target_commitish` portion of the GitHub release to the value of this field.
+  # It'll then set the `target_commitish` portion of the GitHub release to the
+  # value of this field.
   # Only works on GitHub.
   #
   # Default: empty.
@@ -89,13 +91,15 @@ release:
   name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
 
   # You can disable this pipe in order to not create the release on any SCM.
-  # Keep in mind that this might also break things that depend on the release URL, for instance, homebrew taps.
+  # Keep in mind that this might also break things that depend on the release
+  # URL, for instance, homebrew taps.
   #
   # Defaults to false.
   disable: true
 
   # Set this to true if you want to disable just the artifact upload to the SCM.
-  # If this is true, GoReleaser will still create the release with the changelog, but won't upload anything to it.
+  # If this is true, GoReleaser will still create the release with the
+  # changelog, but won't upload anything to it.
   #
   # Default: false.
   # Since: v1.11.
@@ -125,7 +129,8 @@ Let's see what can be customized in the `release` section for GitLab.
 ```yaml
 # .goreleaser.yaml
 release:
-  # Default is extracted from the origin remote URL or empty if its private hosted.
+  # Default is extracted from the origin remote URL or empty if its private
+  # hosted.
   # You can also use Gitlab's internal project id by setting it in the name
   #  field and leaving the owner field empty.
   gitlab:
@@ -175,7 +180,8 @@ release:
     [Learn how to set up an API token, self-hosted GitLab, etc](/scm/gitlab/).
 
 !!! tip
-    If you use GitLab subgroups, you need to specify it in the `owner` field, e.g. `mygroup/mysubgroup`.
+    If you use GitLab subgroups, you need to specify it in the `owner` field,
+    e.g. `mygroup/mysubgroup`.
 
 !!! warning
     Only GitLab `v12.9+` is supported for releases.
@@ -231,7 +237,8 @@ release:
       name_template: file.txt # note that this only works if glob matches 1 file only
 ```
 
-To enable uploading `tar.gz` and `checksums.txt` files you need to add the following to your Gitea config in `app.ini`:
+To enable uploading `tar.gz` and `checksums.txt` files you need to add the
+following to your Gitea config in `app.ini`:
 
 ```ini
 [attachment]
@@ -246,7 +253,7 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 
 !!! warning
     Gitea versions earlier than 1.9.2 do not support uploading `checksums.txt`
-    files because of a [bug](https://github.com/go-gitea/gitea/issues/7882)
+    files because of a [bug](https://github.com/go-gitea/gitea/issues/7882),
     so you will have to enable all file types with `*/*`.
 
 !!! warning
@@ -254,21 +261,21 @@ ALLOWED_TYPES = application/gzip|application/x-gzip|application/x-gtar|applicati
 
 ### Define Previous Tag
 
-GoReleaser uses `git describe` to get the previous tag used for generating the Changelog.
-You can set a different build tag using the environment variable `GORELEASER_PREVIOUS_TAG`.
-This is useful in scenarios where two tags point to the same commit.
+GoReleaser uses `git describe` to get the previous tag used for generating the
+Changelog. You can set a different build tag using the environment variable
+`GORELEASER_PREVIOUS_TAG`. This is useful in scenarios where two tags point to
+the same commit.
 
 ## Custom release notes
 
-You can specify a file containing your custom release notes, and
-pass it with the `--release-notes=FILE` flag.
-GoReleaser will then skip its own release notes generation,
-using the contents of your file instead.
-You can use Markdown to format the contents of your file.
+You can specify a file containing your custom release notes, and pass it with
+the `--release-notes=FILE` flag. GoReleaser will then skip its own release notes
+generation, using the contents of your file instead. You can use Markdown to
+format the contents of your file.
 
 On Unix systems you can also generate the release notes in-line by using
-[process substitution](https://en.wikipedia.org/wiki/Process_substitution).
-To list all commits since the last tag, but skip ones starting with `Merge` or
+[process substitution](https://en.wikipedia.org/wiki/Process_substitution). To
+list all commits since the last tag, but skip ones starting with `Merge` or
 `docs`, you could run this command:
 
 ```sh
@@ -281,6 +288,6 @@ Some changelog generators you can use:
 - [miniscruff/changie](https://github.com/miniscruff/changie)
 
 !!! info
-    If you create the release before running GoReleaser, and the
-    said release has some text in its body, GoReleaser will not override it with
-    its release notes.
+    If you create the release before running GoReleaser, and the said release
+    has some text in its body, GoReleaser will not override it with its release
+    notes.

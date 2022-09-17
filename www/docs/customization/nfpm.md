@@ -111,7 +111,8 @@ nfpms:
 
     # Version Metadata (previously deb.metadata).
     # Default is extracted from `version` if it is semver compatible.
-    # Setting metadata might interfere with version comparisons depending on the packager.
+    # Setting metadata might interfere with version comparisons depending on the
+    # packager.
     version_metadata: git
 
     # Version Release.
@@ -123,7 +124,8 @@ nfpms:
     # Priority.
     priority: extra
 
-    # Makes a meta package - an empty package that contains only supporting files and dependencies.
+    # Makes a meta package - an empty package that contains only supporting
+    # files and dependencies.
     # When set to `true`, the `builds` option is ignored.
     # Defaults to false.
     meta: true
@@ -158,7 +160,8 @@ nfpms:
         dst: /usr/local/bin/foo
         type: "symlink"
 
-      # Corresponds to `%config(noreplace)` if the packager is rpm, otherwise it is just a config file
+      # Corresponds to `%config(noreplace)` if the packager is rpm, otherwise it
+      # is just a config file
       - src: path/to/local/bar.conf
         dst: /etc/bar.conf
         type: "config|noreplace"
@@ -171,8 +174,8 @@ nfpms:
       # are added to the package header. From the RPM directives documentation:
       #
       # "There are times when a file should be owned by the package but not
-      # installed - log files and state files are good examples of cases you might
-      # desire this to happen."
+      # installed - log files and state files are good examples of cases you
+      # might desire this to happen."
       #
       # "The way to achieve this, is to use the %ghost directive. By adding this
       # directive to the line containing a file, RPM will know about the ghosted
@@ -184,7 +187,8 @@ nfpms:
       - dst: /var/log/boo.log
         type: ghost
 
-      # You can use the packager field to add files that are unique to a specific packager
+      # You can use the packager field to add files that are unique to a
+      # specific packager
       - src: path/to/rpm/file.conf
         dst: /etc/file.conf
         type: "config|noreplace"
@@ -198,8 +202,9 @@ nfpms:
         type: "config|noreplace"
         packager: apk
 
-      # Sometimes it is important to be able to set the mtime, mode, owner, or group for a file
-      # that differs from what is on the local build system at build time.
+      # Sometimes it is important to be able to set the mtime, mode, owner, or
+      # group for a file that differs from what is on the local build system at
+      # build time.
       - src: path/to/foo
         dst: /usr/local/foo
         file_info:
@@ -208,13 +213,15 @@ nfpms:
           owner: notRoot
           group: notRoot
 
-      # Using the type 'dir', empty directories can be created. When building RPMs, however, this
-      # type has another important purpose: Claiming ownership of that folder. This is important
-      # because when upgrading or removing an RPM package, only the directories for which it has
-      # claimed ownership are removed. However, you should not claim ownership of a folder that
-      # is created by the distro or a dependency of your package.
-      # A directory in the build environment can optionally be provided in the 'src' field in
-      # order copy mtime and mode from that directory without having to specify it manually.
+      # Using the type 'dir', empty directories can be created. When building
+      # RPMs, however, this type has another important purpose: Claiming
+      # ownership of that folder. This is important because when upgrading or
+      # removing an RPM package, only the directories for which it has claimed
+      # ownership are removed. However, you should not claim ownership of a folder
+      # thatis created by the distro or a dependency of your package.
+      # A directory in the build environment can optionally be provided in the
+      # 'src' field in order copy mtime and mode from that directory without
+      # having to specify it manually.
       - dst: /some/dir
         type: dir
         file_info:
@@ -284,8 +291,8 @@ nfpms:
       # are added to the package header. From the RPM directives documentation:
       #
       # "There are times when a file should be owned by the package but not
-      # installed - log files and state files are good examples of cases you might
-      # desire this to happen."
+      # installed - log files and state files are good examples of cases you
+      # might desire this to happen."
       #
       # "The way to achieve this, is to use the %ghost directive. By adding this
       # directive to the line containing a file, RPM will know about the ghosted

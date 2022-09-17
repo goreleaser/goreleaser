@@ -56,7 +56,7 @@ aurs:
     # The SSH private key that should be used to commit to the Git repository.
     # This can either be a path or the key contents.
     #
-    # WARNING: do not expose your private key in the config file!
+    # WARNING: do not expose your private key in the configuration file!
     private_key: '{{ .Env.AUR_KEY }}'
 
     # The AUR Git URL for this package.

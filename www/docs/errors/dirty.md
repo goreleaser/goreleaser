@@ -1,9 +1,10 @@
-# Git is currently in a dirty state
+# Git is in a dirty state
 
 GoReleaser requires a clean git state to work.
 
-If you see this error, it means that something in your build process is either creating or editing files before GoReleaser is called.
-The error message should show you which files were created/modified.
+If you see this error, it means that something in your build process is either
+creating or editing files before GoReleaser is called. The error message should
+show you, which files were created/modified.
 
 Here's an example error:
 
@@ -18,5 +19,6 @@ Learn more at https://goreleaser.com/errors/dirty
 
 From here on, you have a couple of options:
 
-- add the file to `.gitignore` (recommended if the file is temporary and/or generated);
+- add the file to `.gitignore` (recommended if the file is temporary and/or
+  generated);
 - change your process the build process to not touch any git tracked files.
