@@ -1,0 +1,66 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write
+  packages: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_CLI_EXPERIMENTAL: "enabled"
+    steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
+        with:
+          fetch-depth: 0
+      - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/setup-qemu-action@8b122486cedac8393e77aa9734c3528886e4a1a8 # v1
+      - uses: docker/setup-buildx-action@dc7b9719a96d48369863986a06765841d7ea23f6 # v1
+      - name: setup-snapcraft
+        # FIXME: the mkdirs are a hack for https://github.com/goreleaser/goreleaser/issues/1715
+        run: |
+          sudo apt-get update
+          sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
+          mkdir -p $HOME/.cache/snapcraft/download
+          mkdir -p $HOME/.cache/snapcraft/stage-packages
+      - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3
+        with:
+          go-version: '1.19'
+          cache: true
+      - uses: sigstore/cosign-installer@v2.6.0
+      - uses: anchore/sbom-action/download-syft@v0.12.0
+      - name: dockerhub-login
+        uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b # v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: ghcr-login
+        uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b # v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: snapcraft-login
+        run: snapcraft login --with <(echo "${{ secrets.SNAPCRAFT_LOGIN }}")
+      - name: goreleaser-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          TWITTER_CONSUMER_KEY: ${{ secrets.TWITTER_CONSUMER_KEY }}
+          TWITTER_CONSUMER_SECRET: ${{ secrets.TWITTER_CONSUMER_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
+          COSIGN_PWD: ${{ secrets.COSIGN_PWD }}
+          FURY_TOKEN: ${{ secrets.FURY_TOKEN }}
+          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          AUR_KEY: ${{ secrets.AUR_KEY }}
+        run: task goreleaser
