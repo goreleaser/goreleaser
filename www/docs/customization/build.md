@@ -112,14 +112,20 @@ builds:
       - gomips: hardfloat
       - goamd64: v4
 
-    # Optionally override the matrix generation and specify only the final list of targets.
-    # Format is `{goos}_{goarch}` with optionally a suffix with `_{goarm}`, `_{goamd64}` or `_{gomips}`.
+    # Optionally override the matrix generation and specify only the final list
+    # of targets.
+    #
+    # Format is `{goos}_{goarch}` with their respective suffixes when
+    # applicable: `_{goarm}`, `_{goamd64}`, `_{gomips}`.
     #
     # Special values:
-    # - go_118_first_class: evaluates to the first-class targets of go1.18. Since GoReleaser v1.9.
-    # - go_first_class: evaluates to latest stable go first-class targets, currently same as 1.18. Since GoReleaser v1.9.
+    # - go_118_first_class: evaluates to the first-class targets of go1.18.
+    #   Since GoReleaser v1.9.
+    # - go_first_class: evaluates to latest stable go first-class targets,
+    #   currently same as 1.18. Since GoReleaser v1.9.
     #
-    # This overrides `goos`, `goarch`, `goarm`, `gomips`, `goamd64` and `ignores`.
+    # This overrides `goos`, `goarch`, `goarm`, `gomips`, `goamd64` and
+    # `ignores`.
     targets:
       - go_first_class
       - go_118_first_class
@@ -161,17 +167,23 @@ builds:
     # Default is false
     skip: false
 
-    # By default, GoReleaser will create your binaries inside `dist/${BuildID}_${BuildTarget}`, which is an unique directory per build target in the matrix.
+    # By default, GoReleaser will create your binaries inside
+    # `dist/${BuildID}_${BuildTarget}`, which is an unique directory per build
+    # target in the matrix.
     # You can set subdirs within that folder using the `binary` property.
     #
-    # However, if for some reason you don't want that unique directory to be created, you can set this property.
-    # If you do, you are responsible for keeping different builds from overriding each other.
+    # However, if for some reason you don't want that unique directory to be
+    # created, you can set this property.
+    # If you do, you are responsible for keeping different builds from
+    # overriding each other.
     #
     # Defaults to `false`.
     no_unique_dist_dir: true
 
-    # By default, GoReleaser will check if the main filepath has a main function.
-    # This can be used to skip that check, in case you're building tests, for example.
+    # By default, GoReleaser will check if the main filepath has a main
+    # function.
+    # This can be used to skip that check, in case you're building tests, for
+    # example.
     #
     # Default: false.
     # Since: v1.9.
@@ -255,7 +267,8 @@ builds:
       - windows
 ```
 
-The binary name field supports [templating](/customization/templates/). The following build details are exposed:
+The binary name field supports [templating](/customization/templates/). The
+following build details are exposed:
 
 <!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->
 
@@ -288,11 +301,12 @@ GOVERSION=$(go version) goreleaser
 ## Build Hooks
 
 Both pre and post hooks run **for each build target**, regardless of whether
-these targets are generated via a matrix of OSes and architectures
-or defined explicitly.
+these targets are generated via a matrix of OSes and architectures or defined
+explicitly.
 
-In addition to simple declarations as shown above _multiple_ hooks can be declared
-to help retaining reusability of config between different build environments.
+In addition to simple declarations as shown above _multiple_ hooks can be
+declared to help retaining reusability of config between different build
+environments.
 
 ```yaml
 # .goreleaser.yaml
@@ -331,9 +345,11 @@ builds:
        - second-script.sh
 ```
 
-All properties of a hook (`cmd`, `dir` and `env`) support [templating](/customization/templates/)
-with `post` hooks having binary artifact available (as these run _after_ the build).
-Additionally the following build details are exposed to both `pre` and `post` hooks:
+All properties of a hook (`cmd`, `dir` and `env`) support
+[templating](/customization/templates/) with `post` hooks having binary artifact
+available (as these run _after_ the build).
+Additionally the following build details are exposed to both `pre` and `post`
+hooks:
 
 
 <!-- to format the tables, use: https://tabletomarkdown.com/format-markdown-table/ -->
@@ -353,9 +369,9 @@ Environment variables are inherited and overridden in the following order:
 
 ## Go Modules
 
- If you use Go 1.11+ with go modules or vgo, when GoReleaser runs it may
- try to download the dependencies. Since several builds run in parallel, it is
- very likely to fail.
+ If you use Go 1.11+ with go modules or vgo, when GoReleaser runs it may try to
+ download the dependencies. Since several builds run in parallel, it is very
+ likely to fail.
 
  You can solve this by running `go mod tidy` before calling `goreleaser` or
  by adding a [hook][] doing that on your `.goreleaser.yaml` file:
@@ -378,25 +394,34 @@ This is useful in scenarios where two tags point to the same commit.
 
 ## Reproducible Builds
 
-To make your releases, checksums and signatures reproducible, you will need to make some (if not all) of the following modifications to the build defaults in GoReleaser:
+To make your releases, checksums and signatures reproducible, you will need to
+make some (if not all) of the following modifications to the build defaults in
+GoReleaser:
 
-* Modify `ldflags`: by default `main.Date` is set to the time GoReleaser is run (`{{.Date}}`), you can set this to `{{.CommitDate}}` or just not pass the variable.
-* Modify `mod_timestamp`: by default this is empty string, set to `{{.CommitTimestamp}}` or a constant value instead.
-* If you do not run your builds from a consistent directory structure, pass `-trimpath` to `flags`.
-* Remove uses of the `time` template function. This function returns a new value on every call and is not deterministic.
+* Modify `ldflags`: by default `main.Date` is set to the time GoReleaser is run
+  (`{{.Date}}`), you can set this to `{{.CommitDate}}` or just not pass the
+  variable.
+* Modify `mod_timestamp`: by default this is empty string, set to
+  `{{.CommitTimestamp}}` or a constant value instead.
+* If you do not run your builds from a consistent directory structure, pass
+  `-trimpath` to `flags`.
+* Remove uses of the `time` template function. This function returns a new value
+  on every call and is not deterministic.
 
 ## Import pre-built binaries
 
 !!! success "GoReleaser Pro"
     The prebuilt builder is a [GoReleaser Pro feature](/pro/).
 
-Since GoReleaser Pro v0.179.0, it is possible to import pre-built binaries into the GoReleaser lifecycle.
+Since GoReleaser Pro v0.179.0, it is possible to import pre-built binaries into
+the GoReleaser lifecycle.
 
 Reasons you might want to do that include:
 
 - You want to build your binaries in different machines due to CGO
 - You want to build using a pre-existing `Makefile` or other tool
-- You want to speed up the build by running several builds in parallel in different machines
+- You want to speed up the build by running several builds in parallel in
+  different machines
 
 In any case, its pretty easy to do that now:
 
@@ -427,14 +452,16 @@ builds:
     path: output/mybin_{{ .Os }}_{{ .Arch }}_{{ with .Amd64 }}_{{ . }}{{ end }}/mybin
 ```
 
-This example config will import into your release pipeline the following binaries:
+This example config will import into your release pipeline the following
+binaries:
 
 - `output/mybin_linux_amd64`
 - `output/mybin_linux_arm64`
 - `output/mybin_darwin_amd64_v1`
 - `output/mybin_darwin_arm64`
 
-The other steps of the pipeline will act as if those were built by GoReleaser itself.
+The other steps of the pipeline will act as if those were built by GoReleaser
+itself.
 There is no difference in how the binaries are handled.
 
 !!! tip
@@ -460,17 +487,24 @@ If you'd like to see this in action, check [this example on GitHub](https://gith
 
 ## A note about folder names inside `dist`
 
-By default, GoReleaser will create your binaries inside `dist/${BuildID}_${BuildTarget}`, which is an unique directory per build target in the matrix.
+By default, GoReleaser will create your binaries inside
+`dist/${BuildID}_${BuildTarget}`, which is an unique directory per build target
+in the matrix.
 
-Those names have no guarantees of remaining the same from one version to another.
-If you really need to access them from outside GoReleaser, you should be able to consistently get the path of a binary by parsing `dist/artifacts.json`.
+Those names have no guarantees of remaining the same from one version to
+another. If you really need to access them from outside GoReleaser, you should
+be able to consistently get the path of a binary by parsing
+`dist/artifacts.json`.
 
-You can also set `builds.no_unique_dist_dir` (as documented earlier in this page), but in that case you are responsible for preventing name conflicts.
+You can also set `builds.no_unique_dist_dir` (as documented earlier in this
+page), but in that case you are responsible for preventing name conflicts.
 
 ### Why is there a `_v1` suffix on `amd64` builds?
 
-Go 1.18 introduced the `GOAMD64` option, and `v1` is the default value for that option.
+Go 1.18 introduced the `GOAMD64` option, and `v1` is the default value for that
+option.
 
-Since you can have GoReleaser build for multiple different `GOAMD64` targets, it adds that suffix to prevent name conflicts.
-The same thing happens for `arm` and `GOARM`, `mips` and `GOMIPS` and others.
+Since you can have GoReleaser build for multiple different `GOAMD64` targets, it
+adds that suffix to prevent name conflicts. The same thing happens for `arm` and
+`GOARM`, `mips` and `GOMIPS` and others.
 
