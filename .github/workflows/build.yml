@@ -41,13 +41,6 @@ jobs:
         with:
           go-version: '1.19'
           cache: true
-      - uses: actions/cache@fd5de65bc895cf536527842281bea11763fefd77 # v3
-        with:
-          path: |
-            ./dist/*.deb
-            ./dist/*.rpm
-            ./dist/*.apk
-          key: ${{ github.ref }}
       - uses: sigstore/cosign-installer@v2.6.0
       - uses: anchore/sbom-action/download-syft@v0.12.0
       - name: setup-validate-krew-manifest
