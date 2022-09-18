@@ -108,7 +108,7 @@ func TestDirty(t *testing.T) {
 	t.Run("all checks up", func(t *testing.T) {
 		err := Pipe{}.Run(context.New(config.Project{}))
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "git is currently in a dirty state")
+		require.Contains(t, err.Error(), "git is in a dirty state")
 	})
 	t.Run("skip validate is set", func(t *testing.T) {
 		ctx := context.New(config.Project{})
