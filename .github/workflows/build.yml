@@ -4,14 +4,10 @@ on:
   push:
     branches:
       - 'main'
-    tags:
-      - 'v*'
   pull_request:
 
 permissions:
-  contents: write
-  id-token: write
-  packages: write
+  contents: read
 
 jobs:
   govulncheck:
@@ -20,34 +16,7 @@ jobs:
     uses: caarlos0/meta/.github/workflows/semgrep.yml@main
   ruleguard:
     uses: caarlos0/meta/.github/workflows/ruleguard.yml@main
-  goreleaser-check-pkgs:
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_CLI_EXPERIMENTAL: "enabled"
-    needs:
-      - goreleaser
-    if: github.ref == 'refs/heads/main'
-    strategy:
-      matrix:
-        format: [ deb, rpm, apk ]
-    steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
-        with:
-          fetch-depth: 0
-      - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
-        with:
-          version: 3.x
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/setup-qemu-action@8b122486cedac8393e77aa9734c3528886e4a1a8 # v1
-      - uses: actions/cache@fd5de65bc895cf536527842281bea11763fefd77 # v3
-        with:
-          path: |
-            ./dist/*.deb
-            ./dist/*.rpm
-            ./dist/*.apk
-          key: ${{ github.ref }}
-      - run: task goreleaser:test:${{ matrix.format }}
-  goreleaser:
+  test:
     runs-on: ubuntu-latest
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
@@ -72,13 +41,6 @@ jobs:
         with:
           go-version: '1.19'
           cache: true
-      - uses: actions/cache@fd5de65bc895cf536527842281bea11763fefd77 # v3
-        with:
-          path: |
-            ./dist/*.deb
-            ./dist/*.rpm
-            ./dist/*.apk
-          key: ${{ github.ref }}
       - uses: sigstore/cosign-installer@v2.6.0
       - uses: anchore/sbom-action/download-syft@v0.12.0
       - name: setup-validate-krew-manifest
@@ -96,33 +58,3 @@ jobs:
           file: ./coverage.txt
       - run: ./goreleaser check
       - run: git diff
-      - name: dockerhub-login
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b # v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: ghcr-login
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b # v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: snapcraft-login
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: snapcraft login --with <(echo "${{ secrets.SNAPCRAFT_LOGIN }}")
-      - name: goreleaser-release
-        if: startsWith(github.ref, 'refs/tags/v') ||  github.ref == 'refs/heads/main'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          TWITTER_CONSUMER_KEY: ${{ secrets.TWITTER_CONSUMER_KEY }}
-          TWITTER_CONSUMER_SECRET: ${{ secrets.TWITTER_CONSUMER_SECRET }}
-          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
-          TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
-          COSIGN_PWD: ${{ secrets.COSIGN_PWD }}
-          FURY_TOKEN: ${{ secrets.FURY_TOKEN }}
-          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          AUR_KEY: ${{ secrets.AUR_KEY }}
-        run: task goreleaser
