@@ -18,7 +18,9 @@ Major concepts:
 
 The `env` parameters below will need to be customized as appropriate of one's keychain details. See [gon configuration][gon configuration] documentation for what these values should be set to. For simplicity they will be re-used by the notarization step later.
 
-We separate out the mac builds because we are required to sign the binaries themselves. This is an offline operation.
+We separate out the mac builds because we are required (by OSX) to sign the binaries themselves. Since signing is an offline operation it's nice and speedy.
+
+Hon is configuration driven, doesn't have a CLI interface, and the configuration doesn't support much in the way of templating. Instead we generate the appropriate configuration on the fly, leverage goreleaser's templating tools to hard-code the correct values, and then run hon to perform the signing.
 
 ```yaml
 # .goreleaser.yml
@@ -71,13 +73,14 @@ dist/macos_darwin_arm64/myapp: satisfies its Designated Requirement
 
 ## Configuring Notarization
 
-We want a separate archive ID, so we can make sure to Release the correctly signed packages.
+Notarizing takes our archived (with a signed binary inside) and submits it to Apple. This is an online activity than can take meaningful time but it necessary for production releases to avoid security prompts.
 
-Here we do a specific notarize step _replacing_ the original artifact in-place. One could generate a separate archive, just be sure not to Release it.
+Here we are doing a very similar behavior as we did during the Build step, where we define a hon config block on the fly and then execute.
+
+We must be sure to define an archive ID, so we when we go to Release later, Goreleaser will pick the correct files. Here we do a specific notarize step _replacing_ the original artifact in-place. One could generate a separate archive filename, just be sure not to Release it.
 
 **Important**:
- - notarization is an online activity that can take meaningful time. Sometimes minutes, sometimes hours.
- - zip, pkg, dmg, app format is required for notarization.
+  - zip, pkg, dmg, app format is required for notarization.
 
 ```yaml
 # .goreleaser.yml
