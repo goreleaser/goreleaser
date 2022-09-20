@@ -65,7 +65,7 @@ jobs:
           task build
       - name: test
         run: ./scripts/test.sh
-      - uses: codecov/codecov-action@81cd2dc8148241f03f5839d295e000b8f761e378 # v3
+      - uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3
         with:
           file: ./coverage.txt
       - run: ./goreleaser check
