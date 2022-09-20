@@ -4,7 +4,17 @@ on:
   push:
     branches:
       - 'main'
+    paths:
+      - 'go.*'
+      - '**/*.go'
+      - 'Taskfile.yml'
+      - 'Dockerfile'
   pull_request:
+    paths:
+      - 'go.*'
+      - '**/*.go'
+      - 'Taskfile.yml'
+      - 'Dockerfile'
 
 permissions:
   contents: read

@@ -42,6 +42,7 @@ jobs:
       - run: task goreleaser:test:${{ matrix.format }}
   goreleaser:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
