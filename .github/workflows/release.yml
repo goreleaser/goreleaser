@@ -64,7 +64,7 @@ jobs:
           mkdir -p $HOME/.cache/snapcraft/stage-packages
       - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3
         with:
-          go-version: '1.19'
+          go-version: '>=1.19.1'
           cache: true
       - uses: actions/cache@fd5de65bc895cf536527842281bea11763fefd77 # v3
         with:

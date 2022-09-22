@@ -36,7 +36,7 @@ jobs:
       - run: git fetch --force --tags
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.19
+          go-version: '>=1.19.1'
           cache: true
       - uses: goreleaser/goreleaser-action@v2
         with:
