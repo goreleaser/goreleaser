@@ -217,8 +217,9 @@ nfpms:
       # RPMs, however, this type has another important purpose: Claiming
       # ownership of that folder. This is important because when upgrading or
       # removing an RPM package, only the directories for which it has claimed
-      # ownership are removed. However, you should not claim ownership of a folder
-      # thatis created by the distro or a dependency of your package.
+      # ownership are removed. However, you should not claim ownership of a
+      # folder that is created by the OS or a dependency of your package.
+      #
       # A directory in the build environment can optionally be provided in the
       # 'src' field in order copy mtime and mode from that directory without
       # having to specify it manually.
@@ -227,19 +228,22 @@ nfpms:
         file_info:
           mode: 0700
 
-    # Scripts to execute during the installation of the package.
+    # Scripts to execute during the installation of the package. (overridable)
+    #
     # Keys are the possible targets during the installation process
-    # Values are the paths to the scripts which will be executed
+    # Values are the paths to the scripts which will be executed.
     scripts:
       preinstall: "scripts/preinstall.sh"
       postinstall: "scripts/postinstall.sh"
       preremove: "scripts/preremove.sh"
       postremove: "scripts/postremove.sh"
 
-    # All fields above marked as `overridable` can be overridden for a given package format in this section.
+    # All fields above marked as `overridable` can be overridden for a given
+    # package format in this section.
     overrides:
-      # The depends override can for example be used to provide version constraints for dependencies where
-      # different package formats use different versions or for dependencies that are named differently.
+      # The depends override can for example be used to provide version
+      # constraints for dependencies where  different package formats use
+      # different versions or for dependencies that are named differently.
       deb:
         depends:
           - baz (>= 1.2.3-0)
@@ -262,13 +266,14 @@ nfpms:
         # The posttrans script runs after all RPM package transactions / stages.
         posttrans: ./scripts/posttrans.sh
 
+      # The package summary. This is, by default, the first line of the
+      # description, but can be explicitly provided here.
+      # Defaults to the first line of the description.
+      summary: Explicit Summary for Sample Package
+
       # The package group. This option is deprecated by most distros
       # but required by old distros like CentOS 5 / EL 5 and earlier.
       group: Unspecified
-
-      # The package summary. This is, by default, the first line of the
-      # description, but can be explicitly provided here.
-      summary: Explicit Summary for Sample Package
 
       # The packager is used to identify the organization that actually packaged
       # the software, as opposed to the author of the software.
