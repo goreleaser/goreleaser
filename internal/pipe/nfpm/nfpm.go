@@ -296,6 +296,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 				PostRemove:  overridden.Scripts.PostRemove,
 			},
 			Deb: nfpm.Deb{
+				// TODO: Compression, Fields
 				Scripts: nfpm.DebScripts{
 					Rules:     overridden.Deb.Scripts.Rules,
 					Templates: overridden.Deb.Scripts.Templates,
@@ -313,6 +314,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 					PackageSignature: nfpm.PackageSignature{
 						KeyFile:       debKeyFile,
 						KeyPassphrase: getPassphraseFromEnv(ctx, "DEB", fpm.ID),
+						// TODO: Method, Type, KeyID
 					},
 					Type: overridden.Deb.Signature.Type,
 				},
@@ -325,6 +327,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 					PackageSignature: nfpm.PackageSignature{
 						KeyFile:       rpmKeyFile,
 						KeyPassphrase: getPassphraseFromEnv(ctx, "RPM", fpm.ID),
+						// TODO: KeyID
 					},
 				},
 				Scripts: nfpm.RPMScripts{
