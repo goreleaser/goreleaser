@@ -54,12 +54,15 @@ func TestReleaseBrokenProject(t *testing.T) {
 }
 
 func TestReleaseFlags(t *testing.T) {
-	setup := func(opts releaseOpts) *context.Context {
-		return setupReleaseContext(context.New(config.Project{}), opts)
+	setup := func(tb testing.TB, opts releaseOpts) *context.Context {
+		tb.Helper()
+		ctx := context.New(config.Project{})
+		require.NoError(tb, setupReleaseContext(ctx, opts))
+		return ctx
 	}
 
 	t.Run("snapshot", func(t *testing.T) {
-		ctx := setup(releaseOpts{
+		ctx := setup(t, releaseOpts{
 			snapshot: true,
 		})
 		require.True(t, ctx.Snapshot)
@@ -69,7 +72,7 @@ func TestReleaseFlags(t *testing.T) {
 	})
 
 	t.Run("skips", func(t *testing.T) {
-		ctx := setup(releaseOpts{
+		ctx := setup(t, releaseOpts{
 			skipPublish:  true,
 			skipSign:     true,
 			skipValidate: true,
@@ -81,7 +84,7 @@ func TestReleaseFlags(t *testing.T) {
 	})
 
 	t.Run("parallelism", func(t *testing.T) {
-		require.Equal(t, 1, setup(releaseOpts{
+		require.Equal(t, 1, setup(t, releaseOpts{
 			parallelism: 1,
 		}).Parallelism)
 	})
@@ -90,7 +93,7 @@ func TestReleaseFlags(t *testing.T) {
 		notes := "foo.md"
 		header := "header.md"
 		footer := "footer.md"
-		ctx := setup(releaseOpts{
+		ctx := setup(t, releaseOpts{
 			releaseNotesFile:  notes,
 			releaseHeaderFile: header,
 			releaseFooterFile: footer,
@@ -104,7 +107,7 @@ func TestReleaseFlags(t *testing.T) {
 		notes := "foo.md"
 		header := "header.md"
 		footer := "footer.md"
-		ctx := setup(releaseOpts{
+		ctx := setup(t, releaseOpts{
 			releaseNotesTmpl:  notes,
 			releaseHeaderTmpl: header,
 			releaseFooterTmpl: footer,
@@ -115,7 +118,7 @@ func TestReleaseFlags(t *testing.T) {
 	})
 
 	t.Run("rm dist", func(t *testing.T) {
-		require.True(t, setup(releaseOpts{
+		require.True(t, setup(t, releaseOpts{
 			rmDist: true,
 		}).RmDist)
 	})

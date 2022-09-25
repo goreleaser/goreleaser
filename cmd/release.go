@@ -96,7 +96,9 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 	}
 	ctx, cancel := context.NewWithTimeout(cfg, options.timeout)
 	defer cancel()
-	setupReleaseContext(ctx, options)
+	if err := setupReleaseContext(ctx, options); err != nil {
+		return nil, err
+	}
 	return ctx, ctrlc.Default.Run(ctx, func() error {
 		for _, pipe := range pipeline.Pipeline {
 			if err := skip.Maybe(
@@ -113,7 +115,7 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 	})
 }
 
-func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Context {
+func setupReleaseContext(ctx *context.Context, options releaseOpts) error {
 	ctx.Parallelism = runtime.NumCPU()
 	if options.parallelism > 0 {
 		ctx.Parallelism = options.parallelism
@@ -141,5 +143,5 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Con
 
 	// test only
 	ctx.Deprecated = options.deprecated
-	return ctx
+	return nil
 }
