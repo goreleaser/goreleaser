@@ -83,6 +83,15 @@ dockers:
     # Defaults to false.
     skip_push: false
 
+    # Allows to create Docker images that do not use any other artifacts managed
+    # by GoReleaser.
+    # If your Docker image does not use any previously generated artifact, this
+    # option can be useful.
+    #
+    # Defaults to false.
+    # Since: v1.12.
+    meta: true
+
     # Path to the Dockerfile (from the project root).
     #
     # Defaults to `Dockerfile`.

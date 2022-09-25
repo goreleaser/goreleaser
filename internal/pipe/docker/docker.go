@@ -142,6 +142,9 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.Artifact) error {
+	if len(artifacts) == 0 && !docker.Meta {
+		return pipe.Skip("no binaries matching the filters")
+	}
 	tmp, err := os.MkdirTemp(ctx.Config.Dist, "goreleaserdocker")
 	if err != nil {
 		return fmt.Errorf("failed to create temporary dir: %w", err)
