@@ -113,7 +113,7 @@ func releaseProject(options releaseOpts) (*context.Context, error) {
 	})
 }
 
-func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Context {
+func setupReleaseContext(ctx *context.Context, options releaseOpts) {
 	ctx.Parallelism = runtime.NumCPU()
 	if options.parallelism > 0 {
 		ctx.Parallelism = options.parallelism
@@ -141,5 +141,4 @@ func setupReleaseContext(ctx *context.Context, options releaseOpts) *context.Con
 
 	// test only
 	ctx.Deprecated = options.deprecated
-	return ctx
 }
