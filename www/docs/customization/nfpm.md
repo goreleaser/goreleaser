@@ -217,8 +217,9 @@ nfpms:
       # RPMs, however, this type has another important purpose: Claiming
       # ownership of that folder. This is important because when upgrading or
       # removing an RPM package, only the directories for which it has claimed
-      # ownership are removed. However, you should not claim ownership of a folder
-      # thatis created by the distro or a dependency of your package.
+      # ownership are removed. However, you should not claim ownership of a
+      # folder that is created by the OS or a dependency of your package.
+      #
       # A directory in the build environment can optionally be provided in the
       # 'src' field in order copy mtime and mode from that directory without
       # having to specify it manually.
@@ -227,40 +228,34 @@ nfpms:
         file_info:
           mode: 0700
 
-    # Scripts to execute during the installation of the package.
+    # Scripts to execute during the installation of the package. (overridable)
+    #
     # Keys are the possible targets during the installation process
-    # Values are the paths to the scripts which will be executed
+    # Values are the paths to the scripts which will be executed.
     scripts:
       preinstall: "scripts/preinstall.sh"
       postinstall: "scripts/postinstall.sh"
       preremove: "scripts/preremove.sh"
       postremove: "scripts/postremove.sh"
 
-    # Some attributes can be overridden per package format.
+    # All fields above marked as `overridable` can be overridden for a given
+    # package format in this section.
     overrides:
+      # The depends override can for example be used to provide version
+      # constraints for dependencies where  different package formats use
+      # different versions or for dependencies that are named differently.
       deb:
-        conflicts:
-          - subversion
-        dependencies:
-          - git
-        suggests:
-          - gitk
-        recommends:
-          - tig
-        replaces:
-          - bash
-        provides:
-          - bash
+        depends:
+          - baz (>= 1.2.3-0)
+          - some-lib-dev
+        # ...
       rpm:
-        replacements:
-          amd64: x86_64
-        file_name_template: "{{ .ProjectName }}-{{ .Version }}-{{ .Arch }}"
-        files:
-          "tmp/man.gz": "/usr/share/man/man8/app.8.gz"
-        config_files:
-          "tmp/app_generated.conf": "/etc/app-rpm.conf"
-        scripts:
-          preinstall: "scripts/preinstall-rpm.sh"
+        depends:
+          - baz >= 1.2.3-0
+          - some-lib-devel
+        # ...
+      apk:
+        # ...
 
     # Custom configuration applied only to the RPM packager.
     rpm:
@@ -271,7 +266,8 @@ nfpms:
         # The posttrans script runs after all RPM package transactions / stages.
         posttrans: ./scripts/posttrans.sh
 
-      # The package summary.
+      # The package summary. This is, by default, the first line of the
+      # description, but can be explicitly provided here.
       # Defaults to the first line of the description.
       summary: Explicit Summary for Sample Package
 
@@ -279,27 +275,14 @@ nfpms:
       # but required by old distros like CentOS 5 / EL 5 and earlier.
       group: Unspecified
 
-      # Compression algorithm.
+      # The packager is used to identify the organization that actually packaged
+      # the software, as opposed to the author of the software.
+      # `maintainer` will be used as fallback if not specified.
+      # This will expand any env var you set in the field, eg packager: ${PACKAGER}
+      packager: GoReleaser <staff@goreleaser.com>
+
+      # Compression algorithm (gzip (default), lzma or xz).
       compression: lzma
-
-      # These config files will not be replaced by new versions if they were
-      # changed by the user. Corresponds to %config(noreplace).
-      config_noreplace_files:
-        path/to/local/bar.con: /etc/bar.conf
-
-      # These files are not actually present in the package, but the file names
-      # are added to the package header. From the RPM directives documentation:
-      #
-      # "There are times when a file should be owned by the package but not
-      # installed - log files and state files are good examples of cases you
-      # might desire this to happen."
-      #
-      # "The way to achieve this, is to use the %ghost directive. By adding this
-      # directive to the line containing a file, RPM will know about the ghosted
-      # file, but will not add it to the package."
-      ghost_files:
-        - /etc/casper.conf
-        - /var/log/boo.log
 
       # The package is signed if a key_file is set
       signature:
@@ -376,7 +359,6 @@ nfpms:
         # E.g. If your nfpm id is 'default' then the apk-specific passphrase
         # should be set as `$NFPM_DEFAULT_APK_PASSPHRASE`
         key_file: '{{ .Env.GPG_KEY_PATH }}'
-
 
         # The name of the signing key. When verifying a package, the signature
         # is matched to the public key store in /etc/apk/keys/<key_name>.rsa.pub.
