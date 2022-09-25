@@ -974,6 +974,24 @@ func TestRunPipe(t *testing.T) {
 				registry + "goreleaser/nfpm_arm:latest",
 			},
 		},
+		"meta": {
+			dockers: []config.Docker{
+				{
+					ImageTemplates: []string{registry + "goreleaser/nfpm_meta:latest"},
+					Goos:           "linuxxx",
+					IDs:            []string{"mybin", "anotherbin"},
+					Dockerfile:     "testdata/Dockerfile.true",
+					Meta:           true,
+				},
+			},
+			assertImageLabels:   noLabels,
+			assertError:         shouldNotErr,
+			pubAssertError:      shouldNotErr,
+			manifestAssertError: shouldNotErr,
+			expect: []string{
+				registry + "goreleaser/nfpm_meta:latest",
+			},
+		},
 	}
 
 	killAndRm(t)
