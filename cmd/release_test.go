@@ -57,7 +57,7 @@ func TestReleaseFlags(t *testing.T) {
 	setup := func(tb testing.TB, opts releaseOpts) *context.Context {
 		tb.Helper()
 		ctx := context.New(config.Project{})
-		require.NoError(tb, setupReleaseContext(ctx, opts))
+		setupReleaseContext(ctx, opts)
 		return ctx
 	}
 
