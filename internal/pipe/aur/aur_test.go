@@ -720,6 +720,20 @@ func TestSkip(t *testing.T) {
 	})
 }
 
+func TestRunSkipNoArchives(t *testing.T) {
+	ctx := context.New(config.Project{
+		AURs: []config.AUR{{
+			Name:        "foo",
+			Description: "foo",
+		}},
+	})
+
+	client := client.NewMock()
+	err := runAll(ctx, client)
+	testlib.AssertSkipped(t, err)
+	require.EqualError(t, err, ErrNoArchivesFound.Error())
+}
+
 func TestKeyPath(t *testing.T) {
 	t.Run("with valid path", func(t *testing.T) {
 		path := makeKey(t, keygen.Ed25519)

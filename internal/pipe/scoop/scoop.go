@@ -4,7 +4,6 @@ package scoop
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -22,7 +21,7 @@ import (
 )
 
 // ErrNoWindows when there is no build for windows (goos doesn't contain windows).
-var ErrNoWindows = errors.New("scoop requires a windows build and archive")
+var ErrNoWindows = pipe.Skip("scoop requires a windows build and archive")
 
 const scoopConfigExtra = "ScoopConfig"
 

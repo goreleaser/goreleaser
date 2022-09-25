@@ -940,6 +940,27 @@ func TestRunSkipNoName(t *testing.T) {
 	testlib.AssertSkipped(t, runAll(ctx, client))
 }
 
+func TestRunSkipNoArchives(t *testing.T) {
+	ctx := context.New(config.Project{
+		Krews: []config.Krew{{
+			Name:             "foo",
+			Description:      "foo",
+			ShortDescription: "foo",
+			Index: config.RepoRef{
+				Owner:  "aa",
+				Name:   "aa",
+				Token:  "aa",
+				Branch: "aa",
+			},
+		}},
+	})
+
+	client := client.NewMock()
+	err := runAll(ctx, client)
+	testlib.AssertSkipped(t, err)
+	require.EqualError(t, err, ErrNoArchivesFound.Error())
+}
+
 func manifestName(tb testing.TB) string {
 	tb.Helper()
 	return path.Base(tb.Name())

@@ -26,7 +26,7 @@ const brewConfigExtra = "BrewConfig"
 
 var (
 	// ErrNoArchivesFound happens when 0 archives are found.
-	ErrNoArchivesFound = errors.New("no linux/macos archives found")
+	ErrNoArchivesFound = pipe.Skip("no linux/macos archives found")
 
 	// ErrMultipleArchivesSameOS happens when the config yields multiple archives
 	// for linux or windows.
@@ -81,13 +81,18 @@ func (Pipe) Publish(ctx *context.Context) error {
 }
 
 func runAll(ctx *context.Context, cli client.Client) error {
+	skips := pipe.SkipMemento{}
 	for _, brew := range ctx.Config.Brews {
 		err := doRun(ctx, brew, cli)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
 		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func publishAll(ctx *context.Context, cli client.Client) error {

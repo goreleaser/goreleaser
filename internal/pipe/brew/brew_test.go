@@ -1114,6 +1114,25 @@ func TestRunSkipNoName(t *testing.T) {
 	testlib.AssertSkipped(t, runAll(ctx, client))
 }
 
+func TestRunSkipNoArchives(t *testing.T) {
+	ctx := context.New(config.Project{
+		Brews: []config.Homebrew{{
+			Name: "foo",
+			Tap: config.RepoRef{
+				Owner:  "aa",
+				Name:   "aa",
+				Token:  "aa",
+				Branch: "aa",
+			},
+		}},
+	})
+
+	client := client.NewMock()
+	err := runAll(ctx, client)
+	testlib.AssertSkipped(t, err)
+	require.EqualError(t, err, ErrNoArchivesFound.Error())
+}
+
 func TestInstalls(t *testing.T) {
 	t.Run("provided", func(t *testing.T) {
 		require.Equal(t, []string{

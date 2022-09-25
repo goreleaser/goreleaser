@@ -3,7 +3,6 @@ package aur
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -30,7 +29,7 @@ const (
 	defaultCommitMsg  = "Update to {{ .Tag }}"
 )
 
-var ErrNoArchivesFound = errors.New("no linux archives found")
+var ErrNoArchivesFound = pipe.Skip("no linux archives found")
 
 // Pipe for arch linux's AUR pkgbuild.
 type Pipe struct{}
@@ -82,13 +81,18 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func runAll(ctx *context.Context, cli client.Client) error {
+	skips := pipe.SkipMemento{}
 	for _, aur := range ctx.Config.AURs {
 		err := doRun(ctx, aur, cli)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
 		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func doRun(ctx *context.Context, aur config.AUR, cl client.Client) error {

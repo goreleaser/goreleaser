@@ -35,7 +35,7 @@ type ErrSkip struct {
 	reason string
 }
 
-// Error implements the error interface. returns the reason the pipe was skipped.
+// Error implements the error interface. Returns the reason the pipe was skipped.
 func (e ErrSkip) Error() string {
 	return e.reason
 }

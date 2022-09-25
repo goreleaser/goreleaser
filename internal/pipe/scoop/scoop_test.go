@@ -295,7 +295,11 @@ func Test_doRun(t *testing.T) {
 				client.NewMock(),
 			},
 			[]artifact.Artifact{},
-			shouldErr(ErrNoWindows.Error()),
+			func(t *testing.T, err error) {
+				t.Helper()
+				testlib.AssertSkipped(t, err)
+				require.EqualError(t, err, ErrNoWindows.Error())
+			},
 			shouldNotErr,
 			noAssertions,
 		},

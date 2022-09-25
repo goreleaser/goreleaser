@@ -5,7 +5,6 @@
 package krew
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -31,7 +30,7 @@ const (
 	apiVersion      = "krew.googlecontainertools.github.com/v1alpha2"
 )
 
-var ErrNoArchivesFound = errors.New("no archives found")
+var ErrNoArchivesFound = pipe.Skip("no archives found")
 
 // Pipe for krew manifest deployment.
 type Pipe struct{}
@@ -68,13 +67,18 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func runAll(ctx *context.Context, cli client.Client) error {
+	skips := pipe.SkipMemento{}
 	for _, krew := range ctx.Config.Krews {
 		err := doRun(ctx, krew, cli)
+		if err != nil && pipe.IsSkip(err) {
+			skips.Remember(err)
+			continue
+		}
 		if err != nil {
 			return err
 		}
 	}
-	return nil
+	return skips.Evaluate()
 }
 
 func doRun(ctx *context.Context, krew config.Krew, cl client.Client) error {
