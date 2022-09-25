@@ -122,6 +122,10 @@ dockers:
     - config.yml
 ```
 
+!!! warning
+    Note that you will have to manually login into the Docker registries you
+    want to push to — GoReleaser does not login by itself.
+
 !!! tip
     Learn more about the [name template engine](/customization/templates/).
 

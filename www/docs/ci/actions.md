@@ -38,6 +38,8 @@ jobs:
         with:
           go-version: '>=1.19.1'
           cache: true
+      # More assembly might be required: Docker logins, GPG, etc. It all depends
+      # on your needs.
       - uses: goreleaser/goreleaser-action@v2
         with:
           # either 'goreleaser' (default) or 'goreleaser-pro'
