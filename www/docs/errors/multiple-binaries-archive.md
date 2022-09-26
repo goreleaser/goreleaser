@@ -36,10 +36,10 @@ From here on, you have a couple of options:
   ```yaml
   archives:
   - id: a1
-    builds: b1
+    builds: [b1]
     name_template: something-unique-for-a1
   - id: a2
-    builds: b2
+    builds: [b2]
     name_template: something-unique-for-a2
   ```
 - if you really want to have the mixed archive, you can add
