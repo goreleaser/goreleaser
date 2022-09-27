@@ -1,10 +1,12 @@
 # Using the `main.version` ldflag
 
-Defaults-wise GoReleaser sets three _ldflags_:
+By default, GoReleaser will set the following 3 _ldflags_:
 
-- `main.version`: Current Git tag (the `v` prefix is stripped) or the name of the snapshot, if you're using the `--snapshot` flag
+- `main.version`: Current Git tag (the `v` prefix is stripped) or the name of
+  the snapshot, if you're using the `--snapshot` flag
 - `main.commit`: Current git commit SHA
-- `main.date`: Date according [RFC3339](https://golang.org/pkg/time/#pkg-constants)
+- `main.date`: Date in the
+  [RFC3339](https://golang.org/pkg/time/#pkg-constants) format
 
 You can use them in your `main.go` file to print more build details:
 
@@ -17,12 +19,12 @@ var (
 	version = "dev"
 	commit  = "none"
 	date    = "unknown"
-    builtBy = "unknown"
 )
 
 func main() {
-  fmt.Printf("my app %s, commit %s, built at %s by %s", version, commit, date, builtBy)
+  fmt.Printf("my app %s, commit %s, built at %s", version, commit, date)
 }
 ```
 
-You can override this by changing the `ldflags` option in the [`build` section](/customization/build/).
+You can override this by changing the `ldflags` option in the
+[`build` section](/customization/build/).
