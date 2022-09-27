@@ -854,8 +854,8 @@ type Upload struct {
 	Mode               string            `yaml:"mode,omitempty" json:"mode,omitempty"`
 	Method             string            `yaml:"method,omitempty" json:"method,omitempty"`
 	ChecksumHeader     string            `yaml:"checksum_header,omitempty" json:"checksum_header,omitempty"`
-	ClientX509Cert     string            `yaml:"client_x509_cert" json:"client_x509_cert"`
-	ClientX509Key      string            `yaml:"client_x509_key" json:"client_x509_key"`
+	ClientX509Cert     string            `yaml:"client_x509_cert,omitempty" json:"client_x509_cert,omitempty"`
+	ClientX509Key      string            `yaml:"client_x509_key,omitempty" json:"client_x509_key,omitempty"`
 	TrustedCerts       string            `yaml:"trusted_certificates,omitempty" json:"trusted_certificates,omitempty"`
 	Checksum           bool              `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	Signature          bool              `yaml:"signature,omitempty" json:"signature,omitempty"`
