@@ -319,15 +319,15 @@ type Build struct {
 	UnproxiedDir    string          `yaml:"-" json:"-"` // used by gomod.proxy
 
 	BuildDetails          `yaml:",inline" json:",inline"` // nolint: tagliatelle
-	BuildDetailsOverrides []BuildDetailsOverride          `yaml:"overrides,omitempty" json:"overrides,omitempty"`
+	BuildDetailsOverrides []BuildDetailsOverride `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 }
 
 type BuildDetailsOverride struct {
-	Goos         string                          `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Goarch       string                          `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm        string                          `yaml:"goarm,omitempty" json:"goarm,omitempty"`
-	Gomips       string                          `yaml:"gomips,omitempty" json:"gomips,omitempty"`
-	Goamd64      string                          `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Goos         string `yaml:"goos,omitempty" json:"goos,omitempty"`
+	Goarch       string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+	Goarm        string `yaml:"goarm,omitempty" json:"goarm,omitempty"`
+	Gomips       string `yaml:"gomips,omitempty" json:"gomips,omitempty"`
+	Goamd64      string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	BuildDetails `yaml:",inline" json:",inline"` // nolint: tagliatelle
 }
 
@@ -531,7 +531,7 @@ type ExtraFile struct {
 // NFPM config.
 type NFPM struct {
 	NFPMOverridables `yaml:",inline" json:",inline"` // nolint: tagliatelle
-	Overrides        map[string]NFPMOverridables     `yaml:"overrides,omitempty" json:"overrides,omitempty"`
+	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 
 	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
 	Builds      []string `yaml:"builds,omitempty" json:"builds,omitempty"`
@@ -854,8 +854,8 @@ type Upload struct {
 	Mode               string            `yaml:"mode,omitempty" json:"mode,omitempty"`
 	Method             string            `yaml:"method,omitempty" json:"method,omitempty"`
 	ChecksumHeader     string            `yaml:"checksum_header,omitempty" json:"checksum_header,omitempty"`
-	ClientX509Cert     string            `yaml:"client_x509_cert" json:"client_x509_cert"`
-	ClientX509Key      string            `yaml:"client_x509_key" json:"client_x509_key"`
+	ClientX509Cert     string            `yaml:"client_x509_cert,omitempty" json:"client_x509_cert,omitempty"`
+	ClientX509Key      string            `yaml:"client_x509_key,omitempty" json:"client_x509_key,omitempty"`
 	TrustedCerts       string            `yaml:"trusted_certificates,omitempty" json:"trusted_certificates,omitempty"`
 	Checksum           bool              `yaml:"checksum,omitempty" json:"checksum,omitempty"`
 	Signature          bool              `yaml:"signature,omitempty" json:"signature,omitempty"`
