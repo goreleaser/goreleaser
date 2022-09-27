@@ -137,26 +137,27 @@ brews:
     # Default is empty.
     plist: |
       <?xml version="1.0" encoding="UTF-8"?>
-      ...
+      # ...
 
     # Service block.
     #
     # Since: v1.7.
     service: |
       run: foo/bar
-      ...
+      # ...
 
     # So you can `brew test` your formula.
     # Default is empty.
     test: |
-      system "#{bin}/program --version"
-      ...
+      system "#{bin}/foo --version"
+      # ...
 
     # Custom install script for brew.
-    # Default is 'bin.install "program"'.
+    # Default is 'bin.install "the binary name"'.
     install: |
-      bin.install "program"
-      ...
+      bin.install "some_other_name"
+      bash_completion.install "completions/foo.bash" => "foo"
+      # ...
 
     # Custom post_install script for brew.
     # Could be used to do any additional work after the "install" script
