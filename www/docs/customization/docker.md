@@ -144,7 +144,7 @@ That can be accomplished simply by adding template language in the definition:
 
 ```yaml
 # .goreleaser.yaml
-project: foo
+project_name: foo
 dockers:
   -
     image_templates:
