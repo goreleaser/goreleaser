@@ -2538,11 +2538,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object",
-				"required": [
-					"client_x509_cert",
-					"client_x509_key"
-				]
+				"type": "object"
 			},
 			"Webhook": {
 				"properties": {
