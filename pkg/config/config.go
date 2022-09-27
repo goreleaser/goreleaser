@@ -319,15 +319,15 @@ type Build struct {
 	UnproxiedDir    string          `yaml:"-" json:"-"` // used by gomod.proxy
 
 	BuildDetails          `yaml:",inline" json:",inline"` // nolint: tagliatelle
-	BuildDetailsOverrides []BuildDetailsOverride `yaml:"overrides,omitempty" json:"overrides,omitempty"`
+	BuildDetailsOverrides []BuildDetailsOverride          `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 }
 
 type BuildDetailsOverride struct {
-	Goos         string `yaml:"goos,omitempty" json:"goos,omitempty"`
-	Goarch       string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm        string `yaml:"goarm,omitempty" json:"goarm,omitempty"`
-	Gomips       string `yaml:"gomips,omitempty" json:"gomips,omitempty"`
-	Goamd64      string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+	Goos         string                          `yaml:"goos,omitempty" json:"goos,omitempty"`
+	Goarch       string                          `yaml:"goarch,omitempty" json:"goarch,omitempty"`
+	Goarm        string                          `yaml:"goarm,omitempty" json:"goarm,omitempty"`
+	Gomips       string                          `yaml:"gomips,omitempty" json:"gomips,omitempty"`
+	Goamd64      string                          `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	BuildDetails `yaml:",inline" json:",inline"` // nolint: tagliatelle
 }
 
@@ -531,7 +531,7 @@ type ExtraFile struct {
 // NFPM config.
 type NFPM struct {
 	NFPMOverridables `yaml:",inline" json:",inline"` // nolint: tagliatelle
-	Overrides        map[string]NFPMOverridables `yaml:"overrides,omitempty" json:"overrides,omitempty"`
+	Overrides        map[string]NFPMOverridables     `yaml:"overrides,omitempty" json:"overrides,omitempty"`
 
 	ID          string   `yaml:"id,omitempty" json:"id,omitempty"`
 	Builds      []string `yaml:"builds,omitempty" json:"builds,omitempty"`
