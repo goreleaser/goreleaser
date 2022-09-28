@@ -85,6 +85,10 @@ const (
 	CArchive
 	// CShared is a C shared library, generated via a CGo build with buildmode=c-shared.
 	CShared
+	// SourceRPM is a source RPM.
+	SourceRPM
+	// RPMSpec is an RPM .spec file.
+	RPMSpec
 )
 
 func (t Type) String() string {
@@ -137,6 +141,10 @@ func (t Type) String() string {
 		return "Winget Manifest"
 	case Nixpkg:
 		return "Nixpkg"
+	case SourceRPM:
+		return "Source RPM"
+	case RPMSpec:
+		return "RPM Spec"
 	default:
 		return "unknown"
 	}

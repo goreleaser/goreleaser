@@ -31,6 +31,7 @@ const (
 	AUR            Key = "aur"
 	NFPM           Key = "nfpm"
 	Chocolatey     Key = "chocolatey"
+	SRPM           Key = "srpm"
 )
 
 func String(ctx *context.Context) string {
@@ -113,6 +114,7 @@ var Release = Keys{
 	Nix,
 	AUR,
 	NFPM,
+	SRPM,
 	Before,
 }
 

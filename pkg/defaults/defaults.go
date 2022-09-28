@@ -36,6 +36,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/snapcraft"
 	"github.com/goreleaser/goreleaser/internal/pipe/snapshot"
 	"github.com/goreleaser/goreleaser/internal/pipe/sourcearchive"
+	"github.com/goreleaser/goreleaser/internal/pipe/srpm"
 	"github.com/goreleaser/goreleaser/internal/pipe/teams"
 	"github.com/goreleaser/goreleaser/internal/pipe/telegram"
 	"github.com/goreleaser/goreleaser/internal/pipe/twitter"
@@ -69,6 +70,7 @@ var Defaulters = []Defaulter{
 	sourcearchive.Pipe{},
 	archive.Pipe{},
 	nfpm.Pipe{},
+	srpm.Pipe{},
 	snapcraft.Pipe{},
 	checksums.Pipe{},
 	sign.Pipe{},
