@@ -596,9 +596,8 @@ func TestCheckUseJobToken(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		os.Setenv("CI_JOB_TOKEN", tt.ciToken)
+		t.Setenv("CI_JOB_TOKEN", tt.ciToken)
 		got := checkUseJobToken(tt.ctx, tt.token)
 		require.Equal(t, tt.want, got, tt.desc)
-		os.Unsetenv("CI_JOB_TOKEN")
 	}
 }
