@@ -7,6 +7,8 @@ import (
 	"io/fs"
 	"os"
 	"time"
+
+	"github.com/goreleaser/nfpm/v2/files"
 )
 
 type Versioned struct {
@@ -851,6 +853,30 @@ type NFPMContent struct {
 	Expand      bool     `yaml:"expand,omitempty" json:"expand,omitempty"`
 }
 
+// SRPM config.
+type SRPM struct {
+	NFPMRPM
+	Enabled              bool              `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	ID                   string            `yaml:"id,omitempty" json:"id,omitempty"`
+	PackageName          string            `yaml:"package_name,omitempty" json:"package_name,omitempty"`
+	Epoch                string            `yaml:"epoch,omitempty" json:"epoch,omitempty"`
+	ImportPath           string            `yaml:"import_path,omitempty" json:"import_path,omitempty"`
+	Section              string            `yaml:"section,omitempty" json:"section,omitempty"`
+	Maintainer           string            `yaml:"maintainer,omitempty" json:"maintainer,omitempty"`
+	FileNameTemplate     string            `yaml:"file_name_template,omitempty" json:"file_name_template,omitempty"`
+	SpecFileNameTemplate string            `yaml:"spec_file_name_template,omitempty" json:"spec_file_name_template,omitempty"`
+	SpecTemplateFile     string            `yaml:"spec_template_file,omitempty" json:"spec_template_file,omitempty"`
+	License              string            `yaml:"license,omitempty" json:"license,omitempty"`
+	LicenseFileName      string            `yaml:"license_file_name,omitempty" json:"license_file_name,omitempty"`
+	Vendor               string            `yaml:"vendor,omitempty" json:"vendor,omitempty"`
+	URL                  string            `yaml:"url,omitempty" json:"url,omitempty"`
+	Packager             string            `yaml:"packager,omitempty" json:"packager,omitempty"`
+	Description          string            `yaml:"description,omitempty" json:"description,omitempty"`
+	Bins                 map[string]string `yaml:"bins,omitempty" json:"bins,omitempty"`
+	Docs                 []string          `yaml:"docs,omitempty" json:"docs,omitempty"`
+	Contents             files.Contents    `yaml:"contents,omitempty" json:"contents,omitempty"`
+}
+
 // SBOM config.
 type SBOM struct {
 	ID        string   `yaml:"id,omitempty" json:"id,omitempty"`
@@ -1209,6 +1235,7 @@ type Project struct {
 	Builds            []Build           `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Archives          []Archive         `yaml:"archives,omitempty" json:"archives,omitempty"`
 	NFPMs             []NFPM            `yaml:"nfpms,omitempty" json:"nfpms,omitempty"`
+	SRPM              SRPM              `yaml:"srpm,omitempty" json:"srpm,omitempty"`
 	Snapcrafts        []Snapcraft       `yaml:"snapcrafts,omitempty" json:"snapcrafts,omitempty"`
 	Snapshot          Snapshot          `yaml:"snapshot,omitempty" json:"snapshot,omitempty"`
 	Checksum          Checksum          `yaml:"checksum,omitempty" json:"checksum,omitempty"`

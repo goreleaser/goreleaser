@@ -155,6 +155,7 @@ nav:
           - customization/docker_manifest.md
           - customization/docker_digests.md
           - Ko: customization/ko.md
+          - customization/srpm.md
       - SBOMs: customization/sbom.md
       - customization/reportsizes.md
       - Sign & Notarize:
