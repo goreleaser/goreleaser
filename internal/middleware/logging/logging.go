@@ -35,6 +35,7 @@ func Log(title string, next middleware.Action) middleware.Action {
 func PadLog(title string, next middleware.Action) middleware.Action {
 	return func(ctx *context.Context) error {
 		defer log.ResetPadding()
+		log.ResetPadding()
 		log.IncreasePadding()
 		log.Infof(bold.Render(title))
 		log.IncreasePadding()
