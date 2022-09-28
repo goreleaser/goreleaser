@@ -88,6 +88,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: snapcraft-login
+        if: startsWith(github.ref, 'refs/tags/v')
         run: snapcraft login --with <(echo "${{ secrets.SNAPCRAFT_LOGIN }}")
       - name: goreleaser-release
         env:
