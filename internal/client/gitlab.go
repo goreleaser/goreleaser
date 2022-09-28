@@ -514,10 +514,7 @@ func checkUseJobToken(ctx context.Context, token string) bool {
 		// We may be creating a new client with a non-CI_JOB_TOKEN, for
 		// things like Homebrew publishing. We can't use the
 		// CI_JOB_TOKEN there
-		if token != ciToken {
-			return false
-		}
-		return true
+		return token == ciToken
 	}
 	return false
 }
