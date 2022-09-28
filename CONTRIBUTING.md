@@ -1,8 +1,9 @@
 # Contributing
 
-By participating to this project, you agree to abide our [code of conduct](https://github.com/goreleaser/.github/blob/main/CODE_OF_CONDUCT.md).
+By participating in this project, you agree to abide our
+[code of conduct](https://github.com/goreleaser/.github/blob/main/CODE_OF_CONDUCT.md).
 
-## Setup your machine
+## Set up your machine
 
 `goreleaser` is written in [Go](https://golang.org/).
 
@@ -13,7 +14,6 @@ Prerequisites:
 
 Other things you might need to run the tests:
 
-- [Buildpacks](https://buildpacks.io/)
 - [cosign](https://github.com/sigstore/cosign)
 - [Docker](https://www.docker.com/)
 - [GPG](https://gnupg.org)

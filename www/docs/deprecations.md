@@ -54,17 +54,6 @@ nFPM will soon make mandatory setting the maintainer field.
     - maintainer: 'Name <email>'
     ```
 
-
-
-### dockers.use: buildpacks
-
-> since 2022-03-16 (v1.7.0)
-
-This will be removed soon due to some issues:
-
-- The binary gets rebuild again during the buildpacks build;
-- There is no ARM support.
-
 ### variables
 
 > since 2022-01-20 (v1.4.0)
@@ -90,6 +79,15 @@ On [GoReleaser PRO](/pro/) custom variables should now be prefixed with `.Var`.
 ## Expired deprecation notices
 
 The following options were deprecated in the past and were already removed.
+
+### dockers.use: buildpacks
+
+> since 2022-03-16 (v1.7.0), removed 2022-09-28 (v1.12.0)
+
+This was removed due to some issues:
+
+- The binary gets rebuild again during the buildpacks build;
+- There is no ARM support.
 
 ### rigs
 
