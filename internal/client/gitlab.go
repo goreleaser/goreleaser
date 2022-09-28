@@ -47,9 +47,7 @@ func NewGitLab(ctx *context.Context, token string) (Client, error) {
 
 	var client *gitlab.Client
 	var err error
-	useJobClient := checkUseJobToken(*ctx, token)
-
-	if useJobClient {
+	if checkUseJobToken(*ctx, token) {
 		client, err = gitlab.NewJobClient(token, options...)
 	} else {
 		client, err = gitlab.NewClient(token, options...)
