@@ -53,7 +53,7 @@ changelog:
     - go mod tidy
   groups:
     - title: Dependency updates
-      regexp: "^.*feat\\(deps\\)*:+.*$"
+      regexp: "^.*(feat|fix)\\(deps\\)*:+.*$"
       order: 300
     - title: 'New Features'
       regexp: "^.*feat[(\\w)]*:+.*$"
