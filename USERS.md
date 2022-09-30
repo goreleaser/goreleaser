@@ -40,6 +40,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Splunk](http://dev.splunk.com)
 1. [Sysdig](https://sysdig.com)
 1. [TOTVS Labs](https://totvslabs.com)
+1. [Trendyol](https://trendyol.com)
 1. [Trybe](https://betrybe.com)
 
 Feel free to [add yours](https://github.com/goreleaser/goreleaser/edit/main/USERS.md)!
