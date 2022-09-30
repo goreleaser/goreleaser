@@ -549,55 +549,56 @@ func TestCloseMileston(t *testing.T) {
 
 func TestCheckUseJobToken(t *testing.T) {
 	tests := []struct {
-		ctx     context.Context
-		token   string
-		ciToken string
-		want    bool
-		desc    string
+		useJobToken bool
+		token       string
+		ciToken     string
+		want        bool
+		desc        string
+		name        string
 	}{
 		{
-			ctx: context.Context{
-				Config: config.Project{
-					GitLabURLs: config.GitLabURLs{
-						UseJobToken: true,
-					},
-				},
-			},
-			token:   "real-ci-token",
-			ciToken: "real-ci-token",
-			desc:    "token and CI_JOB_TOKEN match so should return true",
-			want:    true,
+			useJobToken: true,
+			token:       "real-ci-token",
+			ciToken:     "real-ci-token",
+			desc:        "token and CI_JOB_TOKEN match so should return true",
+			want:        true,
+			name:        "UseJobToken-tokens-equal",
 		},
 		{
-			ctx: context.Context{
-				Config: config.Project{
-					GitLabURLs: config.GitLabURLs{
-						UseJobToken: true,
-					},
-				},
-			},
-			token:   "some-random-token",
-			ciToken: "real-ci-token",
-			desc:    "token and CI_JOB_TOKEN do NOT match so should return false",
-			want:    false,
+			useJobToken: true,
+			token:       "some-random-token",
+			ciToken:     "real-ci-token",
+			desc:        "token and CI_JOB_TOKEN do NOT match so should return false",
+			want:        false,
+			name:        "UseJobToken-tokens-diff",
 		},
 		{
-			ctx: context.Context{
-				Config: config.Project{
-					GitLabURLs: config.GitLabURLs{
-						UseJobToken: false,
-					},
-				},
-			},
-			token:   "real-ci-token",
-			ciToken: "real-ci-token",
-			desc:    "token and CI_JOB_TOKEN match, however UseJobToken is set to false, so return false",
-			want:    false,
+			useJobToken: false,
+			token:       "real-ci-token",
+			ciToken:     "real-ci-token",
+			desc:        "token and CI_JOB_TOKEN match, however UseJobToken is set to false, so return false",
+			want:        false,
+			name:        "NoUseJobToken-tokens-equal",
+		},
+		{
+			useJobToken: false,
+			token:       "real-ci-token",
+			ciToken:     "real-ci-token",
+			desc:        "token and CI_JOB_TOKEN do not match, and UseJobToken is set to false, should return false",
+			want:        false,
+			name:        "NoUseJobToken-tokens-diff",
 		},
 	}
 	for _, tt := range tests {
-		t.Setenv("CI_JOB_TOKEN", tt.ciToken)
-		got := checkUseJobToken(tt.ctx, tt.token)
-		require.Equal(t, tt.want, got, tt.desc)
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("CI_JOB_TOKEN", tt.ciToken)
+			ctx := context.New(config.Project{
+				GitLabURLs: config.GitLabURLs{
+					UseJobToken: tt.useJobToken,
+				},
+			})
+			got := checkUseJobToken(ctx, tt.token)
+			require.Equal(t, tt.want, got, tt.desc)
+		})
 	}
 }
