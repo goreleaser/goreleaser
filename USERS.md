@@ -18,6 +18,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [Fleet for osquery](https://fleetdm.com)
 1. [GitGuardian](https://gitguardian.com)
 1. [GitHub](https://github.com)
+1. [Gitleaks](https://gitleaks.io)
 1. [Go Buffalo](https://gobuffalo.io)
 1. [GolangCI](https://golangci.com)
 1. [Google](https://google.com)
