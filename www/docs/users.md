@@ -6,6 +6,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 
 1. [Anchore](https://anchore.com)
 1. [Authzed](https://authzed.com)
+1. [Caddy](https://caddyserver.com)
 1. [Charm](https://charm.sh)
 1. [Comcast](https://comcast.github.io)
 1. [Compose Generator](https://www.compose-generator.com)
