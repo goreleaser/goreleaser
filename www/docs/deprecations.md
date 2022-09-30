@@ -138,13 +138,16 @@ ignore:
   goarch: arm64
 ```
 
-If you try to use new versions of GoReleaser with Go 1.16 or older, it will warn about it until this deprecation warning expires, after that your build will likely fail.
+If you try to use new versions of GoReleaser with Go 1.16 or older, it will warn
+about it until this deprecation warning expires, after that your build will
+likely fail.
 
 ### godownloader
 
 > since 2021-10-13 (all), removed 2022-05-18
 
-GoDownloader, the install script generator, wasn't been updated for a long time and is now officially deprecated.
+GoDownloader, the installation script generator, wasn't updated for a long time
+and is now officially deprecated.
 The website and all install scripts will be taken out in 6 months.
 You can still use any of the other install methods.
 
