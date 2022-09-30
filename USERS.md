@@ -20,6 +20,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [GitHub](https://github.com)
 1. [Go Buffalo](https://gobuffalo.io)
 1. [GolangCI](https://golangci.com)
+1. [Goldenhand Software](https://www.goldenhandsoftware.co.uk)
 1. [Google](https://google.com)
 1. [Hashicorp](https://hashicorp.com)
 1. [Helm](https://helm.sh)
