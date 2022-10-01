@@ -597,7 +597,7 @@ func TestCheckUseJobToken(t *testing.T) {
 					UseJobToken: tt.useJobToken,
 				},
 			})
-			got := checkUseJobToken(ctx, tt.token)
+			got := checkUseJobToken(*ctx, tt.token)
 			require.Equal(t, tt.want, got, tt.desc)
 		})
 	}
