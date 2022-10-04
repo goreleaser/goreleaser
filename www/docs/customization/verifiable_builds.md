@@ -18,12 +18,13 @@ gomod:
   # this setting.
   # Notice: for this to work your `build.main` must be a package, not a `.go` file.
   #
-  # Default is false.
+  # Default: false.
   proxy: true
 
   # If proxy is true, use these environment variables when running `go mod`
   # commands (namely, `go mod tidy`).
-  # Defaults to `os.Environ()`.
+  #
+  # Default: `os.Environ()` merged with what you set the root `env` section.
   env:
     - GOPROXY=https://proxy.golang.org,direct
     - GOSUMDB=sum.golang.org
@@ -36,7 +37,8 @@ gomod:
   mod: mod
 
   # Which Go binary to use.
-  # Defaults to `go`.
+  #
+  # Default: `go`.
   gobinary: go1.17
 ```
 

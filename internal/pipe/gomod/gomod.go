@@ -33,7 +33,9 @@ func (Pipe) Run(ctx *context.Context) error {
 	if ctx.Config.GoMod.Mod != "" {
 		flags = append(flags, "-mod="+ctx.Config.GoMod.Mod)
 	}
-	out, err := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, flags...).CombinedOutput()
+	cmd := exec.CommandContext(ctx, ctx.Config.GoMod.GoBinary, flags...)
+	cmd.Env = append(ctx.Env.Strings(), ctx.Config.GoMod.Env...)
+	out, err := cmd.CombinedOutput()
 	result := strings.TrimSpace(string(out))
 	if result == go115NotAGoModuleError || result == go116NotAGoModuleError {
 		return pipe.Skip("not a go module")
