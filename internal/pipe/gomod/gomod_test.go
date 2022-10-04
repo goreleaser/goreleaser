@@ -29,6 +29,19 @@ func TestRunCustomMod(t *testing.T) {
 	require.Equal(t, "github.com/goreleaser/goreleaser", ctx.ModulePath)
 }
 
+func TestCustomEnv(t *testing.T) {
+	bin := filepath.Join(t.TempDir(), "go.bin")
+	require.NoError(t, os.WriteFile(bin, []byte("#!/bin/sh\nenv | grep -qw FOO=bar"), 0o755))
+	ctx := context.New(config.Project{
+		GoMod: config.GoMod{
+			GoBinary: bin,
+			Env:      []string{"FOO=bar"},
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.NoError(t, Pipe{}.Run(ctx))
+}
+
 func TestRunOutsideGoModule(t *testing.T) {
 	dir := testlib.Mktmp(t)
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "main.go"), []byte("package main\nfunc main() {println(0)}"), 0o666))
