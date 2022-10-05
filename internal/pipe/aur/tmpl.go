@@ -11,6 +11,7 @@ type templateData struct {
 	Contributors    []string
 	Provides        []string
 	Conflicts       []string
+	Backup          []string
 	Depends         []string
 	OptDepends      []string
 	Arches          []string
@@ -52,6 +53,9 @@ depends=({{ pkgArray . }})
 {{- end }}
 {{- with .OptDepends }}
 optdepends=({{ pkgArray . }})
+{{- end }}
+{{- with .Backup }}
+backup=({{ pkgArray . }})
 {{- end }}
 
 {{ range .ReleasePackages -}}
