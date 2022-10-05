@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - 'main'
-    paths:
-      - 'go.*'
-      - '**/*.go'
-      - 'Taskfile.yml'
-      - 'Dockerfile'
-      - '.github/workflows/build.yml'
   pull_request:
     paths:
       - 'go.*'
