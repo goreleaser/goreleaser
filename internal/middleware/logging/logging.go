@@ -20,9 +20,7 @@ func Log(title string, next middleware.Action) middleware.Action {
 	return func(ctx *context.Context) error {
 		start := time.Now()
 		defer func() {
-			if took := time.Since(start).Round(time.Second); took > 0 {
-				log.Info(faint.Render(fmt.Sprintf("took: %s", took)))
-			}
+			logDuration(start)
 			log.ResetPadding()
 		}()
 		log.Infof(bold.Render(title))
@@ -34,11 +32,21 @@ func Log(title string, next middleware.Action) middleware.Action {
 // PadLog pretty prints the given action and its title with an increased padding.
 func PadLog(title string, next middleware.Action) middleware.Action {
 	return func(ctx *context.Context) error {
-		defer log.ResetPadding()
+		start := time.Now()
+		defer func() {
+			logDuration(start)
+			log.ResetPadding()
+		}()
 		log.ResetPadding()
 		log.IncreasePadding()
 		log.Infof(bold.Render(title))
 		log.IncreasePadding()
 		return next(ctx)
+	}
+}
+
+func logDuration(start time.Time) {
+	if took := time.Since(start).Round(time.Second); took > 0 {
+		log.Info(faint.Render(fmt.Sprintf("took: %s", took)))
 	}
 }
