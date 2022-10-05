@@ -71,6 +71,12 @@
 						},
 						"type": "array"
 					},
+					"backup": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
 					"rel": {
 						"type": "string"
 					},
