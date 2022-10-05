@@ -20,6 +20,6 @@ jobs:
       - uses: withfig/push-to-fig-autocomplete-action@v1
         with:
           token: ${{ secrets.GH_PAT }}
-          autocomplete-spec-name: fig-cli
+          autocomplete-spec-name: goreleaser
           spec-path: goreleaser.ts
           integration: commander
