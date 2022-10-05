@@ -1,3 +1,5 @@
+name: fig
+
 on:
   workflow_dispatch:
   push:
