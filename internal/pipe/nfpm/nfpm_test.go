@@ -159,8 +159,11 @@ func TestRunPipe(t *testing.T) {
 	})
 	ctx.Version = "1.0.0"
 	ctx.Git = context.GitInfo{CurrentTag: "v1.0.0"}
-	for _, goos := range []string{"linux", "darwin"} {
+	for _, goos := range []string{"linux", "darwin", "ios"} {
 		for _, goarch := range []string{"amd64", "386", "arm64", "arm", "mips"} {
+			if goos == "ios" && goarch != "arm64" {
+				continue
+			}
 			switch goarch {
 			case "arm":
 				for _, goarm := range []string{"6", "7"} {
@@ -220,7 +223,7 @@ func TestRunPipe(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 36)
+	require.Len(t, packages, 40)
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
@@ -234,7 +237,11 @@ func TestRunPipe(t *testing.T) {
 		if pkg.Gomips != "" {
 			arch += "_" + pkg.Gomips
 		}
-		require.Equal(t, "foo_1.0.0_Tux_"+arch+"-10-20."+format, pkg.Name)
+		if pkg.Goos == "linux" {
+			require.Equal(t, "foo_1.0.0_Tux_"+arch+"-10-20."+format, pkg.Name)
+		} else {
+			require.Equal(t, "foo_1.0.0_ios_arm64-10-20."+format, pkg.Name)
+		}
 		require.Equal(t, "someid", pkg.ID())
 		require.ElementsMatch(t, []string{
 			"./testdata/testfile.txt",

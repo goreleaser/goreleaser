@@ -82,7 +82,10 @@ func (Pipe) Run(ctx *context.Context) error {
 func doRun(ctx *context.Context, fpm config.NFPM) error {
 	filters := []artifact.Filter{
 		artifact.ByType(artifact.Binary),
-		artifact.ByGoos("linux"),
+		artifact.Or(
+			artifact.ByGoos("linux"),
+			artifact.ByGoos("ios"),
+		),
 	}
 	if len(fpm.Builds) > 0 {
 		filters = append(filters, artifact.ByIDs(fpm.Builds...))
@@ -266,7 +269,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 
 	info := &nfpm.Info{
 		Arch:            infoArch,
-		Platform:        "linux",
+		Platform:        binaries[0].Goos,
 		Name:            fpm.PackageName,
 		Version:         ctx.Version,
 		Section:         fpm.Section,
