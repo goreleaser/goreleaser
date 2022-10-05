@@ -46,6 +46,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 	}
 
 	tm := api.NewMessage(ctx.Config.Announce.Telegram.ChatID, msg)
+	tm.ParseMode = "MarkdownV2"
 	_, err = bot.Send(tm)
 	if err != nil {
 		return fmt.Errorf("announce: failed to announce to telegram: %w", err)
