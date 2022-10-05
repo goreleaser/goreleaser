@@ -1,0 +1,25 @@
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  fig:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
+      - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3
+        with:
+          go-version: '>=1.19.1'
+          cache: true
+      - run: go run . generate-fig-spec >goreleaser.ts
+      - uses: withfig/push-to-fig-autocomplete-action@v1
+        with:
+          token: ${{ secrets.GH_PAT }}
+          autocomplete-spec-name: goreleaser
+          spec-path: goreleaser.ts
+          integration: commander
