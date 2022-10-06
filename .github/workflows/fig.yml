@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
       - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3
         with:
-          go-version: '>=1.19.1'
+          go-version: '>=1.19.2'
           cache: true
       - run: go run . generate-fig-spec >goreleaser.ts
       - uses: withfig/push-to-fig-autocomplete-action@v1
