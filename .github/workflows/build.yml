@@ -20,14 +20,14 @@ jobs:
     uses: caarlos0/meta/.github/workflows/govulncheck.yml@main
     with:
       cache: true
-      go-version: '>=1.19.1'
+      go-version: '>=1.19.2'
   semgrep:
     uses: caarlos0/meta/.github/workflows/semgrep.yml@main
   ruleguard:
     uses: caarlos0/meta/.github/workflows/ruleguard.yml@main
     with:
       cache: true
-      go-version: '>=1.19.1'
+      go-version: '>=1.19.2'
       args: '-disable largeloopcopy'
   test:
     runs-on: ubuntu-latest
@@ -52,7 +52,7 @@ jobs:
           mkdir -p $HOME/.cache/snapcraft/stage-packages
       - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3
         with:
-          go-version: '>=1.19.1'
+          go-version: '>=1.19.2'
           cache: true
       - uses: sigstore/cosign-installer@v2.7.0
       - uses: anchore/sbom-action/download-syft@v0.12.0
