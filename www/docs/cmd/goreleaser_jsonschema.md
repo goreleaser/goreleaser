@@ -10,7 +10,7 @@ goreleaser jsonschema [flags]
 
 ```
   -h, --help            help for jsonschema
-  -o, --output string   where to save the json schema (default "-")
+  -o, --output string   Where to save the JSONSchema file (default "-")
 ```
 
 ## Options inherited from parent commands
