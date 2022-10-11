@@ -139,6 +139,10 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	// TODO: improve mips handling on nfpm
 	infoArch := binaries[0].Goarch + binaries[0].Goarm + binaries[0].Gomips // key used for the ConventionalFileName et al
 	arch := infoArch + binaries[0].Goamd64                                  // unique arch key
+	infoPlatform := binaries[0].Goos
+	if infoPlatform == "ios" {
+		infoPlatform = "iphoneos-arm64"
+	}
 
 	bindDir := fpm.Bindir
 	if format == termuxFormat {
@@ -269,7 +273,7 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 
 	info := &nfpm.Info{
 		Arch:            infoArch,
-		Platform:        binaries[0].Goos,
+		Platform:        infoPlatform,
 		Name:            fpm.PackageName,
 		Version:         ctx.Version,
 		Section:         fpm.Section,
