@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - 'main'
-    paths:
-      - 'go.*'
-      - '**/*.go'
-      - 'Taskfile.yml'
-      - 'Dockerfile'
-      - '.github/workflows/build.yml'
   pull_request:
     paths:
       - 'go.*'
@@ -26,21 +20,21 @@ jobs:
     uses: caarlos0/meta/.github/workflows/govulncheck.yml@main
     with:
       cache: true
-      go-version: '>=1.19.1'
+      go-version: '>=1.19.2'
   semgrep:
     uses: caarlos0/meta/.github/workflows/semgrep.yml@main
   ruleguard:
     uses: caarlos0/meta/.github/workflows/ruleguard.yml@main
     with:
       cache: true
-      go-version: '>=1.19.1'
+      go-version: '>=1.19.2'
       args: '-disable largeloopcopy'
   test:
     runs-on: ubuntu-latest
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
         with:
           fetch-depth: 0
       - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
@@ -58,9 +52,9 @@ jobs:
           mkdir -p $HOME/.cache/snapcraft/stage-packages
       - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3
         with:
-          go-version: '>=1.19.1'
+          go-version: '>=1.19.2'
           cache: true
-      - uses: sigstore/cosign-installer@v2.7.0
+      - uses: sigstore/cosign-installer@v2.8.0
       - uses: anchore/sbom-action/download-syft@v0.12.0
       - name: setup-validate-krew-manifest
         run: go install sigs.k8s.io/krew/cmd/validate-krew-manifest@latest

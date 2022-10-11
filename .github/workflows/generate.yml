@@ -19,16 +19,17 @@ jobs:
       contents: write  # for stefanzweifel/git-auto-commit-action to push code in repo
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
         with:
           token: ${{ secrets.GH_PAT }}
       - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3
         with:
-          go-version: '>=1.19.1'
+          go-version: '>=1.19.2'
+          cache: true
       - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
       - run: task docs:generate
       - run: task schema:generate
-      - uses: stefanzweifel/git-auto-commit-action@6c32682a4040e023c054b2fc60a7cf65cc77f7ad # v4
+      - uses: stefanzweifel/git-auto-commit-action@fd157da78fa13d9383e5580d1fd1184d89554b51 # v4
         with:
           commit_message: "chore: docs auto-update"
           branch: main

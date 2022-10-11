@@ -25,5 +25,7 @@ announce:
     message_template: 'Awesome project {{.Tag}} is out!'
 ```
 
+You can format your message using MarkdownV2, for reference, see the [Telegram Bot API](https://core.telegram.org/bots/api#markdownv2-style).
+
 !!! tip
     Learn more about the [name template engine](/customization/templates/).

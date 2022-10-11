@@ -13,3 +13,24 @@ Learn more at https://goreleaser.com/errors/multiple-tokens
 
 In this case, you either unset `GITHUB_TOKEN` or `GITLAB_TOKEN`.
 You can read more about it in the [SCM docs](/scm/github/).
+
+This can also happen if you load the tokens from files.
+The default paths are:
+
+- `~/.config/goreleaser/github_token`
+- `~/.config/goreleaser/gitlab_token`
+- `~/.config/goreleaser/gitea_token`
+
+If you have more than one of these files, but for a particular project, you want
+to force one of them, you can explicitly disable the others by setting them to a
+file you know won't exist:
+
+```yaml
+
+# .goreleaser.yaml
+env_files:
+  gitlab_token: ~/nope
+  gitea_token: ~/nope
+```
+
+This will prevent using both GitLab and Gitea tokens.

@@ -84,6 +84,7 @@ func newReleaseCmd() *releaseCmd {
 	cmd.Flags().DurationVar(&root.opts.timeout, "timeout", 30*time.Minute, "Timeout to the entire release process")
 	cmd.Flags().BoolVar(&root.opts.deprecated, "deprecated", false, "Force print the deprecation message - tests only")
 	_ = cmd.Flags().MarkHidden("deprecated")
+	_ = cmd.Flags().SetAnnotation("config", cobra.BashCompFilenameExt, []string{"yaml", "yml"})
 
 	root.cmd = cmd
 	return root

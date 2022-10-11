@@ -1,4 +1,4 @@
-# Thanks for buying GoReleaser Pro! 🥳
+# Thanks for subscribing to GoReleaser Pro! 🥳
 
 A few notes on how to get started:
 
@@ -7,12 +7,12 @@ A few notes on how to get started:
    well.[^actions]
 - [x] if you installed GoReleaser via a package manager, you'll need to install a
    different package. Usually it's the same name as the OSS, but with a
-   `-pro` suffix.[^install]
+   `-pro` suffix, e.g. `goreleaser-pro` instead of `goreleaser`.[^install]
 - [x] Once you install the Pro version, you can set the `GORELEASER_KEY`
    environment variable according to your shell of choice, and use it the same
    way you use the OSS version — with all the extra features!
-- [x] If you use the YAML Language Server, check out the Pro Schema as
-  well.[^schema]
+- [x] If you use the YAML Language Server in your editor, check out the Pro
+  JSONSchema, so you can have some instant feedback on options.[^schema]
 - [x] If you have any questions or feedback, feel free to contact in the email you
   received or on any of the public chats we have.[^links]
 

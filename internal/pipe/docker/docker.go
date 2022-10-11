@@ -9,7 +9,6 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
-	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -22,9 +21,8 @@ import (
 const (
 	dockerConfigExtra = "DockerConfig"
 
-	useBuildx     = "buildx"
-	useDocker     = "docker"
-	useBuildPacks = "buildpacks" // deprecated: should not be used anymore
+	useBuildx = "buildx"
+	useDocker = "docker"
 )
 
 // Pipe for docker.
@@ -53,9 +51,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if docker.Dockerfile == "" {
 			docker.Dockerfile = "Dockerfile"
-		}
-		if docker.Use == useBuildPacks {
-			deprecate.Notice(ctx, "dockers.use: buildpacks")
 		}
 		if docker.Use == "" {
 			docker.Use = useDocker
@@ -159,15 +154,14 @@ func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.A
 	log := log.WithField("image", images[0])
 	log.Debug("tempdir: " + tmp)
 
-	if docker.Use != useBuildPacks {
-		dockerfile, err := tmpl.New(ctx).Apply(docker.Dockerfile)
-		if err != nil {
-			return err
-		}
-		if err := gio.Copy(dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
-			return fmt.Errorf("failed to copy dockerfile: %w", err)
-		}
+	dockerfile, err := tmpl.New(ctx).Apply(docker.Dockerfile)
+	if err != nil {
+		return err
 	}
+	if err := gio.Copy(dockerfile, filepath.Join(tmp, "Dockerfile")); err != nil {
+		return fmt.Errorf("failed to copy dockerfile: %w", err)
+	}
+
 	for _, file := range docker.Files {
 		if err := os.MkdirAll(filepath.Join(tmp, filepath.Dir(file)), 0o755); err != nil {
 			return fmt.Errorf("failed to copy extra file '%s': %w", file, err)
