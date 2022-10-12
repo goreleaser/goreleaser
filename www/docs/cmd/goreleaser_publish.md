@@ -14,7 +14,7 @@ Environment variables will be re-evaluated here, so make sure they are
 available to the publish command as well.
 
 !!! success "GoReleaser Pro"
-    This subcommand is [GoReleaser Pro feature](https://goreleaser.com/pro/).
+    This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
 
 
 ```

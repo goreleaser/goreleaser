@@ -1,7 +1,7 @@
 # Splitting and Merging builds
 
 !!! success "GoReleaser Pro"
-    This subcommand is [GoReleaser Pro feature](https://goreleaser.com/pro/).
+    This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
 
 > Since GoReleaser v1.12.0.
 
