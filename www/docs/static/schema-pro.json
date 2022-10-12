@@ -1687,6 +1687,20 @@
 				"additionalProperties": false,
 				"type": "object"
 			},
+			"Partial": {
+				"properties": {
+					"by": {
+						"type": "string",
+						"enum": [
+							"goos",
+							"target"
+						],
+						"default": "goos"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
 			"PreBuiltOptions": {
 				"properties": {
 					"path": {
@@ -1764,9 +1778,6 @@
 					"snapshot": {
 						"$ref": "#/$defs/Snapshot"
 					},
-					"nightly": {
-						"$ref": "#/$defs/Nightly"
-					},
 					"checksum": {
 						"$ref": "#/$defs/Checksum"
 					},
@@ -1797,12 +1808,6 @@
 					"blobs": {
 						"items": {
 							"$ref": "#/$defs/Blob"
-						},
-						"type": "array"
-					},
-					"furies": {
-						"items": {
-							"$ref": "#/$defs/Fury"
 						},
 						"type": "array"
 					},
@@ -1845,9 +1850,6 @@
 					"gomod": {
 						"$ref": "#/$defs/GoMod"
 					},
-					"monorepo": {
-						"$ref": "#/$defs/Monorepo"
-					},
 					"announce": {
 						"$ref": "#/$defs/Announce"
 					},
@@ -1883,6 +1885,21 @@
 					},
 					"variables": {
 						"type": "object"
+					},
+					"monorepo": {
+						"$ref": "#/$defs/Monorepo"
+					},
+					"partial": {
+						"$ref": "#/$defs/Partial"
+					},
+					"nightly": {
+						"$ref": "#/$defs/Nightly"
+					},
+					"furies": {
+						"items": {
+							"$ref": "#/$defs/Fury"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,

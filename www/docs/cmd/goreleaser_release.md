@@ -33,6 +33,7 @@ goreleaser release [flags]
       --skip-sign                    Skips signing artifacts
       --skip-validate                Skips git checks
       --snapshot                     Generate an unversioned snapshot release, skipping all validations and without publishing any artifacts (implies --skip-publish, --skip-announce and --skip-validate, overrides --nightly)
+      --split                        Split the build so it can be merged and published later (implies --prepare)
       --timeout duration             Timeout to the entire release process (default 30m0s)
 ```
 
