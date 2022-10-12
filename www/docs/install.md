@@ -164,6 +164,14 @@ Use it for testing out new features only.
 === "Pro"
     Download the pre-compiled binaries from the [nightly release][nighly-pro-releases] and copy them to the desired location.
 
+### bash script
+
+=== "Pro"
+    ```bash
+    curl -sfL https://goreleaser.com/static/run |
+      VERSION=nightly DISTRIBUTION=pro bash -s -- release --rm-dist
+    ```
+
 #### docker
 
 === "Pro"

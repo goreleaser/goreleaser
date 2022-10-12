@@ -1,13 +1,13 @@
 # Splitting and Merging builds
 
+GoReleaser can also split and merge builds.
+
 > Since: v1.12.0-pro.
 
 !!! success "GoReleaser Pro"
     This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
 
-
-You can now split and merge builds.
-This can help in several areas:
+This feature can help in some areas:
 
 1. CGO, as you can build each platform in their target OS and merge later;
 1. Native packaging and signing for Windows and macOS (more features for this
