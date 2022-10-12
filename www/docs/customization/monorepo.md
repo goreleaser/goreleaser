@@ -47,6 +47,8 @@ Then, the following is different from a "regular" run:
   - if yours is not, you might want to change that manually;
 - Extra files on the release, archives, Docker builds, etc are prefixed with
   `monorepo.dir`;
+- If using `changelog.use: git`, only commits matching files in `monorepo.dir`
+  will be included in the changelog.
 - On templates, `{{.PrefixedTag}}` will be `monorepo.prefix/tag` (aka the actual
   tag name), and `{{.Tag}}` has the prefix stripped;
 

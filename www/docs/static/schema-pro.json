@@ -482,6 +482,12 @@
 					},
 					"abbrev": {
 						"type": "integer"
+					},
+					"paths": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
 					}
 				},
 				"additionalProperties": false,

@@ -37,6 +37,16 @@ changelog:
   # Since: v1.11.2
   abbrev: -1
 
+  # Paths to filter the commits for.
+  # Only works when `use: git`, otherwise ignored.
+  # Only on GoReleaser Pro.
+  #
+  # Default: monorepo.dir value, or empty if no monorepo.
+  # Since: v1.12.0-pro
+  paths:
+  - foo/
+  - bar/
+
   # Group commits messages by given regex and title.
   # Order value defines the order of the groups.
   # Proving no regex means all commits will be grouped under the default group.
