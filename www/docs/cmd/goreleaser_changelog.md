@@ -13,7 +13,7 @@ You can also use this command to test the `changelog` configuration in your `.go
 This command skips all validations and does not publish anything.
 
 !!! success "GoReleaser Pro"
-    This subcommand is [GoReleaser Pro feature](https://goreleaser.com/pro/).
+    This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
 
 
 ```

@@ -1,9 +1,10 @@
 # Splitting and Merging builds
 
+> Since: v1.12.0-pro.
+
 !!! success "GoReleaser Pro"
     This subcommand is a [GoReleaser Pro feature](https://goreleaser.com/pro/).
 
-> Since GoReleaser v1.12.0.
 
 You can now split and merge builds.
 This can help in several areas:
