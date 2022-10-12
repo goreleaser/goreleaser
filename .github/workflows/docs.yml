@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
-      - uses: arduino/setup-task@ca745e18916de727f841ec824ac20a615f1cddea # v1
+      - uses: arduino/setup-task@d665c6beebae46ff3f699d7b2fd3f1959de7153c # v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3
