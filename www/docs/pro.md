@@ -5,11 +5,14 @@ additional features:
 
 - [x] [Split and merge builds](/customization/partial) to speed up your release
   by splitting work, use CGO, or run platform-specific code;
+- [x] [Filter commits by path in the changelog](/customization/changelog);
 - [x] Have custom [before and after hooks for achives](/customization/archive/);
-- [x] Prepare a release with [`goreleaser release
-  --prepare`](/cmd/goreleaser_release/), publish and announce it later with
-  [`goreleaser publish`](/cmd/goreleaser_publish/) and [`goreleaser
-  announce`](/cmd/goreleaser_announce/);
+- [x] Prepare a release with
+  [`goreleaser release --prepare`](/cmd/goreleaser_release/), publish and
+  announce it later with
+  [`goreleaser publish`](/cmd/goreleaser_publish/) and
+  [`goreleaser announce`](/cmd/goreleaser_announce/), or with
+  [`goreleaser continue`](/cmd/goreleaser_continue/);
 - [x] Preview and test your next release's change log with
   [`goreleaser changelog`](/cmd/goreleaser_changelog/);
 - [x] Continuously release [nightly builds](/customization/nightlies/);
@@ -39,12 +42,13 @@ of the things we plan to work on, in one form or another:
 
 - [ ] `--dry-run` to test the release locally, possibly skipping the actual
   build of the binaries to focus on faster iteration of the other parts;
-- [ ] `--single-target` & friends for `goreleaser release` as well;
+- [ ] `--single-target` & friends for `goreleaser release`;
 - [ ] first-class macOS signing;
 - [ ] create Windows installers;
 
 That said, your input is always welcome!
-Once you buy it, feel free to [email me](mailto:carlos@becker.software?subject=GoReleaser%20Feature%20Suggestion)
+Once you buy it, feel free to
+[email me](mailto:carlos@becker.software?subject=GoReleaser%20Feature%20Suggestion)
 with your suggestions and ideas.
 
 ## Pricing & Sponsors
