@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -168,6 +169,38 @@ func TestURL(t *testing.T) {
 		})
 		require.NoError(t, err)
 		require.Equal(t, "gs://foo", url)
+	})
+
+	t.Run("template errors", func(t *testing.T) {
+		t.Run("provider", func(t *testing.T) {
+			_, err := urlFor(context.New(config.Project{}), config.Blob{
+				Provider: "{{ .Nope }}",
+			})
+			testlib.RequireTemplateError(t, err)
+		})
+		t.Run("bucket", func(t *testing.T) {
+			_, err := urlFor(context.New(config.Project{}), config.Blob{
+				Bucket:   "{{ .Nope }}",
+				Provider: "gs",
+			})
+			testlib.RequireTemplateError(t, err)
+		})
+		t.Run("endpoint", func(t *testing.T) {
+			_, err := urlFor(context.New(config.Project{}), config.Blob{
+				Bucket:   "foobar",
+				Endpoint: "{{.Env.NOPE}}",
+				Provider: "s3",
+			})
+			testlib.RequireTemplateError(t, err)
+		})
+		t.Run("region", func(t *testing.T) {
+			_, err := urlFor(context.New(config.Project{}), config.Blob{
+				Bucket:   "foobar",
+				Region:   "{{.Env.NOPE}}",
+				Provider: "s3",
+			})
+			testlib.RequireTemplateError(t, err)
+		})
 	})
 }
 
