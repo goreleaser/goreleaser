@@ -266,6 +266,9 @@ Changelog. You can set a different build tag using the environment variable
 `GORELEASER_PREVIOUS_TAG`. This is useful in scenarios where two tags point to
 the same commit.
 
+The [Nightly](/customization/nightlies) is automatically ignored, even if set
+via the environment variables above.
+
 ## Custom release notes
 
 You can specify a file containing your custom release notes, and pass it with
