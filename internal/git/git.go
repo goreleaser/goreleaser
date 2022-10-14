@@ -59,3 +59,19 @@ func Clean(output string, err error) (string, error) {
 	}
 	return output, err
 }
+
+// CleanAllLines returns all the non empty lines of the output, cleaned up.
+func CleanAllLines(output string, err error) ([]string, error) {
+	var result []string
+	for _, line := range strings.Split(output, "\n") {
+		l := strings.TrimSpace(strings.ReplaceAll(line, "'", ""))
+		if l == "" {
+			continue
+		}
+		result = append(result, l)
+	}
+	if err != nil {
+		err = errors.New(strings.TrimSuffix(err.Error(), "\n"))
+	}
+	return result, err
+}

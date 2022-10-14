@@ -222,36 +222,90 @@ func getTagWithFormat(ctx *context.Context, tag, format string) (string, error) 
 }
 
 func getTag(ctx *context.Context) (string, error) {
-	var tag string
-	var err error
-	for _, fn := range []func() (string, error){
-		func() (string, error) {
-			return os.Getenv("GORELEASER_CURRENT_TAG"), nil
+	for _, fn := range []func() ([]string, error){
+		getFromEnv("GORELEASER_CURRENT_TAG"),
+		func() ([]string, error) {
+			return gitTagsPointingAt(ctx, "HEAD")
 		},
-		func() (string, error) {
-			return git.Clean(git.Run(ctx, "tag", "--points-at", "HEAD", "--sort", "-version:refname"))
-		},
-		func() (string, error) {
-			return git.Clean(git.Run(ctx, "describe", "--tags", "--abbrev=0"))
+		func() ([]string, error) {
+			// this will get the last tag, even if it wasn't made against the
+			// last commit...
+			return git.CleanAllLines(gitDescribe(ctx, "HEAD"))
 		},
 	} {
-		tag, err = fn()
-		if tag != "" || err != nil {
-			return tag, err
+		tags, err := fn()
+		if len(tags) > 0 {
+			return tags[0], err
+		}
+		if err != nil {
+			return "", err
 		}
 	}
 
-	return tag, err
+	return "", nil
 }
 
 func getPreviousTag(ctx *context.Context, current string) (string, error) {
-	if tag := os.Getenv("GORELEASER_PREVIOUS_TAG"); tag != "" {
-		return tag, nil
+	for _, fn := range []func() ([]string, error){
+		getFromEnv("GORELEASER_PREVIOUS_TAG"),
+		func() ([]string, error) {
+			sha, err := previousTagSha(ctx, current)
+			if err != nil {
+				return nil, err
+			}
+			return gitTagsPointingAt(ctx, sha)
+		},
+	} {
+		tags, err := fn()
+		if len(tags) > 0 {
+			return tags[0], err
+		}
+		if err != nil {
+			return "", err
+		}
 	}
 
-	return git.Clean(git.Run(ctx, "describe", "--tags", "--abbrev=0", fmt.Sprintf("tags/%s^", current)))
+	return "", nil
+}
+
+func gitTagsPointingAt(ctx *context.Context, ref string) ([]string, error) {
+	return git.CleanAllLines(git.Run(
+		ctx,
+		"tag",
+		"--points-at",
+		ref,
+		"--sort",
+		"-version:refname",
+	))
+}
+
+func gitDescribe(ctx *context.Context, ref string) (string, error) {
+	return git.Clean(git.Run(
+		ctx,
+		"describe",
+		"--tags",
+		"--abbrev=0",
+		ref,
+	))
+}
+
+func previousTagSha(ctx *context.Context, current string) (string, error) {
+	tag, err := gitDescribe(ctx, fmt.Sprintf("tags/%s^", current))
+	if err != nil {
+		return "", err
+	}
+	return git.Clean(git.Run(ctx, "show", "--format='%h'", tag, "--quiet"))
 }
 
 func getURL(ctx *context.Context) (string, error) {
 	return git.Clean(git.Run(ctx, "ls-remote", "--get-url"))
+}
+
+func getFromEnv(s string) func() ([]string, error) {
+	return func() ([]string, error) {
+		if tag := os.Getenv(s); tag != "" {
+			return []string{tag}, nil
+		}
+		return nil, nil
+	}
 }
