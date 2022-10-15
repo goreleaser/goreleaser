@@ -376,8 +376,16 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 	if err != nil {
 		return err
 	}
-	if !strings.HasSuffix(name, "."+format) {
-		name = name + "." + format
+
+	ext := "." + format
+	if packager, ok := packager.(nfpm.PackagerWithExtension); ok {
+		if format != "termux.deb" {
+			ext = packager.ConventionalExtension()
+		}
+	}
+
+	if !strings.HasSuffix(name, ext) {
+		name = name + ext
 	}
 
 	path := filepath.Join(ctx.Config.Dist, name)
