@@ -377,11 +377,11 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 		return err
 	}
 
-	var ext string
+	ext := "." + format
 	if packager, ok := packager.(nfpm.PackagerWithExtension); ok {
-		ext = packager.ConventionalExtension()
-	} else {
-		ext = "." + format
+		if format != "termux.deb" {
+			ext = packager.ConventionalExtension()
+		}
 	}
 
 	if !strings.HasSuffix(name, ext) {
