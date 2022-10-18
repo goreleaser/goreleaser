@@ -205,11 +205,11 @@ func getCommitDate(ctx *context.Context) (time.Time, error) {
 }
 
 func getShortCommit(ctx *context.Context) (string, error) {
-	return git.Clean(git.Run(ctx, "show", "--format='%h'", "HEAD", "--quiet"))
+	return git.Clean(git.Run(ctx, "show", "--format=%h", "HEAD", "--quiet"))
 }
 
 func getFullCommit(ctx *context.Context) (string, error) {
-	return git.Clean(git.Run(ctx, "show", "--format='%H'", "HEAD", "--quiet"))
+	return git.Clean(git.Run(ctx, "show", "--format=%H", "HEAD", "--quiet"))
 }
 
 func getSummary(ctx *context.Context) (string, error) {
@@ -294,7 +294,7 @@ func previousTagSha(ctx *context.Context, current string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return git.Clean(git.Run(ctx, "show", "--format='%h'", tag, "--quiet"))
+	return git.Clean(git.Run(ctx, "rev-list", "-n1", tag))
 }
 
 func getURL(ctx *context.Context) (string, error) {

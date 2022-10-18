@@ -192,11 +192,13 @@ func TestValidState(t *testing.T) {
 	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
 	testlib.GitCommit(t, "commit3")
 	testlib.GitTag(t, "v0.0.1")
-	testlib.GitCommit(t, "commit4")
 	testlib.GitTag(t, "v0.0.2")
+	testlib.GitCommit(t, "commit4")
+	testlib.GitTag(t, "v0.0.3")
 	ctx := context.New(config.Project{})
 	require.NoError(t, Pipe{}.Run(ctx))
-	require.Equal(t, "v0.0.2", ctx.Git.CurrentTag)
+	require.Equal(t, "v0.0.2", ctx.Git.PreviousTag)
+	require.Equal(t, "v0.0.3", ctx.Git.CurrentTag)
 	require.Equal(t, "git@github.com:foo/bar.git", ctx.Git.URL)
 }
 
