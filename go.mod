@@ -10,7 +10,7 @@ require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
-	github.com/caarlos0/log v0.1.9
+	github.com/caarlos0/log v0.1.10
 	github.com/charmbracelet/keygen v0.3.0
 	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
