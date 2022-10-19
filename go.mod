@@ -10,9 +10,9 @@ require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/caarlos0/go-reddit/v3 v3.0.1
 	github.com/caarlos0/go-shellwords v1.0.12
-	github.com/caarlos0/log v0.1.8
+	github.com/caarlos0/log v0.1.10
 	github.com/charmbracelet/keygen v0.3.0
-	github.com/charmbracelet/lipgloss v0.6.1-0.20221011104340-92c8fa0a572b
+	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb
 	github.com/dghubble/oauth1 v0.7.1
 	github.com/disgoorg/disgo v0.13.20
@@ -29,7 +29,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
-	github.com/muesli/termenv v0.12.1-0.20220901123159-d729275e0977
+	github.com/muesli/termenv v0.13.0
 	github.com/slack-go/slack v0.11.3
 	github.com/spf13/cobra v1.6.0
 	github.com/stretchr/testify v1.8.0
@@ -93,7 +93,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.11.13 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.16.10 // indirect
 	github.com/aws/smithy-go v1.12.0 // indirect
-	github.com/aymanbagabas/go-osc52 v1.0.3 // indirect
+	github.com/aymanbagabas/go-osc52 v1.2.1 // indirect
 	github.com/blakesmith/ar v0.0.0-20190502131153-809d4375e1fb // indirect
 	github.com/caarlos0/sshmarshal v0.0.0-20220308164159-9ddb9f83c6b3 // indirect
 	github.com/cavaliergopher/cpio v1.0.1 // indirect
@@ -151,7 +151,7 @@ require (
 	gitlab.com/digitalxero/go-conventional-commit v1.0.7 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/net v0.0.0-20220805013720-a33c5aa5df48 // indirect
-	golang.org/x/sys v0.0.0-20220909162455-aba9fc2a8ff2 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
