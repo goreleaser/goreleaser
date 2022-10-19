@@ -50,7 +50,7 @@ jobs:
           sudo apt-get -yq --no-install-suggests --no-install-recommends install snapcraft
           mkdir -p $HOME/.cache/snapcraft/download
           mkdir -p $HOME/.cache/snapcraft/stage-packages
-      - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3
+      - uses: actions/setup-go@c4a742cab115ed795e34d4513e2cf7d472deb55f # v3
         with:
           go-version: '>=1.19.2'
           cache: true
