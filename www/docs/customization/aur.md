@@ -2,7 +2,7 @@
 
 Since: v1.4.
 
-After releasing to GitHub or GitLab, GoReleaser can generate and publish
+After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a `PKGBUILD` to an _Arch User Repository_.
 
 !!! warning
