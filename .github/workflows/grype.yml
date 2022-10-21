@@ -22,18 +22,3 @@ jobs:
       with:
         path: "."
         fail-build: true
-
-  scan-image:
-    name: scan-image
-    runs-on: ubuntu-latest
-
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
-
-    steps:
-    - uses: anchore/scan-action@v3
-      with:
-        image: "goreleaser/goreleaser:latest"
-        fail-build: true
