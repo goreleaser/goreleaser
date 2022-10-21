@@ -36,6 +36,7 @@ func (Pipe) Run(ctx *context.Context) error {
 		}
 
 		ctx.Config.GiteaURLs.Download = strings.ReplaceAll(apiURL, "/api/v1", "")
+		ctx.Config.GiteaURLs.Download = strings.TrimSuffix(apiURL, "/")
 	}
 	for _, defaulter := range defaults.Defaulters {
 		if err := errhandler.Handle(defaulter.Default)(ctx); err != nil {
