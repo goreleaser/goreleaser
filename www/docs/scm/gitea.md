@@ -24,7 +24,7 @@ the `.goreleaser.yaml` configuration file. This takes a normal string, or a temp
 ```yaml
 # .goreleaser.yaml
 gitea_urls:
-  api: https://gitea.myinstance.com/api/v1/
+  api: https://gitea.myinstance.com/api/v1
   download: https://gitea.myinstance.com
   # set to true if you use a self-signed certificate
   skip_tls_verify: false

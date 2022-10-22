@@ -1,6 +1,6 @@
 # Homebrew Taps
 
-After releasing to GitHub or GitLab, GoReleaser can generate and publish
+After releasing to GitHub, GitLab, or Gitea, GoReleaser can generate and publish
 a _homebrew-tap_ recipe into a repository that you have access to.
 
 The `brews` section specifies how the formula should be created.
