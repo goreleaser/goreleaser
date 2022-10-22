@@ -35,7 +35,7 @@ func (Pipe) Run(ctx *context.Context) error {
 			return fmt.Errorf("templating Gitea API URL: %w", err)
 		}
 
-		ctx.Config.GiteaURLs.Download = strings.ReplaceAll(apiURL, "/api/v1", "")
+		ctx.Config.GiteaURLs.Download = strings.TrimSuffix(strings.ReplaceAll(apiURL, "/api/v1", ""), "/")
 	}
 	for _, defaulter := range defaults.Defaulters {
 		if err := errhandler.Handle(defaulter.Default)(ctx); err != nil {
