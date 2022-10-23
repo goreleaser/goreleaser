@@ -303,12 +303,13 @@ release:
   footer: |
     **Full Changelog**: https://github.com/goreleaser/goreleaser/compare/{{ .PreviousTag }}...{{ .Tag }}
 
-    ## What to do next?
+    * * *
 
-    - Read the [documentation](https://goreleaser.com/intro/)
-    - Check out the [GoReleaser Pro](https://goreleaser.com/pro) distribution
-    - Join our [Discord server](https://discord.gg/RGEBtg8vQ6)
-    - Follow us on [Twitter](https://twitter.com/goreleaser)
+    <a href="https://goreleser.com"><img src="https://raw.githubusercontent.com/goreleaser/artwork/master/opencollective-header.png" with="100%" alt="GoReleaser logo"></a>
+
+    Find examples and commented usage of all options in our [website](https://goreleaser.com/intro/).
+    Want to help? You can [sponsor](https://goreleaser.com/sponsors/),get a [Pro License](https://goreleaser.com/pro) or [contribute](https://goreleaser.com/contributing).
+    Also, feel free to reach out on [Discord](https://discord.gg/RGEBtg8vQ6) and [Twitter](https://twitter.com/goreleaser)!
 
 announce:
   twitter:
