@@ -32,7 +32,7 @@ require (
 	github.com/muesli/termenv v0.13.0
 	github.com/slack-go/slack v0.11.3
 	github.com/spf13/cobra v1.6.0
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	github.com/ulikunitz/xz v0.5.10
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
 	github.com/xanzy/go-gitlab v0.73.1
