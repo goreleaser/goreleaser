@@ -90,7 +90,8 @@ You can also use `go version -m my_program` to display the go module information
 ## Limitations
 
 1. Extra files will still be copied from the current project's root folder and not from the proxy cache;
-1. You can't build packages that are not contained in the main module.
+1. You can't build packages that are not contained in the main module;
+1. VCS info will not be available.
 
 ## More information
 
