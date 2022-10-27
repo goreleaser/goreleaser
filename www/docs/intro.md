@@ -52,9 +52,7 @@ Your entire release process is customized through a `.goreleaser.yml` file.
 Once you set it up, every time you want to create a new release, all you need to
 do is push a git tag and run `goreleaser release`:
 
-<video autoplay loop>
-  <source src="https://user-images.githubusercontent.com/245435/190040641-1fa183e5-d05a-4f9d-b466-02969a529b86.mp4" type="video/mp4">
-</video>
+![goreleaser example gif](https://raw.githubusercontent.com/goreleaser/example-simple/main/goreleaser.gif)
 
 You can also do it in your continuous integration platform of choice.
 

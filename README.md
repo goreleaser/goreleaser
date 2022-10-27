@@ -9,7 +9,7 @@
 GoReleaser builds Go binaries for several platforms, creates a GitHub release and then
 pushes a Homebrew formula to a tap repository. All that wrapped in your favorite CI.
 
-https://user-images.githubusercontent.com/245435/190040641-1fa183e5-d05a-4f9d-b466-02969a529b86.mp4
+![](https://raw.githubusercontent.com/goreleaser/example-simple/main/goreleaser.gif)
 
 ---
 
