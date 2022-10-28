@@ -149,7 +149,6 @@ func TestRunPipe(t *testing.T) {
 						{
 							Source:      "./testdata/folder",
 							Destination: "/etc/folder",
-							Type:        "dir",
 						},
 					},
 					Replacements: map[string]string{
