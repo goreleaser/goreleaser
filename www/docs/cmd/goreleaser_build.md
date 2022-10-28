@@ -27,7 +27,6 @@ goreleaser build [flags]
   -p, --parallelism int    Amount tasks to run concurrently (default: number of CPUs)
       --rm-dist            Remove the dist folder before building
       --single-target      Builds only for current GOOS and GOARCH, regardless of what's set in the configuration file
-      --skip-after         Skips global after hooks
       --skip-before        Skips global before hooks
       --skip-post-hooks    Skips all post-build hooks
       --skip-validate      Skips several sanity checks
