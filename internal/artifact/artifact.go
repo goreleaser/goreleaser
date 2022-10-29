@@ -66,6 +66,8 @@ const (
 	ScoopManifest
 	// SBOM is a Software Bill of Materials file.
 	SBOM
+	// PublishableChocolatey is a chocolatey package yet to be published.
+	PublishableChocolatey
 )
 
 func (t Type) String() string {
@@ -104,6 +106,8 @@ func (t Type) String() string {
 		return "PKGBUILD"
 	case SrcInfo:
 		return "SRCINFO"
+	case PublishableChocolatey:
+		return "Chocolatey"
 	default:
 		return "unknown"
 	}

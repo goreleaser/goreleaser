@@ -11,6 +11,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/aur"
 	"github.com/goreleaser/goreleaser/internal/pipe/blob"
 	"github.com/goreleaser/goreleaser/internal/pipe/brew"
+	"github.com/goreleaser/goreleaser/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/internal/pipe/custompublishers"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
@@ -48,6 +49,7 @@ var publishers = []Publisher{
 	aur.Pipe{},
 	krew.Pipe{},
 	scoop.Pipe{},
+	chocolatey.Pipe{},
 	milestone.Pipe{},
 }
 

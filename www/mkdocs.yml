@@ -96,6 +96,7 @@ nav:
     - customization/nfpm.md
     - customization/checksum.md
     - customization/snapcraft.md
+    - customization/chocolatey.md
     - customization/docker.md
     - customization/docker_manifest.md
   - customization/sbom.md
