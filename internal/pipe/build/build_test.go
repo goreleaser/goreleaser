@@ -426,6 +426,26 @@ func TestSkipBuild(t *testing.T) {
 	require.Len(t, ctx.Artifacts.List(), 0)
 }
 
+func TestExtDarwin(t *testing.T) {
+	require.Equal(t, "", extFor("darwin_amd64", config.FlagArray{}))
+	require.Equal(t, "", extFor("darwin_arm64", config.FlagArray{}))
+	require.Equal(t, "", extFor("darwin_amd64", config.FlagArray{"-tags=dev", "-v"}))
+	require.Equal(t, ".dylib", extFor("darwin_amd64", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-shared"}))
+	require.Equal(t, ".dylib", extFor("darwin_arm64", config.FlagArray{"-buildmode=c-shared"}))
+	require.Equal(t, ".a", extFor("darwin_amd64", config.FlagArray{"-buildmode=c-archive"}))
+	require.Equal(t, ".a", extFor("darwin_arm64", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-archive"}))
+}
+
+func TestExtLinux(t *testing.T) {
+	require.Equal(t, "", extFor("linux_amd64", config.FlagArray{}))
+	require.Equal(t, "", extFor("linux_386", config.FlagArray{}))
+	require.Equal(t, "", extFor("linux_amd64", config.FlagArray{"-tags=dev", "-v"}))
+	require.Equal(t, ".so", extFor("linux_amd64", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-shared"}))
+	require.Equal(t, ".so", extFor("linux_386", config.FlagArray{"-buildmode=c-shared"}))
+	require.Equal(t, ".a", extFor("linux_amd64", config.FlagArray{"-buildmode=c-archive"}))
+	require.Equal(t, ".a", extFor("linux_386", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-archive"}))
+}
+
 func TestExtWindows(t *testing.T) {
 	require.Equal(t, ".exe", extFor("windows_amd64", config.FlagArray{}))
 	require.Equal(t, ".exe", extFor("windows_386", config.FlagArray{}))

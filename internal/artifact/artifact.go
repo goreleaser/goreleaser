@@ -66,6 +66,8 @@ const (
 	ScoopManifest
 	// SBOM is a Software Bill of Materials file.
 	SBOM
+	// Header is a C header file, generated for CGo library builds.
+	Header
 )
 
 func (t Type) String() string {
@@ -104,6 +106,8 @@ func (t Type) String() string {
 		return "PKGBUILD"
 	case SrcInfo:
 		return "SRCINFO"
+	case Header:
+		return "Header"
 	default:
 		return "unknown"
 	}

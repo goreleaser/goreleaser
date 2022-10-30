@@ -212,6 +212,26 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 }
 
 func extFor(target string, flags config.FlagArray) string {
+	if strings.Contains(target, "darwin") {
+		for _, s := range flags {
+			if s == "-buildmode=c-shared" {
+				return ".dylib"
+			}
+			if s == "-buildmode=c-archive" {
+				return ".a"
+			}
+		}
+	}
+	if strings.Contains(target, "linux") {
+		for _, s := range flags {
+			if s == "-buildmode=c-shared" {
+				return ".so"
+			}
+			if s == "-buildmode=c-archive" {
+				return ".a"
+			}
+		}
+	}
 	if strings.Contains(target, "windows") {
 		for _, s := range flags {
 			if s == "-buildmode=c-shared" {

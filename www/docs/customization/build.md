@@ -517,3 +517,24 @@ will evaluate to the list of first class ports as defined in the Go wiki.
 
 You can read more about it
 [here](https://github.com/golang/go/wiki/PortingPolicy#first-class-ports).
+
+## Building shared or static libraries
+
+GoReleaser supports compiling and releasing libraries, by configuring the [Go build mode](https://pkg.go.dev/cmd/go#hdr-Build_modes).
+
+This can be set with `buildmode` in your build `flags`. It currently supports `c-shared` and `c-archive`.
+
+GoReleaser will:
+
+* set the correct file extension for the target OS.
+* package the generated header file (`.h`) in the release bundle.
+
+```yaml
+# .goreleaser.yaml
+builds:
+  -
+    id: "my-library"
+
+    # Configure the buildmode flag to output a shared library
+    flags: -buildmode=c-shared  # or "c-archive" for a static library
+```

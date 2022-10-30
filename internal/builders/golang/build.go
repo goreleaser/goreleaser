@@ -192,6 +192,8 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		}
 	}
 
+	addHeaderArtifactIfLibrary(ctx, build, options)
+
 	ctx.Artifacts.Add(artifact)
 	return nil
 }
@@ -365,4 +367,33 @@ func hasMain(file *ast.File) bool {
 		}
 	}
 	return false
+}
+
+func addHeaderArtifactIfLibrary(ctx *context.Context, build config.Build, options api.Options) {
+	for _, s := range build.BuildDetails.Flags {
+		if s == "-buildmode=c-shared" || s == "-buildmode=c-archive" {
+			fullPathWithoutExt := strings.TrimSuffix(options.Path, options.Ext)
+			basePath := filepath.Base(fullPathWithoutExt)
+			fullPath := fullPathWithoutExt + ".h"
+			headerName := basePath + ".h"
+
+			header := &artifact.Artifact{
+				Type:    artifact.Header,
+				Path:    fullPath,
+				Name:    headerName,
+				Goos:    options.Goos,
+				Goarch:  options.Goarch,
+				Goamd64: options.Goamd64,
+				Goarm:   options.Goarm,
+				Gomips:  options.Gomips,
+				Extra: map[string]interface{}{
+					artifact.ExtraBinary: headerName,
+					artifact.ExtraExt:    ".h",
+					artifact.ExtraID:     build.ID,
+				},
+			}
+
+			ctx.Artifacts.Add(header)
+		}
+	}
 }
