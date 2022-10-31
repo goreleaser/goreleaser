@@ -70,6 +70,7 @@ nav:
   - ci/jenkins.md
   - ci/semaphore.md
   - ci/travis.md
+  - ci/woodpecker.md
 - Customization:
   - About: customization/index.md
   - Basics:
