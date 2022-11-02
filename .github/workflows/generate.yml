@@ -24,7 +24,7 @@ jobs:
           token: ${{ secrets.GH_PAT }}
       - uses: actions/setup-go@c4a742cab115ed795e34d4513e2cf7d472deb55f # v3
         with:
-          go-version: '>=1.19.2'
+          go-version: '>=1.19.3'
           cache: true
       - uses: arduino/setup-task@d665c6beebae46ff3f699d7b2fd3f1959de7153c # v1
       - run: task docs:generate
