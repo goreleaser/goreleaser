@@ -634,6 +634,17 @@ type NFPMAPK struct {
 	Signature NFPMAPKSignature `yaml:"signature,omitempty" json:"signature,omitempty"`
 }
 
+type NFPMArchLinuxScripts struct {
+	PreUpgrade  string `yaml:"preupgrade,omitempty" json:"preupgrade,omitempty"`
+	PostUpgrade string `yaml:"postupgrade,omitempty" json:"postupgrade,omitempty"`
+}
+
+type NFPMArchLinux struct {
+	Pkgbase  string               `yaml:"pkgbase,omitempty" json:"pkgbase,omitempty"`
+	Packager string               `yaml:"packager,omitempty" json:"packager,omitempty"`
+	Scripts  NFPMArchLinuxScripts `yaml:"scripts,omitempty" json:"scripts,omitempty"`
+}
+
 // NFPMOverridables is used to specify per package format settings.
 type NFPMOverridables struct {
 	FileNameTemplate string            `yaml:"file_name_template,omitempty" json:"file_name_template,omitempty"`
@@ -654,6 +665,7 @@ type NFPMOverridables struct {
 	RPM              NFPMRPM           `yaml:"rpm,omitempty" json:"rpm,omitempty"`
 	Deb              NFPMDeb           `yaml:"deb,omitempty" json:"deb,omitempty"`
 	APK              NFPMAPK           `yaml:"apk,omitempty" json:"apk,omitempty"`
+	ArchLinux        NFPMArchLinux     `yaml:"archlinux,omitempty" json:"archlinux,omitempty"`
 }
 
 // SBOM config.

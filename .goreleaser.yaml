@@ -242,6 +242,7 @@ nfpms:
     - apk
     - deb
     - rpm
+    - archlinux
     dependencies:
     - git
     recommends:

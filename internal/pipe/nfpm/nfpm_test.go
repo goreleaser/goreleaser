@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/goreleaser/nfpm/v2"
 	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/stretchr/testify/require"
 )
@@ -92,7 +93,7 @@ func TestRunPipe(t *testing.T) {
 				ID:          "someid",
 				Bindir:      "/usr/bin",
 				Builds:      []string{"default"},
-				Formats:     []string{"deb", "rpm", "apk", "termux.deb"},
+				Formats:     []string{"deb", "rpm", "apk", "termux.deb", "archlinux"},
 				Section:     "somesection",
 				Priority:    "standard",
 				Description: "Some description with {{ .Env.DESC }}",
@@ -223,7 +224,7 @@ func TestRunPipe(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 40)
+	require.Len(t, packages, 51)
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
@@ -237,10 +238,21 @@ func TestRunPipe(t *testing.T) {
 		if pkg.Gomips != "" {
 			arch += "_" + pkg.Gomips
 		}
+
+		ext := "." + format
+		if format != "termux.deb" {
+			packager, err := nfpm.Get(format)
+			require.NoError(t, err)
+
+			if packager, ok := packager.(nfpm.PackagerWithExtension); ok {
+				ext = packager.ConventionalExtension()
+			}
+		}
+
 		if pkg.Goos == "linux" {
-			require.Equal(t, "foo_1.0.0_Tux_"+arch+"-10-20."+format, pkg.Name)
+			require.Equal(t, "foo_1.0.0_Tux_"+arch+"-10-20"+ext, pkg.Name)
 		} else {
-			require.Equal(t, "foo_1.0.0_ios_arm64-10-20."+format, pkg.Name)
+			require.Equal(t, "foo_1.0.0_ios_arm64-10-20"+ext, pkg.Name)
 		}
 		require.Equal(t, "someid", pkg.ID())
 		require.ElementsMatch(t, []string{
@@ -289,7 +301,7 @@ func TestRunPipeConventionalNameTemplate(t *testing.T) {
 			{
 				ID:          "someid",
 				Builds:      []string{"default"},
-				Formats:     []string{"deb", "rpm", "apk"},
+				Formats:     []string{"deb", "rpm", "apk", "archlinux"},
 				Section:     "somesection",
 				Priority:    "standard",
 				Description: "Some description ",
@@ -299,7 +311,7 @@ func TestRunPipeConventionalNameTemplate(t *testing.T) {
 				Homepage:    "https://goreleaser.com/",
 				Bindir:      "/usr/bin",
 				NFPMOverridables: config.NFPMOverridables{
-					FileNameTemplate: `{{ trimsuffix (trimsuffix (trimsuffix .ConventionalFileName ".deb") ".rpm") ".apk" }}{{ if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end }}`,
+					FileNameTemplate: `{{ trimsuffix (trimsuffix (trimsuffix (trimsuffix .ConventionalFileName ".pkg.tar.zst") ".deb") ".rpm") ".apk" }}{{ if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end }}`,
 					PackageName:      "foo",
 				},
 			},
@@ -368,7 +380,7 @@ func TestRunPipeConventionalNameTemplate(t *testing.T) {
 	}
 	require.NoError(t, Pipe{}.Run(ctx))
 	packages := ctx.Artifacts.Filter(artifact.ByType(artifact.LinuxPackage)).List()
-	require.Len(t, packages, 30)
+	require.Len(t, packages, 40)
 	for _, pkg := range packages {
 		format := pkg.Format()
 		require.NotEmpty(t, format)
@@ -402,6 +414,16 @@ func TestRunPipeConventionalNameTemplate(t *testing.T) {
 			"foo_1.0.0_x86_64v2.apk",
 			"foo_1.0.0_x86_64v3.apk",
 			"foo_1.0.0_x86_64v4.apk",
+			"foo-1.0.0-1-aarch64.pkg.tar.zst",
+			"foo-1.0.0-1-armv6h.pkg.tar.zst",
+			"foo-1.0.0-1-armv7h.pkg.tar.zst",
+			"foo-1.0.0-1-i686.pkg.tar.zst",
+			"foo-1.0.0-1-x86_64.pkg.tar.zst",
+			"foo-1.0.0-1-x86_64v2.pkg.tar.zst",
+			"foo-1.0.0-1-x86_64v3.pkg.tar.zst",
+			"foo-1.0.0-1-x86_64v4.pkg.tar.zst",
+			"foo-1.0.0-1-mipssoftfloat.pkg.tar.zst",
+			"foo-1.0.0-1-mipshardfloat.pkg.tar.zst",
 		}, pkg.Name, "package name is not expected")
 		require.Equal(t, "someid", pkg.ID())
 		require.ElementsMatch(t, []string{binPath}, sources(artifact.ExtraOr(*pkg, extraFiles, files.Contents{})))

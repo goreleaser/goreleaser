@@ -1,7 +1,7 @@
 # Linux packages (via nFPM)
 
 GoReleaser can be wired to [nfpm](https://github.com/goreleaser/nfpm) to
-generate and publish `.deb`, `.rpm` and `.apk` packages.
+generate and publish `.deb`, `.rpm`, `.apk`, and Archlinux packages.
 
 Available options:
 
@@ -67,6 +67,7 @@ nfpms:
       - deb
       - rpm
       - termux.deb # Since GoReleaser v1.11.
+      - archlinux
 
     # Packages your package depends on. (overridable)
     dependencies:
@@ -364,6 +365,22 @@ nfpms:
         # is matched to the public key store in /etc/apk/keys/<key_name>.rsa.pub.
         # If unset, it defaults to the maintainer email address.
         key_name: origin
+    archlinux:
+      # Archlinux-specific scripts
+      scripts:
+        # The preupgrade script runs before pacman upgrades the package.
+        preupgrade: ./scripts/preupgrade.sh
+        # The postupgrade script runs after pacman upgrades the package.
+        postupgrade: ./scripts/postupgrade.sh
+      
+      # The pkgbase can be used to explicitly specify the name to be used to refer
+      # to a group of packages. See: https://wiki.archlinux.org/title/PKGBUILD#pkgbase.
+      pkgbase: foo
+
+      # The packager refers to the organization packaging the software, not to be confused
+      # with the maintainer, which is the person who maintains the software.
+      packager: GoReleaser <staff@goreleaser.com>
+
 ```
 
 !!! tip

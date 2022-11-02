@@ -22,9 +22,10 @@ import (
 	"github.com/goreleaser/nfpm/v2/files"
 	"github.com/imdario/mergo"
 
-	_ "github.com/goreleaser/nfpm/v2/apk" // blank import to register the format
-	_ "github.com/goreleaser/nfpm/v2/deb" // blank import to register the format
-	_ "github.com/goreleaser/nfpm/v2/rpm" // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/apk"  // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/arch" // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/deb"  // blank import to register the format
+	_ "github.com/goreleaser/nfpm/v2/rpm"  // blank import to register the format
 )
 
 const (
@@ -353,6 +354,14 @@ func create(ctx *context.Context, fpm config.NFPM, format string, binaries []*ar
 				Scripts: nfpm.APKScripts{
 					PreUpgrade:  overridden.APK.Scripts.PreUpgrade,
 					PostUpgrade: overridden.APK.Scripts.PostUpgrade,
+				},
+			},
+			ArchLinux: nfpm.ArchLinux{
+				Pkgbase:  overridden.ArchLinux.Pkgbase,
+				Packager: overridden.ArchLinux.Packager,
+				Scripts: nfpm.ArchLinuxScripts{
+					PreUpgrade:  overridden.ArchLinux.Scripts.PreUpgrade,
+					PostUpgrade: overridden.ArchLinux.Scripts.PostUpgrade,
 				},
 			},
 		},
