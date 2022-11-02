@@ -196,17 +196,11 @@ func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {
 	}
 	brew.Name = name
 
-	tapOwner, err := tmpl.New(ctx).Apply(brew.Tap.Owner)
+	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, brew.Tap)
 	if err != nil {
 		return err
 	}
-	brew.Tap.Owner = tapOwner
-
-	tapName, err := tmpl.New(ctx).Apply(brew.Tap.Name)
-	if err != nil {
-		return err
-	}
-	brew.Tap.Name = tapName
+	brew.Tap = ref
 
 	skipUpload, err := tmpl.New(ctx).Apply(brew.SkipUpload)
 	if err != nil {
