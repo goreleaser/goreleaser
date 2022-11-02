@@ -68,8 +68,6 @@ var BuildPipeline = []Piper{
 	gomod.ProxyPipe{},
 	// writes the actual config (with defaults et al set) to dist
 	effectiveconfig.Pipe{},
-	// builds the release changelog
-	changelog.Pipe{},
 	// build
 	build.Pipe{},
 	// universal binary handling
@@ -84,6 +82,8 @@ var BuildCmdPipeline = append(BuildPipeline, metadata.Pipe{})
 // nolint: gochecknoglobals
 var Pipeline = append(
 	BuildPipeline,
+	// builds the release changelog
+	changelog.Pipe{},
 	// archive in tar.gz, zip or binary (which does no archiving at all)
 	archive.Pipe{},
 	// archive the source code using git-archive
