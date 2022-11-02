@@ -301,6 +301,11 @@ func doPublish(ctx *context.Context, manifest *artifact.Artifact, cl client.Clie
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping krew publish")
 	}
 
+	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, cfg.Index)
+	if err != nil {
+		return err
+	}
+	cfg.Index = ref
 	repo := client.RepoFromRef(cfg.Index)
 
 	gpath := buildManifestPath(manifestsFolder, manifest.Name)

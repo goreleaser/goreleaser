@@ -99,7 +99,7 @@ func TestFillPartial(t *testing.T) {
 
 	ctx = context.New(config.Project{
 		GiteaURLs: config.GiteaURLs{
-			API: "https://gitea.com/api/v1",
+			API: "https://gitea.com/api/v1/",
 		},
 	})
 	ctx.TokenType = context.TokenTypeGitea

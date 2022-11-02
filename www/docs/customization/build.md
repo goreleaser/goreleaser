@@ -120,10 +120,11 @@ builds:
     # applicable: `_{goarm}`, `_{goamd64}`, `_{gomips}`.
     #
     # Special values:
-    # - go_118_first_class: evaluates to the first-class targets of go1.18.
+    # - go_118_first_class: evaluates to the first-class ports of go1.18.
     #   Since GoReleaser v1.9.
-    # - go_first_class: evaluates to latest stable go first-class targets,
-    #   currently same as 1.18. Since GoReleaser v1.9.
+    # - go_first_class: evaluates to latest stable go first-class ports,
+    #   currently same as 1.18.
+    #   Since GoReleaser v1.9.
     #
     # This overrides `goos`, `goarch`, `goarm`, `gomips`, `goamd64` and
     # `ignores`.
@@ -509,3 +510,10 @@ Since you can have GoReleaser build for multiple different `GOAMD64` targets, it
 adds that suffix to prevent name conflicts. The same thing happens for `arm` and
 `GOARM`, `mips` and `GOMIPS` and others.
 
+### Go's first class ports
+
+The `targets` option can take a `go_first_class` special value as target, which
+will evaluate to the list of first class ports as defined in the Go wiki.
+
+You can read more about it
+[here](https://github.com/golang/go/wiki/PortingPolicy#first-class-ports).

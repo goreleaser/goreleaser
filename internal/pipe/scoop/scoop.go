@@ -159,6 +159,12 @@ func doPublish(ctx *context.Context, cl client.Client) error {
 		return err
 	}
 
+	ref, err := client.TemplateRef(tmpl.New(ctx).Apply, scoop.Bucket)
+	if err != nil {
+		return err
+	}
+	scoop.Bucket = ref
+
 	repo := client.RepoFromRef(scoop.Bucket)
 	return cl.CreateFile(
 		ctx,

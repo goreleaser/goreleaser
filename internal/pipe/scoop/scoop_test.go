@@ -39,25 +39,25 @@ func Test_doRun(t *testing.T) {
 	require.NoError(t, os.WriteFile(file, []byte("lorem ipsum"), 0o644))
 
 	type args struct {
-		ctx    *context.Context
+		ctx    func() *context.Context
 		client *client.Mock
 	}
 
-	type asserter func(*testing.T, args)
-	type errChecker func(*testing.T, error)
+	type asserter func(testing.TB, args)
+	type errChecker func(testing.TB, error)
 	shouldErr := func(msg string) errChecker {
-		return func(t *testing.T, err error) {
-			t.Helper()
-			require.Error(t, err)
-			require.EqualError(t, err, msg)
+		return func(tb testing.TB, err error) {
+			tb.Helper()
+			require.Error(tb, err)
+			require.EqualError(tb, err, msg)
 		}
 	}
-	noAssertions := func(t *testing.T, _ args) {
-		t.Helper()
+	noAssertions := func(tb testing.TB, _ args) {
+		tb.Helper()
 	}
-	shouldNotErr := func(t *testing.T, err error) {
-		t.Helper()
-		require.NoError(t, err)
+	shouldNotErr := func(tb testing.TB, err error) {
+		tb.Helper()
+		require.NoError(tb, err)
 	}
 
 	tests := []struct {
@@ -71,13 +71,8 @@ func Test_doRun(t *testing.T) {
 		{
 			"valid public github",
 			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitHub,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version: "1.0.1",
-					Config: config.Project{
+				func() *context.Context {
+					ctx := context.New(config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
@@ -88,7 +83,13 @@ func Test_doRun(t *testing.T) {
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						},
-					},
+					})
+					ctx.TokenType = context.TokenTypeGitHub
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1",
+					}
+					ctx.Version = "1.0.1"
+					return ctx
 				},
 				client.NewMock(),
 			},
@@ -98,21 +99,16 @@ func Test_doRun(t *testing.T) {
 			},
 			shouldNotErr,
 			shouldNotErr,
-			func(t *testing.T, a args) {
-				t.Helper()
-				require.Equal(t, "scoops/run-pipe.json", a.client.Path)
+			func(tb testing.TB, a args) {
+				tb.Helper()
+				require.Equal(tb, "scoops/run-pipe.json", a.client.Path)
 			},
 		},
 		{
 			"wrap in directory",
 			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitHub,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version: "1.0.1",
-					Config: config.Project{
+				func() *context.Context {
+					ctx := context.New(config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
@@ -122,7 +118,13 @@ func Test_doRun(t *testing.T) {
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						},
-					},
+					})
+					ctx.TokenType = context.TokenTypeGitHub
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1",
+					}
+					ctx.Version = "1.0.1"
+					return ctx
 				},
 				client.NewMock(),
 			},
@@ -154,13 +156,8 @@ func Test_doRun(t *testing.T) {
 		{
 			"valid enterprise github",
 			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitHub,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version: "1.0.1",
-					Config: config.Project{
+				func() *context.Context {
+					ctx := context.New(config.Project{
 						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.github.enterprise.com"},
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
@@ -171,7 +168,13 @@ func Test_doRun(t *testing.T) {
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						},
-					},
+					})
+					ctx.TokenType = context.TokenTypeGitHub
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1",
+					}
+					ctx.Version = "1.0.1"
+					return ctx
 				},
 				client.NewMock(),
 			},
@@ -181,21 +184,16 @@ func Test_doRun(t *testing.T) {
 			},
 			shouldNotErr,
 			shouldNotErr,
-			func(t *testing.T, a args) {
-				t.Helper()
-				require.Equal(t, "run-pipe.json", a.client.Path)
+			func(tb testing.TB, a args) {
+				tb.Helper()
+				require.Equal(tb, "run-pipe.json", a.client.Path)
 			},
 		},
 		{
 			"valid public gitlab",
 			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitLab,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version: "1.0.1",
-					Config: config.Project{
+				func() *context.Context {
+					ctx := context.New(config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
@@ -205,7 +203,13 @@ func Test_doRun(t *testing.T) {
 							Description: "A run pipe test formula",
 							Homepage:    "https://gitlab.com/goreleaser",
 						},
-					},
+					})
+					ctx.TokenType = context.TokenTypeGitLab
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1",
+					}
+					ctx.Version = "1.0.1"
+					return ctx
 				},
 				client.NewMock(),
 			},
@@ -231,13 +235,8 @@ func Test_doRun(t *testing.T) {
 		{
 			"valid enterprise gitlab",
 			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitLab,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version: "1.0.1",
-					Config: config.Project{
+				func() *context.Context {
+					ctx := context.New(config.Project{
 						GitHubURLs:  config.GitHubURLs{Download: "https://api.custom.gitlab.enterprise.com"},
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
@@ -248,7 +247,13 @@ func Test_doRun(t *testing.T) {
 							Description: "A run pipe test formula",
 							Homepage:    "https://gitlab.com/goreleaser",
 						},
-					},
+					})
+					ctx.TokenType = context.TokenTypeGitLab
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1",
+					}
+					ctx.Version = "1.0.1"
+					return ctx
 				},
 				client.NewMock(),
 			},
@@ -274,13 +279,8 @@ func Test_doRun(t *testing.T) {
 		{
 			"no windows build",
 			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitHub,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version: "1.0.1",
-					Config: config.Project{
+				func() *context.Context {
+					ctx := context.New(config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
@@ -290,7 +290,13 @@ func Test_doRun(t *testing.T) {
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						},
-					},
+					})
+					ctx.TokenType = context.TokenTypeGitHub
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1",
+					}
+					ctx.Version = "1.0.1"
+					return ctx
 				},
 				client.NewMock(),
 			},
@@ -302,13 +308,8 @@ func Test_doRun(t *testing.T) {
 		{
 			"is draft",
 			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitHub,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version: "1.0.1",
-					Config: config.Project{
+				func() *context.Context {
+					ctx := context.New(config.Project{
 						ProjectName: "run-pipe",
 						Release: config.Release{
 							Draft: true,
@@ -321,7 +322,13 @@ func Test_doRun(t *testing.T) {
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						},
-					},
+					})
+					ctx.TokenType = context.TokenTypeGitHub
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1",
+					}
+					ctx.Version = "1.0.1"
+					return ctx
 				},
 				client.NewMock(),
 			},
@@ -336,19 +343,8 @@ func Test_doRun(t *testing.T) {
 		{
 			"is prerelease and skip upload set to auto",
 			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitHub,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1-pre.1",
-					},
-					Semver: context.Semver{
-						Major:      1,
-						Minor:      0,
-						Patch:      1,
-						Prerelease: "-pre.1",
-					},
-					Version: "1.0.1-pre.1",
-					Config: config.Project{
+				func() *context.Context {
+					ctx := context.New(config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
 							SkipUpload: "auto",
@@ -359,7 +355,19 @@ func Test_doRun(t *testing.T) {
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						},
-					},
+					})
+					ctx.TokenType = context.TokenTypeGitHub
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1-pre.1",
+					}
+					ctx.Semver = context.Semver{
+						Major:      1,
+						Minor:      0,
+						Patch:      1,
+						Prerelease: "-pre.1",
+					}
+					ctx.Version = "1.0.1-pre.1"
+					return ctx
 				},
 				client.NewMock(),
 			},
@@ -374,13 +382,8 @@ func Test_doRun(t *testing.T) {
 		{
 			"skip upload set to true",
 			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitHub,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version: "1.0.1",
-					Config: config.Project{
+				func() *context.Context {
+					ctx := context.New(config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
 							SkipUpload: "true",
@@ -391,7 +394,13 @@ func Test_doRun(t *testing.T) {
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						},
-					},
+					})
+					ctx.TokenType = context.TokenTypeGitHub
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1",
+					}
+					ctx.Version = "1.0.1"
+					return ctx
 				},
 				client.NewMock(),
 			},
@@ -406,13 +415,8 @@ func Test_doRun(t *testing.T) {
 		{
 			"release is disabled",
 			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitHub,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version: "1.0.1",
-					Config: config.Project{
+				func() *context.Context {
+					ctx := context.New(config.Project{
 						ProjectName: "run-pipe",
 						Release: config.Release{
 							Disable: true,
@@ -425,7 +429,13 @@ func Test_doRun(t *testing.T) {
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						},
-					},
+					})
+					ctx.TokenType = context.TokenTypeGitHub
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1",
+					}
+					ctx.Version = "1.0.1"
+					return ctx
 				},
 				client.NewMock(),
 			},
@@ -440,13 +450,8 @@ func Test_doRun(t *testing.T) {
 		{
 			"no archive",
 			args{
-				&context.Context{
-					TokenType: context.TokenTypeGitHub,
-					Git: context.GitInfo{
-						CurrentTag: "v1.0.1",
-					},
-					Version: "1.0.1",
-					Config: config.Project{
+				func() *context.Context {
+					ctx := context.New(config.Project{
 						ProjectName: "run-pipe",
 						Scoop: config.Scoop{
 							Bucket: config.RepoRef{
@@ -456,7 +461,13 @@ func Test_doRun(t *testing.T) {
 							Description: "A run pipe test formula",
 							Homepage:    "https://github.com/goreleaser",
 						},
-					},
+					})
+					ctx.TokenType = context.TokenTypeGitHub
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1",
+					}
+					ctx.Version = "1.0.1"
+					return ctx
 				},
 				client.NewMock(),
 			},
@@ -465,10 +476,79 @@ func Test_doRun(t *testing.T) {
 			shouldNotErr,
 			noAssertions,
 		},
+		{
+			"invalid ref tmpl",
+			args{
+				func() *context.Context {
+					ctx := context.New(config.Project{
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner: "{{ .Env.aaaaaa }}",
+								Name:  "test",
+							},
+							Folder:      "scoops",
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						},
+					})
+					ctx.TokenType = context.TokenTypeGitHub
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1",
+					}
+					ctx.Version = "1.0.1"
+					return ctx
+				},
+				client.NewMock(),
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1-pre.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
+			},
+			shouldNotErr,
+			testlib.RequireTemplateError,
+			noAssertions,
+		},
+		{
+			"ref templ",
+			args{
+				func() *context.Context {
+					ctx := context.New(config.Project{
+						Env:         []string{"FOO=test", "BRANCH=main"},
+						ProjectName: "run-pipe",
+						Scoop: config.Scoop{
+							Bucket: config.RepoRef{
+								Owner:  "{{ .Env.FOO }}",
+								Name:   "{{ .Env.FOO }}",
+								Branch: "{{ .Env.BRANCH }}",
+							},
+							Folder:      "scoops",
+							Description: "A run pipe test formula",
+							Homepage:    "https://github.com/goreleaser",
+						},
+					})
+					ctx.TokenType = context.TokenTypeGitHub
+					ctx.Git = context.GitInfo{
+						CurrentTag: "v1.0.1",
+					}
+					ctx.Version = "1.0.1"
+					return ctx
+				},
+				client.NewMock(),
+			},
+			[]artifact.Artifact{
+				{Name: "foo_1.0.1_windows_amd64.tar.gz", Goos: "windows", Goarch: "amd64", Goamd64: "v1", Path: file},
+			},
+			shouldNotErr,
+			shouldNotErr,
+			func(tb testing.TB, a args) {
+				tb.Helper()
+				require.Equal(tb, "scoops/run-pipe.json", a.client.Path)
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx := tt.args.ctx
+			ctx := tt.args.ctx()
 			ctx.Artifacts = artifact.New()
 			for _, a := range tt.artifacts {
 				a.Type = artifact.UploadableArchive

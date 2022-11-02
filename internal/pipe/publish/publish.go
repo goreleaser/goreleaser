@@ -35,8 +35,8 @@ type Publisher interface {
 var publishers = []Publisher{
 	blob.Pipe{},
 	upload.Pipe{},
-	custompublishers.Pipe{},
 	artifactory.Pipe{},
+	custompublishers.Pipe{},
 	docker.Pipe{},
 	docker.ManifestPipe{},
 	sign.DockerPipe{},

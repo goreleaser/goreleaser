@@ -36,19 +36,20 @@ jobs:
       - run: git fetch --force --tags
       - uses: actions/setup-go@v3
         with:
-          go-version: '>=1.19.2'
+          go-version: '>=1.19.3'
           cache: true
       # More assembly might be required: Docker logins, GPG, etc. It all depends
       # on your needs.
       - uses: goreleaser/goreleaser-action@v2
         with:
-          # either 'goreleaser' (default) or 'goreleaser-pro'
+          # either 'goreleaser' (default) or 'goreleaser-pro':
           distribution: goreleaser
           version: latest
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
+          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro'
+          # distribution:
           # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
 ```
 

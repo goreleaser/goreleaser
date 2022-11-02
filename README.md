@@ -9,7 +9,7 @@
 GoReleaser builds Go binaries for several platforms, creates a GitHub release and then
 pushes a Homebrew formula to a tap repository. All that wrapped in your favorite CI.
 
-https://user-images.githubusercontent.com/245435/190040641-1fa183e5-d05a-4f9d-b466-02969a529b86.mp4
+![](https://raw.githubusercontent.com/goreleaser/example-simple/main/goreleaser.gif)
 
 ---
 
@@ -38,7 +38,7 @@ You can find the links above and all others [here](https://goreleaser.com/links/
 
 This project adheres to the Contributor Covenant [code of conduct](https://github.com/goreleaser/.github/blob/main/CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
-We appreciate your contribution. 
+We appreciate your contribution.
 Please refer to our [contributing guidelines](CONTRIBUTING.md) for further information.
 
 ## Badges
@@ -53,6 +53,7 @@ Please refer to our [contributing guidelines](CONTRIBUTING.md) for further infor
 [![Backers on Open Collective](https://opencollective.com/goreleaser/backers/badge.svg?style=for-the-badge)](https://opencollective.com/goreleaser/backers/)
 [![Sponsors on Open Collective](https://opencollective.com/goreleaser/sponsors/badge.svg?style=for-the-badge)](https://opencollective.com/goreleaser/sponsors/)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg?style=for-the-badge)](https://conventionalcommits.org)
+[![CII Best Practices](https://img.shields.io/cii/summary/5420?label=openssf%20best%20practices&style=for-the-badge)](https://bestpractices.coreinfrastructure.org/projects/5420)
 
 ## Sponsors
 

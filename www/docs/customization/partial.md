@@ -20,23 +20,32 @@ You don't really need to set anything up. To get started, run:
 
 ```bash
 goreleaser release --rm-dist --split
+GOOS=darwin goreleaser release --rm-dist --split
+GGOOS=windows goreleaser release --rm-dist --split
 ```
 
 Note that this step will push your Docker images as well.
 Docker manifests are not created yet, though.
 
-This will build only the artifacts for your current `GOOS`, and you should be
-able to find them in `dist/$GOOS`.
+- In the first example, it'll build for the current `GOOS` (as returned by
+`runtime.GOOS`).
+- In the second, it'll use the informed `GOOS`. This env will also bleed to
+  things like before hooks, so be aware that any `go run` commands ran by
+  GoReleaser there might fail.
+- The third example uses the informed `GGOOS`, which is used only to filter
+  which targets should be build, and does not affect anything else (as the
+  second option does).
 
-You can run the other `GOOS` you want as well by either running in their OS, or
-by giving a `GOOS` to `goreleaser`.
+Those commands will create the needed artifacts for each platform in
+`dist/$GOOS`.
 
-You should then have multiple `GOOS` folder inside your `dist` folder.
+You can also specify `GOARCH` and `GGOARCH`, which only take effect if you set
+`partial.by` to `target`.
 
 Now, to continue, run:
 
 ```bash
-goreleaser continue
+goreleaser continue --merge
 ```
 
 This last step will run some extra things that were not run during the previous
@@ -75,3 +84,8 @@ partial:
   by: target
 ```
 
+## Integration with GitHub Actions
+
+You can find an example project
+[here](https://github.com/caarlos0/goreleaser-pro-split-merge-example).
+Feel free to dive into the workflow and the GoReleaser config.
