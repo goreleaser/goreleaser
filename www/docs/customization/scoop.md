@@ -17,10 +17,14 @@ scoop:
 
   # Repository to push the app manifest to.
   bucket:
+    # Repository owner template. (templateable)
     owner: user
+
+    # Repository name. (templateable)
     name: scoop-bucket
 
-    # Optionally a branch can be provided.
+    # Optionally a branch can be provided. (templateable)
+    #
     # Defaults to the default repository branch.
     branch: main
 
