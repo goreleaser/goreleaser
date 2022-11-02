@@ -199,6 +199,27 @@ type Krew struct {
 	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
+// Ko contains the ko section
+type Ko struct {
+	ID                  string   `yaml:"id,omitempty" json:"id,omitempty"`
+	Build               string   `yaml:"build,omitempty" json:"build,omitempty"`
+	Main                string   `yaml:"main,omitempty" json:"main,omitempty"`
+	WorkingDir          string   `yaml:"working_dir,omitempty" json:"working_dir,omitempty"`
+	BaseImage           string   `yaml:"base_image,omitempty" json:"base_image,omitempty"`
+	Repository          string   `yaml:"repository,omitempty" json:"repository,omitempty"`
+	CosignRepository    string   `yaml:"cosign_repository,omitempty" json:"cosign_repository,omitempty"`
+	Platforms           []string `yaml:"platforms,omitempty" json:"platforms,omitempty"`
+	Tags                []string `yaml:"tags,omitempty" json:"tags,omitempty"`
+	SBOM                string   `yaml:"sbom,omitempty" json:"sbom,omitempty"`
+	Push                bool     `yaml:"push,omitempty" json:"push,omitempty"`
+	LDFlags             []string `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
+	Flags               []string `yaml:"flags,omitempty" json:"flags,omitempty"`
+	Env                 []string `yaml:"env,omitempty" json:"env,omitempty"`
+	Bare                bool     `yaml:"bare,omitempty" json:"bare,omitempty"`
+	PreserveImportPaths bool     `yaml:"preserve_import_paths,omitempty" json:"preserve_import_paths,omitempty"`
+	BaseImportPaths     bool     `yaml:"base_import_paths,omitempty" json:"base_import_paths,omitempty"`
+}
+
 // Scoop contains the scoop.sh section.
 type Scoop struct {
 	Name                  string       `yaml:"name,omitempty" json:"name,omitempty"`
@@ -914,6 +935,7 @@ type Project struct {
 	Brews           []Homebrew       `yaml:"brews,omitempty" json:"brews,omitempty"`
 	AURs            []AUR            `yaml:"aurs,omitempty" json:"aurs,omitempty"`
 	Krews           []Krew           `yaml:"krews,omitempty" json:"krews,omitempty"`
+	Kos             []Ko             `yaml:"kos,omitempty" json:"kos,omitempty"`
 	Scoop           Scoop            `yaml:"scoop,omitempty" json:"scoop,omitempty"`
 	Builds          []Build          `yaml:"builds,omitempty" json:"builds,omitempty"`
 	Archives        []Archive        `yaml:"archives,omitempty" json:"archives,omitempty"`
