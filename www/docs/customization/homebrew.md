@@ -42,10 +42,14 @@ brews:
 
     # GitHub/GitLab repository to push the formula to
     tap:
-      owner: repo-owner
+      # Repository owner template. (templateable)
+      owner: user
+
+      # Repository name. (templateable)
       name: homebrew-tap
 
-      # Optionally a branch can be provided.
+      # Optionally a branch can be provided. (templateable)
+      #
       # Defaults to the default repository branch.
       branch: main
 

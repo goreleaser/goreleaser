@@ -39,10 +39,14 @@ krews:
     # GitHub/GitLab repository to push the Krew plugin to
     # Gitea is not supported yet, but the support coming
     index:
-      owner: repo-owner
+      # Repository owner template. (templateable)
+      owner: user
+
+      # Repository name. (templateable)
       name: krew-plugins
 
-      # Optionally a branch can be provided.
+      # Optionally a branch can be provided. (templateable)
+      #
       # Defaults to the default repository branch.
       branch: main
 
