@@ -21,7 +21,7 @@ require (
 	github.com/google/go-github/v48 v48.0.0
 	github.com/google/uuid v1.3.0
 	github.com/goreleaser/fileglob v1.3.0
-	github.com/goreleaser/nfpm/v2 v2.20.0
+	github.com/goreleaser/nfpm/v2 v2.21.0
 	github.com/imdario/mergo v0.3.13
 	github.com/invopop/jsonschema v0.6.0
 	github.com/jarcoal/httpmock v1.2.0
@@ -128,7 +128,7 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kevinburke/ssh_config v1.1.0 // indirect
-	github.com/klauspost/compress v1.15.11 // indirect
+	github.com/klauspost/compress v1.15.12 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
