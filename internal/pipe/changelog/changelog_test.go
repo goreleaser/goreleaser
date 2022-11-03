@@ -638,12 +638,12 @@ func TestGroup(t *testing.T) {
 				},
 				{
 					Title:  "Features",
-					Regexp: "^.*feat[(\\w)]*:+.*$",
+					Regexp: `^[0-9a-h]+ feat(\([[:word:]]+\))??!?:.+$`,
 					Order:  0,
 				},
 				{
 					Title:  "Bug Fixes",
-					Regexp: "^.*bug[(\\w)]*:+.*$",
+					Regexp: `^[0-9a-h]+ bug(\([[:word:]]+\))??!?:.+$`,
 					Order:  1,
 				},
 				{
@@ -680,13 +680,13 @@ func TestGroupBadRegex(t *testing.T) {
 			Groups: []config.ChangeLogGroup{
 				{
 					Title:  "Something",
-					Regexp: "^.*feat[(\\w", // unterminated regex
+					Regexp: "^.*feat[a-z", // unterminated regex
 				},
 			},
 		},
 	})
 	ctx.Git.CurrentTag = "v0.0.2"
-	require.EqualError(t, Pipe{}.Run(ctx), `failed to group into "Something": error parsing regexp: missing closing ]: `+"`"+`[(\w`+"`")
+	require.EqualError(t, Pipe{}.Run(ctx), "failed to group into \"Something\": error parsing regexp: missing closing ]: `[a-z`")
 }
 
 func TestChangelogFormat(t *testing.T) {

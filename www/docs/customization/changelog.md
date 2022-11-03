@@ -51,14 +51,15 @@ changelog:
   # Order value defines the order of the groups.
   # Proving no regex means all commits will be grouped under the default group.
   # Groups are disabled when using github-native, as it already groups things by itself.
+  # Matches are performed against strings of the form: "<abbrev-commit> <title-commit>".
   #
   # Default is no groups.
   groups:
     - title: Features
-      regexp: "^.*feat[(\\w)]*:+.*$"
+      regexp: '^[0-9a-h]+ feat(\([[:word:]]+\))??!?:.+$'
       order: 0
     - title: 'Bug fixes'
-      regexp: "^.*fix[(\\w)]*:+.*$"
+      regexp: '^[0-9a-h]+ bug(\([[:word:]]+\))??!?:.+$'
       order: 1
     - title: Others
       order: 999
