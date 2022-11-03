@@ -39,5 +39,21 @@ editor support:
 You can also generate it for your specific version using the
 [`goreleaser jsonschema`][schema] command.
 
+### Pin the schema version
+
+You can pin the version by getting the schema from the GitHub tag, for example,
+for v1.12.0:
+
+
+=== "OSS"
+    ```sh
+    https://raw.githubusercontent.com/goreleaser/goreleaser/v1.12.0/www/docs/static/schema.json
+    ```
+
+=== "Pro"
+    ```sh
+    https://raw.githubusercontent.com/goreleaser/goreleaser/v1.12.0/www/docs/static/schema-pro.json
+    ```
+
 [jsonschema]: http://json-schema.org/draft/2020-12/json-schema-validation.html
 [schema]: /cmd/goreleaser_jsonschema/
