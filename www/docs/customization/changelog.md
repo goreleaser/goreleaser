@@ -57,10 +57,10 @@ changelog:
   # Default is no groups.
   groups:
     - title: Features
-      regexp: '^[0-9a-h]+ feat(\([[:word:]]+\))??!?:.+$'
+      regexp: '^[[:xdigit:]]+ feat(\([[:word:]]+\))??!?:.+$'
       order: 0
     - title: 'Bug fixes'
-      regexp: '^[0-9a-h]+ bug(\([[:word:]]+\))??!?:.+$'
+      regexp: '^[[:xdigit:]]+ bug(\([[:word:]]+\))??!?:.+$'
       order: 1
     - title: Others
       order: 999
