@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/assert"
@@ -143,6 +144,7 @@ func TestSBOMCatalogDefault(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("artifact=%q", test.configs[0].Artifacts), func(t *testing.T) {
+			testlib.CheckPath(t, "syft")
 			ctx := &context.Context{
 				Config: config.Project{
 					SBOMs: test.configs,
@@ -446,6 +448,7 @@ func TestSBOMCatalogArtifacts(t *testing.T) {
 
 func testSBOMCataloging(tb testing.TB, ctx *context.Context, sbomPaths, sbomNames []string, expectedErrMsg string) {
 	tb.Helper()
+	testlib.CheckPath(tb, "syft")
 	tmpdir := tb.TempDir()
 
 	ctx.Config.Dist = tmpdir
