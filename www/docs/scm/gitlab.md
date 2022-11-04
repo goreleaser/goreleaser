@@ -20,6 +20,13 @@ env_files:
     If you use a project access token, make sure to set `use_package_registry`
     to `true` as well, otherwise it might not work.
 
+!!! warning
+    If you are using a [protected variable](https://docs.gitlab.com/ee/ci/variables/#protected-cicd-variables)
+    to store any of the values needed by goreleaser, ensure that you are protecting the tags as CI jobs in
+    Gitlab only may access protected variables if the job is run for protected refs
+    ([branches](https://docs.gitlab.com/ee/user/project/protected_branches.html),
+    [tags](https://docs.gitlab.com/ee/user/project/protected_tags.html)).
+
 ## GitLab Enterprise or private hosted
 
 You can use GoReleaser with GitLab Enterprise by providing its URLs in the
