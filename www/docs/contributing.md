@@ -19,6 +19,7 @@ Other things you might need to run the tests:
 - [GPG](https://gnupg.org)
 - [Podman](https://podman.io/)
 - [Snapcraft](https://snapcraft.io/)
+- [Syft](https://github.com/anchore/syft)
 
 Clone `goreleaser` anywhere:
 
