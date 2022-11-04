@@ -3,6 +3,7 @@ package release
 import (
 	"testing"
 
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/stretchr/testify/require"
@@ -13,8 +14,11 @@ func TestSetupGitLab(t *testing.T) {
 		ctx := context.New(config.Project{})
 
 		require.NoError(t, setupGitLab(ctx))
-		require.Equal(t, "goreleaser", ctx.Config.Release.GitLab.Owner)
-		require.Equal(t, "goreleaser", ctx.Config.Release.GitLab.Name)
+
+		repo, err := git.ExtractRepoFromConfig(ctx)
+		require.NoError(t, err)
+		require.Equal(t, repo.Owner, ctx.Config.Release.GitLab.Owner)
+		require.Equal(t, repo.Name, ctx.Config.Release.GitLab.Name)
 	})
 
 	t.Run("with templates", func(t *testing.T) {
