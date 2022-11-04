@@ -52,6 +52,7 @@ changelog:
   # Proving no regex means all commits will be grouped under the default group.
   # Groups are disabled when using github-native, as it already groups things by itself.
   # Matches are performed against strings of the form: "<abbrev-commit> <title-commit>".
+  # Regex use RE2 syntax as defined here: https://github.com/google/re2/wiki/Syntax.
   #
   # Default is no groups.
   groups:
