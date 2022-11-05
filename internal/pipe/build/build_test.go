@@ -427,43 +427,43 @@ func TestSkipBuild(t *testing.T) {
 }
 
 func TestExtDarwin(t *testing.T) {
-	require.Equal(t, "", extFor("darwin_amd64", config.FlagArray{}))
-	require.Equal(t, "", extFor("darwin_arm64", config.FlagArray{}))
-	require.Equal(t, "", extFor("darwin_amd64", config.FlagArray{"-tags=dev", "-v"}))
-	require.Equal(t, ".dylib", extFor("darwin_amd64", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-shared"}))
-	require.Equal(t, ".dylib", extFor("darwin_arm64", config.FlagArray{"-buildmode=c-shared"}))
-	require.Equal(t, ".a", extFor("darwin_amd64", config.FlagArray{"-buildmode=c-archive"}))
-	require.Equal(t, ".a", extFor("darwin_arm64", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-archive"}))
+	require.Equal(t, "", extFor("darwin_amd64", config.BuildDetails{}))
+	require.Equal(t, "", extFor("darwin_arm64", config.BuildDetails{}))
+	require.Equal(t, "", extFor("darwin_amd64", config.BuildDetails{}))
+	require.Equal(t, ".dylib", extFor("darwin_amd64", config.BuildDetails{Buildmode: "c-shared"}))
+	require.Equal(t, ".dylib", extFor("darwin_arm64", config.BuildDetails{Buildmode: "c-shared"}))
+	require.Equal(t, ".a", extFor("darwin_amd64", config.BuildDetails{Buildmode: "c-archive"}))
+	require.Equal(t, ".a", extFor("darwin_arm64", config.BuildDetails{Buildmode: "c-archive"}))
 }
 
 func TestExtLinux(t *testing.T) {
-	require.Equal(t, "", extFor("linux_amd64", config.FlagArray{}))
-	require.Equal(t, "", extFor("linux_386", config.FlagArray{}))
-	require.Equal(t, "", extFor("linux_amd64", config.FlagArray{"-tags=dev", "-v"}))
-	require.Equal(t, ".so", extFor("linux_amd64", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-shared"}))
-	require.Equal(t, ".so", extFor("linux_386", config.FlagArray{"-buildmode=c-shared"}))
-	require.Equal(t, ".a", extFor("linux_amd64", config.FlagArray{"-buildmode=c-archive"}))
-	require.Equal(t, ".a", extFor("linux_386", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-archive"}))
+	require.Equal(t, "", extFor("linux_amd64", config.BuildDetails{}))
+	require.Equal(t, "", extFor("linux_386", config.BuildDetails{}))
+	require.Equal(t, "", extFor("linux_amd64", config.BuildDetails{}))
+	require.Equal(t, ".so", extFor("linux_amd64", config.BuildDetails{Buildmode: "c-shared"}))
+	require.Equal(t, ".so", extFor("linux_386", config.BuildDetails{Buildmode: "c-shared"}))
+	require.Equal(t, ".a", extFor("linux_amd64", config.BuildDetails{Buildmode: "c-archive"}))
+	require.Equal(t, ".a", extFor("linux_386", config.BuildDetails{Buildmode: "c-archive"}))
 }
 
 func TestExtWindows(t *testing.T) {
-	require.Equal(t, ".exe", extFor("windows_amd64", config.FlagArray{}))
-	require.Equal(t, ".exe", extFor("windows_386", config.FlagArray{}))
-	require.Equal(t, ".exe", extFor("windows_amd64", config.FlagArray{"-tags=dev", "-v"}))
-	require.Equal(t, ".dll", extFor("windows_amd64", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-shared"}))
-	require.Equal(t, ".dll", extFor("windows_386", config.FlagArray{"-buildmode=c-shared"}))
-	require.Equal(t, ".lib", extFor("windows_amd64", config.FlagArray{"-buildmode=c-archive"}))
-	require.Equal(t, ".lib", extFor("windows_386", config.FlagArray{"-tags=dev", "-v", "-buildmode=c-archive"}))
+	require.Equal(t, ".exe", extFor("windows_amd64", config.BuildDetails{}))
+	require.Equal(t, ".exe", extFor("windows_386", config.BuildDetails{}))
+	require.Equal(t, ".exe", extFor("windows_amd64", config.BuildDetails{}))
+	require.Equal(t, ".dll", extFor("windows_amd64", config.BuildDetails{Buildmode: "c-shared"}))
+	require.Equal(t, ".dll", extFor("windows_386", config.BuildDetails{Buildmode: "c-shared"}))
+	require.Equal(t, ".lib", extFor("windows_amd64", config.BuildDetails{Buildmode: "c-archive"}))
+	require.Equal(t, ".lib", extFor("windows_386", config.BuildDetails{Buildmode: "c-archive"}))
 }
 
 func TestExtWasm(t *testing.T) {
-	require.Equal(t, ".wasm", extFor("js_wasm", config.FlagArray{}))
+	require.Equal(t, ".wasm", extFor("js_wasm", config.BuildDetails{}))
 }
 
 func TestExtOthers(t *testing.T) {
-	require.Empty(t, "", extFor("linux_amd64", config.FlagArray{}))
-	require.Empty(t, "", extFor("linuxwin_386", config.FlagArray{}))
-	require.Empty(t, "", extFor("winasdasd_sad", config.FlagArray{}))
+	require.Empty(t, "", extFor("linux_amd64", config.BuildDetails{}))
+	require.Empty(t, "", extFor("linuxwin_386", config.BuildDetails{}))
+	require.Empty(t, "", extFor("winasdasd_sad", config.BuildDetails{}))
 }
 
 func TestTemplate(t *testing.T) {

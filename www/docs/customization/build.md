@@ -51,6 +51,11 @@ builds:
       - -s -w -X main.build={{.Version}}
       - ./usemsan=-msan
 
+    # Custom Go build mode.
+    # `c-shared` and `c-archive` configure the publishing of the header and set the correct extension.
+    # Default is empty.
+    buildmode: c-shared
+
     # Custom build tags templates.
     # Default is empty.
     tags:
@@ -520,9 +525,14 @@ You can read more about it
 
 ## Building shared or static libraries
 
-GoReleaser supports compiling and releasing libraries, by configuring the [Go build mode](https://pkg.go.dev/cmd/go#hdr-Build_modes).
+GoReleaser supports compiling and releasing C shared or static libraries,
+by configuring the [Go build mode](https://pkg.go.dev/cmd/go#hdr-Build_modes).
 
-This can be set with `buildmode` in your build `flags`. It currently supports `c-shared` and `c-archive`.
+This can be set with `buildmode` in your build. It currently supports `c-shared` and `c-archive`.
+Other values will transparently be applied to the build line (via the `-buildmode` flag),
+but GoReleaser will not attempt to configure any additional logic.
+
+As of today, a template may not be applied to this field.
 
 GoReleaser will:
 
@@ -536,5 +546,5 @@ builds:
     id: "my-library"
 
     # Configure the buildmode flag to output a shared library
-    flags: -buildmode=c-shared  # or "c-archive" for a static library
+    buildmode: "c-shared"  # or "c-archive" for a static library
 ```

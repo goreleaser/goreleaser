@@ -135,7 +135,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		return err
 	}
 
-	artifact := &artifact.Artifact{
+	a := &artifact.Artifact{
 		Type:    artifact.Binary,
 		Path:    options.Path,
 		Name:    options.Name,
@@ -149,6 +149,15 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 			artifact.ExtraExt:    options.Ext,
 			artifact.ExtraID:     build.ID,
 		},
+	}
+
+	if build.Buildmode == "c-archive" {
+		a.Type = artifact.CArchive
+		ctx.Artifacts.Add(getHeaderArtifactForLibrary(build, options))
+	}
+	if build.Buildmode == "c-shared" {
+		a.Type = artifact.CShared
+		ctx.Artifacts.Add(getHeaderArtifactForLibrary(build, options))
 	}
 
 	details, err := withOverrides(ctx, build, options)
@@ -167,7 +176,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		"GOAMD64="+options.Goamd64,
 	)
 
-	cmd, err := buildGoBuildLine(ctx, build, details, options, artifact, env)
+	cmd, err := buildGoBuildLine(ctx, build, details, options, a, env)
 	if err != nil {
 		return err
 	}
@@ -177,7 +186,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 
 	if build.ModTimestamp != "" {
-		modTimestamp, err := tmpl.New(ctx).WithEnvS(env).WithArtifact(artifact, map[string]string{}).Apply(build.ModTimestamp)
+		modTimestamp, err := tmpl.New(ctx).WithEnvS(env).WithArtifact(a, map[string]string{}).Apply(build.ModTimestamp)
 		if err != nil {
 			return err
 		}
@@ -192,9 +201,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 		}
 	}
 
-	addHeaderArtifactIfLibrary(ctx, build, options)
-
-	ctx.Artifacts.Add(artifact)
+	ctx.Artifacts.Add(a)
 	return nil
 }
 
@@ -266,6 +273,10 @@ func buildGoBuildLine(ctx *context.Context, build config.Build, details config.B
 		}
 		// ldflags need to be single string in order to apply correctly
 		cmd = append(cmd, "-ldflags="+strings.Join(ldflags, " "))
+	}
+
+	if details.Buildmode != "" {
+		cmd = append(cmd, "-buildmode="+details.Buildmode)
 	}
 
 	cmd = append(cmd, "-o", options.Path, build.Main)
@@ -369,31 +380,25 @@ func hasMain(file *ast.File) bool {
 	return false
 }
 
-func addHeaderArtifactIfLibrary(ctx *context.Context, build config.Build, options api.Options) {
-	for _, s := range build.BuildDetails.Flags {
-		if s == "-buildmode=c-shared" || s == "-buildmode=c-archive" {
-			fullPathWithoutExt := strings.TrimSuffix(options.Path, options.Ext)
-			basePath := filepath.Base(fullPathWithoutExt)
-			fullPath := fullPathWithoutExt + ".h"
-			headerName := basePath + ".h"
+func getHeaderArtifactForLibrary(build config.Build, options api.Options) *artifact.Artifact {
+	fullPathWithoutExt := strings.TrimSuffix(options.Path, options.Ext)
+	basePath := filepath.Base(fullPathWithoutExt)
+	fullPath := fullPathWithoutExt + ".h"
+	headerName := basePath + ".h"
 
-			header := &artifact.Artifact{
-				Type:    artifact.Header,
-				Path:    fullPath,
-				Name:    headerName,
-				Goos:    options.Goos,
-				Goarch:  options.Goarch,
-				Goamd64: options.Goamd64,
-				Goarm:   options.Goarm,
-				Gomips:  options.Gomips,
-				Extra: map[string]interface{}{
-					artifact.ExtraBinary: headerName,
-					artifact.ExtraExt:    ".h",
-					artifact.ExtraID:     build.ID,
-				},
-			}
-
-			ctx.Artifacts.Add(header)
-		}
+	return &artifact.Artifact{
+		Type:    artifact.Header,
+		Path:    fullPath,
+		Name:    headerName,
+		Goos:    options.Goos,
+		Goarch:  options.Goarch,
+		Goamd64: options.Goamd64,
+		Goarm:   options.Goarm,
+		Gomips:  options.Gomips,
+		Extra: map[string]interface{}{
+			artifact.ExtraBinary: headerName,
+			artifact.ExtraExt:    ".h",
+			artifact.ExtraID:     build.ID,
+		},
 	}
 }

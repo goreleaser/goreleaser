@@ -156,7 +156,7 @@ func doBuild(ctx *context.Context, build config.Build, opts builders.Options) er
 }
 
 func buildOptionsForTarget(ctx *context.Context, build config.Build, target string) (*builders.Options, error) {
-	ext := extFor(target, build.Flags)
+	ext := extFor(target, build.BuildDetails)
 	parts := strings.Split(target, "_")
 	if len(parts) < 2 {
 		return nil, fmt.Errorf("%s is not a valid build target", target)
@@ -211,35 +211,30 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 	return &buildOpts, nil
 }
 
-func extFor(target string, flags config.FlagArray) string {
+func extFor(target string, build config.BuildDetails) string {
+	buildmode := build.Buildmode
 	if strings.Contains(target, "darwin") {
-		for _, s := range flags {
-			if s == "-buildmode=c-shared" {
-				return ".dylib"
-			}
-			if s == "-buildmode=c-archive" {
-				return ".a"
-			}
+		if buildmode == "c-shared" {
+			return ".dylib"
+		}
+		if buildmode == "c-archive" {
+			return ".a"
 		}
 	}
 	if strings.Contains(target, "linux") {
-		for _, s := range flags {
-			if s == "-buildmode=c-shared" {
-				return ".so"
-			}
-			if s == "-buildmode=c-archive" {
-				return ".a"
-			}
+		if buildmode == "c-shared" {
+			return ".so"
+		}
+		if buildmode == "c-archive" {
+			return ".a"
 		}
 	}
 	if strings.Contains(target, "windows") {
-		for _, s := range flags {
-			if s == "-buildmode=c-shared" {
-				return ".dll"
-			}
-			if s == "-buildmode=c-archive" {
-				return ".lib"
-			}
+		if buildmode == "c-shared" {
+			return ".dll"
+		}
+		if buildmode == "c-archive" {
+			return ".lib"
 		}
 		return ".exe"
 	}

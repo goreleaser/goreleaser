@@ -92,6 +92,8 @@ func (Pipe) Run(ctx *context.Context) error {
 			artifact.ByType(artifact.Binary),
 			artifact.ByType(artifact.UniversalBinary),
 			artifact.ByType(artifact.Header),
+			artifact.ByType(artifact.CArchive),
+			artifact.ByType(artifact.CShared),
 		)}
 		if len(archive.Builds) > 0 {
 			filter = append(filter, artifact.ByIDs(archive.Builds...))

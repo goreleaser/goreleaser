@@ -333,12 +333,13 @@ type BuildDetailsOverride struct {
 }
 
 type BuildDetails struct {
-	Ldflags  StringArray `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
-	Tags     FlagArray   `yaml:"tags,omitempty" json:"tags,omitempty"`
-	Flags    FlagArray   `yaml:"flags,omitempty" json:"flags,omitempty"`
-	Asmflags StringArray `yaml:"asmflags,omitempty" json:"asmflags,omitempty"`
-	Gcflags  StringArray `yaml:"gcflags,omitempty" json:"gcflags,omitempty"`
-	Env      []string    `yaml:"env,omitempty" json:"env,omitempty"`
+	Buildmode string      `yaml:"buildmode,omitempty" json:"buildmode,omitempty"`
+	Ldflags   StringArray `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
+	Tags      FlagArray   `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Flags     FlagArray   `yaml:"flags,omitempty" json:"flags,omitempty"`
+	Asmflags  StringArray `yaml:"asmflags,omitempty" json:"asmflags,omitempty"`
+	Gcflags   StringArray `yaml:"gcflags,omitempty" json:"gcflags,omitempty"`
+	Env       []string    `yaml:"env,omitempty" json:"env,omitempty"`
 }
 
 type BuildHookConfig struct {
