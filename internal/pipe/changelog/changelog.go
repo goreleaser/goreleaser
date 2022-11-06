@@ -155,16 +155,23 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 			if err != nil {
 				return "", fmt.Errorf("failed to group into %q: %w", group.Title, err)
 			}
+
+			log.Debugf("group: %#v", group)
 			for i, entry := range entries {
 				match := regex.MatchString(entry)
+				log.Debugf("match[%d]: %s = %v\n", i, entry, match)
 				if match {
 					item.entries = append(item.entries, li+entry)
-					// Striking out the matched entry
-					entries[i] = ""
+					// Remove matched entry.
+					entries = append(entries[:i], entries[i+1:]...)
 				}
 			}
 		}
 		groups = append(groups, item)
+
+		if len(entries) == 0 {
+			break // No more entries to process.
+		}
 	}
 
 	sort.Slice(groups, func(i, j int) bool { return groups[i].order < groups[j].order })

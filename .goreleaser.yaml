@@ -53,16 +53,16 @@ changelog:
     - go mod tidy
   groups:
     - title: Dependency updates
-      regexp: '^[[:xdigit:]]+ (feat|fix)\(deps\)!?:.+$'
+      regexp: '^.*?(feat|fix)\(deps\)!?:.+$'
       order: 300
     - title: 'New Features'
-      regexp: '^[[:xdigit:]]+ feat(\([[:word:]]+\))??!?:.+$'
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
       order: 100
     - title: 'Bug fixes'
-      regexp: '^[[:xdigit:]]+ fix(\([[:word:]]+\))??!?:.+$'
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
       order: 200
     - title: 'Documentation updates'
-      regexp: ^[[:xdigit:]]+ doc(\([[:word:]]+\))??!?:.+$
+      regexp: ^.*?doc(\([[:word:]]+\))??!?:.+$
       order: 400
     - title: Other work
       order: 9999

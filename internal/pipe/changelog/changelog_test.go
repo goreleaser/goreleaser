@@ -638,12 +638,12 @@ func TestGroup(t *testing.T) {
 				},
 				{
 					Title:  "Features",
-					Regexp: `^[0-9a-h]+ feat(\([[:word:]]+\))??!?:.+$`,
+					Regexp: `^.*?feat(\([[:word:]]+\))??!?:.+$`,
 					Order:  0,
 				},
 				{
 					Title:  "Bug Fixes",
-					Regexp: `^[0-9a-h]+ bug(\([[:word:]]+\))??!?:.+$`,
+					Regexp: `^.*?bug(\([[:word:]]+\))??!?:.+$`,
 					Order:  1,
 				},
 				{
