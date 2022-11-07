@@ -157,15 +157,19 @@ func formatChangelog(ctx *context.Context, entries []string) (string, error) {
 			}
 
 			log.Debugf("group: %#v", group)
-			for i, entry := range entries {
+			i := 0
+			for _, entry := range entries {
 				match := regex.MatchString(entry)
-				log.Debugf("match[%d]: %s = %v\n", i, entry, match)
+				log.Debugf("entry: %s match: %b\n", entry, match)
 				if match {
 					item.entries = append(item.entries, li+entry)
-					// Remove matched entry.
-					entries = append(entries[:i], entries[i+1:]...)
+				} else {
+					// Keep unmatched entry.
+					entries[i] = entry
+					i++
 				}
 			}
+			entries = entries[:i]
 		}
 		groups = append(groups, item)
 
