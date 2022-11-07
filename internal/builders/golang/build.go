@@ -237,6 +237,9 @@ func withOverrides(ctx *context.Context, build config.Build, options api.Options
 func buildGoBuildLine(ctx *context.Context, build config.Build, details config.BuildDetails, options api.Options, artifact *artifact.Artifact, env []string) ([]string, error) {
 	cmd := []string{build.GoBinary, build.Command}
 
+	// tags, ldflags, and buildmode, should only appear once, warning only to avoid a breaking change
+	validateUniqueFlags(details)
+
 	flags, err := processFlags(ctx, artifact, env, details.Flags, "")
 	if err != nil {
 		return cmd, err
@@ -281,6 +284,20 @@ func buildGoBuildLine(ctx *context.Context, build config.Build, details config.B
 
 	cmd = append(cmd, "-o", options.Path, build.Main)
 	return cmd, nil
+}
+
+func validateUniqueFlags(details config.BuildDetails) {
+	for _, flag := range details.Flags {
+		if strings.HasPrefix(flag, "-tags") && len(details.Tags) > 0 {
+			log.WithField("flag", flag).WithField("tags", details.Tags).Warn("tags is defined twice")
+		}
+		if strings.HasPrefix(flag, "-ldflags") && len(details.Ldflags) > 0 {
+			log.WithField("flag", flag).WithField("ldflags", details.Ldflags).Warn("ldflags is defined twice")
+		}
+		if strings.HasPrefix(flag, "-buildmode") && details.Buildmode != "" {
+			log.WithField("flag", flag).WithField("buildmode", details.Buildmode).Warn("buildmode is defined twice")
+		}
+	}
 }
 
 func processFlags(ctx *context.Context, a *artifact.Artifact, env, flags []string, flagPrefix string) ([]string, error) {
