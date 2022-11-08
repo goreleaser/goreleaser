@@ -34,6 +34,11 @@ theme:
 
 plugins:
   - search
+  - redirects:
+      redirect_maps:
+        discord: https://discord.gg/RGEBtg8vQ6
+        twitter: https://twitter.com/goreleaser
+        linkedin: https://www.linkedin.com/company/goreleaser/
   - minify:
       minify_html: true
 

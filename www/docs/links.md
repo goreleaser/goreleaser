@@ -1,15 +1,16 @@
 # Links
 
 - Follow the progress on the [GitHub repository](https://github.com/goreleaser/goreleaser)
-- Follow [@goreleaser](https://twitter.com/goreleaser) on Twitter for updates
-- Join our [Discord server](https://discord.gg/RGEBtg8vQ6)
+- Follow [@goreleaser](/twitter) on Twitter for updates
+- Join our [Discord server](/discord)
 - Read our [blog](https://blog.goreleaser.com)[^blog]
 - Sign up for our [Newsletter](https://www.getrevue.co/profile/goreleaser)
-- Follow us on [LinkedIn](https://www.linkedin.com/company/goreleaser/)
-- Ask questions on [StackOverflow](https://stackoverflow.com/questions/tagged/goreleaser)
+- Follow us on [LinkedIn](/linkedin)
 - For questions, support and general discussion, please use
-[GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions);
+[Discord](/discord) or
+[GitHub Discussions](https://github.com/goreleaser/goreleaser/discussions)
 - [Contributing Guidelines](/contributing)
+- [Security Policy](/security)
 - [EULA](/eula)
 
 This project adheres to the Contributor Covenant
