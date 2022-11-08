@@ -36,9 +36,9 @@ plugins:
   - search
   - redirects:
       redirect_maps:
-        discord: https://discord.gg/RGEBtg8vQ6
-        twitter: https://twitter.com/goreleaser
-        linkedin: https://www.linkedin.com/company/goreleaser/
+        discord.md: https://discord.gg/RGEBtg8vQ6
+        twitter.md: https://twitter.com/goreleaser
+        linkedin.md: https://www.linkedin.com/company/goreleaser/
   - minify:
       minify_html: true
 
