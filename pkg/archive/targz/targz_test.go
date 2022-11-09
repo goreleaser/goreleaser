@@ -87,7 +87,6 @@ func TestTarGzFile(t *testing.T) {
 		}
 		require.NoError(t, err)
 		paths = append(paths, next.Name)
-		t.Logf("%s: %v", next.Name, next.FileInfo().Mode())
 		if next.Name == "sub1/executable" {
 			ex := next.FileInfo().Mode() | 0o111
 			require.Equal(t, next.FileInfo().Mode().String(), ex.String())
