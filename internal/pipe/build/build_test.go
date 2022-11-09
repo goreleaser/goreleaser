@@ -461,9 +461,12 @@ func TestExtWasm(t *testing.T) {
 }
 
 func TestExtOthers(t *testing.T) {
-	require.Empty(t, "", extFor("linux_amd64", config.BuildDetails{}))
-	require.Empty(t, "", extFor("linuxwin_386", config.BuildDetails{}))
-	require.Empty(t, "", extFor("winasdasd_sad", config.BuildDetails{}))
+	require.Equal(t, "", extFor("linux_amd64", config.BuildDetails{}))
+	require.Equal(t, "", extFor("linuxwin_386", config.BuildDetails{}))
+	require.Equal(t, "", extFor("winasdasd_sad", config.BuildDetails{}))
+	require.Equal(t, ".so", extFor("aix_amd64", config.BuildDetails{Buildmode: "c-shared"}))
+	require.Equal(t, ".a", extFor("android_386", config.BuildDetails{Buildmode: "c-archive"}))
+	require.Equal(t, ".so", extFor("winasdasd_sad", config.BuildDetails{Buildmode: "c-shared"}))
 }
 
 func TestTemplate(t *testing.T) {
