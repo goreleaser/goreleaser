@@ -215,11 +215,12 @@ func withOverrides(ctx *context.Context, build config.Build, options api.Options
 
 		if optsTarget == overrideTarget {
 			dets := config.BuildDetails{
-				Ldflags:  build.BuildDetails.Ldflags,
-				Tags:     build.BuildDetails.Tags,
-				Flags:    build.BuildDetails.Flags,
-				Asmflags: build.BuildDetails.Asmflags,
-				Gcflags:  build.BuildDetails.Gcflags,
+				Buildmode: build.BuildDetails.Buildmode,
+				Ldflags:   build.BuildDetails.Ldflags,
+				Tags:      build.BuildDetails.Tags,
+				Flags:     build.BuildDetails.Flags,
+				Asmflags:  build.BuildDetails.Asmflags,
+				Gcflags:   build.BuildDetails.Gcflags,
 			}
 			if err := mergo.Merge(&dets, o.BuildDetails, mergo.WithOverride); err != nil {
 				return build.BuildDetails, err
