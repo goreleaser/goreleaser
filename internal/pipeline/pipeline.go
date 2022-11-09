@@ -108,10 +108,10 @@ var Pipeline = append(
 	scoop.Pipe{},
 	// create and push docker images
 	docker.Pipe{},
-	// creates a metadata.json and an artifacts.json files in the dist folder
-	metadata.Pipe{},
 	// publishes artifacts
 	publish.Pipe{},
+	// creates a metadata.json and an artifacts.json files in the dist folder
+	metadata.Pipe{},
 	// announce releases
 	announce.Pipe{},
 )
