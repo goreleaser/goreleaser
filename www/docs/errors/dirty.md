@@ -21,4 +21,4 @@ From here on, you have a couple of options:
 
 - add the file to `.gitignore` (recommended if the file is temporary and/or
   generated);
-- change your process the build process to not touch any git tracked files.
+- change your build process to not touch any git tracked files.
