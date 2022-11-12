@@ -281,5 +281,9 @@ dockers:
     use: podman
 ```
 
-Note that GoReleaser will not install Podman for you, nor change any of its configuration.
+Note that GoReleaser will not install Podman for you, nor change any of its
+configuration.
+
+If you want to use it rootless, make sure to follow
+[this guide](https://github.com/containers/podman/blob/main/docs/tutorials/rootless_tutorial.md).
 

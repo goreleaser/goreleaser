@@ -68,6 +68,12 @@ const (
 	SBOM
 	// PublishableChocolatey is a chocolatey package yet to be published.
 	PublishableChocolatey
+	// Header is a C header file, generated for CGo library builds.
+	Header
+	// CArchive is a C static library, generated via a CGo build with buildmode=c-archive.
+	CArchive
+	// CShared is a C shared library, generated via a CGo build with buildmode=c-shared.
+	CShared
 )
 
 func (t Type) String() string {
@@ -108,6 +114,12 @@ func (t Type) String() string {
 		return "SRCINFO"
 	case PublishableChocolatey:
 		return "Chocolatey"
+	case Header:
+		return "C Header"
+	case CArchive:
+		return "C Archive Library"
+	case CShared:
+		return "C Shared Library"
 	default:
 		return "unknown"
 	}
