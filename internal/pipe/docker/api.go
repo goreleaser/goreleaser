@@ -86,7 +86,7 @@ func runCommandWithOutput(ctx *context.Context, dir, binary string, args ...stri
 	out, err := cmd.Output()
 	if out != nil {
 		// regardless of command success, always print stdout for backward-compatibility with runCommand()
-		io.MultiWriter(logext.NewWriter(fields, logext.Error), w).Write(out)
+		_, _ = io.MultiWriter(logext.NewWriter(fields, logext.Error), w).Write(out)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", err, b.String())
