@@ -52,7 +52,12 @@ builds:
       - ./usemsan=-msan
 
     # Custom Go build mode.
-    # `c-shared` and `c-archive` configure the publishing of the header and set the correct extension.
+    #
+    # Valid options:
+    # - `c-shared`
+    # - `c-archive`
+    #
+    # Since GoReleaser v1.13.
     # Default is empty.
     buildmode: c-shared
 
@@ -525,19 +530,22 @@ You can read more about it
 
 ## Building shared or static libraries
 
-GoReleaser supports compiling and releasing C shared or static libraries,
-by configuring the [Go build mode](https://pkg.go.dev/cmd/go#hdr-Build_modes).
+> Since: v1.13.0
 
-This can be set with `buildmode` in your build. It currently supports `c-shared` and `c-archive`.
-Other values will transparently be applied to the build line (via the `-buildmode` flag),
-but GoReleaser will not attempt to configure any additional logic.
+GoReleaser supports compiling and releasing C shared or static libraries, by
+configuring the [Go build mode](https://pkg.go.dev/cmd/go#hdr-Build_modes).
 
-As of today, a template may not be applied to this field.
+This can be set with `buildmode` in your build.
+It now supports `c-shared` and `c-archive`. Other values will transparently be
+applied to the build line (via the `-buildmode` flag), but GoReleaser will not
+attempt to configure any additional logic.
 
 GoReleaser will:
 
 * set the correct file extension for the target OS.
 * package the generated header file (`.h`) in the release bundle.
+
+Example usage:
 
 ```yaml
 # .goreleaser.yaml
