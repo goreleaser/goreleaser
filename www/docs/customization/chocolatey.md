@@ -1,5 +1,7 @@
 # Chocolatey Packages
 
+> Since: v1.13.0
+
 GoReleaser can also generate `nupkg` packages.
 [Chocolatey](http://chocolatey.org/) are packages based on `nupkg` format, that
 will let you publish your project directly to the Chocolatey Repository. From
@@ -130,4 +132,5 @@ chocolateys:
     Learn more about the [name template engine](/customization/templates/).
 
 !!! note
-    GoReleaser will not install `chocolatey` nor any of its dependencies for you.
+    GoReleaser will not install `chocolatey`/`choco` nor any of its dependencies
+    for you.

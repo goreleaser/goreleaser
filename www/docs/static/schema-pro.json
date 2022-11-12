@@ -350,6 +350,9 @@
 					"no_main_check": {
 						"type": "boolean"
 					},
+					"buildmode": {
+						"type": "string"
+					},
 					"ldflags": {
 						"$ref": "#/$defs/StringArray"
 					},
@@ -399,6 +402,9 @@
 						"type": "string"
 					},
 					"goamd64": {
+						"type": "string"
+					},
+					"buildmode": {
 						"type": "string"
 					},
 					"ldflags": {
@@ -1340,6 +1346,9 @@
 					"apk": {
 						"$ref": "#/$defs/NFPMAPK"
 					},
+					"archlinux": {
+						"$ref": "#/$defs/NFPMArchLinux"
+					},
 					"overrides": {
 						"patternProperties": {
 							".*": {
@@ -1427,6 +1436,33 @@
 						"type": "string"
 					},
 					"key_name": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"NFPMArchLinux": {
+				"properties": {
+					"pkgbase": {
+						"type": "string"
+					},
+					"packager": {
+						"type": "string"
+					},
+					"scripts": {
+						"$ref": "#/$defs/NFPMArchLinuxScripts"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"NFPMArchLinuxScripts": {
+				"properties": {
+					"preupgrade": {
+						"type": "string"
+					},
+					"postupgrade": {
 						"type": "string"
 					}
 				},
@@ -1604,6 +1640,9 @@
 					},
 					"apk": {
 						"$ref": "#/$defs/NFPMAPK"
+					},
+					"archlinux": {
+						"$ref": "#/$defs/NFPMArchLinux"
 					}
 				},
 				"additionalProperties": false,
