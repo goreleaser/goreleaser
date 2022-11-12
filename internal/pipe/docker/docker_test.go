@@ -271,15 +271,16 @@ func TestRunPipe(t *testing.T) {
 			extraPrepare: func(t *testing.T, ctx *context.Context) {
 				t.Helper()
 				for _, cmd := range []string{
-					fmt.Sprintf("docker manifest rm %sgoreleaser/test_multiarch:2test ", registry),
+					fmt.Sprintf("docker manifest rm %sgoreleaser/test_multiarch:2test || true", registry),
 					fmt.Sprintf("docker build -t %sgoreleaser/dummy:v1 --platform linux/amd64 -f testdata/Dockerfile.dummy .", registry),
 					fmt.Sprintf("docker push %sgoreleaser/dummy:v1", registry),
 					fmt.Sprintf("docker manifest create %sgoreleaser/test_multiarch:2test --amend %sgoreleaser/dummy:v1 --insecure", registry, registry),
 				} {
-					// t.Log("running", cmd)
-					parts := strings.Fields(cmd)
+					parts := strings.Fields(strings.TrimSuffix(cmd, " || true"))
 					out, err := exec.CommandContext(ctx, parts[0], parts[1:]...).CombinedOutput()
-					require.NoError(t, err, cmd+": "+string(out))
+					if !strings.HasSuffix(cmd, " || true") {
+						require.NoError(t, err, cmd+": "+string(out))
+					}
 				}
 			},
 		},
