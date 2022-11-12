@@ -66,6 +66,8 @@ const (
 	ScoopManifest
 	// SBOM is a Software Bill of Materials file.
 	SBOM
+	// PublishableChocolatey is a chocolatey package yet to be published.
+	PublishableChocolatey
 	// Header is a C header file, generated for CGo library builds.
 	Header
 	// CArchive is a C static library, generated via a CGo build with buildmode=c-archive.
@@ -110,6 +112,8 @@ func (t Type) String() string {
 		return "PKGBUILD"
 	case SrcInfo:
 		return "SRCINFO"
+	case PublishableChocolatey:
+		return "Chocolatey"
 	case Header:
 		return "C Header"
 	case CArchive:

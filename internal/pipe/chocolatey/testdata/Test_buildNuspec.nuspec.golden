@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>goreleaser</id>
+    <version>1.12.3</version>
+    <title>GoReleaser</title>
+    <authors>caarlos0</authors>
+    <projectUrl>https://goreleaser.com/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <tags>go docker homebrew golang package</tags>
+    <summary>Deliver Go binaries as fast and easily as possible</summary>
+    <description>GoReleaser builds Go binaries for several platforms, creates a GitHub release and then pushes a Homebrew formula to a tap repository. All that wrapped in your favorite CI.</description>
+    <dependencies>
+      <dependency id="nfpm" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

@@ -12,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/build"
 	"github.com/goreleaser/goreleaser/internal/pipe/changelog"
 	"github.com/goreleaser/goreleaser/internal/pipe/checksums"
+	"github.com/goreleaser/goreleaser/internal/pipe/chocolatey"
 	"github.com/goreleaser/goreleaser/internal/pipe/defaults"
 	"github.com/goreleaser/goreleaser/internal/pipe/dist"
 	"github.com/goreleaser/goreleaser/internal/pipe/docker"
@@ -106,6 +107,8 @@ var Pipeline = append(
 	krew.Pipe{},
 	// create scoop buckets
 	scoop.Pipe{},
+	// create chocolatey pkg and publish
+	chocolatey.Pipe{},
 	// create and push docker images
 	docker.Pipe{},
 	// creates a metadata.json and an artifacts.json files in the dist folder
