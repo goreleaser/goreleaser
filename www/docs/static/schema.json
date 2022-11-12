@@ -329,6 +329,9 @@
 					"no_main_check": {
 						"type": "boolean"
 					},
+					"buildmode": {
+						"type": "string"
+					},
 					"ldflags": {
 						"$ref": "#/$defs/StringArray"
 					},
@@ -375,6 +378,9 @@
 						"type": "string"
 					},
 					"goamd64": {
+						"type": "string"
+					},
+					"buildmode": {
 						"type": "string"
 					},
 					"ldflags": {
