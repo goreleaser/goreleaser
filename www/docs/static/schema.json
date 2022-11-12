@@ -329,6 +329,9 @@
 					"no_main_check": {
 						"type": "boolean"
 					},
+					"buildmode": {
+						"type": "string"
+					},
 					"ldflags": {
 						"$ref": "#/$defs/StringArray"
 					},
@@ -375,6 +378,9 @@
 						"type": "string"
 					},
 					"goamd64": {
+						"type": "string"
+					},
+					"buildmode": {
 						"type": "string"
 					},
 					"ldflags": {
@@ -485,6 +491,102 @@
 							"$ref": "#/$defs/ExtraFile"
 						},
 						"type": "array"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Chocolatey": {
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"ids": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"package_source_url": {
+						"type": "string"
+					},
+					"authoers": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"authors": {
+						"type": "string"
+					},
+					"project_url": {
+						"type": "string"
+					},
+					"url_template": {
+						"type": "string"
+					},
+					"icon_url": {
+						"type": "string"
+					},
+					"copyright": {
+						"type": "string"
+					},
+					"license_url": {
+						"type": "string"
+					},
+					"require_license_acceptance": {
+						"type": "boolean"
+					},
+					"project_source_url": {
+						"type": "string"
+					},
+					"docs_url": {
+						"type": "string"
+					},
+					"bug_tracker_url": {
+						"type": "string"
+					},
+					"tags": {
+						"type": "string"
+					},
+					"summary": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"release_notes": {
+						"type": "string"
+					},
+					"dependencies": {
+						"items": {
+							"$ref": "#/$defs/ChocolateyDependency"
+						},
+						"type": "array"
+					},
+					"skip_publish": {
+						"type": "boolean"
+					},
+					"api_key": {
+						"type": "string"
+					},
+					"source_repo": {
+						"type": "string"
+					},
+					"goamd64": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"ChocolateyDependency": {
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"version": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
@@ -1738,6 +1840,12 @@
 					"sboms": {
 						"items": {
 							"$ref": "#/$defs/SBOM"
+						},
+						"type": "array"
+					},
+					"chocolatey": {
+						"items": {
+							"$ref": "#/$defs/Chocolatey"
 						},
 						"type": "array"
 					},

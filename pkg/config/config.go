@@ -333,12 +333,13 @@ type BuildDetailsOverride struct {
 }
 
 type BuildDetails struct {
-	Ldflags  StringArray `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
-	Tags     FlagArray   `yaml:"tags,omitempty" json:"tags,omitempty"`
-	Flags    FlagArray   `yaml:"flags,omitempty" json:"flags,omitempty"`
-	Asmflags StringArray `yaml:"asmflags,omitempty" json:"asmflags,omitempty"`
-	Gcflags  StringArray `yaml:"gcflags,omitempty" json:"gcflags,omitempty"`
-	Env      []string    `yaml:"env,omitempty" json:"env,omitempty"`
+	Buildmode string      `yaml:"buildmode,omitempty" json:"buildmode,omitempty"`
+	Ldflags   StringArray `yaml:"ldflags,omitempty" json:"ldflags,omitempty"`
+	Tags      FlagArray   `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Flags     FlagArray   `yaml:"flags,omitempty" json:"flags,omitempty"`
+	Asmflags  StringArray `yaml:"asmflags,omitempty" json:"asmflags,omitempty"`
+	Gcflags   StringArray `yaml:"gcflags,omitempty" json:"gcflags,omitempty"`
+	Env       []string    `yaml:"env,omitempty" json:"env,omitempty"`
 }
 
 type BuildHookConfig struct {
@@ -929,6 +930,7 @@ type Project struct {
 	GoMod           GoMod            `yaml:"gomod,omitempty" json:"gomod,omitempty"`
 	Announce        Announce         `yaml:"announce,omitempty" json:"announce,omitempty"`
 	SBOMs           []SBOM           `yaml:"sboms,omitempty" json:"sboms,omitempty"`
+	Chocolateys     []Chocolatey     `yaml:"chocolateys,omitempty" json:"chocolatey,omitempty"`
 
 	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty" json:"universal_binaries,omitempty"`
 
@@ -1114,4 +1116,38 @@ func (a *SlackAttachment) UnmarshalYAML(unmarshal func(interface{}) error) error
 // MarshalJSON marshals a slack attachment as JSON.
 func (a SlackAttachment) MarshalJSON() ([]byte, error) {
 	return json.Marshal(a.Internal)
+}
+
+// Chocolatey contains the chocolatey section.
+type Chocolatey struct {
+	Name                     string                 `yaml:"name,omitempty" json:"name,omitempty"`
+	IDs                      []string               `yaml:"ids,omitempty" json:"ids,omitempty"`
+	PackageSourceURL         string                 `yaml:"package_source_url,omitempty" json:"package_source_url,omitempty"`
+	Owners                   string                 `yaml:"owners,omitempty" json:"authoers,omitempty"`
+	Title                    string                 `yaml:"title,omitempty" json:"title,omitempty"`
+	Authors                  string                 `yaml:"authors,omitempty" json:"authors,omitempty"`
+	ProjectURL               string                 `yaml:"project_url,omitempty" json:"project_url,omitempty"`
+	URLTemplate              string                 `yaml:"url_template,omitempty" json:"url_template,omitempty"`
+	IconURL                  string                 `yaml:"icon_url,omitempty" json:"icon_url,omitempty"`
+	Copyright                string                 `yaml:"copyright,omitempty" json:"copyright,omitempty"`
+	LicenseURL               string                 `yaml:"license_url,omitempty" json:"license_url,omitempty"`
+	RequireLicenseAcceptance bool                   `yaml:"require_license_acceptance,omitempty" json:"require_license_acceptance,omitempty"`
+	ProjectSourceURL         string                 `yaml:"project_source_url,omitempty" json:"project_source_url,omitempty"`
+	DocsURL                  string                 `yaml:"docs_url,omitempty" json:"docs_url,omitempty"`
+	BugTrackerURL            string                 `yaml:"bug_tracker_url,omitempty" json:"bug_tracker_url,omitempty"`
+	Tags                     string                 `yaml:"tags,omitempty" json:"tags,omitempty"`
+	Summary                  string                 `yaml:"summary,omitempty" json:"summary,omitempty"`
+	Description              string                 `yaml:"description,omitempty" json:"description,omitempty"`
+	ReleaseNotes             string                 `yaml:"release_notes,omitempty" json:"release_notes,omitempty"`
+	Dependencies             []ChocolateyDependency `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
+	SkipPublish              bool                   `yaml:"skip_publish,omitempty" json:"skip_publish,omitempty"`
+	APIKey                   string                 `yaml:"api_key,omitempty" json:"api_key,omitempty"`
+	SourceRepo               string                 `yaml:"source_repo,omitempty" json:"source_repo,omitempty"`
+	Goamd64                  string                 `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
+}
+
+// ChcolateyDependency represents Chocolatey dependency.
+type ChocolateyDependency struct {
+	ID      string `yaml:"id,omitempty" json:"id,omitempty"`
+	Version string `yaml:"version,omitempty" json:"version,omitempty"`
 }
