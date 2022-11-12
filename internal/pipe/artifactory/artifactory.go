@@ -79,7 +79,7 @@ func checkResponse(r *h.Response) error {
 	if err == nil && data != nil {
 		err := json.Unmarshal(data, errorResponse)
 		if err != nil {
-			return err
+			return fmt.Errorf("unexpected error: %w: %s", err, string(data))
 		}
 	}
 	return errorResponse
