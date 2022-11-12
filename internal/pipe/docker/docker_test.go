@@ -1091,6 +1091,13 @@ func TestRunPipe(t *testing.T) {
 					// t.Log("removing docker image", img)
 					require.NoError(t, rmi(img), "could not delete image %s", img)
 				}
+
+				_ = ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImage)).Visit(func(a *artifact.Artifact) error {
+					digest, err := artifact.Extra[string](*a, dockerDigestExtra)
+					require.NoError(t, err)
+					require.NotEmpty(t, digest)
+					return nil
+				})
 			})
 		}
 	}
