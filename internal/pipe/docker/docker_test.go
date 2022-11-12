@@ -270,8 +270,8 @@ func TestRunPipe(t *testing.T) {
 			assertImageLabels:   noLabels,
 			extraPrepare: func(t *testing.T, ctx *context.Context) {
 				t.Helper()
-				_ = exec.Command(fmt.Sprintf("docker manifest rm %sgoreleaser/test_multiarch:2test ", registry)).Run()
 				for _, cmd := range []string{
+					fmt.Sprintf("docker manifest rm %sgoreleaser/test_multiarch:2test ", registry),
 					fmt.Sprintf("docker build -t %sgoreleaser/dummy:v1 --platform linux/amd64 -f testdata/Dockerfile.dummy .", registry),
 					fmt.Sprintf("docker push %sgoreleaser/dummy:v1", registry),
 					fmt.Sprintf("docker manifest create %sgoreleaser/test_multiarch:2test --amend %sgoreleaser/dummy:v1 --insecure", registry, registry),
