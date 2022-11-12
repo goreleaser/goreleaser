@@ -250,8 +250,7 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		}
 	}
 
-	githubReleaseID := strconv.FormatInt(release.GetID(), 10)
-	return githubReleaseID, nil
+	return strconv.FormatInt(release.GetID(), 10), nil
 }
 
 func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.RepositoryRelease, body string) (*github.RepositoryRelease, error) {
