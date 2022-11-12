@@ -34,7 +34,7 @@ func registerImager(use string, impl imager) {
 // imager is something that can build and push docker images.
 type imager interface {
 	Build(ctx *context.Context, root string, images, flags []string) error
-	Push(ctx *context.Context, image string, flags []string) error
+	Push(ctx *context.Context, image string, flags []string) (digest string, err error)
 }
 
 // manifester is something that can create and push docker manifests.
@@ -65,4 +65,32 @@ func runCommand(ctx *context.Context, dir, binary string, args ...string) error 
 		return fmt.Errorf("%w: %s", err, b.String())
 	}
 	return nil
+}
+
+func runCommandWithOutput(ctx *context.Context, dir, binary string, args ...string) ([]byte, error) {
+	fields := log.Fields{
+		"cmd": append([]string{binary}, args[0]),
+		"cwd": dir,
+	}
+
+	/* #nosec */
+	cmd := exec.CommandContext(ctx, binary, args...)
+	cmd.Dir = dir
+	cmd.Env = ctx.Env.Strings()
+
+	var b bytes.Buffer
+	w := gio.Safe(&b)
+	cmd.Stderr = io.MultiWriter(logext.NewWriter(fields, logext.Error), w)
+
+	log.WithFields(fields).WithField("args", args[1:]).Debug("running")
+	out, err := cmd.Output()
+	if out != nil {
+		// regardless of command success, always print stdout for backward-compatibility with runCommand()
+		_, _ = io.MultiWriter(logext.NewWriter(fields, logext.Error), w).Write(out)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", err, b.String())
+	}
+
+	return out, nil
 }

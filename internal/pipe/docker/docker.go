@@ -20,6 +20,7 @@ import (
 
 const (
 	dockerConfigExtra = "DockerConfig"
+	dockerDigestExtra = "digest"
 
 	useBuildx = "buildx"
 	useDocker = "docker"
@@ -248,7 +249,8 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 		return pipe.Skip("prerelease detected with 'auto' push, skipping docker publish: " + image.Name)
 	}
 
-	if err := imagers[docker.Use].Push(ctx, image.Name, docker.PushFlags); err != nil {
+	digest, err := imagers[docker.Use].Push(ctx, image.Name, docker.PushFlags)
+	if err != nil {
 		return err
 	}
 
@@ -264,6 +266,8 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	if docker.ID != "" {
 		art.Extra[artifact.ExtraID] = docker.ID
 	}
+	art.Extra[dockerDigestExtra] = digest
+
 	ctx.Artifacts.Add(art)
 	return nil
 }

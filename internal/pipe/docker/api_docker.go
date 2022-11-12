@@ -2,6 +2,7 @@ package docker
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
@@ -43,11 +44,21 @@ type dockerImager struct {
 	buildx bool
 }
 
-func (i dockerImager) Push(ctx *context.Context, image string, flags []string) error {
-	if err := runCommand(ctx, ".", "docker", "push", image); err != nil {
-		return fmt.Errorf("failed to push %s: %w", image, err)
+var dockerDigestPattern = regexp.MustCompile("sha256:[a-z0-9]{64}")
+
+func (i dockerImager) Push(ctx *context.Context, image string, flags []string) (digest string, err error) {
+	outBytes, err := runCommandWithOutput(ctx, ".", "docker", "push", image)
+	if err != nil {
+		return "", fmt.Errorf("failed to push %s: %w", image, err)
 	}
-	return nil
+
+	out := string(outBytes)
+	digest = dockerDigestPattern.FindString(out)
+	if digest == "" {
+		return "", fmt.Errorf("failed to find docker digest in docker push output: %v", out)
+	}
+
+	return digest, nil
 }
 
 func (i dockerImager) Build(ctx *context.Context, root string, images, flags []string) error {

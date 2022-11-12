@@ -86,8 +86,10 @@ func (t Type) String() string {
 		return "Binary"
 	case LinuxPackage:
 		return "Linux Package"
-	case PublishableDockerImage, DockerImage:
+	case PublishableDockerImage:
 		return "Docker Image"
+	case DockerImage:
+		return "Published Docker Image"
 	case DockerManifest:
 		return "Docker Manifest"
 	case PublishableSnapcraft, Snapcraft:
