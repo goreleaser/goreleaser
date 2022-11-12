@@ -212,15 +212,10 @@ func buildOptionsForTarget(ctx *context.Context, build config.Build, target stri
 }
 
 func extFor(target string, build config.BuildDetails) string {
-	if target == "js_wasm" {
-		return ".wasm"
-	}
-
 	// Configure the extensions for shared and static libraries - by default .so and .a respectively -
 	// with overrides for Windows (.dll for shared and .lib for static) and .dylib for macOS.
-	buildmode := build.Buildmode
-
-	if buildmode == "c-shared" {
+	switch build.Buildmode {
+	case "c-shared":
 		if strings.Contains(target, "darwin") {
 			return ".dylib"
 		}
@@ -228,13 +223,15 @@ func extFor(target string, build config.BuildDetails) string {
 			return ".dll"
 		}
 		return ".so"
-	}
-
-	if buildmode == "c-archive" {
+	case "c-archive":
 		if strings.Contains(target, "windows") {
 			return ".lib"
 		}
 		return ".a"
+	}
+
+	if target == "js_wasm" {
+		return ".wasm"
 	}
 
 	if strings.Contains(target, "windows") {
