@@ -20,7 +20,7 @@ import (
 
 const (
 	dockerConfigExtra = "DockerConfig"
-	dockerDigestExtra = "digest"
+	dockerDigestExtra = "Digest"
 
 	useBuildx = "buildx"
 	useDocker = "docker"
