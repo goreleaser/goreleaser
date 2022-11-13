@@ -19,6 +19,10 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+const (
+	artifactChecksumExtra = "Checksum"
+)
+
 var (
 	errNoArtifacts = errors.New("there are no artifacts to sign")
 	lock           sync.Mutex
@@ -117,6 +121,34 @@ func refresh(ctx *context.Context, filepath string) error {
 	}
 
 	err = g.Wait()
+	if err != nil {
+		return err
+	}
+
+	artifactsMapping := make(map[string]int)
+	for i, a := range artifactList {
+		if a.Type == artifact.UploadableFile {
+			continue // skip extra files
+		}
+		// Path is the only unique field for an artifact
+		artifactsMapping[a.Path] = i
+	}
+
+	err = ctx.Artifacts.Visit(func(a *artifact.Artifact) error {
+		if index, ok := artifactsMapping[a.Path]; ok {
+			sumFields := strings.Fields(sumLines[index])
+			if len(sumFields) == 0 {
+				return fmt.Errorf("missing checksum in sumline of %s: %s", a.Path, sumFields)
+			}
+			sum := sumFields[0]
+			if a.Extra == nil {
+				a.Extra = make(artifact.Extras)
+			}
+			a.Extra[artifactChecksumExtra] = fmt.Sprintf("%s:%s", ctx.Config.Checksum.Algorithm, sum)
+		}
+
+		return nil
+	})
 	if err != nil {
 		return err
 	}

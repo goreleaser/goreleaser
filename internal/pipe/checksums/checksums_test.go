@@ -1,6 +1,7 @@
 package checksums
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -276,6 +277,15 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 				binary,
 			},
 		},
+		"default_plus_extra": {
+			extraFiles: []config.ExtraFile{
+				{Glob: extraFileFooRelPath},
+			},
+			want: []string{
+				binary,
+				extraFileFoo,
+			},
+		},
 		"one extra file": {
 			extraFiles: []config.ExtraFile{
 				{Glob: extraFileFooRelPath},
@@ -304,47 +314,87 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 			},
 		},
 	}
+	checksumsMap := map[string]string{
+		"crc32":  "f94d3859",
+		"md5":    "5ac749fbeec93607fc28d666be85e73a",
+		"sha1":   "8b45e4bd1c6acb88bebf6407d16205f567e62a3e",
+		"sha224": "21bc225587d8768058837b68fe7e0341e87b972f02fd8fb0c236d1d3",
+		"sha256": "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc",
+		"sha384": "f6055a96a105d2fb5941a616964ffda8294fd415730cc4154a602062bc3d00e99d3c6f4a11af8c965a343de4afca3c2b",
+		"sha512": "14925e01a7a0cf0801aa95fe52d542b578af58ae7997ada66db3a6eae68a329d50600a5b7b442eabf4ea77ea8ef5fe40acf2ab31d47311b2a232c4f64009aac1",
+	}
 
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			folder := t.TempDir()
-			file := filepath.Join(folder, binary)
-			require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
-			ctx := context.New(
-				config.Project{
-					Dist:        folder,
-					ProjectName: binary,
-					Checksum: config.Checksum{
-						Algorithm:    "sha256",
-						NameTemplate: "checksums.txt",
-						ExtraFiles:   tt.extraFiles,
-						IDs:          tt.ids,
+	for algo, value := range checksumsMap {
+		algoTestCounter := 0
+		for name, tt := range tests {
+			t.Run(name, func(t *testing.T) {
+				folder := t.TempDir()
+				file := filepath.Join(folder, binary)
+				require.NoError(t, os.WriteFile(file, []byte("some string"), 0o644))
+				ctx := context.New(
+					config.Project{
+						Dist:        folder,
+						ProjectName: binary,
+						Checksum: config.Checksum{
+							Algorithm:    algo,
+							NameTemplate: "checksums.txt",
+							ExtraFiles:   tt.extraFiles,
+							IDs:          tt.ids,
+						},
 					},
-				},
-			)
+				)
 
-			ctx.Artifacts.Add(&artifact.Artifact{
-				Name: binary,
-				Path: file,
-				Type: artifact.UploadableBinary,
-				Extra: map[string]interface{}{
-					artifact.ExtraID: "id-1",
-				},
-			})
+				ctx.Artifacts.Add(&artifact.Artifact{
+					Name: binary,
+					Path: file,
+					Type: artifact.UploadableBinary,
+					Extra: map[string]interface{}{
+						artifact.ExtraID: "id-1",
+					},
+				})
 
-			require.NoError(t, Pipe{}.Run(ctx))
+				require.NoError(t, Pipe{}.Run(ctx))
 
-			bts, err := os.ReadFile(filepath.Join(folder, checksums))
+				bts, err := os.ReadFile(filepath.Join(folder, checksums))
 
-			require.NoError(t, err)
-			for _, want := range tt.want {
-				if tt.extraFiles == nil {
-					require.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  "+want)
-				} else {
-					require.Contains(t, string(bts), "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  "+want)
+				require.NoError(t, err)
+				if algo == "sha256" {
+					for _, want := range tt.want {
+						if want == binary {
+							require.Contains(t, string(bts), "61d034473102d7dac305902770471fd50f4c5b26f6831a56dd90b5184b3c30fc  "+want)
+						} else if want == extraFileFoo {
+							require.Contains(t, string(bts), "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  "+want)
+						}
+					}
 				}
-			}
-		})
+
+				wantBinary := false
+				for _, want := range tt.want {
+					if want == binary {
+						wantBinary = true
+						break
+					}
+				}
+				if wantBinary {
+					_ = ctx.Artifacts.Filter(artifact.ByType(artifact.UploadableBinary)).Visit(func(a *artifact.Artifact) error {
+						if a.Path != file {
+							return nil
+						}
+
+						algoTestCounter += 1
+						checksum, ok := a.Extra[artifactChecksumExtra]
+						require.True(t, ok)
+
+						expectedChecksum := fmt.Sprintf("%s:%s", algo, value)
+						require.Equal(t, expectedChecksum, checksum)
+
+						return nil
+					})
+				}
+			})
+		}
+		const tests_that_include_binary = 2
+		require.Equal(t, tests_that_include_binary, algoTestCounter)
 	}
 }
 
