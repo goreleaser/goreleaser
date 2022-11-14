@@ -300,7 +300,7 @@ type Build struct {
 	ID              string          `yaml:"id,omitempty" json:"id,omitempty"`
 	Goos            []string        `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch          []string        `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm           []string        `yaml:"goarm,omitempty" json:"goarm,omitempty"nt`
+	Goarm           []string        `yaml:"goarm,omitempty" json:"goarm,omitempty"`
 	Gomips          []string        `yaml:"gomips,omitempty" json:"gomips,omitempty"`
 	Goamd64         []string        `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Targets         []string        `yaml:"targets,omitempty" json:"targets,omitempty"`
