@@ -19,6 +19,10 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
+const (
+	artifactChecksumExtra = "Checksum"
+)
+
 var (
 	errNoArtifacts = errors.New("there are no artifacts to sign")
 	lock           sync.Mutex
@@ -137,11 +141,17 @@ func refresh(ctx *context.Context, filepath string) error {
 	return err
 }
 
-func checksums(algorithm string, artifact *artifact.Artifact) (string, error) {
-	log.WithField("file", artifact.Name).Debug("checksumming")
-	sha, err := artifact.Checksum(algorithm)
+func checksums(algorithm string, a *artifact.Artifact) (string, error) {
+	log.WithField("file", a.Name).Debug("checksumming")
+	sha, err := a.Checksum(algorithm)
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%v  %v\n", sha, artifact.Name), nil
+
+	if a.Extra == nil {
+		a.Extra = make(artifact.Extras)
+	}
+	a.Extra[artifactChecksumExtra] = fmt.Sprintf("%s:%s", algorithm, sha)
+
+	return fmt.Sprintf("%v  %v\n", sha, a.Name), nil
 }

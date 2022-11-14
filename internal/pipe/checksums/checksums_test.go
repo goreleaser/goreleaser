@@ -344,6 +344,19 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 					require.Contains(t, string(bts), "3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  "+want)
 				}
 			}
+
+			_ = ctx.Artifacts.Visit(func(a *artifact.Artifact) error {
+				if a.Path != file {
+					return nil
+				}
+				if len(tt.ids) > 0 {
+					return nil
+				}
+				checkSum, err := artifact.Extra[string](*a, artifactChecksumExtra)
+				require.Nil(t, err)
+				require.NotEmptyf(t, checkSum, "failed: %v", a.Path)
+				return nil
+			})
 		})
 	}
 }
