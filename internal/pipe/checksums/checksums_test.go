@@ -381,7 +381,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 							return nil
 						}
 
-						algoTestCounter += 1
+						algoTestCounter++
 						checksum, ok := a.Extra[artifactChecksumExtra]
 						require.True(t, ok)
 
@@ -393,8 +393,8 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 				}
 			})
 		}
-		const tests_that_include_binary = 2
-		require.Equal(t, tests_that_include_binary, algoTestCounter)
+		const testsThatIncludeBinary = 2
+		require.Equal(t, testsThatIncludeBinary, algoTestCounter)
 	}
 }
 
