@@ -345,7 +345,7 @@ func TestPipeCheckSumsWithExtraFiles(t *testing.T) {
 				}
 			}
 
-			ctx.Artifacts.Visit(func(a *artifact.Artifact) error {
+			_ = ctx.Artifacts.Visit(func(a *artifact.Artifact) error {
 				if a.Path != file {
 					return nil
 				}
