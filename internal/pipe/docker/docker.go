@@ -104,10 +104,12 @@ func (Pipe) Publish(ctx *context.Context) error {
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	g := semerrgroup.NewSkipAware(semerrgroup.New(ctx.Parallelism))
-	for _, docker := range ctx.Config.Dockers {
+	for i, docker := range ctx.Config.Dockers {
+		i := i
 		docker := docker
 		g.Go(func() error {
-			log.WithField("docker", docker).Debug("looking for artifacts matching")
+			log := log.WithField("index", i)
+			log.Debug("looking for artifacts matching")
 			filters := []artifact.Filter{
 				artifact.ByGoos(docker.Goos),
 				artifact.ByGoarch(docker.Goarch),
@@ -128,6 +130,9 @@ func (Pipe) Run(ctx *context.Context) error {
 			}
 			artifacts := ctx.Artifacts.Filter(artifact.And(filters...))
 			log.WithField("artifacts", artifacts.Paths()).Debug("found artifacts")
+			if len(artifacts.Paths()) == 0 {
+				log.Warn("not binaries or packages found for the given platform - COPY/ADD may not work")
+			}
 			return process(ctx, docker, artifacts.List())
 		})
 	}
