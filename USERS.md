@@ -30,6 +30,7 @@ Here's a running list of some organizations using GoReleaser[^1]:
 1. [IRON Security](https://iron.security)
 1. [Koordinator](https://koordinator.sh)
 1. [KSOC](https://www.ksoc.com/)
+1. [Mercure](https://mercure.rocks/)
 1. [Meroxa](https://meroxa.com/)
 1. [Microsoft](https://microsoft.com)
 1. [Minio](https://min.io)
