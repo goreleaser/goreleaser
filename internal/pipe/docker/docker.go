@@ -47,6 +47,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if docker.Goarch == "" {
 			docker.Goarch = "amd64"
 		}
+		if docker.Goarm == "" {
+			docker.Goarm = "6"
+		}
 		if docker.Goamd64 == "" {
 			docker.Goamd64 = "v1"
 		}
