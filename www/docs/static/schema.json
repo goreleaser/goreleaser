@@ -398,7 +398,7 @@
 								"type": "string"
 							},
 							{
-								"type": "int"
+								"type": "integer"
 							}
 						]
 					},
@@ -722,7 +722,7 @@
 								"type": "string"
 							},
 							{
-								"type": "int"
+								"type": "integer"
 							}
 						]
 					},
@@ -1116,7 +1116,7 @@
 								"type": "string"
 							},
 							{
-								"type": "int"
+								"type": "integer"
 							}
 						]
 					},
@@ -1259,7 +1259,7 @@
 								"type": "string"
 							},
 							{
-								"type": "int"
+								"type": "integer"
 							}
 						]
 					},

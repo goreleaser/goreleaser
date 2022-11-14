@@ -172,7 +172,7 @@ type Homebrew struct {
 	CustomRequire         string               `yaml:"custom_require,omitempty" json:"custom_require,omitempty"`
 	CustomBlock           string               `yaml:"custom_block,omitempty" json:"custom_block,omitempty"`
 	IDs                   []string             `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Goarm                 string               `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;int"`
+	Goarm                 string               `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Goamd64               string               `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Service               string               `yaml:"service,omitempty" json:"service,omitempty"`
 }
@@ -189,7 +189,7 @@ type Krew struct {
 	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
 	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
 	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
-	Goarm                 string       `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;int"`
+	Goarm                 string       `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
@@ -300,7 +300,7 @@ type Build struct {
 	ID              string          `yaml:"id,omitempty" json:"id,omitempty"`
 	Goos            []string        `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch          []string        `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm           []string        `yaml:"goarm,omitempty" json:"goarm,omitempty"`
+	Goarm           []string        `yaml:"goarm,omitempty" json:"goarm,omitempty"nt`
 	Gomips          []string        `yaml:"gomips,omitempty" json:"gomips,omitempty"`
 	Goamd64         []string        `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Targets         []string        `yaml:"targets,omitempty" json:"targets,omitempty"`
@@ -326,7 +326,7 @@ type Build struct {
 type BuildDetailsOverride struct {
 	Goos         string                          `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch       string                          `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm        string                          `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;int"`
+	Goarm        string                          `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Gomips       string                          `yaml:"gomips,omitempty" json:"gomips,omitempty"`
 	Goamd64      string                          `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	BuildDetails `yaml:",inline" json:",inline"` // nolint: tagliatelle
@@ -788,7 +788,7 @@ type Docker struct {
 	IDs                []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Goos               string   `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch             string   `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm              string   `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;int"`
+	Goarm              string   `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Goamd64            string   `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Dockerfile         string   `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
 	ImageTemplates     []string `yaml:"image_templates,omitempty" json:"image_templates,omitempty"`
