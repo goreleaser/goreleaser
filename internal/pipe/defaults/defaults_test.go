@@ -92,8 +92,9 @@ func TestFillPartial(t *testing.T) {
 	require.Len(t, ctx.Config.Archives[0].Files, 1)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Goos)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Goarch)
+	require.NotEmpty(t, ctx.Config.Dockers[0].Goarm)
+	require.NotEmpty(t, ctx.Config.Dockers[0].Goamd64)
 	require.NotEmpty(t, ctx.Config.Dockers[0].Dockerfile)
-	require.Empty(t, ctx.Config.Dockers[0].Goarm)
 	require.Equal(t, "disttt", ctx.Config.Dist)
 	require.NotEqual(t, "https://github.com", ctx.Config.GitHubURLs.Download)
 
