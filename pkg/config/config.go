@@ -132,7 +132,7 @@ type AUR struct {
 	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
 	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
 	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
-	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
 	Maintainers           []string     `yaml:"maintainers,omitempty" json:"maintainers,omitempty"`
 	Contributors          []string     `yaml:"contributors,omitempty" json:"contributors,omitempty"`
@@ -166,13 +166,13 @@ type Homebrew struct {
 	Description           string               `yaml:"description,omitempty" json:"description,omitempty"`
 	Homepage              string               `yaml:"homepage,omitempty" json:"homepage,omitempty"`
 	License               string               `yaml:"license,omitempty" json:"license,omitempty"`
-	SkipUpload            string               `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty"`
+	SkipUpload            string               `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	DownloadStrategy      string               `yaml:"download_strategy,omitempty" json:"download_strategy,omitempty"`
 	URLTemplate           string               `yaml:"url_template,omitempty" json:"url_template,omitempty"`
 	CustomRequire         string               `yaml:"custom_require,omitempty" json:"custom_require,omitempty"`
 	CustomBlock           string               `yaml:"custom_block,omitempty" json:"custom_block,omitempty"`
 	IDs                   []string             `yaml:"ids,omitempty" json:"ids,omitempty"`
-	Goarm                 string               `yaml:"goarm,omitempty" json:"goarm,omitempty"`
+	Goarm                 string               `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Goamd64               string               `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Service               string               `yaml:"service,omitempty" json:"service,omitempty"`
 }
@@ -189,9 +189,9 @@ type Krew struct {
 	Description           string       `yaml:"description,omitempty" json:"description,omitempty"`
 	Homepage              string       `yaml:"homepage,omitempty" json:"homepage,omitempty"`
 	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
-	Goarm                 string       `yaml:"goarm,omitempty" json:"goarm,omitempty"`
+	Goarm                 string       `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
-	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 }
 
 // Scoop contains the scoop.sh section.
@@ -206,7 +206,7 @@ type Scoop struct {
 	License               string       `yaml:"license,omitempty" json:"license,omitempty"`
 	URLTemplate           string       `yaml:"url_template,omitempty" json:"url_template,omitempty"`
 	Persist               []string     `yaml:"persist,omitempty" json:"persist,omitempty"`
-	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty"`
+	SkipUpload            string       `yaml:"skip_upload,omitempty" json:"skip_upload,omitempty" jsonschema:"oneof_type=string;boolean"`
 	PreInstall            []string     `yaml:"pre_install,omitempty" json:"pre_install,omitempty"`
 	PostInstall           []string     `yaml:"post_install,omitempty" json:"post_install,omitempty"`
 	Goamd64               string       `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
@@ -228,7 +228,7 @@ type BuildHooks struct { // renamed on pro
 type IgnoredBuild struct {
 	Goos    string `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch  string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm   string `yaml:"goarm,omitempty" json:"goarm,omitempty"`
+	Goarm   string `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Gomips  string `yaml:"gomips,omitempty" json:"gomips,omitempty"`
 	Goamd64 string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 }
@@ -311,7 +311,7 @@ type Build struct {
 	Hooks           BuildHookConfig `yaml:"hooks,omitempty" json:"hooks,omitempty"`
 	Builder         string          `yaml:"builder,omitempty" json:"builder,omitempty"`
 	ModTimestamp    string          `yaml:"mod_timestamp,omitempty" json:"mod_timestamp,omitempty"`
-	Skip            bool            `yaml:"skip,omitempty" json:"skip,omitempty"`
+	Skip            bool            `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
 	GoBinary        string          `yaml:"gobinary,omitempty" json:"gobinary,omitempty"`
 	Command         string          `yaml:"command,omitempty" json:"command,omitempty"`
 	NoUniqueDistDir bool            `yaml:"no_unique_dist_dir,omitempty" json:"no_unique_dist_dir,omitempty"`
@@ -326,7 +326,7 @@ type Build struct {
 type BuildDetailsOverride struct {
 	Goos         string                          `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch       string                          `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm        string                          `yaml:"goarm,omitempty" json:"goarm,omitempty"`
+	Goarm        string                          `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Gomips       string                          `yaml:"gomips,omitempty" json:"gomips,omitempty"`
 	Goamd64      string                          `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	BuildDetails `yaml:",inline" json:",inline"` // nolint: tagliatelle
@@ -788,11 +788,11 @@ type Docker struct {
 	IDs                []string `yaml:"ids,omitempty" json:"ids,omitempty"`
 	Goos               string   `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch             string   `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm              string   `yaml:"goarm,omitempty" json:"goarm,omitempty"`
+	Goarm              string   `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Goamd64            string   `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 	Dockerfile         string   `yaml:"dockerfile,omitempty" json:"dockerfile,omitempty"`
 	ImageTemplates     []string `yaml:"image_templates,omitempty" json:"image_templates,omitempty"`
-	SkipPush           string   `yaml:"skip_push,omitempty" json:"skip_push,omitempty"`
+	SkipPush           string   `yaml:"skip_push,omitempty" json:"skip_push,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Files              []string `yaml:"extra_files,omitempty" json:"extra_files,omitempty"`
 	BuildFlagTemplates []string `yaml:"build_flag_templates,omitempty" json:"build_flag_templates,omitempty"`
 	PushFlags          []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
@@ -803,7 +803,7 @@ type Docker struct {
 type DockerManifest struct {
 	ID             string   `yaml:"id,omitempty" json:"id,omitempty"`
 	NameTemplate   string   `yaml:"name_template,omitempty" json:"name_template,omitempty"`
-	SkipPush       string   `yaml:"skip_push,omitempty" json:"skip_push,omitempty"`
+	SkipPush       string   `yaml:"skip_push,omitempty" json:"skip_push,omitempty" jsonschema:"oneof_type=string;boolean"`
 	ImageTemplates []string `yaml:"image_templates,omitempty" json:"image_templates,omitempty"`
 	CreateFlags    []string `yaml:"create_flags,omitempty" json:"create_flags,omitempty"`
 	PushFlags      []string `yaml:"push_flags,omitempty" json:"push_flags,omitempty"`
@@ -955,7 +955,7 @@ type GoMod struct {
 }
 
 type Announce struct {
-	Skip       string     `yaml:"skip,omitempty" json:"skip,omitempty"`
+	Skip       string     `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Twitter    Twitter    `yaml:"twitter,omitempty" json:"twitter,omitempty"`
 	Reddit     Reddit     `yaml:"reddit,omitempty" json:"reddit,omitempty"`
 	Slack      Slack      `yaml:"slack,omitempty" json:"slack,omitempty"`
