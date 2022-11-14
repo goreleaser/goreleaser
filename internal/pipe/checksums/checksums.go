@@ -125,34 +125,6 @@ func refresh(ctx *context.Context, filepath string) error {
 		return err
 	}
 
-	artifactsMapping := make(map[string]int)
-	for i, a := range artifactList {
-		if a.Type == artifact.UploadableFile {
-			continue // skip extra files
-		}
-		// Path is the only unique field for an artifact
-		artifactsMapping[a.Path] = i
-	}
-
-	err = ctx.Artifacts.Visit(func(a *artifact.Artifact) error {
-		if index, ok := artifactsMapping[a.Path]; ok {
-			sumFields := strings.Fields(sumLines[index])
-			if len(sumFields) == 0 {
-				return fmt.Errorf("missing checksum in sumline of %s: %s", a.Path, sumFields)
-			}
-			sum := sumFields[0]
-			if a.Extra == nil {
-				a.Extra = make(artifact.Extras)
-			}
-			a.Extra[artifactChecksumExtra] = fmt.Sprintf("%s:%s", ctx.Config.Checksum.Algorithm, sum)
-		}
-
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
 	file, err := os.OpenFile(
 		filepath,
 		os.O_APPEND|os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
@@ -169,11 +141,17 @@ func refresh(ctx *context.Context, filepath string) error {
 	return err
 }
 
-func checksums(algorithm string, artifact *artifact.Artifact) (string, error) {
-	log.WithField("file", artifact.Name).Debug("checksumming")
-	sha, err := artifact.Checksum(algorithm)
+func checksums(algorithm string, a *artifact.Artifact) (string, error) {
+	log.WithField("file", a.Name).Debug("checksumming")
+	sha, err := a.Checksum(algorithm)
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%v  %v\n", sha, artifact.Name), nil
+
+	if a.Extra == nil {
+		a.Extra = make(artifact.Extras)
+	}
+	a.Extra[artifactChecksumExtra] = fmt.Sprintf("%s:%s", algorithm, sha)
+
+	return fmt.Sprintf("%v  %v\n", sha, a.Name), nil
 }
