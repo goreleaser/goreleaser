@@ -228,7 +228,7 @@ type BuildHooks struct { // renamed on pro
 type IgnoredBuild struct {
 	Goos    string `yaml:"goos,omitempty" json:"goos,omitempty"`
 	Goarch  string `yaml:"goarch,omitempty" json:"goarch,omitempty"`
-	Goarm   string `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;int"`
+	Goarm   string `yaml:"goarm,omitempty" json:"goarm,omitempty" jsonschema:"oneof_type=string;integer"`
 	Gomips  string `yaml:"gomips,omitempty" json:"gomips,omitempty"`
 	Goamd64 string `yaml:"goamd64,omitempty" json:"goamd64,omitempty"`
 }
