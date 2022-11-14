@@ -50,18 +50,23 @@ dockers:
     id: myimg
 
     # GOOS of the built binaries/packages that should be used.
+    # Default: `linux`.
     goos: linux
 
     # GOARCH of the built binaries/packages that should be used.
+    # Default: `amd64`.
     goarch: amd64
 
     # GOARM of the built binaries/packages that should be used.
+    # Default: `6`.
     goarm: ''
 
     # GOAMD64 of the built binaries/packages that should be used.
+    # Default: `v1`.
     goamd64: 'v2'
 
     # IDs to filter the binaries/packages.
+    # Default: `empty`.
     ids:
     - mybuild
     - mynfpm

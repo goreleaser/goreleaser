@@ -1182,6 +1182,7 @@ func TestDefault(t *testing.T) {
 	docker := ctx.Config.Dockers[0]
 	require.Equal(t, "linux", docker.Goos)
 	require.Equal(t, "amd64", docker.Goarch)
+	require.Equal(t, "6", docker.Goarm)
 	require.Equal(t, []string{"aa"}, docker.IDs)
 	require.Equal(t, useDocker, docker.Use)
 	docker = ctx.Config.Dockers[1]
