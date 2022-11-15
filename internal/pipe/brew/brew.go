@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,10 +17,12 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"golang.org/x/crypto/ssh"
 )
 
 const brewConfigExtra = "BrewConfig"
@@ -112,10 +115,6 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	if err != nil {
 		return err
 	}
-	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
-	if err != nil {
-		return err
-	}
 
 	if strings.TrimSpace(brew.SkipUpload) == "true" {
 		return pipe.Skip("brew.skip_upload is set")
@@ -125,9 +124,20 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping homebrew publish")
 	}
 
+	gpath := buildFormulaPath(brew.Folder, formula.Name)
+
+	if len(brew.Tap.GitURL) > 0 {
+		log.WithField("formula", gpath).WithField("repo", brew.Tap.GitURL).Info("pushing")
+		return doGitPublish(ctx, brew, formula)
+	}
+
+	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
+	if err != nil {
+		return err
+	}
+
 	repo := client.RepoFromRef(brew.Tap)
 
-	gpath := buildFormulaPath(brew.Folder, formula.Name)
 	log.WithField("formula", gpath).
 		WithField("repo", repo.String()).
 		Info("pushing")
@@ -148,6 +158,141 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	}
 
 	return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+}
+
+func doGitPublish(ctx *context.Context, brew config.Homebrew, formula *artifact.Artifact) error {
+	key, err := tmpl.New(ctx).Apply(brew.Tap.PrivateKey)
+	if err != nil {
+		return err
+	}
+
+	key, err = keyPath(key)
+	if err != nil {
+		return err
+	}
+
+	url, err := tmpl.New(ctx).Apply(brew.Tap.GitURL)
+	if err != nil {
+		return err
+	}
+
+	if url == "" {
+		return pipe.Skip("brew.tap.git_url is empty")
+	}
+
+	sshcmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
+		"KeyPath": key,
+	}).Apply(brew.Tap.GitSSHCommand)
+	if err != nil {
+		return err
+	}
+
+	msg, err := tmpl.New(ctx).Apply(brew.CommitMessageTemplate)
+	if err != nil {
+		return err
+	}
+
+	author, err := commitauthor.Get(ctx, brew.CommitAuthor)
+	if err != nil {
+		return err
+	}
+
+	parent := filepath.Join(ctx.Config.Dist, "brew", "repos")
+	cwd := filepath.Join(parent, brew.Name)
+
+	if err := os.MkdirAll(parent, 0o755); err != nil {
+		return err
+	}
+
+	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
+
+	if err := runGitCmds(ctx, parent, env, [][]string{
+		{"clone", url, brew.Name},
+	}); err != nil {
+		return fmt.Errorf("failed to setup local Brew repo: %w", err)
+	}
+
+	if err := runGitCmds(ctx, cwd, env, [][]string{
+		// setup auth et al
+		{"config", "--local", "user.name", author.Name},
+		{"config", "--local", "user.email", author.Email},
+		{"config", "--local", "commit.gpgSign", "false"},
+		{"config", "--local", "init.defaultBranch", "master"},
+	}); err != nil {
+		return fmt.Errorf("failed to setup local Brew repo: %w", err)
+	}
+
+	bts, err := os.ReadFile(formula.Path)
+	if err != nil {
+		return fmt.Errorf("failed to read %s: %w", formula.Name, err)
+	}
+
+	if err := os.WriteFile(filepath.Join(cwd, formula.Name), bts, 0o644); err != nil {
+		return fmt.Errorf("failed to write %s: %w", formula.Name, err)
+	}
+
+	log.WithField("repo", url).WithField("name", brew.Name).Info("pushing")
+	if err := runGitCmds(ctx, cwd, env, [][]string{
+		{"add", "-A", "."},
+		{"commit", "-m", msg},
+		{"push", "origin", "HEAD"},
+	}); err != nil {
+		return fmt.Errorf("failed to push %q (%q): %w", brew.Name, url, err)
+	}
+
+	return nil
+}
+
+func keyPath(key string) (string, error) {
+	if key == "" {
+		return "", pipe.Skip("brew.tap.private_key is empty")
+	}
+
+	path := key
+	if _, err := ssh.ParsePrivateKey([]byte(key)); err == nil {
+		// if it can be parsed as a valid private key, we write it to a
+		// temp file and use that path on GIT_SSH_COMMAND.
+		f, err := os.CreateTemp("", "id_*")
+		if err != nil {
+			return "", fmt.Errorf("failed to store private key: %w", err)
+		}
+		defer f.Close()
+
+		// the key needs to EOF at an empty line, seems like github actions
+		// is somehow removing them.
+		if !strings.HasSuffix(key, "\n") {
+			key += "\n"
+		}
+
+		if _, err := io.WriteString(f, key); err != nil {
+			return "", fmt.Errorf("failed to store private key: %w", err)
+		}
+		if err := f.Close(); err != nil {
+			return "", fmt.Errorf("failed to store private key: %w", err)
+		}
+		path = f.Name()
+	}
+
+	if _, err := os.Stat(path); err != nil {
+		return "", fmt.Errorf("could not stat brew.tap.private_key: %w", err)
+	}
+
+	// in any case, ensure the key has the correct permissions.
+	if err := os.Chmod(path, 0o600); err != nil {
+		return "", fmt.Errorf("failed to ensure brew.tap.private_key permissions: %w", err)
+	}
+
+	return path, nil
+}
+
+func runGitCmds(ctx *context.Context, cwd string, env []string, cmds [][]string) error {
+	for _, cmd := range cmds {
+		args := append([]string{"-C", cwd}, cmd...)
+		if _, err := git.Clean(git.RunWithEnv(ctx, env, args...)); err != nil {
+			return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
+		}
+	}
+	return nil
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {

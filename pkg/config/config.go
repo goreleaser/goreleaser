@@ -74,10 +74,13 @@ func (r Repo) isSCM() bool {
 // also require separate authentication
 // e.g. Homebrew Tap, Scoop bucket.
 type RepoRef struct {
-	Owner  string `yaml:"owner,omitempty" json:"owner,omitempty"`
-	Name   string `yaml:"name,omitempty" json:"name,omitempty"`
-	Token  string `yaml:"token,omitempty" json:"token,omitempty"`
-	Branch string `yaml:"branch,omitempty" json:"branch,omitempty"`
+	Owner         string `yaml:"owner,omitempty" json:"owner,omitempty"`
+	Name          string `yaml:"name,omitempty" json:"name,omitempty"`
+	Token         string `yaml:"token,omitempty" json:"token,omitempty"`
+	Branch        string `yaml:"branch,omitempty" json:"branch,omitempty"`
+	GitURL        string `yaml:"git_url,omitempty" json:"git_url,omitempty"`
+	GitSSHCommand string `yaml:"git_ssh_command,omitempty" json:"git_ssh_command,omitempty"`
+	PrivateKey    string `yaml:"private_key,omitempty" json:"private_key,omitempty"`
 }
 
 // HomebrewDependency represents Homebrew dependency.
