@@ -20,7 +20,6 @@ import (
 
 const (
 	dockerConfigExtra = "DockerConfig"
-	dockerDigestExtra = artifact.ExtraDigest
 
 	useBuildx = "buildx"
 	useDocker = "docker"

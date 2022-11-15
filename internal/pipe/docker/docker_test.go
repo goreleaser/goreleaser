@@ -1094,7 +1094,7 @@ func TestRunPipe(t *testing.T) {
 				}
 
 				_ = ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImage)).Visit(func(a *artifact.Artifact) error {
-					digest, err := artifact.Extra[string](*a, dockerDigestExtra)
+					digest, err := artifact.Extra[string](*a, artifact.ExtraDigest)
 					require.NoError(t, err)
 					require.NotEmpty(t, digest)
 					return nil
@@ -1430,14 +1430,14 @@ func TestWithDigest(t *testing.T) {
 		Name: "owner/img:t1",
 		Type: artifact.DockerImage,
 		Extra: artifact.Extras{
-			dockerDigestExtra: "sha256:d1",
+			artifact.ExtraDigest: "sha256:d1",
 		},
 	})
 	artifacts.Add(&artifact.Artifact{
 		Name: "owner/img:t2",
 		Type: artifact.DockerImage,
 		Extra: artifact.Extras{
-			dockerDigestExtra: "sha256:d2",
+			artifact.ExtraDigest: "sha256:d2",
 		},
 	})
 	artifacts.Add(&artifact.Artifact{
