@@ -28,7 +28,7 @@ func TestDockerSignDefault(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, ctx.Config.DockerSigns[0].Cmd, "cosign")
 	require.Equal(t, ctx.Config.DockerSigns[0].Signature, "")
-	require.Equal(t, ctx.Config.DockerSigns[0].Args, []string{"sign", "--key=cosign.key", "$artifact"})
+	require.Equal(t, ctx.Config.DockerSigns[0].Args, []string{"sign", "--key=cosign.key", "${artifact}@${digest}"})
 	require.Equal(t, ctx.Config.DockerSigns[0].Artifacts, "none")
 }
 
@@ -54,12 +54,15 @@ func TestDockerSignArtifacts(t *testing.T) {
 	testlib.CheckPath(t, "cosign")
 	key := "cosign.key"
 	cmd := "sh"
-	args := []string{"-c", "echo ${artifact} > ${signature} && cosign sign --key=" + key + " --upload=false ${artifact} > ${signature}"}
+	args := []string{"-c", "echo ${artifact}@${digest} > ${signature} && cosign sign --key=" + key + " --upload=false ${artifact}@${digest} > ${signature}"}
 	password := "password"
 
 	img1 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1-amd64"
+	img1Digest := "sha256:d7bf8be1b156cc0cd9d2e33765a69bc968d4ef6b2dea9b207d63129b9709862a"
 	img2 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1-arm64v8"
+	img2Digest := "sha256:551801b7f42f8c33bfabb06e25804c2aca14776d2b7df33e07de54e887910b72"
 	man1 := "ghcr.io/caarlos0/goreleaser-docker-manifest-actions-example:1.2.1"
+	man1Digest := "sha256:b5db21408555f1ef5d68008a0a03a7caba3f29b62c64f1404e139b005a20bf03"
 
 	for name, cfg := range map[string]struct {
 		Signs    []config.Sign
@@ -88,7 +91,7 @@ func TestDockerSignArtifacts(t *testing.T) {
 					Stdin:       &password,
 					Cmd:         "cosign",
 					Certificate: `{{ replace (replace (replace .Env.artifact "/" "-") ":" "-") "." "" }}.pem`,
-					Args:        []string{"sign", "--output-certificate=${certificate}", "--key=" + key, "--upload=false", "${artifact}"},
+					Args:        []string{"sign", "--output-certificate=${certificate}", "--key=" + key, "--upload=false", "${artifact}@${digest}"},
 				},
 			},
 		},
@@ -165,7 +168,8 @@ func TestDockerSignArtifacts(t *testing.T) {
 				Path: img1,
 				Type: artifact.DockerImage,
 				Extra: map[string]interface{}{
-					artifact.ExtraID: "img1",
+					artifact.ExtraID:     "img1",
+					artifact.ExtraDigest: img1Digest,
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -173,7 +177,8 @@ func TestDockerSignArtifacts(t *testing.T) {
 				Path: img2,
 				Type: artifact.DockerImage,
 				Extra: map[string]interface{}{
-					artifact.ExtraID: "img2",
+					artifact.ExtraID:     "img2",
+					artifact.ExtraDigest: img2Digest,
 				},
 			})
 			ctx.Artifacts.Add(&artifact.Artifact{
@@ -181,7 +186,8 @@ func TestDockerSignArtifacts(t *testing.T) {
 				Path: man1,
 				Type: artifact.DockerManifest,
 				Extra: map[string]interface{}{
-					artifact.ExtraID: "man1",
+					artifact.ExtraID:     "man1",
+					artifact.ExtraDigest: man1Digest,
 				},
 			})
 
