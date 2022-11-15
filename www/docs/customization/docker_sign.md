@@ -28,7 +28,7 @@ docker_signs:
 
     # Command line templateable arguments for the command
     #
-    # defaults to `["sign", "--key=cosign.key", "${artifact}"]`
+    # defaults to `["sign", "--key=cosign.key", "${artifact}@${digest}"]`
     args: ["sign", "--key=cosign.key", "--upload=false", "${artifact}"]
 
 
@@ -77,12 +77,16 @@ docker_signs:
 These environment variables might be available in the fields that are templateable:
 
 - `${artifact}`: the path to the artifact that will be signed [^1]
+- `${digest}`: the digest of the image/manifest that will be signed [^2]
 - `${artifactID}`: the ID of the artifact that will be signed
 - `${certificate}`: the certificate file name, if provided
 
 [^1]: notice that this might contain `/` characters, which depending on how
   you use it might evaluate to actual paths within the file system. Use with
   care.
+[^2]: those are extracted automatically when running Docker push from within
+  GoReleaser. Using the digest helps making sure you're signing the right image
+  and avoid concurrency issues.
 
 
 ## Common usage example

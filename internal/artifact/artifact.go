@@ -137,6 +137,7 @@ const (
 	ExtraBinaries  = "Binaries"
 	ExtraRefresh   = "Refresh"
 	ExtraReplaces  = "Replaces"
+	ExtraDigest    = "Digest"
 )
 
 // Extras represents the extra fields in an artifact.
