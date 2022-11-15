@@ -20,7 +20,6 @@ import (
 
 const (
 	dockerConfigExtra = "DockerConfig"
-	dockerDigestExtra = "Digest"
 
 	useBuildx = "buildx"
 	useDocker = "docker"
@@ -274,7 +273,7 @@ func dockerPush(ctx *context.Context, image *artifact.Artifact) error {
 	if docker.ID != "" {
 		art.Extra[artifact.ExtraID] = docker.ID
 	}
-	art.Extra[dockerDigestExtra] = digest
+	art.Extra[artifact.ExtraDigest] = digest
 
 	ctx.Artifacts.Add(art)
 	return nil

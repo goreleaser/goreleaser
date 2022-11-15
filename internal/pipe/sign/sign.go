@@ -154,6 +154,7 @@ func signone(ctx *context.Context, cfg config.Sign, art *artifact.Artifact) ([]*
 	env["artifactName"] = art.Name // shouldn't be used
 	env["artifact"] = art.Path
 	env["artifactID"] = art.ID()
+	env["digest"] = artifact.ExtraOr(*art, artifact.ExtraDigest, "")
 
 	tmplEnv, err := templateEnvS(ctx, cfg.Env)
 	if err != nil {

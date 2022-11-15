@@ -116,16 +116,30 @@ func manifestName(ctx *context.Context, manifest config.DockerManifest) (string,
 }
 
 func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]string, error) {
+	artifacts := ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImage)).List()
 	imgs := make([]string, 0, len(manifest.ImageTemplates))
 	for _, img := range manifest.ImageTemplates {
 		str, err := tmpl.New(ctx).Apply(img)
 		if err != nil {
 			return []string{}, err
 		}
-		imgs = append(imgs, str)
+		imgs = append(imgs, withDigest(manifest.Use, str, artifacts))
 	}
 	if strings.TrimSpace(strings.Join(manifest.ImageTemplates, "")) == "" {
 		return imgs, pipe.Skip("manifest has no images")
 	}
 	return imgs, nil
+}
+
+func withDigest(use, name string, images []*artifact.Artifact) string {
+	for _, art := range images {
+		if art.Name == name {
+			if digest := artifact.ExtraOr(*art, artifact.ExtraDigest, ""); digest != "" {
+				return name + "@" + digest
+			}
+			break
+		}
+	}
+	log.Warnf("did not find the digest for %s using %s, defaulting to insecure mode", name, use)
+	return name
 }

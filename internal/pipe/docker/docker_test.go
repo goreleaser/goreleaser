@@ -1094,7 +1094,7 @@ func TestRunPipe(t *testing.T) {
 				}
 
 				_ = ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImage)).Visit(func(a *artifact.Artifact) error {
-					digest, err := artifact.Extra[string](*a, dockerDigestExtra)
+					digest, err := artifact.Extra[string](*a, artifact.ExtraDigest)
 					require.NoError(t, err)
 					require.NotEmpty(t, digest)
 					return nil
@@ -1422,4 +1422,42 @@ func TestSkip(t *testing.T) {
 			require.False(t, ManifestPipe{}.Skip(ctx))
 		})
 	})
+}
+
+func TestWithDigest(t *testing.T) {
+	artifacts := artifact.New()
+	artifacts.Add(&artifact.Artifact{
+		Name: "owner/img:t1",
+		Type: artifact.DockerImage,
+		Extra: artifact.Extras{
+			artifact.ExtraDigest: "sha256:d1",
+		},
+	})
+	artifacts.Add(&artifact.Artifact{
+		Name: "owner/img:t2",
+		Type: artifact.DockerImage,
+		Extra: artifact.Extras{
+			artifact.ExtraDigest: "sha256:d2",
+		},
+	})
+	artifacts.Add(&artifact.Artifact{
+		Name: "owner/img:t3",
+		Type: artifact.DockerImage,
+	})
+
+	for _, use := range []string{useDocker, useBuildx} {
+		t.Run(use, func(t *testing.T) {
+			t.Run("good", func(t *testing.T) {
+				require.Equal(t, "localhost:5050/owner/img:t1@sha256:d1", withDigest(use, "localhost:5050/owner/img:t1", artifacts.List()))
+			})
+
+			t.Run("no digest", func(t *testing.T) {
+				require.Equal(t, "localhost:5050/owner/img:t3", withDigest(use, "localhost:5050/owner/img:t3", artifacts.List()))
+			})
+
+			t.Run("no match", func(t *testing.T) {
+				require.Equal(t, "localhost:5050/owner/img:t4", withDigest(use, "localhost:5050/owner/img:t4", artifacts.List()))
+			})
+		})
+	}
 }

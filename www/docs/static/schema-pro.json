@@ -30,7 +30,14 @@
 						"type": "string"
 					},
 					"skip_upload": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"url_template": {
 						"type": "string"
@@ -111,7 +118,14 @@
 			"Announce": {
 				"properties": {
 					"skip": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"twitter": {
 						"$ref": "#/$defs/Twitter"
@@ -336,7 +350,14 @@
 						"type": "string"
 					},
 					"skip": {
-						"type": "boolean"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"gobinary": {
 						"type": "string"
@@ -396,7 +417,14 @@
 						"type": "string"
 					},
 					"goarm": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "integer"
+							}
+						]
 					},
 					"gomips": {
 						"type": "string"
@@ -719,7 +747,14 @@
 						"type": "string"
 					},
 					"goarm": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "integer"
+							}
+						]
 					},
 					"goamd64": {
 						"type": "string"
@@ -734,7 +769,14 @@
 						"type": "array"
 					},
 					"skip_push": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"extra_files": {
 						"items": {
@@ -770,7 +812,14 @@
 						"type": "string"
 					},
 					"skip_push": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"image_templates": {
 						"items": {
@@ -1091,7 +1140,14 @@
 						"type": "string"
 					},
 					"skip_upload": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"download_strategy": {
 						"type": "string"
@@ -1112,7 +1168,14 @@
 						"type": "array"
 					},
 					"goarm": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "integer"
+							}
+						]
 					},
 					"goamd64": {
 						"type": "string"
@@ -1193,7 +1256,14 @@
 						"type": "string"
 					},
 					"goarm": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "integer"
+							}
+						]
 					},
 					"gomips": {
 						"type": "string"
@@ -1279,13 +1349,27 @@
 						"type": "string"
 					},
 					"goarm": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "integer"
+							}
+						]
 					},
 					"goamd64": {
 						"type": "string"
 					},
 					"skip_upload": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					}
 				},
 				"additionalProperties": false,
@@ -2317,7 +2401,14 @@
 						"type": "array"
 					},
 					"skip_upload": {
-						"type": "string"
+						"oneOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "boolean"
+							}
+						]
 					},
 					"pre_install": {
 						"items": {
