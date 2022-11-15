@@ -123,7 +123,7 @@ func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]str
 		if err != nil {
 			return []string{}, err
 		}
-		imgs = append(imgs, withDigest(str, artifacts))
+		imgs = append(imgs, withDigest(manifest.Use, str, artifacts))
 	}
 	if strings.TrimSpace(strings.Join(manifest.ImageTemplates, "")) == "" {
 		return imgs, pipe.Skip("manifest has no images")
@@ -131,7 +131,7 @@ func manifestImages(ctx *context.Context, manifest config.DockerManifest) ([]str
 	return imgs, nil
 }
 
-func withDigest(name string, images []*artifact.Artifact) string {
+func withDigest(use, name string, images []*artifact.Artifact) string {
 	for _, art := range images {
 		if art.Name == name {
 			if digest := artifact.ExtraOr(*art, artifact.ExtraDigest, ""); digest != "" {
@@ -140,6 +140,6 @@ func withDigest(name string, images []*artifact.Artifact) string {
 			break
 		}
 	}
-	log.Warnf("did not find the digest for %s, defaulting to insecure mode")
+	log.Warnf("did not find the digest for %s using %s, defaulting to insecure mode", name, use)
 	return name
 }

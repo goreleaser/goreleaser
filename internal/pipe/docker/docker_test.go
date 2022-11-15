@@ -1445,15 +1445,19 @@ func TestWithDigest(t *testing.T) {
 		Type: artifact.DockerImage,
 	})
 
-	t.Run("good", func(t *testing.T) {
-		require.Equal(t, "owner/img:t1@sha256:d1", withDigest("owner/img:t1", artifacts.List()))
-	})
+	for _, use := range []string{useDocker, useBuildx} {
+		t.Run(use, func(t *testing.T) {
+			t.Run("good", func(t *testing.T) {
+				require.Equal(t, "localhost:5050/owner/img:t1@sha256:d1", withDigest(use, "localhost:5050/owner/img:t1", artifacts.List()))
+			})
 
-	t.Run("no digest", func(t *testing.T) {
-		require.Equal(t, "owner/img:t3", withDigest("owner/img:t3", artifacts.List()))
-	})
+			t.Run("no digest", func(t *testing.T) {
+				require.Equal(t, "localhost:5050/owner/img:t3", withDigest(use, "localhost:5050/owner/img:t3", artifacts.List()))
+			})
 
-	t.Run("no match", func(t *testing.T) {
-		require.Equal(t, "owner/img:t4", withDigest("owner/img:t4", artifacts.List()))
-	})
+			t.Run("no match", func(t *testing.T) {
+				require.Equal(t, "localhost:5050/owner/img:t4", withDigest(use, "localhost:5050/owner/img:t4", artifacts.List()))
+			})
+		})
+	}
 }
