@@ -67,7 +67,7 @@ nfpms:
       - deb
       - rpm
       - termux.deb # Since GoReleaser v1.11.
-      - archlinux
+      - archlinux  # Since GoReleaser v1.13.
 
     # Packages your package depends on. (overridable)
     dependencies:
@@ -372,7 +372,7 @@ nfpms:
         preupgrade: ./scripts/preupgrade.sh
         # The postupgrade script runs after pacman upgrades the package.
         postupgrade: ./scripts/postupgrade.sh
-      
+
       # The pkgbase can be used to explicitly specify the name to be used to refer
       # to a group of packages. See: https://wiki.archlinux.org/title/PKGBUILD#pkgbase.
       pkgbase: foo
