@@ -1427,25 +1427,26 @@ func TestSkip(t *testing.T) {
 func TestWithDigest(t *testing.T) {
 	artifacts := artifact.New()
 	artifacts.Add(&artifact.Artifact{
-		Name: "owner/img:t1",
+		Name: "localhost:5050/owner/img:t1",
 		Type: artifact.DockerImage,
 		Extra: artifact.Extras{
 			artifact.ExtraDigest: "sha256:d1",
 		},
 	})
 	artifacts.Add(&artifact.Artifact{
-		Name: "owner/img:t2",
+		Name: "localhost:5050/owner/img:t2",
 		Type: artifact.DockerImage,
 		Extra: artifact.Extras{
 			artifact.ExtraDigest: "sha256:d2",
 		},
 	})
 	artifacts.Add(&artifact.Artifact{
-		Name: "owner/img:t3",
+		Name: "localhost:5050/owner/img:t3",
 		Type: artifact.DockerImage,
 	})
 
 	for _, use := range []string{useDocker, useBuildx} {
+		use := use
 		t.Run(use, func(t *testing.T) {
 			t.Run("good", func(t *testing.T) {
 				require.Equal(t, "localhost:5050/owner/img:t1@sha256:d1", withDigest(use, "localhost:5050/owner/img:t1", artifacts.List()))
