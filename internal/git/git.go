@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"os/exec"
 	"strings"
 
@@ -49,6 +50,16 @@ func RunWithEnv(ctx context.Context, env []string, args ...string) (string, erro
 // Run runs a git command and returns its output or errors.
 func Run(ctx context.Context, args ...string) (string, error) {
 	return RunWithEnv(ctx, []string{}, args...)
+}
+
+func RunCmds(ctx context.Context, cwd string, env []string, cmds [][]string) error {
+	for _, cmd := range cmds {
+		args := append([]string{"-C", cwd}, cmd...)
+		if _, err := Clean(RunWithEnv(ctx, env, args...)); err != nil {
+			return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
+		}
+	}
+	return nil
 }
 
 // Clean the output.

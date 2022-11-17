@@ -16,8 +16,8 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
-	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/pipe"
+	"github.com/goreleaser/goreleaser/internal/pipe/lib"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -368,88 +368,7 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping aur publish")
 	}
 
-	key, err := tmpl.New(ctx).Apply(cfg.PrivateKey)
-	if err != nil {
-		return err
-	}
-
-	key, err = keyPath(key)
-	if err != nil {
-		return err
-	}
-
-	url, err := tmpl.New(ctx).Apply(cfg.GitURL)
-	if err != nil {
-		return err
-	}
-
-	if url == "" {
-		return pipe.Skip("aur.git_url is empty")
-	}
-
-	sshcmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
-		"KeyPath": key,
-	}).Apply(cfg.GitSSHCommand)
-	if err != nil {
-		return err
-	}
-
-	msg, err := tmpl.New(ctx).Apply(cfg.CommitMessageTemplate)
-	if err != nil {
-		return err
-	}
-
-	author, err := commitauthor.Get(ctx, cfg.CommitAuthor)
-	if err != nil {
-		return err
-	}
-
-	parent := filepath.Join(ctx.Config.Dist, "aur", "repos")
-	cwd := filepath.Join(parent, cfg.Name)
-
-	if err := os.MkdirAll(parent, 0o755); err != nil {
-		return err
-	}
-
-	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshcmd)}
-
-	if err := runGitCmds(ctx, parent, env, [][]string{
-		{"clone", url, cfg.Name},
-	}); err != nil {
-		return fmt.Errorf("failed to setup local AUR repo: %w", err)
-	}
-
-	if err := runGitCmds(ctx, cwd, env, [][]string{
-		// setup auth et al
-		{"config", "--local", "user.name", author.Name},
-		{"config", "--local", "user.email", author.Email},
-		{"config", "--local", "commit.gpgSign", "false"},
-		{"config", "--local", "init.defaultBranch", "master"},
-	}); err != nil {
-		return fmt.Errorf("failed to setup local AUR repo: %w", err)
-	}
-
-	for _, pkg := range pkgs {
-		bts, err := os.ReadFile(pkg.Path)
-		if err != nil {
-			return fmt.Errorf("failed to read %s: %w", pkg.Name, err)
-		}
-
-		if err := os.WriteFile(filepath.Join(cwd, pkg.Name), bts, 0o644); err != nil {
-			return fmt.Errorf("failed to write %s: %w", pkg.Name, err)
-		}
-	}
-
-	log.WithField("repo", url).WithField("name", cfg.Name).Info("pushing")
-	if err := runGitCmds(ctx, cwd, env, [][]string{
-		{"add", "-A", "."},
-		{"commit", "-m", msg},
-		{"push", "origin", "HEAD"},
-	}); err != nil {
-		return fmt.Errorf("failed to push %q (%q): %w", cfg.Name, url, err)
-	}
-
-	return nil
+	return lib.PublishArtifactToGitURL(ctx, pkgs, config.RepoRef{PrivateKey: cfg.PrivateKey, GitURL: cfg.GitURL, GitSSHCommand: cfg.GitSSHCommand}, cfg.CommitAuthor, cfg.CommitMessageTemplate)
 }
 
 func keyPath(key string) (string, error) {
@@ -492,14 +411,4 @@ func keyPath(key string) (string, error) {
 	}
 
 	return path, nil
-}
-
-func runGitCmds(ctx *context.Context, cwd string, env []string, cmds [][]string) error {
-	for _, cmd := range cmds {
-		args := append([]string{"-C", cwd}, cmd...)
-		if _, err := git.Clean(git.RunWithEnv(ctx, env, args...)); err != nil {
-			return fmt.Errorf("%q failed: %w", strings.Join(cmd, " "), err)
-		}
-	}
-	return nil
 }
