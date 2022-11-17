@@ -1302,10 +1302,16 @@
 					},
 					"message_template": {
 						"type": "string"
+					},
+					"server": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"server"
+				]
 			},
 			"Mattermost": {
 				"properties": {
