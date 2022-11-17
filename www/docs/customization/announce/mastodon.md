@@ -1,6 +1,6 @@
 # Mastodon
 
-For it to work, you'll need to create a new Mastodon app (https://social.yourdomain.tld/settings/applications/new), and set
+For it to work, you'll need to create a new Mastodon app `https://social.yourdomain.tld/settings/applications/new`, and set
 some environment variables on your pipeline:
 
 - `MASTODON_SERVER`
