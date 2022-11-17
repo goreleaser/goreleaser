@@ -123,6 +123,7 @@ nav:
       - About: customization/announce/index.md
       - customization/announce/discord.md
       - customization/announce/linkedin.md
+      - customization/announce/mastodon.md
       - customization/announce/mattermost.md
       - customization/announce/reddit.md
       - customization/announce/slack.md

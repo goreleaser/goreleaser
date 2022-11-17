@@ -26,6 +26,7 @@ require (
 	github.com/invopop/jsonschema v0.7.0
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/klauspost/pgzip v1.2.5
+	github.com/mattn/go-mastodon v0.0.6
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/mango-cobra v1.2.0
 	github.com/muesli/roff v0.1.0
@@ -147,6 +148,7 @@ require (
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
+	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
 	github.com/xanzy/ssh-agent v0.3.1 // indirect
 	gitlab.com/digitalxero/go-conventional-commit v1.0.7 // indirect
 	go.opencensus.io v0.23.0 // indirect
