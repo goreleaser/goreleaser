@@ -18,6 +18,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/pipe/gomod"
 	"github.com/goreleaser/goreleaser/internal/pipe/krew"
 	"github.com/goreleaser/goreleaser/internal/pipe/linkedin"
+	"github.com/goreleaser/goreleaser/internal/pipe/mastodon"
 	"github.com/goreleaser/goreleaser/internal/pipe/mattermost"
 	"github.com/goreleaser/goreleaser/internal/pipe/milestone"
 	"github.com/goreleaser/goreleaser/internal/pipe/nfpm"
@@ -80,6 +81,7 @@ var Defaulters = []Defaulter{
 	teams.Pipe{},
 	twitter.Pipe{},
 	smtp.Pipe{},
+	mastodon.Pipe{},
 	mattermost.Pipe{},
 	milestone.Pipe{},
 	linkedin.Pipe{},

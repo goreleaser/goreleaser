@@ -10,6 +10,7 @@ import (
 	"github.com/goreleaser/goreleaser/internal/middleware/skip"
 	"github.com/goreleaser/goreleaser/internal/pipe/discord"
 	"github.com/goreleaser/goreleaser/internal/pipe/linkedin"
+	"github.com/goreleaser/goreleaser/internal/pipe/mastodon"
 	"github.com/goreleaser/goreleaser/internal/pipe/mattermost"
 	"github.com/goreleaser/goreleaser/internal/pipe/reddit"
 	"github.com/goreleaser/goreleaser/internal/pipe/slack"
@@ -33,6 +34,7 @@ var announcers = []Announcer{
 	// XXX: keep asc sorting
 	discord.Pipe{},
 	linkedin.Pipe{},
+	mastodon.Pipe{},
 	mattermost.Pipe{},
 	reddit.Pipe{},
 	slack.Pipe{},

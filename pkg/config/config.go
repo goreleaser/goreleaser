@@ -957,6 +957,7 @@ type GoMod struct {
 type Announce struct {
 	Skip       string     `yaml:"skip,omitempty" json:"skip,omitempty" jsonschema:"oneof_type=string;boolean"`
 	Twitter    Twitter    `yaml:"twitter,omitempty" json:"twitter,omitempty"`
+	Mastodon   Mastodon   `yaml:"mastodon,omitempty" json:"mastodon,omitempty"`
 	Reddit     Reddit     `yaml:"reddit,omitempty" json:"reddit,omitempty"`
 	Slack      Slack      `yaml:"slack,omitempty" json:"slack,omitempty"`
 	Discord    Discord    `yaml:"discord,omitempty" json:"discord,omitempty"`
@@ -978,6 +979,11 @@ type Webhook struct {
 }
 
 type Twitter struct {
+	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
+	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
+}
+
+type Mastodon struct {
 	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
 }
