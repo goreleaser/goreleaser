@@ -36,7 +36,7 @@ func TestAnnounceMissingEnv(t *testing.T) {
 		},
 	})
 	require.NoError(t, Pipe{}.Default(ctx))
-	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to mastodon: env: environment variable "MASTODON_SERVER" should not be empty; environment variable "MASTODON_CLIENT_ID" should not be empty; environment variable "MASTODON_CLIENT_SECRET" should not be empty; environment variable "MASTODON_ACCESS_TOKEN" should not be empty`)
+	require.EqualError(t, Pipe{}.Announce(ctx), `announce: failed to announce to mastodon: env: environment variable "MASTODON_CLIENT_ID" should not be empty; environment variable "MASTODON_CLIENT_SECRET" should not be empty; environment variable "MASTODON_ACCESS_TOKEN" should not be empty`)
 }
 
 func TestSkip(t *testing.T) {
@@ -44,14 +44,25 @@ func TestSkip(t *testing.T) {
 		require.True(t, Pipe{}.Skip(context.New(config.Project{})))
 	})
 
-	t.Run("dont skip", func(t *testing.T) {
-		ctx := context.New(config.Project{
+	t.Run("skip empty server", func(t *testing.T) {
+		require.True(t, Pipe{}.Skip(context.New(config.Project{
 			Announce: config.Announce{
 				Mastodon: config.Mastodon{
 					Enabled: true,
+					Server:  "", // empty
 				},
 			},
-		})
-		require.False(t, Pipe{}.Skip(ctx))
+		})))
+	})
+
+	t.Run("dont skip", func(t *testing.T) {
+		require.False(t, Pipe{}.Skip(context.New(config.Project{
+			Announce: config.Announce{
+				Mastodon: config.Mastodon{
+					Enabled: true,
+					Server:  "https://mastodon.social",
+				},
+			},
+		})))
 	})
 }
