@@ -121,6 +121,9 @@
 					"twitter": {
 						"$ref": "#/$defs/Twitter"
 					},
+					"mastodon": {
+						"$ref": "#/$defs/Mastodon"
+					},
 					"reddit": {
 						"$ref": "#/$defs/Reddit"
 					},
@@ -1281,6 +1284,18 @@
 				"type": "object"
 			},
 			"LinkedIn": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"message_template": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Mastodon": {
 				"properties": {
 					"enabled": {
 						"type": "boolean"
