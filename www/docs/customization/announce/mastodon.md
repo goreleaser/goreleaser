@@ -1,9 +1,10 @@
 # Mastodon
 
+> Since: v1.13.0
+
 For it to work, you'll need to create a new Mastodon app `https://social.yourdomain.tld/settings/applications/new`, and set
 some environment variables on your pipeline:
 
-- `MASTODON_SERVER`
 - `MASTODON_CLIENT_ID`
 - `MASTODON_CLIENT_SECRET`
 - `MASTODON_ACCESS_TOKEN`
@@ -21,6 +22,10 @@ announce:
     # Message template to use while publishing.
     # Defaults to `{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}`
     message_template: 'Awesome project {{.Tag}} is out!'
+
+    # Mastodon server URL.
+    # Defaults to empty.
+    server: https://mastodon.social
 ```
 
 !!! tip

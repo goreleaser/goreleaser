@@ -986,6 +986,7 @@ type Twitter struct {
 type Mastodon struct {
 	Enabled         bool   `yaml:"enabled,omitempty" json:"enabled,omitempty"`
 	MessageTemplate string `yaml:"message_template,omitempty" json:"message_template,omitempty"`
+	Server          string `yaml:"server" json:"server"`
 }
 
 type Reddit struct {

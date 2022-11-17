@@ -14,11 +14,13 @@ const defaultMessageTemplate = `{{ .ProjectName }} {{ .Tag }} is out! Check it o
 
 type Pipe struct{}
 
-func (Pipe) String() string                 { return "mastodon" }
-func (Pipe) Skip(ctx *context.Context) bool { return !ctx.Config.Announce.Mastodon.Enabled }
+func (Pipe) String() string { return "mastodon" }
+
+func (Pipe) Skip(ctx *context.Context) bool {
+	return !ctx.Config.Announce.Mastodon.Enabled || ctx.Config.Announce.Mastodon.Server == ""
+}
 
 type Config struct {
-	Server       string `env:"MASTODON_SERVER,notEmpty"`
 	ClientID     string `env:"MASTODON_CLIENT_ID,notEmpty"`
 	ClientSecret string `env:"MASTODON_CLIENT_SECRET,notEmpty"`
 	AccessToken  string `env:"MASTODON_ACCESS_TOKEN,notEmpty"`
@@ -43,7 +45,7 @@ func (Pipe) Announce(ctx *context.Context) error {
 	}
 
 	client := mastodon.NewClient(&mastodon.Config{
-		Server:       cfg.Server,
+		Server:       ctx.Config.Announce.Mastodon.Server,
 		ClientID:     cfg.ClientID,
 		ClientSecret: cfg.ClientSecret,
 		AccessToken:  cfg.AccessToken,
