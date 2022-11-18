@@ -16,6 +16,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
+    - uses: actions/setup-go@c4a742cab115ed795e34d4513e2cf7d472deb55f # v3
+      with:
+        go-version: '>=1.19.3'
+        cache: true
     - uses: github/codeql-action/init@678fc3afe258fb2e0cdc165ccf77b85719de7b3c # v2
     - uses: github/codeql-action/autobuild@678fc3afe258fb2e0cdc165ccf77b85719de7b3c # v2
     - uses: github/codeql-action/analyze@678fc3afe258fb2e0cdc165ccf77b85719de7b3c # v2
