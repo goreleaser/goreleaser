@@ -241,15 +241,6 @@ func (c *githubClient) CreateRelease(ctx *context.Context, body string) (string,
 		return "", fmt.Errorf("could not release: %w", err)
 	}
 
-	if release.GetDraft() != ctx.Config.Release.Draft {
-		// sometimes, for unknown reasons, the release is created as a draft, even though it isn't.
-		// This should publish it.
-		release.Draft = github.Bool(ctx.Config.Release.Draft)
-		if _, err := c.updateRelease(ctx, release.GetID(), release); err != nil {
-			return "", fmt.Errorf("could not update existing release: %w", err)
-		}
-	}
-
 	return strconv.FormatInt(release.GetID(), 10), nil
 }
 
