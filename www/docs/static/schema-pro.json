@@ -130,6 +130,9 @@
 					"twitter": {
 						"$ref": "#/$defs/Twitter"
 					},
+					"mastodon": {
+						"$ref": "#/$defs/Mastodon"
+					},
 					"reddit": {
 						"$ref": "#/$defs/Reddit"
 					},
@@ -1386,6 +1389,24 @@
 				},
 				"additionalProperties": false,
 				"type": "object"
+			},
+			"Mastodon": {
+				"properties": {
+					"enabled": {
+						"type": "boolean"
+					},
+					"message_template": {
+						"type": "string"
+					},
+					"server": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object",
+				"required": [
+					"server"
+				]
 			},
 			"Mattermost": {
 				"properties": {
