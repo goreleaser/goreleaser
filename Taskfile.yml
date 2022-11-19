@@ -156,11 +156,6 @@ tasks:
           Platform: 'arm64'
           Image: fedora
           Cmd: '{{.rpm}} goreleaser-*.aarch64.rpm'
-      - task: goreleaser:test:pkg
-        vars:
-          Platform: 'arm/7'
-          Image: fedora
-          Cmd: '{{.rpm}} goreleaser-*.armv7hl.rpm'
 
   goreleaser:test:deb:
     desc: Tests deb packages
