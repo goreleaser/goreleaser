@@ -1,7 +1,9 @@
 # Links
 
 - Follow the progress on the [GitHub repository](https://github.com/goreleaser/goreleaser)
-- Follow [@goreleaser](/twitter) on Twitter for updates
+- Follow us on [Twitter](/twitter) and
+<a rel="me" href="https://fosstodon.org/@goreleaser">Mastodon</a>
+for updates
 - Join our [Discord server](/discord)
 - Read our [blog](https://blog.goreleaser.com)[^blog]
 - Sign up for our [Newsletter](https://www.getrevue.co/profile/goreleaser)

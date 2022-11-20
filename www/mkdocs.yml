@@ -38,6 +38,7 @@ plugins:
       redirect_maps:
         discord.md: https://discord.gg/RGEBtg8vQ6
         twitter.md: https://twitter.com/goreleaser
+        mastodon.md: https://fosstodon.org/@goreleaser
         linkedin.md: https://www.linkedin.com/company/goreleaser/
   - minify:
       minify_html: true
@@ -48,6 +49,8 @@ extra:
       link: https://github.com/goreleaser
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/goreleaser
+    - icon: fontawesome/brands/mastodon
+      link: https://fosstodon.org/@goreleaser
 
 nav:
 - Home: index.md

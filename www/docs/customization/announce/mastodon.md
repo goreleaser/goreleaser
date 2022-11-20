@@ -2,14 +2,16 @@
 
 > Since: v1.13.0
 
-For it to work, you'll need to create a new Mastodon app `https://social.yourdomain.tld/settings/applications/new`, and set
-some environment variables on your pipeline:
+For it to work, you'll need to create a new Mastodon app
+`https://social.yourdomain.tld/settings/applications/new` with `write:statuses`
+permissions, and set the following environment variables in your pipeline:
 
-- `MASTODON_CLIENT_ID`
-- `MASTODON_CLIENT_SECRET`
-- `MASTODON_ACCESS_TOKEN`
+- `MASTODON_CLIENT_ID`: *"Client key"*.
+- `MASTODON_CLIENT_SECRET`: *"Client secret"*.
+- `MASTODON_ACCESS_TOKEN`: *"Your access token"*.
 
-Then, you can add something like the following to your `.goreleaser.yaml` config:
+Then, you can add something like the following to your `.goreleaser.yaml`
+configuration file:
 
 ```yaml
 # .goreleaser.yaml
