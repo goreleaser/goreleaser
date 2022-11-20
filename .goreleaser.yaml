@@ -320,7 +320,7 @@ announce:
   mastodon:
     enabled: true
     message_template: '#GoReleaser {{ .Tag }} is out! Check it out: https://github.com/goreleaser/goreleaser/releases/tag/{{ .Tag }}'
-    server: https://mastodon.social
+    server: https://fosstodon.org
 
   discord:
     enabled: true
