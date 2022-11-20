@@ -214,6 +214,11 @@ nfpms:
           owner: notRoot
           group: notRoot
 
+      # If `dst` ends with a `/`, it'll create the given path and copy the given
+      # `src` into it, the same way `cp` works with and without trailing `/`.
+      - src: ./foo/bar/*
+        dst: /usr/local/myapp/
+
       # Using the type 'dir', empty directories can be created. When building
       # RPMs, however, this type has another important purpose: Claiming
       # ownership of that folder. This is important because when upgrading or
