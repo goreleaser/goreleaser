@@ -23,7 +23,10 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/context"
 )
 
-const brewConfigExtra = "BrewConfig"
+const (
+	defaultSSHCommand = "ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null"
+	brewConfigExtra   = "BrewConfig"
+)
 
 var (
 	// ErrNoArchivesFound happens when 0 archives are found.
@@ -51,6 +54,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if brew.Name == "" {
 			brew.Name = ctx.Config.ProjectName
+		}
+		if brew.Tap.GitSSHCommand == "" {
+			brew.Tap.GitSSHCommand = defaultSSHCommand
 		}
 		if brew.Goarm == "" {
 			brew.Goarm = "6"
@@ -124,9 +130,19 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 
 	gpath := buildFormulaPath(brew.Folder, formula.Name)
 
+	msg, err := tmpl.New(ctx).Apply(brew.CommitMessageTemplate)
+	if err != nil {
+		return err
+	}
+
+	author, err := commitauthor.Get(ctx, brew.CommitAuthor)
+	if err != nil {
+		return err
+	}
+
 	if len(brew.Tap.GitURL) > 0 {
 		log.WithField("formula", gpath).WithField("repo", brew.Tap.GitURL).Info("pushing")
-		return lib.PublishArtifactToGitURL(ctx, []*artifact.Artifact{formula}, brew.Tap, brew.CommitAuthor, brew.CommitMessageTemplate)
+		return lib.PublishArtifactToGitURL(ctx, []*artifact.Artifact{formula}, brew.Tap, author, msg)
 	}
 
 	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
@@ -139,16 +155,6 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	log.WithField("formula", gpath).
 		WithField("repo", repo.String()).
 		Info("pushing")
-
-	msg, err := tmpl.New(ctx).Apply(brew.CommitMessageTemplate)
-	if err != nil {
-		return err
-	}
-
-	author, err := commitauthor.Get(ctx, brew.CommitAuthor)
-	if err != nil {
-		return err
-	}
 
 	content, err := os.ReadFile(formula.Path)
 	if err != nil {

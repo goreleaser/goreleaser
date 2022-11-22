@@ -38,7 +38,7 @@ func PublishArtifactToGitURL(ctx *context.Context, artifacts []*artifact.Artifac
 	}
 
 	if url == "" {
-		return pipe.Skip("brew.tap.git_url is empty")
+		return pipe.Skip("git_url is empty")
 	}
 
 	sshcmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
@@ -108,7 +108,7 @@ func PublishArtifactToGitURL(ctx *context.Context, artifacts []*artifact.Artifac
 
 func keyPath(key string) (string, error) {
 	if key == "" {
-		return "", pipe.Skip("brew.tap.private_key is empty")
+		return "", pipe.Skip("private_key is empty")
 	}
 
 	path := key
@@ -137,12 +137,12 @@ func keyPath(key string) (string, error) {
 	}
 
 	if _, err := os.Stat(path); err != nil {
-		return "", fmt.Errorf("could not stat brew.tap.private_key: %w", err)
+		return "", fmt.Errorf("could not stat private_key: %w", err)
 	}
 
 	// in any case, ensure the key has the correct permissions.
 	if err := os.Chmod(path, 0o600); err != nil {
-		return "", fmt.Errorf("failed to ensure brew.tap.private_key permissions: %w", err)
+		return "", fmt.Errorf("failed to ensure private_key permissions: %w", err)
 	}
 
 	return path, nil

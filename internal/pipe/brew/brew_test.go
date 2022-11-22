@@ -6,8 +6,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/charmbracelet/keygen"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/client"
+	"github.com/goreleaser/goreleaser/internal/git"
 	"github.com/goreleaser/goreleaser/internal/golden"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
@@ -205,6 +207,16 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Brews[0].Tap.Owner = "test"
 				ctx.Config.Brews[0].Tap.Name = "test"
 				ctx.Config.Brews[0].Homepage = "https://gitlab.com/goreleaser"
+			},
+		},
+		"custom_git_url": {
+			prepare: func(ctx *context.Context) {
+				ctx.TokenType = context.TokenTypeGitHub
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
+				ctx.Config.Brews[0].Tap.GitURL = makeBareRepo(t)
+				ctx.Config.Brews[0].Tap.PrivateKey = makeKey(t, keygen.Ed25519)
 			},
 		},
 		"invalid_commit_template": {
@@ -1297,4 +1309,29 @@ func TestRunPipeUniversalBinaryNotReplacing(t *testing.T) {
 	distBts, err := os.ReadFile(distFile)
 	require.NoError(t, err)
 	require.Equal(t, client.Content, string(distBts))
+}
+
+func makeKey(tb testing.TB, algo keygen.KeyType) string {
+	tb.Helper()
+
+	dir := tb.TempDir()
+	filepath := filepath.Join(dir, "id")
+	_, err := keygen.NewWithWrite(filepath, nil, algo)
+	require.NoError(tb, err)
+	return fmt.Sprintf("%s_%s", filepath, algo)
+}
+
+func makeBareRepo(tb testing.TB) string {
+	tb.Helper()
+	dir := tb.TempDir()
+	_, err := git.Run(
+		context.New(config.Project{}),
+		"-C", dir,
+		"-c", "init.defaultBranch=master",
+		"init",
+		"--bare",
+		".",
+	)
+	require.NoError(tb, err)
+	return dir
 }
