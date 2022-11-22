@@ -2,6 +2,7 @@ package zip
 
 import (
 	"archive/zip"
+	"bytes"
 	"io"
 	"io/fs"
 	"os"
@@ -85,6 +86,13 @@ func TestZipFile(t *testing.T) {
 		}
 		if zf.Name == "link.txt" {
 			require.True(t, zf.FileInfo().Mode()&os.ModeSymlink != 0)
+			rc, err := zf.Open()
+			require.NoError(t, err)
+			var link bytes.Buffer
+			_, err = io.Copy(&link, rc)
+			require.NoError(t, err)
+			rc.Close()
+			require.Equal(t, link.String(), "regular.txt")
 		}
 	}
 	require.Equal(t, []string{
