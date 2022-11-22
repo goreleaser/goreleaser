@@ -77,7 +77,7 @@ builds:
 
     # GOOS list to build for.
     # For more info refer to: https://golang.org/doc/install/source#environment
-    # Defaults are darwin and linux.
+    # Defaults are darwin, linux, and windows.
     goos:
       - freebsd
       - windows
