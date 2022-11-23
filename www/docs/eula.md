@@ -81,8 +81,8 @@ If you do not wish to receive such communications, a Customer may opt-out by not
 
 ## 7. Co-Marketing
 
-At the request of Supplier, Customer agrees to participate in other reasonable marketing activities that promote the benefits of the Services to other potential customers and to use of Customer's name and logo on the Supplier's web site and in Supplier's promotional materials.
-Customer agrees that Supplier may disclose Customer as a customer of the Products.
+At the request of the Supplier and only with prior written approval from the Customer for each use of Customer's name and logo, Customer agrees to participate in other reasonable marketing activities that promote the benefits of the Services to other potential customers and to use of Customer's name and logo on the Supplier's web site and in Supplier's promotional materials.
+Customer agrees that Supplier may disclose Customer as a customer of the Products only with Customer's prior written approval for each use.
 
 ## 8. Limitation of Liability.
 
