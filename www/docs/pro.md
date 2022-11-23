@@ -6,7 +6,7 @@ additional features:
 - [x] [Split and merge builds](/customization/partial) to speed up your release
   by splitting work, use CGO, or run platform-specific code;
 - [x] [Filter commits by path in the changelog](/customization/changelog);
-- [x] Have custom [before and after hooks for achives](/customization/archive/);
+- [x] Have custom [before and after hooks for archives](/customization/archive/);
 - [x] Prepare a release with
   [`goreleaser release --prepare`](/cmd/goreleaser_release/), publish and
   announce it later with
