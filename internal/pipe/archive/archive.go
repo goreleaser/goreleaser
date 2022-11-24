@@ -15,6 +15,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -73,6 +74,9 @@ func (Pipe) Default(ctx *context.Context) error {
 			if archive.Format == "binary" {
 				archive.NameTemplate = defaultBinaryNameTemplate
 			}
+		}
+		if len(archive.Replacements) != 0 {
+			deprecate.Notice(ctx, "archives.replacements")
 		}
 		ids.Inc(archive.ID)
 	}

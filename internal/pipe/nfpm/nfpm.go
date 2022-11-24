@@ -59,6 +59,9 @@ func (Pipe) Default(ctx *context.Context) error {
 		if fpm.Maintainer == "" {
 			deprecate.NoticeCustom(ctx, "nfpms.maintainer", "`{{ .Property }}` should always be set, check {{ .URL }} for more info")
 		}
+		if len(fpm.Replacements) != 0 {
+			deprecate.Notice(ctx, "nfpms.replacements")
+		}
 		ids.Inc(fpm.ID)
 	}
 

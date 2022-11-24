@@ -13,6 +13,7 @@ import (
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/gio"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/pipe"
@@ -121,6 +122,9 @@ func (Pipe) Default(ctx *context.Context) error {
 			for _, b := range ctx.Config.Builds {
 				snap.Builds = append(snap.Builds, b.ID)
 			}
+		}
+		if len(snap.Replacements) != 0 {
+			deprecate.Notice(ctx, "snapcrafts.replacements")
 		}
 		ids.Inc(snap.ID)
 	}
