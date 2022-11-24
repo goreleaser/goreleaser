@@ -11,23 +11,33 @@ class CustomRequire < Formula
   depends_on "zsh" => :optional
   depends_on "bash" => "3.2.57"
   depends_on "fish" => :optional
-  depends_on :macos
 
   on_macos do
-    url "https://dummyhost/download/v1.0.1/bin.tar.gz", using: CustomDownloadStrategy
-    sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    if Hardware::CPU.intel?
+      url "https://dummyhost/download/v1.0.1/bin.tar.gz", using: CustomDownloadStrategy
+      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
-    def install
-      bin.install "custom_require_darwin_amd64 => custom_require"
+      def install
+        bin.install "custom_require_darwin_amd64 => custom_require"
+      end
     end
-
     if Hardware::CPU.arm?
-      def caveats
-        <<~EOS
-          The darwin_arm64 architecture is not supported for the CustomRequire
-          formula at this time. The darwin_amd64 binary may work in compatibility
-          mode, but it might not be fully supported.
-        EOS
+      url "https://dummyhost/download/v1.0.1/bin.tar.gz", using: CustomDownloadStrategy
+      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
+      def install
+        bin.install "custom_require_darwin_arm64 => custom_require"
+      end
+    end
+  end
+
+  on_linux do
+    if Hardware::CPU.intel?
+      url "https://dummyhost/download/v1.0.1/bin.tar.gz", using: CustomDownloadStrategy
+      sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
+      def install
+        bin.install "custom_require_linux_amd64 => custom_require"
       end
     end
   end

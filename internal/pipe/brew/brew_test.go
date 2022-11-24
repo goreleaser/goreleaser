@@ -312,6 +312,29 @@ func TestFullPipe(t *testing.T) {
 					artifact.ExtraFormat: "tar.gz",
 				},
 			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "bin.tar.gz",
+				Path:   path,
+				Goos:   "darwin",
+				Goarch: "arm64",
+				Type:   artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					artifact.ExtraID:     "foo",
+					artifact.ExtraFormat: "tar.gz",
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "bin.tar.gz",
+				Path:    path,
+				Goos:    "linux",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					artifact.ExtraID:     "foo",
+					artifact.ExtraFormat: "tar.gz",
+				},
+			})
 
 			f, err := os.Create(path)
 			require.NoError(t, err)
