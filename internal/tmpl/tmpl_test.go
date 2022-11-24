@@ -228,6 +228,11 @@ func TestFuncMap(t *testing.T) {
 			Expected: "https://github.com/foo/bar",
 		},
 		{
+			Template: `{{ title "file" }}`,
+			Name:     "title",
+			Expected: "File",
+		},
+		{
 			Template: `{{ .ReleaseURL }}`,
 			Name:     "trimsuffix",
 			Expected: "https://github.com/foo/bar/releases/tag/v1.0.0",
