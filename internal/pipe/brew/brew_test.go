@@ -247,6 +247,14 @@ func TestFullPipe(t *testing.T) {
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
+		"invalid_install_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Install = "{{ .aaaa }"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
