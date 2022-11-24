@@ -116,6 +116,7 @@ Usage                         |Description
 `abs .ArtifactPath`           |returns an absolute representation of path. See [Abs](https://golang.org/pkg/path/filepath/#Abs)
 `filter "text" "regex"`       |keeps only the lines matching the given regex, analogous to `grep -E`. Since v1.6.
 `reverseFilter "text" "regex"`|keeps only the lines **not** matching the given regex, analogous to `grep -vE`. Since v1.6.
+`title "foo"`               |"titlenize" the string using english as language, analagous to `cases.Title(language.English).String()`. Since v1.14.
 
 With all those fields, you may be able to compose the name of your artifacts
 pretty much the way you want:

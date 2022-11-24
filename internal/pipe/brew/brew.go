@@ -346,7 +346,7 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 			cfg.URLTemplate = url
 		}
 
-		url, err := tmpl.New(ctx).WithArtifact(art, map[string]string{}).Apply(cfg.URLTemplate)
+		url, err := tmpl.New(ctx).WithArtifact(art).Apply(cfg.URLTemplate)
 		if err != nil {
 			return result, err
 		}

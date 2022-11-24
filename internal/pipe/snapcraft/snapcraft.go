@@ -212,7 +212,7 @@ func (Pipe) Publish(ctx *context.Context) error {
 func create(ctx *context.Context, snap config.Snapcraft, arch string, binaries []*artifact.Artifact) error {
 	log := log.WithField("arch", arch)
 	folder, err := tmpl.New(ctx).
-		WithArtifact(binaries[0], snap.Replacements).
+		WithArtifactReplacements(binaries[0], snap.Replacements).
 		Apply(snap.NameTemplate)
 	if err != nil {
 		return err

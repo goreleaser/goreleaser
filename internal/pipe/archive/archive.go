@@ -138,7 +138,7 @@ func createMeta(ctx *context.Context, arch config.Archive) error {
 }
 
 func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {
-	template := tmpl.New(ctx).WithArtifact(binaries[0], arch.Replacements)
+	template := tmpl.New(ctx).WithArtifactReplacements(binaries[0], arch.Replacements)
 	format := packageFormat(arch, binaries[0].Goos)
 	return doCreate(ctx, arch, binaries, format, template)
 }
@@ -245,7 +245,7 @@ func wrapFolder(a config.Archive) string {
 func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
 	for _, binary := range binaries {
 		name, err := tmpl.New(ctx).
-			WithArtifact(binary, archive.Replacements).
+			WithArtifactReplacements(binary, archive.Replacements).
 			Apply(archive.NameTemplate)
 		if err != nil {
 			return err

@@ -241,9 +241,7 @@ func dataFor(ctx *context.Context, cl client.Client, artifacts []*artifact.Artif
 			continue
 		}
 
-		url, err := tmpl.New(ctx).
-			WithArtifact(artifact, map[string]string{}).
-			Apply(ctx.Config.Scoop.URLTemplate)
+		url, err := tmpl.New(ctx).WithArtifact(artifact).Apply(ctx.Config.Scoop.URLTemplate)
 		if err != nil {
 			return manifest, err
 		}

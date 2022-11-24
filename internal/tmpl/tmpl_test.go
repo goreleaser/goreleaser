@@ -80,7 +80,7 @@ func TestWithArtifact(t *testing.T) {
 		expect := expect
 		t.Run(expect, func(t *testing.T) {
 			t.Parallel()
-			result, err := New(ctx).WithArtifact(
+			result, err := New(ctx).WithArtifactReplacements(
 				&artifact.Artifact{
 					Name:    "not-this-binary",
 					Path:    "/tmp/foo.exe",
@@ -103,7 +103,7 @@ func TestWithArtifact(t *testing.T) {
 
 	t.Run("artifact without binary name", func(t *testing.T) {
 		t.Parallel()
-		result, err := New(ctx).WithArtifact(
+		result, err := New(ctx).WithArtifactReplacements(
 			&artifact.Artifact{
 				Name:   "another-binary",
 				Goarch: "amd64",
