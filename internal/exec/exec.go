@@ -162,10 +162,12 @@ func resolveCommand(ctx *context.Context, publisher config.Publisher, artifact *
 	}
 
 	dir := publisher.Dir
+
+	// nolint:staticcheck
+	tpl := tmpl.New(ctx).
+		WithArtifactReplacements(artifact, replacements)
 	if dir != "" {
-		dir, err = tmpl.New(ctx).
-			WithArtifactReplacements(artifact, replacements).
-			Apply(dir)
+		dir, err = tpl.Apply(dir)
 		if err != nil {
 			return nil, err
 		}
@@ -173,9 +175,7 @@ func resolveCommand(ctx *context.Context, publisher config.Publisher, artifact *
 
 	cmd := publisher.Cmd
 	if cmd != "" {
-		cmd, err = tmpl.New(ctx).
-			WithArtifactReplacements(artifact, replacements).
-			Apply(cmd)
+		cmd, err = tpl.Apply(cmd)
 		if err != nil {
 			return nil, err
 		}
@@ -188,9 +188,7 @@ func resolveCommand(ctx *context.Context, publisher config.Publisher, artifact *
 
 	env := make([]string, len(publisher.Env))
 	for i, e := range publisher.Env {
-		e, err = tmpl.New(ctx).
-			WithArtifactReplacements(artifact, replacements).
-			Apply(e)
+		e, err = tpl.Apply(e)
 		if err != nil {
 			return nil, err
 		}

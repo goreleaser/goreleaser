@@ -142,6 +142,7 @@ func createMeta(ctx *context.Context, arch config.Archive) error {
 }
 
 func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {
+	// nolint:staticcheck
 	template := tmpl.New(ctx).WithArtifactReplacements(binaries[0], arch.Replacements)
 	format := packageFormat(arch, binaries[0].Goos)
 	return doCreate(ctx, arch, binaries, format, template)
@@ -248,6 +249,7 @@ func wrapFolder(a config.Archive) string {
 
 func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
 	for _, binary := range binaries {
+		// nolint:staticcheck
 		name, err := tmpl.New(ctx).
 			WithArtifactReplacements(binary, archive.Replacements).
 			Apply(archive.NameTemplate)

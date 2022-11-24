@@ -389,6 +389,8 @@ func resolveTargetTemplate(ctx *context.Context, upload *config.Upload, artifact
 		// will be removed soon anyway
 		replacements = ctx.Config.Archives[0].Replacements
 	}
+
+	// nolint:staticcheck
 	return tmpl.New(ctx).
 		WithArtifactReplacements(artifact, replacements).
 		Apply(upload.Target)
@@ -403,6 +405,7 @@ func resolveHeaderTemplate(ctx *context.Context, upload *config.Upload, artifact
 		// will be removed soon anyway
 		replacements = ctx.Config.Archives[0].Replacements
 	}
+	// nolint:staticcheck
 	return tmpl.New(ctx).
 		WithArtifactReplacements(artifact, replacements).
 		Apply(headerValue)
