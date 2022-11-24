@@ -14,6 +14,8 @@ import (
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/pkg/build"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // Template holds data that can be applied to a template string.
@@ -185,6 +187,7 @@ func (t *Template) Apply(s string) (string, error) {
 			"trim":          strings.TrimSpace,
 			"trimprefix":    strings.TrimPrefix,
 			"trimsuffix":    strings.TrimSuffix,
+			"title":         cases.Title(language.English).String,
 			"dir":           filepath.Dir,
 			"abs":           filepath.Abs,
 			"incmajor":      incMajor,
