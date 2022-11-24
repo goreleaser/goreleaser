@@ -247,9 +247,6 @@ func buildFormula(ctx *context.Context, brew config.Homebrew, client client.Clie
 func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	t, err := template.
 		New(data.Name).
-		Funcs(template.FuncMap{
-			"join": strings.Join,
-		}).
 		Parse(formulaTemplate)
 	if err != nil {
 		return "", err
