@@ -17,7 +17,7 @@ class Default < Formula
     sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
     def install
-      bin.install "default"
+      bin.install "default_darwin_amd64 => default"
     end
 
     if Hardware::CPU.arm?

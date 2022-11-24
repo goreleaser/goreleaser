@@ -17,7 +17,7 @@ class CustomDownloadStrategy < Formula
     sha256 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
     def install
-      bin.install "custom_download_strategy"
+      bin.install "custom_download_strategy_darwin_amd64 => custom_download_strategy"
     end
 
     if Hardware::CPU.arm?
