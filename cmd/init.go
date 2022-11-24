@@ -31,7 +31,7 @@ func newInitCmd() *initCmd {
 			defer conf.Close()
 
 			log.Infof(boldStyle.Render(fmt.Sprintf("Generating %s file", root.config)))
-			if _, err := conf.WriteString(static.ExampleConfig); err != nil {
+			if _, err := conf.Write(static.ExampleConfig); err != nil {
 				return err
 			}
 
