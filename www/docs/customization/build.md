@@ -71,6 +71,8 @@ builds:
 
     # Custom environment variables to be set during the builds.
     #
+    # Invalid and empty environment variables are ignored.
+    #
     # Default: `os.Environ()` merged with what you set the root `env` section.
     env:
       - CGO_ENABLED=0

@@ -159,12 +159,21 @@ func TestWithEnv(t *testing.T) {
 		"FOO": "BAR",
 	}
 	ctx.Git.CurrentTag = "v1.2.3"
-	out, err := New(ctx).WithEnvS([]string{
+	tpl := New(ctx).WithEnvS([]string{
 		"FOO=foo",
 		"BAR=bar",
-	}).Apply("{{ .Env.FOO }}-{{ .Env.BAR }}")
+		"NOVAL=",
+		"=NOKEY",
+		"=",
+		"NOTHING",
+	})
+	out, err := tpl.Apply("{{ .Env.FOO }}-{{ .Env.BAR }}")
 	require.NoError(t, err)
 	require.Equal(t, "foo-bar", out)
+
+	out, err = tpl.Apply(`{{ range $idx, $key := .Env }}{{ $idx }},{{ end }}`)
+	require.NoError(t, err)
+	require.Equal(t, "BAR,FOO,", out)
 }
 
 func TestFuncMap(t *testing.T) {
