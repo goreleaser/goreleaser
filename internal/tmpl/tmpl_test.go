@@ -173,7 +173,7 @@ func TestWithEnv(t *testing.T) {
 
 	out, err = tpl.Apply(`{{ range $idx, $key := .Env }}{{ $idx }},{{ end }}`)
 	require.NoError(t, err)
-	require.Equal(t, "BAR,FOO,", out)
+	require.Equal(t, "BAR,FOO,NOVAL,", out)
 }
 
 func TestFuncMap(t *testing.T) {

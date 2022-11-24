@@ -120,7 +120,7 @@ func (t *Template) WithEnvS(envs []string) *Template {
 	result := map[string]string{}
 	for _, env := range envs {
 		k, v, ok := strings.Cut(env, "=")
-		if !ok || k == "" || v == "" {
+		if !ok || k == "" {
 			continue
 		}
 		result[k] = v
