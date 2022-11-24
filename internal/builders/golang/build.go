@@ -53,7 +53,7 @@ func (*Builder) WithDefaults(build config.Build) (config.Build, error) {
 	}
 	if len(build.Targets) == 0 {
 		if len(build.Goos) == 0 {
-			build.Goos = []string{"linux", "darwin"}
+			build.Goos = []string{"linux", "darwin", "windows"}
 		}
 		if len(build.Goarch) == 0 {
 			build.Goarch = []string{"amd64", "arm64", "386"}
