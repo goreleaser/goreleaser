@@ -247,6 +247,14 @@ func TestFullPipe(t *testing.T) {
 			},
 			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
 		},
+		"invalid_install_template": {
+			prepare: func(ctx *context.Context) {
+				ctx.Config.Brews[0].Tap.Owner = "test"
+				ctx.Config.Brews[0].Tap.Name = "test"
+				ctx.Config.Brews[0].Install = "{{ .aaaa }"
+			},
+			expectedRunError: `template: tmpl:1: unexpected "}" in operand`,
+		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
@@ -280,7 +288,7 @@ func TestFullPipe(t *testing.T) {
 							Conflicts:   []string{"gtk+", "qt"},
 							Service:     "run foo/bar\nkeep_alive true",
 							PostInstall: "system \"echo\"\ntouch \"/tmp/hi\"",
-							Install:     `bin.install "{{ .ProjectName }}"`,
+							Install:     `bin.install "{{ .ProjectName }}_{{.Os}}_{{.Arch}} => {{.ProjectName}}"`,
 							Goamd64:     "v1",
 						},
 					},
@@ -304,6 +312,29 @@ func TestFullPipe(t *testing.T) {
 				Name:    "bin.tar.gz",
 				Path:    path,
 				Goos:    "darwin",
+				Goarch:  "amd64",
+				Goamd64: "v1",
+				Type:    artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					artifact.ExtraID:     "foo",
+					artifact.ExtraFormat: "tar.gz",
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:   "bin.tar.gz",
+				Path:   path,
+				Goos:   "darwin",
+				Goarch: "arm64",
+				Type:   artifact.UploadableArchive,
+				Extra: map[string]interface{}{
+					artifact.ExtraID:     "foo",
+					artifact.ExtraFormat: "tar.gz",
+				},
+			})
+			ctx.Artifacts.Add(&artifact.Artifact{
+				Name:    "bin.tar.gz",
+				Path:    path,
+				Goos:    "linux",
 				Goarch:  "amd64",
 				Goamd64: "v1",
 				Type:    artifact.UploadableArchive,
@@ -1116,20 +1147,22 @@ func TestRunSkipNoName(t *testing.T) {
 
 func TestInstalls(t *testing.T) {
 	t.Run("provided", func(t *testing.T) {
+		install, err := installs(
+			context.New(config.Project{}),
+			config.Homebrew{Install: "bin.install \"foo\"\nbin.install \"bar\""},
+			&artifact.Artifact{},
+		)
+		require.NoError(t, err)
 		require.Equal(t, []string{
 			`bin.install "foo"`,
 			`bin.install "bar"`,
-		}, installs(
-			config.Homebrew{Install: "bin.install \"foo\"\nbin.install \"bar\""},
-			&artifact.Artifact{},
-		))
+		}, install)
 	})
 
 	t.Run("from archives", func(t *testing.T) {
-		require.Equal(t, []string{
-			`bin.install "bar"`,
-			`bin.install "foo"`,
-		}, installs(
+		install, err := installs(
+			context.New(config.Project{}),
+
 			config.Homebrew{},
 			&artifact.Artifact{
 				Type: artifact.UploadableArchive,
@@ -1137,13 +1170,17 @@ func TestInstalls(t *testing.T) {
 					artifact.ExtraBinaries: []string{"foo", "bar"},
 				},
 			},
-		))
+		)
+		require.NoError(t, err)
+		require.Equal(t, []string{
+			`bin.install "bar"`,
+			`bin.install "foo"`,
+		}, install)
 	})
 
 	t.Run("from binary", func(t *testing.T) {
-		require.Equal(t, []string{
-			`bin.install "foo_macos" => "foo"`,
-		}, installs(
+		install, err := installs(
+			context.New(config.Project{}),
 			config.Homebrew{},
 			&artifact.Artifact{
 				Name: "foo_macos",
@@ -1152,7 +1189,29 @@ func TestInstalls(t *testing.T) {
 					artifact.ExtraBinary: "foo",
 				},
 			},
-		))
+		)
+		require.NoError(t, err)
+		require.Equal(t, []string{
+			`bin.install "foo_macos" => "foo"`,
+		}, install)
+	})
+
+	t.Run("from template", func(t *testing.T) {
+		install, err := installs(
+			context.New(config.Project{}),
+			config.Homebrew{
+				Install: `bin.install "foo_{{.Os}}" => "foo"`,
+			},
+			&artifact.Artifact{
+				Name: "foo_darwin",
+				Goos: "darwin",
+				Type: artifact.UploadableBinary,
+			},
+		)
+		require.NoError(t, err)
+		require.Equal(t, []string{
+			`bin.install "foo_darwin" => "foo"`,
+		}, install)
 	})
 }
 

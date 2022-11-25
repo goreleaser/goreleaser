@@ -247,9 +247,6 @@ func buildFormula(ctx *context.Context, brew config.Homebrew, client client.Clie
 func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	t, err := template.
 		New(data.Name).
-		Funcs(template.FuncMap{
-			"join": strings.Join,
-		}).
 		Parse(formulaTemplate)
 	if err != nil {
 		return "", err
@@ -282,9 +279,13 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 	return out.String(), nil
 }
 
-func installs(cfg config.Homebrew, art *artifact.Artifact) []string {
-	if cfg.Install != "" {
-		return split(cfg.Install)
+func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact) ([]string, error) {
+	applied, err := tmpl.New(ctx).WithArtifact(art, nil).Apply(cfg.Install)
+	if err != nil {
+		return nil, err
+	}
+	if applied != "" {
+		return split(applied), nil
 	}
 
 	install := map[string]bool{}
@@ -302,7 +303,7 @@ func installs(cfg config.Homebrew, art *artifact.Artifact) []string {
 	result := keys(install)
 	sort.Strings(result)
 	log.Warnf("guessing install to be %q", strings.Join(result, ", "))
-	return result
+	return result, nil
 }
 
 func keys(m map[string]bool) []string {
@@ -351,13 +352,18 @@ func dataFor(ctx *context.Context, cfg config.Homebrew, cl client.Client, artifa
 			return result, err
 		}
 
+		install, err := installs(ctx, cfg, art)
+		if err != nil {
+			return result, err
+		}
+
 		pkg := releasePackage{
 			DownloadURL:      url,
 			SHA256:           sum,
 			OS:               art.Goos,
 			Arch:             art.Goarch,
 			DownloadStrategy: cfg.DownloadStrategy,
-			Install:          installs(cfg, art),
+			Install:          install,
 		}
 
 		counts[pkg.OS+pkg.Arch]++
