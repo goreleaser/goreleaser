@@ -121,6 +121,8 @@ func TestRunFullPipe(t *testing.T) {
 	folder := testlib.Mktmp(t)
 	pre := filepath.Join(folder, "pre")
 	post := filepath.Join(folder, "post")
+	preOS := filepath.Join(folder, "pre_linux")
+	postOS := filepath.Join(folder, "post_linux")
 	config := config.Project{
 		Builds: []config.Build{
 			{
@@ -130,13 +132,16 @@ func TestRunFullPipe(t *testing.T) {
 				BuildDetails: config.BuildDetails{
 					Flags:   []string{"-v"},
 					Ldflags: []string{"-X main.test=testing"},
+					Env:     []string{"THE_OS={{ .Os }}"},
 				},
 				Hooks: config.BuildHookConfig{
 					Pre: []config.Hook{
 						{Cmd: "touch " + pre},
+						{Cmd: "touch pre_{{ .Env.THE_OS}}"},
 					},
 					Post: []config.Hook{
 						{Cmd: "touch " + post},
+						{Cmd: "touch post_{{ .Env.THE_OS}}"},
 					},
 				},
 				Targets: []string{"linux_amd64"},
@@ -153,6 +158,8 @@ func TestRunFullPipe(t *testing.T) {
 	}})
 	require.FileExists(t, post)
 	require.FileExists(t, pre)
+	require.FileExists(t, postOS)
+	require.FileExists(t, preOS)
 	require.FileExists(t, filepath.Join(folder, "build1_linux_amd64", "testing"))
 }
 

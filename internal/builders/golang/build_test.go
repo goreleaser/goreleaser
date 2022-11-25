@@ -363,7 +363,16 @@ func TestBuild(t *testing.T) {
 				GoBinary: "go",
 				Command:  "build",
 				BuildDetails: config.BuildDetails{
-					Env:      []string{"GO111MODULE=off"},
+					Env: []string{
+						"GO111MODULE=off",
+						`TEST_T={{- if eq .Os "windows" -}}
+						w
+						{{- else if eq .Os "darwin" -}}
+						d
+						{{- else if eq .Os "linux" -}}
+						l
+						{{- end -}}`,
+					},
 					Asmflags: []string{".=", "all="},
 					Gcflags:  []string{"all="},
 					Flags:    []string{"{{.Env.GO_FLAGS}}"},
@@ -426,6 +435,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    "",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
+				"testEnvs":           []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -439,6 +449,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    "",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
+				"testEnvs":           []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -452,6 +463,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    "",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
+				"testEnvs":           []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -464,6 +476,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    "",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
+				"testEnvs":           []string{"TEST_T=d"},
 			},
 		},
 		{
@@ -477,6 +490,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    "",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
+				"testEnvs":           []string{"TEST_T=l"},
 			},
 		},
 		{
@@ -489,6 +503,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    ".exe",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
+				"testEnvs":           []string{"TEST_T=w"},
 			},
 		},
 		{
@@ -501,6 +516,7 @@ func TestBuild(t *testing.T) {
 				artifact.ExtraExt:    ".wasm",
 				artifact.ExtraBinary: "foo-v5.6.7",
 				artifact.ExtraID:     "foo",
+				"testEnvs":           []string{"TEST_T="},
 			},
 		},
 	})
@@ -522,6 +538,37 @@ func TestBuild(t *testing.T) {
 		}
 		modTimes[modTime] = true
 	}
+}
+
+func TestBuildInvalidEnv(t *testing.T) {
+	folder := testlib.Mktmp(t)
+	writeGoodMain(t, folder)
+	config := config.Project{
+		Builds: []config.Build{
+			{
+				ID:     "foo",
+				Dir:    ".",
+				Binary: "foo",
+				Targets: []string{
+					runtimeTarget,
+				},
+				GoBinary: "go",
+				BuildDetails: config.BuildDetails{
+					Env: []string{"GO111MODULE={{ .Nope }}"},
+				},
+			},
+		},
+	}
+	ctx := context.New(config)
+	ctx.Git.CurrentTag = "5.6.7"
+	build := ctx.Config.Builds[0]
+	err := Default.Build(ctx, build, api.Options{
+		Target: runtimeTarget,
+		Name:   build.Binary,
+		Path:   filepath.Join(folder, "dist", runtimeTarget, build.Binary),
+		Ext:    "",
+	})
+	testlib.RequireTemplateError(t, err)
 }
 
 func TestBuildCodeInSubdir(t *testing.T) {

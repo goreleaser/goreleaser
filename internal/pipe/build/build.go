@@ -115,9 +115,7 @@ func runHook(ctx *context.Context, opts builders.Options, buildEnv []string, hoo
 		var env []string
 
 		env = append(env, ctx.Env.Strings()...)
-		env = append(env, buildEnv...)
-
-		for _, rawEnv := range hook.Env {
+		for _, rawEnv := range append(buildEnv, hook.Env...) {
 			e, err := tmpl.New(ctx).WithBuildOptions(opts).Apply(rawEnv)
 			if err != nil {
 				return err
