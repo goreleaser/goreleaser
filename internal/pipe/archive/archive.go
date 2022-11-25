@@ -15,6 +15,7 @@ import (
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/archivefiles"
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/deprecate"
 	"github.com/goreleaser/goreleaser/internal/ids"
 	"github.com/goreleaser/goreleaser/internal/semerrgroup"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
@@ -73,6 +74,9 @@ func (Pipe) Default(ctx *context.Context) error {
 			if archive.Format == "binary" {
 				archive.NameTemplate = defaultBinaryNameTemplate
 			}
+		}
+		if len(archive.Replacements) != 0 {
+			deprecate.Notice(ctx, "archives.replacements")
 		}
 		ids.Inc(archive.ID)
 	}
@@ -138,7 +142,8 @@ func createMeta(ctx *context.Context, arch config.Archive) error {
 }
 
 func create(ctx *context.Context, arch config.Archive, binaries []*artifact.Artifact) error {
-	template := tmpl.New(ctx).WithArtifact(binaries[0], arch.Replacements)
+	// nolint:staticcheck
+	template := tmpl.New(ctx).WithArtifactReplacements(binaries[0], arch.Replacements)
 	format := packageFormat(arch, binaries[0].Goos)
 	return doCreate(ctx, arch, binaries, format, template)
 }
@@ -244,8 +249,9 @@ func wrapFolder(a config.Archive) string {
 
 func skip(ctx *context.Context, archive config.Archive, binaries []*artifact.Artifact) error {
 	for _, binary := range binaries {
+		// nolint:staticcheck
 		name, err := tmpl.New(ctx).
-			WithArtifact(binary, archive.Replacements).
+			WithArtifactReplacements(binary, archive.Replacements).
 			Apply(archive.NameTemplate)
 		if err != nil {
 			return err

@@ -29,16 +29,6 @@ snapcrafts:
     # Default: `{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}`
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
-    # Replacements for GOOS and GOARCH in the package name.
-    # Keys should be valid GOOSs or GOARCHs.
-    # Values are the respective replacements.
-    # Default is empty.
-    replacements:
-      amd64: 64-bit
-      386: 32-bit
-      darwin: macOS
-      linux: Tux
-
     # The name of the snap. This is optional.
     # Default is project name.
     name: drumroll

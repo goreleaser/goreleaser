@@ -36,6 +36,125 @@ Description.
 
 -->
 
+### archives.replacements
+
+> since 2022-11-24 (v1.14.0)
+
+The `replacements` will be removed soon from the archives section, as it was
+never handled correctly when multiple archives were being used, and it also
+causes confusion in other places.
+
+You can still get the same features by abusing the `name_template` property.
+
+=== "Before"
+
+    ``` yaml
+    archives:
+      - id: foo
+        name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+        replacements:
+          darwin: Darwin
+          linux: Linux
+          windows: Windows
+          386: i386
+          amd64: x86_64
+    ```
+
+=== "After"
+    ``` yaml
+    archives:
+      - id: foo
+        name_template: >-
+          {{ .ProjectName }}_
+          {{- title .Os }}_
+          {{- if eq .Arch "amd64" }}x86_64
+          {{- else if eq .Arch "386" }}i386
+          {{- else }}{{ .Arch }}{{ end }}
+    ```
+
+Those two configurations will yield the same results.
+
+
+### nfpms.replacements
+
+> since 2022-11-24 (v1.14.0)
+
+The `replacements` will be removed soon from the nFPMs section.
+
+You can still get the same features by abusing the `file_name_template` property.
+
+=== "Before"
+
+    ``` yaml
+    nfpms:
+      - id: foo
+        file_name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+        replacements:
+          darwin: Darwin
+          linux: Linux
+          windows: Windows
+          386: i386
+          amd64: x86_64
+    ```
+
+=== "After"
+    ``` yaml
+    nfpms:
+      - id: foo
+        file_name_template: >-
+          {{ .ProjectName }}_
+          {{- title .Os }}_
+          {{- if eq .Arch "amd64" }}x86_64
+          {{- else if eq .Arch "386" }}i386
+          {{- else }}{{ .Arch }}{{ end }}
+    ```
+
+Those two configurations will yield the same results.
+
+Generally speaking, is probably best to use `{{ .ConventionalFileName }}`
+instead of custom templates.
+
+### snapcrafts.replacements
+
+> since 2022-11-24 (v1.14.0)
+
+The `replacements` will be removed soon from the Snapcrafts section.
+
+You can still get the same features by abusing the `name_template` property.
+
+=== "Before"
+
+    ``` yaml
+    snapcrafts:
+      - id: foo
+        name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+        replacements:
+          darwin: Darwin
+          linux: Linux
+          windows: Windows
+          386: i386
+          amd64: x86_64
+    ```
+
+=== "After"
+    ``` yaml
+    snapcrafts:
+      - id: foo
+        name_template: >-
+          {{ .ProjectName }}_
+          {{- title .Os }}_
+          {{- if eq .Arch "amd64" }}x86_64
+          {{- else if eq .Arch "386" }}i386
+          {{- else }}{{ .Arch }}{{ end }}
+    ```
+
+Those two configurations will yield the same results.
+
+Generally speaking, is probably best to use `{{ .ConventionalFileName }}`
+instead of custom templates.
+
+
+
 ### nfpms.maintainer
 
 > since 2022-05-07 (v1.9.0)

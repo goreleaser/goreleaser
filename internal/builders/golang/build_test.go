@@ -898,7 +898,7 @@ func TestLdFlagsFullTemplate(t *testing.T) {
 		Env:     map[string]string{"FOO": "123"},
 	}
 	artifact := &artifact.Artifact{Goarch: "amd64"}
-	flags, err := tmpl.New(ctx).WithArtifact(artifact, map[string]string{}).
+	flags, err := tmpl.New(ctx).WithArtifact(artifact).
 		Apply(`-s -w -X main.version={{.Version}} -X main.tag={{.Tag}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X "main.foo={{.Env.FOO}}" -X main.time={{ time "20060102" }} -X main.arch={{.Arch}} -X main.commitDate={{.CommitDate}}`)
 	require.NoError(t, err)
 	require.Contains(t, flags, "-s -w")

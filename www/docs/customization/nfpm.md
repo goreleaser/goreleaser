@@ -29,16 +29,6 @@ nfpms:
       - foo
       - bar
 
-    # Replacements for GOOS and GOARCH in the package name.
-    # Keys should be valid GOOSs or GOARCHs.
-    # Values are the respective replacements.
-    # Default is empty.
-    replacements:
-      amd64: 64-bit
-      386: 32-bit
-      darwin: macOS
-      linux: Tux
-
     # Your app's vendor.
     # Default is empty.
     vendor: Drum Roll Inc.

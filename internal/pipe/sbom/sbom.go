@@ -238,8 +238,7 @@ func applyTemplate(ctx *context.Context, cfg config.SBOM, a *artifact.Artifact) 
 		}
 		extraEnvs = appendExtraEnv("artifact", procPath, extraEnvs, env)
 		extraEnvs = appendExtraEnv("artifactID", a.ID(), extraEnvs, env)
-
-		templater = templater.WithArtifact(a, nil)
+		templater = templater.WithArtifact(a)
 	}
 
 	for _, keyValue := range cfg.Env {

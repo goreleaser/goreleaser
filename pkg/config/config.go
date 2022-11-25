@@ -476,7 +476,7 @@ type Archive struct {
 	ID                        string            `yaml:"id,omitempty" json:"id,omitempty"`
 	Builds                    []string          `yaml:"builds,omitempty" json:"builds,omitempty"`
 	NameTemplate              string            `yaml:"name_template,omitempty" json:"name_template,omitempty"`
-	Replacements              map[string]string `yaml:"replacements,omitempty" json:"replacements,omitempty"`
+	Replacements              map[string]string `yaml:"replacements,omitempty" json:"replacements,omitempty"` // Deprecated: use templates instead
 	Format                    string            `yaml:"format,omitempty" json:"format,omitempty"`
 	FormatOverrides           []FormatOverride  `yaml:"format_overrides,omitempty" json:"format_overrides,omitempty"`
 	WrapInDirectory           string            `yaml:"wrap_in_directory,omitempty" json:"wrap_in_directory,omitempty" jsonschema:"oneof_type=string;boolean"`
@@ -654,7 +654,7 @@ type NFPMOverridables struct {
 	Release          string            `yaml:"release,omitempty" json:"release,omitempty"`
 	Prerelease       string            `yaml:"prerelease,omitempty" json:"prerelease,omitempty"`
 	VersionMetadata  string            `yaml:"version_metadata,omitempty" json:"version_metadata,omitempty"`
-	Replacements     map[string]string `yaml:"replacements,omitempty" json:"replacements,omitempty"`
+	Replacements     map[string]string `yaml:"replacements,omitempty" json:"replacements,omitempty"` // Deprecated: use templates instead
 	Dependencies     []string          `yaml:"dependencies,omitempty" json:"dependencies,omitempty"`
 	Recommends       []string          `yaml:"recommends,omitempty" json:"recommends,omitempty"`
 	Suggests         []string          `yaml:"suggests,omitempty" json:"suggests,omitempty"`
@@ -741,7 +741,7 @@ type SnapcraftLayoutMetadata struct {
 // Snapcraft config.
 type Snapcraft struct {
 	NameTemplate string            `yaml:"name_template,omitempty" json:"name_template,omitempty"`
-	Replacements map[string]string `yaml:"replacements,omitempty" json:"replacements,omitempty"`
+	Replacements map[string]string `yaml:"replacements,omitempty" json:"replacements,omitempty"` // Deprecated: use templates instead.
 	Publish      bool              `yaml:"publish,omitempty" json:"publish,omitempty"`
 
 	ID               string                             `yaml:"id,omitempty" json:"id,omitempty"`

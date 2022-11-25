@@ -186,7 +186,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	}
 
 	if build.ModTimestamp != "" {
-		modTimestamp, err := tmpl.New(ctx).WithEnvS(env).WithArtifact(a, map[string]string{}).Apply(build.ModTimestamp)
+		modTimestamp, err := tmpl.New(ctx).WithEnvS(env).WithArtifact(a).Apply(build.ModTimestamp)
 		if err != nil {
 			return err
 		}
@@ -314,7 +314,7 @@ func processFlags(ctx *context.Context, a *artifact.Artifact, env, flags []strin
 }
 
 func processFlag(ctx *context.Context, a *artifact.Artifact, env []string, rawFlag string) (string, error) {
-	return tmpl.New(ctx).WithEnvS(env).WithArtifact(a, map[string]string{}).Apply(rawFlag)
+	return tmpl.New(ctx).WithEnvS(env).WithArtifact(a).Apply(rawFlag)
 }
 
 func run(ctx *context.Context, command, env []string, dir string) error {
