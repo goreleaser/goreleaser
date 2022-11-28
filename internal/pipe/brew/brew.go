@@ -135,11 +135,7 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
-	if len(brew.Tap.GitURL) > 0 && brew.Tap.Token != "" {
-		cl, err = client.NewGitUploadClient(ctx)
-	} else {
-		cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
-	}
+	cl, err = getClient(ctx, brew, cl, brew.Tap.Token)
 
 	if err != nil {
 		return err
@@ -157,6 +153,14 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	}
 
 	return cl.CreateFile(ctx, author, repo, content, gpath, msg)
+}
+
+func getClient(ctx *context.Context, brew config.Homebrew, cl client.Client, token string) (client.Client, error) {
+	cl, err := client.NewIfToken(ctx, cl, brew.Tap.Token)
+	if len(brew.Tap.GitURL) > 0 && ctx.TokenType != context.TokenTypeGitLab {
+		cl, err = client.NewGitUploadClient(ctx)
+	}
+	return cl, err
 }
 
 func doRun(ctx *context.Context, brew config.Homebrew, cl client.Client) error {

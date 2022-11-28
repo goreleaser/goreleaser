@@ -211,14 +211,12 @@ func TestFullPipe(t *testing.T) {
 		},
 		"custom_git_url": {
 			prepare: func(ctx *context.Context) {
-				ctx.TokenType = context.TokenTypeGitHub
+				ctx.TokenType = context.TokenTypeGitLab
 				ctx.Config.Brews[0].Tap.Owner = "test"
 				ctx.Config.Brews[0].Tap.Name = "test"
 				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 				ctx.Config.Brews[0].Tap.GitURL = makeBareRepo(t)
 				ctx.Config.Brews[0].Tap.PrivateKey = makeKey(t, keygen.Ed25519)
-				ctx.Config.Brews[0].CommitAuthor = config.CommitAuthor{Name: "Goreleaser", Email: "example@example.com"}
-				ctx.Config.Brews[0].CommitMessageTemplate = "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
 			},
 		},
 		"invalid_commit_template": {
@@ -334,8 +332,6 @@ func TestFullPipe(t *testing.T) {
 			distFile := filepath.Join(folder, name+".rb")
 
 			require.NoError(t, Pipe{}.Default(ctx))
-
-			fmt.Println("AFTER DEFAULT")
 
 			if tt.expectedRunError == "" {
 				require.NoError(t, runAll(ctx, client))

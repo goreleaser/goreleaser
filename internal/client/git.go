@@ -74,7 +74,7 @@ func (gc *gitClient) CreateFile(ctx *context.Context, commitAuthor config.Commit
 
 	env := []string{fmt.Sprintf("GIT_SSH_COMMAND=%s", sshCmd)}
 
-	repoName := url[strings.LastIndex(url, "/")+1:]
+	repoName := strings.TrimSuffix(url[strings.LastIndex(url, "/")+1:], ".git")
 
 	_, err = os.Stat(filepath.Join(ctx.Config.Dist, repoName))
 
