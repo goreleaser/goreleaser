@@ -38,13 +38,10 @@ func (m dockerManifester) Push(ctx *context.Context, manifest string, flags []st
 	if err != nil {
 		return "", fmt.Errorf("failed to push %s: %w", manifest, err)
 	}
-
-	out := string(bts)
-	digest := dockerDigestPattern.FindString(out)
+	digest := dockerDigestPattern.FindString(string(bts))
 	if digest == "" {
-		return "", fmt.Errorf("failed to find docker digest in docker push output: %v", out)
+		return "", fmt.Errorf("failed to find docker digest in docker push output: %s", string(bts))
 	}
-
 	return digest, nil
 }
 
@@ -59,13 +56,10 @@ func (i dockerImager) Push(ctx *context.Context, image string, flags []string) (
 	if err != nil {
 		return "", fmt.Errorf("failed to push %s: %w", image, err)
 	}
-
-	out := string(bts)
-	digest := dockerDigestPattern.FindString(out)
+	digest := dockerDigestPattern.FindString(string(bts))
 	if digest == "" {
-		return "", fmt.Errorf("failed to find docker digest in docker push output: %v", out)
+		return "", fmt.Errorf("failed to find docker digest in docker push output: %s", string(bts))
 	}
-
 	return digest, nil
 }
 
