@@ -280,7 +280,7 @@ func doBuildFormula(ctx *context.Context, data templateData) (string, error) {
 }
 
 func installs(ctx *context.Context, cfg config.Homebrew, art *artifact.Artifact) ([]string, error) {
-	applied, err := tmpl.New(ctx).WithArtifact(art, nil).Apply(cfg.Install)
+	applied, err := tmpl.New(ctx).WithArtifact(art).Apply(cfg.Install)
 	if err != nil {
 		return nil, err
 	}

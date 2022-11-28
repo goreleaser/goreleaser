@@ -170,7 +170,7 @@ func (*Builder) Build(ctx *context.Context, build config.Build, options api.Opti
 	testEnvs := []string{}
 	env = append(env, ctx.Env.Strings()...)
 	for _, e := range details.Env {
-		ee, err := tmpl.New(ctx).WithEnvS(env).WithArtifact(a, nil).Apply(e)
+		ee, err := tmpl.New(ctx).WithEnvS(env).WithArtifact(a).Apply(e)
 		if err != nil {
 			return err
 		}
