@@ -30,9 +30,12 @@ type Info struct {
 }
 
 type Repo struct {
-	Owner  string
-	Name   string
-	Branch string
+	Owner         string
+	Name          string
+	Branch        string
+	GitURL        string
+	GitSSHCommand string
+	PrivateKey    string
 }
 
 func (r Repo) String() string {

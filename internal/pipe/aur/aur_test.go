@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/charmbracelet/keygen"
@@ -203,13 +202,13 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = ""
 			},
-			expectedPublishError: `aur.private_key is empty`,
+			expectedPublishError: `private_key is empty`,
 		},
 		"key-not-found": {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].PrivateKey = "testdata/nope"
 			},
-			expectedPublishError: `could not stat aur.private_key: stat testdata/nope: no such file or directory`,
+			expectedPublishError: `could not stat private_key: stat testdata/nope: no such file or directory`,
 		},
 		"invalid-git-url-template": {
 			prepare: func(ctx *context.Context) {
@@ -221,7 +220,7 @@ func TestFullPipe(t *testing.T) {
 			prepare: func(ctx *context.Context) {
 				ctx.Config.AURs[0].GitURL = ""
 			},
-			expectedPublishError: `aur.git_url is empty`,
+			expectedPublishError: `git_url is empty`,
 		},
 		"invalid-ssh-cmd-template": {
 			prepare: func(ctx *context.Context) {
@@ -721,53 +720,6 @@ func TestSkip(t *testing.T) {
 			},
 		})
 		require.False(t, Pipe{}.Skip(ctx))
-	})
-}
-
-func TestKeyPath(t *testing.T) {
-	t.Run("with valid path", func(t *testing.T) {
-		path := makeKey(t, keygen.Ed25519)
-		result, err := keyPath(path)
-		require.NoError(t, err)
-		require.Equal(t, path, result)
-	})
-	t.Run("with invalid path", func(t *testing.T) {
-		result, err := keyPath("testdata/nope")
-		require.EqualError(t, err, `could not stat aur.private_key: stat testdata/nope: no such file or directory`)
-		require.Equal(t, "", result)
-	})
-	t.Run("with key", func(t *testing.T) {
-		for _, algo := range []keygen.KeyType{keygen.Ed25519, keygen.RSA} {
-			t.Run(string(algo), func(t *testing.T) {
-				path := makeKey(t, algo)
-				bts, err := os.ReadFile(path)
-				require.NoError(t, err)
-
-				result, err := keyPath(string(bts))
-				require.NoError(t, err)
-
-				resultbts, err := os.ReadFile(result)
-				require.NoError(t, err)
-				require.Equal(t, string(bts), string(resultbts))
-			})
-		}
-	})
-	t.Run("empty", func(t *testing.T) {
-		result, err := keyPath("")
-		require.EqualError(t, err, `aur.private_key is empty`)
-		require.Equal(t, "", result)
-	})
-	t.Run("with invalid EOF", func(t *testing.T) {
-		path := makeKey(t, keygen.Ed25519)
-		bts, err := os.ReadFile(path)
-		require.NoError(t, err)
-
-		result, err := keyPath(strings.TrimSpace(string(bts)))
-		require.NoError(t, err)
-
-		resultbts, err := os.ReadFile(result)
-		require.NoError(t, err)
-		require.Equal(t, string(bts), string(resultbts))
 	})
 }
 

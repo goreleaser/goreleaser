@@ -217,6 +217,8 @@ func TestFullPipe(t *testing.T) {
 				ctx.Config.Brews[0].Homepage = "https://github.com/goreleaser"
 				ctx.Config.Brews[0].Tap.GitURL = makeBareRepo(t)
 				ctx.Config.Brews[0].Tap.PrivateKey = makeKey(t, keygen.Ed25519)
+				ctx.Config.Brews[0].CommitAuthor = config.CommitAuthor{Name: "Goreleaser", Email: "example@example.com"}
+				ctx.Config.Brews[0].CommitMessageTemplate = "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
 			},
 		},
 		"invalid_commit_template": {
@@ -262,42 +264,42 @@ func TestFullPipe(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			folder := t.TempDir()
-			ctx := &context.Context{
-				Git: context.GitInfo{
-					CurrentTag: "v1.0.1",
-				},
-				Version:   "1.0.1",
-				Artifacts: artifact.New(),
-				Env: map[string]string{
-					"FOO": "foo_is_bar",
-				},
-				Config: config.Project{
-					Dist:        folder,
-					ProjectName: name,
-					Brews: []config.Homebrew{
-						{
-							Name: name,
-							IDs: []string{
-								"foo",
-							},
-							Description: "Run pipe test formula and FOO={{ .Env.FOO }}",
-							Caveats:     "don't do this {{ .ProjectName }}",
-							Test:        "system \"true\"\nsystem \"#{bin}/foo\", \"-h\"",
-							Plist:       `<xml>whatever</xml>`,
-							Dependencies: []config.HomebrewDependency{
-								{Name: "zsh", Type: "optional"},
-								{Name: "bash", Version: "3.2.57"},
-								{Name: "fish", Type: "optional", Version: "v1.2.3"},
-							},
-							Conflicts:   []string{"gtk+", "qt"},
-							Service:     "run foo/bar\nkeep_alive true",
-							PostInstall: "system \"echo\"\ntouch \"/tmp/hi\"",
-							Install:     `bin.install "{{ .ProjectName }}"`,
-							Goamd64:     "v1",
+
+			ctx := context.New(config.Project{
+				Dist:        folder,
+				ProjectName: name,
+				Brews: []config.Homebrew{
+					{
+						Name: name,
+						IDs: []string{
+							"foo",
 						},
+						Description: "Run pipe test formula and FOO={{ .Env.FOO }}",
+						Caveats:     "don't do this {{ .ProjectName }}",
+						Test:        "system \"true\"\nsystem \"#{bin}/foo\", \"-h\"",
+						Plist:       `<xml>whatever</xml>`,
+						Dependencies: []config.HomebrewDependency{
+							{Name: "zsh", Type: "optional"},
+							{Name: "bash", Version: "3.2.57"},
+							{Name: "fish", Type: "optional", Version: "v1.2.3"},
+						},
+						Conflicts:   []string{"gtk+", "qt"},
+						Service:     "run foo/bar\nkeep_alive true",
+						PostInstall: "system \"echo\"\ntouch \"/tmp/hi\"",
+						Install:     `bin.install "{{ .ProjectName }}"`,
+						Goamd64:     "v1",
 					},
 				},
+			})
+			ctx.Git = context.GitInfo{
+				CurrentTag: "v1.0.1",
 			}
+			ctx.Version = "1.0.1"
+			ctx.Artifacts = artifact.New()
+			ctx.Env = map[string]string{
+				"FOO": "foo_is_bar",
+			}
+
 			tt.prepare(ctx)
 			ctx.Artifacts.Add(&artifact.Artifact{
 				Name:    "bar_bin.tar.gz",
@@ -330,6 +332,8 @@ func TestFullPipe(t *testing.T) {
 			require.NoError(t, f.Close())
 			client := client.NewMock()
 			distFile := filepath.Join(folder, name+".rb")
+
+			// require.NoError(t, Pipe{}.Default(ctx))
 
 			if tt.expectedRunError == "" {
 				require.NoError(t, runAll(ctx, client))

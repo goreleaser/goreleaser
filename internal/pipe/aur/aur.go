@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -17,11 +16,9 @@ import (
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/pipe"
-	"github.com/goreleaser/goreleaser/internal/pipe/lib"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
-	"golang.org/x/crypto/ssh"
 )
 
 const (
@@ -368,47 +365,25 @@ func doPublish(ctx *context.Context, pkgs []*artifact.Artifact) error {
 		return pipe.Skip("prerelease detected with 'auto' upload, skipping aur publish")
 	}
 
-	return lib.PublishArtifactToGitURL(ctx, pkgs, config.RepoRef{PrivateKey: cfg.PrivateKey, GitURL: cfg.GitURL, GitSSHCommand: cfg.GitSSHCommand}, cfg.CommitAuthor, cfg.CommitMessageTemplate)
-}
-
-func keyPath(key string) (string, error) {
-	if key == "" {
-		return "", pipe.Skip("aur.private_key is empty")
+	cl, err := client.NewGitUploadClient(ctx)
+	if err != nil {
+		return err
 	}
 
-	path := key
-	if _, err := ssh.ParsePrivateKey([]byte(key)); err == nil {
-		// if it can be parsed as a valid private key, we write it to a
-		// temp file and use that path on GIT_SSH_COMMAND.
-		f, err := os.CreateTemp("", "id_*")
+	repo := client.RepoFromRef(config.RepoRef{PrivateKey: cfg.PrivateKey, GitURL: cfg.GitURL, GitSSHCommand: cfg.GitSSHCommand})
+
+	log.WithField("repo", cfg.GitURL).WithField("name", cfg.Name).Info("pushing")
+	for _, pkg := range pkgs {
+		log.WithField("package", pkg.Name).Info("pushing")
+		content, err := os.ReadFile(pkg.Path)
 		if err != nil {
-			return "", fmt.Errorf("failed to store private key: %w", err)
+			return err
 		}
-		defer f.Close()
-
-		// the key needs to EOF at an empty line, seems like github actions
-		// is somehow removing them.
-		if !strings.HasSuffix(key, "\n") {
-			key += "\n"
+		err = cl.CreateFile(ctx, cfg.CommitAuthor, repo, content, pkg.Name, cfg.CommitMessageTemplate)
+		if err != nil {
+			return pipe.Skip(err.Error())
 		}
-
-		if _, err := io.WriteString(f, key); err != nil {
-			return "", fmt.Errorf("failed to store private key: %w", err)
-		}
-		if err := f.Close(); err != nil {
-			return "", fmt.Errorf("failed to store private key: %w", err)
-		}
-		path = f.Name()
 	}
 
-	if _, err := os.Stat(path); err != nil {
-		return "", fmt.Errorf("could not stat aur.private_key: %w", err)
-	}
-
-	// in any case, ensure the key has the correct permissions.
-	if err := os.Chmod(path, 0o600); err != nil {
-		return "", fmt.Errorf("failed to ensure aur.private_key permissions: %w", err)
-	}
-
-	return path, nil
+	return nil
 }

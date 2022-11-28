@@ -7,9 +7,12 @@ import (
 // RepoFromRef converts a config.RepoRef into a Repo.
 func RepoFromRef(ref config.RepoRef) Repo {
 	return Repo{
-		Owner:  ref.Owner,
-		Name:   ref.Name,
-		Branch: ref.Branch,
+		Owner:         ref.Owner,
+		Name:          ref.Name,
+		Branch:        ref.Branch,
+		GitURL:        ref.GitURL,
+		GitSSHCommand: ref.GitSSHCommand,
+		PrivateKey:    ref.PrivateKey,
 	}
 }
 

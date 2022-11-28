@@ -17,7 +17,6 @@ import (
 	"github.com/goreleaser/goreleaser/internal/client"
 	"github.com/goreleaser/goreleaser/internal/commitauthor"
 	"github.com/goreleaser/goreleaser/internal/pipe"
-	"github.com/goreleaser/goreleaser/internal/pipe/lib"
 	"github.com/goreleaser/goreleaser/internal/tmpl"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
@@ -140,12 +139,12 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 		return err
 	}
 
-	if len(brew.Tap.GitURL) > 0 {
-		log.WithField("formula", gpath).WithField("repo", brew.Tap.GitURL).Info("pushing")
-		return lib.PublishArtifactToGitURL(ctx, []*artifact.Artifact{formula}, brew.Tap, author, msg)
+	if len(brew.Tap.GitURL) > 0 && brew.Tap.Token != "" {
+		cl, err = client.NewGitUploadClient(ctx)
+	} else {
+		cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
 	}
 
-	cl, err = client.NewIfToken(ctx, cl, brew.Tap.Token)
 	if err != nil {
 		return err
 	}
@@ -160,6 +159,8 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("%v\n", author)
 
 	return cl.CreateFile(ctx, author, repo, content, gpath, msg)
 }
