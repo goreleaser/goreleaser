@@ -23,8 +23,7 @@ import (
 )
 
 const (
-	defaultSSHCommand = "ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null"
-	brewConfigExtra   = "BrewConfig"
+	brewConfigExtra = "BrewConfig"
 )
 
 var (
@@ -53,9 +52,6 @@ func (Pipe) Default(ctx *context.Context) error {
 		}
 		if brew.Name == "" {
 			brew.Name = ctx.Config.ProjectName
-		}
-		if brew.Tap.GitSSHCommand == "" {
-			brew.Tap.GitSSHCommand = defaultSSHCommand
 		}
 		if brew.Goarm == "" {
 			brew.Goarm = "6"
@@ -159,8 +155,6 @@ func doPublish(ctx *context.Context, formula *artifact.Artifact, cl client.Clien
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("%v\n", author)
 
 	return cl.CreateFile(ctx, author, repo, content, gpath, msg)
 }

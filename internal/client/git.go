@@ -18,6 +18,8 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+const defaultSSHCommand = "ssh -i {{ .KeyPath }} -o StrictHostKeyChecking=accept-new -F /dev/null"
+
 type gitClient struct{}
 
 func NewGitUploadClient(ctx *context.Context) (Client, error) {
@@ -35,9 +37,16 @@ func (gc *gitClient) CreateFile(ctx *context.Context, commitAuthor config.Commit
 		return err
 	}
 
+	var gitSSHCommand string
+	if len(repo.GitSSHCommand) > 0 {
+		gitSSHCommand = repo.GitSSHCommand
+	} else {
+		gitSSHCommand = defaultSSHCommand
+	}
+
 	sshCmd, err := tmpl.New(ctx).WithExtraFields(tmpl.Fields{
 		"KeyPath": key,
-	}).Apply(repo.GitSSHCommand)
+	}).Apply(gitSSHCommand)
 	if err != nil {
 		return err
 	}

@@ -333,7 +333,9 @@ func TestFullPipe(t *testing.T) {
 			client := client.NewMock()
 			distFile := filepath.Join(folder, name+".rb")
 
-			// require.NoError(t, Pipe{}.Default(ctx))
+			require.NoError(t, Pipe{}.Default(ctx))
+
+			fmt.Println("AFTER DEFAULT")
 
 			if tt.expectedRunError == "" {
 				require.NoError(t, runAll(ctx, client))
@@ -341,6 +343,7 @@ func TestFullPipe(t *testing.T) {
 				require.EqualError(t, runAll(ctx, client), tt.expectedRunError)
 				return
 			}
+
 			if tt.expectedPublishError != "" {
 				require.EqualError(t, publishAll(ctx, client), tt.expectedPublishError)
 				return
