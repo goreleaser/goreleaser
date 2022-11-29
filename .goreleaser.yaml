@@ -287,7 +287,7 @@ docker_signs:
   output: true
   args:
   - 'sign'
-  - '${artifact}'
+  - '${artifact}@${digest}'
 
 publishers:
   - name: fury.io
