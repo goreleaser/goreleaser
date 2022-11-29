@@ -31,13 +31,18 @@ func (m dockerManifester) Create(ctx *context.Context, manifest string, images, 
 	return nil
 }
 
-func (m dockerManifester) Push(ctx *context.Context, manifest string, flags []string) error {
+func (m dockerManifester) Push(ctx *context.Context, manifest string, flags []string) (string, error) {
 	args := []string{"manifest", "push", manifest}
 	args = append(args, flags...)
-	if err := runCommand(ctx, ".", "docker", args...); err != nil {
-		return fmt.Errorf("failed to push %s: %w", manifest, err)
+	bts, err := runCommandWithOutput(ctx, ".", "docker", args...)
+	if err != nil {
+		return "", fmt.Errorf("failed to push %s: %w", manifest, err)
 	}
-	return nil
+	digest := dockerDigestPattern.FindString(string(bts))
+	if digest == "" {
+		return "", fmt.Errorf("failed to find docker digest in docker push output: %s", string(bts))
+	}
+	return digest, nil
 }
 
 type dockerImager struct {
@@ -46,18 +51,15 @@ type dockerImager struct {
 
 var dockerDigestPattern = regexp.MustCompile("sha256:[a-z0-9]{64}")
 
-func (i dockerImager) Push(ctx *context.Context, image string, flags []string) (digest string, err error) {
-	outBytes, err := runCommandWithOutput(ctx, ".", "docker", "push", image)
+func (i dockerImager) Push(ctx *context.Context, image string, flags []string) (string, error) {
+	bts, err := runCommandWithOutput(ctx, ".", "docker", "push", image)
 	if err != nil {
 		return "", fmt.Errorf("failed to push %s: %w", image, err)
 	}
-
-	out := string(outBytes)
-	digest = dockerDigestPattern.FindString(out)
+	digest := dockerDigestPattern.FindString(string(bts))
 	if digest == "" {
-		return "", fmt.Errorf("failed to find docker digest in docker push output: %v", out)
+		return "", fmt.Errorf("failed to find docker digest in docker push output: %s", string(bts))
 	}
-
 	return digest, nil
 }
 

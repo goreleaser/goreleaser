@@ -1093,10 +1093,15 @@ func TestRunPipe(t *testing.T) {
 					require.NoError(t, rmi(img), "could not delete image %s", img)
 				}
 
-				_ = ctx.Artifacts.Filter(artifact.ByType(artifact.DockerImage)).Visit(func(a *artifact.Artifact) error {
+				_ = ctx.Artifacts.Filter(
+					artifact.Or(
+						artifact.ByType(artifact.DockerImage),
+						artifact.ByType(artifact.DockerManifest),
+					),
+				).Visit(func(a *artifact.Artifact) error {
 					digest, err := artifact.Extra[string](*a, artifact.ExtraDigest)
 					require.NoError(t, err)
-					require.NotEmpty(t, digest)
+					require.NotEmpty(t, digest, "missing digest for "+a.Name)
 					return nil
 				})
 			})
