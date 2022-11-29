@@ -252,12 +252,19 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 		data.GetTagName(),
 	)
 	if err != nil {
-		release, _, err = c.client.Repositories.CreateRelease(
+		release, resp, err := c.client.Repositories.CreateRelease(
 			ctx,
 			ctx.Config.Release.GitHub.Owner,
 			ctx.Config.Release.GitHub.Name,
 			data,
 		)
+		if err == nil {
+			log.WithFields(log.Fields{
+				"name":       data.GetName(),
+				"release-id": release.GetID(),
+				"request-id": resp.Header.Get("X-GitHub-Request-Id"),
+			}).Info("release created")
+		}
 		return release, err
 	}
 
@@ -266,14 +273,21 @@ func (c *githubClient) createOrUpdateRelease(ctx *context.Context, data *github.
 }
 
 func (c *githubClient) updateRelease(ctx *context.Context, id int64, data *github.RepositoryRelease) (*github.RepositoryRelease, error) {
-	repo, _, err := c.client.Repositories.EditRelease(
+	release, resp, err := c.client.Repositories.EditRelease(
 		ctx,
 		ctx.Config.Release.GitHub.Owner,
 		ctx.Config.Release.GitHub.Name,
 		id,
 		data,
 	)
-	return repo, err
+	if err == nil {
+		log.WithFields(log.Fields{
+			"name":       data.GetName(),
+			"release-id": release.GetID(),
+			"request-id": resp.Header.Get("X-GitHub-Request-Id"),
+		}).Info("release updated")
+	}
+	return release, err
 }
 
 func (c *githubClient) ReleaseURLTemplate(ctx *context.Context) (string, error) {
