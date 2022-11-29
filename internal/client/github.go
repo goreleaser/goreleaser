@@ -310,6 +310,13 @@ func (c *githubClient) Upload(
 		},
 		file,
 	)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"name":       artifact.Name,
+			"release-id": releaseID,
+			"request-id": resp.Header.Get("X-GitHub-Request-Id"),
+		}).Warn("upload failed")
+	}
 	if err == nil {
 		return nil
 	}
