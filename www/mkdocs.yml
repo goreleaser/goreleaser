@@ -147,6 +147,7 @@ nav:
 - Common errors:
   - errors/dirty.md
   - errors/multiple-tokens.md
+  - errors/release-upload.md
   - errors/docker-build.md
   - errors/no-main.md
   - errors/resource-not-accessible-by-integration.md
