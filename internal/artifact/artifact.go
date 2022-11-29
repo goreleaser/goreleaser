@@ -289,6 +289,17 @@ func New() Artifacts {
 func (artifacts Artifacts) List() []*Artifact {
 	artifacts.lock.Lock()
 	defer artifacts.lock.Unlock()
+	names := map[string]bool{}
+	for _, item := range artifacts.items {
+		if item.Name == "" {
+			continue
+		}
+		if names[item.Name] {
+			log.WithField("name", item.Name).
+				Warn("multiple artifacts with the same name: this may cause errors")
+		}
+		names[item.Name] = true
+	}
 	return artifacts.items
 }
 
