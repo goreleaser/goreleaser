@@ -40,7 +40,7 @@ type imager interface {
 // manifester is something that can create and push docker manifests.
 type manifester interface {
 	Create(ctx *context.Context, manifest string, images, flags []string) error
-	Push(ctx *context.Context, manifest string, flags []string) error
+	Push(ctx *context.Context, manifest string, flags []string) (digest string, err error)
 }
 
 // nolint: unparam

@@ -81,10 +81,15 @@ func (ManifestPipe) Publish(ctx *context.Context) error {
 			if manifest.ID != "" {
 				art.Extra[artifact.ExtraID] = manifest.ID
 			}
-			ctx.Artifacts.Add(art)
 
 			log.WithField("manifest", name).Info("pushing")
-			return manifester.Push(ctx, name, manifest.PushFlags)
+			digest, err := manifester.Push(ctx, name, manifest.PushFlags)
+			if err != nil {
+				return err
+			}
+			art.Extra[artifact.ExtraDigest] = digest
+			ctx.Artifacts.Add(art)
+			return nil
 		})
 	}
 	return g.Wait()
