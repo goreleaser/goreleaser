@@ -36,6 +36,32 @@ func TestRunPipeNoFormats(t *testing.T) {
 	testlib.AssertSkipped(t, Pipe{}.Run(ctx))
 }
 
+func TestRunPipeError(t *testing.T) {
+	ctx := context.New(config.Project{
+		Dist: t.TempDir(),
+		NFPMs: []config.NFPM{
+			{
+				Formats: []string{"deb"},
+				NFPMOverridables: config.NFPMOverridables{
+					FileNameTemplate: "{{.ConventionalFileName}}",
+				},
+			},
+		},
+	})
+	ctx.Artifacts.Add(&artifact.Artifact{
+		Name:   "mybin",
+		Path:   "testdata/testfile.txt",
+		Goarch: "amd64",
+		Goos:   "linux",
+		Type:   artifact.Binary,
+		Extra: map[string]interface{}{
+			artifact.ExtraID: "foo",
+		},
+	})
+	require.NoError(t, Pipe{}.Default(ctx))
+	require.EqualError(t, Pipe{}.Run(ctx), "nfpm failed for _0.0.0~rc0_amd64.deb: package name must be provided")
+}
+
 func TestRunPipeInvalidFormat(t *testing.T) {
 	ctx := context.New(config.Project{
 		ProjectName: "nope",
@@ -664,7 +690,7 @@ func TestInvalidConfig(t *testing.T) {
 			artifact.ExtraID: "default",
 		},
 	})
-	require.Contains(t, Pipe{}.Run(ctx).Error(), `nfpm failed: package name must be provided`)
+	require.Contains(t, Pipe{}.Run(ctx).Error(), `package name must be provided`)
 }
 
 func TestDefault(t *testing.T) {
@@ -954,7 +980,7 @@ func TestRPMSpecificScriptsConfig(t *testing.T) {
 		require.Contains(
 			t,
 			Pipe{}.Run(ctx).Error(),
-			`nfpm failed: open /does/not/exist_pretrans.sh: no such file or directory`,
+			`open /does/not/exist_pretrans.sh: no such file or directory`,
 		)
 	})
 
@@ -964,7 +990,7 @@ func TestRPMSpecificScriptsConfig(t *testing.T) {
 		require.Contains(
 			t,
 			Pipe{}.Run(ctx).Error(),
-			`nfpm failed: open /does/not/exist_posttrans.sh: no such file or directory`,
+			`open /does/not/exist_posttrans.sh: no such file or directory`,
 		)
 	})
 
@@ -1112,7 +1138,7 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 		require.Contains(
 			t,
 			Pipe{}.Run(ctx).Error(),
-			`nfpm failed: stat /does/not/exist_preupgrade.sh: no such file or directory`,
+			`stat /does/not/exist_preupgrade.sh: no such file or directory`,
 		)
 	})
 
@@ -1123,7 +1149,7 @@ func TestAPKSpecificScriptsConfig(t *testing.T) {
 		require.Contains(
 			t,
 			Pipe{}.Run(ctx).Error(),
-			`nfpm failed: stat /does/not/exist_postupgrade.sh: no such file or directory`,
+			`stat /does/not/exist_postupgrade.sh: no such file or directory`,
 		)
 	})
 
