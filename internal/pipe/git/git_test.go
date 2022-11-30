@@ -172,6 +172,24 @@ func TestShallowClone(t *testing.T) {
 	})
 }
 
+func TestTagSortOrder(t *testing.T) {
+	testlib.Mktmp(t)
+	testlib.GitInit(t)
+	testlib.GitRemoteAdd(t, "git@github.com:foo/bar.git")
+	testlib.GitCommit(t, "commit1")
+	testlib.GitCommit(t, "commit2")
+	testlib.GitCommit(t, "commit3")
+	testlib.GitTag(t, "v0.0.1-rc.2")
+	testlib.GitTag(t, "v0.0.1")
+	ctx := context.New(config.Project{
+		Git: config.Git{
+			TagSort: "-version:creatordate",
+		},
+	})
+	require.NoError(t, Pipe{}.Run(ctx))
+	require.Equal(t, "v0.0.1", ctx.Git.CurrentTag)
+}
+
 func TestTagIsNotLastCommit(t *testing.T) {
 	testlib.Mktmp(t)
 	testlib.GitInit(t)

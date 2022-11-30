@@ -16,6 +16,11 @@ import (
 	"github.com/invopop/jsonschema"
 )
 
+// Git configs.
+type Git struct {
+	TagSort string `yaml:"tag_sort,omitempty" json:"tag_sort,omitempty"`
+}
+
 // GitHubURLs holds the URLs to be used when using github enterprise.
 type GitHubURLs struct {
 	API           string `yaml:"api,omitempty" json:"api,omitempty"`
@@ -931,6 +936,7 @@ type Project struct {
 	Announce        Announce         `yaml:"announce,omitempty" json:"announce,omitempty"`
 	SBOMs           []SBOM           `yaml:"sboms,omitempty" json:"sboms,omitempty"`
 	Chocolateys     []Chocolatey     `yaml:"chocolateys,omitempty" json:"chocolatey,omitempty"`
+	Git             Git              `yaml:"git,omitempty" json:"git,omitempty"`
 
 	UniversalBinaries []UniversalBinary `yaml:"universal_binaries,omitempty" json:"universal_binaries,omitempty"`
 

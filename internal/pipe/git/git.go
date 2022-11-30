@@ -22,11 +22,20 @@ func (Pipe) String() string {
 	return "getting and validating git state"
 }
 
+// this pipe does not implement Defaulter because it runs before the defaults
+// pipe, and we need to set some defaults of our own first.
+func setDefaults(ctx *context.Context) {
+	if ctx.Config.Git.TagSort == "" {
+		ctx.Config.Git.TagSort = "-version:refname"
+	}
+}
+
 // Run the pipe.
 func (Pipe) Run(ctx *context.Context) error {
 	if _, err := exec.LookPath("git"); err != nil {
 		return ErrNoGit
 	}
+	setDefaults(ctx)
 	info, err := getInfo(ctx)
 	if err != nil {
 		return err
@@ -275,7 +284,7 @@ func gitTagsPointingAt(ctx *context.Context, ref string) ([]string, error) {
 		"--points-at",
 		ref,
 		"--sort",
-		"-version:refname",
+		ctx.Config.Git.TagSort,
 	))
 }
 
