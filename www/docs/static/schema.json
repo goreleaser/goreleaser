@@ -2293,7 +2293,18 @@
 						"type": "string"
 					},
 					"artifacts": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"all",
+							"manifests",
+							"images",
+							"checksum",
+							"source",
+							"package",
+							"archive",
+							"binary",
+							"sbom"
+						]
 					},
 					"ids": {
 						"items": {
