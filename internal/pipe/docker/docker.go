@@ -129,9 +129,6 @@ func (Pipe) Run(ctx *context.Context) error {
 			}
 			artifacts := ctx.Artifacts.Filter(artifact.And(filters...))
 			log.WithField("artifacts", artifacts.Paths()).Debug("found artifacts")
-			if len(artifacts.Paths()) == 0 {
-				log.Warn("not binaries or packages found for the given platform - COPY/ADD may not work")
-			}
 			return process(ctx, docker, artifacts.List())
 		})
 	}
@@ -145,6 +142,9 @@ func (Pipe) Run(ctx *context.Context) error {
 }
 
 func process(ctx *context.Context, docker config.Docker, artifacts []*artifact.Artifact) error {
+	if len(artifacts) == 0 {
+		log.Warn("not binaries or packages found for the given platform - COPY/ADD may not work")
+	}
 	tmp, err := os.MkdirTemp(ctx.Config.Dist, "goreleaserdocker")
 	if err != nil {
 		return fmt.Errorf("failed to create temporary dir: %w", err)
