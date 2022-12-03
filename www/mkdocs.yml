@@ -88,6 +88,7 @@ nav:
     - customization/hooks.md
     - customization/dist.md
     - customization/project.md
+    - customization/git.md
   - Build:
     - customization/build.md
     - customization/verifiable_builds.md

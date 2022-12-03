@@ -572,7 +572,7 @@ builds:
 
 ## Complex templated environment variables
 
-> Since v1.14.
+> Since v1.14.0.
 
 Builds environment variables are templateable.
 
