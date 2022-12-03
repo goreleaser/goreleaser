@@ -644,7 +644,16 @@
 						"type": "string"
 					},
 					"type": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"symlink",
+							"ghost",
+							"config",
+							"config|noreplace",
+							"dir",
+							""
+						],
+						"default": ""
 					},
 					"packager": {
 						"type": "string"
@@ -654,7 +663,10 @@
 					}
 				},
 				"additionalProperties": false,
-				"type": "object"
+				"type": "object",
+				"required": [
+					"dst"
+				]
 			},
 			"ContentFileInfo": {
 				"properties": {
@@ -951,6 +963,15 @@
 						"type": "string"
 					},
 					"format": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"type": "object"
+			},
+			"Git": {
+				"properties": {
+					"tag_sort": {
 						"type": "string"
 					}
 				},
@@ -1953,6 +1974,9 @@
 							"$ref": "#/$defs/Chocolatey"
 						},
 						"type": "array"
+					},
+					"git": {
+						"$ref": "#/$defs/Git"
 					},
 					"universal_binaries": {
 						"items": {
