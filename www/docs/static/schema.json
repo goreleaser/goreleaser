@@ -166,6 +166,9 @@
 						},
 						"type": "array"
 					},
+					"builds_info": {
+						"$ref": "#/$defs/FileInfo"
+					},
 					"name_template": {
 						"type": "string"
 					},
