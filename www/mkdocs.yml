@@ -151,6 +151,7 @@ nav:
   - errors/release-upload.md
   - errors/docker-build.md
   - errors/no-main.md
+  - errors/build.md
   - errors/resource-not-accessible-by-integration.md
   - errors/no-history.md
   - errors/multiple-binaries-archive.md
