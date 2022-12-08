@@ -89,7 +89,7 @@ dockers:
     # This option is only available on GoReleaser Pro.
     #
     # Defaults to false.
-    skip_push: false
+    skip_build: false
 
     # Skips the docker push.
     # Could be useful if you also do draft releases.
