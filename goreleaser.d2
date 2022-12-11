@@ -1,0 +1,104 @@
+repo: 'Source Repository' {
+  shape: cylinder
+}
+
+user: User {shape: person}
+
+tag: 'Git Tag'
+cmd: 'goreleaser release --rm-dist' {
+  shape: code
+}
+
+repo -> tag
+user -> tag: runs
+user -> cmd: runs
+
+tag -> goreleaser
+cmd -> goreleaser.start
+
+goreleaser: GoReleaser {
+  start: 'Start' {shape: step}
+  prep: 'Prepare phase' {
+    shape: step
+
+    env: 'Load environment variables'
+    git: 'Validate git state'
+    semver: 'Validate semver'
+    defaults: 'Set defaults'
+    partial: 'Handle partial builds'
+    before: 'Run global before hooks'
+    snapshot: 'Handle snapshot versioning'
+    nightly: 'Handles nightly versioning'
+    dist: 'Handle ./dist folder'
+  }
+  build: 'Build phase' {
+    shape: step
+
+    prebuilt: 'Handle prebuilt binaries'
+    gomod: 'GoMod proxying'
+    effectiveconfig: 'Write dist/config.yaml'
+    build: Build
+    unibin: 'macOS universal binaries'
+  }
+  archive: 'Archive and package phase' {
+    shape: step
+
+    changelog: 'Build changelog'
+    archive: 'Create archives'
+    sourcearchive: 'Create source archive'
+    nfpm: 'Create linux packages with nFPM'
+    snap: 'Create snapcraft packages'
+    sbom: 'Create SBOMs'
+    checksums: 'Create checksums'
+    sign: 'Sign binaries, archives, checksums, sboms, etc'
+    aur: 'Create AUR local files'
+    brew: 'Create Homebrew tap local files'
+    krew: 'Create Krew local files'
+    scoop: 'Create Scoop local files'
+    choco: 'Create Chocolatey local files'
+    docker: 'Create Docker local images'
+  }
+  publish: 'Publish phase' {
+    shape: step
+
+    blob: 'Blobs'
+    http: 'HTTP upload'
+    artifactory: 'Artifactory'
+    fury: 'Fury.io'
+    custom: 'Custom scripts'
+    docker: 'Push Docker images'
+    dockermanifest: 'Create and Push Docker manifests'
+    dockersign: 'Sign Docker images/manifests'
+    snap: 'Publish snap packages'
+    release: 'SCM Release'
+    brew: 'Homebrew Tap'
+    aur: 'AUR'
+    krew: 'Krew'
+    scoop: 'Scoop'
+    choco: 'Chocolatey'
+    milestone: 'Close milestone'
+  }
+  after: After {
+    shape: step
+
+    metadata: 'Write metadata files into ./dist'
+    announce: 'Announce release'
+    after: 'Global after hooks'
+  }
+
+  done: Done {shape: step}
+
+  start -> prep -> build -> archive -> publish -> after -> done
+}
+
+goreleaser.prep <-> distOut
+goreleaser.build <-> distOut
+goreleaser.archive <-> distOut
+goreleaser.publish <- distOut
+goreleaser.after -> distOut
+goreleaser.publish -> internet
+localDocker -> goreleaser.publish
+
+distOut: './dist folder' {shape: stored_data}
+localDocker: 'local Docker registry' {shape: stored_data}
+internet: 'Internet (GitHub/Gitlab/Gitea/Dockerhub/S3/etc...)' {shape: cloud}
