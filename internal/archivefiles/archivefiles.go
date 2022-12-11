@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"sort"
+	"time"
 
 	"github.com/caarlos0/log"
 	"github.com/goreleaser/fileglob"
@@ -24,6 +25,25 @@ func Eval(template *tmpl.Template, files []config.File) ([]config.File, error) {
 		files, err := fileglob.Glob(replaced)
 		if err != nil {
 			return result, fmt.Errorf("globbing failed for pattern %s: %w", replaced, err)
+		}
+
+		f.Info.Owner, err = template.Apply(f.Info.Owner)
+		if err != nil {
+			return result, fmt.Errorf("failed to apply template %s: %w", f.Info.Owner, err)
+		}
+		f.Info.Group, err = template.Apply(f.Info.Group)
+		if err != nil {
+			return result, fmt.Errorf("failed to apply template %s: %w", f.Info.Group, err)
+		}
+		f.Info.MTime, err = template.Apply(f.Info.MTime)
+		if err != nil {
+			return result, fmt.Errorf("failed to apply template %s: %w", f.Info.MTime, err)
+		}
+		if f.Info.MTime != "" {
+			f.Info.ParsedMTime, err = time.Parse(time.RFC3339Nano, f.Info.MTime)
+			if err != nil {
+				return result, fmt.Errorf("failed to parse %s: %w", f.Info.MTime, err)
+			}
 		}
 
 		for _, file := range files {

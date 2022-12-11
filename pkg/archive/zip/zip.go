@@ -49,8 +49,8 @@ func (a Archive) Add(f config.File) error {
 	}
 	header.Name = f.Destination
 	header.Method = zip.Deflate
-	if !f.Info.MTime.IsZero() {
-		header.Modified = f.Info.MTime
+	if !f.Info.ParsedMTime.IsZero() {
+		header.Modified = f.Info.ParsedMTime
 	}
 	if f.Info.Mode != 0 {
 		header.SetMode(f.Info.Mode)

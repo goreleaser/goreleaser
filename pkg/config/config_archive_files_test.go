@@ -84,10 +84,11 @@ files:
 			Source:      "./foobar",
 			Destination: "./barzaz",
 			Info: FileInfo{
-				Owner: "carlos",
-				Group: "users",
-				Mode:  0o644,
-				MTime: now,
+				Owner:       "carlos",
+				Group:       "users",
+				Mode:        0o644,
+				MTime:       now.Format(time.RFC3339Nano),
+				ParsedMTime: time.Time{},
 			},
 		},
 	}, actual.Files)

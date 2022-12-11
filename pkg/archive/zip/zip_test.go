@@ -117,10 +117,10 @@ func TestZipFileInfo(t *testing.T) {
 		Source:      "../testdata/foo.txt",
 		Destination: "nope.txt",
 		Info: config.FileInfo{
-			Mode:  0o755,
-			Owner: "carlos",
-			Group: "root",
-			MTime: now,
+			Mode:        0o755,
+			Owner:       "carlos",
+			Group:       "root",
+			ParsedMTime: now,
 		},
 	}))
 
