@@ -82,7 +82,19 @@ goreleaser: GoReleaser {
     shape: step
 
     metadata: 'Write metadata files into ./dist'
-    announce: 'Announce release'
+    announce: 'Announce release' {
+      Discord
+      LinkedIn
+      Mastodon
+      Mattermost
+      Reddit
+      Slack
+      SMTP
+      Teams
+      Telegram
+      Twitter
+      Webhook
+    }
     after: 'Global after hooks'
   }
 
