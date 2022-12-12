@@ -53,6 +53,7 @@ func (a Archive) Add(f config.File) error {
 	} else {
 		a.gw.Header.ModTime = f.Info.MTime
 	}
+	fmt.Printf("%#v\n", a.gw.Header)
 	_, err = io.Copy(a.gw, file)
 	return err
 }
