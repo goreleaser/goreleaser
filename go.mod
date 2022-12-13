@@ -34,7 +34,7 @@ require (
 	github.com/slack-go/slack v0.11.4
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
-	github.com/ulikunitz/xz v0.5.10
+	github.com/ulikunitz/xz v0.5.11
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
 	github.com/xanzy/go-gitlab v0.77.0
 	gocloud.dev v0.27.0
