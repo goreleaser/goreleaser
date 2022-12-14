@@ -285,11 +285,10 @@ func setupBucket(tb testing.TB, pool *dockertest.Pool, name string) {
 	})
 	require.NoError(tb, err)
 	require.NoError(tb, pool.Retry(func() error {
-		res, ok := pool.ContainerByName(res.Container.Name)
-		if !ok {
-			return nil
+		if _, ok := pool.ContainerByName(res.Container.Name); ok {
+			return fmt.Errorf("still running: %s", res.Container.Name)
 		}
-		return fmt.Errorf("still running: %s", res.Container.Name)
+		return nil
 	}))
 }
 
