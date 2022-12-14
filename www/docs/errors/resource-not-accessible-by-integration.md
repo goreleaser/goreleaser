@@ -1,8 +1,10 @@
 # Resource not accessible by integration
 
-When using GitHub Actions, you might feel tempted to use the action-bound `GITHUB_TOKEN`.
+When using GitHub Actions, you might feel tempted to use the action-bound
+`GITHUB_TOKEN`.
 
-While it is a good practice, and should work for most cases, if your workflow writes a file in another repository, you may see this error:
+While it is a good practice, and should work for most cases, if your workflow
+writes a file in another repository, you may see this error:
 
 ```sh
    ⨯ release failed after 430.85s error=homebrew tap formula: failed to publish artifacts: PUT https://api.github.com/repos/user/homebrew-tap/contents/Formula/scorecard.rb: 403 Resource not accessible by integration []
@@ -25,7 +27,7 @@ You'll need to add it as secret and pass it to the action, for instance:
 ```yaml
 # .github/workflows/goreleaser.yaml
 # ...
-      - uses: goreleaser/goreleaser-action@v2
+      - uses: goreleaser/goreleaser-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 # ...
@@ -42,7 +44,7 @@ We would need to change the workflow file:
 ```yaml
 # .github/workflows/goreleaser.yaml
 # ...
-      - uses: goreleaser/goreleaser-action@v2
+      - uses: goreleaser/goreleaser-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
