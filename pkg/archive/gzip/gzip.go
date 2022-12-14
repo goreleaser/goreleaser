@@ -48,10 +48,10 @@ func (a Archive) Add(f config.File) error {
 		return nil
 	}
 	a.gw.Header.Name = f.Destination
-	if f.Info.MTime.IsZero() {
+	if f.Info.ParsedMTime.IsZero() {
 		a.gw.Header.ModTime = info.ModTime()
 	} else {
-		a.gw.Header.ModTime = f.Info.MTime
+		a.gw.Header.ModTime = f.Info.ParsedMTime
 	}
 	_, err = io.Copy(a.gw, file)
 	return err

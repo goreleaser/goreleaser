@@ -96,11 +96,18 @@ archives:
         # Not all fields are supported by all formats available formats.
         # Defaults to the file info of the actual file if not provided.
         info:
+          # Templateable (since v1.14.0)
           owner: root
+
+          # Templateable (since v1.14.0)
           group: root
+
+          # Must be in time.RFC3339Nano format.
+          # Templateable (since v1.14.0)
+          mtime: '{{ .CommitDate }}'
+
+          # File mode.
           mode: 0644
-          # format is `time.RFC3339Nano`
-          mtime: 2008-01-02T15:04:05Z
 
     # Before and after hooks for each archive.
     # Skipped if archive format is binary.

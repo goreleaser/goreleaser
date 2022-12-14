@@ -45,8 +45,8 @@ func (a Archive) Add(f config.File) error {
 		return fmt.Errorf("%s: %w", f.Source, err)
 	}
 	header.Name = f.Destination
-	if !f.Info.MTime.IsZero() {
-		header.ModTime = f.Info.MTime
+	if !f.Info.ParsedMTime.IsZero() {
+		header.ModTime = f.Info.ParsedMTime
 	}
 	if f.Info.Mode != 0 {
 		header.Mode = int64(f.Info.Mode)
