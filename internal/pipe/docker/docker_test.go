@@ -1,7 +1,6 @@
 package docker
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -9,61 +8,43 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/caarlos0/log"
 	"github.com/goreleaser/goreleaser/internal/artifact"
 	"github.com/goreleaser/goreleaser/internal/pipe"
 	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
+	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/require"
 )
 
 var (
-	it              = flag.Bool("it", false, "push images to docker hub")
-	debug           = flag.Bool("debug", false, "enable debug logs")
-	registryPort    = "5050"
-	registry        = fmt.Sprintf("localhost:%s/", registryPort)
-	altRegistryPort = "5051"
-	altRegistry     = fmt.Sprintf("localhost:%s/", altRegistryPort)
+	registry    string
+	altRegistry string
 )
 
-func TestMain(m *testing.M) {
-	flag.Parse()
-	if *it {
-		registry = "docker.io/"
-	}
-	if *debug {
-		log.SetLevel(log.DebugLevel)
-	}
-	os.Exit(m.Run())
+func start(tb testing.TB) {
+	tb.Helper()
+	tb.Log("starting registries")
+
+	pool, err := dockertest.NewPool("")
+	require.NoError(tb, err)
+	require.NoError(tb, pool.Client.Ping())
+
+	registry1 := startRegistry(tb, pool)
+	registry2 := startRegistry(tb, pool)
+
+	registry = "localhost:" + registry1.GetPort("5000/tcp")
+	altRegistry = "localhost:" + registry2.GetPort("5000/tcp")
 }
 
-func start(t *testing.T) {
-	t.Helper()
-	if *it {
-		return
-	}
-	t.Log("starting registries")
-	for _, line := range []string{
-		fmt.Sprintf("run -d -p %s:5000 --name registry registry:2", registryPort),
-		fmt.Sprintf("run -d -p %s:5000 --name alt_registry registry:2", altRegistryPort),
-	} {
-		if out, err := exec.Command("docker", strings.Fields(line)...).CombinedOutput(); err != nil {
-			t.Log("failed to start docker registry", string(out), err)
-			t.FailNow()
-		}
-	}
-}
-
-func killAndRm(t *testing.T) {
-	t.Helper()
-	if *it {
-		return
-	}
-	t.Log("killing registries")
-	for _, registry := range []string{"registry", "alt_registry"} {
-		_ = exec.Command("docker", "rm", "--force", registry).Run()
-	}
+func startRegistry(tb testing.TB, pool *dockertest.Pool) *dockertest.Resource {
+	tb.Helper()
+	resource, err := pool.Run("registry", "2", nil)
+	require.NoError(tb, err)
+	tb.Cleanup(func() {
+		require.NoError(tb, pool.Purge(resource))
+	})
+	return resource
 }
 
 // TODO: this test is too big... split in smaller tests? Mainly the manifest ones...
@@ -977,9 +958,7 @@ func TestRunPipe(t *testing.T) {
 		},
 	}
 
-	killAndRm(t)
 	start(t)
-	defer killAndRm(t)
 
 	for name, docker := range table {
 		for imager := range imagers {
