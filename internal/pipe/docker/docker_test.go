@@ -28,22 +28,15 @@ const (
 func start(tb testing.TB) {
 	tb.Helper()
 	tb.Log("starting registries")
-
-	pool, err := dockertest.NewPool("")
-	require.NoError(tb, err)
-	require.NoError(tb, pool.Client.Ping())
-
-	startRegistry(tb, pool, "registry", registryPort)
-	startRegistry(tb, pool, "alt_registry", altRegistryPort)
+	startRegistry(tb, "registry", registryPort)
+	startRegistry(tb, "alt_registry", altRegistryPort)
 }
 
-func startRegistry(tb testing.TB, pool *dockertest.Pool, name, port string) {
+func startRegistry(tb testing.TB, name, port string) {
 	tb.Helper()
 
-	if trash, ok := pool.ContainerByName(name); ok {
-		require.NoError(tb, pool.Purge(trash))
-	}
-
+	pool := testlib.MustDockerPool(tb)
+	testlib.MustKillContainer(tb, name)
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Name:       name,
 		Repository: "registry",

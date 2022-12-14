@@ -3,12 +3,14 @@ package blob
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/goreleaser/goreleaser/internal/artifact"
+	"github.com/goreleaser/goreleaser/internal/testlib"
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/ory/dockertest/v3"
@@ -23,30 +25,19 @@ const (
 	containerName = "goreleaserTestMinio"
 )
 
-var (
-	listen string
-	pool   *dockertest.Pool
-)
+var listen string
 
 func TestMain(m *testing.M) {
 	prepareEnv()
 
 	requireNoErr := func(err error) {
-		if err == nil {
-			return
+		if err != nil {
+			log.Fatal(err)
 		}
-		fmt.Println(err)
-		os.Exit(1)
 	}
 
-	var err error
-	pool, err = dockertest.NewPool("")
-	requireNoErr(err)
-	requireNoErr(pool.Client.Ping())
-
-	if trash, ok := pool.ContainerByName(containerName); ok {
-		requireNoErr(pool.Purge(trash))
-	}
+	pool := testlib.MustDockerPool(log.Default())
+	testlib.MustKillContainer(log.Default(), containerName)
 
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Name:       containerName,
@@ -154,7 +145,7 @@ func TestMinioUpload(t *testing.T) {
 		},
 	})
 
-	setupBucket(t, pool, name)
+	setupBucket(t, testlib.MustDockerPool(t), name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
@@ -201,7 +192,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 		Path: debpath,
 	})
 
-	setupBucket(t, pool, name)
+	setupBucket(t, testlib.MustDockerPool(t), name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
@@ -237,7 +228,7 @@ func TestMinioUploadRootFolder(t *testing.T) {
 		Path: debpath,
 	})
 
-	setupBucket(t, pool, name)
+	setupBucket(t, testlib.MustDockerPool(t), name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
