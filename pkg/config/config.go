@@ -480,6 +480,7 @@ type UniversalBinary struct {
 type Archive struct {
 	ID                        string            `yaml:"id,omitempty" json:"id,omitempty"`
 	Builds                    []string          `yaml:"builds,omitempty" json:"builds,omitempty"`
+	BuildsInfo                FileInfo          `yaml:"builds_info,omitempty" json:"builds_info,omitempty"`
 	NameTemplate              string            `yaml:"name_template,omitempty" json:"name_template,omitempty"`
 	Replacements              map[string]string `yaml:"replacements,omitempty" json:"replacements,omitempty"` // Deprecated: use templates instead
 	Format                    string            `yaml:"format,omitempty" json:"format,omitempty"`

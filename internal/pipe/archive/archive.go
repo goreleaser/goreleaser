@@ -206,6 +206,7 @@ func doCreate(ctx *context.Context, arch config.Archive, binaries []*artifact.Ar
 		if err := a.Add(config.File{
 			Source:      binary.Path,
 			Destination: dst,
+			Info:        arch.BuildsInfo,
 		}); err != nil {
 			return fmt.Errorf("failed to add: '%s' -> '%s': %w", binary.Path, dst, err)
 		}
