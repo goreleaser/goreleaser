@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/goreleaser/goreleaser/pkg/config"
 	"github.com/goreleaser/goreleaser/pkg/context"
 	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/require"
 	"gocloud.dev/blob"
 )
@@ -23,7 +23,10 @@ const (
 	containerName = "goreleaserTestMinio"
 )
 
-var minioRes *dockertest.Resource
+var (
+	listen string
+	pool   *dockertest.Pool
+)
 
 func TestMain(m *testing.M) {
 	prepareEnv()
@@ -36,10 +39,15 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	pool, err := dockertest.NewPool("")
+	var err error
+	pool, err = dockertest.NewPool("")
 	exitOnErr(err)
 	exitOnErr(pool.Client.Ping())
 
+	oldRes, ok := pool.ContainerByName(containerName)
+	if ok {
+		_ = pool.Purge(oldRes)
+	}
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Name:       containerName,
 		Repository: "minio/minio",
@@ -50,13 +58,15 @@ func TestMain(m *testing.M) {
 		},
 		ExposedPorts: []string{"9000", "9001"},
 		Cmd:          []string{"server", "/data", "--console-address", ":9001"},
+	}, func(hc *docker.HostConfig) {
+		hc.AutoRemove = true
 	})
 	exitOnErr(err)
 	exitOnErr(pool.Retry(func() error {
 		_, err := http.Get(fmt.Sprintf("http://localhost:%s/minio/health/ready", resource.GetPort("9000/tcp")))
 		return err
 	}))
-	minioRes = resource
+	listen = "localhost:" + resource.GetPort("9000/tcp")
 
 	code := m.Run()
 
@@ -87,7 +97,7 @@ func TestMinioUpload(t *testing.T) {
 				Provider: "s3",
 				Bucket:   name,
 				Region:   "us-east",
-				Endpoint: "http://localhost:" + minioRes.GetPort("9000/tcp"),
+				Endpoint: "http://" + listen,
 				IDs:      []string{"foo", "bar"},
 				ExtraFiles: []config.ExtraFile{
 					{
@@ -144,7 +154,7 @@ func TestMinioUpload(t *testing.T) {
 		},
 	})
 
-	setupBucket(t, name)
+	setupBucket(t, pool, name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 
@@ -175,7 +185,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 			{
 				Provider: "s3",
 				Bucket:   "{{.Env.BUCKET_ID}}",
-				Endpoint: "http://localhost:" + minioRes.GetPort("9000/tcp"),
+				Endpoint: "http://" + listen,
 			},
 		},
 	})
@@ -191,7 +201,7 @@ func TestMinioUploadCustomBucketID(t *testing.T) {
 		Path: debpath,
 	})
 
-	setupBucket(t, name)
+	setupBucket(t, pool, name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
@@ -211,7 +221,7 @@ func TestMinioUploadRootFolder(t *testing.T) {
 				Provider: "s3",
 				Bucket:   name,
 				Folder:   "/",
-				Endpoint: "http://localhost:" + minioRes.GetPort("9000/tcp"),
+				Endpoint: "http://" + listen,
 			},
 		},
 	})
@@ -227,7 +237,7 @@ func TestMinioUploadRootFolder(t *testing.T) {
 		Path: debpath,
 	})
 
-	setupBucket(t, name)
+	setupBucket(t, pool, name)
 	require.NoError(t, Pipe{}.Default(ctx))
 	require.NoError(t, Pipe{}.Publish(ctx))
 }
@@ -245,7 +255,7 @@ func TestMinioUploadInvalidCustomBucketID(t *testing.T) {
 			{
 				Provider: "s3",
 				Bucket:   "{{.Bad}}",
-				Endpoint: "http://localhost:" + minioRes.GetPort("9000/tcp"),
+				Endpoint: "http://" + listen,
 			},
 		},
 	})
@@ -271,18 +281,25 @@ func prepareEnv() {
 	os.Setenv("AWS_REGION", "us-east-1")
 }
 
-func setupBucket(tb testing.TB, name string) {
+func setupBucket(tb testing.TB, pool *dockertest.Pool, name string) {
 	tb.Helper()
 
-	if out, err := exec.Command(
-		"docker", "run", "--rm",
-		"--link", containerName,
-		"-e", fmt.Sprintf("MC_HOST_local=http://%s:%s@%s:9000", minioUser, minioPwd, containerName),
-		"minio/mc",
-		"mb", "local/"+name,
-	).CombinedOutput(); err != nil {
-		tb.Fatalf("failed to create test bucket: %s", string(out))
-	}
+	res, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Repository: "minio/mc",
+		Links:      []string{containerName},
+		Env:        []string{fmt.Sprintf("MC_HOST_local=http://%s:%s@%s:9000", minioUser, minioPwd, containerName)},
+		Cmd:        []string{"mb", "local/" + name},
+	}, func(hc *docker.HostConfig) {
+		hc.AutoRemove = true
+	})
+	require.NoError(tb, err)
+	require.NoError(tb, pool.Retry(func() error {
+		res, ok := pool.ContainerByName(res.Container.Name)
+		if !ok {
+			return nil
+		}
+		return fmt.Errorf("still running: %s", res.Container.Name)
+	}))
 }
 
 func getFiles(t *testing.T, ctx *context.Context, cfg config.Blob) []string {
