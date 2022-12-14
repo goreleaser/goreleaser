@@ -23,7 +23,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3
         with:
-          go-version: '>=1.19.3'
+          go-version: '>=1.19.4'
       - run: task docs:build
       - uses: wjdp/htmltest-action@09118714cd26bef56bd3d0819e4f9b1dce6f60a9 # master
         with:
